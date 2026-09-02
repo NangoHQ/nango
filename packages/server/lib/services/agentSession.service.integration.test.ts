@@ -9,10 +9,10 @@ import { seeders } from '@nangohq/shared';
 import {
     createAgentSession,
     createAgentSessionToken,
+    endAgentSession,
     getAgentSession,
     getAgentSessionByToken,
-    listExpiredAgentSessions,
-    terminateAgentSession
+    listExpiredAgentSessions
 } from './agentSession.service.js';
 
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, DBEnvironment, DBTeam } from '@nangohq/types';
@@ -149,7 +149,7 @@ describe('agentSession service', () => {
         const session = await createSession({ account, environment });
 
         const terminated = (
-            await terminateAgentSession(db.knex, {
+            await endAgentSession(db.knex, {
                 id: session.id,
                 accountId: account.id,
                 environmentId: environment.id,
@@ -161,7 +161,7 @@ describe('agentSession service', () => {
         expect(terminated.session.endedReason).toBe('terminated');
 
         const retried = (
-            await terminateAgentSession(db.knex, {
+            await endAgentSession(db.knex, {
                 id: session.id,
                 accountId: account.id,
                 environmentId: environment.id,
@@ -178,7 +178,7 @@ describe('agentSession service', () => {
         const { token } = (await createAgentSessionToken(db.knex, session)).unwrap();
 
         (
-            await terminateAgentSession(db.knex, {
+            await endAgentSession(db.knex, {
                 id: session.id,
                 accountId: account.id,
                 environmentId: environment.id,
@@ -196,7 +196,7 @@ describe('agentSession service', () => {
         await db.knex(table).where({ id: session.id }).update({ ended_at: db.knex.fn.now(), ended_reason: 'expired' });
 
         const terminated = (
-            await terminateAgentSession(db.knex, {
+            await endAgentSession(db.knex, {
                 id: session.id,
                 accountId: account.id,
                 environmentId: environment.id,
@@ -280,7 +280,7 @@ describe('agentSession service', () => {
         const expiredRecent = await createSession({ account, environment, expiresAt: new Date(Date.now() - 60 * 60 * 1000) });
         const active = await createSession({ account, environment, expiresAt: new Date(Date.now() + 60 * 60 * 1000) });
         (
-            await terminateAgentSession(db.knex, {
+            await endAgentSession(db.knex, {
                 id: expiredEnded.id,
                 accountId: account.id,
                 environmentId: environment.id,

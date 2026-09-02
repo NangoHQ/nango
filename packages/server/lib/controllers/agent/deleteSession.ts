@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { resolveActor } from '../../middleware/audit/auditable.js';
-import * as agentSessionTerminationService from '../../services/agentSessionTermination.service.js';
+import * as agentSessionService from '../../services/agentSession.service.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type { DeleteAgentSession } from '@nangohq/types';
@@ -32,7 +32,7 @@ export const deleteAgentSession = asyncWrapperWithEnvironment<DeleteAgentSession
     }
 
     const { account, environment } = res.locals;
-    const terminated = await agentSessionTerminationService.terminateAgentSession({
+    const terminated = await agentSessionService.terminateAgentSession({
         account,
         environment,
         sessionId: params.data.sessionId,
