@@ -1,4 +1,4 @@
-import { expandIssuable } from './scopes.js';
+import { expandIssuable, isAccountScope } from './scopes.js';
 import { isIssuableWhere, targetForScope, whereContains } from './where.js';
 
 import type { Scope, ScopeSelector } from './scopes.js';
@@ -41,7 +41,11 @@ export function authorize(principal: Principal, scope: Scope, target: Target): b
     return principal.grants.some((grant) => scopeMatches(grant.can, scope) && grant.where.some((where) => whereContains(where, target)));
 }
 
-export function authorizeIn(principal: Principal, scope: Scope, environment: TargetEnvironment): boolean {
+/** An account scope needs no environment. An environment scope with none to answer against is a no. */
+export function authorizeIn(principal: Principal, scope: Scope, environment: TargetEnvironment | null): boolean {
+    if (!environment && !isAccountScope(scope)) {
+        return false;
+    }
     return authorize(principal, scope, targetForScope(scope, principal.accountId, environment));
 }
 

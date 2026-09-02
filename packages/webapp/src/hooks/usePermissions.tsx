@@ -26,12 +26,11 @@ export function usePermissions(): { can: (scope: Scope, inEnvironment?: ApiEnvir
 
     const can = useCallback(
         (scope: Scope, inEnvironment?: ApiEnvironmentSummary) => {
-            const environment = inEnvironment ?? current;
-            // `PrivateRoute` renders nothing until both have landed.
-            if (!principal || !environment) {
+            // `PrivateRoute` renders nothing until the user has landed.
+            if (!principal) {
                 return false;
             }
-            return authorizeIn(principal, scope, environment);
+            return authorizeIn(principal, scope, inEnvironment ?? current);
         },
         [principal, current]
     );

@@ -177,9 +177,20 @@ describe('authorizeIn', () => {
     });
 
     it('answers an account scope whatever environment it is handed', () => {
-        expect(authorizeIn(principal([{ can: ['account:*'], where: ['account'] }]), 'account:team:update', { id: 5, account_id: 1, is_production: true })).toBe(
-            true
-        );
+        const onAccount = principal([{ can: ['account:*'], where: ['account'] }]);
+        expect(authorizeIn(onAccount, 'account:team:update', { id: 5, account_id: 1, is_production: true })).toBe(true);
+        expect(authorizeIn(onAccount, 'account:team:update', { id: 9, account_id: 1, is_production: false })).toBe(true);
+    });
+
+    // The dashboard asks account questions on pages that resolve no environment.
+    it('answers an account scope with no environment at all', () => {
+        const onAccount = principal([{ can: ['account:*'], where: ['account'] }]);
+        expect(authorizeIn(onAccount, 'account:team:update', null)).toBe(true);
+        expect(authorizeIn(p, 'account:team:update', null)).toBe(false);
+    });
+
+    it('refuses an environment scope with no environment, rather than throwing', () => {
+        expect(authorizeIn(p, 'environment:settings:update', null)).toBe(false);
     });
 });
 
