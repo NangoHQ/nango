@@ -97,7 +97,11 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 }
 
 const auditPartitions = isSelfHostedAuditTrailEnabled(envs.AUDIT_DATABASE_URL)
-    ? startPartitionDaemon({ knex: auditDb(envs.AUDIT_DATABASE_URL), tickIntervalMs: envs.NANGO_AUDIT_PARTITION_INTERVAL_MS })
+    ? startPartitionDaemon({
+          knex: auditDb(envs.AUDIT_DATABASE_URL),
+          tickIntervalMs: envs.NANGO_AUDIT_PARTITION_INTERVAL_MS,
+          ...(envs.NANGO_AUDIT_RETENTION_DAYS ? { retentionDays: envs.NANGO_AUDIT_RETENTION_DAYS } : {})
+      })
     : null;
 
 // Preload providers
