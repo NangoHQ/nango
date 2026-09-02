@@ -760,6 +760,7 @@ const ENVS_SHAPE = z.object({
     // May point at the product's own database.
     AUDIT_DATABASE_URL: z.url().optional(),
     AUDIT_DB_POOL_MAX: z.coerce.number().optional().default(5),
+    AUDIT_DB_SSL: z.stringbool().optional().default(false),
     NANGO_AUDIT_RETENTION_DAYS: z.coerce.number().int().positive().optional().default(365),
     NANGO_AUDIT_PARTITION_INTERVAL_MS: z.coerce
         .number()
