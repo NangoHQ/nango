@@ -66,7 +66,7 @@ describe('connection.created — live-stack contract', () => {
             action: 'created',
             outcome: 'success',
             // The key acted, and it stays the actor even though this endpoint accepts an end_user in the body.
-            actor: { type: 'api_key', id: String(apiKey.id) },
+            actor: { type: 'api_key', id: apiKey.uuid },
             targets: [{ type: 'connection', id: generatedId }],
             metadata: { providerConfigKey: 'github' }
         });
@@ -91,7 +91,7 @@ describe('connection.created — live-stack contract', () => {
             resource: 'connection',
             action: 'created',
             outcome: 'failure',
-            actor: { type: 'api_key', id: String(apiKey.id) },
+            actor: { type: 'api_key', id: apiKey.uuid },
             targets: []
         });
     });
@@ -123,7 +123,7 @@ describe('connection.created — live-stack contract', () => {
             resource: 'connection',
             action: 'created',
             outcome: 'success',
-            actor: { type: 'api_key', id: String(apiKey.id) },
+            actor: { type: 'api_key', id: apiKey.uuid },
             targets: [{ type: 'connection', id: 'deprecated-conn' }],
             metadata: { providerConfigKey: 'github' }
         });

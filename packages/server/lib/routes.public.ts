@@ -37,10 +37,10 @@ import { postPublicMetadata } from './controllers/connection/connectionId/metada
 import { patchPublicConnection } from './controllers/connection/connectionId/patchConnection.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
-import { deletePublicApiKey } from './controllers/environment/deleteApiKey.js';
+import { deletePublicEnvironmentApiKey } from './controllers/environment/deleteApiKey.js';
 import { deletePublicEnvironment } from './controllers/environment/deleteEnvironment.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
-import { postPublicApiKey } from './controllers/environment/postApiKey.js';
+import { postPublicEnvironmentApiKey } from './controllers/environment/postApiKey.js';
 import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
 import { postPublicRotateWebhookSigningKey } from './controllers/environment/postPublicRotateWebhookSigningKey.js';
 import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
@@ -232,8 +232,14 @@ publicAPI.route('/providers/:provider/templates').get(apiAuth, withEnvironmentTa
 publicAPI.use('/environments', jsonContentTypeMiddleware);
 publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, withScope('account:environments:create'), postPublicEnvironment);
 publicAPI
-    .route('/environments/:environmentId')
+    .route('/environments/:environmentUuid')
     .delete(apiAuth, auditPublicEnvironmentDeleted, withScope('account:environments:delete'), deletePublicEnvironment);
+publicAPI
+    .route('/environments/:environmentUuid/api-keys')
+    .post(apiAuth, auditPublicApiKeyCreated, withScope('account:environments:api_keys:create'), postPublicEnvironmentApiKey);
+publicAPI
+    .route('/environments/:environmentUuid/api-keys/:keyUuid')
+    .delete(apiAuth, auditPublicApiKeyDeleted, withScope('account:environments:api_keys:delete'), deletePublicEnvironmentApiKey);
 
 // @deprecated rollbacked for one customer, to delete asap
 publicAPI
@@ -314,10 +320,6 @@ publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
 publicAPI.route('/environment-variables').get(apiAuth, withScope('environment:variables:read'), getPublicEnvironmentVariables);
 
 publicAPI.use('/environment', jsonContentTypeMiddleware);
-publicAPI
-    .route('/environment/api-keys')
-    .post(apiAuth, auditPublicApiKeyCreated, withScope('account:environments:api_keys:create'), postPublicApiKey)
-    .delete(apiAuth, auditPublicApiKeyDeleted, withScope('account:environments:api_keys:delete'), deletePublicApiKey);
 publicAPI
     .route('/environment/webhook-signing-key/rotate')
     .post(apiAuth, auditPublicWebhookSigningKeyRotated, withScope('environment:webhook_signing_key:rotate'), postPublicRotateWebhookSigningKey);

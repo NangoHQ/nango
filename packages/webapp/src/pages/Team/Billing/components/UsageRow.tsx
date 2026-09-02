@@ -67,6 +67,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
     const percent = limit ? Math.round((usage / limit) * 100) : null;
     const showLimits = variant === 'caps';
     const figures = showLimits && limit != null ? formatMetricPair(metric, usage, limit) : { usage: formatMetricUsage(metric, usage), limit: null };
+    const exactFigure = formatMetricUsageExact(metric, usage) + (figures.limit != null ? ` / ${figures.limit}` : '');
     // The charge and usage queries resolve independently.
     const isPending = variant === 'charges' ? charge?.pending : capsLoading;
 
@@ -78,12 +79,13 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                         <span className="text-text-default type-text-regular-sm truncate">{label}</span>
                     </div>
                     {variant !== 'usage' ? (
-                        <div className="flex items-center gap-5">
+                        // Fixed track: every row's bar starts at the same x, whatever the figure's width.
+                        <div className={cn('items-center gap-5', showLimits ? 'grid grid-cols-[80px_minmax(0,1fr)]' : 'flex')}>
                             {capsLoading ? (
-                                <Skeleton className="h-5 w-32" />
+                                <Skeleton className={cn('h-5', showLimits ? 'w-full' : 'w-32')} />
                             ) : (
                                 <>
-                                    <span className="text-text-default type-text-regular-sm shrink-0" title={formatMetricUsageExact(metric, usage)}>
+                                    <span className="text-text-default type-text-regular-sm truncate" title={exactFigure}>
                                         {figures.usage}
                                         {figures.limit != null && <span className="text-text-muted"> / {figures.limit}</span>}
                                     </span>
