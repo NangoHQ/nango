@@ -10,7 +10,7 @@ import {
     syncCommandToOperation,
     verifyOwnership
 } from '@nangohq/shared';
-import { getModelFullName, isHosted } from '@nangohq/utils';
+import { isHosted } from '@nangohq/utils';
 
 import { requireEnvironment } from '../utils/asyncWrapper.js';
 import { getOrchestrator } from '../utils/utils.js';
@@ -70,7 +70,7 @@ class SyncController {
                 ...sync,
                 record_count: Object.fromEntries(
                     sync.models.map((model) => {
-                        const modelFullName = getModelFullName(model, sync.variant);
+                        const modelFullName = sync.variant === 'base' ? model : `${model}::${sync.variant}`;
                         return [model, byModel.value[modelFullName]?.count ?? 0];
                     })
                 )

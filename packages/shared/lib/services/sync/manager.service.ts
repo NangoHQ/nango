@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { getCheckpointKey, getLogger, getModelFullName, stringifyError } from '@nangohq/utils';
+import { getCheckpointKey, getLogger, stringifyError } from '@nangohq/utils';
 
 import { SyncJobsType, SyncStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
@@ -581,7 +581,7 @@ export class SyncManagerService {
         const recordCount: Record<string, number> =
             syncConfig?.models.reduce(
                 (acc, model) => {
-                    const modelFullName = getModelFullName(model, sync.variant);
+                    const modelFullName = sync.variant === 'base' ? model : `${model}::${sync.variant}`;
                     acc[model] = countRes.isOk() ? countRes.value[modelFullName]?.count || 0 : 0;
                     return acc;
                 },
