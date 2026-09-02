@@ -14,8 +14,12 @@ export function isSelfHostedAuditTrailEnabled(url: string | undefined): url is s
 export function auditDb(url: string): Knex {
     instance ??= knex({
         client: 'pg',
-        // TLS comes from the URL's own sslmode, so a deployment can demand verification.
-        connection: { connectionString: url, application_name: envs.NANGO_DB_APPLICATION_NAME },
+        // A sslmode in the URL overrides this, so a private CA is configured there rather than here.
+        connection: {
+            connectionString: url,
+            application_name: envs.NANGO_DB_APPLICATION_NAME,
+            ssl: envs.NANGO_DB_SSL ? { rejectUnauthorized: true } : false
+        },
         pool: { min: 0, max: envs.AUDIT_DB_POOL_MAX }
     });
     return instance;
