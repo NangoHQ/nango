@@ -3162,6 +3162,36 @@ bamboohr-basic:
             default_value: x
             hidden: true
 
+bandwidth:
+    display_name: Bandwidth
+    categories:
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.bandwidth.com
+        verification:
+            method: POST
+            headers:
+                content-type: application/x-www-form-urlencoded
+            endpoints:
+                - /api/v1/oauth2/token
+            data:
+                grant_type: client_credentials
+    docs: https://nango.dev/docs/api-integrations/bandwidth
+    docs_connect: https://nango.dev/docs/api-integrations/bandwidth/connect
+    credentials:
+        username:
+            type: string
+            title: Client ID
+            description: The Client ID of a Bandwidth API Credential (Account > API Credentials), not a Dashboard username.
+            doc_section: '#step-1-create-an-api-credential'
+        password:
+            type: string
+            title: Client Secret
+            description: The Client Secret shown when the API Credential was created, not a Dashboard password.
+            secret: true
+            doc_section: '#step-1-create-an-api-credential'
+
 basecamp:
     display_name: Basecamp
     categories:

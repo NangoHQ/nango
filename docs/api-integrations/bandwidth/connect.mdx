@@ -1,0 +1,44 @@
+---
+title: Bandwidth - How do I link my account?
+sidebarTitle: Bandwidth
+---
+
+## Overview
+
+To authenticate with Bandwidth, you will need:
+1. **Client ID** - The Client ID of a Bandwidth API Credential.
+2. **Client Secret** - The Client Secret issued together with that Client ID.
+
+These are **API Credentials** created under **Account > API Credentials** in the Bandwidth Dashboard. They are not your Bandwidth Dashboard login and not a legacy API User username/password. Bandwidth is retiring API Users: new API Users could no longer be created after April 1, 2026, and all API Users stop working on December 2, 2026. Only API Credentials are supported here.
+
+API Credentials use the OAuth2 client-credentials flow. Nango stores the Client ID and Client Secret and sends them as HTTP Basic credentials (`Authorization: Basic base64(<Client ID>:<Client Secret>)`) to `https://api.bandwidth.com/api/v1/oauth2/token`, which returns a short-lived bearer token for the Messaging, Voice and Numbers APIs. When you connect, Nango verifies the pair against that token endpoint before saving it.
+
+### Prerequisites
+
+- You must have access to the [Bandwidth Dashboard](https://dashboard.bandwidth.com).
+- Your Dashboard user needs the **Credential Access** role to create API Credentials.
+- Your account must be enabled for the products you want to call (Messaging, Voice, Numbers).
+
+### Instructions
+
+#### Step 1: Create an API Credential
+
+1. Log in to the [Bandwidth Dashboard](https://dashboard.bandwidth.com).
+2. Go to **Account > API Credentials** and click **Create Credential**.
+3. Give the credential a name and set its scope. Use the **ACCOUNT** scope so the credential can access every sub-account it needs.
+4. Assign the roles for the APIs you will call, for example **Messaging**, **Voice** and **Numbers**. Keep the role set minimal.
+5. Optionally set an expiration date.
+6. Save the credential and copy the **Client ID** and **Client Secret**. The Client Secret is shown only once; store it securely. If you lose it, rotate the credential to get a new secret.
+
+See Bandwidth's guides on [managing API Credentials](https://dev.bandwidth.com/docs/account/credentials/management) and [migrating from API Users](https://dev.bandwidth.com/docs/account/credentials/migration) for details.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Client ID** and **Client Secret**:
+
+1. Open the form where you need to authenticate with Bandwidth.
+2. Enter your **Client ID** in the **Client ID** field.
+3. Enter your **Client Secret** in the **Client Secret** field.
+4. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Bandwidth.

@@ -1,0 +1,86 @@
+---
+title: 'Bandwidth'
+sidebarTitle: 'Bandwidth'
+description: 'Integrate your application with the Bandwidth Messaging, Voice and Numbers APIs'
+---
+
+## Quickstart
+
+Connect to Bandwidth with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Bandwidth_.
+    </Step>
+    <Step title="Authorize Bandwidth">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter the Client ID and Client Secret of a Bandwidth API Credential. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Bandwidth API">
+    Bandwidth product APIs (Messaging, Voice, Numbers) expect an OAuth2 bearer token, not the API Credential itself. Nango stores the Client ID and Client Secret and sends them as HTTP Basic credentials, so the first request to make is the client-credentials token exchange. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/api/v1/oauth2/token" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/x-www-form-urlencoded" \
+              -d "grant_type=client_credentials"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/api/v1/oauth2/token',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            data: 'grant_type=client_credentials'
+        });
+
+        console.log(res.data.access_token);
+        ```
+        </Tab>
+
+    </Tabs>
+    Use the returned `access_token` as `Authorization: Bearer <access_token>` against `https://messaging.bandwidth.com`, `https://voice.bandwidth.com` or `https://numbers.bandwidth.com` (pass `baseUrlOverride` when proxying). Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## Bandwidth integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my Bandwidth account?](/api-integrations/bandwidth/connect)
+Connect your Bandwidth account using the Connect UI
+
+Official docs:
+- [Bandwidth API reference](https://dev.bandwidth.com/apis/)
+- [Managing API Credentials](https://dev.bandwidth.com/docs/account/credentials/management)
+- [Migrating from API Users to API Credentials](https://dev.bandwidth.com/docs/account/credentials/migration)
+
+## Pre-built syncs & actions for Bandwidth
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/bandwidth/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
