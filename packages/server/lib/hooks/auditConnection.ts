@@ -31,6 +31,10 @@ export function connectionCreatedActor(
     if (authType === 'publicKey') {
         return PUBLIC_KEY_ACTOR;
     }
+    // The hook-side emitter has no OAuth session to report an auth type from.
+    if (endUser) {
+        return connectSessionActor(endUser);
+    }
     return UNKNOWN_ACTOR;
 }
 
