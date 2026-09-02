@@ -7,7 +7,7 @@ import { jsonSchema } from '@nangohq/nango-orchestrator';
 import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
-import { GroupCooldowns } from './groupCooldown.js';
+import { GroupThrottles } from './groupThrottle.js';
 
 import type { Message } from '@aws-sdk/client-sqs';
 import type { ExecuteWebhookProps, OrchestratorClient } from '@nangohq/nango-orchestrator';
@@ -45,7 +45,7 @@ export interface DispatchQueueConsumerProps {
     waitTimeSeconds: number;
     visibilityTimeoutSeconds: number;
     maxAgeMs: number;
-    rateLimitCooldownMaxMs: number;
+    rateLimitThrottleMaxMs: number;
     sqs?: SQSClient;
 }
 
@@ -64,7 +64,7 @@ export class DispatchQueueConsumer {
     private readonly waitTimeSeconds: number;
     private readonly visibilityTimeoutSeconds: number;
     private readonly maxAgeMs: number;
-    private readonly cooldowns: GroupCooldowns;
+    private readonly throttles: GroupThrottles;
     private readonly abortController = new AbortController();
     private loopPromises: Promise<void>[] = [];
 
@@ -77,7 +77,7 @@ export class DispatchQueueConsumer {
         this.waitTimeSeconds = props.waitTimeSeconds;
         this.visibilityTimeoutSeconds = props.visibilityTimeoutSeconds;
         this.maxAgeMs = props.maxAgeMs;
-        this.cooldowns = new GroupCooldowns({ maxCooldownMs: props.rateLimitCooldownMaxMs });
+        this.throttles = new GroupThrottles({ maxThrottleMs: props.rateLimitThrottleMaxMs });
         this.sqs = props.sqs ?? new SQSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
     }
 
@@ -151,11 +151,11 @@ export class DispatchQueueConsumer {
                     }
                 }
                 const groupedEntries: ParsedEntry[][] = [];
-                let coolingDown = 0;
+                let throttled = 0;
                 for (const group of groups.values()) {
-                    if (this.cooldowns.isCoolingDown(dispatchGroupKey(group[0]!.parsed))) {
-                        coolingDown += group.length;
-                        this.reportCoolingDown(group);
+                    if (this.throttles.isThrottled(dispatchGroupKey(group[0]!.parsed))) {
+                        throttled += group.length;
+                        this.reportThrottled(group);
                         continue;
                     }
                     groupedEntries.push(group);
@@ -164,9 +164,9 @@ export class DispatchQueueConsumer {
                 metrics.histogram(metrics.Types.WEBHOOK_DISPATCH_BATCH_SIZE, groupedEntries.length);
                 span.setTag('batch_size', groupedEntries.length);
                 span.setTag('received', entries.length);
-                span.setTag('cooling_down', coolingDown);
+                span.setTag('throttled', throttled);
 
-                const dispatched = entries.length - coolingDown;
+                const dispatched = entries.length - throttled;
                 if (groupedEntries.length === 0) {
                     return;
                 }
@@ -275,13 +275,13 @@ export class DispatchQueueConsumer {
             // Per-entry errors:
             // - duplicate_task_name: already scheduled, treat as success and delete.
             // - task_cap_exceeded: the group is saturated, so redelivering won't help, so we drop the message.
-            // - rate_limit_exceeded: the group is over its cap, so cool it down and let SQS redeliver.
+            // - rate_limit_exceeded: the group is over its cap, so throttle it and let SQS redeliver.
             // - anything else: leave for redelivery (SQS visibility timeout → eventual DLQ).
             if (result.error.name === 'duplicate_task_name') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider, providerConfigKey });
                 await this.deleteGroup(group);
             } else if (result.error.name === 'rate_limit_exceeded') {
-                this.cooldowns.start(dispatchGroupKey(group[0]!.parsed), getRetryAfterMs(result.error.payload));
+                this.throttles.throttleFor(dispatchGroupKey(group[0]!.parsed), getRetryAfterMs(result.error.payload));
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
                 await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
@@ -294,10 +294,10 @@ export class DispatchQueueConsumer {
         }
     }
 
-    private reportCoolingDown(group: ParsedEntry[]): void {
+    private reportThrottled(group: ParsedEntry[]): void {
         const { provider, connection } = group[0]!.parsed;
         metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, group.length, {
-            result: 'cooling_down',
+            result: 'throttle_deferred',
             provider,
             providerConfigKey: connection.provider_config_key
         });

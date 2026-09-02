@@ -67,7 +67,7 @@ function makeHarness(
         badBody?: string;
         consumerConcurrency?: number;
         maxAgeMs?: number;
-        rateLimitCooldownMaxMs?: number;
+        rateLimitThrottleMaxMs?: number;
         sqsSend?: Mock<SqsSendFn>;
     } = {}
 ): Harness {
@@ -113,7 +113,7 @@ function makeHarness(
         waitTimeSeconds: 0,
         visibilityTimeoutSeconds: 30,
         maxAgeMs: opts.maxAgeMs ?? 0,
-        rateLimitCooldownMaxMs: opts.rateLimitCooldownMaxMs ?? 0
+        rateLimitThrottleMaxMs: opts.rateLimitThrottleMaxMs ?? 0
     });
 
     return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhookBatch };
@@ -225,7 +225,7 @@ describe('DispatchQueueConsumer', () => {
         expect(getDeleteCalls(h)).toHaveLength(1);
     });
 
-    it('cools down only the throttled group and keeps the other groups flowing', async () => {
+    it('throttles only the rate limited group and keeps the other groups flowing', async () => {
         const noisy = (n: number) =>
             buildMessage({
                 taskName: `webhook:noisy:${n}`,
@@ -259,7 +259,7 @@ describe('DispatchQueueConsumer', () => {
             throw new Error(`unexpected command ${String(command)}`);
         });
 
-        const h = makeHarness({ sqsSend, rateLimitCooldownMaxMs: 60_000 });
+        const h = makeHarness({ sqsSend, rateLimitThrottleMaxMs: 60_000 });
         h.orchestratorExecuteWebhookBatch.mockImplementation((props: unknown[]) =>
             Promise.resolve(
                 Ok(
@@ -309,7 +309,7 @@ describe('DispatchQueueConsumer', () => {
             return {};
         });
 
-        const h = makeHarness({ sqsSend, rateLimitCooldownMaxMs: 60_000 });
+        const h = makeHarness({ sqsSend, rateLimitThrottleMaxMs: 60_000 });
         h.orchestratorExecuteWebhookBatch
             .mockResolvedValueOnce(Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 30_000 } })]))
             .mockResolvedValueOnce(Err({ name: 'immediate_batch_failed', message: 'boom', payload: {} }));

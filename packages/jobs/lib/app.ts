@@ -59,7 +59,7 @@ try {
               waitTimeSeconds: envs.NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS,
               visibilityTimeoutSeconds: envs.NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS,
               maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000,
-              rateLimitCooldownMaxMs: envs.NANGO_TASK_DISPATCH_RATE_LIMIT_COOLDOWN_MAX_MS
+              rateLimitThrottleMaxMs: envs.NANGO_TASK_DISPATCH_RATE_LIMIT_THROTTLE_MAX_MS
           })
         : undefined;
 
