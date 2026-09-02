@@ -54,11 +54,15 @@ export async function dropExpiredPartitions({
 }): Promise<Result<{ dropped: number; skipped: number }>> {
     const cutoff = dayjs(now).utc().startOf('day').subtract(retentionDays, 'day');
     try {
+        // Only actual children of our parent: a detached partition keeps its name, and dropping one would
+        // delete the data an operator detached in order to keep.
         const { rows } = await knex.raw<{ rows: { relname: string }[] }>(
-            `SELECT c.relname FROM pg_class c
-             JOIN pg_namespace n ON n.oid = c.relnamespace
-             WHERE n.nspname = ? AND c.relkind = 'r' AND c.relname ~ ? ORDER BY c.relname`,
-            [schema, `^${PARTITION_PREFIX}[0-9]{8}$`]
+            `SELECT c.relname FROM pg_inherits i
+             JOIN pg_class c ON c.oid = i.inhrelid
+             JOIN pg_class p ON p.oid = i.inhparent
+             JOIN pg_namespace n ON n.oid = p.relnamespace
+             WHERE n.nspname = ? AND p.relname = ? AND c.relname ~ ? ORDER BY c.relname`,
+            [schema, AUDIT_EVENTS_TABLE, `^${PARTITION_PREFIX}[0-9]{8}$`]
         );
         const cutoffDay = cutoff.format('YYYYMMDD');
         const expired = rows.filter((row) => partitionDay(row.relname) < cutoffDay);

@@ -66,6 +66,17 @@ describe('audit partition lifecycle', () => {
         await expect(insert('2026-10-01T00:00:00.000Z')).rejects.toThrow(/no partition of relation/);
     });
 
+    it('leaves a detached table alone, even when its name looks expired', async () => {
+        await ensurePartition({ knex, schema, date: day(-400) });
+        const [detached] = await partitions();
+        await knex.raw(`ALTER TABLE ??.?? DETACH PARTITION ??.??`, [schema, AUDIT_EVENTS_TABLE, schema, detached]);
+        await ensurePartition({ knex, schema, date: day(-399) });
+
+        const res = await dropExpiredPartitions({ knex, schema, retentionDays: 365, now });
+        expect(res.isOk() && res.value).toEqual({ dropped: 1, skipped: 0 });
+        expect(await partitions()).toEqual([detached]);
+    });
+
     it('drops expired partitions and preserves the rest', async () => {
         // -366 and -365 straddle the cutoff, so the pair pins where it falls
         for (const offset of [-400, -366, -365, -10, 0]) {
