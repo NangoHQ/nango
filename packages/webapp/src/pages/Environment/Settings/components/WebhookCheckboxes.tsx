@@ -59,7 +59,7 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
     const { mutateAsync: patchWebhookAsync } = usePatchWebhook(env);
 
     const { can } = usePermissions();
-    const canEditEnvironment = can('environment:settings:update');
+    const canEditWebhooks = can('environment:webhooks:update');
 
     const [loading, setLoading] = useState<string | false>();
 
@@ -99,7 +99,7 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
 
                     <div className="flex gap-2 items-center">
                         {loading === stateKey && <Loader2 className="size-4 animate-spin" />}
-                        <PermissionGate condition={canEditEnvironment}>
+                        <PermissionGate condition={canEditWebhooks}>
                             {(allowed) => (
                                 <Switch
                                     name="hmac_enabled"

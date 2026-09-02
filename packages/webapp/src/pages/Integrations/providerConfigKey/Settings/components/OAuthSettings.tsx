@@ -26,7 +26,7 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
     const { confirm, DialogComponent } = useConfirmDialog();
 
     const { can } = usePermissions();
-    const canEdit = can('environment:integrations:update');
+    const canEdit = can('environment:integrations:update', environment);
 
     const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
     const [isEditingClientId, setIsEditingClientId] = useState(false);

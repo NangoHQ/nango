@@ -29,7 +29,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
     const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
 
     const { can } = usePermissions();
-    const canEdit = can('environment:integrations:update');
+    const canEdit = can('environment:integrations:update', environment);
 
     const [isEditingIntegrationId, setIsEditingIntegrationId] = useState(false);
 
