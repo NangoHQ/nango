@@ -100,7 +100,10 @@ describe('AppAuthController.connect', () => {
             activityLogId: 'activity-1',
             connectSessionId: 10
         });
-        mockGetAccountContext.mockResolvedValue({ environment: { id: 2, name: 'dev' }, account: { id: 1, name: 'acme' } });
+        mockGetAccountContext.mockResolvedValue({
+            environment: { id: 2, uuid: 'e0000000-0000-4000-8000-000000000002', name: 'dev' },
+            account: { id: 1, uuid: 'a0000000-0000-4000-8000-000000000001', name: 'acme' }
+        });
         mockGetProviderConfig.mockResolvedValue({ id: 1, unique_key: 'github-app', provider: 'github-app', oauth_client_id: 'app-123' });
         mockGetProvider.mockReturnValue({ auth_mode: 'APP', token_url: 'https://api.github.com/app/installations' });
         mockCreateCredentials.mockResolvedValue(Ok({ type: 'APP', jwtToken: 'jwt-token' }));
@@ -154,7 +157,7 @@ describe('AppAuthController.connect', () => {
             connectionId: 'conn-1',
             providerConfigKey: 'github-app',
             account: { id: 1 },
-            environment: { id: 2, name: 'dev' }
+            environment: { uuid: 'e0000000-0000-4000-8000-000000000002', name: 'dev' }
         });
     });
 

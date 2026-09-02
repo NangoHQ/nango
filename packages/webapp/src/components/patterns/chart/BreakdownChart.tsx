@@ -5,6 +5,7 @@ import { formatQuantity } from '@/utils/utils';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../ui/Chart';
 import { niceCapAxis } from './chartFormat';
 import { REST_SERIES_KEY } from './usageChartColors';
+import { countPlottedDays } from './useChartData';
 
 import type { ChartConfig } from '../../ui/Chart';
 import type { ChartSeries } from './types';
@@ -60,6 +61,9 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
     const bandClick = (s: ChartSeries) => () => toggleIsolate(s.key);
     const ChartComponent = isCumulative ? AreaChart : BarChart;
 
+    // An area spanning a single day has no width and paints nothing — the 1st of a month renders blank.
+    const areaDot = useMemo(() => (countPlottedDays(chartData) === 1 ? { r: 3 } : false), [chartData]);
+
     // Stacking follows declaration order (first series = bottom), so pin the neutral
     // "Rest" bucket to the bottom; the sized series stack above it. The legend/tooltip keep their own order.
     const stackSeries = [...series.filter((s) => s.key === REST_SERIES_KEY), ...series.filter((s) => s.key !== REST_SERIES_KEY)];
@@ -80,7 +84,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
                             strokeOpacity={dimByHover(s.key) ? 0.3 : 1}
                             strokeWidth={1}
                             type="basis"
-                            dot={false}
+                            dot={areaDot}
                             // The active dot sits on top of the band; mirror the band's handlers so
                             // hovering it doesn't drop the highlight / single-series tooltip.
                             activeDot={{ onMouseEnter: () => hoverSeries(s.key), onMouseLeave: () => unhoverSeries(), onClick: bandClick(s) }}
@@ -119,7 +123,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
                     stroke="var(--color-total)"
                     type="basis"
                     strokeWidth={2}
-                    dot={false}
+                    dot={areaDot}
                     isAnimationActive={false}
                 />
             ];

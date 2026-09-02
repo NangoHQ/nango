@@ -6,6 +6,19 @@ import { mergeFlags } from './plans.js';
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
 describe('mergeFlags', () => {
+    it('should cap only connections and function runtime on the free plan', () => {
+        expect(getPlanDefinition('free')?.flags).toMatchObject({
+            connections_max: 10,
+            function_duration_seconds_max: 36_000,
+            records_max: null,
+            proxy_max: null,
+            function_executions_max: null,
+            function_compute_gbms_max: null,
+            webhook_forwards_max: null,
+            function_logs_max: null
+        });
+    });
+
     it('should enable RBAC by default on free-uncapped, startup-deal, growth, growth-v2 and enterprise plans', () => {
         expect(getPlanDefinition('free')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('starter')?.flags.has_rbac).toBe(false);

@@ -3,7 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { LocalStorageKeys } from '@/utils/local-storage';
 
-import type { ApiPlan, GetBillingPeriodCosts, GetOverdueInvoices, GetUpcomingInvoice, PlanDefinition } from '@nangohq/types';
+import type { ApiPlan, GetBillingPeriodCosts, GetOverdueInvoices, GetStripePaymentMethods, GetUpcomingInvoice, PlanDefinition } from '@nangohq/types';
 
 /** Simulated aggregate usage state, matching what `getAggregateUsageState` can return. */
 export type UsageLimitOverride = 'near' | 'over';
@@ -30,6 +30,7 @@ interface PlanOverrideState {
     spendOverride: SpendOverride | null;
     metricChargesEnabled: boolean;
     periodCostsOverride: PeriodCostsOverride | null;
+    paymentMethodOverride: boolean;
     setOverride: (code: PlanDefinition['code'] | null) => void;
     setScheduledTarget: (code: PlanDefinition['code'] | null) => void;
     setOverdueOverride: (override: boolean) => void;
@@ -38,23 +39,28 @@ interface PlanOverrideState {
     setSpendOverride: (override: SpendOverride | null) => void;
     setMetricChargesEnabled: (enabled: boolean) => void;
     setPeriodCostsOverride: (override: PeriodCostsOverride | null) => void;
+    setPaymentMethodOverride: (override: boolean) => void;
+    resetAll: () => void;
 }
+
+export const DEFAULTS = {
+    overrideCode: null,
+    scheduledTargetCode: null,
+    overdueOverride: false,
+    usageLimitOverride: null,
+    spendHeadlineEnabled: false,
+    spendOverride: null,
+    metricChargesEnabled: false,
+    periodCostsOverride: null,
+    paymentMethodOverride: false
+} satisfies Partial<PlanOverrideState>;
 
 export const usePlanOverrideStore = create<PlanOverrideState>()(
     persist(
         (set) => ({
-            overrideCode: null,
-            scheduledTargetCode: null,
-            overdueOverride: false,
-            usageLimitOverride: null,
-            spendHeadlineEnabled: false,
-            spendOverride: null,
-            metricChargesEnabled: false,
-            periodCostsOverride: null,
-            // Reset the simulated states too — each is only valid for the plan it was picked against,
-            // and the two are offered on opposite sides of the paid/free split.
-            // `spendHeadlineEnabled` is deliberately not reset — it's a rollout flag, not a
-            // simulated state scoped to the previewed plan.
+            ...DEFAULTS,
+            // Switching plan clears the states picked against the old one. `spendHeadlineEnabled`
+            // survives here — a rollout flag, not a simulated state — though Reset still clears it.
             setOverride: (overrideCode) =>
                 set({
                     overrideCode,
@@ -70,7 +76,9 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
             setSpendHeadlineEnabled: (spendHeadlineEnabled) => set({ spendHeadlineEnabled }),
             setSpendOverride: (spendOverride) => set({ spendOverride }),
             setMetricChargesEnabled: (metricChargesEnabled) => set({ metricChargesEnabled }),
-            setPeriodCostsOverride: (periodCostsOverride) => set({ periodCostsOverride })
+            setPeriodCostsOverride: (periodCostsOverride) => set({ periodCostsOverride }),
+            setPaymentMethodOverride: (paymentMethodOverride) => set({ paymentMethodOverride }),
+            resetAll: () => set(DEFAULTS)
         }),
         {
             name: LocalStorageKeys.DevPlanOverride,
@@ -93,6 +101,11 @@ export function buildOverdueOverride(realPortalUrl?: string | null): GetOverdueI
             portalUrl: realPortalUrl ?? null
         }
     };
+}
+
+/** Stands in for a card, so the payment slot can be previewed without configuring Stripe locally. */
+export function buildPaymentMethodOverride(): GetStripePaymentMethods['Success'] {
+    return { data: [{ id: 'pm_preview', brand: 'visa', last4: '4242', expMonth: 8, expYear: 2030 }] };
 }
 
 /** Stands in for the real upcoming-invoice response when the override is on, for visual QA only. */
@@ -136,10 +149,9 @@ export function buildPeriodCostsOverride(override: PeriodCostsOverride): GetBill
 /** Overlays a dev-tool plan override (and optional simulated scheduled change) onto a real plan, for visual QA only. */
 export function applyPlanOverride(
     realPlan: ApiPlan | null | undefined,
-    overridePlan: PlanDefinition | null | undefined,
-    scheduledTarget?: PlanDefinition | null
+    { overridePlan, scheduledTarget }: { overridePlan?: PlanDefinition | null; scheduledTarget?: PlanDefinition | null }
 ): ApiPlan | null | undefined {
-    if (!overridePlan || !realPlan) {
+    if (!realPlan || !overridePlan) {
         return realPlan;
     }
 

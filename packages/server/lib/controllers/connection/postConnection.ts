@@ -440,7 +440,7 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
         connectionId: updatedConnection.connection.connection_id,
         providerConfigKey: body.provider_config_key,
         account: { id: account.id, uuid: account.uuid },
-        environment: { id: environment.id, name: environment.name },
+        environment: { uuid: environment.uuid, name: environment.name },
         endUser: undefined
     });
 
