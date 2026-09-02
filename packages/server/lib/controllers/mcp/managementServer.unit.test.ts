@@ -6,6 +6,7 @@ import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, flags, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
+import { triggerActionTool } from './actions/trigger.js';
 import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
 import { createConnectSessionTool } from './connectSessions/create.js';
@@ -72,6 +73,10 @@ describe('createManagementMcpServer', () => {
                 {
                     name: 'syncs_set_state',
                     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+                },
+                {
+                    name: 'actions_trigger',
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 {
                     name: 'proxy_request',
@@ -389,6 +394,73 @@ describe('createManagementMcpServer', () => {
 
             expect(withoutDocsTools(result.tools).map((tool) => tool.name)).toStrictEqual(['connections_list', 'connections_get']);
         } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('exposes and authorizes non-idempotent action triggering', async () => {
+        const authorized = await createTestClient(['environment:actions:execute']);
+        try {
+            const result = await authorized.client.listTools();
+            const scopedTools = withoutDocsTools(result.tools);
+            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools[0]).toMatchObject({
+                name: 'actions_trigger',
+                description: expect.stringContaining('time out within 90 seconds'),
+                inputSchema: {
+                    type: 'object',
+                    required: ['action_name', 'integration_id', 'connection_id'],
+                    additionalProperties: false
+                },
+                outputSchema: { type: 'object', required: ['data'], additionalProperties: false },
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
+            });
+            expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('async');
+            expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('max_retries');
+        } finally {
+            await authorized.client.close();
+            await authorized.server.close();
+        }
+
+        const handlerSpy = vi.spyOn(triggerActionTool, 'handler');
+        const unauthorized = await createTestClient(['environment:mcp']);
+        try {
+            const result = await unauthorized.client.callTool({
+                name: 'actions_trigger',
+                arguments: { action_name: 'create-issue', input: {}, integration_id: 'github', connection_id: 'connection-id' }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: 'MCP error -32602: Tool actions_trigger disabled' }],
+                isError: true
+            });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await unauthorized.client.close();
+            await unauthorized.server.close();
+        }
+    });
+
+    it('returns action responses as JSON text and structured content', async () => {
+        const response = { data: 'created' };
+        const handlerSpy = vi.spyOn(triggerActionTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:actions:execute']);
+
+        try {
+            const result = await client.callTool({
+                name: 'actions_trigger',
+                arguments: { action_name: 'create-issue', input: {}, integration_id: 'github', connection_id: 'connection-id' }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
             await client.close();
             await server.close();
         }
