@@ -1,8 +1,7 @@
-import { permissions } from '@nangohq/authz';
 import { configService, countSyncConfigByConfigId, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { resolve } from '../../../authz/resolve.js';
+import { authorizes } from '../../../authz/resolve.js';
 import { integrationToApi } from '../../../formatters/integration.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { parseAssertionOptionParamsFromTemplate, parseConnectionConfigParamsFromTemplate, parseCredentialsParamsFromTemplate } from '../../../utils/utils.js';
@@ -17,7 +16,7 @@ export const getIntegrations = asyncWrapperWithEnvironment<GetIntegrations>(asyn
     }
 
     const { environment } = res.locals;
-    const includeCredentials = !environment.is_production || (await resolve(res.locals, permissions.canReadProdConnectionCredentials));
+    const includeCredentials = !environment.is_production || authorizes(res.locals, 'environment:integrations:list_credentials');
 
     const integrations = await configService.listIntegrationForApi(environment.id);
     const rawSyncConfig = await countSyncConfigByConfigId(environment.id);

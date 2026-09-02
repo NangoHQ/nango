@@ -467,6 +467,13 @@ const NOW = new Date('2026-08-21T12:00:00Z');
 const RECORDS_PROD = 'AinLoHESvrXqhEig';
 const RECORDS_TEST = 'FTTFTvuqDr7YbcRB';
 const WEBHOOKS_PROD = 'j46jUSMMya8jqhkR';
+/** Read off the `pay-as-you-go` plan's prices: the metric list carries near-duplicates by name. */
+const CONNECTIONS_V3_TEST = 'd43sZsrkdUE9gCUv';
+const COMPUTE_HOURS_TEST = '5wA8CWsfttHSaTw3';
+const DATA_TRANSFER_TEST = 'cJe5pcF2MQ8pvBrF';
+const COMPUTE_HOURS_PROD = 'ZrAoynYimCwtmFSP';
+const DATA_TRANSFER_PROD = 'RNskBsYUvTYLsjV2';
+const CONNECTIONS_PROD = '8aAyMTG6HafmZpqJ';
 
 function usagePrice(metricId: string | null, total: string, name = 'Some price', priceId = 'price_1') {
     return {
@@ -497,6 +504,39 @@ describe('fromOrbPeriodCosts', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_TEST, '1.00', 'Sync records')])] };
 
         expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 100 });
+    });
+
+    it('maps the metrics the new pricing bills on', () => {
+        const costs = {
+            data: [
+                bucket([
+                    usagePrice(CONNECTIONS_V3_TEST, '9.86', 'ConnectionsV3', 'price_1'),
+                    usagePrice(COMPUTE_HOURS_TEST, '44.86', 'Function compute time (h)', 'price_2'),
+                    usagePrice(DATA_TRANSFER_TEST, '6.20', 'Data transfer (GB)', 'price_3')
+                ])
+            ]
+        };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ connections: 986, function_duration_seconds: 4486, data_transfer: 620 });
+        expect(result?.flagged).toEqual([]);
+        expect(result?.fullyAttributed).toBe(true);
+    });
+
+    it('maps the new metrics in prod, where connections keeps the id the old plans use', () => {
+        const costs = {
+            data: [
+                bucket([
+                    usagePrice(CONNECTIONS_PROD, '9.86', 'Connections', 'price_1'),
+                    usagePrice(COMPUTE_HOURS_PROD, '44.86', 'Function compute time (h)', 'price_2'),
+                    usagePrice(DATA_TRANSFER_PROD, '6.20', 'Data transfer (GB)', 'price_3')
+                ])
+            ]
+        };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ connections: 986, function_duration_seconds: 4486, data_transfer: 620 });
+        expect(result?.fullyAttributed).toBe(true);
     });
 
     it('maps on the id, not the name, so a renamed price still lands', () => {

@@ -50,6 +50,7 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
             case 'facebook':
+            case 'meta-mcp':
             case 'followupboss':
             case 'instagram':
             case 'jobber':
@@ -74,6 +75,7 @@ class ProviderClient {
             case 'slack':
             case 'attio-mcp':
             case 'revolut-business':
+            case 'scrollstash-mcp':
             case 'shopline-oauth':
             case 'threads':
                 return true;
@@ -113,6 +115,8 @@ class ProviderClient {
         switch (config.provider) {
             case 'attio-mcp':
                 return this.createAttioMcpToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
+            case 'scrollstash-mcp':
+                return this.createScrollstashMcpToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
             case 'agiloft':
                 return this.createAgiloftToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'braintree':
@@ -131,6 +135,7 @@ class ProviderClient {
             case 'jobber':
                 return this.createJobberToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
+            case 'meta-mcp':
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             case 'instagram':
                 return this.createInstagramToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
@@ -224,6 +229,7 @@ class ProviderClient {
 
         if (
             config.provider !== 'facebook' &&
+            config.provider !== 'meta-mcp' &&
             !credentials.refresh_token &&
             config.provider !== 'microsoft-admin' &&
             config.provider !== 'instagram' &&
@@ -231,7 +237,10 @@ class ProviderClient {
             config.provider !== 'threads'
         ) {
             throw new NangoError('missing_refresh_token');
-        } else if ((config.provider === 'facebook' || config.provider === 'instagram' || config.provider === 'threads') && !credentials.access_token) {
+        } else if (
+            (config.provider === 'facebook' || config.provider === 'meta-mcp' || config.provider === 'instagram' || config.provider === 'threads') &&
+            !credentials.access_token
+        ) {
             throw new NangoError('missing_access_token');
         }
 
@@ -265,6 +274,7 @@ class ProviderClient {
             case 'jobber':
                 return this.refreshJobberToken(provider.token_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
+            case 'meta-mcp':
                 return this.refreshFacebookToken(provider.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
             case 'instagram':
                 return this.refreshInstagramToken(provider.refresh_url as string, credentials.access_token);
@@ -366,6 +376,8 @@ class ProviderClient {
                 );
             case 'attio-mcp':
                 return this.refreshAttioMcpToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
+            case 'scrollstash-mcp':
+                return this.refreshScrollstashMcpToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -2316,6 +2328,66 @@ class ProviderClient {
             throw new NangoError('attio_mcp_refresh_token_request_error');
         } catch (err: any) {
             throw new NangoError('attio_mcp_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createScrollstashMcpToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        redirectUri: string,
+        codeVerifier: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'authorization_code',
+                code,
+                client_id: clientId,
+                redirect_uri: redirectUri,
+                code_verifier: codeVerifier
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('scrollstash_mcp_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('scrollstash_mcp_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshScrollstashMcpToken(tokenUrl: string, refreshToken: string, clientId: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                client_id: clientId,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('scrollstash_mcp_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('scrollstash_mcp_refresh_token_request_error', stringifyError(err));
         }
     }
 }

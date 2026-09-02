@@ -19,8 +19,6 @@ function principal(grants: Grant[]): Principal {
 
 describe('whereContains', () => {
     it.each([
-        ['*', prodEnv, true],
-        ['*', account, true],
         ['account', account, true],
         ['account', prodEnv, false],
         ['env:*', prodEnv, true],
@@ -35,8 +33,8 @@ describe('whereContains', () => {
         expect(whereContains(where, target)).toBe(expected);
     });
 
-    it('nests: env:5 ⊆ env:production ⊆ env:* ⊆ *', () => {
-        for (const where of ['env:5', 'env:production', 'env:*', '*'] as const) {
+    it('nests: env:5 ⊆ env:production ⊆ env:*', () => {
+        for (const where of ['env:5', 'env:production', 'env:*'] as const) {
             expect(whereContains(where, prodEnv)).toBe(true);
         }
     });
@@ -48,9 +46,14 @@ describe('scopeMatches', () => {
         expect(scopeMatches(['environment:connections:read'], 'environment:connections:delete')).toBe(false);
     });
 
-    it('bare * matches anything, including non-issuable scopes — roles are not customer credentials', () => {
-        expect(scopeMatches(['*'], 'environment:settings:read_secret')).toBe(true);
-        expect(scopeMatches(['*'], 'account:billing:payment_methods:create')).toBe(true);
+    it('a namespace wildcard reaches non-issuable scopes — roles are not customer credentials', () => {
+        expect(scopeMatches(['environment:*'], 'environment:settings:read_secret')).toBe(true);
+        expect(scopeMatches(['account:*'], 'account:billing:payment_methods:create')).toBe(true);
+    });
+
+    it('a namespace wildcard does not cross into the other namespace', () => {
+        expect(scopeMatches(['environment:*'], 'account:billing:payment_methods:create')).toBe(false);
+        expect(scopeMatches(['account:*'], 'environment:connections:read')).toBe(false);
     });
 
     it('a prefix wildcard matches issuable scopes under it', () => {
@@ -112,7 +115,7 @@ describe('authorize', () => {
     it('grants are additive — any match allows', () => {
         const p = principal([
             { can: ['environment:connections:read'], where: ['env:production'] },
-            { can: ['*'], where: ['env:non-production'] }
+            { can: ['environment:*'], where: ['env:non-production'] }
         ]);
         expect(authorize(p, 'environment:connections:delete', prodEnv)).toBe(false);
         expect(authorize(p, 'environment:connections:delete', devEnv)).toBe(true);
@@ -140,7 +143,6 @@ describe('isIssuableWhere', () => {
         expect(isIssuableWhere('env:production')).toBe(false);
         expect(isIssuableWhere('env:non-production')).toBe(false);
         expect(isIssuableWhere('env:*')).toBe(false);
-        expect(isIssuableWhere('*')).toBe(false);
     });
 });
 
@@ -193,7 +195,7 @@ describe('issuedPrincipal', () => {
     });
 
     it.each(PRIVATE_SCOPES)('no wildcard a key may hold reaches private scope %s', (scope) => {
-        const widest = issued(['*', 'environment:*', 'account:*'], ['env:5', 'account']);
+        const widest = issued(['environment:*', 'account:*'], ['env:5', 'account']);
         expect(authorize(widest, scope, prodEnv)).toBe(false);
         expect(authorize(widest, scope, account)).toBe(false);
     });

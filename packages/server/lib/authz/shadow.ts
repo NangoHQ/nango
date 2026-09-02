@@ -1,13 +1,12 @@
-import { accountTarget, authorize, authorizeAny, environmentTarget } from '@nangohq/authz';
+import { accountTarget, authorize, environmentTarget } from '@nangohq/authz';
 import { metrics } from '@nangohq/utils';
 
-import { planeForPermission, scopesForPermission } from './legacyScopes.js';
 import { principalFor } from './principal.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { Plane } from './legacyScopes.js';
+import type { Plane } from './permissionScopes.js';
 import type { Scope, Target } from '@nangohq/authz';
-import type { CustomerKeyScope, Permission } from '@nangohq/types';
+import type { CustomerKeyScope } from '@nangohq/types';
 
 function targetFor(locals: Partial<RequestLocals>, plane: Plane): Target | null {
     const account = locals.account;
@@ -22,45 +21,8 @@ function targetFor(locals: Partial<RequestLocals>, plane: Plane): Target | null 
 }
 
 /**
- * Compares the grant model against the answer the request actually used, and counts the difference.
- * Nothing here changes what the caller is allowed to do — the count is the gate on the flip.
- *
- * This is the signal that matters: roles are a deny map today, so the allow-list has to enumerate a
- * complement, and over-denial is how that goes wrong.
- */
-export function recordRoleDivergence({ locals, permission, legacy }: { locals: Partial<RequestLocals>; permission: Permission; legacy: boolean }): void {
-    const tags = { resource: permission.resource, action: permission.action, tier: permission.scope };
-
-    const principal = principalFor(locals);
-    const scopes = scopesForPermission(permission);
-    const target = targetFor(locals, planeForPermission(permission));
-
-    const unmapped = (reason: string) => metrics.increment(metrics.Types.AUTHZ_ROLE_UNMAPPED, 1, { ...tags, reason });
-
-    // Checked first: a missing mapping is a property of the permission, so it holds on every request
-    // rather than being a transient miss, and it leaves the route permanently uncompared.
-    if (scopes.length === 0) {
-        unmapped('no_scope_mapping');
-        return;
-    }
-    if (!principal) {
-        unmapped('no_principal');
-        return;
-    }
-    if (!target) {
-        unmapped('no_target');
-        return;
-    }
-
-    if (authorizeAny(principal, scopes, target) !== legacy) {
-        metrics.increment(metrics.Types.AUTHZ_ROLE_DIVERGENCE, 1, { ...tags, expected: String(legacy) });
-    }
-}
-
-/**
- * Both sides read the same stored scopes with the same wildcard semantics, so this should sit at zero
- * from the first deploy. Movement means `buildPrincipal` derived the grants wrong, not that the grant
- * model disagrees — a different bug with a different fix.
+ * The key path still authorizes from the legacy scope check, so its derivation stays shadowed until
+ * `withScope` flips too.
  */
 export function recordScopeDivergence({
     locals,
@@ -71,29 +33,33 @@ export function recordScopeDivergence({
     requiredScopes: readonly CustomerKeyScope[];
     legacy: boolean;
 }): void {
-    const tags = { scope: requiredScopes.join('|') };
+    // `|` and `,` are dogstatsd field separators; a tag value containing either truncates the tag list.
+    const tags = { scope: requiredScopes.join('/') };
 
     const principal = principalFor(locals);
     // Each scope carries its own plane, so a mixed any-of set gets a target per scope.
     const targeted = requiredScopes.map((scope) => ({ scope, target: targetFor(locals, scope.startsWith('account:') ? 'account' : 'environment') }));
 
-    const unmapped = (reason: string) => metrics.increment(metrics.Types.AUTHZ_KEY_DERIVATION_UNMAPPED, 1, { ...tags, reason });
+    const compared = (result: string, extra?: Record<string, string>) =>
+        metrics.increment(metrics.Types.AUTHZ_KEY_DERIVATION_COMPARISON, 1, { ...tags, result, ...extra });
 
     // No mapping step on this path: the required scope is already a scope.
     if (requiredScopes.length === 0) {
-        unmapped('no_scope_required');
+        compared('unmapped', { reason: 'no_scope_required' });
         return;
     }
     if (!principal) {
-        unmapped('no_principal');
+        compared('unmapped', { reason: 'no_principal' });
         return;
     }
     if (targeted.some(({ target }) => !target)) {
-        unmapped('no_target');
+        compared('unmapped', { reason: 'no_target' });
         return;
     }
 
     if (targeted.some(({ scope, target }) => authorize(principal, scope as Scope, target!)) !== legacy) {
-        metrics.increment(metrics.Types.AUTHZ_KEY_DERIVATION_DIVERGENCE, 1, { ...tags, expected: String(legacy) });
+        compared('diverge', { expected: String(legacy) });
+        return;
     }
+    compared('agree');
 }

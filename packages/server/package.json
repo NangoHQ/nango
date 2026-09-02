@@ -54,6 +54,7 @@
         "express": "5.1.0",
         "express-session": "1.18.2",
         "fast-xml-parser": "5.10.1",
+        "fuse.js": "7.1.0",
         "he": "1.2.0",
         "helmet": "7.1.0",
         "json-bigint": "1.0.0",
