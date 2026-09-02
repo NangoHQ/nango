@@ -681,6 +681,14 @@
     {
       "source": "/integrations/all/jobber",
       "destination": "/api-integrations/jobber"
+    },
+    {
+      "source": "/integrations/all/stripe-app-sandbox",
+      "destination": "/api-integrations/stripe-app-sandbox"
+    },
+    {
+      "source": "/integrations/all/stripe-app-sandbox/connect",
+      "destination": "/api-integrations/stripe-app-sandbox/connect"
     }
   ],
   "navigation": {
@@ -1779,7 +1787,7 @@
               "api-integrations/stripe",
               "api-integrations/stripe-api-key",
               "integrations/all/stripe-app",
-              "integrations/all/stripe-app-sandbox",
+              "api-integrations/stripe-app-sandbox",
               "integrations/all/stripe-express",
               "api-integrations/supabase",
               "api-integrations/supabase-mcp",

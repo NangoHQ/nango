@@ -1,0 +1,111 @@
+---
+title: 'How to register your own Stripe App Sandbox OAuth app'
+sidebarTitle: 'Stripe App Sandbox Setup'
+description: 'Register an OAuth app with Stripe App Sandbox and connect it to Nango'
+---
+
+This guide shows you how to register your own Stripe App to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Stripe account. Stripe App Sandbox is a test environment that simulates real installs and OAuth flows without affecting live data, so use it for development and testing before you publish your app. You'll need an activated Stripe account (business info submitted, no charges required) to get started.
+
+<Steps>
+  <Step title="Create a Stripe account">
+    If you don't already have one, sign up for a [Stripe account](https://dashboard.stripe.com/register).
+  </Step>
+  <Step title="Install Stripe CLI">
+    1. If you haven't already, install the [Stripe CLI](https://docs.stripe.com/stripe-cli#install).
+    2. Log in using your Stripe account:
+       ```shell
+       stripe login
+       ```
+  </Step>
+
+  <Step title="Install the Stripe Apps CLI plugin">
+    1. Run the following command to install the Stripe Apps plugin:
+       ```shell
+       stripe plugin install apps
+       ```
+    2. Verify the plugin version is 1.5.12 or newer:
+        ```shell
+        stripe apps -v
+        ```
+  </Step>
+
+  <Step title="Create your Stripe App">
+    1. Create a new app project using the CLI:
+       ```shell
+       stripe apps create my-stripe-app
+       ```
+    2. This creates a local project folder with a manifest and app code.
+  </Step>
+
+  <Step title="Edit the app manifest">
+    Open the **stripe-app.json** file and update these fields:
+    - **stripe_api_access_type**: Set to **oauth**
+    - **distribution_type**: Set to **public**
+    - **allowed_redirect_uris**: Add your redirect URI as **https://api.nango.dev/oauth/callback**
+    - **sandbox_install_compatible**: Set to **true**
+    Example:
+    ```json
+    {
+      "id": "com.example.my-app",
+      "version": "0.0.1",
+      "name": "My Stripe App",
+      "icon": "./icon.png",
+      "permissions": [],
+      "stripe_api_access_type": "oauth",
+      "distribution_type": "public",
+      "sandbox_install_compatible": true,
+      "allowed_redirect_uris": [
+        "https://api.nango.dev/oauth/callback"
+      ]
+    }
+    ```
+  </Step>
+
+  <Step title="Add required permissions and UI (optional)">
+    1. Add [permissions](https://docs.stripe.com/stripe-apps/reference/permissions) your app requires to access Stripe resources in the manifest (e.g., **read_only**, **customers:read**, etc.).
+    ```json
+    "permissions": [
+        {
+            "permission": "customers:read",
+            "purpose": "Receive access to the customer's phone number"
+        }
+    ]
+  ```
+    2. Optionally add a **settings view** or other UI extensions if your app has a user-facing configuration.
+  </Step>
+  <Step title="Upload your app to Stripe (requires live account)">
+    1. Ensure you're logged into a fully activated (non-sandbox) Stripe account.
+    2. Upload your app to Stripe:
+       ```shell
+       stripe apps upload
+       ```
+    <Note>[Sandbox accounts](https://docs.stripe.com/stripe-apps/enable-sandbox-support#enable-sandbox-installs-for-your-public-app) cannot upload apps. You must activate your account first.</Note>
+  </Step>
+
+  <Step title="Obtain your Client ID and Client Secret">
+    1. Go to your app's details page in the Stripe Dashboard.
+    2. Open the <strong>External test</strong> tab.
+    3. Click <strong>Get started</strong> if you haven't already configured the external test OAuth setup.
+    4. After setup, Stripe will generate OAuth installation links in the **Test OAuth** section. Your <strong>Client ID</strong> will be included in the **Sandbox link** as a query parameter (e.g., <code>client_id=...</code>).
+    5. To obtain your <strong>Client Secret</strong>, go to the <strong>API Keys</strong> page in the Stripe Dashboard and copy your <strong>Secret key</strong> (starts with <code>sk_test_...</code>).
+
+    ⚠️ Make sure that your <strong>client_id</strong> and <strong>secret key</strong> come from the same Stripe sandbox account and environment. Mixing keys from different environments or accounts will result in authorization errors like <em>"Authorization code provided does not belong to you."</em>
+    Save these credentials securely as you'll need them when configuring your integration in Nango.
+  </Step>
+
+  <Step id="find-app-domain" title="Find your App Domain">
+    Your App Domain comes from the same **Test OAuth** section you used to find your Client ID — see [Finding your App Domain](/api-integrations/stripe-app-sandbox/connect#step-1-finding-your-app-domain) for the lookup steps.
+
+    This value is the same for every connection made through this integration, so set it once on the integration itself rather than per connection: enter it in the **App Domain** field when creating the `stripe-app-sandbox` integration in Nango, or later from the integration's settings page. If you skip it here, Connect falls back to asking each end user for it instead.
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+For more on building Stripe Apps, see [Stripe's Apps documentation](https://docs.stripe.com/stripe-apps).
+
+---

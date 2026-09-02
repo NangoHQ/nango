@@ -1,0 +1,32 @@
+---
+title: Stripe App Sandbox - How do I link my account?
+sidebarTitle: Stripe App Sandbox
+---
+
+## Overview
+
+To authenticate with Stripe App Sandbox, you may need:
+1. **App Domain** - only if it hasn't already been configured on the integration.
+
+This guide walks you through finding your App Domain in Stripe, in case you're asked to provide it.
+
+### Instructions
+
+#### Step 1: Finding your App Domain
+
+The App Domain is the same for every connection made through this integration, so whoever set up Stripe App Sandbox in Nango has usually already preconfigured it. Only fill this in if you're explicitly asked to.
+
+After creating your Stripe app and setting up OAuth:
+1. Go to your app's **External test** tab in the Stripe Dashboard.
+2. Under **Test OAuth**, find the **Live mode link** or **Test mode link** (e.g., `https://marketplace.stripe.com/oauth/v2/ch_1234abcd/authorize?client_id=ca_1234XYZ&...`).
+3. Your App Domain is the value between `/v2/` and `/authorize` — in this example, it's `ch_1234abcd`.
+
+#### Step 2: Enter your connection details
+
+1. Open the form where you need to authenticate with Stripe App Sandbox.
+2. Only fill in **App Domain** if you were asked to in step 1.
+3. Submit the form to connect your account.
+
+You are now connected to Stripe App Sandbox.
+
+---

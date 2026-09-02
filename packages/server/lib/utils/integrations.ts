@@ -27,6 +27,20 @@ export function getPreconfiguredCredentials(custom: IntegrationConfig['custom'],
     return Object.keys(provider.integration_config).filter((field) => Boolean(custom[field]));
 }
 
+/**
+ * Names of `connection_config` fields that are also declared in `integration_config` (the dual-declaration
+ * fallback pattern, e.g. stripe-app-sandbox's `appDomain`) and already have a value set at the integration
+ * level, so the Connect UI can skip asking end users for them.
+ */
+export function getPreconfiguredConnectionConfig(custom: IntegrationConfig['custom'], provider: Provider): string[] {
+    const { connection_config: connectionConfig, integration_config: integrationConfig } = provider;
+    if (!custom || !connectionConfig || !integrationConfig) {
+        return [];
+    }
+
+    return Object.keys(connectionConfig).filter((field) => field in integrationConfig && Boolean(custom[field]));
+}
+
 export function getIntegrationCredentials(integration: IntegrationConfig, provider: Provider): IntegrationCredentials {
     const usesSharedCredentials = Boolean(integration.shared_credentials_id);
 

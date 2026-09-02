@@ -180,6 +180,10 @@ export const patchIntegration = asyncWrapperWithEnvironment<PatchIntegration>(as
     }
 
     if ('integrationConfig' in body && body.integrationConfig) {
+        if (integration.shared_credentials_id) {
+            res.status(400).send({ error: { code: 'invalid_body', message: 'integrationConfig is not supported with shared credentials' } });
+            return;
+        }
         const result = resolveIntegrationConfig(provider, body.integrationConfig, { patch: true, existing: integration.custom });
         if (result.isErr()) {
             res.status(400).send({ error: { code: 'invalid_body', message: result.error.message } });
