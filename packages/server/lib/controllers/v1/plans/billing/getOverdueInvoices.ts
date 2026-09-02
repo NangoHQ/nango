@@ -1,8 +1,7 @@
-import { permissions } from '@nangohq/authz';
 import { billing } from '@nangohq/billing';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { resolve } from '../../../../authz/resolve.js';
+import { authorizes } from '../../../../authz/resolve.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { GetOverdueInvoices } from '@nangohq/types';
@@ -39,7 +38,7 @@ export const getOverdueInvoices = asyncWrapper<GetOverdueInvoices>(async (req, r
     // returned to members who can manage billing — others get a null URL. Fetch the customer only when
     // something is overdue and the caller can act on it; a failure here costs the CTA, not the warning.
     let portalUrl: string | null = null;
-    if (overdueRes.value.hasOverdue && (await resolve(res.locals, permissions.canManageBilling))) {
+    if (overdueRes.value.hasOverdue && authorizes(res.locals, 'account:billing:payment_methods:create')) {
         const customerRes = await billing.getCustomer(account.id);
         if (customerRes.isErr()) {
             report(customerRes.error);

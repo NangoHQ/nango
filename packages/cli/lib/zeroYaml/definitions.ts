@@ -337,14 +337,14 @@ export function validateFunction({
     integrationId,
     basename
 }: {
-    params: { trigger?: FunctionTriggerDefinition | undefined; data?: unknown; requires?: FunctionRequires | undefined };
+    params: Pick<FunctionDefinition, 'trigger' | 'data' | 'requires'>;
     integrationId: string;
     basename: string;
 }): Result<void> {
     const fnPath = `${integrationId}/functions/${basename}.ts`;
 
-    // For now only HTTP-triggered and trigger-less functions are supported, with no data (records, checkpoints or metadata).
-    // TODO: Add support for schedule and event triggers, and data
+    // For now only HTTP-triggered and trigger-less functions are supported.
+    // TODO: Add support for schedule/event triggers and records.
     const supportedFunctionTriggerKinds: FunctionTriggerDefinition['kind'][] = ['none', 'http'];
 
     if (params.trigger && !supportedFunctionTriggerKinds.includes(params.trigger.kind)) {
@@ -373,8 +373,8 @@ export function validateFunction({
             );
         }
     }
-    if (params.data) {
-        return Err(new Error(`Function '${fnPath}' declares 'data' (records, checkpoint or metadata) which is not supported yet. Remove 'data' for now.`));
+    if (params.data?.models) {
+        return Err(new Error(`Function '${fnPath}' declares 'data.models', which is not supported yet.`));
     }
     if (params.requires?.connection === false) {
         return Err(new Error(`Function '${fnPath}' is connection-less (requires.connection = false) which is not supported yet.`));

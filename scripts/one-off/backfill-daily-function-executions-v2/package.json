@@ -1,0 +1,13 @@
+{
+    "name": "backfill-daily-function-executions-v2",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "dry-run": "npm run build && node dist/backfill.js --dry-run",
+        "run": "npm run build && node dist/backfill.js"
+    },
+    "dependencies": {
+        "@clickhouse/client": "1.18.2"
+    }
+}

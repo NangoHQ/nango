@@ -1,10 +1,10 @@
 import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { accountService, getPlan, handlePlanChanged, updatePlan } from '@nangohq/shared';
+import { accountService, getPlan, updatePlan } from '@nangohq/shared';
 import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
-import { clearSpendAlertOnPlanChange } from '../../../services/spendAlertNotification.service.js';
+import { applyPendingPlanChange } from '../../../services/planChange.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PostStripeWebhooks, Result } from '@nangohq/types';
@@ -169,40 +169,17 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
                 return Err("team doesn't not have a subscription or pending changes");
             }
 
-            // Finally, we apply the pending change to confirm the card and the plan
-            const resApply = await billing.client.applyPendingChanges({
-                pendingChangeId: sub.pendingChangeId,
-                paymentExternalId: data.id,
-                amountCollected: (data.amount / 100).toFixed(2)
-            });
-            if (resApply.isErr()) {
-                return Err(resApply.error);
-            }
-
-            // This operation is also done in orb/postWebhooks
-            // But their webhook system is so slow that we need to duplicate the logic here
             const team = await accountService.getAccountById(db.knex, plan.account_id);
             if (!team) {
                 return Err('Failed to find team');
             }
 
-            const planExternalId = resApply.value.planExternalId;
-
-            const changed = await handlePlanChanged(db.knex, team, {
-                newPlanCode: planExternalId,
-                orbSubscriptionId: resApply.value.id
+            // Finally, we apply the pending change to confirm the card and the plan
+            return await applyPendingPlanChange({
+                team,
+                pendingChangeId: sub.pendingChangeId,
+                payment: { externalId: data.id, amountCollected: (data.amount / 100).toFixed(2) }
             });
-
-            if (changed.isErr()) {
-                return Err(changed.error);
-            }
-            logger.info(`Plan updated for account ${team.id} to ${planExternalId}`);
-
-            if (changed.value) {
-                await clearSpendAlertOnPlanChange({ accountId: team.id, subscriptionId: resApply.value.id });
-            }
-
-            return Ok(undefined);
         }
 
         // payment intent from upgrade has not been successful

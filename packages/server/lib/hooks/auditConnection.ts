@@ -1,22 +1,35 @@
 import { getLogger } from '@nangohq/utils';
 
-import { auditEventDropped, connectSessionActor, makeAuditTarget as makeTarget, recordAuditEvent, UNKNOWN_ACTOR } from '../audit.js';
+import { auditEventDropped, connectSessionActor, makeAuditTarget as makeTarget, PUBLIC_KEY_ACTOR, recordAuditEvent, UNKNOWN_ACTOR } from '../audit.js';
 import { canRecordAuditTrailForAccount } from '../utils/auditTrail.js';
 
 import type { AuditActor, AuditAttribution, AuditEvent, NoAttribution } from '@nangohq/audit';
-import type { AuthOperationType, InternalEndUser } from '@nangohq/types';
+import type { AuthOperationType, InternalEndUser, OAuthSession } from '@nangohq/types';
 import type { Request } from 'express';
 
 const logger = getLogger('Audit');
 
-// `resolveActor` only reports what a request proves, so a connect session's end user arrives on the payload
-// instead — the OAuth callback has no locals at all. With neither, naming nobody is honest.
-export function connectionCreatedActor(actor: AuditActor | undefined, endUser: InternalEndUser | null | undefined): AuditActor {
+// connectSessionOrPublicAuth guards `/oauth/connect` and accepts nothing else, so these two are the only
+// ways a hosted flow starts — and the callback that creates the connection sees neither.
+export function oauthAuthType(session: Pick<OAuthSession, 'connectSessionId'>): 'publicKey' | 'connectSession' {
+    return session.connectSessionId ? 'connectSession' : 'publicKey';
+}
+
+// `resolveActor` only reports what a request proves, so both the connect session's end user and how the flow
+// started reach us from the OAuth session instead.
+export function connectionCreatedActor(
+    actor: AuditActor | undefined,
+    endUser: InternalEndUser | null | undefined,
+    authType?: 'publicKey' | 'connectSession' | undefined
+): AuditActor {
     if (actor && actor.type !== 'unknown') {
         return actor;
     }
     if (endUser) {
         return connectSessionActor(endUser);
+    }
+    if (authType === 'publicKey') {
+        return PUBLIC_KEY_ACTOR;
     }
     return UNKNOWN_ACTOR;
 }
@@ -27,7 +40,7 @@ export async function recordConnectionCreated(params: {
     providerConfigKey: string;
     operation: AuthOperationType;
     account: { id: number; uuid: string };
-    environment: { id: number; name: string };
+    environment: { uuid: string; name: string };
     endUser?: InternalEndUser | null | undefined;
     auditAttribution: AuditAttribution | NoAttribution;
 }): Promise<void> {
@@ -42,10 +55,11 @@ export async function recordConnectionCreated(params: {
         const occurredAt = new Date().toISOString();
         const attributed = params.auditAttribution.kind === 'request' ? params.auditAttribution : undefined;
         const target = makeTarget('connection', params.connectionId);
-        const event = {
+        const event: AuditEvent = {
             occurredAt,
             accountId: params.account.id,
-            environment: { id: params.environment.id, display: params.environment.name },
+            scope: 'environment',
+            environment: { id: params.environment.uuid, display: params.environment.name },
             actor: connectionCreatedActor(attributed?.actor, params.endUser),
             resource: 'connection',
             action: 'created',
@@ -53,7 +67,7 @@ export async function recordConnectionCreated(params: {
             context: attributed?.context ?? {},
             outcome: 'success',
             metadata: { providerConfigKey: params.providerConfigKey }
-        } as AuditEvent;
+        };
         await recordAuditEvent(event);
     } catch (err) {
         logger.error(`failed to emit connection.created audit event`, err);

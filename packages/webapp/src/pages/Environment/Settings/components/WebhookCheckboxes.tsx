@@ -43,6 +43,11 @@ const checkboxesConfig: CheckboxConfig[] = [
         label: 'Async Actions: completion',
         tooltip: 'If checked, a webhook will be sent when an async action completes.',
         stateKey: 'on_async_action_completion'
+    },
+    {
+        label: 'Auth: connection deletion webhooks',
+        tooltip: 'If checked, a webhook will be sent when a connection is deleted.',
+        stateKey: 'on_connection_deletion'
     }
 ];
 
@@ -77,6 +82,7 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
                 on_sync_completion_always: checkboxState['on_sync_completion_always'],
                 on_sync_error: checkboxState['on_sync_error'],
                 on_async_action_completion: checkboxState['on_async_action_completion'],
+                on_connection_deletion: checkboxState['on_connection_deletion'],
                 [name]: checked
             });
         } catch {

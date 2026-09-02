@@ -25,6 +25,7 @@ function auditEvent(accountId: number, occurredAt: string, resourceAction: Audit
     return {
         occurredAt,
         accountId,
+        scope: 'environment',
         environment: null,
         actor: { type: 'user', id: '5', display: 'a@b.co' },
         targets: [{ type: 'connection', id: '10' }],
@@ -132,6 +133,7 @@ describe('GET /api/v1/audit-trail', () => {
         expect(event.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
         expect(event.resource).toBe('connection');
         expect(event.action).toBe('deleted');
+        expect(event.scope).toBe('environment');
     });
 
     it('caps how many values one filter param can carry', async () => {

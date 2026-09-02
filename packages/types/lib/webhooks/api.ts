@@ -51,7 +51,8 @@ export type NangoSyncWebhookBody = NangoSyncWebhookBodySuccess | NangoSyncWebhoo
 export interface NangoAuthWebhookBodyBase extends NangoWebhookBase {
     type: 'auth';
     connectionId: string;
-    authMode: AuthModeType;
+    /** 'unknown' when the connection's integration could no longer be resolved (e.g. it was deleted). */
+    authMode: AuthModeType | 'unknown';
     providerConfigKey: string;
     provider: string;
     environment: string;
