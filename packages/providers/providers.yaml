@@ -11702,7 +11702,7 @@ inteliquent:
         - communication
     auth_mode: BASIC
     proxy:
-        base_url: ${connectionConfig.apiBaseUrl} || https://services.inteliquent.com/Services/2.0.0
+        base_url: ${connectionConfig.apiBaseUrl} || https://services.inteliquent.com
         body:
             privateKey: ${username}
         verification:
@@ -11710,7 +11710,7 @@ inteliquent:
             headers:
                 content-type: application/json
             endpoints:
-                - /tnDetail
+                - /Services/2.0.0/tnDetail
             data:
                 tnSearchList:
                     tnSearchItem:
@@ -11725,9 +11725,9 @@ inteliquent:
             title: Inteliquent environment
             description: The Services API environment the API Key was generated for.
             enum:
-                - https://services.inteliquent.com/Services/2.0.0
-                - https://services-sandbox.inteliquent.com/Services/2.0.0
-            default_value: https://services.inteliquent.com/Services/2.0.0
+                - https://services.inteliquent.com
+                - https://services-sandbox.inteliquent.com
+            default_value: https://services.inteliquent.com
             doc_section: '#step-1-generate-an-api-key-and-api-secret'
     credentials:
         username:
