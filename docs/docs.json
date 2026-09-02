@@ -1700,6 +1700,7 @@
               "integrations/all/sap-fieldglass",
               "api-integrations/sap-odata-oauth2-cc",
               "api-integrations/sap-odata-basic",
+              "api-integrations/scavio",
               "api-integrations/schwab",
               "integrations/all/scrapedo",
               "api-integrations/scrollstash-mcp",
