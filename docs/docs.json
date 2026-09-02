@@ -27,7 +27,10 @@
     "dark": "/images/Nango-Dark-Mode.svg",
     "href": "https://nango.dev"
   },
-  "favicon": "/favicon.png",
+  "favicon": {
+    "light": "/favicon-white.svg",
+    "dark": "/favicon-black.svg"
+  },
   "contextual": {
     "options": [
       "copy",
