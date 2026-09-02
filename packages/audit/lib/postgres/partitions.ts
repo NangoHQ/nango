@@ -59,7 +59,7 @@ export async function dropExpiredPartitions({
              JOIN pg_class c ON c.oid = i.inhrelid
              JOIN pg_class p ON p.oid = i.inhparent
              JOIN pg_namespace n ON n.oid = p.relnamespace
-             WHERE n.nspname = ? AND p.relname = ? AND c.relname ~ ? ORDER BY c.relname`,
+             WHERE n.nspname = ? AND p.relname = ? AND c.relnamespace = p.relnamespace AND c.relname ~ ? ORDER BY c.relname`,
             [schema, AUDIT_EVENTS_TABLE, `^${PARTITION_PREFIX}[0-9]{8}$`]
         );
         const cutoffDay = cutoff.format('YYYYMMDD');
