@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { errorManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerToApi } from '../../formatters/provider.js';
@@ -38,6 +39,7 @@ export const getPublicProvider = asyncWrapper<GetPublicProvider>((req, res) => {
             return;
         }
 
+        errorManager.report(result.error.cause instanceof Error ? result.error.cause : result.error);
         res.status(500).send({ error: { code: 'server_error', message: result.error.message } });
         return;
     }

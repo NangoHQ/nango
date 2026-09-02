@@ -1,3 +1,4 @@
+import { errorManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerTemplatesToApi } from '../../../../../formatters/provider.js';
@@ -22,6 +23,7 @@ export const getProviderTemplates = asyncWrapper<GetProviderTemplates>((req, res
 
     const result = providerService.listTemplates({ providerName: valParams.data.providerConfigKey });
     if (result.isErr()) {
+        errorManager.report(result.error.cause instanceof Error ? result.error.cause : result.error);
         res.status(500).send({ error: { code: 'server_error', message: result.error.message } });
         return;
     }

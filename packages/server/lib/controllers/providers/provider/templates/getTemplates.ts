@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { errorManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerTemplatesToApi } from '../../../../formatters/provider.js';
@@ -30,6 +31,7 @@ export const getPublicProviderTemplates = asyncWrapper<GetPublicProviderTemplate
 
     const result = providerService.listTemplates({ providerName: valParams.data.provider });
     if (result.isErr()) {
+        errorManager.report(result.error.cause instanceof Error ? result.error.cause : result.error);
         res.status(500).send({ error: { code: 'server_error', message: result.error.message } });
         return;
     }
