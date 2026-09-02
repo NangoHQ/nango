@@ -54,8 +54,6 @@ export async function dropExpiredPartitions({
 }): Promise<Result<{ dropped: number; skipped: number }>> {
     const cutoff = dayjs(now).utc().startOf('day').subtract(retentionDays, 'day');
     try {
-        // Only actual children of our parent: a detached partition keeps its name, and dropping one would
-        // delete the data an operator detached in order to keep.
         const { rows } = await knex.raw<{ rows: { relname: string }[] }>(
             `SELECT c.relname FROM pg_inherits i
              JOIN pg_class c ON c.oid = i.inhrelid
