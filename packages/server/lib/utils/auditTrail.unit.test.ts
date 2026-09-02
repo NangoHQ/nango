@@ -9,6 +9,8 @@ import type * as NangoUtils from '@nangohq/utils';
 
 // `flagHasPlan` is a const export, so it can only be varied per test through the module mock.
 const planFlag = vi.hoisted(() => ({ enabled: true }));
+const backendFlag = vi.hoisted(() => ({ configured: true }));
+vi.mock('../audit.js', () => ({ auditBackend: backendFlag }));
 vi.mock('@nangohq/utils', async () => {
     const actual: typeof NangoUtils = await vi.importActual('@nangohq/utils');
     return {
@@ -26,9 +28,10 @@ const entitled = { has_audit_trail_control_plane: true, has_audit_trail_access: 
 const notEntitled = { has_audit_trail_control_plane: false, has_audit_trail_access: false };
 
 /** `unleash: null` leaves the noop provider in place, so the flag resolves to its default. */
-function setup({ optIn, hasPlan, unleash }: { optIn: boolean; hasPlan: boolean; unleash: boolean | null }) {
+function setup({ optIn, hasPlan, unleash, backend = true }: { optIn: boolean; hasPlan: boolean; unleash: boolean | null; backend?: boolean }) {
     flags.hasAuditTrail = optIn;
     planFlag.enabled = hasPlan;
+    backendFlag.configured = backend;
     if (unleash != null) {
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(unleash);
     }
@@ -38,6 +41,7 @@ describe('audit trail entitlement', () => {
     afterEach(() => {
         flags.hasAuditTrail = false;
         planFlag.enabled = true;
+        backendFlag.configured = true;
         vi.restoreAllMocks();
     });
 
@@ -47,6 +51,13 @@ describe('audit trail entitlement', () => {
 
             await expect(canRecordAuditTrail(UUID, null)).resolves.toBe(true);
             await expect(canAccessAuditTrail(UUID, null)).resolves.toBe(true);
+        });
+
+        it('stays off when the deployment opted in with nowhere to keep the trail', async () => {
+            setup({ optIn: true, hasPlan: false, unleash: null, backend: false });
+
+            await expect(canRecordAuditTrail(UUID, null)).resolves.toBe(false);
+            await expect(canAccessAuditTrail(UUID, null)).resolves.toBe(false);
         });
 
         it('cannot weaken the rollout flag or the entitlement where plans exist', async () => {

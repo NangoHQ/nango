@@ -66,9 +66,10 @@ describe('selectAuditStores', () => {
         (envs as any).AUDIT_DATABASE_URL = 'postgres://localhost:5432/nango';
         (envs as any).CLICKHOUSE_URL = 'http://localhost:8123';
 
-        const { writer, reader } = selectAuditStores();
+        const { writer, reader, configured } = selectAuditStores();
         expect(writer).toBeInstanceOf(PostgresAuditStore);
         expect(reader).toBe(writer);
+        expect(configured).toBe(true);
     });
 
     it('ignores the audit database while the trail is disabled', () => {
@@ -86,9 +87,10 @@ describe('selectAuditStores', () => {
         (envs as any).NANGO_AUDIT_TRANSPORT = 'pubsub';
         (envs as any).CLICKHOUSE_URL = 'http://localhost:8123';
 
-        const { writer, reader } = selectAuditStores();
+        const { writer, reader, configured } = selectAuditStores();
         expect(writer).toBeInstanceOf(PubSubAuditWriter);
         expect(reader).toBeInstanceOf(ClickhouseAuditStore);
+        expect(configured).toBe(true);
     });
 
     it('does not publish to pub/sub with no ClickHouse to read from', () => {
@@ -96,9 +98,10 @@ describe('selectAuditStores', () => {
         (envs as any).NANGO_AUDIT_TRANSPORT = 'pubsub';
         (envs as any).CLICKHOUSE_URL = undefined;
 
-        const { writer, reader } = selectAuditStores();
+        const { writer, reader, configured } = selectAuditStores();
         expect(writer).toBeInstanceOf(NoopAuditStore);
         expect(reader).toBe(writer);
+        expect(configured).toBe(false);
     });
 
     it('reads and writes ClickHouse when it is the only backend', () => {
@@ -106,9 +109,10 @@ describe('selectAuditStores', () => {
         (envs as any).NANGO_AUDIT_TRANSPORT = 'direct';
         (envs as any).CLICKHOUSE_URL = 'http://localhost:8123';
 
-        const { writer, reader } = selectAuditStores();
+        const { writer, reader, configured } = selectAuditStores();
         expect(writer).toBeInstanceOf(ClickhouseAuditStore);
         expect(reader).toBe(writer);
+        expect(configured).toBe(true);
     });
 
     it('drops events when no backend is configured', () => {
@@ -116,8 +120,9 @@ describe('selectAuditStores', () => {
         (envs as any).NANGO_AUDIT_TRANSPORT = 'direct';
         (envs as any).CLICKHOUSE_URL = undefined;
 
-        const { writer, reader } = selectAuditStores();
+        const { writer, reader, configured } = selectAuditStores();
         expect(writer).toBeInstanceOf(NoopAuditStore);
         expect(reader).toBe(writer);
+        expect(configured).toBe(false);
     });
 });

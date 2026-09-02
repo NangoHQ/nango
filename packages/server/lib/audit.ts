@@ -56,32 +56,35 @@ function buildClickhouseStore(url: string): ClickhouseAuditStore | null {
     }
 }
 
-export function selectAuditStores(): { writer: AuditWriter; reader: AuditReader } {
+export function selectAuditStores(): { writer: AuditWriter; reader: AuditReader; configured: boolean } {
     if (isSelfHostedAuditTrailEnabled(envs.AUDIT_DATABASE_URL)) {
         logger.info('Audit: reading and writing events in Postgres');
         const postgres = new PostgresAuditStore(auditDb(envs.AUDIT_DATABASE_URL));
-        return { writer: postgres, reader: postgres };
+        return { writer: postgres, reader: postgres, configured: true };
     }
 
     const clickhouse = envs.CLICKHOUSE_URL ? buildClickhouseStore(envs.CLICKHOUSE_URL) : null;
 
     if (clickhouse && envs.NANGO_AUDIT_TRANSPORT === 'pubsub') {
         logger.info('Audit: publishing events to pub/sub, reading from ClickHouse');
-        return { writer: new PubSubAuditWriter(pubsub.publisher), reader: clickhouse };
+        return { writer: new PubSubAuditWriter(pubsub.publisher), reader: clickhouse, configured: true };
     }
 
     if (clickhouse) {
         logger.info('Audit: reading and writing events in ClickHouse');
-        return { writer: clickhouse, reader: clickhouse };
+        return { writer: clickhouse, reader: clickhouse, configured: true };
     }
 
     logger.warning('Audit: no backend configured, events are dropped');
     const noop = new NoopAuditStore();
-    return { writer: noop, reader: noop };
+    return { writer: noop, reader: noop, configured: false };
 }
 
 const stores = selectAuditStores();
 export const audit = new AuditClient(stores.writer, stores.reader);
+
+/** With no backend behind it the trail could only ever read back empty. An object, like `flags`, so a test can say one is wired. */
+export const auditBackend = { configured: stores.configured };
 
 export type AuditDropReason = 'write_failed' | 'build_failed';
 
