@@ -74,8 +74,6 @@ export class PostgresAuditStore implements AuditWriter, AuditReader {
 
         return await tracer.trace('nango.audit.postgres.list', async (span) => {
             try {
-                // Ordered to match the primary key's (account_id, occurred_at, id), so the account predicate is an
-                // equality prefix and the cursor a range on the rest.
                 const { rows } = await this.knex.raw<{ rows: { event: string; cursor_id: string; cursor_occurred_at: string }[] }>(
                     `SELECT event::text AS event, id::text AS cursor_id, to_char(occurred_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') AS cursor_occurred_at
                      FROM ??.??
@@ -94,8 +92,6 @@ export class PostgresAuditStore implements AuditWriter, AuditReader {
                 });
             } catch (err) {
                 span?.addTags({ error: stringifyError(err) });
-                // Nothing above this reports a failed read, so the log is the only signal a self-hosted
-                // deployment without APM would get.
                 logger.error(`Failed to list audit trail events: ${stringifyError(err)}`);
                 return Err(new Error('failed_to_list_audit_trail_events', { cause: err }));
             } finally {
