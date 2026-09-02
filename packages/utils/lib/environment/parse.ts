@@ -757,8 +757,8 @@ const ENVS_SHAPE = z.object({
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
-    // Keeping the trail in Postgres, as self-hosted and BYOC do; cloud ignores these. The URL may
-    // point at the product's own database.
+    // Only read where the trail is kept in Postgres: local, self-hosted and BYOC. Cloud ignores them.
+    // The URL may point at the product's own database.
     AUDIT_DATABASE_URL: z.url().optional(),
     AUDIT_DB_POOL_MAX: z.coerce.number().optional().default(5),
     AUDIT_DB_SSL: z.stringbool().optional().default(false),
