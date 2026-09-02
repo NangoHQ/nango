@@ -221,6 +221,24 @@ export type GetPublicApiKeys = ApiEndpoint<{
     };
 }>;
 
+export type GetPublicApiKey = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/environments/:environmentUuid/api-keys/:keyUuid';
+    Params: { environmentUuid: string; keyUuid: string };
+    Success: {
+        data: {
+            id: number;
+            uuid: string;
+            display_name: string;
+            scopes: ApiKeyScope[];
+            secret: string;
+            last_used_at: string | null;
+            created_at: string;
+        };
+    };
+}>;
+
 export type DeletePublicApiKey = ApiEndpoint<{
     Audit: AuditPolicy<'api_key', 'deleted', 'environment'>;
     Method: 'DELETE';

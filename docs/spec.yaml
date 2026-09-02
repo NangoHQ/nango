@@ -3138,6 +3138,80 @@ paths:
                 '500':
                     $ref: '#/components/responses/ServerError'
     /environments/{environmentUuid}/api-keys/{keyUuid}:
+        get:
+            summary: Get an environment API key
+            description: Retrieve an Environment API key, including its secret.
+            parameters:
+                - name: environmentUuid
+                  in: path
+                  required: true
+                  description: Environment UUID that owns the key.
+                  schema:
+                      type: string
+                      format: uuid
+                  example: 123e4567-e89b-12d3-a456-426614174000
+                - name: keyUuid
+                  in: path
+                  required: true
+                  description: API-key UUID.
+                  schema:
+                      type: string
+                      format: uuid
+                  example: 123e4567-e89b-12d3-a456-426614174001
+            responses:
+                '200':
+                    description: Successfully retrieved the Environment API key
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: object
+                                        required:
+                                            - id
+                                            - uuid
+                                            - display_name
+                                            - scopes
+                                            - secret
+                                            - last_used_at
+                                            - created_at
+                                        properties:
+                                            id:
+                                                type: integer
+                                                example: 456
+                                            uuid:
+                                                type: string
+                                                format: uuid
+                                                example: 123e4567-e89b-12d3-a456-426614174001
+                                            display_name:
+                                                type: string
+                                                example: provisioned-ci
+                                            scopes:
+                                                type: array
+                                                items:
+                                                    type: string
+                                            secret:
+                                                type: string
+                                                description: The Environment API-key secret.
+                                            last_used_at:
+                                                type: [string, 'null']
+                                                format: date-time
+                                            created_at:
+                                                type: string
+                                                format: date-time
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/ServerError'
         delete:
             summary: Delete an environment API key
             description: Delete an environment API key
