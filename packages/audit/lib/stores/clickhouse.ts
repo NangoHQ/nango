@@ -13,8 +13,8 @@ const logger = getLogger('audit');
 
 const AUDIT_RETENTION_DAYS = 365;
 const READ_QUERY_MAX_EXECUTION_SECONDS = 30;
-// Shorter than the list's: the count is the one part of the page that degrades well, so an unbounded
-// window on a large account should cost the reader the number rather than the wait.
+// Shorter than the list's: the count is optional to the response, so an unbounded window on a large
+// account gives up rather than holding the read open.
 const COUNT_QUERY_MAX_EXECUTION_SECONDS = 5;
 
 // Shared by the list and the count so the number can never describe a different set than the rows under it.

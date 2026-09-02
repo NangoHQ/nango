@@ -215,7 +215,7 @@ describe('ClickhouseAuditStore.list deduplication', () => {
         }
     });
 
-    it('counts a twice-stored event once, so the header cannot disagree with the rows', async () => {
+    it('counts a twice-stored event once, so the count and the list agree on the same set', async () => {
         const dupe = '77777777-7777-7777-7777-777777777777';
         const other = '88888888-8888-8888-8888-888888888888';
         await client.command({ query: `SYSTEM STOP MERGES ${database}.audit_trail_events` });

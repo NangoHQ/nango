@@ -1,5 +1,5 @@
 import { InvalidAuditCursorError } from '@nangohq/audit';
-import { getLogger, zodErrorToHTTP } from '@nangohq/utils';
+import { Err, getLogger, zodErrorToHTTP } from '@nangohq/utils';
 
 import { audit } from '../../../audit.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -7,8 +7,9 @@ import { canViewAuditTrail } from '../../../utils/auditTrail.js';
 import { auditListQuery } from './query.js';
 
 import type { GetAuditTrail } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
-const logger = getLogger('AuditTrail');
+const logger = getLogger('audit');
 
 const PAGE_SIZE = 25;
 
@@ -28,12 +29,14 @@ export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
 
     const { cursor, from, to, resources, actions } = query.data;
 
-    // Issued together: they share no state, so awaiting the count after the list would add its latency to the page.
-    // The count runs on the first page only — it can't change while the filters are fixed.
-    const [result, counted] = await Promise.all([
-        audit.listAuditTrailEvents({ accountId: account.id, limit: PAGE_SIZE, cursor, from, to, resources, actions }),
-        cursor ? undefined : audit.countAuditTrailEvents({ accountId: account.id, from, to, resources, actions })
-    ]);
+    // Started before the list is awaited so it doesn't queue behind it, and only on the first page — the total
+    // can't change while the filters are fixed. The `catch` matters twice: a failed count must not fail the
+    // read, and the promise is abandoned entirely when the list errors, which would otherwise go unhandled.
+    const counting: Promise<Result<number>> | undefined = cursor
+        ? undefined
+        : audit.countAuditTrailEvents({ accountId: account.id, from, to, resources, actions }).catch(() => Err(new Error('count threw')));
+
+    const result = await audit.listAuditTrailEvents({ accountId: account.id, limit: PAGE_SIZE, cursor, from, to, resources, actions });
 
     if (result.isErr()) {
         if (result.error instanceof InvalidAuditCursorError) {
@@ -44,11 +47,11 @@ export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
         return;
     }
 
-    // A failed count costs the reader the number rather than the rows.
+    const counted = await counting;
     let total: number | undefined;
     if (counted) {
         if (counted.isErr()) {
-            logger.warning(`failed to count audit trail events`, { accountId: account.id, error: counted.error });
+            logger.warning(`audit trail count failed, returning the page without a total`, { accountId: account.id, error: counted.error });
         } else {
             total = counted.value;
         }

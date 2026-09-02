@@ -6,7 +6,7 @@ export interface AuditTrailCursor {
     id: string;
 }
 
-/** The filter half of a read, without the paging half, so the count can take the same shape as the list. */
+/** Split from the paging half so the count can take the same shape as the list. */
 export interface AuditTrailFilter {
     accountId: number;
     from?: string | undefined;
@@ -37,6 +37,5 @@ export interface AuditBatchWriter {
 
 export interface AuditReader {
     list(params: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>>;
-    /** How many events match, independent of paging. */
     count(params: AuditTrailFilter): Promise<Result<number>>;
 }
