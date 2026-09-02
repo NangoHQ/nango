@@ -34,7 +34,9 @@ export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
     // read, and the promise is abandoned entirely when the list errors, which would otherwise go unhandled.
     const counting: Promise<Result<number>> | undefined = cursor
         ? undefined
-        : audit.countAuditTrailEvents({ accountId: account.id, from, to, resources, actions }).catch(() => Err(new Error('count threw')));
+        : audit
+              .countAuditTrailEvents({ accountId: account.id, from, to, resources, actions })
+              .catch((err: unknown) => Err(err instanceof Error ? err : new Error(String(err))));
 
     const result = await audit.listAuditTrailEvents({ accountId: account.id, limit: PAGE_SIZE, cursor, from, to, resources, actions });
 
