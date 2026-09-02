@@ -7,7 +7,7 @@ description: 'Optimized interface for AI agents to use integrations'
 <Note>
     Agent sessions are in public beta.
     
-    Join our [beta Slack Channel]() for feedback and notifications of breaking changes.
+    Join our [beta Slack Channel](https://join.slack.com/share/enQtMTE5NDc2MjE1MjI1OTktNWM2OGUwMzI2NWQ2OWJhMzQ5YTA5YzEyNmQzZDVkMzlhOWRlMTBlYTFhYTZlMmU3MGQyOTc1NDljY2FkMzM4NQ) for feedback and notifications of breaking changes.
 </Note>
 
 Agent sessions are an optimized interface for AI agents to use integrations.
@@ -25,7 +25,7 @@ Example sessions:
 - A finance agent with a few read-only tools on an org's accounting system, and read & write access to a team's Slack
 - A developer agent with a team's Linear access and a user's personal GitHub access
 
-Agent sessions integrate with Nango's [observability] and [audit trail] features.
+Agent sessions integrate with Nango's [observability](/guides/platform/observability) and audit trail features.
 
 ## Quickstart
 
@@ -68,23 +68,151 @@ Agent sessions integrate with Nango's [observability] and [audit trail] features
   <Step id="pass-mcp" title="Pass the MCP server to your agent">
   Pass the `mcp_url` to your agent, with the `session_token` as bearer auth:
 
-  ```typescript
-import OpenAI from "openai";
-const client = new OpenAI();
+  <Tabs>
+    <Tab title="OpenAI">
+    ```typescript
+    import OpenAI from "openai";
 
-const resp = await client.responses.create({
-  model: "gpt-5.6",
-  input: "Create a payment link for $20",
-  tools: [
-    {
-      type: "mcp",
-      server_label: "Nango integrations", // Or a name suitable for your session
-      server_url: "<mcp_url>",
-      authorization: "<session_token>",
-    },
-  ],
-});
-  ```
+    const client = new OpenAI();
+
+    const response = await client.responses.create({
+      model: "gpt-5.6",
+      input: "Summarize the last 5 emails in the user's inbox",
+      tools: [
+        {
+          type: "mcp",
+          server_label: "nango", // Or a name suitable for your session
+          server_url: "<mcp_url>",
+          authorization: "<session_token>",
+          require_approval: "never"
+        }
+      ]
+    });
+
+    console.log(response.output_text);
+    ```
+
+    The Responses API never stores the `authorization` value, so send it on every request.
+    </Tab>
+
+    <Tab title="Anthropic">
+    ```typescript
+    import Anthropic from "@anthropic-ai/sdk";
+
+    const client = new Anthropic();
+
+    const message = await client.beta.messages.create({
+      model: "claude-opus-5",
+      max_tokens: 1024,
+      messages: [{ role: "user", content: "Summarize the last 5 emails in the user's inbox" }],
+      mcp_servers: [
+        {
+          type: "url",
+          name: "nango",
+          url: "<mcp_url>",
+          authorization_token: "<session_token>"
+        }
+      ],
+      tools: [{ type: "mcp_toolset", mcp_server_name: "nango" }],
+      betas: ["mcp-client-2025-11-20"]
+    });
+
+    console.log(message.content);
+    ```
+
+    The MCP connector is behind the `mcp-client-2025-11-20` beta.
+    </Tab>
+
+    <Tab title="Vercel AI SDK">
+    ```typescript
+    import { createMCPClient } from "@ai-sdk/mcp";
+    import { openai } from "@ai-sdk/openai";
+    import { generateText, stepCountIs } from "ai";
+
+    const mcpClient = await createMCPClient({
+      transport: {
+        type: "http",
+        url: "<mcp_url>",
+        headers: { Authorization: "Bearer <session_token>" }
+      }
+    });
+
+    try {
+      const { text } = await generateText({
+        model: openai("gpt-5.6"),
+        prompt: "Summarize the last 5 emails in the user's inbox",
+        tools: await mcpClient.tools(),
+        stopWhen: stepCountIs(10)
+      });
+
+      console.log(text);
+    } finally {
+      await mcpClient.close();
+    }
+    ```
+    </Tab>
+
+    <Tab title="LangChain">
+    ```typescript
+    import { MultiServerMCPClient } from "@langchain/mcp-adapters";
+    import { createAgent } from "langchain";
+
+    const client = new MultiServerMCPClient({
+      mcpServers: {
+        nango: {
+          transport: "http",
+          url: "<mcp_url>",
+          headers: { Authorization: "Bearer <session_token>" }
+        }
+      }
+    });
+
+    const agent = createAgent({
+      model: "openai:gpt-5.6",
+      tools: await client.getTools()
+    });
+
+    const result = await agent.invoke({
+      messages: [{ role: "user", content: "Summarize the last 5 emails in the user's inbox" }]
+    });
+
+    console.log(result.messages.at(-1)?.content);
+    ```
+    </Tab>
+
+    <Tab title="Mastra">
+    ```typescript
+    import { openai } from "@ai-sdk/openai";
+    import { Agent } from "@mastra/core/agent";
+    import { MCPClient } from "@mastra/mcp";
+
+    const mcp = new MCPClient({
+      id: "nango-session",
+      servers: {
+        nango: {
+          url: new URL("<mcp_url>"),
+          requestInit: {
+            headers: { Authorization: "Bearer <session_token>" }
+          }
+        }
+      }
+    });
+
+    const agent = new Agent({
+      name: "Integrations agent",
+      instructions: "Use the Nango tools to complete the user's request.",
+      model: openai("gpt-5.6"),
+      tools: await mcp.getTools()
+    });
+
+    const response = await agent.generate("Summarize the last 5 emails in the user's inbox");
+
+    console.log(response.text);
+    ```
+
+    Give each session's client a distinct `id` if you create one per request.
+    </Tab>
+  </Tabs>
 
   Your agent can now use every tool the session exposes.
   </Step>
@@ -209,7 +337,7 @@ You can also use `pinned` without any `any` selectors, if you already know the e
 An integration that matches no connection does not fail creation. It appears in the toolset as `connected: false`, and its tool calls fail with a missing authorization error.
 
 <Note>
-Currently there is no way for the agent to ask the user to connect an unconnected integration. Let us know on the [Beta Slack channel] if you need this and we are happy to prioritize it.
+Currently there is no way for the agent to ask the user to connect an unconnected integration. Let us know on the [Beta Slack channel](https://join.slack.com/share/enQtMTE5NDc2MjE1MjI1OTktNWM2OGUwMzI2NWQ2OWJhMzQ5YTA5YzEyNmQzZDVkMzlhOWRlMTBlYTFhYTZlMmU3MGQyOTc1NDljY2FkMzM4NQ) if you need this and we are happy to prioritize it.
 </Note>
 
 ## Toolsets & tools
