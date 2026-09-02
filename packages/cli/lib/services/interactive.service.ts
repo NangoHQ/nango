@@ -3,7 +3,7 @@ import inquirer from 'inquirer';
 
 import { Nango } from '@nangohq/node';
 
-import { getCliAxiosTlsProps } from '../tls.js';
+import { getCliTlsProps } from '../tls.js';
 import { FUNCTION_TYPES } from '../types.js';
 import { getEnvironments, parseSecretKey, resolveHostport } from '../utils.js';
 
@@ -136,7 +136,7 @@ export async function promptForFunctionToRun(functions: { name: string; type: st
 
 export async function promptForConnection(environment: string, integrationId?: string): Promise<string> {
     await parseSecretKey(environment);
-    const nango = new Nango({ host: resolveHostport(), secretKey: String(process.env['NANGO_SECRET_KEY']) }, getCliAxiosTlsProps());
+    const nango = new Nango({ host: resolveHostport(), secretKey: String(process.env['NANGO_SECRET_KEY']) }, getCliTlsProps());
     let connections: GetPublicConnections['Success'];
     try {
         connections = await nango.listConnections(integrationId ? { integrationId } : {});
@@ -166,7 +166,7 @@ export async function promptForConnection(environment: string, integrationId?: s
 
 export async function inferIntegrationsFromConnectionId(connectionId: string, environment: string): Promise<string[]> {
     await parseSecretKey(environment);
-    const nango = new Nango({ host: resolveHostport(), secretKey: String(process.env['NANGO_SECRET_KEY']) }, getCliAxiosTlsProps());
+    const nango = new Nango({ host: resolveHostport(), secretKey: String(process.env['NANGO_SECRET_KEY']) }, getCliTlsProps());
     try {
         const result = await nango.listConnections({ connectionId });
         return result.connections.map((c) => c.provider_config_key);

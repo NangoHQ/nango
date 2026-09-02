@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import { Nango } from '@nangohq/node';
 import { BASE_VARIANT, executeUncontrolledFetch, InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 
-import { getCliAxiosTlsProps } from '../tls.js';
+import { getCliTlsProps } from '../tls.js';
 
 import type { DryRunService } from './dryrun.service.js';
 import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
@@ -438,7 +438,7 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
 function getAxiosSettings(props: NangoProps) {
     const axiosSettings: AdminAxiosProps = {
         userAgent: 'sdk',
-        ...getCliAxiosTlsProps()
+        ...getCliTlsProps()
     };
 
     if (props.axios?.response) {

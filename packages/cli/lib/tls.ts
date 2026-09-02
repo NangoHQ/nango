@@ -158,7 +158,7 @@ export function getCliHttpsAgent(): https.Agent | undefined {
     return httpsAgent;
 }
 
-export function getCliAxiosTlsProps(): { httpsAgent: https.Agent } | Record<string, never> {
+export function getCliTlsProps(): { httpsAgent: https.Agent } | Record<string, never> {
     const agent = getCliHttpsAgent();
     return agent ? { httpsAgent: agent } : {};
 }
