@@ -177,7 +177,7 @@ jobs:
                     --path "/*" \
                     --project "${{ vars.GCP_PROJECT_ID }}"
     deploy_all_services:
-        if: inputs.service == 'deploy_all_services' && inputs.stage != 'replit' && inputs.stage != 'charm-sandbox'
+        if: inputs.service == 'deploy_all_services' && (inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production')
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -420,6 +420,7 @@ jobs:
                     "${{ needs.deploy_runners.result }}"
                     "${{ needs.deploy_lambda.result }}"
                     "${{ needs.deploy_agentcore.result }}"
+                    "${{ needs.deploy_all_services.result }}"
                   )
                   outcome="skipped"
                   for r in "${results[@]}"; do
