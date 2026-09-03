@@ -129,7 +129,7 @@ import { createSync, ProxyConfiguration } from 'nango';
 import z from 'zod';
 
 // This sync runs daily, so a 2-day lookahead is enough to always renew in time.
-const RENEWAL_WINDOW_MS = 24 * 60 * 60 * 1000;
+const RENEWAL_WINDOW_MS = 2 * 24 * 60 * 60 * 1000;
 
 export default createSync({
     description: 'Renew Outlook subscriptions that are expiring within the next day',
