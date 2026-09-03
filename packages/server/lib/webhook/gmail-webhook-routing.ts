@@ -94,8 +94,6 @@ const route: WebhookHandler = async (nango, headers, body) => {
     if (!authHeader) {
         metrics.increment(metrics.Types.WEBHOOK_INCOMING_UNVERIFIED, 1, {
             accountId: nango.team.id,
-            environmentId: nango.environment.id,
-            provider: nango.integration.provider,
             reason: 'gmail_missing_authorization'
         });
     }
