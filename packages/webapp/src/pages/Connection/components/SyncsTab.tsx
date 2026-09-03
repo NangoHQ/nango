@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Search, Wrench, X } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
@@ -34,7 +35,7 @@ import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { SimpleCodeBlock } from '@/components/ui/SimpleCodeBlock';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import { useRunSyncCommand, useSyncs } from '@/hooks/useSyncs';
+import { syncsPageQueryKey, useRunSyncCommand, useSyncs } from '@/hooks/useSyncs';
 import { useToast } from '@/hooks/useToast';
 import { useConnectionContext } from '@/pages/Connection/Show';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
@@ -44,7 +45,8 @@ import { getLogsUrl } from '@/utils/logs';
 import { cn, formatDateToUSFormat, formatFrequency, formatQuantity, getRunTime, interpretNextRun, truncateMiddle } from '@/utils/utils';
 
 import type { RunSyncCommand } from '@/types';
-import type { ApiConnectionSync } from '@nangohq/types';
+import type { ApiConnectionSync, GetConnectionSyncs } from '@nangohq/types';
+import type { InfiniteData } from '@tanstack/react-query';
 import type { VirtualItem, Virtualizer } from '@tanstack/react-virtual';
 
 const ROW_HEIGHT_PX = 44;
@@ -90,6 +92,7 @@ export const SyncsTab = () => {
     const { connection } = connectionData;
     const providerConfigKey = integrationData.integration.unique_key;
 
+    const queryClient = useQueryClient();
     const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
     const debouncedSearch = useDebouncedValue(search);
 
@@ -100,6 +103,12 @@ export const SyncsTab = () => {
         search: debouncedSearch || undefined
     });
 
+    const queryKey = syncsPageQueryKey({
+        env,
+        connection_id: connection.connection_id,
+        provider_config_key: providerConfigKey,
+        search: debouncedSearch || undefined
+    });
     const syncs = useMemo(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
     const total = data?.pages[0]?.pagination.total ?? 0;
 
@@ -137,8 +146,9 @@ export const SyncsTab = () => {
                 });
                 toast({ title: `The sync was successfully ${UserFacingSyncCommand[command]}`, variant: 'success' });
             } catch (err) {
-                const message = err instanceof Error ? err.message : undefined;
-                toast({ title: message || `Failed to ${UserFacingSyncCommand[command]} sync`, variant: 'error' });
+                // APIError.message is always 'api_error'; the useful text is in the response body.
+                const apiError = err as { json?: { error?: { message?: string } } };
+                toast({ title: apiError.json?.error?.message || `Failed to ${UserFacingSyncCommand[command]} sync`, variant: 'error' });
             } finally {
                 setPendingSyncId(null);
             }
@@ -161,12 +171,19 @@ export const SyncsTab = () => {
         [connection.connection_id, env, navigate, providerConfigKey]
     );
 
-    // Gated on the top of the list, where page 1 is the only page on screen and so the only one worth refetching.
+    // refetch() on an infinite query refetches every loaded page, so drop back to page 1 first —
+    // safe only because this runs at scrollTop 0, where no later page is on screen.
     useInterval(
         () => {
+            if (document.visibilityState !== 'visible') {
+                return;
+            }
+            queryClient.setQueryData<InfiniteData<GetConnectionSyncs['Success'], number>>(queryKey, (old) =>
+                old ? { ...old, pages: old.pages.slice(0, 1), pageParams: old.pageParams.slice(0, 1) } : old
+            );
             void refetch({ cancelRefetch: true });
         },
-        isAtTop && !debouncedSearch && !isFetchingNextPage && document.visibilityState === 'visible' ? POLL_INTERVAL_MS : null
+        isAtTop && !debouncedSearch && !isFetchingNextPage ? POLL_INTERVAL_MS : null
     );
 
     // A new search leaves the previous rows in place (keepPreviousData), so the offset has to be reset
@@ -437,7 +454,7 @@ const SyncRow = memo(function SyncRow({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                            disabled={actionsDisabled}
+                            disabled={actionsDisabled || sync.schedule_status === null}
                             onClick={() => onSyncCommand(sync, sync.schedule_status === 'STARTED' ? 'PAUSE' : 'UNPAUSE')}
                         >
                             {sync.schedule_status !== 'STARTED' ? (

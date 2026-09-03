@@ -364,7 +364,7 @@ export const listConnectionSyncs = async ({
                 FROM ${SYNC_JOB_TABLE} j
                 JOIN ${SYNC_CONFIG_TABLE} jsc ON jsc.id = j.sync_config_id AND jsc.deleted = false
                 WHERE j.sync_id = s.id
-                ORDER BY j.created_at DESC
+                ORDER BY j.created_at DESC, j.id DESC
                 LIMIT 1
             ) latest ON TRUE`
         )

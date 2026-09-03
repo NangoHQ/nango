@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { records as recordsService } from '@nangohq/records';
 import { connectionService, listConnectionSyncs } from '@nangohq/shared';
-import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
+import { getLogger, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import {
     connectionIdSchema,
@@ -18,6 +18,8 @@ import { getOrchestrator } from '../../../../../utils/utils.js';
 
 import type { ListedSync } from '@nangohq/shared';
 import type { ApiConnectionSync, GetConnectionSyncs } from '@nangohq/types';
+
+const logger = getLogger('connections.syncs');
 
 const orchestrator = getOrchestrator();
 
@@ -112,6 +114,7 @@ async function getRecordCountsForPage({
 
     const counts = await recordsService.getCountsByModel({ connectionId, environmentId, models: [...models] });
     if (counts.isErr()) {
+        logger.error(`Failed to get record counts for connection ${connectionId} in environment ${environmentId}: ${stringifyError(counts.error)}`);
         return null;
     }
 
@@ -139,7 +142,7 @@ function toApi(sync: ListedSync, recordCounts: Record<string, number> | null): A
             sync.job_id === null
                 ? null
                 : {
-                      job_id: Number(sync.job_id),
+                      job_id: sync.job_id,
                       created_at: sync.job_created_at!.toISOString(),
                       updated_at: sync.job_updated_at!.toISOString(),
                       type: sync.job_type ?? 'INITIAL',

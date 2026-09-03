@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import db from '@nangohq/database';
 import { records } from '@nangohq/records';
 import { createSync, seeders } from '@nangohq/shared';
 
@@ -271,7 +272,7 @@ describe(`GET ${route}`, () => {
 
         isSuccess(res.json);
         const latest = res.json.data[0]!.latest_sync;
-        expect(latest?.job_id).toBe(newest.id);
+        expect(latest?.job_id).toBe(String(newest.id));
         expect(latest?.created_at).toEqual(expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/));
     });
 
@@ -312,6 +313,14 @@ describe(`GET ${route}`, () => {
             type: 'action',
             models: ['Email']
         });
+        const { sync: removed } = await createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'a-removed-sync',
+            models: ['Email']
+        });
+        await db.knex.from('_nango_syncs').where({ id: removed.id }).update({ deleted: true, deleted_at: new Date() });
 
         const res = await api.fetch(route, {
             method: 'GET',

@@ -4,7 +4,8 @@ import type { SyncTypeLiteral } from '../nangoYaml/index.js';
 import type { ReportedSyncJobStatus, SyncJobsType, SyncResultByModel, SyncStatus } from './index.js';
 
 export interface ApiConnectionSyncJob {
-    job_id: number;
+    /** `_nango_sync_jobs.id` is a bigint, so it is carried as a string rather than rounded into a number. */
+    job_id: string;
     created_at: string;
     updated_at: string;
     /** @deprecated **/

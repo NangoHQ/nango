@@ -1,4 +1,4 @@
-import { keepPreviousData, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 
@@ -19,6 +19,10 @@ export function syncsQueryKey({ env, provider_config_key, connection_id }: Omit<
     return ['syncs', env, provider_config_key, connection_id];
 }
 
+export function syncsPageQueryKey({ env, provider_config_key, connection_id, search, limit = SYNCS_PAGE_SIZE }: UseSyncsArgs) {
+    return [...syncsQueryKey({ env, provider_config_key, connection_id }), { search, limit }];
+}
+
 async function fetchSyncs(connectionId: string, usp: URLSearchParams): Promise<GetConnectionSyncs['Success']> {
     const res = await apiFetch(`/api/v1/connections/${encodeURIComponent(connectionId)}/syncs?${usp.toString()}`, { method: 'GET' });
 
@@ -32,7 +36,7 @@ async function fetchSyncs(connectionId: string, usp: URLSearchParams): Promise<G
 
 export function useSyncs({ env, connection_id, provider_config_key, search, limit = SYNCS_PAGE_SIZE }: UseSyncsArgs) {
     return useInfiniteQuery<GetConnectionSyncs['Success'], APIError>({
-        queryKey: [...syncsQueryKey({ env, connection_id, provider_config_key }), { search, limit }],
+        queryKey: syncsPageQueryKey({ env, connection_id, provider_config_key, search, limit }),
         queryFn: async ({ pageParam }) => {
             const usp = new URLSearchParams();
             usp.set('env', env);
@@ -51,9 +55,12 @@ export function useSyncs({ env, connection_id, provider_config_key, search, limi
         },
         initialPageParam: 0,
         enabled: Boolean(env && connection_id && provider_config_key),
-        // Without this, every keystroke produces a fresh query key with no cached data, which flips
-        // `isLoading` true and unmounts the search input — it loses focus mid-keystroke.
-        placeholderData: keepPreviousData,
+        // Reusing rows keeps the search input from unmounting (and losing focus) on every keystroke,
+        // but only within one connection — across connections the old rows would be acted on as if current.
+        placeholderData: (previous, previousQuery) => {
+            const previousScope = previousQuery?.queryKey.slice(0, 4);
+            return previousScope && shallowEqual(previousScope, syncsQueryKey({ env, connection_id, provider_config_key })) ? previous : undefined;
+        },
         // An infinite query's refetchInterval refetches every loaded page; the tab drives its own polling.
         refetchInterval: false,
         refetchOnWindowFocus: false
@@ -116,4 +123,8 @@ export function useRunSyncCommand({ env, connection_id, provider_config_key }: O
             await queryClient.invalidateQueries({ queryKey: syncsQueryKey({ env, connection_id, provider_config_key }) });
         }
     });
+}
+
+function shallowEqual(a: readonly unknown[], b: readonly unknown[]): boolean {
+    return a.length === b.length && a.every((value, i) => value === b[i]);
 }
