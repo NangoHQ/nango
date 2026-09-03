@@ -204,7 +204,7 @@ describe('DispatchQueueConsumer', () => {
         expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
     });
 
-    it('defers rather than drops messages whose per-entry result is task_cap_exceeded', async () => {
+    it('keeps rather than drops messages whose per-entry result is task_cap_exceeded', async () => {
         const msgs = [buildMessage({ taskName: 'webhook:1' }), buildMessage({ taskName: 'webhook:2' })];
         const h = makeHarness({ messages: msgs });
         h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
@@ -216,10 +216,10 @@ describe('DispatchQueueConsumer', () => {
         });
 
         expect(getDeleteCalls(h)).toHaveLength(1);
-        expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-1', VisibilityTimeout: 30 }]);
+        expect(getVisibilityCalls(h)).toHaveLength(0);
     });
 
-    it('never defers a task-cap message for less than the visibility timeout it already had', async () => {
+    it('does not touch visibility when a task-cap defer would not outlast the current timeout', async () => {
         const h = makeHarness({ messages: [buildMessage()], taskCapDeferMs: 5_000 });
         h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(Ok([Err({ name: 'task_cap_exceeded', message: 'cap', payload: {} })]));
 
@@ -227,7 +227,8 @@ describe('DispatchQueueConsumer', () => {
             expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
         });
 
-        expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-0', VisibilityTimeout: 30 }]);
+        expect(getVisibilityCalls(h)).toHaveLength(0);
+        expect(getDeleteCalls(h)).toHaveLength(0);
     });
 
     it('defers a task-cap message for longer than the visibility timeout when asked to', async () => {
@@ -316,9 +317,9 @@ describe('DispatchQueueConsumer', () => {
             return {};
         });
 
-        const h = makeHarness({ sqsSend, rateLimitThrottleMaxMs: 60_000 });
+        const h = makeHarness({ sqsSend, rateLimitThrottleMaxMs: 120_000 });
         h.orchestratorExecuteWebhookBatch.mockResolvedValue(
-            Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 30_000 } })])
+            Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 120_000 } })])
         );
 
         h.consumer.start();
@@ -331,8 +332,8 @@ describe('DispatchQueueConsumer', () => {
         expect(warn).toHaveBeenCalledWith('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
     });
 
-    it('never defers a rate limited message for less than the visibility timeout it already had', async () => {
-        const h = makeHarness({ messages: [buildMessage()], rateLimitThrottleMaxMs: 60_000 });
+    it('does not touch visibility when a throttle would not outlast the current timeout', async () => {
+        const h = makeHarness({ messages: [buildMessage()], rateLimitThrottleMaxMs: 120_000 });
         h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
             Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 12 } })])
         );
@@ -341,7 +342,8 @@ describe('DispatchQueueConsumer', () => {
             expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
         });
 
-        expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-0', VisibilityTimeout: 30 }]);
+        expect(getVisibilityCalls(h)).toHaveLength(0);
+        expect(getDeleteCalls(h)).toHaveLength(0);
     });
 
     it('throttles only the rate limited group and keeps the other groups flowing', async () => {
@@ -378,13 +380,13 @@ describe('DispatchQueueConsumer', () => {
             throw new Error(`unexpected command ${String(command)}`);
         });
 
-        const h = makeHarness({ sqsSend, rateLimitThrottleMaxMs: 60_000 });
+        const h = makeHarness({ sqsSend, rateLimitThrottleMaxMs: 120_000 });
         h.orchestratorExecuteWebhookBatch.mockImplementation((props: unknown[]) =>
             Promise.resolve(
                 Ok(
                     (props as { name: string }[]).map((p) =>
                         p.name.startsWith('webhook:noisy')
-                            ? Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 30_000 } })
+                            ? Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 120_000 } })
                             : Ok({ taskId: p.name, retryKey: 'rk' })
                     )
                 )
@@ -441,9 +443,9 @@ describe('DispatchQueueConsumer', () => {
             throw new Error(`unexpected command ${String(command)}`);
         });
 
-        const h = makeHarness({ sqsSend, rateLimitThrottleMaxMs: 60_000 });
+        const h = makeHarness({ sqsSend, rateLimitThrottleMaxMs: 120_000 });
         h.orchestratorExecuteWebhookBatch
-            .mockResolvedValueOnce(Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 30_000 } })]))
+            .mockResolvedValueOnce(Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 120_000 } })]))
             .mockResolvedValueOnce(Ok([Ok({ taskId: 'quiet', retryKey: 'quiet' })]));
 
         h.consumer.start();
@@ -493,9 +495,9 @@ describe('DispatchQueueConsumer', () => {
             return {};
         });
 
-        const h = makeHarness({ sqsSend, rateLimitThrottleMaxMs: 60_000 });
+        const h = makeHarness({ sqsSend, rateLimitThrottleMaxMs: 120_000 });
         h.orchestratorExecuteWebhookBatch
-            .mockResolvedValueOnce(Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 30_000 } })]))
+            .mockResolvedValueOnce(Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 120_000 } })]))
             .mockResolvedValueOnce(Err({ name: 'immediate_batch_failed', message: 'boom', payload: {} }));
         const increment = vi.spyOn(metrics, 'increment');
 

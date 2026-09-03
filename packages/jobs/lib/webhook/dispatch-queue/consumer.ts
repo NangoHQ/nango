@@ -166,7 +166,7 @@ export class DispatchQueueConsumer {
                     const remainingMs = this.throttles.remainingMs(dispatchGroupKey(group[0]!.parsed));
                     if (remainingMs > 0) {
                         throttled += group.length;
-                        deferrals.push(this.reportThrottled(group), this.deferGroup(group, this.deferMsFor(remainingMs)));
+                        deferrals.push(this.reportThrottled(group), this.deferGroup(group, remainingMs));
                         continue;
                     }
                     groupedEntries.push(group);
@@ -303,14 +303,14 @@ export class DispatchQueueConsumer {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
                 const remainingMs = this.throttles.remainingMs(groupKey);
                 if (remainingMs > 0) {
-                    await this.deferGroup(group, this.deferMsFor(remainingMs));
+                    await this.deferGroup(group, remainingMs);
                 }
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
                 await logCtx.warn(THROTTLED_LOG_MESSAGE);
             } else if (result.error.name === 'task_cap_exceeded') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'task_cap', provider, providerConfigKey });
                 if (this.taskCapDeferMs > 0) {
-                    await this.deferGroup(group, this.deferMsFor(this.taskCapDeferMs));
+                    await this.deferGroup(group, this.taskCapDeferMs);
                 }
             } else {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider, providerConfigKey });
@@ -333,11 +333,10 @@ export class DispatchQueueConsumer {
         }
     }
 
-    private deferMsFor(delayMs: number): number {
-        return Math.max(delayMs, this.visibilityTimeoutSeconds * 1000);
-    }
-
     private async deferGroup(group: ParsedEntry[], delayMs: number): Promise<void> {
+        if (delayMs <= this.visibilityTimeoutSeconds * 1000) {
+            return;
+        }
         try {
             await changeVisibility({
                 sqs: this.sqs,
