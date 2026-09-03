@@ -771,6 +771,7 @@
                   "guides/platform/environments",
                   "guides/platform/limits",
                   "guides/platform/security",
+                  "guides/platform/audit-trail",
                   "guides/platform/self-hosting",
                   "guides/platform/proxy-requests",
                   "guides/platform/webhooks-from-nango",
