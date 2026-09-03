@@ -104,6 +104,12 @@
             "js-yaml": "3.15.1"
         },
         "dd-trace": "5.117.0",
+        "vitest": "4.1.9",
+        "typescript": "5.8.3",
+        "zod": "4.0.5",
+        "@types/node": "22.15.29",
+        "dayjs": "1.11.19",
+        "uuidv7": "1.0.2",
         "@elastic/transport": {
             "undici": "6.28.0"
         },

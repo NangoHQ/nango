@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import fs, { writeFileSync } from 'fs';
 import path from 'path';
 
@@ -25,7 +25,7 @@ export const v1toV2Migration = (loadLocation: string): void => {
     }
 
     const scriptFile = path.join(getNangoRootPath(), 'scripts/v1-v2.js');
-    exec(`node ${scriptFile} ./${nangoConfigFile}`, (error) => {
+    execFile('node', [scriptFile, `./${nangoConfigFile}`], (error) => {
         if (error) {
             console.log(chalk.red(`There was an issue migrating your nango.yaml to v2.`));
             console.error(error);

@@ -1,9 +1,13 @@
 import { readFileSync } from 'node:fs';
 
+import { getLogger } from '@nangohq/utils';
+
 import { NangoCliExitCode } from './cli-exit-codes.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { createFunctionSandbox } from './sandbox.js';
 import { deploySandboxTimeoutMs, deployTimeoutMs } from './timeouts.js';
+
+const logger = getLogger('Sandbox.Deploy');
 
 const asyncDeployScriptUrl = new URL('./async-deploy-script.js', import.meta.url);
 const asyncDeployScript = readFileSync(asyncDeployScriptUrl, 'utf8');
@@ -77,11 +81,15 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
                 });
             },
             kill: async () => {
-                await sandbox.stop().catch(() => undefined);
+                await sandbox.stop().catch((err: unknown) => {
+                    logger.debug('Failed to stop deploy sandbox', err);
+                });
             }
         };
     } catch (err) {
-        await sandbox.stop().catch(() => undefined);
+        await sandbox.stop().catch((stopErr: unknown) => {
+            logger.debug('Failed to stop deploy sandbox during cleanup', stopErr);
+        });
         throw err;
     }
 }

@@ -100,16 +100,12 @@ RUN true \
   && apt-get purge -y --auto-remove --allow-remove-essential -o APT::AutoRemove::RecommendsImportant=false perl-base \
   && rm -rf /var/lib/apt/lists/*
 
-# Do not use root to run the app
-# BUT it does not work with secret mount (could not find a solution yet)
-# TODO: fix this
-# USER node
+USER node
 
 WORKDIR /app/nango
 
 # Code
-# COPY --from=build --chown=node:node /app/tmp /app/nango
-COPY --from=build /app/tmp /app/nango
+COPY --from=build --chown=node:node /app/tmp /app/nango
 
 ARG git_hash
 

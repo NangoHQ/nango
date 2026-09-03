@@ -2,10 +2,19 @@
     "files": [],
     "references": [
         {
-            "path": "packages/cli"
+            "path": "packages/audit"
+        },
+        {
+            "path": "packages/authz"
+        },
+        {
+            "path": "packages/clickhouse-migrations"
         },
         {
             "path": "packages/frontend"
+        },
+        {
+            "path": "packages/egress"
         },
         {
             "path": "packages/internal-auth"
@@ -21,6 +30,12 @@
         },
         {
             "path": "packages/kvstore"
+        },
+        {
+            "path": "packages/kms"
+        },
+        {
+            "path": "packages/feature-flags"
         },
         {
             "path": "packages/logs"
@@ -44,7 +59,13 @@
             "path": "packages/runner-sdk"
         },
         {
+            "path": "packages/sandbox"
+        },
+        {
             "path": "packages/scheduler"
+        },
+        {
+            "path": "packages/tasks"
         },
         {
             "path": "packages/orchestrator"
@@ -57,6 +78,9 @@
         },
         {
             "path": "packages/connect-ui"
+        },
+        {
+            "path": "packages/design-system"
         },
         {
             "path": "packages/webapp"

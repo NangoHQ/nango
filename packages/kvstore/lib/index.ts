@@ -124,7 +124,10 @@ export function createSlidingWindowRateLimiter(options: SlidingWindowRateLimiter
             destroyed = true;
             const activeClient = client;
             client = undefined;
-            const connectingClient = await connection?.catch(() => undefined);
+            const connectingClient = await connection?.catch((err: unknown) => {
+                console.debug('Failed to connect redis during destroy', err);
+                return undefined;
+            });
 
             for (const connected of new Set([activeClient, connectingClient])) {
                 if (connected?.isOpen) {

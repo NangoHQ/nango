@@ -102,6 +102,21 @@ export default defineConfig(() => {
         server: { port: DEV_PORT, proxy },
         define: {
             'import.meta.env.VITE_HASH': JSON.stringify(createHash('md5').update(Date.now().toString()).digest('hex').slice(0, 8))
+        },
+        build: {
+            rollupOptions: {
+                output: {
+                    manualChunks(id) {
+                        if (id.includes('node_modules')) {
+                            if (id.includes('recharts')) return 'charts';
+                            if (id.includes('@mantine')) return 'mantine';
+                            if (id.includes('@tanstack')) return 'query';
+                            if (id.includes('date-fns') || id.includes('lodash-es') || id.includes('fuse.js')) return 'utils';
+                            if (id.includes('react')) return 'vendor';
+                        }
+                    }
+                }
+            }
         }
     };
 });

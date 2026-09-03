@@ -1,9 +1,13 @@
 import { readFileSync } from 'node:fs';
 
+import { getLogger } from '@nangohq/utils';
+
 import { NangoCliExitCode } from './cli-exit-codes.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { createFunctionSandbox } from './sandbox.js';
 import { compileTimeoutMs, dryrunSandboxTimeoutMs, dryrunTimeoutMs } from './timeouts.js';
+
+const logger = getLogger('Sandbox.Dryrun');
 
 const asyncDryrunScriptUrl = new URL('./async-dryrun-script.js', import.meta.url);
 const asyncDryrunScript = readFileSync(asyncDryrunScriptUrl, 'utf8');
@@ -97,11 +101,15 @@ export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<P
                 });
             },
             kill: async () => {
-                await sandbox.stop().catch(() => undefined);
+                await sandbox.stop().catch((err: unknown) => {
+                    logger.debug('Failed to stop dryrun sandbox', err);
+                });
             }
         };
     } catch (err) {
-        await sandbox.stop().catch(() => undefined);
+        await sandbox.stop().catch((stopErr: unknown) => {
+            logger.debug('Failed to stop dryrun sandbox during cleanup', stopErr);
+        });
         throw err;
     }
 }

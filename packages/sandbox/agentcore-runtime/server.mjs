@@ -86,10 +86,17 @@ function startCommand(payload) {
         throw new Error('startCommand requires command');
     }
 
+    if (payload.command.length > 8192) {
+        throw new Error('startCommand command exceeds maximum length');
+    }
+
     if (activeCommand) {
         throw new Error('A command is already running in this runtime session');
     }
 
+    // payload.command is produced by buildCommand() in packages/sandbox/lib/providers/agentcore.ts
+    // via shellQuote() and runs inside the isolated AgentCore microVM. Only internal Nango
+    // code can invoke this adapter; user sync code does not reach here directly.
     const child = spawn('sh', ['-lc', payload.command], {
         cwd: workspacePath,
         detached: true,
