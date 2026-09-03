@@ -41,7 +41,7 @@ function createSignedJwt({
     const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
     const kid = 'test-kid';
     const header = { alg: 'RS256', typ: 'JWT', kid };
-    const expectedAud = `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${integration.unique_key}`;
+    const expectedAud = `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${encodeURIComponent(integration.unique_key)}`;
     const payload = { iss, aud: aud ?? expectedAud, exp };
     const headerB64 = Buffer.from(JSON.stringify(header)).toString('base64url');
     const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
@@ -188,5 +188,54 @@ describe('gmailWebhookRouting', () => {
 
         expect(result.isErr()).toBe(true);
         expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects an expired JWT', async () => {
+        const integration = getTestConfig({ provider: 'google-mail', unique_key: 'google-mail' });
+        const { token, jwk } = createSignedJwt({ integration, exp: Math.floor(Date.now() / 1000) - 60 });
+        getGoogleJWKSMock.mockResolvedValue([jwk as Record<string, string>]);
+
+        const { nango, execute } = getNangoMock(integration);
+        const result = await GmailWebhookRouting.default(nango, { authorization: `Bearer ${token}` }, gmailBody() as any, '');
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects a JWT with the wrong issuer', async () => {
+        const integration = getTestConfig({ provider: 'google-mail', unique_key: 'google-mail' });
+        const { token, jwk } = createSignedJwt({ integration, iss: 'https://example.com' });
+        getGoogleJWKSMock.mockResolvedValue([jwk as Record<string, string>]);
+
+        const { nango, execute } = getNangoMock(integration);
+        const result = await GmailWebhookRouting.default(nango, { authorization: `Bearer ${token}` }, gmailBody() as any, '');
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects a JWT signed with a different key than JWKS', async () => {
+        const integration = getTestConfig({ provider: 'google-mail', unique_key: 'google-mail' });
+        const signed = createSignedJwt({ integration });
+        const other = createSignedJwt({ integration });
+        getGoogleJWKSMock.mockResolvedValue([other.jwk as Record<string, string>]);
+
+        const { nango, execute } = getNangoMock(integration);
+        const result = await GmailWebhookRouting.default(nango, { authorization: `Bearer ${signed.token}` }, gmailBody() as any, '');
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('accepts a JWT whose audience encodes reserved characters in unique_key', async () => {
+        const integration = getTestConfig({ provider: 'google-mail', unique_key: 'gmail:prod' });
+        const { token, jwk } = createSignedJwt({ integration });
+        getGoogleJWKSMock.mockResolvedValue([jwk as Record<string, string>]);
+
+        const { nango, execute } = getNangoMock(integration);
+        const result = await GmailWebhookRouting.default(nango, { authorization: `Bearer ${token}` }, gmailBody() as any, '');
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledTimes(1);
     });
 });

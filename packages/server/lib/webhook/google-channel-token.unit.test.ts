@@ -45,4 +45,19 @@ describe('validateGoogleChannelToken', () => {
 
         expect(result.isOk()).toBe(true);
     });
+
+    it('rejects a truthy non-string webhook secret', () => {
+        const integration = getTestConfig({
+            provider: 'google-drive',
+            custom: { webhookSecret: 1 as unknown as string }
+        });
+
+        const result = validateGoogleChannelToken(integration, { 'x-goog-channel-token': 'channel-secret' });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(NangoError);
+            expect((result.error as NangoError).type).toBe('webhook_invalid_signature');
+        }
+    });
 });

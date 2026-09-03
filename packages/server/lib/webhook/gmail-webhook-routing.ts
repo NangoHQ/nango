@@ -66,10 +66,12 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
         }
 
         const environment = await environmentService.getById(integration.environment_id);
-        const webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environment?.uuid}/${integration.unique_key}`;
+        const webhookBase = `${getGlobalWebhookReceiveUrl()}/${environment?.uuid}`;
+        const encodedWebhookUrl = `${webhookBase}/${encodeURIComponent(integration.unique_key)}`;
+        const rawWebhookUrl = `${webhookBase}/${integration.unique_key}`;
 
-        if (payload.aud !== webhookUrl) {
-            logger.warning(`Invalid audience. Expected ${webhookUrl}, got ${payload.aud}`);
+        if (payload.aud !== encodedWebhookUrl && payload.aud !== rawWebhookUrl) {
+            logger.warning(`Invalid audience. Expected ${encodedWebhookUrl}, got ${payload.aud}`);
             return false;
         }
 
