@@ -24,7 +24,7 @@ describe('actionSelectionLabel', () => {
 
 describe('environmentLabel', () => {
     it('names the environment when the event carries one', () => {
-        expect(environmentLabel({ environment: { id: 1, display: 'dev' }, scope: 'environment' })).toBe('dev');
+        expect(environmentLabel({ environment: { id: '1', display: 'dev' }, scope: 'environment' })).toBe('dev');
     });
 
     it('calls an account-scoped event account-level rather than leaving it blank', () => {

@@ -1,5 +1,5 @@
-import { Download } from 'lucide-react';
-import { useState } from 'react';
+import { Share } from 'lucide-react';
+import { useRef, useState } from 'react';
 
 import {
     Button,
@@ -17,27 +17,39 @@ import {
 import { apiAuditTrailExport } from '@/hooks/useAudit';
 import { useToast } from '@/hooks/useToast';
 import { track } from '@/utils/analytics';
-import { AUDIT_EXPORT_MAX_ROWS, exportFilterLabel, exportWindowLabel } from '../export';
+import { openSupportChat } from '@/utils/support';
+import { actionSelectionLabel, resourceSelectionLabel } from '../constants';
+import { AUDIT_EXPORT_MAX_ROWS, exportWindowField } from '../export';
 
 import type { AuditAction, AuditResource } from '@nangohq/types';
 
+// Matches DialogContent's own `duration-200` exit animation.
+const DIALOG_EXIT_MS = 200;
+
 interface AuditExportDialogProps {
-    from: string | undefined;
-    to: string | undefined;
-    resources: AuditResource[];
-    actions: AuditAction[];
+    /** Sent to the API. Its resources can be wider than the ones picked, since an action only matches paired with a resource. */
+    query: { from: string | undefined; to: string | undefined; resources: AuditResource[]; actions: AuditAction[] };
+    selection: { resources: AuditResource[]; actions: AuditAction[] };
     disabled?: boolean;
 }
 
-export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ from, to, resources, actions, disabled }) => {
+export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ query, selection, disabled }) => {
     const { toast } = useToast();
     const [isOpen, setIsOpen] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const exportButtonRef = useRef<HTMLButtonElement>(null);
+    const openSupportOnClose = useRef(false);
+    const windowField = exportWindowField(query.from, query.to);
+
+    const onContact = () => {
+        openSupportOnClose.current = true;
+        setIsOpen(false);
+    };
 
     const onExport = async () => {
         setIsExporting(true);
         try {
-            const { truncated } = await apiAuditTrailExport({ from, to, resources, actions });
+            const { truncated } = await apiAuditTrailExport(query);
             track('web:audit:exported', { truncated });
             setIsOpen(false);
             toast(
@@ -59,28 +71,53 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ from, to, 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" disabled={disabled}>
-                    <Download />
+                <Button variant="outline" size="md" disabled={disabled}>
+                    <Share size={14} />
                     Export
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            {/* Radix would otherwise land on the body's "Contact us" link, making Enter open support instead of exporting. */}
+            <DialogContent
+                onOpenAutoFocus={(event) => {
+                    event.preventDefault();
+                    exportButtonRef.current?.focus();
+                }}
+                onCloseAutoFocus={(event) => {
+                    if (!openSupportOnClose.current) {
+                        return;
+                    }
+                    openSupportOnClose.current = false;
+                    // Radix would pull focus back to the Export trigger, and the focus trap and `aria-hidden`
+                    // only come off with the content — so opening waits for the exit animation.
+                    event.preventDefault();
+                    setTimeout(openSupportChat, DIALOG_EXIT_MS);
+                }}
+            >
                 <DialogHeader>
                     <DialogTitle>Export audit trail</DialogTitle>
-                    <DialogDescription>The window and filters selected on the page are what gets exported.</DialogDescription>
+                    <DialogDescription>Downloads the events matching these filters as a CSV file.</DialogDescription>
                 </DialogHeader>
                 <DialogBody>
-                    <div className="flex flex-col gap-3 text-body-small-regular text-text-secondary">
-                        <p className="text-text-primary">
-                            Exports up to {AUDIT_EXPORT_MAX_ROWS.toLocaleString()} events as CSV, covering {exportWindowLabel(from, to)}, filtered by{' '}
-                            {exportFilterLabel(resources, actions)}.
-                        </p>
-                        <p>
-                            The file is built while you wait, so it is capped at {AUDIT_EXPORT_MAX_ROWS.toLocaleString()} events. If the window holds more, the
-                            export stops there and we will tell you — narrow the window or the filters to get the rest.
-                        </p>
-                        <p>Need a larger export, or a scheduled one? Contact us and we will arrange it.</p>
-                    </div>
+                    <dl className="grid grid-cols-[80px_1fr] gap-x-4 gap-y-2.5 text-body-small-regular">
+                        <dt className="uppercase text-text-muted">{windowField.label}</dt>
+                        <dd className="font-code text-text-primary">
+                            {windowField.value}
+                            {windowField.zone && <span className="text-text-muted"> {windowField.zone}</span>}
+                        </dd>
+                        <dt className="uppercase text-text-muted">Resource</dt>
+                        <dd className="font-code text-text-primary">{resourceSelectionLabel(selection.resources)}</dd>
+                        <dt className="uppercase text-text-muted">Action</dt>
+                        <dd className="font-code text-text-primary">{actionSelectionLabel(selection.actions)}</dd>
+                        <dt className="uppercase text-text-muted">Limit</dt>
+                        <dd className="font-code text-text-primary">{AUDIT_EXPORT_MAX_ROWS.toLocaleString()} events</dd>
+                    </dl>
+                    <p className="mt-5 text-body-small-regular text-text-secondary">
+                        Need a larger or scheduled export?{' '}
+                        <Button variant="link-accent" size="sm" onClick={onContact}>
+                            Contact us
+                        </Button>
+                        .
+                    </p>
                 </DialogBody>
                 <DialogFooter>
                     <DialogClose asChild>
@@ -88,7 +125,7 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ from, to, 
                             Cancel
                         </Button>
                     </DialogClose>
-                    <Button size="sm" loading={isExporting} onClick={() => void onExport()}>
+                    <Button ref={exportButtonRef} size="sm" loading={isExporting} onClick={() => void onExport()}>
                         Export CSV
                     </Button>
                 </DialogFooter>
