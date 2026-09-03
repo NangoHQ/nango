@@ -1,10 +1,16 @@
-import { Ok } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
 import { hashEmailAddress } from '../utils/pii.js';
+import { validateGoogleChannelToken } from './google-channel-token.js';
 
 import type { WebhookHandler } from './types.js';
 
 const route: WebhookHandler = async (nango, headers) => {
+    const tokenResult = validateGoogleChannelToken(nango.integration, headers);
+    if (tokenResult.isErr()) {
+        return Err(tokenResult.error);
+    }
+
     // https://developers.google.com/workspace/calendar/api/guides/push
     // we will need to just forward the headers since the body is empty
     const resourceUri = headers['x-goog-resource-uri'];

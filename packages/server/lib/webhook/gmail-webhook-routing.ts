@@ -20,10 +20,6 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
     try {
         const authHeader: string | undefined = headers['authorization'];
 
-        if (!authHeader) {
-            return true;
-        }
-
         if (!authHeader?.startsWith('Bearer ')) {
             return false;
         }
@@ -66,7 +62,7 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
         }
 
         const environment = await environmentService.getById(integration.environment_id);
-        const webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environment?.uuid}/${integration.provider}`;
+        const webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environment?.uuid}/${integration.unique_key}`;
 
         if (payload.aud !== webhookUrl) {
             logger.warning(`Invalid audience. Expected ${webhookUrl}, got ${payload.aud}`);
@@ -87,14 +83,11 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
 
 const route: WebhookHandler = async (nango, headers, body) => {
     const authHeader = headers['authorization'];
+    const valid = await validate(nango.integration, headers);
 
-    if (authHeader) {
-        const valid = await validate(nango.integration, headers);
-
-        if (!valid) {
-            logger.error('webhook signature invalid');
-            return Err(new NangoError('webhook_invalid_signature'));
-        }
+    if (!valid) {
+        logger.error(authHeader ? 'webhook signature invalid' : 'webhook signature missing');
+        return Err(new NangoError(authHeader ? 'webhook_invalid_signature' : 'webhook_missing_signature'));
     }
 
     let decodedBody: DecodedDataObject | null = null;

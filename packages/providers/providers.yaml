@@ -9997,6 +9997,7 @@ google:
     docs: https://nango.dev/docs/api-integrations/google
     setup_guide_url: https://nango.dev/docs/api-integrations/google/how-to-register-your-own-google-api-oauth-app
     webhook_routing_script: googleWebhookRouting
+    webhook_user_defined_secret: true
 
 google-analytics:
     display_name: Google Analytics
@@ -10094,6 +10095,7 @@ google-mail:
     proxy:
         base_url: https://gmail.googleapis.com
     webhook_routing_script: gmailWebhookRouting
+    webhook_user_defined_secret: false
     post_connection_script: googleMailPostConnection
     docs: https://nango.dev/docs/api-integrations/google-mail
     setup_guide_url: https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app
