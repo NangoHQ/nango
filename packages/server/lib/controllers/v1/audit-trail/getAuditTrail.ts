@@ -9,15 +9,24 @@ import { canViewAuditTrail } from '../../../utils/auditTrail.js';
 import { auditListQuery } from './query.js';
 
 import type { GetAuditTrail } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 const PAGE_SIZE = 25;
 
 // The two reads run concurrently, so each needs its own span for their costs to be separable in a trace.
-async function traced<T>(name: string, run: () => Promise<T>): Promise<T> {
+// Both failure shapes are tagged: a read that returns Err is as much a failed span as one that throws.
+async function traced<T>(name: string, run: () => Promise<Result<T>>): Promise<Result<T>> {
     const active = tracer.scope().active();
     const span = tracer.startSpan(name, active ? { childOf: active } : {});
     try {
-        return await run();
+        const result = await run();
+        if (result.isErr()) {
+            span.setTag('error', result.error);
+        }
+        return result;
+    } catch (err) {
+        span.setTag('error', err);
+        throw err;
     } finally {
         span.finish();
     }
