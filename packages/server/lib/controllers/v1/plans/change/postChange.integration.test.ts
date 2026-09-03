@@ -801,59 +801,38 @@ describe(`POST ${route}`, () => {
             expect(upgradeSpy.mock.invocationCallOrder[0]).toBeLessThan(startGrowthAddonSpy.mock.invocationCallOrder[0]);
         });
 
-        it('should refuse to enable the add-on when an auto-confirmed payment leaves the change pending', async () => {
+        it('should downgrade the plan when the add-on removal is already scheduled', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await setupPlan({ id: plan.id, orb_subscription_id: 'sub_123', stripe_customer_id: 'cus_123', stripe_payment_id: 'pm_123' });
+            await setupPlan({
+                id: plan.id,
+                name: 'pay-as-you-go',
+                has_growth_features: true,
+                growth_features_ends_at: new Date('2026-10-01T00:00:00Z'),
+                orb_subscription_id: 'sub_123',
+                stripe_customer_id: 'cus_123',
+                stripe_payment_id: 'pm_123'
+            });
 
             getSubscriptionSpy.mockResolvedValue(
                 Ok({
                     id: 'sub_123',
-                    planExternalId: 'free',
-                    hasGrowthFeatures: false,
-                    growthFeaturesEndsAt: null,
-                    growthFeaturesPriceIntervalId: null
+                    planExternalId: 'pay-as-you-go',
+                    hasGrowthFeatures: true,
+                    growthFeaturesEndsAt: new Date('2026-10-01T00:00:00Z'),
+                    growthFeaturesPriceIntervalId: 'pi_growth'
                 } satisfies BillingSubscription)
             );
-            upgradeSpy.mockResolvedValue(Ok({ pendingChangeId: 'pending_123', amountInCents: 5000 }));
-            mockPaymentIntentsCreate.mockResolvedValue({ id: 'pi_123', client_secret: 'secret_123', status: 'succeeded' });
 
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
                 token: apiKey.secret,
-                body: { orbId: 'pay-as-you-go', withGrowthFeatures: true }
+                body: { orbId: 'free', withGrowthFeatures: false }
             });
 
-            isError(res.json);
-            expect(res.res.status).toBe(500);
-            expect(startGrowthAddonSpy).not.toHaveBeenCalled();
-        });
-
-        it('should refuse to enable the add-on when the plan change is still awaiting payment', async () => {
-            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await setupPlan({ id: plan.id, orb_subscription_id: 'sub_123', stripe_customer_id: 'cus_123', stripe_payment_id: 'pm_123' });
-
-            getSubscriptionSpy.mockResolvedValue(
-                Ok({
-                    id: 'sub_123',
-                    planExternalId: 'free',
-                    hasGrowthFeatures: false,
-                    growthFeaturesEndsAt: null,
-                    growthFeaturesPriceIntervalId: null
-                } satisfies BillingSubscription)
-            );
-            upgradeSpy.mockResolvedValue(Ok({ pendingChangeId: 'pending_123', amountInCents: 5000 }));
-
-            const res = await api.fetch(route, {
-                method: 'POST',
-                query: { env: 'dev' },
-                token: apiKey.secret,
-                body: { orbId: 'pay-as-you-go', withGrowthFeatures: true }
-            });
-
-            isError(res.json);
-            expect(res.res.status).toBe(500);
-            expect(startGrowthAddonSpy).not.toHaveBeenCalled();
+            isSuccess(res.json);
+            expect(downgradeSpy).toHaveBeenCalledWith({ subscriptionId: 'sub_123', planExternalId: 'free' });
+            expect(endGrowthAddonSpy).not.toHaveBeenCalled();
         });
 
         it('should reject a request that changes neither the plan nor the add-on', async () => {

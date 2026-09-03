@@ -114,11 +114,17 @@ export function resolvePlanChange(context: PlanChangeContext, subscription: Bill
         }
     }
 
-    const addon: AddonDirection | null =
+    let addon: AddonDirection | null =
         requested.withGrowthFeatures === currentPlan.has_growth_features ? null : requested.withGrowthFeatures ? 'enable' : 'disable';
 
     if (addon === 'disable' && subscription.growthFeaturesEndsAt) {
-        return Err(new PlanChangeError('already_scheduled'));
+        if (!plan) {
+            // if the add-on is being disabled but it's disablement is already scheduled
+            // and no other plan changes were made in the request, there's nothing left to do here.
+            return Err(new PlanChangeError('already_scheduled'));
+        }
+        // otherwise, ignore the add-on change and carry on with the plan change
+        addon = null;
     }
 
     if (plan === 'downgrade' && requested.newPlanCode === currentPlan.orb_future_plan) {

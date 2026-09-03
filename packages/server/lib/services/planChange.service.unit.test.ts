@@ -96,6 +96,18 @@ describe('resolvePlanChange', () => {
         });
     });
 
+    it('lets a plan downgrade through when the add-on removal is already scheduled', () => {
+        const res = resolve({
+            from: 'pay-as-you-go',
+            to: 'free',
+            addonNow: true,
+            addonRequested: false,
+            subscription: { growthFeaturesEndsAt: new Date('2026-10-01') }
+        });
+        // The add-on is already in the requested state, so only the plan moves
+        expect(res.unwrap()).toEqual({ plan: 'downgrade', addon: null });
+    });
+
     it('rejects disabling the add-on when removal is already scheduled', () => {
         const res = resolve({
             from: 'pay-as-you-go',
