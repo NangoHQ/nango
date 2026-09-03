@@ -81,6 +81,8 @@ export enum Types {
     WEBHOOK_REQUEST_SIZE_IN_BYTES = 'nango.webhook.request.sizeInBytes',
     WEBHOOK_RESPONSE_SIZE_IN_BYTES = 'nango.webhook.response.sizeInBytes',
     WEBHOOK_DIRECT_TRIGGER_SUCCESS = 'nango.webhook.direct_trigger.success',
+    WEBHOOK_DEDUPE_DISPATCHED = 'nango.webhook.dedupe.dispatched',
+    WEBHOOK_DEDUPE_SUPPRESSED = 'nango.webhook.dedupe.suppressed',
 
     WEBHOOK_DISPATCH_PUBLISH_SUCCESS = 'nango.webhook.dispatch_queue.publish.success',
     WEBHOOK_DISPATCH_PUBLISH_FAILURE = 'nango.webhook.dispatch_queue.publish.failure',
@@ -202,6 +204,8 @@ const CARDINALITY_GATED_PROVIDER_CONFIG_KEY_METRICS = new Set<Types>([
     Types.PRE_CONNECTION_DELETION_FAILURE,
     Types.WEBHOOK_INCOMING_RECEIVED,
     Types.WEBHOOK_DIRECT_TRIGGER_SUCCESS,
+    Types.WEBHOOK_DEDUPE_DISPATCHED,
+    Types.WEBHOOK_DEDUPE_SUPPRESSED,
     Types.WEBHOOK_DISPATCH_LARGE_FANOUT,
     Types.WEBHOOK_DISPATCH_BYPASS_OVERSIZE,
     Types.WEBHOOK_DISPATCH_PUBLISH_SUCCESS,

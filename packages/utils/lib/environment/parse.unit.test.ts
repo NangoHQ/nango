@@ -555,6 +555,21 @@ describe('parse', () => {
         });
     });
 
+    describe('NANGO_WEBHOOK_DEDUPE_WINDOW_MS', () => {
+        it('should default to 0', () => {
+            expect(parseEnvs(ENVS, {}).NANGO_WEBHOOK_DEDUPE_WINDOW_MS).toBe(0);
+        });
+
+        it('should accept a seven second window', () => {
+            expect(parseEnvs(ENVS, { NANGO_WEBHOOK_DEDUPE_WINDOW_MS: '7000' }).NANGO_WEBHOOK_DEDUPE_WINDOW_MS).toBe(7000);
+        });
+
+        it('should reject values outside the SQS delay range', () => {
+            expect(() => parseEnvs(ENVS, { NANGO_WEBHOOK_DEDUPE_WINDOW_MS: '-1' })).toThrowError();
+            expect(() => parseEnvs(ENVS, { NANGO_WEBHOOK_DEDUPE_WINDOW_MS: '900001' })).toThrowError();
+        });
+    });
+
     describe('NANGO_WEBHOOK_INGRESS_RATE_LIMIT_PER_MIN', () => {
         it('should default to 4000', () => {
             const res = parseEnvs(ENVS, {});

@@ -1,7 +1,10 @@
 import crypto from 'node:crypto';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { NangoError } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
+
+import { envs } from '../env.js';
 
 import type { AttioWebhook, WebhookHandler } from './types.js';
 
@@ -10,6 +13,20 @@ const logger = getLogger('Webhook.Attio');
 function validate(secret: string, headerSignature: string, rawBody: string): boolean {
     const signature = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
     return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(headerSignature));
+}
+
+function recordEventClass(eventType: string): 'fetch' | 'delete' | 'merged' | null {
+    switch (eventType) {
+        case 'record.created':
+        case 'record.updated':
+            return 'fetch';
+        case 'record.deleted':
+            return 'delete';
+        case 'record.merged':
+            return 'merged';
+        default:
+            return null;
+    }
 }
 
 const route: WebhookHandler<AttioWebhook> = async (nango, headers, body, rawBody) => {
@@ -38,13 +55,26 @@ const route: WebhookHandler<AttioWebhook> = async (nango, headers, body, rawBody
         return Ok({ content: { status: 'success' }, statusCode: 200 });
     }
 
+    const dedupeWindowMs = envs.NANGO_WEBHOOK_DEDUPE_WINDOW_MS;
+    const enforceDedupe = dedupeWindowMs > 0 && (await getFlags().isAttioWebhookDedupeEnabled(nango.team.uuid));
+
     let connectionIds: string[] = [];
     for (const event of parsedBody.events) {
+        const eventClass = recordEventClass(event.event_type);
+        const dedupe =
+            dedupeWindowMs > 0 && eventClass && event.id.record_id && event.id.object_id
+                ? {
+                      key: `attio:dedupe:${nango.environment.id}:${nango.integration.id}:${event.id.workspace_id}:${event.id.object_id}:${event.id.record_id}:${eventClass}`,
+                      ttlMs: dedupeWindowMs,
+                      enforce: enforceDedupe
+                  }
+                : undefined;
         const response = await nango.executeScriptForWebhooks({
             body: event,
             webhookType: 'event_type',
             connectionIdentifier: 'id.workspace_id',
-            propName: 'workspace_id'
+            propName: 'workspace_id',
+            ...(dedupe ? { dedupe } : {})
         });
         if (response && response.connectionIds?.length > 0) {
             connectionIds = connectionIds.concat(response.connectionIds);
