@@ -7,6 +7,7 @@ import { accountService, getPlan, userService } from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { getAuthorizedManagementMcpEnvironments } from './access.js';
 import { getManagementMcpOAuthConfig, MANAGEMENT_MCP_OAUTH_SCOPE } from './config.js';
 import { activateManagementMcpOAuthGrant, createPendingManagementMcpOAuthGrant, deleteManagementMcpOAuthGrant } from './grant.js';
 import { getManagementMcpOAuthProvider } from './provider.js';
@@ -16,7 +17,8 @@ import type { Request, RequestHandler, Response } from 'express';
 import type { Client, Interaction } from 'oidc-provider';
 
 const approvalSchema = z.object({
-    csrfToken: z.string().min(1)
+    csrfToken: z.string().min(1),
+    environmentIds: z.array(z.number().int().positive()).min(1).max(500)
 });
 const denialSchema = z.object({ csrfToken: z.string().min(1) });
 const logger = getLogger('Audit.ManagementMcpOAuth');
@@ -29,6 +31,7 @@ export const getManagementMcpOAuthInteraction = asyncWrapper(async (req, res) =>
     }
 
     res.setHeader('Cache-Control', 'no-store');
+    const environments = await getAuthorizedManagementMcpEnvironments(context);
     res.json({
         client: {
             name: context.client.clientName ?? 'MCP client',
@@ -36,6 +39,11 @@ export const getManagementMcpOAuthInteraction = asyncWrapper(async (req, res) =>
             redirectHost: new URL(String(context.interaction.params['redirect_uri'])).host
         },
         account: { name: context.account.name },
+        environments: environments.map((environment) => ({
+            id: environment.id,
+            name: environment.name,
+            isProduction: environment.is_production
+        })),
         scope: MANAGEMENT_MCP_OAUTH_SCOPE,
         csrfToken: createCsrfToken(context.interaction.uid, context.user.id)
     });
@@ -55,6 +63,14 @@ export const postManagementMcpOAuthInteractionApprove = asyncWrapper(async (req,
     }
     if (!verifyCsrfToken(parsed.data.csrfToken, context.interaction.uid, context.user.id)) {
         res.status(403).json({ error: { code: 'invalid_csrf_token', message: 'Invalid CSRF token.' } });
+        return;
+    }
+
+    const requestedEnvironmentIds = [...new Set(parsed.data.environmentIds)];
+    const authorizedEnvironments = await getAuthorizedManagementMcpEnvironments(context);
+    const authorizedEnvironmentIds = new Set(authorizedEnvironments.map((environment) => environment.id));
+    if (requestedEnvironmentIds.length !== parsed.data.environmentIds.length || requestedEnvironmentIds.some((id) => !authorizedEnvironmentIds.has(id))) {
+        res.status(403).json({ error: { code: 'invalid_environments', message: 'One or more selected environments are no longer available.' } });
         return;
     }
 
@@ -78,7 +94,8 @@ export const postManagementMcpOAuthInteractionApprove = asyncWrapper(async (req,
         accountId: context.account.id,
         clientId: context.client.clientId,
         resource: context.config.resource,
-        scopes: [MANAGEMENT_MCP_OAUTH_SCOPE]
+        scopes: [MANAGEMENT_MCP_OAUTH_SCOPE],
+        environmentIds: requestedEnvironmentIds
     });
 
     try {
@@ -98,7 +115,8 @@ export const postManagementMcpOAuthInteractionApprove = asyncWrapper(async (req,
         event: 'interaction_approved',
         clientId: context.client.clientId,
         userId: context.user.id,
-        accountId: context.account.id
+        accountId: context.account.id,
+        environmentCount: requestedEnvironmentIds.length
     });
     metrics.increment(metrics.Types.MCP_OAUTH_EVENT, 1, { event: 'interaction_approved', outcome: 'success' });
     res.setHeader('Cache-Control', 'no-store');

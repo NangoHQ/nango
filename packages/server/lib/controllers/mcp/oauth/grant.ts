@@ -2,9 +2,10 @@ import db from '@nangohq/database';
 
 import { ManagementMcpOAuthAdapter } from './adapter.js';
 
-import type { DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
 const TABLE = '_nango_mcp_oauth_grants';
+const ENVIRONMENTS_TABLE = '_nango_mcp_oauth_grant_environments';
 
 export interface ManagementMcpOAuthGrant {
     grant_id: string;
@@ -26,18 +27,35 @@ export async function createPendingManagementMcpOAuthGrant(input: {
     clientId: string;
     resource: string;
     scopes: string[];
+    environmentIds: number[];
 }): Promise<void> {
-    await db.knex<ManagementMcpOAuthGrant>(TABLE).insert({
-        grant_id: input.grantId,
-        user_id: input.userId,
-        account_id: input.accountId,
-        client_id: input.clientId,
-        resource: input.resource,
-        scopes: input.scopes,
-        status: 'pending',
-        revoked_at: null,
-        created_at: new Date(),
-        updated_at: new Date()
+    const environmentIds = [...new Set(input.environmentIds)];
+    if (environmentIds.length === 0) {
+        throw new Error('Management MCP OAuth grants require at least one environment');
+    }
+
+    await db.knex.transaction(async (trx) => {
+        const now = new Date();
+        await trx<ManagementMcpOAuthGrant>(TABLE).insert({
+            grant_id: input.grantId,
+            user_id: input.userId,
+            account_id: input.accountId,
+            client_id: input.clientId,
+            resource: input.resource,
+            scopes: input.scopes,
+            status: 'pending',
+            revoked_at: null,
+            created_at: now,
+            updated_at: now
+        });
+        await trx(ENVIRONMENTS_TABLE).insert(
+            environmentIds.map((environmentId) => ({
+                grant_id: input.grantId,
+                environment_id: environmentId,
+                created_at: now,
+                updated_at: now
+            }))
+        );
     });
 }
 
@@ -95,6 +113,7 @@ export async function getManagementMcpOAuthGrantContext(grantId: string): Promis
     user: DBUser;
     account: DBTeam;
     plan: DBPlan | null;
+    environments: DBEnvironment[];
 } | null> {
     const row = await db.knex
         .select({
@@ -117,7 +136,22 @@ export async function getManagementMcpOAuthGrantContext(grantId: string): Promis
             plan: DBPlan | null;
         }>();
 
-    return row ?? null;
+    if (!row) {
+        return null;
+    }
+
+    const environments = await db
+        .knex<DBEnvironment>({ environment: '_nango_environments' })
+        .select<DBEnvironment[]>('environment.*')
+        .join({ grant_environment: ENVIRONMENTS_TABLE }, 'grant_environment.environment_id', 'environment.id')
+        .where({
+            'grant_environment.grant_id': grantId,
+            'environment.account_id': row.account.id,
+            'environment.deleted': false
+        })
+        .orderBy('environment.name', 'asc');
+
+    return { ...row, environments };
 }
 
 export async function deleteStalePendingManagementMcpOAuthGrants(): Promise<number> {

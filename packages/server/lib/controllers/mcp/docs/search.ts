@@ -1,10 +1,10 @@
-import { defineManagementMcpTool } from '../managementTool.js';
+import { defineManagementMcpAccountTool } from '../managementTool.js';
 import { docsMcpClient } from './client.js';
 import { searchDocsInputSchema, searchDocsOutputSchema } from './schema.js';
 
 import type { SearchDocsOutput } from './schema.js';
 
-export const searchDocsTool = defineManagementMcpTool<typeof searchDocsInputSchema, SearchDocsOutput>({
+export const searchDocsTool = defineManagementMcpAccountTool<typeof searchDocsInputSchema, SearchDocsOutput>({
     name: 'docs_search',
     description:
         'Search the Nango documentation for relevant guides, API references, and examples. Returns contextual snippets with titles and links. Use docs_query_filesystem to read the full content of a page returned by this tool.',

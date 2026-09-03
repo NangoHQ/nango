@@ -24,6 +24,8 @@ let db: typeof database;
 let seeders: typeof seedersType;
 let authenticateUser: AuthenticateUser;
 let originalEnv: Record<string, string | undefined>;
+let flags: { hasAuthRoles: boolean };
+let originalHasAuthRoles: boolean;
 
 describe('management MCP OAuth authorization server', () => {
     beforeAll(async () => {
@@ -44,12 +46,15 @@ describe('management MCP OAuth authorization server', () => {
         db = (await import('@nangohq/database')).default;
         seeders = (await import('@nangohq/shared')).seeders;
         const tests = await import('../../utils/tests.js');
+        flags = (await import('@nangohq/utils')).flags;
+        originalHasAuthRoles = flags.hasAuthRoles;
         authenticateUser = tests.authenticateUser;
         api = await tests.runServer();
     }, 60_000);
 
     afterAll(() => {
         api?.server.close();
+        flags.hasAuthRoles = originalHasAuthRoles;
         for (const [key, value] of Object.entries(originalEnv)) {
             if (value === undefined) {
                 delete process.env[key];
@@ -68,15 +73,20 @@ describe('management MCP OAuth authorization server', () => {
             token_endpoint: `${ISSUER}/token`,
             registration_endpoint: `${ISSUER}/register`,
             revocation_endpoint: `${ISSUER}/revoke`,
-            code_challenge_methods_supported: ['S256']
+            code_challenge_methods_supported: ['S256'],
+            client_id_metadata_document_supported: true
         });
+
+        const openIdMetadata = await fetch(`${api.url}/oauth/management-mcp/.well-known/openid-configuration`);
+        expect(openIdMetadata.status).toBe(200);
+        await expect(openIdMetadata.json()).resolves.toMatchObject({ client_id_metadata_document_supported: true });
 
         const protectedResource = await fetch(`${api.url}/.well-known/oauth-protected-resource/mcp`, { headers: { Host: 'localhost:3003' } });
         expect(protectedResource.status).toBe(200);
         await expect(protectedResource.json()).resolves.toMatchObject({
             resource: RESOURCE,
             authorization_servers: [ISSUER],
-            scopes_supported: ['environment:logs:read']
+            scopes_supported: ['environment:*']
         });
     });
 
@@ -86,9 +96,54 @@ describe('management MCP OAuth authorization server', () => {
         await expect(response.json()).resolves.toMatchObject({ error: 'invalid_redirect_uri' });
     });
 
+    it('resolves an unregistered client through CIMD', async () => {
+        const clientId = 'https://1.1.1.1/nango-management-mcp-client.json';
+        const redirectUri = 'http://127.0.0.1:49153/callback';
+        const nativeFetch = globalThis.fetch;
+        const metadataFetch = vi.fn((input: string | URL | Request) => {
+            const requestUrl = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+            if (requestUrl !== clientId) {
+                throw new Error(`Unexpected CIMD fetch: ${requestUrl}`);
+            }
+            return new Response(
+                JSON.stringify({
+                    client_id: clientId,
+                    client_name: 'CIMD integration test client',
+                    application_type: 'native',
+                    redirect_uris: [redirectUri],
+                    token_endpoint_auth_method: 'none',
+                    grant_types: ['authorization_code', 'refresh_token'],
+                    response_types: ['code']
+                }),
+                { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'max-age=60' } }
+            );
+        });
+        vi.stubGlobal('fetch', metadataFetch);
+
+        try {
+            const { getManagementMcpOAuthProvider } = await import('./oauth/provider.js');
+            const provider = getManagementMcpOAuthProvider();
+            if (!provider) {
+                throw new Error('OAuth provider was not initialized');
+            }
+
+            const client = await provider.Client.find(clientId);
+            expect(client?.metadata()).toMatchObject({
+                client_id: clientId,
+                client_name: 'CIMD integration test client',
+                redirect_uris: [redirectUri]
+            });
+            await expect(provider.Client.find(clientId)).resolves.toBeTruthy();
+            expect(metadataFetch).toHaveBeenCalledOnce();
+        } finally {
+            vi.stubGlobal('fetch', nativeFetch);
+        }
+    });
+
     it('completes code, refresh, MCP, and revocation flows without storing raw credentials', async () => {
-        const { user, account } = await seeders.seedAccountEnvAndUser();
-        await seeders.createEnvironmentSeed(account.id, 'prod');
+        const { user, account, env: devEnvironment } = await seeders.seedAccountEnvAndUser();
+        const prodEnvironment = await seeders.createEnvironmentSeed(account.id, 'prod');
+        const excludedEnvironment = await seeders.createEnvironmentSeed(account.id, 'excluded');
         const redirectUri = 'http://127.0.0.1:49152/callback';
         const registration = await registerClient([redirectUri]);
         const registrationBody = (await registration.json()) as { client_id: string; error?: string; error_description?: string };
@@ -103,7 +158,7 @@ describe('management MCP OAuth authorization server', () => {
             client_id: client.client_id,
             redirect_uri: redirectUri,
             state: 'test-state',
-            scope: 'environment:logs:read',
+            scope: 'environment:*',
             code_challenge: challenge,
             code_challenge_method: 'S256'
         });
@@ -130,8 +185,17 @@ describe('management MCP OAuth authorization server', () => {
             headers: { Cookie: jar.header() }
         });
         expect(detailsResponse.status).toBe(200);
-        const details = (await detailsResponse.json()) as { csrfToken: string; scope: string };
-        expect(details.scope).toBe('environment:logs:read');
+        const details = (await detailsResponse.json()) as {
+            csrfToken: string;
+            scope: string;
+            environments: { id: number; name: string; isProduction: boolean }[];
+        };
+        expect(details.scope).toBe('environment:*');
+        expect(details.environments.map(({ id, name }) => ({ id, name }))).toEqual([
+            { id: devEnvironment.id, name: 'dev' },
+            { id: excludedEnvironment.id, name: 'excluded' },
+            { id: prodEnvironment.id, name: 'prod' }
+        ]);
 
         const preflight = await fetch(`${api.url}/oauth/management-mcp/interaction/${interactionId}/approve`, {
             method: 'OPTIONS',
@@ -150,14 +214,22 @@ describe('management MCP OAuth authorization server', () => {
         const invalidCsrf = await fetch(`${api.url}/oauth/management-mcp/interaction/${interactionId}/approve`, {
             method: 'POST',
             headers: { Cookie: jar.header(), Origin: 'http://localhost:3000', 'Content-Type': 'application/json' },
-            body: JSON.stringify({ csrfToken: 'invalid' })
+            body: JSON.stringify({ csrfToken: 'invalid', environmentIds: [devEnvironment.id, prodEnvironment.id] })
         });
         expect(invalidCsrf.status).toBe(403);
+
+        const invalidEnvironments = await fetch(`${api.url}/oauth/management-mcp/interaction/${interactionId}/approve`, {
+            method: 'POST',
+            headers: { Cookie: jar.header(), Origin: 'http://localhost:3000', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ csrfToken: details.csrfToken, environmentIds: [devEnvironment.id, 2_147_483_647] })
+        });
+        expect(invalidEnvironments.status).toBe(403);
+        await expect(invalidEnvironments.json()).resolves.toMatchObject({ error: { code: 'invalid_environments' } });
 
         const approval = await fetch(`${api.url}/oauth/management-mcp/interaction/${interactionId}/approve`, {
             method: 'POST',
             headers: { Cookie: jar.header(), Origin: 'http://localhost:3000', 'Content-Type': 'application/json' },
-            body: JSON.stringify({ csrfToken: details.csrfToken })
+            body: JSON.stringify({ csrfToken: details.csrfToken, environmentIds: [devEnvironment.id, prodEnvironment.id] })
         });
         jar.add(approval.headers);
         expect(approval.status).toBe(200);
@@ -192,7 +264,7 @@ describe('management MCP OAuth authorization server', () => {
             code_verifier: verifier,
             resource: [RESOURCE, RESOURCE]
         });
-        expect(tokens).toMatchObject({ token_type: 'Bearer', scope: 'environment:logs:read' });
+        expect(tokens).toMatchObject({ token_type: 'Bearer', scope: 'environment:*' });
         expect(tokens.access_token).toBeTruthy();
         expect(tokens.refresh_token).toBeTruthy();
 
@@ -213,11 +285,7 @@ describe('management MCP OAuth authorization server', () => {
         const foundAccessToken = await provider.AccessToken.find(tokens.access_token);
         expect(foundAccessToken, JSON.stringify(adapterPayload)).toBeTruthy();
 
-        const missingEnvironment = await mcpRequest(tokens.access_token, { jsonrpc: '2.0', id: 1, method: 'tools/list' });
-        expect(missingEnvironment.status, JSON.stringify(missingEnvironment.json)).toBe(400);
-        expect(missingEnvironment.json).toMatchObject({ error: { code: 'environment_required' } });
-
-        const tools = await mcpRequest(tokens.access_token, { jsonrpc: '2.0', id: 2, method: 'tools/list' }, 'dev');
+        const tools = await mcpRequest(tokens.access_token, { jsonrpc: '2.0', id: 2, method: 'tools/list' });
         const accessTokenRow = await db
             .knex('_nango_mcp_oauth_provider_artifacts')
             .select('payload')
@@ -225,19 +293,147 @@ describe('management MCP OAuth authorization server', () => {
             .orderBy('created_at', 'desc')
             .first();
         const nangoGrant = await db.knex('_nango_mcp_oauth_grants').select('*').orderBy('created_at', 'desc').first();
+        const grantEnvironments = await db
+            .knex('_nango_mcp_oauth_grant_environments')
+            .select('environment_id')
+            .where({ grant_id: nangoGrant.grant_id })
+            .orderBy('environment_id', 'asc');
         expect(
             tools.status,
             JSON.stringify({ body: tools.json, challenge: tools.headers.get('www-authenticate'), token: accessTokenRow?.payload, grant: nangoGrant })
         ).toBe(200);
-        const toolsBody = tools.json as { result: { tools: { name: string }[] } };
-        expect(toolsBody.result.tools.map((tool) => tool.name)).toEqual(['docs_search', 'docs_query_filesystem', 'logs_list_operations', 'logs_get_operation']);
+        expect(grantEnvironments).toEqual(
+            [devEnvironment.id, prodEnvironment.id].sort((left, right) => left - right).map((environmentId) => ({ environment_id: environmentId }))
+        );
+        const toolsBody = tools.json as { result: { tools: { name: string; inputSchema: { required?: string[] } }[] } };
+        expect(toolsBody.result.tools.map((tool) => tool.name)).toEqual([
+            'docs_search',
+            'docs_query_filesystem',
+            'providers_get',
+            'environments_list',
+            'connect_session_create',
+            'integrations_list',
+            'integrations_get',
+            'integrations_create',
+            'integrations_update',
+            'integrations_delete',
+            'connections_list',
+            'connections_get',
+            'syncs_set_state',
+            'syncs_trigger',
+            'actions_trigger',
+            'proxy_request',
+            'functions_list',
+            'deploy_function',
+            'deploy_template',
+            'get_deployment_status',
+            'logs_list_operations',
+            'logs_get_operation'
+        ]);
+        expect(toolsBody.result.tools.find((tool) => tool.name === 'docs_search')?.inputSchema.required ?? []).not.toContain('environment');
+        expect(toolsBody.result.tools.find((tool) => tool.name === 'environments_list')?.inputSchema.required ?? []).not.toContain('environment');
+        expect(toolsBody.result.tools.find((tool) => tool.name === 'logs_list_operations')?.inputSchema.required).toContain('environment');
 
-        const unknownEnvironment = await mcpRequest(tokens.access_token, { jsonrpc: '2.0', id: 3, method: 'tools/list' }, 'unknown');
-        expect(unknownEnvironment.status).toBe(403);
-        expect(unknownEnvironment.json).toMatchObject({ error: { code: 'forbidden' } });
+        const environmentsList = await mcpRequest(tokens.access_token, {
+            jsonrpc: '2.0',
+            id: 3,
+            method: 'tools/call',
+            params: { name: 'environments_list', arguments: {} }
+        });
+        expect(environmentsList.status).toBe(200);
+        expect(environmentsList.json).toMatchObject({
+            result: {
+                structuredContent: {
+                    environments: [
+                        { name: 'dev', is_production: false },
+                        { name: 'prod', is_production: true }
+                    ]
+                }
+            }
+        });
 
-        const productionTools = await mcpRequest(tokens.access_token, { jsonrpc: '2.0', id: 4, method: 'tools/list' }, 'prod');
-        expect(productionTools.status).toBe(200);
+        flags.hasAuthRoles = true;
+        await db.knex('plans').where({ account_id: account.id }).update({ has_rbac: true });
+        await db.knex('_nango_users').where({ id: user.id }).update({ role: 'production_support' });
+
+        const toolsForProductionSupport = await mcpRequest(tokens.access_token, { jsonrpc: '2.0', id: 31, method: 'tools/list' });
+        expect((toolsForProductionSupport.json as { result: { tools: { name: string }[] } }).result.tools.map((tool) => tool.name)).toEqual(
+            toolsBody.result.tools.map((tool) => tool.name)
+        );
+
+        const readableProductionTool = await mcpRequest(tokens.access_token, {
+            jsonrpc: '2.0',
+            id: 32,
+            method: 'tools/call',
+            params: { name: 'integrations_list', arguments: { environment: prodEnvironment.name } }
+        });
+        expect(readableProductionTool.json).not.toMatchObject({ result: { isError: true } });
+
+        const forbiddenProductionTool = await mcpRequest(tokens.access_token, {
+            jsonrpc: '2.0',
+            id: 33,
+            method: 'tools/call',
+            params: { name: 'integrations_delete', arguments: { environment: prodEnvironment.name, integration_id: 'github' } }
+        });
+        expect(forbiddenProductionTool.json).toMatchObject({ result: { isError: true } });
+        expect(JSON.stringify(forbiddenProductionTool.json)).toContain('do not have permission');
+
+        await db.knex('_nango_users').where({ id: user.id }).update({ role: 'development_full_access' });
+        const environmentsAfterRoleDowngrade = await mcpRequest(tokens.access_token, {
+            jsonrpc: '2.0',
+            id: 34,
+            method: 'tools/call',
+            params: { name: 'environments_list', arguments: {} }
+        });
+        expect(environmentsAfterRoleDowngrade.json).toMatchObject({
+            result: { structuredContent: { environments: [{ name: 'dev' }] } }
+        });
+
+        await db.knex('_nango_users').where({ id: user.id }).update({ role: 'administrator' });
+        flags.hasAuthRoles = originalHasAuthRoles;
+
+        const authorizedCall = await mcpRequest(tokens.access_token, {
+            jsonrpc: '2.0',
+            id: 4,
+            method: 'tools/call',
+            params: { name: 'logs_list_operations', arguments: { environment: devEnvironment.name } }
+        });
+        expect(authorizedCall.status).toBe(200);
+        expect(authorizedCall.json).not.toMatchObject({ result: { isError: true } });
+
+        const excludedCall = await mcpRequest(tokens.access_token, {
+            jsonrpc: '2.0',
+            id: 5,
+            method: 'tools/call',
+            params: { name: 'logs_list_operations', arguments: { environment: excludedEnvironment.name } }
+        });
+        expect(excludedCall.status).toBe(200);
+        expect(excludedCall.json).toMatchObject({ result: { isError: true } });
+        expect(JSON.stringify(excludedCall.json)).toContain('not authorized for this OAuth session');
+
+        const addedAfterConsent = await seeders.createEnvironmentSeed(account.id, 'added-after-consent');
+        const futureEnvironmentCall = await mcpRequest(tokens.access_token, {
+            jsonrpc: '2.0',
+            id: 6,
+            method: 'tools/call',
+            params: { name: 'logs_list_operations', arguments: { environment: addedAfterConsent.name } }
+        });
+        expect(futureEnvironmentCall.status).toBe(200);
+        expect(futureEnvironmentCall.json).toMatchObject({ result: { isError: true } });
+
+        const queryCannotExpandGrant = await mcpRequest(tokens.access_token, { jsonrpc: '2.0', id: 7, method: 'tools/list' }, excludedEnvironment.name);
+        expect(queryCannotExpandGrant.status).toBe(200);
+
+        await db.knex('_nango_environments').where({ id: prodEnvironment.id }).update({ deleted: true, deleted_at: new Date() });
+        const afterEnvironmentDeletion = await mcpRequest(tokens.access_token, {
+            jsonrpc: '2.0',
+            id: 8,
+            method: 'tools/call',
+            params: { name: 'environments_list', arguments: {} }
+        });
+        expect(afterEnvironmentDeletion.json).toMatchObject({
+            result: { structuredContent: { environments: [{ name: 'dev' }] } }
+        });
 
         await expectTokenError(
             {
@@ -257,6 +453,16 @@ describe('management MCP OAuth authorization server', () => {
         expect(refreshed.access_token).not.toBe(tokens.access_token);
         expect(refreshed.refresh_token).not.toBe(tokens.refresh_token);
 
+        const refreshedEnvironments = await mcpRequest(refreshed.access_token, {
+            jsonrpc: '2.0',
+            id: 9,
+            method: 'tools/call',
+            params: { name: 'environments_list', arguments: {} }
+        });
+        expect(refreshedEnvironments.json).toMatchObject({
+            result: { structuredContent: { environments: [{ name: 'dev' }] } }
+        });
+
         const revocation = await fetch(`${api.url}/oauth/management-mcp/revoke`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -270,7 +476,7 @@ describe('management MCP OAuth authorization server', () => {
     });
 
     it('revokes active grants by operator selector', async () => {
-        const { user, account } = await seeders.seedAccountEnvAndUser();
+        const { user, account, env } = await seeders.seedAccountEnvAndUser();
         const grantId = crypto.randomBytes(32).toString('base64url');
         const accessToken = crypto.randomBytes(32).toString('base64url');
         const storageKey = 'nango-management-mcp-oauth-development-storage-key';
@@ -283,7 +489,8 @@ describe('management MCP OAuth authorization server', () => {
             accountId: account.id,
             clientId: 'operator-revocation-test-client',
             resource: RESOURCE,
-            scopes: ['environment:logs:read']
+            scopes: ['environment:*'],
+            environmentIds: [env.id]
         });
         await activateManagementMcpOAuthGrant(grantId);
         const adapter = new ManagementMcpOAuthAdapter('AccessToken', storageKey);
@@ -305,7 +512,7 @@ async function registerClient(redirectUris: string[]): Promise<Response> {
             token_endpoint_auth_method: 'none',
             grant_types: ['authorization_code', 'refresh_token'],
             response_types: ['code'],
-            scope: 'environment:logs:read'
+            scope: 'environment:*'
         })
     });
 }

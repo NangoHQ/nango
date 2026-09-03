@@ -1,7 +1,6 @@
-import { environmentService } from '@nangohq/shared';
 import { metrics } from '@nangohq/utils';
 
-import { authorizes } from '../../authz/resolve.js';
+import { getAuthorizedManagementMcpEnvironments } from './oauth/access.js';
 import { managementMcpOAuthArtifactExists } from './oauth/adapter.js';
 import { getManagementMcpOAuthConfig, isManagementMcpOAuthEnabled, MANAGEMENT_MCP_OAUTH_SCOPE } from './oauth/config.js';
 import { getManagementMcpOAuthGrantContext } from './oauth/grant.js';
@@ -88,44 +87,17 @@ export const managementOAuthAuth: RequestHandler = async (req, res, next) => {
     locals.account = context.account;
     locals.plan = context.plan;
     locals.mcpOAuthScopes = [MANAGEMENT_MCP_OAUTH_SCOPE];
-
-    const environmentSummaries = await environmentService.getEnvironmentsByAccountId(context.account.id);
-    const environments = (
-        await Promise.all(environmentSummaries.map((environment) => environmentService.getByIdWithoutSecrets(environment.id, context.account.id)))
-    ).filter((environment): environment is NonNullable<typeof environment> => environment !== null);
-    const requestedEnvironment = parseEnvironmentName(req.query['environment']);
-    if (requestedEnvironment === null) {
-        res.status(400).json({ error: { code: 'invalid_environment', message: 'The environment query parameter must be a valid environment name.' } });
-        return;
-    }
-
-    const authorizedEnvironments = environments.filter((environment) => {
-        locals.environment = environment;
-        delete locals.principal;
-        return authorizes(locals, MANAGEMENT_MCP_OAUTH_SCOPE);
+    const authorizedEnvironments = await getAuthorizedManagementMcpEnvironments({
+        user: context.user,
+        account: context.account,
+        plan: context.plan,
+        environments: context.environments
     });
-    const environment =
-        requestedEnvironment === undefined
-            ? authorizedEnvironments.length === 1
-                ? authorizedEnvironments[0]
-                : undefined
-            : authorizedEnvironments.find((candidate) => candidate.name === requestedEnvironment);
-    if (!environment) {
-        delete locals.environment;
-        delete locals.principal;
-        const missingSelection = requestedEnvironment === undefined && authorizedEnvironments.length > 1;
-        res.status(missingSelection ? 400 : 403).json({
-            error: {
-                code: missingSelection ? 'environment_required' : 'forbidden',
-                message: missingSelection
-                    ? 'Select an environment by adding ?environment=<name> to the Management MCP URL.'
-                    : 'OAuth grant is not authorized for an environment.'
-            }
-        });
+    if (authorizedEnvironments.length === 0) {
+        sendBearerChallenge(res, 'insufficient_scope', 403);
         return;
     }
-    locals.environment = environment;
-    delete locals.principal;
+    locals.mcpOAuthEnvironments = authorizedEnvironments;
     next();
 };
 
@@ -144,14 +116,7 @@ function getProtectedResourceMetadata(): OAuthProtectedResourceMetadata {
     };
 }
 
-function parseEnvironmentName(value: unknown): string | null | undefined {
-    if (value === undefined) {
-        return undefined;
-    }
-    return typeof value === 'string' && value.length > 0 && value.length <= 255 ? value : null;
-}
-
-function getAuthorizationServerMetadata(): OAuthMetadata {
+function getAuthorizationServerMetadata(): OAuthMetadata & { client_id_metadata_document_supported: true } {
     const { issuer } = getManagementMcpOAuthConfig();
     return {
         issuer,
@@ -164,7 +129,8 @@ function getAuthorizationServerMetadata(): OAuthMetadata {
         grant_types_supported: ['authorization_code', 'refresh_token'],
         token_endpoint_auth_methods_supported: ['none'],
         code_challenge_methods_supported: ['S256'],
-        scopes_supported: [MANAGEMENT_MCP_OAUTH_SCOPE]
+        scopes_supported: [MANAGEMENT_MCP_OAUTH_SCOPE],
+        client_id_metadata_document_supported: true
     };
 }
 

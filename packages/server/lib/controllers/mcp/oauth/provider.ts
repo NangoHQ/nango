@@ -1,13 +1,13 @@
 import { errors, interactionPolicy, Provider } from 'oidc-provider';
 
-import { userService } from '@nangohq/shared';
+import { assertSafeOAuthUrl, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { ManagementMcpOAuthAdapter } from './adapter.js';
 import { getManagementMcpOAuthConfig, isManagementMcpOAuthEnabled, MANAGEMENT_MCP_OAUTH_SCOPE } from './config.js';
 import { revokeManagementMcpOAuthGrant } from './grant.js';
 
-import type { ClientMetadata, Configuration } from 'oidc-provider';
+import type { Client, ClientMetadata, Configuration } from 'oidc-provider';
 
 const logger = getLogger('Server.ManagementMcpOAuth.Provider');
 let provider: Provider | null | undefined;
@@ -46,6 +46,30 @@ export function getManagementMcpOAuthProvider(): Provider | null {
         },
         features: {
             devInteractions: { enabled: false },
+            clientIdMetadataDocument: {
+                enabled: true,
+                ack: 'draft-01',
+                allowFetch: async (_ctx: unknown, clientId: string) => {
+                    try {
+                        await assertSafeOAuthUrl(clientId);
+                        return true;
+                    } catch {
+                        recordOAuthEvent('cimd_metadata_fetch', 'failure');
+                        return false;
+                    }
+                },
+                allowClient: (_ctx: unknown, client: Client) => {
+                    try {
+                        validateRegisteredClient(client.metadata());
+                        recordOAuthEvent('cimd_client_resolved', 'success');
+                        return true;
+                    } catch {
+                        recordOAuthEvent('cimd_client_resolved', 'failure');
+                        return false;
+                    }
+                },
+                cacheDuration: { min: 30, max: 60 * 60 }
+            },
             registration: {
                 enabled: true,
                 initialAccessToken: false,
@@ -86,6 +110,14 @@ export function getManagementMcpOAuthProvider(): Provider | null {
             dPoP: { enabled: false },
             requestObjects: { enabled: false },
             claimsParameter: { enabled: false }
+        } as NonNullable<Configuration['features']> & {
+            clientIdMetadataDocument: {
+                enabled: boolean;
+                ack: string;
+                allowFetch: (ctx: unknown, clientId: string) => Promise<boolean>;
+                allowClient: (ctx: unknown, client: Client) => boolean | Promise<boolean>;
+                cacheDuration: { min: number; max: number };
+            };
         },
         enabledJWA: { idTokenSigningAlgValues: ['ES256'] },
         expiresWithSession: () => false,

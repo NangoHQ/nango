@@ -1,10 +1,10 @@
-import { defineManagementMcpTool } from '../managementTool.js';
+import { defineManagementMcpAccountTool } from '../managementTool.js';
 import { docsMcpClient } from './client.js';
 import { queryDocsFilesystemInputSchema, queryDocsFilesystemOutputSchema } from './schema.js';
 
 import type { QueryDocsFilesystemOutput } from './schema.js';
 
-export const queryDocsFilesystemTool = defineManagementMcpTool<typeof queryDocsFilesystemInputSchema, QueryDocsFilesystemOutput>({
+export const queryDocsFilesystemTool = defineManagementMcpAccountTool<typeof queryDocsFilesystemInputSchema, QueryDocsFilesystemOutput>({
     name: 'docs_query_filesystem',
     description:
         "Run a read-only shell-like command against Mintlify's virtual Nango documentation filesystem. Use this to read full pages, browse the documentation structure, or perform exact text searches. Supported commands include rg, grep, find, tree, ls, cat, head, tail, sed, awk, and jq. The filesystem is an isolated documentation sandbox, not the Nango server or the caller's computer.",

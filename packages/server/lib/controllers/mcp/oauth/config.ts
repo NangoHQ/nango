@@ -4,7 +4,7 @@ import { envs } from '../../../env.js';
 
 import type { JWKS } from 'oidc-provider';
 
-export const MANAGEMENT_MCP_OAUTH_SCOPE = 'environment:logs:read';
+export const MANAGEMENT_MCP_OAUTH_SCOPE = 'environment:*';
 export const MANAGEMENT_MCP_OAUTH_PROVIDER_PATH = '/oauth/management-mcp';
 
 const DEV_COOKIE_KEYS = ['nango-management-mcp-oauth-development-key-1', 'nango-management-mcp-oauth-development-key-2'];

@@ -15,6 +15,7 @@ import { getDeploymentStatusTool } from './functions/getDeploymentStatus.js';
 import { listFunctionsTool } from './functions/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
+import { listIntegrationsTool } from './integrations/list.js';
 import { updateIntegrationsTool } from './integrations/update.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { createManagementMcpServer } from './managementServer.js';
@@ -26,11 +27,14 @@ import { withoutUnscopedTools } from './testUtils.js';
 import { PublicMcpError } from './utils.js';
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
+
+const originalHasAuthRoles = flags.hasAuthRoles;
 
 describe('createManagementMcpServer', () => {
     afterEach(() => {
         flags.hasAuditTrail = false;
+        flags.hasAuthRoles = originalHasAuthRoles;
         vi.restoreAllMocks();
     });
 
@@ -172,6 +176,141 @@ describe('createManagementMcpServer', () => {
                 expect(tool.inputSchema['$schema']).toBe('https://json-schema.org/draft/2020-12/schema');
                 expect(tool.outputSchema?.['$schema']).toBe('https://json-schema.org/draft/2020-12/schema');
             }
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('lists and centrally resolves environments for OAuth tool calls', async () => {
+        const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+        const dev = fakeEnvironment();
+        const prod = fakeEnvironment({ id: 2, uuid: 'prod-environment', name: 'prod', is_production: true });
+        const server = createManagementMcpServer({
+            account: fakeAccount(),
+            authorizedEnvironments: [dev, prod],
+            user: fakeUser(),
+            plan: null,
+            grantedScopes: ['environment:*']
+        });
+        const client = new Client({ name: 'test-client', version: '1.0.0' });
+        const response = { operations: [], pagination: { total: 0, cursor: null } };
+        const handlerSpy = vi.spyOn(listLogOperationsTool, 'handler').mockResolvedValue(Ok(response));
+
+        try {
+            await server.connect(serverTransport);
+            await client.connect(clientTransport);
+
+            const tools = await client.listTools();
+            expect(tools.tools.map((tool) => tool.name)).toStrictEqual([
+                'docs_search',
+                'docs_query_filesystem',
+                'providers_get',
+                'environments_list',
+                'connect_session_create',
+                'integrations_list',
+                'integrations_get',
+                'integrations_create',
+                'integrations_update',
+                'integrations_delete',
+                'connections_list',
+                'connections_get',
+                'syncs_set_state',
+                'syncs_trigger',
+                'actions_trigger',
+                'proxy_request',
+                'functions_list',
+                'deploy_function',
+                'deploy_template',
+                'get_deployment_status',
+                'logs_list_operations',
+                'logs_get_operation'
+            ]);
+            expect(tools.tools.find((tool) => tool.name === 'docs_search')?.inputSchema.required ?? []).not.toContain('environment');
+            expect(tools.tools.find((tool) => tool.name === 'providers_get')?.inputSchema.required ?? []).not.toContain('environment');
+            expect(tools.tools.find((tool) => tool.name === 'environments_list')?.inputSchema.required ?? []).not.toContain('environment');
+            expect(tools.tools.find((tool) => tool.name === 'logs_list_operations')?.inputSchema.required).toContain('environment');
+
+            await expect(client.callTool({ name: 'environments_list', arguments: {} })).resolves.toMatchObject({
+                structuredContent: {
+                    environments: [
+                        { name: 'dev', is_production: false },
+                        { name: 'prod', is_production: true }
+                    ]
+                }
+            });
+
+            await expect(client.callTool({ name: 'logs_list_operations', arguments: { environment: 'prod' } })).resolves.toMatchObject({
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenLastCalledWith({}, expect.objectContaining({ environment: prod }));
+
+            await expect(client.callTool({ name: 'logs_list_operations', arguments: { environment: 'excluded' } })).resolves.toMatchObject({
+                isError: true
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('lists every OAuth tool while enforcing the current user role for each target environment', async () => {
+        flags.hasAuthRoles = true;
+        const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+        const dev = fakeEnvironment();
+        const prod = fakeEnvironment({ id: 2, uuid: 'prod-environment', name: 'prod', is_production: true });
+        const user = fakeUser({ role: 'production_support' });
+        const server = createManagementMcpServer({
+            account: fakeAccount(),
+            authorizedEnvironments: [dev, prod],
+            user,
+            plan: null,
+            grantedScopes: ['environment:*']
+        });
+        const client = new Client({ name: 'test-client', version: '1.0.0' });
+        const listHandlerSpy = vi.spyOn(listIntegrationsTool, 'handler').mockResolvedValue(Ok({ data: [] }));
+        const deleteHandlerSpy = vi.spyOn(deleteIntegrationsTool, 'handler').mockResolvedValue(Ok({ success: true }));
+
+        try {
+            await server.connect(serverTransport);
+            await client.connect(clientTransport);
+
+            const tools = await client.listTools();
+            expect(tools.tools).toHaveLength(22);
+            expect(tools.tools.map((tool) => tool.name)).toContain('integrations_delete');
+
+            await expect(client.callTool({ name: 'integrations_list', arguments: { environment: 'prod' } })).resolves.toMatchObject({
+                structuredContent: { data: [] }
+            });
+            expect(listHandlerSpy).toHaveBeenLastCalledWith(
+                {},
+                expect.objectContaining({
+                    environment: prod,
+                    grantedScopes: expect.arrayContaining(['environment:integrations:list'])
+                })
+            );
+            const prodContext = listHandlerSpy.mock.calls.at(-1)?.[1];
+            expect(prodContext?.grantedScopes).not.toContain('environment:integrations:read_credentials');
+            expect(prodContext?.grantedScopes).not.toContain('environment:integrations:delete');
+
+            await expect(client.callTool({ name: 'integrations_delete', arguments: { environment: 'prod', integration_id: 'github' } })).resolves.toMatchObject(
+                { isError: true }
+            );
+            expect(deleteHandlerSpy).not.toHaveBeenCalled();
+
+            await expect(client.callTool({ name: 'integrations_delete', arguments: { environment: 'dev', integration_id: 'github' } })).resolves.toMatchObject({
+                structuredContent: { success: true }
+            });
+            expect(deleteHandlerSpy).toHaveBeenLastCalledWith(
+                { integration_id: 'github' },
+                expect.objectContaining({ environment: dev, grantedScopes: expect.arrayContaining(['environment:integrations:delete']) })
+            );
+
+            user.role = 'development_full_access';
+            await expect(client.callTool({ name: 'integrations_list', arguments: { environment: 'prod' } })).resolves.toMatchObject({ isError: true });
+            expect(listHandlerSpy).toHaveBeenCalledOnce();
         } finally {
             await client.close();
             await server.close();
@@ -1369,7 +1508,17 @@ function fakeAccount(): DBTeam {
     };
 }
 
-function fakeEnvironment(): DBEnvironment {
+function fakeUser(overrides: Partial<DBUser> = {}): DBUser {
+    return {
+        id: 1,
+        account_id: 1,
+        email: 'test@nango.dev',
+        role: 'administrator',
+        ...overrides
+    } as DBUser;
+}
+
+function fakeEnvironment(overrides: Partial<DBEnvironment> = {}): DBEnvironment {
     const now = new Date();
     return {
         id: 1,
@@ -1394,6 +1543,7 @@ function fakeEnvironment(): DBEnvironment {
         deleted_at: null,
         deleted: false,
         created_at: now,
-        updated_at: now
+        updated_at: now,
+        ...overrides
     };
 }
