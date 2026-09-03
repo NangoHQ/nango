@@ -13,11 +13,10 @@ const logger = getLogger('audit');
 
 const AUDIT_RETENTION_DAYS = 365;
 const READ_QUERY_MAX_EXECUTION_SECONDS = 30;
-// Shorter than the list's: the count is optional to the response, so an unbounded window on a large
-// account gives up rather than holding the read open.
+// Shorter than the list's: the count is optional to the response, so a heavy one gives up rather than holding the read open.
 const COUNT_QUERY_MAX_EXECUTION_SECONDS = 5;
 
-// Shared by the list and the count so the number can never describe a different set than the rows under it.
+// One source of the filter, so the count and the list can never describe different sets.
 function buildFilter({ accountId, from, to, resources, actions }: AuditTrailFilter): { conditions: string[]; params: Record<string, unknown> } {
     const params: Record<string, unknown> = { account_id: accountId };
     const conditions = ['account_id = {account_id:Int64}'];
@@ -134,12 +133,11 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
         }
     }
 
-    // `uniqExact(id)` rather than `count()`: the engine is a ReplacingMergeTree, so a redelivery sits as a
-    // second row until a merge collapses it, and a plain count would report it. `FINAL` would also be exact
-    // but rewrites the read the way the ORDER BY short-circuit above avoids.
     async count(filter: AuditTrailFilter): Promise<Result<number>> {
         const { conditions, params } = buildFilter(filter);
 
+        // Not `count()`: this is a ReplacingMergeTree, so a redelivery sits as a second row until a merge
+        // collapses it. `FINAL` is exact too, but gives up the ORDER BY short-circuit the list read needs.
         const sql = `
             SELECT uniqExact(id) AS total
             FROM audit_trail_events

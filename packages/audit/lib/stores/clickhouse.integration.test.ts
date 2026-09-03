@@ -224,7 +224,7 @@ describe('ClickhouseAuditStore.list deduplication', () => {
             await insertEvent({ id: dupe, accountId: 11, occurredAt: at(5000) });
             await insertEvent({ id: other, accountId: 11, occurredAt: at(6000) });
 
-            // Three rows in storage, two distinct events — the gap a plain count() would report.
+            // Without this the test passes on a table where the copy already merged away.
             const raw = await client.query({
                 query: `SELECT count() AS c FROM ${database}.audit_trail_events WHERE account_id = 11`,
                 format: 'JSONEachRow'

@@ -186,7 +186,7 @@ describe('GET /api/v1/audit-trail', () => {
     it('counts every match, not just the page, and narrows the count with the filters', async () => {
         const { session, account } = await authAdmin();
         const base = Date.parse('2026-07-16T10:00:00.000Z');
-        // 26 connection events — one past the page size — plus one of another resource.
+        // One past the page size, so the total can't be mistaken for the page length.
         for (let i = 0; i < 26; i++) {
             (await emitter.record(auditEvent(account.id, new Date(base + i * 1000).toISOString(), { resource: 'connection', action: 'deleted' }))).unwrap();
         }

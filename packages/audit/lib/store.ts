@@ -6,7 +6,6 @@ export interface AuditTrailCursor {
     id: string;
 }
 
-/** Split from the paging half so the count can take the same shape as the list. */
 export interface AuditTrailFilter {
     accountId: number;
     from?: string | undefined;
