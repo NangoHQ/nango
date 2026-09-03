@@ -74,7 +74,7 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
         };
     } finally {
         await sandbox.stop().catch((err: unknown) => {
-            logger.debug('Failed to stop compiler sandbox', err);
+            logger.warning('Failed to stop compiler sandbox', err);
         });
     }
 }

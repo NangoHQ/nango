@@ -94,9 +94,11 @@ function startCommand(payload) {
         throw new Error('A command is already running in this runtime session');
     }
 
-    // payload.command is produced by buildCommand() in packages/sandbox/lib/providers/agentcore.ts
-    // via shellQuote() and runs inside the isolated AgentCore microVM. Only internal Nango
-    // code can invoke this adapter; user sync code does not reach here directly.
+    // payload.command is passed raw from AgentCoreSandbox.startCommand (params.command),
+    // not wrapped by buildCommand()/shellQuote() — that helper only wraps the separate
+    // runCommand path. It is run via sh -lc inside the isolated AgentCore microVM.
+    // Only internal Nango code can invoke this adapter; user sync code does not
+    // reach here directly.
     const child = spawn('sh', ['-lc', payload.command], {
         cwd: workspacePath,
         detached: true,

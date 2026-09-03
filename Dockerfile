@@ -100,12 +100,17 @@ RUN true \
   && apt-get purge -y --auto-remove --allow-remove-essential -o APT::AutoRemove::RecommendsImportant=false perl-base \
   && rm -rf /var/lib/apt/lists/*
 
-USER node
+# Do not use root to run the app — but restrictive secret mounts (TLS/Redis, 0400)
+# cause EACCES for UID 1000 at startup/reconnects. Keep root for now;
+# align mount permissions before switching to USER node.
+# TODO: ensure mounts are readable by node (UID 1000) then enable USER node
+# USER node
 
 WORKDIR /app/nango
 
 # Code
-COPY --from=build --chown=node:node /app/tmp /app/nango
+# COPY --from=build --chown=node:node /app/tmp /app/nango
+COPY --from=build /app/tmp /app/nango
 
 ARG git_hash
 

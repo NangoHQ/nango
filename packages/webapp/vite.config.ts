@@ -110,9 +110,15 @@ export default defineConfig(() => {
                         if (id.includes('node_modules')) {
                             if (id.includes('recharts')) return 'charts';
                             if (id.includes('@mantine')) return 'mantine';
-                            if (id.includes('@tanstack')) return 'query';
+                            if (id.includes('node_modules/@tanstack/react-query') || id.includes('node_modules/@tanstack/query-core')) return 'query';
                             if (id.includes('date-fns') || id.includes('lodash-es') || id.includes('fuse.js')) return 'utils';
-                            if (id.includes('react')) return 'vendor';
+                            if (
+                                id.includes('node_modules/react/') ||
+                                id.includes('node_modules/react-dom/') ||
+                                id.includes('node_modules/scheduler/') ||
+                                id.includes('node_modules/react-router')
+                            )
+                                return 'vendor';
                         }
                     }
                 }

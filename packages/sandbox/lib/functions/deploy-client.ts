@@ -82,13 +82,13 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
             },
             kill: async () => {
                 await sandbox.stop().catch((err: unknown) => {
-                    logger.debug('Failed to stop deploy sandbox', err);
+                    logger.warning('Failed to stop deploy sandbox', err);
                 });
             }
         };
     } catch (err) {
         await sandbox.stop().catch((stopErr: unknown) => {
-            logger.debug('Failed to stop deploy sandbox during cleanup', stopErr);
+            logger.warning('Failed to stop deploy sandbox during cleanup', stopErr);
         });
         throw err;
     }

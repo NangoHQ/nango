@@ -102,13 +102,13 @@ export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<P
             },
             kill: async () => {
                 await sandbox.stop().catch((err: unknown) => {
-                    logger.debug('Failed to stop dryrun sandbox', err);
+                    logger.warning('Failed to stop dryrun sandbox', err);
                 });
             }
         };
     } catch (err) {
         await sandbox.stop().catch((stopErr: unknown) => {
-            logger.debug('Failed to stop dryrun sandbox during cleanup', stopErr);
+            logger.warning('Failed to stop dryrun sandbox during cleanup', stopErr);
         });
         throw err;
     }
