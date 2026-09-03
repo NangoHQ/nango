@@ -307,9 +307,9 @@ export class DispatchQueueConsumer {
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
                 await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
             } else if (result.error.name === 'task_cap_exceeded') {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'task_cap_deferred', provider, providerConfigKey });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'task_cap', provider, providerConfigKey });
                 if (this.taskCapDeferMs > 0) {
-                    await this.deferGroup(group, this.taskCapDeferMs);
+                    await this.deferGroup(group, Math.max(this.taskCapDeferMs, this.visibilityTimeoutSeconds * 1000));
                 }
             } else {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider, providerConfigKey });

@@ -215,7 +215,29 @@ describe('DispatchQueueConsumer', () => {
         });
 
         expect(getDeleteCalls(h)).toHaveLength(1);
-        expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-1', VisibilityTimeout: 15 }]);
+        expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-1', VisibilityTimeout: 30 }]);
+    });
+
+    it('never defers a task-cap message for less than the visibility timeout it already had', async () => {
+        const h = makeHarness({ messages: [buildMessage()], taskCapDeferMs: 5_000 });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(Ok([Err({ name: 'task_cap_exceeded', message: 'cap', payload: {} })]));
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-0', VisibilityTimeout: 30 }]);
+    });
+
+    it('defers a task-cap message for longer than the visibility timeout when asked to', async () => {
+        const h = makeHarness({ messages: [buildMessage()], taskCapDeferMs: 120_000 });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(Ok([Err({ name: 'task_cap_exceeded', message: 'cap', payload: {} })]));
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-0', VisibilityTimeout: 120 }]);
     });
 
     it('leaves task-cap messages on their current visibility timeout when deferral is disabled', async () => {
