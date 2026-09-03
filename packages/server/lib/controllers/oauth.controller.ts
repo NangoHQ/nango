@@ -12,6 +12,7 @@ import {
     accountService,
     assertSafeOAuthUrl,
     configService,
+    ConnectionCreationCappedError,
     connectionService,
     environmentService,
     errorManager,
@@ -1256,6 +1257,7 @@ class OAuthController {
         }
 
         let logCtx: LogContext | undefined;
+        let connectionCreationContext: { environment: DBEnvironment; account: DBTeam; config: ProviderConfig } | undefined;
 
         const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
@@ -1285,6 +1287,7 @@ class OAuthController {
             }
 
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
+            connectionCreationContext = { environment, account, config };
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
             const usesStateCookie =
@@ -1352,6 +1355,33 @@ class OAuthController {
             await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
             return;
         } catch (err) {
+            if (err instanceof ConnectionCreationCappedError) {
+                void logCtx?.error(err.message);
+                await logCtx?.failed();
+                if (connectionCreationContext) {
+                    void connectionCreationFailedHook(
+                        {
+                            connection: {
+                                connection_id: connectionId,
+                                provider_config_key: providerConfigKey,
+                                webhook_url_override: session.webhookUrlOverride
+                            },
+                            environment: connectionCreationContext.environment,
+                            account: connectionCreationContext.account,
+                            auth_mode: session.authMode,
+                            error: {
+                                type: 'resource_capped',
+                                description: err.message
+                            },
+                            operation: 'unknown'
+                        },
+                        connectionCreationContext.account,
+                        connectionCreationContext.config
+                    );
+                }
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.ResourceCapped());
+            }
+
             const prettyError = stringifyError(err, { pretty: true });
 
             errorManager.report(err, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.AUTH, environmentId: session.environmentId });
@@ -2091,6 +2121,30 @@ class OAuthController {
             }
             return;
         } catch (err) {
+            if (err instanceof ConnectionCreationCappedError) {
+                void logCtx.error(err.message);
+                await logCtx.failed();
+                void connectionCreationFailedHook(
+                    {
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
+                        environment,
+                        account,
+                        auth_mode: provider.auth_mode,
+                        error: {
+                            type: 'resource_capped',
+                            description: err.message
+                        },
+                        operation: 'unknown'
+                    },
+                    account,
+                    config
+                );
+                if (res) {
+                    return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.ResourceCapped());
+                }
+                throw err;
+            }
+
             const prettyError = stringifyError(err, { pretty: true });
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -2455,6 +2509,31 @@ class OAuthController {
                 });
             })
             .catch(async (err: unknown) => {
+                if (err instanceof ConnectionCreationCappedError) {
+                    void logCtx.error(err.message);
+                    await logCtx.failed();
+                    void connectionCreationFailedHook(
+                        {
+                            connection: {
+                                connection_id: connectionId,
+                                provider_config_key: providerConfigKey,
+                                webhook_url_override: session.webhookUrlOverride
+                            },
+                            environment,
+                            account,
+                            auth_mode: provider.auth_mode,
+                            error: {
+                                type: 'resource_capped',
+                                description: err.message
+                            },
+                            operation: 'unknown'
+                        },
+                        account,
+                        config
+                    );
+                    return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.ResourceCapped());
+                }
+
                 errorManager.report(err, {
                     source: ErrorSourceEnum.PLATFORM,
                     operation: LogActionEnum.AUTH,
@@ -2637,6 +2716,27 @@ class OAuthController {
                 connectionId
             });
         } catch (err) {
+            if (err instanceof ConnectionCreationCappedError) {
+                void logCtx.error(err.message);
+                await logCtx.failed();
+                void connectionCreationFailedHook(
+                    {
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
+                        environment,
+                        account,
+                        auth_mode: provider.auth_mode,
+                        error: {
+                            type: 'resource_capped',
+                            description: err.message
+                        },
+                        operation: 'unknown'
+                    },
+                    account,
+                    config
+                );
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.ResourceCapped());
+            }
+
             const prettyError = stringifyError(err, { pretty: true });
 
             errorManager.report(err, {

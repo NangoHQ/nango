@@ -19,7 +19,7 @@ import { refreshMcpGenericCredentials } from '../clients/mcpGeneric.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
-import { NangoError } from '../utils/error.js';
+import { ConnectionCreationCappedError, NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
 import {
     extractStepNumber,
@@ -223,6 +223,42 @@ export class ConnectionService {
         return uuidv4();
     }
 
+    public async enforceCreationCap(environmentId: number): Promise<void> {
+        const cappedPlan = await db.knex
+            .from({ target_environment: '_nango_environments' })
+            .join({ plan: 'plans' }, 'plan.account_id', 'target_environment.account_id')
+            .leftJoin({ account_environment: '_nango_environments' }, function () {
+                this.on('account_environment.account_id', 'target_environment.account_id').andOn('account_environment.deleted', db.knex.raw('false'));
+            })
+            .leftJoin({ connection: '_nango_connections' }, function () {
+                this.on('connection.environment_id', 'account_environment.id').andOn('connection.deleted', db.knex.raw('false'));
+            })
+            .select({
+                limit: 'plan.connections_max'
+            })
+            .count<{ connectionCount: string; limit: number }>({ connectionCount: 'connection.id' })
+            .where('target_environment.id', environmentId)
+            .where('target_environment.deleted', false)
+            .whereNotNull('plan.connections_max')
+            .groupBy('plan.connections_max')
+            .havingRaw('COUNT(connection.id) >= plan.connections_max')
+            .first();
+
+        if (!cappedPlan) {
+            return;
+        }
+
+        this.logCreationCapReached({ connectionCount: Number(cappedPlan.connectionCount), limit: cappedPlan.limit });
+        throw new ConnectionCreationCappedError();
+    }
+
+    private logCreationCapReached({ connectionCount, limit }: { connectionCount: number; limit: number }): void {
+        logger.info(
+            'You reached the maximum number of connections on your plan. Attempts to create new connections will be blocked. Upgrade your account, or delete some connections to add new ones.',
+            { connectionCount, limit }
+        );
+    }
+
     public async upsertConnection({
         connectionId,
         providerConfigKey,
@@ -272,6 +308,8 @@ export class ConnectionService {
 
             return [{ connection: connection[0]!, operation: 'override' }];
         }
+
+        await this.enforceCreationCap(environmentId);
 
         const { id, ...data } = getEncryptionManager().encryptConnection({
             connection_id: connectionId,
@@ -331,6 +369,10 @@ export class ConnectionService {
     }): Promise<ConnectionUpsertResponse[]> {
         return await db.knex.transaction(async (trx) => {
             const exists = await this.checkIfConnectionExists(trx, { connectionId, providerConfigKey, environmentId: environment.id });
+
+            if (!exists) {
+                await this.enforceCreationCap(environment.id);
+            }
 
             const { id, ...encryptedConnection } = getEncryptionManager().encryptConnection({
                 connection_id: connectionId,
@@ -428,6 +470,9 @@ export class ConnectionService {
 
             return [{ connection: connection[0]!, operation: 'override' }];
         }
+
+        await this.enforceCreationCap(environment.id);
+
         const connection = await db.knex
             .from<DBConnection>(`_nango_connections`)
             .insert({

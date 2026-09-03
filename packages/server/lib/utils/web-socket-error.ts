@@ -144,6 +144,13 @@ export function FailedCredentialsCheck(errorMessage: string): WSErr {
     };
 }
 
+export function ResourceCapped(): WSErr {
+    return {
+        type: 'resource_capped',
+        message: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.'
+    };
+}
+
 export function UnknownError(errorMessage?: string): WSErr {
     return {
         type: 'unknown_err',

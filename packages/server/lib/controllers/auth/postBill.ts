@@ -5,6 +5,7 @@ import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@na
 import {
     billClient,
     configService,
+    ConnectionCreationCappedError,
     connectionService,
     errorManager,
     ErrorSourceEnum,
@@ -282,6 +283,10 @@ export const postPublicBillAuthorization = asyncWrapperWithEnvironment<PostPubli
             ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
         });
 
+        if (err instanceof ConnectionCreationCappedError) {
+            res.status(err.status).send({ error: { code: 'resource_capped', message: err.message } });
+            return;
+        }
         next(err);
     }
 });

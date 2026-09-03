@@ -5,7 +5,9 @@ import db, { multipleMigrations } from '@nangohq/database';
 import { createConfigSeed, createConfigSeeds, createPreprovisionedProviderConfigSeed } from '../seeders/config.seeder.js';
 import { createConnectionSeed, createConnectionSeeds, getTestConnection } from '../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
+import { seedAccountEnvAndUser } from '../seeders/global.seeder.js';
 import { createSyncSeeds } from '../seeders/sync.seeder.js';
+import { ConnectionCreationCappedError } from '../utils/error.js';
 import connectionService from './connection.service.js';
 import { errorNotificationService } from './notification/error.service.js';
 
@@ -15,6 +17,46 @@ import type { Metadata } from '@nangohq/types';
 describe('Connection service integration tests', () => {
     beforeAll(async () => {
         await multipleMigrations();
+    });
+
+    describe('connection cap', () => {
+        it('rejects inserting a new connection at the cap', async () => {
+            const { env } = await seedAccountEnvAndUser({ plan: { connections_max: 0 } });
+            const config = await createConfigSeed(env, `capped-${Math.random().toString(36).slice(2, 10)}`, 'unauthenticated');
+
+            await expect(
+                connectionService.upsertUnauthConnection({
+                    connectionId: 'new-connection',
+                    providerConfigKey: config.unique_key,
+                    environment: env
+                })
+            ).rejects.toBeInstanceOf(ConnectionCreationCappedError);
+
+            await expect(
+                connectionService.checkIfConnectionExists(db.knex, {
+                    connectionId: 'new-connection',
+                    providerConfigKey: config.unique_key,
+                    environmentId: env.id
+                })
+            ).resolves.toBeNull();
+        });
+
+        it('allows completing an existing staged connection at the cap', async () => {
+            const { env, plan } = await seedAccountEnvAndUser();
+            const config = await createConfigSeed(env, `reconnect-${Math.random().toString(36).slice(2, 10)}`, 'unauthenticated');
+            const existing = await createConnectionSeed({ env, provider: config.unique_key, connectionId: 'existing-connection' });
+            await db.knex('plans').where({ id: plan.id }).update({ connections_max: 1 });
+
+            const [updated] = await connectionService.upsertConnection({
+                connectionId: existing.connection_id,
+                providerConfigKey: config.unique_key,
+                environmentId: env.id,
+                parsedRawCredentials: { type: 'API_KEY', apiKey: 'updated' },
+                connectionConfig: { reconnected: true }
+            });
+
+            expect(updated?.operation).toBe('override');
+        });
     });
 
     describe('Metadata simple operations', () => {

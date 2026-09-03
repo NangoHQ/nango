@@ -117,11 +117,14 @@ export type PostInternalConnectSessions = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/connect/sessions';
+    Querystring: { env: string };
     Success: PostConnectSessions['Success'];
     Body: Pick<
         ConnectSessionInput,
         'allowed_integrations' | 'end_user' | 'organization' | 'integrations_config_defaults' | 'overrides' | 'webhook_url_override'
-    >;
+    > & {
+        is_preview?: boolean | undefined;
+    };
 }>;
 
 export type PostPublicConnectTelemetry = ApiEndpoint<{
