@@ -61,12 +61,25 @@ In the Nango dashboard, open your Granola integration and copy the **Webhook URL
 Granola generates a new, distinct `signing_secret` every time you create a webhook endpoint — you can't reuse one secret across multiple endpoints. Where you store it in Nango depends on how many Granola connections you have under this integration:
 
 - **One connection**: set the `signing_secret` value (starts with `whsec_`) as the **Webhook secret** on the Granola integration in the Nango dashboard.
-- **Multiple connections**: each one has its own webhook endpoint and secret, so set each connection's `signing_secret` as `webhookSecret` in that connection's metadata instead, using [Set connection metadata](/reference/backend/http-api/connections/set-metadata). Nango checks the integration-level **Webhook secret** first and falls back to the connection's metadata when that's not set.
+- **Multiple connections**: each one has its own webhook endpoint and secret, so set each connection's `signing_secret` as `webhookSecret` in that connection's metadata instead:
+
+    ```bash
+    curl -X POST "https://api.nango.dev/connections/metadata" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "connection_id": "<CONNECTION-ID>",
+        "provider_config_key": "<INTEGRATION-ID>",
+        "metadata": { "webhookSecret": "<SIGNING-SECRET>" }
+      }'
+    ```
+
+    See [Set connection metadata](/reference/backend/http-api/connections/set-metadata) for the full reference. Nango checks the integration-level **Webhook secret** first and falls back to the connection's metadata when that's not set.
 
 Granola doesn't let you retrieve the secret again after creation — if you lose it, create a new webhook endpoint and update both sides.
 
 <Note>
-If neither a **Webhook secret** nor a connection-level `webhookSecret` is set, Nango accepts the delivery without verifying its signature.
+If neither a **Webhook secret** nor a connection-level `webhookSecret` is set, Nango rejects the delivery — there must be a secret to validate against.
 </Note>
 
 ## Handle the webhook

@@ -66,6 +66,11 @@ const route: WebhookHandler<GranolaWebhookPayload> = async (nango, headers, body
 
     const connection = await nango.getConnectionForWebhook(connectionIdentifierValue);
     if (!connection) {
+        // Already verified above if an integration secret is set; otherwise there's nothing left to validate against.
+        if (!integrationSecret) {
+            return Err(new NangoError('webhook_invalid_secret', { reason: 'No webhook secret configured to validate this request' }));
+        }
+
         return Ok({
             content: { status: 'success' },
             statusCode: 200,
@@ -80,11 +85,13 @@ const route: WebhookHandler<GranolaWebhookPayload> = async (nango, headers, body
             return Err(new NangoError('webhook_invalid_secret', { reason: 'Invalid webhook secret' }));
         }
 
-        if (connectionSecret) {
-            const result = verifySignature(connectionSecret, headers, rawBody);
-            if (result !== 'valid') {
-                return Err(new NangoError(result === 'missing' ? 'webhook_missing_signature' : 'webhook_invalid_signature'));
-            }
+        if (!connectionSecret) {
+            return Err(new NangoError('webhook_invalid_secret', { reason: 'No webhook secret configured to validate this request' }));
+        }
+
+        const result = verifySignature(connectionSecret, headers, rawBody);
+        if (result !== 'valid') {
+            return Err(new NangoError(result === 'missing' ? 'webhook_missing_signature' : 'webhook_invalid_signature'));
         }
     }
 

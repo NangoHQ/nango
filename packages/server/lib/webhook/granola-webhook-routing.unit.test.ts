@@ -99,13 +99,25 @@ describe('Granola webhook routing', () => {
         expect(execute).not.toHaveBeenCalled();
     });
 
-    it('returns success without dispatch when the connection does not exist', async () => {
+    it('returns success without dispatch when the connection does not exist but the integration secret already validated the request', async () => {
+        const { nango, getConnection, execute } = getNangoMock({ connectionExists: false });
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+
+        const result = await GranolaWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isOk()).toBe(true);
+        expect(getConnection).toHaveBeenCalledWith(CONNECTION_ID);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects a webhook for an unknown connection when nothing can validate it', async () => {
         const { nango, getConnection, execute } = getNangoMock({ integrationSecret: null, connectionExists: false });
         const body = getBody();
 
         const result = await GranolaWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
 
-        expect(result.isOk()).toBe(true);
+        expect(result.isErr()).toBe(true);
         expect(getConnection).toHaveBeenCalledWith(CONNECTION_ID);
         expect(execute).not.toHaveBeenCalled();
     });
@@ -121,14 +133,14 @@ describe('Granola webhook routing', () => {
         expect(execute).not.toHaveBeenCalled();
     });
 
-    it('allows a webhook when no secret is configured anywhere', async () => {
+    it('rejects a webhook when no secret is configured anywhere', async () => {
         const { nango, execute } = getNangoMock({ integrationSecret: null });
         const body = getBody();
 
         const result = await GranolaWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
 
-        expect(result.isOk()).toBe(true);
-        expect(execute).toHaveBeenCalledOnce();
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
     });
 
     it("falls back to the connection's webhook secret when the integration has none", async () => {
@@ -216,10 +228,11 @@ describe('Granola webhook routing', () => {
     });
 
     it('forwards the full body and connection ids on success', async () => {
-        const { nango } = getNangoMock({ integrationSecret: null });
+        const { nango } = getNangoMock();
         const body = getBody({ event_type: 'note.edited', data: { changed_fields: ['summary'] } });
+        const rawBody = JSON.stringify(body);
 
-        const result = await GranolaWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
+        const result = await GranolaWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, { nangoConnectionId: CONNECTION_ID });
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
