@@ -199,7 +199,7 @@ describe('unstorableReason contract with the emitter', () => {
                 occurredAt: new Date().toISOString(),
                 accountId: 42,
                 scope: 'environment',
-                environment: { id: 1, display: 'dev' },
+                environment: { id: 'e0000000-0000-4000-8000-000000000001', display: 'dev' },
                 actor: { type: 'user', id: '5', display: 'a@b.co' },
                 resource: 'connection',
                 action: 'deleted',

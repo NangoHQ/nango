@@ -2,6 +2,75 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.71.6] - 2026-09-02
+
+### Added
+
+- *(usage)* Reconcile usage and billable data transfer (#7265) by @ErickRDev
+- *(webapp)* Show customers the usage and limits they're billed on using new pricing (#7251) by @macko911
+- *(authz)* Namespace decides the where, and drop the top-level wildcard (#7287) by @kaposke
+- *(audit)* Check every event's metadata against the vocabulary (#7276) by @pfreixes
+- *(mcp)* Add sync_set_state management tool (#7256) by @marcindobry
+- *(providers)* Add GitLab (Group Access Token) provider (#7199) by @arctic-char
+- *(audit)* Name the deprecated public-key flow as its own actor (#7302) by @pfreixes
+- *(kms)* Add support for gcp kms (#7291) by @rossmcewan
+- *(plans)* Add the pay-as-you-go plan (#7279) by @ErickRDev
+- *(plans)* Add upgrade path from free to PAYG (#7281) by @ErickRDev
+- *(metering)* Add daily function executions v2 backfill (#7188) by @ErickRDev
+- *(usage)* Read all function metrics from v2 table (#7203) by @ErickRDev
+- *(server)* Connection deleted webhook (#7235) by @rbwest
+- *(server)* Add the nango_execute meta tool (NAN-6601) (#7261) by @agusayerza
+- *(server)* Add the nango_tool_search meta tool (NAN-6603) (#7262) by @agusayerza
+- *(webapp)* Show the new pricing's plans (#7306) by @macko911
+- *(audit)* Record the policy scope on every event (NAN-6802) (#7310) by @pfreixes
+- *(plans)* Block moves between Starter and Growth (#7320) by @macko911
+- *(plans)* Cap free function runtime instead of legacy metrics (#7315) by @ErickRDev
+- *(webapp)* Rework the billing overrides dev panel (#7314) by @macko911
+- *(audit)* Name api keys and environments by their uuid (#7319) by @pfreixes
+- *(integrations)* Add support for scrollstash-mcp (#7282) by @hassan254-prog
+- *(providers)* Add sandbox env to factorial (#7228) by @hassan254-prog
+- *(integrations)* Add support for meta-ads-mcp (#7321) by @hassan254-prog
+- *(integrations)* Add support for finta (#7275) by @hassan254-prog
+- *(integrations)* Add support for greenfield-meditech (#7326) by @hassan254-prog
+- *(audit)* Attribute public-key OAuth callbacks (#7329) by @pfreixes
+- *(audit)* Count events that could not name an actor (#7322) by @pfreixes
+- *(integrations)* Add support for epic fhir (#7332) by @hassan254-prog
+- *(server)* Add action trigger management MCP tool (#7284) by @marcindobry
+- *(integrations)* Add support for nooks (#7337) by @hassan254-prog
+- *(mcp)* Add sync trigger management tool (#7257) by @marcindobry
+- *(cli)* Support mtls (#7325) by @rossmcewan
+- *(server)* Track usage of deprecated public endpoints (#7280) by @hassan254-prog
+
+### Changed
+
+- *(audit)* Split the audit middleware into one file per resource (#7271) by @pfreixes
+- *(audit)* Split the store contracts from their implementations (#7272) by @pfreixes
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/8c33aed0ede39e8b56989dffcbaf8e388ffe8f64 by Victor Lang'at by @github-actions[bot]
+- Update version in manifest by @actions-user
+- *(server)* Use grants and scopes instead of permissions in private API (#7293) by @kaposke
+- *(kms)* Rename file (#7307) by @rossmcewan
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/7c51ba656fd0c2690d96bea0af938b2659cece09 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/02b840bafa26f2af89953c21c376eb6c5ed460ea by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/4f107b1670183cf485017912952decd0a2218186 by Victor Lang'at by @github-actions[bot]
+
+### Fixed
+
+- *(server)* Count every shadow comparison, not just the failures (#7263) by @kaposke
+- *(server)* Datadog tag and record every authorization comparison (#7292) by @kaposke
+- *(orchestrator)* Count rate limited and duplicate tasks as rejected (NAN-6809) (#7294) by @agusayerza
+- *(functions)* Metadata and checkpoint is working. do not gate them (#7289) by @TBonnin
+- *(persist)* Stream deleteOutdatedRecords progress to avoid client timeout on large deletes (#7192) by @hassan254-prog
+- *(audit)* Name the integration when a bulk sync pause or start targets nothing (NAN-6791) (#7304) by @pfreixes
+- *(integrations)* Support regional SaaS Backup hosts for NinjaOne (#7300) by @mayankj
+- *(connections)* Include shared credentials when selecting connections for cron refresh (#7312) by @hassan254-prog
+- *(docs)* Point nango.dev/demo links at /contact (#7305) by @macko911
+- *(runner)* Auth runner start (#7288) by @rossmcewan
+- *(webapp)* Show usage on the 1st of the month (#7323) by @macko911
+- *(auth)* Raise API key credential max length to 4096 (#7327) by @mayankj
+- Name the Growth add-on in upgrade prompts (#7316) by @macko911
+- *(api)* Use UUIDs for public environment management  (#7309) by @ErickRDev
+- *(webapp)* Align usage bars across metric rows (#7331) by @macko911
+
 ## [v0.71.5] - 2026-08-27
 
 ### Added
@@ -7812,6 +7881,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.71.6]: https://github.com/NangoHQ/nango/compare/v0.71.5..v0.71.6
 [v0.71.5]: https://github.com/NangoHQ/nango/compare/v0.71.4..v0.71.5
 [v0.71.4]: https://github.com/NangoHQ/nango/compare/v0.71.3..v0.71.4
 [v0.71.3]: https://github.com/NangoHQ/nango/compare/v0.71.2..v0.71.3

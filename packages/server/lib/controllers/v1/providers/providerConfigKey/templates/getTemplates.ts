@@ -1,6 +1,8 @@
+import { errorManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { handleGetProviderTemplates } from './helpers.js';
+import { providerTemplatesToApi } from '../../../../../formatters/provider.js';
+import providerService from '../../../../../services/provider.service.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
 import { validationParams } from '../../getProvider.js';
 
@@ -19,7 +21,12 @@ export const getProviderTemplates = asyncWrapper<GetProviderTemplates>((req, res
         return;
     }
 
-    const { providerConfigKey } = valParams.data;
+    const result = providerService.listTemplates({ providerName: valParams.data.providerConfigKey });
+    if (result.isErr()) {
+        errorManager.report(result.error.cause instanceof Error ? result.error.cause : result.error);
+        res.status(500).send({ error: { code: 'server_error', message: result.error.message } });
+        return;
+    }
 
-    handleGetProviderTemplates({ res, providerConfigKey });
+    res.status(200).send({ data: providerTemplatesToApi(result.value) });
 });

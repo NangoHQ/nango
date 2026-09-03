@@ -23,7 +23,7 @@ export const auditEnvironmentCreated = auditable<PostEnvironment>({
 
 export const auditPublicEnvironmentCreated = auditable<PostPublicEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'created', scope: 'account' }),
-    targetFromResponse: (response) => makeTarget('environment', response.data.id, response.data.name),
+    targetFromResponse: (response) => makeTarget('environment', response.data.uuid, response.data.name),
     metadata: (req) => omitUndefined({ name: nonEmptyString(req.body.name) })
 });
 
@@ -80,7 +80,7 @@ export const auditEnvironmentDeleted = auditable<DeleteEnvironment>({
 
 export const auditPublicEnvironmentDeleted = auditable<DeletePublicEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'deleted', scope: 'account' }),
-    target: (req, locals) => accountEnvironmentTarget(req.params.environmentId, locals)
+    target: (req, locals) => accountEnvironmentTarget(req.params.environmentUuid, locals)
 });
 
 // Keep only the origin (scheme + host) of a URL — a webhook URL can carry a secret token in its path,

@@ -31,6 +31,7 @@
         "@nangohq/feature-flags": "file:../feature-flags",
         "@nangohq/kms": "file:../kms",
         "@nangohq/kvstore": "file:../kvstore",
+        "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/nango-yaml": "file:../nango-yaml",
         "@nangohq/providers": "file:../providers",
         "@nangohq/pubsub": "file:../pubsub",
@@ -66,7 +67,6 @@
     },
     "devDependencies": {
         "@nangohq/logs": "file:../logs",
-        "@nangohq/nango-orchestrator": "file:../orchestrator",
         "@nangohq/types": "file:../types",
         "@types/archiver": "6.0.3",
         "@types/babel__traverse": "7.28.0",

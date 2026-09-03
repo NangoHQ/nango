@@ -28,6 +28,7 @@ export const listApiKeys = asyncWrapperWithEnvironment<ListApiKeys>(async (req, 
         const secret = canReadSecret ? key.secret : `****${key.secret.slice(-4)}`;
         return {
             id: key.id,
+            uuid: key.uuid,
             display_name: key.display_name,
             scopes: (key.scopes ?? []) as ApiKeyScope[],
             secret,

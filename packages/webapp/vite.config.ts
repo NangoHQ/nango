@@ -10,7 +10,7 @@ import svgr from 'vite-plugin-svgr';
 import type { Plugin } from 'vite';
 
 const DEV_PORT = 3000;
-const LOCAL_API_PORT = 3003;
+const LOCAL_API_PORT = 3103;
 
 const REMOTE_API_URLS: Record<string, string> = {
     dev: 'https://api-development.nango.dev',

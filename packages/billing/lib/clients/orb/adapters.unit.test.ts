@@ -475,9 +475,10 @@ const COMPUTE_HOURS_PROD = 'ZrAoynYimCwtmFSP';
 const DATA_TRANSFER_PROD = 'RNskBsYUvTYLsjV2';
 const CONNECTIONS_PROD = '8aAyMTG6HafmZpqJ';
 
-function usagePrice(metricId: string | null, total: string, name = 'Some price', priceId = 'price_1') {
+function usagePrice(metricId: string | null, subtotal: string, name = 'Some price', priceId = 'price_1', total = subtotal) {
     return {
         price_id: priceId,
+        subtotal,
         total,
         price: { price_type: 'usage_price', currency: 'USD', name, billable_metric: metricId ? { id: metricId } : null }
     };
@@ -488,6 +489,27 @@ function bucket(perPriceCosts: ReturnType<typeof usagePrice>[], timeframeEnd = '
 }
 
 describe('fromOrbPeriodCosts', () => {
+    it('reads the usage cost, not the total with a plan minimum folded in', () => {
+        const minimumShare = '16.111111111111111111111';
+        const costs = {
+            data: [
+                bucket([
+                    usagePrice(CONNECTIONS_PROD, '0.00', 'Connections', 'price_1', minimumShare),
+                    usagePrice(COMPUTE_HOURS_PROD, '0.00', 'Function compute time (h)', 'price_2', minimumShare),
+                    usagePrice(DATA_TRANSFER_PROD, '0.00', 'Data transfer (GB)', 'price_3', minimumShare)
+                ])
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ connections: 0, function_duration_seconds: 0, data_transfer: 0 });
+    });
+
+    it('keeps a used metric at its own cost when the minimum tops it up', () => {
+        const costs = { data: [bucket([usagePrice(CONNECTIONS_PROD, '0.29', 'Connections', 'price_1', '16.86')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ connections: 29 });
+    });
+
     it('maps a price to its metric and converts the amount to cents', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_PROD, '23.17', 'Sync records')])] };
 
@@ -564,7 +586,12 @@ describe('fromOrbPeriodCosts', () => {
             data: [
                 bucket([
                     usagePrice(RECORDS_PROD, '23.17'),
-                    { price_id: 'price_fixed', total: '500.00', price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null } }
+                    {
+                        price_id: 'price_fixed',
+                        subtotal: '500.00',
+                        total: '500.00',
+                        price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null }
+                    }
                 ])
             ]
         };
@@ -642,6 +669,7 @@ describe('fromOrbPeriodCosts', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_PROD, '1.00')])] };
         costs.data[0]!.per_price_costs.push({
             price_id: 'price_2',
+            subtotal: '1.00',
             total: '1.00',
             price: { price_type: 'usage_price', currency: 'EUR', name: 'Proxy requests', billable_metric: { id: WEBHOOKS_PROD } }
         });
@@ -676,7 +704,12 @@ describe('fromOrbPeriodCosts', () => {
         const costs = {
             data: [
                 bucket([
-                    { price_id: 'price_fixed', total: '500.00', price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null } }
+                    {
+                        price_id: 'price_fixed',
+                        subtotal: '500.00',
+                        total: '500.00',
+                        price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null }
+                    }
                 ])
             ]
         };
