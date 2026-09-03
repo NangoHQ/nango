@@ -31,4 +31,8 @@ export class GroupThrottles {
     isThrottled(groupKey: string): boolean {
         return this.throttledGroups.get(groupKey) !== undefined;
     }
+
+    remainingMs(groupKey: string): number {
+        return this.throttledGroups.remainingMs(groupKey);
+    }
 }

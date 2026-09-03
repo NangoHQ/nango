@@ -599,7 +599,8 @@ describe('parse', () => {
                 NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: 30,
                 NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: 5,
                 NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: 10,
-                NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: 10
+                NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: 10,
+                NANGO_TASK_DISPATCH_TASK_CAP_DEFER_MS: 15_000
             });
             expect(res.NANGO_TASK_DISPATCH_QUEUE_URL).toBeUndefined();
             expect(res.NANGO_TASK_DISPATCH_DLQ_URL).toBeUndefined();
