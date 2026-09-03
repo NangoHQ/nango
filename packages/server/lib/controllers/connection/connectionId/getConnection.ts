@@ -55,9 +55,7 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
 
     const isSync = req.get('Nango-Is-Sync') === 'true';
 
-    if (!isSync) {
-        metrics.increment(metrics.Types.GET_CONNECTION, 1);
-    }
+    metrics.increment(metrics.Types.GET_CONNECTION, 1, { internal: isSync ? 'true' : 'false' });
 
     const includeCredentials = hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:connections:read_credentials' });
     const requestsCredentialOperation = returnRefreshToken || instantRefresh || refreshGithubAppJwtToken;

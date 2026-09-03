@@ -214,7 +214,7 @@ async function runCreation(params: CreateAgentSessionParams, logCtx: LogContextO
     const token = await agentSessionService.createAgentSessionToken(db.knex, session.value);
     if (token.isErr()) {
         // A session no token can reach is unusable, so it is ended rather than left to expire.
-        const ended = await agentSessionService.terminateAgentSession(db.knex, {
+        const ended = await agentSessionService.endAgentSession(db.knex, {
             id: session.value.id,
             accountId: account.id,
             environmentId: environment.id,

@@ -21,6 +21,7 @@ import { listIntegrationsTool } from './integrations/list.js';
 import { updateIntegrationsTool } from './integrations/update.js';
 import { getLogOperationTool } from './logs/getOperation.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
+import { getProvidersTool } from './providers/get.js';
 import { proxyRequestTool } from './proxy/request.js';
 import { setSyncsStateTool } from './syncs/setState.js';
 import { triggerSyncsTool } from './syncs/trigger.js';
@@ -36,6 +37,7 @@ const logger = getLogger('Server.ManagementMcpServer');
 const managementMcpTools: ManagementMcpTool[] = [
     searchDocsTool,
     queryDocsFilesystemTool,
+    getProvidersTool,
     createConnectSessionTool,
     listIntegrationsTool,
     getIntegrationsTool,

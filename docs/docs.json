@@ -27,7 +27,10 @@
     "dark": "/images/Nango-Dark-Mode.svg",
     "href": "https://nango.dev"
   },
-  "favicon": "/favicon.png",
+  "favicon": {
+    "light": "/favicon-black.svg",
+    "dark": "/favicon-white.svg"
+  },
   "contextual": {
     "options": [
       "copy",
@@ -136,55 +139,55 @@
     },
     {
       "source": "/guides/mcp",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/guides/use-cases/mcp-server",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/overview",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/openai-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/anthropic-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/vercel-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/mastra-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/google-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/langchain-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/llamaindex-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/openai-agents-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/any-llm",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/implement-mcp-server",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/syncs/implement-a-sync",
@@ -376,7 +379,7 @@
     },
     {
       "source": "/implementation-guides/platform/functions/tool-calling",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/platform/functions/storage",
@@ -681,6 +684,10 @@
     {
       "source": "/integrations/all/jobber",
       "destination": "/api-integrations/jobber"
+    },
+    {
+      "source": "/guides/functions/tool-calling",
+      "destination": "/guides/agent-sessions"
     }
   ],
   "navigation": {
@@ -726,6 +733,7 @@
                   "guides/auth/mcp-auth"
                 ]
               },
+              "guides/agent-sessions",
               {
                 "group": "Functions",
                 "expanded": false,
@@ -746,7 +754,6 @@
                   "guides/functions/action-functions",
                   "guides/functions/webhook-functions",
                   "guides/functions/event-functions",
-                  "guides/functions/tool-calling",
                   "guides/functions/storage",
                   "guides/functions/logging",
                   "guides/functions/rate-limits",
@@ -764,6 +771,7 @@
                   "guides/platform/environments",
                   "guides/platform/limits",
                   "guides/platform/security",
+                  "guides/platform/audit-trail",
                   "guides/platform/self-hosting",
                   "guides/platform/proxy-requests",
                   "guides/platform/webhooks-from-nango",

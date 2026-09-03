@@ -23,6 +23,8 @@ Our security practices include:
 - Incident response procedures
 - Continuous monitoring and alerting
 
+For your own reviews, the [audit trail](/guides/platform/audit-trail) records who changed what in your account, when, and from where.
+
 Visit our [Trust Center](https://trust.nango.dev) for the latest compliance documentation, security policies, and audit reports.
 
 ## Credential storage
@@ -217,15 +219,14 @@ Each [environment](/guides/platform/environments) in your Nango account is compl
 
 This ensures your production data is never accessible from development environments.
 
-### Audit logging
+<a id="audit-logging"></a>
+### Audit trail
 
-All credential access and modifications are logged:
+The [audit trail](/guides/platform/audit-trail) records control-plane changes with the actor, the outcome, and the originating IP: who created or deleted a connection, changed an integration, rotated an API key, changed a teammate's role, or signed in. Entries are immutable and account-wide, can be exported as CSV, and reading or exporting the trail is itself recorded.
 
-- Connection creation and deletion
-- Credential refresh operations
-- API requests using credentials
+### Nango logs
 
-Logs are available in the Nango dashboard and can be exported via [OpenTelemetry](/guides/platform/observability#opentelemetry-export).
+[Nango logs](/guides/platform/observability) are a separate, operational record of what ran in your Nango account: auth flows, function executions, proxy requests, etc. Logs can be exported via [OpenTelemetry](/guides/platform/observability#opentelemetry-export).
 
 <a id="team-and-roles"></a>
 ## Team & roles

@@ -1,6 +1,7 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { Tags } from '../db.js';
 import type { AgentSessionUnknownPinnedConnectionsPayload } from './connections.js';
+import type { AgentSessionEndedReason } from './session.js';
 import type {
     AgentSessionToolsNotInToolsetPayload,
     AgentSessionUnknownIntegrationsPayload,
@@ -115,5 +116,21 @@ export type PostAgentSessions = ApiEndpoint<{
             toolset: Record<string, AgentSessionToolsetSummary>;
             meta_tools: AgentSessionMetaToolsSummary;
         };
+    };
+}>;
+
+export interface ApiTerminatedAgentSession {
+    session_id: string;
+    ended_at: string;
+    reason: AgentSessionEndedReason;
+}
+
+export type DeleteAgentSession = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Method: 'DELETE';
+    Path: '/sessions/:sessionId';
+    Params: { sessionId: string };
+    Success: {
+        data: ApiTerminatedAgentSession;
     };
 }>;

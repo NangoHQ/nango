@@ -6,8 +6,6 @@ export enum Types {
     ACTION_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.action.incoming.payloadSizeBytes',
 
     AUTH_SECRET_KEY_HASH_CACHE = 'nango.auth.secretKeyHashCache',
-    AUTHZ_KEY_DERIVATION_COMPARISON = 'nango.authz.keyDerivationComparison',
-    AUTHZ_ROLE_COMPARISON = 'nango.authz.roleComparison',
     AUTH_SHADOW_CACHE = 'nango.auth.shadowCache',
     AUTH_CONTEXT_CACHE = 'nango.auth.contextCache',
     AUTH_GET_ENV_BY_AGENT_SESSION = 'nango.auth.getEnvByAgentSession',
@@ -72,6 +70,7 @@ export enum Types {
     WEBHOOK_INCOMING_RECEIVED = 'nango.webhook.incoming.received',
     WEBHOOK_INCOMING_RATE_LIMITED = 'nango.webhook.incoming.rateLimited',
     WEBHOOK_INCOMING_SKIPPED = 'nango.webhook.incoming.skipped',
+    WEBHOOK_INCOMING_UNVERIFIED = 'nango.webhook.incoming.unverified',
     WEBHOOK_INCOMING_FORWARDED_SUCCESS = 'nango.webhook.incoming.forwarded.success',
     WEBHOOK_INCOMING_FORWARDED_FAILED = 'nango.webhook.incoming.forwarded.failed',
     WEBHOOK_OUTGOING_SUCCESS = 'nango.webhook.outgoing.success',
@@ -118,6 +117,7 @@ export enum Types {
 
     API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
     DEPRECATED_V1_ENDPOINT_USED = 'nango.server.deprecated.v1.used',
+
     DEPRECATED_PUBLIC_ENDPOINT_USED = 'nango.server.deprecated.public.used',
 
     AUTH_SUCCESS = 'nango.server.auth.success',
