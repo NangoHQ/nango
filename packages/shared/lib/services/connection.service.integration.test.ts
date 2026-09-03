@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
@@ -77,6 +77,36 @@ describe('Connection service integration tests', () => {
                 attempts.filter((attempt) => attempt.status === 'rejected').every((attempt) => attempt.reason instanceof ConnectionCreationCappedError)
             ).toBe(true);
             await expect(connectionService.countByAccountId(account.id)).resolves.toBe(1);
+        });
+
+        it('does not lock uncapped accounts during connection creation', async () => {
+            const { account, env } = await seedAccountEnvAndUser({ plan: { connections_max: null } });
+            const config = await createConfigSeed(env, `uncapped-${Math.random().toString(36).slice(2, 10)}`, 'unauthenticated');
+            const capCheckStarted = Promise.withResolvers<undefined>();
+            const continueCapCheck = Promise.withResolvers<undefined>();
+            const enforceCreationCap = vi.spyOn(connectionService, 'enforceCreationCap').mockImplementation(async () => {
+                capCheckStarted.resolve(undefined);
+                await continueCapCheck.promise;
+            });
+
+            const connectionCreation = connectionService.upsertUnauthConnection({
+                connectionId: 'uncapped-connection',
+                providerConfigKey: config.unique_key,
+                environment: env
+            });
+
+            try {
+                await capCheckStarted.promise;
+                await db.knex.transaction(async (trx) => {
+                    await trx.raw("SET LOCAL lock_timeout = '1s'");
+                    await trx.from('_nango_accounts').select('id').where({ id: account.id }).forUpdate().first();
+                });
+            } finally {
+                continueCapCheck.resolve(undefined);
+                enforceCreationCap.mockRestore();
+            }
+
+            await expect(connectionCreation).resolves.toHaveLength(1);
         });
     });
 

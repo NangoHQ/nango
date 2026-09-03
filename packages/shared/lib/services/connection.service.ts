@@ -264,9 +264,11 @@ export class ConnectionService {
         await trx
             .from({ account: '_nango_accounts' })
             .join({ environment: '_nango_environments' }, 'environment.account_id', 'account.id')
+            .join({ plan: 'plans' }, 'plan.account_id', 'account.id')
             .select('account.id')
             .where('environment.id', params.environmentId)
-            .forUpdate()
+            .whereNotNull('plan.connections_max')
+            .forNoKeyUpdate('account')
             .first();
 
         return await this.checkIfConnectionExists(trx, params);
