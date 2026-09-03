@@ -74,8 +74,8 @@ describe('function audit middleware (unit)', () => {
             action: 'deployed',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
-            actor: { type: 'api_key', id: '5', display: 'ci-key' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
+            actor: { type: 'api_key', id: 'c0000000-0000-4000-8000-000000000005', display: 'ci-key' },
             targets: [
                 { type: 'function', id: 'algolia:flow-a' },
                 { type: 'function', id: 'algolia:flow-b' }
@@ -101,8 +101,8 @@ describe('function audit middleware (unit)', () => {
             action: 'deployed',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
-            actor: { type: 'api_key', id: '5', display: 'ci-key' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
+            actor: { type: 'api_key', id: 'c0000000-0000-4000-8000-000000000005', display: 'ci-key' },
             targets: [
                 { type: 'function', id: 'github:fetchIssues' },
                 { type: 'function', id: 'gitlab:fetchIssues' }
@@ -122,7 +122,7 @@ describe('function audit middleware (unit)', () => {
             action: 'upgraded',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
             targets: [{ type: 'function', id: 'algolia:my-sync' }],
             metadata: { upgradeVersion: '2.0.0' }
         });
@@ -136,7 +136,7 @@ describe('function audit middleware (unit)', () => {
             action: 'deployed',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
             targets: [{ type: 'function', id: 'algolia:contacts' }],
             metadata: { source: 'catalog', type: 'sync' }
         });
@@ -171,7 +171,7 @@ describe('function audit middleware (unit)', () => {
             action: 'deployed',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
             targets: [{ type: 'function', id: 'algolia:my-prebuilt-sync' }]
         });
         expect(event?.metadata).toEqual({ source: 'catalog', type: 'sync' });

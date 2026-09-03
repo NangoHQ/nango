@@ -99,7 +99,7 @@ interface OrbCostBucket {
     timeframe_end: string;
     per_price_costs: {
         price_id: string;
-        total: string;
+        subtotal: string;
         price: { price_type: string; name: string; currency?: string | null; billable_metric?: { id: string } | null };
     }[];
 }
@@ -134,7 +134,9 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date):
 
         const metric = price.billable_metric ? (orbBillableMetricToUsageMetric[price.billable_metric.id] ?? null) : null;
         const priceCurrency = normalizeIsoCurrency(price.currency);
-        const amountInCents = orbAmountToCents(priceCost.total);
+        // `total` also carries the price's share of any plan-level minimum or discount — a $50 minimum
+        // lands as $16.67 on each of three unused metrics — so only `subtotal` is attributable to usage.
+        const amountInCents = orbAmountToCents(priceCost.subtotal);
         const readable = priceCurrency !== null && (currency === null || priceCurrency === currency) && amountInCents !== null;
 
         if (!readable) {

@@ -142,6 +142,13 @@ NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
 # Nango's instance URL (OSS: change to http://localhost:3003 or your instance URL).
 NANGO_HOSTPORT=https://api.nango.dev # Default value
 
+# Client certificate for a self-hosted API behind mTLS.
+# A single PEM that contains both the certificate and private key is enough.
+# NANGO_CLI_TLS_CERT=/path/to/client.pem
+# NANGO_CLI_TLS_KEY=/path/to/client.key
+# NANGO_CLI_TLS_CA=/path/to/ca.pem
+# NANGO_CLI_TLS_KEY_PASSPHRASE=
+
 # How to handle CLI upgrades ("prompt", "auto" or "ignore").
 NANGO_CLI_UPGRADE_MODE=prompt # Default value
 

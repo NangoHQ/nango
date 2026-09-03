@@ -2860,12 +2860,18 @@ paths:
                                         type: object
                                         required:
                                             - id
+                                            - uuid
                                             - name
                                         properties:
                                             id:
                                                 type: integer
-                                                description: Numeric environment ID. Use this in later account-level API calls.
+                                                description: Numeric environment ID.
                                                 example: 123
+                                            uuid:
+                                                type: string
+                                                format: uuid
+                                                description: Environment UUID. Use this in later account-level API calls.
+                                                example: 123e4567-e89b-12d3-a456-426614174000
                                             name:
                                                 type: string
                                                 description: The environment name.
@@ -2884,18 +2890,18 @@ paths:
                                 $ref: '#/components/schemas/StdError'
                 '500':
                     $ref: '#/components/responses/ServerError'
-    /environments/{environmentId}:
+    /environments/{environmentUuid}:
         delete:
             summary: Delete an environment
             description: Delete an environment
             parameters:
-                - name: environmentId
+                - name: environmentUuid
                   in: path
                   required: true
                   schema:
-                      type: integer
-                      minimum: 1
-                  description: Numeric environment ID returned when the environment was created.
+                      type: string
+                      format: uuid
+                  description: Environment UUID returned when the environment was created.
             responses:
                 '204':
                     description: Successfully deleted the environment
@@ -2911,10 +2917,19 @@ paths:
                     $ref: '#/components/responses/Forbidden'
                 '404':
                     $ref: '#/components/responses/NotFound'
-    /environment/api-keys:
+    /environments/{environmentUuid}/api-keys:
         post:
             summary: Create an environment API key
             description: Create a new environment API key
+            parameters:
+                - name: environmentUuid
+                  in: path
+                  required: true
+                  description: Environment UUID that will own the key.
+                  schema:
+                      type: string
+                      format: uuid
+                  example: 123e4567-e89b-12d3-a456-426614174000
             requestBody:
                 required: true
                 content:
@@ -2923,14 +2938,8 @@ paths:
                             type: object
                             additionalProperties: false
                             required:
-                                - environment_id
                                 - display_name
                             properties:
-                                environment_id:
-                                    type: integer
-                                    minimum: 1
-                                    description: Numeric environment ID returned when the environment was created.
-                                    example: 123
                                 display_name:
                                     type: string
                                     description: Display name for the key. Must be unique within the environment.
@@ -2951,6 +2960,7 @@ paths:
                                         type: object
                                         required:
                                             - id
+                                            - uuid
                                             - display_name
                                             - scopes
                                             - secret
@@ -2958,8 +2968,13 @@ paths:
                                         properties:
                                             id:
                                                 type: integer
-                                                description: Numeric key ID. Use this to delete the key later.
+                                                description: Numeric key ID.
                                                 example: 456
+                                            uuid:
+                                                type: string
+                                                format: uuid
+                                                description: API key UUID. Use this to delete the key later.
+                                                example: 123e4567-e89b-12d3-a456-426614174001
                                             display_name:
                                                 type: string
                                                 example: provisioned-ci
@@ -2992,30 +3007,27 @@ paths:
                                 $ref: '#/components/schemas/StdError'
                 '500':
                     $ref: '#/components/responses/ServerError'
+    /environments/{environmentUuid}/api-keys/{keyUuid}:
         delete:
             summary: Delete an environment API key
             description: Delete an environment API key
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            additionalProperties: false
-                            required:
-                                - environment_id
-                                - key_id
-                            properties:
-                                environment_id:
-                                    type: integer
-                                    minimum: 1
-                                    description: Numeric environment ID that owns the key.
-                                    example: 123
-                                key_id:
-                                    type: integer
-                                    minimum: 1
-                                    description: Numeric key ID returned when the key was created.
-                                    example: 456
+            parameters:
+                - name: environmentUuid
+                  in: path
+                  required: true
+                  description: Environment UUID that owns the key.
+                  schema:
+                      type: string
+                      format: uuid
+                  example: 123e4567-e89b-12d3-a456-426614174000
+                - name: keyUuid
+                  in: path
+                  required: true
+                  description: API key UUID returned when the key was created.
+                  schema:
+                      type: string
+                      format: uuid
+                  example: 123e4567-e89b-12d3-a456-426614174001
             responses:
                 '200':
                     description: Successfully deleted the Environment API key
