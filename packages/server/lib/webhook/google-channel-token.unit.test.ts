@@ -22,7 +22,7 @@ describe('validateGoogleChannelToken', () => {
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(NangoError);
-            expect(result.error.type).toBe('webhook_missing_token');
+            expect((result.error as NangoError).type).toBe('webhook_missing_token');
         }
     });
 
@@ -34,7 +34,7 @@ describe('validateGoogleChannelToken', () => {
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(NangoError);
-            expect(result.error.type).toBe('webhook_invalid_signature');
+            expect((result.error as NangoError).type).toBe('webhook_invalid_signature');
         }
     });
 
