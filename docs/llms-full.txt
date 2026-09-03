@@ -1914,13 +1914,13 @@ You can customize the Connect UI theme from the Nango dashboard:
 
 These settings apply to the pre-built Connect UI that you open with [`nango.openConnectUI()`](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui).
 
-<Note>Connect UI branding customization is available on the [Growth plan](https://www.nango.dev/pricing).</Note>
+<Note>Connect UI branding customization is available with the [Growth add-on](https://www.nango.dev/pricing).</Note>
 
 ## Override documentation links
 
 By default, the Connect UI displays info icons that link to the Nango documentation. If you are embedding Connect UI in a customer-facing application and want these links to point to your own documentation instead, override them per integration using the `overrides` parameter when [creating a Connect session](/reference/backend/http-api/connect/sessions/create).
 
-<Note>This feature is available on the [Growth plan](https://www.nango.dev/pricing).</Note>
+<Note>This feature is available with the [Growth add-on](https://www.nango.dev/pricing).</Note>
 
 <Tabs>
 
@@ -6273,8 +6273,8 @@ Rate limits apply to API requests from your application to Nango:
 | Plan | Requests per Minute |
 | - | - |
 | Free tier | 200 |
-| Starter | 1,000 |
-| Growth | 2,000 |
+| Pay-as-you-go  | 1,000 |
+| Growth add-on | 2,000 |
 | Enterprise | Custom |
 
 <Info>
@@ -6640,8 +6640,8 @@ Nango Cloud uses [WorkOS](https://workos.com) to power SSO.
 | Plan | SSO support |
 | - | - |
 | Free / Starter | Google SSO only |
-| Growth | SSO with 20+ identity providers (add-on) |
-| Enterprise (Cloud) | SSO with 20+ identity providers (included) |
+| Growth add-on | SAML SSO with 20+ identity providers |
+| Enterprise (Cloud) | SAML SSO + SCIM |
 | Enterprise (Self-hosted) | Not yet available (planned) |
 
 ### Supported providers
@@ -7024,17 +7024,20 @@ For more details, see the [pricing page](https://nango.dev/pricing) or [schedule
 
 | Feature | Free self-hosted | Enterprise self-hosted / Nango Cloud |
 | --- | --- | --- |
-| Auth | Yes | Yes |
+| API Auth | Yes | Yes |
 | Proxy | Yes | Yes |
 | Observability | Auth + proxy only | Full |
 | OpenTelemetry export | No | Yes |
-| Functions | No | Yes |
+| Pre-built syncs, tools & triggers | No | Yes |
+| Syncs | No | Yes |
+| Tool calls | No | Yes |
 | Webhooks | No | Yes |
+| Triggers | No | Yes |
 | MCP server | No | Yes |
 | Customize auth branding | No | Yes |
-| Role-based permissions | No | Yes |
-| SAML SSO | No | On the roadmap |
-| Support SLA | No | Yes |
+| RBAC | No | Yes |
+| MFA | No | Yes |
+| SAML SSO | No | Yes |
 
 ### Server URL, callback URL, and custom domains
 
@@ -11132,7 +11135,7 @@ const { data } = await nango.createConnectSession({
       }
     }
     ```
-    Available on the [Growth plan](https://www.nango.dev/pricing).
+    Available with the [Growth add-on](https://www.nango.dev/pricing).
   </ResponseField>
 </Expandable>
 
