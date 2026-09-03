@@ -116,19 +116,21 @@ export function startPartitionDaemon({
     return cancellableDaemon({
         tickIntervalMs,
         tick: async () => {
-            return await tracer.trace('nango.audit.daemon.partitions', async (span) => {
+            return void (await tracer.trace('nango.audit.daemon.partitions', async (span) => {
                 try {
                     const today = new Date();
                     const tomorrow = dayjs(today).utc().add(1, 'day').toDate();
                     const ensured = await ensurePartitions({ knex, schema, dates: [today, tomorrow] });
                     if (ensured.isErr()) {
                         span?.addTags({ error: stringifyError(ensured.error, { cause: true }) });
+                        logger.error('[audit partitions] failed to ensure partitions', ensured.error);
                     } else {
                         span?.addTags({ ensured: ensured.value.join(',') });
                     }
                     const drop = await dropExpiredPartitions({ knex, schema, retentionDays, now: today });
                     if (drop.isErr()) {
                         span?.addTags({ error: stringifyError(drop.error, { cause: true }) });
+                        logger.error('[audit partitions] failed to drop expired partitions', drop.error);
                         return;
                     }
                     // A skip is a replica losing the race, which is the normal case with more than one.
@@ -136,7 +138,7 @@ export function startPartitionDaemon({
                 } finally {
                     span?.finish();
                 }
-            });
+            }));
         },
         onError: (err) => {
             logger.error(`[audit partitions] unexpected error`, err);
