@@ -175,6 +175,7 @@ export const SyncsTab = () => {
 
     return (
         <div className="flex flex-col gap-3 w-full">
+            <span className="text-text-secondary text-body-small-regular self-end">{total === 1 ? '1 sync' : `${formatQuantity(total)} syncs`}</span>
             <div ref={tableRef}>
                 <Table className="grid border-separate border-spacing-0">
                     <TableHeader className="grid">
@@ -199,9 +200,6 @@ export const SyncsTab = () => {
             </div>
             <div ref={sentinelRef} aria-hidden />
             {isFetchingNextPage && <Skeleton className="w-full h-11" />}
-            <span className="text-text-secondary text-body-small-regular">
-                Showing {formatQuantity(syncs.length)} of {formatQuantity(total)} {total === 1 ? 'sync' : 'syncs'}
-            </span>
 
             <TriggerSyncDialog
                 key={triggerTarget?.id ?? 'none'}
