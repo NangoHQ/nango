@@ -16,7 +16,6 @@ const READ_QUERY_MAX_EXECUTION_SECONDS = 30;
 // Shorter than the list's: the count is optional to the response, so a heavy one gives up rather than holding the read open.
 const COUNT_QUERY_MAX_EXECUTION_SECONDS = 5;
 
-// One source of the filter, so the count and the list can never describe different sets.
 function buildFilter({ accountId, from, to, resources, actions }: AuditTrailFilter): { conditions: string[]; params: Record<string, unknown> } {
     const params: Record<string, unknown> = { account_id: accountId };
     const conditions = ['account_id = {account_id:Int64}'];
@@ -136,8 +135,7 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
     async count(filter: AuditTrailFilter): Promise<Result<number>> {
         const { conditions, params } = buildFilter(filter);
 
-        // Not `count()`: this is a ReplacingMergeTree, so a redelivery sits as a second row until a merge
-        // collapses it. `FINAL` is exact too, but gives up the ORDER BY short-circuit the list read needs.
+        // uniqExact folds the duplicate rows a ReplacingMergeTree can hold until a merge collapses them.
         const sql = `
             SELECT uniqExact(id) AS total
             FROM audit_trail_events
@@ -152,8 +150,6 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
                 clickhouse_settings: { max_execution_time: COUNT_QUERY_MAX_EXECUTION_SECONDS }
             });
             const [row] = await res.json<{ total: string }>();
-            // A bare aggregate always returns one row, and UInt64 arrives as a string. Anything else is a
-            // broken response, and reporting it as 0 would claim nothing matched.
             const total = Number(row?.total);
 
             return Number.isFinite(total) ? Ok(total) : Err('failed_to_count_audit_trail_events');

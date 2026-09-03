@@ -1,5 +1,5 @@
 import { InvalidAuditCursorError } from '@nangohq/audit';
-import { Err, getLogger, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { audit } from '../../../audit.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -7,9 +7,6 @@ import { canViewAuditTrail } from '../../../utils/auditTrail.js';
 import { auditListQuery } from './query.js';
 
 import type { GetAuditTrail } from '@nangohq/types';
-import type { Result } from '@nangohq/utils';
-
-const logger = getLogger('audit');
 
 const PAGE_SIZE = 25;
 
@@ -30,11 +27,7 @@ export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
     const { cursor, from, to, resources, actions } = query.data;
 
     // Started before the list is awaited so it doesn't queue behind it.
-    const counting: Promise<Result<number>> = audit.countAuditTrailEvents({ accountId: account.id, from, to, resources, actions }).catch((err: unknown) => {
-        // Only failures that escaped the store reach here, and they are logged nowhere else.
-        logger.warning(`Audit trail count threw for account ${account.id}: ${stringifyError(err)}`);
-        return Err(err instanceof Error ? err : new Error(String(err)));
-    });
+    const counting = audit.countAuditTrailEvents({ accountId: account.id, from, to, resources, actions });
 
     const result = await audit.listAuditTrailEvents({ accountId: account.id, limit: PAGE_SIZE, cursor, from, to, resources, actions });
 

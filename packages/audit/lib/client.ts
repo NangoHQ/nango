@@ -106,8 +106,13 @@ export class AuditClient {
         }));
     }
 
+    /** Never throws, as `record` doesn't — a reader that rejects comes back as `Err` for the caller to handle. */
     async countAuditTrailEvents(filter: AuditTrailFilter): Promise<Result<number>> {
-        return await this.reader.count(filter);
+        try {
+            return await this.reader.count(filter);
+        } catch (err) {
+            return Err(err);
+        }
     }
 
     /** Builds the CSV for the window. `truncated` reports that `maxRows` cut the result, rather than failing the export. */
