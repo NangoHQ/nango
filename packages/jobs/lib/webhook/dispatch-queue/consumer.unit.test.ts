@@ -1,6 +1,7 @@
 import { ChangeMessageVisibilityBatchCommand, DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { logContextGetter } from '@nangohq/logs';
 import { Err, metrics, Ok } from '@nangohq/utils';
 
 import { DispatchQueueConsumer } from './consumer.js';
@@ -271,9 +272,69 @@ describe('DispatchQueueConsumer', () => {
 
     it('defers rate limited messages to the end of the group throttle', async () => {
         const msgs = [buildMessage({ taskName: 'webhook:1' })];
-        const h = makeHarness({ messages: msgs, rateLimitThrottleMaxMs: 60_000 });
+        const h = makeHarness({ messages: msgs, rateLimitThrottleMaxMs: 120_000 });
         h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
+            Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 120_000 } })])
+        );
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-0', VisibilityTimeout: 120 }]);
+        expect(getDeleteCalls(h)).toHaveLength(0);
+    });
+
+    it('logs the delay for a message skipped because its group was already throttled', async () => {
+        const warn = vi.fn<(message: string) => Promise<void>>().mockResolvedValue(undefined);
+        const loggedFor: string[] = [];
+        vi.spyOn(logContextGetter, 'get').mockImplementation(({ id }: { id: string }) => {
+            loggedFor.push(id);
+            return { warn } as unknown as ReturnType<typeof logContextGetter.get>;
+        });
+
+        const noisy = (n: number) =>
+            buildMessage({
+                taskName: `webhook:noisy:${n}`,
+                activityLogId: `log-noisy-${n}`,
+                connection: { id: 42, connection_id: 'noisy-1', provider_config_key: 'github-noisy', environment_id: 2 }
+            });
+
+        const rounds = [[noisy(1)], [noisy(2)]];
+        const sqsSend = vi.fn<SqsSendFn>(async (command: unknown) => {
+            await new Promise((resolve) => setImmediate(resolve));
+            if (command instanceof ReceiveMessageCommand) {
+                const round = rounds.shift() ?? [];
+                return {
+                    Messages: round.map((m) => ({
+                        Body: JSON.stringify(m),
+                        ReceiptHandle: `rh-${m.taskName}`,
+                        Attributes: { SentTimestamp: String(Date.now()) }
+                    }))
+                };
+            }
+            return {};
+        });
+
+        const h = makeHarness({ sqsSend, rateLimitThrottleMaxMs: 60_000 });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValue(
             Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 30_000 } })])
+        );
+
+        h.consumer.start();
+        await vi.waitFor(() => {
+            expect(loggedFor).toContain('log-noisy-2');
+        });
+        await h.consumer.stop();
+
+        expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        expect(warn).toHaveBeenCalledWith('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
+    });
+
+    it('never defers a rate limited message for less than the visibility timeout it already had', async () => {
+        const h = makeHarness({ messages: [buildMessage()], rateLimitThrottleMaxMs: 60_000 });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
+            Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 12 } })])
         );
 
         await runOnce(h, () => {
@@ -281,7 +342,6 @@ describe('DispatchQueueConsumer', () => {
         });
 
         expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-0', VisibilityTimeout: 30 }]);
-        expect(getDeleteCalls(h)).toHaveLength(0);
     });
 
     it('throttles only the rate limited group and keeps the other groups flowing', async () => {

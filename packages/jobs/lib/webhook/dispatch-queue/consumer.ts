@@ -17,6 +17,8 @@ import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('jobs.webhook.dispatch-queue.consumer');
 
+const THROTTLED_LOG_MESSAGE = 'Webhook execution is delayed: this environment reached its webhook dispatch rate limit';
+
 const messageSchema: z.ZodType<WebhookDispatchMessage> = z.object({
     version: z.literal(1),
     kind: z.literal('webhook'),
@@ -164,8 +166,7 @@ export class DispatchQueueConsumer {
                     const remainingMs = this.throttles.remainingMs(dispatchGroupKey(group[0]!.parsed));
                     if (remainingMs > 0) {
                         throttled += group.length;
-                        this.reportThrottled(group);
-                        deferrals.push(this.deferGroup(group, remainingMs));
+                        deferrals.push(this.reportThrottled(group), this.deferGroup(group, this.deferMsFor(remainingMs)));
                         continue;
                     }
                     groupedEntries.push(group);
@@ -302,14 +303,14 @@ export class DispatchQueueConsumer {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
                 const remainingMs = this.throttles.remainingMs(groupKey);
                 if (remainingMs > 0) {
-                    await this.deferGroup(group, remainingMs);
+                    await this.deferGroup(group, this.deferMsFor(remainingMs));
                 }
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
-                await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
+                await logCtx.warn(THROTTLED_LOG_MESSAGE);
             } else if (result.error.name === 'task_cap_exceeded') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'task_cap', provider, providerConfigKey });
                 if (this.taskCapDeferMs > 0) {
-                    await this.deferGroup(group, Math.max(this.taskCapDeferMs, this.visibilityTimeoutSeconds * 1000));
+                    await this.deferGroup(group, this.deferMsFor(this.taskCapDeferMs));
                 }
             } else {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider, providerConfigKey });
@@ -317,13 +318,23 @@ export class DispatchQueueConsumer {
         }
     }
 
-    private reportThrottled(group: ParsedEntry[]): void {
-        const { provider, connection } = group[0]!.parsed;
+    private async reportThrottled(group: ParsedEntry[]): Promise<void> {
+        const { provider, connection, activityLogId, accountId } = group[0]!.parsed;
         metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, group.length, {
             result: 'throttle_deferred',
             provider,
             providerConfigKey: connection.provider_config_key
         });
+        try {
+            const logCtx = logContextGetter.get({ id: activityLogId, accountId });
+            await logCtx.warn(THROTTLED_LOG_MESSAGE);
+        } catch (err) {
+            report(new Error('webhook dispatch consumer throttle log failed', { cause: err }));
+        }
+    }
+
+    private deferMsFor(delayMs: number): number {
+        return Math.max(delayMs, this.visibilityTimeoutSeconds * 1000);
     }
 
     private async deferGroup(group: ParsedEntry[], delayMs: number): Promise<void> {
