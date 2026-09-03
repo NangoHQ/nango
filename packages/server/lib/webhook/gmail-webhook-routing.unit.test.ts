@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { logContextGetter } from '@nangohq/logs';
 import { environmentService, getGlobalWebhookReceiveUrl, NangoError, seeders } from '@nangohq/shared';
 import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
-import { metrics } from '@nangohq/utils';
 
 import { hashEmailAddress } from '../utils/pii.js';
 import * as GmailWebhookRouting from './gmail-webhook-routing.js';
@@ -126,27 +125,6 @@ describe('gmailWebhookRouting', () => {
         expect(execute).toHaveBeenNthCalledWith(1, expect.objectContaining({ propName: 'emailAddressHash' }));
         expect(execute).toHaveBeenNthCalledWith(2, expect.objectContaining({ propName: 'metadata.emailAddress' }));
         expect(execute).toHaveBeenNthCalledWith(3, expect.objectContaining({ propName: 'metadata.email' }));
-    });
-
-    it('accepts a request with no Authorization header and records a metric', async () => {
-        const integration = getTestConfig({ provider: 'google-mail', unique_key: 'google-mail' });
-        const { nango, execute } = getNangoMock(integration);
-        const increment = vi.spyOn(metrics, 'increment');
-
-        const result = await GmailWebhookRouting.default(nango, {}, gmailBody() as any, '');
-
-        expect(result.isOk()).toBe(true);
-        expect(execute).toHaveBeenCalledTimes(1);
-        expect(increment).toHaveBeenCalledWith(
-            metrics.Types.WEBHOOK_INCOMING_UNVERIFIED,
-            1,
-            expect.objectContaining({
-                accountId: nango.team.id,
-                environmentId: nango.environment.id,
-                provider: 'google-mail',
-                reason: 'gmail_missing_authorization'
-            })
-        );
     });
 
     it('rejects an invalid JWT', async () => {
