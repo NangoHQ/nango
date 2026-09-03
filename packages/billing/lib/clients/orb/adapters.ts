@@ -3,6 +3,7 @@ import { uuidv7 } from 'uuidv7';
 import { Err, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../envs.js';
+import { growthAddonPriceId } from './catalogue.js';
 import { putOrbCustomerSchema } from './types.js';
 
 import type {
@@ -256,7 +257,7 @@ export function growthAddonStateFromOrb(
     referenceDate: Date = new Date()
 ): Pick<BillingSubscription, 'hasGrowthFeatures' | 'growthFeaturesEndsAt' | 'growthFeaturesPriceIntervalId'> {
     for (const interval of priceIntervals) {
-        if (interval.price?.external_price_id !== envs.ORB_GROWTH_ADDON_PRICE_ID) {
+        if (interval.price?.external_price_id !== growthAddonPriceId) {
             continue;
         }
 

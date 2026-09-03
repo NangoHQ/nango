@@ -13,6 +13,7 @@ import {
     toOrbEvent,
     toOrbPutCustomerPayload
 } from './adapters.js';
+import { growthAddonPriceId } from './catalogue.js';
 
 import type { BillingEvent, BillingInvoicingDetails } from '@nangohq/types';
 import type Orb from 'orb-billing';
@@ -728,7 +729,7 @@ describe('fromOrbPeriodCosts', () => {
 
 describe('growthAddonStateFromOrb', () => {
     const NOW = new Date('2026-09-01T00:00:00Z');
-    const addon = (endDate: string | null) => ({ id: 'pi_growth', end_date: endDate, price: { external_price_id: envs.ORB_GROWTH_ADDON_PRICE_ID } });
+    const addon = (endDate: string | null) => ({ id: 'pi_growth', end_date: endDate, price: { external_price_id: growthAddonPriceId } });
     const otherPrice = { end_date: null, price: { external_price_id: 'payg-connections' } };
 
     it('reports the add-on absent when the subscription only carries other prices', () => {
@@ -773,7 +774,7 @@ describe('growthAddonStateFromOrb', () => {
     });
 
     it('reports it active when the start date is unparseable', () => {
-        const started = { id: 'pi_growth', start_date: 'not-a-date', end_date: null, price: { external_price_id: envs.ORB_GROWTH_ADDON_PRICE_ID } };
+        const started = { id: 'pi_growth', start_date: 'not-a-date', end_date: null, price: { external_price_id: growthAddonPriceId } };
         expect(growthAddonStateFromOrb([started], NOW)).toEqual({
             hasGrowthFeatures: true,
             growthFeaturesEndsAt: null,
@@ -786,7 +787,7 @@ describe('growthAddonStateFromOrb', () => {
             id: 'pi_growth',
             start_date: '2026-10-01T00:00:00Z',
             end_date: null,
-            price: { external_price_id: envs.ORB_GROWTH_ADDON_PRICE_ID }
+            price: { external_price_id: growthAddonPriceId }
         };
         expect(growthAddonStateFromOrb([notYetStarted], NOW)).toEqual({
             hasGrowthFeatures: false,
@@ -796,7 +797,7 @@ describe('growthAddonStateFromOrb', () => {
     });
 
     it('reports it active once the interval has started', () => {
-        const started = { id: 'pi_growth', start_date: '2026-08-01T00:00:00Z', end_date: null, price: { external_price_id: envs.ORB_GROWTH_ADDON_PRICE_ID } };
+        const started = { id: 'pi_growth', start_date: '2026-08-01T00:00:00Z', end_date: null, price: { external_price_id: growthAddonPriceId } };
         expect(growthAddonStateFromOrb([started], NOW)).toEqual({
             hasGrowthFeatures: true,
             growthFeaturesEndsAt: null,

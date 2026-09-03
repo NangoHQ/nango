@@ -507,7 +507,6 @@ const ENVS_SHAPE = z.object({
     ORB_API_KEY: z.string().optional(),
     ORB_WEBHOOKS_SECRET: z.string().optional(),
     /** External price id of the growth add-on: it can differ per Orb environment. */
-    ORB_GROWTH_ADDON_PRICE_ID: z.string().optional().default('growth-addon-price-v2'),
     ORB_MAX_RETRIES: z.coerce.number().optional().default(3),
     ORB_RETRY_MAX_ATTEMPTS: z.coerce.number().optional().default(3),
     ORB_RETRY_INITIAL_DELAY_MS: z.coerce.number().optional().default(10_000),

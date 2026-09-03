@@ -49,7 +49,6 @@ interface SubscriptionEvent extends BaseWebhookEvent {
         id: string;
         customer: { id: string; external_customer_id: string };
         plan: { id: string; external_plan_id: string };
-        price_intervals: { start_date?: string | null; end_date: string | null; price?: { external_price_id?: string | null } | null }[];
     };
 }
 

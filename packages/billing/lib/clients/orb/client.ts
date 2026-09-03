@@ -13,6 +13,7 @@ import {
     toOrbEvent,
     toOrbPutCustomerPayload
 } from './adapters.js';
+import { growthAddonPriceId } from './catalogue.js';
 
 import type {
     BillingClient,
@@ -464,7 +465,7 @@ export class OrbClient implements BillingClient {
     async startGrowthAddon(opts: { subscriptionId: string }): Promise<Result<{ priceIntervalId: string | null }>> {
         try {
             const subscription = await this.orbSDK.subscriptions.priceIntervals(opts.subscriptionId, {
-                add: [{ external_price_id: envs.ORB_GROWTH_ADDON_PRICE_ID, start_date: new Date().toISOString() }]
+                add: [{ external_price_id: growthAddonPriceId, start_date: new Date().toISOString() }]
             });
 
             return Ok({ priceIntervalId: growthAddonStateFromOrb(subscription.price_intervals).growthFeaturesPriceIntervalId });
