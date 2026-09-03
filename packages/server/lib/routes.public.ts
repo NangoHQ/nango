@@ -147,14 +147,15 @@ const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
     next();
 };
 
-function trackDeprecatedPublicEndpoint(endpoint: string, shouldSkip?: (req: Request) => boolean): RequestHandler {
+function trackDeprecatedPublicEndpoint(endpoint: string, isInternal?: (req: Request) => boolean): RequestHandler {
     return (req, res, next) => {
         const { account, environment } = res.locals as RequestLocals;
-        if (environment && !shouldSkip?.(req)) {
+        if (environment) {
             metrics.increment(metrics.Types.DEPRECATED_PUBLIC_ENDPOINT_USED, 1, {
                 accountId: account.id,
                 environmentId: environment.id,
-                endpoint
+                endpoint,
+                ...(isInternal && { internal: isInternal(req) ? 'true' : 'false' })
             });
         }
         next();
