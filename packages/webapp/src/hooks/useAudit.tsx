@@ -35,6 +35,7 @@ export function useApiGetAuditTrail(filters: AuditTrailFilters, options?: { enab
         queryKey: ['audit-trail:infinite', filters.from ?? null, filters.to ?? null, filters.resources ?? null, filters.actions ?? null],
         queryFn: async ({ pageParam, signal }) => {
             const params = auditFilterParams(filters);
+            params.append('showTotal', 'true');
             if (pageParam) {
                 params.append('cursor', pageParam);
             }

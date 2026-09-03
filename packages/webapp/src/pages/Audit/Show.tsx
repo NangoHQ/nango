@@ -72,6 +72,8 @@ export const AuditShow: React.FC = () => {
         { enabled: meta?.auditTrail === true && canReadAuditTrail }
     );
     const events = useMemo(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
+    // Absent when the count failed, in which case say nothing rather than pass the loaded rows off as the total.
+    const total = data?.pages.at(-1)?.total;
     const showLoading = !meta || !user || isLoading;
 
     // Menu entry + route are gated on the flag and the permission, but guard direct navigation too.
@@ -138,11 +140,11 @@ export const AuditShow: React.FC = () => {
                     </div>
                 </div>
 
-                {events.length > 0 && (
+                {total && total.value > 0 && (
                     <div className="flex items-center justify-end">
                         <div className="text-text-muted text-body-small-regular">
-                            {events.length}
-                            {hasNextPage ? '+' : ''} {events.length === 1 && !hasNextPage ? 'event' : 'events'}
+                            {total.value.toLocaleString()}
+                            {total.relation === 'gte' ? '+' : ''} {total.value === 1 && total.relation === 'eq' ? 'event' : 'events'}
                         </div>
                     </div>
                 )}
