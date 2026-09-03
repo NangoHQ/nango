@@ -195,7 +195,7 @@ async function emit(req: Request, res: Response): Promise<void> {
             occurredAt,
             accountId: account.id,
             scope: 'environment',
-            environment: environment ? { id: environment.id, display: environment.name } : null,
+            environment: environment ? { id: environment.uuid, display: environment.name } : null,
             actor: resolveActor(locals),
             resource: 'sync',
             action: mapped.action,

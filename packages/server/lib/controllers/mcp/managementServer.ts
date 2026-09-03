@@ -3,6 +3,7 @@ import { ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 import { getLogger, hasApiKeyScope } from '@nangohq/utils';
 
+import { triggerActionTool } from './actions/trigger.js';
 import { recordManagementMcpAudit } from './audit.js';
 import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
@@ -20,8 +21,10 @@ import { listIntegrationsTool } from './integrations/list.js';
 import { updateIntegrationsTool } from './integrations/update.js';
 import { getLogOperationTool } from './logs/getOperation.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
+import { getProvidersTool } from './providers/get.js';
 import { proxyRequestTool } from './proxy/request.js';
 import { setSyncsStateTool } from './syncs/setState.js';
+import { triggerSyncsTool } from './syncs/trigger.js';
 import { emptyObjectJsonSchema, handleMcpToolError, jsonStructuredContent, toJsonSchema202012 } from './utils.js';
 
 import type { ManagementMcpContext, ManagementMcpRequiredScopes, ManagementMcpTool } from './managementTool.js';
@@ -34,6 +37,7 @@ const logger = getLogger('Server.ManagementMcpServer');
 const managementMcpTools: ManagementMcpTool[] = [
     searchDocsTool,
     queryDocsFilesystemTool,
+    getProvidersTool,
     createConnectSessionTool,
     listIntegrationsTool,
     getIntegrationsTool,
@@ -43,6 +47,8 @@ const managementMcpTools: ManagementMcpTool[] = [
     listConnectionsTool,
     getConnectionsTool,
     setSyncsStateTool,
+    triggerSyncsTool,
+    triggerActionTool,
     proxyRequestTool,
     listFunctionsTool,
     deployFunctionTool,

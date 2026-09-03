@@ -22,7 +22,7 @@ export interface ApiAuditTrailEvent {
     occurredAt: string;
     accountId: number;
     scope: AuditScope;
-    environment: { id: number; display: string } | null;
+    environment: { id: string; display: string } | null;
     actor: AuditActor;
     via?: AuditVia[];
     targets: AuditTarget[];

@@ -3,7 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { AuditClient } from '../client.js';
 import { migrate } from '../postgres/migrate.js';
-import { ensurePartition } from '../postgres/partitions.js';
+import { ensurePartitions } from '../postgres/partitions.js';
 import { PostgresAuditStore } from './postgres.js';
 
 import type { Knex } from 'knex';
@@ -39,7 +39,7 @@ beforeAll(async () => {
     knex = knexFactory({ client: 'pg', connection: { connectionString: url } });
     await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [schema]);
     expect((await migrate({ knex, schema })).isOk()).toBe(true);
-    (await ensurePartition({ knex, schema, date: new Date('2026-09-30T00:00:00Z') })).unwrap();
+    (await ensurePartitions({ knex, schema, dates: [new Date('2026-09-30T00:00:00Z')] })).unwrap();
     store = new PostgresAuditStore(knex, schema);
     client = new AuditClient(store, store);
 });
