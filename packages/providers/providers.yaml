@@ -16795,6 +16795,10 @@ outlook:
         - communication
         - popular
     alias: microsoft
+    webhook_routing_script: outlookWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - validationToken
     docs: https://nango.dev/docs/api-integrations/outlook
     setup_guide_url: https://nango.dev/docs/api-integrations/outlook/how-to-register-your-own-outlook-api-oauth-app
 
