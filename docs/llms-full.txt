@@ -6848,7 +6848,7 @@ AUDIT_DATABASE_URL=postgres://user:password@host:5432/nango
 
 Both are required: without a database there is nowhere to keep entries, so the trail stays off rather than showing a page that never fills. The URL can point at the database Nango already uses or at a separate one, and the server creates the `audit` schema and its table on startup, along with the rest of the schema, when `NANGO_MIGRATE_AT_START=true`.
 
-Entries live in a single table partitioned by day. The server creates the next day's partition ahead of time and drops whole partitions once they fall outside the retention window, so expiring old entries never scans the table:
+Entries are kept for a year by default, and the server removes expired ones for you:
 
 ```bash
 NANGO_AUDIT_POSTGRES_RETENTION_DAYS=365
