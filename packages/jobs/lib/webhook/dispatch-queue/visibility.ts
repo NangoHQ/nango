@@ -3,6 +3,7 @@ import { ChangeMessageVisibilityBatchCommand } from '@aws-sdk/client-sqs';
 import type { SQSClient } from '@aws-sdk/client-sqs';
 
 const SQS_BATCH_LIMIT = 10;
+
 const SQS_MAX_VISIBILITY_SECONDS = 43_200;
 
 interface VisibilityProps {
