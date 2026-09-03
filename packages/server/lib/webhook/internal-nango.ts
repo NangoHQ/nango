@@ -66,6 +66,8 @@ interface WebhookDedupeOptions {
     enforce: boolean;
 }
 
+type WebhookDedupeClaim = { status: 'claimed'; key: string; token: string } | { status: 'suppressed' } | { status: 'unavailable' };
+
 function computeTaskName({
     environmentId,
     providerConfigKey,
@@ -356,13 +358,11 @@ export class InternalNango {
         if (matchedExecutions.length === 0) return;
 
         const dedupeClaim = dedupe ? await this.claimWebhookDedupe(dedupe) : null;
-        if (dedupe && dedupeClaim?.suppressed && dedupe.enforce) return;
-        const delaySeconds = dedupe && dedupeClaim && !dedupeClaim.suppressed && dedupe.enforce ? Math.ceil(dedupe.ttlMs / 1000) : undefined;
+        if (dedupe?.enforce && dedupeClaim?.status === 'suppressed') return;
+        const delaySeconds = dedupe?.enforce && dedupeClaim?.status === 'claimed' ? Math.ceil(dedupe.ttlMs / 1000) : undefined;
 
-        const queuePreparationResults = await runWithConcurrencyLimit(
-            matchedExecutions,
-            LOG_CONTEXT_CREATE_CONCURRENCY,
-            async ({ syncConfig, webhook, connection }) => {
+        const queuePreparationResults = await this.releaseWebhookDedupeOnError(
+            runWithConcurrencyLimit(matchedExecutions, LOG_CONTEXT_CREATE_CONCURRENCY, async ({ syncConfig, webhook, connection }) => {
                 let logCtx: Awaited<ReturnType<LogContextGetter['create']>> | null = null;
 
                 try {
@@ -442,7 +442,8 @@ export class InternalNango {
                         connection
                     };
                 }
-            }
+            }),
+            dedupeClaim
         );
 
         const queuedExecutions = queuePreparationResults.filter((result): result is QueuedExecution => result.kind === 'queued');
@@ -464,7 +465,7 @@ export class InternalNango {
         }
 
         if (queuedExecutions.length === 0) {
-            await this.releaseWebhookDedupe(dedupe, dedupeClaim);
+            await this.releaseWebhookDedupeClaim(dedupeClaim);
             return;
         }
 
@@ -481,15 +482,18 @@ export class InternalNango {
         const oversizedExecutions = queuedExecutions.filter(({ preparedMessage }) => preparedMessage.byteSize > SQS_BATCH_MAX_BYTES);
 
         let unmappedFailureCount = 0;
-        let enqueuedCount = 0;
+        let deliveredCount = 0;
 
         if (queueEligibleExecutions.length > 0) {
             const messageGroupId = `account:${this.team.id}:env:${this.environment.id}`;
-            const publishResult = await publisher.publish(
-                queueEligibleExecutions.map(({ preparedMessage }) => preparedMessage),
-                messageGroupId
+            const publishResult = await this.releaseWebhookDedupeOnError(
+                publisher.publish(
+                    queueEligibleExecutions.map(({ preparedMessage }) => preparedMessage),
+                    messageGroupId
+                ),
+                dedupeClaim
             );
-            enqueuedCount = publishResult.enqueued;
+            deliveredCount += publishResult.enqueued;
             const failedActivityLogIds = new Set(publishResult.failedActivityLogIds);
             unmappedFailureCount = publishResult.failed - failedActivityLogIds.size;
 
@@ -541,7 +545,8 @@ export class InternalNango {
                 });
             }
 
-            const dispatchResult = await this.dispatchExecutionsViaOrchestrator(oversizedExecutions, body);
+            const dispatchResult = await this.releaseWebhookDedupeOnError(this.dispatchExecutionsViaOrchestrator(oversizedExecutions, body), dedupeClaim);
+            deliveredCount += dispatchResult.succeededCount;
 
             for (const { error, syncConfig, webhook, connection } of dispatchResult.failedExecutions) {
                 if (error instanceof NangoError && error.type === 'webhook_rate_limit_exceeded') {
@@ -571,30 +576,28 @@ export class InternalNango {
             });
         }
 
-        if (enqueuedCount === 0) {
-            await this.releaseWebhookDedupe(dedupe, dedupeClaim);
+        if (deliveredCount === 0) {
+            await this.releaseWebhookDedupeClaim(dedupeClaim);
         }
     }
 
-    private async claimWebhookDedupe(dedupe: WebhookDedupeOptions): Promise<{ token: string; suppressed: boolean }> {
+    private async claimWebhookDedupe(dedupe: WebhookDedupeOptions): Promise<WebhookDedupeClaim> {
+        const key = dedupe.enforce ? dedupe.key : `${dedupe.key}:shadow`;
         const token = randomUUID();
         const dimensions = {
             provider: this.integration.provider,
-            providerConfigKey: this.integration.unique_key,
-            accountId: this.team.id,
-            environmentId: this.environment.id,
             enforced: String(dedupe.enforce)
         };
 
         try {
             const store = await getKVStore('system');
-            await store.set(dedupe.key, token, { canOverride: false, ttlMs: dedupe.ttlMs });
+            await store.set(key, token, { canOverride: false, ttlMs: dedupe.ttlMs });
             metrics.increment(metrics.Types.WEBHOOK_DEDUPE_DISPATCHED, 1, dimensions);
-            return { token, suppressed: false };
+            return { status: 'claimed', key, token };
         } catch (err) {
             if (err instanceof Error && err.message === 'set_key_already_exists') {
                 metrics.increment(metrics.Types.WEBHOOK_DEDUPE_SUPPRESSED, 1, dimensions);
-                return { token, suppressed: true };
+                return { status: 'suppressed' };
             }
 
             report(err, {
@@ -604,16 +607,25 @@ export class InternalNango {
                 environmentId: this.environment.id,
                 integrationId: this.integration.id
             });
-            return { token, suppressed: false };
+            return { status: 'unavailable' };
         }
     }
 
-    private async releaseWebhookDedupe(dedupe: WebhookDedupeOptions | undefined, claim: { token: string; suppressed: boolean } | null): Promise<void> {
-        if (!dedupe?.enforce || !claim || claim.suppressed) return;
+    private async releaseWebhookDedupeOnError<T>(promise: Promise<T>, claim: WebhookDedupeClaim | null): Promise<T> {
+        try {
+            return await promise;
+        } catch (err) {
+            await this.releaseWebhookDedupeClaim(claim);
+            throw err;
+        }
+    }
+
+    private async releaseWebhookDedupeClaim(claim: WebhookDedupeClaim | null): Promise<void> {
+        if (claim?.status !== 'claimed') return;
 
         try {
             const store = await getKVStore('system');
-            await store.deleteIfValueEquals(dedupe.key, claim.token);
+            await store.deleteIfValueEquals(claim.key, claim.token);
         } catch (err) {
             report(err, {
                 context: 'webhook dedupe release failed',

@@ -565,8 +565,8 @@ describe('parse', () => {
         });
 
         it('should reject values outside the SQS delay range', () => {
-            expect(() => parseEnvs(ENVS, { NANGO_WEBHOOK_DEDUPE_WINDOW_MS: '-1' })).toThrowError();
-            expect(() => parseEnvs(ENVS, { NANGO_WEBHOOK_DEDUPE_WINDOW_MS: '900001' })).toThrowError();
+            expect(() => parseEnvs(ENVS, { NANGO_WEBHOOK_DEDUPE_WINDOW_MS: '-1' })).toThrowError(/expected number to be >=0/);
+            expect(() => parseEnvs(ENVS, { NANGO_WEBHOOK_DEDUPE_WINDOW_MS: '900001' })).toThrowError(/expected number to be <=900000/);
         });
     });
 
