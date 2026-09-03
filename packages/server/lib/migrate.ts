@@ -15,8 +15,8 @@ await migrateKeystore(db.knex);
 await migrateLogs();
 await records.migrate();
 await tasks.migrate();
-if (isSelfHostedAuditTrailEnabled(envs.AUDIT_DATABASE_URL)) {
-    (await migrateAudit({ knex: auditDb(envs.AUDIT_DATABASE_URL) })).unwrap();
+if (isSelfHostedAuditTrailEnabled(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL)) {
+    (await migrateAudit({ knex: auditDb(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL) })).unwrap();
     await destroyAuditDb();
 }
 

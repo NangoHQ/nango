@@ -169,31 +169,21 @@ The default retention period for deleted connections is 31 days. You can configu
 
 The audit trail records control-plane activity — who created a connection, changed an integration, rotated an API key or signed in, from which IP, and whether it succeeded. Self-hosted instances keep it in Postgres, and teammates read it from **Audit trail** in the dashboard.
 
-Enable it on the server with two variables:
+Enable it on the server:
 
-```bash
+```sh
 FLAG_AUDIT_TRAIL_ENABLED=true
-AUDIT_DATABASE_URL=postgres://user:password@host:5432/nango
+NANGO_AUDIT_POSTGRES_DATABASE_URL=postgresql://user:password@host:port/dbname
+NANGO_AUDIT_POSTGRES_SSL=true
 ```
 
-Both are required: without a database there is nowhere to keep entries, so the trail stays off rather than showing a page that never fills. The URL can point at the database Nango already uses or at a separate one, and the server creates the `audit` schema and its table on startup, along with the rest of the schema, when `NANGO_MIGRATE_AT_START=true`.
+Without a database there is nowhere to keep entries, so the trail stays off rather than showing a page that never fills. Set `NANGO_AUDIT_POSTGRES_SSL=true` when the database is external, as with the main one. The URL can point at the database Nango already uses or at a separate one, and the server creates the schema on startup along with the rest of it when `NANGO_MIGRATE_AT_START=true`.
 
 Entries are kept for a year by default, and the server removes expired ones for you:
 
-```bash
+```sh
 NANGO_AUDIT_POSTGRES_RETENTION_DAYS=365
 ```
-
-Two optional settings control the connection:
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `AUDIT_DB_POOL_MAX` | `5` | Connections in the audit pool. The trail writes one row per control-plane request, so the default suits most instances. |
-| `AUDIT_DB_SSL` | `false` | Encrypt the connection. An `sslmode` in `AUDIT_DATABASE_URL` takes precedence, and is how you require certificate verification or point at a private CA with `sslrootcert`. |
-
-<Note>
-These variables configure a Postgres-backed trail and apply to self-hosted instances only. They are unrelated to the `audit-trail` feature flag below, which Nango Cloud uses to roll the feature out per account.
-</Note>
 
 ## Feature flags
 

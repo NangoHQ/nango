@@ -19,9 +19,9 @@ export function auditDb(url: string): Knex {
         connection: {
             connectionString: url,
             application_name: envs.NANGO_DB_APPLICATION_NAME,
-            ssl: envs.AUDIT_DB_SSL ? { rejectUnauthorized: false } : false
+            ssl: envs.NANGO_AUDIT_POSTGRES_SSL ? { rejectUnauthorized: false } : false
         },
-        pool: { min: 0, max: envs.AUDIT_DB_POOL_MAX }
+        pool: { min: 0, max: envs.NANGO_AUDIT_POSTGRES_POOL_MAX }
     });
     return instance;
 }

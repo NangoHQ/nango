@@ -759,9 +759,9 @@ const ENVS_SHAPE = z.object({
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
     // The following are only considered in local, self-hosted and BYOC deployments that configure
     // Postgres storage for the audit trail. The URL can point to the main database.
-    AUDIT_DATABASE_URL: z.url().optional(),
-    AUDIT_DB_POOL_MAX: z.coerce.number().optional().default(5),
-    AUDIT_DB_SSL: z.stringbool().optional().default(false),
+    NANGO_AUDIT_POSTGRES_DATABASE_URL: z.url().optional(),
+    NANGO_AUDIT_POSTGRES_POOL_MAX: z.coerce.number().optional().default(5),
+    NANGO_AUDIT_POSTGRES_SSL: z.stringbool().optional().default(false),
     NANGO_AUDIT_POSTGRES_RETENTION_DAYS: z.coerce.number().int().positive().optional().default(365),
     NANGO_AUDIT_POSTGRES_PARTITION_INTERVAL_MS: z.coerce
         .number()

@@ -88,17 +88,17 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await records.migrate();
     await migrateFleets();
     await tasks.migrate();
-    if (isSelfHostedAuditTrailEnabled(envs.AUDIT_DATABASE_URL)) {
-        (await migrateAudit({ knex: auditDb(envs.AUDIT_DATABASE_URL) })).unwrap();
+    if (isSelfHostedAuditTrailEnabled(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL)) {
+        (await migrateAudit({ knex: auditDb(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL) })).unwrap();
     }
     await db.destroy();
 } else {
     logger.info('Not migrating database');
 }
 
-const auditPartitions = isSelfHostedAuditTrailEnabled(envs.AUDIT_DATABASE_URL)
+const auditPartitions = isSelfHostedAuditTrailEnabled(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL)
     ? startPartitionDaemon({
-          knex: auditDb(envs.AUDIT_DATABASE_URL),
+          knex: auditDb(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL),
           tickIntervalMs: envs.NANGO_AUDIT_POSTGRES_PARTITION_INTERVAL_MS,
           retentionDays: envs.NANGO_AUDIT_POSTGRES_RETENTION_DAYS
       })

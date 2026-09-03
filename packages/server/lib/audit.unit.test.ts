@@ -58,21 +58,21 @@ describe('selectAuditStores', () => {
     const original = {
         transport: envs.NANGO_AUDIT_TRANSPORT,
         clickhouse: envs.CLICKHOUSE_URL,
-        auditDb: envs.AUDIT_DATABASE_URL,
+        auditDb: envs.NANGO_AUDIT_POSTGRES_DATABASE_URL,
         flag: flags.hasAuditTrail
     };
 
     afterEach(async () => {
         (envs as any).NANGO_AUDIT_TRANSPORT = original.transport;
         (envs as any).CLICKHOUSE_URL = original.clickhouse;
-        (envs as any).AUDIT_DATABASE_URL = original.auditDb;
+        (envs as any).NANGO_AUDIT_POSTGRES_DATABASE_URL = original.auditDb;
         flags.hasAuditTrail = original.flag;
         await destroyAuditDb();
     });
 
     it('picks Postgres over ClickHouse when the trail is enabled with a database', () => {
         flags.hasAuditTrail = true;
-        (envs as any).AUDIT_DATABASE_URL = 'postgres://localhost:5432/nango';
+        (envs as any).NANGO_AUDIT_POSTGRES_DATABASE_URL = 'postgres://localhost:5432/nango';
         (envs as any).CLICKHOUSE_URL = 'http://localhost:8123';
 
         const { writer, reader, configured } = selectAuditStores();
@@ -83,7 +83,7 @@ describe('selectAuditStores', () => {
 
     it('ignores the audit database while the trail is disabled', () => {
         flags.hasAuditTrail = false;
-        (envs as any).AUDIT_DATABASE_URL = 'postgres://localhost:5432/nango';
+        (envs as any).NANGO_AUDIT_POSTGRES_DATABASE_URL = 'postgres://localhost:5432/nango';
         (envs as any).NANGO_AUDIT_TRANSPORT = 'direct';
         (envs as any).CLICKHOUSE_URL = 'http://localhost:8123';
 
@@ -92,7 +92,7 @@ describe('selectAuditStores', () => {
     });
 
     it('publishes to pub/sub and reads from ClickHouse', () => {
-        (envs as any).AUDIT_DATABASE_URL = undefined;
+        (envs as any).NANGO_AUDIT_POSTGRES_DATABASE_URL = undefined;
         (envs as any).NANGO_AUDIT_TRANSPORT = 'pubsub';
         (envs as any).CLICKHOUSE_URL = 'http://localhost:8123';
 
@@ -103,7 +103,7 @@ describe('selectAuditStores', () => {
     });
 
     it('does not publish to pub/sub with no ClickHouse to read from', () => {
-        (envs as any).AUDIT_DATABASE_URL = undefined;
+        (envs as any).NANGO_AUDIT_POSTGRES_DATABASE_URL = undefined;
         (envs as any).NANGO_AUDIT_TRANSPORT = 'pubsub';
         (envs as any).CLICKHOUSE_URL = undefined;
 
@@ -114,7 +114,7 @@ describe('selectAuditStores', () => {
     });
 
     it('reads and writes ClickHouse when it is the only backend', () => {
-        (envs as any).AUDIT_DATABASE_URL = undefined;
+        (envs as any).NANGO_AUDIT_POSTGRES_DATABASE_URL = undefined;
         (envs as any).NANGO_AUDIT_TRANSPORT = 'direct';
         (envs as any).CLICKHOUSE_URL = 'http://localhost:8123';
 
@@ -125,7 +125,7 @@ describe('selectAuditStores', () => {
     });
 
     it('drops events when no backend is configured', () => {
-        (envs as any).AUDIT_DATABASE_URL = undefined;
+        (envs as any).NANGO_AUDIT_POSTGRES_DATABASE_URL = undefined;
         (envs as any).NANGO_AUDIT_TRANSPORT = 'direct';
         (envs as any).CLICKHOUSE_URL = undefined;
 
