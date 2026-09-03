@@ -28,8 +28,8 @@
     "href": "https://nango.dev"
   },
   "favicon": {
-    "light": "/favicon-white.svg",
-    "dark": "/favicon-black.svg"
+    "light": "/favicon-black.svg",
+    "dark": "/favicon-white.svg"
   },
   "contextual": {
     "options": [
