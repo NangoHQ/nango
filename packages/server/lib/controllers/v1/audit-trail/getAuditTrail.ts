@@ -29,14 +29,12 @@ export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
 
     const { cursor, from, to, resources, actions } = query.data;
 
-    // Started before the list is awaited so it doesn't queue behind it. First page only: the total can't change while the filters are fixed.
-    const counting: Promise<Result<number>> | undefined = cursor
-        ? undefined
-        : audit.countAuditTrailEvents({ accountId: account.id, from, to, resources, actions }).catch((err: unknown) => {
-              // Only failures that escaped the store reach here, and they are logged nowhere else.
-              logger.warning(`Audit trail count threw for account ${account.id}: ${stringifyError(err)}`);
-              return Err(err instanceof Error ? err : new Error(String(err)));
-          });
+    // Started before the list is awaited so it doesn't queue behind it.
+    const counting: Promise<Result<number>> = audit.countAuditTrailEvents({ accountId: account.id, from, to, resources, actions }).catch((err: unknown) => {
+        // Only failures that escaped the store reach here, and they are logged nowhere else.
+        logger.warning(`Audit trail count threw for account ${account.id}: ${stringifyError(err)}`);
+        return Err(err instanceof Error ? err : new Error(String(err)));
+    });
 
     const result = await audit.listAuditTrailEvents({ accountId: account.id, limit: PAGE_SIZE, cursor, from, to, resources, actions });
 
@@ -50,10 +48,7 @@ export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
     }
 
     const counted = await counting;
-    let total: number | undefined;
-    if (counted?.isOk()) {
-        total = counted.value;
-    }
+    const total = counted.isOk() ? counted.value : undefined;
 
     res.status(200).send({
         data: result.value.events,

@@ -73,7 +73,7 @@ export const AuditShow: React.FC = () => {
     );
     const events = useMemo(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
     // Absent when the count failed, in which case say nothing rather than pass the loaded rows off as the total.
-    const total = data?.pages[0]?.total;
+    const total = data?.pages.at(-1)?.total;
     const showLoading = !meta || !user || isLoading;
 
     // Menu entry + route are gated on the flag and the permission, but guard direct navigation too.

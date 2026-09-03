@@ -202,7 +202,7 @@ describe('GET /api/v1/audit-trail', () => {
         expect(narrowed.json.total).toBe(1);
     });
 
-    it('leaves the total off a continuation, which cannot change it', async () => {
+    it('reports the same total on a continuation as on the first page', async () => {
         const { session, account } = await authAdmin();
         const base = Date.parse('2026-07-16T10:00:00.000Z');
         for (let i = 0; i < 26; i++) {
@@ -215,7 +215,9 @@ describe('GET /api/v1/audit-trail', () => {
 
         const second = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { cursor: first.json.pagination.nextCursor! } });
         isSuccess(second.json);
-        expect(second.json.total).toBeUndefined();
+        expect(second.json.data).toHaveLength(1);
+        // Paging doesn't narrow the set the filters describe, so the number can't move.
+        expect(second.json.total).toBe(26);
     });
 
     it('still returns the rows when the count fails, just without the number', async () => {

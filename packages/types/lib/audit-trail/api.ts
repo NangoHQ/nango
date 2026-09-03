@@ -51,7 +51,7 @@ export type GetAuditTrail = ApiEndpoint<{
     };
     Success: {
         data: ApiAuditTrailEvent[];
-        // How many events the filters match, not how many this page holds. Sent with the first page only.
+        // How many events the filters match, not how many this page holds. Absent when the count failed.
         total?: number;
         pagination: { nextCursor: string | null };
     };
