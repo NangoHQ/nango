@@ -153,17 +153,6 @@ function isPlanUnchanged(currentPlan: DBPlan, newPlan: PlanDefinition): boolean 
     return currentPlan.name === newPlan.code;
 }
 
-/**
- * The one place growth add-on state is written outside the reconcile cron.
- *
- * Kept apart from `handlePlanChanged` on purpose: that function is reachable from the Orb webhook,
- * whose payload is a snapshot from when the event was generated and can arrive up to ~28 hours late
- * after retries. Callers here have just performed the change against Orb, or have just read it live,
- * so nothing they write can be contradicted by an older event.
- *
- * @param endsAt - When the add-on stops billing, once its removal is scheduled. The add-on is still
- * active until then, so `hasGrowthFeatures` stays true alongside it.
- */
 export async function setGrowthAddon(
     db: Knex,
     team: DBTeam,
@@ -179,7 +168,6 @@ export async function setGrowthAddon(
         return Err('Received a plan not linked to the plansList');
     }
 
-    // Granted while the add-on is on, back to whatever the plan itself allows once it is off.
     const flags: Partial<PlanDefinition['flags']> = {};
     for (const flag of Object.keys(GROWTH_FEATURE_FLAGS) as (keyof typeof GROWTH_FEATURE_FLAGS)[]) {
         flags[flag] = hasGrowthFeatures ? GROWTH_FEATURE_FLAGS[flag] : (definition.flags[flag] as boolean);

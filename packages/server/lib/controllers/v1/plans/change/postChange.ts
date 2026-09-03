@@ -123,11 +123,6 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         }
     }
 
-    // NOTE: changes are ordered so that the impact to an account is mitigated in the face of failure
-    // between operations. Joint operations (eg. upgrade with add-on enabling) can't be carried out
-    // atomically due to a limitation in Orb's api: one can't remove an add-on price via a `schedule_plan_change`
-    // operation; rather it requires a call to `price_intervals`.
-
     if (change.addon === 'disable') {
         const disabled = await disableGrowthAddon(context, sub);
         if (disabled.isErr()) {
