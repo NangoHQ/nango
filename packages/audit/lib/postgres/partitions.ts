@@ -29,6 +29,7 @@ function partitionDay(relname: string): string {
 /** One partition per UTC day: 2026-09-30 holds FROM '2026-09-30T00:00:00Z' TO '2026-10-01T00:00:00Z', upper bound excluded. */
 export async function ensurePartitions({ knex, schema, dates }: { knex: Knex; schema: string; dates: Date[] }): Promise<Result<string[]>> {
     const ensured: string[] = [];
+    let failure: Error | undefined;
     for (const date of dates) {
         const day = dayjs(date).utc().startOf('day');
         const name = partitionName(day);
@@ -39,10 +40,11 @@ export async function ensurePartitions({ knex, schema, dates }: { knex: Knex; sc
             );
             ensured.push(name);
         } catch (err) {
-            return Err(new Error(`Failed to ensure audit partition ${name}`, { cause: err }));
+            // One day failing must not cost the others: tomorrow's partition is what keeps inserts working at midnight.
+            failure ??= new Error(`Failed to ensure audit partition ${name}`, { cause: err });
         }
     }
-    return Ok(ensured);
+    return failure ? Err(failure) : Ok(ensured);
 }
 
 export async function dropExpiredPartitions({
@@ -114,7 +116,7 @@ export function startPartitionDaemon({
     return cancellableDaemon({
         tickIntervalMs,
         tick: async () => {
-            return void (await tracer.trace('nango.audit.daemon.partitions', async (span) => {
+            return await tracer.trace('nango.audit.daemon.partitions', async (span) => {
                 try {
                     const today = new Date();
                     const tomorrow = dayjs(today).utc().add(1, 'day').toDate();
@@ -134,7 +136,7 @@ export function startPartitionDaemon({
                 } finally {
                     span?.finish();
                 }
-            }));
+            });
         },
         onError: (err) => {
             logger.error(`[audit partitions] unexpected error`, err);

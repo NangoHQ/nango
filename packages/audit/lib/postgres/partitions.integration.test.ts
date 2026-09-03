@@ -10,6 +10,7 @@ import { AUDIT_EVENTS_TABLE } from './schema.js';
 import type { Knex } from 'knex';
 
 const schema = 'audit_partitions_test';
+const foreignSchema = `${schema}_foreign`;
 dayjs.extend(utc);
 
 const now = new Date('2026-09-30T12:00:00Z');
@@ -39,6 +40,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
+    await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [foreignSchema]);
     for (const name of await partitions()) {
         await knex.raw('DROP TABLE IF EXISTS ??.??', [schema, name]);
     }
@@ -49,6 +51,22 @@ describe('audit partition lifecycle', () => {
         expect((await ensurePartitions({ knex, schema, dates: [now] })).unwrap()).toEqual([`${AUDIT_EVENTS_TABLE}_20260930`]);
         expect((await ensurePartitions({ knex, schema, dates: [now] })).unwrap()).toEqual([`${AUDIT_EVENTS_TABLE}_20260930`]);
         expect(await partitions()).toEqual([`${AUDIT_EVENTS_TABLE}_20260930`]);
+    });
+
+    it('still ensures the other days when one of them cannot be created', async () => {
+        const overlapping = `${AUDIT_EVENTS_TABLE}_manual`;
+        const today = dayjs(now).utc().startOf('day');
+        await knex.raw(`CREATE TABLE ??.?? PARTITION OF ??.?? FOR VALUES FROM ('${today.toISOString()}') TO ('${today.add(1, 'day').toISOString()}')`, [
+            schema,
+            overlapping,
+            schema,
+            AUDIT_EVENTS_TABLE
+        ]);
+
+        expect((await ensurePartitions({ knex, schema, dates: [now, day(1)] })).isErr()).toBe(true);
+        expect(await partitions()).toEqual([`${AUDIT_EVENTS_TABLE}_${dayjs(day(1)).utc().format('YYYYMMDD')}`]);
+
+        await knex.raw('DROP TABLE IF EXISTS ??.??', [schema, overlapping]);
     });
 
     it('covers its whole day and neither of the neighbouring ones', async () => {
