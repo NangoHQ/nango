@@ -57,6 +57,27 @@ describe('Connection service integration tests', () => {
 
             expect(updated?.operation).toBe('override');
         });
+
+        it('does not exceed the cap when connections are created concurrently', async () => {
+            const { account, env } = await seedAccountEnvAndUser({ plan: { connections_max: 1 } });
+            const config = await createConfigSeed(env, `concurrent-${Math.random().toString(36).slice(2, 10)}`, 'unauthenticated');
+
+            const attempts = await Promise.allSettled(
+                Array.from({ length: 5 }, (_, index) =>
+                    connectionService.upsertUnauthConnection({
+                        connectionId: `concurrent-connection-${index}`,
+                        providerConfigKey: config.unique_key,
+                        environment: env
+                    })
+                )
+            );
+
+            expect(attempts.filter((attempt) => attempt.status === 'fulfilled')).toHaveLength(1);
+            expect(
+                attempts.filter((attempt) => attempt.status === 'rejected').every((attempt) => attempt.reason instanceof ConnectionCreationCappedError)
+            ).toBe(true);
+            await expect(connectionService.countByAccountId(account.id)).resolves.toBe(1);
+        });
     });
 
     describe('Metadata simple operations', () => {
