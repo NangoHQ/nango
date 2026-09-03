@@ -1,7 +1,7 @@
 import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { canHaveGrowthAddon, getPlanDefinition, handlePlanChanged, productTracking, setGrowthAddon } from '@nangohq/shared';
-import { Err, getLogger, Ok, report } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { clearSpendAlertOnPlanChange } from './spendAlertNotification.service.js';
 
@@ -12,6 +12,7 @@ const logger = getLogger('Server.PlanChange');
 
 export interface PlanUpgradeResult {
     paymentIntent?: Stripe.PaymentIntent | undefined;
+    paymentMode: 'in-arrears' | 'some-up-front';
 }
 
 export interface PlanChangeContext {
@@ -100,7 +101,14 @@ export function resolvePlanChange(context: PlanChangeContext, subscription: Bill
         subscription.planExternalId !== currentPlan.name ||
         subscription.hasGrowthFeatures !== currentPlan.has_growth_features
     ) {
-        return Err(new PlanChangeError('out_of_sync'));
+        return Err(
+            new PlanChangeError('out_of_sync', {
+                cause: {
+                    ours: { subscriptionId, planId: currentPlan.name, hasGrowthFeatures: currentPlan.has_growth_features },
+                    theirs: { subscriptionId: subscription.id, planId: subscription.planExternalId, hasGrowthFeatures: subscription.hasGrowthFeatures }
+                }
+            })
+        );
     }
 
     // The Growth add-on is only available for a subset of the available plans; reject any request to
@@ -200,15 +208,12 @@ export async function upgradePlan(context: PlanChangeContext): Promise<Result<Pl
     }
 
     try {
-        logger.info(`Upgrading ${team.id} to ${requested.newPlanCode}`);
-
         // NOTE: we always schedule the upgrade as a pending change.
         // Whether we'll settle the change synchronously or asynchronously (via webhook) depends on whether we need to charge the
         // customer first (up front vs in-arrears). When charging the customer up front, we rely on Stripe and thus must await
         // the payment confirmation via webhook.
         const resUpgrade = await billing.upgrade({ subscriptionId, planExternalId: requested.newPlanCode });
         if (resUpgrade.isErr()) {
-            report(resUpgrade.error);
             return Err(new PlanChangeError('upgrade_failed', { cause: resUpgrade.error }));
         }
         const pendingChangeId = resUpgrade.value.pendingChangeId;
@@ -216,20 +221,15 @@ export async function upgradePlan(context: PlanChangeContext): Promise<Result<Pl
         if (!resUpgrade.value.amountInCents) {
             // Orb reported no pending payments found, so apply the pending change inline rather than
             // asynchronously (via Stripe's webhook).
-            logger.info(`Nothing to collect upfront, applying ${pendingChangeId} for ${team.id}`);
-
             const applied = await applyPendingPlanChange({ team, pendingChangeId });
             if (applied.isErr()) {
-                report(applied.error);
                 return Err(new PlanChangeError('upgrade_failed', { cause: applied.error }));
             }
 
-            return Ok({});
+            return Ok({ paymentMode: 'in-arrears' });
         }
 
         const stripe = getStripe();
-
-        logger.info(`Asking for base fee ${resUpgrade.value.amountInCents} for ${team.id}`);
 
         // Create a payment intent to confirm the card
         const paymentIntent = await stripe.paymentIntents.create({
@@ -240,26 +240,25 @@ export async function upgradePlan(context: PlanChangeContext): Promise<Result<Pl
             payment_method: currentPlan.stripe_payment_id
         });
 
-        return Ok(paymentIntent.status === 'succeeded' ? {} : { paymentIntent });
+        return Ok({
+            paymentMode: 'some-up-front',
+            ...(paymentIntent.status === 'succeeded' ? {} : { paymentIntent })
+        });
     } catch (err) {
-        report(err);
         return Err(new PlanChangeError('upgrade_failed', { cause: err }));
     }
 }
 
 /** Schedules a downgrade in Orb, which takes effect at the end of the current term. */
 export async function downgradePlan(context: PlanChangeContext): Promise<Result<void, PlanChangeError>> {
-    const { team, currentPlan, subscriptionId, requested } = context;
+    const { currentPlan, subscriptionId, requested } = context;
 
     if (requested.newPlanCode !== 'free' && (!currentPlan.stripe_payment_id || !currentPlan.stripe_customer_id)) {
         return Err(new PlanChangeError('not_linked_to_stripe'));
     }
 
-    logger.info(`Downgrading ${team.id} to ${requested.newPlanCode}`);
-
     const resDowngrade = await billing.downgrade({ subscriptionId, planExternalId: requested.newPlanCode });
     if (resDowngrade.isErr()) {
-        report(resDowngrade.error);
         return Err(new PlanChangeError('downgrade_failed', { cause: resDowngrade.error }));
     }
 
@@ -289,17 +288,13 @@ export function trackPlanChange(context: PlanChangeContext, change: PlanChanges)
 export async function enableGrowthAddon(context: PlanChangeContext): Promise<Result<void, PlanChangeError>> {
     const { team, subscriptionId } = context;
 
-    logger.info(`Enabling growth add-on for ${team.id}`);
-
     const resStart = await billing.startGrowthAddon({ subscriptionId });
     if (resStart.isErr()) {
-        report(resStart.error);
         return Err(new PlanChangeError('addon_failed', { cause: resStart.error }));
     }
 
     const resRecord = await setGrowthAddon(db.knex, team, { hasGrowthFeatures: true });
     if (resRecord.isErr()) {
-        report(resRecord.error);
         return Err(new PlanChangeError('addon_failed', { cause: resRecord.error }));
     }
 
@@ -309,21 +304,17 @@ export async function enableGrowthAddon(context: PlanChangeContext): Promise<Res
 export async function disableGrowthAddon(context: PlanChangeContext, subscription: BillingSubscription): Promise<Result<void, PlanChangeError>> {
     const { team, subscriptionId } = context;
 
-    logger.info(`Disabling growth add-on for ${team.id}`);
-
     if (!subscription.growthFeaturesPriceIntervalId) {
         return Err(new PlanChangeError('addon_failed', { cause: `Growth add-on price interval not found in subscription: ${subscriptionId}` }));
     }
 
     const resEnd = await billing.endGrowthAddon({ subscriptionId, priceIntervalId: subscription.growthFeaturesPriceIntervalId });
     if (resEnd.isErr()) {
-        report(resEnd.error);
         return Err(new PlanChangeError('addon_failed', { cause: resEnd.error }));
     }
 
     const resRecord = await setGrowthAddon(db.knex, team, { hasGrowthFeatures: true, endsAt: resEnd.value.growthFeaturesEndsAt });
     if (resRecord.isErr()) {
-        report(resRecord.error);
         return Err(new PlanChangeError('addon_failed', { cause: resRecord.error }));
     }
 

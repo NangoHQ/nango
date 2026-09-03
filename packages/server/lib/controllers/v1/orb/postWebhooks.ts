@@ -91,7 +91,14 @@ type Webhooks =
     | SubscriptionCostExceededEvent;
 
 async function handleWebhook(body: Webhooks): Promise<Result<void>> {
-    logger.info('[orb-hook]', body.type);
+    logger.info('[orb-hook]', {
+        id: body.id,
+        createdAt: body.created_at,
+        type: body.type,
+        subscriptionId: body.subscription.id,
+        accountId: body.subscription.customer.external_customer_id,
+        plan: body.subscription.plan.external_plan_id
+    });
 
     switch (body.type) {
         case 'subscription.started':

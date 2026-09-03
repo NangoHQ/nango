@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { billing } from '@nangohq/billing';
 import { plansList } from '@nangohq/shared';
-import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import {
     disableGrowthAddon,
@@ -15,15 +15,30 @@ import {
 } from '../../../../services/planChange.service.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
-import type { PlanChangeError } from '../../../../services/planChange.service.js';
+import type { PlanChangeContext, PlanChangeError, PlanChanges } from '../../../../services/planChange.service.js';
 import type { RequestLocals } from '../../../../utils/express.js';
-import type { PostPlanChange } from '@nangohq/types';
+import type { BillingSubscription, PostPlanChange } from '@nangohq/types';
 import type { Response } from 'express';
 import type Stripe from 'stripe';
 
+const logger = getLogger('Server.PostChange');
+
 type PlanChangeResponse = Response<PostPlanChange['Reply'], RequestLocals>;
 
+function logContext(context: PlanChangeContext, subscription: BillingSubscription, changes: PlanChanges) {
+    return {
+        accountId: context.team.id,
+        currentPlan: context.currentPlan.name,
+        requestedPlan: context.requested.newPlanCode,
+        requestedWithGrowthAddon: context.requested.withGrowthFeatures,
+        subscriptionId: context.subscriptionId,
+        subscription,
+        changes
+    };
+}
+
 function sendPlanChangeError(res: PlanChangeResponse, error: PlanChangeError): void {
+    report(error);
     switch (error.code) {
         case 'not_linked_to_stripe':
             res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
@@ -104,18 +119,19 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         res.status(500).send({ error: { code: 'server_error' } });
         return;
     }
-    const sub = resSub.value;
+    const subscription = resSub.value;
 
-    const resChange = resolvePlanChange(context, sub);
+    const resChange = resolvePlanChange(context, subscription);
     if (resChange.isErr()) {
         sendPlanChangeError(res, resChange.error);
         return;
     }
-    const change = resChange.value;
+    const changes = resChange.value;
 
-    if (sub.pendingChangeId) {
+    if (subscription.pendingChangeId) {
+        logger.info('Detected pending plan change, canceling it', logContext(context, subscription, changes));
         // There is a pending change on Orb already; we must cancel it before moving forward with our change
-        const cancelled = await billing.client.cancelPendingChanges({ pendingChangeId: sub.pendingChangeId });
+        const cancelled = await billing.client.cancelPendingChanges({ pendingChangeId: subscription.pendingChangeId });
         if (cancelled.isErr()) {
             report(cancelled.error);
             res.status(500).send({ error: { code: 'server_error' } });
@@ -123,8 +139,9 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         }
     }
 
-    if (change.addon === 'disable') {
-        const disabled = await disableGrowthAddon(context, sub);
+    if (changes.addon === 'disable') {
+        logger.info('Disabling growth add-on', logContext(context, subscription, changes));
+        const disabled = await disableGrowthAddon(context, subscription);
         if (disabled.isErr()) {
             sendPlanChangeError(res, disabled.error);
             return;
@@ -132,14 +149,16 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
     }
 
     let paymentIntent: Stripe.PaymentIntent | undefined;
-    if (change.plan === 'upgrade') {
+    if (changes.plan === 'upgrade') {
+        logger.info('Upgrading plan', logContext(context, subscription, changes));
         const upgraded = await upgradePlan(context);
         if (upgraded.isErr()) {
             sendPlanChangeError(res, upgraded.error);
             return;
         }
         paymentIntent = upgraded.value.paymentIntent;
-    } else if (change.plan === 'downgrade') {
+    } else if (changes.plan === 'downgrade') {
+        logger.info('Downgrading plan', logContext(context, subscription, changes));
         const downgraded = await downgradePlan(context);
         if (downgraded.isErr()) {
             sendPlanChangeError(res, downgraded.error);
@@ -147,7 +166,8 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         }
     }
 
-    if (change.addon === 'enable') {
+    if (changes.addon === 'enable') {
+        logger.info('Enabling growth add-on', logContext(context, subscription, changes));
         const enabled = await enableGrowthAddon(context);
         if (enabled.isErr()) {
             sendPlanChangeError(res, enabled.error);
@@ -155,7 +175,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         }
     }
 
-    trackPlanChange(context, change);
+    trackPlanChange(context, changes);
 
     res.status(200).send({ data: paymentIntent ? { paymentIntent } : { success: true } });
 });
