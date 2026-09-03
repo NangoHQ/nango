@@ -1,10 +1,7 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Search, Wrench, X } from 'lucide-react';
-import { parseAsString, useQueryState } from 'nuqs';
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Wrench, X } from 'lucide-react';
+import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useInterval } from 'react-use';
 
 import {
     Badge,
@@ -18,9 +15,6 @@ import {
     DialogHeader,
     DialogTitle,
     IconButton,
-    InputGroup,
-    InputGroupAddon,
-    InputGroupInput,
     Tooltip,
     TooltipContent,
     TooltipTrigger
@@ -34,8 +28,9 @@ import { EmptyCard } from '@/components/ui/EmptyCard';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { SimpleCodeBlock } from '@/components/ui/SimpleCodeBlock';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import { syncsPageQueryKey, useRunSyncCommand, useSyncs } from '@/hooks/useSyncs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { useRunSyncCommand, useSyncs } from '@/hooks/useSyncs';
 import { useToast } from '@/hooks/useToast';
 import { useConnectionContext } from '@/pages/Connection/Show';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
@@ -45,17 +40,15 @@ import { getLogsUrl } from '@/utils/logs';
 import { cn, formatDateToUSFormat, formatFrequency, formatQuantity, getRunTime, interpretNextRun, truncateMiddle } from '@/utils/utils';
 
 import type { RunSyncCommand } from '@/types';
-import type { ApiConnectionSync, GetConnectionSyncs } from '@nangohq/types';
-import type { InfiniteData } from '@tanstack/react-query';
-import type { VirtualItem, Virtualizer } from '@tanstack/react-virtual';
+import type { ApiConnectionSync } from '@nangohq/types';
 
 const ROW_HEIGHT_PX = 44;
-const MAX_TABLE_HEIGHT_VH = 70;
-const POLL_INTERVAL_MS = 5000;
 
-// `display: grid` disables the browser's column sizing, so the header and the cells only line up
-// while they share these classes.
-const cellBase = 'flex items-center px-6 min-w-0 whitespace-nowrap';
+// `display: grid` on the table disables the browser's column sizing, so the header and the cells only
+// line up while they share these widths. TableRow's own px-6 is inert in table layout but applies
+// once the row is a flexbox, so rows cancel it.
+const rowLayout = 'flex w-full px-0';
+const cellLayout = 'flex items-center min-w-0';
 const col = {
     name: 'min-w-50 flex-1 basis-0',
     models: 'w-32 shrink-0',
@@ -92,22 +85,10 @@ export const SyncsTab = () => {
     const { connection } = connectionData;
     const providerConfigKey = integrationData.integration.unique_key;
 
-    const queryClient = useQueryClient();
-    const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
-    const debouncedSearch = useDebouncedValue(search);
-
-    const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = useSyncs({
+    const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useSyncs({
         env,
         provider_config_key: providerConfigKey,
-        connection_id: connection.connection_id,
-        search: debouncedSearch || undefined
-    });
-
-    const queryKey = syncsPageQueryKey({
-        env,
-        connection_id: connection.connection_id,
-        provider_config_key: providerConfigKey,
-        search: debouncedSearch || undefined
+        connection_id: connection.connection_id
     });
     const syncs = useMemo(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
     const total = data?.pages[0]?.pagination.total ?? 0;
@@ -123,9 +104,8 @@ export const SyncsTab = () => {
     const [triggerTarget, setTriggerTarget] = useState<TriggerTarget | null>(null);
     const [pendingSyncId, setPendingSyncId] = useState<string | null>(null);
 
-    const scrollRef = useRef<HTMLDivElement | null>(null);
-    const sentinelRef = useRef<HTMLDivElement | null>(null);
-    const [isAtTop, setIsAtTop] = useState(true);
+    const tableRef = useRef<HTMLDivElement | null>(null);
+    const sentinelRef = useInfiniteScroll({ hasNextPage: hasNextPage ?? false, isFetchingNextPage, fetchNextPage, threshold: 400 });
 
     const onSyncCommand = useCallback(
         async (
@@ -171,45 +151,6 @@ export const SyncsTab = () => {
         [connection.connection_id, env, navigate, providerConfigKey]
     );
 
-    // refetch() on an infinite query refetches every loaded page, so drop back to page 1 first —
-    // safe only because this runs at scrollTop 0, where no later page is on screen.
-    useInterval(
-        () => {
-            if (document.visibilityState !== 'visible') {
-                return;
-            }
-            queryClient.setQueryData<InfiniteData<GetConnectionSyncs['Success'], number>>(queryKey, (old) =>
-                old ? { ...old, pages: old.pages.slice(0, 1), pageParams: old.pageParams.slice(0, 1) } : old
-            );
-            void refetch({ cancelRefetch: true });
-        },
-        isAtTop && !debouncedSearch && !isFetchingNextPage ? POLL_INTERVAL_MS : null
-    );
-
-    // A new search leaves the previous rows in place (keepPreviousData), so the offset has to be reset
-    // explicitly or a shorter result set lurches.
-    useEffect(() => {
-        scrollRef.current?.scrollTo({ top: 0 });
-    }, [debouncedSearch]);
-
-    useEffect(() => {
-        const sentinel = sentinelRef.current;
-        const root = scrollRef.current;
-        if (!sentinel || !root || !hasNextPage || isFetchingNextPage) {
-            return;
-        }
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0]?.isIntersecting) {
-                    void fetchNextPage();
-                }
-            },
-            { root, rootMargin: '400px' }
-        );
-        observer.observe(sentinel);
-        return () => observer.disconnect();
-    }, [fetchNextPage, hasNextPage, isFetchingNextPage, syncs.length]);
-
     if (error) {
         return <CriticalErrorAlert message="Failed to load syncs" />;
     }
@@ -218,9 +159,7 @@ export const SyncsTab = () => {
         return <Skeleton className="w-full h-42" />;
     }
 
-    const hasSearch = Boolean(debouncedSearch);
-
-    if (syncs.length === 0 && !hasSearch) {
+    if (syncs.length === 0) {
         const integrationName = integrationData.integration.display_name || integrationData.template.display_name;
         return (
             <EmptyCard>
@@ -234,60 +173,35 @@ export const SyncsTab = () => {
         );
     }
 
-    const tableHeight = Math.min(
-        window.innerHeight * (MAX_TABLE_HEIGHT_VH / 100),
-        ROW_HEIGHT_PX + syncs.length * ROW_HEIGHT_PX + (hasNextPage ? ROW_HEIGHT_PX : 0)
-    );
-
     return (
         <div className="flex flex-col gap-3 w-full">
-            <div className="flex items-center gap-3">
-                <InputGroup>
-                    <InputGroupInput type="text" placeholder="Search syncs" value={search} onChange={(e) => void setSearch(e.target.value || null)} />
-                    <InputGroupAddon>
-                        <Search />
-                    </InputGroupAddon>
-                </InputGroup>
-                <span className="text-text-secondary text-body-small-regular whitespace-nowrap">
-                    {formatQuantity(total)} {total === 1 ? 'sync' : 'syncs'}
-                </span>
+            <div ref={tableRef}>
+                <Table className="grid border-separate border-spacing-0">
+                    <TableHeader className="grid">
+                        <TableRow className={rowLayout}>
+                            {columns.map((column) => (
+                                <TableHead key={column.key} className={cn(cellLayout, col[column.key])}>
+                                    {column.label}
+                                </TableHead>
+                            ))}
+                        </TableRow>
+                    </TableHeader>
+                    <VirtualizedSyncRows
+                        syncs={syncs}
+                        tableRef={tableRef}
+                        pendingSyncId={pendingSyncId}
+                        isRunningSyncCommand={isRunningSyncCommand}
+                        onSyncCommand={onSyncCommand}
+                        onRequestTrigger={setTriggerTarget}
+                        onViewLogs={onViewLogs}
+                    />
+                </Table>
             </div>
-
-            {syncs.length === 0 ? (
-                <EmptyCard>
-                    <span className="text-text-secondary text-body-medium-regular">No syncs match your search.</span>
-                </EmptyCard>
-            ) : (
-                <div
-                    ref={scrollRef}
-                    onScroll={(e) => setIsAtTop(e.currentTarget.scrollTop === 0)}
-                    className="overflow-y-auto overflow-x-hidden rounded border border-border-muted"
-                    style={{ height: `${tableHeight}px` }}
-                >
-                    <table className="grid border-separate border-spacing-0 w-full">
-                        <thead className="grid sticky top-0 z-10 bg-surface-canvas">
-                            <tr className="flex w-full border-b border-border-muted" style={{ height: `${ROW_HEIGHT_PX}px` }}>
-                                {columns.map((column) => (
-                                    <th key={column.key} className={cn(cellBase, col[column.key], 'text-left text-body-small-semi text-text-secondary')}>
-                                        {column.label}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <VirtualizedSyncRows
-                            syncs={syncs}
-                            scrollRef={scrollRef}
-                            pendingSyncId={pendingSyncId}
-                            isRunningSyncCommand={isRunningSyncCommand}
-                            onSyncCommand={onSyncCommand}
-                            onRequestTrigger={setTriggerTarget}
-                            onViewLogs={onViewLogs}
-                        />
-                    </table>
-                    <div ref={sentinelRef} aria-hidden />
-                    {isFetchingNextPage && <Skeleton className="w-full h-11" />}
-                </div>
-            )}
+            <div ref={sentinelRef} aria-hidden />
+            {isFetchingNextPage && <Skeleton className="w-full h-11" />}
+            <span className="text-text-secondary text-body-small-regular">
+                Showing {formatQuantity(syncs.length)} of {formatQuantity(total)} {total === 1 ? 'sync' : 'syncs'}
+            </span>
 
             <TriggerSyncDialog
                 key={triggerTarget?.id ?? 'none'}
@@ -302,7 +216,7 @@ export const SyncsTab = () => {
 
 const VirtualizedSyncRows = ({
     syncs,
-    scrollRef,
+    tableRef,
     pendingSyncId,
     isRunningSyncCommand,
     onSyncCommand,
@@ -310,36 +224,32 @@ const VirtualizedSyncRows = ({
     onViewLogs
 }: {
     syncs: ApiConnectionSync[];
-    scrollRef: React.MutableRefObject<HTMLDivElement | null>;
+    tableRef: React.MutableRefObject<HTMLDivElement | null>;
     pendingSyncId: string | null;
     isRunningSyncCommand: boolean;
     onSyncCommand: (sync: ApiConnectionSync, command: RunSyncCommand) => void;
     onRequestTrigger: (target: TriggerTarget) => void;
     onViewLogs: (sync: ApiConnectionSync) => void;
 }) => {
-    const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
+    // Virtualized against the dashboard's own scroll container, so the tab adds no second scrollbar.
+    const scrollParent = useScrollParent(tableRef);
+    const rowVirtualizer = useVirtualizer({
         count: syncs.length,
-        getScrollElement: () => scrollRef.current,
+        getScrollElement: () => scrollParent,
         estimateSize: () => ROW_HEIGHT_PX,
-        measureElement:
-            typeof window !== 'undefined' && navigator.userAgent.indexOf('Firefox') === -1 ? (element) => element?.getBoundingClientRect().height : undefined,
-        overscan: 5
+        overscan: 5,
+        scrollMargin: tableRef.current?.offsetTop ?? 0
     });
 
-    useLayoutEffect(() => {
-        rowVirtualizer.measure();
-    }, [syncs.length, rowVirtualizer]);
-
     return (
-        <tbody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+        <TableBody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const sync = syncs[virtualRow.index]!;
                 return (
                     <SyncRow
                         key={sync.id}
                         sync={sync}
-                        virtualRow={virtualRow}
-                        rowVirtualizer={rowVirtualizer}
+                        offsetY={virtualRow.start - rowVirtualizer.options.scrollMargin}
                         isPending={pendingSyncId === sync.id}
                         actionsDisabled={isRunningSyncCommand}
                         onSyncCommand={onSyncCommand}
@@ -348,14 +258,13 @@ const VirtualizedSyncRows = ({
                     />
                 );
             })}
-        </tbody>
+        </TableBody>
     );
 };
 
 const SyncRow = memo(function SyncRow({
     sync,
-    virtualRow,
-    rowVirtualizer,
+    offsetY,
     isPending,
     actionsDisabled,
     onSyncCommand,
@@ -363,8 +272,7 @@ const SyncRow = memo(function SyncRow({
     onViewLogs
 }: {
     sync: ApiConnectionSync;
-    virtualRow: VirtualItem;
-    rowVirtualizer: Virtualizer<HTMLDivElement, HTMLTableRowElement>;
+    offsetY: number;
     isPending: boolean;
     actionsDisabled: boolean;
     onSyncCommand: (sync: ApiConnectionSync, command: RunSyncCommand) => void;
@@ -375,13 +283,8 @@ const SyncRow = memo(function SyncRow({
     const recordCount = sync.record_count ? formatQuantity(Object.values(sync.record_count).reduce((acc, count) => acc + count, 0)) : '0';
 
     return (
-        <tr
-            data-index={virtualRow.index}
-            ref={rowVirtualizer.measureElement}
-            className="flex w-full absolute border-b border-border-muted hover:bg-surface-hover"
-            style={{ height: `${ROW_HEIGHT_PX}px`, transform: `translateY(${virtualRow.start}px)` }}
-        >
-            <td className={cn(cellBase, col.name, 'gap-2')}>
+        <TableRow className={cn(rowLayout, 'absolute')} style={{ height: `${ROW_HEIGHT_PX}px`, transform: `translateY(${offsetY}px)` }}>
+            <TableCell className={cn(cellLayout, col.name, 'gap-2')}>
                 <span className="text-body-small-semi text-text-strong truncate min-w-0 flex-1">{sync.name}</span>
                 {sync.variant !== 'base' && (
                     <Tooltip>
@@ -392,38 +295,38 @@ const SyncRow = memo(function SyncRow({
                         <TooltipContent>{sync.variant}</TooltipContent>
                     </Tooltip>
                 )}
-            </td>
+            </TableCell>
 
-            <td className={cn(cellBase, col.models)}>
+            <TableCell className={cn(cellLayout, col.models)}>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <span className="text-body-small-semi text-text-strong truncate block">{models}</span>
                     </TooltipTrigger>
                     <TooltipContent>{models}</TooltipContent>
                 </Tooltip>
-            </td>
+            </TableCell>
 
-            <td className={cn(cellBase, col.lastExecution)}>
+            <TableCell className={cn(cellLayout, col.lastExecution)}>
                 <Tooltip>
                     <TooltipTrigger>
                         <StatusBadge sync={sync} />
                     </TooltipTrigger>
                     {sync.latest_sync && <TooltipContent>{getRunTime(sync.latest_sync.created_at, sync.latest_sync.updated_at)}</TooltipContent>}
                 </Tooltip>
-            </td>
+            </TableCell>
 
-            <td className={cn(cellBase, col.frequency)}>{sync.frequency ? formatFrequency(sync.frequency) : '-'}</td>
+            <TableCell className={cn(cellLayout, col.frequency)}>{sync.frequency ? formatFrequency(sync.frequency) : '-'}</TableCell>
 
-            <td className={cn(cellBase, col.records)}>
+            <TableCell className={cn(cellLayout, col.records)}>
                 <Tooltip>
                     <TooltipTrigger>{recordCount}</TooltipTrigger>
                     <TooltipContent>
                         <SimpleCodeBlock language={'json'}>{JSON.stringify(sync.record_count, null, 2)}</SimpleCodeBlock>
                     </TooltipContent>
                 </Tooltip>
-            </td>
+            </TableCell>
 
-            <td className={cn(cellBase, col.lastStart)}>
+            <TableCell className={cn(cellLayout, col.lastStart)}>
                 <Tooltip>
                     <TooltipTrigger>{formatDateToUSFormat(sync.latest_sync?.updated_at)}</TooltipTrigger>
                     {sync.latest_sync && (
@@ -432,9 +335,9 @@ const SyncRow = memo(function SyncRow({
                         </TooltipContent>
                     )}
                 </Tooltip>
-            </td>
+            </TableCell>
 
-            <td className={cn(cellBase, col.nextStart)}>
+            <TableCell className={cn(cellLayout, col.nextStart)}>
                 {sync.schedule_status === 'STARTED' &&
                     (interpretNextRun(sync.futureActionTimes) === '-' ? (
                         <span>-</span>
@@ -443,9 +346,9 @@ const SyncRow = memo(function SyncRow({
                     ))}
 
                 {sync.schedule_status === 'PAUSED' && <CatalogBadge variant="warning">Schedule Paused</CatalogBadge>}
-            </td>
+            </TableCell>
 
-            <td className={cn(cellBase, col.actions)}>
+            <TableCell className={cn(cellLayout, col.actions)}>
                 <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                         <IconButton variant="ghost" size="2xs" label="Sync actions" loading={isPending}>
@@ -500,8 +403,8 @@ const SyncRow = memo(function SyncRow({
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-            </td>
-        </tr>
+            </TableCell>
+        </TableRow>
     );
 });
 
@@ -609,3 +512,20 @@ const StatusBadge = ({ sync }: { sync: ApiConnectionSync }) => {
         </CatalogBadge>
     );
 };
+
+/** The dashboard layout owns the page's only scroller, and it is too far up the tree to hand down a ref. */
+function useScrollParent(ref: React.MutableRefObject<HTMLElement | null>) {
+    const [scrollParent, setScrollParent] = useState<HTMLElement | null>(null);
+
+    useLayoutEffect(() => {
+        for (let node = ref.current?.parentElement ?? null; node; node = node.parentElement) {
+            const { overflowY } = getComputedStyle(node);
+            if (overflowY === 'auto' || overflowY === 'scroll') {
+                setScrollParent(node);
+                return;
+            }
+        }
+    }, [ref]);
+
+    return scrollParent;
+}

@@ -201,29 +201,6 @@ describe(`GET ${route}`, () => {
         ]);
     });
 
-    it('should search case-insensitively across name and variant', async () => {
-        const { env, apiKey } = await seedAccountEnvAndUser();
-        const { connection } = await seedConnectionWithSyncs({ env, variants: ['Northwind', 'southwind'] });
-
-        const search = async (term: string) => {
-            const res = await api.fetch(route, {
-                method: 'GET',
-                token: apiKey.secret,
-                params: { connectionId: connection.connection_id },
-                query: { env: env.name, provider_config_key: 'github', search: term }
-            });
-            isSuccess(res.json);
-            return res.json;
-        };
-
-        const byVariant = await search('NORTH');
-        expect(byVariant.data.map((s) => s.variant)).toStrictEqual(['Northwind']);
-        expect(byVariant.pagination.total).toBe(1);
-
-        const byName = await search('email');
-        expect(byName.pagination.total).toBe(3);
-    });
-
     it('should look up one sync by exact name and variant', async () => {
         const { env, apiKey } = await seedAccountEnvAndUser();
         const { connection } = await seedConnectionWithSyncs({ env, variants: ['other'] });

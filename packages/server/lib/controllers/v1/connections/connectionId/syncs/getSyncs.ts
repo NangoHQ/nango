@@ -9,7 +9,6 @@ import {
     envSchema,
     paginationQueryFields,
     providerConfigKeySchema,
-    searchQueryField,
     syncNameSchema,
     variantSchema
 } from '../../../../../helpers/validation.js';
@@ -33,7 +32,6 @@ const queryStringValidation = z
     .object({
         env: envSchema,
         provider_config_key: providerConfigKeySchema,
-        search: searchQueryField,
         name: syncNameSchema.optional(),
         variant: variantSchema.optional(),
         ...paginationQueryFields
@@ -77,7 +75,6 @@ export const getConnectionSyncs = asyncWrapperWithEnvironment<GetConnectionSyncs
     const { syncs, total } = await listConnectionSyncs({
         connection: connection.value.connection,
         orchestrator,
-        search: query.search,
         name: query.name,
         variant: query.variant,
         limit: query.limit,

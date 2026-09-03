@@ -734,7 +734,3 @@ export function resolveLocalFilePath({
     }
     return path.resolve(basePath, fileName);
 }
-
-export function escapeLikePattern(value: string): string {
-    return value.replace(/[\\%_]/g, (match) => `\\${match}`);
-}

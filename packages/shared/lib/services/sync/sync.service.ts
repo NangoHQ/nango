@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 import db, { dbNamespace, schema } from '@nangohq/database';
 import { Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
-import { escapeLikePattern } from '../../utils/utils.js';
 import connectionService from '../connection.service.js';
 import {
     getActionConfigByNameAndProviderConfigKey,
@@ -263,7 +262,6 @@ export interface ListedSync extends ListedSyncRow {
 export const listConnectionSyncs = async ({
     connection,
     orchestrator,
-    search,
     name,
     variant,
     limit,
@@ -271,7 +269,6 @@ export const listConnectionSyncs = async ({
 }: {
     connection: DBConnection | DBConnectionDecrypted;
     orchestrator: Orchestrator;
-    search?: string | undefined;
     name?: string | undefined;
     variant?: string | undefined;
     limit: number;
@@ -293,10 +290,6 @@ export const listConnectionSyncs = async ({
                 's.deleted': false
             });
 
-        if (search) {
-            const pattern = `%${escapeLikePattern(search)}%`;
-            q.andWhere((sub) => sub.whereILike('s.name', pattern).orWhereILike('s.variant', pattern));
-        }
         if (name) {
             q.andWhere('s.name', name);
         }

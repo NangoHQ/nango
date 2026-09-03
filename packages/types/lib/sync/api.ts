@@ -46,8 +46,6 @@ export type GetConnectionSyncs = ApiEndpoint<{
     Querystring: {
         env: string;
         provider_config_key: string;
-        /** Case-insensitive contains, over name and variant. */
-        search?: string | undefined;
         name?: string | undefined;
         variant?: string | undefined;
         page?: number | undefined;
