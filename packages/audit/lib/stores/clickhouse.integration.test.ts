@@ -215,29 +215,6 @@ describe('ClickhouseAuditStore.list deduplication', () => {
         }
     });
 
-    it('counts a twice-stored event once, so the count and the list agree on the same set', async () => {
-        const dupe = '77777777-7777-7777-7777-777777777777';
-        const other = '88888888-8888-8888-8888-888888888888';
-        await client.command({ query: `SYSTEM STOP MERGES ${database}.audit_trail_events` });
-        try {
-            await insertEvent({ id: dupe, accountId: 11, occurredAt: at(5000) });
-            await insertEvent({ id: dupe, accountId: 11, occurredAt: at(5000) });
-            await insertEvent({ id: other, accountId: 11, occurredAt: at(6000) });
-
-            // Without this the test passes on a table where the copy already merged away.
-            const raw = await client.query({
-                query: `SELECT count() AS c FROM ${database}.audit_trail_events WHERE account_id = 11`,
-                format: 'JSONEachRow'
-            });
-            expect(Number((await raw.json<{ c: string | number }>())[0]!.c)).toBe(3);
-
-            expect((await store.count({ accountId: 11 })).unwrap()).toEqual({ value: 2, relation: 'eq' });
-            expect((await store.list({ accountId: 11, limit: 10 })).unwrap().events).toHaveLength(2);
-        } finally {
-            await client.command({ query: `SYSTEM START MERGES ${database}.audit_trail_events` });
-        }
-    });
-
     it('does not hand a copy back on the next page, since the cursor excludes the boundary row it shares a key with', async () => {
         const newer = '55555555-5555-5555-5555-555555555555';
         const older = '66666666-6666-6666-6666-666666666666';

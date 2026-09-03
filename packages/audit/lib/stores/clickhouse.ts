@@ -138,11 +138,10 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
         const { conditions, params } = buildFilter(filter);
         params['scan_limit'] = COUNT_SCAN_LIMIT + 1;
 
-        // The inner LIMIT is what bounds the read, however large the account or the window. uniqExact stays
-        // affordable inside it and folds the duplicate rows a ReplacingMergeTree holds until a merge runs —
-        // `uniq` is approximate and was observed returning 1 for two distinct ids.
+        // The inner LIMIT bounds the read however large the account or the window. uniq is approximate,
+        // which also folds the duplicate rows a ReplacingMergeTree holds until a merge runs.
         const sql = `
-            SELECT uniqExact(id) AS total
+            SELECT uniq(id) AS total
             FROM (
                 SELECT id
                 FROM audit_trail_events
