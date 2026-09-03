@@ -65,7 +65,7 @@ const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body
     const emailAddress = body.recorded_by?.email;
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         connectionIdentifierValue: emailAddress,
         propName: 'metadata.emailAddress'
     });

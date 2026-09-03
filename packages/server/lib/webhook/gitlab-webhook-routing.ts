@@ -85,7 +85,7 @@ const route: WebhookHandler = async (nango, headers, body, rawBody, query) => {
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookHeaderValue: headers['x-gitlab-event'] as string,
         connectionIdentifierValue,
         propName: 'connectionId'

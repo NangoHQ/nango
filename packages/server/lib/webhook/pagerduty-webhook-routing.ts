@@ -22,7 +22,7 @@ const route: WebhookHandler<PagerDutyWebhookPayload> = async (nango, headers, bo
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookType: 'event.event_type',
         connectionIdentifierValue,
         propName: 'connectionId'

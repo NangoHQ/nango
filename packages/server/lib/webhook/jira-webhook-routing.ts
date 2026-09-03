@@ -56,7 +56,7 @@ async function routeEvent(nango: InternalNango, event: Record<string, any>): Pro
         return [];
     }
     const response = await nango.executeScriptForWebhooks({
-        body: event,
+        payload: event,
         webhookType: 'webhookEvent',
         connectionIdentifierValue: baseUrl,
         propName: 'baseUrl'

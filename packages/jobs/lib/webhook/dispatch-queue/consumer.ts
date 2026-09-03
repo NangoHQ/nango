@@ -11,33 +11,61 @@ import { GroupThrottles } from './groupThrottle.js';
 import { changeVisibility, deferSeconds } from './visibility.js';
 
 import type { Message } from '@aws-sdk/client-sqs';
-import type { ExecuteWebhookProps, OrchestratorClient } from '@nangohq/nango-orchestrator';
-import type { WebhookDispatchMessage } from '@nangohq/types';
+import type { ClientError, ExecuteFunctionBatchProps, ExecuteWebhookProps, OrchestratorClient } from '@nangohq/nango-orchestrator';
+import type { DispatchMessage, FunctionDispatchMessage, LegacyDispatchMessage } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('jobs.webhook.dispatch-queue.consumer');
 
 const THROTTLED_LOG_MESSAGE = 'Webhook execution is delayed: this environment reached its webhook dispatch rate limit';
 
-const messageSchema: z.ZodType<WebhookDispatchMessage> = z.object({
+const commonMessageSchema = {
     version: z.literal(1),
-    kind: z.literal('webhook'),
-    taskName: z.string().min(1),
     createdAt: z.string().min(1),
     accountId: z.number(),
     integrationId: z.number(),
     provider: z.string(),
-    parentSyncName: z.string().min(1),
     activityLogId: z.string(),
-    webhookName: z.string().min(1),
     connection: z.object({
         id: z.number().positive(),
         connection_id: z.string().min(1),
         provider_config_key: z.string().min(1),
         environment_id: z.number().positive()
+    })
+};
+
+const functionTriggerSchema: z.ZodType<FunctionDispatchMessage['trigger']> = z.object({
+    kind: z.literal('http'),
+    input: jsonSchema.optional().default(null),
+    request: z.object({
+        method: z.enum(['GET', 'POST', 'PATCH', 'PUT', 'DELETE']),
+        path: z.string(),
+        headers: z.record(z.string(), z.string()),
+        query: z.record(z.string(), z.string()),
+        body: jsonSchema.optional().default(null)
     }),
-    payload: jsonSchema
+    subscriptions: z.array(z.string()),
+    connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
 });
+
+const messageSchema: z.ZodType<DispatchMessage> = z.discriminatedUnion('kind', [
+    z.object({
+        ...commonMessageSchema,
+        kind: z.literal('webhook'),
+        taskName: z.string().min(1),
+        parentSyncName: z.string().min(1),
+        webhookName: z.string().min(1),
+        payload: jsonSchema
+    }),
+    z.object({
+        ...commonMessageSchema,
+        kind: z.literal('function'),
+        idempotencyKey: z.string().min(1),
+        functionName: z.string().min(1),
+        trigger: functionTriggerSchema,
+        maxConcurrency: z.number().int().min(0)
+    })
+]);
 
 export interface DispatchQueueConsumerProps {
     queueUrl: string;
@@ -56,7 +84,15 @@ export interface DispatchQueueConsumerProps {
 
 interface ParsedEntry {
     msg: Message;
-    parsed: WebhookDispatchMessage;
+    parsed: DispatchMessage;
+}
+
+interface ParsedLegacyEntry extends ParsedEntry {
+    parsed: LegacyDispatchMessage;
+}
+
+interface ParsedFunctionEntry extends ParsedEntry {
+    parsed: FunctionDispatchMessage;
 }
 
 export class DispatchQueueConsumer {
@@ -153,11 +189,12 @@ export class DispatchQueueConsumer {
                 // SQS might deliver the same message multiple times, so we guard against duplicates
                 const groups = new Map<string, ParsedEntry[]>();
                 for (const entry of entries) {
-                    const group = groups.get(entry.parsed.taskName);
+                    const groupKey = getGroupKey(entry.parsed);
+                    const group = groups.get(groupKey);
                     if (group) {
                         group.push(entry);
                     } else {
-                        groups.set(entry.parsed.taskName, [entry]);
+                        groups.set(groupKey, [entry]);
                     }
                 }
                 const groupedEntries: ParsedEntry[][] = [];
@@ -177,7 +214,6 @@ export class DispatchQueueConsumer {
                 span.setTag('received', entries.length);
                 span.setTag('throttled', throttled);
 
-                const dispatched = entries.length - throttled;
                 if (groupedEntries.length === 0) {
                     await Promise.all(deferrals);
                     return;
@@ -185,37 +221,33 @@ export class DispatchQueueConsumer {
 
                 const deferralsDone = Promise.all(deferrals);
 
-                const propsList: ExecuteWebhookProps[] = groupedEntries.map((group) => {
-                    const m = group[0]!.parsed;
-                    return {
-                        name: m.taskName,
-                        group: { key: dispatchGroupKey(m), maxConcurrency: this.webhookMaxConcurrency },
-                        args: {
-                            webhookName: m.webhookName,
-                            parentSyncName: m.parentSyncName,
-                            connection: m.connection,
-                            activityLogId: m.activityLogId,
-                            input: m.payload
-                        }
-                    };
-                });
-
                 try {
-                    const res = await this.orchestratorClient.executeWebhookBatch(propsList);
-                    if (res.isErr()) {
+                    const legacyGroups = groupedEntries.filter(isLegacyGroup);
+                    const functionGroups = groupedEntries.filter(isFunctionGroup);
+                    const [legacyRes, functionRes] = await Promise.all([
+                        this.processLegacyGroups(legacyGroups, receivedAt),
+                        this.processFunctionGroups(functionGroups, receivedAt)
+                    ]);
+
+                    const reportError = ({ err, count }: { err: ClientError; count: number }) => {
                         span.setTag('error', true);
-                        span.setTag('error.type', res.error.name);
-                        span.setTag('error.message', res.error.message);
-                        const responsePayload = getClientErrorResponsePayload(res.error);
+                        span.setTag('error.type', err.name);
+                        span.setTag('error.message', err.message);
+                        const responsePayload = getClientErrorResponsePayload(err);
                         if (responsePayload) {
                             span.setTag('error.details', responsePayload);
                         }
-                        metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, dispatched, { result: 'failure' });
-                        report(new Error('webhook dispatch consumer batch failed', { cause: res.error }));
-                        return;
+                        metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure' });
+                        report(new Error('webhook dispatch consumer batch failed', { cause: err }));
+                    };
+
+                    if (legacyRes.isErr()) {
+                        reportError({ err: legacyRes.error, count: legacyGroups.reduce((count, group) => count + group.length, 0) });
                     }
 
-                    await this.handleBatchResult(groupedEntries, res.value, receivedAt);
+                    if (functionRes.isErr()) {
+                        reportError({ err: functionRes.error, count: functionGroups.reduce((count, group) => count + group.length, 0) });
+                    }
                 } finally {
                     await deferralsDone;
                 }
@@ -223,6 +255,65 @@ export class DispatchQueueConsumer {
                 span.finish();
             }
         }));
+    }
+
+    private async processLegacyGroups(groupedEntries: ParsedLegacyEntry[][], receivedAt: number): Promise<Result<void, ClientError>> {
+        if (groupedEntries.length === 0) return Ok(undefined);
+
+        const propsList: ExecuteWebhookProps[] = groupedEntries.map((group) => {
+            const message = group[0]!.parsed;
+            return {
+                name: message.taskName,
+                group: { key: `webhook:environment:${message.connection.environment_id}`, maxConcurrency: this.webhookMaxConcurrency },
+                args: {
+                    webhookName: message.webhookName,
+                    parentSyncName: message.parentSyncName,
+                    connection: message.connection,
+                    activityLogId: message.activityLogId,
+                    input: message.payload
+                }
+            };
+        });
+
+        const result = await this.orchestratorClient.executeWebhookBatch(propsList);
+        if (result.isErr()) {
+            return Err(result.error);
+        }
+
+        await this.handleBatchResult(groupedEntries, result.value, receivedAt);
+        return Ok(undefined);
+    }
+
+    private async processFunctionGroups(groupedEntries: ParsedFunctionEntry[][], receivedAt: number): Promise<Result<void, ClientError>> {
+        if (groupedEntries.length === 0) return Ok(undefined);
+
+        const propsList: ExecuteFunctionBatchProps[] = groupedEntries.map((group) => {
+            const message = group[0]!.parsed;
+            return {
+                name: message.idempotencyKey,
+                group: {
+                    key: `function:environment:${message.connection.environment_id}:connection:${message.connection.id}:function:${message.functionName}`,
+                    maxConcurrency: message.maxConcurrency
+                },
+                retry: { count: 0, max: 0 },
+                ownerKey: `environment:${message.connection.environment_id}`,
+                args: {
+                    functionName: message.functionName,
+                    connection: message.connection,
+                    activityLogId: message.activityLogId,
+                    trigger: message.trigger,
+                    async: true
+                }
+            };
+        });
+
+        const result = await this.orchestratorClient.executeFunctionBatch(propsList);
+        if (result.isErr()) {
+            return Err(result.error);
+        }
+
+        await this.handleBatchResult(groupedEntries, result.value, receivedAt);
+        return Ok(undefined);
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -255,7 +346,10 @@ export class DispatchQueueConsumer {
                         providerConfigKey: message.connection.provider_config_key
                     });
                     const logCtx = logContextGetter.get({ id: message.activityLogId, accountId: message.accountId });
-                    await logCtx.warn('Webhook was discarded: it spent too long in the queue and was not processed.', { dwell_ms: dwellMs });
+                    await logCtx.warn('Webhook was discarded: it spent too long in the queue and was not processed.', {
+                        dwell_ms: dwellMs,
+                        kind: message.kind
+                    });
                     await this.tryDeleteMessage(msg.ReceiptHandle);
                     continue;
                 }
@@ -266,13 +360,8 @@ export class DispatchQueueConsumer {
         return entries;
     }
 
-    // `groupedEntries[i]` is the set of messages that shared one taskName and map to `results[i]`.
     // Each result applies to every message in its group (deduped SQS copies of the same task).
-    private async handleBatchResult(
-        groupedEntries: ParsedEntry[][],
-        results: Awaited<ReturnType<OrchestratorClient['executeWebhookBatch']>> extends Result<infer R> ? R : never,
-        receivedAt: number
-    ): Promise<void> {
+    private async handleBatchResult<T>(groupedEntries: ParsedEntry[][], results: Result<T, ClientError>[], receivedAt: number): Promise<void> {
         for (let i = 0; i < groupedEntries.length; i++) {
             const group = groupedEntries[i]!;
             const result = results[i];
@@ -357,7 +446,7 @@ export class DispatchQueueConsumer {
         await Promise.all(group.map((entry) => this.tryDeleteMessage(entry.msg.ReceiptHandle!)));
     }
 
-    private parseMessage(body: string): Result<WebhookDispatchMessage> {
+    private parseMessage(body: string): Result<DispatchMessage> {
         try {
             const json = JSON.parse(body);
             const result = messageSchema.safeParse(json);
@@ -379,7 +468,7 @@ export class DispatchQueueConsumer {
     }
 }
 
-function dispatchGroupKey(message: WebhookDispatchMessage): string {
+function dispatchGroupKey(message: DispatchMessage): string {
     return `webhook:environment:${message.connection.environment_id}`;
 }
 
@@ -389,6 +478,14 @@ function getRetryAfterMs(payload: unknown): number | null {
     }
     const retryAfterMs = payload.retryAfterMs;
     return typeof retryAfterMs === 'number' ? retryAfterMs : null;
+}
+
+function isLegacyGroup(group: ParsedEntry[]): group is ParsedLegacyEntry[] {
+    return group.every((entry) => entry.parsed.kind === 'webhook');
+}
+
+function isFunctionGroup(group: ParsedEntry[]): group is ParsedFunctionEntry[] {
+    return group.every((entry) => entry.parsed.kind === 'function');
 }
 
 function getClientErrorResponsePayload(err: { payload?: unknown }): string | null {
@@ -403,4 +500,8 @@ function getClientErrorResponsePayload(err: { payload?: unknown }): string | nul
     }
 
     return JSON.stringify(responsePayload);
+}
+
+function getGroupKey(message: DispatchMessage): string {
+    return message.kind === 'webhook' ? message.taskName : message.idempotencyKey;
 }

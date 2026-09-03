@@ -8,7 +8,7 @@ import { DispatchQueueConsumer } from './consumer.js';
 
 import type { SQSClient } from '@aws-sdk/client-sqs';
 import type { OrchestratorClient } from '@nangohq/nango-orchestrator';
-import type { WebhookDispatchMessage } from '@nangohq/types';
+import type { DispatchMessage, FunctionDispatchMessage, LegacyDispatchMessage } from '@nangohq/types';
 import type { Mock } from 'vitest';
 
 vi.mock('../../env.js', () => ({
@@ -17,7 +17,7 @@ vi.mock('../../env.js', () => ({
     }
 }));
 
-function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookDispatchMessage {
+function buildMessage(overrides: Partial<LegacyDispatchMessage> = {}): LegacyDispatchMessage {
     return {
         version: 1,
         kind: 'webhook',
@@ -31,6 +31,36 @@ function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookD
         webhookName: 'push',
         connection: { id: 42, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2 },
         payload: { hello: 'world' },
+        ...overrides
+    };
+}
+
+function buildFunctionMessage(overrides: Partial<FunctionDispatchMessage> = {}): FunctionDispatchMessage {
+    return {
+        version: 1,
+        kind: 'function',
+        idempotencyKey: 'function:abc123',
+        createdAt: '2026-04-23T00:00:00.000Z',
+        accountId: 1,
+        integrationId: 3,
+        provider: 'github',
+        activityLogId: 'function-log-1',
+        connection: { id: 42, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2 },
+        functionName: 'native-webhook',
+        trigger: {
+            kind: 'http',
+            input: { hello: 'world' },
+            request: {
+                method: 'POST',
+                path: '/webhook/env/github-dev',
+                headers: { authorization: 'Bearer webhook-secret', 'x-hubspot-correlation-id': 'correlation-id' },
+                query: {},
+                body: '{ "hello": "world" }\n'
+            },
+            subscriptions: ['push'],
+            connection: { connectionId: 'conn-1', integrationId: 'github-dev' }
+        },
+        maxConcurrency: 1,
         ...overrides
     };
 }
@@ -54,17 +84,19 @@ function deferred<T>() {
 type SqsSendFn = (command: unknown) => Promise<unknown>;
 type SqsDestroyFn = () => void;
 type OrchestratorExecuteWebhookBatchFn = (props: unknown[]) => Promise<unknown>;
+type OrchestratorExecuteFunctionBatchFn = (props: unknown[]) => Promise<unknown>;
 
 interface Harness {
     consumer: DispatchQueueConsumer;
     sqsSend: Mock<SqsSendFn>;
     sqsDestroy: Mock<SqsDestroyFn>;
     orchestratorExecuteWebhookBatch: Mock<OrchestratorExecuteWebhookBatchFn>;
+    orchestratorExecuteFunctionBatch: Mock<OrchestratorExecuteFunctionBatchFn>;
 }
 
 function makeHarness(
     opts: {
-        messages?: WebhookDispatchMessage[];
+        messages?: DispatchMessage[];
         badBody?: string;
         consumerConcurrency?: number;
         maxAgeMs?: number;
@@ -104,7 +136,14 @@ function makeHarness(
     orchestratorExecuteWebhookBatch.mockImplementation((props: unknown[]) =>
         Promise.resolve(Ok(props.map((_, i) => Ok({ taskId: `task-${i}`, retryKey: `rk-${i}` }))))
     );
-    const orchestratorClient = { executeWebhookBatch: orchestratorExecuteWebhookBatch } as unknown as OrchestratorClient;
+    const orchestratorExecuteFunctionBatch = vi.fn<OrchestratorExecuteFunctionBatchFn>().mockImplementation((props: unknown[]) => {
+        const results = props.map((_, i) => Ok({ taskId: `function-task-${i}`, retryKey: `function-rk-${i}` }));
+        return Promise.resolve(Ok(results));
+    });
+    const orchestratorClient = {
+        executeWebhookBatch: orchestratorExecuteWebhookBatch,
+        executeFunctionBatch: orchestratorExecuteFunctionBatch
+    } as unknown as OrchestratorClient;
 
     const consumer = new DispatchQueueConsumer({
         sqs,
@@ -121,7 +160,7 @@ function makeHarness(
         taskCapDeferMs: opts.taskCapDeferMs ?? 15_000
     });
 
-    return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhookBatch };
+    return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhookBatch, orchestratorExecuteFunctionBatch };
 }
 
 function getVisibilityCalls(h: Harness) {
@@ -152,11 +191,7 @@ describe('DispatchQueueConsumer', () => {
     });
 
     it('sends all received messages in a single executeWebhookBatch call', async () => {
-        const msgs = [
-            buildMessage({ taskName: 'webhook:1', activityLogId: 'log-1' }),
-            buildMessage({ taskName: 'webhook:2', activityLogId: 'log-2' }),
-            buildMessage({ taskName: 'webhook:3', activityLogId: 'log-3' })
-        ];
+        const msgs = [buildMessage({ taskName: 'webhook:1' }), buildMessage({ taskName: 'webhook:2' }), buildMessage({ taskName: 'webhook:3' })];
         const h = makeHarness({ messages: msgs });
 
         await runOnce(h, () => {
@@ -169,8 +204,73 @@ describe('DispatchQueueConsumer', () => {
         expect(calledWith?.[0]).toMatchObject({
             name: 'webhook:1',
             group: { key: 'webhook:environment:2', maxConcurrency: 500 },
-            args: { webhookName: msgs[0]!.webhookName, activityLogId: 'log-1' }
+            args: { webhookName: msgs[0]!.webhookName }
         });
+    });
+
+    it('dispatches mixed legacy and function messages through their respective orchestrator methods', async () => {
+        const legacy = buildMessage({ taskName: 'webhook:1' });
+        const func = buildFunctionMessage({ idempotencyKey: 'function:1' });
+        const h = makeHarness({ messages: [legacy, func] });
+
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(2);
+        });
+
+        expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledOnce();
+        expect(h.orchestratorExecuteWebhookBatch.mock.calls[0]![0]).toHaveLength(1);
+        expect(h.orchestratorExecuteFunctionBatch).toHaveBeenCalledOnce();
+        expect(h.orchestratorExecuteFunctionBatch.mock.calls[0]![0]).toEqual([
+            expect.objectContaining({
+                name: 'function:1',
+                group: { key: 'function:environment:2:connection:42:function:native-webhook', maxConcurrency: 1 },
+                retry: { count: 0, max: 0 },
+                ownerKey: 'environment:2',
+                args: expect.objectContaining({
+                    functionName: 'native-webhook',
+                    connection: func.connection,
+                    trigger: func.trigger,
+                    async: true
+                })
+            })
+        ]);
+    });
+
+    it('dedupes repeated function idempotency keys before scheduling', async () => {
+        const messages = [buildFunctionMessage({ idempotencyKey: 'function:dup' }), buildFunctionMessage({ idempotencyKey: 'function:dup' })];
+        const h = makeHarness({ messages });
+
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(2);
+        });
+
+        expect(h.orchestratorExecuteFunctionBatch).toHaveBeenCalledOnce();
+        expect(h.orchestratorExecuteFunctionBatch.mock.calls[0]![0]).toHaveLength(1);
+        expect(h.orchestratorExecuteWebhookBatch).not.toHaveBeenCalled();
+    });
+
+    it('sends distinct function messages in a single executeFunctionBatch call', async () => {
+        const messages = [buildFunctionMessage({ idempotencyKey: 'function:one' }), buildFunctionMessage({ idempotencyKey: 'function:two' })];
+        const h = makeHarness({ messages });
+
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(2);
+        });
+
+        expect(h.orchestratorExecuteFunctionBatch).toHaveBeenCalledOnce();
+        const calledWith = h.orchestratorExecuteFunctionBatch.mock.calls[0]![0] as { name: string }[];
+        expect(calledWith.map(({ name }) => name)).toEqual(['function:one', 'function:two']);
+    });
+
+    it('keeps function messages for redelivery when the entire function batch fails', async () => {
+        const h = makeHarness({ messages: [buildFunctionMessage()] });
+        h.orchestratorExecuteFunctionBatch.mockResolvedValueOnce(Err({ name: 'boom', message: 'boom', payload: null }));
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteFunctionBatch).toHaveBeenCalledOnce();
+        });
+
+        expect(getDeleteCalls(h)).toHaveLength(0);
     });
 
     it('dedupes repeated task names in one receive, scheduling once and deleting every copy', async () => {
