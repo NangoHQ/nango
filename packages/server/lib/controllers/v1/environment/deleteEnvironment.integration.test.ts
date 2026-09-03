@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { environmentService, getProvider, PROD_ENVIRONMENT_NAME, seeders } from '@nangohq/shared';
+import { customerKeyService, environmentService, getProvider, PROD_ENVIRONMENT_NAME, seeders } from '@nangohq/shared';
 import { createConfigSeed } from '@nangohq/shared/lib/seeders/config.seeder.js';
 import { createSyncSeeds } from '@nangohq/shared/lib/seeders/index.js';
 
-import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
+import { isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 import type { DBConnection } from '@nangohq/types';
 
@@ -32,15 +32,16 @@ describe(`DELETE ${endpoint}`, () => {
     });
 
     it('should not allow deleting prod environment', async () => {
-        const { account, user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
-        (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: PROD_ENVIRONMENT_NAME })).unwrap();
+        const { account } = await seeders.seedAccountEnvAndUser();
+        const prodEnv = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: PROD_ENVIRONMENT_NAME })).unwrap();
+
+        const prodApiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, prodEnv.id)).unwrap();
 
         const res = await api.fetch(endpoint, {
             method: 'DELETE',
             // @ts-expect-error query params are required
             query: { env: PROD_ENVIRONMENT_NAME },
-            session
+            token: prodApiKeys[0]!.secret
         });
 
         expect(res.res.status).toBe(400);
@@ -54,15 +55,16 @@ describe(`DELETE ${endpoint}`, () => {
     });
 
     it('should successfully delete a non-prod environment', async () => {
-        const { account, user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { account } = await seeders.seedAccountEnvAndUser();
         const testEnv = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete' })).unwrap();
+
+        const testApiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, testEnv.id)).unwrap();
 
         const res = await api.fetch(endpoint, {
             method: 'DELETE',
             // @ts-expect-error query params are required
             query: { env: testEnv.name },
-            session
+            token: testApiKeys[0]!.secret
         });
 
         expect(res.res.status).toBe(204);
@@ -74,9 +76,10 @@ describe(`DELETE ${endpoint}`, () => {
 
     it('should soft delete configs, syncConfigs and syncs when environment is deleted', async () => {
         // Seed account, environment, and user
-        const { account, user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { account } = await seeders.seedAccountEnvAndUser();
         const testEnv = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete-related' })).unwrap();
+
+        const testApiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, testEnv.id)).unwrap();
 
         // Create a provider config for this environment
         const providerName = 'github';
@@ -121,7 +124,7 @@ describe(`DELETE ${endpoint}`, () => {
             method: 'DELETE',
             // @ts-expect-error query params are required
             query: { env: testEnv.name },
-            session
+            token: testApiKeys[0]!.secret
         });
 
         expect(res.res.status).toBe(204);

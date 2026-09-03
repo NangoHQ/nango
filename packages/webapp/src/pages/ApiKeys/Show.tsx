@@ -2,6 +2,7 @@ import { CircleX, ExternalLink, KeyRound, Trash2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
+import { permissions } from '@nangohq/authz';
 import {
     Alert,
     AlertActions,
@@ -180,9 +181,8 @@ const DeleteAccountApiKeyButton: React.FC<{
 export const AccountApiKeysShow: React.FC = () => {
     const { user } = useUser();
     const { can } = usePermissions();
-    const canListAccountKeys = can('account:api_keys:list');
-    const canDeleteAccountKeys = can('account:api_keys:delete');
-    const { data, isLoading, isError, refetch } = useAccountApiKeys(Boolean(user) && canListAccountKeys);
+    const canManageAccountKeys = can(permissions.canManageAccountKeys);
+    const { data, isLoading, isError, refetch } = useAccountApiKeys(Boolean(user) && canManageAccountKeys);
     const { mutateAsync: deleteAccountApiKey, isPending: isDeleting } = useDeleteAccountApiKey();
     const { toast } = useToast();
 
@@ -212,7 +212,7 @@ export const AccountApiKeysShow: React.FC = () => {
         );
     }
 
-    if (!canListAccountKeys) {
+    if (!canManageAccountKeys) {
         return (
             <DashboardLayout fullWidth title="Account API keys">
                 <Helmet>
@@ -301,7 +301,7 @@ export const AccountApiKeysShow: React.FC = () => {
                                     <TableCell>
                                         <div className="flex items-center gap-1">
                                             <CopyButton text={apiKey.secret} onCopy={() => track('web:account_api_keys:secret_copied', {})} />
-                                            <DeleteAccountApiKeyButton apiKey={apiKey} disabled={isDeleting || !canDeleteAccountKeys} onDelete={handleDelete} />
+                                            <DeleteAccountApiKeyButton apiKey={apiKey} disabled={isDeleting} onDelete={handleDelete} />
                                         </div>
                                     </TableCell>
                                 </TableRow>

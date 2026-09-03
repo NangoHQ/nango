@@ -2,6 +2,8 @@ import { ArrowUpRight, BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'luc
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import {
     Sidebar,
@@ -71,7 +73,7 @@ export const AppSidebar: React.FC = () => {
     const showUsageAlert = plan?.name === 'free';
 
     const { can } = usePermissions();
-    const canManageBilling = can('account:billing:payment_methods:create');
+    const canManageBilling = can(permissions.canManageBilling);
     const { data: overdue } = useApiGetOverdueInvoices(env, plan);
     const showOverdueAlert = Boolean(overdue?.data.hasOverdue);
 

@@ -1,11 +1,13 @@
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
+import { permissions } from '@nangohq/authz';
+
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Switch } from '@/components/ui/Switch';
 import { usePermissions } from '@/hooks/usePermissions';
-import { usePatchWebhook } from '../../../../hooks/useEnvironment';
+import { useEnvironment, usePatchWebhook } from '../../../../hooks/useEnvironment';
 import { useToast } from '../../../../hooks/useToast';
 
 import type { ApiWebhooks } from '@nangohq/types';
@@ -58,8 +60,12 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
     const { toast } = useToast();
     const { mutateAsync: patchWebhookAsync } = usePatchWebhook(env);
 
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
+
     const { can } = usePermissions();
-    const canEditWebhooks = can('environment:webhooks:update');
+    const canEditEnvironment = can(permissions.canWriteProdEnvironment) || !environment?.is_production;
 
     const [loading, setLoading] = useState<string | false>();
 
@@ -99,7 +105,7 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
 
                     <div className="flex gap-2 items-center">
                         {loading === stateKey && <Loader2 className="size-4 animate-spin" />}
-                        <PermissionGate condition={canEditWebhooks}>
+                        <PermissionGate condition={canEditEnvironment}>
                             {(allowed) => (
                                 <Switch
                                     name="hmac_enabled"

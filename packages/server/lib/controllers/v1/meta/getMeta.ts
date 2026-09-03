@@ -20,7 +20,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
     res.status(200).send({
         data: {
             environments: environments.map((env) => {
-                return { id: env.id, account_id: sessionUser.account_id, name: env.name, is_production: env.is_production };
+                return { name: env.name, is_production: env.is_production };
             }),
             version: NANGO_VERSION,
             baseUrl,

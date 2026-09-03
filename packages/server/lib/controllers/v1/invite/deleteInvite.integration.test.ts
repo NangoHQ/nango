@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import db from '@nangohq/database';
 import { inviteEmail, seeders } from '@nangohq/shared';
 
-import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../utils/tests.js';
+import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 const route = '/api/v1/invite';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -22,26 +22,24 @@ describe(`DELETE ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'DELETE',
-            session,
+            token: apiKey.secret,
             body: { email: '' },
             // @ts-expect-error missing query on purpose
             query: {}
         });
 
-        shouldRequireSessionEnv(res);
+        shouldRequireQueryEnv(res);
     });
 
     it('should validate body', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'DELETE',
             query: { env: 'dev' },
-            session,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { email: 1 }
         });
@@ -56,20 +54,19 @@ describe(`DELETE ${route}`, () => {
     });
 
     it('should revoke an invite', async () => {
-        const { account, user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { account, user, apiKey } = await seeders.seedAccountEnvAndUser();
 
         const email = 'foo@example.com';
         await inviteEmail({ email, name: email, accountId: account.id, invitedByUserId: user.id, role: 'administrator', trx: db.knex });
 
-        const listBefore = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, session });
+        const listBefore = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, token: apiKey.secret });
         isSuccess(listBefore.json);
         expect(listBefore.json.data.invitedUsers).toHaveLength(1);
 
         const res = await api.fetch(route, {
             method: 'DELETE',
             query: { env: 'dev' },
-            session,
+            token: apiKey.secret,
             body: { email: email }
         });
 
@@ -79,7 +76,7 @@ describe(`DELETE ${route}`, () => {
             data: { success: true }
         });
 
-        const listAfter = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, session });
+        const listAfter = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, token: apiKey.secret });
         isSuccess(listAfter.json);
         expect(listAfter.json.data.invitedUsers).toHaveLength(0);
     });

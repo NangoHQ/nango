@@ -1,6 +1,7 @@
 import { ExternalLink, Eye, EyeOff, Key, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
+import { permissions } from '@nangohq/authz';
 import { Button, Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, IconButton, Input } from '@nangohq/design-system';
 
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
@@ -491,8 +492,9 @@ export const ApiKeys: React.FC = () => {
     const [selectedKeyId, setSelectedKeyId] = useState<number | null>(null);
 
     const { can } = usePermissions();
-    const canReadSecret = can('environment:settings:read_secret');
-    const canManageKeys = can('environment:api_keys:update');
+    const isProd = envData?.environmentAndAccount?.environment?.is_production || false;
+    const canReadSecret = can(permissions.canReadProdSecretKey) || !isProd;
+    const canManageKeys = can(permissions.canWriteProdEnvironmentKeys) || !isProd;
     const canMakeActions = canReadSecret || canManageKeys;
     const managedSecretKey = envData?.environmentAndAccount?.managed_secret_key ?? null;
 

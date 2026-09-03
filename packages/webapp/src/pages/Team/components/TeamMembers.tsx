@@ -2,6 +2,7 @@ import { Ellipsis, ExternalLink, Trash2, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
 import {
     Badge,
     Button,
@@ -127,7 +128,7 @@ export const TeamMembers: React.FC = () => {
     );
 
     const { can } = usePermissions();
-    const canManageTeam = can('account:team:update');
+    const canManageTeam = can(permissions.canManageTeam);
 
     const onRemoveUser = async (user: ApiUser) => {
         try {

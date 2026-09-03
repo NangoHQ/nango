@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import db from '@nangohq/database';
 import { seeders, updatePlan } from '@nangohq/shared';
 
-import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../utils/tests.js';
+import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 import type { DBInvitation } from '@nangohq/types';
 
@@ -26,26 +26,24 @@ describe(`POST ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'POST',
-            session,
+            token: apiKey.secret,
             body: { emails: [] },
             // @ts-expect-error missing query on purpose
             query: {}
         });
 
-        shouldRequireSessionEnv(res);
+        shouldRequireQueryEnv(res);
     });
 
     it('should validate body', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'POST',
             query: { env: 'dev' },
-            session,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { emails: 1 }
         });

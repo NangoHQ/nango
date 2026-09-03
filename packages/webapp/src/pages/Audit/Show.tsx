@@ -2,6 +2,7 @@ import { ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
+import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
@@ -46,7 +47,7 @@ export const AuditShow: React.FC = () => {
     const meta = metaData?.data;
     const { user } = useUser();
     const { can } = usePermissions();
-    const canReadAuditTrail = can('account:audit_trail:read');
+    const canReadAuditTrail = can(permissions.canReadAuditTrail);
     const [period, setPeriod] = useState<Period | null>(() => last14dPreset.toPeriod());
     const [resources, setResources] = useState<ResourceFilter[]>([ALL]);
     const [actions, setActions] = useState<ActionFilter[]>([ALL]);

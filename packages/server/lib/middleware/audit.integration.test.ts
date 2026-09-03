@@ -277,13 +277,12 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records an environment creation with the response id and is account-scoped', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             await updatePlan(db.knex, { id: plan.id, environments_max: 10 });
-            const session = await authenticateUser(api, user);
 
             const res = await api.fetch('/api/v1/environments', {
                 method: 'POST',
-                session,
+                token: apiKey.secret,
                 body: { name: 'staging' }
             });
 
@@ -453,12 +452,11 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records an api key creation without ever recording the secret value', async () => {
-            const { user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
-            const session = await authenticateUser(api, user);
+            const { apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
 
             const res = await api.fetch('/api/v1/environment/api-keys', {
                 method: 'POST',
-                session,
+                token: apiKey.secret,
                 // @ts-expect-error querystring is not typed on this endpoint
                 query: { env: 'dev' },
                 body: { display_name: 'ci-key', scopes: ['environment:*'] }

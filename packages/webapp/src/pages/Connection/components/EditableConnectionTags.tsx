@@ -2,12 +2,14 @@ import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
 import { KeyValueInput } from '@/components/patterns/KeyValueInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
 import { usePatchConnection } from '@/hooks/useConnections';
+import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
@@ -18,8 +20,10 @@ import type { Tags } from '@nangohq/types';
 export const EditableConnectionTags = ({ connectionId, providerConfigKey, tags }: { connectionId: string; providerConfigKey: string; tags: Tags }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
+    const { data } = useEnvironment(env);
+    const environment = data?.environmentAndAccount?.environment;
     const { can } = usePermissions();
-    const canEditConnection = can('environment:connections:update');
+    const canEditConnection = can(permissions.canWriteProdConnections) || !environment?.is_production;
 
     const { mutateAsync: patchConnectionTags, isPending } = usePatchConnection();
 

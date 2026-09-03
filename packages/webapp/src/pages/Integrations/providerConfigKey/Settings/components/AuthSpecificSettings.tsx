@@ -13,7 +13,7 @@ export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['d
     const authMode = data.template.auth_mode;
 
     if (data.template.integration_config && Object.keys(data.template.integration_config).length > 0) {
-        return <CustomIntegrationSettings data={data} />;
+        return <CustomIntegrationSettings data={data} environment={environment} />;
     }
 
     switch (authMode) {
@@ -23,7 +23,7 @@ export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['d
             return <OAuthSettings data={data} environment={environment} />;
 
         case 'OAUTH2_CC':
-            return <OAuth2CCSettings data={data} />;
+            return <OAuth2CCSettings data={data} environment={environment} />;
 
         case 'APP':
             return <AppAuthSettings data={data} environment={environment} />;

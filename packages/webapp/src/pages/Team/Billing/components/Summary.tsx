@@ -1,6 +1,7 @@
 import { Pencil } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { permissions } from '@nangohq/authz';
 import { IconButton } from '@nangohq/design-system';
 
 import { usePlanOverrideStore } from '@/features/planOverride';
@@ -19,7 +20,7 @@ import { SummaryStrip } from './SummaryStrip';
 export const Summary: React.FC = () => {
     const env = useStore((state) => state.env);
     const { can } = usePermissions();
-    const canManageBilling = can('account:billing:payment_methods:create');
+    const canManageBilling = can(permissions.canManageBilling);
 
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;

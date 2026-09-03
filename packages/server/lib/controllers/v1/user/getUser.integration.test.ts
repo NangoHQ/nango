@@ -1,10 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { ROLES } from '@nangohq/authz';
-import { seeders, userService } from '@nangohq/shared';
-import { flags } from '@nangohq/utils';
+import { seeders } from '@nangohq/shared';
 
-import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
+import { isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 const route = '/api/v1/user';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -40,41 +38,19 @@ describe(`GET ${route}`, () => {
         });
     });
 
-    // The field name is part of the contract with the webapp.
-    it('should send the grants the role carries', async () => {
-        const originalFlag = flags.hasAuthRoles;
-        flags.hasAuthRoles = true;
-        try {
-            const { user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
-            const session = await authenticateUser(api, user);
+    // TODO: can't test stuff that needs `user` because we are using an anonymous secret_key
+    //     it('should get a user', async () => {
+    //         const { env, user, account } = await seeders.seedAccountEnvAndUser();
 
-            const res = await api.fetch(route, { method: 'GET', session });
+    //         const res = await api.fetch(route, {
+    //             method: 'GET',
+    //             token: env.secret_key
+    //         });
 
-            expect(res.res.status).toBe(200);
-            isSuccess(res.json);
-            expect(res.json.data.grants).toEqual(ROLES[user.role]);
-            expect(res.json.data).not.toHaveProperty('permissions');
-        } finally {
-            flags.hasAuthRoles = originalFlag;
-        }
-    });
-
-    it('should send a demoted role its narrower grants', async () => {
-        const originalFlag = flags.hasAuthRoles;
-        flags.hasAuthRoles = true;
-        try {
-            const { account } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
-            const member = await seeders.seedUser(account.id);
-            await userService.update({ id: member.id, role: 'production_support' });
-            const session = await authenticateUser(api, member);
-
-            const res = await api.fetch(route, { method: 'GET', session });
-
-            expect(res.res.status).toBe(200);
-            isSuccess(res.json);
-            expect(res.json.data.grants).toEqual(ROLES.production_support);
-        } finally {
-            flags.hasAuthRoles = originalFlag;
-        }
-    });
+    //         expect(res.res.status).toBe(200);
+    //         isSuccess(res.json);
+    //         expect(res.json).toStrictEqual<typeof res.json>({
+    //             data: {}
+    //         });
+    //     });
 });

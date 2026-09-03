@@ -1,9 +1,15 @@
-import { authorize, issuedGrant, ROLES, targetForScope } from '@nangohq/authz';
+import { issuedGrant, ROLES } from '@nangohq/authz';
 import { flagHasPlan, flags } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { Grant, Principal, PrincipalSubject, Scope, ScopeSelector, WhereSelector } from '@nangohq/authz';
+import type { Grant, Principal, PrincipalSubject, ScopeSelector, WhereSelector } from '@nangohq/authz';
 import type { ApiKeyPrincipal, Role } from '@nangohq/types';
+
+/** What a caller reaches when RBAC does not apply: the flag is off, or the plan has no RBAC. */
+const UNRESTRICTED: Grant[] = [
+    { can: ['environment:*'], where: ['env:*'] },
+    { can: ['account:*'], where: ['account'] }
+];
 
 function rbacApplies(locals: { plan?: { has_rbac: boolean } | null }): boolean {
     if (!flags.hasAuthRoles) {
@@ -54,7 +60,7 @@ export function buildPrincipal(locals: Partial<RequestLocals>): Principal | null
         return {
             subject: { type: 'user', id: String(user.id), display: user.email },
             accountId: account.id,
-            grants: grantsForRole(user.role, locals.plan)
+            grants: rbacApplies(locals) ? ROLES[user.role] : UNRESTRICTED
         };
     }
 
@@ -66,9 +72,13 @@ export function buildPrincipal(locals: Partial<RequestLocals>): Principal | null
     return null;
 }
 
-/** Administrator grants when RBAC does not apply. */
-export function grantsForRole(role: Role, plan?: { has_rbac: boolean } | null): readonly Grant[] {
-    return ROLES[rbacApplies({ plan: plan ?? null }) ? role : 'administrator'];
+/** The grants a role carries, with no request behind them. The caller supplies the target to evaluate against. */
+export function principalForRole(role: Role, accountId: number, plan?: { has_rbac: boolean } | null): Principal {
+    return {
+        subject: { type: 'user', id: 'role' },
+        accountId,
+        grants: rbacApplies({ plan: plan ?? null }) ? ROLES[role] : UNRESTRICTED
+    };
 }
 
 /** `buildPrincipal`, computed once per request and kept on locals for later handlers. */
@@ -77,22 +87,4 @@ export function principalFor(locals: Partial<RequestLocals>): Principal | null {
         locals.principal = buildPrincipal(locals);
     }
     return locals.principal;
-}
-
-export class MissingPrincipalError extends Error {
-    readonly scope: Scope;
-
-    constructor(scope: Scope) {
-        super('missing_principal');
-        this.name = 'MissingPrincipalError';
-        this.scope = scope;
-    }
-}
-
-export function principalCan(locals: Partial<RequestLocals>, scope: Scope): boolean {
-    const principal = principalFor(locals);
-    if (!principal) {
-        throw new MissingPrincipalError(scope);
-    }
-    return authorize(principal, scope, targetForScope(scope, principal.accountId, locals.environment ?? null));
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { permissions } from '@nangohq/authz';
 import { Button, Field, FieldError, FieldLabel } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
@@ -19,10 +20,11 @@ export const Telemetry: React.FC = () => {
     const { toast } = useToast();
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
     const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
 
     const { can } = usePermissions();
-    const canEditEnvironment = can('environment:settings:update');
+    const canEditEnvironment = can(permissions.canWriteProdEnvironment) || !environment?.is_production;
 
     const [loading, setLoading] = useState(false);
     const [editHeaders, setEditHeaders] = useState(false);

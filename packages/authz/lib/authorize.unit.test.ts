@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { authorize, authorizeIn, issuedGrant, scopeMatches } from './authorize.js';
+import { authorize, authorizeAny, issuedPrincipal, scopeMatches } from './authorize.js';
 import { ROLES } from './roles.js';
-import { expandIssuable, ISSUABLE_SCOPES, PRIVATE_SCOPES } from './scopes.js';
-import { accountTarget, environmentTarget, isIssuableWhere, ScopeRequiresEnvironmentError, targetForScope, whereContains } from './where.js';
+import { expandIssuable, isIssuable, ISSUABLE_SCOPES, PRIVATE_SCOPES } from './scopes.js';
+import { accountTarget, environmentTarget, isIssuableWhere, whereContains } from './where.js';
 
 import type { Grant, Principal } from './authorize.js';
 import type { ScopeSelector } from './scopes.js';
@@ -81,7 +81,7 @@ describe('expandIssuable', () => {
     it('never yields a private scope, whatever was granted', () => {
         for (const granted of [['*'], ['environment:*'], ['account:*'], PRIVATE_SCOPES] as const) {
             for (const scope of expandIssuable(granted as never)) {
-                expect(ISSUABLE_SCOPES, scope).toContain(scope);
+                expect(isIssuable(scope), scope).toBe(true);
             }
         }
     });
@@ -126,6 +126,12 @@ describe('authorize', () => {
         expect(authorize(p, 'account:environments:create', account)).toBe(true);
         expect(authorize(p, 'account:environments:create', prodEnv)).toBe(false);
     });
+
+    it('authorizeAny is any-of', () => {
+        const p = principal([{ can: ['environment:connections:read_credentials'], where: ['env:*'] }]);
+        expect(authorizeAny(p, ['environment:connections:read', 'environment:connections:read_credentials'], prodEnv)).toBe(true);
+        expect(authorizeAny(p, ['environment:connections:read', 'environment:connections:delete'], prodEnv)).toBe(false);
+    });
 });
 
 describe('isIssuableWhere', () => {
@@ -168,38 +174,8 @@ describe('account isolation', () => {
     });
 });
 
-describe('authorizeIn', () => {
-    const p = principal([{ can: ['environment:*'], where: ['env:non-production'] }]);
-
-    it('answers against the environment it is given', () => {
-        expect(authorizeIn(p, 'environment:settings:update', { id: 9, account_id: 1, is_production: false })).toBe(true);
-        expect(authorizeIn(p, 'environment:settings:update', { id: 5, account_id: 1, is_production: true })).toBe(false);
-    });
-
-    it('answers an account scope whatever environment it is handed', () => {
-        const onAccount = principal([{ can: ['account:*'], where: ['account'] }]);
-        expect(authorizeIn(onAccount, 'account:team:update', { id: 5, account_id: 1, is_production: true })).toBe(true);
-        expect(authorizeIn(onAccount, 'account:team:update', { id: 9, account_id: 1, is_production: false })).toBe(true);
-    });
-
-    // The dashboard asks account questions on pages that resolve no environment.
-    it('answers an account scope with no environment at all', () => {
-        const onAccount = principal([{ can: ['account:*'], where: ['account'] }]);
-        expect(authorizeIn(onAccount, 'account:team:update', null)).toBe(true);
-        expect(authorizeIn(p, 'account:team:update', null)).toBe(false);
-    });
-
-    it('refuses an environment scope with no environment, rather than throwing', () => {
-        expect(authorizeIn(p, 'environment:settings:update', null)).toBe(false);
-    });
-});
-
-describe('issuedGrant', () => {
-    const issued = (scopes: ScopeSelector[], where: WhereSelector[]): Principal => ({
-        subject: { type: 'api_key', id: '1' },
-        accountId: 1,
-        grants: [issuedGrant(scopes, where)]
-    });
+describe('issuedPrincipal', () => {
+    const issued = (scopes: ScopeSelector[], where: WhereSelector[]) => issuedPrincipal({ subject: { type: 'api_key', id: '1' }, accountId: 1, scopes, where });
 
     it('resolves a wildcard to public scopes only', () => {
         const key = issued(['environment:*'], ['env:5']);
@@ -228,44 +204,5 @@ describe('issuedGrant', () => {
         const key = issued(['environment:*'], ['env:5']);
         expect(authorize(key, 'environment:connections:read', prodEnv)).toBe(true);
         expect(authorize(key, 'environment:connections:read', devEnv)).toBe(false);
-    });
-});
-
-describe('targetForScope', () => {
-    const prodRow = { id: 5, account_id: 1, is_production: true };
-
-    it('sends an account scope to the account, whatever environment is in view', () => {
-        expect(targetForScope('account:team:update', 1, null)).toEqual({ type: 'account', accountId: 1 });
-        expect(targetForScope('account:team:update', 1, prodRow)).toEqual({ type: 'account', accountId: 1 });
-    });
-
-    it('sends an environment scope to the environment it is asked about', () => {
-        expect(targetForScope('environment:settings:update', 1, prodRow)).toEqual({
-            type: 'environment',
-            accountId: 1,
-            environment: { id: 5, is_production: true }
-        });
-    });
-
-    it('refuses an environment scope with no environment, naming the scope', () => {
-        expect(() => targetForScope('environment:settings:update', 1, null)).toThrow(ScopeRequiresEnvironmentError);
-        try {
-            targetForScope('environment:settings:update', 1, null);
-            expect.unreachable();
-        } catch (err) {
-            expect((err as ScopeRequiresEnvironmentError).message).toBe('scope_requires_environment');
-            expect((err as ScopeRequiresEnvironmentError).name).toBe('ScopeRequiresEnvironmentError');
-            expect((err as ScopeRequiresEnvironmentError).scope).toBe('environment:settings:update');
-        }
-    });
-
-    it('takes the account from the environment row', () => {
-        expect(targetForScope('environment:settings:update', 999, prodRow)).toMatchObject({ accountId: 1 });
-    });
-
-    it('names a real environment, so a grant scoped to one answers for it', () => {
-        const principal: Principal = { subject: { type: 'user', id: 'u' }, accountId: 1, grants: [{ can: ['environment:*'], where: ['env:5'] }] };
-        expect(authorize(principal, 'environment:settings:update', targetForScope('environment:settings:update', 1, prodRow))).toBe(true);
-        expect(authorize(principal, 'environment:settings:update', targetForScope('environment:settings:update', 1, { ...prodRow, id: 6 }))).toBe(false);
     });
 });

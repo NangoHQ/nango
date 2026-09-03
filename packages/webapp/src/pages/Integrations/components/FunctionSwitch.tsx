@@ -1,5 +1,7 @@
 import { Loader2 } from 'lucide-react';
 
+import { permissions } from '@nangohq/authz';
+
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
@@ -20,9 +22,10 @@ export const FunctionSwitch: React.FC<{
     const env = useStore((state) => state.env);
     const { data: environmentData, refetch: refetchEnv } = useCurrentPlan(env);
     const plan = environmentData?.plan;
+    const environment = environmentData?.environmentAndAccount?.environment;
 
     const { can } = usePermissions();
-    const canWriteFlows = can('environment:syncs:update');
+    const canWriteFlows = can(permissions.canWriteProdFlows) || !environment?.is_production;
 
     const { confirm, DialogComponent } = useConfirmDialog();
 

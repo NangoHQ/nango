@@ -2,10 +2,12 @@ import { Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 
+import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog.js';
+import { useEnvironment } from '@/hooks/useEnvironment.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { clearConnectionsCache } from '../../../../../hooks/useConnections.js';
 import { useDeleteIntegration } from '../../../../../hooks/useIntegration.js';
@@ -17,8 +19,10 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
     const { toast } = useToast();
     const navigate = useNavigate();
 
+    const { data: environmentData } = useEnvironment(env);
+    const environment = environmentData?.environmentAndAccount?.environment;
     const { can } = usePermissions();
-    const canDeleteIntegration = can('environment:integrations:delete');
+    const canDeleteIntegration = environment ? can(permissions.canDeleteProdIntegrations) || !environment.is_production : false;
 
     const { mutate, cache } = useSWRConfig();
     const { mutateAsync: deleteIntegration, isPending } = useDeleteIntegration(env, integration.unique_key);

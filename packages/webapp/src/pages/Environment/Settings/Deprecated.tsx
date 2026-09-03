@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { permissions } from '@nangohq/authz';
 import { FieldLabel } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
@@ -21,11 +22,12 @@ export const DeprecatedSettings: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
     const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
 
     const { can } = usePermissions();
-    const canReadEnvironmentKey = can('environment:settings:read_secret');
-    const canEditEnvironment = can('environment:settings:update');
+    const canReadEnvironmentKey = can(permissions.canReadProdSecretKey) || !environment?.is_production;
+    const canEditEnvironment = can(permissions.canWriteProdEnvironment) || !environment?.is_production;
 
     const [loading, setLoading] = useState(false);
 

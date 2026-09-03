@@ -8,7 +8,7 @@ export type GetUser = ApiEndpoint<{
     Method: 'GET';
     Path: `/api/v1/user`;
     Success: {
-        data: ApiUserWithGrants;
+        data: ApiUserWithPermissions;
     };
 }>;
 
@@ -44,10 +44,13 @@ export interface ApiUser {
     gettingStartedClosed: boolean;
 }
 
-export type ApiGrant = { can: string[]; where: string[] };
+export type AllowedPermissions = Partial<
+    Record<string, Partial<Record<'production' | 'non-production' | 'global', ('create' | 'read' | 'update' | 'delete' | '*')[]>>>
+>;
 
-export type ApiUserWithGrants = ApiUser & {
-    grants: readonly ApiGrant[];
+export type ApiUserWithPermissions = ApiUser & {
+    role: Role;
+    permissions: AllowedPermissions;
     hasPassword: boolean;
 };
 

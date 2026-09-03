@@ -5,7 +5,7 @@ import db from '@nangohq/database';
 import { getPlan, productTracking, seeders, updatePlan } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../../utils/tests.js';
+import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
 
 import type { BillingSubscription } from '@nangohq/types';
 
@@ -81,28 +81,26 @@ describe(`POST ${route}`, () => {
         });
 
         it('should enforce env query params', async () => {
-            const { user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'POST',
-                session,
+                token: apiKey.secret,
                 // @ts-expect-error missing env on purpose
                 query: {},
                 body: { orbId: 'starter-v2' }
             });
 
-            shouldRequireSessionEnv(res);
+            shouldRequireQueryEnv(res);
         });
     });
 
     describe('Input Validation', () => {
         it('should validate body structure - missing orbId', async () => {
-            const { user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 // @ts-expect-error missing orbId on purpose
                 body: {}
             });
@@ -113,12 +111,11 @@ describe(`POST ${route}`, () => {
         });
 
         it('should validate body structure - extra fields', async () => {
-            const { user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 // @ts-expect-error extra fields on purpose
                 body: { orbId: 'starter-v2', extraField: 'invalid' }
             });
@@ -129,12 +126,11 @@ describe(`POST ${route}`, () => {
         });
 
         it('should validate orbId enum - invalid plan code', async () => {
-            const { user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'invalid-plan-code' }
             });
 
@@ -144,13 +140,12 @@ describe(`POST ${route}`, () => {
         });
 
         it('should reject empty query params', async () => {
-            const { user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'POST',
                 // @ts-expect-error invalidParam on purpose
                 query: { env: 'dev', invalidParam: 'value' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -162,15 +157,14 @@ describe(`POST ${route}`, () => {
 
     describe('Plan State Validation', () => {
         it('should reject if team has no orb subscription', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             // Ensure orb_subscription_id is null
             await setupPlan({ id: plan.id, orb_subscription_id: null });
 
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -183,8 +177,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should reject if plan cannot change', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             // Set plan to enterprise which has canChange: false
             await setupPlan({
                 id: plan.id,
@@ -195,7 +188,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -208,15 +201,14 @@ describe(`POST ${route}`, () => {
         });
 
         it('should reject if already on target plan', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             // Ensure plan has subscription
             await setupPlan({ id: plan.id, orb_subscription_id: 'sub_123' });
 
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'free' } // Already on free plan
             });
 
@@ -231,8 +223,7 @@ describe(`POST ${route}`, () => {
 
     describe('Subscription Validation', () => {
         it('should reject if subscription not found in Orb', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({ id: plan.id, orb_subscription_id: 'sub_123' });
 
             getSubscriptionSpy.mockResolvedValue(Ok(null));
@@ -240,7 +231,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -253,8 +244,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should handle pending changes', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -276,7 +266,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -288,8 +278,7 @@ describe(`POST ${route}`, () => {
 
     describe('Upgrade Flow', () => {
         it('should reject an upgrade from starter-v2 to growth-v2', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 name: 'starter-v2',
@@ -306,7 +295,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'growth-v2' }
             });
 
@@ -319,8 +308,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should reject upgrade without Stripe linkage', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -338,7 +326,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -351,8 +339,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should create payment intent for upgrade', async () => {
-            const { account, plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { account, plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -374,7 +361,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -391,8 +378,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should return payment intent when not auto-confirmed', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -414,7 +400,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -427,8 +413,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should return success when payment auto-confirmed', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -450,7 +435,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -462,8 +447,7 @@ describe(`POST ${route}`, () => {
         it('should apply the pending change without a payment when nothing is payable now', async () => {
             // A plan billed fully in arrears has no base fee to charge when the change is applied, so Orb
             // reports nothing payable now. Stripe should not be involved.
-            const { account, plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { account, plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -477,7 +461,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'pay-as-you-go' }
             });
 
@@ -496,8 +480,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should leave the pending change alone on upgrade error', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -518,7 +501,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -530,8 +513,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should handle upgrade billing service errors', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -550,7 +532,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -562,8 +544,7 @@ describe(`POST ${route}`, () => {
 
     describe('Downgrade Flow', () => {
         it('should allow downgrade to free without Stripe', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 name: 'starter-v2',
@@ -583,7 +564,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'free' }
             });
 
@@ -593,8 +574,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should reject a downgrade from growth-v2 to starter-v2', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 name: 'growth-v2',
@@ -611,7 +591,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -624,8 +604,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should reject if already scheduled for downgrade', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 name: 'starter-v2',
@@ -643,7 +622,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'free' }
             });
 
@@ -656,8 +635,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should successfully downgrade', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 name: 'starter-v2',
@@ -675,7 +653,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'free' }
             });
 
@@ -685,8 +663,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should handle downgrade billing service errors', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 name: 'starter-v2',
@@ -704,7 +681,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'free' }
             });
 
@@ -716,8 +693,7 @@ describe(`POST ${route}`, () => {
 
     describe('Error Handling', () => {
         it('should handle billing service errors gracefully', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123'
@@ -728,7 +704,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -738,8 +714,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should handle Stripe API errors', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -760,7 +735,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                session,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 

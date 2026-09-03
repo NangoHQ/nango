@@ -1,4 +1,8 @@
+import { permissions } from '@nangohq/authz';
+
+import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useStore } from '@/store';
 import { ApiKeyCredentialsComponent } from './ApiKeyCredentials';
 import { AppCredentialsComponent } from './AppCredentials';
 import { BasicCredentialsComponent } from './BasicCredentials';
@@ -22,8 +26,12 @@ interface AuthCredentialsProps {
 export const AuthCredentials: React.FC<AuthCredentialsProps> = ({ connection, providerConfigKey }) => {
     const { credentials } = connection;
 
+    const env = useStore((state) => state.env);
+    const { data } = useEnvironment(env);
+    const environment = data?.environmentAndAccount?.environment;
+
     const { can } = usePermissions();
-    const canReadConnectionCredentials = can('environment:connections:read_credentials');
+    const canReadConnectionCredentials = can(permissions.canReadProdConnectionCredentials) || !environment?.is_production;
 
     return (
         <>

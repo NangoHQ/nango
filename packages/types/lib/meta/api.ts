@@ -1,8 +1,6 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { DBEnvironment } from '../environment/db.js';
 
-export type ApiEnvironmentSummary = Pick<DBEnvironment, 'id' | 'account_id' | 'name' | 'is_production'>;
-
 export type GetMeta = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
@@ -11,7 +9,7 @@ export type GetMeta = ApiEndpoint<{
     Error: ApiError<'user_not_found'>;
     Success: {
         data: {
-            environments: ApiEnvironmentSummary[];
+            environments: Pick<DBEnvironment, 'name' | 'is_production'>[];
             version: string;
             baseUrl: string;
             debugMode: boolean;

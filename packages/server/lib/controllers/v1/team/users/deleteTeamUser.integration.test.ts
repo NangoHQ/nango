@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { seeders } from '@nangohq/shared';
 
-import { authenticateUser, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../../utils/tests.js';
+import { runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
 
 const route = '/api/v1/team/users/:id';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -21,26 +21,24 @@ describe(`DELETE ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'DELETE',
-            session,
+            token: apiKey.secret,
             params: { id: 1 },
             // @ts-expect-error missing query on purpose
             query: {}
         });
 
-        shouldRequireSessionEnv(res);
+        shouldRequireQueryEnv(res);
     });
 
     it('should validate params', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'DELETE',
             query: { env: 'dev' },
-            session,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             params: { id: 'a' }
         });

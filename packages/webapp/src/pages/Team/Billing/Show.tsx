@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
 import { AlertButton, Button } from '@nangohq/design-system';
 
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
@@ -29,7 +30,7 @@ import { hasMonthlySpend, showsSummaryStrip } from './planVisibility';
 
 export const TeamBilling: React.FC = () => {
     const { can } = usePermissions();
-    const canManageBilling = can('account:billing:payment_methods:create');
+    const canManageBilling = can(permissions.canManageBilling);
     const usageLimitOverride = usePlanOverrideStore((s) => s.usageLimitOverride);
 
     // Hidden for legacy, enterprise and free-uncapped accounts. Checked here as well as inside

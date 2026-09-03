@@ -1,6 +1,7 @@
 import { AlertTriangle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import { permissions } from '@nangohq/authz';
 import { Alert, AlertDescription, FieldLabel } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
@@ -12,7 +13,7 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { isIntegrationConfigFieldVisible } from '@/utils/integrationConfig';
 
-import type { GetIntegration, SimplifiedJSONSchema } from '@nangohq/types';
+import type { ApiEnvironment, GetIntegration, SimplifiedJSONSchema } from '@nangohq/types';
 
 type FieldEntry = [string, SimplifiedJSONSchema];
 
@@ -50,13 +51,16 @@ function buildValidator(definition: SimplifiedJSONSchema): (value: string) => st
  * `integration_config` and pre-filled from the integration's stored `custom` values. Each field saves
  * independently (text fields via the inline edit/save pattern, enum fields on selection change).
  */
-export const CustomIntegrationSettings: React.FC<{ data: GetIntegration['Success']['data'] }> = ({ data: { integration, template } }) => {
+export const CustomIntegrationSettings: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({
+    data: { integration, template },
+    environment
+}) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { can } = usePermissions();
     const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
 
-    const canEdit = can('environment:integrations:update');
+    const canEdit = !environment.is_production || can(permissions.canWriteProdIntegrations);
 
     const schemaMap = template.integration_config ?? {};
 

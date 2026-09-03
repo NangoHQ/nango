@@ -2,6 +2,8 @@ import { ChevronsUpDown, CreditCard, KeyRound, LogOut, ScrollText, SlidersHorizo
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar';
 import { useDevPanelStore, useIsDevToolsEnabled } from '@/features/DevToolPanel';
@@ -31,8 +33,8 @@ export const ProfileDropdown: React.FC = () => {
     const signout = useSignout();
     const { user } = useUser();
     const { can } = usePermissions();
-    const canReadAuditTrail = can('account:audit_trail:read');
-    const canManageAccountKeys = can('account:api_keys:list');
+    const canReadAuditTrail = can(permissions.canReadAuditTrail);
+    const canManageAccountKeys = can(permissions.canManageAccountKeys);
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const toggleDevPanel = useDevPanelStore((s) => s.toggle);
     const isDevToolsEnabled = useIsDevToolsEnabled();

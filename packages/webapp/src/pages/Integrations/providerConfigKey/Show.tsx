@@ -2,6 +2,8 @@ import { ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -29,7 +31,7 @@ export const ShowIntegration: React.FC = () => {
     const environmentAndAccount = environmentData?.environmentAndAccount;
 
     const { can } = usePermissions();
-    const canCreateTestConnection = can('environment:connections:update');
+    const canCreateTestConnection = can(permissions.canWriteProdConnections) || !environmentAndAccount?.environment.is_production;
 
     const { data, isLoading: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
     const integration = data?.data;

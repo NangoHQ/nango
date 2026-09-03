@@ -6,6 +6,7 @@ import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
+import { permissions } from '@nangohq/authz';
 import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
@@ -19,6 +20,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConnections } from '@/hooks/useConnections';
+import { useEnvironment } from '@/hooks/useEnvironment';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
@@ -163,10 +165,11 @@ const columns: ColumnDef<ConnectionRow>[] = [
 
 export const ConnectionList = () => {
     const env = useStore((state) => state.env);
+    const { data: environmentData } = useEnvironment(env);
+    const environment = environmentData?.environmentAndAccount?.environment;
 
     const { can } = usePermissions();
-    // Connections are created through a connect session, which requires `connections:update`.
-    const canCreateTestConnection = can('environment:connections:update');
+    const canCreateTestConnection = can(permissions.canWriteProdConnections) || !environment?.is_production;
 
     const navigate = useNavigate();
 

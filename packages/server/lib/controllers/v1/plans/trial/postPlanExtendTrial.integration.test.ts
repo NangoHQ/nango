@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import db from '@nangohq/database';
 import { getPlan, seeders, TRIAL_DURATION, updatePlan } from '@nangohq/shared';
 
-import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../../utils/tests.js';
+import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
 
 const route = '/api/v1/plans/trial/extension';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -22,25 +22,23 @@ describe(`POST ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'POST',
-            session,
+            token: apiKey.secret,
             // @ts-expect-error missing query on purpose
             query: {}
         });
 
-        shouldRequireSessionEnv(res);
+        shouldRequireQueryEnv(res);
     });
 
     it('should validate body', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'POST',
             query: { env: 'dev' },
-            session,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { test: 1 }
         });
@@ -55,8 +53,7 @@ describe(`POST ${route}`, () => {
     });
 
     it('should extend trial', async () => {
-        const { plan, user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
 
         // start trial
         const endDate = new Date(Date.now() + TRIAL_DURATION);
@@ -65,7 +62,7 @@ describe(`POST ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'POST',
             query: { env: 'dev' },
-            session
+            token: apiKey.secret
         });
 
         isSuccess(res.json);
@@ -79,8 +76,7 @@ describe(`POST ${route}`, () => {
     });
 
     it('should reject extending trial when auto idling is disabled even if trial fields are still set', async () => {
-        const { plan, user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
 
         const endDate = new Date(Date.now() + TRIAL_DURATION);
         await updatePlan(db.knex, {
@@ -93,7 +89,7 @@ describe(`POST ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'POST',
             query: { env: 'dev' },
-            session
+            token: apiKey.secret
         });
 
         expect(res.res.status).toBe(400);

@@ -1,6 +1,8 @@
 import { keepPreviousData, queryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
+import { permissions } from '@nangohq/authz';
+
 import { applyPlanOverride, buildOverdueOverride, buildPeriodCostsOverride, buildSpendOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
@@ -153,7 +155,7 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
     // Only used to key the cache: `portalUrl` is returned to billing managers only, so a mid-session
     // permission change must not serve the other role's cached response.
     const { can } = usePermissions();
-    const canManageBilling = can('account:billing:payment_methods:create');
+    const canManageBilling = can(permissions.canManageBilling);
     return useQuery<GetOverdueInvoices['Success'], APIError>({
         // Fetched for every member, not just billing managers — the overdue warning shows to all. Not
         // gated on the plan either: a downgraded account can still owe an invoice.

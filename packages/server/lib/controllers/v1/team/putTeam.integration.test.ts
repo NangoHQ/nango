@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { seeders } from '@nangohq/shared';
 
-import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../utils/tests.js';
+import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 const route = '/api/v1/team';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -21,24 +21,22 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(
             route,
             // @ts-expect-error missing query on purpose
-            { session, params: { operationId: '1' } }
+            { token: apiKey.secret, params: { operationId: '1' } }
         );
 
-        shouldRequireSessionEnv(res);
+        shouldRequireQueryEnv(res);
     });
 
     it('should validate body', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'PUT',
             query: { env: 'dev' },
-            session,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { name: 1 }
         });
@@ -53,13 +51,12 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should put team name', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const session = await authenticateUser(api, user);
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(route, {
             method: 'PUT',
             query: { env: 'dev' },
-            session,
+            token: apiKey.secret,
             body: { name: 'hello' }
         });
 

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
@@ -14,6 +15,7 @@ import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { useEnvironment } from '@/hooks/useEnvironment';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
@@ -27,11 +29,13 @@ export const IntegrationsList = () => {
     const navigate = useNavigate();
 
     const env = useStore((state) => state.env);
+    const { data: environmentData } = useEnvironment(env);
+    const { environment } = environmentData?.environmentAndAccount || {};
     const { data, isPending, error } = useListIntegrations(env);
     const [integrations, setIntegrations] = useState<ApiIntegrationList[] | null>(null);
 
     const { can } = usePermissions();
-    const canWriteIntegration = can('environment:integrations:update');
+    const canWriteIntegration = can(permissions.canWriteProdIntegrations) || !environment?.is_production;
 
     const initialIntegrations = useMemo(() => {
         return data?.data ?? null;

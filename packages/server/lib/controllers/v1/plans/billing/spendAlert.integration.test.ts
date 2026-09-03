@@ -5,7 +5,7 @@ import db from '@nangohq/database';
 import { seeders, updatePlan } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../../utils/tests.js';
+import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
 
 const route = '/api/v1/plans/billing/spend-alert';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -21,7 +21,7 @@ async function seedPlan(planName: string, { subscriptionId = 'orb_sub_123' }: { 
     if (updated.isErr()) {
         throw updated.error;
     }
-    return { ...seed, session: await authenticateUser(api, seed.user) };
+    return seed;
 }
 
 beforeAll(async () => {
@@ -51,24 +51,22 @@ describe(`GET ${route}`, () => {
         });
 
         it('should enforce env query param', async () => {
-            const { user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'GET',
-                session,
+                token: apiKey.secret,
                 // @ts-expect-error missing env on purpose
                 query: {}
             });
 
-            shouldRequireSessionEnv(res);
+            shouldRequireQueryEnv(res);
         });
 
         it('should reject extra params in query', async () => {
-            const { user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'GET',
-                session,
+                token: apiKey.secret,
                 // @ts-expect-error extra param on purpose
                 query: { env: 'dev', foo: 'bar' }
             });
@@ -81,9 +79,9 @@ describe(`GET ${route}`, () => {
 
     describe('Plan gating', () => {
         it.each(['free', 'free-uncapped', 'enterprise'])('should not call Orb on %s', async (planName) => {
-            const { session } = await seedPlan(planName);
+            const { apiKey } = await seedPlan(planName);
 
-            const res = await api.fetch(route, { method: 'GET', session, query: { env: 'dev' } });
+            const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
@@ -92,9 +90,9 @@ describe(`GET ${route}`, () => {
         });
 
         it.each(['starter-v2', 'growth-v2', 'startup-deal'])('should return the threshold on %s', async (planName) => {
-            const { session } = await seedPlan(planName);
+            const { apiKey } = await seedPlan(planName);
 
-            const res = await api.fetch(route, { method: 'GET', session, query: { env: 'dev' } });
+            const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
@@ -105,20 +103,20 @@ describe(`GET ${route}`, () => {
 
     describe('Orb responses', () => {
         it('should default to USD when no alert is set', async () => {
-            const { session } = await seedPlan('starter-v2');
+            const { apiKey } = await seedPlan('starter-v2');
             getSpendAlertSpy.mockResolvedValue(Ok(null));
 
-            const res = await api.fetch(route, { method: 'GET', session, query: { env: 'dev' } });
+            const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
 
             isSuccess(res.json);
             expect(res.json.data).toStrictEqual({ thresholdInCents: null, currency: 'USD' });
         });
 
         it('should 500 when the Orb read fails', async () => {
-            const { session } = await seedPlan('starter-v2');
+            const { apiKey } = await seedPlan('starter-v2');
             getSpendAlertSpy.mockResolvedValue(Err(new Error('failed_to_get_spend_alert')));
 
-            const res = await api.fetch(route, { method: 'GET', session, query: { env: 'dev' } });
+            const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
 
             isError(res.json);
             expect(res.res.status).toBe(500);
@@ -126,9 +124,9 @@ describe(`GET ${route}`, () => {
         });
 
         it('should report no threshold when a spend plan has no linked subscription', async () => {
-            const { session } = await seedPlan('starter-v2', { subscriptionId: null });
+            const { apiKey } = await seedPlan('starter-v2', { subscriptionId: null });
 
-            const res = await api.fetch(route, { method: 'GET', session, query: { env: 'dev' } });
+            const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
@@ -147,17 +145,16 @@ describe(`PUT ${route}`, () => {
         });
 
         it('should enforce env query param', async () => {
-            const { user } = await seeders.seedAccountEnvAndUser();
-            const session = await authenticateUser(api, user);
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'PUT',
-                session,
+                token: apiKey.secret,
                 // @ts-expect-error missing env on purpose
                 query: {},
                 body: { thresholdInCents: 5000 }
             });
 
-            shouldRequireSessionEnv(res);
+            shouldRequireQueryEnv(res);
         });
     });
 
@@ -170,9 +167,9 @@ describe(`PUT ${route}`, () => {
             ['a missing threshold', {}],
             ['an unknown field', { thresholdInCents: 5000, foo: 'bar' }]
         ])('should reject %s', async (_label, body) => {
-            const { session } = await seedPlan('starter-v2');
+            const { apiKey } = await seedPlan('starter-v2');
 
-            const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: body as any });
+            const res = await api.fetch(route, { method: 'PUT', token: apiKey.secret, query: { env: 'dev' }, body: body as any });
 
             isError(res.json);
             expect(res.res.status).toBe(400);
@@ -183,9 +180,9 @@ describe(`PUT ${route}`, () => {
 
     describe('Plan gating', () => {
         it.each(['free', 'free-uncapped', 'enterprise'])('should refuse to set a threshold on %s', async (planName) => {
-            const { session } = await seedPlan(planName);
+            const { apiKey } = await seedPlan(planName);
 
-            const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
+            const res = await api.fetch(route, { method: 'PUT', token: apiKey.secret, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
 
             isError(res.json);
             expect(res.res.status).toBe(400);
@@ -195,9 +192,9 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should save the threshold and echo it back', async () => {
-        const { session } = await seedPlan('starter-v2');
+        const { apiKey } = await seedPlan('starter-v2');
 
-        const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
+        const res = await api.fetch(route, { method: 'PUT', token: apiKey.secret, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
 
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
@@ -207,9 +204,9 @@ describe(`PUT ${route}`, () => {
 
     it('should report the feature unavailable when a spend plan has no linked subscription', async () => {
         // GET degrades to a null threshold in this state, so PUT has to say why the save can't land.
-        const { session } = await seedPlan('starter-v2', { subscriptionId: null });
+        const { apiKey } = await seedPlan('starter-v2', { subscriptionId: null });
 
-        const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
+        const res = await api.fetch(route, { method: 'PUT', token: apiKey.secret, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
 
         isError(res.json);
         expect(res.res.status).toBe(400);
@@ -218,10 +215,10 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should 500 when the Orb write fails', async () => {
-        const { session } = await seedPlan('starter-v2');
+        const { apiKey } = await seedPlan('starter-v2');
         setSpendAlertSpy.mockResolvedValue(Err(new Error('failed_to_set_spend_alert')));
 
-        const res = await api.fetch(route, { method: 'PUT', session, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
+        const res = await api.fetch(route, { method: 'PUT', token: apiKey.secret, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
 
         isError(res.json);
         expect(res.res.status).toBe(500);
@@ -237,9 +234,9 @@ describe(`DELETE ${route}`, () => {
     });
 
     it('should remove the threshold', async () => {
-        const { session } = await seedPlan('starter-v2');
+        const { apiKey } = await seedPlan('starter-v2');
 
-        const res = await api.fetch(route, { method: 'DELETE', session, query: { env: 'dev' } });
+        const res = await api.fetch(route, { method: 'DELETE', token: apiKey.secret, query: { env: 'dev' } });
 
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
@@ -247,28 +244,28 @@ describe(`DELETE ${route}`, () => {
     });
 
     it('should still remove a threshold on a plan that has left the allowlist', async () => {
-        const { session } = await seedPlan('enterprise');
+        const { apiKey } = await seedPlan('enterprise');
 
-        const res = await api.fetch(route, { method: 'DELETE', session, query: { env: 'dev' } });
+        const res = await api.fetch(route, { method: 'DELETE', token: apiKey.secret, query: { env: 'dev' } });
 
         isSuccess(res.json);
         expect(removeSpendAlertSpy).toHaveBeenCalledWith('orb_sub_123');
     });
 
     it('should succeed without calling Orb when there is no subscription', async () => {
-        const { session } = await seedPlan('starter-v2', { subscriptionId: null });
+        const { apiKey } = await seedPlan('starter-v2', { subscriptionId: null });
 
-        const res = await api.fetch(route, { method: 'DELETE', session, query: { env: 'dev' } });
+        const res = await api.fetch(route, { method: 'DELETE', token: apiKey.secret, query: { env: 'dev' } });
 
         isSuccess(res.json);
         expect(removeSpendAlertSpy).not.toHaveBeenCalled();
     });
 
     it('should 500 when the Orb write fails', async () => {
-        const { session } = await seedPlan('starter-v2');
+        const { apiKey } = await seedPlan('starter-v2');
         removeSpendAlertSpy.mockResolvedValue(Err(new Error('failed_to_remove_spend_alert')));
 
-        const res = await api.fetch(route, { method: 'DELETE', session, query: { env: 'dev' } });
+        const res = await api.fetch(route, { method: 'DELETE', token: apiKey.secret, query: { env: 'dev' } });
 
         isError(res.json);
         expect(res.res.status).toBe(500);
