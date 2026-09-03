@@ -115,8 +115,8 @@ export function startPartitionDaemon({
 }): { abort: () => Promise<void> } {
     return cancellableDaemon({
         tickIntervalMs,
-        tick: async () => {
-            return void (await tracer.trace('nango.audit.daemon.partitions', async (span) => {
+        tick: async (): Promise<void> => {
+            return tracer.trace('nango.audit.daemon.partitions', async (span) => {
                 try {
                     const today = new Date();
                     const tomorrow = dayjs(today).utc().add(1, 'day').toDate();
@@ -138,7 +138,7 @@ export function startPartitionDaemon({
                 } finally {
                     span?.finish();
                 }
-            }));
+            });
         },
         onError: (err) => {
             logger.error(`[audit partitions] unexpected error`, err);
