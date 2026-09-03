@@ -287,11 +287,14 @@ describe('DispatchQueueConsumer', () => {
     });
 
     it('logs the delay for a message skipped because its group was already throttled', async () => {
-        const warn = vi.fn<(message: string) => Promise<void>>().mockResolvedValue(undefined);
-        const loggedFor: string[] = [];
+        const warned: [string, string][] = [];
         vi.spyOn(logContextGetter, 'get').mockImplementation(({ id }: { id: string }) => {
-            loggedFor.push(id);
-            return { warn } as unknown as ReturnType<typeof logContextGetter.get>;
+            return {
+                warn: (message: string) => {
+                    warned.push([id, message]);
+                    return Promise.resolve();
+                }
+            } as unknown as ReturnType<typeof logContextGetter.get>;
         });
 
         const noisy = (n: number) =>
@@ -324,12 +327,27 @@ describe('DispatchQueueConsumer', () => {
 
         h.consumer.start();
         await vi.waitFor(() => {
-            expect(loggedFor).toContain('log-noisy-2');
+            expect(warned.map(([id]) => id)).toContain('log-noisy-2');
         });
         await h.consumer.stop();
 
         expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
-        expect(warn).toHaveBeenCalledWith('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
+        expect(warned).toContainEqual(['log-noisy-2', 'Webhook execution is delayed: this environment reached its webhook dispatch rate limit']);
+    });
+
+    it('defers when a throttle outlasts the visibility left after a slow dispatch', async () => {
+        const h = makeHarness({ messages: [buildMessage()], rateLimitThrottleMaxMs: 60_000 });
+        h.orchestratorExecuteWebhookBatch.mockImplementation(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 1_000));
+            return Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 29_500 } })]);
+        });
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        // 29.5s is under the 30s timeout but past what is left of it once the call has taken 1s.
+        expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-0', VisibilityTimeout: 30 }]);
     });
 
     it('does not touch visibility when a throttle would not outlast the current timeout', async () => {

@@ -142,6 +142,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
+        const receivedAt = Date.now();
         return void (await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
@@ -166,7 +167,7 @@ export class DispatchQueueConsumer {
                     const remainingMs = this.throttles.remainingMs(dispatchGroupKey(group[0]!.parsed));
                     if (remainingMs > 0) {
                         throttled += group.length;
-                        deferrals.push(this.reportThrottled(group), this.deferGroup(group, remainingMs));
+                        deferrals.push(this.reportThrottled(group), this.deferGroup(group, remainingMs, receivedAt));
                         continue;
                     }
                     groupedEntries.push(group);
@@ -214,7 +215,7 @@ export class DispatchQueueConsumer {
                         return;
                     }
 
-                    await this.handleBatchResult(groupedEntries, res.value);
+                    await this.handleBatchResult(groupedEntries, res.value, receivedAt);
                 } finally {
                     await deferralsDone;
                 }
@@ -269,7 +270,8 @@ export class DispatchQueueConsumer {
     // Each result applies to every message in its group (deduped SQS copies of the same task).
     private async handleBatchResult(
         groupedEntries: ParsedEntry[][],
-        results: Awaited<ReturnType<OrchestratorClient['executeWebhookBatch']>> extends Result<infer R> ? R : never
+        results: Awaited<ReturnType<OrchestratorClient['executeWebhookBatch']>> extends Result<infer R> ? R : never,
+        receivedAt: number
     ): Promise<void> {
         for (let i = 0; i < groupedEntries.length; i++) {
             const group = groupedEntries[i]!;
@@ -303,14 +305,14 @@ export class DispatchQueueConsumer {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
                 const remainingMs = this.throttles.remainingMs(groupKey);
                 if (remainingMs > 0) {
-                    await this.deferGroup(group, remainingMs);
+                    await this.deferGroup(group, remainingMs, receivedAt);
                 }
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
                 await logCtx.warn(THROTTLED_LOG_MESSAGE);
             } else if (result.error.name === 'task_cap_exceeded') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'task_cap', provider, providerConfigKey });
                 if (this.taskCapDeferMs > 0) {
-                    await this.deferGroup(group, this.taskCapDeferMs);
+                    await this.deferGroup(group, this.taskCapDeferMs, receivedAt);
                 }
             } else {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider, providerConfigKey });
@@ -333,8 +335,9 @@ export class DispatchQueueConsumer {
         }
     }
 
-    private async deferGroup(group: ParsedEntry[], delayMs: number): Promise<void> {
-        if (delayMs <= this.visibilityTimeoutSeconds * 1000) {
+    private async deferGroup(group: ParsedEntry[], delayMs: number, receivedAt: number): Promise<void> {
+        const remainingVisibilityMs = this.visibilityTimeoutSeconds * 1000 - (Date.now() - receivedAt);
+        if (delayMs <= remainingVisibilityMs) {
             return;
         }
         try {
