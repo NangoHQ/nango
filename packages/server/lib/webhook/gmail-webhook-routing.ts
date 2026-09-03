@@ -71,7 +71,8 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
         const rawWebhookUrl = `${webhookBase}/${integration.unique_key}`;
 
         if (payload.aud !== encodedWebhookUrl && payload.aud !== rawWebhookUrl) {
-            logger.warning(`Invalid audience. Expected ${encodedWebhookUrl}, got ${payload.aud}`);
+            const expected = encodedWebhookUrl === rawWebhookUrl ? encodedWebhookUrl : `${encodedWebhookUrl} or ${rawWebhookUrl}`;
+            logger.warning(`Invalid audience. Expected ${expected}, got ${payload.aud}`);
             return false;
         }
 
