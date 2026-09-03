@@ -1379,7 +1379,7 @@ class OAuthController {
                         connectionCreationContext.config
                     );
                 }
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.ResourceCapped());
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.ResourceCapped(err.message));
             }
 
             const prettyError = stringifyError(err, { pretty: true });
@@ -2140,7 +2140,7 @@ class OAuthController {
                     config
                 );
                 if (res) {
-                    return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.ResourceCapped());
+                    return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.ResourceCapped(err.message));
                 }
                 throw err;
             }
@@ -2531,7 +2531,7 @@ class OAuthController {
                         account,
                         config
                     );
-                    return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.ResourceCapped());
+                    return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.ResourceCapped(err.message));
                 }
 
                 errorManager.report(err, {
@@ -2734,7 +2734,7 @@ class OAuthController {
                     account,
                     config
                 );
-                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.ResourceCapped());
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.ResourceCapped(err.message));
             }
 
             const prettyError = stringifyError(err, { pretty: true });

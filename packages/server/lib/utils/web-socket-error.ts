@@ -144,10 +144,10 @@ export function FailedCredentialsCheck(errorMessage: string): WSErr {
     };
 }
 
-export function ResourceCapped(): WSErr {
+export function ResourceCapped(message: string): WSErr {
     return {
         type: 'resource_capped',
-        message: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.'
+        message
     };
 }
 

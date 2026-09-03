@@ -259,7 +259,7 @@ class AppAuthController {
                     },
                     account
                 );
-                return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, WSErrBuilder.ResourceCapped());
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, WSErrBuilder.ResourceCapped(err.message));
             }
 
             const prettyError = stringifyError(err, { pretty: true });
