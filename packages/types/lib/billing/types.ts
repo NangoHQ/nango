@@ -84,7 +84,7 @@ export interface BillingSubscription {
     growthFeaturesEndsAt: Date | null;
     /** Orb's price interval is the allocation of a price for a given time period.
      * The Growth add-on is an external price that gets attached to the plan, so we must parse
-     * it's interval in order to know whether there's a scheduled operation in the future.
+     * its interval in order to know whether there's a scheduled operation in the future.
      */
     growthFeaturesPriceIntervalId: string | null;
 }

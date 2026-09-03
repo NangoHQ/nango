@@ -27,12 +27,12 @@ export interface PlanChangeContext {
     };
 }
 
-export type PlanDirection = 'upgrade' | 'downgrade';
-export type AddonDirection = 'enable' | 'disable';
+export type PlanChange = 'upgrade' | 'downgrade';
+export type AddonChange = 'enable' | 'disable';
 
-export interface PlanChangePlan {
-    plan: PlanDirection | null;
-    addon: AddonDirection | null;
+export interface PlanChanges {
+    plan: PlanChange | null;
+    addon: AddonChange | null;
 }
 
 export type PlanChangeErrorCode =
@@ -87,7 +87,11 @@ export function getPlanChangeContext(
     });
 }
 
-export function resolvePlanChange(context: PlanChangeContext, subscription: BillingSubscription): Result<PlanChangePlan, PlanChangeError> {
+function isAddonDisablingScheduled(subscription: BillingSubscription): boolean {
+    return subscription.growthFeaturesEndsAt !== null;
+}
+
+export function resolvePlanChange(context: PlanChangeContext, subscription: BillingSubscription): Result<PlanChanges, PlanChangeError> {
     const { currentPlan, currentPlanDefinition, subscriptionId, requested } = context;
 
     // Our record is a mirror of Orb's, so if it drifts, fail loudly rather than attempting the change
@@ -99,44 +103,50 @@ export function resolvePlanChange(context: PlanChangeContext, subscription: Bill
         return Err(new PlanChangeError('out_of_sync'));
     }
 
+    // The Growth add-on is only available for a subset of the available plans; reject any request to
+    // add it to a plan outside of that set.
     if (requested.withGrowthFeatures && !canHaveGrowthAddon(requested.newPlanCode as DBPlan['name'])) {
         return Err(new PlanChangeError('growth_features_unavailable'));
     }
 
-    let plan: PlanDirection | null = null;
+    // Resolve the plan change direction: to upgrade, downgrade or do nothing.
+    let planChange: PlanChange | null = null;
     if (requested.newPlanCode !== currentPlanDefinition.code) {
         if (currentPlanDefinition.nextPlan?.includes(requested.newPlanCode)) {
-            plan = 'upgrade';
+            planChange = 'upgrade';
         } else if (currentPlanDefinition.prevPlan?.includes(requested.newPlanCode)) {
-            plan = 'downgrade';
+            planChange = 'downgrade';
         } else {
             return Err(new PlanChangeError('transition_not_allowed'));
         }
     }
 
-    let addon: AddonDirection | null =
+    // Resolve the add-on change direction: to enable, disable or do nothing.
+    let addonChange: AddonChange | null =
         requested.withGrowthFeatures === currentPlan.has_growth_features ? null : requested.withGrowthFeatures ? 'enable' : 'disable';
 
-    if (addon === 'disable' && subscription.growthFeaturesEndsAt) {
-        if (!plan) {
-            // if the add-on is being disabled but it's disablement is already scheduled
-            // and no other plan changes were made in the request, there's nothing left to do here.
+    if (addonChange === 'disable' && isAddonDisablingScheduled(subscription)) {
+        if (!planChange) {
+            // If the add-on is being disabled but it's disablement is already scheduled and no other
+            // plan changes were made in the request, there's nothing left to do here.
             return Err(new PlanChangeError('already_scheduled'));
         }
-        // otherwise, ignore the add-on change and carry on with the plan change
-        addon = null;
+        // Otherwise, ignore the request to disable it (as it is already scheduled to disable) so that
+        // the plan change can be fulfilled.
+        addonChange = null;
     }
 
-    if (plan === 'downgrade' && requested.newPlanCode === currentPlan.orb_future_plan) {
+    if (planChange === 'downgrade' && requested.newPlanCode === currentPlan.orb_future_plan) {
         return Err(new PlanChangeError('already_scheduled'));
     }
 
-    if (!plan && !addon) {
+    if (!planChange && !addonChange) {
         return Err(new PlanChangeError('no_change_requested'));
     }
 
-    return Ok({ plan, addon });
+    return Ok({ plan: planChange, addon: addonChange });
 }
+
 /**
  * Applies a pending Orb subscription change and persists the resulting plan in the database.
  *
@@ -256,7 +266,7 @@ export async function downgradePlan(context: PlanChangeContext): Promise<Result<
     return Ok(undefined);
 }
 
-export function trackPlanChange(context: PlanChangeContext, change: PlanChangePlan): void {
+export function trackPlanChange(context: PlanChangeContext, change: PlanChanges): void {
     const { team, currentPlan, requested } = context;
 
     if (change.plan !== 'downgrade' && change.addon !== 'disable') {
