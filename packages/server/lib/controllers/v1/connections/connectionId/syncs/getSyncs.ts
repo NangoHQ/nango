@@ -90,7 +90,6 @@ export const getConnectionSyncs = asyncWrapperWithEnvironment<GetConnectionSyncs
     });
 });
 
-/** Counts are stored per `Model` / `Model::variant`, so only the page's own keys are fetched. */
 async function getRecordCountsForPage({
     syncs,
     connectionId,

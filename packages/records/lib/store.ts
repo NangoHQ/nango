@@ -109,7 +109,7 @@ export interface RecordsStore {
     }: {
         connectionId: number;
         environmentId: number;
-        /** Restrict to these full model names (`Model` or `Model::variant`); all models when omitted. */
+        /** Full model names: `Model::variant` for a non-base variant, not the bare model. */
         models?: string[] | undefined;
     }) => Promise<Result<Record<string, RecordCount>>>;
 

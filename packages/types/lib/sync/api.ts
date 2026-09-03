@@ -15,7 +15,6 @@ export interface ApiConnectionSync {
     variant: string;
     nango_connection_id: number;
     models: string[];
-    /** The per-sync override when set, otherwise the sync config's `runs`. */
     frequency: string | null;
     /** null when the orchestrator has no schedule for the sync, or could not be reached. */
     schedule_status: 'STARTED' | 'PAUSED' | 'DELETED' | null;

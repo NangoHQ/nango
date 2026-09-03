@@ -278,7 +278,6 @@ export function usePlayground(inputFields: InputField[]) {
                 integration: playgroundIntegration
             });
             try {
-                // The playground always runs the base variant, so resolve that one rather than the whole list.
                 const sync = await fetchSyncByName({
                     env,
                     connection_id: playgroundConnection,

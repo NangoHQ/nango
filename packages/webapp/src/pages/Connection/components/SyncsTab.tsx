@@ -44,8 +44,7 @@ import type { ApiConnectionSync } from '@nangohq/types';
 
 const ROW_HEIGHT_PX = 44;
 
-// `display: grid` disables the browser's column sizing, so header and cells only align while they share
-// these widths — and TableRow's px-6, inert in table layout, applies once the row is a flexbox.
+// TableRow's px-6 is inert in table layout but applies once the row is a flexbox, hence px-0 here.
 const rowLayout = 'flex w-full px-0';
 const cellLayout = 'flex items-center min-w-0';
 const col = {
@@ -480,10 +479,7 @@ const StatusBadge = ({ sync }: { sync: ApiConnectionSync }) => {
     );
 };
 
-/**
- * The dashboard layout owns the page's only scroller and is too far up the tree to hand down a ref.
- * `offsetTop` is resolved once because it keys the virtualizer's measurement cache.
- */
+/** `offsetTop` is resolved once: re-reading it per render invalidates the virtualizer's measurement cache. */
 function useScrollParent(ref: React.MutableRefObject<HTMLElement | null>) {
     const [resolved, setResolved] = useState<{ scrollParent: HTMLElement | null; offsetTop: number }>({ scrollParent: null, offsetTop: 0 });
 

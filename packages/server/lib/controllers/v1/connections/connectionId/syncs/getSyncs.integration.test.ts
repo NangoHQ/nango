@@ -13,7 +13,6 @@ let api: Awaited<ReturnType<typeof runServer>>;
 
 const { createConfigSeed, createConnectionSeed, createSyncSeeds, createSyncJobSeeds, seedAccountEnvAndUser } = seeders;
 
-/** A connection with `variants` extra variants of `sync_name`, on top of the seeded `base`. */
 async function seedConnectionWithSyncs({
     env,
     syncName = 'emails',

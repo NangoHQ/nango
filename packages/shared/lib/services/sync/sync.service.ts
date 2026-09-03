@@ -242,7 +242,6 @@ export interface ListedSync {
     futureActionTimes: number[];
 }
 
-/** Filtering and paging run over ids alone, so the latest-job lateral runs `limit` times, not `offset + limit` times. */
 const joinActiveSyncConfig = (configId: number) =>
     function (this: Knex.JoinClause) {
         this.on('sc.sync_name', 's.name')
@@ -253,6 +252,7 @@ const joinActiveSyncConfig = (configId: number) =>
             .andOnVal('sc.nango_config_id', configId);
     };
 
+/** Paging runs over ids alone, so the latest-job lateral runs `limit` times, not `offset + limit` times. */
 export const listConnectionSyncs = async ({
     connection,
     orchestrator,
