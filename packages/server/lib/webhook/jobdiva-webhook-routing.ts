@@ -36,7 +36,7 @@ const route: WebhookHandler<jobdivaWebhookResponse> = async (nango, headers, bod
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookType: `${body.type} ${body.operation}`
     });
 

@@ -40,7 +40,7 @@ const route: WebhookHandler = async (nango, headers, body, rawBody, query) => {
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookType: 'triggerEvent',
         connectionIdentifierValue,
         propName: 'connectionId'

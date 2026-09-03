@@ -41,7 +41,7 @@ const route: WebhookHandler<AttioWebhook> = async (nango, headers, body, rawBody
     let connectionIds: string[] = [];
     for (const event of parsedBody.events) {
         const response = await nango.executeScriptForWebhooks({
-            body: event,
+            payload: event,
             webhookType: 'event_type',
             connectionIdentifier: 'id.workspace_id',
             propName: 'workspace_id'

@@ -59,6 +59,7 @@ function getNangoMock(integration: IntegrationConfig) {
         environment,
         plan: seeders.getTestPlan(),
         integration,
+        request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
         logContextGetter
     });
     const execute = vi.fn().mockResolvedValue({ connectionIds: ['conn-1'], connectionMetadata: {} });
@@ -89,7 +90,7 @@ describe('gmailWebhookRouting', () => {
                 propName: 'emailAddressHash',
                 webhookType: 'type',
                 connectionIdentifier: 'emailAddressHash',
-                body: expect.objectContaining({
+                payload: expect.objectContaining({
                     type: '*',
                     emailAddress: 'user@example.com',
                     emailAddressHash: hashEmailAddress('user@example.com')
@@ -115,6 +116,7 @@ describe('gmailWebhookRouting', () => {
             environment,
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nango.executeScriptForWebhooks = execute;

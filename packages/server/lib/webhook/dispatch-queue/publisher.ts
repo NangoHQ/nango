@@ -4,7 +4,7 @@ import tracer from 'dd-trace';
 import { chunk, metrics, report, runWithConcurrencyLimit } from '@nangohq/utils';
 
 import type { SendMessageBatchCommandOutput, SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
-import type { WebhookDispatchMessage } from '@nangohq/types';
+import type { DispatchMessage } from '@nangohq/types';
 
 const SQS_BATCH_MAX_ENTRIES = 10;
 const DEFAULT_PUBLISH_CONCURRENCY = 10;
@@ -25,8 +25,8 @@ export interface PublishResult {
     failedActivityLogIds: string[];
 }
 
-export interface PreparedDispatchMessage {
-    message: WebhookDispatchMessage;
+export interface PreparedDispatchMessage<T extends DispatchMessage = DispatchMessage> {
+    message: T;
     byteSize: number;
 }
 

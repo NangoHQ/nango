@@ -29,6 +29,7 @@ describe('Webhook route unit tests', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -112,7 +113,7 @@ describe('Webhook route unit tests', () => {
 
         expect(mock).toHaveBeenCalledTimes(body.length);
         expect(mock).toHaveBeenNthCalledWith(2, {
-            body: body[0],
+            payload: body[0],
             connectionIdentifier: 'portalId',
             webhookType: 'subscriptionType'
         });
@@ -127,6 +128,7 @@ describe('Webhook route unit tests', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter: logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -177,17 +179,17 @@ describe('Webhook route unit tests', () => {
 
         expect(mock).toHaveBeenCalledTimes(body.length);
         expect(mock).toHaveBeenNthCalledWith(1, {
-            body: body[2],
+            payload: body[2],
             connectionIdentifier: 'portalId',
             webhookType: 'subscriptionType'
         });
         expect(mock).toHaveBeenNthCalledWith(2, {
-            body: body[1],
+            payload: body[1],
             connectionIdentifier: 'portalId',
             webhookType: 'subscriptionType'
         });
         expect(mock).toHaveBeenNthCalledWith(3, {
-            body: body[0],
+            payload: body[0],
             connectionIdentifier: 'portalId',
             webhookType: 'subscriptionType'
         });
@@ -202,6 +204,7 @@ describe('Webhook route unit tests', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -236,7 +239,7 @@ describe('Webhook route unit tests', () => {
 
         expect(mock).toHaveBeenCalledTimes(1);
         expect(mock).toHaveBeenCalledWith({
-            body: body[0],
+            payload: body[0],
             connectionIdentifier: 'portalId',
             webhookType: 'subscriptionType'
         });
@@ -251,6 +254,7 @@ describe('Webhook route unit tests', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;

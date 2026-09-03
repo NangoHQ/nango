@@ -62,7 +62,7 @@ const route: WebhookHandler<XeroWebhookBody> = async (nango, headers, body, rawB
     let connectionIds: string[] = [];
     for (const event of parsedBody.events) {
         const response = await nango.executeScriptForWebhooks({
-            body: event,
+            payload: event,
             webhookType: 'eventType',
             connectionIdentifier: 'tenantId',
             propName: 'tenant_id'

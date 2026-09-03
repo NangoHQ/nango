@@ -41,7 +41,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
 
     try {
         const response = await nango.executeScriptForWebhooks({
-            body,
+            payload: body,
             webhookType: 'action',
             connectionIdentifier: 'installation.id',
             propName: 'installation_id'

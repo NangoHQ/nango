@@ -173,7 +173,7 @@ export async function invokeFunction({
         logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
         // `perConnection: 1` serializes concurrent invocations of the same function for a connection; 'max' is unbounded
-        const maxConcurrency = currentVersion.limits?.concurrency?.perConnection === 1 ? 1 : 0;
+        const maxConcurrency = getFunctionMaxConcurrency(currentVersion);
 
         const invocation = await orchestrator.invokeFunction({
             environment,
@@ -203,6 +203,11 @@ export async function invokeFunction({
         }
         return Ok(invocation.value);
     });
+}
+
+/** Convert a function's per-connection concurrency setting to the orchestrator convention (0 means unbounded). */
+export function getFunctionMaxConcurrency(version: DBFunctionConfigVersion): number {
+    return version.limits?.concurrency?.perConnection === 1 ? 1 : 0;
 }
 
 function buildRuntimeTrigger({
