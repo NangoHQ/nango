@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
 import { environmentService, getGlobalWebhookReceiveUrl, NangoError } from '@nangohq/shared';
-import { Err, getLogger, Ok, report } from '@nangohq/utils';
+import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { hashEmailAddress } from '../utils/pii.js';
 import { getGoogleJWKS } from './cache.js';
@@ -20,7 +20,11 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
     try {
         const authHeader: string | undefined = headers['authorization'];
 
-        if (!authHeader?.startsWith('Bearer ')) {
+        if (!authHeader) {
+            return true;
+        }
+
+        if (!authHeader.startsWith('Bearer ')) {
             return false;
         }
 
@@ -83,11 +87,21 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
 
 const route: WebhookHandler = async (nango, headers, body) => {
     const authHeader = headers['authorization'];
+
+    if (!authHeader) {
+        metrics.increment(metrics.Types.WEBHOOK_INCOMING_UNVERIFIED, 1, {
+            accountId: nango.team.id,
+            environmentId: nango.environment.id,
+            provider: nango.integration.provider,
+            reason: 'gmail_missing_authorization'
+        });
+    }
+
     const valid = await validate(nango.integration, headers);
 
     if (!valid) {
-        logger.error(authHeader ? 'webhook signature invalid' : 'webhook signature missing');
-        return Err(new NangoError(authHeader ? 'webhook_invalid_signature' : 'webhook_missing_signature'));
+        logger.error('webhook signature invalid');
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     let decodedBody: DecodedDataObject | null = null;
