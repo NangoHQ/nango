@@ -2,6 +2,7 @@ export { auditClickhouseClient } from './clickhouse/clickhouse.js';
 export { AUDIT_EXPORT_MAX_ROWS, AuditClient, InvalidAuditCursorError } from './client.js';
 export { migrate } from './clickhouse/migrate.js';
 export { migrate as migratePostgres } from './postgres/migrate.js';
+export { startPartitionDaemon } from './postgres/partitions.js';
 export { ClickhouseAuditStore } from './stores/clickhouse.js';
 export { NoopAuditStore } from './stores/noop.js';
 export { PubSubAuditWriter } from './stores/pubsub.js';
