@@ -4,7 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { auditCsvHeader, auditCsvRows } from './csv.js';
 
-import type { AuditReader, AuditTrailCursor, AuditWriter } from './store.js';
+import type { AuditReader, AuditTrailCursor, AuditTrailFilter, AuditWriter } from './store.js';
 import type { ApiAuditTrailEvent, AuditEvent, AuditExportMaxRows, AuditTrailVersion, StoredAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -106,20 +106,8 @@ export class AuditClient {
         }));
     }
 
-    async countAuditTrailEvents({
-        accountId,
-        from,
-        to,
-        resources,
-        actions
-    }: {
-        accountId: number;
-        from?: string | undefined;
-        to?: string | undefined;
-        resources?: string[] | undefined;
-        actions?: string[] | undefined;
-    }): Promise<Result<number>> {
-        return await this.reader.count({ accountId, from, to, resources, actions });
+    async countAuditTrailEvents(filter: AuditTrailFilter): Promise<Result<number>> {
+        return await this.reader.count(filter);
     }
 
     /** Builds the CSV for the window. `truncated` reports that `maxRows` cut the result, rather than failing the export. */

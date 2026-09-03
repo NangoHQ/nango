@@ -1,5 +1,5 @@
 import { InvalidAuditCursorError } from '@nangohq/audit';
-import { Err, getLogger, zodErrorToHTTP } from '@nangohq/utils';
+import { Err, zodErrorToHTTP } from '@nangohq/utils';
 
 import { audit } from '../../../audit.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -8,8 +8,6 @@ import { auditListQuery } from './query.js';
 
 import type { GetAuditTrail } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-
-const logger = getLogger('audit');
 
 const PAGE_SIZE = 25;
 
@@ -51,12 +49,8 @@ export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
 
     const counted = await counting;
     let total: number | undefined;
-    if (counted) {
-        if (counted.isErr()) {
-            logger.warning(`audit trail count failed, returning the page without a total`, { accountId: account.id, error: counted.error });
-        } else {
-            total = counted.value;
-        }
+    if (counted?.isOk()) {
+        total = counted.value;
     }
 
     res.status(200).send({

@@ -137,8 +137,8 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
     // `uniqExact(id)` rather than `count()`: the engine is a ReplacingMergeTree, so a redelivery sits as a
     // second row until a merge collapses it, and a plain count would report it. `FINAL` would also be exact
     // but rewrites the read the way the ORDER BY short-circuit above avoids.
-    async count({ accountId, from, to, resources, actions }: AuditTrailFilter): Promise<Result<number>> {
-        const { conditions, params } = buildFilter({ accountId, from, to, resources, actions });
+    async count(filter: AuditTrailFilter): Promise<Result<number>> {
+        const { conditions, params } = buildFilter(filter);
 
         const sql = `
             SELECT uniqExact(id) AS total
@@ -154,11 +154,14 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
                 clickhouse_settings: { max_execution_time: COUNT_QUERY_MAX_EXECUTION_SECONDS }
             });
             const [row] = await res.json<{ total: string }>();
+            // A bare aggregate always returns one row, and UInt64 arrives as a string. Anything else is a
+            // broken response, and reporting it as 0 would claim nothing matched.
+            const total = Number(row?.total);
 
-            // ClickHouse serializes UInt64 as a string, so parse rather than trust the shape.
-            return Ok(row ? Number(row.total) : 0);
+            return Number.isFinite(total) ? Ok(total) : Err('failed_to_count_audit_trail_events');
         } catch (err) {
-            logger.error(`Failed to count audit trail events: ${stringifyError(err)}`);
+            // Warning, not error: the caller is expected to carry on without the number.
+            logger.warning(`Failed to count audit trail events for account ${filter.accountId}: ${stringifyError(err)}`);
             return Err('failed_to_count_audit_trail_events');
         }
     }
