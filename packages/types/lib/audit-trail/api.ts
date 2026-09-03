@@ -48,6 +48,8 @@ export type GetAuditTrail = ApiEndpoint<{
         // `actions` requires `resources`: the pair is matched as one `resource.action` value.
         resources?: string;
         actions?: string;
+        // Opt-in: the count is a second read, so a caller that doesn't show one shouldn't pay for it.
+        showTotal?: boolean | undefined;
     };
     Success: {
         data: ApiAuditTrailEvent[];
@@ -57,7 +59,8 @@ export type GetAuditTrail = ApiEndpoint<{
 }>;
 
 /**
- * How many events the filters match, not how many the page holds. Absent when the count failed.
+ * How many events the filters match, not how many the page holds. Absent unless `showTotal` was
+ * asked for, and when the count failed.
  *
  * The read is bounded, so `relation` says whether `value` is the answer or a floor — `gte` means the
  * account has at least this many and the count stopped looking. Shaped after Elasticsearch's `hits.total`
