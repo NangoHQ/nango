@@ -4,7 +4,7 @@ import knexFactory from 'knex';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { migrate } from './migrate.js';
-import { dropExpiredPartitions, ensurePartition } from './partitions.js';
+import { dropExpiredPartitions, ensurePartitions } from './partitions.js';
 import { AUDIT_EVENTS_TABLE } from './schema.js';
 
 import type { Knex } from 'knex';
@@ -46,13 +46,13 @@ beforeEach(async () => {
 
 describe('audit partition lifecycle', () => {
     it('is idempotent, so every tick can ensure the same day', async () => {
-        expect((await ensurePartition({ knex, schema, date: now })).isOk()).toBe(true);
-        expect((await ensurePartition({ knex, schema, date: now })).isOk()).toBe(true);
+        expect((await ensurePartitions({ knex, schema, dates: [now] })).unwrap()).toEqual([`${AUDIT_EVENTS_TABLE}_20260930`]);
+        expect((await ensurePartitions({ knex, schema, dates: [now] })).unwrap()).toEqual([`${AUDIT_EVENTS_TABLE}_20260930`]);
         expect(await partitions()).toEqual([`${AUDIT_EVENTS_TABLE}_20260930`]);
     });
 
     it('covers its whole day and neither of the neighbouring ones', async () => {
-        await ensurePartition({ knex, schema, date: now });
+        await ensurePartitions({ knex, schema, dates: [now] });
         const insert = (occurredAt: string) =>
             knex.raw(`INSERT INTO ??.?? (event, occurred_at) VALUES (?, ?)`, [
                 schema,
@@ -67,21 +67,45 @@ describe('audit partition lifecycle', () => {
     });
 
     it('leaves a detached table alone, even when its name looks expired', async () => {
-        await ensurePartition({ knex, schema, date: day(-400) });
+        await ensurePartitions({ knex, schema, dates: [day(-400)] });
         const [detached] = await partitions();
         await knex.raw(`ALTER TABLE ??.?? DETACH PARTITION ??.??`, [schema, AUDIT_EVENTS_TABLE, schema, detached]);
-        await ensurePartition({ knex, schema, date: day(-399) });
+        await ensurePartitions({ knex, schema, dates: [day(-399)] });
 
         const res = await dropExpiredPartitions({ knex, schema, retentionDays: 365, now });
         expect(res.isOk() && res.value).toEqual({ dropped: 1, skipped: 0 });
         expect(await partitions()).toEqual([detached]);
     });
 
+    it('does not drop a partition placed in another schema', async () => {
+        const foreign = `${schema}_foreign`;
+        const from = dayjs(day(-400)).utc().startOf('day');
+        await knex.raw('CREATE SCHEMA IF NOT EXISTS ??', [foreign]);
+        await knex.raw(`CREATE TABLE ??.?? PARTITION OF ??.?? FOR VALUES FROM ('${from.toISOString()}') TO ('${from.add(1, 'day').toISOString()}')`, [
+            foreign,
+            `${AUDIT_EVENTS_TABLE}_${from.format('YYYYMMDD')}`,
+            schema,
+            AUDIT_EVENTS_TABLE
+        ]);
+
+        const res = await dropExpiredPartitions({ knex, schema, retentionDays: 365, now });
+
+        expect(res.isOk() && res.value).toEqual({ dropped: 0, skipped: 0 });
+        await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [foreign]);
+    });
+
+    it('refuses a retention that would drop the partition holding live events', async () => {
+        await ensurePartitions({ knex, schema, dates: [day(-400), now] });
+
+        for (const retentionDays of [-1, 0, 1.5]) {
+            expect((await dropExpiredPartitions({ knex, schema, retentionDays, now })).isErr()).toBe(true);
+        }
+        expect(await partitions()).toHaveLength(2);
+    });
+
     it('drops expired partitions and preserves the rest', async () => {
         // -366 and -365 straddle the cutoff, so the pair pins where it falls
-        for (const offset of [-400, -366, -365, -10, 0]) {
-            await ensurePartition({ knex, schema, date: day(offset) });
-        }
+        await ensurePartitions({ knex, schema, dates: [-400, -366, -365, -10, 0].map(day) });
 
         const res = await dropExpiredPartitions({ knex, schema, retentionDays: 365, now });
         expect(res.isOk() && res.value).toEqual({ dropped: 2, skipped: 0 });

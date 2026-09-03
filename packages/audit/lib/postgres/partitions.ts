@@ -27,18 +27,22 @@ function partitionDay(relname: string): string {
 }
 
 /** One partition per UTC day: 2026-09-30 holds FROM '2026-09-30T00:00:00Z' TO '2026-10-01T00:00:00Z', upper bound excluded. */
-export async function ensurePartition({ knex, schema, date }: { knex: Knex; schema: string; date: Date }): Promise<Result<void>> {
-    const day = dayjs(date).utc().startOf('day');
-    const name = partitionName(day);
-    try {
-        await knex.raw(
-            `CREATE TABLE IF NOT EXISTS ??.?? PARTITION OF ??.?? FOR VALUES FROM ('${day.toISOString()}') TO ('${day.add(1, 'day').toISOString()}')`,
-            [schema, name, schema, AUDIT_EVENTS_TABLE]
-        );
-        return Ok(undefined);
-    } catch (err) {
-        return Err(new Error(`Failed to ensure audit partition ${name}`, { cause: err }));
+export async function ensurePartitions({ knex, schema, dates }: { knex: Knex; schema: string; dates: Date[] }): Promise<Result<string[]>> {
+    const ensured: string[] = [];
+    for (const date of dates) {
+        const day = dayjs(date).utc().startOf('day');
+        const name = partitionName(day);
+        try {
+            await knex.raw(
+                `CREATE TABLE IF NOT EXISTS ??.?? PARTITION OF ??.?? FOR VALUES FROM ('${day.toISOString()}') TO ('${day.add(1, 'day').toISOString()}')`,
+                [schema, name, schema, AUDIT_EVENTS_TABLE]
+            );
+            ensured.push(name);
+        } catch (err) {
+            return Err(new Error(`Failed to ensure audit partition ${name}`, { cause: err }));
+        }
     }
+    return Ok(ensured);
 }
 
 export async function dropExpiredPartitions({
@@ -52,15 +56,19 @@ export async function dropExpiredPartitions({
     retentionDays: number;
     now: Date;
 }): Promise<Result<{ dropped: number; skipped: number }>> {
+    if (!Number.isInteger(retentionDays) || retentionDays < 1) {
+        return Err(new Error(`Refusing to drop audit partitions with a retention of ${retentionDays} days`));
+    }
+
     const cutoff = dayjs(now).utc().startOf('day').subtract(retentionDays, 'day');
     try {
         const { rows } = await knex.raw<{ rows: { relname: string }[] }>(
-            `SELECT c.relname FROM pg_inherits i
-             JOIN pg_class c ON c.oid = i.inhrelid
-             JOIN pg_class p ON p.oid = i.inhparent
-             JOIN pg_namespace n ON n.oid = p.relnamespace
-             WHERE n.nspname = ? AND p.relname = ? AND c.relnamespace = p.relnamespace AND c.relname ~ ? ORDER BY c.relname`,
-            [schema, AUDIT_EVENTS_TABLE, `^${PARTITION_PREFIX}[0-9]{8}$`]
+            // Only drops partitions placed in this schema.
+            `SELECT c.relname FROM pg_partition_tree(format('%I.%I', ?::text, ?::text)::regclass) t
+             JOIN pg_class c ON c.oid = t.relid
+             JOIN pg_namespace n ON n.oid = c.relnamespace
+             WHERE t.isleaf AND n.nspname = ? AND c.relname ~ ? ORDER BY c.relname`,
+            [schema, AUDIT_EVENTS_TABLE, schema, `^${PARTITION_PREFIX}[0-9]{8}$`]
         );
         const cutoffDay = cutoff.format('YYYYMMDD');
         const expired = rows.filter((row) => partitionDay(row.relname) < cutoffDay);
@@ -106,15 +114,15 @@ export function startPartitionDaemon({
     return cancellableDaemon({
         tickIntervalMs,
         tick: async () => {
-            return await tracer.trace('nango.audit.daemon.partitions', async (span) => {
+            return void (await tracer.trace('nango.audit.daemon.partitions', async (span) => {
                 try {
                     const today = new Date();
                     const tomorrow = dayjs(today).utc().add(1, 'day').toDate();
-                    for (const date of [today, tomorrow]) {
-                        const res = await ensurePartition({ knex, schema, date });
-                        if (res.isErr()) {
-                            span?.addTags({ error: stringifyError(res.error, { cause: true }) });
-                        }
+                    const ensured = await ensurePartitions({ knex, schema, dates: [today, tomorrow] });
+                    if (ensured.isErr()) {
+                        span?.addTags({ error: stringifyError(ensured.error, { cause: true }) });
+                    } else {
+                        span?.addTags({ ensured: ensured.value.join(',') });
                     }
                     const drop = await dropExpiredPartitions({ knex, schema, retentionDays, now: today });
                     if (drop.isErr()) {
@@ -126,7 +134,7 @@ export function startPartitionDaemon({
                 } finally {
                     span?.finish();
                 }
-            });
+            }));
         },
         onError: (err) => {
             logger.error(`[audit partitions] unexpected error`, err);
