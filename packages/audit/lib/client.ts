@@ -5,7 +5,7 @@ import { Err, Ok } from '@nangohq/utils';
 import { auditCsvHeader, auditCsvRows } from './csv.js';
 
 import type { AuditReader, AuditTrailCursor, AuditTrailFilter, AuditWriter } from './store.js';
-import type { ApiAuditTrailEvent, AuditEvent, AuditExportMaxRows, AuditTrailVersion, StoredAuditEvent } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditEvent, AuditExportMaxRows, AuditTrailTotal, AuditTrailVersion, StoredAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 // The date the shape shipped, not a timestamp; bump only on a breaking change.
@@ -107,7 +107,7 @@ export class AuditClient {
     }
 
     /** Never throws, as `record` doesn't — a reader that rejects comes back as `Err` for the caller to handle. */
-    async countAuditTrailEvents(filter: AuditTrailFilter): Promise<Result<number>> {
+    async countAuditTrailEvents(filter: AuditTrailFilter): Promise<Result<AuditTrailTotal>> {
         try {
             return await this.reader.count(filter);
         } catch (err) {

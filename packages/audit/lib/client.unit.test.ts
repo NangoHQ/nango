@@ -6,7 +6,7 @@ import { AuditClient, InvalidAuditCursorError } from './client.js';
 import { NoopAuditStore } from './stores/noop.js';
 
 import type { AuditReader, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from './store.js';
-import type { AuditEvent, SerializedAuditEvent, StoredAuditEvent } from '@nangohq/types';
+import type { AuditEvent, AuditTrailTotal, SerializedAuditEvent, StoredAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 class RecordingStore implements AuditWriter, AuditReader {
@@ -23,8 +23,8 @@ class RecordingStore implements AuditWriter, AuditReader {
         return Promise.resolve(Ok({ events: [], nextCursor: null }));
     }
 
-    count(): Promise<Result<number>> {
-        return Promise.resolve(Ok(0));
+    count(): Promise<Result<AuditTrailTotal>> {
+        return Promise.resolve(Ok({ value: 0, relation: 'eq' }));
     }
 
     stored(index = 0): StoredAuditEvent {

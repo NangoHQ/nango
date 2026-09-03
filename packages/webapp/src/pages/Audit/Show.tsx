@@ -140,10 +140,11 @@ export const AuditShow: React.FC = () => {
                     </div>
                 </div>
 
-                {total !== undefined && total > 0 && (
+                {total && total.value > 0 && (
                     <div className="flex items-center justify-end">
                         <div className="text-text-muted text-body-small-regular">
-                            {total.toLocaleString()} {total === 1 ? 'event' : 'events'}
+                            {total.value.toLocaleString()}
+                            {total.relation === 'gte' ? '+' : ''} {total.value === 1 && total.relation === 'eq' ? 'event' : 'events'}
                         </div>
                     </div>
                 )}

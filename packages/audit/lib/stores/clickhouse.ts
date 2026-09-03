@@ -6,7 +6,7 @@ import { sanitizeClickhouseError } from '../error.js';
 
 import type { AuditBatchWriter, AuditReader, AuditTrailFilter, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from '../store.js';
 import type { ClickHouseClient } from '@clickhouse/client';
-import type { ApiAuditTrailEvent, SerializedAuditEvent } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditExportMaxRows, AuditTrailTotal, SerializedAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('audit');
@@ -15,6 +15,8 @@ const AUDIT_RETENTION_DAYS = 365;
 const READ_QUERY_MAX_EXECUTION_SECONDS = 30;
 // Shorter than the list's: the count is optional to the response, so a heavy one gives up rather than holding the read open.
 const COUNT_QUERY_MAX_EXECUTION_SECONDS = 5;
+// The export's ceiling, so "50,000+" in the header says exactly one thing: an export of this window truncates.
+const COUNT_SCAN_LIMIT: AuditExportMaxRows = 50_000;
 
 function buildFilter({ accountId, from, to, resources, actions }: AuditTrailFilter): { conditions: string[]; params: Record<string, unknown> } {
     const params: Record<string, unknown> = { account_id: accountId };
@@ -132,14 +134,21 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
         }
     }
 
-    async count(filter: AuditTrailFilter): Promise<Result<number>> {
+    async count(filter: AuditTrailFilter): Promise<Result<AuditTrailTotal>> {
         const { conditions, params } = buildFilter(filter);
+        params['scan_limit'] = COUNT_SCAN_LIMIT + 1;
 
-        // uniqExact folds the duplicate rows a ReplacingMergeTree can hold until a merge collapses them.
+        // The inner LIMIT is what bounds the read, however large the account or the window. uniqExact stays
+        // affordable inside it and folds the duplicate rows a ReplacingMergeTree holds until a merge runs —
+        // `uniq` is approximate and was observed returning 1 for two distinct ids.
         const sql = `
             SELECT uniqExact(id) AS total
-            FROM audit_trail_events
-            WHERE ${conditions.join(' AND ')}
+            FROM (
+                SELECT id
+                FROM audit_trail_events
+                WHERE ${conditions.join(' AND ')}
+                LIMIT {scan_limit:UInt32}
+            )
         `;
 
         try {
@@ -152,7 +161,12 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
             const [row] = await res.json<{ total: string }>();
             const total = Number(row?.total);
 
-            return Number.isFinite(total) ? Ok(total) : Err('failed_to_count_audit_trail_events');
+            if (!Number.isFinite(total)) {
+                return Err('failed_to_count_audit_trail_events');
+            }
+
+            // Hitting the scan limit means the account has at least this many, not exactly this many.
+            return total > COUNT_SCAN_LIMIT ? Ok({ value: COUNT_SCAN_LIMIT, relation: 'gte' }) : Ok({ value: total, relation: 'eq' });
         } catch (err) {
             // Warning, not error: the caller is expected to carry on without the number.
             logger.warning(`Failed to count audit trail events for account ${filter.accountId}: ${stringifyError(err)}`);

@@ -195,11 +195,11 @@ describe('GET /api/v1/audit-trail', () => {
         const all = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
         isSuccess(all.json);
         expect(all.json.data).toHaveLength(25);
-        expect(all.json.total).toBe(27);
+        expect(all.json.total).toEqual({ value: 27, relation: 'eq' });
 
         const narrowed = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: 'api_key' } });
         isSuccess(narrowed.json);
-        expect(narrowed.json.total).toBe(1);
+        expect(narrowed.json.total).toEqual({ value: 1, relation: 'eq' });
     });
 
     it('reports the same total on a continuation as on the first page', async () => {
@@ -211,13 +211,13 @@ describe('GET /api/v1/audit-trail', () => {
 
         const first = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
         isSuccess(first.json);
-        expect(first.json.total).toBe(26);
+        expect(first.json.total).toEqual({ value: 26, relation: 'eq' });
 
         const second = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { cursor: first.json.pagination.nextCursor! } });
         isSuccess(second.json);
         expect(second.json.data).toHaveLength(1);
         // Paging doesn't narrow the set the filters describe, so the number can't move.
-        expect(second.json.total).toBe(26);
+        expect(second.json.total).toEqual({ value: 26, relation: 'eq' });
     });
 
     it('still returns the rows when the count fails, just without the number', async () => {

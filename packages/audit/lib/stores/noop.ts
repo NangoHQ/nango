@@ -1,6 +1,7 @@
 import { Ok } from '@nangohq/utils';
 
 import type { AuditReader, AuditTrailPage, AuditWriter } from '../store.js';
+import type { AuditTrailTotal } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export class NoopAuditStore implements AuditWriter, AuditReader {
@@ -12,7 +13,7 @@ export class NoopAuditStore implements AuditWriter, AuditReader {
         return Promise.resolve(Ok({ events: [], nextCursor: null }));
     }
 
-    count(): Promise<Result<number>> {
-        return Promise.resolve(Ok(0));
+    count(): Promise<Result<AuditTrailTotal>> {
+        return Promise.resolve(Ok({ value: 0, relation: 'eq' }));
     }
 }

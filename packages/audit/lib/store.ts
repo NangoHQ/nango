@@ -1,4 +1,4 @@
-import type { ApiAuditTrailEvent, SerializedAuditEvent } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditTrailTotal, SerializedAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export interface AuditTrailCursor {
@@ -36,5 +36,5 @@ export interface AuditBatchWriter {
 
 export interface AuditReader {
     list(params: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>>;
-    count(params: AuditTrailFilter): Promise<Result<number>>;
+    count(params: AuditTrailFilter): Promise<Result<AuditTrailTotal>>;
 }

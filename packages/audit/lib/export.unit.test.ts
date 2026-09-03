@@ -100,7 +100,7 @@ describe('AuditClient.exportCsv', () => {
 
     it('propagates a read failure instead of returning a partial document', async () => {
         const reader: AuditReader = {
-            count: vi.fn().mockResolvedValue(Ok(0)),
+            count: vi.fn().mockResolvedValue(Ok({ value: 0, relation: 'eq' })),
             list: vi.fn().mockResolvedValue(Err('failed_to_list_audit_trail_events'))
         };
         const result = await clientFor(reader).exportCsv({ accountId: 42, maxRows: 10, pageSize: 5 });

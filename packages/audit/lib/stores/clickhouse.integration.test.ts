@@ -231,7 +231,7 @@ describe('ClickhouseAuditStore.list deduplication', () => {
             });
             expect(Number((await raw.json<{ c: string | number }>())[0]!.c)).toBe(3);
 
-            expect((await store.count({ accountId: 11 })).unwrap()).toBe(2);
+            expect((await store.count({ accountId: 11 })).unwrap()).toEqual({ value: 2, relation: 'eq' });
             expect((await store.list({ accountId: 11, limit: 10 })).unwrap().events).toHaveLength(2);
         } finally {
             await client.command({ query: `SYSTEM START MERGES ${database}.audit_trail_events` });
