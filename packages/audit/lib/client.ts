@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
 import { auditCsvHeader, auditCsvRows } from './csv.js';
 
@@ -9,6 +9,8 @@ import type { ApiAuditTrailEvent, AuditEvent, AuditExportMaxRows, AuditTrailTota
 import type { Result } from '@nangohq/utils';
 
 // The date the shape shipped, not a timestamp; bump only on a breaking change.
+const logger = getLogger('audit');
+
 const AUDIT_EVENT_VERSION: AuditTrailVersion = '2026-07-16';
 
 // The response is built during the request, so the ceiling is what the load balancer's timeout allows.
@@ -111,6 +113,8 @@ export class AuditClient {
         try {
             return await this.reader.count(filter);
         } catch (err) {
+            // The reader logs what it catches, so only escapes reach here and they are recorded nowhere else.
+            logger.warning(`Audit trail count threw for account ${filter.accountId}: ${stringifyError(err)}`);
             return Err(err);
         }
     }

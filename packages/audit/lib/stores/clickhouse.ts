@@ -46,7 +46,8 @@ function buildFilter({ accountId, from, to, resources, actions }: AuditTrailFilt
 export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, AuditReader {
     constructor(
         private readonly client: ClickHouseClient,
-        private readonly retentionDays = AUDIT_RETENTION_DAYS
+        private readonly retentionDays = AUDIT_RETENTION_DAYS,
+        private readonly countScanLimit: number = COUNT_SCAN_LIMIT
     ) {}
 
     // Never throws, so every call emits exactly one ingest-result metric — callers rely on that to
@@ -136,12 +137,12 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
 
     async count(filter: AuditTrailFilter): Promise<Result<AuditTrailTotal>> {
         const { conditions, params } = buildFilter(filter);
-        params['scan_limit'] = COUNT_SCAN_LIMIT + 1;
+        params['scan_limit'] = this.countScanLimit + 1;
 
         // The inner LIMIT bounds the read however large the account or the window. uniq is approximate,
         // which also folds the duplicate rows a ReplacingMergeTree holds until a merge runs.
         const sql = `
-            SELECT uniq(id) AS total
+            SELECT uniq(id) AS total, count() AS scanned
             FROM (
                 SELECT id
                 FROM audit_trail_events
@@ -157,15 +158,17 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
                 query_params: params,
                 clickhouse_settings: { max_execution_time: COUNT_QUERY_MAX_EXECUTION_SECONDS }
             });
-            const [row] = await res.json<{ total: string }>();
+            const [row] = await res.json<{ total: string; scanned: string }>();
             const total = Number(row?.total);
+            const scanned = Number(row?.scanned);
 
-            if (!Number.isFinite(total)) {
+            if (!Number.isFinite(total) || !Number.isFinite(scanned)) {
                 return Err('failed_to_count_audit_trail_events');
             }
 
-            // Hitting the scan limit means the account has at least this many, not exactly this many.
-            return total > COUNT_SCAN_LIMIT ? Ok({ value: COUNT_SCAN_LIMIT, relation: 'gte' }) : Ok({ value: total, relation: 'eq' });
+            // Keyed on rows read, not distinct values: the LIMIT caps rows, so duplicates inside the prefix
+            // would otherwise leave a truncated count looking exact.
+            return scanned > this.countScanLimit ? Ok({ value: this.countScanLimit, relation: 'gte' }) : Ok({ value: total, relation: 'eq' });
         } catch (err) {
             // Warning, not error: the caller is expected to carry on without the number.
             logger.warning(`Failed to count audit trail events for account ${filter.accountId}: ${stringifyError(err)}`);
