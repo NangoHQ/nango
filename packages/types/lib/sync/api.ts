@@ -1,20 +1,12 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
-import type { SyncTypeLiteral } from '../nangoYaml/index.js';
-import type { ReportedSyncJobStatus, SyncJobsType, SyncResultByModel, SyncStatus } from './index.js';
+import type { ReportedSyncJobStatus, SyncResultByModel, SyncStatus } from './index.js';
 
 export interface ApiConnectionSyncJob {
-    /** `_nango_sync_jobs.id` is a bigint, so it is carried as a string rather than rounded into a number. */
-    job_id: string;
     created_at: string;
     updated_at: string;
-    /** @deprecated **/
-    type: SyncJobsType | 'INITIAL';
     status: SyncStatus;
     result: SyncResultByModel | null;
-    sync_config_id: number;
-    version: string;
-    models: string[];
 }
 
 export interface ApiConnectionSync {
@@ -22,18 +14,15 @@ export interface ApiConnectionSync {
     name: string;
     variant: string;
     nango_connection_id: number;
-    sync_type: SyncTypeLiteral;
     models: string[];
     /** The per-sync override when set, otherwise the sync config's `runs`. */
     frequency: string | null;
-    frequency_override: string | null;
     /** null when the orchestrator has no schedule for the sync, or could not be reached. */
     schedule_status: 'STARTED' | 'PAUSED' | 'DELETED' | null;
     status: SyncStatus;
     /** Unix seconds. */
     futureActionTimes: number[];
     latest_sync: ApiConnectionSyncJob | null;
-    active_logs: { log_id: string } | null;
     /** Keyed by bare model name; null when the record store could not be reached. */
     record_count: Record<string, number> | null;
 }

@@ -15,6 +15,7 @@ import {
 import { asyncWrapperWithEnvironment } from '../../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../../utils/utils.js';
 
+import type { RecordCount } from '@nangohq/records';
 import type { ListedSync } from '@nangohq/shared';
 import type { ApiConnectionSync, GetConnectionSyncs } from '@nangohq/types';
 
@@ -98,7 +99,7 @@ async function getRecordCountsForPage({
     syncs: ListedSync[];
     connectionId: number;
     environmentId: number;
-}): Promise<Record<string, number> | null> {
+}): Promise<Record<string, RecordCount> | null> {
     const models = new Set<string>();
     for (const sync of syncs) {
         for (const model of sync.models) {
@@ -115,42 +116,19 @@ async function getRecordCountsForPage({
         return null;
     }
 
-    return Object.fromEntries(Object.entries(counts.value).map(([model, count]) => [model, count.count]));
+    return counts.value;
 }
 
 function toRecordModelName(model: string, variant: string): string {
     return variant === 'base' ? model : `${model}::${variant}`;
 }
 
-function toApi(sync: ListedSync, recordCounts: Record<string, number> | null): ApiConnectionSync {
+function toApi(sync: ListedSync, recordCounts: Record<string, RecordCount> | null): ApiConnectionSync {
     return {
-        id: sync.id,
-        name: sync.name,
-        variant: sync.variant,
-        nango_connection_id: sync.nango_connection_id,
-        sync_type: sync.sync_type,
-        models: sync.models,
-        frequency: sync.frequency,
-        frequency_override: sync.frequency_override,
-        schedule_status: sync.schedule_status,
-        status: sync.status,
-        futureActionTimes: sync.futureActionTimes,
-        latest_sync:
-            sync.job_id === null
-                ? null
-                : {
-                      job_id: sync.job_id,
-                      created_at: sync.job_created_at!.toISOString(),
-                      updated_at: sync.job_updated_at!.toISOString(),
-                      type: sync.job_type ?? 'INITIAL',
-                      status: sync.job_status!,
-                      result: sync.job_result,
-                      sync_config_id: sync.job_sync_config_id!,
-                      version: sync.job_version!,
-                      models: sync.job_models ?? []
-                  },
-        active_logs: sync.error_log_id ? { log_id: sync.error_log_id } : null,
+        ...sync,
         record_count:
-            recordCounts === null ? null : Object.fromEntries(sync.models.map((model) => [model, recordCounts[toRecordModelName(model, sync.variant)] ?? 0]))
+            recordCounts === null
+                ? null
+                : Object.fromEntries(sync.models.map((model) => [model, recordCounts[toRecordModelName(model, sync.variant)]?.count ?? 0]))
     };
 }

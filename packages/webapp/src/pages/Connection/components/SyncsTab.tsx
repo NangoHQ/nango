@@ -44,9 +44,8 @@ import type { ApiConnectionSync } from '@nangohq/types';
 
 const ROW_HEIGHT_PX = 44;
 
-// `display: grid` on the table disables the browser's column sizing, so the header and the cells only
-// line up while they share these widths. TableRow's own px-6 is inert in table layout but applies
-// once the row is a flexbox, so rows cancel it.
+// `display: grid` disables the browser's column sizing, so header and cells only align while they share
+// these widths — and TableRow's px-6, inert in table layout, applies once the row is a flexbox.
 const rowLayout = 'flex w-full px-0';
 const cellLayout = 'flex items-center min-w-0';
 const col = {
@@ -71,14 +70,6 @@ const columns = [
     { key: 'actions', label: '' }
 ] as const;
 
-/** Kept as a snapshot so the dialog survives its originating row scrolling out of the virtual window. */
-interface TriggerTarget {
-    id: string;
-    name: string;
-    variant: string;
-    nango_connection_id: number;
-}
-
 export const SyncsTab = () => {
     const env = useStore((state) => state.env);
     const { connectionData, integrationData } = useConnectionContext();
@@ -95,17 +86,13 @@ export const SyncsTab = () => {
 
     const { toast } = useToast();
     const navigate = useNavigate();
-    const { mutateAsync: runSyncCommand, isPending: isRunningSyncCommand } = useRunSyncCommand({
-        env,
-        connection_id: connection.connection_id,
-        provider_config_key: providerConfigKey
-    });
+    const { mutateAsync: runSyncCommand } = useRunSyncCommand(env);
 
-    const [triggerTarget, setTriggerTarget] = useState<TriggerTarget | null>(null);
+    const [triggerTarget, setTriggerTarget] = useState<ApiConnectionSync | null>(null);
     const [pendingSyncId, setPendingSyncId] = useState<string | null>(null);
 
     const tableRef = useRef<HTMLDivElement | null>(null);
-    const sentinelRef = useInfiniteScroll({ hasNextPage: hasNextPage ?? false, isFetchingNextPage, fetchNextPage, threshold: 400 });
+    const sentinelRef = useInfiniteScroll({ hasNextPage, isFetchingNextPage, fetchNextPage, threshold: 400 });
 
     const onSyncCommand = useCallback(
         async (
@@ -191,7 +178,7 @@ export const SyncsTab = () => {
                         syncs={syncs}
                         tableRef={tableRef}
                         pendingSyncId={pendingSyncId}
-                        isRunningSyncCommand={isRunningSyncCommand}
+                        actionsDisabled={pendingSyncId !== null}
                         onSyncCommand={onSyncCommand}
                         onRequestTrigger={setTriggerTarget}
                         onViewLogs={onViewLogs}
@@ -201,13 +188,9 @@ export const SyncsTab = () => {
             <div ref={sentinelRef} aria-hidden />
             {isFetchingNextPage && <Skeleton className="w-full h-11" />}
 
-            <TriggerSyncDialog
-                key={triggerTarget?.id ?? 'none'}
-                target={triggerTarget}
-                isPending={isRunningSyncCommand}
-                onClose={() => setTriggerTarget(null)}
-                onTrigger={onSyncCommand}
-            />
+            {triggerTarget && (
+                <TriggerSyncDialog target={triggerTarget} isPending={pendingSyncId !== null} onClose={() => setTriggerTarget(null)} onTrigger={onSyncCommand} />
+            )}
         </div>
     );
 };
@@ -216,7 +199,7 @@ const VirtualizedSyncRows = ({
     syncs,
     tableRef,
     pendingSyncId,
-    isRunningSyncCommand,
+    actionsDisabled,
     onSyncCommand,
     onRequestTrigger,
     onViewLogs
@@ -224,19 +207,19 @@ const VirtualizedSyncRows = ({
     syncs: ApiConnectionSync[];
     tableRef: React.MutableRefObject<HTMLDivElement | null>;
     pendingSyncId: string | null;
-    isRunningSyncCommand: boolean;
+    actionsDisabled: boolean;
     onSyncCommand: (sync: ApiConnectionSync, command: RunSyncCommand) => void;
-    onRequestTrigger: (target: TriggerTarget) => void;
+    onRequestTrigger: (sync: ApiConnectionSync) => void;
     onViewLogs: (sync: ApiConnectionSync) => void;
 }) => {
     // Virtualized against the dashboard's own scroll container, so the tab adds no second scrollbar.
-    const scrollParent = useScrollParent(tableRef);
+    const { scrollParent, offsetTop } = useScrollParent(tableRef);
     const rowVirtualizer = useVirtualizer({
         count: syncs.length,
         getScrollElement: () => scrollParent,
         estimateSize: () => ROW_HEIGHT_PX,
         overscan: 5,
-        scrollMargin: tableRef.current?.offsetTop ?? 0
+        scrollMargin: offsetTop
     });
 
     return (
@@ -249,7 +232,7 @@ const VirtualizedSyncRows = ({
                         sync={sync}
                         offsetY={virtualRow.start - rowVirtualizer.options.scrollMargin}
                         isPending={pendingSyncId === sync.id}
-                        actionsDisabled={isRunningSyncCommand}
+                        actionsDisabled={actionsDisabled}
                         onSyncCommand={onSyncCommand}
                         onRequestTrigger={onRequestTrigger}
                         onViewLogs={onViewLogs}
@@ -274,11 +257,13 @@ const SyncRow = memo(function SyncRow({
     isPending: boolean;
     actionsDisabled: boolean;
     onSyncCommand: (sync: ApiConnectionSync, command: RunSyncCommand) => void;
-    onRequestTrigger: (target: TriggerTarget) => void;
+    onRequestTrigger: (sync: ApiConnectionSync) => void;
     onViewLogs: (sync: ApiConnectionSync) => void;
 }) {
     const models = sync.models.join(', ');
     const recordCount = sync.record_count ? formatQuantity(Object.values(sync.record_count).reduce((acc, count) => acc + count, 0)) : '0';
+    const nextRun = interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at);
+    const nextRunLabel = Array.isArray(nextRun) ? nextRun[0] : nextRun;
 
     return (
         <TableRow className={cn(rowLayout, 'absolute')} style={{ height: `${ROW_HEIGHT_PX}px`, transform: `translateY(${offsetY}px)` }}>
@@ -319,7 +304,7 @@ const SyncRow = memo(function SyncRow({
                 <Tooltip>
                     <TooltipTrigger>{recordCount}</TooltipTrigger>
                     <TooltipContent>
-                        <SimpleCodeBlock language={'json'}>{JSON.stringify(sync.record_count, null, 2)}</SimpleCodeBlock>
+                        <JsonBlock value={sync.record_count} />
                     </TooltipContent>
                 </Tooltip>
             </TableCell>
@@ -329,19 +314,14 @@ const SyncRow = memo(function SyncRow({
                     <TooltipTrigger>{formatDateToUSFormat(sync.latest_sync?.updated_at)}</TooltipTrigger>
                     {sync.latest_sync && (
                         <TooltipContent>
-                            <SimpleCodeBlock language={'json'}>{JSON.stringify(sync.latest_sync.result, null, 2)}</SimpleCodeBlock>
+                            <JsonBlock value={sync.latest_sync.result} />
                         </TooltipContent>
                     )}
                 </Tooltip>
             </TableCell>
 
             <TableCell className={cn(cellLayout, col.nextStart)}>
-                {sync.schedule_status === 'STARTED' &&
-                    (interpretNextRun(sync.futureActionTimes) === '-' ? (
-                        <span>-</span>
-                    ) : (
-                        <span>{interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at)[0]}</span>
-                    ))}
+                {sync.schedule_status === 'STARTED' && <span>{nextRunLabel}</span>}
 
                 {sync.schedule_status === 'PAUSED' && <CatalogBadge variant="warning">Schedule Paused</CatalogBadge>}
             </TableCell>
@@ -379,17 +359,7 @@ const SyncRow = memo(function SyncRow({
                         )}
 
                         {sync.status !== 'RUNNING' && (
-                            <DropdownMenuItem
-                                disabled={actionsDisabled}
-                                onClick={() =>
-                                    onRequestTrigger({
-                                        id: sync.id,
-                                        name: sync.name,
-                                        variant: sync.variant,
-                                        nango_connection_id: sync.nango_connection_id
-                                    })
-                                }
-                            >
+                            <DropdownMenuItem disabled={actionsDisabled} onClick={() => onRequestTrigger(sync)}>
                                 <RefreshCw />
                                 <span>Trigger execution</span>
                             </DropdownMenuItem>
@@ -413,17 +383,13 @@ const TriggerSyncDialog = ({
     onClose,
     onTrigger
 }: {
-    target: TriggerTarget | null;
+    target: ApiConnectionSync;
     isPending: boolean;
     onClose: () => void;
-    onTrigger: (sync: TriggerTarget, command: RunSyncCommand, opts?: { deleteRecords?: boolean }) => Promise<void> | void;
+    onTrigger: (sync: ApiConnectionSync, command: RunSyncCommand, opts?: { deleteRecords?: boolean }) => Promise<void> | void;
 }) => {
     const [fullResync, setFullResync] = useState(false);
     const [emptyCache, setEmptyCache] = useState(false);
-
-    if (!target) {
-        return null;
-    }
 
     return (
         <Dialog open={true} onOpenChange={(open) => !open && onClose()} modal={true}>
@@ -479,6 +445,9 @@ const TriggerSyncDialog = ({
     );
 };
 
+/** Stringifies in its own body, so a closed tooltip costs nothing per row. */
+const JsonBlock = ({ value }: { value: unknown }) => <SimpleCodeBlock language={'json'}>{JSON.stringify(value, null, 2)}</SimpleCodeBlock>;
+
 const StatusBadge = ({ sync }: { sync: ApiConnectionSync }) => {
     const status = sync.latest_sync?.status;
 
@@ -511,19 +480,24 @@ const StatusBadge = ({ sync }: { sync: ApiConnectionSync }) => {
     );
 };
 
-/** The dashboard layout owns the page's only scroller, and it is too far up the tree to hand down a ref. */
+/**
+ * The dashboard layout owns the page's only scroller and is too far up the tree to hand down a ref.
+ * `offsetTop` is resolved once because it keys the virtualizer's measurement cache.
+ */
 function useScrollParent(ref: React.MutableRefObject<HTMLElement | null>) {
-    const [scrollParent, setScrollParent] = useState<HTMLElement | null>(null);
+    const [resolved, setResolved] = useState<{ scrollParent: HTMLElement | null; offsetTop: number }>({ scrollParent: null, offsetTop: 0 });
 
     useLayoutEffect(() => {
+        const offsetTop = ref.current?.offsetTop ?? 0;
         for (let node = ref.current?.parentElement ?? null; node; node = node.parentElement) {
             const { overflowY } = getComputedStyle(node);
             if (overflowY === 'auto' || overflowY === 'scroll') {
-                setScrollParent(node);
+                setResolved({ scrollParent: node, offsetTop });
                 return;
             }
         }
+        setResolved({ scrollParent: null, offsetTop });
     }, [ref]);
 
-    return scrollParent;
+    return resolved;
 }

@@ -11,11 +11,6 @@ interface UseSyncsArgs {
     env: string;
     connection_id: string;
     provider_config_key: string;
-    limit?: number;
-}
-
-export function syncsQueryKey({ env, provider_config_key, connection_id }: Omit<UseSyncsArgs, 'limit'>) {
-    return ['syncs', env, provider_config_key, connection_id];
 }
 
 async function fetchSyncs(connectionId: string, usp: URLSearchParams): Promise<GetConnectionSyncs['Success']> {
@@ -29,15 +24,15 @@ async function fetchSyncs(connectionId: string, usp: URLSearchParams): Promise<G
     return json;
 }
 
-export function useSyncs({ env, connection_id, provider_config_key, limit = SYNCS_PAGE_SIZE }: UseSyncsArgs) {
+export function useSyncs({ env, connection_id, provider_config_key }: UseSyncsArgs) {
     return useInfiniteQuery<GetConnectionSyncs['Success'], APIError>({
-        queryKey: [...syncsQueryKey({ env, connection_id, provider_config_key }), { limit }],
+        queryKey: ['syncs', env, provider_config_key, connection_id],
         queryFn: async ({ pageParam }) => {
             const usp = new URLSearchParams();
             usp.set('env', env);
             usp.set('provider_config_key', provider_config_key);
             usp.set('page', String(pageParam));
-            usp.set('limit', String(limit));
+            usp.set('limit', String(SYNCS_PAGE_SIZE));
 
             return await fetchSyncs(connection_id, usp);
         },
@@ -75,7 +70,7 @@ export async function fetchSyncByName({
     return json.data[0] ?? null;
 }
 
-export function useRunSyncCommand({ env, connection_id, provider_config_key }: Omit<UseSyncsArgs, 'limit'>) {
+export function useRunSyncCommand(env: string) {
     const queryClient = useQueryClient();
     return useMutation<
         { res: Response; json: Record<string, unknown> },
@@ -104,7 +99,7 @@ export function useRunSyncCommand({ env, connection_id, provider_config_key }: O
             return { res, json };
         },
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: syncsQueryKey({ env, connection_id, provider_config_key }) });
+            await queryClient.invalidateQueries({ queryKey: ['syncs'] });
         }
     });
 }

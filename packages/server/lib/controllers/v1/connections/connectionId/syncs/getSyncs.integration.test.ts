@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
 import { records } from '@nangohq/records';
-import { createSync, seeders } from '@nangohq/shared';
+import { createSync, seeders, SyncStatus } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
 
@@ -237,8 +237,8 @@ describe(`GET ${route}`, () => {
         const { env, apiKey } = await seedAccountEnvAndUser();
         const { connection, sync, syncConfig } = await seedConnectionWithSyncs({ env });
 
-        await createSyncJobSeeds(sync.id, { sync_config_id: syncConfig.id });
-        const newest = await createSyncJobSeeds(sync.id, { sync_config_id: syncConfig.id });
+        await createSyncJobSeeds(sync.id, { sync_config_id: syncConfig.id, status: SyncStatus.SUCCESS });
+        await createSyncJobSeeds(sync.id, { sync_config_id: syncConfig.id, status: SyncStatus.RUNNING });
 
         const res = await api.fetch(route, {
             method: 'GET',
@@ -249,7 +249,8 @@ describe(`GET ${route}`, () => {
 
         isSuccess(res.json);
         const latest = res.json.data[0]!.latest_sync;
-        expect(latest?.job_id).toBe(String(newest.id));
+        // The newest job is the RUNNING one; seeing SUCCESS would mean the lateral picked the older row.
+        expect(latest?.status).toBe('RUNNING');
         expect(latest?.created_at).toEqual(expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/));
     });
 

@@ -27,7 +27,6 @@ import type {
     SlimAction,
     SlimSync,
     SyncAndActionDifferences,
-    SyncResultByModel,
     SyncTypeLiteral
 } from '@nangohq/types';
 import type { Knex } from 'knex';
@@ -230,35 +229,30 @@ export const getSyncs = async (
     });
 };
 
-interface ListedSyncRow {
+export interface ListedSync {
     id: string;
     name: string;
     variant: string;
     nango_connection_id: number;
-    sync_type: SyncTypeLiteral;
     models: string[];
     frequency: string | null;
-    frequency_override: string | null;
-    error_log_id: string | null;
-    /** `_nango_sync_jobs.id` is a bigint, which pg hands back as a string. */
-    job_id: string | null;
-    job_created_at: Date | null;
-    job_updated_at: Date | null;
-    job_type: ApiConnectionSyncJob['type'] | null;
-    job_status: SyncStatus | null;
-    job_result: SyncResultByModel | null;
-    job_sync_config_id: number | null;
-    job_version: string | null;
-    job_models: string[] | null;
-}
-
-export interface ListedSync extends ListedSyncRow {
+    latest_sync: ApiConnectionSyncJob | null;
     schedule_status: 'STARTED' | 'PAUSED' | 'DELETED' | null;
     status: SyncStatus;
     futureActionTimes: number[];
 }
 
 /** Filtering and paging run over ids alone, so the latest-job lateral runs `limit` times, not `offset + limit` times. */
+const joinActiveSyncConfig = (configId: number) =>
+    function (this: Knex.JoinClause) {
+        this.on('sc.sync_name', 's.name')
+            .andOn('sc.deleted', '=', db.knex.raw('FALSE'))
+            .andOn('sc.active', '=', db.knex.raw('TRUE'))
+            .andOn('sc.type', '=', db.knex.raw('?', 'sync'))
+            .andOn('sc.enabled', '=', db.knex.raw('TRUE'))
+            .andOnVal('sc.nango_config_id', configId);
+    };
+
 export const listConnectionSyncs = async ({
     connection,
     orchestrator,
@@ -277,18 +271,8 @@ export const listConnectionSyncs = async ({
     const matching = () => {
         const q = db.readOnly
             .from(`${TABLE} as s`)
-            .join(`${SYNC_CONFIG_TABLE} as sc`, function () {
-                this.on('sc.sync_name', 's.name')
-                    .andOn('sc.deleted', '=', db.knex.raw('FALSE'))
-                    .andOn('sc.active', '=', db.knex.raw('TRUE'))
-                    .andOn('sc.type', '=', db.knex.raw('?', 'sync'))
-                    .andOn('sc.enabled', '=', db.knex.raw('TRUE'));
-            })
-            .where({
-                's.nango_connection_id': connection.id,
-                'sc.nango_config_id': connection.config_id,
-                's.deleted': false
-            });
+            .join(`${SYNC_CONFIG_TABLE} as sc`, joinActiveSyncConfig(connection.config_id))
+            .where({ 's.nango_connection_id': connection.id, 's.deleted': false });
 
         if (name) {
             q.andWhere('s.name', name);
@@ -319,43 +303,23 @@ export const listConnectionSyncs = async ({
 
     const rows = await db.readOnly
         .from(`${TABLE} as s`)
-        .select<ListedSyncRow[]>(
+        .select<Omit<ListedSync, 'schedule_status' | 'status' | 'futureActionTimes'>[]>(
             's.id',
             's.name',
             's.variant',
             's.nango_connection_id',
-            'sc.sync_type',
             'sc.models',
             db.knex.raw('COALESCE(s.frequency, sc.runs) as frequency'),
-            db.knex.raw('s.frequency as frequency_override'),
-            'al.log_id as error_log_id',
-            'latest.job_id',
-            'latest.job_created_at',
-            'latest.job_updated_at',
-            'latest.job_type',
-            'latest.job_status',
-            'latest.job_result',
-            'latest.job_sync_config_id',
-            'latest.job_version',
-            'latest.job_models'
+            'latest.latest_sync'
         )
-        .join(`${SYNC_CONFIG_TABLE} as sc`, function () {
-            this.on('sc.sync_name', 's.name')
-                .andOn('sc.deleted', '=', db.knex.raw('FALSE'))
-                .andOn('sc.active', '=', db.knex.raw('TRUE'))
-                .andOn('sc.type', '=', db.knex.raw('?', 'sync'))
-                .andOn('sc.enabled', '=', db.knex.raw('TRUE'));
-        })
-        .leftJoin(`${ACTIVE_LOG_TABLE} as al`, function () {
-            this.on('al.sync_id', 's.id').andOnVal('al.active', true).andOnVal('al.type', 'sync');
-        })
+        .join(`${SYNC_CONFIG_TABLE} as sc`, joinActiveSyncConfig(connection.config_id))
         .joinRaw(
             `LEFT JOIN LATERAL (
-                SELECT j.id as job_id, j.created_at as job_created_at, j.updated_at as job_updated_at,
-                       j.type as job_type, j.result as job_result, j.status as job_status,
-                       j.sync_config_id as job_sync_config_id, jsc.version as job_version, jsc.models as job_models
+                SELECT json_build_object(
+                    'created_at', j.created_at, 'updated_at', j.updated_at,
+                    'status', j.status, 'result', j.result
+                ) as latest_sync
                 FROM ${SYNC_JOB_TABLE} j
-                JOIN ${SYNC_CONFIG_TABLE} jsc ON jsc.id = j.sync_config_id AND jsc.deleted = false
                 WHERE j.sync_id = s.id
                 ORDER BY j.created_at DESC, j.id DESC
                 LIMIT 1
@@ -365,7 +329,6 @@ export const listConnectionSyncs = async ({
             's.id',
             page.map((row) => row.id)
         )
-        .andWhere({ 'sc.nango_config_id': connection.config_id })
         .orderBy([
             { column: 's.name', order: 'asc' },
             { column: 's.variant', order: 'asc' }
@@ -378,21 +341,13 @@ export const listConnectionSyncs = async ({
     }
     const scheduleMap = schedules.isOk() ? schedules.value : new Map();
 
-    const syncs = rows.map((row) => {
+    const syncs = rows.map((row): ListedSync => {
         const schedule = scheduleMap.get(row.id);
-        if (!schedule) {
-            return {
-                ...row,
-                schedule_status: null,
-                status: row.job_status === 'RUNNING' ? ('RUNNING' as SyncStatus) : ('STOPPED' as SyncStatus),
-                futureActionTimes: []
-            };
-        }
         return {
             ...row,
-            schedule_status: schedule.state,
-            status: syncManager.classifySyncStatus(row.job_status as SyncStatus, schedule.state),
-            futureActionTimes: schedule.nextDueDate ? [schedule.nextDueDate.getTime() / 1000] : []
+            schedule_status: schedule?.state ?? null,
+            status: syncManager.classifySyncStatus(row.latest_sync?.status as SyncStatus, schedule?.state ?? 'DELETED'),
+            futureActionTimes: schedule?.nextDueDate ? [schedule.nextDueDate.getTime() / 1000] : []
         };
     });
 
