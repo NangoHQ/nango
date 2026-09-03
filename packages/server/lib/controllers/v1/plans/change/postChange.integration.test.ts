@@ -802,7 +802,8 @@ describe(`POST ${route}`, () => {
         });
 
         it('should downgrade the plan when the add-on removal is already scheduled', async () => {
-            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            const { plan, user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
             await setupPlan({
                 id: plan.id,
                 name: 'pay-as-you-go',
@@ -826,7 +827,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: apiKey.secret,
+                session,
                 body: { orbId: 'free', withGrowthFeatures: false }
             });
 
