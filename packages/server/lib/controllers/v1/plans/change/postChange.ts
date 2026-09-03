@@ -4,13 +4,22 @@ import { billing } from '@nangohq/billing';
 import { plansList } from '@nangohq/shared';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { downgradePlan, getPlanChangeContext, getPlanChangeDirection, upgradePlan } from '../../../../services/planChange.service.js';
+import {
+    disableGrowthAddon,
+    downgradePlan,
+    enableGrowthAddon,
+    getPlanChangeContext,
+    resolvePlanChange,
+    trackPlanChange,
+    upgradePlan
+} from '../../../../services/planChange.service.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { PlanChangeError } from '../../../../services/planChange.service.js';
 import type { RequestLocals } from '../../../../utils/express.js';
 import type { PostPlanChange } from '@nangohq/types';
 import type { Response } from 'express';
+import type Stripe from 'stripe';
 
 type PlanChangeResponse = Response<PostPlanChange['Reply'], RequestLocals>;
 
@@ -31,9 +40,6 @@ function sendPlanChangeError(res: PlanChangeResponse, error: PlanChangeError): v
         case 'out_of_sync':
             res.status(409).send({ error: { code: 'conflict', message: 'billing state is being reconciled, please try again shortly' } });
             return;
-        case 'conflicting_directions':
-            res.status(400).send({ error: { code: 'invalid_body', message: 'invalid plan change' } });
-            return;
         case 'invalid_plan':
             res.status(400).send({ error: { code: 'invalid_body', message: 'team has an invalid plan' } });
             return;
@@ -48,6 +54,7 @@ function sendPlanChangeError(res: PlanChangeResponse, error: PlanChangeError): v
             return;
         case 'upgrade_failed':
         case 'downgrade_failed':
+        case 'addon_failed':
             // Already reported with its cause by the service, which has the context to describe it
             res.status(500).send({ error: { code: 'server_error' } });
             return;
@@ -99,11 +106,12 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
     }
     const sub = resSub.value;
 
-    const changeDirection = getPlanChangeDirection(context, sub);
-    if (changeDirection.isErr()) {
-        sendPlanChangeError(res, changeDirection.error);
+    const resChange = resolvePlanChange(context, sub);
+    if (resChange.isErr()) {
+        sendPlanChangeError(res, resChange.error);
         return;
     }
+    const change = resChange.value;
 
     if (sub.pendingChangeId) {
         // There is a pending change on Orb already; we must cancel it before moving forward with our change
@@ -115,24 +123,44 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         }
     }
 
-    if (changeDirection.value === 'upgrade') {
+    // NOTE: changes are ordered so that the impact to an account is mitigated in the face of failure
+    // between operations. Joint operations (eg. upgrade with add-on enabling) can't be carried out
+    // atomically due to a limitation in Orb's api: one can't remove an add-on price via a `schedule_plan_change`
+    // operation; rather it requires a call to `price_intervals`.
+
+    if (change.addon === 'disable') {
+        const disabled = await disableGrowthAddon(context, sub);
+        if (disabled.isErr()) {
+            sendPlanChangeError(res, disabled.error);
+            return;
+        }
+    }
+
+    let paymentIntent: Stripe.PaymentIntent | undefined;
+    if (change.plan === 'upgrade') {
         const upgraded = await upgradePlan(context);
         if (upgraded.isErr()) {
             sendPlanChangeError(res, upgraded.error);
             return;
         }
-
-        // A pending intent still needs the client to confirm the card; if it is absent, the change is done
-        const { paymentIntent } = upgraded.value;
-        res.status(200).send({ data: paymentIntent ? { paymentIntent } : { success: true } });
-        return;
+        paymentIntent = upgraded.value.paymentIntent;
+    } else if (change.plan === 'downgrade') {
+        const downgraded = await downgradePlan(context);
+        if (downgraded.isErr()) {
+            sendPlanChangeError(res, downgraded.error);
+            return;
+        }
     }
 
-    const downgraded = await downgradePlan(context, sub);
-    if (downgraded.isErr()) {
-        sendPlanChangeError(res, downgraded.error);
-        return;
+    if (change.addon === 'enable') {
+        const enabled = await enableGrowthAddon(context);
+        if (enabled.isErr()) {
+            sendPlanChangeError(res, enabled.error);
+            return;
+        }
     }
 
-    res.status(200).send({ data: { success: true } });
+    trackPlanChange(context, change);
+
+    res.status(200).send({ data: paymentIntent ? { paymentIntent } : { success: true } });
 });

@@ -17,8 +17,9 @@ export interface BillingClient {
     removeSpendAlert: (subscriptionId: string) => Promise<Result<void>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetrics>>;
-    upgrade: (opts: PlanUpgradeRequest) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
+    upgrade: (opts: PlanChangeRequest) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
     downgrade: (opts: PlanChangeRequest) => Promise<Result<void>>;
+    startGrowthAddon: (opts: { subscriptionId: string }) => Promise<Result<{ priceIntervalId: string | null }>>;
     endGrowthAddon: (opts: { subscriptionId: string; priceIntervalId: string }) => Promise<Result<{ growthFeaturesEndsAt: Date | null }>>;
     applyPendingChanges: (opts: {
         pendingChangeId: string;
@@ -44,10 +45,6 @@ export interface BillingClient {
 export interface PlanChangeRequest {
     subscriptionId: string;
     planExternalId: string;
-}
-
-export interface PlanUpgradeRequest extends PlanChangeRequest {
-    addPriceExternalIds?: string[] | undefined;
 }
 
 export interface BillingCustomer {

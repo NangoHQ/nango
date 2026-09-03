@@ -18,8 +18,7 @@ import type {
     BillingUsageMetrics,
     DBTeam,
     GetBillingUsageOpts,
-    PlanChangeRequest,
-    PlanUpgradeRequest
+    PlanChangeRequest
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -122,12 +121,16 @@ export class Billing {
         return await this.client.getUsage(subscriptionId, opts);
     }
 
-    async upgrade(opts: PlanUpgradeRequest): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
+    async upgrade(opts: PlanChangeRequest): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
         return await this.client.upgrade(opts);
     }
 
     async downgrade(opts: PlanChangeRequest): Promise<Result<void>> {
         return await this.client.downgrade(opts);
+    }
+
+    async startGrowthAddon(opts: { subscriptionId: string }): Promise<Result<{ priceIntervalId: string | null }>> {
+        return await this.client.startGrowthAddon(opts);
     }
 
     async endGrowthAddon(opts: { subscriptionId: string; priceIntervalId: string }): Promise<Result<{ growthFeaturesEndsAt: Date | null }>> {

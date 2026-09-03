@@ -14,8 +14,7 @@ import type {
     BillingUsageMetrics,
     DBTeam,
     GetBillingUsageOpts,
-    PlanChangeRequest,
-    PlanUpgradeRequest
+    PlanChangeRequest
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -110,7 +109,7 @@ export class NoopBillingClient implements BillingClient {
         return Promise.resolve(Ok({}));
     }
 
-    upgrade(_opts: PlanUpgradeRequest): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
+    upgrade(_opts: PlanChangeRequest): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
         return Promise.resolve(Ok({ pendingChangeId: 'local-pending-change', amountInCents: null }));
     }
 
@@ -125,6 +124,10 @@ export class NoopBillingClient implements BillingClient {
         return Promise.resolve(
             Ok({ id: 'local-sub', planExternalId: 'free', hasGrowthFeatures: false, growthFeaturesEndsAt: null, growthFeaturesPriceIntervalId: null })
         );
+    }
+
+    startGrowthAddon(_opts: { subscriptionId: string }): Promise<Result<{ priceIntervalId: string | null }>> {
+        return Promise.resolve(Ok({ priceIntervalId: 'local-price-interval' }));
     }
 
     endGrowthAddon(_opts: { subscriptionId: string; priceIntervalId: string }): Promise<Result<{ growthFeaturesEndsAt: Date | null }>> {

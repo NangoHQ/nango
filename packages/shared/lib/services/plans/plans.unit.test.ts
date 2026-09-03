@@ -154,8 +154,7 @@ describe('mergeFlags', () => {
             it('should apply the plan defaults for the gated flags when no add-on is active', () => {
                 const newFlags = mergeFlags({
                     currentPlan: makePlan({ code: from, flagOverrides: {} }),
-                    newPlanDefinition: payAsYouGo,
-                    hasGrowthFeatures: false
+                    newPlanDefinition: payAsYouGo
                 });
                 expect(newFlags).toMatchObject({
                     has_otel: false,
@@ -169,8 +168,7 @@ describe('mergeFlags', () => {
             it('should keep a higher limit the source plan carries', () => {
                 const newFlags = mergeFlags({
                     currentPlan: makePlan({ code: from, flagOverrides: {} }),
-                    newPlanDefinition: payAsYouGo,
-                    hasGrowthFeatures: false
+                    newPlanDefinition: payAsYouGo
                 });
                 const source = getPlanDefinition(from)!;
                 expect(newFlags.environments_max).toBe(Math.max(source.flags.environments_max ?? 0, payAsYouGo.flags.environments_max ?? 0));
@@ -178,22 +176,21 @@ describe('mergeFlags', () => {
 
             it('should keep overrides on flags the growth add-on does not gate', () => {
                 const currentPlan = makePlan({ code: from, flagOverrides: { environments_max: 50, api_rate_limit_size: '2xl' } });
-                const newFlags = mergeFlags({ currentPlan, newPlanDefinition: payAsYouGo, hasGrowthFeatures: false });
+                const newFlags = mergeFlags({ currentPlan, newPlanDefinition: payAsYouGo });
                 expect(newFlags).toMatchObject({ environments_max: 50, api_rate_limit_size: '2xl' });
             });
 
             it('should revoke add-on-gated flags when no add-on is active, override or not', () => {
                 const currentPlan = makePlan({ code: from, flagOverrides: { has_otel: true, has_rbac: true, can_customize_connect_ui_theme: true } });
-                const newFlags = mergeFlags({ currentPlan, newPlanDefinition: payAsYouGo, hasGrowthFeatures: false });
+                const newFlags = mergeFlags({ currentPlan, newPlanDefinition: payAsYouGo });
 
                 expect(newFlags).toMatchObject({ has_otel: false, has_rbac: false, can_customize_connect_ui_theme: false });
             });
 
             it('should grant the growth feature set when the add-on is active', () => {
                 const newFlags = mergeFlags({
-                    currentPlan: makePlan({ code: from, flagOverrides: {} }),
-                    newPlanDefinition: payAsYouGo,
-                    hasGrowthFeatures: true
+                    currentPlan: makePlan({ code: from, flagOverrides: {}, hasGrowthFeatures: true }),
+                    newPlanDefinition: payAsYouGo
                 });
 
                 expect(newFlags).toMatchObject({
@@ -212,8 +209,8 @@ describe('mergeFlags', () => {
         const enterprise = getPlanDefinition('enterprise')!;
         const currentPlan = makePlan({ code: 'growth-v2', flagOverrides: { has_rbac: true, has_otel: true } });
 
-        expect(mergeFlags({ currentPlan, newPlanDefinition: enterprise, hasGrowthFeatures: false })).toEqual(
-            mergeFlags({ currentPlan, newPlanDefinition: enterprise, hasGrowthFeatures: true })
+        expect(mergeFlags({ currentPlan, newPlanDefinition: enterprise })).toEqual(
+            mergeFlags({ currentPlan: { ...currentPlan, has_growth_features: true }, newPlanDefinition: enterprise })
         );
     });
 });
@@ -237,13 +234,21 @@ describe('self-serve transitions', () => {
     });
 });
 
-function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides: PlanDefinition['flags'] }): DBPlan {
+function makePlan({
+    code,
+    flagOverrides,
+    hasGrowthFeatures = false
+}: {
+    code: DBPlan['name'];
+    flagOverrides: PlanDefinition['flags'];
+    hasGrowthFeatures?: boolean;
+}): DBPlan {
     const defaultPlanDefinition = getPlanDefinition(code)!;
     return {
         id: 1,
         account_id: 1,
         name: code,
-        has_growth_features: false,
+        has_growth_features: hasGrowthFeatures,
         growth_features_ends_at: null,
         created_at: new Date(),
         updated_at: new Date(),

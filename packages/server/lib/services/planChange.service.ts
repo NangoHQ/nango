@@ -1,9 +1,8 @@
 import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { canHaveGrowthAddon, getPlanDefinition, handlePlanChanged, productTracking, updatePlanByTeam } from '@nangohq/shared';
+import { canHaveGrowthAddon, getPlanDefinition, handlePlanChanged, productTracking, setGrowthAddon } from '@nangohq/shared';
 import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
-import { envs } from '../env.js';
 import { clearSpendAlertOnPlanChange } from './spendAlertNotification.service.js';
 
 import type { BillingSubscription, DBPlan, DBTeam, PlanDefinition, Result } from '@nangohq/types';
@@ -28,7 +27,14 @@ export interface PlanChangeContext {
     };
 }
 
-export type PlanChangeDirection = 'upgrade' | 'downgrade';
+export type PlanDirection = 'upgrade' | 'downgrade';
+export type AddonDirection = 'enable' | 'disable';
+
+export interface PlanChangePlan {
+    plan: PlanDirection | null;
+    addon: AddonDirection | null;
+}
+
 export type PlanChangeErrorCode =
     | 'invalid_plan'
     | 'no_subscription'
@@ -36,12 +42,12 @@ export type PlanChangeErrorCode =
     | 'out_of_sync'
     | 'transition_not_allowed'
     | 'no_change_requested'
-    | 'conflicting_directions'
     | 'growth_features_unavailable'
     | 'not_linked_to_stripe'
     | 'already_scheduled'
     | 'upgrade_failed'
-    | 'downgrade_failed';
+    | 'downgrade_failed'
+    | 'addon_failed';
 
 export class PlanChangeError extends Error {
     constructor(
@@ -81,10 +87,10 @@ export function getPlanChangeContext(
     });
 }
 
-export function getPlanChangeDirection(context: PlanChangeContext, subscription: BillingSubscription): Result<PlanChangeDirection, PlanChangeError> {
+export function resolvePlanChange(context: PlanChangeContext, subscription: BillingSubscription): Result<PlanChangePlan, PlanChangeError> {
     const { currentPlan, currentPlanDefinition, subscriptionId, requested } = context;
 
-    // Our record is a mirror of Orb's, so if it drifts, fail loudly rather than attempting the plan change
+    // Our record is a mirror of Orb's, so if it drifts, fail loudly rather than attempting the change
     if (
         subscription.id !== subscriptionId ||
         subscription.planExternalId !== currentPlan.name ||
@@ -97,49 +103,34 @@ export function getPlanChangeDirection(context: PlanChangeContext, subscription:
         return Err(new PlanChangeError('growth_features_unavailable'));
     }
 
-    let planDirection: PlanChangeDirection | null = null;
+    let plan: PlanDirection | null = null;
     if (requested.newPlanCode !== currentPlanDefinition.code) {
         if (currentPlanDefinition.nextPlan?.includes(requested.newPlanCode)) {
-            planDirection = 'upgrade';
+            plan = 'upgrade';
         } else if (currentPlanDefinition.prevPlan?.includes(requested.newPlanCode)) {
-            planDirection = 'downgrade';
+            plan = 'downgrade';
         } else {
             return Err(new PlanChangeError('transition_not_allowed'));
         }
     }
 
-    const hasGrowthFeatures = currentPlan.has_growth_features;
-    const growthDirection: PlanChangeDirection | null =
-        requested.withGrowthFeatures === hasGrowthFeatures ? null : requested.withGrowthFeatures ? 'upgrade' : 'downgrade';
+    const addon: AddonDirection | null =
+        requested.withGrowthFeatures === currentPlan.has_growth_features ? null : requested.withGrowthFeatures ? 'enable' : 'disable';
 
-    // A scheduled downgrade for the growth add-on should not block plan downgrades.
-    if (!planDirection && growthDirection === 'downgrade' && subscription.growthFeaturesEndsAt) {
+    if (addon === 'disable' && subscription.growthFeaturesEndsAt) {
         return Err(new PlanChangeError('already_scheduled'));
     }
 
-    if (planDirection === 'downgrade' && requested.newPlanCode === currentPlan.orb_future_plan) {
+    if (plan === 'downgrade' && requested.newPlanCode === currentPlan.orb_future_plan) {
         return Err(new PlanChangeError('already_scheduled'));
     }
 
-    if (!planDirection && !growthDirection) {
+    if (!plan && !addon) {
         return Err(new PlanChangeError('no_change_requested'));
     }
 
-    if (planDirection && growthDirection && planDirection !== growthDirection) {
-        return Err(new PlanChangeError('conflicting_directions'));
-    }
-
-    return Ok(planDirection ?? growthDirection!);
+    return Ok({ plan, addon });
 }
-
-/**
- * Produces the Orb external price IDs to attach for an upgrade.
- */
-export function withAddonChanges(context: PlanChangeContext): { addPriceExternalIds: string[] } {
-    const { currentPlan, requested } = context;
-    return { addPriceExternalIds: requested.withGrowthFeatures && !currentPlan.has_growth_features ? [envs.ORB_GROWTH_ADDON_PRICE_ID] : [] };
-}
-
 /**
  * Applies a pending Orb subscription change and persists the resulting plan in the database.
  *
@@ -166,9 +157,7 @@ export async function applyPendingPlanChange({
 
     const resChanged = await handlePlanChanged(db.knex, team, {
         newPlanCode: subscription.planExternalId,
-        orbSubscriptionId: subscription.id,
-        hasGrowthFeatures: subscription.hasGrowthFeatures,
-        growthFeaturesEndsAt: subscription.growthFeaturesEndsAt
+        orbSubscriptionId: subscription.id
     });
     if (resChanged.isErr()) {
         return Err(new Error('failed_to_sync_applied_plan_change', { cause: resChanged.error }));
@@ -195,13 +184,13 @@ export async function upgradePlan(context: PlanChangeContext): Promise<Result<Pl
     }
 
     try {
-        logger.info(`Upgrading ${team.id} to ${requested.newPlanCode}${requested.withGrowthFeatures ? ' with growth features' : ''}`);
+        logger.info(`Upgrading ${team.id} to ${requested.newPlanCode}`);
 
         // NOTE: we always schedule the upgrade as a pending change.
         // Whether we'll settle the change synchronously or asynchronously (via webhook) depends on whether we need to charge the
         // customer first (up front vs in-arrears). When charging the customer up front, we rely on Stripe and thus must await
         // the payment confirmation via webhook.
-        const resUpgrade = await billing.upgrade({ subscriptionId, planExternalId: requested.newPlanCode, ...withAddonChanges(context) });
+        const resUpgrade = await billing.upgrade({ subscriptionId, planExternalId: requested.newPlanCode });
         if (resUpgrade.isErr()) {
             report(resUpgrade.error);
             return Err(new PlanChangeError('upgrade_failed', { cause: resUpgrade.error }));
@@ -243,34 +232,29 @@ export async function upgradePlan(context: PlanChangeContext): Promise<Result<Pl
 }
 
 /** Schedules a downgrade in Orb, which takes effect at the end of the current term. */
-export async function downgradePlan(context: PlanChangeContext, subscription: BillingSubscription): Promise<Result<void, PlanChangeError>> {
+export async function downgradePlan(context: PlanChangeContext): Promise<Result<void, PlanChangeError>> {
     const { team, currentPlan, subscriptionId, requested } = context;
 
-    const planChanged = requested.newPlanCode !== currentPlan.name;
-    const changedToNonFree = planChanged && requested.newPlanCode !== 'free';
-    if (changedToNonFree && (!currentPlan.stripe_payment_id || !currentPlan.stripe_customer_id)) {
+    if (requested.newPlanCode !== 'free' && (!currentPlan.stripe_payment_id || !currentPlan.stripe_customer_id)) {
         return Err(new PlanChangeError('not_linked_to_stripe'));
     }
 
-    if (!requested.withGrowthFeatures && currentPlan.has_growth_features) {
-        logger.info(`Disabling growth add-on for ${team.id}`);
-        const resDisabled = await disableGrowthAddon(context, subscription);
+    logger.info(`Downgrading ${team.id} to ${requested.newPlanCode}`);
 
-        if (resDisabled?.isErr()) {
-            report(resDisabled.error);
-            return Err(new PlanChangeError('downgrade_failed', { cause: resDisabled.error }));
-        }
+    const resDowngrade = await billing.downgrade({ subscriptionId, planExternalId: requested.newPlanCode });
+    if (resDowngrade.isErr()) {
+        report(resDowngrade.error);
+        return Err(new PlanChangeError('downgrade_failed', { cause: resDowngrade.error }));
     }
 
-    // End of term, so the customer keeps what they have paid for. Flags only drop once Orb applies it.
-    if (planChanged) {
-        logger.info(`Downgrading ${team.id} to ${requested.newPlanCode}${requested.withGrowthFeatures ? ' with growth features' : ''}`);
+    return Ok(undefined);
+}
 
-        const resDowngrade = await billing.downgrade({ subscriptionId, planExternalId: requested.newPlanCode });
-        if (resDowngrade.isErr()) {
-            report(resDowngrade.error);
-            return Err(new PlanChangeError('downgrade_failed', { cause: resDowngrade.error }));
-        }
+export function trackPlanChange(context: PlanChangeContext, change: PlanChangePlan): void {
+    const { team, currentPlan, requested } = context;
+
+    if (change.plan !== 'downgrade' && change.addon !== 'disable') {
+        return;
     }
 
     productTracking.track({
@@ -284,28 +268,48 @@ export async function downgradePlan(context: PlanChangeContext, subscription: Bi
             orbCustomerId: currentPlan.orb_customer_id
         }
     });
+}
+
+export async function enableGrowthAddon(context: PlanChangeContext): Promise<Result<void, PlanChangeError>> {
+    const { team, subscriptionId } = context;
+
+    logger.info(`Enabling growth add-on for ${team.id}`);
+
+    const resStart = await billing.startGrowthAddon({ subscriptionId });
+    if (resStart.isErr()) {
+        report(resStart.error);
+        return Err(new PlanChangeError('addon_failed', { cause: resStart.error }));
+    }
+
+    const resRecord = await setGrowthAddon(db.knex, team, { hasGrowthFeatures: true });
+    if (resRecord.isErr()) {
+        report(resRecord.error);
+        return Err(new PlanChangeError('addon_failed', { cause: resRecord.error }));
+    }
 
     return Ok(undefined);
 }
 
-async function disableGrowthAddon(context: PlanChangeContext, subscription: BillingSubscription): Promise<Result<void>> {
+export async function disableGrowthAddon(context: PlanChangeContext, subscription: BillingSubscription): Promise<Result<void, PlanChangeError>> {
     const { team, subscriptionId } = context;
 
+    logger.info(`Disabling growth add-on for ${team.id}`);
+
     if (!subscription.growthFeaturesPriceIntervalId) {
-        return Err(new PlanChangeError('downgrade_failed', { cause: `Growth add-on price interval not found in subscription: ${subscriptionId}` }));
+        return Err(new PlanChangeError('addon_failed', { cause: `Growth add-on price interval not found in subscription: ${subscriptionId}` }));
     }
 
     const resEnd = await billing.endGrowthAddon({ subscriptionId, priceIntervalId: subscription.growthFeaturesPriceIntervalId });
     if (resEnd.isErr()) {
-        return Err(new PlanChangeError('downgrade_failed', { cause: resEnd.error }));
+        report(resEnd.error);
+        return Err(new PlanChangeError('addon_failed', { cause: resEnd.error }));
     }
 
-    // NOTE: removing the add-on (an external price) from the subscription does not trigger any webhook events
-    // so to reflect the date in which the add-on will be disabled, we must update the plan inline here.
-    const resRecord = await updatePlanByTeam(db.knex, { account_id: team.id, growth_features_ends_at: resEnd.value.growthFeaturesEndsAt });
+    const resRecord = await setGrowthAddon(db.knex, team, { hasGrowthFeatures: true, endsAt: resEnd.value.growthFeaturesEndsAt });
     if (resRecord.isErr()) {
-        return Err(new PlanChangeError('downgrade_failed', { cause: resRecord.error }));
+        report(resRecord.error);
+        return Err(new PlanChangeError('addon_failed', { cause: resRecord.error }));
     }
 
-    return Ok();
+    return Ok(undefined);
 }

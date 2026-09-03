@@ -28,7 +28,6 @@ import type {
     DBTeam,
     GetBillingUsageOpts,
     PlanChangeRequest,
-    PlanUpgradeRequest,
     Result
 } from '@nangohq/types';
 
@@ -418,7 +417,7 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async upgrade(opts: PlanUpgradeRequest): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
+    async upgrade(opts: PlanChangeRequest): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
         try {
             // We schedule the upgrade but we don't apply it yet
             // We apply it when the first payment is made to confirm the card
@@ -427,8 +426,7 @@ export class OrbClient implements BillingClient {
                 {
                     change_option: 'immediate', // It will be immediate after first payment
                     auto_collection: true,
-                    external_plan_id: opts.planExternalId,
-                    ...toOrbAddPrices(opts)
+                    external_plan_id: opts.planExternalId
                 },
                 { headers: { 'Create-Pending-Subscription-Change': 'true' } }
             );
@@ -456,6 +454,22 @@ export class OrbClient implements BillingClient {
             });
         } catch (err) {
             return Err(new Error('failed_to_upgrade_customer', { cause: err }));
+        }
+    }
+
+    /**
+     * Attaches the growth add-on price to the subscription, billing from now:
+     * the customer pays for it from the moment they turn it on, prorated by Orb.
+     */
+    async startGrowthAddon(opts: { subscriptionId: string }): Promise<Result<{ priceIntervalId: string | null }>> {
+        try {
+            const subscription = await this.orbSDK.subscriptions.priceIntervals(opts.subscriptionId, {
+                add: [{ external_price_id: envs.ORB_GROWTH_ADDON_PRICE_ID, start_date: new Date().toISOString() }]
+            });
+
+            return Ok({ priceIntervalId: growthAddonStateFromOrb(subscription.price_intervals).growthFeaturesPriceIntervalId });
+        } catch (err) {
+            return Err(new Error('failed_to_start_growth_addon', { cause: err }));
         }
     }
 
@@ -554,11 +568,6 @@ export class OrbClient implements BillingClient {
             return Err(new Error('failed_to_get_plan_by_id', { cause: err }));
         }
     }
-}
-
-function toOrbAddPrices(opts: PlanUpgradeRequest) {
-    // Orb rejects an empty array, so the key is omitted entirely when there is nothing to add
-    return opts.addPriceExternalIds?.length ? { add_prices: opts.addPriceExternalIds.map((id) => ({ external_price_id: id })) } : {};
 }
 
 function isOrbNotFoundError(err: unknown): err is InstanceType<typeof Orb.NotFoundError> {

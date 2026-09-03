@@ -149,11 +149,53 @@ export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
         .where('plans.auto_idle', true);
 }
 
-function isPlanUnchanged(currentPlan: DBPlan, newPlan: PlanDefinition, hasGrowthFeatures: boolean, growthFeaturesEndsAt: Date | null): boolean {
-    const growthAddonUnchanged = currentPlan.has_growth_features === hasGrowthFeatures;
-    const growthAddonIntervalUnchanged = (currentPlan.growth_features_ends_at?.getTime() ?? null) === (growthFeaturesEndsAt?.getTime() ?? null);
-    const planUnchanged = currentPlan.name === newPlan.code;
-    return planUnchanged && growthAddonUnchanged && growthAddonIntervalUnchanged;
+function isPlanUnchanged(currentPlan: DBPlan, newPlan: PlanDefinition): boolean {
+    return currentPlan.name === newPlan.code;
+}
+
+/**
+ * The one place growth add-on state is written outside the reconcile cron.
+ *
+ * Kept apart from `handlePlanChanged` on purpose: that function is reachable from the Orb webhook,
+ * whose payload is a snapshot from when the event was generated and can arrive up to ~28 hours late
+ * after retries. Callers here have just performed the change against Orb, or have just read it live,
+ * so nothing they write can be contradicted by an older event.
+ *
+ * @param endsAt - When the add-on stops billing, once its removal is scheduled. The add-on is still
+ * active until then, so `hasGrowthFeatures` stays true alongside it.
+ */
+export async function setGrowthAddon(
+    db: Knex,
+    team: DBTeam,
+    { hasGrowthFeatures, endsAt = null }: { hasGrowthFeatures: boolean; endsAt?: Date | null }
+): Promise<Result<void>> {
+    const plan = await getPlan(db, { accountId: team.id });
+    if (plan.isErr()) {
+        return Err(new Error('Failed to get current plan', { cause: plan.error }));
+    }
+
+    const definition = plansList.find((p) => p.code === plan.value.name);
+    if (!definition) {
+        return Err('Received a plan not linked to the plansList');
+    }
+
+    // Granted while the add-on is on, back to whatever the plan itself allows once it is off.
+    const flags: Partial<PlanDefinition['flags']> = {};
+    for (const flag of Object.keys(GROWTH_FEATURE_FLAGS) as (keyof typeof GROWTH_FEATURE_FLAGS)[]) {
+        flags[flag] = hasGrowthFeatures ? GROWTH_FEATURE_FLAGS[flag] : (definition.flags[flag] as boolean);
+    }
+
+    const updated = await updatePlanByTeam(db, {
+        account_id: team.id,
+        has_growth_features: hasGrowthFeatures,
+        growth_features_ends_at: hasGrowthFeatures ? endsAt : null,
+        ...flags
+    });
+    if (updated.isErr()) {
+        return Err(new Error('Failed to update growth add-on', { cause: updated.error }));
+    }
+
+    return Ok(undefined);
 }
 
 /** Resolves to whether the plan actually changed, so callers can react only when it did. */
@@ -163,15 +205,11 @@ export async function handlePlanChanged(
     {
         newPlanCode,
         orbCustomerId,
-        orbSubscriptionId,
-        hasGrowthFeatures,
-        growthFeaturesEndsAt
+        orbSubscriptionId
     }: {
         newPlanCode: string;
         orbCustomerId?: string | undefined;
         orbSubscriptionId: string;
-        hasGrowthFeatures: boolean;
-        growthFeaturesEndsAt: Date | null;
     }
 ): Promise<Result<boolean>> {
     const newPlan = plansList.find((p) => p.code === newPlanCode);
@@ -184,12 +222,12 @@ export async function handlePlanChanged(
         return Err(new Error('Failed to get current plan', { cause: currentPlan.error }));
     }
 
-    if (isPlanUnchanged(currentPlan.value, newPlan, hasGrowthFeatures, growthFeaturesEndsAt)) {
+    if (isPlanUnchanged(currentPlan.value, newPlan)) {
         return Ok(false);
     }
 
     // Merge current plan flags with new plan defaults
-    const mergedFlags = mergeFlags({ currentPlan: currentPlan.value, newPlanDefinition: newPlan, hasGrowthFeatures });
+    const mergedFlags = mergeFlags({ currentPlan: currentPlan.value, newPlanDefinition: newPlan });
 
     // Only update subscription date from free to paid (undefined = no update)
     const isCurrentFree = currentPlan.value.name === freePlan.code;
@@ -200,8 +238,6 @@ export async function handlePlanChanged(
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
         name: newPlan.code,
-        has_growth_features: hasGrowthFeatures,
-        growth_features_ends_at: growthFeaturesEndsAt,
         orb_subscription_id: orbSubscriptionId,
         orb_future_plan: null,
         orb_future_plan_at: null,
@@ -233,15 +269,8 @@ export async function handlePlanChanged(
     return Ok(true);
 }
 
-export function mergeFlags({
-    currentPlan,
-    newPlanDefinition,
-    hasGrowthFeatures = false
-}: {
-    currentPlan: DBPlan;
-    newPlanDefinition: PlanDefinition;
-    hasGrowthFeatures?: boolean;
-}): PlanDefinition['flags'] {
+export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPlan; newPlanDefinition: PlanDefinition }): PlanDefinition['flags'] {
+    const hasGrowthFeatures = currentPlan.has_growth_features;
     let flags = mergePlanFlags({ currentPlan, newPlanDefinition });
 
     if (canHaveGrowthAddon(newPlanDefinition.code)) {

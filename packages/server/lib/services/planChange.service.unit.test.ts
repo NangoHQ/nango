@@ -2,13 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { seeders } from '@nangohq/shared';
 
-import { envs } from '../env.js';
-import { getPlanChangeContext, getPlanChangeDirection, withAddonChanges } from './planChange.service.js';
+import { getPlanChangeContext, resolvePlanChange } from './planChange.service.js';
 
-import type { PlanChangeDirection } from './planChange.service.js';
 import type { BillingSubscription, DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
 
-// getPlanChangeDirection never reads the team; it only rides along in the context
 const team = { id: 1 } as DBTeam;
 
 function planOf(name: PlanDefinition['code'], hasGrowthFeatures: boolean, plan?: Partial<DBPlan>): DBPlan {
@@ -36,7 +33,7 @@ function resolve({
 }) {
     const context = getPlanChangeContext(team, planOf(from, addonNow, plan), to, addonRequested).unwrap();
 
-    return getPlanChangeDirection(context, {
+    return resolvePlanChange(context, {
         id: 'sub_123',
         planExternalId: from,
         hasGrowthFeatures: addonNow,
@@ -46,18 +43,18 @@ function resolve({
     });
 }
 
-describe('getPlanChangeDirection', () => {
+describe('resolvePlanChange', () => {
     it.each([
-        { from: 'free', to: 'pay-as-you-go', expectedDirection: 'upgrade' },
-        { from: 'free', to: 'enterprise', expectedDirection: 'upgrade' },
-        { from: 'pay-as-you-go', to: 'enterprise', expectedDirection: 'upgrade' },
-        { from: 'pay-as-you-go', to: 'free', expectedDirection: 'downgrade' },
-        { from: 'starter-v2', to: 'enterprise', expectedDirection: 'upgrade' },
-        { from: 'starter-v2', to: 'free', expectedDirection: 'downgrade' }
-    ] as { from: PlanDefinition['code']; to: PlanDefinition['code']; expectedDirection: PlanChangeDirection }[])(
-        'resolves $from -> $to as: $expectedDirection',
-        ({ from, to, expectedDirection }) => {
-            expect(resolve({ from, to }).unwrap()).toBe(expectedDirection);
+        { from: 'free', to: 'pay-as-you-go', plan: 'upgrade' },
+        { from: 'free', to: 'enterprise', plan: 'upgrade' },
+        { from: 'pay-as-you-go', to: 'enterprise', plan: 'upgrade' },
+        { from: 'pay-as-you-go', to: 'free', plan: 'downgrade' },
+        { from: 'starter-v2', to: 'enterprise', plan: 'upgrade' },
+        { from: 'starter-v2', to: 'free', plan: 'downgrade' }
+    ] as { from: PlanDefinition['code']; to: PlanDefinition['code']; plan: 'upgrade' | 'downgrade' }[])(
+        'resolves $from -> $to as: $plan',
+        ({ from, to, plan }) => {
+            expect(resolve({ from, to }).unwrap()).toEqual({ plan, addon: null });
         }
     );
 
@@ -77,15 +74,6 @@ describe('getPlanChangeDirection', () => {
         expect(res.isErr() && res.error.code).toBe('out_of_sync');
     });
 
-    it('rejects a downgrade to a plan that is already scheduled', () => {
-        const res = resolve({ from: 'pay-as-you-go', to: 'free', plan: { orb_future_plan: 'free' } });
-        expect(res.isErr() && res.error.code).toBe('already_scheduled');
-    });
-
-    it('allows an upgrade to a plan that is already scheduled', () => {
-        expect(resolve({ from: 'free', to: 'pay-as-you-go', plan: { orb_future_plan: 'pay-as-you-go' } }).unwrap()).toBe('upgrade');
-    });
-
     it('rejects when Orb and the database disagree on the subscription id', () => {
         const res = resolve({ from: 'free', to: 'pay-as-you-go', subscription: { id: 'sub_replaced' } });
         expect(res.isErr() && res.error.code).toBe('out_of_sync');
@@ -96,8 +84,16 @@ describe('getPlanChangeDirection', () => {
         expect(res.isErr() && res.error.code).toBe('out_of_sync');
     });
 
-    it('proceeds when both sides agree', () => {
-        expect(resolve({ from: 'free', to: 'pay-as-you-go' }).unwrap()).toBe('upgrade');
+    it('rejects a downgrade to a plan that is already scheduled', () => {
+        const res = resolve({ from: 'pay-as-you-go', to: 'free', plan: { orb_future_plan: 'free' } });
+        expect(res.isErr() && res.error.code).toBe('already_scheduled');
+    });
+
+    it('allows an upgrade to a plan that is already scheduled', () => {
+        expect(resolve({ from: 'free', to: 'pay-as-you-go', plan: { orb_future_plan: 'pay-as-you-go' } }).unwrap()).toEqual({
+            plan: 'upgrade',
+            addon: null
+        });
     });
 
     it('rejects disabling the add-on when removal is already scheduled', () => {
@@ -111,25 +107,18 @@ describe('getPlanChangeDirection', () => {
         expect(res.isErr() && res.error.code).toBe('already_scheduled');
     });
 
-    it('resolves same plan transitions with add-on enabled as an upgrade', () => {
-        expect(resolve({ from: 'pay-as-you-go', to: 'pay-as-you-go', addonRequested: true }).unwrap()).toBe('upgrade');
+    it('resolves an add-on change on an unchanged plan as add-on only', () => {
+        expect(resolve({ from: 'pay-as-you-go', to: 'pay-as-you-go', addonRequested: true }).unwrap()).toEqual({ plan: null, addon: 'enable' });
+        expect(resolve({ from: 'pay-as-you-go', to: 'pay-as-you-go', addonNow: true }).unwrap()).toEqual({ plan: null, addon: 'disable' });
     });
 
-    it('resolves same plan transitions with add-on disabled as a downgrade', () => {
-        expect(resolve({ from: 'pay-as-you-go', to: 'pay-as-you-go', addonNow: true }).unwrap()).toBe('downgrade');
+    it('resolves a plan change that also moves the add-on as both', () => {
+        expect(resolve({ from: 'free', to: 'pay-as-you-go', addonRequested: true }).unwrap()).toEqual({ plan: 'upgrade', addon: 'enable' });
+        expect(resolve({ from: 'pay-as-you-go', to: 'free', addonNow: true }).unwrap()).toEqual({ plan: 'downgrade', addon: 'disable' });
     });
 
-    it('resolves a plan upgrade that also enables the add-on as an upgrade', () => {
-        expect(resolve({ from: 'free', to: 'pay-as-you-go', addonRequested: true }).unwrap()).toBe('upgrade');
-    });
-
-    it('resolves a plan downgrade that also disables the add-on as a downgrade', () => {
-        expect(resolve({ from: 'pay-as-you-go', to: 'free', addonNow: true }).unwrap()).toBe('downgrade');
-    });
-
-    it('rejects disabling the add-on while upgrading the plan', () => {
-        const res = resolve({ from: 'pay-as-you-go', to: 'enterprise', addonNow: true });
-        expect(res.isErr() && res.error.code).toBe('conflicting_directions');
+    it('resolves dropping the add-on while upgrading the plan as both', () => {
+        expect(resolve({ from: 'pay-as-you-go', to: 'enterprise', addonNow: true }).unwrap()).toEqual({ plan: 'upgrade', addon: 'disable' });
     });
 
     it('rejects enabling the add-on on a plan that cannot carry it', () => {
@@ -140,15 +129,6 @@ describe('getPlanChangeDirection', () => {
     it('rejects a downgrade that would carry the add-on onto a plan that cannot have it', () => {
         const res = resolve({ from: 'pay-as-you-go', to: 'free', addonNow: true, addonRequested: true });
         expect(res.isErr() && res.error.code).toBe('growth_features_unavailable');
-    });
-});
-
-describe('withAddonChanges', () => {
-    const diff = (has: boolean, want: boolean) => withAddonChanges(getPlanChangeContext(team, planOf('pay-as-you-go', has), 'pay-as-you-go', want).unwrap());
-
-    it('adds the price only when it is not already there', () => {
-        expect(diff(false, true)).toEqual({ addPriceExternalIds: [envs.ORB_GROWTH_ADDON_PRICE_ID] });
-        expect(diff(true, true)).toEqual({ addPriceExternalIds: [] });
     });
 });
 
