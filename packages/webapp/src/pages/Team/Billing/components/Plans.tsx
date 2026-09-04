@@ -18,6 +18,7 @@ import {
 } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Separator } from '@/components/ui/Separator';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
@@ -29,11 +30,14 @@ import { openSupportChat } from '@/utils/support';
 import { isOnS26Pricing } from '@/utils/usage';
 import { cn } from '@/utils/utils';
 import { formatBillingDate, nextUsageResetDate } from '../billingPeriod.js';
-import { isRetiredPlan } from '../planVisibility.js';
+import { growthAddonState, isRetiredPlan } from '../planVisibility.js';
+import { pendingPlanChange } from '../summaryState.js';
 import { PlanChangeErrorAlert, usePlanChangeRequest } from '../usePlanChangeRequest.js';
+import { GrowthAddon } from './GrowthAddon.js';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
-import { ENTERPRISE_PLAN_DESCRIPTION, PLAN_CARD_LIMITS, S26_PLAN_CARDS } from './planCardCopy.js';
+import { ENTERPRISE_PLAN_DESCRIPTION, GROWTH_ADDON_COPY, GROWTH_ADDON_PRICE, PLAN_CARD_LIMITS, S26_PLAN_CARDS } from './planCardCopy.js';
 
+import type { GrowthAddonState } from '../planVisibility.js';
 import type { PlanDefinitionList } from '../types.js';
 import type { S26PlanCard } from './planCardCopy.js';
 import type { PlanDefinition, StripePaymentMethod } from '@nangohq/types';
@@ -78,6 +82,11 @@ export const Plans: React.FC = () => {
     }, [currentPlan, plansList, showsNewPlans]);
 
     const activeIsOffered = plans?.list.some((p) => p.active) ?? false;
+    const pendingChange = useMemo(
+        () => (currentPlan ? pendingPlanChange({ plan: currentPlan, plans: plansList?.data, now: new Date() }) : null),
+        [currentPlan, plansList]
+    );
+    const addonState = growthAddonState(currentPlan);
 
     return (
         <div className="flex flex-col gap-4">
@@ -90,6 +99,9 @@ export const Plans: React.FC = () => {
                         activePlan={plans?.activePlan}
                         activeIsOffered={activeIsOffered}
                         card={showsNewPlans ? S26_PLAN_CARDS.find((c) => c.code === plan.plan.code) : undefined}
+                        addonState={addonState}
+                        endsAt={currentPlan?.growth_features_ends_at ?? undefined}
+                        pendingChangeAt={pendingChange?.at}
                         closed={s26Pricing && !showsNewPlans && isRetiredPlan(plan.plan.code)}
                         paymentMethod={paymentMethod}
                     />
@@ -117,11 +129,17 @@ const PlanCard: React.FC<{
     activeIsOffered: boolean;
     /** Undefined while the old set of cards is on screen. */
     card?: S26PlanCard;
+    addonState: GrowthAddonState;
+    /** When a scheduled add-on removal takes effect, as Orb's period end rather than a guess at it. */
+    endsAt?: string;
+    /** Set when a plan change is already coming: the add-on cannot then move the other way. */
+    pendingChangeAt?: string;
     /** Whether this plan is no longer something the account can move to. */
     closed?: boolean;
     paymentMethod?: StripePaymentMethod | null;
-}> = ({ planDefinition, activePlan, activeIsOffered, card, closed, paymentMethod }) => {
+}> = ({ planDefinition, activePlan, activeIsOffered, card, addonState, endsAt, pendingChangeAt, closed, paymentMethod }) => {
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
+    const [addonAction, setAddonAction] = useState<'add' | 'remove' | null>(null);
 
     const { can } = usePermissions();
     const canChangePlan = can('account:plan:update');
@@ -195,6 +213,9 @@ const PlanCard: React.FC<{
     })();
 
     if (card) {
+        const showsAddon = active && plan.code === 'pay-as-you-go';
+        const features = showsAddon || !card.addonTeaser ? card.features : [...card.features, card.addonTeaser];
+
         return (
             <Card selected={active}>
                 <div className="flex flex-col gap-4 p-4 flex-1">
@@ -212,13 +233,27 @@ const PlanCard: React.FC<{
                     </div>
                     <Separator />
                     <ul className="flex flex-col gap-2">
-                        {card.features.map((feature) => (
+                        {features.map((feature) => (
                             <li key={feature} className="flex gap-2 items-baseline">
                                 <span className="text-text-muted text-body-small-regular">&middot;</span>
                                 <span className="text-text-secondary text-body-small-regular">{feature}</span>
                             </li>
                         ))}
                     </ul>
+                    {showsAddon && (
+                        <>
+                            <GrowthAddon
+                                state={addonState}
+                                endsAt={endsAt}
+                                onAdd={() => setAddonAction('add')}
+                                onRemove={() => setAddonAction('remove')}
+                                lockedReason={pendingChangeAt ? `Your plan changes on ${pendingChangeAt}.` : undefined}
+                            />
+                            {addonAction && (
+                                <GrowthAddonDialog planCode={plan.code} action={addonAction} open onOpenChange={(next) => !next && setAddonAction(null)} />
+                            )}
+                        </>
+                    )}
                 </div>
                 <div className="w-full px-4 py-6">{ButtonComponent}</div>
             </Card>
@@ -299,6 +334,10 @@ const PlanChangeDialog: React.FC<{
     const env = useStore((state) => state.env);
     const { submit, reset, loading, longWait, error } = usePlanChangeRequest(env);
 
+    const offersAddon = Boolean(newPricing && selectedPlan.isUpgrade && selectedPlan.plan.code === 'pay-as-you-go');
+    const [withAddon, setWithAddon] = useState(false);
+    const wantsAddon = offersAddon && withAddon;
+
     const [internalOpen, setInternalOpen] = useState(false);
     const isControlled = openProp !== undefined;
     const open = isControlled ? openProp : internalOpen;
@@ -309,6 +348,7 @@ const PlanChangeDialog: React.FC<{
             }
             if (!value) {
                 reset();
+                setWithAddon(false);
             }
             onOpenChange?.(value);
         },
@@ -320,11 +360,13 @@ const PlanChangeDialog: React.FC<{
         const done = selectedPlan.isUpgrade
             ? await submit({
                   orbId: code,
-                  settled: (plan) => plan.name === code,
+                  withGrowthFeatures: wantsAddon,
+                  settled: (plan) => plan.name === code && plan.has_growth_features === wantsAddon,
                   successTitle: `Upgraded successfully to ${selectedPlan.plan.title}`
               })
             : await submit({
                   orbId: code,
+                  withGrowthFeatures: false,
                   settled: (plan) => plan.orb_future_plan === code,
                   successTitle: `Downgraded successfully to ${selectedPlan.plan.title}`
               });
@@ -373,6 +415,25 @@ const PlanChangeDialog: React.FC<{
                                 <p className="text-s text-text-muted text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
                             )}
                         </div>
+                        {offersAddon && (
+                            <>
+                                <label className="flex gap-3 items-start rounded-md border border-dashed border-border-muted p-3 cursor-pointer">
+                                    <Checkbox checked={withAddon} onCheckedChange={(checked) => setWithAddon(checked === true)} className="mt-0.5" />
+                                    <span className="flex flex-col gap-1">
+                                        <span className="text-text-strong text-body-medium-medium">Include {GROWTH_ADDON_COPY.title}</span>
+                                        <span className="text-text-secondary text-body-medium-regular">{GROWTH_ADDON_COPY.price}</span>
+                                        <span className="text-text-secondary text-body-small-regular">{GROWTH_ADDON_COPY.features}</span>
+                                    </span>
+                                </label>
+                                <div className="flex items-baseline justify-between">
+                                    <span className="text-text-strong text-body-medium-medium">Monthly total</span>
+                                    <span className="text-text-strong type-text-medium-md">
+                                        ${(selectedPlan.plan.basePrice ?? 0) + (wantsAddon ? GROWTH_ADDON_PRICE : 0)}
+                                        <span className="text-text-secondary type-text-regular-md">/mo</span>
+                                    </span>
+                                </div>
+                            </>
+                        )}
                         <PlanChangeErrorAlert error={error} />
                     </div>
                 </DialogBody>
@@ -390,6 +451,80 @@ const PlanChangeDialog: React.FC<{
                     >
                         {loading && <Loader className="size-4 animate-spin" />}
                         {confirmLabel}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+/** There is no add-on endpoint: `POST /plans/change` takes an end state, so this is a plan change in place. */
+const GrowthAddonDialog: React.FC<{
+    planCode: PlanDefinition['code'];
+    action: 'add' | 'remove';
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+}> = ({ planCode, action, open, onOpenChange }) => {
+    const env = useStore((state) => state.env);
+    const { submit, reset, loading, error } = usePlanChangeRequest(env);
+    const endsOn = useMemo(() => formatBillingDate(nextUsageResetDate(new Date())), []);
+
+    const setOpen = (value: boolean) => {
+        if (!value) {
+            reset();
+        }
+        onOpenChange(value);
+    };
+
+    const onConfirm = async () => {
+        const done =
+            action === 'add'
+                ? await submit({
+                      orbId: planCode,
+                      withGrowthFeatures: true,
+                      settled: (plan) => plan.has_growth_features,
+                      successTitle: `${GROWTH_ADDON_COPY.title} added`
+                  })
+                : await submit({
+                      orbId: planCode,
+                      withGrowthFeatures: false,
+                      successTitle: `${GROWTH_ADDON_COPY.title} will be removed on ${endsOn}`
+                  });
+
+        if (done) {
+            onOpenChange(false);
+        }
+    };
+
+    const description =
+        action === 'add'
+            ? `The ${GROWTH_ADDON_COPY.title} is ${GROWTH_ADDON_COPY.price.replace('/mo', '')} per month, billed alongside your plan. You'll be charged a prorated amount today, then the full amount from ${endsOn}.`
+            : `You'll keep Growth features until the end of your current billing period. The add-on is removed on ${endsOn}, and you won't be charged for it after that.`;
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>
+                        {action === 'add' ? 'Confirm' : 'Remove'} {GROWTH_ADDON_COPY.title}
+                    </DialogTitle>
+                    <DialogDescription className="sr-only">{description}</DialogDescription>
+                </DialogHeader>
+                <DialogBody>
+                    <div className="flex flex-col gap-4">
+                        <p className="text-text-secondary text-sm">{description}</p>
+                        <PlanChangeErrorAlert error={error} />
+                    </div>
+                </DialogBody>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline" size="sm">
+                            Cancel
+                        </Button>
+                    </DialogClose>
+                    <Button variant={action === 'add' ? 'primary' : 'danger'} size="sm" onClick={() => void onConfirm()} disabled={loading}>
+                        {loading && <Loader className="size-4 animate-spin" />}
+                        {action === 'add' ? `Add ${GROWTH_ADDON_COPY.title}` : `Remove ${GROWTH_ADDON_COPY.title}`}
                     </Button>
                 </DialogFooter>
             </DialogContent>
