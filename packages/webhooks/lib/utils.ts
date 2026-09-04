@@ -160,7 +160,7 @@ export const shouldSend = ({
 }: {
     webhookSettings: DBExternalWebhook;
     success: boolean;
-    type: 'auth_creation' | 'auth_refresh' | 'auth_override' | 'sync' | 'forward' | 'async_action';
+    type: 'auth_creation' | 'auth_refresh' | 'auth_override' | 'auth_deletion' | 'sync' | 'forward' | 'async_action';
 }): boolean => {
     const hasAnyWebhook = Boolean(webhookSettings.primary_url || webhookSettings.secondary_url);
 
@@ -177,6 +177,10 @@ export const shouldSend = ({
     }
 
     if (type === 'auth_refresh' && !webhookSettings.on_auth_refresh_error) {
+        return false;
+    }
+
+    if (type === 'auth_deletion' && !webhookSettings.on_connection_deletion) {
         return false;
     }
 

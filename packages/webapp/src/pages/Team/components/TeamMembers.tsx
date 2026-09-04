@@ -2,7 +2,6 @@ import { Ellipsis, ExternalLink, Trash2, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
 import {
     Badge,
     Button,
@@ -128,7 +127,7 @@ export const TeamMembers: React.FC = () => {
     );
 
     const { can } = usePermissions();
-    const canManageTeam = can(permissions.canManageTeam);
+    const canManageTeam = can('account:team:update');
 
     const onRemoveUser = async (user: ApiUser) => {
         try {
@@ -187,7 +186,7 @@ export const TeamMembers: React.FC = () => {
                                             variant="warning"
                                             tooltipContent={
                                                 <span>
-                                                    RBAC is only available for &apos;Growth&apos; plans. This role is overwritten by &apos;Full access&apos;.{' '}
+                                                    RBAC is only available with the Growth add-on. This role is overwritten by &apos;Full access&apos;.{' '}
                                                     <Button asChild variant="link-accent" size="sm">
                                                         <Link to={`/team/billing#plans`}>Upgrade</Link>
                                                     </Button>{' '}

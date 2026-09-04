@@ -1,25 +1,20 @@
 import { BookOpen, Box, MessageSquareMore as HelpIcon, Moon, Sun } from 'lucide-react';
 
-import { permissions } from '@nangohq/authz';
 import { Button, IconButton } from '@nangohq/design-system';
 
 import { Breadcrumbs } from '@/components/patterns/Breadcrumbs';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { trackPlaygroundOpened } from '@/features/Playground/analytics';
-import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
-import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
+import { openSupportChat } from '@/utils/support';
 
 export const AppHeader: React.FC = () => {
-    const env = useStore((s) => s.env);
     const playgroundOpen = usePlaygroundStore((s) => s.isOpen);
     const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
-    const { data: envData } = useEnvironment(env);
-    const environment = envData?.environmentAndAccount?.environment;
     const { can } = usePermissions();
-    const canUsePlayground = envData != null && (can(permissions.canUseProdPlayground) || !environment?.is_production);
+    const canUsePlayground = can('environment:syncs:execute');
     const darkMode = useThemeStore(darkModeSelector);
     const toggleDarkMode = useThemeStore((s) => s.toggleDarkMode);
 
@@ -50,12 +45,7 @@ export const AppHeader: React.FC = () => {
                         <BookOpen />
                     </a>
                 </IconButton>
-                <IconButton
-                    variant="outline"
-                    size="md"
-                    label="Help"
-                    onClick={() => (window.Plain ? window.Plain.open() : window.open('https://nango.dev/slack', '_blank', 'noopener,noreferrer'))}
-                >
+                <IconButton variant="outline" size="md" label="Help" onClick={openSupportChat}>
                     <HelpIcon />
                 </IconButton>
                 <IconButton variant="outline" size="md" label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'} onClick={toggleDarkMode}>

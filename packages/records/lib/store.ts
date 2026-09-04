@@ -71,7 +71,8 @@ export interface RecordsStore {
         limit,
         toCursorIncluded,
         batchSize,
-        dryRun
+        dryRun,
+        onProgress
     }: {
         connectionId: number;
         environmentId: number;
@@ -81,6 +82,7 @@ export interface RecordsStore {
         toCursorIncluded?: string;
         batchSize?: number;
         dryRun?: boolean;
+        onProgress?: (progress: { deleted: number; page: number }) => void | Promise<void>;
     }) => Promise<Result<{ count: number; lastCursor: string | null }>>;
 
     deleteOutdatedRecords: ({
@@ -88,13 +90,15 @@ export interface RecordsStore {
         connectionId,
         model,
         generation,
-        batchSize
+        batchSize,
+        onProgress
     }: {
         environmentId: number;
         connectionId: number;
         model: string;
         generation: number;
         batchSize?: number;
+        onProgress?: (progress: { deleted: number; page: number }) => void | Promise<void>;
     }) => Promise<Result<string[]>>;
 
     // Aggregation operations

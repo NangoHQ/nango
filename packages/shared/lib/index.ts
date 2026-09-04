@@ -15,7 +15,7 @@ import { errorNotificationService } from './services/notification/error.service.
 import { generateSlackConnectionId, SlackService } from './services/notification/slack.service.js';
 import secretService from './services/secret.service.js';
 import sharedCredentialsService from './services/shared-credentials.service.js';
-import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
+import syncManager, { RunSyncCommandError, syncCommandToOperation } from './services/sync/manager.service.js';
 import userService from './services/user.service.js';
 import { getEncryptionManager, pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
@@ -37,11 +37,13 @@ export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
 export * from './services/endUser.service.js';
 export type { CreateEnvironmentError } from './services/environment.service.js';
+export type { RunSyncCommandErrorCode, RunSyncCommandResult } from './services/sync/manager.service.js';
 export * from './services/tags.service.js';
 export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
 export { MFAError, recordMFALoginRefused, recordMFAVerifyFailure, recordMFAVerifySuccess } from './services/mfa.service.js';
 export { CustomerKeyError, MAX_API_KEYS_PER_ACCOUNT } from './services/customerKey.service.js';
+export type { ApiKeyRef } from './services/customerKey.service.js';
 export {
     GetConnectionError,
     type ConnectionIntegrationMatchRow,
@@ -101,6 +103,7 @@ export {
     pbkdf2,
     providerClientManager,
     remoteFileService,
+    RunSyncCommandError,
     secretService,
     seeders,
     sharedCredentialsService,

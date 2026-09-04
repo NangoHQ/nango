@@ -15,7 +15,8 @@ const bodySchema = z
         organization: originalBodySchema.shape.organization,
         integrations_config_defaults: originalBodySchema.shape.integrations_config_defaults,
         overrides: originalBodySchema.shape.overrides,
-        webhook_url_override: originalBodySchema.shape.webhook_url_override
+        webhook_url_override: originalBodySchema.shape.webhook_url_override,
+        is_preview: z.boolean().optional()
     })
     .strict();
 
@@ -47,5 +48,5 @@ export const postInternalConnectSessions = asyncWrapperWithEnvironment<PostInter
         tags: endUserTags
     } satisfies PostConnectSessions['Body'];
 
-    await generateSession(res, emulatedBody, res.locals.plan);
+    await generateSession(res, emulatedBody, res.locals.plan, body.is_preview);
 });

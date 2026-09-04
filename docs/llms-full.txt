@@ -73,7 +73,7 @@ Explore the main product integration use cases:
   <Card title="Integration runtime" icon="server" href="/guides/functions/functions-guide">
     Actions, syncs, webhooks, schedules, retries, rate-limit backoff, checkpoints, and resumable execution.
   </Card>
-  <Card title="Agent-ready access" icon="robot" href="/guides/functions/tool-calling">
+  <Card title="Agent-ready access" icon="robot" href="/guides/agent-sessions">
     Tool schemas, MCP support, and scoped action functions your agents can call without handling provider credentials.
   </Card>
   <Card title="Production controls" icon="chart-line" href="/guides/platform/observability">
@@ -220,7 +220,7 @@ The steps below show the flow end to end. This quickstart uses the GitHub API as
       <Card title="Sync external data" icon="arrows-rotate" href="/getting-started/use-cases/syncs">
         Keep external API data fresh for your product or RAG pipeline.
       </Card>
-      <Card title="Expose tools to agents" icon="robot" href="/guides/functions/tool-calling">
+      <Card title="Expose tools to agents" icon="robot" href="/guides/agent-sessions">
         Use action functions through tool calling and MCP.
       </Card>
     </CardGroup>
@@ -237,7 +237,7 @@ Description: Connect your coding agent to Nango
 Coding agents can speed up Nango integration work in two places: wiring Nango into your product and building [Nango Functions](/guides/functions/functions-guide).
 
 <Info>
-This page is about configuring Nango with your coding agent. To expose Nango integrations to your product's agents, see [Tool calling & MCP](/guides/functions/tool-calling).
+This page is about configuring Nango with your coding agent. To expose Nango integrations to your product's agents, see [Agent Sessions](/guides/agent-sessions).
 </Info>
 
 ## Management MCP server (Beta)
@@ -423,7 +423,7 @@ Description: Give agents scoped, observable access to external APIs through Nang
 
 AI agents become useful when they can act in the systems your users already use: HubSpot, Gmail, Slack, Linear, Notion, Salesforce, and the rest. The hard part is not just calling an API. It is OAuth, token refresh, per-user permissions, rate limits, logging, and keeping credentials out of the model loop.
 
-Nango handles that plumbing. Users authorize integrations through Nango, you expose selected action functions as tools, and agents call those action functions through the Nango API or the built-in MCP server.
+Nango handles that plumbing. Users authorize integrations through Nango, you expose selected action functions as tools, and agents call those action functions through the [agent sessions API](/guides/agent-sessions).
 
 ## When this fits
 
@@ -449,11 +449,11 @@ This keeps provider credentials in Nango and gives you a stable tool surface acr
 
 ## Technical setup
 
-Nango supports both direct action function execution and MCP-based tool discovery. Use the technical [Tool calling & MCP](/guides/functions/tool-calling) guide for headers, transports, tool discovery, action execution, and client setup.
+Nango supports both direct action function execution and MCP-based tool discovery through [agent sessions](/guides/agent-sessions).
 
 ## What to read next
 
-- [Tool calling & MCP](/guides/functions/tool-calling) - connect Nango action functions to agents, LLM SDKs, and MCP clients.
+- [Tool calling & MCP](/guides/agent-sessions) - connect Nango action functions to agents, LLM SDKs, and MCP clients.
 - [Action functions](/guides/functions/action-functions) - build the action functions agents can call.
 - [Get integration functions config](/reference/backend/http-api/scripts/config) - list enabled action functions programmatically.
 - [Functions guide](/guides/functions/functions-guide) - create, test, deploy, and trigger functions.
@@ -1914,13 +1914,13 @@ You can customize the Connect UI theme from the Nango dashboard:
 
 These settings apply to the pre-built Connect UI that you open with [`nango.openConnectUI()`](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui).
 
-<Note>Connect UI branding customization is available on the [Growth plan](https://www.nango.dev/pricing).</Note>
+<Note>Connect UI branding customization is available with the [Growth add-on](https://www.nango.dev/pricing).</Note>
 
 ## Override documentation links
 
 By default, the Connect UI displays info icons that link to the Nango documentation. If you are embedding Connect UI in a customer-facing application and want these links to point to your own documentation instead, override them per integration using the `overrides` parameter when [creating a Connect session](/reference/backend/http-api/connect/sessions/create).
 
-<Note>This feature is available on the [Growth plan](https://www.nango.dev/pricing).</Note>
+<Note>This feature is available with the [Growth add-on](https://www.nango.dev/pricing).</Note>
 
 <Tabs>
 
@@ -2252,6 +2252,448 @@ Our generic MCP provider currently only works with MCP servers that support auto
 
 In both cases, your app only needs to open the Connect UI and pass the session token. Nango handles the rest.
 
+## Agent sessions
+
+Source: https://nango.dev/docs/guides/agent-sessions.md
+Description: Optimized interface for AI agents to use integrations
+
+<Note>
+    Agent sessions are in public beta.
+    
+    Join our [beta Slack Channel](https://join.slack.com/share/enQtMTE5NDc2MjE1MjI1OTktNWM2OGUwMzI2NWQ2OWJhMzQ5YTA5YzEyNmQzZDVkMzlhOWRlMTBlYTFhYTZlMmU3MGQyOTc1NDljY2FkMzM4NQ) for feedback and notifications of breaking changes.
+</Note>
+
+Agent sessions are an optimized interface for AI agents to use integrations.
+
+Each session has three parts:
+
+- **Tenant** — on whose behalf the agent can call integrations
+- **Toolset** — which integrations and tools it can use
+- **Discovery** — how it finds and calls those tools
+
+Your backend creates the session and exposes it to the agent as an MCP server. The agent never sees raw credentials, and cannot change the scope of its own session.
+
+Example sessions:
+- A sales agent with a user's personal Gmail & Google Calendar, and a read-only org-wide Salesforce connection
+- A finance agent with a few read-only tools on an org's accounting system, and read & write access to a team's Slack
+- A developer agent with a team's Linear access and a user's personal GitHub access
+
+## Quickstart
+
+<Steps>
+  <Step id="create-session" title="Create a session from your backend">
+  By default, a session covers every tool on the integrations the tenant has a connection for.
+
+  To define the tenant, select the connections the agent may use with tag selectors:
+  ```bash
+  curl --request POST \
+    --url 'https://api.nango.dev/sessions' \
+    --header 'Authorization: Bearer <NANGO-API-KEY>' \
+    --header 'Content-Type: application/json' \
+    --data '{
+      "tenant": {
+        "connections": {
+          "any": [{ "tags": { "organization_id": "acme", "workspace": "marketing" } }]
+        }
+      }
+    }'
+  ```
+
+  Requires an API key with the `environment:agent_sessions:write` scope. See [API key scopes](/reference/backend/http-api/api-keys#scopes).
+
+  This returns a ready-to-use session:
+  ```json
+  {
+    "data": {
+      "session_id": "0f4a...",
+      "session_token": "nango_agent_session_...",
+      "mcp_url": "https://api.nango.dev/session/0f4a.../mcp",
+      "expires_at": "2026-09-15T10:00:00.000Z",
+      "toolset": {
+        "notion": { "connected": true, "tools_pinned": 0, "tools_searchable": 12 },
+        "slack": { "connected": true, "tools_pinned": 0, "tools_searchable": 7 }
+      },
+      "meta_tools": { "nango_tool_search": true, "nango_execute": true }
+    }
+  }
+  ```
+  </Step>
+  <Step id="pass-mcp" title="Pass the MCP server to your agent">
+  Pass the `mcp_url` to your agent, with the `session_token` as bearer auth:
+
+  <Tabs>
+    <Tab title="OpenAI">
+    ```typescript
+    import OpenAI from "openai";
+
+    const client = new OpenAI();
+
+    const response = await client.responses.create({
+      model: "gpt-5.6",
+      input: "Summarize the last 5 emails in the user's inbox",
+      tools: [
+        {
+          type: "mcp",
+          server_label: "nango", // Or a name suitable for your session
+          server_url: "<mcp_url>",
+          authorization: "<session_token>",
+          require_approval: "never"
+        }
+      ]
+    });
+
+    console.log(response.output_text);
+    ```
+
+    The Responses API never stores the `authorization` value, so send it on every request.
+    </Tab>
+
+    <Tab title="Anthropic">
+    ```typescript
+    import Anthropic from "@anthropic-ai/sdk";
+
+    const client = new Anthropic();
+
+    const message = await client.beta.messages.create({
+      model: "claude-opus-5",
+      max_tokens: 1024,
+      messages: [{ role: "user", content: "Summarize the last 5 emails in the user's inbox" }],
+      mcp_servers: [
+        {
+          type: "url",
+          name: "nango",
+          url: "<mcp_url>",
+          authorization_token: "<session_token>"
+        }
+      ],
+      tools: [{ type: "mcp_toolset", mcp_server_name: "nango" }],
+      betas: ["mcp-client-2025-11-20"]
+    });
+
+    console.log(message.content);
+    ```
+
+    The MCP connector is behind the `mcp-client-2025-11-20` beta.
+    </Tab>
+
+    <Tab title="Vercel AI SDK">
+    ```typescript
+    import { createMCPClient } from "@ai-sdk/mcp";
+    import { openai } from "@ai-sdk/openai";
+    import { generateText, stepCountIs } from "ai";
+
+    const mcpClient = await createMCPClient({
+      transport: {
+        type: "http",
+        url: "<mcp_url>",
+        headers: { Authorization: "Bearer <session_token>" }
+      }
+    });
+
+    try {
+      const { text } = await generateText({
+        model: openai("gpt-5.6"),
+        prompt: "Summarize the last 5 emails in the user's inbox",
+        tools: await mcpClient.tools(),
+        stopWhen: stepCountIs(10)
+      });
+
+      console.log(text);
+    } finally {
+      await mcpClient.close();
+    }
+    ```
+    </Tab>
+
+    <Tab title="LangChain">
+    ```typescript
+    import { MultiServerMCPClient } from "@langchain/mcp-adapters";
+    import { createAgent } from "langchain";
+
+    const client = new MultiServerMCPClient({
+      mcpServers: {
+        nango: {
+          transport: "http",
+          url: "<mcp_url>",
+          headers: { Authorization: "Bearer <session_token>" }
+        }
+      }
+    });
+
+    const agent = createAgent({
+      model: "openai:gpt-5.6",
+      tools: await client.getTools()
+    });
+
+    const result = await agent.invoke({
+      messages: [{ role: "user", content: "Summarize the last 5 emails in the user's inbox" }]
+    });
+
+    console.log(result.messages.at(-1)?.content);
+    ```
+    </Tab>
+
+    <Tab title="Mastra">
+    ```typescript
+    import { openai } from "@ai-sdk/openai";
+    import { Agent } from "@mastra/core/agent";
+    import { MCPClient } from "@mastra/mcp";
+
+    const mcp = new MCPClient({
+      id: "nango-session",
+      servers: {
+        nango: {
+          url: new URL("<mcp_url>"),
+          requestInit: {
+            headers: { Authorization: "Bearer <session_token>" }
+          }
+        }
+      }
+    });
+
+    const agent = new Agent({
+      name: "Integrations agent",
+      instructions: "Use the Nango tools to complete the user's request.",
+      model: openai("gpt-5.6"),
+      tools: await mcp.getTools()
+    });
+
+    const response = await agent.generate("Summarize the last 5 emails in the user's inbox");
+
+    console.log(response.text);
+    ```
+
+    Give each session's client a distinct `id` if you create one per request.
+    </Tab>
+  </Tabs>
+
+  Your agent can now use every tool the session exposes.
+  </Step>
+</Steps>
+
+## Session basics
+
+### Creating a session
+
+Create a session with the tools and access your agent needs.
+
+```jsonc
+{
+  "tenant": {
+    "connections": {  // Either "any" or "pinned" is required
+      "any": [
+        { "tags": { "endUserId": 74, "organizationId": "7283" }},
+        { "tags": { "endUser": 74, "workspaceSlug": "slack-marketing-workspace" }}
+      ],
+      "pinned": [
+        { "integration_id": "notion", "connection_id": "882386f9-efae-48aa-bea1-58a4f6fbc2ff" }
+      ]
+    }
+  },
+
+  "toolset": {       // Optional, defaults to all integrations
+    "notion": { "allow": { "tools": ["read_doc", "upsert_doc"] } },
+    "slack": "*"
+  },
+ 
+  "pinned_tools": {  // Optional, defaults to no pinned tools
+    "notion": ["read_doc"]
+  },
+
+  "meta_tools": {    // Optional, defaults to all
+    "nango_tool_search": true,
+    "nango_execute": true
+  },
+
+  "expires_in": "1h" // Optional. Minimum "60s", maximum and default "15d".
+}
+```
+
+Creation fails if your tenant selectors are [not unique](#resolving-ambiguity), or if a toolset or tool doesn't exist in your Nango environment.
+
+Each session gets a unique `session_id` and `session_token`. The token is a scoped access token for that session — treat it as a secret, and keep session durations as short as your use case allows.
+
+### Session MCP server
+
+Every session exposes its own MCP server at its `mcp_url`. It speaks Streamable HTTP and authenticates with the `session_token` as a bearer token, so any MCP-capable agent or client can connect to it.
+
+`tools/list` returns the enabled meta tools plus the pinned tools, paginated 50 at a time through `nextCursor`. Searchable tools are callable but not listed, and the agent finds them with the `nango_tool_search` meta tool.
+
+### Terminating a session
+
+Sessions are immutable and cannot be extended. They expire on their own once `expires_in` is up, and you can end one early with `DELETE /sessions/{session_id}`:
+
+```bash
+curl --request DELETE \
+  --url 'https://api.nango.dev/sessions/0f4a...' \
+  --header 'Authorization: Bearer <NANGO-API-KEY>'
+```
+
+Requires an API key with the `environment:agent_sessions:write` scope, the same one session creation uses.
+
+```json
+{
+  "data": {
+    "session_id": "0f4a...",
+    "ended_at": "2026-09-15T10:00:00.000Z",
+    "reason": "terminated"
+  }
+}
+```
+
+Terminating revokes the `session_token` together with the session, so the session's MCP server answers `401` from that point on. A tool call already in flight is not cancelled.
+
+Terminating is idempotent. A session that has already ended keeps its original `ended_at` and `reason`, so terminating it again returns the same response. An unknown session, or one from another environment, returns a `404`.
+
+Recreate the session with the same parameters if you need it again.
+
+## Tenant
+
+The tenant defines on whose behalf the agent may act. For example: use a specific user's Gmail credentials, but the org-wide credentials for Salesforce.
+
+You express this with [Connection tag](/guides/auth/connection-tags-configuration-metadata#connection-tags) selectors under `any`, which the session resolves to the right Connections in Nango. Tags within one entry are ANDed, entries are ORed, up to 10 entries.
+
+Here, `organization_id`, `workspace`, and `user_id` are Connection tags we set up for our application.
+
+```json
+{
+  "tenant": {
+    "connections": {
+      "any": [
+        { "tags": { "organization_id": "acme", "workspace": "marketing" } },
+        { "tags": { "user_id": "27382" } }
+      ]
+    }
+  }
+}
+```
+
+Selectors must resolve to **exactly one connection per integration** at creation time. The resolved connection is stored on the session, and every tool call the agent makes afterwards uses it.
+
+### Resolving ambiguity
+
+If the selectors match two or more connections on the same integration, there is no way to tell which one the session should use. Creation fails with `ambiguous_connections`, and no session is created:
+
+```json
+{
+  "error": {
+    "code": "ambiguous_connections",
+    "message": "1 integration matched more than one connection. Narrow the connection tags or pin a connection id.",
+    "payload": {
+      "integrations": {
+        "notion": {
+          "match_count": 2,
+          "candidates": [{ "connection_id": "3fd0cc49-..." }, { "connection_id": "f91890c5-..." }]
+        }
+      }
+    }
+  }
+}
+```
+
+There are two ways to resolve this:
+
+1. Add tags to the selector until it matches exactly one connection per integration.
+2. Use `pinned` to name the connection to use for that integration.
+
+```json
+{
+  "tenant": {
+    "connections": {
+      "any": [{ "tags": { "organization_id": "acme" } }],
+      "pinned": [{ "integration_id": "notion", "connection_id": "f91890c5-..." }]
+    }
+  }
+}
+```
+
+You can only use one pin per integration. A pin must be one of the connections the selectors matched, or creation fails with `pinned_connection_not_matched`. Pinning a connection that does not exist fails with `unknown_pinned_connection`.
+
+You can also use `pinned` without any `any` selectors, if you already know the exact connections you want to use.
+
+An integration that matches no connection does not fail creation. It appears in the toolset as `connected: false`, and its tool calls fail with a missing authorization error.
+
+<Note>
+Currently there is no way for the agent to ask the user to connect an unconnected integration. Let us know on the [Beta Slack channel](https://join.slack.com/share/enQtMTE5NDc2MjE1MjI1OTktNWM2OGUwMzI2NWQ2OWJhMzQ5YTA5YzEyNmQzZDVkMzlhOWRlMTBlYTFhYTZlMmU3MGQyOTc1NDljY2FkMzM4NQ) if you need this and we are happy to prioritize it.
+</Note>
+
+## Toolsets & tools
+
+`toolset` defines which tools are available to the agent.
+
+The toolset is a subset of the Integrations that are enabled in your Nango environment.
+
+```json
+{
+  "toolset": {
+    "notion": { "allow": { "tools": ["read_doc", "upsert_doc"] } },
+    "slack": "*"
+  }
+}
+```
+
+You can use the following selectors:
+- `"*"` on an integration means every action function on it
+- `allow` makes the integration an allowlist, where `"*"` means every tool
+- `deny` always subtracts from whatever `allow` gave
+- To deny an integration entirely, leave it out of the toolset
+- `toolset: "*"` at the top level means every integration in the environment
+- Leaving `toolset` out entirely means every integration the tenant resolved a connection for, which is narrower than `"*"`
+
+Only action functions can be tools. Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
+
+### Pinned tools
+
+By default, everything in the toolset is searchable with the `nango_tool_search` meta tool, but none of it is listed in the MCP server's tool list. This keeps a large toolset from filling the agent's context with hundreds of definitions it will never call.
+
+`pinned_tools` exposes specific tools in that list, so they are in context as soon as the agent loads the server:
+
+```json
+{
+  "toolset": { "notion": { "allow": { "tools": ["read_doc", "upsert_doc"] } } },
+  "pinned_tools": { "notion": ["read_doc"] }
+}
+```
+
+A pinned tool must be in the toolset, otherwise creation fails with `tool_not_in_toolset`.
+
+## Meta tools
+
+Meta tools are Nango's own tools. They are always pinned to the MCP server's tool list.
+
+| Tool | What it does |
+| --- | --- |
+| `nango_tool_search` | Finds tools in the session's toolset from a plain-language description |
+| `nango_execute` | Runs one of the session's tools by name |
+
+Both default to `true`. You can disable them on session creation with `meta_tools`:
+
+```json
+{ "meta_tools": { "nango_execute": false } }
+```
+
+### nango_tool_search
+
+Takes a plain-language `query` describing what the agent wants to do.
+
+```json
+{ "query": "find emails by subject" }
+```
+
+The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
+
+Only a best match includes `input`, its argument schema — a weak match is a lead, not something to call yet.
+
+### nango_execute
+
+Runs one of the session's tools by name, on the connection the session resolved for that integration.
+
+```json
+{ "tool": "notion__read_doc", "input": { "doc_id": "abc" } }
+```
+
+Execution is synchronous and goes through the same path as [triggering an action function](/reference/backend/http-api/action/trigger), so it is capped by the synchronous execution limit and appears in Nango logs like any other function run.
+
 ## Functions guide
 
 Source: https://nango.dev/docs/guides/functions/functions-guide.md
@@ -2521,7 +2963,7 @@ This works for any deployed function — a template you enabled from the dashboa
 
 ## Related guides
 
-- [Function tool calling](/guides/functions/tool-calling) — expose action functions to agents, LLM SDKs, and MCP clients.
+- [Function tool calling](/guides/agent-sessions) — expose action functions to agents, LLM SDKs, and MCP clients.
 - [Unified APIs](/guides/functions/unified-apis) — build provider-specific functions behind one stable model.
 - [Logging](/guides/functions/logging) — control custom function logs locally and in cloud environments.
 - [Storage](/guides/functions/storage) — store per-connection metadata and read it inside functions.
@@ -3933,7 +4375,7 @@ To receive completion events instead of polling, configure [webhooks from Nango 
 
 ## Related guides
 
-- [Function tool calling](/guides/functions/tool-calling)
+- [Agents tool calling](/guides/agent-sessions)
 - [Data validation](/guides/functions/data-validation)
 - [Rate limits](/guides/functions/rate-limits)
 - [Trigger action API](/reference/backend/http-api/action/trigger)
@@ -4256,380 +4698,6 @@ Event functions run automatically when their configured event occurs. Your app d
 - [Webhook forwarding](/guides/platform/webhook-forwarding)
 - [Storage](/guides/functions/storage)
 - [Functions SDK reference](/reference/functions/functions-sdk)
-
-## Tool calling & MCP
-
-Source: https://nango.dev/docs/guides/functions/tool-calling.md
-Description: Expose Nango action functions to agents, LLM SDKs, and MCP clients.
-
-Tool calling in Nango happens through [action functions](/guides/functions/action-functions). Each tool is an action function that an agent, LLM SDK, or MCP client can call on demand for a specific connection.
-
-The agent chooses a tool, your application asks Nango to execute the action function for that connection, and Nango handles the external API credentials, retries, rate limits, and logs.
-
-## Prerequisites
-
-- A Nango integration configured for the external API.
-- A connection for the user whose credentials should be used.
-- One or more enabled action functions for the operations the agent may call.
-
-Build custom tools with [action functions](/guides/functions/action-functions), or enable template action functions from the [template catalog](/guides/functions/functions-guide#template-catalog).
-
-## Common auth and execution
-
-Keep provider credentials out of the agent runtime. Your app should resolve the Nango connection for the current user, then pass only the connection ID and selected tool to Nango.
-
-```ts
-import { Nango } from '@nangohq/node';
-
-const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
-
-const integrationId = 'hubspot';
-
-async function getConnectionIdForUser(userId: string) {
-    const connections = await nango.listConnections({
-        integrationId,
-        tags: { end_user_id: userId }
-    });
-
-    let connectionId = connections.connections[0]?.connection_id;
-
-    if (!connectionId) {
-        const session = await nango.createConnectSession({
-            allowed_integrations: [integrationId],
-            tags: { end_user_id: userId }
-        });
-
-        // Send this URL to the user in your app, then wait for authorization.
-        console.log(session.data.connect_link);
-
-        const connection = await nango.waitForConnection(integrationId, userId);
-        connectionId = connection!.connection_id;
-    }
-
-    return connectionId;
-}
-
-async function executeNangoTool(actionName: string, input?: unknown) {
-    const connectionId = await getConnectionIdForUser('user_123');
-
-    return await nango.triggerAction(integrationId, connectionId, actionName, input);
-}
-```
-
-The examples below focus on framework-specific tool syntax and call the shared `executeNangoTool()` helper.
-
-## Framework examples
-
-These examples expose a HubSpot `whoami` action function as a `who_am_i` tool.
-
-<Tabs>
-  <Tab title="OpenAI">
-  ```ts
-  import OpenAI from 'openai';
-
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-
-  const tools = [
-      {
-          type: 'function' as const,
-          name: 'who_am_i',
-          description: 'Get the current HubSpot user information.',
-          strict: true,
-          parameters: {
-              type: 'object',
-              properties: {},
-              required: [],
-              additionalProperties: false
-          }
-      }
-  ];
-
-  const input: any[] = [
-      {
-          role: 'user',
-          content: 'Use who_am_i and summarize the current HubSpot user.'
-      }
-  ];
-
-  const response = await client.responses.create({
-      model: 'gpt-5',
-      input,
-      tools
-  });
-
-  for (const item of response.output) {
-      if (item.type !== 'function_call' || item.name !== 'who_am_i') {
-          continue;
-      }
-
-      const result = await executeNangoTool('whoami', JSON.parse(item.arguments || '{}'));
-
-      input.push(item);
-      input.push({
-          type: 'function_call_output',
-          call_id: item.call_id,
-          output: JSON.stringify(result)
-      });
-  }
-
-  const finalResponse = await client.responses.create({
-      model: 'gpt-5',
-      input,
-      tools
-  });
-
-  console.log(finalResponse.output_text);
-  ```
-  </Tab>
-  <Tab title="Anthropic">
-  ```ts
-  import Anthropic from '@anthropic-ai/sdk';
-
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
-
-  const tools = [
-      {
-          name: 'who_am_i',
-          description: 'Get the current HubSpot user information.',
-          input_schema: {
-              type: 'object',
-              properties: {},
-              required: []
-          }
-      }
-  ];
-
-  const messages: Anthropic.MessageParam[] = [
-      {
-          role: 'user',
-          content: 'Use who_am_i and summarize the current HubSpot user.'
-      }
-  ];
-
-  const message = await client.messages.create({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 1024,
-      messages,
-      tools
-  });
-
-  const toolUse = message.content.find((block) => block.type === 'tool_use');
-
-  if (toolUse?.type === 'tool_use' && toolUse.name === 'who_am_i') {
-      const result = await executeNangoTool('whoami', toolUse.input);
-
-      messages.push({ role: 'assistant', content: message.content });
-      messages.push({
-          role: 'user',
-          content: [
-              {
-                  type: 'tool_result',
-                  tool_use_id: toolUse.id,
-                  content: JSON.stringify(result)
-              }
-          ]
-      });
-
-      const finalMessage = await client.messages.create({
-          model: 'claude-sonnet-4-5',
-          max_tokens: 1024,
-          messages,
-          tools
-      });
-
-      console.log(finalMessage.content);
-  }
-  ```
-  </Tab>
-  <Tab title="Vercel AI SDK">
-  ```ts
-  import { generateText, stepCountIs, tool } from 'ai';
-  import { openai } from '@ai-sdk/openai';
-  import { z } from 'zod';
-
-  const { text, toolResults } = await generateText({
-      model: openai('gpt-4o'),
-      prompt: 'Use who_am_i and summarize the current HubSpot user.',
-      tools: {
-          who_am_i: tool({
-              description: 'Get the current HubSpot user information.',
-              inputSchema: z.object({}),
-              execute: async () => {
-                  return await executeNangoTool('whoami');
-              }
-          })
-      },
-      stopWhen: stepCountIs(5)
-  });
-
-  console.log(text);
-  console.log(toolResults);
-  ```
-  </Tab>
-  <Tab title="LangChain">
-  ```ts
-  import { createAgent, tool } from 'langchain';
-  import { z } from 'zod';
-
-  const whoAmI = tool(
-      async () => {
-          const result = await executeNangoTool('whoami');
-          return JSON.stringify(result);
-      },
-      {
-          name: 'who_am_i',
-          description: 'Get the current HubSpot user information.',
-          schema: z.object({})
-      }
-  );
-
-  const agent = createAgent({
-      model: 'openai:gpt-5.4',
-      tools: [whoAmI]
-  });
-
-  const result = await agent.invoke({
-      messages: [
-          {
-              role: 'user',
-              content: 'Use who_am_i and summarize the current HubSpot user.'
-          }
-      ]
-  });
-
-  console.log(result.messages.at(-1)?.content);
-  ```
-  </Tab>
-  <Tab title="Mastra">
-  ```ts
-  import { openai } from '@ai-sdk/openai';
-  import { Agent } from '@mastra/core/agent';
-  import { createTool } from '@mastra/core/tools';
-  import { z } from 'zod';
-
-  const whoAmI = createTool({
-      id: 'who_am_i',
-      description: 'Get the current HubSpot user information.',
-      inputSchema: z.object({}),
-      execute: async () => {
-          return await executeNangoTool('whoami');
-      }
-  });
-
-  const agent = new Agent({
-      name: 'HubSpot Agent',
-      instructions: 'Use available tools to answer HubSpot account questions.',
-      model: openai('gpt-4o'),
-      tools: {
-          who_am_i: whoAmI
-      }
-  });
-
-  const response = await agent.generate('Use who_am_i and summarize the current HubSpot user.');
-
-  console.log(response.text);
-  ```
-  </Tab>
-</Tabs>
-
-## Programmatic tool discovery
-
-The [Get integration functions config API](/reference/backend/http-api/scripts/config) returns enabled action function definitions. Use it when an agent or orchestration layer should discover available tools at runtime.
-
-```bash
-curl --request GET \
-  --url 'https://api.nango.dev/scripts/config?provider_config_key=<INTEGRATION-ID>&format=openai' \
-  --header 'Authorization: Bearer <ENV-SECRET-KEY>'
-```
-
-Use `format=nango` for Nango's native configuration shape, or `format=openai` when you want OpenAI-compatible function definitions.
-
-## Direct tool execution
-
-For SDKs that let you provide your own tool executor, define the tool schema in your app and call Nango from the executor.
-
-```ts
-import { Nango } from '@nangohq/node';
-
-const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
-
-async function executeTool(connectionId: string, input: { owner: string; repo: string; title: string }) {
-    return await nango.triggerAction('github', connectionId, 'create-issue', input);
-}
-```
-
-Keep these values explicit:
-
-- `providerConfigKey` / integration ID - which integration owns the action function.
-- `connectionId` - which user's credentials the call uses.
-- Action function name - the enabled action function to execute.
-- Input payload - validated by the action function schema when configured.
-
-## MCP server
-
-Nango exposes enabled action functions through a hosted MCP server:
-
-```text
-https://api.nango.dev/mcp
-```
-
-The server supports Streamable HTTP transport. Requests must include:
-
-| Header | Value |
-| --- | --- |
-| `Authorization` | `Bearer <ENV-SECRET-KEY>` |
-| `connection-id` | The connection whose credentials should be used |
-| `provider-config-key` | The integration ID |
-
-Example client setup with the MCP TypeScript SDK:
-
-```ts
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-
-const transport = new StreamableHTTPClientTransport(new URL('https://api.nango.dev/mcp'), {
-    requestInit: {
-        headers: {
-            Authorization: `Bearer ${process.env.NANGO_API_KEY}`,
-            'connection-id': '<CONNECTION-ID>',
-            'provider-config-key': '<INTEGRATION-ID>'
-        }
-    }
-});
-```
-
-For desktop clients that only support stdio, use a bridge such as `mcp-remote` and pass the same headers. Keep the header spacing exactly as required by the bridge you choose.
-
-## Auth flow for agents
-
-Agents should not receive provider credentials. Your app should:
-
-1. Check whether the user already has a Nango connection.
-2. Create a Connect session if they need to authorize.
-3. Store the resulting `connectionId` in your app.
-4. Use that `connectionId` for future tool calls.
-
-See the [Auth guide](/guides/auth/auth-guide) and [Create Connect Session API](/reference/backend/http-api/connect/sessions/create) for the end-to-end auth flow.
-
-<Accordion title="For agents">
-  If you are implementing this flow programmatically, first list or create the user's connection, then call `GET /scripts/config` to discover enabled action functions, and finally execute tools with `POST /action/trigger` or the MCP server.
-
-  Required values for every execution are the Nango Environment API key, integration ID, connection ID, action function name, and input payload.
-</Accordion>
-
-## Observability and safety
-
-Every action function execution appears in Nango logs. Use logs to debug failed tool calls, inspect provider requests, and review agent behavior.
-
-Keep tool names and descriptions specific. Expose only action functions the agent is allowed to call for the current user and workflow. For write operations, make action function logic idempotent before using async execution or retries.
-
-## Related references
-
-- [Action functions](/guides/functions/action-functions)
-- [Template catalog](/guides/functions/functions-guide#template-catalog)
-- [Get integration functions config API](/reference/backend/http-api/scripts/config)
-- [Trigger action API](/reference/backend/http-api/action/trigger)
-- [Functions SDK reference](/reference/functions/functions-sdk)
-- [Observability](/guides/platform/observability)
 
 ## Storage
 
@@ -6229,8 +6297,8 @@ Rate limits apply to API requests from your application to Nango:
 | Plan | Requests per Minute |
 | - | - |
 | Free tier | 200 |
-| Starter | 1,000 |
-| Growth | 2,000 |
+| Pay-as-you-go  | 1,000 |
+| Growth add-on | 2,000 |
 | Enterprise | Custom |
 
 <Info>
@@ -6316,7 +6384,7 @@ Nango is **SOC 2 Type II** certified, **GDPR** compliant, and **HIPAA** complian
 | - | - |
 | SOC 2 Type II | Annual audit covering security, availability, and confidentiality. [View report →](https://trust.nango.dev) |
 | GDPR | Data Processing Agreement (DPA) automatically applies to all cloud accounts. [View DPA →](https://nango.dev/terms#dpa) |
-| HIPAA | Business Associate Agreement (BAA) available on request. [Contact us →](https://nango.dev/demo) |
+| HIPAA | Business Associate Agreement (BAA) available on request. [Contact us →](https://nango.dev/contact) |
 
 Our security practices include:
 
@@ -6324,6 +6392,8 @@ Our security practices include:
 - Secure development lifecycle
 - Incident response procedures
 - Continuous monitoring and alerting
+
+For your own reviews, the [audit trail](/guides/platform/audit-trail) records who changed what in your account, when, and from where.
 
 Visit our [Trust Center](https://trust.nango.dev) for the latest compliance documentation, security policies, and audit reports.
 
@@ -6519,15 +6589,14 @@ Each [environment](/guides/platform/environments) in your Nango account is compl
 
 This ensures your production data is never accessible from development environments.
 
-### Audit logging
+<a id="audit-logging"></a>
+### Audit trail
 
-All credential access and modifications are logged:
+The [audit trail](/guides/platform/audit-trail) records control-plane changes with the actor, the outcome, and the originating IP: who created or deleted a connection, changed an integration, rotated an API key, changed a teammate's role, or signed in. Entries are immutable and account-wide, can be exported as CSV, and reading or exporting the trail is itself recorded.
 
-- Connection creation and deletion
-- Credential refresh operations
-- API requests using credentials
+### Nango logs
 
-Logs are available in the Nango dashboard and can be exported via [OpenTelemetry](/guides/platform/observability#opentelemetry-export).
+[Nango logs](/guides/platform/observability) are a separate, operational record of what ran in your Nango account: auth flows, function executions, proxy requests, etc. Logs can be exported via [OpenTelemetry](/guides/platform/observability#opentelemetry-export).
 
 <a id="team-and-roles"></a>
 ## Team & roles
@@ -6594,9 +6663,9 @@ Nango Cloud uses [WorkOS](https://workos.com) to power SSO.
 
 | Plan | SSO support |
 | - | - |
-| Free / Starter | Google SSO only |
-| Growth | SSO with 20+ identity providers (add-on) |
-| Enterprise (Cloud) | SSO with 20+ identity providers (included) |
+| Free / Pay-as-you-go | Google SSO only |
+| Growth add-on | SAML SSO with 20+ identity providers |
+| Enterprise (Cloud) | SAML SSO + SCIM |
 | Enterprise (Self-hosted) | Not yet available (planned) |
 
 ### Supported providers
@@ -6606,7 +6675,7 @@ Through WorkOS, Nango supports the main SSO providers, including **Okta**, **Ent
 ### How to enable SSO
 
 1. To enable SSO for your account, contact the Nango team (on our shared Slack channel or the [community](https://nango.dev/slack)).
-2. If you are on the Growth plan, we will subscribe your workspace to the SSO add-on.
+2. If you are on Pay-as-you-go, we will subscribe your workspace to the Growth add-on, which includes SAML SSO.
 3. We will invite an admin from your company to complete the SSO setup flow.
 
 ### Setup flow
@@ -6668,6 +6737,114 @@ For details on available scopes, advised profiles, and key management, see the [
 - [Auth guide](/guides/auth/auth-guide) - keep provider credentials out of your app.
 - [Token refreshing and validity](/guides/auth/token-refreshing) - handle revoked OAuth credentials.
 - [Self-host Nango](/guides/platform/self-hosting) - review deployment and data ownership options.
+
+## Audit trail
+
+Source: https://nango.dev/docs/guides/platform/audit-trail.md
+Description: Review who changed what in your Nango account.
+
+The audit trail records **control-plane** activity in your Nango account — the operations that configure it and manage who can reach it: connection changes, integration settings, teammate roles, sign-ins.
+
+Each entry captures the actor, the action, the affected resource, and the outcome, so you can answer "who did this, and when" during an incident or a compliance review.
+
+Entries are immutable: Nango never edits or deletes one before its retention period ends.
+
+## Availability
+
+The audit trail is available on the [Enterprise plan](https://nango.dev/pricing), with a default 1 year data retention. [Contact us](https://nango.dev/demo) if you would like a demo.
+
+## View & export
+
+When enabled for your account, the audit trail lives in the Nango dashboard under **Audit trail**, in the menu behind your profile. It covers all activity in your account, across all environments.
+
+### Exporting to CSV
+
+You can export audit trail entries as a CSV, filtered by time window, resource, and action.
+
+A single export returns at most 50,000 entries, most recent first. If your selection holds more, the download still succeeds and the dashboard tells you it was truncated. Narrow the window, or contact support for help with a larger export.
+
+## What is recorded
+
+Each entry records:
+
+| Field | Description |
+|-------|-------------|
+| `id` | A unique ID for the entry, useful when referring to one in a support request |
+| `occurredAt` | When the action happened |
+| `actor` | Who performed it — see [Actors](#actors) |
+| `via` | Only present when the action reached Nango through a Nango support session — see [Nango support access](#nango-support-access) |
+| `resource` and `action` | What was done, for example `connection` + `deleted` |
+| `targets` | What it was done to, such as a connection ID or a teammate's email |
+| `outcome` | `success`, `failure`, or `denied` |
+| `scope` | Whether the action applied to a single environment or to the whole account |
+| `environment` | The environment involved. Empty when `scope` is `account`, because the action was not tied to one |
+| `context` | The originating IP address and user agent, and the interface used: `api` covers both the dashboard and the REST API, `mcp` covers Nango's management MCP server |
+| `metadata` | Detail specific to the action, such as whether a sync run was a full refresh, or the filters an export used |
+
+The audit trail covers the main control-plane operations related to connections, integrations, functions, syncs, API keys, environments, team membership, authentication, and billing. The recorded `resource`s and `action`s are:
+
+| Resource | Actions |
+|----------|---------|
+| `connection` | `created`, `updated`, `metadata_updated`, `refreshed`, `deleted` |
+| `integration` | `created`, `updated`, `deleted` |
+| `function` | `deployed`, `upgraded`, `deleted` |
+| `sync` | `enabled`, `disabled`, `paused`, `started`, `triggered`, `cancelled`, `frequency_changed`, `variant_created`, `variant_deleted` |
+| `api_key` | `created`, `updated`, `deleted` |
+| `environment` | `created`, `updated`, `variables_changed`, `webhook_urls_changed`, `webhook_signing_key_rotated`, `deleted` |
+| `member` | `invited`, `invite_accepted`, `invite_declined`, `invite_revoked`, `removed`, `role_changed` |
+| `team` | `updated` |
+| `user` | `updated` |
+| `app_auth` | `login`, `logout`, `signup`, `password_changed`, `password_reset` |
+| `mfa` | `enrolled`, `enabled`, `disabled`, `verified`, `recovery_regenerated` |
+| `billing` | `plan_changed`, `trial_extended`, `details_changed`, `payment_method_added`, `payment_method_removed`, `spend_alert_changed`, `spend_alert_removed` |
+| `audit_trail` | `queried`, `exported` |
+
+`connection.metadata_updated` and `sync.triggered` are recorded for actions taken in the dashboard. The equivalent API endpoints — `POST` / `PATCH /connection/metadata` and `POST /sync/trigger` — are data plane operations and are not recorded; see [Limitations](#limitations).
+
+Secrets, such as API keys and passwords, are stripped from audit log entries.
+
+Reads are generally not recorded. Listing connections, fetching an integration, or opening a page in the dashboard leaves no entry. Our audit trail is designed to answer "what changed", not "what was looked at". Queries to the audit trail are an exception and logged with the actions listed above.
+
+<Note>
+The audit trail currently does not cover data plane operations, such as reading connection credentials or fetching sync records. See [Limitations](#limitations) for details.
+</Note>
+
+## Actors
+
+| Actor | Meaning |
+|-------|---------|
+| `user` | Someone signed in to the Nango dashboard |
+| `api_key` | A call authenticated with an API key. The entry includes the API key's name. |
+| `connect_session` | The end user who completed a Connect flow, identified by the end-user ID you supplied when creating the session, and their email if you supplied one |
+| `anonymous` | Nango knows an attempt was made but cannot name who made it — a rejected sign-in, for example. The email in the request was never verified, so it appears as the target rather than the actor |
+| `public_key` | A connection created through the [legacy public key flow](/guides/platform/migrations/migrate-from-public-key). The key identifies your environment, not a person, so no end user is named |
+
+### Nango support access
+
+Nango staff may access your account to investigate a support request. Actions taken during such a session carry the `via` field, naming the Nango account that was acting, next to the `actor` the action was performed as. An entry without `via` was not reached through a Nango session.
+
+`via` also carries the id of the individual operator, so two Nango people are distinguishable in your trail. It is an id and never a name or email: it identifies them to Nango, not to you. Ask us and we can tell you who it was.
+
+## Limitations
+
+<Note>
+We can expand audit trail coverage on request. If you need items logged that aren't covered today, please [reach out](https://nango.dev/demo)!
+</Note>
+
+The audit trail currently covers the control plane, but not the **data plane**: API requests used to work with integrations and exchange data with external APIs.
+
+For example, the following activities are not covered:
+
+| Not recorded | Example |
+|--------------|----------|
+| Reading connection credentials | `GET /connection/{connectionId}` |
+| Reading records from Nango | `GET /records` |
+| Deleting/pruning records in Nango | `PATCH /records` pruning |
+| Setting or updating connection metadata via the API | `POST` / `PATCH /connection/metadata` |
+| Triggering a sync via the API | `POST /sync/trigger` |
+| Proxy requests | Every call through `/proxy` |
+| Action executions | `POST /action/trigger` |
+| Reading configuration | Listing or fetching connections, integrations, or functions |
 
 ## Self-host Nango
 
@@ -6835,6 +7012,26 @@ The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation 
 
 The default retention period for deleted connections is 31 days. You can configure this via the `CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS` environment variable.
 
+## Audit trail
+
+The audit trail records control-plane activity — who created a connection, changed an integration, rotated an API key or signed in, from which IP, and whether it succeeded. Self-hosted instances keep it in Postgres, and teammates read it from **Audit trail** in the dashboard.
+
+Enable it on the server:
+
+```sh
+FLAG_AUDIT_TRAIL_ENABLED=true
+NANGO_AUDIT_POSTGRES_DATABASE_URL=postgresql://user:password@host:port/dbname
+NANGO_AUDIT_POSTGRES_SSL=true
+```
+
+Without a database there is nowhere to keep entries, so the trail stays off rather than showing a page that never fills. Set `NANGO_AUDIT_POSTGRES_SSL=true` when the database is external, as with the main one. The URL can point at the database Nango already uses or at a separate one, and the server creates the schema on startup along with the rest of it when `NANGO_MIGRATE_AT_START=true`.
+
+Entries are kept for a year by default, and the server removes expired ones for you:
+
+```sh
+NANGO_AUDIT_POSTGRES_RETENTION_DAYS=365
+```
+
 ## Feature flags
 
 Nango gates some behavior behind feature flags. Flags are served by the provider set in `NANGO_FLAG_PROVIDER`, which defaults to `noop`, so every flag uses its built-in default.
@@ -6865,23 +7062,26 @@ Once the server restarts, users can turn it on from their profile settings by pa
 
 A limited free self-hosting option is available for hobby projects. It is intended for lightweight deployments that need Auth and Proxy, without the managed features and support included with Enterprise self-hosting or Nango Cloud.
 
-For more details, see the [pricing page](https://nango.dev/pricing) or [schedule a call](https://nango.dev/demo) to discuss the Enterprise self-hosted version.
+For more details, see the [pricing page](https://nango.dev/pricing) or [schedule a call](https://nango.dev/contact) to discuss the Enterprise self-hosted version.
 
 ### Feature availability
 
 | Feature | Free self-hosted | Enterprise self-hosted / Nango Cloud |
 | --- | --- | --- |
-| Auth | Yes | Yes |
+| API Auth | Yes | Yes |
 | Proxy | Yes | Yes |
 | Observability | Auth + proxy only | Full |
 | OpenTelemetry export | No | Yes |
-| Functions | No | Yes |
+| Pre-built syncs, tools & triggers | No | Yes |
+| Syncs | No | Yes |
+| Tool calls | No | Yes |
 | Webhooks | No | Yes |
+| Triggers | No | Yes |
 | MCP server | No | Yes |
 | Customize auth branding | No | Yes |
-| Role-based permissions | No | Yes |
-| SAML SSO | No | On the roadmap |
-| Support SLA | No | Yes |
+| RBAC | No | Yes |
+| MFA | No | Yes |
+| SAML SSO | No | Nango Cloud only |
 
 ### Server URL, callback URL, and custom domains
 
@@ -7164,20 +7364,43 @@ NANGO_INTERNAL_TLS_CA_FILE=/etc/nango/tls/ca.crt
 `NANGO_INTERNAL_TLS_CA` replaces the default root store for internal calls. One of those calls fetches `PROVIDERS_URL`—if that points at an endpoint with a publicly issued certificate, leave the CA unset and use `NODE_EXTRA_CA_CERTS` instead, which adds to the default roots rather than replacing them.
 </Note>
 
+#### CLI access through public mTLS
+
+Internal mTLS only covers service-to-service calls. If the load balancer in front of the **public API** also requires a client certificate, the Nango CLI needs its own cert or `nango deploy`, `dryrun`, and `pull` will fail.
+
+Set these in the `nango-integrations/.env` file (or the environment that runs the CLI):
+
+```sh
+NANGO_CLI_TLS_CERT=/path/to/client.pem
+```
+
+A PEM that contains both the certificate and private key is enough. Use a separate key or CA when the files are split:
+
+```sh
+NANGO_CLI_TLS_CERT=/path/to/client.crt
+NANGO_CLI_TLS_KEY=/path/to/client.key
+NANGO_CLI_TLS_CA=/path/to/ca.pem
+NANGO_CLI_TLS_KEY_PASSPHRASE=
+```
+
+`NANGO_CLI_TLS_CA` is only needed when the public API uses a private CA. Set `NANGO_CLI_TLS_KEY_PASSPHRASE` if the private key is encrypted. These variables are independent of `NANGO_INTERNAL_TLS_*`.
+
 #### Internal service auth
 
-Orchestrator and jobs HTTP APIs accept an `Authorization: Bearer` credential except `GET /health`, which stays open for probes. Enforcement is off until you set `NANGO_INTERNAL_AUTH_REQUIRED=true`. Shipping the image with no new variables is a no-op.
+Orchestrator, jobs, and runner HTTP APIs accept an `Authorization: Bearer` credential except `GET /health`, which stays open for probes. Enforcement is off until you set `NANGO_INTERNAL_AUTH_REQUIRED=true`. Shipping the image with no new variables is a no-op.
 
-There are two credential kinds:
+There are three credential kinds:
 
 - **Control plane** (server, jobs, orchestrator): a static shared secret. Used for server and jobs calling orchestrator.
-- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call. The runner presents it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour).
+- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call body. The runner presents it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour).
+- **Runner dispatch JWT**: jobs mints an EdDSA token (`aud: runner`, `task_id` or `node_id`) and sends it as `Authorization: Bearer` on `start`, `abort`, and `notifyWhenIdle`. The Ed25519 private key is derived from `NANGO_INTERNAL_AUTH_SIGNING_KEY` and never leaves jobs. Jobs injects only the matching public key onto the runner at node start, so a runner process cannot mint dispatch tokens. A start call without a valid jobs identity is rejected when `REQUIRED=true`.
 
 | Variable | Where | Purpose |
 | - | - | - |
 | `NANGO_INTERNAL_AUTH_TOKEN` | server, jobs, orchestrator | Static Bearer. Never the runner service. |
-| `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only | HMAC key for task JWTs. |
-| `NANGO_INTERNAL_AUTH_REQUIRED` | orchestrator, jobs | Fail closed. Default `false`. Flip independently. |
+| `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only. Never set on runners. | HMAC key for task JWTs (`aud: jobs`). Also the seed for the Ed25519 runner-dispatch keypair. |
+| `NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY` | runners (injected by jobs at node start) | Ed25519 public key. Verify-only; cannot mint dispatch tokens. |
+| `NANGO_INTERNAL_AUTH_REQUIRED` | orchestrator, jobs, runners | Fail closed. Default `false`. Flip independently on orchestrator, then jobs. Runners inherit `REQUIRED` at node start. |
 
 #### Custom websockets path
 
@@ -7247,7 +7470,7 @@ docker-compose up -d
 ```
 
 <Tip>
-If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/demo).
+If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a call](https://nango.dev/contact).
 </Tip>
 
 ## Related guides
@@ -7579,6 +7802,7 @@ All `operation` values are:
 - `creation`: a new connection has been created
 - `override`: a connection has been re-authorized
 - `refresh`: an OAuth connection's access token has failed to refresh, or has recovered after a previous failure
+- `deletion`: a connection has been deleted
 
 Payload received following a refresh token error:
 
@@ -7630,6 +7854,30 @@ Nango retries refreshing on its periodic cycle, so a single refresh failure does
 
 <Note>
   This recovery webhook is only sent when a refresh succeeds after a previous refresh failure — not on every routine successful refresh. It's gated by the same webhook setting as refresh failures.
+</Note>
+
+Payload received following a connection deletion:
+
+```json
+{
+    "type": "auth",
+    "operation": "deletion",
+    "connectionId": "<your-connection-id>",
+    "authMode": "OAUTH2 | BASIC | API_KEY | ...",
+    "providerConfigKey": "<your-integration-id>",
+    "provider": "<your-provider-key>",
+    "environment": "DEV | PROD | ...",
+    "success": true,
+    "tags": {
+        "end_user_id": "<your-end-user-id>",
+        "end_user_email": "<your-end-user-email>",
+        "organization_id": "<your-organization-id>"
+    }
+}
+```
+
+<Note>
+  This webhook is only sent when a connection is deleted directly through the dashboard or the API. It is not sent for bulk deletions caused by deleting an integration or environment.
 </Note>
 
 ### Sync webhooks
@@ -9262,7 +9510,7 @@ The **Default - Full access** key that comes with each environment already has a
 #### Agent Sessions
 
 <Note>
-    Agent sessions are experimental. The endpoints and this scope are likely to change, including in breaking ways, until the feature is generally available.
+    Agent sessions are experimental. The endpoints and this scope are likely to change, including in breaking ways, until the feature is generally available. See the [agent sessions guide](/guides/agent-sessions).
 </Note>
 
 | Scope | Description |
@@ -9409,13 +9657,14 @@ Creates a new environment. Additional environments are limited by your [pricing 
 
 You can create a production environment by setting `is_production: true`.
 
-The response includes the numeric environment `id`. Use it to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
+The response includes an environment `uuid`. Use it to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
 
 <ResponseExample>
 ```json Example Response
 {
   "data": {
     "id": 123,
+    "uuid": "123e4567-e89b-12d3-a456-426614174000",
     "name": "staging"
   }
 }
@@ -9430,7 +9679,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/delete.md
   Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
 </Info>
 
-Deletes an environment. `environmentId` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create).
+Deletes an environment. `environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create).
 
 The reserved `prod` environment cannot be deleted.
 
@@ -9444,13 +9693,14 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/create-ap
 
 Creates an Environment API key. Keys created by this endpoint always have full environment access (`environment:*`). This endpoint does not accept custom scopes. Create keys with custom scopes under **Environment Settings > API Keys**.
 
-`environment_id` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create).
+`environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create).
 
 <ResponseExample>
 ```json Example Response
 {
   "data": {
     "id": 456,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
     "display_name": "provisioned-ci",
     "scopes": ["environment:*"],
     "secret": "<YOUR-ENVIRONMENT-API-KEY>",
@@ -9468,7 +9718,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/delete-ap
   Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
 </Info>
 
-Deletes an Environment API key. `environment_id` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create). `key_id` is the numeric ID returned when the key was [created](/reference/backend/http-api/environments/create-api-key).
+Deletes an Environment API key. `environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create). `keyUuid` is the UUID returned when the key was [created](/reference/backend/http-api/environments/create-api-key).
 
 ## List all integrations
 
@@ -10929,7 +11179,7 @@ const { data } = await nango.createConnectSession({
       }
     }
     ```
-    Available on the [Growth plan](https://www.nango.dev/pricing).
+    Available with the [Growth add-on](https://www.nango.dev/pricing).
   </ResponseField>
 </Expandable>
 
@@ -12980,7 +13230,7 @@ Configure your MCP client to send a Nango API key as a Bearer token:
 Manage API keys in **Environment Settings > API Keys** in the Nango UI. The API key determines which Nango environment the client can access. To limit what the MCP client can do, you can [scope down the API key](/reference/backend/http-api/api-keys#scopes) to only the tools it needs. The required scope for each tool is listed below.
 
 <Note>
-    The `environment:mcp` scope is not required for Management MCP tools. That scope is used by the separate [action-function MCP server](/guides/functions/tool-calling#mcp-server), which exposes enabled action functions as tools.
+    The `environment:mcp` scope is not required for Management MCP tools.
 </Note>
 
 Keep the API key server-side and only configure it in MCP clients you trust. Do not expose it in client-side code, logs, or URLs.
@@ -12997,6 +13247,16 @@ These tools require a valid Management MCP API key but no additional environment
 | ----------------------- | ------------------------------------------------------------------------- | ---------------------- |
 | `docs_search`           | Search the Nango documentation and return contextual snippets and links. | None                   |
 | `docs_query_filesystem` | Read and query Mintlify's virtual Nango documentation filesystem.         | None                   |
+
+### Providers
+
+Use the Provider tools to inspect the public provider catalog. Set `include_templates` to `true` to include the provider's available function templates in the result.
+
+These tools require a valid Management MCP API key but no additional environment operation scope.
+
+| Tool            | Description                                                        | Required API key scope |
+| --------------- | ------------------------------------------------------------------ | ---------------------- |
+| `providers_get` | Get one provider and optionally include its function templates.    | None                   |
 
 ### Connect sessions
 
@@ -13026,6 +13286,27 @@ Use the Connections tools to inspect connections in the authenticated Nango envi
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `connections_list` | List and filter connections.                                                                                                            | `environment:connections:list` or `environment:connections:list_credentials` |
 | `connections_get`  | Get a connection and its current credential state. Credential access and refresh flags require `read_credentials` and may rotate credential material. | `environment:connections:read` or `environment:connections:read_credentials` |
+
+### Actions
+
+Use the Actions tool to trigger an action function synchronously for a connection. Provide the integration ID, connection ID, and action name. The JSON input is optional. The tool returns the action's JSON result in the `data` field.
+
+<Warning>
+    Expect the MCP request to time out within 90 seconds. This does not cancel the action function, which may continue running for up to 15 minutes. After a timeout, the tool cannot return the result or an action ID, and retrying starts another execution. When the action supports it, use input parameters that limit the amount of data processed to keep execution within the MCP timeout.
+</Warning>
+
+| Tool              | Description                                                    | Required API key scope          |
+| ----------------- | -------------------------------------------------------------- | ------------------------------- |
+| `actions_trigger` | Trigger an action function synchronously for a connection.     | `environment:actions:execute`   |
+
+### Syncs
+
+Use the Sync tools to set sync state or trigger syncs for an integration in the authenticated Nango environment. You can optionally limit either operation to one connection and select named sync variants. Triggering can run a full reset and clear existing synced records.
+
+| Tool              | Description                                                                    | Required API key scope      |
+| ----------------- | ------------------------------------------------------------------------------ | --------------------------- |
+| `syncs_set_state` | Set one or more syncs to `started` or `paused`.                                  | `environment:syncs:execute` |
+| `syncs_trigger`   | Trigger one or more syncs, optionally with a full reset and/or cache clear.    | `environment:syncs:execute` |
 
 ### Proxy requests
 
@@ -13099,6 +13380,8 @@ Get your `prod` and `dev` Environment API keys from [Environment Settings > API 
 
 <Info>
 For self-hosting, set the `NANGO_HOSTPORT` env variable to `http://localhost:3003` (for local development) or your instance's URL.
+
+If the public API is behind mutual TLS, set `NANGO_CLI_TLS_CERT` to a PEM file path. A file that contains both the certificate and private key is enough. Use `NANGO_CLI_TLS_KEY` and `NANGO_CLI_TLS_CA` when the key or CA is in a separate file.
 </Info>
 
 ## All CLI commands & command details
@@ -13184,6 +13467,13 @@ NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
 
 # Nango's instance URL (OSS: change to http://localhost:3003 or your instance URL).
 NANGO_HOSTPORT=https://api.nango.dev # Default value
+
+# Client certificate for a self-hosted API behind mTLS.
+# A single PEM that contains both the certificate and private key is enough.
+# NANGO_CLI_TLS_CERT=/path/to/client.pem
+# NANGO_CLI_TLS_KEY=/path/to/client.key
+# NANGO_CLI_TLS_CA=/path/to/ca.pem
+# NANGO_CLI_TLS_KEY_PASSPHRASE=
 
 # How to handle CLI upgrades ("prompt", "auto" or "ignore").
 NANGO_CLI_UPGRADE_MODE=prompt # Default value
@@ -15191,6 +15481,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `entrata` | Entrata | BASIC | [docs](https://nango.dev/docs/integrations/all/entrata.md) |  |  | other |
 | `envoy` | Envoy | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/envoy.md) |  |  | productivity |
 | `epc-gov-uk` | Energy Performance Certificates (Gov.UK) | API_KEY | [docs](https://nango.dev/docs/api-integrations/epc-gov-uk.md) | [connect](https://nango.dev/docs/api-integrations/epc-gov-uk/connect.md) |  | other |
+| `epic` | Epic (FHIR) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/epic.md) | [connect](https://nango.dev/docs/api-integrations/epic/connect.md) | [setup](https://nango.dev/docs/api-integrations/epic/how-to-register-your-own-epic-app.md) | other |
 | `epic-games` | Epic Games | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/epic-games.md) |  |  | gaming |
 | `epost-klara` | ePost (KLARA) | API_KEY | [docs](https://nango.dev/docs/api-integrations/epost-klara.md) | [connect](https://nango.dev/docs/api-integrations/epost-klara/connect.md) |  | other |
 | `ergo` | Ergo | API_KEY | [docs](https://nango.dev/docs/api-integrations/ergo.md) | [connect](https://nango.dev/docs/api-integrations/ergo/connect.md) |  | productivity |
@@ -15220,6 +15511,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `fillout` | Fillout (Oauth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fillout.md) |  |  | surveys |
 | `fillout-api-key` | Fillout (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/fillout-api-key.md) | [connect](https://nango.dev/docs/integrations/all/fillout-api-key/connect.md) |  | surveys |
 | `findymail` | FindyMail | API_KEY | [docs](https://nango.dev/docs/integrations/all/findymail.md) | [connect](https://nango.dev/docs/integrations/all/findymail/connect.md) |  | marketing, crm |
+| `finta` | Finta | API_KEY | [docs](https://nango.dev/docs/api-integrations/finta.md) | [connect](https://nango.dev/docs/api-integrations/finta/connect.md) |  | banking |
 | `firefish` | Firefish | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/firefish.md) |  |  | crm |
 | `fireflies` | Fireflies | API_KEY | [docs](https://nango.dev/docs/integrations/all/fireflies.md) |  |  | analytics, communication, productivity |
 | `firstbase` | Firstbase | API_KEY | [docs](https://nango.dev/docs/api-integrations/firstbase.md) | [connect](https://nango.dev/docs/api-integrations/firstbase/connect.md) |  | hr |
@@ -15257,6 +15549,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `github-app-oauth` | GitHub (App OAuth) | CUSTOM | [docs](https://nango.dev/docs/api-integrations/github-app-oauth.md) |  | [setup](https://nango.dev/docs/api-integrations/github-app-oauth/how-to-register-your-own-github-app-api-oauth-app.md) | dev-tools, ticketing |
 | `github-pat` | Github (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/github-pat.md) | [connect](https://nango.dev/docs/integrations/all/github-pat/connect.md) |  | dev-tools, ticketing |
 | `gitlab` | GitLab | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gitlab.md) |  |  | dev-tools, ticketing |
+| `gitlab-group-token` | GitLab (Group Access Token) | API_KEY | [docs](https://nango.dev/docs/api-integrations/gitlab-group-token.md) | [connect](https://nango.dev/docs/api-integrations/gitlab-group-token/connect.md) |  | dev-tools, ticketing |
 | `gitlab-pat` | GitLab  (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/gitlab-pat.md) | [connect](https://nango.dev/docs/integrations/all/gitlab-pat/connect.md) |  | dev-tools, ticketing |
 | `glean` | Glean | API_KEY | [docs](https://nango.dev/docs/api-integrations/glean.md) | [connect](https://nango.dev/docs/api-integrations/glean/connect.md) |  | knowledge-base, productivity |
 | `glean-oauth` | Glean (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/glean-oauth.md) | [connect](https://nango.dev/docs/api-integrations/glean-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/glean-oauth/how-to-register-your-own-glean-oauth-app.md) | knowledge-base, productivity |
@@ -15296,6 +15589,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `grammarly-scim` | Grammarly SCIM | API_KEY | [docs](https://nango.dev/docs/integrations/all/grammarly-scim.md) | [connect](https://nango.dev/docs/integrations/all/grammarly-scim/connect.md) |  | productivity |
 | `granola` | Granola | API_KEY | [docs](https://nango.dev/docs/api-integrations/granola.md) | [connect](https://nango.dev/docs/api-integrations/granola/connect.md) |  | productivity, knowledge-base |
 | `granola-mcp` | Granola (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/granola-mcp.md) |  |  | productivity, knowledge-base, mcp |
+| `greenfield-meditech` | MEDITECH Greenfield | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/greenfield-meditech.md) | [connect](https://nango.dev/docs/api-integrations/greenfield-meditech/connect.md) | [setup](https://nango.dev/docs/api-integrations/greenfield-meditech/how-to-register-your-own-greenfield-meditech-api-oauth-app.md) | other |
 | `greenhouse` | Greenhouse (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/greenhouse.md) | [connect](https://nango.dev/docs/integrations/all/greenhouse/connect.md) |  | ats |
 | `greenhouse-assessment` | Greenhouse (Assessment API) | BASIC | [docs](https://nango.dev/docs/integrations/all/greenhouse-assessment.md) | [connect](https://nango.dev/docs/integrations/all/greenhouse-assessment/connect.md) |  | ats |
 | `greenhouse-basic` | Greenhouse (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/greenhouse-basic.md) | [connect](https://nango.dev/docs/integrations/all/greenhouse-basic/connect.md) |  | ats |
@@ -15434,6 +15728,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `meilisearch` | Meilisearch | API_KEY | [docs](https://nango.dev/docs/api-integrations/meilisearch.md) | [connect](https://nango.dev/docs/api-integrations/meilisearch/connect.md) |  | search |
 | `mercury` | Mercury | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/mercury.md) | [connect](https://nango.dev/docs/api-integrations/mercury/connect.md) | [setup](https://nango.dev/docs/api-integrations/mercury/how-to-register-your-own-mercury-oauth-app.md) | accounting |
 | `meta-marketing-api` | Meta Marketing API | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/meta-marketing-api.md) |  | [setup](https://nango.dev/docs/api-integrations/meta-marketing-api/how-to-register-your-own-meta-marketing-api-oauth-app.md) | marketing |
+| `meta-mcp` | Meta Ads (MCP) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/meta-mcp.md) |  | [setup](https://nango.dev/docs/api-integrations/meta-mcp/how-to-register-your-own-meta-mcp-oauth-app.md) | marketing, mcp |
 | `metabase` | Metabase | API_KEY | [docs](https://nango.dev/docs/api-integrations/metabase.md) | [connect](https://nango.dev/docs/api-integrations/metabase/connect.md) |  | analytics |
 | `microsoft` | Microsoft | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/microsoft.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | communication, dev-tools, productivity |
 | `microsoft-admin` | Microsoft (Admin) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-admin.md) | [connect](https://nango.dev/docs/integrations/all/microsoft-admin/connect.md) |  | communication, dev-tools, productivity, iam |
@@ -15492,6 +15787,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `ninjaone-rmm-oauth2` | NinjaOne RMM (OAuth2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2.md) |  | [setup](https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2/how-to-register-your-own-ninjaone-rmm-api-oauth-app.md) | support |
 | `ninjaone-saas-backup` | NinjaOne SaaS Backup | API_KEY | [docs](https://nango.dev/docs/api-integrations/ninjaone-saas-backup.md) | [connect](https://nango.dev/docs/api-integrations/ninjaone-saas-backup/connect.md) |  | storage, productivity |
 | `nocrm` | nocrm.io | API_KEY | [docs](https://nango.dev/docs/api-integrations/nocrm.md) | [connect](https://nango.dev/docs/api-integrations/nocrm/connect.md) |  | crm, productivity |
+| `nooks` | Nooks (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/nooks.md) |  | [setup](https://nango.dev/docs/api-integrations/nooks/how-to-register-your-own-nooks-api-oauth-app.md) | marketing |
+| `nooks-api-key` | Nooks (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/nooks-api-key.md) | [connect](https://nango.dev/docs/api-integrations/nooks-api-key/connect.md) |  | marketing |
 | `northbeam` | Northbeam | API_KEY | [docs](https://nango.dev/docs/api-integrations/northbeam.md) | [connect](https://nango.dev/docs/api-integrations/northbeam/connect.md) |  | analytics, marketing |
 | `notion` | Notion | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/notion.md) |  | [setup](https://nango.dev/docs/api-integrations/notion/how-to-register-your-own-notion-api-oauth-app.md) | knowledge-base, popular, productivity |
 | `notion-mcp` | Notion (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/notion-mcp.md) |  |  | knowledge-base, productivity, mcp |
@@ -15668,6 +15965,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `sap-success-factors` | SAP SuccessFactors | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/sap-success-factors.md) | [connect](https://nango.dev/docs/api-integrations/sap-success-factors/connect.md) |  | hr |
 | `schwab` | Schwab | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/schwab.md) |  | [setup](https://nango.dev/docs/api-integrations/schwab/how-to-register-your-own-schwab-oauth-app.md) | banking, accounting |
 | `scrapedo` | Scrape.do | API_KEY | [docs](https://nango.dev/docs/integrations/all/scrapedo.md) | [connect](https://nango.dev/docs/integrations/all/scrapedo/connect.md) |  | other |
+| `scrollstash-mcp` | ScrollStash (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/scrollstash-mcp.md) |  |  | mcp |
 | `sedna` | Sedna (OAuth) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/sedna.md) |  |  | communication |
 | `sedna-basic` | Sedna (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/sedna-basic.md) |  |  | communication |
 | `segment` | Segment | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/segment.md) |  |  | analytics, marketing |
@@ -15910,6 +16208,6 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 
 - [Blog](https://nango.dev/blog): Articles, product updates, and integration deep-dives from the Nango team.
 - [Pricing](https://nango.dev/pricing): Plans and pricing for Nango Cloud.
-- [Talk to the team](https://nango.dev/demo): Book a call with Nango for sales, onboarding, or technical questions.
+- [Talk to the team](https://nango.dev/contact): Book a call with Nango for sales, onboarding, or technical questions.
 - [Community Slack](https://nango.dev/slack): Get help, share feedback, and connect with other Nango developers.
 

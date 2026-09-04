@@ -93,7 +93,7 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
         if (rateLimitKey) {
             const rateLimit = await rateLimiter.consume(rateLimitKey, 1);
             if (rateLimit.rejected > 0) {
-                metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, 1, { reason: 'rate_limit' });
+                metrics.increment(metrics.Types.ORCH_TASKS_REJECTED, 1, { reason: 'rate_limit' });
                 res.setHeader('Retry-After', Math.max(1, Math.ceil(rateLimit.retryAfterMs / 1000)));
                 res.status(429).json({
                     error: {

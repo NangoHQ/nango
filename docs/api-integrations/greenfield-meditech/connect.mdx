@@ -1,0 +1,43 @@
+---
+title: MEDITECH Greenfield - How do I link my account?
+sidebarTitle: MEDITECH Greenfield
+---
+
+## Overview
+
+To authenticate with MEDITECH Greenfield via the Connect UI, you need:
+
+1. **Authorization host** — the MEDITECH host that issues authorization codes.
+2. **FHIR API host** — the MEDITECH host that issues tokens and serves the FHIR API.
+
+<Note>
+Sandbox hosts only work against synthetic test patients in the Greenfield Workspace. Going live against a real healthcare organization's data uses different hosts, provisioned separately by that organization.
+</Note>
+
+## Prerequisites
+
+- The MEDITECH Greenfield integration must already be configured in Nango with a Client ID and Client Secret — see the [OAuth client setup guide](/api-integrations/greenfield-meditech/how-to-register-your-own-greenfield-meditech-api-oauth-app) if that hasn't been done yet.
+
+## Instructions
+
+### Step 1: Find your authorization host and FHIR API host
+
+Which hosts you use depends on whether you're testing against the sandbox or connecting to a real healthcare organization:
+
+| Environment | Authorization host (`authHost`) | FHIR API host (`host`) |
+|-------------|----------------------------------|-------------------------|
+| Greenfield sandbox | `greenfield-apis.meditech.com` | `greenfield-prod-apis.meditech.com` |
+| Production | Varies per healthcare organization | Varies per healthcare organization |
+
+- **Sandbox**: use the fixed hosts above while testing with synthetic patients.
+- **Production**: each MEDITECH customer's FHIR endpoints are listed in MEDITECH's [endpoint directory](https://greenfield.meditech.com/explorer/endpoints). A single organization may expose multiple endpoints depending on its facility footprint, so confirm the exact authorization host and FHIR API host with the healthcare organization directly. Enter both without the `https://` prefix and without a trailing slash.
+
+### Step 2: Enter your hosts in the Connect UI
+
+1. Open the Connect UI (or the **Connections** tab -> _Add Test Connection_ -> _Authorize_) for MEDITECH Greenfield.
+2. Enter the **Authorization host** and **FHIR API host** from Step 1.
+3. Log in with the credentials you use for MEDITECH Expanse (via your organization's identity provider) and approve the requested scopes.
+
+<img src="/api-integrations/greenfield-meditech/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to MEDITECH Greenfield.

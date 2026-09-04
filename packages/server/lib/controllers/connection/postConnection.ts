@@ -5,6 +5,7 @@ import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import {
     buildTagsFromEndUser,
     configService,
+    ConnectionCreationCappedError,
     connectionService,
     EndUserMapper,
     getEncryptionManager,
@@ -30,10 +31,11 @@ import {
 } from '../../helpers/validation.js';
 import { noteConnectionUpsert } from '../../hooks/auditConnection.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
-import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess, testConnectionCredentials } from '../../hooks/hooks.js';
+import { connectionCreated, connectionRefreshSuccess, testConnectionCredentials } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type { AuthOperationType, ConnectionConfig, ConnectionUpsertResponse, EndUser, PostPublicConnection, ProviderGithubApp } from '@nangohq/types';
+import type { Response } from 'express';
 
 const schemaBody = z.strictObject({
     provider_config_key: z.string(),
@@ -96,6 +98,18 @@ const schemaBody = z.strictObject({
     tags: connectionTagsSchema.optional()
 });
 
+async function handleConnectionCreation<T>(res: Response, creation: Promise<T>): Promise<T | null> {
+    try {
+        return await creation;
+    } catch (err) {
+        if (err instanceof ConnectionCreationCappedError) {
+            res.status(err.status).send({ error: { code: 'resource_capped', message: err.message } });
+            return null;
+        }
+        throw err;
+    }
+}
+
 export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnection>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
@@ -109,7 +123,7 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
         return;
     }
 
-    const { environment, account, plan } = res.locals;
+    const { environment, account } = res.locals;
     const body: PostPublicConnection['Body'] = valBody.data;
     const webhookUrlOverride = body.webhook_url_override ?? null;
 
@@ -120,20 +134,6 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
     }
 
     const providerName = integration.provider;
-
-    if (plan) {
-        const isCapped = await connectionCreationStartCapCheck({
-            creationType: 'import',
-            team: account,
-            plan
-        });
-        if (isCapped.capped) {
-            res.status(400).send({
-                error: { code: 'resource_capped', message: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.' }
-            });
-            return;
-        }
-    }
 
     const provider = getProvider(providerName);
     if (!provider) {
@@ -185,17 +185,24 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
         case 'OAUTH2':
         case 'OAUTH2_CC':
         case 'OAUTH1': {
-            const [imported] = await connectionService.importOAuthConnection({
-                connectionId,
-                providerConfigKey: body.provider_config_key,
-                metadata: body.metadata || {},
-                environment,
-                connectionConfig: body.connection_config || {},
-                webhookUrlOverride,
-                parsedRawCredentials: { ...body.credentials, raw: body.credentials },
-                connectionCreatedHook: connCreatedHook,
-                tags: mergedTags
-            });
+            const creation = await handleConnectionCreation(
+                res,
+                connectionService.importOAuthConnection({
+                    connectionId,
+                    providerConfigKey: body.provider_config_key,
+                    metadata: body.metadata || {},
+                    environment,
+                    connectionConfig: body.connection_config || {},
+                    webhookUrlOverride,
+                    parsedRawCredentials: { ...body.credentials, raw: body.credentials },
+                    connectionCreatedHook: connCreatedHook,
+                    tags: mergedTags
+                })
+            );
+            if (!creation) {
+                return;
+            }
+            const [imported] = creation;
 
             if (imported) {
                 updatedConnection = imported;
@@ -225,17 +232,24 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
                 return;
             }
 
-            const [imported] = await connectionService.importApiAuthConnection({
-                connectionId,
-                providerConfigKey: body.provider_config_key,
-                metadata: body.metadata || {},
-                environment,
-                credentials: body.credentials,
-                connectionConfig,
-                webhookUrlOverride,
-                connectionCreatedHook: connCreatedHook,
-                tags: mergedTags
-            });
+            const creation = await handleConnectionCreation(
+                res,
+                connectionService.importApiAuthConnection({
+                    connectionId,
+                    providerConfigKey: body.provider_config_key,
+                    metadata: body.metadata || {},
+                    environment,
+                    credentials: body.credentials,
+                    connectionConfig,
+                    webhookUrlOverride,
+                    connectionCreatedHook: connCreatedHook,
+                    tags: mergedTags
+                })
+            );
+            if (!creation) {
+                return;
+            }
+            const [imported] = creation;
 
             if (imported) {
                 updatedConnection = imported;
@@ -263,16 +277,23 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
                 return;
             }
 
-            const [imported] = await connectionService.upsertConnection({
-                connectionId,
-                providerConfigKey: body.provider_config_key,
-                parsedRawCredentials: credentialsRes.value,
-                connectionConfig: body.connection_config || {},
-                webhookUrlOverride,
-                environmentId: environment.id,
-                metadata: body.metadata || {},
-                tags: mergedTags
-            });
+            const creation = await handleConnectionCreation(
+                res,
+                connectionService.upsertConnection({
+                    connectionId,
+                    providerConfigKey: body.provider_config_key,
+                    parsedRawCredentials: credentialsRes.value,
+                    connectionConfig: body.connection_config || {},
+                    webhookUrlOverride,
+                    environmentId: environment.id,
+                    metadata: body.metadata || {},
+                    tags: mergedTags
+                })
+            );
+            if (!creation) {
+                return;
+            }
+            const [imported] = creation;
 
             if (imported) {
                 updatedConnection = imported;
@@ -302,16 +323,23 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
                 return;
             }
 
-            const [imported] = await connectionService.upsertConnection({
-                connectionId,
-                providerConfigKey: body.provider_config_key,
-                parsedRawCredentials: credentialsRes.value,
-                connectionConfig: body.connection_config || {},
-                webhookUrlOverride,
-                environmentId: environment.id,
-                metadata: body.metadata || {},
-                tags: mergedTags
-            });
+            const creation = await handleConnectionCreation(
+                res,
+                connectionService.upsertConnection({
+                    connectionId,
+                    providerConfigKey: body.provider_config_key,
+                    parsedRawCredentials: credentialsRes.value,
+                    connectionConfig: body.connection_config || {},
+                    webhookUrlOverride,
+                    environmentId: environment.id,
+                    metadata: body.metadata || {},
+                    tags: mergedTags
+                })
+            );
+            if (!creation) {
+                return;
+            }
+            const [imported] = creation;
 
             if (imported) {
                 updatedConnection = imported;
@@ -349,21 +377,28 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
                 return;
             }
 
-            const [imported] = await connectionService.upsertAuthConnection({
-                connectionId,
-                providerConfigKey: body.provider_config_key,
-                credentials: body.credentials,
-                connectionConfig: {
-                    ...body.connection_config,
-                    oauth_client_id: integration.oauth_client_id,
-                    oauth_client_secret: integration.oauth_client_secret
-                },
-                webhookUrlOverride,
-                metadata: body.metadata || {},
-                config: integration,
-                environment,
-                tags: mergedTags
-            });
+            const creation = await handleConnectionCreation(
+                res,
+                connectionService.upsertAuthConnection({
+                    connectionId,
+                    providerConfigKey: body.provider_config_key,
+                    credentials: body.credentials,
+                    connectionConfig: {
+                        ...body.connection_config,
+                        oauth_client_id: integration.oauth_client_id,
+                        oauth_client_secret: integration.oauth_client_secret
+                    },
+                    webhookUrlOverride,
+                    metadata: body.metadata || {},
+                    config: integration,
+                    environment,
+                    tags: mergedTags
+                })
+            );
+            if (!creation) {
+                return;
+            }
+            const [imported] = creation;
 
             if (imported) {
                 updatedConnection = imported;
@@ -372,15 +407,22 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
             break;
         }
         case 'NONE': {
-            const [imported] = await connectionService.upsertUnauthConnection({
-                connectionId,
-                providerConfigKey: body.provider_config_key,
-                environment,
-                metadata: body.metadata || {},
-                connectionConfig: body.connection_config || {},
-                webhookUrlOverride,
-                tags: mergedTags
-            });
+            const creation = await handleConnectionCreation(
+                res,
+                connectionService.upsertUnauthConnection({
+                    connectionId,
+                    providerConfigKey: body.provider_config_key,
+                    environment,
+                    metadata: body.metadata || {},
+                    connectionConfig: body.connection_config || {},
+                    webhookUrlOverride,
+                    tags: mergedTags
+                })
+            );
+            if (!creation) {
+                return;
+            }
+            const [imported] = creation;
 
             if (imported) {
                 updatedConnection = imported;
@@ -440,7 +482,7 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
         connectionId: updatedConnection.connection.connection_id,
         providerConfigKey: body.provider_config_key,
         account: { id: account.id, uuid: account.uuid },
-        environment: { id: environment.id, name: environment.name },
+        environment: { uuid: environment.uuid, name: environment.name },
         endUser: undefined
     });
 

@@ -60,7 +60,7 @@ async function startPendingMfaLogin(): Promise<{ user: DBUser; totp: OTPAuth.TOT
 // The MFA login-verify flow is a dedicated middleware that resolves the acting user from the
 // pending-login session (real signup + signin + MFA activation + DB reads), so it only makes sense
 // against the live stack. The typed auditable() specs (enroll/enable/disable/recovery) are covered
-// off-stack in ../../../../middleware/auditable.unit.test.ts.
+// off-stack in ../../../../middleware/audit/mfa.middleware.unit.test.ts.
 describe('MFA verify audit — pending-login session (private API)', () => {
     beforeAll(async () => {
         api = await runServer();

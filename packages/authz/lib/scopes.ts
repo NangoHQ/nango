@@ -65,7 +65,7 @@ true satisfies [Exclude<ConcreteApiKeyScope, (typeof PUBLIC_ENVIRONMENT_SCOPES)[
  */
 export const PUBLIC_ACCOUNT_SCOPES = [
     // Environments
-    'account:environments:create',
+    'account:environments:create', // any environment
     'account:environments:delete',
     'account:environments:set_production',
     'account:environments:api_keys:create',
@@ -75,10 +75,11 @@ export const PUBLIC_ACCOUNT_SCOPES = [
 true satisfies [Exclude<ConcreteAccountApiKeyScope, (typeof PUBLIC_ACCOUNT_SCOPES)[number]>] extends [never] ? true : never;
 
 /**
- * Scopes with no public endpoint.
+ * Scopes that can't be issued to API keys. These only apply to roles.
  * When adding a public endpoint that requires one of these, move the scope to the public list. The time of moving is also
  * a good moment to reconsider its name.
- * Wildcards in API keys (eg. `*`, `environment:*`) don't expand to these. When moved to the public list, wildcard keys will start covering it.
+ * Wildcards in API keys (eg. `environment:*`, `account:*`) don't expand to these. When moved to the public list, wildcard keys will start covering it.
+ * Some scopes only make sense in roles (therefore in this list), like `environment:settings:read_secret` (environment keys shouldn't be able to read an environment keys secrets)
  */
 export const PRIVATE_SCOPES = [
     // ── account namespace ──
@@ -91,25 +92,31 @@ export const PRIVATE_SCOPES = [
     'account:billing:payment_methods:list',
     'account:billing:payment_methods:create',
     'account:billing:payment_methods:delete',
+    'account:billing:spend_alert:read',
+    'account:billing:spend_alert:update',
     'account:plan:update',
     'account:audit_trail:read',
-
-    // Keys bound to the account
     'account:api_keys:list',
-    'account:api_keys:create',
-    'account:api_keys:delete',
 
-    // Keys bound to an environment
-    'account:environments:api_keys:list',
-    'account:environments:api_keys:update',
-    'account:environments:api_keys:read_secret',
     // ── environment namespace ──
+    'environment:api_keys:list',
+    'environment:api_keys:create',
+    'environment:api_keys:update',
+    'environment:api_keys:delete',
     'environment:settings:read',
     'environment:settings:update',
-    // Hands over a credential stronger than the caller's; do not promote either of these
-    'environment:settings:read_secret',
     'environment:variables:update',
-    'environment:webhooks:update'
+    'environment:webhooks:update',
+
+    // ── Don't promote ──
+    // Issuing account keys from an account key is self-perpetuating.
+    'account:api_keys:create',
+    'account:api_keys:delete',
+    // `environment:*` is the default on every key, so this would hand environment destruction to all of them.
+    // The account-level equivalent is `account:environments:delete`.
+    'environment:delete',
+    // Hand back a credential stronger than the caller's, so whoever holds one could widen themselves.
+    'environment:settings:read_secret'
 ] as const;
 
 export type PrivateScope = (typeof PRIVATE_SCOPES)[number];
@@ -120,28 +127,25 @@ export type IssuableScope = (typeof PUBLIC_ENVIRONMENT_SCOPES)[number] | (typeof
 /** One concrete scope, the kind a route requires. */
 export type Scope = IssuableScope | PrivateScope;
 
-/** A pattern matching many scopes. */
-export type ScopeWildcard = '*' | WildcardsFor<'environment'> | WildcardsFor<'account'>;
+/** A pattern matching many scopes in one namespace */
+export type ScopeWildcard = WildcardsFor<'environment'> | WildcardsFor<'account'>;
 
-/** One scope, or a pattern matching many. Bare `*` is role-only; no public scope is `*`. */
+/** One scope, or a pattern matching many. */
 export type ScopeSelector = Scope | ScopeWildcard;
 
 /** The concrete scopes a credential ends up holding, once wildcards are expanded. */
 export const ISSUABLE_SCOPES: readonly IssuableScope[] = [...PUBLIC_ENVIRONMENT_SCOPES, ...PUBLIC_ACCOUNT_SCOPES];
 
-const ISSUABLE = new Set<string>(ISSUABLE_SCOPES);
-
-export function isIssuable(scope: Scope): scope is IssuableScope {
-    return ISSUABLE.has(scope);
+export function isAccountScope(scope: string): boolean {
+    return scope.startsWith('account:');
 }
 
 /**
- * The concrete issuable scopes matching `granted`. Roles are exempt — their grants are not issued to
- * anyone and may name private scopes.
+ * The concrete issuable scopes matching `granted`
  */
 export function expandIssuable(granted: readonly ScopeSelector[]): IssuableScope[] {
     return ISSUABLE_SCOPES.filter((scope) =>
-        granted.some((selector) => selector === scope || selector === '*' || (selector.endsWith(':*') && scope.startsWith(selector.slice(0, -1))))
+        granted.some((selector) => selector === scope || (selector.endsWith(':*') && scope.startsWith(selector.slice(0, -1))))
     );
 }
 

@@ -3,10 +3,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import * as logs from '@nangohq/logs';
-import { configService } from '@nangohq/shared';
+import { configService, ConnectionCreationCappedError, connectionService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import * as hooks from '../hooks/hooks.js';
 import { createConnectSession } from './connectSession.service.js';
 
 import type { DBEnvironment, DBPlan, DBTeam, PrivateKey } from '@nangohq/types';
@@ -19,7 +18,7 @@ describe('createConnectSession', () => {
     it('validates, inserts, creates a private key, and returns transport-neutral data', async () => {
         const expiresAt = new Date('2026-01-01T00:30:00.000Z');
         const { trx, insert } = mockTransaction();
-        vi.spyOn(hooks, 'connectionCreationStartCapCheck').mockResolvedValue({ capped: false });
+        vi.spyOn(connectionService, 'enforceCreationCap').mockResolvedValue();
         vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([{ unique_key: 'github' }] as any);
         vi.spyOn(logs.logContextGetter, 'create').mockResolvedValue({ id: 'operation-id' } as any);
         const keySpy = vi.spyOn(keystore, 'createPrivateKey').mockResolvedValue(Ok(['session-token', privateKeyFixture(expiresAt)]));
@@ -106,8 +105,28 @@ describe('createConnectSession', () => {
         expect(transactionSpy).not.toHaveBeenCalled();
     });
 
-    it('enforces connection caps before creating a session', async () => {
-        vi.spyOn(hooks, 'connectionCreationStartCapCheck').mockResolvedValue({ capped: true });
+    it('creates a preview session without enforcing the connection cap', async () => {
+        const expiresAt = new Date('2026-01-01T00:30:00.000Z');
+        mockTransaction();
+        const capCheck = vi.spyOn(connectionService, 'enforceCreationCap').mockRejectedValue(new ConnectionCreationCappedError());
+        vi.spyOn(logs.logContextGetter, 'create').mockResolvedValue({ id: 'operation-id' } as any);
+        vi.spyOn(keystore, 'createPrivateKey').mockResolvedValue(Ok(['session-token', privateKeyFixture(expiresAt)]));
+
+        const result = await createConnectSession({
+            account: accountFixture(),
+            environment: environmentFixture(),
+            plan: planFixture(),
+            isPreview: true,
+            endUser: null,
+            tags: { team: 'platform' }
+        });
+
+        expect(result.isOk()).toBe(true);
+        expect(capCheck).not.toHaveBeenCalled();
+    });
+
+    it('enforces connection caps for normal sessions', async () => {
+        vi.spyOn(connectionService, 'enforceCreationCap').mockRejectedValue(new ConnectionCreationCappedError());
         const transactionSpy = vi.spyOn(db.knex, 'transaction');
 
         const result = await createConnectSession({
@@ -126,7 +145,7 @@ describe('createConnectSession', () => {
     });
 
     it('enforces the docs Connect override plan entitlement', async () => {
-        vi.spyOn(hooks, 'connectionCreationStartCapCheck').mockResolvedValue({ capped: false });
+        vi.spyOn(connectionService, 'enforceCreationCap').mockResolvedValue();
         vi.spyOn(configService, 'listProviderConfigs').mockResolvedValue([{ unique_key: 'github' }] as any);
 
         const result = await createConnectSession({

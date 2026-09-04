@@ -2,7 +2,16 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, errorManager, ErrorSourceEnum, getProvider, LogActionEnum, syncEndUserToConnection } from '@nangohq/shared';
+import {
+    configService,
+    ConnectionCreationCappedError,
+    connectionService,
+    errorManager,
+    ErrorSourceEnum,
+    getProvider,
+    LogActionEnum,
+    syncEndUserToConnection
+} from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
@@ -257,7 +266,7 @@ export const postPublicTbaAuthorization = asyncWrapperWithEnvironment<PostPublic
                 connectionId: updatedConnection.connection.connection_id,
                 providerConfigKey: updatedConnection.connection.provider_config_key,
                 account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
+                environment: { uuid: environment.uuid, name: environment.name },
                 endUser: res.locals.endUser
             }
         };
@@ -313,6 +322,10 @@ export const postPublicTbaAuthorization = asyncWrapperWithEnvironment<PostPublic
             ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
         });
 
+        if (err instanceof ConnectionCreationCappedError) {
+            res.status(err.status).send({ error: { code: 'resource_capped', message: err.message } });
+            return;
+        }
         next(err);
     }
 });

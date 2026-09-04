@@ -225,6 +225,20 @@ describe('DispatchQueuePublisher', () => {
         expect(bodies).toEqual([JSON.stringify(first.message), JSON.stringify(second.message)]);
     });
 
+    it('sets a per-message delay when requested', async () => {
+        const seen: Array<number | undefined> = [];
+        const { sqs } = makeSqsMock((cmd) => {
+            seen.push(...(cmd.input.Entries ?? []).map((entry) => entry.DelaySeconds));
+            return successfulBatchResponse(cmd);
+        });
+        const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
+        const delayed = { ...buildPreparedMessage(), delaySeconds: 7 };
+
+        await publisher.publish([delayed, buildPreparedMessage()], 'account:1:env:2');
+
+        expect(seen).toEqual([7, undefined]);
+    });
+
     it('splits batches when cumulative bytes exceed the SQS request limit', async () => {
         const { sqs, send } = makeSqsMock((cmd) => successfulBatchResponse(cmd));
         const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });

@@ -14,7 +14,7 @@ Nango is **SOC 2 Type II** certified, **GDPR** compliant, and **HIPAA** complian
 | - | - |
 | SOC 2 Type II | Annual audit covering security, availability, and confidentiality. [View report →](https://trust.nango.dev) |
 | GDPR | Data Processing Agreement (DPA) automatically applies to all cloud accounts. [View DPA →](https://nango.dev/terms#dpa) |
-| HIPAA | Business Associate Agreement (BAA) available on request. [Contact us →](https://nango.dev/demo) |
+| HIPAA | Business Associate Agreement (BAA) available on request. [Contact us →](https://nango.dev/contact) |
 
 Our security practices include:
 
@@ -22,6 +22,8 @@ Our security practices include:
 - Secure development lifecycle
 - Incident response procedures
 - Continuous monitoring and alerting
+
+For your own reviews, the [audit trail](/guides/platform/audit-trail) records who changed what in your account, when, and from where.
 
 Visit our [Trust Center](https://trust.nango.dev) for the latest compliance documentation, security policies, and audit reports.
 
@@ -217,15 +219,14 @@ Each [environment](/guides/platform/environments) in your Nango account is compl
 
 This ensures your production data is never accessible from development environments.
 
-### Audit logging
+<a id="audit-logging"></a>
+### Audit trail
 
-All credential access and modifications are logged:
+The [audit trail](/guides/platform/audit-trail) records control-plane changes with the actor, the outcome, and the originating IP: who created or deleted a connection, changed an integration, rotated an API key, changed a teammate's role, or signed in. Entries are immutable and account-wide, can be exported as CSV, and reading or exporting the trail is itself recorded.
 
-- Connection creation and deletion
-- Credential refresh operations
-- API requests using credentials
+### Nango logs
 
-Logs are available in the Nango dashboard and can be exported via [OpenTelemetry](/guides/platform/observability#opentelemetry-export).
+[Nango logs](/guides/platform/observability) are a separate, operational record of what ran in your Nango account: auth flows, function executions, proxy requests, etc. Logs can be exported via [OpenTelemetry](/guides/platform/observability#opentelemetry-export).
 
 <a id="team-and-roles"></a>
 ## Team & roles
@@ -292,9 +293,9 @@ Nango Cloud uses [WorkOS](https://workos.com) to power SSO.
 
 | Plan | SSO support |
 | - | - |
-| Free / Starter | Google SSO only |
-| Growth | SSO with 20+ identity providers (add-on) |
-| Enterprise (Cloud) | SSO with 20+ identity providers (included) |
+| Free / Pay-as-you-go | Google SSO only |
+| Growth add-on | SAML SSO with 20+ identity providers |
+| Enterprise (Cloud) | SAML SSO + SCIM |
 | Enterprise (Self-hosted) | Not yet available (planned) |
 
 ### Supported providers
@@ -304,7 +305,7 @@ Through WorkOS, Nango supports the main SSO providers, including **Okta**, **Ent
 ### How to enable SSO
 
 1. To enable SSO for your account, contact the Nango team (on our shared Slack channel or the [community](https://nango.dev/slack)).
-2. If you are on the Growth plan, we will subscribe your workspace to the SSO add-on.
+2. If you are on Pay-as-you-go, we will subscribe your workspace to the Growth add-on, which includes SAML SSO.
 3. We will invite an admin from your company to complete the SSO setup flow.
 
 ### Setup flow

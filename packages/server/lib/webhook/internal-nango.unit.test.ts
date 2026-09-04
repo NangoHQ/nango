@@ -182,6 +182,21 @@ describe('InternalNango queue dispatch', () => {
         expect(logCtx2.failed).toHaveBeenCalledOnce();
     });
 
+    it('passes an optional delay to queued webhook messages', async () => {
+        const publisher = {
+            publish: vi.fn().mockResolvedValue({ enqueued: 1, failed: 0, failedActivityLogIds: [] })
+        };
+        mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
+        mocks.getConnectionsByEnvironmentAndConfig.mockResolvedValue([
+            { id: 11, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2, metadata: null }
+        ]);
+        const { nango } = makeInternalNango([createLogCtx('log-1')]);
+
+        await nango.executeScriptForWebhooks({ body: { event: 'x' }, webhookTypeValue: 'push', delaySeconds: 7 });
+
+        expect(publisher.publish).toHaveBeenCalledWith([expect.objectContaining({ delaySeconds: 7 })], 'account:1:env:2');
+    });
+
     it('falls back to direct orchestrator dispatch when the feature flag is off', async () => {
         mocks.envs.WEBHOOK_INGRESS_USE_DISPATCH_QUEUE = false;
         const publisher = { publish: vi.fn() };

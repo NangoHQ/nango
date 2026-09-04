@@ -66,7 +66,7 @@ describe('connection.created — live-stack contract', () => {
             action: 'created',
             outcome: 'success',
             // The key acted, and it stays the actor even though this endpoint accepts an end_user in the body.
-            actor: { type: 'api_key', id: String(apiKey.id) },
+            actor: { type: 'api_key', id: apiKey.uuid },
             targets: [{ type: 'connection', id: generatedId }],
             metadata: { providerConfigKey: 'github' }
         });
@@ -91,7 +91,7 @@ describe('connection.created — live-stack contract', () => {
             resource: 'connection',
             action: 'created',
             outcome: 'failure',
-            actor: { type: 'api_key', id: String(apiKey.id) },
+            actor: { type: 'api_key', id: apiKey.uuid },
             targets: []
         });
     });
@@ -123,7 +123,7 @@ describe('connection.created — live-stack contract', () => {
             resource: 'connection',
             action: 'created',
             outcome: 'success',
-            actor: { type: 'api_key', id: String(apiKey.id) },
+            actor: { type: 'api_key', id: apiKey.uuid },
             targets: [{ type: 'connection', id: 'deprecated-conn' }],
             metadata: { providerConfigKey: 'github' }
         });
@@ -132,22 +132,28 @@ describe('connection.created — live-stack contract', () => {
     // The OAuth callback is the busiest creation path and the only one where nothing on the request
     // identifies anyone: the provider issues the redirect, so the end user has to be recovered from the
     // session row the authorize leg wrote.
-    it('attributes an OAuth callback creation to the end user on its connect session', async () => {
+    // A hosted flow authenticates at /oauth/connect and creates the connection on the callback, so who
+    // started it can only reach the trail through the OAuth session.
+    async function runOAuthCallback({ withConnectSession, connectionId }: { withConnectSession: boolean; connectionId: string }) {
         const { account, env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
         await seeders.createConfigSeed(env, 'github', 'github', { oauth_client_id: 'a-client-id', oauth_client_secret: 'a-client-secret' });
 
-        const session = await api.fetch('/connect/sessions', {
-            method: 'POST',
-            token: apiKey.secret,
-            body: { end_user: { id: 'oauth-end-user', email: 'oauth@customer.com' } }
-        });
-        isSuccess(session.json);
-        const [connectSession] = await db.knex
-            .select<{ id: number }[]>('id')
-            .from('connect_sessions')
-            .where({ environment_id: env.id })
-            .orderBy('id', 'desc')
-            .limit(1);
+        let connectSessionId: number | null = null;
+        if (withConnectSession) {
+            const session = await api.fetch('/connect/sessions', {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { end_user: { id: 'oauth-end-user', email: 'oauth@customer.com' } }
+            });
+            isSuccess(session.json);
+            const [connectSession] = await db.knex
+                .select<{ id: number }[]>('id')
+                .from('connect_sessions')
+                .where({ environment_id: env.id })
+                .orderBy('id', 'desc')
+                .limit(1);
+            connectSessionId = connectSession!.id;
+        }
 
         const logCtx = await logContextGetter.create({ operation: { type: 'auth', action: 'create_connection' } }, { account, environment: env });
         const state = randomUUID();
@@ -155,10 +161,10 @@ describe('connection.created — live-stack contract', () => {
             id: state,
             providerConfigKey: 'github',
             provider: 'github',
-            connectionId: 'oauth-callback-conn',
+            connectionId,
             callbackUrl: `${api.url}/oauth/callback`,
             authMode: 'OAUTH2',
-            connectSessionId: connectSession!.id,
+            connectSessionId,
             connectionConfig: {},
             webhookUrlOverride: null,
             environmentId: env.id,
@@ -183,6 +189,10 @@ describe('connection.created — live-stack contract', () => {
         await vi.waitFor(() => {
             expect(auditEvent('connection', 'created')).toBeDefined();
         });
+    }
+
+    it('attributes an OAuth callback creation to the end user on its connect session', async () => {
+        await runOAuthCallback({ withConnectSession: true, connectionId: 'oauth-callback-conn' });
         expect(auditEvent('connection', 'created')).toMatchObject({
             resource: 'connection',
             action: 'created',
@@ -190,6 +200,18 @@ describe('connection.created — live-stack contract', () => {
             actor: { type: 'connect_session', id: 'oauth-end-user', display: 'oauth@customer.com' },
             targets: [{ type: 'connection', id: 'oauth-callback-conn' }],
             // The provider issues this redirect, so the context is the end user's browser, not ours.
+            context: { interface: 'api', ip: '203.0.113.9', userAgent: 'a-browser' }
+        });
+    });
+
+    it('attributes an OAuth callback creation to the public key when no connect session started the flow', async () => {
+        await runOAuthCallback({ withConnectSession: false, connectionId: 'public-key-callback-conn' });
+        expect(auditEvent('connection', 'created')).toMatchObject({
+            resource: 'connection',
+            action: 'created',
+            outcome: 'success',
+            actor: { type: 'public_key', id: 'unknown' },
+            targets: [{ type: 'connection', id: 'public-key-callback-conn' }],
             context: { interface: 'api', ip: '203.0.113.9', userAgent: 'a-browser' }
         });
     });

@@ -19,7 +19,7 @@ import { refreshMcpGenericCredentials } from '../clients/mcpGeneric.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
-import { NangoError } from '../utils/error.js';
+import { ConnectionCreationCappedError, NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
 import {
     extractStepNumber,
@@ -92,6 +92,7 @@ import type {
     ProviderOAuth2,
     ProviderSignature,
     ProviderTwoStep,
+    SharedCredentials,
     SignatureCredentials,
     Tags,
     TbaCredentials,
@@ -222,6 +223,64 @@ export class ConnectionService {
         return uuidv4();
     }
 
+    public async enforceCreationCap(environmentId: number, database: Knex = db.knex): Promise<void> {
+        const cappedPlan = await database
+            .from({ target_environment: '_nango_environments' })
+            .join({ plan: 'plans' }, 'plan.account_id', 'target_environment.account_id')
+            .leftJoin({ account_environment: '_nango_environments' }, function () {
+                this.on('account_environment.account_id', 'target_environment.account_id').andOn('account_environment.deleted', database.raw('false'));
+            })
+            .leftJoin({ connection: '_nango_connections' }, function () {
+                this.on('connection.environment_id', 'account_environment.id').andOn('connection.deleted', database.raw('false'));
+            })
+            .select({
+                limit: 'plan.connections_max'
+            })
+            .count<{ connectionCount: string; limit: number }>({ connectionCount: 'connection.id' })
+            .where('target_environment.id', environmentId)
+            .where('target_environment.deleted', false)
+            .whereNotNull('plan.connections_max')
+            .groupBy('plan.connections_max')
+            .havingRaw('COUNT(connection.id) >= plan.connections_max')
+            .first();
+
+        if (!cappedPlan) {
+            return;
+        }
+
+        this.logCreationCapReached({ connectionCount: Number(cappedPlan.connectionCount), limit: cappedPlan.limit });
+        throw new ConnectionCreationCappedError();
+    }
+
+    private async findExistingConnectionOrLockCreation(
+        trx: Knex.Transaction,
+        params: { connectionId: string; providerConfigKey: string; environmentId: number }
+    ): Promise<DBConnection | null> {
+        const existing = await this.checkIfConnectionExists(trx, params);
+        if (existing) {
+            return existing;
+        }
+
+        await trx
+            .from({ account: '_nango_accounts' })
+            .join({ environment: '_nango_environments' }, 'environment.account_id', 'account.id')
+            .join({ plan: 'plans' }, 'plan.account_id', 'account.id')
+            .select('account.id')
+            .where('environment.id', params.environmentId)
+            .whereNotNull('plan.connections_max')
+            .forNoKeyUpdate('account')
+            .first();
+
+        return await this.checkIfConnectionExists(trx, params);
+    }
+
+    private logCreationCapReached({ connectionCount, limit }: { connectionCount: number; limit: number }): void {
+        logger.info(
+            'You reached the maximum number of connections on your plan. Attempts to create new connections will be blocked. Upgrade your account, or delete some connections to add new ones.',
+            { connectionCount, limit }
+        );
+    }
+
     public async upsertConnection({
         connectionId,
         providerConfigKey,
@@ -241,62 +300,67 @@ export class ConnectionService {
         metadata?: Metadata | null;
         tags?: Tags | undefined;
     }): Promise<ConnectionUpsertResponse[]> {
-        const storedConnection = await this.checkIfConnectionExists(db.knex, { connectionId, providerConfigKey, environmentId });
         const config_id = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
 
-        if (storedConnection) {
-            const encryptedConnection = getEncryptionManager().encryptConnection({
-                ...storedConnection,
+        return await db.knex.transaction(async (trx) => {
+            const storedConnection = await this.findExistingConnectionOrLockCreation(trx, { connectionId, providerConfigKey, environmentId });
+
+            if (storedConnection) {
+                const encryptedConnection = getEncryptionManager().encryptConnection({
+                    ...storedConnection,
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    credentials: parsedRawCredentials,
+                    connection_config: connectionConfig || storedConnection.connection_config,
+                    webhook_url_override: webhookUrlOverride !== undefined ? webhookUrlOverride : (storedConnection.webhook_url_override ?? null),
+                    environment_id: environmentId,
+                    config_id: config_id as number,
+                    metadata: metadata || storedConnection.metadata || null,
+                    credentials_expires_at: getExpiresAtFromCredentials(parsedRawCredentials),
+                    last_refresh_success: new Date(),
+                    last_refresh_failure: null,
+                    refresh_attempts: null,
+                    refresh_exhausted: false,
+                    tags: tags ?? storedConnection.tags
+                });
+
+                const connection = await trx
+                    .from<DBConnection>(`_nango_connections`)
+                    .where({ id: storedConnection.id, deleted: false })
+                    .update(encryptedConnection)
+                    .returning('*');
+
+                return [{ connection: connection[0]!, operation: 'override' }];
+            }
+
+            await this.enforceCreationCap(environmentId, trx);
+
+            const { id, ...data } = getEncryptionManager().encryptConnection({
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
-                credentials: parsedRawCredentials,
-                connection_config: connectionConfig || storedConnection.connection_config,
-                webhook_url_override: webhookUrlOverride !== undefined ? webhookUrlOverride : (storedConnection.webhook_url_override ?? null),
-                environment_id: environmentId,
                 config_id: config_id as number,
-                metadata: metadata || storedConnection.metadata || null,
+                credentials: parsedRawCredentials,
+                connection_config: connectionConfig || {},
+                webhook_url_override: webhookUrlOverride ?? null,
+                environment_id: environmentId,
+                metadata: metadata || null,
+                created_at: new Date(),
+                updated_at: new Date(),
+                id: -1,
+                last_fetched_at: new Date(),
                 credentials_expires_at: getExpiresAtFromCredentials(parsedRawCredentials),
                 last_refresh_success: new Date(),
                 last_refresh_failure: null,
                 refresh_attempts: null,
                 refresh_exhausted: false,
-                tags: tags ?? storedConnection.tags
+                deleted: false,
+                deleted_at: null,
+                tags: tags ?? {}
             });
+            const connection = await trx.from<DBConnection>(`_nango_connections`).insert(data).returning('*');
 
-            const connection = await db.knex
-                .from<DBConnection>(`_nango_connections`)
-                .where({ id: storedConnection.id, deleted: false })
-                .update(encryptedConnection)
-                .returning('*');
-
-            return [{ connection: connection[0]!, operation: 'override' }];
-        }
-
-        const { id, ...data } = getEncryptionManager().encryptConnection({
-            connection_id: connectionId,
-            provider_config_key: providerConfigKey,
-            config_id: config_id as number,
-            credentials: parsedRawCredentials,
-            connection_config: connectionConfig || {},
-            webhook_url_override: webhookUrlOverride ?? null,
-            environment_id: environmentId,
-            metadata: metadata || null,
-            created_at: new Date(),
-            updated_at: new Date(),
-            id: -1,
-            last_fetched_at: new Date(),
-            credentials_expires_at: getExpiresAtFromCredentials(parsedRawCredentials),
-            last_refresh_success: new Date(),
-            last_refresh_failure: null,
-            refresh_attempts: null,
-            refresh_exhausted: false,
-            deleted: false,
-            deleted_at: null,
-            tags: tags ?? {}
+            return [{ connection: connection[0]!, operation: 'creation' }];
         });
-        const connection = await db.knex.from<DBConnection>(`_nango_connections`).insert(data).returning('*');
-
-        return [{ connection: connection[0]!, operation: 'creation' }];
     }
 
     public async upsertAuthConnection({
@@ -329,7 +393,15 @@ export class ConnectionService {
         tags?: Tags | undefined;
     }): Promise<ConnectionUpsertResponse[]> {
         return await db.knex.transaction(async (trx) => {
-            const exists = await this.checkIfConnectionExists(trx, { connectionId, providerConfigKey, environmentId: environment.id });
+            const exists = await this.findExistingConnectionOrLockCreation(trx, {
+                connectionId,
+                providerConfigKey,
+                environmentId: environment.id
+            });
+
+            if (!exists) {
+                await this.enforceCreationCap(environment.id, trx);
+            }
 
             const { id, ...encryptedConnection } = getEncryptionManager().encryptConnection({
                 connection_id: connectionId,
@@ -354,7 +426,7 @@ export class ConnectionService {
                 tags: tags ?? exists?.tags ?? {}
             });
 
-            const [connection] = await db.knex
+            const [connection] = await trx
                 .from<DBConnection>(`_nango_connections`)
                 .insert(encryptedConnection)
                 .onConflict(['connection_id', 'provider_config_key', 'environment_id', 'deleted_at'])
@@ -400,54 +472,64 @@ export class ConnectionService {
         environment: DBEnvironment;
         tags?: Tags | undefined;
     }): Promise<ConnectionUpsertResponse[]> {
-        const storedConnection = await this.checkIfConnectionExists(db.knex, { connectionId, providerConfigKey, environmentId: environment.id });
         const config_id = await configService.getIdByProviderConfigKey(environment.id, providerConfigKey); // TODO remove that
         const expiresAt = getExpiresAtFromCredentials({});
 
-        if (storedConnection) {
-            const connection = await db.knex
+        return await db.knex.transaction(async (trx) => {
+            const storedConnection = await this.findExistingConnectionOrLockCreation(trx, {
+                connectionId,
+                providerConfigKey,
+                environmentId: environment.id
+            });
+
+            if (storedConnection) {
+                const connection = await trx
+                    .from<DBConnection>(`_nango_connections`)
+                    .where({ id: storedConnection.id, deleted: false })
+                    .update({
+                        connection_id: connectionId,
+                        provider_config_key: providerConfigKey,
+                        config_id: config_id as number,
+                        updated_at: new Date(),
+                        connection_config: connectionConfig || storedConnection.connection_config,
+                        webhook_url_override: webhookUrlOverride !== undefined ? webhookUrlOverride : (storedConnection.webhook_url_override ?? null),
+                        metadata: metadata || storedConnection.metadata || null,
+                        credentials_expires_at: expiresAt,
+                        last_refresh_success: new Date(),
+                        last_refresh_failure: null,
+                        refresh_attempts: null,
+                        refresh_exhausted: false,
+                        tags: tags ?? storedConnection.tags
+                    })
+                    .returning('*');
+
+                return [{ connection: connection[0]!, operation: 'override' }];
+            }
+
+            await this.enforceCreationCap(environment.id, trx);
+
+            const connection = await trx
                 .from<DBConnection>(`_nango_connections`)
-                .where({ id: storedConnection.id, deleted: false })
-                .update({
+                .insert({
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
-                    config_id: config_id as number,
-                    updated_at: new Date(),
-                    connection_config: connectionConfig || storedConnection.connection_config,
-                    webhook_url_override: webhookUrlOverride !== undefined ? webhookUrlOverride : (storedConnection.webhook_url_override ?? null),
-                    metadata: metadata || storedConnection.metadata || null,
+                    credentials: {},
+                    connection_config: connectionConfig || {},
+                    webhook_url_override: webhookUrlOverride ?? null,
+                    metadata: metadata || {},
+                    environment_id: environment.id,
+                    config_id: config_id!,
                     credentials_expires_at: expiresAt,
                     last_refresh_success: new Date(),
                     last_refresh_failure: null,
                     refresh_attempts: null,
                     refresh_exhausted: false,
-                    tags: tags ?? storedConnection.tags
+                    tags: tags ?? {}
                 })
                 .returning('*');
 
-            return [{ connection: connection[0]!, operation: 'override' }];
-        }
-        const connection = await db.knex
-            .from<DBConnection>(`_nango_connections`)
-            .insert({
-                connection_id: connectionId,
-                provider_config_key: providerConfigKey,
-                credentials: {},
-                connection_config: connectionConfig || {},
-                webhook_url_override: webhookUrlOverride ?? null,
-                metadata: metadata || {},
-                environment_id: environment.id,
-                config_id: config_id!,
-                credentials_expires_at: expiresAt,
-                last_refresh_success: new Date(),
-                last_refresh_failure: null,
-                refresh_attempts: null,
-                refresh_exhausted: false,
-                tags: tags ?? {}
-            })
-            .returning('*');
-
-        return [{ connection: connection[0]!, operation: 'creation' }];
+            return [{ connection: connection[0]!, operation: 'creation' }];
+        });
     }
 
     public async importOAuthConnection({
@@ -1002,11 +1084,13 @@ export class ConnectionService {
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
             .join('_nango_accounts', '_nango_environments.account_id', '_nango_accounts.id')
-            .select<T>(
+            .leftJoin('providers_shared_credentials', '_nango_configs.shared_credentials_id', 'providers_shared_credentials.id')
+            .select<(T[number] & { shared_credentials: SharedCredentials | null })[]>(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
                 db.knex.raw('row_to_json(_nango_configs.*) as integration'),
                 db.knex.raw('row_to_json(_nango_environments.*) as environment'),
-                db.knex.raw('row_to_json(_nango_accounts.*) as account')
+                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
+                'providers_shared_credentials.credentials as shared_credentials'
             )
             .where('_nango_connections.deleted', false)
             .andWhere((builder) => builder.where('refresh_exhausted', false).orWhereNull('refresh_exhausted'))
@@ -1019,7 +1103,18 @@ export class ConnectionService {
         }
 
         const result = await query;
-        return result || [];
+        return (result || []).map(({ shared_credentials, ...row }) => {
+            if (row.integration.shared_credentials_id && shared_credentials) {
+                Object.assign(row.integration, {
+                    oauth_client_id: shared_credentials.oauth_client_id,
+                    oauth_client_secret: shared_credentials.oauth_client_secret,
+                    oauth_scopes: shared_credentials.oauth_scopes,
+                    oauth_client_secret_iv: shared_credentials.oauth_client_secret_iv,
+                    oauth_client_secret_tag: shared_credentials.oauth_client_secret_tag
+                });
+            }
+            return row;
+        });
     }
 
     public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex | Knex.Transaction) {
@@ -1942,7 +2037,7 @@ export class ConnectionService {
 
             let create;
             if (assertionType === 'jwt') {
-                if (!existingAssertion || assertionClient.isJwtAssertionExpired(existingAssertion)) {
+                if (provider.assertion.singleUse || !existingAssertion || assertionClient.isJwtAssertionExpired(existingAssertion)) {
                     create = assertionClient.generateJwtAssertion(assertionArgs);
                 }
             } else if (!existingAssertion || assertionClient.isSamlAssertionExpired(existingAssertion)) {

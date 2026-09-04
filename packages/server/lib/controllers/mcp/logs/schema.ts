@@ -138,9 +138,11 @@ const webhookOperationFilterSchema = z
     .object({
         type: z.literal('webhook'),
         actions: z
-            .array(z.enum(['incoming', 'forward', 'sync', 'connection_create', 'connection_refresh'] satisfies OperationWebhook['action'][]))
+            .array(
+                z.enum(['incoming', 'forward', 'sync', 'connection_create', 'connection_refresh', 'connection_delete'] satisfies OperationWebhook['action'][])
+            )
             .min(1)
-            .max(5)
+            .max(6)
             .optional()
     })
     .strict();

@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
+import { maxScheduleNamesPerSearch } from '@nangohq/nango-orchestrator';
 import { Err, errorToObject, getCheckpointKey, getFrequencyMs, Ok, stringifyError } from '@nangohq/utils';
 
 import { hardDeleteCheckpoints } from '../index.js';
@@ -108,17 +109,20 @@ export class Orchestrator {
 
     async searchSchedules(props: { syncId: string; environmentId: number }[]): Promise<Result<Map<string, OrchestratorSchedule>>> {
         const scheduleNames = props.map(({ syncId, environmentId }) => ScheduleName.get({ environmentId, syncId }));
-        const schedules = await this.client.searchSchedules({ scheduleNames, limit: scheduleNames.length });
-        if (schedules.isErr()) {
-            return Err(`Failed to get schedules: ${stringifyError(schedules.error)}`);
-        }
-        const scheduleMap = schedules.value.reduce((map, schedule) => {
-            const parsed = ScheduleName.parse(schedule.name);
-            if (parsed.isOk()) {
-                map.set(parsed.value.syncId, schedule);
+        const scheduleMap = new Map<string, OrchestratorSchedule>();
+        for (let i = 0; i < scheduleNames.length; i += maxScheduleNamesPerSearch) {
+            const batch = scheduleNames.slice(i, i + maxScheduleNamesPerSearch);
+            const schedules = await this.client.searchSchedules({ scheduleNames: batch, limit: batch.length });
+            if (schedules.isErr()) {
+                return Err(`Failed to get schedules: ${stringifyError(schedules.error)}`);
             }
-            return map;
-        }, new Map<string, OrchestratorSchedule>());
+            for (const schedule of schedules.value) {
+                const parsed = ScheduleName.parse(schedule.name);
+                if (parsed.isOk()) {
+                    scheduleMap.set(parsed.value.syncId, schedule);
+                }
+            }
+        }
         return Ok(scheduleMap);
     }
 
@@ -244,7 +248,8 @@ export class Orchestrator {
             }
             let parsedInput: JsonValue = null;
             try {
-                parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
+                // Only an absent input is null. A truthiness check here turned false, 0 and "" into null.
+                parsedInput = input === undefined ? null : JSON.parse(JSON.stringify(input));
             } catch (err) {
                 const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(err)}`;
                 const error = new NangoError('action_failure', { error: errorMsg });

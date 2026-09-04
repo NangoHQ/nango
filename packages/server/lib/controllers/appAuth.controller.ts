@@ -1,10 +1,19 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { accountService, configService, connectionService, errorManager, getProvider, githubAppClient, syncEndUserToConnection } from '@nangohq/shared';
+import {
+    accountService,
+    configService,
+    ConnectionCreationCappedError,
+    connectionService,
+    errorManager,
+    getProvider,
+    githubAppClient,
+    syncEndUserToConnection
+} from '@nangohq/shared';
 import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
-import { noteConnectionUpsert } from '../hooks/auditConnection.js';
+import { noteConnectionUpsert, oauthAuthType } from '../hooks/auditConnection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
@@ -198,8 +207,9 @@ class AppAuthController {
                 connectionId: updatedConnection.connection.connection_id,
                 providerConfigKey: updatedConnection.connection.provider_config_key,
                 account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
-                endUser: connectSession?.connectSession.endUser ?? undefined
+                environment: { uuid: environment.uuid, name: environment.name },
+                endUser: connectSession?.connectSession.endUser ?? undefined,
+                authType: oauthAuthType(session)
             });
 
             void connectionCreatedHook(
@@ -228,6 +238,30 @@ class AppAuthController {
             });
             return;
         } catch (err) {
+            if (err instanceof ConnectionCreationCappedError) {
+                void logCtx.error(err.message);
+                await logCtx.failed();
+                void connectionCreationFailedHook(
+                    {
+                        connection: {
+                            connection_id: receivedConnectionId,
+                            provider_config_key: providerConfigKey,
+                            webhook_url_override: resolvedWebhookUrlOverride
+                        },
+                        environment,
+                        account,
+                        auth_mode: 'APP',
+                        error: {
+                            type: 'resource_capped',
+                            description: err.message
+                        },
+                        operation: 'unknown'
+                    },
+                    account
+                );
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, WSErrBuilder.ResourceCapped(err.message));
+            }
+
             const prettyError = stringifyError(err, { pretty: true });
 
             const error = WSErrBuilder.UnknownError();
