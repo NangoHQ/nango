@@ -96,14 +96,18 @@ try {
         logger.info('Closing...');
         clearTimeout(healthCheck);
 
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        srv.close(async () => {
-            otlp.stop();
+        const consumersStopped = (async () => {
             await processor.stop();
             await invocationsProcessor.stop();
             if (webhookDispatchConsumer) {
                 await webhookDispatchConsumer.stop();
             }
+        })();
+        const serverClosed = new Promise<void>((resolve) => srv.close(() => resolve()));
+
+        void (async () => {
+            await Promise.all([consumersStopped, serverClosed]);
+            otlp.stop();
             await destroyFeatureFlags();
             await destroyLogs();
             await stopFleets();
@@ -114,7 +118,7 @@ try {
             console.info('Closed');
 
             process.exit();
-        });
+        })();
     });
 
     process.on('SIGINT', () => {
