@@ -521,10 +521,9 @@ describe('authz integration', () => {
             const devUser = await createUserWithRole(account.id, 'development_full_access');
             const session = await authenticateUser(api, devUser);
 
-            // @ts-expect-error authz test — /sync not in endpoint types
             const res = await api.fetch('/api/v1/sync', {
                 method: 'GET',
-                query: { env: 'prod' },
+                query: { env: 'prod', connection_id: 'conn', provider_config_key: 'github' },
                 session
             });
 

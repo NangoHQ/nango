@@ -211,7 +211,8 @@ const VirtualizedSyncRows = ({
     onRequestTrigger: (sync: ApiConnectionSync) => void;
     onViewLogs: (sync: ApiConnectionSync) => void;
 }) => {
-    // Virtualized against the dashboard's own scroll container, so the tab adds no second scrollbar.
+    // Scrolls with the dashboard's own container, so the tab adds no second scrollbar. offsetTop is
+    // resolved in a hook because it keys the measurement cache — a render-time read would rebuild it each frame.
     const { scrollParent, offsetTop } = useScrollParent(tableRef);
     const rowVirtualizer = useVirtualizer({
         count: syncs.length,
@@ -445,7 +446,9 @@ const TriggerSyncDialog = ({
 };
 
 /** Stringifies in its own body, so a closed tooltip costs nothing per row. */
-const JsonBlock = ({ value }: { value: unknown }) => <SimpleCodeBlock language={'json'}>{JSON.stringify(value, null, 2)}</SimpleCodeBlock>;
+const JsonBlock = ({ value }: { value: unknown }) => {
+    return <SimpleCodeBlock language={'json'}>{JSON.stringify(value, null, 2)}</SimpleCodeBlock>;
+};
 
 const StatusBadge = ({ sync }: { sync: ApiConnectionSync }) => {
     const status = sync.latest_sync?.status;
@@ -479,7 +482,6 @@ const StatusBadge = ({ sync }: { sync: ApiConnectionSync }) => {
     );
 };
 
-/** `offsetTop` is resolved once: re-reading it per render invalidates the virtualizer's measurement cache. */
 function useScrollParent(ref: React.MutableRefObject<HTMLElement | null>) {
     const [resolved, setResolved] = useState<{ scrollParent: HTMLElement | null; offsetTop: number }>({ scrollParent: null, offsetTop: 0 });
 

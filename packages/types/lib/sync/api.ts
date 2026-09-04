@@ -29,10 +29,10 @@ export interface ApiConnectionSync {
 export type GetConnectionSyncs = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
-    Path: '/api/v1/connections/:connectionId/syncs';
-    Params: { connectionId: string };
+    Path: '/api/v1/sync';
     Querystring: {
         env: string;
+        connection_id: string;
         provider_config_key: string;
         name?: string | undefined;
         variant?: string | undefined;

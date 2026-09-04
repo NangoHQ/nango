@@ -16,7 +16,6 @@ import type { Sync, SyncStatus, SyncWithConnectionId } from '../../models/Sync.j
 import type { CreateSyncArgs } from './manager.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
-    ActiveLog,
     ApiConnectionSyncJob,
     CLIDeployFlowConfig,
     ConnectionInternal,
@@ -26,8 +25,7 @@ import type {
     Result,
     SlimAction,
     SlimSync,
-    SyncAndActionDifferences,
-    SyncTypeLiteral
+    SyncAndActionDifferences
 } from '@nangohq/types';
 import type { Knex } from 'knex';
 
@@ -36,7 +34,6 @@ const logger = getLogger('sync.service');
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
-const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 
 /**
  * Sync Service
@@ -144,89 +141,6 @@ export const getSync = async ({ connectionId, name, variant }: { connectionId: n
     }
 
     return null;
-};
-
-/**
- * Get Syncs
- * @description get the sync related to the connection
- * the latest sync and its result and the next sync based on the schedule
- */
-export const getSyncs = async (
-    nangoConnection: DBConnection | DBConnectionDecrypted,
-    orchestrator: Orchestrator
-): Promise<(Sync & { sync_type: SyncTypeLiteral; status: SyncStatus; active_logs: Pick<ActiveLog, 'log_id'>; models: string[] })[]> => {
-    const q = db.readOnly
-        .from<Sync>(TABLE)
-        .select(
-            `${TABLE}.*`,
-            `${TABLE}.frequency as frequency_override`,
-            `${SYNC_CONFIG_TABLE}.sync_type`,
-            `${SYNC_CONFIG_TABLE}.runs as frequency`,
-            `${SYNC_CONFIG_TABLE}.models`,
-            `${ACTIVE_LOG_TABLE}.log_id as error_log_id`,
-            db.knex.raw(`json_build_object( 'log_id', ${ACTIVE_LOG_TABLE}.log_id) as active_logs`),
-            db.knex.raw(
-                `(SELECT json_build_object(
-                            'job_id', ${SYNC_JOB_TABLE}.id,
-                            'created_at', ${SYNC_JOB_TABLE}.created_at,
-                            'updated_at', ${SYNC_JOB_TABLE}.updated_at,
-                            'type', ${SYNC_JOB_TABLE}.type,
-                            'result', ${SYNC_JOB_TABLE}.result,
-                            'status', ${SYNC_JOB_TABLE}.status,
-                            'sync_config_id', ${SYNC_JOB_TABLE}.sync_config_id,
-                            'version', ${SYNC_CONFIG_TABLE}.version,
-                            'models', ${SYNC_CONFIG_TABLE}.models
-                        )
-                        FROM ${SYNC_JOB_TABLE}
-                        JOIN ${SYNC_CONFIG_TABLE} ON ${SYNC_CONFIG_TABLE}.id = ${SYNC_JOB_TABLE}.sync_config_id AND ${SYNC_CONFIG_TABLE}.deleted = false
-                        WHERE ${SYNC_JOB_TABLE}.sync_id = ${TABLE}.id
-                        ORDER BY ${SYNC_JOB_TABLE}.created_at DESC
-                        LIMIT 1) as latest_sync`
-            )
-        )
-        .leftJoin(ACTIVE_LOG_TABLE, function () {
-            this.on(`${ACTIVE_LOG_TABLE}.sync_id`, `${TABLE}.id`).andOnVal(`${ACTIVE_LOG_TABLE}.active`, true).andOnVal(`${ACTIVE_LOG_TABLE}.type`, 'sync');
-        })
-        .join(SYNC_CONFIG_TABLE, function () {
-            this.on(`${SYNC_CONFIG_TABLE}.sync_name`, `${TABLE}.name`)
-                .andOn(`${SYNC_CONFIG_TABLE}.deleted`, '=', db.knex.raw('FALSE'))
-                .andOn(`${SYNC_CONFIG_TABLE}.active`, '=', db.knex.raw('TRUE'))
-                .andOn(`${SYNC_CONFIG_TABLE}.type`, '=', db.knex.raw('?', 'sync'))
-                .andOn(`${SYNC_CONFIG_TABLE}.enabled`, '=', db.knex.raw('?', 'TRUE'));
-        })
-        .where({
-            nango_connection_id: nangoConnection.id,
-            [`${SYNC_CONFIG_TABLE}.nango_config_id`]: nangoConnection.config_id,
-            [`${TABLE}.deleted`]: false
-        })
-        .orderBy([
-            { column: `${TABLE}.name`, order: 'asc' },
-            { column: `${TABLE}.variant`, order: 'asc' }
-        ]);
-
-    const result = await q;
-
-    const searchSchedulesProps = result.map((sync) => {
-        return { syncId: sync.id, environmentId: nangoConnection.environment_id };
-    });
-    const schedules = await orchestrator.searchSchedules(searchSchedulesProps);
-    if (schedules.isErr()) {
-        throw new Error(`Failed to get schedules for environment ${nangoConnection.environment_id}: ${stringifyError(schedules.error)}`);
-    }
-    return result.map((sync) => {
-        const schedule = schedules.value.get(sync.id);
-        const { job_row_number, ...syncData } = sync;
-        if (schedule) {
-            return {
-                ...syncData,
-                frequency: sync.frequency_override || sync.frequency,
-                schedule_status: schedule.state,
-                status: syncManager.classifySyncStatus(sync?.latest_sync?.status, schedule.state),
-                futureActionTimes: schedule.nextDueDate ? [schedule.nextDueDate.getTime() / 1000] : []
-            };
-        }
-        return sync;
-    });
 };
 
 export interface ListedSync {

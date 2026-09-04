@@ -4,16 +4,9 @@ import { records as recordsService } from '@nangohq/records';
 import { connectionService, listConnectionSyncs } from '@nangohq/shared';
 import { getLogger, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
-import {
-    connectionIdSchema,
-    envSchema,
-    paginationQueryFields,
-    providerConfigKeySchema,
-    syncNameSchema,
-    variantSchema
-} from '../../../../../helpers/validation.js';
-import { asyncWrapperWithEnvironment } from '../../../../../utils/asyncWrapper.js';
-import { getOrchestrator } from '../../../../../utils/utils.js';
+import { connectionIdSchema, envSchema, paginationQueryFields, providerConfigKeySchema, syncNameSchema, variantSchema } from '../../../helpers/validation.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../../utils/utils.js';
 
 import type { RecordCount } from '@nangohq/records';
 import type { ListedSync } from '@nangohq/shared';
@@ -23,15 +16,10 @@ const logger = getLogger('connections.syncs');
 
 const orchestrator = getOrchestrator();
 
-const paramValidation = z
-    .object({
-        connectionId: connectionIdSchema
-    })
-    .strict();
-
 const queryStringValidation = z
     .object({
         env: envSchema,
+        connection_id: connectionIdSchema,
         provider_config_key: providerConfigKeySchema,
         name: syncNameSchema.optional(),
         variant: variantSchema.optional(),
@@ -52,18 +40,11 @@ export const getConnectionSyncs = asyncWrapperWithEnvironment<GetConnectionSyncs
         return;
     }
 
-    const paramValues = paramValidation.safeParse(req.params);
-    if (!paramValues.success) {
-        res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(paramValues.error) } });
-        return;
-    }
-
     const { environment } = res.locals;
     const query = queryParamValues.data satisfies GetConnectionSyncs['Querystring'];
-    const params = paramValues.data satisfies GetConnectionSyncs['Params'];
 
     const connection = await connectionService.getConnectionForPrivateApi({
-        connectionId: params.connectionId,
+        connectionId: query.connection_id,
         providerConfigKey: query.provider_config_key,
         environmentId: environment.id
     });

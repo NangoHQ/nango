@@ -4,11 +4,11 @@ import db from '@nangohq/database';
 import { records } from '@nangohq/records';
 import { createSync, seeders, SyncStatus } from '@nangohq/shared';
 
-import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
+import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 import type { DBEnvironment } from '@nangohq/types';
 
-const route = '/api/v1/connections/:connectionId/syncs';
+const route = '/api/v1/sync';
 let api: Awaited<ReturnType<typeof runServer>>;
 
 const { createConfigSeed, createConnectionSeed, createSyncSeeds, createSyncJobSeeds, seedAccountEnvAndUser } = seeders;
@@ -57,8 +57,7 @@ describe(`GET ${route}`, () => {
     it('should be protected', async () => {
         const res = await api.fetch(route, {
             method: 'GET',
-            params: { connectionId: 'test-connection' },
-            query: { env: 'dev', provider_config_key: 'github' }
+            query: { env: 'dev', connection_id: 'test-connection', provider_config_key: 'github' }
         });
 
         shouldBeProtected(res);
@@ -70,8 +69,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             token: apiKey.secret,
-            params: { connectionId: 'test-connection' },
-            query: { provider_config_key: 'github' } as any
+            query: { connection_id: 'test-connection', provider_config_key: 'github' } as any
         });
 
         shouldRequireQueryEnv(res);
@@ -84,8 +82,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             token: apiKey.secret,
-            params: { connectionId: connection.connection_id },
-            query: { env: env.name, provider_config_key: 'github', connection_id: connection.connection_id } as any
+            query: { env: env.name, connection_id: connection.connection_id, provider_config_key: 'github', not_a_param: 'x' } as any
         });
 
         isError(res.json);
@@ -100,8 +97,7 @@ describe(`GET ${route}`, () => {
         const tooBig = await api.fetch(route, {
             method: 'GET',
             token: apiKey.secret,
-            params: { connectionId: connection.connection_id },
-            query: { env: env.name, provider_config_key: 'github', limit: 101 }
+            query: { env: env.name, connection_id: connection.connection_id, provider_config_key: 'github', limit: 101 }
         });
         isError(tooBig.json);
         expect(tooBig.res.status).toBe(400);
@@ -109,8 +105,7 @@ describe(`GET ${route}`, () => {
         const negativePage = await api.fetch(route, {
             method: 'GET',
             token: apiKey.secret,
-            params: { connectionId: connection.connection_id },
-            query: { env: env.name, provider_config_key: 'github', page: -1 }
+            query: { env: env.name, connection_id: connection.connection_id, provider_config_key: 'github', page: -1 }
         });
         isError(negativePage.json);
         expect(negativePage.res.status).toBe(400);
@@ -123,8 +118,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             token: apiKey.secret,
-            params: { connectionId: 'does-not-exist' },
-            query: { env: env.name, provider_config_key: 'github' }
+            query: { env: env.name, connection_id: 'does-not-exist', provider_config_key: 'github' }
         });
 
         isError(res.json);
@@ -139,8 +133,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             token: apiKey.secret,
-            params: { connectionId: connection.connection_id },
-            query: { env: env.name, provider_config_key: 'github' }
+            query: { env: env.name, connection_id: connection.connection_id, provider_config_key: 'github' }
         });
 
         isSuccess(res.json);
@@ -156,8 +149,7 @@ describe(`GET ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'GET',
                 token: apiKey.secret,
-                params: { connectionId: connection.connection_id },
-                query: { env: env.name, provider_config_key: 'github', page, limit: 2 }
+                query: { env: env.name, connection_id: connection.connection_id, provider_config_key: 'github', page, limit: 2 }
             });
             isSuccess(res.json);
             return res.json;
@@ -184,8 +176,7 @@ describe(`GET ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'GET',
                 token: apiKey.secret,
-                params: { connectionId: connection.connection_id },
-                query: { env: env.name, provider_config_key: 'github', page, limit: 2 }
+                query: { env: env.name, connection_id: connection.connection_id, provider_config_key: 'github', page, limit: 2 }
             });
             isSuccess(res.json);
             seen.push(...res.json.data.map((sync) => ({ name: sync.name, variant: sync.variant })));
@@ -207,8 +198,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             token: apiKey.secret,
-            params: { connectionId: connection.connection_id },
-            query: { env: env.name, provider_config_key: 'github', name: 'emails', variant: 'base', limit: 1 }
+            query: { env: env.name, connection_id: connection.connection_id, provider_config_key: 'github', name: 'emails', variant: 'base', limit: 1 }
         });
 
         isSuccess(res.json);
@@ -224,8 +214,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             token: apiKey.secret,
-            params: { connectionId: connection.connection_id },
-            query: { env: env.name, provider_config_key: 'github' }
+            query: { env: env.name, connection_id: connection.connection_id, provider_config_key: 'github' }
         });
 
         isSuccess(res.json);
@@ -242,8 +231,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             token: apiKey.secret,
-            params: { connectionId: connection.connection_id },
-            query: { env: env.name, provider_config_key: 'github' }
+            query: { env: env.name, connection_id: connection.connection_id, provider_config_key: 'github' }
         });
 
         isSuccess(res.json);
@@ -260,8 +248,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             token: apiKey.secret,
-            params: { connectionId: connection.connection_id },
-            query: { env: env.name, provider_config_key: 'github' }
+            query: { env: env.name, connection_id: connection.connection_id, provider_config_key: 'github' }
         });
 
         isSuccess(res.json);
@@ -302,8 +289,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             token: apiKey.secret,
-            params: { connectionId: connection.connection_id },
-            query: { env: env.name, provider_config_key: 'github' }
+            query: { env: env.name, connection_id: connection.connection_id, provider_config_key: 'github' }
         });
 
         isSuccess(res.json);
@@ -317,8 +303,7 @@ describe(`GET ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'GET',
             token: apiKey.secret,
-            params: { connectionId: connection.connection_id },
-            query: { env: env.name, provider_config_key: 'github' }
+            query: { env: env.name, connection_id: connection.connection_id, provider_config_key: 'github' }
         });
 
         isSuccess(res.json);
