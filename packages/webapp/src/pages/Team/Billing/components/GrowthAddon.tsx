@@ -42,7 +42,6 @@ export const GrowthAddon: React.FC<{ state: GrowthAddonState; endsAt?: string; o
                         </Button>
                     </ConditionalTooltip>
                 )}
-                {/* Keeping the add-on has no action behind it until NAN-6816 lets a scheduled removal be cancelled. */}
             </div>
             <div className="flex items-center gap-1.5">
                 {state !== 'none' && <Dot variant={state === 'active' ? 'success' : 'warning'} />}

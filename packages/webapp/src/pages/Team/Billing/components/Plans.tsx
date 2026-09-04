@@ -130,9 +130,7 @@ const PlanCard: React.FC<{
     /** Undefined while the old set of cards is on screen. */
     card?: S26PlanCard;
     addonState: GrowthAddonState;
-    /** Orb's period end, not a client-side guess at it. */
     endsAt?: string;
-    /** A scheduled plan change locks the add-on, in both directions. */
     pendingChangeAt?: string;
     /** Whether this plan is no longer something the account can move to. */
     closed?: boolean;
