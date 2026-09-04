@@ -352,7 +352,8 @@ function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPla
             case 'function_executions_max':
             case 'function_compute_gbms_max':
             case 'function_duration_seconds_max':
-            case 'function_logs_max': {
+            case 'function_logs_max':
+            case 'data_transfer_max': {
                 const currentValue = currentPlan[key];
                 const newValue = newPlanDefinition.flags[key] || 0;
                 if (currentValue === null || currentValue > newValue) {
