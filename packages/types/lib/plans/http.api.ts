@@ -250,7 +250,7 @@ export type PostPlanChange = ApiEndpoint<{
     Method: 'POST';
     Path: '/api/v1/plans/change';
     Querystring: { env: string };
-    Body: { orbId: string };
+    Body: { orbId: string; withGrowthFeatures: boolean };
     Success: {
         data: { success: true } | { paymentIntent: any };
     };
