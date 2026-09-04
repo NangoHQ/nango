@@ -83,9 +83,9 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ query, sel
                     Export
                 </Button>
             </DialogTrigger>
-            {/* Radix would otherwise land on the body's "Contact us" link, making Enter open support instead of exporting. */}
             <DialogContent
                 onOpenAutoFocus={(event) => {
+                    // Radix would otherwise land on the body's "Contact us" link, making Enter open support.
                     event.preventDefault();
                     exportButtonRef.current?.focus();
                 }}

@@ -74,8 +74,7 @@ export const AuditShow: React.FC = () => {
     const resourceSelection = useMemo(() => resources.filter((resource): resource is AuditResource => resource !== ALL), [resources]);
     const actionOptions = useMemo(() => actionOptionsForResources(resourceSelection), [resourceSelection]);
 
-    // Reconciled here, not in the change handler: a selection also arrives from the URL, and an action the
-    // chosen resources don't declare would be sent as a pair that can never match.
+    // Reconciled here, not in the change handler: a selection also arrives from the URL.
     const offeredActions = useMemo<ActionFilter[]>(() => {
         const offered = new Set(actionOptions.map((option) => option.value));
         const kept = actions.filter((action) => offered.has(action));
@@ -95,7 +94,6 @@ export const AuditShow: React.FC = () => {
     );
     const events = useMemo(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
 
-    // The button below stays: it is the keyboard path, and the fallback if the observer never fires.
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
     // Stops on error: the sentinel stays visible after a failed page, so the observer would retry it in a loop.
     const canLoadMore = hasNextPage && !isFetchingNextPage && !isError;

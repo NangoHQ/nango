@@ -100,7 +100,6 @@ export function viaLabel(via: ApiAuditTrailEvent['via']): string | undefined {
     return via?.map((entry) => `${entry.display ?? entry.id} (${entry.type}${entry.actorId ? `, actor ${entry.actorId}` : ''})`).join(', ');
 }
 
-// Display names, not the raw `resource.action` key — that stays available in the drawer's JSON and the CSV.
 export function eventLabel(event: Pick<ApiAuditTrailEvent, 'resource' | 'action'>): string {
     // Falls back to the raw key: a newer backend can send a resource this build has no label for.
     return `${resourceLabels[event.resource] ?? event.resource} · ${formatKeyToLabel(event.action)}`;

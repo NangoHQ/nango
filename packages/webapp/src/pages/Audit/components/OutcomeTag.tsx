@@ -10,8 +10,8 @@ const outcomeVariant: Record<AuditOutcome, React.ComponentProps<typeof Tag>['var
     denied: 'warning'
 };
 
-// `normal-case` overrides Tag's uppercase base: the outcome is a value from the event, shown as it is stored.
 export const OutcomeTag: React.FC<{ outcome: AuditOutcome }> = ({ outcome }) => (
+    // `normal-case` overrides Tag's uppercase base: the outcome is shown as the event stored it.
     <Tag variant={outcomeVariant[outcome]} className="gap-1 font-code normal-case">
         {outcome === 'success' ? <Check size={12} /> : <X size={12} />}
         {outcome}
