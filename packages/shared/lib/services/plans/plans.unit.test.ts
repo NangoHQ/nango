@@ -15,7 +15,8 @@ describe('mergeFlags', () => {
             function_executions_max: null,
             function_compute_gbms_max: null,
             webhook_forwards_max: null,
-            function_logs_max: null
+            function_logs_max: null,
+            data_transfer_max: 10_000_000_000
         });
     });
 
@@ -287,6 +288,7 @@ function makePlan({
         function_duration_seconds_max: null,
         webhook_forwards_max: null,
         function_logs_max: null,
+        data_transfer_max: null,
         sync_function_runtime: 'runner',
         sync_lambda_checkpoint_required: true,
         action_function_runtime: 'runner',

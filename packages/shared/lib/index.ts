@@ -59,7 +59,7 @@ export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
 export * from './services/proxy/outbound-policy.js';
 export { type MeteredBytes, createMeteringTransport } from './services/proxy/byte-metering-transport.js';
-export { makeDataTransferEvent } from './services/proxy/data-transfer-event.js';
+export { isBillableDataTransfer, makeDataTransferEvent } from './services/proxy/data-transfer-event.js';
 export * from './services/plans/plans.js';
 export * from './services/plans/definitions.js';
 export * from './services/plans/spendAlertNotifications.js';
