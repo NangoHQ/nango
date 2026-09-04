@@ -14,6 +14,7 @@ import type { ApiPlan } from '@nangohq/types';
 
 interface PlanChangeRequest {
     orbId: string;
+    /** The end state, not a delta: `false` drops an add-on the account already has. */
     withGrowthFeatures: boolean;
     settled?: (plan: ApiPlan) => boolean;
     successTitle: string;

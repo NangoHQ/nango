@@ -132,7 +132,7 @@ const PlanCard: React.FC<{
     addonState: GrowthAddonState;
     /** Orb's period end, not a client-side guess at it. */
     endsAt?: string;
-    /** Set when a plan change is already coming: the add-on cannot then move the other way. */
+    /** A scheduled plan change locks the add-on, in both directions. */
     pendingChangeAt?: string;
     /** Whether this plan is no longer something the account can move to. */
     closed?: boolean;
@@ -460,7 +460,6 @@ const PlanChangeDialog: React.FC<{
     );
 };
 
-/** There is no add-on endpoint: `POST /plans/change` takes an end state, so this is a plan change in place. */
 const GrowthAddonDialog: React.FC<{
     planCode: PlanDefinition['code'];
     action: 'add' | 'remove';
