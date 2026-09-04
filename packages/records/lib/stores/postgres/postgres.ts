@@ -1584,15 +1584,29 @@ export class PostgresStore implements RecordsStore {
         }
     }
 
-    async getCountsByModel({ connectionId, environmentId }: { connectionId: number; environmentId: number }): Promise<Result<Record<string, RecordCount>>> {
+    async getCountsByModel({
+        connectionId,
+        environmentId,
+        models
+    }: {
+        connectionId: number;
+        environmentId: number;
+        models?: string[] | undefined;
+    }): Promise<Result<Record<string, RecordCount>>> {
         try {
-            const results = await this.db
+            const query = this.db
                 .from(RECORD_COUNTS_TABLE)
                 .where({
                     connection_id: connectionId,
                     environment_id: environmentId
                 })
                 .select<RecordCount[]>('*');
+
+            if (models) {
+                query.whereIn('model', models);
+            }
+
+            const results = await query;
 
             const statsByModel: Record<string, RecordCount> = results.reduce(
                 (acc, result) => ({

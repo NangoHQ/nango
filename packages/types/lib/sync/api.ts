@@ -1,6 +1,49 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
-import type { ReportedSyncJobStatus } from './index.js';
+import type { ReportedSyncJobStatus, SyncResultByModel, SyncStatus } from './index.js';
+
+export interface ApiConnectionSyncJob {
+    created_at: string;
+    updated_at: string;
+    status: SyncStatus;
+    result: SyncResultByModel | null;
+}
+
+export interface ApiConnectionSync {
+    id: string;
+    name: string;
+    variant: string;
+    nango_connection_id: number;
+    models: string[];
+    frequency: string | null;
+    /** null when the orchestrator has no schedule for the sync, or could not be reached. */
+    schedule_status: 'STARTED' | 'PAUSED' | 'DELETED' | null;
+    status: SyncStatus;
+    /** Unix seconds. */
+    futureActionTimes: number[];
+    latest_sync: ApiConnectionSyncJob | null;
+    /** Keyed by bare model name; null when the record store could not be reached. */
+    record_count: Record<string, number> | null;
+}
+
+export type GetConnectionSyncs = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/sync';
+    Querystring: {
+        env: string;
+        connection_id: string;
+        provider_config_key: string;
+        name?: string | undefined;
+        variant?: string | undefined;
+        page?: number | undefined;
+        limit?: number | undefined;
+    };
+    Success: {
+        data: ApiConnectionSync[];
+        pagination: { total: number; page: number; limit: number };
+    };
+}>;
 
 export type PostPublicTrigger = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'data-plane operation' };
