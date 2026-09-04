@@ -3,7 +3,7 @@ import { Err, metrics } from '@nangohq/utils';
 import { formatMcpArgumentsError, handleMcpToolError, jsonContent, jsonStructuredContent, PublicMcpError } from '../../mcp/utils.js';
 
 import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/server';
-import type { AgentSession, AgentSessionMetaTools, DBEnvironment, DBTeam } from '@nangohq/types';
+import type { AgentSession, AgentSessionMetaTools, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type * as z from 'zod/v4';
 
@@ -25,6 +25,7 @@ export type AgentSessionCallableTools = ReadonlyMap<string, AgentSessionCallable
 export interface AgentSessionMcpContext {
     account: DBTeam;
     environment: DBEnvironment;
+    plan: DBPlan | null;
     session: AgentSession;
     callable: AgentSessionCallableTools;
 }

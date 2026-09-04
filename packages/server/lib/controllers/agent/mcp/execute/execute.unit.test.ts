@@ -45,7 +45,7 @@ function context({
         accountId: 1,
         resolvedConnections,
         compiledToolset,
-        metaTools: { nangoToolSearch: true, nangoExecute: true },
+        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
         expiresAt: new Date(),
         endedAt: null,
         endedReason: null,
@@ -53,7 +53,7 @@ function context({
         updatedAt: new Date()
     };
 
-    return { account: { id: 1 } as DBTeam, environment: { id: 1 } as DBEnvironment, session, callable: buildSessionTools(session).callable };
+    return { account: { id: 1 } as DBTeam, environment: { id: 1 } as DBEnvironment, plan: null, session, callable: buildSessionTools(session).callable };
 }
 
 async function execute(toolName: string, args: Partial<Parameters<typeof executeSessionTool>[0]> = {}) {
@@ -223,7 +223,7 @@ describe('nango_execute', () => {
     });
 
     it('does not point at tool search when the session turned it off', async () => {
-        const withoutSearch = { ...context(), session: { ...context().session, metaTools: { nangoToolSearch: false, nangoExecute: true } } };
+        const withoutSearch = { ...context(), session: { ...context().session, metaTools: { nangoToolSearch: false, nangoExecute: true, nangoProxy: false } } };
 
         const result = await executeTool.handler({ tool: 'notion__delete_doc' }, withoutSearch);
 

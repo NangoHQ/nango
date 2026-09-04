@@ -38,9 +38,10 @@ const EXPIRES_IN_UNITS_IN_MS: Record<string, number> = {
     d: 24 * 60 * 60 * 1000
 };
 
-const META_TOOLS = ['nango_tool_search', 'nango_execute'] as const;
+const META_TOOLS = ['nango_tool_search', 'nango_execute', 'nango_proxy'] as const;
 
-const DEFAULT_META_TOOLS: AgentSessionMetaTools = { nangoToolSearch: true, nangoExecute: true };
+/** nango_proxy is off by default: it reaches any endpoint of a connected integration, not only the toolset's tools. */
+const DEFAULT_META_TOOLS: AgentSessionMetaTools = { nangoToolSearch: true, nangoExecute: true, nangoProxy: false };
 
 export const agentSessionExpiresInSchema = z
     .string()
@@ -235,7 +236,8 @@ async function runCreation(params: CreateAgentSessionParams, logCtx: LogContextO
         toolset: toolsetSummary(session.value.compiledToolset, session.value.resolvedConnections),
         metaTools: {
             nango_tool_search: session.value.metaTools.nangoToolSearch,
-            nango_execute: session.value.metaTools.nangoExecute
+            nango_execute: session.value.metaTools.nangoExecute,
+            nango_proxy: session.value.metaTools.nangoProxy
         }
     });
 }
@@ -246,7 +248,8 @@ function parseMetaTools(requested: Record<string, boolean> | undefined): { appli
     return {
         applied: {
             nangoToolSearch: requested?.['nango_tool_search'] ?? DEFAULT_META_TOOLS.nangoToolSearch,
-            nangoExecute: requested?.['nango_execute'] ?? DEFAULT_META_TOOLS.nangoExecute
+            nangoExecute: requested?.['nango_execute'] ?? DEFAULT_META_TOOLS.nangoExecute,
+            nangoProxy: requested?.['nango_proxy'] ?? DEFAULT_META_TOOLS.nangoProxy
         },
         unknown
     };

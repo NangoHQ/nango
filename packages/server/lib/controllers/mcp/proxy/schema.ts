@@ -5,19 +5,27 @@ import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/va
 const queryValueSchema = z.union([z.string(), z.number(), z.array(z.union([z.string(), z.number()]))]);
 const proxyResponseHeaderSchema = z.union([z.string(), z.array(z.string())]);
 
+export const proxyMethodSchema = z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']);
+
+export const proxyPathSchema = z
+    .string()
+    .min(1)
+    .max(8192)
+    .startsWith('/')
+    .refine((path) => !path.includes('#'), { message: 'URL fragments are not supported in proxy paths.' });
+
+export const proxyQueryParamsSchema = z.record(z.string().min(1).max(255), queryValueSchema);
+
+export const proxyHeadersSchema = z.record(z.string().min(1).max(255), z.string().max(8192));
+
 export const proxyRequestInputSchema = z
     .object({
-        method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
-        path: z
-            .string()
-            .min(1)
-            .max(8192)
-            .startsWith('/')
-            .refine((path) => !path.includes('#'), { message: 'URL fragments are not supported in proxy paths.' }),
+        method: proxyMethodSchema,
+        path: proxyPathSchema,
         integration_id: providerConfigKeySchema.min(1),
         connection_id: connectionIdSchema.min(1),
-        query_params: z.record(z.string().min(1).max(255), queryValueSchema).optional(),
-        headers: z.record(z.string().min(1).max(255), z.string().max(8192)).optional(),
+        query_params: proxyQueryParamsSchema.optional(),
+        headers: proxyHeadersSchema.optional(),
         body: z.json().optional(),
         base_url_override: z.url().or(z.literal('')).optional(),
         retries: z.number().int().min(0).max(5).optional(),
@@ -35,4 +43,5 @@ export const proxyRequestOutputSchema = z
     })
     .strict();
 
+export type ProxyQueryParams = z.infer<typeof proxyQueryParamsSchema>;
 export type ProxyRequestOutput = z.infer<typeof proxyRequestOutputSchema>;

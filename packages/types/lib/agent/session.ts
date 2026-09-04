@@ -4,6 +4,7 @@ import type { AgentSessionCompiledToolset } from './toolset.js';
 export interface AgentSessionMetaTools {
     readonly nangoToolSearch: boolean;
     readonly nangoExecute: boolean;
+    readonly nangoProxy: boolean;
 }
 
 export type AgentSessionEndedReason = 'terminated' | 'expired';
