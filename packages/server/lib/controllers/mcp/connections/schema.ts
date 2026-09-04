@@ -1,6 +1,6 @@
 import * as z from 'zod/v4';
 
-import { connectionTagsSchema } from '@nangohq/shared';
+import { CONNECTION_LIST_MAX_LIMIT, connectionTagsSchema } from '@nangohq/shared';
 
 import { connectionIdSchema, endUserSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 
@@ -12,7 +12,7 @@ export const listConnectionsArgumentsSchema = z
         integration_id: providerConfigKeySchema.min(1).optional(),
         end_user_organization_id: z.string().min(1).max(255).optional(),
         tags: connectionTagsSchema.optional(),
-        limit: z.number().int().min(1).max(2000).optional(),
+        limit: z.number().int().min(1).max(CONNECTION_LIST_MAX_LIMIT).optional(),
         page: z.number().int().min(0).optional()
     })
     .strict();

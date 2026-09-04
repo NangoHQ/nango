@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { connectionService, connectionTagsSchema } from '@nangohq/shared';
+import { CONNECTION_LIST_DEFAULT_LIMIT, CONNECTION_LIST_MAX_LIMIT, connectionService, connectionTagsSchema } from '@nangohq/shared';
 import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToPublicApi } from '../../formatters/connection.js';
@@ -8,9 +8,6 @@ import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { bodySchema } from '../connect/postSessions.js';
 
 import type { GetPublicConnections } from '@nangohq/types';
-
-const MAX_LIMIT = 2000;
-const DEFAULT_LIMIT = 100;
 
 const validationQuery = z
     .object({
@@ -20,7 +17,7 @@ const validationQuery = z
         integrationId: z.string().min(1).optional(),
         endUserOrganizationId: bodySchema.shape.end_user.shape.id.optional(),
         tags: connectionTagsSchema.optional(),
-        limit: z.coerce.number().min(1).max(MAX_LIMIT).optional(),
+        limit: z.coerce.number().min(1).max(CONNECTION_LIST_MAX_LIMIT).optional(),
         page: z.coerce.number().min(0).optional()
     })
     .strict();
@@ -50,7 +47,7 @@ export const getPublicConnections = asyncWrapperWithEnvironment<GetPublicConnect
         endUserOrganizationId: queryParam.endUserOrganizationId,
         tags: queryParam.tags,
         page: queryParam.page,
-        limit: queryParam.limit ?? DEFAULT_LIMIT
+        limit: queryParam.limit ?? CONNECTION_LIST_DEFAULT_LIMIT
     });
 
     res.status(200).send({
