@@ -1,13 +1,13 @@
 import JSONBig from 'json-bigint';
 
-import { getProxyResponseMediaType, isProxyResponseJsonMediaType } from './response.js';
+import { getProxyResponseMediaType, isProxyResponseJsonMediaType } from './mcpProxyResponse.js';
 
-import type { ProxyServiceResponse } from '../../../services/proxy.service.js';
-import type { ProxyRequestOutput } from './schema.js';
+import type { McpProxyResponse } from './mcpProxySchema.js';
+import type { ProxyServiceResponse } from './proxy.service.js';
 
 const losslessJson = JSONBig({ protoAction: 'error', constructorAction: 'preserve' });
 
-export function proxyResponseToMcp(response: ProxyServiceResponse, body: Buffer): ProxyRequestOutput {
+export function proxyResponseToMcp(response: ProxyServiceResponse, body: Buffer): McpProxyResponse {
     return {
         status: response.status,
         headers: formatHeaders(response.headers, response.wasCompressed),
@@ -33,7 +33,7 @@ function formatHeaders(headers: Record<string, unknown>, wasCompressed: boolean 
     return formatted;
 }
 
-function formatBody(body: string, mediaType: string): ProxyRequestOutput['body'] {
+function formatBody(body: string, mediaType: string): McpProxyResponse['body'] {
     if (isProxyResponseJsonMediaType(mediaType)) {
         try {
             const jsonBody: unknown = losslessJson.parse(stripByteOrderMark(body));
@@ -49,7 +49,7 @@ function formatBody(body: string, mediaType: string): ProxyRequestOutput['body']
  * json-bigint parses long numeric tokens as BigNumber objects. Safe integers remain numbers; unsafe integers and
  * high-precision decimals become strings so MCP serialization cannot silently round provider data.
  */
-function normalizeLosslessJson(value: unknown): ProxyRequestOutput['body'] {
+function normalizeLosslessJson(value: unknown): McpProxyResponse['body'] {
     if (isJsonBigNumber(value)) {
         const number = value.toNumber();
         return value.isInteger() && Number.isSafeInteger(number) ? number : value.toFixed();

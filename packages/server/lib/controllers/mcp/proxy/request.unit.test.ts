@@ -4,11 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import { MAX_MCP_PROXY_RESPONSE_BYTES } from '../../../services/mcpProxyResponse.js';
 import proxyService, { ProxyServiceError } from '../../../services/proxy.service.js';
 import { egressTelemetryRecorder } from '../../../utils/egressTelemetry.js';
 import { PublicMcpError } from '../utils.js';
 import { proxyRequestTool } from './request.js';
-import { MAX_MCP_PROXY_RESPONSE_BYTES } from './response.js';
 
 import type { ProxyServiceResponse } from '../../../services/proxy.service.js';
 import type { ManagementMcpContext } from '../managementTool.js';

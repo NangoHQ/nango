@@ -55,7 +55,7 @@ describe('agentSession service', () => {
                 environmentId: environment.id,
                 resolvedConnections,
                 compiledToolset,
-                metaTools: { nangoToolSearch: true, nangoExecute: true },
+                metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
                 expiresAt
             })
         ).unwrap();
@@ -65,7 +65,7 @@ describe('agentSession service', () => {
             environmentId: environment.id,
             resolvedConnections,
             compiledToolset,
-            metaTools: { nangoToolSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
             expiresAt,
             endedAt: null,
             endedReason: null
@@ -117,7 +117,7 @@ describe('agentSession service', () => {
             environmentId: other.env.id,
             resolvedConnections: {},
             compiledToolset: {},
-            metaTools: { nangoToolSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
             expiresAt: new Date(Date.now() + 60_000)
         });
 
@@ -135,7 +135,7 @@ describe('agentSession service', () => {
             environmentId: environment.id,
             resolvedConnections: {},
             compiledToolset: {},
-            metaTools: { nangoToolSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
             expiresAt: new Date(Date.now() + 60_000)
         });
 
@@ -313,7 +313,7 @@ async function createSession({
             environmentId: environment.id,
             resolvedConnections: {},
             compiledToolset: {},
-            metaTools: { nangoToolSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
             expiresAt
         })
     ).unwrap();

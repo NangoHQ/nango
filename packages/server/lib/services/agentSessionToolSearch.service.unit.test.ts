@@ -19,7 +19,7 @@ function session({
         accountId: 1,
         resolvedConnections,
         compiledToolset,
-        metaTools: { nangoToolSearch: true, nangoExecute: true },
+        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
         expiresAt: new Date(),
         endedAt: null,
         endedReason: null,
