@@ -1,7 +1,5 @@
 import { authorizeApiKey, canAccessApiKeyTarget } from '@nangohq/utils';
 
-import { recordScopeDivergence } from '../authz/shadow.js';
-
 import type { RequestLocals } from '../utils/express.js';
 import type { ApiKeyAuthorizationTarget, CustomerKeyScope } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -56,7 +54,6 @@ export function withEnvironmentTarget(_req: Request, res: Response<unknown, Part
 export function withScope(requiredScope: CustomerKeyScope) {
     return function (_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
         const allowed = hasAuthorizedScope({ locals: res.locals, requiredScope });
-        recordScopeDivergence({ locals: res.locals, requiredScopes: [requiredScope], legacy: allowed });
 
         if (allowed) {
             next();
@@ -70,7 +67,6 @@ export function withScope(requiredScope: CustomerKeyScope) {
 export function withAnyScope(...requiredScopes: CustomerKeyScope[]) {
     return function (_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
         const allowed = requiredScopes.some((requiredScope) => hasAuthorizedScope({ locals: res.locals, requiredScope }));
-        recordScopeDivergence({ locals: res.locals, requiredScopes, legacy: allowed });
 
         if (allowed) {
             next();

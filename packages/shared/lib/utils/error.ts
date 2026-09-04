@@ -33,6 +33,14 @@ export class AuthCredentialsError extends NangoInternalError {
     }
 }
 
+export class ConnectionCreationCappedError extends NangoInternalError {
+    constructor() {
+        super('resource_capped');
+        this.status = 400;
+        this.message = 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.';
+    }
+}
+
 export class NangoError extends NangoInternalError {
     public additional_properties?: Record<string, JsonValue> | undefined = undefined;
     public override readonly message: string;

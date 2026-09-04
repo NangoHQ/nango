@@ -1,14 +1,16 @@
 import { randomUUID } from 'node:crypto';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
 import { auditCsvHeader, auditCsvRows } from './csv.js';
 
-import type { AuditReader, AuditTrailCursor, AuditWriter } from './store.js';
-import type { ApiAuditTrailEvent, AuditEvent, AuditExportMaxRows, AuditTrailVersion, StoredAuditEvent } from '@nangohq/types';
+import type { AuditReader, AuditTrailCursor, AuditTrailFilter, AuditWriter } from './store.js';
+import type { ApiAuditTrailEvent, AuditEvent, AuditExportMaxRows, AuditTrailTotal, AuditTrailVersion, StoredAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 // The date the shape shipped, not a timestamp; bump only on a breaking change.
+const logger = getLogger('audit');
+
 const AUDIT_EVENT_VERSION: AuditTrailVersion = '2026-07-16';
 
 // The response is built during the request, so the ceiling is what the load balancer's timeout allows.
@@ -104,6 +106,17 @@ export class AuditClient {
             events: page.events,
             nextCursor: page.nextCursor ? encodeCursor(page.nextCursor) : null
         }));
+    }
+
+    /** Never throws, as `record` doesn't — a reader that rejects comes back as `Err` for the caller to handle. */
+    async countAuditTrailEvents(filter: AuditTrailFilter): Promise<Result<AuditTrailTotal>> {
+        try {
+            return await this.reader.count(filter);
+        } catch (err) {
+            // The reader logs what it catches, so only escapes reach here and they are recorded nowhere else.
+            logger.warning(`Audit trail count threw for account ${filter.accountId}: ${stringifyError(err)}`);
+            return Err(err);
+        }
     }
 
     /** Builds the CSV for the window. `truncated` reports that `maxRows` cut the result, rather than failing the export. */

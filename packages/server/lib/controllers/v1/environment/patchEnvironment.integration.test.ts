@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import db from '@nangohq/database';
 import { environmentService, seeders } from '@nangohq/shared';
 
-import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
+import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -29,7 +29,8 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should successfully rename an environment', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
         const newName = 'renamed-env';
 
         const res = await api.fetch(endpoint, {
@@ -37,7 +38,7 @@ describe(`PATCH ${endpoint}`, () => {
             // @ts-expect-error query params are required
             query: { env: env.name },
             body: { name: newName },
-            token: apiKey.secret
+            session
         });
 
         expect(res.res.status).toBe(200);
@@ -54,7 +55,8 @@ describe(`PATCH ${endpoint}`, () => {
     });
 
     it('should not allow renaming to an existing environment name', async () => {
-        const { env, account, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, account, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
         await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'existing' });
 
         const res = await api.fetch(endpoint, {
@@ -62,7 +64,7 @@ describe(`PATCH ${endpoint}`, () => {
             // @ts-expect-error query params are required
             query: { env: env.name },
             body: { name: 'existing' },
-            token: apiKey.secret
+            session
         });
 
         expect(res.res.status).toBe(409);

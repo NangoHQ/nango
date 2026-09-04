@@ -1160,7 +1160,8 @@ export class PostgresStore implements RecordsStore {
         limit,
         toCursorIncluded,
         batchSize = 1000,
-        dryRun = false
+        dryRun = false,
+        onProgress
     }: {
         connectionId: number;
         environmentId: number;
@@ -1170,6 +1171,7 @@ export class PostgresStore implements RecordsStore {
         toCursorIncluded?: string;
         batchSize?: number;
         dryRun?: boolean;
+        onProgress?: (progress: { deleted: number; page: number }) => void | Promise<void>;
     }): Promise<Result<{ count: number; lastCursor: string | null }>> {
         const activeSpan = tracer.scope().active();
         const span = tracer.startSpan('nango.records.deletedRecords', {
@@ -1212,6 +1214,7 @@ export class PostgresStore implements RecordsStore {
                 // Each batch starts right after the last processed record
                 // so the index scan doesn't re-traverse dead tuples from prior batches
                 let from: { updated_at: string; id: string } | null = null;
+                let page = 0;
 
                 do {
                     const toDelete = limit ? Math.min(batchSize, limit - totalRecords) : batchSize;
@@ -1313,6 +1316,9 @@ export class PostgresStore implements RecordsStore {
                     if (!partition && res[0]?.partition) {
                         partition = res[0].partition;
                     }
+
+                    page++;
+                    await onProgress?.({ deleted: totalRecords, page });
 
                     const lastDeletedRecord = res[res.length - 1];
                     if (lastDeletedRecord) {

@@ -19,7 +19,7 @@ import type {
 } from './account/api.js';
 import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
-import type { PostAgentSessions } from './agent/api.js';
+import type { DeleteAgentSession, PostAgentSessions } from './agent/api.js';
 import type { GetAgentSessionMcp, PostAgentSessionMcp } from './agent/mcp.api.js';
 import type { EndpointMethod } from './api.js';
 import type { GetAuditTrail, GetAuditTrailExport } from './audit-trail/api.js';
@@ -170,6 +170,7 @@ export type PublicApiEndpoints =
     | DeletePublicIntegration
     | PostConnectSessions
     | PostAgentSessions
+    | DeleteAgentSession
     | PostAgentSessionMcp
     | GetAgentSessionMcp
     | PostPublicConnectSessionsReconnect

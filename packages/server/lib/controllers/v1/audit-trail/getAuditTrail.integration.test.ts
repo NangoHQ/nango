@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, migrate } from '@nangohq/audit';
 import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
+import { Err } from '@nangohq/utils';
 
 import { audit } from '../../../audit.js';
 import { authenticateUser, isError, isSuccess, runServer } from '../../../utils/tests.js';
@@ -67,7 +68,7 @@ describe('GET /api/v1/audit-trail', () => {
     it('rejects an account that is not entitled to the audit trail with 403', async () => {
         const { session } = await authAdmin({ entitled: false });
 
-        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { showTotal: true } });
 
         expect(res.res.status).toBe(403);
         isError(res.json);
@@ -119,7 +120,7 @@ describe('GET /api/v1/audit-trail', () => {
         (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z'))).unwrap();
         (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:01.000Z'))).unwrap();
 
-        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { showTotal: true } });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
@@ -182,6 +183,73 @@ describe('GET /api/v1/audit-trail', () => {
         expect(res.json.data.map((e) => e.resource).sort()).toEqual(['api_key', 'connection']);
     });
 
+    it('counts every match, not just the page, and narrows the count with the filters', async () => {
+        const { session, account } = await authAdmin();
+        const base = Date.parse('2026-07-16T10:00:00.000Z');
+        // One past the page size, so the total can't be mistaken for the page length.
+        for (let i = 0; i < 26; i++) {
+            (await emitter.record(auditEvent(account.id, new Date(base + i * 1000).toISOString(), { resource: 'connection', action: 'deleted' }))).unwrap();
+        }
+        (await emitter.record(auditEvent(account.id, new Date(base + 30_000).toISOString(), { resource: 'api_key', action: 'deleted' }))).unwrap();
+
+        const all = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { showTotal: true } });
+        isSuccess(all.json);
+        expect(all.json.data).toHaveLength(25);
+        expect(all.json.total).toEqual({ value: 27, relation: 'eq' });
+
+        const narrowed = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: 'api_key', showTotal: true } });
+        isSuccess(narrowed.json);
+        expect(narrowed.json.total).toEqual({ value: 1, relation: 'eq' });
+    });
+
+    it('reports the same total on a continuation as on the first page', async () => {
+        const { session, account } = await authAdmin();
+        const base = Date.parse('2026-07-16T10:00:00.000Z');
+        for (let i = 0; i < 26; i++) {
+            (await emitter.record(auditEvent(account.id, new Date(base + i * 1000).toISOString()))).unwrap();
+        }
+
+        const first = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { showTotal: true } });
+        isSuccess(first.json);
+        expect(first.json.total).toEqual({ value: 26, relation: 'eq' });
+
+        const second = await api.fetch('/api/v1/audit-trail', {
+            method: 'GET',
+            session,
+            query: { cursor: first.json.pagination.nextCursor!, showTotal: true }
+        });
+        isSuccess(second.json);
+        expect(second.json.data).toHaveLength(1);
+        // Paging doesn't narrow the set the filters describe, so the number can't move.
+        expect(second.json.total).toEqual({ value: 26, relation: 'eq' });
+    });
+
+    it('still returns the rows when the count fails, just without the number', async () => {
+        const { session, account } = await authAdmin();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z'))).unwrap();
+
+        const spy = vi.spyOn(audit, 'countAuditTrailEvents').mockResolvedValue(Err('failed_to_count_audit_trail_events'));
+        try {
+            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { showTotal: true } });
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json.data).toHaveLength(1);
+            expect(res.json.total).toBeUndefined();
+        } finally {
+            spy.mockRestore();
+        }
+    });
+
+    it('does not count unless the caller asks', async () => {
+        const { session, account } = await authAdmin();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z'))).unwrap();
+
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+        isSuccess(res.json);
+        expect(res.json.data).toHaveLength(1);
+        expect(res.json.total).toBeUndefined();
+    });
+
     it('paginates via the opaque cursor', async () => {
         const { session, account } = await authAdmin();
         // 26 events one second apart (oldest → newest) — one more than the fixed page size of 25.
@@ -190,7 +258,7 @@ describe('GET /api/v1/audit-trail', () => {
             (await emitter.record(auditEvent(account.id, new Date(base + i * 1000).toISOString()))).unwrap();
         }
 
-        const page1 = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+        const page1 = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { showTotal: true } });
         expect(page1.res.status).toBe(200);
         isSuccess(page1.json);
         expect(page1.json.data).toHaveLength(25);
@@ -252,7 +320,7 @@ describe('GET /api/v1/audit-trail', () => {
         it('marks a page of an earlier query as continued', async () => {
             const { session, account } = await authRecorded();
             (await emitter.record(auditEvent(account.id, new Date().toISOString()))).unwrap();
-            const first = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+            const first = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { showTotal: true } });
             isSuccess(first.json);
             const recordSpy = vi.spyOn(audit, 'record');
 
@@ -276,7 +344,7 @@ describe('GET /api/v1/audit-trail', () => {
             const { session, account } = await authRecorded({ access: false });
             const recordSpy = vi.spyOn(audit, 'record');
 
-            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { showTotal: true } });
 
             expect(res.res.status).toBe(403);
             await vi.waitFor(() => {
