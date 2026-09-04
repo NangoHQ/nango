@@ -123,3 +123,28 @@ describe('postgres audit store', () => {
         expect(events.map((e) => e.id)).toEqual([uuid(5)]);
     });
 });
+
+describe('postgres audit store count', () => {
+    it('counts what the same filters match, not what a page holds', async () => {
+        for (let i = 0; i < 3; i++) {
+            (await store.record(event(uuid(i + 60), `2026-09-30T10:0${i}:00.000Z`))).unwrap();
+        }
+        (await store.record(event(uuid(63), '2026-09-30T10:03:00.000Z', { resource: 'connection', action: 'created' }))).unwrap();
+        (await store.record(event(uuid(64), '2026-09-30T10:04:00.000Z', { accountId: 999 }))).unwrap();
+
+        expect((await store.count({ accountId })).unwrap()).toEqual({ value: 4, relation: 'eq' });
+        expect((await store.count({ accountId, resources: ['sync'] })).unwrap()).toEqual({ value: 3, relation: 'eq' });
+        expect((await store.count({ accountId, resources: ['connection'], actions: ['created'] })).unwrap()).toEqual({ value: 1, relation: 'eq' });
+        expect((await store.count({ accountId, from: '2026-09-30T10:02:00.000Z' })).unwrap()).toEqual({ value: 2, relation: 'eq' });
+    });
+
+    it('reports a floor once the scan hits its cap, rather than an exact figure', async () => {
+        const bounded = new PostgresAuditStore(knex, schema, 3);
+        for (let i = 0; i < 5; i++) {
+            (await store.record(event(uuid(i + 70), `2026-09-30T11:0${i}:00.000Z`))).unwrap();
+        }
+
+        expect((await bounded.count({ accountId })).unwrap()).toEqual({ value: 3, relation: 'gte' });
+        expect((await bounded.count({ accountId, from: '2026-09-30T11:03:00.000Z' })).unwrap()).toEqual({ value: 2, relation: 'eq' });
+    });
+});

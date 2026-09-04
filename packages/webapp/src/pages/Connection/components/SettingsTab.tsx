@@ -1,7 +1,6 @@
 import { ExternalLink, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
 import { Button, FieldLabel } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
@@ -9,7 +8,6 @@ import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteConnection, usePatchConnection } from '@/hooks/useConnections';
-import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useConnectionContext } from '@/pages/Connection/Show';
@@ -21,11 +19,9 @@ export const SettingsTab = () => {
     const env = useStore((state) => state.env);
     const { connectionData, providerConfigKey } = useConnectionContext();
     const { connection } = connectionData;
-    const { data } = useEnvironment(env);
-    const environment = data?.environmentAndAccount?.environment;
     const { can } = usePermissions();
-    const canWriteConnection = can(permissions.canWriteProdConnections) || !environment?.is_production;
-    const canDeleteConnection = can(permissions.canDeleteProdConnections) || !environment?.is_production;
+    const canWriteConnection = can('environment:connections:update');
+    const canDeleteConnection = can('environment:connections:delete');
     const navigate = useNavigate();
 
     const { toast } = useToast();

@@ -2521,7 +2521,31 @@ Every session exposes its own MCP server at its `mcp_url`. It speaks Streamable 
 
 ### Terminating a session
 
-Sessions are immutable and cannot be extended. They expire on their own once `expires_in` is up. Recreate the session with the same parameters if you need it again.
+Sessions are immutable and cannot be extended. They expire on their own once `expires_in` is up, and you can end one early with `DELETE /sessions/{session_id}`:
+
+```bash
+curl --request DELETE \
+  --url 'https://api.nango.dev/sessions/0f4a...' \
+  --header 'Authorization: Bearer <NANGO-API-KEY>'
+```
+
+Requires an API key with the `environment:agent_sessions:write` scope, the same one session creation uses.
+
+```json
+{
+  "data": {
+    "session_id": "0f4a...",
+    "ended_at": "2026-09-15T10:00:00.000Z",
+    "reason": "terminated"
+  }
+}
+```
+
+Terminating revokes the `session_token` together with the session, so the session's MCP server answers `401` from that point on. A tool call already in flight is not cancelled.
+
+Terminating is idempotent. A session that has already ended keeps its original `ended_at` and `reason`, so terminating it again returns the same response. An unknown session, or one from another environment, returns a `404`.
+
+Recreate the session with the same parameters if you need it again.
 
 ## Tenant
 

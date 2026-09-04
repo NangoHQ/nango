@@ -77,6 +77,7 @@ export const functionArgsSchema = z.object({
     type: z.literal('function'),
     functionName: z.string().min(1),
     activityLogId: z.string(),
+    // TODO: add support for connection-less functions
     trigger: z.discriminatedUnion('kind', [
         z.object({
             kind: z.literal('invoke'),
@@ -98,6 +99,7 @@ export const functionArgsSchema = z.object({
                 query: z.record(z.string(), z.string()),
                 body: jsonSchema.optional().default(null)
             }),
+            subscriptions: z.array(z.string()).default([]),
             connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
         }),
         z.object({

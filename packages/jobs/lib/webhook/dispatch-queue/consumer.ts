@@ -7,6 +7,8 @@ import { jsonSchema } from '@nangohq/nango-orchestrator';
 import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
+import { GroupThrottles } from './groupThrottle.js';
+import { changeVisibility, deferSeconds } from './visibility.js';
 
 import type { Message } from '@aws-sdk/client-sqs';
 import type { ExecuteWebhookProps, OrchestratorClient } from '@nangohq/nango-orchestrator';
@@ -14,6 +16,8 @@ import type { WebhookDispatchMessage } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('jobs.webhook.dispatch-queue.consumer');
+
+const THROTTLED_LOG_MESSAGE = 'Webhook execution is delayed: this environment reached its webhook dispatch rate limit';
 
 const messageSchema: z.ZodType<WebhookDispatchMessage> = z.object({
     version: z.literal(1),
@@ -44,6 +48,9 @@ export interface DispatchQueueConsumerProps {
     waitTimeSeconds: number;
     visibilityTimeoutSeconds: number;
     maxAgeMs: number;
+    rateLimitThrottleMaxMs: number;
+    deferJitterRatio: number;
+    taskCapDeferMs: number;
     sqs?: SQSClient;
 }
 
@@ -62,6 +69,9 @@ export class DispatchQueueConsumer {
     private readonly waitTimeSeconds: number;
     private readonly visibilityTimeoutSeconds: number;
     private readonly maxAgeMs: number;
+    private readonly throttles: GroupThrottles;
+    private readonly deferJitterRatio: number;
+    private readonly taskCapDeferMs: number;
     private readonly abortController = new AbortController();
     private loopPromises: Promise<void>[] = [];
 
@@ -74,6 +84,9 @@ export class DispatchQueueConsumer {
         this.waitTimeSeconds = props.waitTimeSeconds;
         this.visibilityTimeoutSeconds = props.visibilityTimeoutSeconds;
         this.maxAgeMs = props.maxAgeMs;
+        this.throttles = new GroupThrottles({ maxThrottleMs: props.rateLimitThrottleMaxMs });
+        this.deferJitterRatio = props.deferJitterRatio;
+        this.taskCapDeferMs = props.taskCapDeferMs;
         this.sqs = props.sqs ?? new SQSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
     }
 
@@ -129,7 +142,8 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return void (await tracer.scope().activate(span, async () => {
+        const receivedAt = Date.now();
+        return await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -146,17 +160,36 @@ export class DispatchQueueConsumer {
                         groups.set(entry.parsed.taskName, [entry]);
                     }
                 }
-                const groupedEntries = [...groups.values()];
-
+                const groupedEntries: ParsedEntry[][] = [];
+                const deferrals: Promise<void>[] = [];
+                let throttled = 0;
+                for (const group of groups.values()) {
+                    const remainingMs = this.throttles.remainingMs(dispatchGroupKey(group[0]!.parsed));
+                    if (remainingMs > 0) {
+                        throttled += group.length;
+                        deferrals.push(this.reportThrottled(group), this.deferGroup(group, remainingMs, receivedAt));
+                        continue;
+                    }
+                    groupedEntries.push(group);
+                }
                 metrics.histogram(metrics.Types.WEBHOOK_DISPATCH_BATCH_SIZE, groupedEntries.length);
                 span.setTag('batch_size', groupedEntries.length);
                 span.setTag('received', entries.length);
+                span.setTag('throttled', throttled);
+
+                const dispatched = entries.length - throttled;
+                if (groupedEntries.length === 0) {
+                    await Promise.all(deferrals);
+                    return;
+                }
+
+                const deferralsDone = Promise.all(deferrals);
 
                 const propsList: ExecuteWebhookProps[] = groupedEntries.map((group) => {
                     const m = group[0]!.parsed;
                     return {
                         name: m.taskName,
-                        group: { key: `webhook:environment:${m.connection.environment_id}`, maxConcurrency: this.webhookMaxConcurrency },
+                        group: { key: dispatchGroupKey(m), maxConcurrency: this.webhookMaxConcurrency },
                         args: {
                             webhookName: m.webhookName,
                             parentSyncName: m.parentSyncName,
@@ -167,25 +200,29 @@ export class DispatchQueueConsumer {
                     };
                 });
 
-                const res = await this.orchestratorClient.executeWebhookBatch(propsList);
-                if (res.isErr()) {
-                    span.setTag('error', true);
-                    span.setTag('error.type', res.error.name);
-                    span.setTag('error.message', res.error.message);
-                    const responsePayload = getClientErrorResponsePayload(res.error);
-                    if (responsePayload) {
-                        span.setTag('error.details', responsePayload);
+                try {
+                    const res = await this.orchestratorClient.executeWebhookBatch(propsList);
+                    if (res.isErr()) {
+                        span.setTag('error', true);
+                        span.setTag('error.type', res.error.name);
+                        span.setTag('error.message', res.error.message);
+                        const responsePayload = getClientErrorResponsePayload(res.error);
+                        if (responsePayload) {
+                            span.setTag('error.details', responsePayload);
+                        }
+                        metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, dispatched, { result: 'failure' });
+                        report(new Error('webhook dispatch consumer batch failed', { cause: res.error }));
+                        return;
                     }
-                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, entries.length, { result: 'failure' });
-                    report(new Error('webhook dispatch consumer batch failed', { cause: res.error }));
-                    return;
-                }
 
-                await this.handleBatchResult(groupedEntries, res.value);
+                    await this.handleBatchResult(groupedEntries, res.value, receivedAt);
+                } finally {
+                    await deferralsDone;
+                }
             } finally {
                 span.finish();
             }
-        }));
+        });
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -233,7 +270,8 @@ export class DispatchQueueConsumer {
     // Each result applies to every message in its group (deduped SQS copies of the same task).
     private async handleBatchResult(
         groupedEntries: ParsedEntry[][],
-        results: Awaited<ReturnType<OrchestratorClient['executeWebhookBatch']>> extends Result<infer R> ? R : never
+        results: Awaited<ReturnType<OrchestratorClient['executeWebhookBatch']>> extends Result<infer R> ? R : never,
+        receivedAt: number
     ): Promise<void> {
         for (let i = 0; i < groupedEntries.length; i++) {
             const group = groupedEntries[i]!;
@@ -255,22 +293,63 @@ export class DispatchQueueConsumer {
 
             // Per-entry errors:
             // - duplicate_task_name: already scheduled, treat as success and delete.
-            // - task_cap_exceeded: the group is saturated, so redelivering won't help, so we drop the message.
-            // - rate_limit_exceeded: the environment is over its cap, so redelivery is the backpressure.
+            // - task_cap_exceeded: the group is saturated, leave it for retry as it drains.
+            // - rate_limit_exceeded: the group is over its cap, throttle it and defer until that expires.
             // - anything else: leave for redelivery (SQS visibility timeout → eventual DLQ).
             if (result.error.name === 'duplicate_task_name') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider, providerConfigKey });
                 await this.deleteGroup(group);
             } else if (result.error.name === 'rate_limit_exceeded') {
+                const groupKey = dispatchGroupKey(group[0]!.parsed);
+                this.throttles.throttleFor(groupKey, getRetryAfterMs(result.error.payload));
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
+                const remainingMs = this.throttles.remainingMs(groupKey);
+                if (remainingMs > 0) {
+                    await this.deferGroup(group, remainingMs, receivedAt);
+                }
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
-                await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
+                await logCtx.warn(THROTTLED_LOG_MESSAGE);
             } else if (result.error.name === 'task_cap_exceeded') {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DROPPED, count, { reason: 'task_cap', provider, providerConfigKey });
-                await this.deleteGroup(group);
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'task_cap', provider, providerConfigKey });
+                if (this.taskCapDeferMs > 0) {
+                    await this.deferGroup(group, this.taskCapDeferMs, receivedAt);
+                }
             } else {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider, providerConfigKey });
             }
+        }
+    }
+
+    private async reportThrottled(group: ParsedEntry[]): Promise<void> {
+        const { provider, connection, activityLogId, accountId } = group[0]!.parsed;
+        metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, group.length, {
+            result: 'throttle_deferred',
+            provider,
+            providerConfigKey: connection.provider_config_key
+        });
+        try {
+            const logCtx = logContextGetter.get({ id: activityLogId, accountId });
+            await logCtx.warn(THROTTLED_LOG_MESSAGE);
+        } catch (err) {
+            report(new Error('webhook dispatch consumer throttle log failed', { cause: err }));
+        }
+    }
+
+    private async deferGroup(group: ParsedEntry[], delayMs: number, receivedAt: number): Promise<void> {
+        const remainingVisibilityMs = this.visibilityTimeoutSeconds * 1000 - (Date.now() - receivedAt);
+        if (delayMs <= remainingVisibilityMs) {
+            return;
+        }
+        try {
+            await changeVisibility({
+                sqs: this.sqs,
+                queueUrl: this.queueUrl,
+                receiptHandles: group.map((entry) => entry.msg.ReceiptHandle!),
+                visibilityTimeoutSeconds: deferSeconds(delayMs, this.deferJitterRatio)
+            });
+        } catch (err) {
+            // Redelivery on the normal visibility timeout is the fallback, so this is not fatal.
+            report(new Error('webhook dispatch consumer defer failed', { cause: err }));
         }
     }
 
@@ -298,6 +377,18 @@ export class DispatchQueueConsumer {
             report(new Error('webhook dispatch consumer delete failed', { cause: err }));
         }
     }
+}
+
+function dispatchGroupKey(message: WebhookDispatchMessage): string {
+    return `webhook:environment:${message.connection.environment_id}`;
+}
+
+function getRetryAfterMs(payload: unknown): number | null {
+    if (!payload || typeof payload !== 'object' || !('retryAfterMs' in payload)) {
+        return null;
+    }
+    const retryAfterMs = payload.retryAfterMs;
+    return typeof retryAfterMs === 'number' ? retryAfterMs : null;
 }
 
 function getClientErrorResponsePayload(err: { payload?: unknown }): string | null {

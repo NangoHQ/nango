@@ -928,6 +928,9 @@ const ENVS_SHAPE = z.object({
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
     NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),
+    NANGO_TASK_DISPATCH_RATE_LIMIT_THROTTLE_MAX_MS: z.coerce.number().min(0).optional().default(60_000),
+    NANGO_TASK_DISPATCH_DEFER_JITTER_RATIO: z.coerce.number().min(0).max(1).optional().default(0.2),
+    NANGO_TASK_DISPATCH_TASK_CAP_DEFER_MS: z.coerce.number().min(0).optional().default(15_000),
 
     // Sandboxes
     SANDBOX_PROVIDER: z.enum(['e2b', 'docker', 'agentcore']).optional(),

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ConnectionCreationCappedError } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
 import appAuthController from './appAuth.controller.js';
@@ -185,6 +186,35 @@ describe('AppAuthController.connect', () => {
                 connection: expect.objectContaining({
                     webhook_url_override: 'https://override.example.com/hook'
                 })
+            }),
+            expect.anything()
+        );
+    });
+
+    it('triggers the creation-failure hook when connection creation is capped', async () => {
+        mockUpsertConnection.mockRejectedValue(new ConnectionCreationCappedError());
+
+        const req = {
+            query: { installation_id: 'install-1', state: 'session-id' },
+            ip: '203.0.113.7',
+            get: vi.fn(() => 'vitest')
+        } as unknown as Request;
+        const res = {
+            locals: {},
+            redirect: vi.fn(),
+            sendStatus: vi.fn(),
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
+
+        await appAuthController.connect(req, res, vi.fn());
+
+        expect(mockConnectionCreationFailed).toHaveBeenCalledWith(
+            expect.objectContaining({
+                error: {
+                    type: 'resource_capped',
+                    description: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.'
+                }
             }),
             expect.anything()
         );
