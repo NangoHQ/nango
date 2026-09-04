@@ -73,7 +73,8 @@ export function usePlanChangeRequest(env: string) {
 
             let json: Awaited<ReturnType<typeof postPlanChange>>;
             try {
-                json = await postPlanChange({ orbId });
+                // TODO: set a real value once the UI lets customers self-serve the growth add-on.
+                json = await postPlanChange({ orbId, withGrowthFeatures: false });
             } catch {
                 return fail('Something went wrong', true);
             }
