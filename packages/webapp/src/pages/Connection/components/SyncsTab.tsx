@@ -1,5 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Wrench, X } from 'lucide-react';
+import { Ellipsis, Info, List, Loader, OctagonPause, Play, RefreshCw, Wrench, X } from 'lucide-react';
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -184,8 +184,17 @@ export const SyncsTab = () => {
                     />
                 </Table>
             </div>
-            <div ref={sentinelRef} aria-hidden />
-            {isFetchingNextPage && <Skeleton className="w-full h-11" />}
+            {hasNextPage && (
+                <div
+                    ref={sentinelRef}
+                    aria-busy={isFetchingNextPage}
+                    aria-label={isFetchingNextPage ? 'Loading more syncs' : 'Load more syncs when visible'}
+                    className="flex min-h-12 w-full items-center justify-center py-3"
+                    role="status"
+                >
+                    {isFetchingNextPage && <Loader className="size-4 animate-spin text-text-muted" />}
+                </div>
+            )}
 
             {triggerTarget && (
                 <TriggerSyncDialog target={triggerTarget} isPending={pendingSyncId !== null} onClose={() => setTriggerTarget(null)} onTrigger={onSyncCommand} />
