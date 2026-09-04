@@ -17,6 +17,7 @@ import type {
     DBEnvironment,
     DBPlan,
     DBTeam,
+    DBUser,
     EndpointAudit,
     NoAudit
 } from '@nangohq/types';
@@ -28,6 +29,8 @@ const logger = getLogger('Server.ManagementMcpTool');
 export interface ManagementMcpContext {
     account: DBTeam;
     environment: DBEnvironment;
+    authorizedEnvironments?: DBEnvironment[];
+    user?: DBUser;
     plan: DBPlan | null;
     grantedScopes: string[] | undefined;
     customerApiKeyId?: number | undefined;
@@ -49,6 +52,7 @@ export interface ManagementMcpTool<TResponse extends object = object> {
     outputSchema?: ManagementMcpSchema;
     annotations?: ToolAnnotations;
     requiredScopes: ManagementMcpRequiredScopes;
+    environmentTarget: boolean;
     audit: EndpointAudit | DynamicManagementMcpAudit;
     handler: (args: unknown, context: ManagementMcpContext) => Promise<Result<TResponse>>;
 }
@@ -77,7 +81,7 @@ type ManagementMcpToolAudit<TArgs, TResponse extends object> =
 
 type ManagementMcpToolDefinition<TInputSchema extends z.ZodType, TResponse extends object> = Omit<
     ManagementMcpTool<TResponse>,
-    'audit' | 'handler' | 'inputSchema'
+    'audit' | 'environmentTarget' | 'handler' | 'inputSchema'
 > & {
     inputSchema: TInputSchema;
     audit: ManagementMcpToolAudit<z.output<TInputSchema>, TResponse>;
@@ -98,6 +102,7 @@ export function defineManagementMcpTool<TInputSchema extends z.ZodType, TRespons
 
     return {
         ...tool,
+        environmentTarget: true,
         audit: resolvedAudit,
         async handler(args, context) {
             const parsedArgs = tool.inputSchema.safeParse(args ?? {});
@@ -137,6 +142,41 @@ export function defineManagementMcpTool<TInputSchema extends z.ZodType, TRespons
             });
             return result;
         }
+    };
+}
+
+type ManagementMcpAccountContext = Omit<ManagementMcpContext, 'authorizedEnvironments' | 'environment'> & { environments: DBEnvironment[] };
+
+type ManagementMcpAccountToolDefinition<TInputSchema extends z.ZodType, TResponse extends object> = Omit<
+    ManagementMcpTool<TResponse>,
+    'audit' | 'environmentTarget' | 'handler' | 'inputSchema'
+> & {
+    inputSchema: TInputSchema;
+    audit: NoAudit<string>;
+    handler: (context: ManagementMcpAccountContext & { args: z.output<TInputSchema> }) => Result<TResponse> | Promise<Result<TResponse>>;
+};
+
+export function defineManagementMcpAccountTool<TInputSchema extends z.ZodType, TResponse extends object>(
+    tool: ManagementMcpAccountToolDefinition<TInputSchema, TResponse>
+): ManagementMcpTool<TResponse> {
+    const { handler, ...definition } = tool;
+    return {
+        ...defineManagementMcpTool({
+            ...definition,
+            async handler(context) {
+                const { account, plan, grantedScopes, customerApiKeyId, audit, args } = context;
+                return await handler({
+                    account,
+                    plan,
+                    grantedScopes,
+                    customerApiKeyId,
+                    audit,
+                    environments: context.authorizedEnvironments ?? [context.environment],
+                    args
+                });
+            }
+        }),
+        environmentTarget: false
     };
 }
 

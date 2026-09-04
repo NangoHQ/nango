@@ -94,7 +94,8 @@ export const PrivateRoute: React.FC = () => {
     }, [user, meta, identify]);
 
     if (userError || metaError) {
-        return <Navigate to="/signin" replace />;
+        const next = `${location.pathname}${location.search}${location.hash}`;
+        return <Navigate to={`/signin?next=${encodeURIComponent(next)}`} replace />;
     }
     if (loadingUser || loadingMeta || !ready) {
         return null;

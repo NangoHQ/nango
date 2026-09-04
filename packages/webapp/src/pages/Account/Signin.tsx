@@ -227,7 +227,8 @@ export const Signin: React.FC = () => {
                             </div>
                         )}
 
-                        <GoogleButton text="Sign in with Google" setServerErrorMessage={setServerErrorMessage} token={inviteToken} />
+                        {/* External login leaves the SPA, so carry `next` to resume flows such as a pending MCP authorization after the callback. */}
+                        <GoogleButton text="Sign in with Google" setServerErrorMessage={setServerErrorMessage} token={inviteToken} next={next || undefined} />
                     </div>
                 )}
 

@@ -16,6 +16,8 @@ import {
 } from '@nangohq/shared';
 import { getLogger, metrics, report } from '@nangohq/utils';
 
+import { deleteExpiredManagementMcpOAuthArtifacts } from '../controllers/mcp/oauth/adapter.js';
+import { deleteStalePendingManagementMcpOAuthGrants } from '../controllers/mcp/oauth/grant.js';
 import { batchDelete } from '../deletion/batchDelete.js';
 import { deleteConnectionData } from '../deletion/deleteConnectionData.js';
 import { deleteEnvironmentData } from '../deletion/deleteEnvironmentData.js';
@@ -121,6 +123,18 @@ export async function exec(): Promise<void> {
             ...opts,
             name: 'oauth sessions',
             deleteFn: async () => await oauthSessionService.deleteExpiredSessions({ limit, olderThan: deleteOauthSessionOlderThan })
+        });
+
+        await batchDelete({
+            ...opts,
+            name: 'management MCP OAuth artifacts',
+            deleteFn: async () => await deleteExpiredManagementMcpOAuthArtifacts(limit)
+        });
+
+        await batchDelete({
+            ...opts,
+            name: 'management MCP OAuth pending grants',
+            deleteFn: deleteStalePendingManagementMcpOAuthGrants
         });
 
         // Delete invitations

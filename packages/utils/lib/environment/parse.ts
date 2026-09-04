@@ -206,6 +206,11 @@ const ENVS_SHAPE = z.object({
     // `/` keeps requests on whichever host served the dashboard (same-origin).
     NANGO_DASHBOARD_API_URL: z.url().or(z.literal('/')).optional(),
     NANGO_MANAGEMENT_MCP_SERVER_URL: z.url().optional(),
+    NANGO_MANAGEMENT_MCP_OAUTH_ENABLED: z.stringbool().optional().default(false),
+    NANGO_MANAGEMENT_MCP_OAUTH_ISSUER: z.url().optional(),
+    NANGO_MANAGEMENT_MCP_OAUTH_COOKIE_KEYS: z.string().optional(),
+    NANGO_MANAGEMENT_MCP_OAUTH_JWKS: z.string().optional(),
+    NANGO_MANAGEMENT_MCP_OAUTH_STORAGE_KEY: z.string().optional(),
     NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional().default(200),
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),

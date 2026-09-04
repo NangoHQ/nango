@@ -126,7 +126,8 @@ function getKey(req: Request, res: Response<any, Partial<RequestLocals>>): strin
 
 const specialPaths = ['/api/v1/account', '/api/v1/admin/impersonate'];
 function getPointsToConsume(req: Request, res: Response<any, Partial<RequestLocals>>, maxPoints: number): number {
-    const fullPath = path.join(req.baseUrl, req.route.path);
+    const routePath = typeof req.route?.path === 'string' ? req.route.path : req.path;
+    const fullPath = path.join(req.baseUrl, routePath);
 
     if (specialPaths.some((p) => fullPath.startsWith(p))) {
         // limiting to 6 requests per period to avoid brute force attacks

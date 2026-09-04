@@ -18,6 +18,7 @@ const workosMocks = vi.hoisted(() => {
     return {
         authenticateWithCode: vi.fn(),
         authenticateWithEmailVerification: vi.fn(),
+        getAuthorizationUrl: vi.fn().mockReturnValue('https://auth.example/authorize'),
         getOrganization: vi.fn()
     };
 });
@@ -26,7 +27,8 @@ vi.mock('../../../../clients/workos.client.js', () => ({
     getWorkOSClient: () => ({
         userManagement: {
             authenticateWithCode: workosMocks.authenticateWithCode,
-            authenticateWithEmailVerification: workosMocks.authenticateWithEmailVerification
+            authenticateWithEmailVerification: workosMocks.authenticateWithEmailVerification,
+            getAuthorizationUrl: workosMocks.getAuthorizationUrl
         },
         organizations: {
             getOrganization: workosMocks.getOrganization
@@ -72,6 +74,7 @@ describe(`POST ${route}`, () => {
     it('should complete the pending WorkOS email verification flow and create the local user', async () => {
         const email = `MixedCase-${nanoid()}@Example.com`;
         const verificationCode = '123456';
+        const next = '/oauth/authorize?interaction=test-interaction';
 
         workosMocks.authenticateWithCode.mockRejectedValue({
             rawData: {
@@ -94,15 +97,24 @@ describe(`POST ${route}`, () => {
 
         expect(await userService.getUserByEmail(email)).toBeNull();
 
-        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, {
+        const signupRes = await api.fetch('/api/v1/account/managed/signup', {
+            method: 'POST',
+            body: { provider: 'GoogleOAuth', next }
+        });
+        expect(signupRes.res.status).toBe(200);
+
+        const sessionCookie = signupRes.res.headers.getSetCookie()[0]?.split(';')[0];
+        const state = (workosMocks.getAuthorizationUrl.mock.calls[0]?.[0] as { state?: string } | undefined)?.state;
+        expect(sessionCookie).toBeTruthy();
+        expect(state).toBeTruthy();
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${encodeURIComponent(state!)}`, {
+            headers: { Cookie: sessionCookie! },
             redirect: 'manual'
         });
 
         expect(callbackRes.status).toBe(302);
         expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/signin/verify');
-
-        const sessionCookie = callbackRes.headers.getSetCookie()[0]?.split(';')[0];
-        expect(sessionCookie).toBeTruthy();
 
         const getVerificationRes = await api.fetch('/api/v1/account/managed/verification', {
             method: 'GET',
@@ -127,7 +139,7 @@ describe(`POST ${route}`, () => {
         expect(postVerificationRes.res.status).toBe(200);
         expect(postVerificationRes.json).toStrictEqual({
             data: {
-                url: 'http://localhost:3003/onboarding/account-discovery'
+                url: `http://localhost:3003/onboarding/account-discovery?next=${encodeURIComponent(next)}`
             }
         });
 
@@ -160,6 +172,56 @@ describe(`POST ${route}`, () => {
         });
     });
 
+    it('should resume the original page after managed login for an existing user', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const next = '/oauth/authorize?interaction=test-interaction';
+
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: {
+                email: user.email,
+                firstName: user.name,
+                lastName: ''
+            },
+            organizationId: undefined
+        });
+
+        const signupRes = await api.fetch('/api/v1/account/managed/signup', {
+            method: 'POST',
+            body: { provider: 'GoogleOAuth', next }
+        });
+        const sessionCookie = signupRes.res.headers.getSetCookie()[0]?.split(';')[0];
+        const state = (workosMocks.getAuthorizationUrl.mock.calls[0]?.[0] as { state?: string } | undefined)?.state;
+        expect(signupRes.res.status).toBe(200);
+        expect(sessionCookie).toBeTruthy();
+        expect(state).toBeTruthy();
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${encodeURIComponent(state!)}`, {
+            headers: { Cookie: sessionCookie! },
+            redirect: 'manual'
+        });
+
+        expect(callbackRes.status).toBe(302);
+        expect(callbackRes.headers.get('location')).toBe(`http://localhost:3003${next}`);
+
+        const replayRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_456&state=${encodeURIComponent(state!)}`, {
+            headers: { Cookie: sessionCookie! },
+            redirect: 'manual'
+        });
+        expect(replayRes.status).toBe(302);
+        expect(replayRes.headers.get('location')).toBe('http://localhost:3003/signin?error=sso_session_expired');
+    });
+
+    it('should reject an external post-login destination', async () => {
+        const signupRes = await api.fetch('/api/v1/account/managed/signup', {
+            method: 'POST',
+            body: { provider: 'GoogleOAuth', next: 'https://attacker.example' }
+        });
+
+        expect(signupRes.res.status).toBe(400);
+        expect(signupRes.json).toMatchObject({ error: { code: 'invalid_body' } });
+        expect(workosMocks.getAuthorizationUrl).not.toHaveBeenCalled();
+    });
+
     it('should rethrow unexpected structured WorkOS errors instead of masking them as invalid verification codes', async () => {
         const email = `${nanoid()}@example.com`;
 
@@ -180,12 +242,20 @@ describe(`POST ${route}`, () => {
             }
         });
 
-        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, {
+        const signupRes = await api.fetch('/api/v1/account/managed/signup', {
+            method: 'POST',
+            body: { provider: 'GoogleOAuth' }
+        });
+        const sessionCookie = signupRes.res.headers.getSetCookie()[0]?.split(';')[0];
+        const state = (workosMocks.getAuthorizationUrl.mock.calls[0]?.[0] as { state?: string } | undefined)?.state;
+        expect(sessionCookie).toBeTruthy();
+        expect(state).toBeTruthy();
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${encodeURIComponent(state!)}`, {
+            headers: { Cookie: sessionCookie! },
             redirect: 'manual'
         });
-
-        const sessionCookie = callbackRes.headers.getSetCookie()[0]?.split(';')[0];
-        expect(sessionCookie).toBeTruthy();
+        expect(callbackRes.status).toBe(302);
 
         const postVerificationRes = await api.fetch('/api/v1/account/managed/verification', {
             method: 'POST',
@@ -207,6 +277,7 @@ describe(`POST ${route}`, () => {
         vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
 
         const { user } = await seeders.seedAccountEnvAndUser();
+        const next = '/oauth/authorize?interaction=test-interaction';
         const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
         const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
         (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
@@ -216,7 +287,17 @@ describe(`POST ${route}`, () => {
             organizationId: undefined
         });
 
-        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, {
+        const signupRes = await api.fetch('/api/v1/account/managed/signup', {
+            method: 'POST',
+            body: { provider: 'GoogleOAuth', next }
+        });
+        const initialCookie = signupRes.res.headers.getSetCookie()[0]?.split(';')[0];
+        const state = (workosMocks.getAuthorizationUrl.mock.calls[0]?.[0] as { state?: string } | undefined)?.state;
+        expect(initialCookie).toBeTruthy();
+        expect(state).toBeTruthy();
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${encodeURIComponent(state!)}`, {
+            headers: { Cookie: initialCookie! },
             redirect: 'manual'
         });
 
@@ -237,7 +318,7 @@ describe(`POST ${route}`, () => {
         });
 
         expect(verification.res.status).toBe(200);
-        expect(verification.json).toMatchObject({ data: { url: '/', user: { email: user.email } } });
+        expect(verification.json).toMatchObject({ data: { url: next, user: { email: user.email } } });
     });
 
     it('should not challenge MFA when the user has no active factor', async () => {
@@ -250,7 +331,17 @@ describe(`POST ${route}`, () => {
             organizationId: undefined
         });
 
-        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, {
+        const signupRes = await api.fetch('/api/v1/account/managed/signup', {
+            method: 'POST',
+            body: { provider: 'GoogleOAuth' }
+        });
+        const sessionCookie = signupRes.res.headers.getSetCookie()[0]?.split(';')[0];
+        const state = (workosMocks.getAuthorizationUrl.mock.calls[0]?.[0] as { state?: string } | undefined)?.state;
+        expect(sessionCookie).toBeTruthy();
+        expect(state).toBeTruthy();
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${encodeURIComponent(state!)}`, {
+            headers: { Cookie: sessionCookie! },
             redirect: 'manual'
         });
 

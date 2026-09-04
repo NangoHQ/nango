@@ -15,7 +15,7 @@ const logger = getLogger('Server.AuthManaged');
 const validation = z
     .object({
         code: z.string().min(1).max(255),
-        state: z.string().optional()
+        state: z.string().min(1).max(2048)
     })
     .strict();
 

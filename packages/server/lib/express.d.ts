@@ -67,6 +67,14 @@ declare module 'express-session' {
                 accountName: string;
             };
         };
+        managedAuthRequests?: Record<
+            string,
+            {
+                createdAt: number;
+                token?: string | undefined;
+                next?: string | undefined;
+            }
+        >;
     }
 }
 

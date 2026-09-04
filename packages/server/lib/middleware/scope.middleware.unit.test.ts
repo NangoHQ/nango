@@ -101,6 +101,17 @@ describe('hasAuthorizedScope', () => {
 });
 
 describe('withEnvironmentTarget', () => {
+    it('calls next() for an OAuth grant with authorized environments', () => {
+        const { next, status } = run(withEnvironmentTarget, {
+            authType: 'mcpOAuth',
+            account,
+            mcpOAuthEnvironments: [environment]
+        });
+
+        expect(next).toHaveBeenCalledOnce();
+        expect(status).not.toHaveBeenCalled();
+    });
+
     it('calls next() for a key bound to the environment', () => {
         const { next, status } = run(withEnvironmentTarget, locals());
 

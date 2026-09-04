@@ -33,7 +33,12 @@ export function hasAuthorizedScope({ locals, requiredScope }: { locals: Partial<
  * Routes with scope requirements must use withScope or withAnyScope instead.
  */
 export function withEnvironmentTarget(_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
-    const { account, environment, apiKeyPrincipal } = res.locals;
+    const { account, environment, apiKeyPrincipal, mcpOAuthEnvironments } = res.locals;
+    if (res.locals.authType === 'mcpOAuth' && account && mcpOAuthEnvironments && mcpOAuthEnvironments.length > 0) {
+        // OAuth resolves an environment for each tool call from the grant's stored allowlist.
+        next();
+        return;
+    }
     if (
         !account ||
         !environment ||

@@ -56,6 +56,8 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Platform: Security](https://nango.dev/docs/guides/platform/security.md): How Nango secures your API credentials and customer data.
 - [Platform: Audit trail](https://nango.dev/docs/guides/platform/audit-trail.md): Review who changed what in your Nango account.
 - [Platform: Self-host Nango](https://nango.dev/docs/guides/platform/self-hosting.md): Overview of self-hosted deployments.
+- [Platform: Management MCP OAuth](https://nango.dev/docs/guides/platform/management-mcp-oauth.md): Configure Nango as the OAuth authorization server for its Management MCP endpoint.
+- [Platform: Management MCP OAuth architecture and production readiness](https://nango.dev/docs/guides/platform/management-mcp-oauth-architecture.md): An engineering overview of the Management MCP OAuth proof of concept, including its architecture, tradeoffs, and work required before production use.
 - [Platform: Proxy requests](https://nango.dev/docs/guides/platform/proxy-requests.md): How to use the requests proxy from Nango
 - [Platform: Receive webhooks from Nango](https://nango.dev/docs/guides/platform/webhooks-from-nango.md): Reference for the webhooks Nango sends to your app — setup, types, payloads, signature verification, and retries.
 - [Platform: External webhook forwarding](https://nango.dev/docs/guides/platform/webhook-forwarding.md): Forward external API webhooks through Nango to your app, with connection attribution.
