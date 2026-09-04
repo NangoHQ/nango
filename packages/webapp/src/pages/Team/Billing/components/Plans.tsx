@@ -417,7 +417,7 @@ const PlanChangeDialog: React.FC<{
                         </div>
                         {offersAddon && (
                             <>
-                                <label className="flex gap-3 items-start rounded-md border border-dashed border-border-muted p-3 cursor-pointer">
+                                <label className="flex gap-3 items-start rounded bg-surface-input-muted border border-dashed border-border-strong p-3 cursor-pointer">
                                     <Checkbox checked={withAddon} onCheckedChange={(checked) => setWithAddon(checked === true)} className="mt-0.5" />
                                     <span className="flex flex-col gap-1">
                                         <span className="text-text-strong text-body-medium-medium">Include {GROWTH_ADDON_COPY.title}</span>
