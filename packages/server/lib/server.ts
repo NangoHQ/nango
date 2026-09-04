@@ -8,7 +8,6 @@ import * as cron from 'node-cron';
 import qs from 'qs';
 import { WebSocketServer } from 'ws';
 
-import { migratePostgres as migrateAudit, startPartitionDaemon } from '@nangohq/audit';
 import { billing } from '@nangohq/billing';
 import db, { KnexDatabase } from '@nangohq/database';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
@@ -19,7 +18,7 @@ import { records } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
 import { flags, getLogger, NANGO_VERSION, once, report } from '@nangohq/utils';
 
-import { auditDb, destroyAuditDb, isSelfHostedAuditTrailEnabled } from './auditDb.js';
+import { destroyAuditDb, migrateAuditDb, startAuditPartitions } from './auditDb.js';
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
 import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
@@ -88,21 +87,13 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await records.migrate();
     await migrateFleets();
     await tasks.migrate();
-    if (isSelfHostedAuditTrailEnabled(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL)) {
-        (await migrateAudit({ knex: auditDb(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL) })).unwrap();
-    }
+    await migrateAuditDb();
     await db.destroy();
 } else {
     logger.info('Not migrating database');
 }
 
-const auditPartitions = isSelfHostedAuditTrailEnabled(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL)
-    ? startPartitionDaemon({
-          knex: auditDb(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL),
-          tickIntervalMs: envs.NANGO_AUDIT_POSTGRES_PARTITION_INTERVAL_MS,
-          retentionDays: envs.NANGO_AUDIT_POSTGRES_RETENTION_DAYS
-      })
-    : null;
+const auditPartitions = startAuditPartitions();
 
 // Preload providers
 getProviders();

@@ -2,7 +2,7 @@ import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, NoopAuditStor
 import { pubsub } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
-import { auditDb, isSelfHostedAuditTrailEnabled } from './auditDb.js';
+import { auditDb } from './auditDb.js';
 import { envs } from './env.js';
 
 import type { AuditActor, AuditEvent, AuditReader, AuditTarget, AuditTargetType, AuditWriter } from '@nangohq/audit';
@@ -58,9 +58,10 @@ function buildClickhouseStore(url: string): ClickhouseAuditStore | null {
 }
 
 export function selectAuditStores(): { writer: AuditWriter; reader: AuditReader; configured: boolean } {
-    if (isSelfHostedAuditTrailEnabled(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL)) {
+    const db = auditDb();
+    if (db) {
         logger.info('Audit: reading and writing events in Postgres');
-        const postgres = new PostgresAuditStore(auditDb(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL));
+        const postgres = new PostgresAuditStore(db);
         return { writer: postgres, reader: postgres, configured: true };
     }
 

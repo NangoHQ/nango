@@ -1,11 +1,9 @@
-import { migratePostgres as migrateAudit } from '@nangohq/audit';
 import { KnexDatabase } from '@nangohq/database';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { start as migrateLogs } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 
-import { auditDb, destroyAuditDb, isSelfHostedAuditTrailEnabled } from './auditDb.js';
-import { envs } from './env.js';
+import { destroyAuditDb, migrateAuditDb } from './auditDb.js';
 import { tasks } from './tasks/index.js';
 import migrate from './utils/migrate.js';
 
@@ -15,9 +13,7 @@ await migrateKeystore(db.knex);
 await migrateLogs();
 await records.migrate();
 await tasks.migrate();
-if (isSelfHostedAuditTrailEnabled(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL)) {
-    (await migrateAudit({ knex: auditDb(envs.NANGO_AUDIT_POSTGRES_DATABASE_URL) })).unwrap();
-    await destroyAuditDb();
-}
+await migrateAuditDb();
+await destroyAuditDb();
 
 process.exit(0);
