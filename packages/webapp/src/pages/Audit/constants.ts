@@ -105,8 +105,14 @@ export function eventLabel(event: Pick<ApiAuditTrailEvent, 'resource' | 'action'
     return `${resourceLabels[event.resource]} · ${formatKeyToLabel(event.action)}`;
 }
 
-export function targetsLabel(targets: ApiAuditTrailEvent['targets']): string {
-    return targets.map((target) => target.display ?? target.id).join(', ') || '—';
+export function targetNames(targets: ApiAuditTrailEvent['targets']): string[] {
+    return targets.map((target) => target.display ?? target.id);
+}
+
+/** First target plus a count, so a deploy touching a dozen functions still occupies one row. */
+export function targetsSummary(targets: ApiAuditTrailEvent['targets']): { first: string; rest: number } | null {
+    const [first, ...rest] = targetNames(targets);
+    return first ? { first, rest: rest.length } : null;
 }
 
 export function environmentLabel(event: Pick<ApiAuditTrailEvent, 'environment' | 'scope'>): string {

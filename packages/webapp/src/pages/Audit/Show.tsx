@@ -1,9 +1,9 @@
 import { Box, ChevronRight, Zap } from 'lucide-react';
 import { parseAsArrayOf, parseAsStringLiteral, parseAsTimestamp, useQueryState } from 'nuqs';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { Button } from '@nangohq/design-system';
+import { Badge, Button } from '@nangohq/design-system';
 
 import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
@@ -29,7 +29,7 @@ import {
     resourceOptions,
     resourcesOwningActions,
     resourceValues,
-    targetsLabel,
+    targetsSummary,
     viaLabel
 } from './constants';
 
@@ -42,6 +42,19 @@ const parseActions = parseAsArrayOf(parseAsStringLiteral(actionValues), ',').wit
 // A preset period has no `to` (see utils/logs), so this is variable-length by design.
 const periodToParam = (period: Period | null): Date[] => (!period ? [] : period.to ? [period.from, period.to] : [period.from]);
 const parsePeriod = parseAsArrayOf(parseAsTimestamp, ',').withOptions({ history: 'push' }).withDefault(periodToParam(last14dPreset.toPeriod()));
+
+const TargetCell: React.FC<{ targets: ApiAuditTrailEvent['targets'] }> = ({ targets }) => {
+    const summary = targetsSummary(targets);
+    if (!summary) {
+        return <>—</>;
+    }
+    return (
+        <div className="flex items-center gap-2">
+            <span className="truncate">{summary.first}</span>
+            {summary.rest > 0 && <Badge variant="secondary">+{summary.rest}</Badge>}
+        </div>
+    );
+};
 
 export const AuditShow: React.FC = () => {
     const { data: metaData } = useMeta();
@@ -81,6 +94,26 @@ export const AuditShow: React.FC = () => {
         { enabled: meta?.auditTrail === true && canReadAuditTrail }
     );
     const events = useMemo(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
+
+    // The button below stays: it is the keyboard path, and the fallback if the observer never fires.
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+    const canLoadMore = hasNextPage && !isFetchingNextPage;
+    const observeLoadMore = useCallback((node: HTMLDivElement | null) => {
+        loadMoreRef.current = node;
+    }, []);
+    useEffect(() => {
+        const node = loadMoreRef.current;
+        if (!node || !canLoadMore) {
+            return;
+        }
+        const observer = new IntersectionObserver((entries) => {
+            if (entries.some((entry) => entry.isIntersecting)) {
+                void fetchNextPage();
+            }
+        });
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, [canLoadMore, fetchNextPage, events.length]);
     // Absent when the count failed, in which case say nothing rather than pass the loaded rows off as the total.
     const total = data?.pages.at(-1)?.total;
     const showLoading = !meta || !user || isLoading;
@@ -160,6 +193,7 @@ export const AuditShow: React.FC = () => {
                     <AuditExportDialog
                         query={{ from, to, resources: resourceFilter, actions: actionSelection }}
                         selection={{ resources: resourceSelection, actions: actionSelection }}
+                        total={total}
                         disabled={showLoading || isError}
                     />
                 </div>
@@ -189,7 +223,9 @@ export const AuditShow: React.FC = () => {
                                             {via && <span className="text-text-muted"> via {via}</span>}
                                         </TableCell>
                                         <TableCell>{eventLabel(event)}</TableCell>
-                                        <TableCell>{targetsLabel(event.targets)}</TableCell>
+                                        <TableCell className="max-w-md">
+                                            <TargetCell targets={event.targets} />
+                                        </TableCell>
                                         <TableCell>
                                             <OutcomeTag outcome={event.outcome} />
                                         </TableCell>
@@ -237,7 +273,7 @@ export const AuditShow: React.FC = () => {
                 )}
 
                 {events.length > 0 && hasNextPage && (
-                    <div className="flex justify-center mt-2">
+                    <div ref={observeLoadMore} className="flex justify-center mt-2">
                         <Button variant="outline" loading={isFetchingNextPage} onClick={() => void fetchNextPage()}>
                             Load more...
                         </Button>
