@@ -42,12 +42,8 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     const setOverdueOverride = usePlanOverrideStore((s) => s.setOverdueOverride);
     const usageLimitOverride = usePlanOverrideStore((s) => s.usageLimitOverride);
     const setUsageLimitOverride = usePlanOverrideStore((s) => s.setUsageLimitOverride);
-    const spendHeadlineEnabled = usePlanOverrideStore((s) => s.spendHeadlineEnabled);
-    const setSpendHeadlineEnabled = usePlanOverrideStore((s) => s.setSpendHeadlineEnabled);
     const spendOverride = usePlanOverrideStore((s) => s.spendOverride);
     const setSpendOverride = usePlanOverrideStore((s) => s.setSpendOverride);
-    const metricChargesEnabled = usePlanOverrideStore((s) => s.metricChargesEnabled);
-    const setMetricChargesEnabled = usePlanOverrideStore((s) => s.setMetricChargesEnabled);
     const periodCostsOverride = usePlanOverrideStore((s) => s.periodCostsOverride);
     const setPeriodCostsOverride = usePlanOverrideStore((s) => s.setPeriodCostsOverride);
     const paymentMethodOverride = usePlanOverrideStore((s) => s.paymentMethodOverride);
@@ -176,58 +172,46 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
 
                     {leadsWithSpend && (
                         <>
-                            <Row label="Spend headline" hint="Unverified against real Orb invoices, so customers do not see it yet.">
-                                <RowSwitch checked={spendHeadlineEnabled} onCheckedChange={setSpendHeadlineEnabled} />
+                            <Row label="Spend">
+                                <Select
+                                    value={spendOverride === null ? REAL_SPEND_VALUE : String(spendOverride)}
+                                    onValueChange={(value) =>
+                                        setSpendOverride(
+                                            value === REAL_SPEND_VALUE
+                                                ? null
+                                                : value === UNAVAILABLE_SPEND_VALUE
+                                                  ? UNAVAILABLE_SPEND_VALUE
+                                                  : (Number(value) as SpendOverride)
+                                        )
+                                    }
+                                >
+                                    <RowTrigger placeholder="Real" />
+                                    <SelectContent>
+                                        <SelectItem value={REAL_SPEND_VALUE}>Real</SelectItem>
+                                        {SPEND_PRESETS_IN_CENTS.map((cents) => (
+                                            <SelectItem key={cents} value={String(cents)}>
+                                                {(cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                                            </SelectItem>
+                                        ))}
+                                        <SelectItem value={UNAVAILABLE_SPEND_VALUE}>Unavailable</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </Row>
-                            {spendHeadlineEnabled && (
-                                <Row label="Spend" indent>
-                                    <Select
-                                        value={spendOverride === null ? REAL_SPEND_VALUE : String(spendOverride)}
-                                        onValueChange={(value) =>
-                                            setSpendOverride(
-                                                value === REAL_SPEND_VALUE
-                                                    ? null
-                                                    : value === UNAVAILABLE_SPEND_VALUE
-                                                      ? UNAVAILABLE_SPEND_VALUE
-                                                      : (Number(value) as SpendOverride)
-                                            )
-                                        }
-                                    >
-                                        <RowTrigger placeholder="Real" />
-                                        <SelectContent>
-                                            <SelectItem value={REAL_SPEND_VALUE}>Real</SelectItem>
-                                            {SPEND_PRESETS_IN_CENTS.map((cents) => (
-                                                <SelectItem key={cents} value={String(cents)}>
-                                                    {(cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                                                </SelectItem>
-                                            ))}
-                                            <SelectItem value={UNAVAILABLE_SPEND_VALUE}>Unavailable</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </Row>
-                            )}
 
-                            <Row label="Charges column" hint="Unverified against real Orb invoices, so customers do not see it yet.">
-                                <RowSwitch checked={metricChargesEnabled} onCheckedChange={setMetricChargesEnabled} />
+                            <Row label="Charges">
+                                <Select
+                                    value={periodCostsOverride ?? REAL_PERIOD_COSTS_VALUE}
+                                    onValueChange={(value) => setPeriodCostsOverride(value === REAL_PERIOD_COSTS_VALUE ? null : (value as PeriodCostsOverride))}
+                                >
+                                    <RowTrigger placeholder="Real" />
+                                    <SelectContent>
+                                        <SelectItem value={REAL_PERIOD_COSTS_VALUE}>Real</SelectItem>
+                                        <SelectItem value="populated">Some metrics</SelectItem>
+                                        <SelectItem value="zero">$0.00 on all</SelectItem>
+                                        <SelectItem value="unavailable">Unavailable</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </Row>
-                            {metricChargesEnabled && (
-                                <Row label="Charges" indent>
-                                    <Select
-                                        value={periodCostsOverride ?? REAL_PERIOD_COSTS_VALUE}
-                                        onValueChange={(value) =>
-                                            setPeriodCostsOverride(value === REAL_PERIOD_COSTS_VALUE ? null : (value as PeriodCostsOverride))
-                                        }
-                                    >
-                                        <RowTrigger placeholder="Real" />
-                                        <SelectContent>
-                                            <SelectItem value={REAL_PERIOD_COSTS_VALUE}>Real</SelectItem>
-                                            <SelectItem value="populated">Some metrics</SelectItem>
-                                            <SelectItem value="zero">$0.00 on all</SelectItem>
-                                            <SelectItem value="unavailable">Unavailable</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </Row>
-                            )}
                         </>
                     )}
                 </Section>

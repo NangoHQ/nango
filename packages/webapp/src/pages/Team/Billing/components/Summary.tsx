@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 
 import { IconButton } from '@nangohq/design-system';
 
-import { usePlanOverrideStore } from '@/features/planOverride';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetPlans, useApiGetUpcomingInvoice, useCurrentPlan } from '@/hooks/usePlan';
@@ -31,9 +30,7 @@ export const Summary: React.FC = () => {
     const onS26Pricing = isOnS26Pricing(plan, metaData?.data.s26Pricing === true);
     const paymentMethod = paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
 
-    // Behind a dev-tool flag until the figure is reconciled against real Orb invoices (NAN-6246).
-    const spendHeadlineEnabled = usePlanOverrideStore((s) => s.spendHeadlineEnabled);
-    const spendEnabled = spendHeadlineEnabled && hasMonthlySpend(plan);
+    const spendEnabled = hasMonthlySpend(plan);
     const { data: upcoming, isPending: isSpendPending, isError: didSpendFail } = useApiGetUpcomingInvoice(env, plan, { enabled: spendEnabled });
     const spend = useMemo(() => {
         if (!spendEnabled) {
