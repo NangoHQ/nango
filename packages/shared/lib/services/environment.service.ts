@@ -78,12 +78,17 @@ class EnvironmentService {
         return Ok(name === PROD_ENVIRONMENT_NAME ? true : (isProduction ?? false));
     }
 
-    async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'id' | 'name' | 'is_production'>[]> {
+    async getEnvironmentsByAccountId(account_id: number, name?: string): Promise<Pick<DBEnvironment, 'id' | 'uuid' | 'name' | 'is_production'>[]> {
         try {
             const result = await db.knex
-                .select<Pick<DBEnvironment, 'name' | 'id' | 'is_production'>[]>('id', 'name', 'is_production')
+                .select<Pick<DBEnvironment, 'id' | 'uuid' | 'name' | 'is_production'>[]>('id', 'uuid', 'name', 'is_production')
                 .from<DBEnvironment>(TABLE)
                 .where({ account_id, deleted: false })
+                .modify((query) => {
+                    if (name !== undefined) {
+                        query.where({ name });
+                    }
+                })
                 .orderBy('name', 'asc');
 
             if (result == null || result.length == 0) {
