@@ -47,7 +47,7 @@ function validate(secret: string, msgId: string, msgSignature: string, msgTimest
     return false;
 }
 
-const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body, rawBody) => {
+const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body, rawBody, query) => {
     if (nango.integration.custom?.['webhookSecret']) {
         const msgId = headers['webhook-id'] || headers['svix-id'];
         const msgSignature = headers['webhook-signature'] || headers['svix-signature'];
@@ -62,13 +62,24 @@ const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body
         }
     }
 
+    // Prefer the nangoConnectionId query param when the webhook URL was registered with one;
+    // otherwise fall back to matching on the recording owner's email, as before.
+    const nangoConnectionId = query?.['nangoConnectionId'];
     const emailAddress = body.recorded_by?.email;
 
-    const response = await nango.executeScriptForWebhooks({
-        body,
-        connectionIdentifierValue: emailAddress,
-        propName: 'metadata.emailAddress'
-    });
+    const response = await nango.executeScriptForWebhooks(
+        nangoConnectionId
+            ? {
+                  body,
+                  connectionIdentifierValue: nangoConnectionId,
+                  propName: 'connectionId'
+              }
+            : {
+                  body,
+                  connectionIdentifierValue: emailAddress,
+                  propName: 'metadata.emailAddress'
+              }
+    );
 
     return Ok({
         content: { status: 'success' },

@@ -98,6 +98,14 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/fathom",
+      "destination": "/api-integrations/fathom"
+    },
+    {
+      "source": "/integrations/all/fathom/connect",
+      "destination": "/api-integrations/fathom/connect"
+    },
+    {
       "source": "/integrations/all/google-gemini",
       "destination": "/api-integrations/google-gemini"
     },
@@ -1247,7 +1255,7 @@
               "integrations/all/fairing",
               "integrations/all/falai",
               "api-integrations/fanvue",
-              "integrations/all/fathom",
+              "api-integrations/fathom",
               "api-integrations/fathom-oauth",
               "api-integrations/fellow",
               "api-integrations/fern",
