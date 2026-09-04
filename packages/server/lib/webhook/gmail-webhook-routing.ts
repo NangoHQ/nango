@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
 import { environmentService, getGlobalWebhookReceiveUrl, NangoError } from '@nangohq/shared';
-import { Err, getLogger, Ok, report } from '@nangohq/utils';
+import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { hashEmailAddress } from '../utils/pii.js';
 import { getGoogleJWKS } from './cache.js';
@@ -24,7 +24,7 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
             return true;
         }
 
-        if (!authHeader?.startsWith('Bearer ')) {
+        if (!authHeader.startsWith('Bearer ')) {
             return false;
         }
 
@@ -66,10 +66,13 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
         }
 
         const environment = await environmentService.getById(integration.environment_id);
-        const webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environment?.uuid}/${integration.provider}`;
+        const webhookBase = `${getGlobalWebhookReceiveUrl()}/${environment?.uuid}`;
+        const encodedWebhookUrl = `${webhookBase}/${encodeURIComponent(integration.unique_key)}`;
+        const rawWebhookUrl = `${webhookBase}/${integration.unique_key}`;
 
-        if (payload.aud !== webhookUrl) {
-            logger.warning(`Invalid audience. Expected ${webhookUrl}, got ${payload.aud}`);
+        if (payload.aud !== encodedWebhookUrl && payload.aud !== rawWebhookUrl) {
+            const expected = encodedWebhookUrl === rawWebhookUrl ? encodedWebhookUrl : `${encodedWebhookUrl} or ${rawWebhookUrl}`;
+            logger.warning(`Invalid audience. Expected ${expected}, got ${payload.aud}`);
             return false;
         }
 
@@ -88,13 +91,18 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
 const route: WebhookHandler = async (nango, headers, body) => {
     const authHeader = headers['authorization'];
 
-    if (authHeader) {
-        const valid = await validate(nango.integration, headers);
+    if (!authHeader) {
+        metrics.increment(metrics.Types.WEBHOOK_INCOMING_UNVERIFIED, 1, {
+            accountId: nango.team.id,
+            reason: 'gmail_missing_authorization'
+        });
+    }
 
-        if (!valid) {
-            logger.error('webhook signature invalid');
-            return Err(new NangoError('webhook_invalid_signature'));
-        }
+    const valid = await validate(nango.integration, headers);
+
+    if (!valid) {
+        logger.error('webhook signature invalid');
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     let decodedBody: DecodedDataObject | null = null;

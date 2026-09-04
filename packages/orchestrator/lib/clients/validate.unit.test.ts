@@ -34,6 +34,7 @@ describe('validateTask', () => {
                     kind: 'http',
                     input: { value: 42 },
                     request: { method: 'POST', path: '/functions/invocations', headers: {}, query: {}, body: { value: 42 } },
+                    subscriptions: ['issues'],
                     connection: { connectionId: 'connection-id', integrationId: 'integration-id' }
                 },
                 async: false,
@@ -51,7 +52,7 @@ describe('validateTask', () => {
         if (task.isFunction()) {
             expect(task).toMatchObject({
                 functionName: 'my-function',
-                trigger: expect.objectContaining({ kind: 'http', input: { value: 42 } }),
+                trigger: expect.objectContaining({ kind: 'http', input: { value: 42 }, subscriptions: ['issues'] }),
                 async: false,
                 attempt: 1,
                 attemptMax: 3
@@ -106,6 +107,7 @@ describe('validateTask', () => {
                 kind: 'http',
                 input: null,
                 request: { method, path: '/webhooks/github', headers: {}, query: {}, body: null },
+                subscriptions: [],
                 connection: { connectionId: 'connection-id', integrationId: 'integration-id' }
             });
         }

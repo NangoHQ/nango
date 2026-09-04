@@ -3,6 +3,8 @@ import { getFlags } from '@nangohq/feature-flags';
 import { getPlanSafe } from '@nangohq/shared';
 import { flagHasPlan, flags } from '@nangohq/utils';
 
+import { auditBackend } from '../audit.js';
+
 import type { DBPlan } from '@nangohq/types';
 import type { Request } from 'express';
 
@@ -17,7 +19,7 @@ async function isEntitled(
     // No plans layer, so no entitlement to read — the deployment opt-in is the only way in (local dev
     // sets it, self-hosted does not). Opposite of `hasRbac`, which reads plan-less as unrestricted.
     if (!flagHasPlan) {
-        return flags.hasAuditTrail;
+        return flags.hasAuditTrail && auditBackend.configured;
     }
     if (!(await getFlags().isAuditTrailEnabled(accountUuid))) {
         return false;

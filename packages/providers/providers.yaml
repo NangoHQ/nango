@@ -9998,6 +9998,7 @@ google:
     docs: https://nango.dev/docs/api-integrations/google
     setup_guide_url: https://nango.dev/docs/api-integrations/google/how-to-register-your-own-google-api-oauth-app
     webhook_routing_script: googleWebhookRouting
+    webhook_user_defined_secret: true
 
 google-analytics:
     display_name: Google Analytics
@@ -10038,6 +10039,7 @@ google-calendar:
                 - '401'
                 - '429'
     webhook_routing_script: googleCalendarWebhookRouting
+    webhook_user_defined_secret: true
     post_connection_script: googleCalendarPostConnection
     docs: https://nango.dev/docs/api-integrations/google-calendar
     setup_guide_url: https://nango.dev/docs/api-integrations/google-calendar/how-to-register-your-own-google-calendar-api-oauth-app
@@ -10157,6 +10159,7 @@ google-drive:
         - storage
     alias: google
     webhook_routing_script: googleDriveWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/google-drive
     setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app
 

@@ -188,6 +188,19 @@ describe('AuditClient.record through ClickhouseAuditStore', () => {
     });
 });
 
+describe('ClickhouseAuditStore.count bounding', () => {
+    it('reports a floor once the scan hits its cap, rather than an exact figure', async () => {
+        // The store caps its scan at the export ceiling; a smaller cap keeps the fixture cheap.
+        const bounded = new ClickhouseAuditStore(client, undefined, 3);
+        for (let i = 0; i < 5; i++) {
+            await insertEvent({ id: `99999999-9999-9999-9999-99999999999${i}`, accountId: 12, occurredAt: at(7000 + i) });
+        }
+
+        expect((await bounded.count({ accountId: 12 })).unwrap()).toEqual({ value: 3, relation: 'gte' });
+        expect((await bounded.count({ accountId: 12, from: at(7003) })).unwrap()).toEqual({ value: 2, relation: 'eq' });
+    });
+});
+
 describe('ClickhouseAuditStore.list deduplication', () => {
     it('returns one row for an event that was stored twice', async () => {
         const id = '44444444-4444-4444-4444-444444444444';

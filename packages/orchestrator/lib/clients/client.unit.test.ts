@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { OrchestratorClient } from './client.js';
 
-import type { ExecuteFunctionProps, ExecuteWebhookProps, ImmediateProps } from './types.js';
+import type { ExecuteFunctionBatchProps, ExecuteFunctionProps, ExecuteWebhookProps, ImmediateProps } from './types.js';
 
 function buildImmediateRequest(): ImmediateProps {
     return {
@@ -143,6 +143,11 @@ function buildFunctionProps(async: boolean): ExecuteFunctionProps {
     };
 }
 
+function buildFunctionBatchProps(name: string): ExecuteFunctionBatchProps {
+    const props = buildFunctionProps(true);
+    return { ...props, name, args: { ...props.args, async: true } };
+}
+
 describe('OrchestratorClient executeFunction', () => {
     afterEach(() => {
         vi.restoreAllMocks();
@@ -198,6 +203,46 @@ describe('OrchestratorClient executeFunction', () => {
         expect(body.args).toMatchObject({ type: 'function', functionName: 'my-function', async: true });
         expect(body.retry).toEqual({ count: 0, max: 2 });
         expect(body.timeoutSettingsInSecs).toEqual({ createdToStarted: 24 * 60 * 60, startedToCompleted: 15 * 60, heartbeat: 2 * 60 });
+    });
+});
+
+describe('OrchestratorClient executeFunctionBatch', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+    });
+
+    it('schedules asynchronous functions in one batch and returns ordered per-entry results', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    results: [{ taskId: 't1', retryKey: 'r1' }, { error: { code: 'duplicate_task_name', message: 'already exists' } }]
+                }),
+                { status: 200, headers: { 'content-type': 'application/json' } }
+            )
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeFunctionBatch([buildFunctionBatchProps('function-a'), buildFunctionBatchProps('function-b')]);
+
+        expect(res.isOk()).toBe(true);
+        if (res.isOk()) {
+            expect(res.value[0]!.isOk() && res.value[0].value).toEqual({ taskId: 't1', retryKey: 'r1' });
+            expect(res.value[1]!.isErr() && res.value[1].error.name).toBe('duplicate_task_name');
+        }
+        expect(fetchMock).toHaveBeenCalledOnce();
+        const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
+        expect(url).toBe('http://orchestrator.test/v1/immediate/batch');
+        const body = JSON.parse(init.body);
+        expect(body.tasks).toHaveLength(2);
+        expect(body.tasks[0]).toMatchObject({
+            name: 'function-a',
+            args: { type: 'function', functionName: 'my-function', async: true },
+            retry: { count: 0, max: 2 },
+            timeoutSettingsInSecs: { createdToStarted: 24 * 60 * 60, startedToCompleted: 15 * 60, heartbeat: 2 * 60 }
+        });
+        expect(body.tasks[0].rateLimitKey).toBe('456');
     });
 });
 

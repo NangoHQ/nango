@@ -1,4 +1,4 @@
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 import * as z from 'zod';
 
 import { connectionService } from '@nangohq/shared';
@@ -8,7 +8,6 @@ import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/valid
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { createConnectionToolsMcpServer } from './connectionToolsServer.js';
 
-import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import type { GetConnectionToolsMcp, PostConnectionToolsMcp } from '@nangohq/types';
 
 export const validationHeaders = z
@@ -47,15 +46,14 @@ export const postConnectionToolsMcp = asyncWrapperWithEnvironment<PostConnection
     }
 
     const server = result.value;
-    const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport();
+    const transport: NodeStreamableHTTPServerTransport = new NodeStreamableHTTPServerTransport();
 
     res.on('close', () => {
         void transport.close();
         void server.close();
     });
 
-    // Casting because 'exactOptionalPropertyTypes: true' says `?: string` is not equal to `string | undefined`
-    await server.connect(transport as Transport);
+    await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
 });
 

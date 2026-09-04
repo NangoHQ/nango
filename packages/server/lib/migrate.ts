@@ -3,6 +3,7 @@ import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { start as migrateLogs } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 
+import { destroyAuditDb, migrateAuditDb } from './auditDb.js';
 import { tasks } from './tasks/index.js';
 import migrate from './utils/migrate.js';
 
@@ -12,5 +13,7 @@ await migrateKeystore(db.knex);
 await migrateLogs();
 await records.migrate();
 await tasks.migrate();
+await migrateAuditDb();
+await destroyAuditDb();
 
 process.exit(0);

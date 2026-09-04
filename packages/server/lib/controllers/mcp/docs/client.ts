@@ -1,13 +1,10 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
+import { Client, SdkHttpError, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { PublicMcpError } from '../utils.js';
 
-import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
-import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import type { CallToolResult } from '@modelcontextprotocol/client';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Server.ManagementMcp.DocsClient');
@@ -90,7 +87,7 @@ async function connectDocsMcpClient(signal: AbortSignal): Promise<ConnectedDocsM
     const client = new Client({ name: 'Nango Management MCP docs proxy', version: '1.0.0' });
     const transport = new DocsMcpClientTransport(docsMcpUrl);
     try {
-        await client.connect(transport as Transport, { signal, timeout: docsMcpTimeoutMs, maxTotalTimeout: docsMcpTimeoutMs });
+        await client.connect(transport, { signal, timeout: docsMcpTimeoutMs, maxTotalTimeout: docsMcpTimeoutMs });
     } catch (err) {
         // Client.connect starts closing the transport without awaiting it when initialization fails.
         // Await the same idempotent close operation so an allocated upstream session is terminated before returning.
@@ -100,11 +97,14 @@ async function connectDocsMcpClient(signal: AbortSignal): Promise<ConnectedDocsM
 
     return {
         async callTool(name, args, callSignal) {
-            return (await client.callTool({ name, arguments: args }, CallToolResultSchema, {
-                signal: callSignal,
-                timeout: docsMcpTimeoutMs,
-                maxTotalTimeout: docsMcpTimeoutMs
-            })) as CallToolResult;
+            return await client.callTool(
+                { name, arguments: args },
+                {
+                    signal: callSignal,
+                    timeout: docsMcpTimeoutMs,
+                    maxTotalTimeout: docsMcpTimeoutMs
+                }
+            );
         },
         async close() {
             await client.close();
@@ -113,7 +113,7 @@ async function connectDocsMcpClient(signal: AbortSignal): Promise<ConnectedDocsM
 }
 
 function isRateLimitError(error: unknown): boolean {
-    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 429) {
+    if (SdkHttpError.isInstance(error) && error.status === 429) {
         return true;
     }
 

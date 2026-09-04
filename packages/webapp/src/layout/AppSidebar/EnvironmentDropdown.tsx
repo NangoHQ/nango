@@ -2,7 +2,6 @@ import { ChevronsUpDown, Lock } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
 import { Badge, Button } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
@@ -23,17 +22,17 @@ export const EnvironmentDropdown: React.FC = () => {
     const setEnv = useStore((state) => state.setEnv);
     const envs = useStore((state) => state.envs);
     const { data: environmentData } = useCurrentPlan(env);
-    const environment = { plan: environmentData?.plan };
+    const plan = environmentData?.plan;
     const { data: metaData } = useMeta();
     const meta = metaData?.data;
     const [environmentDialogOpen, setEnvironmentDialogOpen] = useState(false);
 
     const { can } = usePermissions();
-    const canCreateEnvironment = can(permissions.canCreateEnvironment);
+    const canCreateEnvironment = can('account:environments:create');
 
     const navigate = useNavigate();
 
-    const isMaxEnvironmentsReached = envs && environment.plan && envs.length >= environment.plan.environments_max;
+    const isMaxEnvironmentsReached = envs && plan && envs.length >= plan.environments_max;
 
     const onSelect = (selected: string) => {
         if (selected === env) {
@@ -93,8 +92,8 @@ export const EnvironmentDropdown: React.FC = () => {
                             {meta?.environments.map((environment) => (
                                 <PermissionGate
                                     key={environment.name}
-                                    condition={can(permissions.canAccessProdEnvironment) || !environment.is_production}
-                                    message="Your role does not have access to production environments."
+                                    condition={can('environment:settings:read', environment)}
+                                    message="Your role does not have access to this environment."
                                     tooltipSide="right"
                                 >
                                     {(allowed) => (
@@ -119,7 +118,7 @@ export const EnvironmentDropdown: React.FC = () => {
                                         content={
                                             <>
                                                 Max number of environments reached.{' '}
-                                                {environment?.plan?.name.includes('legacy') ? (
+                                                {plan?.name.includes('legacy') ? (
                                                     <>Contact Nango to add more</>
                                                 ) : (
                                                     <>

@@ -288,9 +288,9 @@ describe('POST /mcp management server', () => {
             });
 
             expect(res.status).toBe(200);
-            expect(res.json.result).toStrictEqual({
-                content: [{ type: 'text', text: `MCP error -32602: Tool ${toolName} disabled` }],
-                isError: true
+            expect(res.json.error).toMatchObject({
+                code: -32602,
+                message: `Tool ${toolName} disabled`
             });
         }
     });
@@ -360,9 +360,9 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(res.json.result).toStrictEqual({
-            content: [{ type: 'text', text: 'MCP error -32602: Tool integrations_create disabled' }],
-            isError: true
+        expect(res.json.error).toMatchObject({
+            code: -32602,
+            message: 'Tool integrations_create disabled'
         });
 
         await vi.waitFor(() => {

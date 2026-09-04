@@ -1914,13 +1914,13 @@ You can customize the Connect UI theme from the Nango dashboard:
 
 These settings apply to the pre-built Connect UI that you open with [`nango.openConnectUI()`](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui).
 
-<Note>Connect UI branding customization is available on the [Growth plan](https://www.nango.dev/pricing).</Note>
+<Note>Connect UI branding customization is available with the [Growth add-on](https://www.nango.dev/pricing).</Note>
 
 ## Override documentation links
 
 By default, the Connect UI displays info icons that link to the Nango documentation. If you are embedding Connect UI in a customer-facing application and want these links to point to your own documentation instead, override them per integration using the `overrides` parameter when [creating a Connect session](/reference/backend/http-api/connect/sessions/create).
 
-<Note>This feature is available on the [Growth plan](https://www.nango.dev/pricing).</Note>
+<Note>This feature is available with the [Growth add-on](https://www.nango.dev/pricing).</Note>
 
 <Tabs>
 
@@ -2521,7 +2521,31 @@ Every session exposes its own MCP server at its `mcp_url`. It speaks Streamable 
 
 ### Terminating a session
 
-Sessions are immutable and cannot be extended. They expire on their own once `expires_in` is up. Recreate the session with the same parameters if you need it again.
+Sessions are immutable and cannot be extended. They expire on their own once `expires_in` is up, and you can end one early with `DELETE /sessions/{session_id}`:
+
+```bash
+curl --request DELETE \
+  --url 'https://api.nango.dev/sessions/0f4a...' \
+  --header 'Authorization: Bearer <NANGO-API-KEY>'
+```
+
+Requires an API key with the `environment:agent_sessions:write` scope, the same one session creation uses.
+
+```json
+{
+  "data": {
+    "session_id": "0f4a...",
+    "ended_at": "2026-09-15T10:00:00.000Z",
+    "reason": "terminated"
+  }
+}
+```
+
+Terminating revokes the `session_token` together with the session, so the session's MCP server answers `401` from that point on. A tool call already in flight is not cancelled.
+
+Terminating is idempotent. A session that has already ended keeps its original `ended_at` and `reason`, so terminating it again returns the same response. An unknown session, or one from another environment, returns a `404`.
+
+Recreate the session with the same parameters if you need it again.
 
 ## Tenant
 
@@ -6273,8 +6297,8 @@ Rate limits apply to API requests from your application to Nango:
 | Plan | Requests per Minute |
 | - | - |
 | Free tier | 200 |
-| Starter | 1,000 |
-| Growth | 2,000 |
+| Pay-as-you-go  | 1,000 |
+| Growth add-on | 2,000 |
 | Enterprise | Custom |
 
 <Info>
@@ -6639,9 +6663,9 @@ Nango Cloud uses [WorkOS](https://workos.com) to power SSO.
 
 | Plan | SSO support |
 | - | - |
-| Free / Starter | Google SSO only |
-| Growth | SSO with 20+ identity providers (add-on) |
-| Enterprise (Cloud) | SSO with 20+ identity providers (included) |
+| Free / Pay-as-you-go | Google SSO only |
+| Growth add-on | SAML SSO with 20+ identity providers |
+| Enterprise (Cloud) | SAML SSO + SCIM |
 | Enterprise (Self-hosted) | Not yet available (planned) |
 
 ### Supported providers
@@ -6651,7 +6675,7 @@ Through WorkOS, Nango supports the main SSO providers, including **Okta**, **Ent
 ### How to enable SSO
 
 1. To enable SSO for your account, contact the Nango team (on our shared Slack channel or the [community](https://nango.dev/slack)).
-2. If you are on the Growth plan, we will subscribe your workspace to the SSO add-on.
+2. If you are on Pay-as-you-go, we will subscribe your workspace to the Growth add-on, which includes SAML SSO.
 3. We will invite an admin from your company to complete the SSO setup flow.
 
 ### Setup flow
@@ -6988,6 +7012,26 @@ The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation 
 
 The default retention period for deleted connections is 31 days. You can configure this via the `CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS` environment variable.
 
+## Audit trail
+
+The audit trail records control-plane activity — who created a connection, changed an integration, rotated an API key or signed in, from which IP, and whether it succeeded. Self-hosted instances keep it in Postgres, and teammates read it from **Audit trail** in the dashboard.
+
+Enable it on the server:
+
+```sh
+FLAG_AUDIT_TRAIL_ENABLED=true
+NANGO_AUDIT_POSTGRES_DATABASE_URL=postgresql://user:password@host:port/dbname
+NANGO_AUDIT_POSTGRES_SSL=true
+```
+
+Without a database there is nowhere to keep entries, so the trail stays off rather than showing a page that never fills. Set `NANGO_AUDIT_POSTGRES_SSL=true` when the database is external, as with the main one. The URL can point at the database Nango already uses or at a separate one, and the server creates the schema on startup along with the rest of it when `NANGO_MIGRATE_AT_START=true`.
+
+Entries are kept for a year by default, and the server removes expired ones for you:
+
+```sh
+NANGO_AUDIT_POSTGRES_RETENTION_DAYS=365
+```
+
 ## Feature flags
 
 Nango gates some behavior behind feature flags. Flags are served by the provider set in `NANGO_FLAG_PROVIDER`, which defaults to `noop`, so every flag uses its built-in default.
@@ -7024,17 +7068,20 @@ For more details, see the [pricing page](https://nango.dev/pricing) or [schedule
 
 | Feature | Free self-hosted | Enterprise self-hosted / Nango Cloud |
 | --- | --- | --- |
-| Auth | Yes | Yes |
+| API Auth | Yes | Yes |
 | Proxy | Yes | Yes |
 | Observability | Auth + proxy only | Full |
 | OpenTelemetry export | No | Yes |
-| Functions | No | Yes |
+| Pre-built syncs, tools & triggers | No | Yes |
+| Syncs | No | Yes |
+| Tool calls | No | Yes |
 | Webhooks | No | Yes |
+| Triggers | No | Yes |
 | MCP server | No | Yes |
 | Customize auth branding | No | Yes |
-| Role-based permissions | No | Yes |
-| SAML SSO | No | On the roadmap |
-| Support SLA | No | Yes |
+| RBAC | No | Yes |
+| MFA | No | Yes |
+| SAML SSO | No | Nango Cloud only |
 
 ### Server URL, callback URL, and custom domains
 
@@ -11132,7 +11179,7 @@ const { data } = await nango.createConnectSession({
       }
     }
     ```
-    Available on the [Growth plan](https://www.nango.dev/pricing).
+    Available with the [Growth add-on](https://www.nango.dev/pricing).
   </ResponseField>
 </Expandable>
 

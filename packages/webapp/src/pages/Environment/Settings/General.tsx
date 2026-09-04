@@ -2,7 +2,6 @@ import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
 import { Alert, AlertDescription, Input } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
@@ -39,8 +38,8 @@ export const General: React.FC = () => {
     const { mutateAsync: deleteEnvironmentAsync } = useDeleteEnvironment(env);
 
     const { can } = usePermissions();
-    const canEditEnvironment = !environment?.is_production || can(permissions.canWriteProdEnvironment);
-    const canToggleIsProduction = can(permissions.canToggleIsProduction);
+    const canEditEnvironment = can('environment:settings:update');
+    const canToggleIsProduction = can('account:environments:set_production');
 
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
