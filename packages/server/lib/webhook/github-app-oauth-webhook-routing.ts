@@ -28,19 +28,21 @@ function validate(integration: IntegrationConfig, headerSignature: string, rawBo
     const trusted = Buffer.from(`sha256=${signature}`, 'ascii');
     const untrusted = Buffer.from(headerSignature, 'ascii');
 
-    return crypto.timingSafeEqual(trusted, untrusted);
+    return trusted.length === untrusted.length && crypto.timingSafeEqual(trusted, untrusted);
 }
 
 const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     const signature = headers['x-hub-signature-256'];
 
-    if (signature) {
-        const valid = validate(nango.integration, signature, rawBody);
+    if (!signature) {
+        logger.error('Github App webhook missing signature', { configId: nango.integration.id });
+        return Err(new NangoError('webhook_missing_signature'));
+    }
 
-        if (!valid) {
-            logger.error('Github App webhook signature invalid. Exiting');
-            return Err(new NangoError('webhook_invalid_signature'));
-        }
+    const valid = validate(nango.integration, signature, rawBody);
+    if (!valid) {
+        logger.error('Github App webhook signature invalid. Exiting', { configId: nango.integration.id });
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     if (get(body, 'action') === 'created') {
