@@ -2,6 +2,8 @@ import { Share } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 import {
+    Alert,
+    AlertDescription,
     Button,
     Dialog,
     DialogBody,
@@ -21,7 +23,7 @@ import { openSupportChat } from '@/utils/support';
 import { actionSelectionLabel, resourceSelectionLabel } from '../constants';
 import { AUDIT_EXPORT_MAX_ROWS, exportWindowField } from '../export';
 
-import type { AuditAction, AuditResource } from '@nangohq/types';
+import type { AuditAction, AuditResource, AuditTrailTotal } from '@nangohq/types';
 
 // Matches DialogContent's own `duration-200` exit animation.
 const DIALOG_EXIT_MS = 200;
@@ -30,16 +32,21 @@ interface AuditExportDialogProps {
     /** Sent to the API. Its resources can be wider than the ones picked, since an action only matches paired with a resource. */
     query: { from: string | undefined; to: string | undefined; resources: AuditResource[]; actions: AuditAction[] };
     selection: { resources: AuditResource[]; actions: AuditAction[] };
+    /** Absent when the count failed, in which case the cap has to be stated unconditionally. */
+    total?: AuditTrailTotal | undefined;
     disabled?: boolean;
 }
 
-export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ query, selection, disabled }) => {
+export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ query, selection, total, disabled }) => {
     const { toast } = useToast();
     const [isOpen, setIsOpen] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const exportButtonRef = useRef<HTMLButtonElement>(null);
     const openSupportOnClose = useRef(false);
     const windowField = exportWindowField(query.from, query.to);
+    // A capped count knows only that the window is bigger than the cap, never by how much.
+    const truncates = total ? total.relation === 'gte' || total.value > AUDIT_EXPORT_MAX_ROWS : undefined;
+    const exportedCount = total && (truncates ? AUDIT_EXPORT_MAX_ROWS : total.value);
 
     const onContact = () => {
         openSupportOnClose.current = true;
@@ -108,10 +115,30 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ query, sel
                         <dd className="font-code text-text-primary">{resourceSelectionLabel(selection.resources)}</dd>
                         <dt className="uppercase text-text-muted">Action</dt>
                         <dd className="font-code text-text-primary">{actionSelectionLabel(selection.actions)}</dd>
-                        <dt className="uppercase text-text-muted">Limit</dt>
-                        <dd className="font-code text-text-primary">{AUDIT_EXPORT_MAX_ROWS.toLocaleString()} events</dd>
+                        {total && (
+                            <>
+                                <dt className="uppercase text-text-muted">Events</dt>
+                                <dd className="font-code text-text-primary">
+                                    {exportedCount?.toLocaleString()}
+                                    {truncates && <span className="text-text-muted"> (max)</span>}
+                                </dd>
+                            </>
+                        )}
                     </dl>
-                    <p className="mt-5 text-body-small-regular text-text-secondary">
+                    {truncates === true && (
+                        <div className="mt-5">
+                            <Alert variant="info" size="compact">
+                                <AlertDescription>
+                                    Your filters match more than the {AUDIT_EXPORT_MAX_ROWS.toLocaleString()} events a single export can hold. Narrow the date
+                                    range or filters to export older events.
+                                </AlertDescription>
+                            </Alert>
+                        </div>
+                    )}
+                    {truncates === undefined && (
+                        <p className="mt-5 text-body-small-regular text-text-secondary">An export stops at {AUDIT_EXPORT_MAX_ROWS.toLocaleString()} events.</p>
+                    )}
+                    <p className="mt-3 text-body-small-regular text-text-secondary">
                         Need a larger or scheduled export?{' '}
                         <Button variant="link-accent" size="sm" onClick={onContact}>
                             Contact us

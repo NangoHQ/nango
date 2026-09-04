@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { formatDateToLogFormat } from '@/utils/utils';
-import { actorLabel, environmentLabel, eventLabel, targetsLabel, viaLabel } from '../constants';
+import { actorLabel, environmentLabel, eventLabel, targetNames, viaLabel } from '../constants';
 import { OutcomeTag } from './OutcomeTag';
 
 import type { ApiAuditTrailEvent } from '@nangohq/types';
@@ -59,7 +59,18 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
                         <Meta label="Actor" value={actorLabel(event.actor)} />
                         {via && <Meta label="Via" value={via} />}
                         <Meta label="Event" value={eventLabel(event)} />
-                        <Meta label="Target" value={targetsLabel(event.targets)} />
+                        <dt className="uppercase text-text-muted">{event.targets.length > 1 ? 'Targets' : 'Target'}</dt>
+                        <dd className="break-all">
+                            {event.targets.length === 0 ? (
+                                '—'
+                            ) : (
+                                <ul>
+                                    {targetNames(event.targets).map((name) => (
+                                        <li key={name}>{name}</li>
+                                    ))}
+                                </ul>
+                            )}
+                        </dd>
                         <Meta label="Environment" value={environmentLabel(event)} />
                         {event.context.ip && <Meta label="IP" value={event.context.ip} mono />}
                         {event.context.userAgent && <Meta label="User agent" value={event.context.userAgent} />}
