@@ -115,9 +115,14 @@ describe('planAccruesCharges', () => {
     });
 
     it('names the minimum rather than a base fee on the new pricing', () => {
-        expect(SPEND_TOOLTIP_S26).toContain('$50 monthly minimum');
+        expect(SPEND_TOOLTIP_S26).toContain('monthly minimum');
         expect(SPEND_TOOLTIP_S26).not.toContain('base fee');
         expect(SPEND_TOOLTIP_S26).toContain(SPEND_TOOLTIP_WITHOUT_CHARGES);
+    });
+
+    it('quotes no amount, and says the minimum prorates', () => {
+        expect(SPEND_TOOLTIP_S26).not.toMatch(/\$\d/);
+        expect(SPEND_TOOLTIP_S26).toContain('prorated');
     });
 });
 
@@ -129,8 +134,8 @@ describe('buildSummaryState headline', () => {
     });
 
     it('explains the spend as a minimum for an account on the new pricing', () => {
-        const state = build(planOf('pay-as-you-go'), { spend: spendOf(1200), onS26Pricing: true });
-        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$12.00', tooltip: SPEND_TOOLTIP_S26 });
+        const state = build(planOf('pay-as-you-go'), { spend: spendOf(4833), onS26Pricing: true });
+        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$48.33', tooltip: SPEND_TOOLTIP_S26 });
     });
 
     it('reports $0.00 on the startup deal rather than treating it as missing', () => {

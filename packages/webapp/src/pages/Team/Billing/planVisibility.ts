@@ -98,6 +98,24 @@ const PLAN_ACCRUES_CHARGES: Record<DBPlan['name'], boolean> = {
     'growth-legacy': false
 };
 
+// Only Pay-as-you-go is sold with a minimum as standard: a negotiated one on an individual Growth or
+// Enterprise contract does not put the row on that plan's page.
+const PLAN_HAS_MINIMUM: Record<DBPlan['name'], boolean> = {
+    'pay-as-you-go': true,
+    'starter-v2': false,
+    'growth-v2': false,
+    'startup-deal': false,
+    free: false,
+    'free-uncapped': false,
+    enterprise: false,
+    'enterprise-cloud-hosted': false,
+    starter: false,
+    growth: false,
+    'starter-legacy': false,
+    'scale-legacy': false,
+    'growth-legacy': false
+};
+
 // Plans September 2026 stops selling: their cards stay on screen but every CTA targeting one
 // becomes Contact us. Which card *set* an account sees is `isOnS26Pricing`, a different question.
 const PLAN_IS_RETIRED: Record<DBPlan['name'], boolean> = {
@@ -150,6 +168,13 @@ export function planAccruesCharges(plan: ApiPlan | null | undefined): boolean {
         return false;
     }
     return PLAN_ACCRUES_CHARGES[plan.name];
+}
+
+export function hasPlanMinimum(plan: ApiPlan | null | undefined): boolean {
+    if (!plan) {
+        return false;
+    }
+    return PLAN_HAS_MINIMUM[plan.name];
 }
 
 export function isRetiredPlan(code: DBPlan['name']): boolean {

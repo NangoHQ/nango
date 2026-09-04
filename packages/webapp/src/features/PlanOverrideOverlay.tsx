@@ -12,7 +12,7 @@ import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
 import { hasMonthlySpend } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
 import { cn } from '@/utils/utils';
-import { DEFAULTS, usePlanOverrideStore } from './planOverride';
+import { DEFAULTS, PAY_AS_YOU_GO_MINIMUM_IN_CENTS, usePlanOverrideStore } from './planOverride';
 
 import type { PeriodCostsOverride, SpendOverride, UsageLimitOverride } from './planOverride';
 import type { PlanDefinition } from '@nangohq/types';
@@ -22,8 +22,7 @@ const NO_SCHEDULED_CHANGE_VALUE = '__none__';
 const REAL_USAGE_VALUE = '__real_usage__';
 const REAL_SPEND_VALUE = '__real_spend__';
 const UNAVAILABLE_SPEND_VALUE = 'unavailable';
-// A base-only Starter bill, a mid-period Growth bill, and the startup deal's real zero.
-const SPEND_PRESETS_IN_CENTS = [0, 5000, 128430];
+const SPEND_PRESETS_IN_CENTS = [0, PAY_AS_YOU_GO_MINIMUM_IN_CENTS, 128430];
 const REAL_PERIOD_COSTS_VALUE = '__real_period_costs__';
 interface PlanOverrideContentProps {
     onBack: () => void;
