@@ -316,6 +316,7 @@ export class ProxyService {
             const proxy = new ProxyRequest({
                 proxyConfig: proxyConfig.value,
                 outboundPolicy: getServerOutboundUrlPolicy(),
+                maxWaitMs: envs.NANGO_PROXY_MAX_RETRY_WAIT_MS,
                 logger: (message) => {
                     void logCtx?.log(message);
                 },

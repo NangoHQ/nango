@@ -57,6 +57,7 @@ export class OrbClient implements BillingClient {
                     },
                     {
                         maxAttempts: envs.ORB_RETRY_MAX_ATTEMPTS,
+                        maxWaitMs: Infinity,
                         delayMs: (attempt) => initialDelayMs * 2 ** attempt + Math.random() * initialDelayMs, // exponential backoff with jitter
                         retryOnError: (e) => {
                             // retry only on 429

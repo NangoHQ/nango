@@ -7,11 +7,26 @@ import type { RetryReason } from './utils.js';
 import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
 import type { AxiosError } from 'axios';
 
+function capRetryWait(reason: string, wait: number, maxWaitMs: number): RetryReason {
+    if (wait > maxWaitMs) {
+        return { retry: false, reason: `${reason}_wait_too_long`, wait };
+    }
+    return { retry: true, reason, wait };
+}
+
 /**
  * Determine if we can retry or not based on the error we are receiving
  * The strategy has been laid out carefully, be careful on modifying anything here.
  */
-export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxyConfig?: ApplicationConstructedProxyConfiguration | undefined }): RetryReason {
+export function getProxyRetryFromErr({
+    err,
+    proxyConfig,
+    maxWaitMs
+}: {
+    err: unknown;
+    proxyConfig?: ApplicationConstructedProxyConfiguration | undefined;
+    maxWaitMs: number;
+}): RetryReason {
     if (!isAxiosError(err)) {
         return { retry: false, reason: 'unknown_error' };
     }
@@ -84,7 +99,7 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         }
 
         if (bestRetry) {
-            return { retry: true, reason: `custom_${bestRetry.reason}`, wait: bestRetry.wait };
+            return capRetryWait(`custom_${bestRetry.reason}`, bestRetry.wait, maxWaitMs);
         }
     }
 
@@ -107,7 +122,7 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         }
 
         if (bestRetry) {
-            return { retry: true, reason: `preconfigured_${bestRetry.reason}`, wait: bestRetry.wait };
+            return capRetryWait(`preconfigured_${bestRetry.reason}`, bestRetry.wait, maxWaitMs);
         }
     }
 
@@ -119,11 +134,7 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
 
         const res = getRetryFromBody({ err, type, retryPath, retryRegex });
         if (res.found) {
-            return {
-                retry: true,
-                reason: `preconfigured_${res.reason}`,
-                wait: res.wait
-            };
+            return capRetryWait(`preconfigured_${res.reason}`, res.wait, maxWaitMs);
         }
     }
 

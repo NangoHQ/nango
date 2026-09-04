@@ -30,6 +30,7 @@ describe('call', () => {
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200' }),
             outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            maxWaitMs: Infinity,
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });
@@ -61,6 +62,7 @@ describe('call', () => {
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/400', retries: 1 }),
             outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            maxWaitMs: Infinity,
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });
@@ -96,6 +98,7 @@ describe('call', () => {
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/500', retries: 1 }),
             outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            maxWaitMs: Infinity,
             getConnection,
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });
@@ -141,6 +144,7 @@ describe('call', () => {
             logger: vi.fn(),
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'http://127.0.0.1' } }, endpoint: '/' }),
             outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            maxWaitMs: Infinity,
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });

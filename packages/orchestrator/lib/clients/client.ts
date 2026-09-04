@@ -63,6 +63,7 @@ export class OrchestratorClient {
             };
             const retryConfig: RetryConfig<E['Reply']> = config?.retryConfig || {
                 maxAttempts: 3,
+                maxWaitMs: Infinity,
                 delayMs: 50,
                 retryIf: (res) => 'error' in res
             };
@@ -73,7 +74,7 @@ export class OrchestratorClient {
     public async immediate(props: ImmediateProps): Promise<Result<PostImmediate['Success'], ClientError>> {
         const res = await this.routeFetch(
             postImmediateRoute,
-            props.rateLimitKey ? { retryConfig: { maxAttempts: 1, delayMs: 0, retryIf: () => false } } : undefined
+            props.rateLimitKey ? { retryConfig: { maxAttempts: 1, maxWaitMs: Infinity, delayMs: 0, retryIf: () => false } } : undefined
         )({ body: props });
         if ('error' in res) {
             const rateLimit = getErrorForCode(res.error.payload, 'rate_limit_exceeded');
@@ -199,6 +200,7 @@ export class OrchestratorClient {
             // A schedule that already has an active task or is being mutated is a terminal answer, not a transient failure
             retryConfig: {
                 maxAttempts: 3,
+                maxWaitMs: Infinity,
                 delayMs: 50,
                 retryIf: (res) =>
                     'error' in res &&
@@ -255,6 +257,7 @@ export class OrchestratorClient {
         const getOutput = await this.routeFetch(getOutputRoute, {
             retryConfig: {
                 maxAttempts: 1000,
+                maxWaitMs: Infinity,
                 delayMs: 100,
                 retryIf: (res) => 'error' in res && Date.now() < retryUntil
             }
@@ -435,7 +438,7 @@ export class OrchestratorClient {
         }
 
         const res = await this.routeFetch(postImmediateBatchRoute, {
-            retryConfig: { maxAttempts: 1, delayMs: 0, retryIf: () => false }
+            retryConfig: { maxAttempts: 1, maxWaitMs: Infinity, delayMs: 0, retryIf: () => false }
         })({ body: { tasks: propsList } });
 
         if ('error' in res) {
