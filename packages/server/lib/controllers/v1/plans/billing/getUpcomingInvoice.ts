@@ -6,7 +6,7 @@ import { isSpendPlan } from '../../../../utils/spendPlans.js';
 
 import type { GetUpcomingInvoice } from '@nangohq/types';
 
-const NO_SPEND = { amountInCents: null, currency: null };
+const NO_SPEND = { amountInCents: null, minimum: null, currency: null };
 
 export const getUpcomingInvoice = asyncWrapper<GetUpcomingInvoice>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -41,5 +41,5 @@ export const getUpcomingInvoice = asyncWrapper<GetUpcomingInvoice>(async (req, r
     }
 
     const invoice = invoiceRes.value;
-    res.status(200).send({ data: invoice ? { amountInCents: invoice.amountInCents, currency: invoice.currency } : NO_SPEND });
+    res.status(200).send({ data: invoice ? { amountInCents: invoice.amountInCents, minimum: invoice.minimum, currency: invoice.currency } : NO_SPEND });
 });

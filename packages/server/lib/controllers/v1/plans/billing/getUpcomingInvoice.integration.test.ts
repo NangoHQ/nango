@@ -36,7 +36,7 @@ describe(`GET ${route}`, () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        getUpcomingInvoiceSpy.mockResolvedValue(Ok({ amountInCents: 128430, currency: 'USD' }));
+        getUpcomingInvoiceSpy.mockResolvedValue(Ok({ amountInCents: 128430, minimum: null, currency: 'USD' }));
     });
 
     describe('Authentication & Authorization', () => {
@@ -81,7 +81,7 @@ describe(`GET ${route}`, () => {
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
-            expect(res.json.data).toStrictEqual({ amountInCents: null, currency: null });
+            expect(res.json.data).toStrictEqual({ amountInCents: null, minimum: null, currency: null });
             // The gate exists to keep a non-monthly plan's contract total off this endpoint, so
             // "returned null" is not enough — the call must not happen at all.
             expect(getUpcomingInvoiceSpy).not.toHaveBeenCalled();
@@ -94,18 +94,18 @@ describe(`GET ${route}`, () => {
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
-            expect(res.json.data).toStrictEqual({ amountInCents: 128430, currency: 'USD' });
+            expect(res.json.data).toStrictEqual({ amountInCents: 128430, minimum: null, currency: 'USD' });
             expect(getUpcomingInvoiceSpy).toHaveBeenCalledWith('orb_sub_123');
         });
 
         it('should report zero rather than falling back — the startup deal really does bill $0.00', async () => {
             const { apiKey } = await seedPlan('startup-deal');
-            getUpcomingInvoiceSpy.mockResolvedValue(Ok({ amountInCents: 0, currency: 'USD' }));
+            getUpcomingInvoiceSpy.mockResolvedValue(Ok({ amountInCents: 0, minimum: null, currency: 'USD' }));
 
             const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
 
             isSuccess(res.json);
-            expect(res.json.data).toStrictEqual({ amountInCents: 0, currency: 'USD' });
+            expect(res.json.data).toStrictEqual({ amountInCents: 0, minimum: null, currency: 'USD' });
         });
     });
 
@@ -117,7 +117,17 @@ describe(`GET ${route}`, () => {
             const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
 
             isSuccess(res.json);
-            expect(res.json.data).toStrictEqual({ amountInCents: null, currency: null });
+            expect(res.json.data).toStrictEqual({ amountInCents: null, minimum: null, currency: null });
+        });
+
+        it('should pass a binding minimum through', async () => {
+            const { apiKey } = await seedPlan('pay-as-you-go');
+            getUpcomingInvoiceSpy.mockResolvedValue(Ok({ amountInCents: 4833, minimum: { enforcedInCents: 4833, topUpInCents: 4637 }, currency: 'USD' }));
+
+            const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
+
+            isSuccess(res.json);
+            expect(res.json.data).toStrictEqual({ amountInCents: 4833, minimum: { enforcedInCents: 4833, topUpInCents: 4637 }, currency: 'USD' });
         });
 
         it('should 500 when the Orb read fails', async () => {
@@ -139,7 +149,7 @@ describe(`GET ${route}`, () => {
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
-            expect(res.json.data).toStrictEqual({ amountInCents: null, currency: null });
+            expect(res.json.data).toStrictEqual({ amountInCents: null, minimum: null, currency: null });
             expect(getUpcomingInvoiceSpy).not.toHaveBeenCalled();
         });
     });

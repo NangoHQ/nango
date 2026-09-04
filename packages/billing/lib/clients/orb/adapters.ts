@@ -10,6 +10,7 @@ import type {
     BillingCustomer,
     BillingEvent,
     BillingInvoicingDetails,
+    BillingMinimumSpend,
     BillingPeriodCosts,
     BillingSpendAlert,
     BillingUpcomingInvoice,
@@ -50,7 +51,7 @@ export function normalizeIsoCurrency(currency: string | null | undefined): strin
     return code && /^[A-Z]{3}$/.test(code) ? code : null;
 }
 
-export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: string }): BillingUpcomingInvoice | null {
+export function fromOrbUpcomingInvoice(invoice: { amount_due: string; subtotal: string; total: string; currency: string }): BillingUpcomingInvoice | null {
     const amountInCents = orbAmountToCents(invoice.amount_due);
     if (amountInCents === null) {
         return null;
@@ -61,7 +62,22 @@ export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: 
         return null;
     }
 
-    return { amountInCents, currency };
+    return { amountInCents, minimum: minimumSpendOf(invoice), currency };
+}
+
+/**
+ * Adjustments alone separate subtotal from total, and a discount moves the total down, so a total
+ * above the subtotal means a minimum. The total is also the only source for the figure Orb enforces:
+ * `invoice.minimum.minimum_amount` reports the plan's nominal one even over a prorated period.
+ */
+function minimumSpendOf(invoice: { subtotal: string; total: string }): BillingMinimumSpend | null {
+    const subtotalInCents = orbAmountToCents(invoice.subtotal);
+    const totalInCents = orbAmountToCents(invoice.total);
+    if (subtotalInCents === null || totalInCents === null || totalInCents <= subtotalInCents) {
+        return null;
+    }
+
+    return { enforcedInCents: totalInCents, topUpInCents: totalInCents - subtotalInCents };
 }
 
 /**
