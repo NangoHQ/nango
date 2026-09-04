@@ -1056,6 +1056,7 @@
               "api-integrations/back-market",
               "api-integrations/bamboohr",
               "integrations/all/bamboohr-basic",
+              "api-integrations/bandwidth",
               "integrations/all/basecamp",
               "api-integrations/baserow",
               "api-integrations/basin",
