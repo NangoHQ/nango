@@ -15,9 +15,12 @@ function noInlineScripts(): Plugin {
         transformIndexHtml: {
             order: 'post',
             handler: (html) => {
-                const blocked = /<script(?![^>]*\ssrc=)[^>]*>[\s\S]*?<\/script>/i.exec(html) ?? /<[^>]+\son[a-z]+\s*=/i.exec(html);
+                // Quoted values are dropped first, so ` src=` inside an attribute can't pass for the attribute itself.
+                const tagsOnly = html.replace(/"[^"]*"|'[^']*'/g, '');
+                const inlineScript = (tagsOnly.match(/<script\b[^>]*>/gi) ?? []).find((tag) => !/\ssrc\s*=/i.test(tag));
+                const blocked = inlineScript ?? /<[^>]+\son[a-z]+\s*=/i.exec(tagsOnly)?.[0];
                 if (blocked) {
-                    throw new Error(`[connect-ui] no-inline-scripts: "${blocked[0].slice(0, 80)}" is blocked by the enforced CSP`);
+                    throw new Error(`[connect-ui] no-inline-scripts: "${blocked}" is blocked by the enforced CSP`);
                 }
                 return html;
             }
