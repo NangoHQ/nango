@@ -92,6 +92,12 @@ export interface DBPlan extends Timestamps {
      */
     function_logs_max: number | null;
 
+    /** Limit the amount of billable data transfer (in bytes) that can be used in a month
+     * Set to null to remove limit
+     * @default null
+     */
+    data_transfer_max: number | null;
+
     /**
      * Limit the number of environments that can be created
      * @default 2

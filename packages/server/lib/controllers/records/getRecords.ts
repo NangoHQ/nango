@@ -8,6 +8,7 @@ import { ENVS, metrics, parseEnvs, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionIdSchema, modelSchema, providerConfigKeySchema, variantSchema } from '../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { egressTelemetryRecorder } from '../../utils/egressTelemetry.js';
+import { capping } from '../../utils/usage.js';
 
 import type { GetPublicRecords } from '@nangohq/types';
 
@@ -67,6 +68,17 @@ export const getPublicRecords = asyncWrapperWithEnvironment<GetPublicRecords>(as
     const { environment, account, plan } = res.locals;
     const headers: GetPublicRecords['Headers'] = valHeaders.data;
     const query: GetPublicRecords['Querystring'] = valQuery.data;
+
+    const cappingStatus = await capping.getStatus(plan, 'data_transfer');
+    if (cappingStatus.isCapped) {
+        res.status(402).send({
+            error: {
+                code: 'plan_limit',
+                message: cappingStatus.message || 'You have reached the data transfer limits for your plan. Upgrade to continue using.'
+            }
+        });
+        return;
+    }
 
     const { error, response: connection } = await connectionService.getConnection(headers['connection-id'], headers['provider-config-key'], environment.id);
 
