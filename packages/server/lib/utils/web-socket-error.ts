@@ -60,6 +60,13 @@ export function InvalidCallbackOAuth2(providerContext?: string): WSErr {
     };
 }
 
+export function InvalidAuthorizationResponseIssuer(): WSErr {
+    return {
+        type: 'callback_err',
+        message: 'The OAuth authorization response could not be verified.'
+    };
+}
+
 export function EnvironmentOrAccountNotFound(): WSErr {
     return {
         type: 'account_or_environment_retrieval_err',

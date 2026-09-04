@@ -1,7 +1,13 @@
 import * as crypto from 'node:crypto';
 
-import { exchangeAuthorization, registerClient, startAuthorization } from '@modelcontextprotocol/sdk/client/auth.js';
-import { OAuthClientInformationSchema, OAuthMetadataSchema } from '@modelcontextprotocol/sdk/shared/auth.js';
+import {
+    exchangeAuthorization,
+    IssuerMismatchError,
+    registerClient,
+    startAuthorization,
+    validateAuthorizationResponseIssuer
+} from '@modelcontextprotocol/client';
+import { OAuthClientInformationSchema, OAuthMetadataSchema } from '@modelcontextprotocol/core';
 import simpleOauth2 from 'simple-oauth2';
 import * as uuid from 'uuid';
 
@@ -59,7 +65,7 @@ import * as WSErrBuilder from '../utils/web-socket-error.js';
 
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
 import type { RequestLocals } from '../utils/express.js';
-import type { OAuthClientInformation, OAuthClientMetadata, OAuthTokens } from '@modelcontextprotocol/sdk/shared/auth.js';
+import type { OAuthClientInformation, OAuthClientMetadata, OAuthTokens } from '@modelcontextprotocol/client';
 import type { LogContext } from '@nangohq/logs';
 import type { Config, Config as ProviderConfig } from '@nangohq/shared';
 import type {
@@ -89,6 +95,13 @@ import type { NextFunction, Request, Response } from 'express';
 const SEC_FETCH_MODE_VALUES = new Set(['navigate', 'cors', 'no-cors', 'same-origin', 'websocket']);
 const SEC_FETCH_DEST_VALUES = new Set(['document', 'empty', 'iframe', 'frame', 'nested-document']);
 const SEC_FETCH_SITE_VALUES = new Set(['cross-site', 'same-origin', 'same-site', 'none']);
+
+class MalformedAuthorizationResponseIssuerError extends Error {
+    constructor() {
+        super('The OAuth authorization response issuer could not be verified.');
+        this.name = 'MalformedAuthorizationResponseIssuerError';
+    }
+}
 
 function normalizeHeaderTag(value: string | undefined, allowed: Set<string>): string {
     if (!value) {
@@ -2590,14 +2603,6 @@ class OAuthController {
         const connectionId = session.connectionId;
         const channel = session.webSocketClientId;
 
-        if (!authorizationCode) {
-            const providerContext = WSErrBuilder.getProviderErrorContextFromQuery(req.query as Record<string, unknown>);
-            const error = WSErrBuilder.InvalidCallbackOAuth2(providerContext);
-            void logCtx.error(error.message);
-            await logCtx.failed();
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
-        }
-
         const metadataStr = session.connectionConfig['oauth_metadata'];
         const clientInfoStr = session.connectionConfig['oauth_client_info'];
         const resourceUrl = session.connectionConfig['oauth_resource_url'];
@@ -2613,6 +2618,28 @@ class OAuthController {
 
         try {
             const metadata = OAuthMetadataSchema.parse(JSON.parse(metadataStr));
+            const authorizationResponseIssuer = req.query['iss'];
+            if (authorizationResponseIssuer !== undefined && typeof authorizationResponseIssuer !== 'string') {
+                throw new MalformedAuthorizationResponseIssuerError();
+            }
+
+            if (!authorizationCode) {
+                // exchangeAuthorization() validates iss when exchanging a code, but error callbacks
+                // never reach it. Validate here before displaying attacker-controlled error fields.
+                // https://github.com/modelcontextprotocol/typescript-sdk/blob/main/docs/migration/upgrade-to-v2.md#authorization-server-mix-up-defense-rfc-9207--rfc-8414-33--action-required
+                validateAuthorizationResponseIssuer({
+                    iss: authorizationResponseIssuer,
+                    expectedIssuer: metadata.issuer,
+                    issParameterSupported: metadata.authorization_response_iss_parameter_supported === true
+                });
+
+                const providerContext = WSErrBuilder.getProviderErrorContextFromQuery(req.query as Record<string, unknown>);
+                const error = WSErrBuilder.InvalidCallbackOAuth2(providerContext);
+                void logCtx.error(error.message);
+                await logCtx.failed();
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+            }
+
             const clientInformation = OAuthClientInformationSchema.parse(JSON.parse(clientInfoStr));
             const resource = resourceUrl ? new URL(resourceUrl) : undefined;
 
@@ -2624,7 +2651,8 @@ class OAuthController {
                 authorizationCode,
                 codeVerifier,
                 redirectUri,
-                ...(resource && { resource })
+                ...(resource && { resource }),
+                ...(authorizationResponseIssuer !== undefined ? { iss: authorizationResponseIssuer } : {})
             });
 
             const parsedRawCredentials: OAuth2Credentials = {
@@ -2742,6 +2770,9 @@ class OAuthController {
             }
 
             const prettyError = stringifyError(err, { pretty: true });
+            const invalidAuthorizationResponseIssuer = err instanceof MalformedAuthorizationResponseIssuerError || IssuerMismatchError.isInstance(err);
+            const publicError = invalidAuthorizationResponseIssuer ? WSErrBuilder.InvalidAuthorizationResponseIssuer() : WSErrBuilder.UnknownError(prettyError);
+            const connectionErrorDescription = invalidAuthorizationResponseIssuer ? 'Invalid OAuth authorization response issuer' : prettyError;
 
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -2764,7 +2795,7 @@ class OAuthController {
                     auth_mode: provider.auth_mode,
                     error: {
                         type: 'unknown',
-                        description: prettyError
+                        description: connectionErrorDescription
                     },
                     operation: 'unknown'
                 },
@@ -2778,7 +2809,7 @@ class OAuthController {
                 providerConfigKey: config.unique_key
             });
 
-            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, publicError);
         }
     }
 
