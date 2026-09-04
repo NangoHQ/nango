@@ -100,16 +100,15 @@ RUN true \
       /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
   && rm -rf /var/lib/apt/lists/*
 
-# Do not use root to run the app
-# BUT it does not work with secret mount (could not find a solution yet)
-# TODO: fix this
-# USER node
+# Create app directory with correct ownership for non-root user.
+# Secret mounts (e.g. /etc/nango/tls) are expected to be world or group
+# readable (0440 with fsGroup 1000) so USER node can read them — see docs.
+RUN mkdir -p /app/nango && chown node:node /app/nango
 
 WORKDIR /app/nango
 
-# Code
-# COPY --from=build --chown=node:node /app/tmp /app/nango
-COPY --from=build /app/tmp /app/nango
+# Code — preserve ownership so the non-root user can read it
+COPY --from=build --chown=node:node /app/tmp /app/nango
 
 ARG git_hash
 
@@ -119,3 +118,6 @@ ENV GIT_HASH=$git_hash
 ENV SERVER_RUN_MODE=DOCKERIZED
 
 EXPOSE 8080
+
+# Run as non-root; secret volumes must be mounted group-readable (see docs).
+USER node
