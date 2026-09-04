@@ -14,11 +14,9 @@ export interface RetryConfig<T = unknown> {
     retryOnError?: (error: Error) => boolean;
 }
 
-export const DEFAULT_MAX_RETRY_WAIT_MS = 10 * 60 * 1000; // 10 minutes
-
 export async function retry<T>(
     fn: () => T,
-    { maxAttempts, maxWaitMs = DEFAULT_MAX_RETRY_WAIT_MS, delayMs, retryIf = () => false, retryOnError = () => true }: RetryConfig<T>
+    { maxAttempts, maxWaitMs = Infinity, delayMs, retryIf = () => false, retryOnError = () => true }: RetryConfig<T>
 ): Promise<T> {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         const wait = async () => {

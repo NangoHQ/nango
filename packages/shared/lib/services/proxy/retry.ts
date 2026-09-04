@@ -1,7 +1,7 @@
 import { isAxiosError } from 'axios';
 import get from 'lodash-es/get.js';
 
-import { DEFAULT_MAX_RETRY_WAIT_MS, networkError } from '@nangohq/utils';
+import { networkError } from '@nangohq/utils';
 
 import type { RetryReason } from './utils.js';
 import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
@@ -21,11 +21,11 @@ function capRetryWait(reason: string, wait: number, maxWaitMs: number): RetryRea
 export function getProxyRetryFromErr({
     err,
     proxyConfig,
-    maxWaitMs = DEFAULT_MAX_RETRY_WAIT_MS
+    maxWaitMs
 }: {
     err: unknown;
     proxyConfig?: ApplicationConstructedProxyConfiguration | undefined;
-    maxWaitMs?: number;
+    maxWaitMs: number;
 }): RetryReason {
     if (!isAxiosError(err)) {
         return { retry: false, reason: 'unknown_error' };

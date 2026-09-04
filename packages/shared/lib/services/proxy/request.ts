@@ -2,7 +2,7 @@ import { finished, Readable } from 'node:stream';
 
 import { isAxiosError } from 'axios';
 
-import { axiosInstance as axios, DEFAULT_MAX_RETRY_WAIT_MS, Err, getLogger, Ok, redactHeaders, redactURL, retryFlexible } from '@nangohq/utils';
+import { axiosInstance as axios, Err, getLogger, Ok, redactHeaders, redactURL, retryFlexible } from '@nangohq/utils';
 
 import { createMeteringTransport } from './byte-metering-transport.js';
 import { getProxyRetryFromErr } from './retry.js';
@@ -25,7 +25,7 @@ interface Props {
     getConnection: () => MaybePromise<ConnectionForProxy>;
     getIntegrationConfig: () => MaybePromise<IntegrationConfigForProxy>;
     outboundPolicy: OutboundUrlPolicy;
-    maxWaitMs?: number;
+    maxWaitMs: number;
 }
 
 /**
@@ -93,7 +93,7 @@ export class ProxyRequest {
         this.getConnection = props.getConnection;
         this.getIntegrationConfig = props.getIntegrationConfig;
         this.outboundPolicy = props.outboundPolicy;
-        this.maxWaitMs = props.maxWaitMs ?? DEFAULT_MAX_RETRY_WAIT_MS;
+        this.maxWaitMs = props.maxWaitMs;
     }
 
     /**
