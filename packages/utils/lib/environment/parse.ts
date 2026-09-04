@@ -901,7 +901,6 @@ const ENVS_SHAPE = z.object({
 
     // WEBHOOK INGRESS
     WEBHOOK_INGRESS_USE_DISPATCH_QUEUE: z.stringbool().optional().default(false),
-    NANGO_WEBHOOK_DEDUPE_WINDOW_MS: z.coerce.number().int().min(0).max(900_000).optional().default(0),
     NANGO_WEBHOOK_INGRESS_RATE_LIMIT_PER_MIN: z.coerce.number().min(0).optional().default(4000),
     NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE: z.stringbool().optional().default(false),
 

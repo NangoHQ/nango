@@ -13,10 +13,6 @@ const mocks = vi.hoisted(() => {
         increment: vi.fn(),
         report: vi.fn(),
         metricsIncrement: vi.fn(),
-        kvstore: {
-            set: vi.fn(),
-            deleteIfValueEquals: vi.fn()
-        },
         getConnection: vi.fn(),
         getConnectionsByEnvironmentAndConfig: vi.fn(),
         getSyncConfigsByConfigIdForWebhook: vi.fn()
@@ -25,7 +21,6 @@ const mocks = vi.hoisted(() => {
 
 vi.mock('../env.js', () => ({ envs: mocks.envs }));
 vi.mock('./dispatch-queue/client.js', () => mocks.dispatchQueueClient);
-vi.mock('@nangohq/kvstore', () => ({ getKVStore: () => mocks.kvstore }));
 vi.mock('../utils/utils.js', () => ({ getOrchestrator: () => ({ triggerWebhook: mocks.triggerWebhook }) }));
 vi.mock('@nangohq/utils', async (importOriginal) => {
     const actual = await importOriginal();
@@ -47,8 +42,6 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
             Types: {
                 ...metrics.Types,
                 WEBHOOK_DIRECT_TRIGGER_SUCCESS: 'nango.webhook.direct_trigger.success',
-                WEBHOOK_DEDUPE_DISPATCHED: 'nango.webhook.dedupe.dispatched',
-                WEBHOOK_DEDUPE_SUPPRESSED: 'nango.webhook.dedupe.suppressed',
                 WEBHOOK_DISPATCH_LARGE_FANOUT: 'nango.webhook.dispatch_queue.large_fanout',
                 WEBHOOK_DISPATCH_BYPASS_OVERSIZE: 'nango.webhook.dispatch_queue.bypass_oversize'
             },
@@ -131,8 +124,6 @@ describe('InternalNango queue dispatch', () => {
         mocks.increment.mockClear();
         mocks.envs.WEBHOOK_INGRESS_USE_DISPATCH_QUEUE = true;
         mocks.dispatchQueueClient.dispatchQueuePublisher = null;
-        mocks.kvstore.set.mockResolvedValue(undefined);
-        mocks.kvstore.deleteIfValueEquals.mockResolvedValue(true);
         mocks.getConnection.mockResolvedValue({
             success: true,
             response: { connection_id: 'conn-1', metadata: { webhookSecret: 'secret' } }
@@ -191,7 +182,7 @@ describe('InternalNango queue dispatch', () => {
         expect(logCtx2.failed).toHaveBeenCalledOnce();
     });
 
-    it('delays the winner of an enforced dedupe window', async () => {
+    it('passes an optional delay to queued webhook messages', async () => {
         const publisher = {
             publish: vi.fn().mockResolvedValue({ enqueued: 1, failed: 0, failedActivityLogIds: [] })
         };
@@ -201,163 +192,9 @@ describe('InternalNango queue dispatch', () => {
         ]);
         const { nango } = makeInternalNango([createLogCtx('log-1')]);
 
-        const result = await nango.executeScriptForWebhooks({
-            body: { event: 'x' },
-            webhookTypeValue: 'push',
-            dedupe: { key: 'dedupe-key', ttlMs: 7000, enforce: true }
-        });
+        await nango.executeScriptForWebhooks({ body: { event: 'x' }, webhookTypeValue: 'push', delaySeconds: 7 });
 
-        expect(result.connectionIds).toEqual(['conn-1']);
-        expect(mocks.kvstore.set).toHaveBeenCalledWith('dedupe-key', expect.any(String), { canOverride: false, ttlMs: 7000 });
         expect(publisher.publish).toHaveBeenCalledWith([expect.objectContaining({ delaySeconds: 7 })], 'account:1:env:2');
-        expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.dedupe.dispatched', 1, {
-            provider: 'github',
-            enforced: 'true'
-        });
-    });
-
-    it('suppresses a duplicate while preserving resolved connection ids', async () => {
-        const publisher = { publish: vi.fn() };
-        mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
-        mocks.kvstore.set.mockRejectedValue(new Error('set_key_already_exists'));
-        const { nango, logContextGetter } = makeInternalNango([]);
-
-        const result = await nango.executeScriptForWebhooks({
-            body: { event: 'x' },
-            webhookTypeValue: 'push',
-            dedupe: { key: 'dedupe-key', ttlMs: 7000, enforce: true }
-        });
-
-        expect(result.connectionIds).toEqual(['conn-1', 'conn-2']);
-        expect(publisher.publish).not.toHaveBeenCalled();
-        expect(logContextGetter.create).not.toHaveBeenCalled();
-        expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.dedupe.suppressed', 1, expect.objectContaining({ enforced: 'true' }));
-    });
-
-    it('measures duplicates without suppressing them in shadow mode', async () => {
-        const publisher = {
-            publish: vi.fn().mockResolvedValue({ enqueued: 1, failed: 0, failedActivityLogIds: [] })
-        };
-        mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
-        mocks.getConnectionsByEnvironmentAndConfig.mockResolvedValue([
-            { id: 11, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2, metadata: null }
-        ]);
-        mocks.kvstore.set.mockRejectedValue(new Error('set_key_already_exists'));
-        const { nango } = makeInternalNango([createLogCtx('log-1')]);
-
-        await nango.executeScriptForWebhooks({
-            body: { event: 'x' },
-            webhookTypeValue: 'push',
-            dedupe: { key: 'dedupe-key', ttlMs: 7000, enforce: false }
-        });
-
-        expect(mocks.kvstore.set).toHaveBeenCalledWith('dedupe-key:shadow', expect.any(String), { canOverride: false, ttlMs: 7000 });
-        expect(publisher.publish).toHaveBeenCalledWith([expect.not.objectContaining({ delaySeconds: expect.anything() })], 'account:1:env:2');
-        expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.dedupe.suppressed', 1, expect.objectContaining({ enforced: 'false' }));
-    });
-
-    it('fails open when the dedupe store is unavailable', async () => {
-        const publisher = {
-            publish: vi.fn().mockResolvedValue({ enqueued: 1, failed: 0, failedActivityLogIds: [] })
-        };
-        mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
-        mocks.getConnectionsByEnvironmentAndConfig.mockResolvedValue([
-            { id: 11, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2, metadata: null }
-        ]);
-        mocks.kvstore.set.mockRejectedValue(new Error('redis unavailable'));
-        const { nango } = makeInternalNango([createLogCtx('log-1')]);
-
-        await nango.executeScriptForWebhooks({
-            body: { event: 'x' },
-            webhookTypeValue: 'push',
-            dedupe: { key: 'dedupe-key', ttlMs: 7000, enforce: true }
-        });
-
-        expect(publisher.publish).toHaveBeenCalledWith([expect.not.objectContaining({ delaySeconds: expect.anything() })], 'account:1:env:2');
-        expect(mocks.report).toHaveBeenCalledWith(expect.any(Error), expect.objectContaining({ context: 'webhook dedupe claim failed' }));
-    });
-
-    it('releases the dedupe claim when queue publication throws', async () => {
-        const publisher = { publish: vi.fn().mockRejectedValue(new Error('publisher unavailable')) };
-        mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
-        mocks.getConnectionsByEnvironmentAndConfig.mockResolvedValue([
-            { id: 11, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2, metadata: null }
-        ]);
-        const { nango } = makeInternalNango([createLogCtx('log-1')]);
-
-        await expect(
-            nango.executeScriptForWebhooks({
-                body: { event: 'x' },
-                webhookTypeValue: 'push',
-                dedupe: { key: 'dedupe-key', ttlMs: 7000, enforce: true }
-            })
-        ).rejects.toThrow('publisher unavailable');
-
-        const token = mocks.kvstore.set.mock.calls[0]?.[1];
-        expect(mocks.kvstore.deleteIfValueEquals).toHaveBeenCalledWith('dedupe-key', token);
-    });
-
-    it('releases the dedupe claim when queue preparation throws', async () => {
-        const publisher = { publish: vi.fn() };
-        mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
-        mocks.getConnectionsByEnvironmentAndConfig.mockResolvedValue([
-            { id: 11, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2, metadata: null }
-        ]);
-        const logCtx = createLogCtx('log-1');
-        logCtx.attachSpan.mockImplementation(() => {
-            throw new Error('preparation failed');
-        });
-        logCtx.error.mockRejectedValue(new Error('logging failed'));
-        const { nango } = makeInternalNango([logCtx]);
-
-        await expect(
-            nango.executeScriptForWebhooks({
-                body: { event: 'x' },
-                webhookTypeValue: 'push',
-                dedupe: { key: 'dedupe-key', ttlMs: 7000, enforce: true }
-            })
-        ).rejects.toThrow('logging failed');
-
-        const token = mocks.kvstore.set.mock.calls[0]?.[1];
-        expect(mocks.kvstore.deleteIfValueEquals).toHaveBeenCalledWith('dedupe-key', token);
-    });
-
-    it('releases the dedupe claim when no messages are enqueued', async () => {
-        const publisher = {
-            publish: vi.fn().mockResolvedValue({ enqueued: 0, failed: 1, failedActivityLogIds: ['log-1'] })
-        };
-        mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
-        mocks.getConnectionsByEnvironmentAndConfig.mockResolvedValue([
-            { id: 11, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2, metadata: null }
-        ]);
-        const { nango } = makeInternalNango([createLogCtx('log-1')]);
-
-        await nango.executeScriptForWebhooks({
-            body: { event: 'x' },
-            webhookTypeValue: 'push',
-            dedupe: { key: 'dedupe-key', ttlMs: 7000, enforce: true }
-        });
-
-        const token = mocks.kvstore.set.mock.calls[0]?.[1];
-        expect(token).toEqual(expect.any(String));
-        expect(mocks.kvstore.deleteIfValueEquals).toHaveBeenCalledWith('dedupe-key', token);
-    });
-
-    it('releases the dedupe claim after a partially successful queue fanout', async () => {
-        const publisher = {
-            publish: vi.fn().mockResolvedValue({ enqueued: 1, failed: 1, failedActivityLogIds: ['log-2'] })
-        };
-        mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
-
-        const { nango } = makeInternalNango([createLogCtx('log-1'), createLogCtx('log-2')]);
-        await nango.executeScriptForWebhooks({
-            body: { event: 'x' },
-            webhookTypeValue: 'push',
-            dedupe: { key: 'dedupe-key', ttlMs: 7000, enforce: true }
-        });
-
-        const token = mocks.kvstore.set.mock.calls[0]?.[1];
-        expect(mocks.kvstore.deleteIfValueEquals).toHaveBeenCalledWith('dedupe-key', token);
     });
 
     it('falls back to direct orchestrator dispatch when the feature flag is off', async () => {
@@ -443,7 +280,7 @@ describe('InternalNango queue dispatch', () => {
         expect(publisher.publish).toHaveBeenCalledOnce();
     });
 
-    it('publishes successful executions and releases the dedupe claim when queue preparation partially fails', async () => {
+    it('publishes successful executions even when one log context creation fails', async () => {
         const publisher = {
             publish: vi.fn().mockResolvedValue({ enqueued: 1, failed: 0, failedActivityLogIds: [] })
         };
@@ -455,11 +292,7 @@ describe('InternalNango queue dispatch', () => {
         } as any;
         const { nango } = makeInternalNango([], logContextGetter);
 
-        const result = await nango.executeScriptForWebhooks({
-            body: { event: 'x' },
-            webhookTypeValue: 'push',
-            dedupe: { key: 'dedupe-key', ttlMs: 7000, enforce: true }
-        });
+        const result = await nango.executeScriptForWebhooks({ body: { event: 'x' }, webhookTypeValue: 'push' });
 
         expect(result.connectionIds).toEqual(['conn-1', 'conn-2']);
         expect(publisher.publish).toHaveBeenCalledTimes(1);
@@ -480,8 +313,6 @@ describe('InternalNango queue dispatch', () => {
             connection: 'conn-2',
             integration: 'github-dev'
         });
-        const token = mocks.kvstore.set.mock.calls[0]?.[1];
-        expect(mocks.kvstore.deleteIfValueEquals).toHaveBeenCalledWith('dedupe-key', token);
         expect(mocks.report).toHaveBeenCalledWith(expect.any(Error), {
             error: 'The webhook could not be prepared for queue dispatch',
             provider: 'github',
@@ -590,24 +421,6 @@ describe('InternalNango queue dispatch', () => {
         );
     });
 
-    it('retains the dedupe claim after a successful oversized direct dispatch', async () => {
-        const publisher = { publish: vi.fn() };
-        mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
-        mocks.getConnectionsByEnvironmentAndConfig.mockResolvedValue([
-            { id: 11, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2, metadata: null }
-        ]);
-        const { nango } = makeInternalNango([createLogCtx('log-1')]);
-
-        await nango.executeScriptForWebhooks({
-            body: { payload: 'x'.repeat(1_100_000) },
-            webhookTypeValue: 'push',
-            dedupe: { key: 'dedupe-key', ttlMs: 7000, enforce: true }
-        });
-
-        expect(mocks.triggerWebhook).toHaveBeenCalledOnce();
-        expect(mocks.kvstore.deleteIfValueEquals).not.toHaveBeenCalled();
-    });
-
     it('reports but does not rethrow when oversized direct dispatch fails', async () => {
         const publisher = {
             publish: vi.fn().mockResolvedValue({ enqueued: 1, failed: 0, failedActivityLogIds: [] })
@@ -631,7 +444,7 @@ describe('InternalNango queue dispatch', () => {
         expect(mocks.report).toHaveBeenCalledWith(expect.any(Error), expect.objectContaining({ context: 'oversized webhook direct dispatch failed' }));
     });
 
-    it('releases the dedupe claim when oversize dispatch partially succeeds', async () => {
+    it('only reports for the failing connection when oversize dispatch partially succeeds', async () => {
         const publisher = { publish: vi.fn() };
         mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
         // First call succeeds, second call returns Err — logCtx handling is triggerWebhook's responsibility
@@ -643,17 +456,10 @@ describe('InternalNango queue dispatch', () => {
         const logCtx2 = createLogCtx('log-2');
         const { nango } = makeInternalNango([logCtx1, logCtx2]);
 
-        await expect(
-            nango.executeScriptForWebhooks({
-                body: { payload: 'x'.repeat(1_100_000) },
-                webhookTypeValue: 'push',
-                dedupe: { key: 'dedupe-key', ttlMs: 7000, enforce: true }
-            })
-        ).resolves.not.toThrow();
+        await expect(nango.executeScriptForWebhooks({ body: { payload: 'x'.repeat(1_100_000) }, webhookTypeValue: 'push' })).resolves.not.toThrow();
 
         expect(mocks.triggerWebhook).toHaveBeenCalledTimes(2);
-        const token = mocks.kvstore.set.mock.calls[0]?.[1];
-        expect(mocks.kvstore.deleteIfValueEquals).toHaveBeenCalledWith('dedupe-key', token);
+        // Only the failing connection triggers a report; the successful one does not
         expect(mocks.report).toHaveBeenCalledTimes(1);
         expect(mocks.report).toHaveBeenCalledWith(expect.any(Error), expect.objectContaining({ context: 'oversized webhook direct dispatch failed' }));
     });
