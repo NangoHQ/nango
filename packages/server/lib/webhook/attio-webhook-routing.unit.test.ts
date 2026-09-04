@@ -12,7 +12,8 @@ const mocks = vi.hoisted(() => ({
     deleteIfValueEquals: vi.fn(),
     findConnectionsByConnectionConfigValue: vi.fn(),
     increment: vi.fn(),
-    report: vi.fn()
+    logError: vi.fn(),
+    logInfo: vi.fn()
 }));
 
 vi.mock('@nangohq/feature-flags', () => ({
@@ -31,7 +32,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
     return {
         ...actual,
         metrics: { ...actual.metrics, increment: mocks.increment },
-        report: mocks.report
+        getLogger: () => ({ error: mocks.logError, info: mocks.logInfo })
     };
 });
 
@@ -155,8 +156,8 @@ describe('Attio webhook routing', () => {
 
         expect(nango.executeScriptForWebhooks).toHaveBeenCalledOnce();
         expect(nango.executeScriptForWebhooks).toHaveBeenCalledWith(expect.not.objectContaining({ delaySeconds: expect.anything() }));
-        expect(mocks.report).toHaveBeenCalledWith(expect.any(Error), {
-            context: 'attio webhook dedupe claim failed',
+        expect(mocks.logError).toHaveBeenCalledWith('attio webhook dedupe claim failed', {
+            error: expect.any(Error),
             accountId: 1,
             environmentId: 2,
             integrationId: 3

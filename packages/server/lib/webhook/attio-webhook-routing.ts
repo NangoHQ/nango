@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import { getFlags } from '@nangohq/feature-flags';
 import { getKVStore } from '@nangohq/kvstore';
 import { connectionService, NangoError } from '@nangohq/shared';
-import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
+import { Err, getLogger, metrics, Ok } from '@nangohq/utils';
 
 import type { AttioWebhook, WebhookHandler } from './types.js';
 
@@ -67,7 +67,7 @@ const route: WebhookHandler<AttioWebhook> = async (nango, headers, body, rawBody
             const dimensions = { provider: 'attio', enforced: String(enforceDedupe) };
 
             try {
-                const store = await getKVStore('system');
+                const store = await getKVStore();
                 await store.set(key, token, { canOverride: false, ttlMs: ATTIO_WEBHOOK_DEDUPE_WINDOW_MS });
                 if (enforceDedupe) dedupeClaim = { key, token };
                 metrics.increment(metrics.Types.WEBHOOK_DEDUPE_DISPATCHED, 1, dimensions);
@@ -85,8 +85,8 @@ const route: WebhookHandler<AttioWebhook> = async (nango, headers, body, rawBody
                         continue;
                     }
                 } else {
-                    report(err, {
-                        context: 'attio webhook dedupe claim failed',
+                    logger.error('attio webhook dedupe claim failed', {
+                        error: err,
                         accountId: nango.team.id,
                         environmentId: nango.environment.id,
                         integrationId: nango.integration.id
@@ -109,11 +109,11 @@ const route: WebhookHandler<AttioWebhook> = async (nango, headers, body, rawBody
         } catch (err) {
             if (dedupeClaim) {
                 try {
-                    const store = await getKVStore('system');
+                    const store = await getKVStore();
                     await store.deleteIfValueEquals(dedupeClaim.key, dedupeClaim.token);
                 } catch (err) {
-                    report(err, {
-                        context: 'attio webhook dedupe release failed',
+                    logger.error('attio webhook dedupe release failed', {
+                        error: err,
                         accountId: nango.team.id,
                         environmentId: nango.environment.id,
                         integrationId: nango.integration.id
