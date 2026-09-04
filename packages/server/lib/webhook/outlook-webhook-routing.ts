@@ -44,7 +44,7 @@ const route: WebhookHandler<OutlookNotificationPayload> = async (nango, _headers
     }
 
     const validNotifications = notifications
-        .filter((n) => typeof n.clientState === 'string' && safeCompare(expectedClientState, n.clientState))
+        .filter((n) => n !== null && typeof n.clientState === 'string' && safeCompare(expectedClientState, n.clientState))
         .map(({ clientState: _clientState, ...notification }) => notification);
     if (validNotifications.length === 0) {
         return Err(new NangoError('webhook_invalid_signature'));
