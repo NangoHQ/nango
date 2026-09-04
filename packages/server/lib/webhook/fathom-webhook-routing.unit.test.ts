@@ -120,13 +120,27 @@ describe('Fathom webhook routing', () => {
         expect(execute).not.toHaveBeenCalled();
     });
 
-    it('allows a webhook when no secret is configured', async () => {
+    it('rejects routing by nangoConnectionId when no secret is configured', async () => {
         const { nango, execute } = getNangoMock({ webhookSecret: null });
         const body = getBody();
 
         const result = await FathomWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
 
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('still allows the email fallback when no secret is configured', async () => {
+        const { nango, execute } = getNangoMock({ webhookSecret: null });
+        const body = getBody();
+
+        const result = await FathomWebhookRouting.default(nango, {}, body, JSON.stringify(body), {});
+
         expect(result.isOk()).toBe(true);
-        expect(execute).toHaveBeenCalledOnce();
+        expect(execute).toHaveBeenCalledWith({
+            body,
+            connectionIdentifierValue: EMAIL,
+            propName: 'metadata.emailAddress'
+        });
     });
 });
