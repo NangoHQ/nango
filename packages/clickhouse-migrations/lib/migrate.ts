@@ -14,27 +14,80 @@ function hashToInt(str: string): number {
     return hash % 2147483647;
 }
 
-async function acquireAdvisoryLock(knex: any, key: number, timeoutMs: number, logger: StrictLogger, database: string): Promise<boolean> {
-    const start = Date.now();
-    while (Date.now() - start < timeoutMs) {
-        const result = await knex.raw(`SELECT pg_try_advisory_lock(?) as acquired`, [key]);
-        const acquired = result.rows?.[0]?.acquired ?? result[0]?.acquired;
-        if (acquired) {
-            logger.info(`Clickhouse migration (${database}): acquired advisory lock ${key}`);
-            return true;
-        }
-        await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-    return false;
+function isProduction(): boolean {
+    return process.env['NODE_ENV'] === 'production';
 }
 
-async function releaseAdvisoryLock(knex: any, key: number, logger: StrictLogger, database: string): Promise<void> {
+async function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+    let timeout: NodeJS.Timeout | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+        timeout = setTimeout(() => reject(new Error(message)), ms);
+    });
     try {
-        await knex.raw(`SELECT pg_advisory_unlock(?)`, [key]);
-        logger.info(`Clickhouse migration (${database}): released advisory lock ${key}`);
-    } catch (err) {
-        logger.warning(`Clickhouse migration (${database}): failed to release advisory lock`, { error: stringifyError(err) });
+        return await Promise.race([promise, timeoutPromise]);
+    } finally {
+        if (timeout) clearTimeout(timeout);
     }
+}
+
+async function runWithAdvisoryXactLock<T>({
+    knex,
+    key,
+    timeoutMs,
+    logger,
+    database,
+    fn
+}: {
+    knex: any;
+    key: number;
+    timeoutMs: number;
+    logger: StrictLogger;
+    database: string;
+    fn: () => Promise<T>;
+}): Promise<T> {
+    const start = Date.now();
+    let attempt = 0;
+    while (Date.now() - start < timeoutMs) {
+        attempt++;
+        const remaining = timeoutMs - (Date.now() - start);
+        if (remaining <= 0) break;
+        const queryTimeoutMs = Math.min(5000, remaining);
+        let trx: any = null;
+        try {
+            trx = await knex.transaction();
+            const result: any = await withTimeout(
+                trx.raw(`SELECT pg_try_advisory_xact_lock(?) as acquired`, [key]),
+                queryTimeoutMs,
+                `advisory lock query timed out after ${queryTimeoutMs}ms`
+            );
+            const acquired = result.rows?.[0]?.acquired ?? result[0]?.acquired;
+            if (!acquired) {
+                await trx.rollback();
+                logger.info(`Clickhouse migration (${database}): advisory lock ${key} held by another migration, retrying (attempt ${attempt})`);
+                await new Promise((resolve) => setTimeout(resolve, 100));
+                continue;
+            }
+            logger.info(`Clickhouse migration (${database}): acquired advisory xact lock ${key} (attempt ${attempt})`);
+            const fnResult = await fn();
+            await trx.commit();
+            logger.info(`Clickhouse migration (${database}): released advisory xact lock ${key}`);
+            return fnResult;
+        } catch (err) {
+            if (trx) {
+                try {
+                    await trx.rollback();
+                } catch {}
+            }
+            const isTimeout = err instanceof Error && err.message.includes('timed out');
+            if (isTimeout) {
+                logger.warning(`Clickhouse migration (${database}): lock query timed out, retrying`, { error: stringifyError(err) });
+                await new Promise((resolve) => setTimeout(resolve, 100));
+                continue;
+            }
+            throw err;
+        }
+    }
+    throw new Error(`could not acquire advisory xact lock ${key} within ${timeoutMs}ms`);
 }
 
 export interface ClickhouseMigrateOptions {
@@ -79,33 +132,8 @@ export async function migrate({ clickhouseClient, database, migrationsDir, migra
     }
 
     const lockKey = hashToInt(`clickhouse_migration_${database}`);
-    let knex: any = null;
-    let lockAcquired = false;
-    try {
-        try {
-            const dbModule = (await import('@nangohq/database')) as any;
-            knex = dbModule.default?.knex ?? dbModule.knex ?? null;
-        } catch {
-            knex = null;
-        }
 
-        if (knex) {
-            try {
-                lockAcquired = await acquireAdvisoryLock(knex, lockKey, 30000, logger, database);
-                if (!lockAcquired) {
-                    return Err(
-                        `Clickhouse migration (${database}) failed: could not acquire advisory lock ${lockKey} within 30s - another migration may be in progress`
-                    );
-                }
-            } catch (err) {
-                logger.warning(`Clickhouse migration (${database}): failed to acquire advisory lock, proceeding without lock`, {
-                    error: stringifyError(err)
-                });
-            }
-        } else {
-            logger.warning(`Clickhouse migration (${database}): database not available, proceeding without lock`);
-        }
-
+    const runMigrations = async (): Promise<Result<void>> => {
         const migrationTable = `${database}.migrations`;
         await client.command({
             query: `
@@ -140,12 +168,47 @@ export async function migrate({ clickhouseClient, database, migrationsDir, migra
         }
         logger.info(`Clickhouse migration (${database}): ${migrations.length > 0 ? `applied ${migrations.length} migration(s)` : `no migrations`}`);
         return Ok(undefined);
+    };
+
+    let knex: any = null;
+    try {
+        const dbModule = (await import('@nangohq/database')) as any;
+        knex = dbModule.default?.knex ?? dbModule.knex ?? null;
+    } catch {
+        knex = null;
+    }
+
+    try {
+        if (knex) {
+            try {
+                return await runWithAdvisoryXactLock({
+                    knex,
+                    key: lockKey,
+                    timeoutMs: 30000,
+                    logger,
+                    database,
+                    fn: runMigrations
+                });
+            } catch (err) {
+                const msg = stringifyError(err);
+                if (isProduction()) {
+                    return Err(`Clickhouse migration (${database}) failed: ${msg}`);
+                }
+                logger.warning(`Clickhouse migration (${database}): advisory lock failed, proceeding without lock in non-production`, {
+                    error: msg
+                });
+                return await runMigrations();
+            }
+        } else {
+            if (isProduction()) {
+                return Err(`Clickhouse migration (${database}) failed: database not available for advisory lock in production`);
+            }
+            logger.warning(`Clickhouse migration (${database}): database not available, proceeding without lock`);
+            return await runMigrations();
+        }
     } catch (err) {
         return Err(`Clickhouse migration (${database}) failed: ${stringifyError(err)}`);
     } finally {
-        if (lockAcquired && knex) {
-            await releaseAdvisoryLock(knex, lockKey, logger, database);
-        }
         await client.close();
     }
 }
