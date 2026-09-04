@@ -5,18 +5,21 @@ import { Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 import { AUDIT_EVENTS_TABLE, AUDIT_SCHEMA } from '../postgres/schema.js';
 
 import type { DBAuditTrailEvent } from '../postgres/schema.js';
-import type { AuditReader, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from '../store.js';
-import type { ApiAuditTrailEvent, SerializedAuditEvent } from '@nangohq/types';
+import type { AuditReader, AuditTrailFilter, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from '../store.js';
+import type { ApiAuditTrailEvent, AuditExportMaxRows, AuditTrailTotal, SerializedAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
 const logger = getLogger('audit');
 
+const COUNT_SCAN_LIMIT: AuditExportMaxRows = 50_000;
+
 /** Direct-write store for self-hosted and BYOC, which do not use pub/sub. */
 export class PostgresAuditStore implements AuditWriter, AuditReader {
     constructor(
         private readonly knex: Knex,
-        private readonly schema: string = AUDIT_SCHEMA
+        private readonly schema: string = AUDIT_SCHEMA,
+        private readonly countScanLimit: number = COUNT_SCAN_LIMIT
     ) {}
 
     /**
@@ -46,6 +49,32 @@ export class PostgresAuditStore implements AuditWriter, AuditReader {
         });
     }
 
+    async count(filter: AuditTrailFilter): Promise<Result<AuditTrailTotal>> {
+        const capped = applyFilter(this.knex.withSchema(this.schema).from<DBAuditTrailEvent>(AUDIT_EVENTS_TABLE).select(this.knex.raw('1')), filter).limit(
+            this.countScanLimit + 1
+        );
+
+        return await tracer.trace('nango.audit.postgres.count', async (span) => {
+            try {
+                const [row] = await this.knex.from(capped.as('capped')).count<{ count: string }[]>('* as count');
+                const scanned = Number(row?.count);
+                if (!Number.isFinite(scanned)) {
+                    return Err('failed_to_count_audit_trail_events');
+                }
+
+                return scanned > this.countScanLimit
+                    ? Ok({ value: this.countScanLimit, relation: 'gte' as const })
+                    : Ok({ value: scanned, relation: 'eq' as const });
+            } catch (err) {
+                span?.addTags({ error: stringifyError(err) });
+                logger.warning(`Failed to count audit trail events for account ${filter.accountId}: ${stringifyError(err)}`);
+                return Err('failed_to_count_audit_trail_events');
+            } finally {
+                span?.finish();
+            }
+        });
+    }
+
     async list({ accountId, limit, before, from, to, resources, actions }: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>> {
         let query = this.knex
             .withSchema(this.schema)
@@ -55,25 +84,13 @@ export class PostgresAuditStore implements AuditWriter, AuditReader {
                 this.knex.raw('id::text AS cursor_id'),
                 this.knex.raw(`to_char(occurred_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') AS cursor_occurred_at`)
             )
-            .where({ account_id: accountId })
             .orderBy([
                 { column: 'occurred_at', order: 'desc' },
                 { column: 'id', order: 'desc' }
             ])
             .limit(limit + 1);
 
-        if (resources?.length) {
-            query = query.whereIn('resource', resources);
-            if (actions?.length) {
-                query = query.whereIn('action', actions);
-            }
-        }
-        if (from) {
-            query = query.where('occurred_at', '>=', from);
-        }
-        if (to) {
-            query = query.where('occurred_at', '<=', to);
-        }
+        query = applyFilter(query, { accountId, from, to, resources, actions });
         if (before) {
             query = query.whereRaw(`(occurred_at, id) < ((?::timestamp AT TIME ZONE 'UTC'), ?::uuid)`, [before.occurredAt, before.id]);
         }
@@ -98,4 +115,21 @@ export class PostgresAuditStore implements AuditWriter, AuditReader {
             }
         });
     }
+}
+
+function applyFilter(query: Knex.QueryBuilder, { accountId, from, to, resources, actions }: AuditTrailFilter): Knex.QueryBuilder {
+    query = query.where({ account_id: accountId });
+    if (resources?.length) {
+        query = query.whereIn('resource', resources);
+        if (actions?.length) {
+            query = query.whereIn('action', actions);
+        }
+    }
+    if (from) {
+        query = query.where('occurred_at', '>=', from);
+    }
+    if (to) {
+        query = query.where('occurred_at', '<=', to);
+    }
+    return query;
 }
