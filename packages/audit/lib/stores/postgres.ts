@@ -4,6 +4,7 @@ import { Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
 import { AUDIT_EVENTS_TABLE, AUDIT_SCHEMA } from '../postgres/schema.js';
 
+import type { DBAuditTrailEvent } from '../postgres/schema.js';
 import type { AuditReader, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from '../store.js';
 import type { ApiAuditTrailEvent, SerializedAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -47,41 +48,40 @@ export class PostgresAuditStore implements AuditWriter, AuditReader {
     }
 
     async list({ accountId, limit, before, from, to, resources, actions }: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>> {
-        const conditions: string[] = ['account_id = ?'];
-        const bindings: unknown[] = [accountId];
+        let query = this.knex
+            .withSchema(this.schema)
+            .from<DBAuditTrailEvent>(AUDIT_EVENTS_TABLE)
+            .select(
+                this.knex.raw('event::text AS event'),
+                this.knex.raw('id::text AS cursor_id'),
+                this.knex.raw(`to_char(occurred_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') AS cursor_occurred_at`)
+            )
+            .where({ account_id: accountId })
+            .orderBy([
+                { column: 'occurred_at', order: 'desc' },
+                { column: 'id', order: 'desc' }
+            ])
+            .limit(limit + 1);
 
         if (resources?.length) {
+            query = query.whereIn('resource', resources);
             if (actions?.length) {
-                conditions.push('resource = ANY(?) AND action = ANY(?)');
-                bindings.push(resources, actions);
-            } else {
-                conditions.push('resource = ANY(?)');
-                bindings.push(resources);
+                query = query.whereIn('action', actions);
             }
         }
         if (from) {
-            conditions.push('occurred_at >= ?');
-            bindings.push(from);
+            query = query.where('occurred_at', '>=', from);
         }
         if (to) {
-            conditions.push('occurred_at <= ?');
-            bindings.push(to);
+            query = query.where('occurred_at', '<=', to);
         }
         if (before) {
-            conditions.push(`(occurred_at, id) < ((?::timestamp AT TIME ZONE 'UTC'), ?::uuid)`);
-            bindings.push(before.occurredAt, before.id);
+            query = query.whereRaw(`(occurred_at, id) < ((?::timestamp AT TIME ZONE 'UTC'), ?::uuid)`, [before.occurredAt, before.id]);
         }
 
         return await tracer.trace('nango.audit.postgres.list', async (span) => {
             try {
-                const { rows } = await this.knex.raw<{ rows: { event: string; cursor_id: string; cursor_occurred_at: string }[] }>(
-                    `SELECT event::text AS event, id::text AS cursor_id, to_char(occurred_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') AS cursor_occurred_at
-                     FROM ??.??
-                     WHERE ${conditions.join(' AND ')}
-                     ORDER BY occurred_at DESC, id DESC
-                     LIMIT ?`,
-                    [this.schema, AUDIT_EVENTS_TABLE, ...bindings, limit + 1]
-                );
+                const rows: { event: string; cursor_id: string; cursor_occurred_at: string }[] = await query;
 
                 const hasMore = rows.length > limit;
                 const page = rows.slice(0, limit);
