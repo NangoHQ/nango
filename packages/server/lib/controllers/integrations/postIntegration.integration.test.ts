@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import { getActionsByProviderConfigKey, seeders } from '@nangohq/shared';
 import { Err, getLogger } from '@nangohq/utils';
 
 import integrationService, { IntegrationServiceError } from '../../services/integration.service.js';
@@ -202,5 +202,24 @@ describe(`POST ${endpoint}`, () => {
         isSuccess(resGet.json);
         const credentials = resGet.json.data.credentials as { webhook_secret: string | null };
         expect(credentials.webhook_secret).toBeNull();
+    });
+
+    it('should auto-deploy catalog actions when the integration is created', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { provider: 'bitdefender', unique_key: 'bitdefender-actions' }
+        });
+
+        isSuccess(res.json);
+        const actions = await getActionsByProviderConfigKey(env.id, 'bitdefender-actions');
+        expect(actions).toHaveLength(1);
+        expect(actions[0]).toMatchObject({
+            sync_name: 'get-company-details',
+            type: 'action',
+            source: 'catalog',
+            enabled: true
+        });
     });
 });

@@ -1,6 +1,7 @@
 import db from '@nangohq/database';
 import { env, Err, Ok } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
 import { NangoError } from '../../utils/error.js';
 import remoteFileService from '../file/remote.service.js';
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId } from '../sync/config/config.service.js';
@@ -20,6 +21,8 @@ import type {
     Result,
     SyncDeploymentResult
 } from '@nangohq/types';
+
+type TemplateDeployIntegration = Pick<Config, 'id' | 'unique_key' | 'provider'>;
 
 /**
  * Deploy a template from the S3 public folder, to the database and S3
@@ -182,6 +185,227 @@ export async function deployTemplate({
 
         return Err(new NangoError('error_creating_sync_config'));
     }
+}
+
+export type DeployTemplatesSkipReason = 'already_deployed' | 'missing_json_schema' | 'copy_failed';
+
+export interface DeployTemplatesResult {
+    deployed: SyncDeploymentResult[];
+    skipped: { name: string; reason: DeployTemplatesSkipReason }[];
+}
+
+/**
+ * Deploy many catalog templates in one pass: parallel file copies, then a single DB transaction.
+ * Skips names that already have an active config (custom or catalog) instead of failing the batch.
+ * Does not call logCtx.success/failed — the caller owns the operation outcome.
+ */
+export async function deployTemplates({
+    environment,
+    team,
+    templates,
+    integration,
+    deployInfo,
+    logCtx
+}: {
+    environment: DBEnvironment;
+    team: DBTeam;
+    templates: NangoSyncConfig[];
+    integration: TemplateDeployIntegration;
+    deployInfo: { integrationId: string; provider: string };
+    logCtx: LogContext;
+}): Promise<DeployTemplatesResult> {
+    const skipped: DeployTemplatesResult['skipped'] = [];
+    if (templates.length === 0) {
+        return { deployed: [], skipped };
+    }
+
+    const existing = await db.knex
+        .from<DBSyncConfig>('_nango_sync_configs')
+        .where({
+            environment_id: environment.id,
+            nango_config_id: integration.id!,
+            active: true,
+            deleted: false
+        })
+        .select<{ sync_name: string }[]>('sync_name');
+    const existingNames = new Set(existing.map((row) => row.sync_name));
+
+    const toCopy: NangoSyncConfig[] = [];
+    for (const template of templates) {
+        if (existingNames.has(template.name)) {
+            skipped.push({ name: template.name, reason: 'already_deployed' });
+            continue;
+        }
+        if (!template.json_schema) {
+            void logCtx.error(`Template missing json schema: ${template.name}`);
+            skipped.push({ name: template.name, reason: 'missing_json_schema' });
+            continue;
+        }
+        toCopy.push(template);
+    }
+
+    const copied: { template: NangoSyncConfig; copyJs: string }[] = [];
+    for (let i = 0; i < toCopy.length; i += envs.DEPLOY_BATCH_SIZE) {
+        const batch = toCopy.slice(i, i + envs.DEPLOY_BATCH_SIZE);
+        const batchResults = await Promise.all(
+            batch.map(async (template) => {
+                const copyJs = await copyTemplateFiles({ template, integration, deployInfo, environment, team, logCtx });
+                return { template, copyJs };
+            })
+        );
+        for (const { template, copyJs } of batchResults) {
+            if (!copyJs) {
+                skipped.push({ name: template.name, reason: 'copy_failed' });
+                continue;
+            }
+            copied.push({ template, copyJs });
+        }
+    }
+
+    if (copied.length === 0) {
+        return { deployed: [], skipped };
+    }
+
+    const created_at = new Date();
+    const now = new Date();
+    const toInsert: DBSyncConfigInsert[] = copied.map(({ template, copyJs }) =>
+        toSyncConfigInsert({ template, integration, environment, fileLocation: copyJs, createdAt: created_at })
+    );
+
+    const deployResults: SyncDeploymentResult[] = copied.map(({ template }, index) => {
+        const insert = toInsert[index]!;
+        return {
+            ...template,
+            providerConfigKey: deployInfo.integrationId,
+            ...insert,
+            last_deployed: created_at,
+            input: template.input || null,
+            models: [...template.returns, template.input].filter(Boolean) as string[]
+        };
+    });
+
+    try {
+        await db.knex.transaction(async (trx) => {
+            const inserted = await trx.from<DBSyncConfig>('_nango_sync_configs').insert(toInsert).returning('*');
+            if (inserted.length !== toInsert.length) {
+                throw new NangoError('failed_to_insert');
+            }
+
+            const endpoints: DBSyncEndpointCreate[] = [];
+            for (const [index, row] of inserted.entries()) {
+                const template = copied[index]!.template;
+                deployResults[index]!.id = row.id;
+                for (const [endpointIndex, endpoint] of template.endpoints.entries()) {
+                    endpoints.push({
+                        sync_config_id: row.id,
+                        method: endpoint.method,
+                        path: endpoint.path,
+                        group_name: endpoint.group || null,
+                        model: template.returns[endpointIndex] || null,
+                        created_at: now,
+                        updated_at: now
+                    });
+                }
+            }
+            if (endpoints.length > 0) {
+                await trx.from<DBSyncEndpoint>('_nango_sync_endpoints').insert(endpoints);
+            }
+        });
+    } catch (err) {
+        void logCtx.error('Failed to deploy catalog templates', { error: err });
+        throw err;
+    }
+
+    const names = deployResults.map((result) => result.name);
+    void logCtx.info(`Successfully deployed ${names.length} catalog templates`, { names });
+    return { deployed: deployResults, skipped };
+}
+
+async function copyTemplateFiles({
+    template,
+    integration,
+    deployInfo,
+    environment,
+    team,
+    logCtx
+}: {
+    template: NangoSyncConfig;
+    integration: TemplateDeployIntegration;
+    deployInfo: { integrationId: string; provider: string };
+    environment: DBEnvironment;
+    team: DBTeam;
+    logCtx: LogContext;
+}): Promise<string | null> {
+    const version = template.version || '0.0.1';
+    const publicRoute = deployInfo.provider;
+    const remoteBasePathConfig = `${env}/account/${team.id}/environment/${environment.id}/config/${integration.id}`;
+
+    void logCtx.info(`Uploading ${deployInfo.integrationId} -> ${template.name}@${version}`);
+
+    const [copyJs, copyTs] = await Promise.all([
+        remoteFileService.copy({
+            sourcePath: `${publicRoute}/build/${deployInfo.provider}_${template.type}s_${template.name}.cjs`,
+            destinationPath: `${remoteBasePathConfig}/${template.name}-v${version}.js`,
+            destinationLocalFileName: `build/${deployInfo.provider}-${template.type}s-${template.name}.cjs`
+        }),
+        remoteFileService.copy({
+            sourcePath: `${publicRoute}/${template.type}s/${template.name}.ts`,
+            destinationPath: `${remoteBasePathConfig}/${template.name}.ts`,
+            destinationLocalFileName: `${deployInfo.integrationId}/${template.type}s/${template.name}.ts`
+        })
+    ]);
+
+    if (!copyJs) {
+        void logCtx.error(`There was an error uploading the main js file for ${template.name}`);
+        return null;
+    }
+    if (!copyTs) {
+        void logCtx.error(`There was an error uploading the source file for ${template.name}`);
+        return null;
+    }
+    return copyJs;
+}
+
+function toSyncConfigInsert({
+    template,
+    integration,
+    environment,
+    fileLocation,
+    createdAt
+}: {
+    template: NangoSyncConfig;
+    integration: TemplateDeployIntegration;
+    environment: DBEnvironment;
+    fileLocation: string;
+    createdAt: Date;
+}): DBSyncConfigInsert {
+    return {
+        created_at: createdAt,
+        sync_name: template.name,
+        nango_config_id: integration.id!,
+        file_location: fileLocation,
+        version: template.version || '0.0.1',
+        models: template.returns,
+        active: true,
+        runs: template.type === 'sync' ? template.runs! : null,
+        model_schema: null,
+        input: template.input || null,
+        environment_id: environment.id,
+        deleted: false,
+        track_deletes: template.type === 'sync' ? template.track_deletes! : false,
+        type: template.type!,
+        auto_start: template.type === 'sync' ? !!template.auto_start : false,
+        attributes: {},
+        metadata: { description: template.description, scopes: template.scopes },
+        source: 'catalog',
+        enabled: true,
+        webhook_subscriptions: null,
+        models_json_schema: template.json_schema,
+        sdk_version: template.sdk_version,
+        features: template.features,
+        updated_at: createdAt,
+        sync_type: 'sync_type' in template ? template.sync_type : null
+    };
 }
 
 /**

@@ -1,9 +1,10 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as shared from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import integrationService, { IntegrationService } from './integration.service.js';
+import * as integrationTemplateService from './integrationTemplate.service.js';
 
 import type { Config, Orchestrator } from '@nangohq/shared';
 import type { DBSharedCredentials, Provider, SimplifiedJSONSchema } from '@nangohq/types';
@@ -212,6 +213,11 @@ describe('integrationService', () => {
     });
 
     describe('create', () => {
+        beforeEach(() => {
+            vi.spyOn(shared.environmentService, 'getById').mockResolvedValue({ id: 42, account_id: 1 } as never);
+            vi.spyOn(integrationTemplateService, 'autoDeployCatalogActions').mockResolvedValue(undefined);
+        });
+
         it('creates an integration with caller-supplied credentials and configuration', async () => {
             const provider = configurableProviderFixture();
             const createdIntegration = integrationFixture({ uniqueKey: 'github-own', provider: 'github' });
