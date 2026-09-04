@@ -6685,6 +6685,7 @@ digits:
     authorization_url: https://connect.digits.com/v1/oauth/authorize
     token_url: https://connect.digits.com/v1/oauth/token
     body_format: json
+    disable_pkce: true
     authorization_params:
         response_type: code
     token_params:
