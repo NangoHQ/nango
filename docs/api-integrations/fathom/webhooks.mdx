@@ -1,0 +1,90 @@
+---
+title: 'How to set up webhooks with Fathom on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Fathom recording events in your app using Nango webhooks'
+---
+
+Fathom sends a webhook once a recording finishes processing — there's a single event, `new-meeting-content-ready`, so no event-type filtering is needed on your side.
+
+## How it works
+
+1. Fathom sends a POST request to your Nango webhook URL when a recording you're subscribed to finishes processing.
+2. Nango verifies the delivery's signature (if you've set a **Webhook secret** on the integration — required when routing by `nangoConnectionId`), then routes the event to a connection.
+3. The payload includes the transcript, summary, and action items you asked for when creating the webhook — there's no separate API call needed to fetch them.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Fathom integration and copy the **Webhook URL**.
+
+### 2. Create the webhook in Fathom
+
+<Tabs>
+  <Tab title="Fathom dashboard">
+    1. Go to **Settings → API Access → Manage** and select **Add Webhook**.
+    2. Enter your Nango webhook URL as the destination — see [Connection matching](#connection-matching) below for whether to append `?nangoConnectionId=<CONNECTION-ID>`.
+    3. Choose which recordings trigger it (your own, shared with you, shared with your team) and which content to include (transcript, summary, action items, CRM matches).
+    4. Save the webhook and copy the **secret** it generates — you'll only see it once. You'll use it in the next step.
+  </Tab>
+  <Tab title="Fathom API">
+    Register your endpoint with Fathom's create webhook API, through Nango's proxy:
+
+    ```bash
+    curl -X POST "https://api.nango.dev/proxy/external/v1/webhooks" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "destination_url": "<NANGO-WEBHOOK-URL>",
+        "triggered_for": ["my_recordings", "my_shared_with_team_recordings"],
+        "include_transcript": true,
+        "include_summary": true,
+        "include_action_items": true
+      }'
+    ```
+
+    At least one of `include_transcript`, `include_crm_matches`, `include_summary`, or `include_action_items` must be `true`. Fathom generates the `secret` and returns it in the response — save it, you'll need it in the next step. The response also includes an `id` you'll need to delete the webhook later (see [Rollback strategy](#rollback-strategy)).
+  </Tab>
+</Tabs>
+
+### 3. Set the webhook secret in Nango
+
+1. In the Nango dashboard, open your Fathom integration and go to the **Settings** tab.
+2. Enter the secret Fathom returned in the previous step into the **Webhook Secret** field.
+
+<Note>
+If no **Webhook secret** is set, Nango accepts email-routed deliveries without verifying their signature. Deliveries using `nangoConnectionId` always require a **Webhook secret** — see [Connection matching](#connection-matching).
+</Note>
+
+## Connection matching
+
+Fathom's webhook is created once per workspace (one API key), but a workspace can have multiple team members recording meetings — so Nango supports two ways to route a delivery to a connection:
+
+- **By email (default)** — if the destination URL has no `nangoConnectionId` query param, Nango matches the event's `recorded_by.email` against **`metadata.emailAddress`** on your connections. Use this when you have one Nango connection per team member and want each person's recordings routed to their own connection. Set `metadata.emailAddress` on each connection via [Set connection metadata](/reference/backend/http-api/connections/set-metadata).
+- **By `nangoConnectionId`** — append `?nangoConnectionId=<CONNECTION-ID>` to the destination URL when creating the webhook. Every delivery for that webhook routes to that one connection regardless of who recorded it. Use this when a single connection should receive everything for the workspace. Because the connection is chosen from a value in the URL, Nango requires a **Webhook secret** to be set on the integration for this mode — a delivery with `nangoConnectionId` is rejected if no secret is configured or its signature doesn't verify.
+
+If neither matches — no `nangoConnectionId` and no connection has a matching `metadata.emailAddress` — the delivery is still accepted, but isn't routed anywhere.
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app** — Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync** — run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+## Rollback strategy
+
+To stop deliveries, delete the webhook using the `id` Fathom returned when you created it:
+
+```bash
+curl -X DELETE "https://api.nango.dev/proxy/external/v1/webhooks/<WEBHOOK-ID>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>"
+```
+
+Or delete it from **Settings → API Access → Manage** in the Fathom dashboard.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

@@ -8273,13 +8273,17 @@ fathom:
                 - /external/v1/teams
     webhook_routing_script: fathomWebhookRouting
     webhook_user_defined_secret: true
-    docs: https://nango.dev/docs/integrations/all/fathom
-    docs_connect: https://nango.dev/docs/integrations/all/fathom/connect
+    webhook_allowed_query_params:
+        - nangoConnectionId
+    docs: https://nango.dev/docs/api-integrations/fathom
+    docs_connect: https://nango.dev/docs/api-integrations/fathom/connect
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your Fathom account
+            description: The API key for your Fathom account.
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            example: zEqdWLo1************CQ.GUMvH9T6*****************************MFUJAw
 
 fathom-oauth:
     display_name: Fathom (OAuth)
@@ -8298,6 +8302,8 @@ fathom-oauth:
         grant_type: refresh_token
     webhook_routing_script: fathomWebhookRouting
     webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - nangoConnectionId
     proxy:
         base_url: https://api.fathom.ai
         retry:

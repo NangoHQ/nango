@@ -47,8 +47,10 @@ function validate(secret: string, msgId: string, msgSignature: string, msgTimest
     return false;
 }
 
-const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body, rawBody) => {
-    if (nango.integration.custom?.['webhookSecret']) {
+const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body, rawBody, query) => {
+    const webhookSecret = nango.integration.custom?.['webhookSecret'];
+
+    if (webhookSecret) {
         const msgId = headers['webhook-id'] || headers['svix-id'];
         const msgSignature = headers['webhook-signature'] || headers['svix-signature'];
         const msgTimestamp = headers['webhook-timestamp'] || headers['svix-timestamp'];
@@ -57,18 +59,35 @@ const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body
             return Err(new NangoError('webhook_missing_signature'));
         }
 
-        if (!validate(nango.integration.custom['webhookSecret'], msgId, msgSignature, msgTimestamp, rawBody)) {
+        if (!validate(webhookSecret, msgId, msgSignature, msgTimestamp, rawBody)) {
             return Err(new NangoError('webhook_invalid_signature'));
         }
     }
 
+    // Prefer the nangoConnectionId query param when the webhook URL was registered with one;
+    // otherwise fall back to matching on the recording owner's email, as before.
+    const nangoConnectionId = query?.['nangoConnectionId'];
     const emailAddress = body.recorded_by?.email;
 
-    const response = await nango.executeScriptForWebhooks({
-        body,
-        connectionIdentifierValue: emailAddress,
-        propName: 'metadata.emailAddress'
-    });
+    // nangoConnectionId is caller-supplied and can select any connection under this integration,
+    // so require a verified signature before trusting it for routing.
+    if (nangoConnectionId && !webhookSecret) {
+        return Err(new NangoError('webhook_missing_signature'));
+    }
+
+    const response = await nango.executeScriptForWebhooks(
+        nangoConnectionId
+            ? {
+                  body,
+                  connectionIdentifierValue: nangoConnectionId,
+                  propName: 'connectionId'
+              }
+            : {
+                  body,
+                  connectionIdentifierValue: emailAddress,
+                  propName: 'metadata.emailAddress'
+              }
+    );
 
     return Ok({
         content: { status: 'success' },
