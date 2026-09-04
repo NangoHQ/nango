@@ -144,6 +144,13 @@ export function FailedCredentialsCheck(errorMessage: string): WSErr {
     };
 }
 
+export function ResourceCapped(message: string): WSErr {
+    return {
+        type: 'resource_capped',
+        message
+    };
+}
+
 export function UnknownError(errorMessage?: string): WSErr {
     return {
         type: 'unknown_err',
