@@ -40,10 +40,12 @@ const route: WebhookHandler<OutlookNotificationPayload> = async (nango, _headers
 
     const expectedClientState = nango.integration.custom?.['webhookSecret'];
     if (!expectedClientState || typeof expectedClientState !== 'string') {
-        return Err(new NangoError('integration_missing_webhook_secret'));
+        return Err(new NangoError('webhook_missing_signature'));
     }
 
-    const validNotifications = notifications.filter((n) => typeof n.clientState === 'string' && safeCompare(expectedClientState, n.clientState));
+    const validNotifications = notifications
+        .filter((n) => typeof n.clientState === 'string' && safeCompare(expectedClientState, n.clientState))
+        .map(({ clientState: _clientState, ...notification }) => notification);
     if (validNotifications.length === 0) {
         return Err(new NangoError('webhook_invalid_signature'));
     }
