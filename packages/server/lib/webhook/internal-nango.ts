@@ -481,6 +481,7 @@ export class InternalNango {
         const queueEligibleExecutions = queuedExecutions.filter(({ preparedMessage }) => preparedMessage.byteSize <= SQS_BATCH_MAX_BYTES);
         const oversizedExecutions = queuedExecutions.filter(({ preparedMessage }) => preparedMessage.byteSize > SQS_BATCH_MAX_BYTES);
 
+        let hasFailure = failedQueuedExecutions.length > 0;
         let unmappedFailureCount = 0;
         let deliveredCount = 0;
 
@@ -494,6 +495,7 @@ export class InternalNango {
                 dedupeClaim
             );
             deliveredCount += publishResult.enqueued;
+            hasFailure ||= publishResult.failed > 0;
             const failedActivityLogIds = new Set(publishResult.failedActivityLogIds);
             unmappedFailureCount = publishResult.failed - failedActivityLogIds.size;
 
@@ -547,6 +549,7 @@ export class InternalNango {
 
             const dispatchResult = await this.releaseWebhookDedupeOnError(this.dispatchExecutionsViaOrchestrator(oversizedExecutions, body), dedupeClaim);
             deliveredCount += dispatchResult.succeededCount;
+            hasFailure ||= dispatchResult.failedExecutions.length > 0;
 
             for (const { error, syncConfig, webhook, connection } of dispatchResult.failedExecutions) {
                 if (error instanceof NangoError && error.type === 'webhook_rate_limit_exceeded') {
@@ -576,7 +579,7 @@ export class InternalNango {
             });
         }
 
-        if (deliveredCount === 0) {
+        if (hasFailure || deliveredCount === 0) {
             await this.releaseWebhookDedupeClaim(dedupeClaim);
         }
     }
