@@ -50,8 +50,43 @@ In the Nango dashboard, open your Granola integration and copy the **Webhook URL
 
     Granola generates the `signing_secret` and returns it in the response — the request has no field to supply your own. It's returned only once; save it, you'll need it in the next step. Optionally pass `folder_ids` to scope the endpoint to specific folders, and `events` to subscribe to a subset (omit it to receive all events).
 
+    The response also includes an `id` (e.g. `whe_2mKr8fQxLp7Ta3`) identifying this webhook endpoint — store it too, you'll need it to delete the endpoint later (see [step 4](#4-delete-the-webhook-endpoint-on-connection-deletion)).
+
     <Note>
-    You can automate this with a [post-connection-creation script](/getting-started/use-cases/implement-event-handler) so every new Granola connection registers its own webhook endpoint automatically. Use `nango.connectionId` to build the `nangoConnectionId` query param, then call `nango.updateMetadata({ webhookSecret: response.data.signing_secret })` to store the returned secret directly on the connection — no manual step 3 needed for that connection.
+    You can automate this with a [post-connection-creation script](/guides/functions/event-functions) so every new Granola connection registers its own webhook endpoint automatically:
+
+    ```typescript
+    import { createOnEvent, ProxyConfiguration } from 'nango';
+    import z from 'zod';
+
+    export default createOnEvent({
+        event: 'post-connection-creation',
+        description: 'Register a Granola webhook endpoint for this connection',
+        metadata: z.object({
+            webhookSecret: z.string().optional(),
+            webhookEndpointId: z.string().optional()
+        }),
+        exec: async (nango) => {
+            const webhookUrl = await nango.getWebhookURL();
+
+            const config: ProxyConfiguration = {
+                endpoint: '/v1/webhook-endpoints',
+                data: {
+                    url: `${webhookUrl}?nangoConnectionId=${nango.connectionId}`,
+                    scopes: ['personal', 'public']
+                }
+            };
+
+            const response = await nango.post(config);
+
+            // Store the secret for signature verification and the id for later deletion (step 4)
+            await nango.updateMetadata({
+                webhookSecret: response.data.signing_secret,
+                webhookEndpointId: response.data.id
+            });
+        }
+    });
+    ```
     </Note>
   </Tab>
 </Tabs>
@@ -82,6 +117,44 @@ Granola doesn't let you retrieve the secret again after creation — if you lose
 If neither a **Webhook secret** nor a connection-level `webhookSecret` is set, Nango rejects the delivery — there must be a secret to validate against.
 </Note>
 
+### 4. Delete the webhook endpoint on connection deletion
+
+If a connection is deleted in Nango but its Granola webhook endpoint remains active, Granola keeps sending deliveries to it — they'll just have no connection to route to. Delete the webhook endpoint before the connection is removed.
+
+You can automate this with a `pre-connection-deletion` lifecycle event, using the `webhookEndpointId` stored in metadata during creation ([step 2](#2-register-the-webhook-in-granola)):
+
+```typescript
+import { createOnEvent, ProxyConfiguration } from 'nango';
+import z from 'zod';
+
+export default createOnEvent({
+    event: 'pre-connection-deletion',
+    description: "Delete the connection's Granola webhook endpoint before connection deletion",
+    metadata: z.object({
+        webhookEndpointId: z.string().optional()
+    }),
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+        if (!metadata.webhookEndpointId) {
+            return;
+        }
+
+        const config: ProxyConfiguration = {
+            endpoint: `/v1/webhook-endpoints/${metadata.webhookEndpointId}`
+        };
+
+        try {
+            await nango.delete(config);
+        } catch (err) {
+            // Avoid blocking connection deletion if the delete call fails (e.g. already deleted upstream)
+            await nango.log(`Failed to delete Granola webhook endpoint ${metadata.webhookEndpointId}: ${String(err)}`, { level: 'error' });
+        }
+    }
+});
+```
+
+If you registered the webhook endpoint manually (the dashboard flow in [step 2](#2-register-the-webhook-in-granola) doesn't return an id to Nango), delete it from **Settings → Connectors → Webhooks** in Granola instead.
+
 ## Handle the webhook
 
 Once routed, you have two options:
@@ -100,5 +173,18 @@ Once routed, you have two options:
 Subscribe to both `note.generated` and `note.access_granted` if you're using webhooks to discover notes — an already-generated note that's later shared with you triggers `note.access_granted`, not `note.generated`.
 
 For the full payload schema, see Granola's webhooks documentation.
+
+## Rollback strategy
+
+To stop deliveries, delete the webhook endpoint using the `id` Granola returned when you created it:
+
+```bash
+curl -X DELETE "https://api.nango.dev/proxy/v1/webhook-endpoints/<WEBHOOK-ENDPOINT-ID>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>"
+```
+
+Or delete it from **Settings → Connectors → Webhooks** in the Granola dashboard. Either way, also clear `webhookEndpointId` (and `webhookSecret`, if it was connection-level) from the connection's metadata so nothing references a deleted endpoint. Re-enable notifications by creating a new webhook endpoint with the steps above.
 
 <Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>
