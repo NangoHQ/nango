@@ -79,9 +79,17 @@ export interface BillingOverdueInvoices {
     hasOverdue: boolean;
 }
 
+export interface BillingMinimumSpend {
+    /** A prorated share of the plan's monthly minimum over a partial period, not the plan's figure. */
+    enforcedInCents: number;
+    topUpInCents: number;
+}
+
 /** Orb's upcoming invoice for a subscription — the whole invoice, not a month's slice of it. */
 export interface BillingUpcomingInvoice {
     amountInCents: number;
+    /** Null when no minimum binds, which says nothing about the amount above — that still stands. */
+    minimum: BillingMinimumSpend | null;
     /** ISO 4217, uppercased. Orb's `credits` is rejected upstream. */
     currency: string;
 }

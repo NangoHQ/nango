@@ -6,11 +6,12 @@ import { Alert, AlertActions, AlertDescription, AlertTitle, Button } from '@nang
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { usePlanOverrideStore } from '@/features/planOverride';
 import { useMeta } from '@/hooks/useMeta';
-import { useApiGetBillingPeriodCosts, useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
+import { useApiGetBillingPeriodCosts, useApiGetBillingUsage, useApiGetUpcomingInvoice, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { billedUsageMetrics } from '@/utils/usage';
-import { hasMonthlySpend, isLegacyPlan } from '../planVisibility';
+import { buildMinimumSpendRow } from '../minimumSpend';
+import { hasMonthlySpend, hasPlanMinimum, isLegacyPlan } from '../planVisibility';
 import { buildUsageRowCharges } from '../usageCharges';
 import { useSelectedMonth } from '../useSelectedMonth';
 import { FreeUsage } from './FreeUsage';
@@ -50,6 +51,19 @@ export const Usage: React.FC = () => {
     const chargesEnabled = metricChargesEnabled && isCurrentMonth && hasMonthlySpend(plan);
     const { data: periodCosts, isPending: costsPending, isError: costsError } = useApiGetBillingPeriodCosts(env, plan, { enabled: chargesEnabled });
     const charges = buildUsageRowCharges({ enabled: chargesEnabled, isPending: costsPending, isError: costsError, data: periodCosts });
+
+    const minimumEnabled = chargesEnabled && hasPlanMinimum(plan);
+    const { data: upcoming, isError: upcomingError } = useApiGetUpcomingInvoice(env, plan, { enabled: minimumEnabled });
+    // Stating the minimum beside a dash or a skeleton would show a total the rows can't add up to, so
+    // the row waits for every metric to carry a figure — which a malformed or unattributed price
+    // denies just as much as a failed request does.
+    const costs = costsPending || costsError ? null : periodCosts?.data;
+    const chargesStated = costs ? !costs.noCosts && costs.malformedMetrics.length === 0 && costs.fullyAttributed : false;
+    const minimumSpend = buildMinimumSpendRow({
+        enabled: minimumEnabled && chargesStated && !upcomingError,
+        minimum: upcoming?.data.minimum ?? null,
+        currency: upcoming?.data.currency ?? null
+    });
 
     if (usageError) {
         return (
@@ -121,6 +135,7 @@ export const Usage: React.FC = () => {
                 chartMode="daily"
                 variant={charges ? 'charges' : 'usage'}
                 charges={charges}
+                minimumSpend={minimumSpend}
             />
         </div>
     );

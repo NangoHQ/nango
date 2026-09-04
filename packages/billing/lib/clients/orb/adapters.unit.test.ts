@@ -408,24 +408,78 @@ describe('orbAmountToCents', () => {
 });
 
 describe('fromOrbUpcomingInvoice', () => {
+    /** An invoice whose usage stands on its own, so no minimum tops it up. */
+    function invoiceOf(amount: string, currency = 'USD') {
+        return { amount_due: amount, subtotal: amount, total: amount, currency };
+    }
+
     it('maps amount and currency', () => {
-        expect(fromOrbUpcomingInvoice({ amount_due: '1284.30', currency: 'USD' })).toEqual({ amountInCents: 128430, currency: 'USD' });
+        expect(fromOrbUpcomingInvoice(invoiceOf('1284.30'))).toEqual({ amountInCents: 128430, minimum: null, currency: 'USD' });
     });
 
     it('uppercases the currency', () => {
-        expect(fromOrbUpcomingInvoice({ amount_due: '10.00', currency: 'usd' })).toEqual({ amountInCents: 1000, currency: 'USD' });
+        expect(fromOrbUpcomingInvoice(invoiceOf('10.00', 'usd'))).toEqual({ amountInCents: 1000, minimum: null, currency: 'USD' });
     });
 
     it('passes through non-USD currencies', () => {
-        expect(fromOrbUpcomingInvoice({ amount_due: '10.00', currency: 'EUR' })).toEqual({ amountInCents: 1000, currency: 'EUR' });
+        expect(fromOrbUpcomingInvoice(invoiceOf('10.00', 'EUR'))).toEqual({ amountInCents: 1000, minimum: null, currency: 'EUR' });
     });
 
     it('returns null for a credit-denominated invoice', () => {
-        expect(fromOrbUpcomingInvoice({ amount_due: '10.00', currency: 'credits' })).toBeNull();
+        expect(fromOrbUpcomingInvoice(invoiceOf('10.00', 'credits'))).toBeNull();
     });
 
     it('returns null for an unparseable amount', () => {
-        expect(fromOrbUpcomingInvoice({ amount_due: 'n/a', currency: 'USD' })).toBeNull();
+        expect(fromOrbUpcomingInvoice(invoiceOf('n/a'))).toBeNull();
+    });
+
+    it('reads a binding minimum off the gap between subtotal and total', () => {
+        // Orb loses a cent splitting a $50 minimum across three prices, so a real total lands at 49.99.
+        expect(
+            fromOrbUpcomingInvoice({ amount_due: '49.99', subtotal: '0.74', total: '49.99', currency: 'USD', minimum: { minimum_amount: '50.00' } })
+        ).toEqual({
+            amountInCents: 4999,
+            minimum: { enforcedInCents: 4999, topUpInCents: 4925 },
+            currency: 'USD'
+        });
+    });
+
+    it('reports the prorated minimum Orb enforces, not the plan-level figure it reports', () => {
+        expect(
+            fromOrbUpcomingInvoice({ amount_due: '48.33', subtotal: '1.96', total: '48.33', currency: 'USD', minimum: { minimum_amount: '50.00' } })
+        ).toEqual({
+            amountInCents: 4833,
+            minimum: { enforcedInCents: 4833, topUpInCents: 4637 },
+            currency: 'USD'
+        });
+    });
+
+    it('states no minimum once usage passes it', () => {
+        expect(
+            fromOrbUpcomingInvoice({ amount_due: '51.86', subtotal: '51.86', total: '51.86', currency: 'USD', minimum: { minimum_amount: '50.00' } })?.minimum
+        ).toBeNull();
+    });
+
+    it('states no minimum when a discount puts the total under the subtotal', () => {
+        expect(
+            fromOrbUpcomingInvoice({ amount_due: '90.00', subtotal: '100.00', total: '90.00', currency: 'USD', minimum: { minimum_amount: '50.00' } })?.minimum
+        ).toBeNull();
+    });
+
+    it('states no minimum when the invoice carries none, whatever lifts the total', () => {
+        // Anything else raising the total above the subtotal — tax, say — would otherwise be reported
+        // as a minimum topping the invoice up.
+        expect(fromOrbUpcomingInvoice({ amount_due: '120.00', subtotal: '100.00', total: '120.00', currency: 'USD' })?.minimum).toBeNull();
+    });
+
+    it('keeps the amount when the minimum figures are unreadable', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: '49.99', subtotal: 'n/a', total: '49.99', currency: 'USD', minimum: { minimum_amount: '50.00' } })).toEqual(
+            {
+                amountInCents: 4999,
+                minimum: null,
+                currency: 'USD'
+            }
+        );
     });
 });
 

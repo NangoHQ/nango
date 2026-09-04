@@ -167,6 +167,7 @@ export type GetUpcomingInvoice = ApiEndpoint<{
     Success: {
         data: {
             amountInCents: number | null;
+            minimum: { enforcedInCents: number; topUpInCents: number } | null;
             currency: string | null;
         };
     };

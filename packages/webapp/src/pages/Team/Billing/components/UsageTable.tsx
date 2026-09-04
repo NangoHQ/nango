@@ -1,5 +1,6 @@
 import { Info } from 'lucide-react';
 
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { cn } from '@/utils/utils';
 import { UsageRow, usageRowGrid } from './UsageRow';
 
@@ -28,6 +29,8 @@ interface UsageTableProps {
      *  (each row manages its own open state) when omitted. */
     isRowOpen?: (metric: UsageMetric) => boolean;
     onRowOpenChange?: (metric: UsageMetric, open: boolean) => void;
+    /** Closing row for what the plan minimum adds on top of the metric charges, not a total. */
+    minimumSpend?: { formatted: string; tooltip: string } | null;
 }
 
 /** The two right-hand column headers, which differ by variant. */
@@ -46,7 +49,18 @@ function usageColumnHeaders(variant: UsageTableProps['variant']): { thisPeriod: 
  * The bordered per-metric usage table shared by Free and paid: a header row, then one collapsible
  * {@link UsageRow} per metric.
  */
-export const UsageTable: React.FC<UsageTableProps> = ({ rows, isLoading, env, timeframe, chartMode, variant, charges, isRowOpen, onRowOpenChange }) => {
+export const UsageTable: React.FC<UsageTableProps> = ({
+    rows,
+    isLoading,
+    env,
+    timeframe,
+    chartMode,
+    variant,
+    charges,
+    isRowOpen,
+    onRowOpenChange,
+    minimumSpend
+}) => {
     const { thisPeriod, rightmost } = usageColumnHeaders(variant);
     return (
         <div className="w-full flex flex-col gap-4">
@@ -76,6 +90,19 @@ export const UsageTable: React.FC<UsageTableProps> = ({ rows, isLoading, env, ti
                         charge={charges?.(row.metric)}
                     />
                 ))}
+                {minimumSpend && (
+                    <div className={cn(usageRowGrid(variant), 'py-3.5')}>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="text-text-default type-text-regular-sm truncate">Minimum spend</span>
+                            <InfoTooltip side="top" align="start">
+                                {minimumSpend.tooltip}
+                            </InfoTooltip>
+                        </div>
+                        <span />
+                        <div className="text-text-default type-text-regular-sm">{minimumSpend.formatted}</div>
+                        <span />
+                    </div>
+                )}
             </div>
             <span className="flex items-center gap-1.5 text-text-muted text-body-small-regular px-1">
                 <Info className="size-3.5 shrink-0" />

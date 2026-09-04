@@ -10,6 +10,8 @@ export type UsageLimitOverride = 'near' | 'over';
 
 export type SpendOverride = number | 'unavailable';
 
+export const PAY_AS_YOU_GO_MINIMUM_IN_CENTS = 5000;
+
 export type PeriodCostsOverride = 'populated' | 'zero' | 'unavailable';
 
 interface PlanOverrideState {
@@ -111,9 +113,12 @@ export function buildPaymentMethodOverride(): GetStripePaymentMethods['Success']
 /** Stands in for the real upcoming-invoice response when the override is on, for visual QA only. */
 export function buildSpendOverride(override: SpendOverride): GetUpcomingInvoice['Success'] {
     if (override === 'unavailable') {
-        return { data: { amountInCents: null, currency: null } };
+        return { data: { amountInCents: null, minimum: null, currency: null } };
     }
-    return { data: { amountInCents: override, currency: 'USD' } };
+    // The whole preset is the top-up, matching an account billing no usage. Anything less assumes a
+    // usage figure the charges column doesn't share, and the previewed table stops adding up.
+    const minimum = override === PAY_AS_YOU_GO_MINIMUM_IN_CENTS ? { enforcedInCents: override, topUpInCents: override } : null;
+    return { data: { amountInCents: override, minimum, currency: 'USD' } };
 }
 
 /**

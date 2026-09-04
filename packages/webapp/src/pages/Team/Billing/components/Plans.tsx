@@ -341,7 +341,7 @@ const PlanChangeDialog: React.FC<{
             if (newPricing) {
                 // Orb prices every metric in arrears under a plan-level minimum, so there is no base
                 // fee to prorate and the upgrade collects nothing.
-                return `${selectedPlan.plan.title} bills at the end of each month — your usage, or a $${selectedPlan.plan.basePrice} monthly minimum, whichever is higher. Nothing is charged today.`;
+                return `${selectedPlan.plan.title} bills at the end of each month — your usage, or a $${selectedPlan.plan.basePrice} monthly minimum, whichever is higher. This first period is charged a prorated share of that minimum. Nothing is charged today.`;
             }
             return `The ${selectedPlan.plan.title} plan includes a ${selectedPlan.plan.basePrice} monthly base fee, plus additional usage-based charges. When you upgrade, you'll be charged a prorated base fee for the current month.`;
         }

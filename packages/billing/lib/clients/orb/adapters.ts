@@ -10,6 +10,7 @@ import type {
     BillingCustomer,
     BillingEvent,
     BillingInvoicingDetails,
+    BillingMinimumSpend,
     BillingPeriodCosts,
     BillingSpendAlert,
     BillingUpcomingInvoice,
@@ -50,7 +51,7 @@ export function normalizeIsoCurrency(currency: string | null | undefined): strin
     return code && /^[A-Z]{3}$/.test(code) ? code : null;
 }
 
-export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: string }): BillingUpcomingInvoice | null {
+export function fromOrbUpcomingInvoice(invoice: OrbUpcomingInvoice): BillingUpcomingInvoice | null {
     const amountInCents = orbAmountToCents(invoice.amount_due);
     if (amountInCents === null) {
         return null;
@@ -61,7 +62,35 @@ export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: 
         return null;
     }
 
-    return { amountInCents, currency };
+    return { amountInCents, minimum: minimumSpendOf(invoice), currency };
+}
+
+interface OrbUpcomingInvoice {
+    amount_due: string;
+    subtotal: string;
+    total: string;
+    currency: string;
+    minimum?: { minimum_amount?: string | null } | null | undefined;
+}
+
+/**
+ * `invoice.minimum` says a minimum exists, never what it costs — it reports the plan's nominal figure
+ * even over a period Orb prorates — so the amount comes from the gap between subtotal and total, and
+ * the object only gates it. Without that gate anything else lifting the total, tax included, would
+ * read as a minimum.
+ */
+function minimumSpendOf(invoice: OrbUpcomingInvoice): BillingMinimumSpend | null {
+    if (!invoice.minimum) {
+        return null;
+    }
+
+    const subtotalInCents = orbAmountToCents(invoice.subtotal);
+    const totalInCents = orbAmountToCents(invoice.total);
+    if (subtotalInCents === null || totalInCents === null || totalInCents <= subtotalInCents) {
+        return null;
+    }
+
+    return { enforcedInCents: totalInCents, topUpInCents: totalInCents - subtotalInCents };
 }
 
 /**
