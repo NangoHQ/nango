@@ -16,17 +16,16 @@ Connect to Bandwidth with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter the Client ID and Client Secret of a Bandwidth API Credential. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Bandwidth API" id="call-bandwidth-api">
-    Bandwidth product APIs (Messaging, Voice, Numbers) expect an OAuth2 bearer token, not the API Credential itself. Nango stores the Client ID and Client Secret and sends them as HTTP Basic credentials, so the first request to make is the client-credentials token exchange. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the Bandwidth Messaging API (list uploaded media). Bandwidth's product APIs live on separate hosts (`messaging.bandwidth.com`, `voice.bandwidth.com`, `numbers.bandwidth.com`), so pass the host as a base URL override. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), [connection ID](https://app.nango.dev/dev/connections), and Bandwidth account ID:
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl -X POST "https://api.nango.dev/proxy/api/v1/oauth2/token" \
+            curl "https://api.nango.dev/proxy/api/v2/users/<ACCOUNT-ID>/media" \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
-              -H "Connection-Id: <CONNECTION-ID>" \
-              -H "Content-Type: application/x-www-form-urlencoded" \
-              -d "grant_type=client_credentials"
+              -H "Base-Url-Override: https://messaging.bandwidth.com" \
+              -H "Connection-Id: <CONNECTION-ID>"
             ```
 
         </Tab>
@@ -40,21 +39,19 @@ Connect to Bandwidth with Nango and see data flow in 2 minutes.
 
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
-        const res = await nango.post({
-            endpoint: '/api/v1/oauth2/token',
+        const res = await nango.get({
+            endpoint: '/api/v2/users/<ACCOUNT-ID>/media',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            data: 'grant_type=client_credentials'
+            baseUrlOverride: 'https://messaging.bandwidth.com'
         });
 
-        // Send as `Authorization: Bearer ${access_token}` to the Bandwidth product APIs; do not log it.
-        const { access_token } = res.data;
+        console.log(res.data);
         ```
         </Tab>
 
     </Tabs>
-    Use the returned `access_token` as `Authorization: Bearer <access_token>` against `https://messaging.bandwidth.com`, `https://voice.bandwidth.com` or `https://numbers.bandwidth.com` (pass `baseUrlOverride` when proxying). Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
     You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>

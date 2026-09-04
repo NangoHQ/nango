@@ -11,8 +11,6 @@ To authenticate with Bandwidth, you will need:
 
 These are **API Credentials** created under **Account > API Credentials** in the Bandwidth Dashboard. They are not your Bandwidth Dashboard login and not a legacy API User username/password. Bandwidth is retiring API Users: new API Users could no longer be created after April 1, 2026, and all API Users stop working on December 2, 2026. Only API Credentials are supported here.
 
-API Credentials use the OAuth2 client-credentials flow. Nango stores the Client ID and Client Secret and sends them as HTTP Basic credentials (`Authorization: Basic base64(<Client ID>:<Client Secret>)`) to `https://api.bandwidth.com/api/v1/oauth2/token`, which returns a short-lived bearer token for the Messaging, Voice and Numbers APIs. When you connect, Nango verifies the pair against that token endpoint before saving it.
-
 ### Prerequisites
 
 - You must have access to the [Bandwidth Dashboard](https://dashboard.bandwidth.com).

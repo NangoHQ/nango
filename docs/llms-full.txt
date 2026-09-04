@@ -15099,7 +15099,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `back-market` | Back Market | API_KEY | [docs](https://nango.dev/docs/api-integrations/back-market.md) | [connect](https://nango.dev/docs/api-integrations/back-market/connect.md) |  | e-commerce |
 | `bamboohr` | BambooHR (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/bamboohr.md) | [connect](https://nango.dev/docs/api-integrations/bamboohr/connect.md) | [setup](https://nango.dev/docs/api-integrations/bamboohr/how-to-register-your-own-bamboohr-oauth-app.md) | hr |
 | `bamboohr-basic` | BambooHR (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/bamboohr-basic.md) | [connect](https://nango.dev/docs/integrations/all/bamboohr-basic/connect.md) |  | hr |
-| `bandwidth` | Bandwidth | BASIC | [docs](https://nango.dev/docs/api-integrations/bandwidth.md) | [connect](https://nango.dev/docs/api-integrations/bandwidth/connect.md) |  | communication |
+| `bandwidth` | Bandwidth | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bandwidth.md) | [connect](https://nango.dev/docs/api-integrations/bandwidth/connect.md) |  | communication |
 | `basecamp` | Basecamp | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/basecamp.md) | [connect](https://nango.dev/docs/integrations/all/basecamp/connect.md) |  | productivity |
 | `baserow` | Baserow | API_KEY | [docs](https://nango.dev/docs/api-integrations/baserow.md) | [connect](https://nango.dev/docs/api-integrations/baserow/connect.md) |  | productivity, dev-tools |
 | `basin` | Basin | API_KEY | [docs](https://nango.dev/docs/api-integrations/basin.md) | [connect](https://nango.dev/docs/api-integrations/basin/connect.md) |  | dev-tools |
