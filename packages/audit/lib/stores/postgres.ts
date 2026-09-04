@@ -36,8 +36,7 @@ export class PostgresAuditStore implements AuditWriter, AuditReader {
                 );
                 return Ok(undefined);
             } catch (err) {
-                // The driver error carries part of the event, so only the code is returned to keep the event
-                // out of the logs.
+                // only the code is returned to keep the event out of the logs.
                 const code = err && typeof err === 'object' && 'code' in err ? String(err.code) : 'unknown';
                 span?.addTags({ error: code });
                 return Err(new Error(`failed_to_record_audit_event: ${code}`));
