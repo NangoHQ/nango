@@ -36,9 +36,11 @@ export const GrowthAddon: React.FC<{ state: GrowthAddonState; endsAt?: string; o
                     </ConditionalTooltip>
                 )}
                 {state === 'active' && (
-                    <Button variant="link-danger" size="sm" onClick={onActionClicked}>
-                        Remove
-                    </Button>
+                    <ConditionalTooltip condition={!!lockedReason} content={lockedReason} side="left" asChild>
+                        <Button variant="link-danger" size="sm" disabled={!!lockedReason} onClick={onActionClicked}>
+                            Remove
+                        </Button>
+                    </ConditionalTooltip>
                 )}
                 {/* Keeping the add-on has no action behind it until NAN-6816 lets a scheduled removal be cancelled. */}
             </div>
