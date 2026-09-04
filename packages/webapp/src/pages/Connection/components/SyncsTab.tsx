@@ -1,6 +1,6 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Ellipsis, Info, List, Loader, OctagonPause, Play, RefreshCw, Wrench, X } from 'lucide-react';
-import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -90,7 +90,7 @@ export const SyncsTab = () => {
     const [triggerTarget, setTriggerTarget] = useState<ApiConnectionSync | null>(null);
     const [pendingSyncId, setPendingSyncId] = useState<string | null>(null);
 
-    const tableRef = useRef<HTMLDivElement | null>(null);
+    const { ref: tableRef, scrollParent, offsetTop } = useScrollParent();
     const sentinelRef = useInfiniteScroll({ hasNextPage, isFetchingNextPage, fetchNextPage, threshold: 400 });
 
     const onSyncCommand = useCallback(
@@ -175,7 +175,8 @@ export const SyncsTab = () => {
                     </TableHeader>
                     <VirtualizedSyncRows
                         syncs={syncs}
-                        tableRef={tableRef}
+                        scrollParent={scrollParent}
+                        offsetTop={offsetTop}
                         pendingSyncId={pendingSyncId}
                         actionsDisabled={pendingSyncId !== null}
                         onSyncCommand={onSyncCommand}
@@ -205,7 +206,8 @@ export const SyncsTab = () => {
 
 const VirtualizedSyncRows = ({
     syncs,
-    tableRef,
+    scrollParent,
+    offsetTop,
     pendingSyncId,
     actionsDisabled,
     onSyncCommand,
@@ -213,7 +215,8 @@ const VirtualizedSyncRows = ({
     onViewLogs
 }: {
     syncs: ApiConnectionSync[];
-    tableRef: React.MutableRefObject<HTMLDivElement | null>;
+    scrollParent: HTMLElement | null;
+    offsetTop: number;
     pendingSyncId: string | null;
     actionsDisabled: boolean;
     onSyncCommand: (sync: ApiConnectionSync, command: RunSyncCommand) => void;
@@ -222,7 +225,6 @@ const VirtualizedSyncRows = ({
 }) => {
     // Scrolls with the dashboard's own container, so the tab adds no second scrollbar. offsetTop is
     // resolved in a hook because it keys the measurement cache — a render-time read would rebuild it each frame.
-    const { scrollParent, offsetTop } = useScrollParent(tableRef);
     const rowVirtualizer = useVirtualizer({
         count: syncs.length,
         getScrollElement: () => scrollParent,
@@ -491,20 +493,26 @@ const StatusBadge = ({ sync }: { sync: ApiConnectionSync }) => {
     );
 };
 
-function useScrollParent(ref: React.MutableRefObject<HTMLElement | null>) {
+/**
+ * Resolving from a callback ref rather than an effect: the element is attached by the time this runs,
+ * whereas a layout effect in a child fires before the ancestor holding the ref has one.
+ */
+function useScrollParent() {
     const [resolved, setResolved] = useState<{ scrollParent: HTMLElement | null; offsetTop: number }>({ scrollParent: null, offsetTop: 0 });
 
-    useLayoutEffect(() => {
-        const offsetTop = ref.current?.offsetTop ?? 0;
-        for (let node = ref.current?.parentElement ?? null; node; node = node.parentElement) {
-            const { overflowY } = getComputedStyle(node);
+    const ref = useCallback((node: HTMLDivElement | null) => {
+        if (!node) {
+            return;
+        }
+        for (let parent = node.parentElement; parent; parent = parent.parentElement) {
+            const { overflowY } = getComputedStyle(parent);
             if (overflowY === 'auto' || overflowY === 'scroll') {
-                setResolved({ scrollParent: node, offsetTop });
+                setResolved({ scrollParent: parent, offsetTop: node.offsetTop });
                 return;
             }
         }
-        setResolved({ scrollParent: null, offsetTop });
-    }, [ref]);
+        setResolved({ scrollParent: null, offsetTop: node.offsetTop });
+    }, []);
 
-    return resolved;
+    return { ref, ...resolved };
 }
