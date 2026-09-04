@@ -1,16 +1,15 @@
+import { executeMcpProxyRequest, MAX_MCP_PROXY_RESPONSE_SIZE_LABEL, mcpProxyResponseSchema } from '../../../services/mcpProxy.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
-import { executeMcpProxyRequest } from './execute.js';
-import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL } from './response.js';
-import { proxyRequestInputSchema, proxyRequestOutputSchema } from './schema.js';
+import { proxyRequestInputSchema } from './schema.js';
 
+import type { McpProxyResponse } from '../../../services/mcpProxy.service.js';
 import type { ManagementMcpTool } from '../managementTool.js';
-import type { ProxyRequestOutput } from './schema.js';
 
-export const proxyRequestTool: ManagementMcpTool<ProxyRequestOutput> = defineManagementMcpTool<typeof proxyRequestInputSchema, ProxyRequestOutput>({
+export const proxyRequestTool: ManagementMcpTool<McpProxyResponse> = defineManagementMcpTool<typeof proxyRequestInputSchema, McpProxyResponse>({
     name: 'proxy_request',
     description: `Make an authenticated HTTP request to a provider API through the Nango proxy. Returns JSON or UTF-8 text responses up to ${MAX_MCP_PROXY_RESPONSE_SIZE_LABEL}; unsafe JSON numbers are strings. Use the HTTP proxy for binary or larger responses.`,
     inputSchema: proxyRequestInputSchema,
-    outputSchema: proxyRequestOutputSchema,
+    outputSchema: mcpProxyResponseSchema,
     requiredScopes: { every: ['environment:proxy'] },
     audit: { kind: 'no-audit', reason: 'non-auditable' },
     annotations: {

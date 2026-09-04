@@ -144,9 +144,18 @@ describe('proxyTool', () => {
         expect(errorOf(await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1' })).message).toBe('Connection not found');
     });
 
-    it('rejects a path that is not rooted, and one carrying a fragment', async () => {
-        expect(errorOf(await callProxy({ integration: 'notion', method: 'GET', path: 'v1/pages' })).message).toContain('nango_proxy');
-        expect(errorOf(await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages#frag' })).message).toContain('nango_proxy');
+    it.each([
+        { label: 'a path that is not rooted', method: 'GET', path: 'v1/pages', expected: 'must start with "/"' },
+        { label: 'a path carrying a URL fragment', method: 'GET', path: '/v1/pages#frag', expected: 'URL fragments are not supported in proxy paths.' },
+        { label: 'a method the proxy does not take', method: 'TRACE', path: '/v1/pages', expected: 'method' },
+        { label: 'a connection the agent tried to choose', method: 'GET', path: '/v1/pages', expected: 'connection_id', extra: { connection_id: 'other' } }
+    ])('rejects $label before reaching the proxy', async ({ method, path, expected, extra }) => {
+        const request = vi.spyOn(proxyService, 'request');
+
+        const result = await callProxy({ integration: 'notion', method, path, ...extra });
+
+        expect(errorOf(result).message).toContain(expected);
+        expect(request).not.toHaveBeenCalled();
     });
 
     it('is enabled only when the session turned the meta tool on', () => {

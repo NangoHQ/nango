@@ -1,6 +1,6 @@
 import * as z from 'zod/v4';
 
-import { proxyHeadersSchema, proxyMethodSchema, proxyPathSchema, proxyQueryParamsSchema } from '../../../mcp/proxy/schema.js';
+import { proxyHeadersSchema, proxyMethodSchema, proxyPathSchema, proxyQueryParamsSchema } from '../../../../services/mcpProxy.service.js';
 
 /**
  * The connection is the session's, so the agent names an integration and never a connection. No
