@@ -59,7 +59,10 @@ export class Capping {
         });
 
         if (messages.length > 0) {
-            status.message = messages.join(' ') + ' Please upgrade your plan to remove the limits.';
+            status.message = messages.join(' ');
+            if (!status.metrics.data_transfer?.isCapped) {
+                status.message += ' Please upgrade your plan to remove the limits.';
+            }
         }
 
         // Emit a datadog metric if the account is capped on any metric
@@ -99,8 +102,7 @@ export class Capping {
             case 'function_logs':
                 return plan.function_logs_max;
             case 'data_transfer':
-                // Data transfer is not capped (yet?)
-                return null;
+                return plan.data_transfer_max;
         }
     }
 
@@ -123,7 +125,7 @@ export class Capping {
             case 'function_logs':
                 return 'You have reached the maximum number of function logs for your plan.';
             case 'data_transfer':
-                return 'You have reached the maximum data transfer for your plan.';
+                return 'You have reached the data transfer limits for your plan. Upgrade to continue using.';
         }
     }
 }
