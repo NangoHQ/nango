@@ -24,7 +24,9 @@ function validate(integration: IntegrationConfig, headerSignature: string, rawBo
     }
 
     const signature = crypto.createHmac('sha256', integration.custom['webhookSecret']).update(rawBody).digest('hex');
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(headerSignature));
+    const trusted = Buffer.from(signature, 'utf8');
+    const untrusted = Buffer.from(headerSignature, 'utf8');
+    return trusted.length === untrusted.length && crypto.timingSafeEqual(trusted, untrusted);
 }
 
 const route: WebhookHandler<CheckrBody> = async (nango, headers, body, rawBody) => {
@@ -36,8 +38,7 @@ const route: WebhookHandler<CheckrBody> = async (nango, headers, body, rawBody) 
 
     if (!validate(nango.integration, signature, rawBody)) {
         logger.error('invalid signature', { configId: nango.integration.id });
-        // TODO the verification should use the API key
-        //return;
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     const parsedBody = body;
