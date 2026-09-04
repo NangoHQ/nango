@@ -12,8 +12,6 @@ To authenticate with NetSapiens, you need:
 4. **Client ID** - The OAuth client ID issued for API access on your platform.
 5. **Client Secret** - The OAuth client secret that pairs with the client ID.
 
-Nango sends these values to `POST https://<server>/ns-api/v2/tokens` with `grant_type=password`, stores the returned access and refresh tokens, and refreshes the access token with `grant_type=refresh_token` before it expires. Your password is only used to obtain the initial token.
-
 ## Prerequisites
 
 - A NetSapiens account on a core that exposes API v2 (`/ns-api/v2`).
@@ -30,7 +28,7 @@ Nango sends these values to `POST https://<server>/ns-api/v2/tokens` with `grant
 ### Step 2: Create or locate your API client
 
 1. Ask your NetSapiens service provider (or, if you operate the platform, your platform administrators) for an OAuth **Client ID** and **Client Secret** for API access.
-2. Store the secret securely; it is required both for the initial token request and for every refresh.
+2. Store the secret securely; you will need it when connecting.
 
 ### Step 3: Gather your API user login
 

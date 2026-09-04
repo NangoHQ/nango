@@ -15495,17 +15495,13 @@ netsapiens:
         token_expiration_strategy: expireIn
     proxy:
         base_url: https://${connectionConfig.server}/ns-api
-        verification:
-            method: GET
-            endpoints:
-                - /v2/version
     docs: https://nango.dev/docs/api-integrations/netsapiens
     docs_connect: https://nango.dev/docs/api-integrations/netsapiens/connect
     connection_config:
         server:
             type: string
             title: NetSapiens Server
-            description: The hostname of your NetSapiens core (without https://).
+            description: The hostname of your NetSapiens core.
             example: mycompany.netsapiens.com
             format: hostname
             prefix: https://
@@ -15515,7 +15511,7 @@ netsapiens:
         username:
             type: string
             title: Username
-            description: Your NetSapiens API login username.
+            description: Your NetSapiens API login username, in the form extension@domain.
             example: 1000@mydomain.com
             order: 1
             doc_section: '#step-3-gather-your-api-user-login'

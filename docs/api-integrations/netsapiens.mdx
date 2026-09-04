@@ -17,7 +17,7 @@ NetSapiens is a multi-tenant UCaaS platform. Each service provider runs its own 
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _NetSapiens_.
     </Step>
     <Step title="Authorize NetSapiens" id="authorize-netsapiens">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your NetSapiens server hostname, username, password, client ID, and client secret. Nango exchanges them for an access token with the OAuth2 password grant and refreshes it automatically. Later, you'll let your users do the same directly from your app.
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your NetSapiens server hostname, username, password, client ID, and client secret. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the NetSapiens API" id="call-netsapiens-api">
     Let's make your first request to the NetSapiens API to read the API version of the core. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
@@ -83,7 +83,6 @@ import PreBuiltUseCases from "/snippets/generated/netsapiens/PreBuiltUseCases.md
 ## 💡 API gotchas
 
 - The proxy base URL is `https://<server>/ns-api`. Include the API version in each endpoint path (for example `/v2/version` or `/v2/domains`).
-- Access tokens are short-lived. Nango stores the `refresh_token` returned by `POST /tokens` and refreshes the access token with `grant_type=refresh_token` before it expires.
 - The API user's scope (Super User, Reseller, Office Manager, ...) determines which domains and resources the connection can read.
 - The client ID and client secret are issued per platform by the service provider that operates the NetSapiens core; they cannot be self-registered.
 
