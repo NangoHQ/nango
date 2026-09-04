@@ -17,7 +17,7 @@ import {
     IconButton
 } from '@nangohq/design-system';
 
-import { PermissionGate } from '@/components/patterns/PermissionGate.js';
+import { PERMISSION_DENIED_REASON, PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Separator } from '@/components/ui/Separator';
 import { useMeta } from '@/hooks/useMeta';
@@ -247,7 +247,9 @@ const PlanCard: React.FC<{
                                 endsAt={endsAt}
                                 onAdd={() => setAddonAction('add')}
                                 onRemove={() => setAddonAction('remove')}
-                                lockedReason={pendingChangeAt ? `Your plan changes on ${pendingChangeAt}.` : undefined}
+                                lockedReason={
+                                    !canChangePlan ? PERMISSION_DENIED_REASON : pendingChangeAt ? `Your plan changes on ${pendingChangeAt}.` : undefined
+                                }
                             />
                             {addonAction && (
                                 <GrowthAddonDialog planCode={plan.code} action={addonAction} open onOpenChange={(next) => !next && setAddonAction(null)} />
@@ -383,7 +385,7 @@ const PlanChangeDialog: React.FC<{
             if (newPricing) {
                 // Orb prices every metric in arrears under a plan-level minimum, so there is no base
                 // fee to prorate and the upgrade collects nothing.
-                return `${selectedPlan.plan.title} bills at the end of each month — your usage, or a $${selectedPlan.plan.basePrice} monthly minimum, whichever is higher. Nothing is charged today, and this month's minimum is prorated from the day you upgrade.`;
+                return `${selectedPlan.plan.title} bills at the end of each month — your usage, or a $${selectedPlan.plan.basePrice} monthly minimum, whichever is higher. Nothing is charged today, and this month's minimum and any add-on are prorated from the day you upgrade.`;
             }
             return `The ${selectedPlan.plan.title} plan includes a ${selectedPlan.plan.basePrice} monthly base fee, plus additional usage-based charges. When you upgrade, you'll be charged a prorated base fee for the current month.`;
         }
