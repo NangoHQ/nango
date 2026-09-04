@@ -97,7 +97,8 @@ export const AuditShow: React.FC = () => {
 
     // The button below stays: it is the keyboard path, and the fallback if the observer never fires.
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
-    const canLoadMore = hasNextPage && !isFetchingNextPage;
+    // Stops on error: the sentinel stays visible after a failed page, so the observer would retry it in a loop.
+    const canLoadMore = hasNextPage && !isFetchingNextPage && !isError;
     const observeLoadMore = useCallback((node: HTMLDivElement | null) => {
         loadMoreRef.current = node;
     }, []);

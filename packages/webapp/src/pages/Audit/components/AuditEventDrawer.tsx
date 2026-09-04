@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { formatDateToLogFormat } from '@/utils/utils';
-import { actorLabel, environmentLabel, eventLabel, targetNames, viaLabel } from '../constants';
+import { actorLabel, environmentLabel, eventLabel, viaLabel } from '../constants';
 import { OutcomeTag } from './OutcomeTag';
 
 import type { ApiAuditTrailEvent } from '@nangohq/types';
@@ -65,8 +65,8 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
                                 '—'
                             ) : (
                                 <ul>
-                                    {targetNames(event.targets).map((name) => (
-                                        <li key={name}>{name}</li>
+                                    {event.targets.map((target, index) => (
+                                        <li key={`${target.type}:${target.id}:${index}`}>{target.display ?? target.id}</li>
                                     ))}
                                 </ul>
                             )}

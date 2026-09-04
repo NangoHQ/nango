@@ -102,16 +102,13 @@ export function viaLabel(via: ApiAuditTrailEvent['via']): string | undefined {
 
 // Display names, not the raw `resource.action` key — that stays available in the drawer's JSON and the CSV.
 export function eventLabel(event: Pick<ApiAuditTrailEvent, 'resource' | 'action'>): string {
-    return `${resourceLabels[event.resource]} · ${formatKeyToLabel(event.action)}`;
-}
-
-export function targetNames(targets: ApiAuditTrailEvent['targets']): string[] {
-    return targets.map((target) => target.display ?? target.id);
+    // Falls back to the raw key: a newer backend can send a resource this build has no label for.
+    return `${resourceLabels[event.resource] ?? event.resource} · ${formatKeyToLabel(event.action)}`;
 }
 
 /** First target plus a count, so a deploy touching a dozen functions still occupies one row. */
 export function targetsSummary(targets: ApiAuditTrailEvent['targets']): { first: string; rest: number } | null {
-    const [first, ...rest] = targetNames(targets);
+    const [first, ...rest] = targets.map((target) => target.display ?? target.id);
     return first ? { first, rest: rest.length } : null;
 }
 
