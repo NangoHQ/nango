@@ -15,12 +15,13 @@ function noInlineScripts(): Plugin {
         transformIndexHtml: {
             order: 'post',
             handler: (html) => {
-                // Quoted values are dropped first, so ` src=` inside an attribute can't pass for the attribute itself.
-                const tagsOnly = html.replace(/"[^"]*"|'[^']*'/g, '');
-                const inlineScript = (tagsOnly.match(/<script\b[^>]*>/gi) ?? []).find((tag) => !/\ssrc\s*=/i.test(tag));
-                const blocked = inlineScript ?? /<[^>]+\son[a-z]+\s*=/i.exec(tagsOnly)?.[0];
+                // Blank out quoted values, preserving length so indexes still map onto `html`: text
+                // inside an attribute value must not pass for an attribute itself.
+                const tagsOnly = html.replace(/"[^"]*"|'[^']*'/g, (quoted) => ' '.repeat(quoted.length));
+                const blocked = /<script\b(?![^>]*\ssrc\s*=)[^>]*>/i.exec(tagsOnly) ?? /<[^>]+\son[a-z]+/i.exec(tagsOnly);
                 if (blocked) {
-                    throw new Error(`[connect-ui] no-inline-scripts: "${blocked}" is blocked by the enforced CSP`);
+                    const snippet = html.slice(blocked.index, blocked.index + 80).trim();
+                    throw new Error(`[connect-ui] no-inline-scripts: "${snippet}" is blocked by the enforced CSP`);
                 }
                 return html;
             }
