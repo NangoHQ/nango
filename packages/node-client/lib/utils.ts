@@ -49,8 +49,9 @@ export function addQueryParams(url: URL, queries?: Record<string, any>) {
 
     Object.entries(queries).forEach(([name, value]) => {
         if (Array.isArray(value)) {
+            url.searchParams.delete(name);
             for (const el of value) {
-                url.searchParams.set(name, el);
+                url.searchParams.append(name, el);
             }
         } else if (value !== null && value !== undefined) {
             url.searchParams.set(name, value);
