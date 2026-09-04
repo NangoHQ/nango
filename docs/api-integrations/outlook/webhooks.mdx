@@ -132,7 +132,7 @@ import z from 'zod';
 const RENEWAL_WINDOW_MS = 2 * 24 * 60 * 60 * 1000;
 
 export default createSync({
-    description: 'Renew Outlook subscriptions that are expiring within the next day',
+    description: 'Renew Outlook subscriptions that are expiring',
     models: {},
     metadata: z.object({
         subscriptionIds: z.array(z.string()).optional(),
