@@ -489,6 +489,24 @@ NANGO_INTERNAL_TLS_CA_FILE=/etc/nango/tls/ca.crt
 - `NANGO_INTERNAL_TLS_KEY_PASSPHRASE` is used exactly as given, including any leading or trailing whitespace, since that whitespace may be part of the passphrase. Surrounding whitespace *is* stripped from the other variables, where it is never significant.
 - Prefer ECDSA P-256 over RSA-2048. The per-handshake signature is roughly an order of magnitude cheaper, which matters on the jobs-to-runner path.
 - Certificates are read once at startup, including `_FILE` paths. Rotation requires a restart.
+- The Docker image runs as non-root (`USER node`, UID 1000). When mounting Kubernetes secrets via `_FILE`, set `securityContext.fsGroup: 1000` and `volumes[].secret.defaultMode: 0440` so the files are group-readable; the default `0400` is only readable by root and will fail with `EACCES` under `USER node`. Example:
+
+  ```yaml
+  securityContext:
+    fsGroup: 1000
+  volumes:
+    - name: internal-tls
+      secret:
+        secretName: nango-internal-tls
+        defaultMode: 0440
+        items:
+          - key: tls.crt
+            path: tls.crt
+          - key: tls.key
+            path: tls.key
+          - key: ca.crt
+            path: ca.crt
+  ```
 
 <Note>
 `NANGO_INTERNAL_TLS_CA` replaces the default root store for internal calls. One of those calls fetches `PROVIDERS_URL`—if that points at an endpoint with a publicly issued certificate, leave the CA unset and use `NODE_EXTRA_CA_CERTS` instead, which adds to the default roots rather than replacing them.
