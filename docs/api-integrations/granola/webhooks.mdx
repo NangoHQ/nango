@@ -68,6 +68,10 @@ In the Nango dashboard, open your Granola integration and copy the **Webhook URL
         }),
         exec: async (nango) => {
             const webhookUrl = await nango.getWebhookURL();
+            if (!webhookUrl) {
+                await nango.log('Skipping webhook endpoint registration: webhook URL is not configured', { level: 'error' });
+                return;
+            }
 
             const config: ProxyConfiguration = {
                 endpoint: '/v1/webhook-endpoints',
