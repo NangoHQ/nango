@@ -15513,6 +15513,7 @@ netsapiens:
             title: Username
             description: Your NetSapiens API login username, in the form extension@domain.
             example: 1000@mydomain.com
+            pattern: '^[^@\s]+@[^@\s]+$'
             order: 1
             doc_section: '#step-3-gather-your-api-user-login'
         password:
