@@ -4,6 +4,7 @@ export { migrate } from './clickhouse/migrate.js';
 export { migrate as migratePostgres } from './postgres/migrate.js';
 export { startPartitionDaemon } from './postgres/partitions.js';
 export { ClickhouseAuditStore } from './stores/clickhouse.js';
+export { PostgresAuditStore } from './stores/postgres.js';
 export { NoopAuditStore } from './stores/noop.js';
 export { PubSubAuditWriter } from './stores/pubsub.js';
 export type {
