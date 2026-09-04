@@ -59,7 +59,7 @@ export class PostgresAuditStore implements AuditWriter, AuditReader {
                 const [row] = await this.knex.from(capped.as('capped')).count<{ count: string }[]>('* as count');
                 const scanned = Number(row?.count);
                 if (!Number.isFinite(scanned)) {
-                    return Err('failed_to_count_audit_trail_events');
+                    throw new Error(`unexpected count row: ${JSON.stringify(row)}`);
                 }
 
                 return scanned > this.countScanLimit
