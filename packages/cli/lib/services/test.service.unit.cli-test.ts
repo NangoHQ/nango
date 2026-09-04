@@ -4,7 +4,14 @@ import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { generateActionTest, generateSyncTest, shouldProcessAction, shouldProcessSync, validateAndFilterIntegrations } from './test.service.js';
+import {
+    generateActionTest,
+    generateSyncTest,
+    generateTestConfigs,
+    shouldProcessAction,
+    shouldProcessSync,
+    validateAndFilterIntegrations
+} from './test.service.js';
 
 import type { IntegrationDefinition } from './test.service.js';
 
@@ -462,8 +469,11 @@ describe('generateSyncTest', () => {
         const content = await fs.readFile(outputPath, 'utf8');
 
         // Check imports
+        expect(content).toContain("import { NangoSyncMock } from 'nango/test'");
         expect(content).toContain("import { afterEach, vi, expect, it, describe } from 'vitest'");
         expect(content).toContain("import createSync from '../syncs/fetch-issues.js'");
+        expect(content).toContain('const nangoMock = new NangoSyncMock({');
+        expect(content).not.toContain('global.vitest');
 
         // Check describe block
         expect(content).toContain("describe('github fetch-issues tests'");
@@ -528,8 +538,11 @@ describe('generateActionTest', () => {
         const content = await fs.readFile(outputPath, 'utf8');
 
         // Check imports
-        expect(content).toContain("import { vi, expect, it, describe } from 'vitest'");
+        expect(content).toContain("import { NangoActionMock } from 'nango/test'");
+        expect(content).toContain("import { expect, it, describe } from 'vitest'");
         expect(content).toContain("import createAction from '../actions/send-message.js'");
+        expect(content).toContain('const nangoMock = new NangoActionMock({');
+        expect(content).not.toContain('global.vitest');
 
         // Check describe block
         expect(content).toContain("describe('slack send-message tests'");
@@ -558,5 +571,53 @@ describe('generateActionTest', () => {
 
         // Null output should be rendered as empty string or null
         expect(content).toContain('Model: ""');
+    });
+});
+
+describe('generateTestConfigs', () => {
+    let tmpDir: string;
+
+    afterEach(async () => {
+        if (tmpDir) {
+            await fs.rm(tmpDir, { recursive: true, force: true });
+        }
+    });
+
+    it('does not generate a setup file for a new project', async () => {
+        tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'nango-test-config-'));
+
+        const success = await generateTestConfigs({ absolutePath: tmpDir, rootPath: tmpDir, debug: false });
+
+        expect(success).toBe(true);
+        expect(await fs.readFile(path.join(tmpDir, 'vite.config.ts'), 'utf8')).not.toContain('setupFiles');
+        await expect(fs.access(path.join(tmpDir, 'vitest.setup.ts'))).rejects.toThrow();
+    });
+
+    it('preserves the setup path for tests that use the legacy global', async () => {
+        tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'nango-test-config-'));
+        const testDir = path.join(tmpDir, 'github', 'tests');
+        await fs.mkdir(testDir, { recursive: true });
+        await fs.writeFile(path.join(testDir, 'github-issues.test.ts'), 'void global.vitest.NangoSyncMock;');
+
+        const success = await generateTestConfigs({ absolutePath: tmpDir, rootPath: tmpDir, debug: false });
+
+        expect(success).toBe(true);
+        expect(await fs.readFile(path.join(tmpDir, 'vite.config.ts'), 'utf8')).toContain('setupFiles: "vitest.setup.ts"');
+        const setup = await fs.readFile(path.join(tmpDir, 'vitest.setup.ts'), 'utf8');
+        expect(setup).toContain('declare global');
+        expect(setup).toContain('NangoSyncMock: typeof NangoSyncMock');
+        expect(setup).toContain('NangoActionMock: typeof NangoActionMock');
+    });
+
+    it('does not overwrite an existing setup file without confirmation', async () => {
+        tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'nango-test-config-'));
+        const setupPath = path.join(tmpDir, 'vitest.setup.ts');
+        await fs.writeFile(setupPath, '// Custom setup\n');
+
+        const success = await generateTestConfigs({ absolutePath: tmpDir, rootPath: tmpDir, debug: false });
+
+        expect(success).toBe(true);
+        expect(await fs.readFile(setupPath, 'utf8')).toBe('// Custom setup\n');
+        expect(await fs.readFile(path.join(tmpDir, 'vite.config.ts'), 'utf8')).toContain('setupFiles: "vitest.setup.ts"');
     });
 });

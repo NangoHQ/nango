@@ -5349,6 +5349,7 @@ When you run `nango generate:tests`, Nango creates test files for all your integ
 
 **Sync test example:**
 ```typescript
+import { NangoSyncMock } from 'nango/test';
 import { vi, expect, it, describe, beforeAll } from 'vitest';
 import createSync from '../syncs/fetch-tickets.js';
 
@@ -5356,7 +5357,7 @@ describe('github fetch-tickets tests', () => {
   let nangoMock;
 
   beforeAll(async () => {
-    nangoMock = new global.vitest.NangoSyncMock({
+    nangoMock = new NangoSyncMock({
       dirname: __dirname,
       name: "fetch-tickets",
       Model: "Ticket"
@@ -5398,6 +5399,7 @@ describe('github fetch-tickets tests', () => {
 
 **Action test example:**
 ```typescript
+import { NangoActionMock } from 'nango/test';
 import { vi, expect, it, describe, beforeAll } from 'vitest';
 import createAction from '../actions/create-ticket.js';
 
@@ -5405,7 +5407,7 @@ describe('github create-ticket tests', () => {
   let nangoMock;
 
   beforeAll(async () => {
-    nangoMock = new global.vitest.NangoActionMock({
+    nangoMock = new NangoActionMock({
       dirname: __dirname,
       name: "create-ticket",
       Model: "Ticket"
@@ -5509,27 +5511,30 @@ npm test -- --coverage
 Vitest is configured via `vite.config.ts` in your project root:
 
 ```typescript
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    globals: true,
-    environment: 'node',
-    setupFiles: ['./vitest.setup.ts'],
+    include: ['**/*.{test,spec}.?(c|m)[jt]s?(x)'],
   },
 });
 ```
 
-The `vitest.setup.ts` file makes Nango mocks available globally:
+New tests import `NangoSyncMock` or `NangoActionMock` directly from `nango/test`, so they don't require a setup file.
+
+Projects with older generated tests may still have a `vitest.setup.ts` file that makes the mocks available through `global.vitest`. Nango keeps that setup configured while legacy tests remain, so existing tests continue to run. To migrate an older test, replace the global constructor with a direct import:
 
 ```typescript
-import { NangoActionMock, NangoSyncMock } from "nango/test";
+import { NangoSyncMock } from 'nango/test';
 
-globalThis.vitest = {
-  NangoActionMock,
-  NangoSyncMock,
-};
+const nangoMock = new NangoSyncMock({
+  dirname: __dirname,
+  name: 'fetch-tickets',
+  Model: 'Ticket',
+});
 ```
+
+Once no tests reference `global.vitest`, you can remove `vitest.setup.ts` and its `setupFiles` entry from your Vitest configuration.
 
 ## Customizing tests with business logic
 
@@ -5540,6 +5545,7 @@ While auto-generated tests validate basic data flow, you often need custom tests
 Extend the generated tests with additional assertions:
 
 ```typescript
+import { NangoSyncMock } from 'nango/test';
 import { vi, expect, it, describe, beforeAll } from 'vitest';
 import createSync from '../syncs/fetch-tickets.js';
 
@@ -5547,7 +5553,7 @@ describe('github fetch-tickets tests', () => {
   let nangoMock;
 
   beforeAll(async () => {
-    nangoMock = new global.vitest.NangoSyncMock({
+    nangoMock = new NangoSyncMock({
       dirname: __dirname,
       name: "fetch-tickets",
       Model: "Ticket"
@@ -5595,7 +5601,7 @@ Test how your integration handles errors:
 ```typescript
 it('should handle API errors gracefully', async () => {
   // Create a mock that will throw an error
-  const errorMock = new global.vitest.NangoSyncMock({
+  const errorMock = new NangoSyncMock({
     dirname: __dirname,
     name: "fetch-tickets-error",
     Model: "Ticket"
@@ -5671,6 +5677,7 @@ it('should only fetch tickets after checkpoint date', async () => {
 Test multiple scenarios with different inputs:
 
 ```typescript
+import { NangoSyncMock } from 'nango/test';
 import { it, describe, expect, beforeAll } from 'vitest';
 
 describe.each([
@@ -5682,7 +5689,7 @@ describe.each([
   let nangoMock;
 
   beforeAll(async () => {
-    nangoMock = new global.vitest.NangoSyncMock({
+    nangoMock = new NangoSyncMock({
       dirname: __dirname,
       name: `fetch-tickets-${priority}`,
       Model: "Ticket"
