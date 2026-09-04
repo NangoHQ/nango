@@ -25041,7 +25041,6 @@ typeform:
             type: string
             title: Authorization host
             description: The Typeform host that issues authorization codes for your data center.
-            prefix: https://
             enum:
                 - api.typeform.com
                 - api.typeform.eu
@@ -25050,7 +25049,6 @@ typeform:
             type: string
             title: API host
             description: The Typeform host that serves the API for your data center.
-            prefix: https://
             enum:
                 - api.typeform.com
                 - api.eu.typeform.com

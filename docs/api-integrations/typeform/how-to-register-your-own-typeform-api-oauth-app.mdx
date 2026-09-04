@@ -29,6 +29,8 @@ This guide shows you how to register your own app with Typeform to obtain your O
 
 <Note>
 On Typeform's EU data center? OAuth app registration is the same, but you'll also need to set the Authorization host and API host when connecting — see the [connect guide](/api-integrations/typeform/connect).
+
+OAuth clients are region-specific: the new EU data center (`api.typeform.eu`) has its own separate authorization server, so a Client ID and Client Secret registered under the standard region (or the older EU data center) won't work there, and vice versa. If you need to support accounts on both, register a separate OAuth app in each region.
 </Note>
 
 For more details, see [Typeform's application docs](https://www.typeform.com/developers/get-started/applications/).
