@@ -122,7 +122,7 @@ export const buttonVariants = cva(
                 // 20px square — smallest icon-only size (use with IconButton); icon sizing comes from the base
                 '2xs': 'size-5 p-1',
                 xs: 'h-6 px-1.5 text-ds-xs',
-                sm: 'h-7 px-2',
+                sm: 'h-7 px-2 text-ds-xs',
                 md: 'h-8 px-2.5',
                 lg: 'h-9 px-3'
             }
@@ -132,9 +132,7 @@ export const buttonVariants = cva(
             // link-danger alone gets 2px horizontal padding that link-accent/link-neutral don't have.
             { variant: ['link-accent', 'link-neutral'], className: 'h-auto w-auto p-0' },
             { variant: 'link-danger', className: 'h-auto w-auto px-0.5 py-0' },
-            // Figma's link text/icon scale is its own two-tier scale, distinct from the solid-button sizes:
-            // xs/sm render at 12px text (md/lg keep the base 14px text-ds-md, so no override needed there).
-            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: ['xs', 'sm'], className: 'text-ds-xs gap-1' },
+            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: ['xs', 'sm'], className: 'gap-1' },
             // xs takes the smallest (12px) icon; sm's icon is 14px, between xs and md/lg. No radius override:
             // link variants are bare text with no border or background, so a pill only ever showed up as a
             // capsule-shaped focus ring around a few words.

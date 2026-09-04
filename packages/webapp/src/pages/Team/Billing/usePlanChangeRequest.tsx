@@ -14,6 +14,7 @@ import type { ApiPlan } from '@nangohq/types';
 
 interface PlanChangeRequest {
     orbId: string;
+    withGrowthFeatures: boolean;
     settled?: (plan: ApiPlan) => boolean;
     successTitle: string;
 }
@@ -66,15 +67,14 @@ export function usePlanChangeRequest(env: string) {
     );
 
     const submit = useCallback(
-        async ({ orbId, settled, successTitle }: PlanChangeRequest): Promise<boolean> => {
+        async ({ orbId, withGrowthFeatures, settled, successTitle }: PlanChangeRequest): Promise<boolean> => {
             setLoading(true);
             setLongWait(false);
             setError(null);
 
             let json: Awaited<ReturnType<typeof postPlanChange>>;
             try {
-                // TODO: set a real value once the UI lets customers self-serve the growth add-on.
-                json = await postPlanChange({ orbId, withGrowthFeatures: false });
+                json = await postPlanChange({ orbId, withGrowthFeatures });
             } catch {
                 return fail('Something went wrong', true);
             }
