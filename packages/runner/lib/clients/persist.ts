@@ -33,6 +33,11 @@ const deleteOutdatedRecordsTerminalLineSchema = z.discriminatedUnion('status', [
     z.object({ status: z.literal('error'), error: z.looseObject({ message: z.string() }) })
 ]);
 
+const deleteHardAllRecordsTerminalLineSchema = z.discriminatedUnion('status', [
+    z.object({ status: z.literal('done'), deletedCount: z.number(), hasMore: z.boolean() }),
+    z.object({ status: z.literal('error'), error: z.looseObject({ message: z.string() }) })
+]);
+
 export class PersistClient {
     private baseUrl: string;
     private secretKey: string;
@@ -243,15 +248,58 @@ export class PersistClient {
         syncJobId: number;
         model: string;
     }): Promise<Result<DeleteHardAllRecordsSuccess>> {
-        const res = await this.fetch<DeleteHardAllRecordsSuccess>({
+        const path = `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records/hard`;
+        const response = await httpFetch(`${this.baseUrl}${path}`, {
             method: 'DELETE',
-            path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records/hard`,
-            data: { model }
+            headers: {
+                Authorization: `Bearer ${this.secretKey}`,
+                'Content-Type': 'application/json',
+                // Tells persist it can stream an NDJSON response. Older runners/lambdas that
+                // don't send this get a single buffered JSON response instead. Remove this
+                // once we have a single code path, i.e. once runner/lambda are fully deployed
+                // with the streaming-aware client.
+                Accept: 'application/x-ndjson'
+            },
+            body: JSON.stringify({ model }),
+            userAgent: this.userAgent
         });
-        if (res.isErr()) {
-            return Err(new Error(`Failed to hard delete records: ${res.error.message}`));
+
+        if (!response.ok) {
+            const responseData = await response.text();
+            return Err(new Error(`Failed to hard delete records: ${responseData || 'Request failed with status ' + response.status}`));
         }
-        return res;
+
+        let terminalLine: string | undefined;
+        try {
+            for await (const line of httpStreamNDJson(response)) {
+                if (line.includes('"status":"done"') || line.includes('"status":"error"')) {
+                    terminalLine = line;
+                    break;
+                }
+            }
+        } catch (err) {
+            return Err(new Error(`Failed to hard delete records: failed to read response: ${stringifyError(err)}`));
+        }
+        if (!terminalLine) {
+            return Err(new Error('Failed to hard delete records: stream ended without a terminal line'));
+        }
+
+        let parsed: unknown;
+        try {
+            parsed = JSON.parse(terminalLine);
+        } catch (err) {
+            return Err(new Error(`Failed to hard delete records: failed to parse response: ${stringifyError(err)}`));
+        }
+
+        const result = deleteHardAllRecordsTerminalLineSchema.safeParse(parsed);
+        if (!result.success) {
+            return Err(new Error(`Failed to hard delete records: unexpected response ${terminalLine}`));
+        }
+
+        if (result.data.status === 'error') {
+            return Err(new Error(`Failed to hard delete records: ${result.data.error.message}`));
+        }
+        return Ok({ deletedCount: result.data.deletedCount, hasMore: result.data.hasMore });
     }
 
     public async deleteOutdatedRecords({

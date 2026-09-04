@@ -1,6 +1,6 @@
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { buildPermissions } from '../../../authz/resolve.js';
+import { grantsForRole } from '../../../authz/principal.js';
 import { userToAPI } from '../../../formatters/user.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
@@ -17,8 +17,7 @@ export const getUser = asyncWrapper<GetUser>((req, res) => {
     res.status(200).send({
         data: {
             ...userToAPI(user),
-            role: user.role,
-            permissions: buildPermissions(user.role, plan),
+            grants: grantsForRole(user.role, plan),
             hasPassword: Boolean(user.hashed_password)
         }
     });

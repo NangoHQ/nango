@@ -1,7 +1,6 @@
 import { ArrowRight, Check, Loader } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
-import { permissions } from '@nangohq/authz';
 import {
     Button,
     Card,
@@ -125,7 +124,7 @@ const PlanCard: React.FC<{
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
 
     const { can } = usePermissions();
-    const canChangePlan = can(permissions.canChangePlan);
+    const canChangePlan = can('account:plan:update');
 
     const [paymentMethodDialogOpen, setPaymentMethodDialogOpen] = useState(false);
     const [planChangeDialogOpen, setPlanChangeDialogOpen] = useState(false);

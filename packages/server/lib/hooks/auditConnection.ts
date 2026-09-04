@@ -20,7 +20,7 @@ export function oauthAuthType(session: Pick<OAuthSession, 'connectSessionId'>): 
 export function connectionCreatedActor(
     actor: AuditActor | undefined,
     endUser: InternalEndUser | null | undefined,
-    authType?: 'publicKey' | 'connectSession' | undefined
+    authType?: 'publicKey' | 'connectSession'
 ): AuditActor {
     if (actor && actor.type !== 'unknown') {
         return actor;

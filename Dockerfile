@@ -86,18 +86,18 @@ RUN true \
 # Resulting new, minimal image
 FROM node:22.22.2-bookworm-slim AS web
 
-# Install a more recent npm
-RUN npm install -g npm@11.10.1
-
 # - Bash is just to be able to log inside the image and have a decent shell
 # - apt upgrade pulls Debian security updates (libgnutls30 / DSA-6281)
 # - perl-base has unfixed CRITICAL/HIGH CVEs on bookworm and is unused at runtime
+# - npm/npx/corepack ship with the Node image and are unused at runtime
 RUN true \
   && apt-get update \
   && apt-get upgrade -y --no-install-recommends \
   && apt-get install -y --no-install-recommends bash ca-certificates \
   && update-ca-certificates \
   && apt-get purge -y --auto-remove --allow-remove-essential -o APT::AutoRemove::RecommendsImportant=false perl-base \
+  && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+      /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
   && rm -rf /var/lib/apt/lists/*
 
 # Do not use root to run the app — but restrictive secret mounts (TLS/Redis, 0400)

@@ -53,7 +53,7 @@ Click on the default subscription for your topic (if one was created) or create 
 
 1. **Delivery type**: Set as push
 2. **Endpoint URL**: Copy the webhook URL from your Gmail integration page in the Nango dashboard, under the **Webhook URL** section.
-3. **Authentication** (recommended): Enable authentication and configure a service account for added security.
+3. **Authentication** (recommended): Enable authentication and configure a service account. Set the audience to your Nango webhook URL from the previous step. When the header is present, Nango verifies the Google-signed OIDC JWT.
 4. **Save the changes**
 
 ### 4. Activate the watch subscription

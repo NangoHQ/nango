@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
 import { SlackIcon } from '@/assets/SlackIcon';
@@ -20,12 +19,11 @@ export const SlackAlertsSettings: React.FC = () => {
     const { data, refetch: refetchEnvironment } = useEnvironment(env);
     const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
-    const environment = environmentAndAccount?.environment;
     const [slackIsConnecting, setSlackIsConnecting] = useState(false);
     const { toast } = useToast();
 
     const { can } = usePermissions();
-    const canEditEnvironment = can(permissions.canWriteProdEnvironment) || !environment?.is_production;
+    const canEditEnvironment = can('environment:settings:update');
 
     if (!environmentAndAccount) {
         return null;
