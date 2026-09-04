@@ -12,7 +12,7 @@ export const listConnectionsArgumentsSchema = z
         integration_id: providerConfigKeySchema.min(1).optional(),
         end_user_organization_id: z.string().min(1).max(255).optional(),
         tags: connectionTagsSchema.optional(),
-        limit: z.number().int().min(1).max(10_000).optional(),
+        limit: z.number().int().min(1).max(2000).optional(),
         page: z.number().int().min(0).optional()
     })
     .strict();

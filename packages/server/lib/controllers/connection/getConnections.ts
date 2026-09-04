@@ -9,6 +9,9 @@ import { bodySchema } from '../connect/postSessions.js';
 
 import type { GetPublicConnections } from '@nangohq/types';
 
+const MAX_LIMIT = 2000;
+const DEFAULT_LIMIT = 100;
+
 const validationQuery = z
     .object({
         connectionId: z.string().min(1).max(255).optional(),
@@ -17,7 +20,7 @@ const validationQuery = z
         integrationId: z.string().min(1).optional(),
         endUserOrganizationId: bodySchema.shape.end_user.shape.id.optional(),
         tags: connectionTagsSchema.optional(),
-        limit: z.coerce.number().min(1).max(2000).optional(),
+        limit: z.coerce.number().min(1).max(MAX_LIMIT).optional(),
         page: z.coerce.number().min(0).optional()
     })
     .strict();
@@ -47,7 +50,7 @@ export const getPublicConnections = asyncWrapperWithEnvironment<GetPublicConnect
         endUserOrganizationId: queryParam.endUserOrganizationId,
         tags: queryParam.tags,
         page: queryParam.page,
-        limit: queryParam.limit || 10_000 // 10_000 to avoid breaking changes. TODO: set to more reasonable default like 1000 in the future
+        limit: queryParam.limit ?? DEFAULT_LIMIT
     });
 
     res.status(200).send({

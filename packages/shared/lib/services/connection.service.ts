@@ -1220,6 +1220,10 @@ export class ConnectionService {
         limit?: number;
         page?: number | undefined;
     }): Promise<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
+        // Defense-in-depth: clamp limit even if callers bypass controller validation
+        const MAX_LIMIT = 2000;
+        limit = Math.min(Math.max(Math.trunc(limit), 1), MAX_LIMIT);
+        page = Math.max(Math.trunc(page), 0);
         const query = db.readOnly
             // Filter and paginate connections
             .with('filtered_connections', (qb) => {
