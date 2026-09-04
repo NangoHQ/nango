@@ -388,7 +388,7 @@ const PlanChangeDialog: React.FC<{
             return `The ${selectedPlan.plan.title} plan includes a ${selectedPlan.plan.basePrice} monthly base fee, plus additional usage-based charges. When you upgrade, you'll be charged a prorated base fee for the current month.`;
         }
         if (newPricing) {
-            return `You'll keep ${activePlan?.title ?? 'your current plan'}'s features until the end of your current billing period. Your plan switches to ${selectedPlan.plan.title} on ${switchesOn}, and your usage will be capped to the ${selectedPlan.plan.title} limits.`;
+            return `You'll keep ${activePlan?.title ?? 'your current plan'} features until the end of your current billing period. Your plan switches to ${selectedPlan.plan.title} on ${switchesOn}, and your usage will be capped to the ${selectedPlan.plan.title} limits.`;
         }
         return `Your ${activePlan?.title ? activePlan.title : 'current'} subscription will end at the end of this month and won't renew. Any remaining usage will be billed after the month ends.`;
     }, [selectedPlan, activePlan, newPricing, switchesOn]);
@@ -498,8 +498,8 @@ const GrowthAddonDialog: React.FC<{
 
     const description =
         action === 'add'
-            ? `The ${GROWTH_ADDON_COPY.title} is ${GROWTH_ADDON_COPY.price.replace('/mo', '')} per month, billed alongside your plan. You'll be charged a prorated amount today, then the full amount from ${endsOn}.`
-            : `You'll keep Growth features until the end of your current billing period. The add-on is removed on ${endsOn}, and you won't be charged for it after that.`;
+            ? `The ${GROWTH_ADDON_COPY.title} is ${GROWTH_ADDON_COPY.price.replace('/mo', '')} per month, billed alongside your plan. Nothing is charged today — a prorated amount lands on your next invoice, then the full amount each month from ${endsOn}.`
+            : `You'll keep Growth features until the end of your current billing period. The add-on is removed on ${endsOn}, and you won't be charged for it moving forward.`;
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
