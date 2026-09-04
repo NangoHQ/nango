@@ -7,7 +7,7 @@ description: Use when running tests in the Nango monorepo - knows unit vs integr
 
 ## Overview
 
-Nango uses Vitest with three separate configs for unit, integration, and CLI tests. Getting the config wrong silently runs zero tests.
+Nango uses Vitest with three separate configs for unit, integration, and CLI tests. Getting the config wrong silently runs zero tests
 
 ## Quick Reference
 
