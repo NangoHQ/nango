@@ -6,7 +6,36 @@ import { Err, Ok, stringifyError } from '@nangohq/utils';
 import type { ClickHouseClient } from '@clickhouse/client';
 import type { Result, StrictLogger } from '@nangohq/utils';
 
-// TODO: lock to prevent concurrent migrations
+function hashToInt(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+    }
+    return hash % 2147483647;
+}
+
+async function acquireAdvisoryLock(knex: any, key: number, timeoutMs: number, logger: StrictLogger, database: string): Promise<boolean> {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+        const result = await knex.raw(`SELECT pg_try_advisory_lock(?) as acquired`, [key]);
+        const acquired = result.rows?.[0]?.acquired ?? result[0]?.acquired;
+        if (acquired) {
+            logger.info(`Clickhouse migration (${database}): acquired advisory lock ${key}`);
+            return true;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    return false;
+}
+
+async function releaseAdvisoryLock(knex: any, key: number, logger: StrictLogger, database: string): Promise<void> {
+    try {
+        await knex.raw(`SELECT pg_advisory_unlock(?)`, [key]);
+        logger.info(`Clickhouse migration (${database}): released advisory lock ${key}`);
+    } catch (err) {
+        logger.warning(`Clickhouse migration (${database}): failed to release advisory lock`, { error: stringifyError(err) });
+    }
+}
 
 export interface ClickhouseMigrateOptions {
     // Called without a database to CREATE DATABASE; returns null when ClickHouse isn't configured.
@@ -48,7 +77,35 @@ export async function migrate({ clickhouseClient, database, migrationsDir, migra
         logger.info(`Clickhouse migration (${database}): config not set, skipping migration`);
         return Ok(undefined);
     }
+
+    const lockKey = hashToInt(`clickhouse_migration_${database}`);
+    let knex: any = null;
+    let lockAcquired = false;
     try {
+        try {
+            const dbModule = (await import('@nangohq/database')) as any;
+            knex = dbModule.default?.knex ?? dbModule.knex ?? null;
+        } catch {
+            knex = null;
+        }
+
+        if (knex) {
+            try {
+                lockAcquired = await acquireAdvisoryLock(knex, lockKey, 30000, logger, database);
+                if (!lockAcquired) {
+                    return Err(
+                        `Clickhouse migration (${database}) failed: could not acquire advisory lock ${lockKey} within 30s - another migration may be in progress`
+                    );
+                }
+            } catch (err) {
+                logger.warning(`Clickhouse migration (${database}): failed to acquire advisory lock, proceeding without lock`, {
+                    error: stringifyError(err)
+                });
+            }
+        } else {
+            logger.warning(`Clickhouse migration (${database}): database not available, proceeding without lock`);
+        }
+
         const migrationTable = `${database}.migrations`;
         await client.command({
             query: `
@@ -86,6 +143,9 @@ export async function migrate({ clickhouseClient, database, migrationsDir, migra
     } catch (err) {
         return Err(`Clickhouse migration (${database}) failed: ${stringifyError(err)}`);
     } finally {
+        if (lockAcquired && knex) {
+            await releaseAdvisoryLock(knex, lockKey, logger, database);
+        }
         await client.close();
     }
 }
