@@ -54,9 +54,11 @@ export const Usage: React.FC = () => {
 
     const minimumEnabled = chargesEnabled && hasPlanMinimum(plan);
     const { data: upcoming, isError: upcomingError } = useApiGetUpcomingInvoice(env, plan, { enabled: minimumEnabled });
-    // Stating the minimum beside dashes or skeletons would show a total the rows can't add up to, so
-    // the row waits for charges the reader can actually check it against.
-    const chargesStated = !costsPending && !costsError && periodCosts?.data.noCosts === false;
+    // Stating the minimum beside a dash or a skeleton would show a total the rows can't add up to, so
+    // the row waits for every metric to carry a figure — which a malformed or unattributed price
+    // denies just as much as a failed request does.
+    const costs = costsPending || costsError ? null : periodCosts?.data;
+    const chargesStated = costs ? !costs.noCosts && costs.malformedMetrics.length === 0 && costs.fullyAttributed : false;
     const minimumSpend = buildMinimumSpendRow({
         enabled: minimumEnabled && chargesStated && !upcomingError,
         minimum: upcoming?.data.minimum ?? null,
