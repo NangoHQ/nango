@@ -44,7 +44,6 @@ export interface S26PlanCard {
     priceSuffix?: string;
     tagline: string;
     features: string[];
-    /** A last bullet, shown only while the add-on isn't spelled out in a block of its own. */
     addonTeaser?: string;
 }
 

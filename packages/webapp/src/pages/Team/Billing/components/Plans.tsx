@@ -130,7 +130,7 @@ const PlanCard: React.FC<{
     /** Undefined while the old set of cards is on screen. */
     card?: S26PlanCard;
     addonState: GrowthAddonState;
-    /** When a scheduled add-on removal takes effect, as Orb's period end rather than a guess at it. */
+    /** Orb's period end, not a client-side guess at it. */
     endsAt?: string;
     /** Set when a plan change is already coming: the add-on cannot then move the other way. */
     pendingChangeAt?: string;
