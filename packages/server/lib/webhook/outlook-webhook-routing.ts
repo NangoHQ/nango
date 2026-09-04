@@ -33,7 +33,7 @@ const route: WebhookHandler<OutlookNotificationPayload> = async (nango, _headers
         return Ok({ content: validationToken, statusCode: 200 });
     }
 
-    const notifications = body.value;
+    const notifications = body?.value;
     if (!Array.isArray(notifications) || notifications.length === 0) {
         return Ok({ content: { status: 'success' }, statusCode: 200 });
     }
