@@ -1,7 +1,7 @@
 import * as z from 'zod/v4';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
-import { proxyHeadersSchema, proxyMethodSchema, proxyPathSchema, proxyQueryParamsSchema } from '../../../services/mcpProxy.service.js';
+import { proxyHeadersSchema, proxyMethodSchema, proxyPathSchema, proxyQueryParamsSchema } from '../../../services/mcpProxySchema.js';
 
 export const proxyRequestInputSchema = z
     .object({

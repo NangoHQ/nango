@@ -2,12 +2,14 @@ import tracer from 'dd-trace';
 
 import { Err } from '@nangohq/utils';
 
-import { executeMcpProxyRequest, MAX_MCP_PROXY_RESPONSE_SIZE_LABEL, mcpProxyResponseSchema } from '../../../../services/mcpProxy.service.js';
+import { executeMcpProxyRequest } from '../../../../services/mcpProxy.service.js';
+import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL } from '../../../../services/mcpProxyResponse.js';
+import { mcpProxyResponseSchema } from '../../../../services/mcpProxySchema.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { defineAgentSessionMcpTool } from '../sessionTool.js';
 import { proxyInputSchema } from './schema.js';
 
-import type { McpProxyResponse } from '../../../../services/mcpProxy.service.js';
+import type { McpProxyResponse } from '../../../../services/mcpProxySchema.js';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 

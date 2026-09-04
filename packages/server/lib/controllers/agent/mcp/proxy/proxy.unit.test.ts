@@ -158,6 +158,35 @@ describe('proxyTool', () => {
         expect(request).not.toHaveBeenCalled();
     });
 
+    it.each(['authorization', 'Authorization', 'proxy-authorization', 'transfer-encoding', 'host'])(
+        'refuses to forward the %s header the proxy sets itself',
+        async (header) => {
+            const request = vi.spyOn(proxyService, 'request');
+
+            const result = await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1', headers: { [header]: 'attacker' } });
+
+            expect(errorOf(result).message).toContain(`cannot be passed: ${header}`);
+            expect(request).not.toHaveBeenCalled();
+        }
+    );
+
+    it('still forwards ordinary headers', async () => {
+        const request = vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse({ ok: true })) });
+
+        await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1', headers: { 'notion-version': '2022-06-28' } });
+
+        expect(request).toHaveBeenCalledWith(expect.objectContaining({ headers: { 'notion-version': '2022-06-28' } }));
+    });
+
+    it('rejects an integration id that is not a provider config key', async () => {
+        const request = vi.spyOn(proxyService, 'request');
+
+        const result = await callProxy({ integration: 'not/a/key', method: 'GET', path: '/v1/pages/1' });
+
+        expect(errorOf(result).message).toContain('integration');
+        expect(request).not.toHaveBeenCalled();
+    });
+
     it('is enabled only when the session turned the meta tool on', () => {
         expect(proxyTool.isEnabled({ nangoToolSearch: true, nangoExecute: true, nangoProxy: true })).toBe(true);
         expect(proxyTool.isEnabled({ nangoToolSearch: true, nangoExecute: true, nangoProxy: false })).toBe(false);

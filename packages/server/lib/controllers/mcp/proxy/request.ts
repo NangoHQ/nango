@@ -1,8 +1,10 @@
-import { executeMcpProxyRequest, MAX_MCP_PROXY_RESPONSE_SIZE_LABEL, mcpProxyResponseSchema } from '../../../services/mcpProxy.service.js';
+import { executeMcpProxyRequest } from '../../../services/mcpProxy.service.js';
+import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL } from '../../../services/mcpProxyResponse.js';
+import { mcpProxyResponseSchema } from '../../../services/mcpProxySchema.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { proxyRequestInputSchema } from './schema.js';
 
-import type { McpProxyResponse } from '../../../services/mcpProxy.service.js';
+import type { McpProxyResponse } from '../../../services/mcpProxySchema.js';
 import type { ManagementMcpTool } from '../managementTool.js';
 
 export const proxyRequestTool: ManagementMcpTool<McpProxyResponse> = defineManagementMcpTool<typeof proxyRequestInputSchema, McpProxyResponse>({

@@ -451,7 +451,7 @@ The escape hatch for when no tool in the session covers what the agent needs. It
 { "integration": "notion", "method": "POST", "path": "/v1/search", "body": { "query": "roadmap" } }
 ```
 
-It also takes `query_params` and `headers`. Credentials are added by Nango, so the agent never sends them.
+It also takes `query_params` and `headers`. Nango authenticates the request from the session's connection, so authentication and hop-by-hop headers are rejected rather than forwarded.
 
 The integration has to be one in the session's toolset with a resolved connection, but the path is not restricted to what the toolset exposes. That is why `nango_proxy` is off by default: turning it on lets the agent reach any endpoint of a connected integration.
 
