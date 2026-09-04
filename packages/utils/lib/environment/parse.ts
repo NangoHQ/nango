@@ -757,6 +757,17 @@ const ENVS_SHAPE = z.object({
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
+    // The following are only considered in local, self-hosted and BYOC deployments that configure
+    // Postgres storage for the audit trail. The URL can point to the main database.
+    NANGO_AUDIT_POSTGRES_DATABASE_URL: z.url().optional(),
+    NANGO_AUDIT_POSTGRES_POOL_MAX: z.coerce.number().optional().default(5),
+    NANGO_AUDIT_POSTGRES_SSL: z.stringbool().optional().default(false),
+    NANGO_AUDIT_POSTGRES_RETENTION_DAYS: z.coerce.number().int().positive().optional().default(365),
+    NANGO_AUDIT_POSTGRES_PARTITION_INTERVAL_MS: z.coerce
+        .number()
+        .positive()
+        .max(6 * 3600 * 1000) // capped so tomorrow's partition is always created before midnight reaches it
+        .default(1 * 3600 * 1000),
     // .int() because these go straight into SQS request fields, which reject a fractional value outright.
     // One poll loop on purpose. Long polling returns as soon as a single message is available, so a batch
     // only grows while an insert is in flight — extra loops would be parked in ReceiveMessage and take those

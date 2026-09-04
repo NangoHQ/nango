@@ -18,6 +18,7 @@ import { records } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
 import { flags, getLogger, NANGO_VERSION, once, report } from '@nangohq/utils';
 
+import { destroyAuditDb, migrateAuditDb, startAuditPartitions } from './auditDb.js';
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
 import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
@@ -86,10 +87,13 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await records.migrate();
     await migrateFleets();
     await tasks.migrate();
+    await migrateAuditDb();
     await db.destroy();
 } else {
     logger.info('Not migrating database');
 }
+
+const auditPartitions = startAuditPartitions();
 
 // Preload providers
 getProviders();
@@ -129,6 +133,8 @@ const close = once(() => {
     server.close(async () => {
         wss.close();
         await stopFleets();
+        await auditPartitions?.abort();
+        await destroyAuditDb();
         await tasks.stop();
         await db.destroy();
         await records.close();

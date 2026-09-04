@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, flags, Ok } from '@nangohq/utils';
 
-import { audit } from '../../audit.js';
+import { audit, auditBackend } from '../../audit.js';
 import { triggerActionTool } from './actions/trigger.js';
 import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
@@ -31,6 +31,7 @@ import type { DBEnvironment, DBTeam } from '@nangohq/types';
 describe('createManagementMcpServer', () => {
     afterEach(() => {
         flags.hasAuditTrail = false;
+        auditBackend.configured = false;
         vi.restoreAllMocks();
     });
 
@@ -1001,6 +1002,7 @@ describe('createManagementMcpServer', () => {
 
     it('audits a requested mutation when its tool is disabled for insufficient scopes', async () => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const requestBody = {
             jsonrpc: '2.0',
@@ -1048,6 +1050,7 @@ describe('createManagementMcpServer', () => {
 
     it.each(['started', 'paused'] as const)('audits a denied sync state change as %s even when other arguments are invalid', async (state) => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const requestBody = {
             jsonrpc: '2.0',
@@ -1091,6 +1094,7 @@ describe('createManagementMcpServer', () => {
 
     it.each(['started', 'paused'] as const)('audits an authorized invalid sync state change as a failed %s attempt', async (state) => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const server = createManagementMcpServer(
             {
@@ -1124,6 +1128,7 @@ describe('createManagementMcpServer', () => {
 
     it('does not audit a denied sync state change when the state is invalid', async () => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const server = createManagementMcpServer(
             {
