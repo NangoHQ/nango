@@ -23,7 +23,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
         // so we need to check both
         const teamId = payload['team_id'] || payload['team']?.['id'];
         const response = await nango.executeScriptForWebhooks({
-            body: { ...payload, teamId },
+            payload: { ...payload, teamId },
             webhookType: 'type',
             connectionIdentifier: 'teamId',
             propName: 'team.id'

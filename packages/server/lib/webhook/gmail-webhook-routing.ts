@@ -123,7 +123,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
     };
 
     let response = await nango.executeScriptForWebhooks({
-        body: editedBodyWithCatchAll,
+        payload: editedBodyWithCatchAll,
         webhookType: 'type',
         connectionIdentifier: 'emailAddressHash',
         propName: 'emailAddressHash'
@@ -131,7 +131,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
 
     if (response.connectionIds.length === 0) {
         response = await nango.executeScriptForWebhooks({
-            body: editedBodyWithCatchAll,
+            payload: editedBodyWithCatchAll,
             webhookType: 'type',
             connectionIdentifier: 'emailAddress',
             propName: 'metadata.emailAddress'
@@ -139,7 +139,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
 
         if (response.connectionIds.length === 0) {
             response = await nango.executeScriptForWebhooks({
-                body: editedBodyWithCatchAll,
+                payload: editedBodyWithCatchAll,
                 webhookType: 'type',
                 connectionIdentifier: 'emailAddress',
                 propName: 'metadata.email'

@@ -20,6 +20,7 @@ function getNangoMock(webhookSecret: unknown = SIGNING_TOKEN) {
         environment: seeders.getTestEnvironment(),
         plan: seeders.getTestPlan(),
         integration: getTestConfig({ provider: 'gitlab' }),
+        request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
         logContextGetter
     });
     const getConnection = vi.spyOn(nango, 'getConnectionForWebhook').mockResolvedValue({
@@ -60,7 +61,7 @@ describe('Gitlab webhook routing', () => {
         expect(result.isOk()).toBe(true);
         expect(getConnection).toHaveBeenCalledWith(CONNECTION_ID);
         expect(execute).toHaveBeenCalledWith({
-            body,
+            payload: body,
             webhookHeaderValue: 'Issue Hook',
             connectionIdentifierValue: CONNECTION_ID,
             propName: 'connectionId'

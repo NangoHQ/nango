@@ -40,7 +40,7 @@ const route: WebhookHandler<JobberWebhookPayload> = async (nango, headers, body,
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body: event,
+        payload: event,
         webhookType: 'topic',
         connectionIdentifier: 'accountId',
         propName: 'accountId'

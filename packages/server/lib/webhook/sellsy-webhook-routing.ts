@@ -45,7 +45,7 @@ const route: WebhookHandler<SellsyWebhookPayload> = async (nango, headers, body,
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookTypeValue,
         connectionIdentifier: 'corpid',
         propName: 'corpid'

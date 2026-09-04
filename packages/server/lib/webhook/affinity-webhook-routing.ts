@@ -4,7 +4,7 @@ import type { affinityWebhookResponse, WebhookHandler } from './types.js';
 
 const route: WebhookHandler<affinityWebhookResponse> = async (nango, _headers, body, _rawBody) => {
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookType: body.type
     });
 

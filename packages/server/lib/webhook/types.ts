@@ -1,5 +1,11 @@
 import type { InternalNango } from './internal-nango.js';
+import type { HttpRequest } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+export type WebhookRequest = HttpRequest & {
+    rawHeaders: Record<string, string>;
+    rawBody: string;
+};
 
 export type WebhookHandler<T = any> = (
     internalNango: InternalNango,

@@ -5,7 +5,7 @@ import { DispatchQueuePublisher } from './publisher.js';
 
 import type { PreparedDispatchMessage } from './publisher.js';
 import type { SendMessageBatchCommandOutput, SQSClient } from '@aws-sdk/client-sqs';
-import type { WebhookDispatchMessage } from '@nangohq/types';
+import type { LegacyDispatchMessage } from '@nangohq/types';
 import type { Mock } from 'vitest';
 
 const tracerMocks = vi.hoisted(() => {
@@ -68,7 +68,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
     };
 });
 
-function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookDispatchMessage {
+function buildMessage(overrides: Partial<LegacyDispatchMessage> = {}): LegacyDispatchMessage {
     return {
         version: 1,
         kind: 'webhook',
@@ -90,7 +90,7 @@ function buildPreparedMessage({
     messageOverrides,
     byteSize
 }: {
-    messageOverrides?: Partial<WebhookDispatchMessage>;
+    messageOverrides?: Partial<LegacyDispatchMessage>;
     byteSize?: number;
 } = {}): PreparedDispatchMessage {
     const message = buildMessage(messageOverrides);
