@@ -1,0 +1,25 @@
+---
+title: 'List environment API keys'
+openapi: 'GET /environments/{environmentUuid}/api-keys'
+---
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:api_keys:list` scope.
+</Info>
+
+<ResponseExample>
+```json Example Response
+{
+  "data": [
+    {
+      "id": 456,
+      "uuid": "123e4567-e89b-12d3-a456-426614174001",
+      "display_name": "provisioned-ci",
+      "scopes": ["environment:*"],
+      "last_used_at": null,
+      "created_at": "2026-08-18T12:00:00.000Z"
+    }
+  ]
+}
+```
+</ResponseExample>
