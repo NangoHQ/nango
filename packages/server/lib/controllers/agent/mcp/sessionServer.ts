@@ -170,7 +170,7 @@ function getOriginalToolArgumentsByRequestId(requestBody: unknown): Map<RequestI
         }
 
         const requestId = request['id'];
-        if (!isRequestId(requestId)) {
+        if (typeof requestId !== 'string' && typeof requestId !== 'number') {
             continue;
         }
 
@@ -183,10 +183,6 @@ function getOriginalToolArgumentsByRequestId(requestBody: unknown): Map<RequestI
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
-}
-
-function isRequestId(value: unknown): value is RequestId {
-    return typeof value === 'string' || typeof value === 'number';
 }
 
 interface SessionTools {
