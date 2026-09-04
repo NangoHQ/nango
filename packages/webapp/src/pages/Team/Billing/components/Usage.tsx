@@ -54,8 +54,11 @@ export const Usage: React.FC = () => {
 
     const minimumEnabled = chargesEnabled && hasPlanMinimum(plan);
     const { data: upcoming, isError: upcomingError } = useApiGetUpcomingInvoice(env, plan, { enabled: minimumEnabled });
+    // Stating the minimum beside dashes or skeletons would show a total the rows can't add up to, so
+    // the row waits for charges the reader can actually check it against.
+    const chargesStated = !costsPending && !costsError && periodCosts?.data.noCosts === false;
     const minimumSpend = buildMinimumSpendRow({
-        enabled: minimumEnabled && !upcomingError,
+        enabled: minimumEnabled && chargesStated && !upcomingError,
         minimum: upcoming?.data.minimum ?? null,
         currency: upcoming?.data.currency ?? null
     });

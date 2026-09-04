@@ -91,7 +91,7 @@ export const UsageTable: React.FC<UsageTableProps> = ({
                     />
                 ))}
                 {minimumSpend && (
-                    <div className={cn(usageRowGrid(variant), 'py-3.5 border-t border-border-default')}>
+                    <div className={cn(usageRowGrid(variant), 'py-3.5')}>
                         <div className="flex items-center gap-1.5 min-w-0">
                             <span className="text-text-default type-text-regular-sm truncate">Minimum spend</span>
                             <InfoTooltip side="top" align="start">
