@@ -185,14 +185,14 @@ export const SyncsTab = () => {
                 </Table>
             </div>
             {hasNextPage && (
-                <div
-                    ref={sentinelRef}
-                    aria-busy={isFetchingNextPage}
-                    aria-label={isFetchingNextPage ? 'Loading more syncs' : 'Load more syncs when visible'}
-                    className="flex min-h-12 w-full items-center justify-center py-3"
-                    role="status"
-                >
-                    {isFetchingNextPage && <Loader className="size-4 animate-spin text-text-muted" />}
+                // The live region wraps only the spinner: on the container its label would flip back to the
+                // idle scroll hint after each page and be announced as if it were a status change.
+                <div ref={sentinelRef} className="flex min-h-12 w-full items-center justify-center py-3">
+                    {isFetchingNextPage && (
+                        <span role="status" aria-label="Loading more syncs">
+                            <Loader className="size-4 animate-spin text-text-muted" />
+                        </span>
+                    )}
                 </div>
             )}
 
