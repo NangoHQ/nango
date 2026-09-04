@@ -276,7 +276,9 @@ Nango uses this URL when generating links to Connect UI and in the dashboard's s
 
 Your reverse proxy must strip the base path prefix before forwarding to Connect UI: a request for `/nango/connect/assets/app.js` must reach Connect UI as `/assets/app.js`.
 
-Connect UI is a single-page app: the server must respond with `index.html` for any path that isn't a built asset, including the base path without a trailing slash. Nango's static file server handles this out of the box; if you serve the built `dist` from your own static host, enable its SPA fallback.
+Connect UI is a single-page app: the server must respond with `index.html` for any path that isn't a built asset. Nango's static file server handles this out of the box; if you serve the built `dist` from your own static host, enable its SPA fallback.
+
+End users must load Connect UI with a trailing slash (`https://example.com/nango/connect/`). Assets resolve relative to the document URL, so the slashless form loads a blank page. Links Nango generates already carry it; if end users can reach the slashless form directly, redirect it to the trailing-slash form in your reverse proxy.
 
 See [Auth](/guides/auth/auth-guide) for the end-user connection flow.
 
