@@ -9613,6 +9613,7 @@ curl --request POST \
 - [Create an environment](/reference/backend/http-api/environments/create)
 - [Delete an environment](/reference/backend/http-api/environments/delete)
 - [List environment API keys](/reference/backend/http-api/environments/list-api-keys)
+- [Get an environment API key](/reference/backend/http-api/environments/get-api-key)
 - [Create an environment API key](/reference/backend/http-api/environments/create-api-key)
 - [Delete an environment API key](/reference/backend/http-api/environments/delete-api-key)
 
@@ -9726,6 +9727,32 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/list-api-
       "created_at": "2026-08-18T12:00:00.000Z"
     }
   ]
+}
+```
+</ResponseExample>
+
+## Get an environment API key
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/get-api-key.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:api_keys:read` scope.
+</Info>
+
+Retrieves an Environment API key, including its secret.
+
+<ResponseExample>
+```json Example Response
+{
+  "data": {
+    "id": 456,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
+    "display_name": "provisioned-ci",
+    "scopes": ["environment:*"],
+    "secret": "<YOUR-ENVIRONMENT-API-KEY>",
+    "last_used_at": null,
+    "created_at": "2026-08-18T12:00:00.000Z"
+  }
 }
 ```
 </ResponseExample>

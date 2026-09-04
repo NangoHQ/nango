@@ -273,7 +273,7 @@ class CustomerKeyService {
         }
     }
 
-    public async getApiKeyByUuid(trx: Knex, keyUuid: string, envId: number, accountId: number): Promise<Result<DBCustomerKey | null>> {
+    public async getApiKeyByUuidWithoutSecrets(trx: Knex, keyUuid: string, envId: number, accountId: number): Promise<Result<DBCustomerKey | null>> {
         try {
             const row = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                 .select(`${CUSTOMER_KEYS_TABLE}.*`)
@@ -289,6 +289,13 @@ class CustomerKeyService {
         } catch (err) {
             return Err(err);
         }
+    }
+
+    public async getApiKeyByUuid(trx: Knex, keyUuid: string, envId: number, accountId: number): Promise<Result<DBCustomerKey | null>> {
+        const encryptedKey = await this.getApiKeyByUuidWithoutSecrets(trx, keyUuid, envId, accountId);
+        return encryptedKey.map((key) => {
+            return key !== null ? getEncryptionManager().decryptAPISecret(key) : null;
+        });
     }
 
     public async createWebhookSigningKey(
