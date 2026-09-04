@@ -1,8 +1,12 @@
+import { getLogger } from '@nangohq/utils';
+
 import { SandboxCommandExitError, SandboxCommandTimeoutError } from '../providers/errors.js';
 import { getCommandOutput } from './command-output.js';
 import { FunctionError } from './helpers.js';
 import { createFunctionSandbox } from './sandbox.js';
 import { compileSandboxTimeoutMs, compileTimeoutMs } from './timeouts.js';
+
+const logger = getLogger('Sandbox.Compiler');
 
 interface FunctionFilePathRequest {
     integration_id: string;
@@ -69,7 +73,9 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
             bundleSizeBytes: Buffer.byteLength(bundledJs, 'utf8')
         };
     } finally {
-        await sandbox.stop().catch(() => undefined);
+        await sandbox.stop().catch((err: unknown) => {
+            logger.warning('Failed to stop compiler sandbox', err);
+        });
     }
 }
 

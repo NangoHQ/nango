@@ -5,6 +5,9 @@
             "path": "packages/audit"
         },
         {
+            "path": "packages/authz"
+        },
+        {
             "path": "packages/clickhouse-migrations"
         },
         {
@@ -117,6 +120,9 @@
         },
         {
             "path": "packages/metering"
+        },
+        {
+            "path": "packages/lambda-runner"
         }
     ]
 }

@@ -253,6 +253,12 @@
                 "typescript/no-unsafe-assignment": "off",
                 "typescript/no-non-null-assertion": "off"
             }
+        },
+        {
+            "files": ["scripts/**/*.{ts,js,mjs}"],
+            "rules": {
+                "no-console": "off"
+            }
         }
     ]
 }
