@@ -1,0 +1,42 @@
+---
+title: Inteliquent - How do I link my account?
+sidebarTitle: Inteliquent
+---
+
+## Overview
+
+To authenticate with Inteliquent, you will need:
+1. **API Key** - The company-level API Key generated in the Inteliquent customer portal.
+2. **API Secret** - The API Secret issued together with that API Key.
+3. **Inteliquent environment** - Production or sandbox, matching the portal the API Key was generated in.
+
+These are API credentials, not your Inteliquent portal username and password. The Services API accepts the pair as HTTP Basic credentials (`Authorization: Basic base64(<API Key>:<API Secret>)`) and also requires the API Key as the `privateKey` field of every JSON request body; Nango adds both for you.
+
+### Prerequisites
+
+- You must have access to the Inteliquent customer portal ([production](https://portal.inteliquent.com) or [sandbox](https://portal-sandbox.inteliquent.com)).
+- Your portal user must have admin rights to view or generate the company API Key.
+
+### Instructions
+
+#### Step 1: Generate an API Key and API Secret
+
+1. Log in to the Inteliquent customer portal for the environment you want to connect: [portal.inteliquent.com](https://portal.inteliquent.com) for production or [portal-sandbox.inteliquent.com](https://portal-sandbox.inteliquent.com) for sandbox.
+2. Open the **Admin** section and locate the company **API Key** settings.
+3. Copy the **API Key** and **API Secret**, or generate a new pair if none exists. Store them securely; generating a new pair invalidates the previous one for every application that uses it.
+
+Keys are environment-specific: a sandbox API Key only works against `services-sandbox.inteliquent.com`, and a production API Key only works against `services.inteliquent.com`.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Key** and **API Secret**:
+
+1. Open the form where you need to authenticate with Inteliquent.
+2. Select the **Inteliquent environment** (production or sandbox) that matches the portal you generated the key in.
+3. Enter your **API Key** in the **API Key** field.
+4. Enter your **API Secret** in the **API Secret** field.
+5. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/inteliquent/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Inteliquent.
