@@ -98,6 +98,14 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/typeform",
+      "destination": "/api-integrations/typeform"
+    },
+    {
+      "source": "/integrations/all/elevio",
+      "destination": "/api-integrations/elevio"
+    },
+    {
       "source": "/integrations/all/google-gemini",
       "destination": "/api-integrations/google-gemini"
     },
@@ -1220,7 +1228,7 @@
               "api-integrations/ecu360-production",
               "integrations/all/egnyte",
               "integrations/all/elevenlabs",
-              "integrations/all/elevio",
+              "api-integrations/elevio",
               "integrations/all/emarsys",
               "integrations/all/emarsys-oauth",
               "api-integrations/embat",
@@ -1855,7 +1863,7 @@
               "integrations/all/twitter",
               "integrations/all/twitter-oauth2-cc",
               "api-integrations/twitter-v2",
-              "integrations/all/typeform",
+              "api-integrations/typeform",
               "integrations/all/typefully",
               "api-integrations/typefully-v2",
               "integrations/all/uber",
