@@ -143,7 +143,7 @@ export class DispatchQueueConsumer {
         });
 
         const receivedAt = Date.now();
-        return await tracer.scope().activate(span, async () => {
+        return void (await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -222,7 +222,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        });
+        }));
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
