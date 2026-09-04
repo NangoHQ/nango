@@ -18,6 +18,13 @@ import { dirname } from './utils/utils.js';
 import type { ApiError } from '@nangohq/types';
 import type { Request, Response } from 'express';
 
+function formatByteLimit(bytes: number): string {
+    if (bytes < 1024 * 1024) {
+        return `${Math.round(bytes / 1024)}kb`;
+    }
+    return `${Math.round(bytes / (1024 * 1024))}mb`;
+}
+
 export const router = express.Router();
 
 router.use(...securityMiddlewares());
@@ -52,9 +59,15 @@ router.use(staticSite);
 
 // -------
 // Error handling.
-router.use((err: any, req: Request, res: Response<ApiError<'invalid_json'>>, _: any) => {
+router.use((err: any, req: Request, res: Response<ApiError<'invalid_json'> | ApiError<'request_too_large'>>, _: any) => {
     if (err instanceof SyntaxError && 'body' in err && 'type' in err && err.type === 'entity.parse.failed') {
         res.status(400).send({ error: { code: 'invalid_json', message: err.message } });
+        return;
+    }
+
+    if (err instanceof Error && 'type' in err && err.type === 'entity.too.large') {
+        const limit = 'limit' in err && typeof err.limit === 'number' ? formatByteLimit(err.limit) : undefined;
+        res.status(413).send({ error: { code: 'request_too_large', message: `Request entity too large${limit ? ` (limit: ${limit})` : ''}` } });
         return;
     }
 
