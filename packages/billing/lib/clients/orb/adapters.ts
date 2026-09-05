@@ -1,8 +1,9 @@
 import { uuidv7 } from 'uuidv7';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../envs.js';
+import { growthAddonPriceId } from './catalogue.js';
 import { putOrbCustomerSchema } from './types.js';
 
 import type {
@@ -12,6 +13,7 @@ import type {
     BillingInvoicingDetails,
     BillingPeriodCosts,
     BillingSpendAlert,
+    BillingSubscription,
     BillingUpcomingInvoice,
     Result,
     UsageMetric
@@ -78,6 +80,9 @@ const orbBillableMetricToUsageMetric: Record<string, UsageMetric> = {
     S6QcTddptFM8tvFc: 'function_executions',
     SuusTqcXhhZVq2w4: 'function_compute_gbms',
     '7TXEdbnT3gWPqkns': 'function_logs',
+    // The new pricing reuses `connections` above, so only two of its three metrics are new here.
+    RNskBsYUvTYLsjV2: 'data_transfer',
+    ZrAoynYimCwtmFSP: 'function_duration_seconds',
     // test mode, shared by dev, staging and local
     QFf9VosRcMWkZvZq: 'connections',
     T9MRaCkFi4SEf2ku: 'proxy',
@@ -85,14 +90,18 @@ const orbBillableMetricToUsageMetric: Record<string, UsageMetric> = {
     D8Gu4UPEJ3tUWJJ3: 'webhook_forwards',
     '29oZqvoENLmauqkY': 'function_executions',
     '4jYMmFPKUQAKKL2T': 'function_compute_gbms',
-    '62CoZikHXhPoS6yt': 'function_logs'
+    '62CoZikHXhPoS6yt': 'function_logs',
+    // Test mode prices connections on its own metric rather than reusing the one above.
+    d43sZsrkdUE9gCUv: 'connections',
+    '5wA8CWsfttHSaTw3': 'function_duration_seconds',
+    cJe5pcF2MQ8pvBrF: 'data_transfer'
 };
 
 interface OrbCostBucket {
     timeframe_end: string;
     per_price_costs: {
         price_id: string;
-        total: string;
+        subtotal: string;
         price: { price_type: string; name: string; currency?: string | null; billable_metric?: { id: string } | null };
     }[];
 }
@@ -127,7 +136,9 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date):
 
         const metric = price.billable_metric ? (orbBillableMetricToUsageMetric[price.billable_metric.id] ?? null) : null;
         const priceCurrency = normalizeIsoCurrency(price.currency);
-        const amountInCents = orbAmountToCents(priceCost.total);
+        // `total` also carries the price's share of any plan-level minimum or discount — a $50 minimum
+        // lands as $16.67 on each of three unused metrics — so only `subtotal` is attributable to usage.
+        const amountInCents = orbAmountToCents(priceCost.subtotal);
         const readable = priceCurrency !== null && (currency === null || priceCurrency === currency) && amountInCents !== null;
 
         if (!readable) {
@@ -234,6 +245,49 @@ export function toOrbPutCustomerPayload(invoicingDetails: BillingInvoicingDetail
     }
 
     return Ok(payload);
+}
+
+/**
+ * Parses Orb's `price_intervals` for the presence of the growth add-on price and its active interval.
+ *
+ * An interval that hasn't started or has already finished gets ignored.
+ */
+export function growthAddonStateFromOrb(
+    priceIntervals: { id?: string; start_date?: string | null; end_date: string | null; price?: { external_price_id?: string | null } | null }[],
+    referenceDate: Date = new Date()
+): Pick<BillingSubscription, 'hasGrowthFeatures' | 'growthFeaturesEndsAt' | 'growthFeaturesPriceIntervalId'> {
+    for (const interval of priceIntervals) {
+        if (interval.price?.external_price_id !== growthAddonPriceId) {
+            continue;
+        }
+
+        const startsAt = parseOrbDate(interval.start_date, { field: 'start_date', priceIntervalId: interval.id });
+        if (startsAt && startsAt > referenceDate) {
+            continue;
+        }
+
+        const endsAt = parseOrbDate(interval.end_date, { field: 'end_date', priceIntervalId: interval.id });
+        if (endsAt && endsAt <= referenceDate) {
+            continue;
+        }
+
+        return { hasGrowthFeatures: true, growthFeaturesEndsAt: endsAt, growthFeaturesPriceIntervalId: interval.id ?? null };
+    }
+
+    return { hasGrowthFeatures: false, growthFeaturesEndsAt: null, growthFeaturesPriceIntervalId: null };
+}
+
+function parseOrbDate(value: string | null | undefined, context: { field: 'start_date' | 'end_date'; priceIntervalId: string | undefined }): Date | null {
+    if (!value) {
+        return null;
+    }
+    const parsed = new Date(value);
+    // Defensive check: we should never receive an invalid date from Orb.
+    if (Number.isNaN(parsed.getTime())) {
+        report(new Error('orb_unparseable_price_interval_date'), { ...context, value });
+        return null;
+    }
+    return parsed;
 }
 
 export function fromOrbCustomer(orbCustomer: Orb.Customer): BillingCustomer {

@@ -65,13 +65,16 @@ export const scriptNameSchema = z
 export const functionTypeSchema = z.enum(['sync', 'action', 'on-event']);
 // On-event functions can't be targeted by name alone yet, so deletion is limited to sync/action.
 export const deletableFunctionTypeSchema = z.enum(['sync', 'action']);
+export const paginationQueryFields = {
+    page: z.coerce.number().int().min(0).optional().default(0),
+    limit: z.coerce.number().int().min(1).max(100).optional().default(20)
+};
 // Shared querystring fields for the function-list endpoints. The private route adds `env`; the public route
 // derives the environment from the secret key, so it spreads these as-is.
 export const functionListQueryFields = {
     type: functionTypeSchema.optional(),
     search: z.string().trim().min(1).max(255).optional(),
-    page: z.coerce.number().int().min(0).optional().default(0),
-    limit: z.coerce.number().int().min(1).max(100).optional().default(20)
+    ...paginationQueryFields
 };
 export const connectionIdSchema = z
     .string()
@@ -203,7 +206,7 @@ export const connectionCredentialsBasicSchema = z.strictObject({
 });
 
 export const connectionCredentialsApiKeySchema = z.strictObject({
-    apiKey: z.string().min(1).max(1024)
+    apiKey: z.string().min(1).max(4096)
 });
 
 export const connectionCredentialsTBASchema = z.strictObject({

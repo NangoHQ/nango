@@ -8,10 +8,12 @@ import {
     fromOrbCustomer,
     fromOrbPeriodCosts,
     fromOrbUpcomingInvoice,
+    growthAddonStateFromOrb,
     orbMetricToUsageMetric,
     toOrbEvent,
     toOrbPutCustomerPayload
 } from './adapters.js';
+import { growthAddonPriceId } from './catalogue.js';
 
 import type {
     BillingClient,
@@ -26,6 +28,7 @@ import type {
     BillingUsageMetrics,
     DBTeam,
     GetBillingUsageOpts,
+    PlanChangeRequest,
     Result
 } from '@nangohq/types';
 
@@ -149,24 +152,25 @@ export class OrbClient implements BillingClient {
                 external_plan_id: planExternalId,
                 start_date: startDate
             });
-            return Ok({ id: subscription.id, planExternalId: planExternalId });
+            return Ok({ id: subscription.id, planExternalId, ...growthAddonStateFromOrb(subscription.price_intervals) });
         } catch (err) {
             return Err(new Error('failed_to_create_subscription', { cause: err }));
         }
     }
 
-    async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
+    async getSubscription(accountId: number): Promise<Result<BillingSubscription>> {
         try {
             const subs = await this.orbSDK.subscriptions.list({ external_customer_id: [String(accountId)], status: 'active' });
             if (subs.data.length === 0) {
-                return Ok(null);
+                return Err(new Error('failed_to_get_subscription', { cause: 'no active subscription' }));
             }
 
             const sub = subs.data[0]!;
             return Ok({
                 id: sub.id,
                 pendingChangeId: sub.pending_subscription_change?.id,
-                planExternalId: sub.plan?.external_plan_id || ''
+                planExternalId: sub.plan?.external_plan_id || '',
+                ...growthAddonStateFromOrb(sub.price_intervals)
             });
         } catch (err) {
             return Err(new Error('failed_to_get_customer', { cause: err }));
@@ -414,7 +418,7 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
+    async upgrade(opts: PlanChangeRequest): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
         try {
             // We schedule the upgrade but we don't apply it yet
             // We apply it when the first payment is made to confirm the card
@@ -454,7 +458,38 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async downgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<void>> {
+    /**
+     * Attaches the growth add-on price to the subscription, billing from now:
+     * the customer pays for it from the moment they turn it on, prorated by Orb.
+     */
+    async startGrowthAddon(opts: { subscriptionId: string }): Promise<Result<{ priceIntervalId: string | null }>> {
+        try {
+            const subscription = await this.orbSDK.subscriptions.priceIntervals(opts.subscriptionId, {
+                add: [{ external_price_id: growthAddonPriceId, start_date: new Date().toISOString() }]
+            });
+
+            return Ok({ priceIntervalId: growthAddonStateFromOrb(subscription.price_intervals).growthFeaturesPriceIntervalId });
+        } catch (err) {
+            return Err(new Error('failed_to_start_growth_addon', { cause: err }));
+        }
+    }
+
+    /**
+     * Schedules the disablement of the growth add-on to the end of the term.
+     */
+    async endGrowthAddon(opts: { subscriptionId: string; priceIntervalId: string }): Promise<Result<{ growthFeaturesEndsAt: Date | null }>> {
+        try {
+            const subscription = await this.orbSDK.subscriptions.priceIntervals(opts.subscriptionId, {
+                edit: [{ price_interval_id: opts.priceIntervalId, end_date: 'end_of_term' }]
+            });
+
+            return Ok({ growthFeaturesEndsAt: growthAddonStateFromOrb(subscription.price_intervals).growthFeaturesEndsAt });
+        } catch (err) {
+            return Err(new Error('failed_to_end_growth_addon', { cause: err }));
+        }
+    }
+
+    async downgrade(opts: PlanChangeRequest): Promise<Result<void>> {
         try {
             await this.orbSDK.subscriptions.schedulePlanChange(opts.subscriptionId, {
                 change_option: 'end_of_subscription_term',
@@ -464,19 +499,32 @@ export class OrbClient implements BillingClient {
 
             return Ok(undefined);
         } catch (err) {
-            return Err(new Error('failed_to_upgrade_customer', { cause: err }));
+            return Err(new Error('failed_to_downgrade_customer', { cause: err }));
         }
     }
 
-    async applyPendingChanges(opts: { pendingChangeId: string; amountCollected: string; paymentExternalId: string }): Promise<Result<BillingSubscription>> {
+    async applyPendingChanges(opts: {
+        pendingChangeId: string;
+        payment?: { externalId: string; amountCollected: string } | undefined;
+    }): Promise<Result<BillingSubscription>> {
         try {
-            const res = await this.orbSDK.subscriptionChanges.apply(opts.pendingChangeId, {
-                description: 'Initial payment on subscription',
-                mark_as_paid: true,
-                previously_collected_amount: opts.amountCollected,
-                payment_external_id: opts.paymentExternalId,
-                payment_notes: `Stripe collected: $${opts.amountCollected}`
-            });
+            const res = await this.orbSDK.subscriptionChanges.apply(
+                opts.pendingChangeId,
+                opts.payment
+                    ? {
+                          description: 'Initial payment on subscription',
+                          mark_as_paid: true,
+                          previously_collected_amount: opts.payment.amountCollected,
+                          payment_external_id: opts.payment.externalId,
+                          payment_notes: `Stripe collected: $${opts.payment.amountCollected}`
+                      }
+                    : {
+                          // Nothing was collected up front, so there is no payment to record and no
+                          // invoice to mark as paid. This happens when the plan bills fully in-arrears:
+                          // Orb invoices the period at its end as usual, but with zero charges.
+                          description: 'Plan change with no upfront payment'
+                      }
+            );
 
             if (!res.subscription) {
                 return Err(new Error('failed_to_apply_pending_changes', { cause: 'no subscription' }));
@@ -484,7 +532,8 @@ export class OrbClient implements BillingClient {
 
             return Ok({
                 id: res.subscription.id,
-                planExternalId: res.subscription.plan!.external_plan_id!
+                planExternalId: res.subscription.plan!.external_plan_id!,
+                ...growthAddonStateFromOrb(res.subscription.price_intervals)
             });
         } catch (err) {
             return Err(new Error('failed_to_apply_pending_changes', { cause: err }));

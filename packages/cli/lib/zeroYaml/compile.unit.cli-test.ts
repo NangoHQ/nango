@@ -4,6 +4,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { assert, describe, expect, it } from 'vitest';
+import * as z from 'zod';
 
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 import { bundleFile, compileAllFunctions, detectFeatures } from './compile.js';
@@ -45,7 +46,7 @@ describe('compileAll', () => {
         await fs.promises.copyFile(path.join(dir, 'github', 'functions', 'fetchIssues.ts'), path.join(dottedIntegrationFunctionsPath, 'fetchIssues.ts'));
         await fs.promises.appendFile(indexPath, "\nimport './github.js/functions/fetchIssues.js';\n");
         await fs.promises.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkg, null, 2));
-        await exec('npm i', { cwd: dir });
+        await exec('npm i --no-audit --no-fund', { cwd: dir });
         const result = await compileAllFunctions({ fullPath: dir, debug: false });
         result.unwrap();
         expect(result.isOk()).toBe(true);
@@ -205,10 +206,15 @@ describe('validateFunction', () => {
         expect(res.error.message).toContain("unsupported trigger kind 'schedule'");
     });
 
-    it('rejects declaring data', () => {
-        const res = validateFunction({ ...base, params: { data: { models: {} } } });
+    it('allows declaring metadata and checkpoint', () => {
+        const res = validateFunction({ ...base, params: { data: { metadata: z.object({}), checkpoint: z.object({}) } } });
+        assert(res.isOk());
+    });
+
+    it('rejects declaring models', () => {
+        const res = validateFunction({ ...base, params: { data: { models: { Issue: z.object({ id: z.string() }) } } } });
         assert(res.isErr());
-        expect(res.error.message).toContain("declares 'data'");
+        expect(res.error.message).toContain("declares 'data.models'");
     });
 
     it('rejects requires.invoke', () => {

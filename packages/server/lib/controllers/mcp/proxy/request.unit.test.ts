@@ -15,7 +15,7 @@ import type { ManagementMcpContext } from '../managementTool.js';
 
 const context = {
     account: { id: 1, uuid: 'account-uuid' },
-    environment: { id: 42, name: 'dev' },
+    environment: { id: 42, uuid: 'e0000000-0000-4000-8000-000000000042', name: 'dev' },
     plan: null,
     grantedScopes: ['environment:proxy']
 } as ManagementMcpContext;

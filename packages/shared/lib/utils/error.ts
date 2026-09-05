@@ -33,6 +33,14 @@ export class AuthCredentialsError extends NangoInternalError {
     }
 }
 
+export class ConnectionCreationCappedError extends NangoInternalError {
+    constructor() {
+        super('resource_capped');
+        this.status = 400;
+        this.message = 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.';
+    }
+}
+
 export class NangoError extends NangoInternalError {
     public additional_properties?: Record<string, JsonValue> | undefined = undefined;
     public override readonly message: string;
@@ -370,6 +378,22 @@ export class NangoError extends NangoInternalError {
             case 'attio_mcp_refresh_token_request_error':
                 this.status = 400;
                 this.message = `The Attio MCP API returned an error when trying to refresh the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
+            case 'scrollstash_mcp_token_request_error':
+                this.status = 400;
+                this.message = `The ScrollStash MCP API returned an error when trying to request an access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
+            case 'scrollstash_mcp_refresh_token_request_error':
+                this.status = 400;
+                this.message = `The ScrollStash MCP API returned an error when trying to refresh the access token. Please try again later.`;
                 if (this.payload) {
                     this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
                 }

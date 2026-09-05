@@ -3,10 +3,10 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { accountTarget, authorize, environmentTarget, ROLES } from '@nangohq/authz';
 import { flags } from '@nangohq/utils';
 
-import { buildPrincipal, principalFor } from './principal.js';
+import { buildPrincipal, MissingPrincipalError, principalCan, principalFor } from './principal.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { ApiKeyPrincipal, DBTeam, DBUser } from '@nangohq/types';
+import type { ApiKeyPrincipal, DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
 import type * as NangoUtils from '@nangohq/utils';
 
 // `flagHasPlan` is a const export, so it can only be varied per test through the module mock.
@@ -22,8 +22,8 @@ vi.mock('@nangohq/utils', async () => {
 });
 
 const account = { id: 1 } as DBTeam;
-const prodEnv = { id: 5, account_id: 1, is_production: true };
-const devEnv = { id: 9, account_id: 1, is_production: false };
+const prodEnv = { id: 5, account_id: 1, is_production: true } as DBEnvironment;
+const devEnv = { id: 9, account_id: 1, is_production: false } as DBEnvironment;
 
 function key(scopes: string[], environmentIds: number[], source: ApiKeyPrincipal['source'] = 'customer_key'): ApiKeyPrincipal {
     return { type: 'api_key', source, accountId: 1, scopes, environmentIds };
@@ -71,6 +71,11 @@ describe('buildPrincipal', () => {
                 user: { id: 7, role: 'production_support', email: 'a@b.c' } as DBUser
             });
             expect(authorize(principal!, 'environment:settings:read_secret', environmentTarget(prodEnv))).toBe(true);
+        });
+
+        it('reaches everything when there is no plan', () => {
+            const principal = buildPrincipal({ account, plan: null, user: { id: 7, role: 'production_support', email: 'a@b.c' } as DBUser });
+            expect(principal?.grants).toEqual(ROLES.administrator);
         });
 
         it('applies the role when plans are not in play at all', () => {
@@ -134,5 +139,65 @@ describe('buildPrincipal', () => {
         const first = principalFor(l);
         expect(l.principal).toBe(first);
         expect(principalFor(l)).toBe(first);
+    });
+});
+
+describe('principalCan', () => {
+    const originalFlag = flags.hasAuthRoles;
+    beforeAll(() => {
+        flags.hasAuthRoles = true;
+    });
+    afterAll(() => {
+        flags.hasAuthRoles = originalFlag;
+    });
+
+    const support = { id: 7, role: 'production_support', email: 'a@b.c' } as DBUser;
+
+    describe('key-authenticated callers', () => {
+        it('evaluates the grants the key carries', () => {
+            const l = locals({ environment: prodEnv, apiKeyPrincipal: key(['environment:connections:read'], [5]) });
+            expect(principalCan(l, 'environment:connections:read')).toBe(true);
+            expect(principalCan(l, 'environment:connections:delete')).toBe(false);
+        });
+
+        it('holds the key to the environments it was issued for', () => {
+            const l = locals({ environment: prodEnv, apiKeyPrincipal: key(['environment:connections:read'], [9]) });
+            expect(principalCan(l, 'environment:connections:read')).toBe(false);
+        });
+
+        // `expandIssuable` resolves stored selectors, so a wildcard cannot reach a scope no key may hold.
+        it('keeps a wildcard out of the private scopes', () => {
+            const l = locals({ environment: prodEnv, apiKeyPrincipal: key(['environment:*'], [5]) });
+            expect(principalCan(l, 'environment:connections:read')).toBe(true);
+            expect(principalCan(l, 'environment:settings:update')).toBe(false);
+        });
+    });
+
+    it('denies a scope the role holds outside production but not in it', () => {
+        expect(principalCan(locals({ environment: prodEnv, user: support }), 'environment:settings:read_secret')).toBe(false);
+        expect(principalCan(locals({ environment: devEnv, user: support }), 'environment:settings:read_secret')).toBe(true);
+    });
+
+    it('throws when an environment scope is checked with no environment resolved', () => {
+        expect(() => principalCan(locals({ user: support }), 'environment:settings:read_secret')).toThrow(/scope_requires_environment/);
+    });
+
+    // The routes that resolve no environment are the ones asking about the account.
+    it('answers an account scope with no environment resolved', () => {
+        expect(principalCan(locals({ user: support }), 'account:audit_trail:read')).toBe(true);
+        expect(principalCan(locals({ user: support }), 'account:team:update')).toBe(false);
+    });
+
+    // Every route that asks reaches this behind auth, so no principal means the route is wired wrong.
+    it('refuses a request that authenticated as nothing, naming the scope', () => {
+        expect(() => principalCan({}, 'account:team:update')).toThrow(MissingPrincipalError);
+        try {
+            principalCan({}, 'account:team:update');
+            expect.unreachable();
+        } catch (err) {
+            expect((err as MissingPrincipalError).message).toBe('missing_principal');
+            expect((err as MissingPrincipalError).name).toBe('MissingPrincipalError');
+            expect((err as MissingPrincipalError).scope).toBe('account:team:update');
+        }
     });
 });

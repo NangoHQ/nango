@@ -6,6 +6,7 @@ import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@na
 import {
     awsSigV4Client,
     configService,
+    ConnectionCreationCappedError,
     connectionService,
     errorManager,
     ErrorSourceEnum,
@@ -324,7 +325,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
                 connectionId: storedConnection.connection.connection_id,
                 providerConfigKey: storedConnection.connection.provider_config_key,
                 account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
+                environment: { uuid: environment.uuid, name: environment.name },
                 endUser: res.locals.endUser
             }
         };
@@ -372,6 +373,10 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
             auth_mode: 'AWS_SIGV4',
             ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
         });
+        if (err instanceof ConnectionCreationCappedError) {
+            res.status(err.status).send({ error: { code: 'resource_capped', message: err.message } });
+            return;
+        }
         next(err);
     }
 });

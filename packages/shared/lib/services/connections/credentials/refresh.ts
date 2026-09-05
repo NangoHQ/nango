@@ -635,7 +635,12 @@ export async function shouldRefreshCredentials({
         }
     }
 
-    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'instagram' || providerConfig.provider === 'threads') {
+    if (
+        providerConfig.provider === 'facebook' ||
+        providerConfig.provider === 'meta-mcp' ||
+        providerConfig.provider === 'instagram' ||
+        providerConfig.provider === 'threads'
+    ) {
         return { should: instantRefresh, reason: providerConfig.provider };
     }
 

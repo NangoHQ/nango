@@ -91,7 +91,14 @@ type Webhooks =
     | SubscriptionCostExceededEvent;
 
 async function handleWebhook(body: Webhooks): Promise<Result<void>> {
-    logger.info('[orb-hook]', body.type);
+    logger.info('[orb-hook]', {
+        id: body.id,
+        createdAt: body.created_at,
+        type: body.type,
+        subscriptionId: body.subscription.id,
+        accountId: body.subscription.customer.external_customer_id,
+        plan: body.subscription.plan.external_plan_id
+    });
 
     switch (body.type) {
         case 'subscription.started':
@@ -107,6 +114,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
             }
 
             logger.info(`Sub started for team "${team.id}"`);
+
             const changed = await handlePlanChanged(db.knex, team, {
                 newPlanCode: body.subscription.plan.external_plan_id,
                 orbCustomerId: body.subscription.customer.id,

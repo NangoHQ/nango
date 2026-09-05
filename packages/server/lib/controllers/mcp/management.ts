@@ -1,11 +1,10 @@
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 
-import { resolveAuditAttribution } from '../../middleware/audit.middleware.js';
+import { resolveAuditAttribution } from '../../middleware/audit/index.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { createManagementMcpServer } from './managementServer.js';
 
 import type { RequestLocalsWithEnvironment } from '../../utils/express.js';
-import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import type { GetManagementMcp, PostManagementMcp } from '@nangohq/types';
 
 export const postManagementMcp = asyncWrapperWithEnvironment<PostManagementMcp>(async (req, res) => {
@@ -19,14 +18,14 @@ export const postManagementMcp = asyncWrapperWithEnvironment<PostManagementMcp>(
         audit: resolveAuditAttribution(req, res.locals)
     };
     const server = createManagementMcpServer(context, req.body);
-    const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport();
+    const transport: NodeStreamableHTTPServerTransport = new NodeStreamableHTTPServerTransport();
 
     res.on('close', () => {
         void transport.close();
         void server.close();
     });
 
-    await server.connect(transport as Transport);
+    await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
 });
 

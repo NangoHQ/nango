@@ -1,4 +1,3 @@
-import { permissions } from '@nangohq/authz';
 import { FieldLabel } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
@@ -18,7 +17,7 @@ export const TeamSettings: React.FC = () => {
     const { mutateAsync: putTeamAsync } = usePutTeam(env);
 
     const { can } = usePermissions();
-    const canManageTeam = can(permissions.canManageTeam);
+    const canManageTeam = can('account:team:update');
 
     const onSaveTeamName = async (name: string) => {
         try {

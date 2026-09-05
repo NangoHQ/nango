@@ -1,5 +1,6 @@
-import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Wrench, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { Ellipsis, Info, List, Loader, OctagonPause, Play, RefreshCw, Wrench, X } from 'lucide-react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -28,6 +29,7 @@ import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { SimpleCodeBlock } from '@/components/ui/SimpleCodeBlock';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useRunSyncCommand, useSyncs } from '@/hooks/useSyncs';
 import { useToast } from '@/hooks/useToast';
 import { useConnectionContext } from '@/pages/Connection/Show';
@@ -35,17 +37,105 @@ import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { useStore } from '@/store';
 import { UserFacingSyncCommand } from '@/types';
 import { getLogsUrl } from '@/utils/logs';
-import { formatDateToUSFormat, formatFrequency, formatQuantity, getRunTime, interpretNextRun, truncateMiddle } from '@/utils/utils';
+import { cn, formatDateToUSFormat, formatFrequency, formatQuantity, getRunTime, interpretNextRun, truncateMiddle } from '@/utils/utils';
 
-import type { RunSyncCommand, SyncResponse } from '@/types';
-import type { ApiConnectionFull } from '@nangohq/types';
+import type { RunSyncCommand } from '@/types';
+import type { ApiConnectionSync } from '@nangohq/types';
+
+const ROW_HEIGHT_PX = 44;
+
+// TableRow's px-6 is inert in table layout but applies once the row is a flexbox, hence px-0 here.
+const rowLayout = 'flex w-full px-0';
+const cellLayout = 'flex items-center min-w-0';
+const col = {
+    name: 'min-w-50 flex-1 basis-0',
+    models: 'w-32 shrink-0',
+    lastExecution: 'w-30 shrink-0',
+    frequency: 'w-24 shrink-0',
+    records: 'w-20 shrink-0',
+    lastStart: 'w-34 shrink-0',
+    nextStart: 'w-36 shrink-0',
+    actions: 'w-14 shrink-0 justify-end'
+} as const;
+
+const columns = [
+    { key: 'name', label: 'Sync Name' },
+    { key: 'models', label: 'Models' },
+    { key: 'lastExecution', label: 'Last Execution' },
+    { key: 'frequency', label: 'Frequency' },
+    { key: 'records', label: 'Records' },
+    { key: 'lastStart', label: 'Last Sync Start' },
+    { key: 'nextStart', label: 'Next Sync Start' },
+    { key: 'actions', label: '' }
+] as const;
 
 export const SyncsTab = () => {
     const env = useStore((state) => state.env);
     const { connectionData, integrationData } = useConnectionContext();
     const { connection } = connectionData;
     const providerConfigKey = integrationData.integration.unique_key;
-    const { data: syncs, isLoading, error } = useSyncs({ env, provider_config_key: providerConfigKey, connection_id: connection.connection_id });
+
+    const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useSyncs({
+        env,
+        provider_config_key: providerConfigKey,
+        connection_id: connection.connection_id
+    });
+    const syncs = useMemo(() => data?.pages.flatMap((page) => page.data) ?? [], [data]);
+    const total = data?.pages[0]?.pagination.total ?? 0;
+
+    const { toast } = useToast();
+    const navigate = useNavigate();
+    const { mutateAsync: runSyncCommand } = useRunSyncCommand(env);
+
+    const [triggerTarget, setTriggerTarget] = useState<ApiConnectionSync | null>(null);
+    const [pendingSyncId, setPendingSyncId] = useState<string | null>(null);
+
+    const { ref: tableRef, scrollParent, offsetTop } = useScrollParent();
+    const sentinelRef = useInfiniteScroll({ hasNextPage, isFetchingNextPage, fetchNextPage, threshold: 400 });
+
+    const onSyncCommand = useCallback(
+        async (
+            sync: Pick<ApiConnectionSync, 'id' | 'name' | 'variant' | 'nango_connection_id'>,
+            command: RunSyncCommand,
+            opts?: { deleteRecords?: boolean }
+        ) => {
+            setPendingSyncId(sync.id);
+            try {
+                await runSyncCommand({
+                    command,
+                    nango_connection_id: sync.nango_connection_id,
+                    sync_id: sync.id,
+                    sync_name: sync.name,
+                    sync_variant: sync.variant,
+                    provider: providerConfigKey,
+                    ...(command === 'RUN_FULL' || command === 'RUN' ? { delete_records: opts?.deleteRecords ?? false } : {})
+                });
+                toast({ title: `The sync was successfully ${UserFacingSyncCommand[command]}`, variant: 'success' });
+            } catch (err) {
+                // APIError.message is always 'api_error'; the useful text is in the response body.
+                const apiError = err as { json?: { error?: { message?: string } } };
+                toast({ title: apiError.json?.error?.message || `Failed to ${UserFacingSyncCommand[command]} sync`, variant: 'error' });
+            } finally {
+                setPendingSyncId(null);
+            }
+        },
+        [providerConfigKey, runSyncCommand, toast]
+    );
+
+    const onViewLogs = useCallback(
+        (sync: ApiConnectionSync) => {
+            void navigate(
+                getLogsUrl({
+                    env,
+                    integrations: providerConfigKey,
+                    connections: connection.connection_id,
+                    syncs: sync.name,
+                    day: sync.latest_sync?.updated_at ? new Date(sync.latest_sync.updated_at) : null
+                })
+            );
+        },
+        [connection.connection_id, env, navigate, providerConfigKey]
+    );
 
     if (error) {
         return <CriticalErrorAlert message="Failed to load syncs" />;
@@ -55,7 +145,7 @@ export const SyncsTab = () => {
         return <Skeleton className="w-full h-42" />;
     }
 
-    if (!syncs || syncs.length === 0) {
+    if (syncs.length === 0) {
         const integrationName = integrationData.integration.display_name || integrationData.template.display_name;
         return (
             <EmptyCard>
@@ -70,270 +160,308 @@ export const SyncsTab = () => {
     }
 
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Sync Name</TableHead>
-                    <TableHead>Models</TableHead>
-                    <TableHead>Last Execution</TableHead>
-                    <TableHead>Frequency</TableHead>
-                    <TableHead>Records</TableHead>
-                    <TableHead>Last Sync Start</TableHead>
-                    <TableHead>Next Sync Start</TableHead>
-                    <TableHead>{/* Actions */}</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {syncs?.map((sync) => (
-                    <SyncRow key={sync.id} sync={sync} connection={connection} provider={providerConfigKey} />
-                ))}
-            </TableBody>
-        </Table>
+        <div className="flex flex-col gap-3 w-full">
+            <span className="text-text-secondary text-body-small-regular self-end">{total === 1 ? '1 sync' : `${formatQuantity(total)} syncs`}</span>
+            <div ref={tableRef}>
+                <Table className="grid border-separate border-spacing-0">
+                    <TableHeader className="grid">
+                        <TableRow className={rowLayout}>
+                            {columns.map((column) => (
+                                <TableHead key={column.key} className={cn(cellLayout, col[column.key])}>
+                                    {column.label}
+                                </TableHead>
+                            ))}
+                        </TableRow>
+                    </TableHeader>
+                    <VirtualizedSyncRows
+                        syncs={syncs}
+                        scrollParent={scrollParent}
+                        offsetTop={offsetTop}
+                        pendingSyncId={pendingSyncId}
+                        actionsDisabled={pendingSyncId !== null}
+                        onSyncCommand={onSyncCommand}
+                        onRequestTrigger={setTriggerTarget}
+                        onViewLogs={onViewLogs}
+                    />
+                </Table>
+            </div>
+            {hasNextPage && (
+                // The live region wraps only the spinner: on the container its label would flip back to the
+                // idle scroll hint after each page and be announced as if it were a status change.
+                <div ref={sentinelRef} className="flex min-h-12 w-full items-center justify-center py-3">
+                    {isFetchingNextPage && (
+                        <span role="status" aria-label="Loading more syncs">
+                            <Loader className="size-4 animate-spin text-text-muted" />
+                        </span>
+                    )}
+                </div>
+            )}
+
+            {triggerTarget && (
+                <TriggerSyncDialog target={triggerTarget} isPending={pendingSyncId !== null} onClose={() => setTriggerTarget(null)} onTrigger={onSyncCommand} />
+            )}
+        </div>
     );
 };
 
-const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connection: ApiConnectionFull; provider: string }) => {
-    const env = useStore((state) => state.env);
-    const { toast } = useToast();
-    const navigate = useNavigate();
+const VirtualizedSyncRows = ({
+    syncs,
+    scrollParent,
+    offsetTop,
+    pendingSyncId,
+    actionsDisabled,
+    onSyncCommand,
+    onRequestTrigger,
+    onViewLogs
+}: {
+    syncs: ApiConnectionSync[];
+    scrollParent: HTMLElement | null;
+    offsetTop: number;
+    pendingSyncId: string | null;
+    actionsDisabled: boolean;
+    onSyncCommand: (sync: ApiConnectionSync, command: RunSyncCommand) => void;
+    onRequestTrigger: (sync: ApiConnectionSync) => void;
+    onViewLogs: (sync: ApiConnectionSync) => void;
+}) => {
+    // Scrolls with the dashboard's own container, so the tab adds no second scrollbar. offsetTop is
+    // resolved in a hook because it keys the measurement cache — a render-time read would rebuild it each frame.
+    const rowVirtualizer = useVirtualizer({
+        count: syncs.length,
+        getScrollElement: () => scrollParent,
+        estimateSize: () => ROW_HEIGHT_PX,
+        overscan: 5,
+        scrollMargin: offsetTop
+    });
 
-    const [triggerDialogOpen, setTriggerDialogOpen] = useState(false);
+    return (
+        <TableBody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const sync = syncs[virtualRow.index]!;
+                return (
+                    <SyncRow
+                        key={sync.id}
+                        sync={sync}
+                        offsetY={virtualRow.start - rowVirtualizer.options.scrollMargin}
+                        isPending={pendingSyncId === sync.id}
+                        actionsDisabled={actionsDisabled}
+                        onSyncCommand={onSyncCommand}
+                        onRequestTrigger={onRequestTrigger}
+                        onViewLogs={onViewLogs}
+                    />
+                );
+            })}
+        </TableBody>
+    );
+};
 
-    const { mutateAsync: runSyncCommand, isPending: isRunningSyncCommand } = useRunSyncCommand(env);
-    const recordCount = sync.record_count ? formatQuantity(Object.entries(sync.record_count).reduce((acc, [, count]) => acc + count, 0)) : '0';
+const SyncRow = memo(function SyncRow({
+    sync,
+    offsetY,
+    isPending,
+    actionsDisabled,
+    onSyncCommand,
+    onRequestTrigger,
+    onViewLogs
+}: {
+    sync: ApiConnectionSync;
+    offsetY: number;
+    isPending: boolean;
+    actionsDisabled: boolean;
+    onSyncCommand: (sync: ApiConnectionSync, command: RunSyncCommand) => void;
+    onRequestTrigger: (sync: ApiConnectionSync) => void;
+    onViewLogs: (sync: ApiConnectionSync) => void;
+}) {
+    const models = sync.models.join(', ');
+    const recordCount = sync.record_count ? formatQuantity(Object.values(sync.record_count).reduce((acc, count) => acc + count, 0)) : '0';
+    const nextRun = interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at);
+    const nextRunLabel = Array.isArray(nextRun) ? nextRun[0] : nextRun;
 
+    return (
+        <TableRow className={cn(rowLayout, 'absolute')} style={{ height: `${ROW_HEIGHT_PX}px`, transform: `translateY(${offsetY}px)` }}>
+            <TableCell className={cn(cellLayout, col.name, 'gap-2')}>
+                <span className="text-body-small-semi text-text-strong truncate min-w-0 flex-1">{sync.name}</span>
+                {sync.variant !== 'base' && (
+                    <Tooltip>
+                        <TooltipTrigger className="shrink-0">
+                            {/* TODO: Replace badge */}
+                            <Badge>{truncateMiddle(sync.variant)}</Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>{sync.variant}</TooltipContent>
+                    </Tooltip>
+                )}
+            </TableCell>
+
+            <TableCell className={cn(cellLayout, col.models)}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="text-body-small-semi text-text-strong truncate block">{models}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>{models}</TooltipContent>
+                </Tooltip>
+            </TableCell>
+
+            <TableCell className={cn(cellLayout, col.lastExecution)}>
+                <Tooltip>
+                    <TooltipTrigger>
+                        <StatusBadge sync={sync} />
+                    </TooltipTrigger>
+                    {sync.latest_sync && <TooltipContent>{getRunTime(sync.latest_sync.created_at, sync.latest_sync.updated_at)}</TooltipContent>}
+                </Tooltip>
+            </TableCell>
+
+            <TableCell className={cn(cellLayout, col.frequency)}>{sync.frequency ? formatFrequency(sync.frequency) : '-'}</TableCell>
+
+            <TableCell className={cn(cellLayout, col.records)}>
+                <Tooltip>
+                    <TooltipTrigger>{recordCount}</TooltipTrigger>
+                    <TooltipContent>
+                        <JsonBlock value={sync.record_count} />
+                    </TooltipContent>
+                </Tooltip>
+            </TableCell>
+
+            <TableCell className={cn(cellLayout, col.lastStart)}>
+                <Tooltip>
+                    <TooltipTrigger>{formatDateToUSFormat(sync.latest_sync?.updated_at)}</TooltipTrigger>
+                    {sync.latest_sync && (
+                        <TooltipContent>
+                            <JsonBlock value={sync.latest_sync.result} />
+                        </TooltipContent>
+                    )}
+                </Tooltip>
+            </TableCell>
+
+            <TableCell className={cn(cellLayout, col.nextStart)}>
+                {sync.schedule_status === 'STARTED' && <span>{nextRunLabel}</span>}
+
+                {sync.schedule_status === 'PAUSED' && <CatalogBadge variant="warning">Schedule Paused</CatalogBadge>}
+            </TableCell>
+
+            <TableCell className={cn(cellLayout, col.actions)}>
+                <DropdownMenu modal={false}>
+                    <DropdownMenuTrigger asChild>
+                        <IconButton variant="ghost" size="2xs" label="Sync actions" loading={isPending}>
+                            <Ellipsis />
+                        </IconButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                            disabled={actionsDisabled || sync.schedule_status === null}
+                            onClick={() => onSyncCommand(sync, sync.schedule_status === 'STARTED' ? 'PAUSE' : 'UNPAUSE')}
+                        >
+                            {sync.schedule_status !== 'STARTED' ? (
+                                <>
+                                    <Play />
+                                    <span>Resume Schedule</span>
+                                </>
+                            ) : (
+                                <>
+                                    <OctagonPause />
+                                    <span>Pause Schedule</span>
+                                </>
+                            )}
+                        </DropdownMenuItem>
+
+                        {sync.status === 'RUNNING' && (
+                            <DropdownMenuItem disabled={actionsDisabled} onClick={() => onSyncCommand(sync, 'CANCEL')}>
+                                <X />
+                                <span>Cancel Execution</span>
+                            </DropdownMenuItem>
+                        )}
+
+                        {sync.status !== 'RUNNING' && (
+                            <DropdownMenuItem disabled={actionsDisabled} onClick={() => onRequestTrigger(sync)}>
+                                <RefreshCw />
+                                <span>Trigger execution</span>
+                            </DropdownMenuItem>
+                        )}
+
+                        <DropdownMenuItem onClick={() => onViewLogs(sync)}>
+                            <List />
+                            <span>View logs</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </TableCell>
+        </TableRow>
+    );
+});
+
+/** Controlled because dialogs don't work well inside dropdowns. */
+const TriggerSyncDialog = ({
+    target,
+    isPending,
+    onClose,
+    onTrigger
+}: {
+    target: ApiConnectionSync;
+    isPending: boolean;
+    onClose: () => void;
+    onTrigger: (sync: ApiConnectionSync, command: RunSyncCommand, opts?: { deleteRecords?: boolean }) => Promise<void> | void;
+}) => {
     const [fullResync, setFullResync] = useState(false);
     const [emptyCache, setEmptyCache] = useState(false);
 
-    const onSyncCommand = async (command: RunSyncCommand) => {
-        try {
-            await runSyncCommand({
-                command,
-                schedule_id: sync.schedule_id,
-                nango_connection_id: sync.nango_connection_id,
-                sync_id: sync.id,
-                sync_name: sync.name,
-                sync_variant: sync.variant,
-                provider,
-                ...(command === 'RUN_FULL' || command === 'RUN'
-                    ? {
-                          delete_records: emptyCache
-                      }
-                    : {})
-            });
-
-            const niceCommand = UserFacingSyncCommand[command];
-            toast({ title: `The sync was successfully ${niceCommand}`, variant: 'success' });
-        } catch (err) {
-            const verb = command === 'RUN_FULL' || command === 'RUN' ? 'run' : 'update';
-            if (err instanceof Error && 'json' in err) {
-                const apiError = err as { json: { error?: { message?: string } } };
-                toast({ title: apiError.json.error?.message || `Failed to ${verb} sync`, variant: 'error' });
-            } else {
-                toast({ title: `Failed to ${verb} sync`, variant: 'error' });
-            }
-        }
-    };
-
-    const onTrigger = async () => {
-        await onSyncCommand(fullResync ? 'RUN_FULL' : 'RUN');
-        setFullResync(false);
-        setEmptyCache(false);
-        setTriggerDialogOpen(false);
-    };
-
-    const logUrl = useMemo(() => {
-        return getLogsUrl({
-            env,
-            integrations: provider,
-            connections: connection?.connection_id,
-            syncs: sync.name,
-            day: sync.latest_sync?.updated_at ? new Date(sync.latest_sync.updated_at) : null
-        });
-    }, [connection?.connection_id, env, provider, sync.latest_sync?.updated_at, sync.name]);
-
-    const models = Array.isArray(sync.models) ? sync.models.join(', ') : sync.models;
-
     return (
-        <>
-            <TableRow key={sync.id}>
-                {/* Name & Variant */}
-                <TableCell>
-                    <div className="flex gap-2 items-center">
-                        <span className="text-body-small-semi text-text-strong">{sync.name}</span>
-                        {sync.variant !== 'base' && (
-                            <Tooltip>
-                                <TooltipTrigger>
-                                    {/* TODO: Replace badge */}
-                                    <Badge>{truncateMiddle(sync.variant)}</Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>{sync.variant}</TooltipContent>
-                            </Tooltip>
-                        )}
-                    </div>
-                </TableCell>
+        <Dialog open={true} onOpenChange={(open) => !open && onClose()} modal={true}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Trigger sync execution</DialogTitle>
+                    <DialogDescription>
+                        Trigger a sync execution for function <span className="font-mono text-text-strong">{target.name}</span> in the current connection.
+                    </DialogDescription>
+                </DialogHeader>
 
-                {/* Models */}
-                <TableCell className="max-w-38">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span className="text-body-small-semi text-text-strong truncate block">{models}</span>
-                        </TooltipTrigger>
-                        <TooltipContent>{models}</TooltipContent>
-                    </Tooltip>
-                </TableCell>
-
-                {/* Last Execution */}
-                <TableCell>
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <StatusBadge sync={sync} />
-                        </TooltipTrigger>
-                        {sync.latest_sync && <TooltipContent>{getRunTime(sync.latest_sync?.created_at, sync.latest_sync?.updated_at)}</TooltipContent>}
-                    </Tooltip>
-                </TableCell>
-
-                {/* Frequency */}
-                <TableCell>{formatFrequency(sync.frequency)}</TableCell>
-
-                {/* Records */}
-                <TableCell>
-                    <Tooltip>
-                        <TooltipTrigger>{recordCount}</TooltipTrigger>
-                        <TooltipContent>
-                            <SimpleCodeBlock language={'json'}>{JSON.stringify(sync.record_count, null, 2)}</SimpleCodeBlock>
-                        </TooltipContent>
-                    </Tooltip>
-                </TableCell>
-
-                {/* Last Sync Start */}
-                <TableCell>
-                    <Tooltip>
-                        <TooltipTrigger>{formatDateToUSFormat(sync.latest_sync?.updated_at)}</TooltipTrigger>
-                        {sync.latest_sync && (
-                            <TooltipContent>
-                                <SimpleCodeBlock language={'json'}>{JSON.stringify(sync.latest_sync.result, null, 2)}</SimpleCodeBlock>
-                            </TooltipContent>
-                        )}
-                    </Tooltip>
-                </TableCell>
-
-                {/* Next Sync Start */}
-                <TableCell>
-                    {sync.schedule_status === 'STARTED' && (
-                        <>
-                            {interpretNextRun(sync.futureActionTimes) === '-' ? (
-                                <span>-</span>
-                            ) : (
-                                <span>{interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at)[0]}</span>
-                            )}
-                        </>
-                    )}
-
-                    {sync.schedule_status === 'PAUSED' && <CatalogBadge variant="warning">Schedule Paused</CatalogBadge>}
-                </TableCell>
-
-                {/* Actions */}
-                <TableCell>
-                    <DropdownMenu modal={false}>
-                        <DropdownMenuTrigger asChild>
-                            <IconButton variant="ghost" size="2xs" label="Sync actions">
-                                <Ellipsis />
-                            </IconButton>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            {/* Pause/Resume Schedule */}
-                            <DropdownMenuItem
-                                disabled={isRunningSyncCommand}
-                                onClick={() => onSyncCommand(sync.schedule_status === 'STARTED' ? 'PAUSE' : 'UNPAUSE')}
-                            >
-                                {sync.schedule_status !== 'STARTED' ? (
-                                    <>
-                                        <Play />
-                                        <span>Resume Schedule</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <OctagonPause />
-                                        <span>Pause Schedule</span>
-                                    </>
-                                )}
-                            </DropdownMenuItem>
-
-                            {/* Cancel Execution */}
-                            {sync.status === 'RUNNING' && (
-                                <DropdownMenuItem disabled={isRunningSyncCommand} onClick={() => onSyncCommand('CANCEL')}>
-                                    <X />
-                                    <span>Cancel Execution</span>
-                                </DropdownMenuItem>
-                            )}
-
-                            {/* Trigger Execution */}
-                            {sync.status !== 'RUNNING' && (
-                                <DropdownMenuItem disabled={isRunningSyncCommand} onClick={() => setTriggerDialogOpen(true)}>
-                                    <RefreshCw />
-                                    <span>Trigger execution</span>
-                                </DropdownMenuItem>
-                            )}
-
-                            {/* View Logs */}
-                            <DropdownMenuItem onClick={() => navigate(logUrl)}>
-                                <List />
-                                <span>View logs</span>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </TableCell>
-            </TableRow>
-
-            {/* Trigger Dialog - Controlled because dialogs don't work well inside dropdowns */}
-            <Dialog open={triggerDialogOpen} onOpenChange={setTriggerDialogOpen} modal={true}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Trigger sync execution</DialogTitle>
-                        <DialogDescription>
-                            Trigger a sync execution for function <span className="font-mono text-text-strong">{sync.name}</span> in the current connection.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <DialogBody>
-                        <div className="flex flex-col gap-8">
-                            <div className="inline-flex gap-2 items-center">
-                                <Checkbox checked={fullResync} onCheckedChange={(e) => setFullResync(e === true)} />
-                                <span className="text-text-strong text-body-medium-medium">Resync entire dataset</span>
-                                <InfoTooltip icon={<Info />} side="bottom">
-                                    The current checkpoint (and the deprecated <span className="font-mono text-text-strong">nango.lastSyncDate</span>) will be
-                                    set to <span className="font-mono text-text-strong">null</span>. The whole dataset will be resynced.
-                                </InfoTooltip>
-                            </div>
-
-                            <div className="inline-flex gap-2 items-center">
-                                <Checkbox checked={emptyCache} onCheckedChange={(e) => setEmptyCache(e === true)} />
-                                <span className="text-text-strong text-body-medium-medium">Empty cache</span>
-                                <InfoTooltip icon={<Info />} side="bottom">
-                                    All records will be reported as new by Nango. Record cursors will be invalidated. Your backend should reprocess all records.
-                                </InfoTooltip>
-                            </div>
+                <DialogBody>
+                    <div className="flex flex-col gap-8">
+                        <div className="inline-flex gap-2 items-center">
+                            <Checkbox checked={fullResync} onCheckedChange={(e) => setFullResync(e === true)} />
+                            <span className="text-text-strong text-body-medium-medium">Resync entire dataset</span>
+                            <InfoTooltip icon={<Info />} side="bottom">
+                                The current checkpoint (and the deprecated <span className="font-mono text-text-strong">nango.lastSyncDate</span>) will be set
+                                to <span className="font-mono text-text-strong">null</span>. The whole dataset will be resynced.
+                            </InfoTooltip>
                         </div>
-                    </DialogBody>
 
-                    <DialogFooter>
-                        <DialogClose asChild>
-                            <Button variant="outline" size="sm">
-                                Cancel
-                            </Button>
-                        </DialogClose>
-                        <Button variant="primary" size="sm" onClick={onTrigger} loading={isRunningSyncCommand}>
-                            Trigger
+                        <div className="inline-flex gap-2 items-center">
+                            <Checkbox checked={emptyCache} onCheckedChange={(e) => setEmptyCache(e === true)} />
+                            <span className="text-text-strong text-body-medium-medium">Empty cache</span>
+                            <InfoTooltip icon={<Info />} side="bottom">
+                                All records will be reported as new by Nango. Record cursors will be invalidated. Your backend should reprocess all records.
+                            </InfoTooltip>
+                        </div>
+                    </div>
+                </DialogBody>
+
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline" size="sm">
+                            Cancel
                         </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </>
+                    </DialogClose>
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        loading={isPending}
+                        onClick={async () => {
+                            await onTrigger(target, fullResync ? 'RUN_FULL' : 'RUN', { deleteRecords: emptyCache });
+                            onClose();
+                        }}
+                    >
+                        Trigger
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 
-const StatusBadge = ({ sync }: { sync: SyncResponse }) => {
+/** Stringifies in its own body, so a closed tooltip costs nothing per row. */
+const JsonBlock = ({ value }: { value: unknown }) => {
+    return <SimpleCodeBlock language={'json'}>{JSON.stringify(value, null, 2)}</SimpleCodeBlock>;
+};
+
+const StatusBadge = ({ sync }: { sync: ApiConnectionSync }) => {
     const status = sync.latest_sync?.status;
 
     let text = 'Never run';
@@ -364,3 +492,27 @@ const StatusBadge = ({ sync }: { sync: SyncResponse }) => {
         </CatalogBadge>
     );
 };
+
+/**
+ * Resolving from a callback ref rather than an effect: the element is attached by the time this runs,
+ * whereas a layout effect in a child fires before the ancestor holding the ref has one.
+ */
+function useScrollParent() {
+    const [resolved, setResolved] = useState<{ scrollParent: HTMLElement | null; offsetTop: number }>({ scrollParent: null, offsetTop: 0 });
+
+    const ref = useCallback((node: HTMLDivElement | null) => {
+        if (!node) {
+            return;
+        }
+        for (let parent = node.parentElement; parent; parent = parent.parentElement) {
+            const { overflowY } = getComputedStyle(parent);
+            if (overflowY === 'auto' || overflowY === 'scroll') {
+                setResolved({ scrollParent: parent, offsetTop: node.offsetTop });
+                return;
+            }
+        }
+        setResolved({ scrollParent: null, offsetTop: node.offsetTop });
+    }, []);
+
+    return { ref, ...resolved };
+}

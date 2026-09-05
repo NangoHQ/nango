@@ -1160,7 +1160,8 @@ export class PostgresStore implements RecordsStore {
         limit,
         toCursorIncluded,
         batchSize = 1000,
-        dryRun = false
+        dryRun = false,
+        onProgress
     }: {
         connectionId: number;
         environmentId: number;
@@ -1170,6 +1171,7 @@ export class PostgresStore implements RecordsStore {
         toCursorIncluded?: string;
         batchSize?: number;
         dryRun?: boolean;
+        onProgress?: (progress: { deleted: number; page: number }) => void | Promise<void>;
     }): Promise<Result<{ count: number; lastCursor: string | null }>> {
         const activeSpan = tracer.scope().active();
         const span = tracer.startSpan('nango.records.deletedRecords', {
@@ -1212,6 +1214,7 @@ export class PostgresStore implements RecordsStore {
                 // Each batch starts right after the last processed record
                 // so the index scan doesn't re-traverse dead tuples from prior batches
                 let from: { updated_at: string; id: string } | null = null;
+                let page = 0;
 
                 do {
                     const toDelete = limit ? Math.min(batchSize, limit - totalRecords) : batchSize;
@@ -1314,6 +1317,9 @@ export class PostgresStore implements RecordsStore {
                         partition = res[0].partition;
                     }
 
+                    page++;
+                    await onProgress?.({ deleted: totalRecords, page });
+
                     const lastDeletedRecord = res[res.length - 1];
                     if (lastDeletedRecord) {
                         lastCursor = Cursor.new({ id: lastDeletedRecord.id, last_modified_at: lastDeletedRecord.updated_at });
@@ -1375,13 +1381,15 @@ export class PostgresStore implements RecordsStore {
         connectionId,
         model,
         generation,
-        batchSize = 10_000
+        batchSize = 10_000,
+        onProgress
     }: {
         environmentId: number;
         connectionId: number;
         model: string;
         generation: number;
         batchSize?: number;
+        onProgress?: (progress: { deleted: number; page: number }) => void | Promise<void>;
     }): Promise<Result<string[]>> {
         const activeSpan = tracer.scope().active();
         const span = tracer.startSpan('nango.records.deleteOutdatedRecords', {
@@ -1392,6 +1400,7 @@ export class PostgresStore implements RecordsStore {
         try {
             const deletedIds: string[] = [];
             let hasMore = true;
+            let page = 0;
             // Cursor as id: each batch starts right after the last processed record so the
             // index scan doesn't re-traverse dead tuples from prior batches
             // updated_at can't be used as cursor here since the soft delete sets it to now.
@@ -1548,6 +1557,9 @@ export class PostgresStore implements RecordsStore {
                 }
 
                 deletedIds.push(...batchResult.rows.map((r) => r.external_id));
+
+                page++;
+                await onProgress?.({ deleted: deletedIds.length, page });
             }
 
             if (partition) {
@@ -1572,15 +1584,29 @@ export class PostgresStore implements RecordsStore {
         }
     }
 
-    async getCountsByModel({ connectionId, environmentId }: { connectionId: number; environmentId: number }): Promise<Result<Record<string, RecordCount>>> {
+    async getCountsByModel({
+        connectionId,
+        environmentId,
+        models
+    }: {
+        connectionId: number;
+        environmentId: number;
+        models?: string[] | undefined;
+    }): Promise<Result<Record<string, RecordCount>>> {
         try {
-            const results = await this.db
+            const query = this.db
                 .from(RECORD_COUNTS_TABLE)
                 .where({
                     connection_id: connectionId,
                     environment_id: environmentId
                 })
                 .select<RecordCount[]>('*');
+
+            if (models) {
+                query.whereIn('model', models);
+            }
+
+            const results = await query;
 
             const statsByModel: Record<string, RecordCount> = results.reduce(
                 (acc, result) => ({

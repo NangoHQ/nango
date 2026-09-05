@@ -1,29 +1,27 @@
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { createAgentSessionMcpServer } from './sessionServer.js';
 
-import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import type { GetAgentSessionMcp, PostAgentSessionMcp } from '@nangohq/types';
 
 export const postAgentSessionMcp = asyncWrapperWithEnvironment<PostAgentSessionMcp>(async (req, res) => {
-    const session = res.locals['agentSession'];
+    const { account, environment, agentSession: session } = res.locals;
 
     if (req.params.sessionId !== session.id) {
         res.status(404).send({ error: { code: 'session_not_found', message: `Agent session '${req.params.sessionId}' not found` } });
         return;
     }
 
-    const server = createAgentSessionMcpServer(session);
-    const transport = new StreamableHTTPServerTransport();
+    const server = createAgentSessionMcpServer({ account, environment, session }, req.body);
+    const transport = new NodeStreamableHTTPServerTransport();
 
     res.on('close', () => {
         void transport.close();
         void server.close();
     });
 
-    // Casting because 'exactOptionalPropertyTypes: true' says `?: string` is not equal to `string | undefined`
-    await server.connect(transport as Transport);
+    await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
 });
 

@@ -21,12 +21,14 @@ const TooltipTrigger = React.forwardRef<React.ElementRef<typeof TooltipPrimitive
 TooltipTrigger.displayName = 'TooltipTrigger';
 
 const TooltipContent = React.forwardRef<React.ElementRef<typeof TooltipPrimitive.Content>, TooltipContentProps>(
-    ({ className, sideOffset = 0, children, ...props }, ref) => (
+    ({ className, sideOffset = 0, collisionPadding = 8, children, ...props }, ref) => (
         <TooltipPrimitive.Portal>
             <TooltipPrimitive.Content
                 ref={ref}
                 data-slot="tooltip-content"
                 sideOffset={sideOffset}
+                // Radix defaults this to 0, which leaves a shifted chip flush against the window.
+                collisionPadding={collisionPadding}
                 className={cn(
                     'bg-surface-inverse text-text-inverse type-label-sm shadow-container-panel rounded-ds-xs px-1.5 py-1',
                     'origin-(--radix-tooltip-content-transform-origin) z-80 w-fit max-w-96',
@@ -43,7 +45,17 @@ const TooltipContent = React.forwardRef<React.ElementRef<typeof TooltipPrimitive
                 {...props}
             >
                 {children}
-                <TooltipPrimitive.Arrow className="bg-surface-inverse fill-surface-inverse rounded-ds-xs z-80 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45" />
+                <TooltipPrimitive.Arrow
+                    className={cn(
+                        'bg-surface-inverse fill-surface-inverse rounded-ds-xs size-2.5 rotate-45',
+                        // Radix rotates the arrow's wrapper per side, so -Y here always points back into the
+                        // chip whatever side it lands on — never per-side offsets.
+                        'translate-y-[calc(-50%_-_2px)]',
+                        // The clip drops the tucked-in half, which would otherwise paint over the text.
+                        // Applied pre-rotation, so this triangle is the outward-facing one.
+                        '[clip-path:polygon(100%_0,100%_100%,0_100%)]'
+                    )}
+                />
             </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
     )

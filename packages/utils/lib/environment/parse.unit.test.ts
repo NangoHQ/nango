@@ -37,6 +37,7 @@ describe('parse', () => {
         expect(res.NANGO_INTERNAL_AUTH_SIGNING_KEY).toBeUndefined();
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_TOKEN_FILE');
         expect(res.NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN).toBeUndefined();
+        expect(res.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY).toBeUndefined();
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT');
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_AUDIENCE');
     });
@@ -598,7 +599,8 @@ describe('parse', () => {
                 NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: 30,
                 NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: 5,
                 NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: 10,
-                NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: 10
+                NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: 10,
+                NANGO_TASK_DISPATCH_TASK_CAP_DEFER_MS: 15_000
             });
             expect(res.NANGO_TASK_DISPATCH_QUEUE_URL).toBeUndefined();
             expect(res.NANGO_TASK_DISPATCH_DLQ_URL).toBeUndefined();

@@ -1,10 +1,11 @@
-import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, DropAuditStore, PubSubAuditWriter } from '@nangohq/audit';
+import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, NoopAuditStore, PostgresAuditStore, PubSubAuditWriter } from '@nangohq/audit';
 import { pubsub } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
+import { auditDb } from './auditDb.js';
 import { envs } from './env.js';
 
-import type { AuditActor, AuditEvent, AuditTarget, AuditTargetType, AuditWriter } from '@nangohq/audit';
+import type { AuditActor, AuditEvent, AuditReader, AuditTarget, AuditTargetType, AuditWriter } from '@nangohq/audit';
 import type { InternalEndUser } from '@nangohq/types';
 
 const logger = getLogger('audit');
@@ -12,6 +13,7 @@ const CHANGED_FIELDS_MAX = 30;
 const CHANGED_FIELD_KEY_MAX = 64;
 
 export const UNKNOWN_ACTOR: AuditActor = { type: 'unknown', id: 'unknown', display: 'unknown' };
+export const PUBLIC_KEY_ACTOR: AuditActor = { type: 'public_key', id: 'unknown' };
 
 // An end user is optional when a connect session carries tags, so the session can name nobody.
 export function connectSessionActor(endUser?: InternalEndUser | null): AuditActor {
@@ -46,33 +48,44 @@ export function changedFields(value: unknown): string[] | undefined {
     return keys.length > 0 ? keys : undefined;
 }
 
-function buildClickhouseStore(): ClickhouseAuditStore | null {
-    if (!envs.CLICKHOUSE_URL) {
-        return null;
-    }
+function buildClickhouseStore(url: string): ClickhouseAuditStore | null {
     try {
-        return new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL));
+        return new ClickhouseAuditStore(auditClickhouseClient(url));
     } catch (err) {
         logger.error('Audit: failed to create the ClickHouse store', err);
         return null;
     }
 }
 
-function buildWriter(clickhouse: ClickhouseAuditStore | null): AuditWriter {
-    if (envs.NANGO_AUDIT_TRANSPORT === 'pubsub') {
-        logger.info('Audit: publishing events to pub/sub');
-        return new PubSubAuditWriter(pubsub.publisher);
+export function selectAuditStores(): { writer: AuditWriter; reader: AuditReader; configured: boolean } {
+    const db = auditDb();
+    if (db) {
+        logger.info('Audit: reading and writing events in Postgres');
+        const postgres = new PostgresAuditStore(db);
+        return { writer: postgres, reader: postgres, configured: true };
     }
+
+    const clickhouse = envs.CLICKHOUSE_URL ? buildClickhouseStore(envs.CLICKHOUSE_URL) : null;
+
+    if (clickhouse && envs.NANGO_AUDIT_TRANSPORT === 'pubsub') {
+        logger.info('Audit: publishing events to pub/sub, reading from ClickHouse');
+        return { writer: new PubSubAuditWriter(pubsub.publisher), reader: clickhouse, configured: true };
+    }
+
     if (clickhouse) {
-        logger.info('Audit: writing events to ClickHouse');
-        return clickhouse;
+        logger.info('Audit: reading and writing events in ClickHouse');
+        return { writer: clickhouse, reader: clickhouse, configured: true };
     }
+
     logger.warning('Audit: no backend configured, events are dropped');
-    return new DropAuditStore();
+    const noop = new NoopAuditStore();
+    return { writer: noop, reader: noop, configured: false };
 }
 
-const clickhouseStore = buildClickhouseStore();
-export const audit = new AuditClient(buildWriter(clickhouseStore), clickhouseStore ?? new DropAuditStore());
+const stores = selectAuditStores();
+export const audit = new AuditClient(stores.writer, stores.reader);
+
+export const auditBackend = { configured: stores.configured };
 
 export type AuditDropReason = 'write_failed' | 'build_failed';
 
@@ -88,4 +101,7 @@ export async function recordAuditEvent(event: AuditEvent): Promise<void> {
         return;
     }
     metrics.increment(metrics.Types.AUDIT_EVENT_RECORDED, 1, { resource: event.resource });
+    if (event.actor.type === 'unknown') {
+        metrics.increment(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field: 'actor', resource: event.resource });
+    }
 }

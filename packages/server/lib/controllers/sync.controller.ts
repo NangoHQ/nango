@@ -1,85 +1,17 @@
 import { logContextGetter } from '@nangohq/logs';
-import { records as recordsService } from '@nangohq/records';
-import {
-    configService,
-    connectionService,
-    errorManager,
-    getSyncConfigRaw,
-    getSyncs,
-    NangoError,
-    syncCommandToOperation,
-    verifyOwnership
-} from '@nangohq/shared';
-import { isHosted } from '@nangohq/utils';
+import { configService, connectionService, errorManager, getSyncConfigRaw, syncCommandToOperation, verifyOwnership } from '@nangohq/shared';
 
 import { requireEnvironment } from '../utils/asyncWrapper.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { LogContextOrigin } from '@nangohq/logs';
-import type { Sync, SyncCommand } from '@nangohq/shared';
+import type { SyncCommand } from '@nangohq/shared';
 import type { NextFunction, Request, Response } from 'express';
 
 const orchestrator = getOrchestrator();
 
 class SyncController {
-    public async getSyncsByParams(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
-        try {
-            const environment = requireEnvironment(req, res);
-            if (!environment) {
-                return;
-            }
-            const { connection_id, provider_config_key } = req.query;
-
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnection(connection_id as string, provider_config_key as string, environment.id);
-
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
-
-                return;
-            }
-
-            if (!connection) {
-                const error = new NangoError('unknown_connection', { connection_id, provider_config_key, environmentName: environment.name });
-                errorManager.errResFromNangoErr(res, error);
-
-                return;
-            }
-
-            if (isHosted) {
-                res.send([]);
-                return;
-            }
-
-            const rawSyncs = await getSyncs(connection, orchestrator);
-            const syncs = await this.addRecordCount(rawSyncs, connection.id, environment.id);
-            res.send(syncs);
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    private async addRecordCount(syncs: (Sync & { models: string[] })[], connectionId: number, environmentId: number) {
-        const byModel = await recordsService.getCountsByModel({ connectionId, environmentId });
-        if (byModel.isOk()) {
-            return syncs.map((sync) => ({
-                ...sync,
-                record_count: Object.fromEntries(
-                    sync.models.map((model) => {
-                        const modelFullName = sync.variant === 'base' ? model : `${model}::${sync.variant}`;
-                        return [model, byModel.value[modelFullName]?.count ?? 0];
-                    })
-                )
-            }));
-        } else {
-            return syncs.map((sync) => ({ ...sync, record_count: null }));
-        }
-    }
-
     public async syncCommand(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         let logCtx: LogContextOrigin | undefined;
 

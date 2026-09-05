@@ -1,9 +1,16 @@
-import { Ok } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
+
+import { validateGoogleChannelToken } from './google-channel-token.js';
 
 import type { WebhookHandler } from './types.js';
 
 // https://developers.google.com/workspace/drive/api/guides/push
 const route: WebhookHandler = async (nango, headers) => {
+    const tokenResult = validateGoogleChannelToken(nango.integration, headers);
+    if (tokenResult.isErr()) {
+        return Err(tokenResult.error);
+    }
+
     const resourceId = headers['x-goog-resource-id'];
     const resourceUri = headers['x-goog-resource-uri'];
 

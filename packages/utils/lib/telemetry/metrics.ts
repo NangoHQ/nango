@@ -6,8 +6,6 @@ export enum Types {
     ACTION_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.action.incoming.payloadSizeBytes',
 
     AUTH_SECRET_KEY_HASH_CACHE = 'nango.auth.secretKeyHashCache',
-    AUTHZ_KEY_DERIVATION_COMPARISON = 'nango.authz.keyDerivationComparison',
-    AUTHZ_ROLE_COMPARISON = 'nango.authz.roleComparison',
     AUTH_SHADOW_CACHE = 'nango.auth.shadowCache',
     AUTH_CONTEXT_CACHE = 'nango.auth.contextCache',
     AUTH_GET_ENV_BY_AGENT_SESSION = 'nango.auth.getEnvByAgentSession',
@@ -72,6 +70,7 @@ export enum Types {
     WEBHOOK_INCOMING_RECEIVED = 'nango.webhook.incoming.received',
     WEBHOOK_INCOMING_RATE_LIMITED = 'nango.webhook.incoming.rateLimited',
     WEBHOOK_INCOMING_SKIPPED = 'nango.webhook.incoming.skipped',
+    WEBHOOK_INCOMING_UNVERIFIED = 'nango.webhook.incoming.unverified',
     WEBHOOK_INCOMING_FORWARDED_SUCCESS = 'nango.webhook.incoming.forwarded.success',
     WEBHOOK_INCOMING_FORWARDED_FAILED = 'nango.webhook.incoming.forwarded.failed',
     WEBHOOK_OUTGOING_SUCCESS = 'nango.webhook.outgoing.success',
@@ -82,17 +81,20 @@ export enum Types {
     WEBHOOK_REQUEST_SIZE_IN_BYTES = 'nango.webhook.request.sizeInBytes',
     WEBHOOK_RESPONSE_SIZE_IN_BYTES = 'nango.webhook.response.sizeInBytes',
     WEBHOOK_DIRECT_TRIGGER_SUCCESS = 'nango.webhook.direct_trigger.success',
+    WEBHOOK_DEDUPE_DISPATCHED = 'nango.webhook.dedupe.dispatched',
+    WEBHOOK_DEDUPE_SUPPRESSED = 'nango.webhook.dedupe.suppressed',
 
     WEBHOOK_DISPATCH_PUBLISH_SUCCESS = 'nango.webhook.dispatch_queue.publish.success',
     WEBHOOK_DISPATCH_PUBLISH_FAILURE = 'nango.webhook.dispatch_queue.publish.failure',
     WEBHOOK_DISPATCH_BYPASS_OVERSIZE = 'nango.webhook.dispatch_queue.bypass_oversize',
     WEBHOOK_DISPATCH_LARGE_FANOUT = 'nango.webhook.dispatch_queue.large_fanout',
-    // Consume outcome, tagged result=success|failure.
+    // Consume outcome, tagged result=success|failure|rate_limited|throttle_deferred|task_cap.
     WEBHOOK_DISPATCH_CONSUME = 'nango.webhook.dispatch_queue.consume',
-    // Messages dropped without being scheduled, tagged reason=poison_pill|stale|task_cap.
+    // Messages dropped without being scheduled, tagged reason=poison_pill|stale.
     WEBHOOK_DISPATCH_DROPPED = 'nango.webhook.dispatch_queue.dropped',
     WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
     WEBHOOK_DISPATCH_BATCH_SIZE = 'nango.webhook.dispatch_queue.batch_size',
+    WEBHOOK_DISPATCH_THROTTLE_MS = 'nango.webhook.dispatch_queue.throttle_ms',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',
@@ -118,6 +120,8 @@ export enum Types {
 
     API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
     DEPRECATED_V1_ENDPOINT_USED = 'nango.server.deprecated.v1.used',
+
+    DEPRECATED_PUBLIC_ENDPOINT_USED = 'nango.server.deprecated.public.used',
 
     AUTH_SUCCESS = 'nango.server.auth.success',
     AUTH_FAILURE = 'nango.server.auth.failure',

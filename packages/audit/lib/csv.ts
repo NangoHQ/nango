@@ -4,6 +4,7 @@ import type { ApiAuditTrailEvent } from '@nangohq/types';
 const COLUMNS: { name: string; of: (event: ApiAuditTrailEvent) => string | undefined }[] = [
     { name: 'occurred_at', of: (event) => event.occurredAt },
     { name: 'event_id', of: (event) => event.id },
+    { name: 'scope', of: (event) => event.scope },
     { name: 'environment', of: (event) => event.environment?.display },
     { name: 'actor_type', of: (event) => event.actor.type },
     { name: 'actor_id', of: (event) => event.actor.id },
