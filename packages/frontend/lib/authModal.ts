@@ -61,6 +61,7 @@ export class AuthorizationModal {
     private debug: boolean;
     private swClient: WebSocket;
     private errorHandler: ErrorHandler;
+    private settled = false;
     public modal?: Window;
     public isProcessingMessage = false;
 
@@ -88,6 +89,28 @@ export class AuthorizationModal {
             this.isProcessingMessage = true;
             this.handleMessage(message, successHandler);
             this.isProcessingMessage = false;
+        };
+
+        this.swClient.onclose = () => {
+            // The server closes the socket after every terminal message (success/error),
+            // but it can also drop the connection on idle timeout during a slow OAuth flow
+            // (e.g. a proxy/gateway closing after ~120s). In that case no success/error
+            // message is ever received, so without this fallback the auth promise never
+            // settles and the modal stays stuck in a pending state.
+            if (this.settled) {
+                return;
+            }
+
+            this.settled = true;
+
+            if (this.debug) {
+                console.log(debugLogPrefix, 'Connection closed before receiving a result. Rejecting authorization...');
+            }
+
+            this.errorHandler(
+                'connection_timeout',
+                'The connection to the Nango server was closed before the authorization flow completed. Please try connecting again.'
+            );
         };
     }
 
@@ -118,6 +141,7 @@ export class AuthorizationModal {
                     console.log(debugLogPrefix, 'Error received. Rejecting authorization...');
                 }
 
+                this.settled = true;
                 this.errorHandler(data.error_type as AuthErrorType, data.error_desc);
                 this.swClient.close();
                 break;
@@ -126,6 +150,7 @@ export class AuthorizationModal {
                     console.log(debugLogPrefix, 'Success received. Resolving authorization...');
                 }
 
+                this.settled = true;
                 successHandler({
                     providerConfigKey: data.provider_config_key,
                     connectionId: data.connection_id,
