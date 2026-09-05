@@ -1233,12 +1233,15 @@ describe('buildProxyURL', () => {
         expect(url).toBe('https://amplitude.com/api/test');
     });
 
-    it('should use the sandbox base URL with inbox path when inboxId is present (e.g. mailtrap)', () => {
+    it.each([
+        ['send.api.mailtrap.io', 'https://send.api.mailtrap.io/api/test'],
+        ['sandbox.api.mailtrap.io', 'https://sandbox.api.mailtrap.io/api/test']
+    ])('should build the base URL from the selected hostname %s (e.g. mailtrap)', (hostname, expected) => {
         const config = getDefaultProxy({
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
-                    base_url: 'https://sandbox.api.mailtrap.io/api/send/${connectionConfig.inboxId} || https://send.api.mailtrap.io'
+                    base_url: 'https://${connectionConfig.hostname}'
                 }
             }
         });
@@ -1247,31 +1250,11 @@ describe('buildProxyURL', () => {
             config,
             connection: getTestConnection({
                 credentials: { type: 'API_KEY', apiKey: 'test-key' },
-                connection_config: { inboxId: '2564102' }
+                connection_config: { hostname }
             })
         });
 
-        expect(url).toBe('https://sandbox.api.mailtrap.io/api/send/2564102/api/test');
-    });
-
-    it('should fall back to the production base URL when inboxId is absent (e.g. mailtrap)', () => {
-        const config = getDefaultProxy({
-            provider: {
-                auth_mode: 'API_KEY',
-                proxy: {
-                    base_url: 'https://sandbox.api.mailtrap.io/api/send/${connectionConfig.inboxId} || https://send.api.mailtrap.io'
-                }
-            }
-        });
-
-        const url = buildProxyURL({
-            config,
-            connection: getTestConnection({
-                credentials: { type: 'API_KEY', apiKey: 'test-key' }
-            })
-        });
-
-        expect(url).toBe('https://send.api.mailtrap.io/api/test');
+        expect(url).toBe(expected);
     });
 
     it('should fall back to second base URL when first connectionConfig param is absent (e.g. amazon-selling-partner without subdomain)', () => {

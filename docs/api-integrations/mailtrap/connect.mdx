@@ -3,14 +3,15 @@ title: Mailtrap - How do I link my account?
 sidebarTitle: Mailtrap
 ---
 
-# Overview
+## Overview
+
+Mailtrap supports both a **production** and a **sandbox** environment. You can connect to either when setting up your integration.
 
 To authenticate with Mailtrap, you will need:
 
 1. **API Token** – A token that grants secure access to the Mailtrap email sending API, enabling authorized applications to send email on your behalf.
-2. **Sandbox Inbox ID** (optional) – The ID of a Mailtrap sandbox testing inbox. Set this to route emails to that inbox instead of real recipients, useful for testing without a verified sending domain.
 
-This guide explains how to obtain both values from Mailtrap.
+This guide explains how to obtain it from Mailtrap.
 
 ### Prerequisites
 
@@ -18,24 +19,60 @@ This guide explains how to obtain both values from Mailtrap.
 
 ### Instructions
 
-#### Step 1: Getting your API token
+#### Step 1: Choose your environment
+
+**Sandbox**
+
+Enter the following hostname to use the Mailtrap sandbox:
+
+| Field | Value |
+|---|---|
+| API Hostname | `sandbox.api.mailtrap.io` |
+
+When calling the API on a sandbox connection, include your sandbox inbox ID in the request path, e.g. `/api/send/{inboxId}`.
+
+To find your inbox ID, open the [Sandboxes](https://mailtrap.io/sandboxes/projects) section of your Mailtrap account and copy the numeric ID from the inbox URL — for `https://mailtrap.io/sandboxes/2564102/settings` the inbox ID is `2564102`.
+
+<Accordion title="For agents">
+Inbox IDs can also be listed through the Nango proxy. Mailtrap's inbox API lives on `mailtrap.io`, not on the sending hosts this integration connects to, so pass a `Base-Url-Override` header to reach it:
+
+```bash
+# 1. List accounts to get your account ID
+curl "https://api.nango.dev/proxy/api/accounts" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>" \
+  -H "Base-Url-Override: https://mailtrap.io"
+
+# 2. List that account's inboxes — each has an `id` to use as {inboxId}
+curl "https://api.nango.dev/proxy/api/accounts/<ACCOUNT-ID>/inboxes" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>" \
+  -H "Base-Url-Override: https://mailtrap.io"
+```
+
+`Base-Url-Override` is enabled by default and can be restricted or disabled per deployment via `NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED` / `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST`.
+</Accordion>
+
+**Production (default)**
+
+Leave the **API Hostname** field set to `send.api.mailtrap.io`. This is pre-selected, so you can skip this step to send to real recipients.
+
+#### Step 2: Getting your API token
 
 1. Log in to your Mailtrap account and go to [API Tokens](https://mailtrap.io/settings/api-tokens).
 2. Click **Add Token**, give it a name, and select the permissions it needs.
 3. Copy the generated token. Store it securely—it is only displayed once.
 
-#### Step 2 (optional): Testing with a sandbox inbox
-
-1. Go to [Sandboxes](https://mailtrap.io/sandboxes/projects) in your Mailtrap account and open the sandbox inbox you want to send test emails to.
-2. Copy the numeric ID from the inbox URL, e.g. for `https://mailtrap.io/sandboxes/2564102/settings` the inbox ID is `2564102`.
-3. Skip this step to send through Mailtrap's production API instead.
-
 #### Step 3: Enter credentials in the Connect UI
 
-Once you have your **API Token** (and optionally a **Sandbox Inbox ID**):
+Once you have your **API Token**:
 
 1. Open the form where you need to authenticate with Mailtrap.
-2. Enter your **API Token** in the API Token field, and your **Sandbox Inbox ID** if you want to test without sending to real recipients.
+2. Enter your **API Token** in the API Token field, and pick the **API Hostname** for the environment you chose in Step 1.
 3. Submit the form to complete authentication.
+
+<img src="/api-integrations/mailtrap/form.png" style={{maxWidth: "450px" }}/>
 
 You are now connected to Mailtrap.
