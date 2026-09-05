@@ -1,0 +1,42 @@
+---
+title: Deputy
+sidebarTitle: Deputy
+---
+
+<Overview />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Any Deputy account can register an OAuth client. |
+| Paid test account | ❓ | Deputy offers free trials. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
+
+
+## Setup guide
+
+1. Sign in to Deputy, then open `https://{yourinstall}.{geo}.deputy.com/exec/devapp/oauth_clients`.
+2. Create a new OAuth client: set a name and your **Redirect URI**.
+3. Copy the **Client ID** and **Client Secret** into Nango.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/deputy.mdx)</Note>
+
+## Useful links
+
+-   [Authenticating with Deputy overview](https://developer.deputy.com/docs/authenticating-with-deputy)
+-   [Using OAuth 2.0](https://developer.deputy.com/docs/using-oauth-20)
+-   [Deputy API docs](https://developer.deputy.com/deputy-docs/reference)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/deputy.mdx)</Note>
+
+## API gotchas
+
+-   The scope is always `longlife_refresh_token`; without it the refresh token is short-lived.
+-   The token response carries an `endpoint` field naming the customer's installation host (e.g. `myinstall.au.deputy.com`). All API calls and token refreshes go to that host, not to once.deputy.com; the template captures it automatically into the connection config.
+-   Access tokens last 24 hours.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/deputy.mdx)</Note>
