@@ -1241,7 +1241,7 @@ describe('buildProxyURL', () => {
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
-                    base_url: 'https://${connectionConfig.hostname}'
+                    base_url: 'https://${connectionConfig.hostname} || https://send.api.mailtrap.io'
                 }
             }
         });
@@ -1255,6 +1255,29 @@ describe('buildProxyURL', () => {
         });
 
         expect(url).toBe(expected);
+    });
+
+    // `default_value` is only applied by the connect UI, so connections created through the SDK/public API can
+    // arrive with no hostname at all. The fallback keeps those on the production host instead of building a URL
+    // from an uninterpolated `${connectionConfig.hostname}`.
+    it('should fall back to the production base URL when hostname is absent (e.g. mailtrap created via SDK)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://${connectionConfig.hostname} || https://send.api.mailtrap.io'
+                }
+            }
+        });
+
+        const url = buildProxyURL({
+            config,
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'test-key' }
+            })
+        });
+
+        expect(url).toBe('https://send.api.mailtrap.io/api/test');
     });
 
     it('should fall back to second base URL when first connectionConfig param is absent (e.g. amazon-selling-partner without subdomain)', () => {

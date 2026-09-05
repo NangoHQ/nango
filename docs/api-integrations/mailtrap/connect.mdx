@@ -34,7 +34,9 @@ When calling the API on a sandbox connection, include your sandbox inbox ID in t
 To find your inbox ID, open the [Sandboxes](https://mailtrap.io/sandboxes/projects) section of your Mailtrap account and copy the numeric ID from the inbox URL — for `https://mailtrap.io/sandboxes/2564102/settings` the inbox ID is `2564102`.
 
 <Accordion title="For agents">
-Inbox IDs can also be listed through the Nango proxy. Mailtrap's inbox API lives on `mailtrap.io`, not on the sending hosts this integration connects to, so pass a `Base-Url-Override` header to reach it:
+Inbox IDs can also be listed through the Nango proxy. Ask the user to sign up at [app.nango.dev/signup](https://app.nango.dev/signup) and provide their Nango Environment API key from the **Environment Settings** tab > **API Keys**, then send it as `Authorization: Bearer <NANGO-API-KEY>`. The default key created on signup has full access; a scoped key needs `environment:proxy`. See [API keys](/reference/backend/http-api/api-keys).
+
+Mailtrap's inbox API lives on `mailtrap.io`, not on the sending hosts this integration connects to, so pass a `Base-Url-Override` header to reach it:
 
 ```bash
 # 1. List accounts to get your account ID

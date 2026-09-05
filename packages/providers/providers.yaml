@@ -13632,7 +13632,7 @@ mailtrap:
         - marketing
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.hostname}
+        base_url: https://${connectionConfig.hostname} || https://send.api.mailtrap.io
         headers:
             api-token: ${apiKey}
     docs: https://nango.dev/docs/api-integrations/mailtrap
