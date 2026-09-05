@@ -13825,6 +13825,40 @@ mailjet:
             example: 'f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1'
             doc_section: '#step-1-getting-your-credentials'
 
+mailtrap:
+    display_name: Mailtrap
+    categories:
+        - communication
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname} || https://send.api.mailtrap.io
+        headers:
+            api-token: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/mailtrap
+    docs_connect: https://nango.dev/docs/api-integrations/mailtrap/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Mailtrap API token.
+            example: '0123456789abcdef0123456789abcdef'
+            pattern: '^[a-f0-9]{32}$'
+            secret: true
+            doc_section: '#step-2-getting-your-api-token'
+    connection_config:
+        hostname:
+            type: string
+            title: API Hostname
+            description: The Mailtrap API host to connect to.
+            default_value: send.api.mailtrap.io
+            format: hostname
+            order: 1
+            enum:
+                - send.api.mailtrap.io
+                - sandbox.api.mailtrap.io
+            doc_section: '#step-1-choose-your-environment'
+
 mandrill:
     display_name: Mandrill
     categories:
