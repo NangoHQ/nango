@@ -687,14 +687,39 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Missing webhook token';
                 break;
 
+            case 'webhook_invalid_secret':
+                this.status = 401;
+                this.message = (this.payload['reason'] as string) || 'Invalid webhook secret';
+                break;
+
             case 'webhook_invalid_payload':
                 this.status = 400;
                 this.message = 'Invalid webhook payload';
                 break;
 
+            case 'webhook_invalid_body':
+                this.status = 400;
+                this.message = 'Could not parse webhook body';
+                break;
+
             case 'webhook_missing_connection_id':
                 this.status = 400;
                 this.message = 'Webhook payload is missing nangoConnectionId';
+                break;
+
+            case 'webhook_missing_nango_connection_id':
+                this.status = 400;
+                this.message = 'Webhook is missing the Nango connection id';
+                break;
+
+            case 'webhook_missing_shop_domain':
+                this.status = 400;
+                this.message = 'Webhook is missing the shop domain header';
+                break;
+
+            case 'webhook_no_connection':
+                this.status = 400;
+                this.message = 'No connection found for this webhook';
                 break;
 
             case 'webhook_no_connection_or_existing_installation_id':

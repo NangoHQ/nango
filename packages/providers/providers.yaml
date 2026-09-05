@@ -9357,6 +9357,10 @@ granola:
             method: GET
             endpoints:
                 - /v1/notes?page_size=1
+    webhook_routing_script: granolaWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/granola
     docs_connect: https://nango.dev/docs/api-integrations/granola/connect
     credentials:
