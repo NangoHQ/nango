@@ -7669,21 +7669,22 @@ elevio:
         headers:
             x-api-key: ${apiKey}
             authorization: Bearer ${connectionConfig.jwt}
-    docs: https://nango.dev/docs/integrations/all/elevio
+    docs: https://nango.dev/docs/api-integrations/elevio
+    docs_connect: https://nango.dev/docs/api-integrations/elevio/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key to your Elevio account
             pattern: '\b[a-f0-9]{40}\b'
-            example: 'x12z67890dd34t8gq5j01ycc75912348'
+            example: '4f3c12ef************************e9d41'
     connection_config:
         jwt:
             type: string
             title: JWT
             description: The JWT to your Elevio account
             pattern: '^[A-Za-z0-9-_]+\.([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+)$'
-
+            example: eyJhbGciOiJIUzI1NiJ9.****************.**********
 entrata:
     display_name: Entrata
     categories:
@@ -25027,8 +25028,8 @@ typeform:
     categories:
         - surveys
     auth_mode: OAUTH2
-    authorization_url: https://api.typeform.com/oauth/authorize
-    token_url: https://api.typeform.com/oauth/token
+    authorization_url: https://${connectionConfig.authHost}/oauth/authorize || https://api.typeform.com/oauth/authorize
+    token_url: https://${connectionConfig.authHost}/oauth/token || https://api.typeform.com/oauth/token
     disable_pkce: true
     default_scopes:
         - offline
@@ -25039,8 +25040,28 @@ typeform:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api.typeform.com
-    docs: https://nango.dev/docs/integrations/all/typeform
+        base_url: https://${connectionConfig.apiHost} || https://api.typeform.com
+    docs: https://nango.dev/docs/api-integrations/typeform
+    docs_connect: https://nango.dev/docs/api-integrations/typeform/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/typeform/how-to-register-your-own-typeform-api-oauth-app
+    connection_config:
+        authHost:
+            type: string
+            title: Authorization host
+            description: The Typeform host that issues authorization codes for your data center.
+            enum:
+                - api.typeform.com
+                - api.typeform.eu
+            order: 1
+        apiHost:
+            type: string
+            title: API host
+            description: The Typeform host that serves the API for your data center.
+            enum:
+                - api.typeform.com
+                - api.eu.typeform.com
+                - api.typeform.eu
+            order: 2
 
 typefully:
     display_name: Typefully
