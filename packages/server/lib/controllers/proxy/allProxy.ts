@@ -361,7 +361,7 @@ export function handleResponse({
         }
 
         try {
-            res.send(Buffer.concat(responseData));
+            res.status(responseStream.status).send(Buffer.concat(responseData));
             onEgressedBytes?.(responseLen);
         } catch (err) {
             const error = err instanceof Error ? err : new Error('Failed to write proxy response');
