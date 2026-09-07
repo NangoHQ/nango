@@ -28,6 +28,7 @@ export interface PublishResult {
 export interface PreparedDispatchMessage {
     message: WebhookDispatchMessage;
     byteSize: number;
+    delaySeconds?: number;
 }
 
 interface BatchPublishResult extends PublishResult {
@@ -192,7 +193,8 @@ function toEntry(message: PreparedDispatchMessage, index: number, messageGroupId
     return {
         Id: indexToEntryId(index),
         MessageBody: JSON.stringify(message.message),
-        MessageGroupId: messageGroupId
+        MessageGroupId: messageGroupId,
+        ...(message.delaySeconds !== undefined ? { DelaySeconds: message.delaySeconds } : {})
     };
 }
 

@@ -25,6 +25,9 @@ export function buildFlags(client: FeatureFlagsClient) {
         isMFAEnabled(accountUuid: string) {
             return client.isEnabled('mfa', { targetingKey: accountUuid, accountUuid }, false);
         },
+        isAttioWebhookDedupeEnabled(accountUuid: string) {
+            return client.isEnabled('attio-webhook-dedupe', { targetingKey: accountUuid, accountUuid }, false);
+        },
         /**
          * Sets Datadog manual.keep on action execution traces for this environment,
          * raising ingestion priority during stall investigations. Default `false`.

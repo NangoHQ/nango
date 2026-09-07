@@ -155,3 +155,13 @@ export function planAccruesCharges(plan: ApiPlan | null | undefined): boolean {
 export function isRetiredPlan(code: DBPlan['name']): boolean {
     return PLAN_IS_RETIRED[code];
 }
+
+export type GrowthAddonState = 'none' | 'active' | 'pending-removal';
+
+/** A scheduled removal still reads as `has_growth_features` until its date, so the date separates the two. */
+export function growthAddonState(plan: ApiPlan | null | undefined): GrowthAddonState {
+    if (!plan?.has_growth_features) {
+        return 'none';
+    }
+    return plan.growth_features_ends_at ? 'pending-removal' : 'active';
+}

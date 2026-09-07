@@ -27,6 +27,7 @@ export interface AnalyticsEvents {
     'web:usage:invoice_details_clicked': Record<string, never>;
     'web:usage:billing_portal_clicked': Record<string, never>;
     'web:usage:upgrade_clicked': Record<string, never>;
+    'web:usage:addon_action_clicked': { state: 'none' | 'active' | 'pending-removal' };
     'web:usage:edit_payment_method_clicked': { source: 'billing_page' };
     'web:usage:overdue_alert_clicked': Record<string, never>;
 

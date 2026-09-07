@@ -44,10 +44,11 @@ export class OrchestratorProcessor {
 
     public async stop(): Promise<void> {
         const waitUntilStopped = async (): Promise<void> => {
-            await this.queue.onIdle();
+            // The loop must exit before draining: its in-flight dequeue can still return a batch
             while (this.status !== 'stopped') {
                 await setTimeout(100); // Wait until the processing loop exits
             }
+            await this.queue.onIdle();
         };
         this.status = 'stopping';
         await waitUntilStopped();

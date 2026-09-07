@@ -4,6 +4,110 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="Audit trail" description="September 3, 2026">
+  Nango now records an audit trail of the control-plane activity in your account: connection changes, integration settings, teammate roles, sign-ins, and more.
+
+  Each entry captures the actor, the action, the affected resource, and the outcome, so you can answer "who did this, and when" during an incident or a compliance review. Entries are immutable and retained for 1 year by default.
+
+  You can browse and filter the Audit trail, and export filtered entries to CSV. The trail covers all environments in your account.
+
+  Audit trail is available on the [Enterprise plan](https://nango.dev/pricing). See the [audit trail documentation](/guides/platform/audit-trail) for what is recorded.
+
+  ![Audit trail page in the dashboard](/images/changelog/audit-trail.png)
+</Update>
+---
+
+<Update label="Agent sessions (public beta)" description="September 2, 2026">
+  Agent sessions are a new interface for AI agents to use integrations, now in public beta.
+
+  Your backend creates a session that defines what the agent can do:
+
+  - **Tenant:** On whose behalf the agent calls integrations, resolved from connection tags
+  - **Toolset:** Which integrations and tools it can use
+  - **Discovery:** How it finds and calls those tools, with pinned tools and a built-in tool search that keeps large toolsets out of the agent's context
+
+  Nango returns a dedicated MCP server for the session, which you pass to any MCP-capable agent. The agent never sees raw credentials and cannot change the scope of its own session.
+
+  See the [agent sessions guide](/guides/agent-sessions) to get started.
+
+  ![An AI agent handling a support ticket with tools from an agent session](/images/changelog/agent-sessions.png)
+</Update>
+---
+
+<Update label="Simpler plans, lower prices" description="September 2, 2026">
+  We updated [Nango's pricing](https://nango.dev/pricing):
+
+  - **71% lower connection price:** Connections now cost \$0.29 per connection per month on Pay-as-you-go.
+  - **Simpler plans:** Free, Pay-as-you-go, and Enterprise. Growth features — RBAC, OpenTelemetry export, and Connect UI customization — are now an optional add-on on Pay-as-you-go.
+  - **Credits included:** The \$50/month Pay-as-you-go subscription comes back as \$50 of usage credits each month.
+</Update>
+---
+
+<Update label="August 2026 roundup" description="September 1, 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="49 new APIs in August">
+      - [AgencyZoom](/api-integrations/agencyzoom)
+      - [AgentLine](/api-integrations/agentline)
+      - [athenahealth](/api-integrations/athenahealth)
+      - [Back Market](/api-integrations/back-market)
+      - [CDW](/api-integrations/cdw)
+      - [Chartboost](/api-integrations/chartboost)
+      - [Chili Piper](/api-integrations/chili-piper)
+      - [Chili Piper (MCP)](/api-integrations/chili-piper-mcp)
+      - [ePost (KLARA)](/api-integrations/epost-klara)
+      - [Factorial (API Key)](/api-integrations/factorial-api-key)
+      - [Facebook (System User Token)](/api-integrations/facebook-system-user)
+      - [Garmin (OAuth2)](/api-integrations/garmin-oauth2)
+      - [GitLab (Group Access Token)](/api-integrations/gitlab-group-token)
+      - [Hail](/api-integrations/hail)
+      - [Hail (MCP)](/api-integrations/hail-mcp)
+      - [HiBob (OAuth)](/api-integrations/hibob-oauth)
+      - [Holded (v2)](/api-integrations/holded-v2)
+      - [Judge.me (API Key)](/api-integrations/judgeme)
+      - [Judge.me (OAuth)](/api-integrations/judgeme-oauth)
+      - [Live Tennis API](/api-integrations/livetennisapi)
+      - [Lovable (MCP)](/api-integrations/lovable-mcp)
+      - [Luma (v2)](/api-integrations/luma-v2)
+      - [Meilisearch](/api-integrations/meilisearch)
+      - [MYOB](/api-integrations/myob)
+      - [Neon](/api-integrations/neon)
+      - [Okta (API Token)](/api-integrations/okta-api-key)
+      - [Omni Analytics](/api-integrations/omni)
+      - [Onshape](/api-integrations/onshape)
+      - [Pushpay ChMS (v2)](/api-integrations/pushpay-chms-v2)
+      - [Redo](/api-integrations/redo)
+      - [Revolut Business](/api-integrations/revolut-business)
+      - [RyderShip](/api-integrations/rydership)
+      - [Sage 300 Construction and Real Estate](/api-integrations/sage-300-cre)
+      - [ServiceNow (JWT)](/api-integrations/servicenow-jwt)
+      - [SHOPLINE](/api-integrations/shopline)
+      - [SHOPLINE (OAuth)](/api-integrations/shopline-oauth)
+      - [Splunk](/api-integrations/splunk)
+      - [Statsig](/api-integrations/statsig)
+      - [Stedi (Healthcare)](/api-integrations/stedi)
+      - [Streamline AI](/api-integrations/streamline-ai)
+      - [Threads](/api-integrations/threads)
+      - [Transporeon Carrier Interface (Basic Auth)](/api-integrations/transporeon-carrier-basic)
+      - [Transporeon Carrier Interface (Client Credentials)](/api-integrations/transporeon-carrier-oauth2-cc)
+      - [Trustpilot](/api-integrations/trustpilot)
+      - [Trustpilot (Client Credentials)](/api-integrations/trustpilot-cc)
+      - [UKG Pro (Workforce Management ROPC)](/api-integrations/ukg-pro-wfm-ropc)
+      - [Viewpoint Vista](/api-integrations/viewpoint-vista)
+      - [Vincere](/api-integrations/vincere)
+      - [Yokoy](/api-integrations/yokoy)
+    </Accordion>
+  </AccordionGroup>
+
+  ## New blog posts
+
+  New posts from the Nango team in August:
+
+  - [What we learned operating auth for 900+ APIs](https://nango.dev/blog/lessons-from-operating-api-auth-for-900-apis)
+  - [What engineering teams look for in API integration platforms](https://nango.dev/blog/what-engineering-teams-look-for-in-api-integration-platforms)
+  - [How developers secure AI agent access to APIs](https://nango.dev/blog/how-developers-secure-ai-agent-access-to-apis)
+</Update>
+---
+
 <Update label="New Management MCP tools" description="August 25, 2026">
   The [Management MCP server](/reference/backend/management-mcp) initially launched with logs tools only. It now exposes 14 tools covering most day-to-day Nango operations, so an agent can configure integrations, inspect connections, call external APIs, and look things up in the Nango docs directly:
 
