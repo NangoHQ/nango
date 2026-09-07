@@ -98,6 +98,22 @@ describe('proxyRequestTool', () => {
         });
     });
 
+    it('keeps an extreme exponent in exponential notation instead of writing it out', async () => {
+        // toFixed() would turn this 25 byte literal into ten million characters, well past the response limit.
+        mockProxyResponse('{"tiny":1.00000000000001e-9999999,"id":123456789012345678901234567890}', 'application/json');
+
+        const result = await requestThroughTool();
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.body).toStrictEqual({
+                tiny: '1.00000000000001e-9999999',
+                // Well inside the range, so a large id is still written out in full.
+                id: '123456789012345678901234567890'
+            });
+        }
+    });
+
     it('returns normal JSON while preserving unsafe and high-precision numbers as strings', async () => {
         mockProxyResponse(
             '{"count":42,"safe":9007199254740991,"unsafe":7584781588001541408,"exponent":1e20,"decimal":0.1234567890123456}',

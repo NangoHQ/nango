@@ -46,13 +46,26 @@ function formatBody(body: string, mediaType: string): ProxyRequestOutput['body']
 }
 
 /**
+ * Past this the number is written in exponential notation instead. toFixed() writes every digit out,
+ * so an extreme exponent expands a short literal into a huge string: json-bigint rejects overflow
+ * (1e309 throws) but not underflow (1e-9999999 parses to a BigNumber and formats to ten million
+ * characters), and the response byte limit is applied before formatting. Real identifiers and
+ * decimals sit far inside this, so nothing legitimate changes shape.
+ */
+const MAX_POSITIONAL_EXPONENT = 100;
+
+/**
  * json-bigint parses long numeric tokens as BigNumber objects. Safe integers remain numbers; unsafe integers and
  * high-precision decimals become strings so MCP serialization cannot silently round provider data.
  */
 function normalizeLosslessJson(value: unknown): ProxyRequestOutput['body'] {
     if (isJsonBigNumber(value)) {
         const number = value.toNumber();
-        return value.isInteger() && Number.isSafeInteger(number) ? number : value.toFixed();
+        if (value.isInteger() && Number.isSafeInteger(number)) {
+            return number;
+        }
+        // Read the exponent rather than measuring toFixed(), which would build the huge string first.
+        return Math.abs(value.e ?? 0) > MAX_POSITIONAL_EXPONENT ? value.toString() : value.toFixed();
     }
     if (typeof value === 'number') {
         return Number.isInteger(value) && !Number.isSafeInteger(value) ? value.toString() : value;
@@ -71,8 +84,11 @@ function normalizeLosslessJson(value: unknown): ProxyRequestOutput['body'] {
 
 interface JsonBigNumber {
     readonly _isBigNumber: true;
+    /** Base 10 exponent. Optional so a build without it falls back to the positional format, as before. */
+    readonly e?: number | null;
     isInteger(): boolean;
     toFixed(): string;
+    toString(): string;
     toNumber(): number;
 }
 
