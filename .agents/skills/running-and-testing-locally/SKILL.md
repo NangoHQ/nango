@@ -67,6 +67,31 @@ npm run dev:watch:apps
 
 Wait for the TypeScript build to complete in Terminal 1 before starting services in Terminal 2. The server runs database migrations automatically on startup (`NANGO_MIGRATE_AT_START` defaults to true).
 
+## Verify the stack started — do this every time
+
+**The webapp answering on 3000 is not evidence the stack is up.** The server starts last (it waits on the TypeScript build, then Redis, then migrations) and can die 40–60s in while Vite keeps serving 3000 and 3009 happily. `concurrently` does not take the others down with it, so the dashboard loads and every API call fails.
+
+Gate on the server's health endpoint, and **bound the wait** — an open-ended `until curl … done` will sit there for as long as you let it while the answer is already in the log:
+
+```bash
+# ~90s is enough for build + migrations on a warm machine
+for i in $(seq 1 18); do
+  curl -sf http://localhost:3003/health && break
+  sleep 5
+done
+curl -s http://localhost:3003/health   # expect {"result":"ok"}
+```
+
+If that doesn't come back OK, **read the log before doing anything else** — do not restart, and do not keep waiting:
+
+```bash
+grep -E 'uncaughtException|"level":"error"' <stack-log> | head -5
+```
+
+The server logs its fatal error and exits within a second of hitting it, so the cause is already sitting in the log by the time the first health check fails.
+
+Agents running the stack in a background task: check the log **once, immediately** after the first failed health check, rather than polling the port for minutes.
+
 ## Selective Service Commands
 
 Run individual services when you only need to restart one:
@@ -115,6 +140,27 @@ ORCHESTRATOR_SERVICE_URL="http://localhost:3008"
 ```
 
 `NANGO_ENCRYPTION_KEY` is **required** for the persist service and Connect UI to start (generate with `openssl rand -base64 32` and add to `.env`).
+
+### Feature flags locally
+
+Flags default to **off** locally, so a feature behind one shows the pre-flag UI and looks like your branch didn't take effect. Point the provider at the environment and set the flag you need:
+
+```ini
+NANGO_FLAG_PROVIDER=env
+NANGO_FEATURE_FLAG_S26_PRICING=true   # new pricing: 3 billed metrics, plan cards, billing page
+```
+
+The env var is the flag key uppercased with dashes as underscores, prefixed `NANGO_FEATURE_FLAG_` — so `s26-pricing` becomes `NANGO_FEATURE_FLAG_S26_PRICING`. Flag keys live in `packages/feature-flags/lib/flags.ts`. Restart the server after changing one; the provider reads the environment at startup.
+
+**`NANGO_CLOUD=true` silently disables all of this.** `buildProvider` refuses the env provider under cloud mode and falls back to noop, so every flag reads its default however many `NANGO_FEATURE_FLAG_*` vars are set. The only sign is one line at startup:
+
+```
+warning NANGO_FLAG_PROVIDER=env is not supported on cloud; using noop provider
+```
+
+Check for it whenever a flag appears to have no effect. Setting `NANGO_CLOUD=false` restores flags but switches the dashboard to the classic getting-started page, so it's a straight trade — pick whichever the task needs.
+
+Some surfaces sit behind a **dev-tool override** rather than a server flag — the billing page's spend headline and per-metric charges, for instance. Those are toggled in the browser: `Ctrl+Shift+D` opens the dev panel, then "Billing Overrides".
 
 ## Browser Testing Workflow
 
@@ -268,6 +314,8 @@ _No flows documented yet — add the first one!_
 
 | Issue | Symptom | Fix |
 |-------|---------|-----|
+| **Migration from another worktree** | Server exits on startup: `The migration directory is corrupt, the following files are missing: <file>.cjs`. Webapp still serves 3000, so only API calls fail | See **Migration mismatch across worktrees** below |
+| Feature looks unchanged | Your branch's UI never appears, no errors anywhere | The feature is behind a flag that defaults off — see **Feature flags locally** |
 | Docker not running | `Cannot connect to the Docker daemon` | Start Docker Desktop |
 | Port already in use | `EADDRINUSE` on startup | Kill the process on that port: `lsof -ti:PORT \| xargs kill` |
 | DB connection refused | Server crashes on startup | Check `npm run dev:docker` — wait for postgres to be ready |
@@ -278,3 +326,30 @@ _No flows documented yet — add the first one!_
 | Connect UI not working | 500 errors or session failures | Set `NANGO_ENCRYPTION_KEY` in `.env` |
 | Can't log in on fresh DB | No account exists yet | Sign up first at http://localhost:3000/signup, then check server logs for the verification callback URL |
 | Elasticsearch errors in logs | Logs-related warnings | Safe to ignore if `NANGO_LOGS_ENABLED="false"` — logs go to stdout instead |
+
+### Migration mismatch across worktrees
+
+Every worktree shares one `nango-db` container, so the migrations table is shared while the migration *files* are per-checkout. When another worktree runs a branch carrying a migration your checkout doesn't have, knex records it and then refuses to start for you:
+
+```
+The migration directory is corrupt, the following files are missing: 20260829120000_plans_add_growth_addon.cjs
+```
+
+Find out where that file lives, because the fix differs:
+
+```bash
+git fetch origin master -q
+git ls-tree -r origin/master --name-only | grep <migration-filename>
+```
+
+- **On master** — your branch is simply behind. Rebase onto `origin/master` (or merge it in) and the file comes with it. This is the common case and the only clean fix.
+- **Not on master** — it came from someone's unmerged branch, and no rebase will produce it. Delete the row so knex stops expecting it:
+
+  ```bash
+  docker exec nango-db psql -U nango -d nango \
+    -c "delete from nango._nango_auth_migrations where name = '<migration-filename>';"
+  ```
+
+  This does **not** undo whatever the migration did to the schema — it only stops knex refusing to boot. If that migration added a column your branch's code doesn't know about, you're fine; if it changed one your code reads, reset the database instead.
+
+Adding a migration on your own branch does the same thing to everyone else, so expect the complaint in the other direction too.
