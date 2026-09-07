@@ -16,8 +16,8 @@ import type { SignOptions } from 'jsonwebtoken';
 const CONNECTION_ID = 'my-connection-id';
 const OTHER_CONNECTION_ID = 'other-connection-id';
 
-function webhookUrlFor(connectionId: string): string {
-    return `${getGlobalWebhookReceiveUrl()}/${seeders.getTestEnvironment().uuid}/test?nangoConnectionId=${connectionId}`;
+function webhookUrlFor(connectionId: string, uniqueKey = 'test'): string {
+    return `${getGlobalWebhookReceiveUrl()}/${seeders.getTestEnvironment().uuid}/${encodeURIComponent(uniqueKey)}?nangoConnectionId=${connectionId}`;
 }
 
 function generateKeyPair() {
@@ -36,13 +36,19 @@ const BARE_PUBLIC_KEY = PUBLIC_KEY.replace(/-----BEGIN PUBLIC KEY-----|-----END 
 function getNangoMock({
     integrationPublicKey = PUBLIC_KEY,
     connectionSecret = null,
-    connectionExists = true
+    connectionExists = true,
+    uniqueKey = 'test'
 }: {
     integrationPublicKey?: string | null;
     connectionSecret?: unknown;
     connectionExists?: boolean;
+    uniqueKey?: string;
 } = {}) {
-    const integration = getTestConfig({ provider: 'gong', ...(integrationPublicKey !== null && { custom: { webhookSecret: integrationPublicKey } }) });
+    const integration = getTestConfig({
+        provider: 'gong',
+        unique_key: uniqueKey,
+        ...(integrationPublicKey !== null && { custom: { webhookSecret: integrationPublicKey } })
+    });
     const nango = new InternalNango({
         team: seeders.getTestTeam(),
         environment: seeders.getTestEnvironment(),
@@ -269,6 +275,19 @@ describe('Gong webhook routing', () => {
 
         expect(result.isErr()).toBe(true);
         expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('accepts a webhook_url claim for an integration whose unique_key needs URL-encoding', async () => {
+        const uniqueKey = 'foo:bar@baz';
+        const { nango, execute } = getNangoMock({ uniqueKey });
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const headers = { authorization: `Bearer ${signToken(rawBody, { webhookUrl: webhookUrlFor(CONNECTION_ID, uniqueKey) })}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledOnce();
     });
 
     it('forwards the full body and connection ids on success', async () => {

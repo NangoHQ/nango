@@ -104,7 +104,7 @@ const route: WebhookHandler<GongWebhookPayload> = async (nango, headers, body, r
     }
 
     const webhookUrlContext = {
-        expectedBaseUrl: `${getGlobalWebhookReceiveUrl()}/${nango.environment.uuid}/${nango.integration.unique_key}`,
+        expectedBaseUrl: `${getGlobalWebhookReceiveUrl()}/${nango.environment.uuid}/${encodeURIComponent(nango.integration.unique_key)}`,
         connectionIdentifierValue
     };
 
