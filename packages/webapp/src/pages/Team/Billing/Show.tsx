@@ -9,7 +9,6 @@ import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Separator } from '@/components/ui/Separator';
 import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { usePlanOverrideStore } from '@/features/planOverride';
-import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetBillingUsage, useApiGetOverdueInvoices, useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
@@ -48,8 +47,7 @@ export const TeamBilling: React.FC = () => {
     // The cap warning belongs with the plan, not the usage table, so it sits above the divider.
     // Free is the only capped plan, and the sidebar alert already runs this query app-wide.
     const { data: caps } = useApiGetUsage(env);
-    const { data: metaData } = useMeta();
-    const billedMetrics = billedUsageMetrics(environmentData?.plan, metaData?.data.s26Pricing === true);
+    const billedMetrics = billedUsageMetrics(environmentData?.plan);
 
     // The dev override fabricates the overdue response, so it has to be handed a real portal URL for
     // the previewed "View invoices" link to open anything. Fetched only while the override is on, and
