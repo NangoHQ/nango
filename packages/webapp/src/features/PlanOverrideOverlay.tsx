@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/Switch';
 import { Tag } from '@/components/ui/Tag';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
-import { hasMonthlySpend } from '@/pages/Team/Billing/planVisibility';
+import { hasMonthlySpend, migratesToPayAsYouGo } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
 import { cn } from '@/utils/utils';
 import { DEFAULTS, usePlanOverrideStore } from './planOverride';
@@ -80,8 +80,26 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
         return duplicated;
     }, [plansList]);
 
-    const prevPlanCodes = plansList?.data.find((plan) => plan.code === overrideCode)?.prevPlan;
-    const scheduledChangeOptions = plansList?.data.filter((plan) => prevPlanCodes?.includes(plan.code));
+    // A downgrade the account could pick itself, plus the Pay-as-you-go migration for the retired v2
+    // plans — which is scheduled on them rather than chosen, so it is absent from `prevPlan`.
+    const scheduledChangeOptions = useMemo(() => {
+        const definitions = plansList?.data;
+        if (!definitions || !overrideCode) {
+            return [];
+        }
+
+        const prevPlanCodes = definitions.find((plan) => plan.code === overrideCode)?.prevPlan ?? [];
+        const options = definitions
+            .filter((plan) => prevPlanCodes.includes(plan.code))
+            .map((plan) => ({ code: plan.code, label: plan.code === 'free' ? 'Free (cancellation)' : `${plan.title} (downgrade)` }));
+
+        const migrationTarget = definitions.find((plan) => plan.code === 'pay-as-you-go');
+        if (migrationTarget && migratesToPayAsYouGo(overrideCode) && !options.some((o) => o.code === migrationTarget.code)) {
+            options.push({ code: migrationTarget.code, label: `${migrationTarget.title} (migration)` });
+        }
+
+        return options;
+    }, [plansList, overrideCode]);
 
     // `useCurrentPlan` already has the override applied, so the real plan has to come from the
     // un-overridden query or the caption would name whatever is being previewed.
@@ -135,7 +153,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                 </div>
 
                 <Section title="Plan state">
-                    {scheduledChangeOptions && scheduledChangeOptions.length > 0 && (
+                    {scheduledChangeOptions.length > 0 && (
                         <Row label="Scheduled change">
                             <Select
                                 value={scheduledTargetCode ?? NO_SCHEDULED_CHANGE_VALUE}
@@ -144,9 +162,9 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                                 <RowTrigger placeholder="None" />
                                 <SelectContent>
                                     <SelectItem value={NO_SCHEDULED_CHANGE_VALUE}>None</SelectItem>
-                                    {scheduledChangeOptions.map((plan) => (
-                                        <SelectItem key={plan.code} value={plan.code}>
-                                            {plan.code === 'free' ? 'Free (cancellation)' : `${plan.title} (downgrade)`}
+                                    {scheduledChangeOptions.map((option) => (
+                                        <SelectItem key={option.code} value={option.code}>
+                                            {option.label}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

@@ -135,11 +135,8 @@ const MIGRATES_TO_PAY_AS_YOU_GO: Record<DBPlan['name'], boolean> = {
 };
 
 /** In scope for the migration by plan alone — says nothing about whether Orb has scheduled it. */
-export function migratesToPayAsYouGo(plan: ApiPlan | null | undefined): boolean {
-    if (!plan) {
-        return false;
-    }
-    return MIGRATES_TO_PAY_AS_YOU_GO[plan.name];
+export function migratesToPayAsYouGo(code: DBPlan['name']): boolean {
+    return MIGRATES_TO_PAY_AS_YOU_GO[code];
 }
 
 export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {

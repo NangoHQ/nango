@@ -23,7 +23,7 @@ export function planTransition({
     plans: PlanDefinition[] | undefined;
     now: Date;
 }): PlanTransition | null {
-    if (!plan || !migratesToPayAsYouGo(plan)) {
+    if (!plan || !migratesToPayAsYouGo(plan.name)) {
         return null;
     }
 
