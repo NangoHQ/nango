@@ -1,0 +1,71 @@
+---
+title: 'bol.com'
+sidebarTitle: 'bol.com'
+description: 'Connect to the bol.com Retailer API with OAuth 2.0 client credentials'
+---
+
+## Quickstart
+
+Connect to the bol.com Retailer API with Nango and make an authenticated request.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango, go to **Integrations**, select **Configure New Integration**, then select **bol.com**.
+    </Step>
+    <Step id="connect-bol-com" title="Connect bol.com">
+    Go to **Connections**, select **Add Test Connection**, then enter your bol.com Retailer API Client ID and Client Secret. Nango exchanges them for a short-lived access token; no user redirect is required.
+    </Step>
+    <Step id="call-retailer-api" title="Call the Retailer API">
+    List the details for the connected retailer. Replace the placeholders with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/retailers/current" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const response = await nango.get({
+            endpoint: '/retailers/current',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(response.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Nango adds the Bearer token and bol.com Retailer API v10 media type to the upstream request. It also renews the short-lived access token when needed. Check the **Logs** tab in Nango to inspect the request.
+    </Step>
+    <Step id="implement-nango" title="Implement Nango in your app">
+    Follow the [Auth implementation guide](/guides/auth/auth-guide) to add the connection flow to your application.
+
+    To create Retailer API credentials, follow the connection guide linked below.
+    </Step>
+</Steps>
+
+## bol.com integration guides
+
+- [How to connect a bol.com seller account](/api-integrations/bol-com/connect): Create Retailer API client credentials and enter them in Nango.
+
+Official docs: [bol.com authentication](https://api.bol.com/retailer/public/Retailer-API/authentication.html) and [Retailer API v10 reference](https://api.bol.com/retailer/public/redoc/v10/retailer.html).
+
+## Pre-built syncs & actions for bol.com
+
+import PreBuiltUseCases from "/snippets/generated/bol-com/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />

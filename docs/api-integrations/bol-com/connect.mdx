@@ -1,0 +1,34 @@
+---
+title: 'Connect a bol.com seller account'
+sidebarTitle: 'Connect bol.com'
+description: 'Create bol.com Retailer API client credentials and connect them to Nango'
+---
+
+## Overview
+
+The bol.com Retailer API uses OAuth 2.0 client credentials. You need a Client ID and Client Secret from the bol.com Seller Dashboard; no redirect URI is required.
+
+You must have a bol.com seller account with access to the Retailer API.
+
+<Steps>
+    <Step id="open-api-settings" title="Open API settings">
+    Sign in to the [bol.com Seller Dashboard](https://partnerplatform.bol.com/). Open your account profile, select **Settings**, then open **Services** > **API settings**.
+    </Step>
+    <Step id="add-technical-contact" title="Add a technical contact">
+    Add the technical contact responsible for the integration if one is not already configured. bol.com requires this before you can create Retailer API credentials.
+    </Step>
+    <Step id="create-client-credentials" title="Create client credentials">
+    Under **Client credentials for the Retailer API**, select **Create**, give the credential a recognizable name, and save it. Copy the generated Client ID, then select **Show secret** and copy the Client Secret.
+
+    <Warning>Store the Client Secret securely. Create a separate credential for each application or third party, and never share credentials between integrations.</Warning>
+    </Step>
+    <Step id="enter-credentials-in-nango" title="Enter the credentials in Nango">
+    In Nango, create or open the **bol.com** integration. Go to **Connections**, select **Add Test Connection**, and enter the Client ID and Client Secret.
+
+    <img src="/api-integrations/bol-com/form.png" style={{maxWidth: "450px" }} />
+
+    Nango sends the credentials to `https://login.bol.com/token` using HTTP Basic authentication and stores the returned short-lived access token. It requests a new token when the current one expires instead of requesting one for every API call.
+    </Step>
+</Steps>
+
+For more details, see [Getting access with API client credentials](https://partnerplatform.bol.com/en/idp/getting-access-with-api-client-credentials) and the [bol.com authentication guide](https://api.bol.com/retailer/public/Retailer-API/authentication.html).
