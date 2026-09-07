@@ -15,18 +15,15 @@ const CONNECTION_ID = 'my-connection-id';
 const SIGNING_KEY = Buffer.alloc(32, 7);
 const SIGNING_SECRET = `whsec_${SIGNING_KEY.toString('base64')}`;
 const OTHER_SIGNING_KEY = Buffer.alloc(32, 9);
-const OTHER_SIGNING_SECRET = `whsec_${OTHER_SIGNING_KEY.toString('base64')}`;
 
 function getNangoMock({
-    integrationSecret = SIGNING_SECRET,
-    connectionSecret = null,
+    connectionSecret = SIGNING_SECRET,
     connectionExists = true
 }: {
-    integrationSecret?: string | null;
     connectionSecret?: unknown;
     connectionExists?: boolean;
 } = {}) {
-    const integration = getTestConfig({ provider: 'granola', ...(integrationSecret !== null && { custom: { webhookSecret: integrationSecret } }) });
+    const integration = getTestConfig({ provider: 'granola' });
     const nango = new InternalNango({
         team: seeders.getTestTeam(),
         environment: seeders.getTestEnvironment(),
@@ -99,30 +96,21 @@ describe('Granola webhook routing', () => {
         expect(execute).not.toHaveBeenCalled();
     });
 
-    it('returns success without dispatch when the connection does not exist but the integration secret already validated the request', async () => {
+    it('rejects a signed delivery whose connection id does not match a real connection', async () => {
         const { nango, getConnection, execute } = getNangoMock({ connectionExists: false });
         const body = getBody();
         const rawBody = JSON.stringify(body);
 
+        // A validly-shaped signature is not enough on its own -- Standard Webhooks signatures don't bind to a
+        // destination, so this must be rejected on the connection lookup, not accepted as "unroutable but ok".
         const result = await GranolaWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, { nangoConnectionId: CONNECTION_ID });
-
-        expect(result.isOk()).toBe(true);
-        expect(getConnection).toHaveBeenCalledWith(CONNECTION_ID);
-        expect(execute).not.toHaveBeenCalled();
-    });
-
-    it('rejects a webhook for an unknown connection when nothing can validate it', async () => {
-        const { nango, getConnection, execute } = getNangoMock({ integrationSecret: null, connectionExists: false });
-        const body = getBody();
-
-        const result = await GranolaWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
 
         expect(result.isErr()).toBe(true);
         expect(getConnection).toHaveBeenCalledWith(CONNECTION_ID);
         expect(execute).not.toHaveBeenCalled();
     });
 
-    it('rejects an unauthenticated request for an unknown connection without looking it up', async () => {
+    it('rejects an unauthenticated request without looking up the connection', async () => {
         const { nango, getConnection, execute } = getNangoMock({ connectionExists: false });
         const body = getBody();
 
@@ -133,35 +121,24 @@ describe('Granola webhook routing', () => {
         expect(execute).not.toHaveBeenCalled();
     });
 
-    it('rejects a webhook when no secret is configured anywhere', async () => {
-        const { nango, execute } = getNangoMock({ integrationSecret: null });
+    it('rejects a webhook when the connection has no secret configured', async () => {
+        const { nango, execute } = getNangoMock({ connectionSecret: null });
         const body = getBody();
+        const rawBody = JSON.stringify(body);
 
-        const result = await GranolaWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
+        const result = await GranolaWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, { nangoConnectionId: CONNECTION_ID });
 
         expect(result.isErr()).toBe(true);
         expect(execute).not.toHaveBeenCalled();
     });
 
-    it("falls back to the connection's webhook secret when the integration has none", async () => {
-        const { nango, execute } = getNangoMock({ integrationSecret: null, connectionSecret: OTHER_SIGNING_SECRET });
+    it("rejects a delivery signed with a different connection's secret", async () => {
+        const { nango, execute } = getNangoMock({ connectionSecret: SIGNING_SECRET });
         const body = getBody();
         const rawBody = JSON.stringify(body);
 
-        const result = await GranolaWebhookRouting.default(nango, getSignedHeaders(rawBody, OTHER_SIGNING_KEY), body, rawBody, {
-            nangoConnectionId: CONNECTION_ID
-        });
-
-        expect(result.isOk()).toBe(true);
-        expect(execute).toHaveBeenCalledOnce();
-    });
-
-    it('prefers the integration secret over the connection secret', async () => {
-        const { nango, execute } = getNangoMock({ integrationSecret: SIGNING_SECRET, connectionSecret: OTHER_SIGNING_SECRET });
-        const body = getBody();
-        const rawBody = JSON.stringify(body);
-
-        // signed with the connection secret only -- should fail since the integration secret takes priority
+        // signed with a different connection's secret -- must not validate against this one, since a shared
+        // or mismatched secret would let a delivery for one connection be replayed against another.
         const result = await GranolaWebhookRouting.default(nango, getSignedHeaders(rawBody, OTHER_SIGNING_KEY), body, rawBody, {
             nangoConnectionId: CONNECTION_ID
         });
@@ -171,20 +148,11 @@ describe('Granola webhook routing', () => {
     });
 
     it('rejects an invalid connection webhook secret', async () => {
-        const { nango, execute } = getNangoMock({ integrationSecret: null, connectionSecret: ['invalid-secret'] });
+        const { nango, execute } = getNangoMock({ connectionSecret: ['invalid-secret'] });
         const body = getBody();
+        const rawBody = JSON.stringify(body);
 
-        const result = await GranolaWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
-
-        expect(result.isErr()).toBe(true);
-        expect(execute).not.toHaveBeenCalled();
-    });
-
-    it('rejects a webhook missing signature headers when a secret is configured', async () => {
-        const { nango, execute } = getNangoMock();
-        const body = getBody();
-
-        const result = await GranolaWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
+        const result = await GranolaWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, { nangoConnectionId: CONNECTION_ID });
 
         expect(result.isErr()).toBe(true);
         expect(execute).not.toHaveBeenCalled();

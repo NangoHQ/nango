@@ -9,11 +9,11 @@ Granola webhooks are available on Business and Enterprise plans. A webhook endpo
 ## How it works
 
 1. Granola sends a POST request to your Nango webhook URL when a subscribed note event occurs.
-2. Nango verifies the delivery's signature (if you've set a **Webhook secret** on the integration), then routes the event to the connection identified by the `nangoConnectionId` query param on the webhook URL — Granola's payload has no field that identifies a single Nango connection, so this param is required.
+2. Nango looks up the connection identified by the `nangoConnectionId` query param on the webhook URL — Granola's payload has no field that identifies a single Nango connection, so this param is required — verifies the delivery's signature against that connection's own **Webhook secret**, then routes the event to it.
 3. Fetch the note referenced by the event from the Granola API using the `note_id` from the payload — access checks apply at fetch time, so a delivery never exposes more than the API would.
 
 <Tip>
-Register a separate Granola webhook endpoint per Nango connection, each pointing at your Nango webhook URL with `?nangoConnectionId=<CONNECTION-ID>` appended. A delivery with no `nangoConnectionId` is rejected; one referencing a `nangoConnectionId` that doesn't match any connection is acknowledged but not routed anywhere.
+Register a separate Granola webhook endpoint per Nango connection, each pointing at your Nango webhook URL with `?nangoConnectionId=<CONNECTION-ID>` appended. A delivery with no `nangoConnectionId` is rejected; one referencing a `nangoConnectionId` that doesn't match any connection is rejected too. Standard Webhooks signatures don't bind a delivery to a destination, so verification always uses that connection's own secret — there's no integration-wide secret that can stand in for it, even with a single connection.
 </Tip>
 
 ## Setup
@@ -97,28 +97,25 @@ In the Nango dashboard, open your Granola integration and copy the **Webhook URL
 
 ### 3. Set the webhook secret in Nango
 
-Granola generates a new, distinct `signing_secret` every time you create a webhook endpoint — you can't reuse one secret across multiple endpoints. Where you store it in Nango depends on how many Granola connections you have under this integration:
+Granola generates a new, distinct `signing_secret` every time you create a webhook endpoint — you can't reuse one secret across multiple endpoints. Set each connection's `signing_secret` as `webhookSecret` in that connection's metadata — every connection needs its own, even if you only have one right now:
 
-- **One connection**: set the `signing_secret` value (starts with `whsec_`) as the **Webhook secret** on the Granola integration in the Nango dashboard.
-- **Multiple connections**: each one has its own webhook endpoint and secret, so set each connection's `signing_secret` as `webhookSecret` in that connection's metadata instead:
+```bash
+curl -X POST "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<SIGNING-SECRET>" }
+  }'
+```
 
-    ```bash
-    curl -X POST "https://api.nango.dev/connections/metadata" \
-      -H "Authorization: Bearer <NANGO-API-KEY>" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "connection_id": "<CONNECTION-ID>",
-        "provider_config_key": "<INTEGRATION-ID>",
-        "metadata": { "webhookSecret": "<SIGNING-SECRET>" }
-      }'
-    ```
-
-    See [Set connection metadata](/reference/backend/http-api/connections/set-metadata) for the full reference. Nango checks the integration-level **Webhook secret** first and falls back to the connection's metadata when that's not set.
+See [Set connection metadata](/reference/backend/http-api/connections/set-metadata) for the full reference.
 
 Granola doesn't let you retrieve the secret again after creation — if you lose it, create a new webhook endpoint and update both sides.
 
 <Note>
-If neither a **Webhook secret** nor a connection-level `webhookSecret` is set, Nango rejects the delivery — there must be a secret to validate against.
+There's no integration-level webhook secret for Granola — Standard Webhooks signatures don't carry any binding to a specific destination, so a single secret shared across connections couldn't stop a delivery meant for one connection from being replayed against another. Each connection must have its own `webhookSecret` in its metadata; Nango rejects the delivery otherwise.
 </Note>
 
 ### 4. Delete the webhook endpoint on connection deletion
@@ -189,6 +186,6 @@ curl -X DELETE "https://api.nango.dev/proxy/v1/webhook-endpoints/<WEBHOOK-ENDPOI
   -H "Connection-Id: <CONNECTION-ID>"
 ```
 
-Or delete it from **Settings → Connectors → Webhooks** in the Granola dashboard. Either way, also clear `webhookEndpointId` (and `webhookSecret`, if it was connection-level) from the connection's metadata so nothing references a deleted endpoint. Re-enable notifications by creating a new webhook endpoint with the steps above.
+Or delete it from **Settings → Connectors → Webhooks** in the Granola dashboard. Either way, also clear `webhookEndpointId` and `webhookSecret` from the connection's metadata so nothing references a deleted endpoint. Re-enable notifications by creating a new webhook endpoint with the steps above.
 
 <Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>
