@@ -14,6 +14,8 @@ Gong sends webhooks through **Automation Rules**: a rule fires whenever a call m
 
 <Tip>
 Register a separate automation rule per Nango connection, each pointing at your Nango webhook URL with `?nangoConnectionId=<CONNECTION-ID>` appended. A delivery with no `nangoConnectionId` is always rejected. A delivery whose `nangoConnectionId` doesn't match a real connection is rejected too — unless the integration-level **Webhook secret** is set and the signature verifies against it, in which case it's accepted but not routed anywhere.
+
+When a public key is configured, Nango also checks that the JWT's `webhook_url` claim exactly matches the destination URL for that connection, including the `nangoConnectionId` query param. This stops a validly-signed delivery for one connection from being replayed against a different connection's route — but it also means the URL you paste into Gong's automation rule must match the one Nango expects byte-for-byte.
 </Tip>
 
 ## Setup

@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 
 import jwt from 'jsonwebtoken';
 
-import { NangoError } from '@nangohq/shared';
+import { getGlobalWebhookReceiveUrl, NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import type { GongWebhookPayload, WebhookHandler } from './types.js';
@@ -22,13 +22,44 @@ function toPemPublicKey(key: string): string {
     return `-----BEGIN PUBLIC KEY-----\n${key}\n-----END PUBLIC KEY-----`;
 }
 
+// Gong's automation rule is registered against one specific destination URL (including the
+// nangoConnectionId query param), and echoes that exact URL back in the webhook_url claim. Checking
+// it against the URL the request actually came in on binds the signed delivery to one connection,
+// so a valid signature for connection A can't be replayed by requesting it with connection B's id.
+function isExpectedWebhookUrl(claimedUrl: string | undefined, expectedBaseUrl: string, connectionIdentifierValue: string): boolean {
+    if (!claimedUrl) {
+        return false;
+    }
+
+    try {
+        const claimed = new URL(claimedUrl);
+        const expected = new URL(expectedBaseUrl);
+        return (
+            claimed.origin === expected.origin &&
+            claimed.pathname === expected.pathname &&
+            claimed.searchParams.get('nangoConnectionId') === connectionIdentifierValue
+        );
+    } catch {
+        return false;
+    }
+}
+
 // Gong signs webhook deliveries with a JWT (RS256) in the Authorization header, using the
 // automation rule's public key. See https://help.gong.io/docs/prepare-your-receiving-application-to-receive-a-webhook-jwt-header
-function validate(publicKey: string, token: string, rawBody: string | Buffer): boolean {
+function validate(
+    publicKey: string,
+    token: string,
+    rawBody: string | Buffer,
+    webhookUrlContext: { expectedBaseUrl: string; connectionIdentifierValue: string }
+): boolean {
     let claims: GongWebhookJwtClaims;
     try {
         claims = jwt.verify(token, toPemPublicKey(publicKey), { algorithms: ['RS256'] }) as GongWebhookJwtClaims;
     } catch {
+        return false;
+    }
+
+    if (!isExpectedWebhookUrl(claims.webhook_url, webhookUrlContext.expectedBaseUrl, webhookUrlContext.connectionIdentifierValue)) {
         return false;
     }
 
@@ -48,14 +79,19 @@ function validate(publicKey: string, token: string, rawBody: string | Buffer): b
     }
 }
 
-function verifySignature(publicKey: string, headers: Record<string, string>, rawBody: string | Buffer): 'valid' | 'missing' | 'invalid' {
+function verifySignature(
+    publicKey: string,
+    headers: Record<string, string>,
+    rawBody: string | Buffer,
+    webhookUrlContext: { expectedBaseUrl: string; connectionIdentifierValue: string }
+): 'valid' | 'missing' | 'invalid' {
     const authHeader = headers['authorization'];
     if (!authHeader) {
         return 'missing';
     }
 
     const token = authHeader.replace(/^Bearer\s+/i, '');
-    return validate(publicKey, token, rawBody) ? 'valid' : 'invalid';
+    return validate(publicKey, token, rawBody, webhookUrlContext) ? 'valid' : 'invalid';
 }
 
 const route: WebhookHandler<GongWebhookPayload> = async (nango, headers, body, rawBody, query) => {
@@ -67,10 +103,15 @@ const route: WebhookHandler<GongWebhookPayload> = async (nango, headers, body, r
         return Err(new NangoError('webhook_missing_connection_id'));
     }
 
+    const webhookUrlContext = {
+        expectedBaseUrl: `${getGlobalWebhookReceiveUrl()}/${nango.environment.uuid}/${nango.integration.unique_key}`,
+        connectionIdentifierValue
+    };
+
     const integrationPublicKey = nango.integration.custom?.['webhookSecret'];
 
     if (integrationPublicKey) {
-        const result = verifySignature(integrationPublicKey, headers, rawBody);
+        const result = verifySignature(integrationPublicKey, headers, rawBody, webhookUrlContext);
         if (result !== 'valid') {
             return Err(new NangoError(result === 'missing' ? 'webhook_missing_signature' : 'webhook_invalid_signature'));
         }
@@ -104,7 +145,7 @@ const route: WebhookHandler<GongWebhookPayload> = async (nango, headers, body, r
             return Err(new NangoError('webhook_invalid_secret', { reason: 'No webhook secret configured to validate this request' }));
         }
 
-        const result = verifySignature(connectionPublicKey, headers, rawBody);
+        const result = verifySignature(connectionPublicKey, headers, rawBody, webhookUrlContext);
         if (result !== 'valid') {
             return Err(new NangoError(result === 'missing' ? 'webhook_missing_signature' : 'webhook_invalid_signature'));
         }

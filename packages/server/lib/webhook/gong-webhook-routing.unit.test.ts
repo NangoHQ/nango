@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
-import { seeders } from '@nangohq/shared';
+import { getGlobalWebhookReceiveUrl, seeders } from '@nangohq/shared';
 import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
 
 import * as GongWebhookRouting from './gong-webhook-routing.js';
@@ -14,6 +14,11 @@ import type { GongWebhookPayload } from './types.js';
 import type { SignOptions } from 'jsonwebtoken';
 
 const CONNECTION_ID = 'my-connection-id';
+const OTHER_CONNECTION_ID = 'other-connection-id';
+
+function webhookUrlFor(connectionId: string): string {
+    return `${getGlobalWebhookReceiveUrl()}/${seeders.getTestEnvironment().uuid}/test?nangoConnectionId=${connectionId}`;
+}
 
 function generateKeyPair() {
     return crypto.generateKeyPairSync('rsa', {
@@ -60,10 +65,14 @@ function getNangoMock({
 
 function signToken(
     rawBody: string,
-    { privateKey = PRIVATE_KEY, expiresIn = '5m' }: { privateKey?: string; expiresIn?: SignOptions['expiresIn'] } = {}
+    {
+        privateKey = PRIVATE_KEY,
+        expiresIn = '5m',
+        webhookUrl = webhookUrlFor(CONNECTION_ID)
+    }: { privateKey?: string; expiresIn?: SignOptions['expiresIn']; webhookUrl?: string } = {}
 ): string {
     const bodySha256 = crypto.createHash('sha256').update(rawBody, 'utf8').digest('hex');
-    return jwt.sign({ webhook_url: 'https://api.nango.dev/webhook/gong', body_sha256: bodySha256 }, privateKey, { algorithm: 'RS256', expiresIn });
+    return jwt.sign({ webhook_url: webhookUrl, body_sha256: bodySha256 }, privateKey, { algorithm: 'RS256', expiresIn });
 }
 
 function getBody(overrides?: Partial<GongWebhookPayload>): GongWebhookPayload {
@@ -227,6 +236,34 @@ describe('Gong webhook routing', () => {
         const body = getBody();
         const rawBody = JSON.stringify(body);
         const headers = { authorization: `Bearer ${signToken(rawBody, { privateKey: OTHER_PRIVATE_KEY })}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects a token whose webhook_url claim is missing', async () => {
+        const { nango, execute } = getNangoMock();
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const bodySha256 = crypto.createHash('sha256').update(rawBody, 'utf8').digest('hex');
+        const token = jwt.sign({ body_sha256: bodySha256 }, PRIVATE_KEY, { algorithm: 'RS256', expiresIn: '5m' });
+        const headers = { authorization: `Bearer ${token}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects a validly signed token whose webhook_url claim was registered for a different connection', async () => {
+        const { nango, execute } = getNangoMock();
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        // signed with a real, trusted key, but the automation rule was registered for OTHER_CONNECTION_ID --
+        // replaying it against CONNECTION_ID's route must not be accepted.
+        const headers = { authorization: `Bearer ${signToken(rawBody, { webhookUrl: webhookUrlFor(OTHER_CONNECTION_ID) })}` };
 
         const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
 
