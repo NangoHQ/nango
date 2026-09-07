@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { retry } from './retry.js';
+import { retry, retryFlexible } from './retry.js';
 
 describe('retry', () => {
     it('should retry', async () => {
@@ -120,5 +120,64 @@ describe('httpRetryStrategy', () => {
 
         expect(httpRetryStrategy(new AxiosError('boom', 'E_ONE'), 1)).toBe(true);
         expect(httpRetryStrategy(new AxiosError('boom', 'E_TWO'), 1)).toBe(true);
+    });
+});
+
+// Capture the delays retryFlexible passes to setTimeout, without actually sleeping. Recording is gated
+// by `capturing` so ambient setTimeout calls (e.g. from setup) don't pollute the assertions.
+let capturing = false;
+const recordedDelays: number[] = [];
+vi.mock('node:timers/promises', () => ({
+    setTimeout: (delay?: number) => {
+        if (capturing) {
+            recordedDelays.push(delay ?? 0);
+        }
+        return Promise.resolve();
+    }
+}));
+
+describe('retryFlexible', () => {
+    const maxDelay = 60 * 10 * 1000; // 10 minutes, mirrors the cap inside retryFlexible
+
+    afterEach(() => {
+        capturing = false;
+        recordedDelays.length = 0;
+    });
+
+    // Runs retryFlexible forcing exactly one retry whose onError returns `onErrorWait`, and returns the
+    // delay retryFlexible actually handed to setTimeout for that retry.
+    async function getRetryDelay(onErrorWait: number): Promise<number> {
+        let call = 0;
+        capturing = true;
+        await retryFlexible(
+            () => {
+                call += 1;
+                if (call <= 1) {
+                    throw new Error('boom');
+                }
+                return 'ok';
+            },
+            {
+                max: 1,
+                onError: () => ({ retry: true, reason: 'test', wait: onErrorWait })
+            }
+        );
+        capturing = false;
+        // exactly one retry => exactly one sleep
+        expect(recordedDelays).toHaveLength(1);
+        return recordedDelays[0] ?? NaN;
+    }
+
+    it('caps a header-driven wait at the 10 minute maxDelay', async () => {
+        // A misbehaving/hostile provider returns a huge Retry-After-derived wait (~31 years).
+        expect(await getRetryDelay(1_000_000_000_000)).toBe(maxDelay);
+    });
+
+    it('does not sleep for a negative wait', async () => {
+        expect(await getRetryDelay(-5000)).toBe(0);
+    });
+
+    it('passes through a wait that is within the cap', async () => {
+        expect(await getRetryDelay(5000)).toBe(5000);
     });
 });

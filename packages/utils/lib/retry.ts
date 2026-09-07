@@ -79,7 +79,10 @@ export async function retryFlexible<TReturn>(
                 throw err;
             }
 
-            lastWait = on.wait ?? nextWait;
+            // Clamp the wait to [0, maxDelay]. onError can derive `wait` from provider-controlled
+            // headers (e.g. Retry-After / a retry-at timestamp), so an out-of-range value must not be
+            // able to make us sleep for years or pass a negative delay to setTimeout.
+            lastWait = Math.min(Math.max(on.wait ?? nextWait, 0), maxDelay);
             await setTimeout(lastWait);
         }
     }
