@@ -97,13 +97,21 @@ try {
         clearTimeout(healthCheck);
 
         const consumersStopped = (async () => {
+            logger.info('Closing consumers...');
             await processor.stop();
             await invocationsProcessor.stop();
             if (webhookDispatchConsumer) {
                 await webhookDispatchConsumer.stop();
             }
+            logger.info('Consumers closed');
         })();
-        const serverClosed = new Promise<void>((resolve) => srv.close(() => resolve()));
+        const serverClosed = new Promise<void>((resolve) => {
+            logger.info('Closing HTTP server...');
+            srv.close(() => {
+                logger.info('HTTP server closed');
+                resolve();
+            });
+        });
 
         void (async () => {
             await Promise.all([consumersStopped, serverClosed]);
