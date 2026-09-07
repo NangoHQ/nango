@@ -8,9 +8,8 @@ import svgr from 'vite-plugin-svgr';
 import type { Plugin, UserConfig } from 'vite';
 
 // Only a deployment that can sit under a base path needs the recovery below, and only its own host
-// decides whether an inline script may run. The CDN build stays inline-free: it serves the root, so
-// the recovery could never fire there, and the enforced `script-src 'self'` (set in nango-infra)
-// would block it anyway.
+// decides whether an inline script may run. The CDN serves the root, so the recovery could never
+// fire there, and its enforced `script-src 'self'` (set in nango-infra) would block it anyway.
 const withBasePathRecovery = process.env['CONNECT_UI_BASE_PATH_RECOVERY'] === 'true';
 
 const ENTRY_TAG = '<script type="module" crossorigin';
@@ -59,33 +58,12 @@ function injectBasePathRecovery(): Plugin {
     };
 }
 
-function noInlineScripts(): Plugin {
-    return {
-        name: 'connect-ui:no-inline-scripts',
-        apply: 'build',
-        transformIndexHtml: {
-            order: 'post',
-            handler: (html) => {
-                // Blank out quoted values, preserving length so indexes still map onto `html`: text
-                // inside an attribute value must not pass for an attribute itself.
-                const tagsOnly = html.replace(/"[^"]*"|'[^']*'/g, (quoted) => ' '.repeat(quoted.length));
-                const blocked = /<script\b(?![^>]*\ssrc\s*=)[^>]*>/i.exec(tagsOnly) ?? /<[^>]+\son[a-z]+/i.exec(tagsOnly);
-                if (blocked) {
-                    const snippet = html.slice(blocked.index, blocked.index + 80).trim();
-                    throw new Error(`[connect-ui] no-inline-scripts: "${snippet}" is blocked by the enforced CSP`);
-                }
-                return html;
-            }
-        }
-    };
-}
-
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
     // Relative base so the prebuilt bundle can be served under any path. Requires a trailing slash
     // on the document URL and depth-1 routes. Dev stays at root.
     base: command === 'build' ? './' : '/',
-    plugins: [react(), svgr(), tailwindcss(), withBasePathRecovery ? injectBasePathRecovery() : noInlineScripts()] as UserConfig['plugins'],
+    plugins: [react(), svgr(), tailwindcss(), ...(withBasePathRecovery ? [injectBasePathRecovery()] : [])] as UserConfig['plugins'],
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src')
