@@ -158,7 +158,7 @@ describe('proxyTool', () => {
         expect(request).not.toHaveBeenCalled();
     });
 
-    it.each(['authorization', 'Authorization', 'proxy-authorization', 'transfer-encoding', 'host'])(
+    it.each(['authorization', 'Authorization', 'cookie', 'proxy-authorization', 'transfer-encoding', 'host'])(
         'refuses to forward the %s header the proxy sets itself',
         async (header) => {
             const request = vi.spyOn(proxyService, 'request');

@@ -38,11 +38,6 @@ const EXPIRES_IN_UNITS_IN_MS: Record<string, number> = {
     d: 24 * 60 * 60 * 1000
 };
 
-/**
- * The one place a meta tool is declared. The accepted keys, the defaults and the created reply are
- * all derived from this, so a new meta tool cannot be wired into some of them and missed in others.
- * Keying it by the session field makes leaving a field unset a compile error.
- */
 const META_TOOLS = {
     nangoToolSearch: { name: 'nango_tool_search', enabledByDefault: true },
     nangoExecute: { name: 'nango_execute', enabledByDefault: true },

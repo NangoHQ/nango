@@ -2,6 +2,7 @@ import * as z from 'zod/v4';
 
 import { providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { proxyHeadersSchema, proxyMethodSchema, proxyPathSchema, proxyQueryParamsSchema } from '../../../../services/mcpProxySchema.js';
+import { HOP_BY_HOP_HEADERS } from '../../../../utils/httpHeaders.js';
 
 /**
  * Caller headers are merged over the credentials the proxy derives from the connection, so setting
@@ -10,17 +11,13 @@ import { proxyHeadersSchema, proxyMethodSchema, proxyPathSchema, proxyQueryParam
  * that already holds the whole environment, so there overriding a header grants nothing new.
  */
 const REJECTED_HEADERS = new Set([
+    ...HOP_BY_HOP_HEADERS,
+    // Credentials, so the request stays authenticated as the session's connection.
     'authorization',
-    'proxy-authorization',
-    'connection',
+    'cookie',
+    // Framing, so the agent cannot describe a hop it is not making.
     'content-length',
-    'host',
-    'keep-alive',
-    'proxy-authenticate',
-    'te',
-    'trailer',
-    'transfer-encoding',
-    'upgrade'
+    'host'
 ]);
 
 function rejectedHeadersIn(headers: Record<string, string>): string[] {

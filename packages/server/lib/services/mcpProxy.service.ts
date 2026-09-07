@@ -6,7 +6,7 @@ import { proxyResponseToMcp } from './mcpProxyFormatter.js';
 import { ProxyResponseFormatError, readProxyResponseBody } from './mcpProxyResponse.js';
 import proxyService from './proxy.service.js';
 
-import type { McpProxyResponse, ProxyQueryParams } from './mcpProxySchema.js';
+import type { ProxyQueryParams, ProxyRequestOutput } from './mcpProxySchema.js';
 import type { ProxyServiceError, ProxyServiceResponse } from './proxy.service.js';
 import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -35,9 +35,11 @@ export interface McpProxyRequest {
  * The single path every MCP proxy caller goes through, so credential handling, the outbound URL
  * policy, plan capping and the response size limit are enforced once rather than per tool.
  */
-export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<Result<McpProxyResponse>> {
+export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<Result<ProxyRequestOutput>> {
     const { account, environment, integrationId, connectionId } = params;
 
+    const body = serializeJsonBody(params.body);
+    const headers = withDefaultJsonContentType(params.headers, params.body);
     const execution = await proxyService.request({
         account,
         environment,
@@ -46,8 +48,8 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<R
         endpoint: appendQueryParams(params.path, params.queryParams),
         integrationId,
         connectionId,
-        headers: withDefaultJsonContentType(params.headers, params.body),
-        body: serializeJsonBody(params.body),
+        headers,
+        body,
         retries: params.retries,
         baseUrlOverride: params.baseUrlOverride,
         decompress: params.decompress,

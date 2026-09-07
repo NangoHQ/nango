@@ -16,7 +16,7 @@ export const proxyQueryParamsSchema = z.record(z.string().min(1).max(255), query
 
 export const proxyHeadersSchema = z.record(z.string().min(1).max(255), z.string().max(8192));
 
-export const mcpProxyResponseSchema = z
+export const proxyRequestOutputSchema = z
     .object({
         status: z.number().int(),
         headers: z.record(z.string(), proxyResponseHeaderSchema),
@@ -25,4 +25,4 @@ export const mcpProxyResponseSchema = z
     .strict();
 
 export type ProxyQueryParams = z.infer<typeof proxyQueryParamsSchema>;
-export type McpProxyResponse = z.infer<typeof mcpProxyResponseSchema>;
+export type ProxyRequestOutput = z.infer<typeof proxyRequestOutputSchema>;
