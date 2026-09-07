@@ -7,17 +7,14 @@ import svgr from 'vite-plugin-svgr';
 
 import type { Plugin, UserConfig } from 'vite';
 
-// Only a deployment that can sit under a base path needs the recovery below, and only its own host
-// decides whether an inline script may run. The CDN serves the root, so the recovery could never
-// fire there, and its enforced `script-src 'self'` (set in nango-infra) would block it anyway.
+// The CDN's enforced `script-src 'self'` (set in nango-infra) blocks an inline script, and it serves
+// the root, where the recovery could never fire — so only base-path-capable builds get it.
 const withBasePathRecovery = process.env['CONNECT_UI_BASE_PATH_RECOVERY'] === 'true';
 
 const ENTRY_TAG = '<script type="module" crossorigin';
 
-// A slashless base URL ("…/nango/connect") resolves the relatively-referenced bundle one directory
-// too high. Confirming the trailing-slash form serves real JavaScript is what separates that from a
-// slashless depth-1 route ("…/nango/connect/integrations"), which already resolves correctly and
-// must not be redirected: an SPA fallback answers 200 with `index.html` for both.
+// The content-type check separates a slashless base URL from a slashless depth-1 route
+// ("…/connect/integrations"), which already resolves correctly: an SPA fallback answers 200 for both.
 const RECOVERY_SCRIPT = `<script>
             window.addEventListener(
                 'error',
