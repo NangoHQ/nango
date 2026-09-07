@@ -27,10 +27,16 @@ const UNAVAILABLE_SPEND_VALUE = 'unavailable';
 const SPEND_PRESETS_IN_CENTS = [0, 5000, 128430];
 const REAL_PERIOD_COSTS_VALUE = '__real_period_costs__';
 const REAL_ADDON_VALUE = '__real_addon__';
-const SCHEDULED_CHANGE_KIND: Partial<Record<PlanDefinition['code'], string>> = {
-    free: 'cancellation',
-    'pay-as-you-go': 'migration'
-};
+function scheduledChangeKind(target: PlanDefinition['code'], from: PlanDefinition['code'] | null): string {
+    if (target === 'free') {
+        return 'cancellation';
+    }
+    // Enterprise lists Pay-as-you-go as an ordinary downgrade, so the source plan decides.
+    if (target === 'pay-as-you-go' && from && migratesToPayAsYouGo(from)) {
+        return 'migration';
+    }
+    return 'downgrade';
+}
 interface PlanOverrideContentProps {
     onBack: () => void;
     onClose: () => void;
@@ -163,7 +169,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                                     <SelectItem value={NO_SCHEDULED_CHANGE_VALUE}>None</SelectItem>
                                     {scheduledChangeOptions.map((plan) => (
                                         <SelectItem key={plan.code} value={plan.code}>
-                                            {plan.title} ({SCHEDULED_CHANGE_KIND[plan.code] ?? 'downgrade'})
+                                            {plan.title} ({scheduledChangeKind(plan.code, overrideCode)})
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
