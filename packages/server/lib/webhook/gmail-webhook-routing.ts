@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { environmentService, getGlobalWebhookReceiveUrl, NangoError } from '@nangohq/shared';
 import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { hashEmailAddress } from '../utils/pii.js';
 import { getGoogleJWKS } from './cache.js';
 
@@ -21,7 +22,7 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
         const authHeader: string | undefined = headers['authorization'];
 
         if (!authHeader) {
-            return true;
+            return envs.ALLOW_GMAIL_WEBHOOK_UNAUTHORIZED;
         }
 
         if (!authHeader.startsWith('Bearer ')) {

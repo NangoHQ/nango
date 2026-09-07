@@ -959,6 +959,9 @@ const ENVS_SHAPE = z.object({
     NANGO_UNLEASH_REFRESH_INTERVAL_MS: z.coerce.number().optional().default(30_000),
     NANGO_UNLEASH_INIT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
 
+    // Allow Gmail webhook to be unverified
+    ALLOW_GMAIL_WEBHOOK_UNAUTHORIZED: z.stringbool().optional().default(true),
+
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
     NANGO_CLOUD: z.stringbool().optional().default(false),
