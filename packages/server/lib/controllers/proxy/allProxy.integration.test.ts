@@ -2,7 +2,6 @@ import { Readable } from 'node:stream';
 
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
 import { ProxyRequest, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
@@ -114,33 +113,26 @@ describe(`GET ${route}`, () => {
         });
     });
 
-    it.each([
-        { forwardAllResponseHeaders: false, expectedProviderHeader: null },
-        { forwardAllResponseHeaders: true, expectedProviderHeader: 'provider-value' }
-    ])(
-        'should respect the response header feature flag when it is $forwardAllResponseHeaders',
-        async ({ forwardAllResponseHeaders, expectedProviderHeader }) => {
-            vi.spyOn(featureFlags.getFlags(), 'shouldForwardAllProxyResponseHeaders').mockResolvedValue(forwardAllResponseHeaders);
-            mockGithubUserResponse({
-                'x-request-id': 'request-id',
-                'x-provider-header': 'provider-value'
-            });
-            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-            const integration = await seeders.createConfigSeed(env, 'github', 'github');
-            const connection = await seeders.createConnectionSeed({ env, config_id: integration.id!, provider: 'github' });
+    it('should forward the provider response headers', async () => {
+        mockGithubUserResponse({
+            'x-request-id': 'request-id',
+            'x-provider-header': 'provider-value'
+        });
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, config_id: integration.id!, provider: 'github' });
 
-            const res = await api.fetch(route, {
-                method: 'GET',
-                token: apiKey.secret,
-                params: { anyPath: 'users/octocat' },
-                headers: { 'connection-id': connection.connection_id, 'provider-config-key': integration.unique_key }
-            });
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { anyPath: 'users/octocat' },
+            headers: { 'connection-id': connection.connection_id, 'provider-config-key': integration.unique_key }
+        });
 
-            isSuccess(res.json);
-            expect(res.res.headers.get('x-request-id')).toBe('request-id');
-            expect(res.res.headers.get('x-provider-header')).toBe(expectedProviderHeader);
-        }
-    );
+        isSuccess(res.json);
+        expect(res.res.headers.get('x-request-id')).toBe('request-id');
+        expect(res.res.headers.get('x-provider-header')).toBe('provider-value');
+    });
 
     it('should return 400 base_url_override_not_allowed when base-url-override host is denylisted', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();

@@ -121,7 +121,8 @@ export class InternalNango {
         webhookTypeValue,
         connectionIdentifier,
         connectionIdentifierValue,
-        propName
+        propName,
+        delaySeconds
     }: {
         body: Record<string, any>;
         webhookType?: string;
@@ -130,6 +131,7 @@ export class InternalNango {
         connectionIdentifier?: string;
         connectionIdentifierValue?: string;
         propName?: string;
+        delaySeconds?: number;
     }): Promise<{ connectionIds: string[]; connectionMetadata: Record<string, Metadata | null> }> {
         let connections: DBConnectionDecrypted[] | null | ConnectionInternal[] = null;
 
@@ -197,7 +199,8 @@ export class InternalNango {
                 syncConfigsWithWebhooks,
                 body,
                 type,
-                webhookHeaderValue
+                webhookHeaderValue,
+                delaySeconds
             });
         } else {
             await this.dispatchViaOrchestrator({ connections, syncConfigsWithWebhooks, body, type, webhookHeaderValue });
@@ -312,7 +315,8 @@ export class InternalNango {
         syncConfigsWithWebhooks,
         body,
         type,
-        webhookHeaderValue
+        webhookHeaderValue,
+        delaySeconds
     }: {
         publisher: DispatchQueuePublisher;
         connections: (DBConnectionDecrypted | ConnectionInternal)[];
@@ -320,6 +324,7 @@ export class InternalNango {
         body: Record<string, any>;
         type: string | undefined;
         webhookHeaderValue: string | undefined;
+        delaySeconds: number | undefined;
     }): Promise<void> {
         const matchedExecutions: MatchedExecution[] = [];
 
@@ -392,7 +397,8 @@ export class InternalNango {
                     const serializedBody = JSON.stringify(message);
                     const preparedMessage: PreparedDispatchMessage = {
                         message,
-                        byteSize: Buffer.byteLength(serializedBody, 'utf8')
+                        byteSize: Buffer.byteLength(serializedBody, 'utf8'),
+                        ...(delaySeconds !== undefined ? { delaySeconds } : {})
                     };
 
                     return {

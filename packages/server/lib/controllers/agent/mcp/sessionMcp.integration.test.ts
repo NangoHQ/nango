@@ -521,10 +521,9 @@ describe('/session/:sessionId/mcp', () => {
             });
 
         // Both come back as errors, so the assertion is on which error: a turned-off tool is
-        // refused by the SDK before any handler runs, one the session kept reaches ours.
+        // refused by the SDK as a JSON-RPC error, while one the session kept reaches our handler.
         const off = await call('nango_tool_search');
-        expect(off.json.result.isError).toBe(true);
-        expect(off.json.result.content[0].text).toContain('Tool nango_tool_search disabled');
+        expect(off.json.error).toMatchObject({ code: -32602, message: 'Tool nango_tool_search disabled' });
 
         const on = await call('nango_execute');
         expect(on.json.result.isError).toBe(true);

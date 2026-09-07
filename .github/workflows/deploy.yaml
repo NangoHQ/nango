@@ -31,7 +31,7 @@ on:
                     - app_ui
                     - lambda
                     - agentcore
-
+                    - deploy_all_services
 # One deploy per service+stage at a time. UI deploys `aws s3 sync --delete` into a
 # shared bucket, so two concurrent runs silently corrupt it (left the live app
 # pointing at a deleted bundle). Queue the rest (queue: max) without aborting an
@@ -176,8 +176,40 @@ jobs:
                   gcloud compute url-maps invalidate-cdn-cache ${{ vars.CONNECT_UI_URL_MAP }} \
                     --path "/*" \
                     --project "${{ vars.GCP_PROJECT_ID }}"
+    deploy_all_services:
+        if: inputs.service == 'deploy_all_services' && (inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production')
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            actions: write
+        steps:
+            - name: Checkout nango-environments
+              uses: actions/checkout@v4
+              with:
+                  repository: NangoHQ/nango-environments
+                  token: ${{ secrets.NANGO_ENVIRONMENTS_PAT }}
+                  path: nango-environments
+            - name: Deploy all services
+              run: |
+                  cd nango-environments
+
+                  # Configure git for the commit
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+                  # Update the nango-values.yaml file for the current stage and service
+                  yq eval '.spec.values.server.image.tag = "${{ github.sha }}"' -i apps/${{ inputs.stage }}/nango-values.yaml
+                  yq eval '.spec.values.jobs.image.tag = "${{ github.sha }}"' -i apps/${{ inputs.stage }}/nango-values.yaml
+                  yq eval '.spec.values.persist.image.tag = "${{ github.sha }}"' -i apps/${{ inputs.stage }}/nango-values.yaml
+                  yq eval '.spec.values.orchestrator.image.tag = "${{ github.sha }}"' -i apps/${{ inputs.stage }}/nango-values.yaml
+                  yq eval '.spec.values.metering.image.tag = "${{ github.sha }}"' -i apps/${{ inputs.stage }}/nango-values.yaml
+
+                  # Commit and push the changes
+                  git add apps/${{ inputs.stage }}/nango-values.yaml
+                  git commit -m "Update ${{ inputs.service }} image tag to ${{ github.sha }} in ${{ inputs.stage }}"
+                  git push origin main
     deploy:
-        if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui' && inputs.service != 'lambda' && inputs.service != 'agentcore'
+        if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui' && inputs.service != 'lambda' && inputs.service != 'agentcore' && inputs.service != 'deploy_all_services'
         runs-on: ubuntu-latest
         permissions:
             contents: write
@@ -191,7 +223,7 @@ jobs:
                   path: nango-environments
 
             - name: Deploy ${{ inputs.service }} (AWS)
-              if: inputs.stage != 'replit'
+              if: inputs.stage != 'replit' && inputs.stage != 'charm-sandbox'
               run: |
                   cd nango-environments
 
@@ -369,6 +401,7 @@ jobs:
             - deploy_runners
             - deploy_lambda
             - deploy_agentcore
+            - deploy_all_services
         runs-on: ubuntu-latest
         permissions:
             contents: read # checkout the repo to reach the local composite action
@@ -387,6 +420,7 @@ jobs:
                     "${{ needs.deploy_runners.result }}"
                     "${{ needs.deploy_lambda.result }}"
                     "${{ needs.deploy_agentcore.result }}"
+                    "${{ needs.deploy_all_services.result }}"
                   )
                   outcome="skipped"
                   for r in "${results[@]}"; do

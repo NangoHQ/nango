@@ -1,21 +1,31 @@
-import { describe, expect, it } from 'vitest';
+import { Client } from '@modelcontextprotocol/client';
+import { InMemoryTransport } from '@modelcontextprotocol/server';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { buildSessionTools, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
+import { seeders } from '@nangohq/shared';
+import { Ok } from '@nangohq/utils';
+
+import { buildSessionTools, createAgentSessionMcpServer, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
 
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionMetaTools } from '@nangohq/types';
 
+const executeAction = vi.hoisted(() => vi.fn());
+vi.mock('../../../services/action.service.js', () => ({ executeAction }));
+
 function session({
     compiledToolset = {},
+    resolvedConnections = {},
     metaTools = { nangoToolSearch: true, nangoExecute: true }
 }: {
     compiledToolset?: AgentSessionCompiledToolset;
+    resolvedConnections?: AgentSession['resolvedConnections'];
     metaTools?: AgentSessionMetaTools;
 } = {}): AgentSession {
     return {
         id: 'session-1',
         environmentId: 1,
         accountId: 1,
-        resolvedConnections: {},
+        resolvedConnections,
         compiledToolset,
         metaTools,
         expiresAt: new Date(),
@@ -29,6 +39,74 @@ function session({
 function tool(name: string) {
     return { name, description: `${name} description` };
 }
+
+describe('createAgentSessionMcpServer', () => {
+    beforeEach(() => {
+        executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
+    });
+
+    it('advertises that its tool list does not change during a connection', async () => {
+        const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+        const server = createAgentSessionMcpServer({
+            account: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            session: session()
+        });
+        const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+        await server.connect(serverTransport);
+        await client.connect(clientTransport);
+
+        try {
+            expect(client.getServerCapabilities()?.tools?.listChanged).toBe(false);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it.each([
+        { requestParams: { name: 'notion__read_doc' }, clientParams: { name: 'notion__read_doc' }, expectedInput: undefined },
+        {
+            requestParams: { name: 'notion__read_doc', arguments: {} },
+            clientParams: { name: 'notion__read_doc', arguments: {} },
+            expectedInput: {}
+        }
+    ])('uses the original direct-tool arguments before SDK normalization', async ({ requestParams, clientParams, expectedInput }) => {
+        const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+        const server = createAgentSessionMcpServer(
+            {
+                account: seeders.getTestTeam(),
+                environment: seeders.getTestEnvironment(),
+                session: session({
+                    compiledToolset: { notion: { provider: 'notion', pinned: [tool('read_doc')], searchable: [] } },
+                    resolvedConnections: {
+                        notion: {
+                            integrationId: 'notion',
+                            provider: 'notion',
+                            connectionId: 'notion-acme',
+                            internalConnectionId: 10,
+                            configId: 20
+                        }
+                    }
+                })
+            },
+            { jsonrpc: '2.0', id: 1, method: 'tools/call', params: requestParams }
+        );
+        const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+        await server.connect(serverTransport);
+        await client.connect(clientTransport);
+
+        try {
+            await client.callTool(clientParams);
+            expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ input: expectedInput }));
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+});
 
 describe('listSessionTools', () => {
     it('lists the meta tools the session was created with', () => {

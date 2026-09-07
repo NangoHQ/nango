@@ -58,7 +58,10 @@ try {
               maxMessages: envs.NANGO_TASK_DISPATCH_MAX_MESSAGES,
               waitTimeSeconds: envs.NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS,
               visibilityTimeoutSeconds: envs.NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS,
-              maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000
+              maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000,
+              rateLimitThrottleMaxMs: envs.NANGO_TASK_DISPATCH_RATE_LIMIT_THROTTLE_MAX_MS,
+              deferJitterRatio: envs.NANGO_TASK_DISPATCH_DEFER_JITTER_RATIO,
+              taskCapDeferMs: envs.NANGO_TASK_DISPATCH_TASK_CAP_DEFER_MS
           })
         : undefined;
 
@@ -93,14 +96,26 @@ try {
         logger.info('Closing...');
         clearTimeout(healthCheck);
 
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        srv.close(async () => {
-            otlp.stop();
+        const consumersStopped = (async () => {
+            logger.info('Closing consumers...');
             await processor.stop();
             await invocationsProcessor.stop();
             if (webhookDispatchConsumer) {
                 await webhookDispatchConsumer.stop();
             }
+            logger.info('Consumers closed');
+        })();
+        const serverClosed = new Promise<void>((resolve) => {
+            logger.info('Closing HTTP server...');
+            srv.close(() => {
+                logger.info('HTTP server closed');
+                resolve();
+            });
+        });
+
+        void (async () => {
+            await Promise.all([consumersStopped, serverClosed]);
+            otlp.stop();
             await destroyFeatureFlags();
             await destroyLogs();
             await stopFleets();
@@ -111,7 +126,7 @@ try {
             console.info('Closed');
 
             process.exit();
-        });
+        })();
     });
 
     process.on('SIGINT', () => {

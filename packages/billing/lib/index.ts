@@ -17,3 +17,4 @@ if (!orbConfigured) {
 export const billing = new Billing(orbConfigured ? new OrbClient() : new NoopBillingClient());
 
 export { getStripe } from './stripe.js';
+export { growthAddonStateFromOrb } from './clients/orb/adapters.js';

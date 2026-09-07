@@ -116,6 +116,12 @@ const PLAN_IS_RETIRED: Record<DBPlan['name'], boolean> = {
     'enterprise-cloud-hosted': false
 };
 
+const MIGRATES_TO_PAY_AS_YOU_GO: readonly DBPlan['name'][] = ['starter-v2', 'growth-v2'];
+
+export function migratesToPayAsYouGo(code: DBPlan['name']): boolean {
+    return MIGRATES_TO_PAY_AS_YOU_GO.includes(code);
+}
+
 export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
     if (!plan) {
         return false;
@@ -154,4 +160,15 @@ export function planAccruesCharges(plan: ApiPlan | null | undefined): boolean {
 
 export function isRetiredPlan(code: DBPlan['name']): boolean {
     return PLAN_IS_RETIRED[code];
+}
+
+/** Only a scheduled migration sets `pending-activation`. `growthAddonState` never returns it. */
+export type GrowthAddonState = 'none' | 'active' | 'pending-removal' | 'pending-activation';
+
+/** A scheduled removal still reads as `has_growth_features` until its date, so the date separates the two. */
+export function growthAddonState(plan: ApiPlan | null | undefined): GrowthAddonState {
+    if (!plan?.has_growth_features) {
+        return 'none';
+    }
+    return plan.growth_features_ends_at ? 'pending-removal' : 'active';
 }

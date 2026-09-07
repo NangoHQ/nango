@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { environmentService, getGlobalWebhookReceiveUrl, NangoError } from '@nangohq/shared';
-import { Err, getLogger, Ok, report } from '@nangohq/utils';
+import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { hashEmailAddress } from '../utils/pii.js';
 import { getGoogleJWKS } from './cache.js';
@@ -16,15 +17,19 @@ interface DecodedDataObject {
     historyId: string;
 }
 
-export async function validate(integration: IntegrationConfig, headers: Record<string, any>): Promise<boolean> {
+export async function validate(
+    integration: IntegrationConfig,
+    headers: Record<string, any>,
+    { allowUnauthorized }: { allowUnauthorized: boolean }
+): Promise<boolean> {
     try {
         const authHeader: string | undefined = headers['authorization'];
 
         if (!authHeader) {
-            return true;
+            return allowUnauthorized;
         }
 
-        if (!authHeader?.startsWith('Bearer ')) {
+        if (!authHeader.startsWith('Bearer ')) {
             return false;
         }
 
@@ -66,10 +71,13 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
         }
 
         const environment = await environmentService.getById(integration.environment_id);
-        const webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environment?.uuid}/${integration.provider}`;
+        const webhookBase = `${getGlobalWebhookReceiveUrl()}/${environment?.uuid}`;
+        const encodedWebhookUrl = `${webhookBase}/${encodeURIComponent(integration.unique_key)}`;
+        const rawWebhookUrl = `${webhookBase}/${integration.unique_key}`;
 
-        if (payload.aud !== webhookUrl) {
-            logger.warning(`Invalid audience. Expected ${webhookUrl}, got ${payload.aud}`);
+        if (payload.aud !== encodedWebhookUrl && payload.aud !== rawWebhookUrl) {
+            const expected = encodedWebhookUrl === rawWebhookUrl ? encodedWebhookUrl : `${encodedWebhookUrl} or ${rawWebhookUrl}`;
+            logger.warning(`Invalid audience. Expected ${expected}, got ${payload.aud}`);
             return false;
         }
 
@@ -88,13 +96,18 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
 const route: WebhookHandler = async (nango, headers, body) => {
     const authHeader = headers['authorization'];
 
-    if (authHeader) {
-        const valid = await validate(nango.integration, headers);
+    if (!authHeader) {
+        metrics.increment(metrics.Types.WEBHOOK_INCOMING_UNVERIFIED, 1, {
+            accountId: nango.team.id,
+            reason: 'gmail_missing_authorization'
+        });
+    }
 
-        if (!valid) {
-            logger.error('webhook signature invalid');
-            return Err(new NangoError('webhook_invalid_signature'));
-        }
+    const valid = await validate(nango.integration, headers, { allowUnauthorized: await getFlags().allowUnauthorizedGmailWebhook(nango.team.uuid) });
+
+    if (!valid) {
+        logger.error('webhook signature invalid');
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     let decodedBody: DecodedDataObject | null = null;

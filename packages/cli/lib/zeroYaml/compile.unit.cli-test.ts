@@ -46,7 +46,7 @@ describe('compileAll', () => {
         await fs.promises.copyFile(path.join(dir, 'github', 'functions', 'fetchIssues.ts'), path.join(dottedIntegrationFunctionsPath, 'fetchIssues.ts'));
         await fs.promises.appendFile(indexPath, "\nimport './github.js/functions/fetchIssues.js';\n");
         await fs.promises.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkg, null, 2));
-        await exec('npm i', { cwd: dir });
+        await exec('npm i --no-audit --no-fund', { cwd: dir });
         const result = await compileAllFunctions({ fullPath: dir, debug: false });
         result.unwrap();
         expect(result.isOk()).toBe(true);

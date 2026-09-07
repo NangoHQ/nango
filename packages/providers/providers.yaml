@@ -6685,6 +6685,7 @@ digits:
     authorization_url: https://connect.digits.com/v1/oauth/authorize
     token_url: https://connect.digits.com/v1/oauth/token
     body_format: json
+    disable_pkce: true
     authorization_params:
         response_type: code
     token_params:
@@ -7668,21 +7669,22 @@ elevio:
         headers:
             x-api-key: ${apiKey}
             authorization: Bearer ${connectionConfig.jwt}
-    docs: https://nango.dev/docs/integrations/all/elevio
+    docs: https://nango.dev/docs/api-integrations/elevio
+    docs_connect: https://nango.dev/docs/api-integrations/elevio/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key to your Elevio account
             pattern: '\b[a-f0-9]{40}\b'
-            example: 'x12z67890dd34t8gq5j01ycc75912348'
+            example: '4f3c12ef************************e9d41'
     connection_config:
         jwt:
             type: string
             title: JWT
             description: The JWT to your Elevio account
             pattern: '^[A-Za-z0-9-_]+\.([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+)$'
-
+            example: eyJhbGciOiJIUzI1NiJ9.****************.**********
 entrata:
     display_name: Entrata
     categories:
@@ -10001,6 +10003,7 @@ google:
     docs: https://nango.dev/docs/api-integrations/google
     setup_guide_url: https://nango.dev/docs/api-integrations/google/how-to-register-your-own-google-api-oauth-app
     webhook_routing_script: googleWebhookRouting
+    webhook_user_defined_secret: true
 
 google-analytics:
     display_name: Google Analytics
@@ -10041,6 +10044,7 @@ google-calendar:
                 - '401'
                 - '429'
     webhook_routing_script: googleCalendarWebhookRouting
+    webhook_user_defined_secret: true
     post_connection_script: googleCalendarPostConnection
     docs: https://nango.dev/docs/api-integrations/google-calendar
     setup_guide_url: https://nango.dev/docs/api-integrations/google-calendar/how-to-register-your-own-google-calendar-api-oauth-app
@@ -10160,6 +10164,7 @@ google-drive:
         - storage
     alias: google
     webhook_routing_script: googleDriveWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/google-drive
     setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app
 
@@ -15471,6 +15476,76 @@ nerdio:
             secret: true
             doc_section: '#step-2-getting-your-azure-credentials'
 
+netsapiens:
+    display_name: NetSapiens
+    categories:
+        - communication
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.server}/ns-api/v2/tokens
+    token_params:
+        grant_type: password
+        client_id: ${credentials.client_id}
+        client_secret: ${credentials.client_secret}
+        username: ${credentials.username}
+        password: ${credentials.password}
+    refresh_token_params:
+        grant_type: refresh_token
+        client_id: ${credentials.client_id}
+        client_secret: ${credentials.client_secret}
+        refresh_token: ${refresh_token}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    token_response:
+        token: access_token
+        refresh_token: refresh_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.server}/ns-api
+    docs: https://nango.dev/docs/api-integrations/netsapiens
+    docs_connect: https://nango.dev/docs/api-integrations/netsapiens/connect
+    connection_config:
+        server:
+            type: string
+            title: NetSapiens Server
+            description: The hostname of your NetSapiens core.
+            example: mycompany.netsapiens.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-locate-your-netsapiens-server-hostname'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your NetSapiens API login username, in the form extension@domain.
+            example: 1000@mydomain.com
+            pattern: '^[^@\s]+@[^@\s]+$'
+            order: 1
+            doc_section: '#step-3-gather-your-api-user-login'
+        password:
+            type: string
+            title: Password
+            description: Your NetSapiens API login password.
+            secret: true
+            order: 2
+            doc_section: '#step-3-gather-your-api-user-login'
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID of your NetSapiens API application.
+            order: 3
+            doc_section: '#step-2-create-or-locate-your-api-client'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret of your NetSapiens API application.
+            secret: true
+            order: 4
+            doc_section: '#step-2-create-or-locate-your-api-client'
+
 netsuite:
     display_name: NetSuite (OAuth)
     categories:
@@ -16796,6 +16871,10 @@ outlook:
         - communication
         - popular
     alias: microsoft
+    webhook_routing_script: outlookWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - validationToken
     docs: https://nango.dev/docs/api-integrations/outlook
     setup_guide_url: https://nango.dev/docs/api-integrations/outlook/how-to-register-your-own-outlook-api-oauth-app
 
@@ -25023,8 +25102,8 @@ typeform:
     categories:
         - surveys
     auth_mode: OAUTH2
-    authorization_url: https://api.typeform.com/oauth/authorize
-    token_url: https://api.typeform.com/oauth/token
+    authorization_url: https://${connectionConfig.authHost}/oauth/authorize || https://api.typeform.com/oauth/authorize
+    token_url: https://${connectionConfig.authHost}/oauth/token || https://api.typeform.com/oauth/token
     disable_pkce: true
     default_scopes:
         - offline
@@ -25035,8 +25114,28 @@ typeform:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api.typeform.com
-    docs: https://nango.dev/docs/integrations/all/typeform
+        base_url: https://${connectionConfig.apiHost} || https://api.typeform.com
+    docs: https://nango.dev/docs/api-integrations/typeform
+    docs_connect: https://nango.dev/docs/api-integrations/typeform/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/typeform/how-to-register-your-own-typeform-api-oauth-app
+    connection_config:
+        authHost:
+            type: string
+            title: Authorization host
+            description: The Typeform host that issues authorization codes for your data center.
+            enum:
+                - api.typeform.com
+                - api.typeform.eu
+            order: 1
+        apiHost:
+            type: string
+            title: API host
+            description: The Typeform host that serves the API for your data center.
+            enum:
+                - api.typeform.com
+                - api.eu.typeform.com
+                - api.typeform.eu
+            order: 2
 
 typefully:
     display_name: Typefully

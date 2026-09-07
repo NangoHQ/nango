@@ -30,7 +30,7 @@ Configure your MCP client to send a Nango API key as a Bearer token:
 Manage API keys in **Environment Settings > API Keys** in the Nango UI. The API key determines which Nango environment the client can access. To limit what the MCP client can do, you can [scope down the API key](/reference/backend/http-api/api-keys#scopes) to only the tools it needs. The required scope for each tool is listed below.
 
 <Note>
-    The `environment:mcp` scope is not required for Management MCP tools. That scope is used by the separate [action-function MCP server](/guides/functions/tool-calling#mcp-server), which exposes enabled action functions as tools.
+    The `environment:mcp` scope is not required for Management MCP tools.
 </Note>
 
 Keep the API key server-side and only configure it in MCP clients you trust. Do not expose it in client-side code, logs, or URLs.
@@ -47,6 +47,16 @@ These tools require a valid Management MCP API key but no additional environment
 | ----------------------- | ------------------------------------------------------------------------- | ---------------------- |
 | `docs_search`           | Search the Nango documentation and return contextual snippets and links. | None                   |
 | `docs_query_filesystem` | Read and query Mintlify's virtual Nango documentation filesystem.         | None                   |
+
+### Providers
+
+Use the Provider tools to inspect the public provider catalog. Set `include_templates` to `true` to include the provider's available function templates in the result.
+
+These tools require a valid Management MCP API key but no additional environment operation scope.
+
+| Tool            | Description                                                        | Required API key scope |
+| --------------- | ------------------------------------------------------------------ | ---------------------- |
+| `providers_get` | Get one provider and optionally include its function templates.    | None                   |
 
 ### Connect sessions
 

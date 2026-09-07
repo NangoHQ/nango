@@ -1,4 +1,6 @@
-import { Ok } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
+
+import { validateGoogleChannelToken } from './google-channel-token.js';
 
 import type { WebhookHandler } from './types.js';
 
@@ -7,6 +9,11 @@ import type { WebhookHandler } from './types.js';
  * (no email / emailAddressHash fallbacks).
  */
 const route: WebhookHandler = async (nango, headers) => {
+    const tokenResult = validateGoogleChannelToken(nango.integration, headers);
+    if (tokenResult.isErr()) {
+        return Err(tokenResult.error);
+    }
+
     const resourceUri = headers['x-goog-resource-uri'];
 
     const baseArgs = {

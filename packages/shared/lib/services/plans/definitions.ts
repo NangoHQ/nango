@@ -385,6 +385,28 @@ export const growthLegacyPlan: PlanDefinition = {
     }
 };
 
+/**
+ * The feature flags the growth add-on grants.
+ *
+ * NOTE: Only the boolean flags are listed here, the numeric limits (e.g. `api_rate_limit_size`, `environments_max`)
+ * are resolved via `mergePlanFlags` following the precedence rules implemented therein.
+ * This is so a hand-granted limit is not pulled back down when the add-on is disabled. */
+type GrowthFeatureFlag = 'has_otel' | 'has_rbac' | 'can_override_docs_connect_url' | 'can_customize_connect_ui_theme' | 'can_disable_connect_ui_watermark';
+
+export const GROWTH_FEATURE_FLAGS = {
+    has_otel: true,
+    has_rbac: true,
+    can_override_docs_connect_url: true,
+    can_customize_connect_ui_theme: true,
+    can_disable_connect_ui_watermark: true
+} satisfies Record<GrowthFeatureFlag, boolean>;
+
+export const PLANS_WITH_GROWTH_ADD_ON: PlanDefinition['code'][] = ['pay-as-you-go'];
+
+export function canHaveGrowthAddon(planCode: PlanDefinition['code']): boolean {
+    return PLANS_WITH_GROWTH_ADD_ON.includes(planCode);
+}
+
 export const plansList: PlanDefinition[] = [
     freePlan,
     freeUncappedPlan,

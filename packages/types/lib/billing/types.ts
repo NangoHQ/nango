@@ -8,7 +8,7 @@ export interface BillingClient {
     getOrCreateCustomer: (accountId: number, defaultTo: Pick<BillingInvoicingDetails, 'legalEntityName' | 'email'>) => Promise<Result<BillingCustomer>>;
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     putCustomer: (accountId: number, invoicingDetails: BillingInvoicingDetails) => Promise<Result<BillingCustomer>>;
-    getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
+    getSubscription: (accountId: number) => Promise<Result<BillingSubscription>>;
     getOverdueInvoices: (accountId: number) => Promise<Result<BillingOverdueInvoices>>;
     getUpcomingInvoice: (subscriptionId: string) => Promise<Result<BillingUpcomingInvoice | null>>;
     getPeriodCosts: (subscriptionId: string) => Promise<Result<BillingPeriodCosts | null>>;
@@ -17,8 +17,10 @@ export interface BillingClient {
     removeSpendAlert: (subscriptionId: string) => Promise<Result<void>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetrics>>;
-    upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
-    downgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<void>>;
+    upgrade: (opts: PlanChangeRequest) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
+    downgrade: (opts: PlanChangeRequest) => Promise<Result<void>>;
+    startGrowthAddon: (opts: { subscriptionId: string }) => Promise<Result<{ priceIntervalId: string | null }>>;
+    endGrowthAddon: (opts: { subscriptionId: string; priceIntervalId: string }) => Promise<Result<{ growthFeaturesEndsAt: Date | null }>>;
     applyPendingChanges: (opts: {
         pendingChangeId: string;
         /**
@@ -38,6 +40,11 @@ export interface BillingClient {
     cancelPendingChanges: (opts: { pendingChangeId: string }) => Promise<Result<void>>;
     verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true>;
     getPlanById(planId: string): Promise<Result<BillingPlan>>;
+}
+
+export interface PlanChangeRequest {
+    subscriptionId: string;
+    planExternalId: string;
 }
 
 export interface BillingCustomer {
@@ -73,6 +80,13 @@ export interface BillingSubscription {
     id: string;
     pendingChangeId?: string | undefined;
     planExternalId: string;
+    hasGrowthFeatures: boolean;
+    growthFeaturesEndsAt: Date | null;
+    /** Orb's price interval is the allocation of a price for a given time period.
+     * The Growth add-on is an external price that gets attached to the plan, so we must parse
+     * its interval in order to know whether there's a scheduled operation in the future.
+     */
+    growthFeaturesPriceIntervalId: string | null;
 }
 
 export interface BillingOverdueInvoices {
