@@ -1,7 +1,6 @@
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
 import { mfaService, userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
@@ -65,8 +64,6 @@ describe('MFA verify audit — pending-login session (private API)', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // getFlags() returns the stable noop facade in tests; force the MFA feature on.
-        vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {
