@@ -80,8 +80,6 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
         return duplicated;
     }, [plansList]);
 
-    // A downgrade the account could pick itself, plus the Pay-as-you-go migration for the retired v2
-    // plans — which is scheduled on them rather than chosen, so it is absent from `prevPlan`.
     const scheduledChangeOptions = useMemo(() => {
         const definitions = plansList?.data;
         if (!definitions || !overrideCode) {
@@ -93,6 +91,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
             .filter((plan) => prevPlanCodes.includes(plan.code))
             .map((plan) => ({ code: plan.code, label: plan.code === 'free' ? 'Free (cancellation)' : `${plan.title} (downgrade)` }));
 
+        // Scheduled on the retired v2 plans rather than chosen by them, so it is absent from `prevPlan`.
         const migrationTarget = definitions.find((plan) => plan.code === 'pay-as-you-go');
         if (migrationTarget && migratesToPayAsYouGo(overrideCode) && !options.some((o) => o.code === migrationTarget.code)) {
             options.push({ code: migrationTarget.code, label: `${migrationTarget.title} (migration)` });

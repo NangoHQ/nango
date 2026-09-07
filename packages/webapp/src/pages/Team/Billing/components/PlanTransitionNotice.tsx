@@ -9,8 +9,6 @@ interface PlanTransitionNoticeProps {
 }
 
 /**
- * Names the retired plan, which has no card of its own in the grid below.
- *
  * States the change date rather than the design's day-before, so this and the banner can't read as
  * two different deadlines.
  */

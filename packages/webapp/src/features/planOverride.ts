@@ -175,7 +175,6 @@ export function applyPlanOverride(
               ...(overridePlan.flags as Partial<ApiPlan>),
               name: overridePlan.code,
               orb_future_plan: scheduledTarget?.code ?? null,
-              // The period boundary real plan changes land on, so a simulated date reads like a live one.
               orb_future_plan_at: scheduledTarget ? nextUsageResetDate(new Date()).toISOString() : null
           }
         : realPlan;
