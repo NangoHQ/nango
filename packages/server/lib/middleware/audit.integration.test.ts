@@ -40,7 +40,6 @@ describe('audit middleware — live-stack contract', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // Roll the flag out to every account here; each one still has to be entitled on its plan.
     });
 
     afterAll(() => {
