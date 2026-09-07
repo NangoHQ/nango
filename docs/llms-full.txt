@@ -6374,6 +6374,8 @@ These limits apply to all webhook types: auth, sync function completion, async a
 Source: https://nango.dev/docs/guides/platform/security.md
 Description: How Nango secures your API credentials and customer data.
 
+[Contact us](https://nango.dev/contact) if you have additional questions or if you require a security review for an Enterprise agreement.
+
 ## Compliance
 
 Nango is **SOC 2 Type II** certified, **GDPR** compliant, and **HIPAA** compliant.
@@ -6531,10 +6533,6 @@ Nango makes outbound requests from these public IP addresses:
 <Warning>
 These IPs may change as we scale. Allowlist all of them and review this page periodically; we will make reasonable efforts to announce breaking changes in advance.
 </Warning>
-
-<Tip>
-**Further questions?** [Contact us](https://nango.dev/contact) and we are happy to help.
-</Tip>
 
 ## Vulnerability disclosure
 
