@@ -21,11 +21,14 @@ const TOOLSET: AgentSessionCompiledToolset = {
         searchable: []
     },
     // In the toolset but with no connection resolved for it.
-    slack: { provider: 'slack', pinned: [], searchable: [] }
+    slack: { provider: 'slack', pinned: [], searchable: [] },
+    // An API key provider, whose credential rides in x-api-key rather than authorization.
+    autosana: { provider: 'autosana', pinned: [], searchable: [] }
 };
 
 const CONNECTIONS: AgentSessionResolvedConnections = {
-    notion: { integrationId: 'notion', provider: 'notion', connectionId: 'notion-acme', internalConnectionId: 10, configId: 20 }
+    notion: { integrationId: 'notion', provider: 'notion', connectionId: 'notion-acme', internalConnectionId: 10, configId: 20 },
+    autosana: { integrationId: 'autosana', provider: 'autosana', connectionId: 'autosana-acme', internalConnectionId: 11, configId: 21 }
 };
 
 function context(): AgentSessionMcpContext {
@@ -176,6 +179,33 @@ describe('proxyTool', () => {
         await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1', headers: { 'notion-version': '2022-06-28' } });
 
         expect(request).toHaveBeenCalledWith(expect.objectContaining({ headers: { 'notion-version': '2022-06-28' } }));
+    });
+
+    it("rejects the provider's own credential header, which is not always authorization", async () => {
+        const request = vi.spyOn(proxyService, 'request');
+
+        const result = await callProxy({ integration: 'autosana', method: 'GET', path: '/runs', headers: { 'X-Api-Key': 'attacker' } });
+
+        expect(errorOf(result).message).toContain('cannot be passed: X-Api-Key');
+        expect(request).not.toHaveBeenCalled();
+    });
+
+    it('allows a provider header that is a constant rather than a credential', async () => {
+        const request = vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse({ ok: true })) });
+
+        // notion templates notion-version, but as a fixed value, so it carries no credential.
+        await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1', headers: { 'notion-version': '2022-02-22' } });
+
+        expect(request).toHaveBeenCalledWith(expect.objectContaining({ headers: { 'notion-version': '2022-02-22' } }));
+    });
+
+    it("does not reject another provider's credential header", async () => {
+        const request = vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse({ ok: true })) });
+
+        // x-api-key is autosana's credential, not notion's, so notion has no reason to refuse it.
+        await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1', headers: { 'x-api-key': 'fine-here' } });
+
+        expect(request).toHaveBeenCalledWith(expect.objectContaining({ headers: { 'x-api-key': 'fine-here' } }));
     });
 
     it('rejects an integration id that is not a provider config key', async () => {

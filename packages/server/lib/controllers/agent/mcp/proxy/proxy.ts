@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import { getProvider } from '@nangohq/shared';
 import { Err } from '@nangohq/utils';
 
 import { executeMcpProxyRequest } from '../../../../services/mcpProxy.service.js';
@@ -7,6 +8,7 @@ import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL } from '../../../../services/mcpProxy
 import { proxyRequestOutputSchema } from '../../../../services/mcpProxySchema.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { defineAgentSessionMcpTool } from '../sessionTool.js';
+import { rejectedHeaderNames } from './headers.js';
 import { proxyInputSchema } from './schema.js';
 
 import type { ProxyRequestOutput } from '../../../../services/mcpProxySchema.js';
@@ -37,6 +39,17 @@ export const proxyTool = defineAgentSessionMcpTool({
         const connection = Object.hasOwn(session.resolvedConnections, integrationId) ? session.resolvedConnections[integrationId] : undefined;
         if (!connection) {
             return Err(new PublicMcpError(`Integration '${integrationId}' has no connection in this session.`));
+        }
+
+        // Which headers carry the credential depends on the provider, so this is checked here
+        // rather than in the input schema, which is built once and knows no integration.
+        const rejectedHeaders = rejectedHeaderNames({ headers: args.headers, provider: getProvider(connection.provider) });
+        if (rejectedHeaders.length > 0) {
+            return Err(
+                new PublicMcpError(
+                    `Nango sets these headers itself, so they cannot be passed: ${rejectedHeaders.join(', ')}. The request is authenticated with the session's connection.`
+                )
+            );
         }
 
         return await tracer.trace<Promise<Result<ProxyRequestOutput>>>('server.mcp.agentSession.proxy', async (span: Span) => {
