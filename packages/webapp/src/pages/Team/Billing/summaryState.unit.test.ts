@@ -120,9 +120,8 @@ describe('planAccruesCharges', () => {
         expect(SPEND_TOOLTIP_S26).toContain(SPEND_TOOLTIP_WITHOUT_CHARGES);
     });
 
-    it('quotes no amount, and says the minimum prorates', () => {
+    it('quotes no amount', () => {
         expect(SPEND_TOOLTIP_S26).not.toMatch(/\$\d/);
-        expect(SPEND_TOOLTIP_S26).toContain('prorated');
     });
 });
 

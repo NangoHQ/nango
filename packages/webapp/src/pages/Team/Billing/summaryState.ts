@@ -12,7 +12,7 @@ export const SPEND_TOOLTIP = `Next month's base fee plus this period's usage bey
  * Names no figure: Orb prorates the minimum over a partial period, so the plan's $50 would routinely
  * be above the headline it sits on. The usage table's minimum row carries the account's real amount.
  */
-export const SPEND_TOOLTIP_S26 = `This period's usage, or your plan's monthly minimum, whichever is higher. A partial period is charged a prorated share of that minimum. ${SPEND_CAVEATS}`;
+export const SPEND_TOOLTIP_S26 = `This period's usage, or your plan's monthly minimum, whichever is higher. ${SPEND_CAVEATS}`;
 
 /** Drops the opening sentence for plans with no base fee and no billable overage. */
 export const SPEND_TOOLTIP_WITHOUT_CHARGES = SPEND_CAVEATS;
