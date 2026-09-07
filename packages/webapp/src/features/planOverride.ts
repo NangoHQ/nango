@@ -175,7 +175,7 @@ export function applyPlanOverride(
               ...(overridePlan.flags as Partial<ApiPlan>),
               name: overridePlan.code,
               orb_future_plan: scheduledTarget?.code ?? null,
-              orb_future_plan_at: scheduledTarget ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : null
+              orb_future_plan_at: scheduledTarget ? nextUsageResetDate(new Date()).toISOString() : null
           }
         : realPlan;
 

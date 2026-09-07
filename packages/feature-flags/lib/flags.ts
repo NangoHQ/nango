@@ -57,9 +57,9 @@ export function buildFlags(client: FeatureFlagsClient) {
         shouldForwardAllProxyResponseHeaders(accountUuid: string) {
             return client.isEnabled('proxy-forward-all-response-headers', { targetingKey: accountUuid, accountUuid }, false);
         },
-        /** Whether the account is measured against the new pricing's three metrics rather than today's seven. */
-        isS26PricingEnabled(accountUuid: string) {
-            return client.isEnabled('s26-pricing', { targetingKey: accountUuid, accountUuid }, false);
+        /** Whether the Gmail webhook can be unverified. */
+        allowUnauthorizedGmailWebhook(accountUuid: string) {
+            return client.isEnabled('allow-unauthorized-gmail-webhook', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }

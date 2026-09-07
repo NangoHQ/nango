@@ -1,4 +1,4 @@
-import { Button } from '@nangohq/design-system';
+import { Badge, Button } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { Dot } from '@/components/ui/Dot';
@@ -35,6 +35,7 @@ export const GrowthAddon: React.FC<{ state: GrowthAddonState; endsAt?: string; o
                         </Button>
                     </ConditionalTooltip>
                 )}
+                {state === 'pending-activation' && <Badge variant="success">Included</Badge>}
                 {state === 'active' && (
                     <ConditionalTooltip condition={!!lockedReason} content={lockedReason} side="left" asChild>
                         <Button variant="link-danger" size="sm" disabled={!!lockedReason} onClick={onActionClicked}>
@@ -44,11 +45,12 @@ export const GrowthAddon: React.FC<{ state: GrowthAddonState; endsAt?: string; o
                 )}
             </div>
             <div className="flex items-center gap-1.5">
-                {state !== 'none' && <Dot variant={state === 'active' ? 'success' : 'warning'} />}
+                {(state === 'active' || state === 'pending-removal') && <Dot variant={state === 'active' ? 'success' : 'warning'} />}
                 <span className="text-text-secondary text-body-medium-regular">
                     {state === 'none' && GROWTH_ADDON_COPY.price}
                     {state === 'active' && `${GROWTH_ADDON_COPY.price} · included in this period`}
                     {state === 'pending-removal' && `Deactivates ${endsAt ? formatBillingDate(new Date(endsAt)) : 'at the end of this period'}`}
+                    {state === 'pending-activation' && GROWTH_ADDON_COPY.price}
                 </span>
             </div>
             <span className="text-text-secondary text-body-small-regular">{GROWTH_ADDON_COPY.features}</span>
