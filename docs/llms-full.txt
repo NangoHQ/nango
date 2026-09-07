@@ -6388,49 +6388,47 @@ Nango is **SOC 2 Type II** certified, **GDPR** compliant, and **HIPAA** complian
 
 We run regular penetration tests, a secure development lifecycle, incident response procedures, and continuous monitoring. The [Trust Center](https://trust.nango.dev) has our current policies and audit reports.
 
-## Data storage & encryption
+## Data storage, retention & deletion
 
 ### What Nango stores
 
-| Data | Includes | Encryption |
-| - | - | - |
-| Connection credentials | OAuth access and refresh tokens, API keys, other provider credentials | **AES-256-GCM** |
-| Integration credentials | Your OAuth client secrets and custom provider settings | **AES-256-GCM** |
-| Nango API keys | Account and environment API keys | **AES-256-GCM** |
-| Environment variables | Values you set per environment | **AES-256-GCM** |
-| Synced records | Record payloads written to the [records cache](/guides/functions/syncs/records-cache) by sync functions | **AES-256-GCM** |
-| Connection configuration | OAuth scopes, authorization parameters, provider-specific settings | Storage-level |
-| Logs & audit trail | Operational and control-plane activity | Storage-level |
+| Data | Includes | Encryption | Retention |
+| - | - | - | - |
+| Connections | Credentials, configuration, and metadata | See [Connections](#connections) | Until you delete the connection |
+| Integration credentials | Your OAuth client secrets and custom provider settings | **AES-256-GCM** | Until you delete the integration |
+| Nango API keys | Account and environment API keys | **AES-256-GCM** | Until rotated or deleted |
+| Environment variables | Values you set per environment | **AES-256-GCM** | Until you delete them |
+| Synced records | Record payloads written to the [records cache](/guides/functions/syncs/records-cache) by sync functions | **AES-256-GCM** | Payload **30 days**, record **60 days** |
+| Nango logs | Auth flows, function executions, proxy requests | Storage-level | **15 days** on Nango Cloud |
+| Audit trail | Control-plane changes | Storage-level | **1 year** by default |
 
-Every row is encrypted at rest at the storage layer. Rows marked **AES-256-GCM** carry an additional application-level layer: the value is encrypted before it is written, so it stays unreadable to anyone holding database access alone.
+Everything is encrypted at rest at the storage layer. Rows marked **AES-256-GCM** carry an additional application-level layer: the value is encrypted before it is written, so it stays unreadable to anyone holding database access alone.
 
-Data is stored in a managed PostgreSQL database in AWS, network-isolated in a private VPC, with automated backups and point-in-time recovery. Self-hosted deployments run on infrastructure you control.
+Data is stored in a managed PostgreSQL database in AWS, network-isolated in a private VPC, with automated backups and point-in-time recovery. Self-hosted deployments run on infrastructure you control, and all retention periods are configurable when [self-hosting](/guides/platform/self-hosting).
 
-### Encryption & Key management
+### Encryption & key management
 
-**Key management** — Nango uses **envelope encryption**. A 256-bit data encryption key (DEK) performs the encryption and is itself stored only in wrapped form, encrypted under a key held in AWS KMS. 
+**Key management** — Nango uses envelope encryption. A 256-bit data encryption key (DEK) performs the encryption and is itself stored only in wrapped form, encrypted under a key held in AWS KMS.
 
 **Algorithm details** — AES-256-GCM with a 256-bit key, a fresh 12-byte initialization vector per encryption, and a 16-byte authentication tag. GCM is authenticated, so a tampered value fails to decrypt rather than returning corrupted data.
 
 **In transit** — TLS 1.2+ on all traffic: your application to Nango, dashboard access, and Nango's requests to external APIs.
 
-## Data retention & deletion
+<a id="connections"></a>
+### Connections
 
-| Data | Retained | Deletion |
+A connection holds everything Nango needs to call an external API on behalf of one of your customers:
+
+| Field | Contents | Encryption |
 | - | - | - |
-| Connections & metadata | Until you delete the connection | Soft delete immediate, hard delete after **31 days** |
-| [Synced records](#synced-records-retention) | Payload **30 days** past last update, record **60 days** past last sync run | Automatic, or with the connection |
-| [Nango logs](#nango-logs) | **15 days** on Nango Cloud | Automatic at end of retention; no manual deletion |
-| [Audit trail](#audit-trail) | **1 year** by default | Immutable, never deleted before retention ends |
+| Credentials | OAuth access and refresh tokens, API keys, other provider credentials | **AES-256-GCM** |
+| Connection configuration | OAuth scopes, authorization parameters, provider-specific settings | Storage-level |
+| Metadata | Customer-specific configuration you set through the API or SDK | Storage-level |
 
-All retention periods are configurable when [self-hosting](/guides/platform/self-hosting).
-
-### Deleting a connection
-
-Delete from the dashboard, the [delete connection endpoint](/reference/backend/http-api/connections/delete), or `deleteConnection` in any backend SDK. Deletion is two-stage:
+Connections are retained until you delete them. Deletion runs in two stages:
 
 1. **Soft delete (immediate)** — the connection becomes inaccessible, its syncs stop, and scheduled tasks are cancelled.
-2. **Hard delete (31 days later)** — credentials, metadata, configuration, synced records, and job history are permanently removed. The window allows recovery from accidental deletion.
+2. **Hard delete (31 days later)** — credentials, configuration, metadata, synced records, and job history are permanently removed. The window allows recovery from accidental deletion.
 
 <Info>
 Logs and audit trail entries age out on their own schedule. They are not removed when you delete a connection and remain until their retention window ends.
