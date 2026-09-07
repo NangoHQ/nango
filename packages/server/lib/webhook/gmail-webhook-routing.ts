@@ -1,9 +1,9 @@
 import crypto from 'node:crypto';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { environmentService, getGlobalWebhookReceiveUrl, NangoError } from '@nangohq/shared';
 import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
-import { envs } from '../env.js';
 import { hashEmailAddress } from '../utils/pii.js';
 import { getGoogleJWKS } from './cache.js';
 
@@ -17,12 +17,16 @@ interface DecodedDataObject {
     historyId: string;
 }
 
-export async function validate(integration: IntegrationConfig, headers: Record<string, any>): Promise<boolean> {
+export async function validate(
+    integration: IntegrationConfig,
+    headers: Record<string, any>,
+    { allowUnauthorized }: { allowUnauthorized: boolean }
+): Promise<boolean> {
     try {
         const authHeader: string | undefined = headers['authorization'];
 
         if (!authHeader) {
-            return envs.ALLOW_GMAIL_WEBHOOK_UNAUTHORIZED;
+            return allowUnauthorized;
         }
 
         if (!authHeader.startsWith('Bearer ')) {
@@ -99,7 +103,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
         });
     }
 
-    const valid = await validate(nango.integration, headers);
+    const valid = await validate(nango.integration, headers, { allowUnauthorized: await getFlags().allowUnauthorizedGmailWebhook(nango.team.uuid) });
 
     if (!valid) {
         logger.error('webhook signature invalid');
