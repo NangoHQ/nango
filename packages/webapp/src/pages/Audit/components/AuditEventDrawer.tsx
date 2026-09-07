@@ -17,9 +17,9 @@ import type { ApiAuditTrailEvent } from '@nangohq/types';
 const TARGETS_SHOWN_COLLAPSED = 10;
 const JSON_LINES_SHOWN_COLLAPSED = 40;
 
-const ShowAll: React.FC<{ hidden: number; noun: string; onClick: () => void }> = ({ hidden, noun, onClick }) => (
+const ExpandToggle: React.FC<{ expanded: boolean; hidden: number; noun: string; onClick: () => void }> = ({ expanded, hidden, noun, onClick }) => (
     <Button variant="link-accent" size="sm" onClick={onClick}>
-        Show {hidden.toLocaleString()} more {noun}
+        {expanded ? 'Show less' : `Show ${hidden.toLocaleString()} more ${noun}`}
     </Button>
 );
 
@@ -93,7 +93,9 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
                                             <li key={`${target.type}:${target.id}:${index}`}>{target.display ?? target.id}</li>
                                         ))}
                                     </ul>
-                                    {targetsHidden > 0 && !allTargets && <ShowAll hidden={targetsHidden} noun="targets" onClick={() => setAllTargets(true)} />}
+                                    {targetsHidden > 0 && (
+                                        <ExpandToggle expanded={allTargets} hidden={targetsHidden} noun="targets" onClick={() => setAllTargets(!allTargets)} />
+                                    )}
                                 </>
                             )}
                         </dd>
@@ -113,7 +115,7 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
                         >
                             {shownJson}
                         </Prism>
-                        {jsonHiddenLines > 0 && !allJson && <ShowAll hidden={jsonHiddenLines} noun="lines" onClick={() => setAllJson(true)} />}
+                        {jsonHiddenLines > 0 && <ExpandToggle expanded={allJson} hidden={jsonHiddenLines} noun="lines" onClick={() => setAllJson(!allJson)} />}
                     </div>
                 </div>
             </SheetContent>
