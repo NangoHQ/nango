@@ -79,9 +79,7 @@ export class UsageProcessor {
                     const mar = event.payload.value;
                     metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
 
-                    this.clickhouse.add([event]);
-
-                    return Ok(undefined);
+                    return this.clickhouse.add([event]);
                 }
                 case 'usage.records': {
                     const { accountId } = event.payload.properties;
@@ -95,9 +93,7 @@ export class UsageProcessor {
                     return Ok(undefined);
                 }
                 case 'usage.actions': {
-                    this.clickhouse.add([event]);
-
-                    return Ok(undefined);
+                    return this.clickhouse.add([event]);
                 }
                 case 'usage.connections': {
                     const { accountId } = event.payload.properties;
@@ -150,7 +146,7 @@ export class UsageProcessor {
                     this.logIncrError('function_logs', accountId, incrLogs);
 
                     // Clickhouse
-                    this.clickhouse.add([event]);
+                    const added = this.clickhouse.add([event]);
 
                     //Datadog
                     const durationMs = telemetryBag?.durationMs || 0;
@@ -178,7 +174,7 @@ export class UsageProcessor {
                         frequencyBucket,
                         functionRuntime: runtime
                     });
-                    return Ok(undefined);
+                    return added;
                 }
                 case 'usage.proxy': {
                     const { accountId } = event.payload.properties;
@@ -187,8 +183,7 @@ export class UsageProcessor {
                         metric: 'proxy',
                         delta: event.payload.value
                     });
-                    this.clickhouse.add([event]);
-                    return Ok(undefined);
+                    return this.clickhouse.add([event]);
                 }
                 case 'usage.webhook_forward': {
                     const { accountId } = event.payload.properties;
@@ -198,15 +193,13 @@ export class UsageProcessor {
                         delta: event.payload.value
                     });
                     this.logIncrError('webhook_forwards', accountId, incrWebhook);
-                    this.clickhouse.add([event]);
-                    return Ok(undefined);
+                    return this.clickhouse.add([event]);
                 }
                 case 'usage.data_transfer': {
                     const { package: pkg, callsite, ingressedBytes, egressedBytes } = event.payload.properties;
                     metrics.increment(metrics.Types.DATA_TRANSFER, ingressedBytes, { package: pkg, callsite, direction: 'ingress' });
                     metrics.increment(metrics.Types.DATA_TRANSFER, egressedBytes, { package: pkg, callsite, direction: 'egress' });
-                    this.clickhouse.add([event]);
-                    return Ok(undefined);
+                    return this.clickhouse.add([event]);
                 }
                 default:
                     ((_exhaustiveCheck: never) => {
