@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/Switch';
 import { Tag } from '@/components/ui/Tag';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
-import { hasMonthlySpend } from '@/pages/Team/Billing/planVisibility';
+import { hasMonthlySpend, migratesToPayAsYouGo } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
 import { cn } from '@/utils/utils';
 import { DEFAULTS, usePlanOverrideStore } from './planOverride';
@@ -27,6 +27,16 @@ const UNAVAILABLE_SPEND_VALUE = 'unavailable';
 const SPEND_PRESETS_IN_CENTS = [0, 5000, 128430];
 const REAL_PERIOD_COSTS_VALUE = '__real_period_costs__';
 const REAL_ADDON_VALUE = '__real_addon__';
+function scheduledChangeKind(target: PlanDefinition['code'], from: PlanDefinition['code'] | null): string {
+    if (target === 'free') {
+        return 'cancellation';
+    }
+    // Enterprise lists Pay-as-you-go as an ordinary downgrade, so the source plan decides.
+    if (target === 'pay-as-you-go' && from && migratesToPayAsYouGo(from)) {
+        return 'migration';
+    }
+    return 'downgrade';
+}
 interface PlanOverrideContentProps {
     onBack: () => void;
     onClose: () => void;
@@ -80,8 +90,21 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
         return duplicated;
     }, [plansList]);
 
-    const prevPlanCodes = plansList?.data.find((plan) => plan.code === overrideCode)?.prevPlan;
-    const scheduledChangeOptions = plansList?.data.filter((plan) => prevPlanCodes?.includes(plan.code));
+    const scheduledChangeOptions = useMemo(() => {
+        const definitions = plansList?.data ?? [];
+        const current = definitions.find((plan) => plan.code === overrideCode);
+        if (!current) {
+            return [];
+        }
+
+        const targets = new Set(current.prevPlan);
+        if (migratesToPayAsYouGo(current.code)) {
+            // We schedule the migration onto these plans, so `prevPlan` never lists it.
+            targets.add('pay-as-you-go');
+        }
+
+        return definitions.filter((plan) => targets.has(plan.code));
+    }, [plansList, overrideCode]);
 
     // `useCurrentPlan` already has the override applied, so the real plan has to come from the
     // un-overridden query or the caption would name whatever is being previewed.
@@ -135,7 +158,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                 </div>
 
                 <Section title="Plan state">
-                    {scheduledChangeOptions && scheduledChangeOptions.length > 0 && (
+                    {scheduledChangeOptions.length > 0 && (
                         <Row label="Scheduled change">
                             <Select
                                 value={scheduledTargetCode ?? NO_SCHEDULED_CHANGE_VALUE}
@@ -146,7 +169,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                                     <SelectItem value={NO_SCHEDULED_CHANGE_VALUE}>None</SelectItem>
                                     {scheduledChangeOptions.map((plan) => (
                                         <SelectItem key={plan.code} value={plan.code}>
-                                            {plan.code === 'free' ? 'Free (cancellation)' : `${plan.title} (downgrade)`}
+                                            {plan.title} ({scheduledChangeKind(plan.code, overrideCode)})
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

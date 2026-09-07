@@ -11,6 +11,7 @@ import { useStore } from '@/store';
 import { isOnS26Pricing } from '@/utils/usage';
 import { hasMonthlySpend, showsSummaryStrip } from '../planVisibility';
 import { buildSummaryState } from '../summaryState';
+import { usePlanTransition } from '../usePlanTransition';
 import { PaymentMethodDialog } from './PaymentMethodDialog';
 import { SummaryStrip } from './SummaryStrip';
 
@@ -27,6 +28,7 @@ export const Summary: React.FC = () => {
     const { data: plansList, isPending: arePlansPending } = useApiGetPlans(env);
     const { data: paymentMethods } = useStripePaymentMethods(env);
     const onS26Pricing = isOnS26Pricing(plan);
+    const transition = usePlanTransition();
     const paymentMethod = paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
 
     // Behind a dev-tool flag until the figure is reconciled against real Orb invoices (NAN-6246).
@@ -53,8 +55,8 @@ export const Summary: React.FC = () => {
         if (!plan || arePlansPending || isSpendResolving) {
             return null;
         }
-        return buildSummaryState({ plan, plans: plansList?.data, paymentMethod, canManageBilling, spend, onS26Pricing, now: new Date() });
-    }, [plan, plansList, arePlansPending, isSpendResolving, paymentMethod, canManageBilling, spend, onS26Pricing]);
+        return buildSummaryState({ plan, plans: plansList?.data, paymentMethod, canManageBilling, spend, onS26Pricing, transition, now: new Date() });
+    }, [plan, plansList, arePlansPending, isSpendResolving, paymentMethod, canManageBilling, spend, onS26Pricing, transition]);
 
     // Legacy, enterprise and free-uncapped accounts get no strip at all — their terms are negotiated
     // per customer or nothing is billable, so every field would be empty or untrue.
