@@ -20,6 +20,7 @@ import { Payment } from './components/Payment';
 import { PaymentMethodDialog } from './components/PaymentMethodDialog';
 import { Plans } from './components/Plans';
 import { PlanTransitionBanner } from './components/PlanTransitionBanner';
+import { PlanTransitionNotice } from './components/PlanTransitionNotice';
 import { ScheduledPlanChangeAlert } from './components/ScheduledPlanChangeAlert';
 import { SpendAlerts } from './components/SpendAlerts';
 import { Summary } from './components/Summary';
@@ -144,8 +145,7 @@ export const TeamBilling: React.FC = () => {
                         </Button>
                     </div>
                     {/* Outside the scroll container below, so the full-width alert doesn't scroll with the plan cards. */}
-                    {/* The transition banner at the top of the page already states this change. */}
-                    {!transition && <ScheduledPlanChangeAlert />}
+                    {transition ? <PlanTransitionNotice transition={transition} /> : <ScheduledPlanChangeAlert />}
                     <div className="w-full overflow-x-auto">
                         <Plans />
                     </div>

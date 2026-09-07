@@ -94,7 +94,7 @@ export const Plans: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-4">
-            {plans && !activeIsOffered && <CurrentPlanCard plan={plans.activePlan} />}
+            {plans && !activeIsOffered && !transition && <CurrentPlanCard plan={plans.activePlan} />}
             <div className={cn('grid gap-4', showsNewPlans ? 'grid-cols-3' : 'grid-cols-4')}>
                 {plans?.list.map((plan) => (
                     <PlanCard
@@ -264,7 +264,17 @@ const PlanCard: React.FC<{
                         </>
                     )}
                 </div>
-                <div className="w-full px-4 py-6">{ButtonComponent}</div>
+                <div className="w-full px-4 py-6 flex flex-col gap-3">
+                    {isUpcoming && (
+                        <div className="flex items-center gap-1 text-body-small-regular">
+                            <span className="text-text-secondary">Question about your plan?</span>
+                            <button type="button" onClick={openSupportChat} className="text-text-default cursor-pointer hover:underline">
+                                Contact us
+                            </button>
+                        </div>
+                    )}
+                    {ButtonComponent}
+                </div>
             </Card>
         );
     }

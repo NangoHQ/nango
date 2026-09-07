@@ -34,6 +34,7 @@ describe('planTransition', () => {
                 at: 'October 1, 2026',
                 toPlanTitle: 'Pay-as-you-go',
                 fromCode: name,
+                fromTitle: name === 'growth-v2' ? 'Growth' : 'Starter',
                 keepsGrowthAddOn: name === 'growth-v2'
             });
         }

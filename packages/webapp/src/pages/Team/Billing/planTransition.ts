@@ -9,6 +9,7 @@ export interface PlanTransition {
     at: string;
     toPlanTitle: string;
     fromCode: DBPlan['name'];
+    fromTitle: string;
     /** Pay-as-you-go's flags match Starter's, so only Growth needs the add-on to keep what it has. */
     keepsGrowthAddOn: boolean;
 }
@@ -36,6 +37,7 @@ export function planTransition({
         at: change.at,
         toPlanTitle: change.toPlanTitle,
         fromCode: plan.name,
+        fromTitle: plans?.find((p) => p.code === plan.name)?.title ?? plan.name,
         keepsGrowthAddOn: plan.name === 'growth-v2'
     };
 }
