@@ -68,9 +68,11 @@ RUN true \
 # ENV NODE_ENV=production
 
 # Build the frontend
+# This image can serve Connect UI under a base path, so its build keeps the slashless-URL recovery
+# that the CDN build omits.
 RUN true \
   && npm run -w @nangohq/webapp build \
-  && npm run -w @nangohq/connect-ui build
+  && CONNECT_UI_BASE_PATH_RECOVERY=true npm run -w @nangohq/connect-ui build
 
 # Clean src
 RUN true \
