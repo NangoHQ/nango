@@ -18,7 +18,7 @@ const TARGETS_SHOWN_COLLAPSED = 10;
 const JSON_LINES_SHOWN_COLLAPSED = 40;
 
 const ExpandToggle: React.FC<{ expanded: boolean; hidden: number; noun: string; onClick: () => void }> = ({ expanded, hidden, noun, onClick }) => (
-    <Button variant="link-accent" size="sm" onClick={onClick}>
+    <Button variant="link-accent" size="sm" aria-expanded={expanded} onClick={onClick}>
         {expanded ? 'Show less' : `Show ${hidden.toLocaleString()} more ${noun}`}
     </Button>
 );
