@@ -170,8 +170,8 @@ const PlanCard: React.FC<{
         }
 
         // A custom or negotiated plan changes through sales, even where its own definition would permit
-        // the move — legacy Growth's `prevPlan` still lists Free. A transitioning account's plan is
-        // missing from the grid on purpose, so it keeps its own moves.
+        // the move — legacy Growth's `prevPlan` still lists Free.
+        // We hide a migrating account's own card, so `activeIsOffered` is false. It can still downgrade.
         const selfServeChange = (activeIsOffered || !!transition) && activePlan?.canChange !== false;
 
         if (!closed && isUpgrade && plan.canChange && selfServeChange) {
