@@ -29,13 +29,15 @@ function validate(integration: IntegrationConfig, headerSignature: string, rawBo
 const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     const signature = headers?.['x-hub-signature-256'];
 
-    if (signature) {
-        const valid = validate(nango.integration, signature, rawBody);
+    if (!signature) {
+        logger.error('Github App webhook missing signature', { configId: nango.integration.id });
+        return Err(new NangoError('webhook_missing_signature'));
+    }
 
-        if (!valid) {
-            logger.error('Github App webhook signature invalid');
-            return Err(new NangoError('webhook_invalid_signature'));
-        }
+    const valid = validate(nango.integration, signature, rawBody);
+    if (!valid) {
+        logger.error('Github App webhook signature invalid', { configId: nango.integration.id });
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     const response = await nango.executeScriptForWebhooks({
