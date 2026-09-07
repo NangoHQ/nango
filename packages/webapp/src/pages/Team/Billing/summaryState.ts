@@ -2,6 +2,7 @@ import { formatBillingDate, nextUsageResetDate } from './billingPeriod';
 import { formatMoneyFromCents } from './money';
 import { hasMonthlySpend, planAccruesCharges } from './planVisibility';
 
+import type { PlanTransition } from './planTransition';
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
 const SPEND_CAVEATS = 'Any account credit is applied when the invoice is issued. Usage syncs daily, so this can be up to 24 hours behind.';
@@ -140,6 +141,7 @@ export function buildSummaryState({
     canManageBilling,
     spend,
     onS26Pricing,
+    transition,
     now
 }: {
     plan: ApiPlan;
@@ -148,6 +150,7 @@ export function buildSummaryState({
     canManageBilling: boolean;
     spend?: SummarySpend | null;
     onS26Pricing: boolean;
+    transition?: PlanTransition | null;
     now: Date;
 }): SummaryStripState {
     const planTitle = planTitleOf(plan.name, plans);
@@ -156,7 +159,7 @@ export function buildSummaryState({
 
     let date: SummaryStripState['date'] = null;
     if (change) {
-        date = { label: 'CHANGES ON', value: change.at };
+        date = { label: transition ? 'TRANSITIONS ON' : 'CHANGES ON', value: change.at };
     } else if (isFree) {
         date = { label: 'LIMITS RESET', value: formatBillingDate(nextUsageResetDate(now)) };
     } else if (plan.name !== 'startup-deal') {
@@ -172,6 +175,7 @@ export function buildSummaryState({
         // no card — the slot is dropped rather than dashed, and the billing section below is where
         // a card gets added.
         payment: isFree || !canManageBilling || !paymentMethod ? null : { card: paymentMethod },
-        change
+        // The banner above the strip already states this change in full.
+        change: transition ? null : change
     };
 }

@@ -49,6 +49,7 @@ export const GrowthAddon: React.FC<{ state: GrowthAddonState; endsAt?: string; o
                     {state === 'none' && GROWTH_ADDON_COPY.price}
                     {state === 'active' && `${GROWTH_ADDON_COPY.price} · included in this period`}
                     {state === 'pending-removal' && `Deactivates ${endsAt ? formatBillingDate(new Date(endsAt)) : 'at the end of this period'}`}
+                    {state === 'pending-activation' && `${GROWTH_ADDON_COPY.price} · included when you move to Pay-as-you-go`}
                 </span>
             </div>
             <span className="text-text-secondary text-body-small-regular">{GROWTH_ADDON_COPY.features}</span>

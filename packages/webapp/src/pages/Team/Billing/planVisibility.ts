@@ -116,6 +116,32 @@ const PLAN_IS_RETIRED: Record<DBPlan['name'], boolean> = {
     'enterprise-cloud-hosted': false
 };
 
+// Narrower than `PLAN_IS_RETIRED`: the pre-v2 codes get no summary strip or monthly spend, so the
+// transition surfaces have nowhere to land, and `startup-deal` schedules its own move to Growth.
+const MIGRATES_TO_PAY_AS_YOU_GO: Record<DBPlan['name'], boolean> = {
+    'starter-v2': true,
+    'growth-v2': true,
+    free: false,
+    'free-uncapped': false,
+    'pay-as-you-go': false,
+    'startup-deal': false,
+    enterprise: false,
+    'enterprise-cloud-hosted': false,
+    starter: false,
+    growth: false,
+    'starter-legacy': false,
+    'scale-legacy': false,
+    'growth-legacy': false
+};
+
+/** In scope for the migration by plan alone — says nothing about whether Orb has scheduled it. */
+export function migratesToPayAsYouGo(plan: ApiPlan | null | undefined): boolean {
+    if (!plan) {
+        return false;
+    }
+    return MIGRATES_TO_PAY_AS_YOU_GO[plan.name];
+}
+
 export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
     if (!plan) {
         return false;
@@ -156,7 +182,8 @@ export function isRetiredPlan(code: DBPlan['name']): boolean {
     return PLAN_IS_RETIRED[code];
 }
 
-export type GrowthAddonState = 'none' | 'active' | 'pending-removal';
+/** `pending-activation` is never derived from a plan — only a scheduled migration carries it. */
+export type GrowthAddonState = 'none' | 'active' | 'pending-removal' | 'pending-activation';
 
 /** A scheduled removal still reads as `has_growth_features` until its date, so the date separates the two. */
 export function growthAddonState(plan: ApiPlan | null | undefined): GrowthAddonState {

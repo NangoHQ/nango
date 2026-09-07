@@ -32,10 +32,12 @@ import { formatBillingDate, nextUsageResetDate } from '../billingPeriod.js';
 import { growthAddonState, isRetiredPlan } from '../planVisibility.js';
 import { pendingPlanChange } from '../summaryState.js';
 import { PlanChangeErrorAlert, usePlanChangeRequest } from '../usePlanChangeRequest.js';
+import { usePlanTransition } from '../usePlanTransition.js';
 import { GrowthAddon } from './GrowthAddon.js';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 import { ENTERPRISE_PLAN_DESCRIPTION, GROWTH_ADDON_COPY, GROWTH_ADDON_PRICE, PLAN_CARD_LIMITS, S26_PLAN_CARDS } from './planCardCopy.js';
 
+import type { PlanTransition } from '../planTransition.js';
 import type { GrowthAddonState } from '../planVisibility.js';
 import type { PlanDefinitionList } from '../types.js';
 import type { S26PlanCard } from './planCardCopy.js';
@@ -53,7 +55,8 @@ export const Plans: React.FC = () => {
         return paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
     }, [paymentMethods]);
 
-    const showsNewPlans = isOnS26Pricing(currentPlan);
+    const transition = usePlanTransition();
+    const showsNewPlans = isOnS26Pricing(currentPlan) || transition !== null;
 
     const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
         if (!currentPlan || !plansList) {
@@ -61,6 +64,10 @@ export const Plans: React.FC = () => {
         }
 
         const curr = plansList.data.find((p) => p.code === currentPlan.name)!;
+
+        // Taken from the pending change rather than the raw column, so a past-dated or same-plan
+        // mirror can't disable a card the strip and banner both treat as nothing.
+        const scheduledCode = pendingPlanChange({ plan: currentPlan, plans: plansList.data, now: new Date() })?.toCode;
 
         // Picked by code rather than by `hidden`: `pay-as-you-go` is hidden in `plansList`, yet is one
         // of the three cards.
@@ -71,7 +78,7 @@ export const Plans: React.FC = () => {
         const list: PlanDefinitionList[] = offered.map((plan) => ({
             plan,
             active: plan.code === currentPlan.name,
-            isFuture: plan.code === currentPlan.orb_future_plan,
+            isFuture: plan.code === scheduledCode,
             isDowngrade: curr.prevPlan?.includes(plan.code) || false,
             isUpgrade: curr.nextPlan?.includes(plan.code) || false
         }));
@@ -99,6 +106,7 @@ export const Plans: React.FC = () => {
                         addonState={addonState}
                         endsAt={currentPlan?.growth_features_ends_at ?? undefined}
                         pendingChangeAt={pendingChange?.at}
+                        transition={transition}
                         closed={!showsNewPlans && isRetiredPlan(plan.plan.code)}
                         paymentMethod={paymentMethod}
                     />
@@ -129,10 +137,11 @@ const PlanCard: React.FC<{
     addonState: GrowthAddonState;
     endsAt?: string;
     pendingChangeAt?: string;
+    transition?: PlanTransition | null;
     /** Whether this plan is no longer something the account can move to. */
     closed?: boolean;
     paymentMethod?: StripePaymentMethod | null;
-}> = ({ planDefinition, activePlan, activeIsOffered, card, addonState, endsAt, pendingChangeAt, closed, paymentMethod }) => {
+}> = ({ planDefinition, activePlan, activeIsOffered, card, addonState, endsAt, pendingChangeAt, transition, closed, paymentMethod }) => {
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
     const [addonAction, setAddonAction] = useState<'add' | 'remove' | null>(null);
 
@@ -152,18 +161,20 @@ const PlanCard: React.FC<{
     }, [paymentMethod]);
 
     const CTA = card ? PlanFooterButton : PlanFooterCTA;
+    const isUpcoming = isFuture && !!transition;
 
     const ButtonComponent = (() => {
         if (active) {
             return <CTA label={card ? 'Your plan' : 'Current plan'} disabled />;
         }
         if (isFuture) {
-            return <CTA label="Scheduled" disabled />;
+            return <CTA label={isUpcoming ? 'Your upcoming plan' : 'Scheduled'} disabled />;
         }
 
         // A custom or negotiated plan changes through sales, even where its own definition would permit
-        // the move — legacy Growth's `prevPlan` still lists Free.
-        const selfServeChange = activeIsOffered && activePlan?.canChange !== false;
+        // the move — legacy Growth's `prevPlan` still lists Free. A transitioning account is the one
+        // case where the active plan is absent from the grid by design, so its own moves still stand.
+        const selfServeChange = (activeIsOffered || !!transition) && activePlan?.canChange !== false;
 
         if (!closed && isUpgrade && plan.canChange && selfServeChange) {
             return (
@@ -208,11 +219,12 @@ const PlanCard: React.FC<{
     })();
 
     if (card) {
-        const showsAddon = active && plan.code === 'pay-as-you-go';
+        const carriesAddon = isUpcoming && transition.keepsGrowthAddOn;
+        const showsAddon = carriesAddon || (active && plan.code === 'pay-as-you-go');
         const features = showsAddon || !card.addonTeaser ? card.features : [...card.features, card.addonTeaser];
 
         return (
-            <Card selected={active}>
+            <Card selected={active || isUpcoming}>
                 <div className="flex flex-col gap-4 p-4 flex-1">
                     <div className="flex flex-col gap-1">
                         <span className="text-text-strong text-body-medium-semi">{plan.title}</span>
@@ -238,7 +250,7 @@ const PlanCard: React.FC<{
                     {showsAddon && (
                         <>
                             <GrowthAddon
-                                state={addonState}
+                                state={carriesAddon ? 'pending-activation' : addonState}
                                 endsAt={endsAt}
                                 onAdd={() => setAddonAction('add')}
                                 onRemove={() => setAddonAction('remove')}

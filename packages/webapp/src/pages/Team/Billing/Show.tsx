@@ -19,12 +19,14 @@ import { BillingHeaderAction } from './components/BillingHeaderAction';
 import { Payment } from './components/Payment';
 import { PaymentMethodDialog } from './components/PaymentMethodDialog';
 import { Plans } from './components/Plans';
+import { PlanTransitionBanner } from './components/PlanTransitionBanner';
 import { ScheduledPlanChangeAlert } from './components/ScheduledPlanChangeAlert';
 import { SpendAlerts } from './components/SpendAlerts';
 import { Summary } from './components/Summary';
 import { Usage } from './components/Usage';
 import { UsageLimitBanner } from './components/UsageLimitBanner';
 import { hasMonthlySpend, showsSummaryStrip } from './planVisibility';
+import { usePlanTransition } from './usePlanTransition';
 
 export const TeamBilling: React.FC = () => {
     const { can } = usePermissions();
@@ -40,6 +42,8 @@ export const TeamBilling: React.FC = () => {
     // so a failed load hides the section rather than leaking them or holding a skeleton forever.
     const { isError: didPlanListFail } = useApiGetPlans(env);
     const showSummary = !didPlanListFail && (isPlanPending || showsSummaryStrip(environmentData?.plan));
+
+    const transition = usePlanTransition();
 
     // A failed refetch keeps the previous plan cached, so the error is checked rather than trusting stale data.
     const showSpendAlerts = canManageBilling && !didPlanFail && hasMonthlySpend(environmentData?.plan) && !!environmentData?.plan?.orb_subscription_id;
@@ -106,6 +110,7 @@ export const TeamBilling: React.FC = () => {
                 {/* Legacy, enterprise and free-uncapped get no strip, but can still owe an invoice. */}
                 <div className="flex flex-col gap-3 empty:hidden">
                     {overdueBanner}
+                    {transition && <PlanTransitionBanner transition={transition} />}
                     {showSummary && <UsageLimitBanner state={usageLimitOverride ?? getAggregateUsageState(caps?.data ?? {}, billedMetrics)} />}
                 </div>
                 {showSummary && (
@@ -139,7 +144,8 @@ export const TeamBilling: React.FC = () => {
                         </Button>
                     </div>
                     {/* Outside the scroll container below, so the full-width alert doesn't scroll with the plan cards. */}
-                    <ScheduledPlanChangeAlert />
+                    {/* The transition banner at the top of the page already states this change. */}
+                    {!transition && <ScheduledPlanChangeAlert />}
                     <div className="w-full overflow-x-auto">
                         <Plans />
                     </div>
