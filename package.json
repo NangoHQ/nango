@@ -15,7 +15,7 @@
         "lint": "oxlint -c .oxlintrc.json",
         "lint:fix": "oxlint -c .oxlintrc.json --fix",
         "ts-build": "tsc -b tsconfig.build.json",
-        "ts-build:docker": "tsc -b tsconfig.docker.json",
+        "ts-build:docker": "jq '. | del(.references[] | select(.path == \"packages/cli\"))' tsconfig.build.json > tsconfig.docker.json && tsc -b tsconfig.docker.json",
         "ts-clean": "npx rimraf packages/*/tsconfig.tsbuildinfo packages/*/dist",
         "webapp-build": "cd ./packages/webapp && npm run build && cd ../..",
         "webapp-build:watch": "tsc -b -w packages/webapp/tsconfig.json",
@@ -104,6 +104,12 @@
             "js-yaml": "3.15.1"
         },
         "dd-trace": "5.117.0",
+        "vitest": "4.1.9",
+        "typescript": "5.8.3",
+        "zod": "4.0.5",
+        "@types/node": "22.15.29",
+        "dayjs": "1.11.19",
+        "uuidv7": "1.0.2",
         "@elastic/transport": {
             "undici": "6.28.0"
         },

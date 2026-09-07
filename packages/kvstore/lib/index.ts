@@ -1,5 +1,7 @@
 import { createClient } from 'redis';
 
+import { getLogger } from '@nangohq/utils';
+
 import { InMemoryKVStore } from './InMemoryStore.js';
 import { Locking } from './Locking.js';
 import { getCustomerRedisUrl, getRedisClientOptions, getRedisUrl } from './redisClient.js';
@@ -9,6 +11,8 @@ import { InMemorySlidingWindowRateLimiter, RedisSlidingWindowRateLimiter } from 
 import type { KVStore } from './KVStore.js';
 import type { NangoRedisClient, RedisBoundary } from './redisClient.js';
 import type { SlidingWindowRateLimiter, SlidingWindowRateLimiterOptions } from './SlidingWindowRateLimiter.js';
+
+const logger = getLogger('kvstore');
 
 export { InMemoryKVStore } from './InMemoryStore.js';
 export { RedisKVStore } from './RedisStore.js';
@@ -124,7 +128,10 @@ export function createSlidingWindowRateLimiter(options: SlidingWindowRateLimiter
             destroyed = true;
             const activeClient = client;
             client = undefined;
-            const connectingClient = await connection?.catch(() => undefined);
+            const connectingClient = await connection?.catch((err: unknown) => {
+                logger.warning('Failed to connect redis during destroy', err);
+                return undefined;
+            });
 
             for (const connected of new Set([activeClient, connectingClient])) {
                 if (connected?.isOpen) {

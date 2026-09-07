@@ -1,6 +1,6 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import Fuse from 'fuse.js';
-import debounce from 'lodash/debounce';
+import debounce from 'lodash-es/debounce.js';
 import { Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';

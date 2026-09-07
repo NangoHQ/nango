@@ -1,5 +1,5 @@
 import Fuse from 'fuse.js';
-import debounce from 'lodash/debounce';
+import debounce from 'lodash-es/debounce.js';
 import { Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';

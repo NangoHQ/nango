@@ -100,9 +100,10 @@ RUN true \
       /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
   && rm -rf /var/lib/apt/lists/*
 
-# Do not use root to run the app
-# BUT it does not work with secret mount (could not find a solution yet)
-# TODO: fix this
+# Do not use root to run the app — but restrictive secret mounts (TLS/Redis, 0400)
+# cause EACCES for UID 1000 at startup/reconnects. Keep root for now;
+# align mount permissions before switching to USER node.
+# TODO: ensure mounts are readable by node (UID 1000) then enable USER node
 # USER node
 
 WORKDIR /app/nango

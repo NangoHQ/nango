@@ -29,7 +29,7 @@
         "@nangohq/utils": "file:../utils",
         "dd-trace": "5.117.0",
         "node-cron": "4.6.0",
-        "uuidv7": "0.6.3",
+        "uuidv7": "1.0.2",
         "zod": "4.0.5"
     },
     "devDependencies": {

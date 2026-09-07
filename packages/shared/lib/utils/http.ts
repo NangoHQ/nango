@@ -62,7 +62,9 @@ async function fetchFollowingPolicyRedirects(initialUrl: URL, baseProps: Request
         }
 
         // Release the socket before issuing the next request.
-        await res.body?.cancel().catch(() => undefined);
+        await res.body?.cancel().catch((err: unknown) => {
+            console.debug('Failed to cancel response body during redirect', err);
+        });
 
         if (followed >= redirectPolicy.maxRedirects) {
             throw new Error(`Maximum number of redirects (${redirectPolicy.maxRedirects}) exceeded`);

@@ -18,3 +18,4 @@ temp
 CLAUDE.local.md
 .cursor/*.local.mdc
 
+tsconfig.docker.json
