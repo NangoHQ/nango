@@ -16,7 +16,7 @@ export type GetMeta = ApiEndpoint<{
             baseUrl: string;
             debugMode: boolean;
             gettingStartedClosed: boolean;
-            // Whether the audit trail is enabled for this account (per-account rollout flag); gates the dashboard UI.
+            // Whether this account can reach its own trail; gates the dashboard UI.
             auditTrail: boolean;
         };
     };
