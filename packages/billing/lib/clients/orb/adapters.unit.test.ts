@@ -281,11 +281,19 @@ describe('orbAmountToCents', () => {
         expect(orbAmountToCents('100')).toBe(10000);
     });
 
-    it('drops sub-cent precision rather than rounding up', () => {
+    it('rounds sub-cent precision half-up', () => {
+        // The costs endpoint answers in full float precision, so two cents arrives just under itself.
+        expect(orbAmountToCents('0.01999999999999999872')).toBe(2);
         expect(orbAmountToCents('19.9900000000')).toBe(1999);
-        expect(orbAmountToCents('19.999')).toBe(1999);
+        expect(orbAmountToCents('19.994')).toBe(1999);
+        expect(orbAmountToCents('19.995')).toBe(2000);
         expect(orbAmountToCents('19.9')).toBe(1990);
         expect(orbAmountToCents('19.')).toBe(1900);
+    });
+
+    it('carries the rounding into the whole part', () => {
+        expect(orbAmountToCents('0.999')).toBe(100);
+        expect(orbAmountToCents('1.999')).toBe(200);
     });
 
     it('handles negative amounts', () => {
