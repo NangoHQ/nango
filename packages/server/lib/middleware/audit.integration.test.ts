@@ -1,7 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import * as featureFlags from '@nangohq/feature-flags';
 import { customerKeyService, seeders, updatePlan, userService } from '@nangohq/shared';
 import { flags, getLogger } from '@nangohq/utils';
 
@@ -42,7 +41,6 @@ describe('audit middleware — live-stack contract', () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
         // Roll the flag out to every account here; each one still has to be entitled on its plan.
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {

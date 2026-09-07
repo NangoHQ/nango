@@ -113,7 +113,6 @@ describe('audit — auth flows', () => {
         auditSpy = vi.spyOn(audit, 'record');
         // getFlags() returns the stable noop facade in tests; roll the audit flag out to every account. MFA
         // is forced on too so an enrolled user's sign-in takes the pending-MFA path.
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
         vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
     });
 

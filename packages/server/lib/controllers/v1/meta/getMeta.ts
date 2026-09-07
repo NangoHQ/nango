@@ -26,7 +26,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             baseUrl,
             debugMode: req.session.debugMode === true,
             gettingStartedClosed: sessionUser.getting_started_closed,
-            auditTrail: await canViewAuditTrail(req, account.uuid, plan),
+            auditTrail: await canViewAuditTrail(req, plan),
             s26Pricing: await getFlags().isS26PricingEnabled(account.uuid)
         }
     });
