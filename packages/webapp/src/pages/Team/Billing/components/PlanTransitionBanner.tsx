@@ -10,10 +10,6 @@ interface PlanTransitionBannerProps {
     transition: PlanTransition;
 }
 
-/**
- * Deliberately silent about the new usage metrics the design shows alongside it: an account is still
- * measured on the retired metrics until Orb moves it, so there is nothing new to review yet (NAN-6744).
- */
 export const PlanTransitionBanner: React.FC<PlanTransitionBannerProps> = ({ transition }) => {
     return (
         <Alert variant="info" size="wide">

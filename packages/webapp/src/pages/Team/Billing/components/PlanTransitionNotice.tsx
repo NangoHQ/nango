@@ -8,10 +8,6 @@ interface PlanTransitionNoticeProps {
     transition: PlanTransition;
 }
 
-/**
- * States the change date rather than the design's day-before, so this and the banner can't read as
- * two different deadlines.
- */
 export const PlanTransitionNotice: React.FC<PlanTransitionNoticeProps> = ({ transition }) => {
     return (
         <Alert variant="info">

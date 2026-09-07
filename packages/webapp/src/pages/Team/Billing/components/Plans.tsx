@@ -65,8 +65,8 @@ export const Plans: React.FC = () => {
 
         const curr = plansList.data.find((p) => p.code === currentPlan.name)!;
 
-        // Taken from the pending change rather than the raw column, so a past-dated or same-plan
-        // mirror can't disable a card the strip and banner both treat as nothing.
+        // `orb_future_plan` keeps stale rows. Read the pending change instead, so a card can't be
+        // disabled by a change that already passed.
         const scheduledCode = pendingPlanChange({ plan: currentPlan, plans: plansList.data, now: new Date() })?.toCode;
 
         // Picked by code rather than by `hidden`: `pay-as-you-go` is hidden in `plansList`, yet is one
@@ -172,8 +172,8 @@ const PlanCard: React.FC<{
         }
 
         // A custom or negotiated plan changes through sales, even where its own definition would permit
-        // the move — legacy Growth's `prevPlan` still lists Free. A transitioning account is the one
-        // case where the active plan is absent from the grid by design, so its own moves still stand.
+        // the move — legacy Growth's `prevPlan` still lists Free. A transitioning account's plan is
+        // missing from the grid on purpose, so it keeps its own moves.
         const selfServeChange = (activeIsOffered || !!transition) && activePlan?.canChange !== false;
 
         if (!closed && isUpgrade && plan.canChange && selfServeChange) {

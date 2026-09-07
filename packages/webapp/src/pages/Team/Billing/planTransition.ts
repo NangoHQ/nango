@@ -10,11 +10,10 @@ export interface PlanTransition {
     toPlanTitle: string;
     fromCode: DBPlan['name'];
     fromTitle: string;
-    /** Pay-as-you-go's flags match Starter's, so only Growth needs the add-on to keep what it has. */
     keepsGrowthAddOn: boolean;
 }
 
-/** Reads the schedule Orb mirrors into the plan, so an account nobody scheduled shows nothing at all. */
+/** Only a change Orb has scheduled counts. An account we never scheduled sees no transition. */
 export function planTransition({
     plan,
     plans,
