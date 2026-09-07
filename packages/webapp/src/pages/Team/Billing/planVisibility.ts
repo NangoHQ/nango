@@ -116,11 +116,8 @@ const PLAN_IS_RETIRED: Record<DBPlan['name'], boolean> = {
     'enterprise-cloud-hosted': false
 };
 
-// Narrower than `PLAN_IS_RETIRED`. The pre-v2 plans get no summary strip, so the transition has
-// nowhere to show, and `startup-deal` converts to Growth instead.
 const MIGRATES_TO_PAY_AS_YOU_GO: readonly DBPlan['name'][] = ['starter-v2', 'growth-v2'];
 
-/** True for plans in scope. Says nothing about whether Orb scheduled the change. */
 export function migratesToPayAsYouGo(code: DBPlan['name']): boolean {
     return MIGRATES_TO_PAY_AS_YOU_GO.includes(code);
 }

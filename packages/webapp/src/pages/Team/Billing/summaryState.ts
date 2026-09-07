@@ -175,7 +175,6 @@ export function buildSummaryState({
         // no card — the slot is dropped rather than dashed, and the billing section below is where
         // a card gets added.
         payment: isFree || !canManageBilling || !paymentMethod ? null : { card: paymentMethod },
-        // The banner above the strip already states this change in full.
         change: transition ? null : change
     };
 }

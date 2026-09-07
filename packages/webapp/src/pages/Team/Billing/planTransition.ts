@@ -13,7 +13,6 @@ export interface PlanTransition {
     keepsGrowthAddOn: boolean;
 }
 
-/** Only a change Orb has scheduled counts. An account we never scheduled sees no transition. */
 export function planTransition({
     plan,
     plans,

@@ -27,7 +27,6 @@ const UNAVAILABLE_SPEND_VALUE = 'unavailable';
 const SPEND_PRESETS_IN_CENTS = [0, 5000, 128430];
 const REAL_PERIOD_COSTS_VALUE = '__real_period_costs__';
 const REAL_ADDON_VALUE = '__real_addon__';
-// Every other scheduled change is a downgrade.
 const SCHEDULED_CHANGE_KIND: Partial<Record<PlanDefinition['code'], string>> = {
     free: 'cancellation',
     'pay-as-you-go': 'migration'

@@ -65,8 +65,6 @@ export const Plans: React.FC = () => {
 
         const curr = plansList.data.find((p) => p.code === currentPlan.name)!;
 
-        // `orb_future_plan` keeps stale rows. Read the pending change instead, so a card can't be
-        // disabled by a change that already passed.
         const scheduledCode = pendingPlanChange({ plan: currentPlan, plans: plansList.data, now: new Date() })?.toCode;
 
         // Picked by code rather than by `hidden`: `pay-as-you-go` is hidden in `plansList`, yet is one
