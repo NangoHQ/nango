@@ -679,6 +679,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Missing webhook token';
                 break;
 
+            case 'webhook_invalid_secret':
+                this.status = 401;
+                this.message = 'Invalid or missing webhook secret';
+                break;
+
             case 'webhook_invalid_payload':
                 this.status = 400;
                 this.message = 'Invalid webhook payload';

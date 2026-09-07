@@ -115,6 +115,22 @@
       "destination": "/api-integrations/bigcommerce"
     },
     {
+      "source": "/integrations/all/gong",
+      "destination": "/api-integrations/gong"
+    },
+    {
+      "source": "/integrations/all/gong-oauth",
+      "destination": "/api-integrations/gong-oauth"
+    },
+    {
+      "source": "/integrations/all/gong/connect",
+      "destination": "/api-integrations/gong/connect"
+    },
+    {
+      "source": "/integrations/all/gong/webhooks",
+      "destination": "/api-integrations/gong/webhooks"
+    },
+    {
       "source": "/introduction",
       "destination": "/"
     },
@@ -1293,8 +1309,8 @@
               "api-integrations/glean",
               "api-integrations/glean-oauth",
               "api-integrations/glyphic",
-              "integrations/all/gong",
-              "integrations/all/gong-oauth",
+              "api-integrations/gong",
+              "api-integrations/gong-oauth",
               "api-integrations/google",
               "api-integrations/google-ads",
               "api-integrations/google-analytics",

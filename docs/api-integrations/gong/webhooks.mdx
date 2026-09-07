@@ -1,0 +1,73 @@
+---
+title: 'How to set up webhooks with Gong on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Gong call events in your app using Nango webhooks'
+---
+
+Gong sends webhooks through **Automation Rules**: a rule fires whenever a call matching its filters is recorded, and posts the call data to a destination URL you control. This works the same way for both the Basic Auth and OAuth Gong integrations.
+
+## How it works
+
+1. A Gong automation rule fires and sends a POST request to your Nango webhook URL.
+2. Nango verifies the delivery's signature (if you've configured a public key), then routes the event to the connection identified by the `nangoConnectionId` query param on the webhook URL — Gong's payload has no field that identifies a single Nango connection, so this param is required.
+3. Nango forwards the event to your app, or triggers a sync.
+
+<Tip>
+Register a separate automation rule per Nango connection, each pointing at your Nango webhook URL with `?nangoConnectionId=<CONNECTION-ID>` appended. A delivery with no `nangoConnectionId` is always rejected. A delivery whose `nangoConnectionId` doesn't match a real connection is rejected too — unless the integration-level **Webhook secret** is set and the signature verifies against it, in which case it's accepted but not routed anywhere.
+</Tip>
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Gong integration and copy the **Webhook URL**. Append `?nangoConnectionId=<CONNECTION-ID>` for the connection you're registering this rule for.
+
+### 2. Create an automation rule in Gong
+
+1. Go to **Admin Center → Settings → Ecosystem → Automation rules** and select **+ Add Rule**.
+2. Use the filter icon to set which calls should trigger the rule.
+3. In the **Action** dropdown, keep **Fire webhook** and paste your Nango webhook URL (with `nangoConnectionId`) as the **Destination URL**.
+4. Choose an authentication method:
+   - **Signed JWT header** — Gong signs deliveries with an RS256 JWT in the `Authorization` header. Click **Show public key** and copy it.
+5. Name the rule, test it against a sample call, then enable it.
+
+### 3. Set the public key in Nango
+
+Gong issues a public key per automation rule, so a single integration-level key only covers one connection. Where you store it in Nango depends on how many Gong connections you have under this integration:
+
+- **One connection**: paste the public key as the **Webhook secret** on the Gong integration in the Nango dashboard.
+- **Multiple connections**: each one has its own automation rule and public key, so set each connection's public key as `webhookSecret` in that connection's metadata instead:
+
+  ```bash
+  curl -X PATCH "https://api.nango.dev/connections/metadata" \
+    -H "Authorization: Bearer <NANGO-API-KEY>" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "connection_id": "<CONNECTION-ID>",
+      "provider_config_key": "<INTEGRATION-ID>",
+      "metadata": {
+        "webhookSecret": "<GONG-PUBLIC-KEY>"
+      }
+    }'
+  ```
+
+  `PATCH` merges into any metadata the connection already has; `POST` on the same endpoint replaces it entirely, so prefer `PATCH` unless you specifically want to wipe existing metadata. Nango checks the integration-level **Webhook secret** first and falls back to the connection's metadata when that's not set.
+
+<Note>
+If neither a **Webhook secret** nor a connection-level `webhookSecret` is set, Nango rejects the delivery instead of accepting it unverified.
+</Note>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app** — Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync** — run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+## Payload
+
+Each delivery contains `callData` (the call record, with the same structure as [Gong's API](https://app.gong.io/settings/api/documentation#overview)) and `isTest` (true when sent from the rule's test button). See [Gong's webhook payload reference](https://help.gong.io/docs/payload-sent-to-webhooks) for the full schema.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+---

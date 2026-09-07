@@ -1,0 +1,255 @@
+import crypto from 'node:crypto';
+
+import jwt from 'jsonwebtoken';
+import { describe, expect, it, vi } from 'vitest';
+
+import { logContextGetter } from '@nangohq/logs';
+import { seeders } from '@nangohq/shared';
+import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
+
+import * as GongWebhookRouting from './gong-webhook-routing.js';
+import { InternalNango } from './internal-nango.js';
+
+import type { GongWebhookPayload } from './types.js';
+import type { SignOptions } from 'jsonwebtoken';
+
+const CONNECTION_ID = 'my-connection-id';
+
+function generateKeyPair() {
+    return crypto.generateKeyPairSync('rsa', {
+        modulusLength: 2048,
+        publicKeyEncoding: { type: 'spki', format: 'pem' },
+        privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+    });
+}
+
+const { publicKey: PUBLIC_KEY, privateKey: PRIVATE_KEY } = generateKeyPair();
+const { publicKey: OTHER_PUBLIC_KEY, privateKey: OTHER_PRIVATE_KEY } = generateKeyPair();
+// Gong's "Show public key" UI hands out just this - the bare base64 DER body, no PEM wrapper.
+const BARE_PUBLIC_KEY = PUBLIC_KEY.replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\n/g, '');
+
+function getNangoMock({
+    integrationPublicKey = PUBLIC_KEY,
+    connectionSecret = null,
+    connectionExists = true
+}: {
+    integrationPublicKey?: string | null;
+    connectionSecret?: unknown;
+    connectionExists?: boolean;
+} = {}) {
+    const integration = getTestConfig({ provider: 'gong', ...(integrationPublicKey !== null && { custom: { webhookSecret: integrationPublicKey } }) });
+    const nango = new InternalNango({
+        team: seeders.getTestTeam(),
+        environment: seeders.getTestEnvironment(),
+        plan: seeders.getTestPlan(),
+        integration,
+        logContextGetter
+    });
+    const getConnection = vi
+        .spyOn(nango, 'getConnectionForWebhook')
+        .mockResolvedValue(
+            connectionExists ? { connectionId: CONNECTION_ID, metadata: connectionSecret !== null ? { webhookSecret: connectionSecret } : null } : null
+        );
+    const execute = vi.spyOn(nango, 'executeScriptForWebhooks').mockResolvedValue({
+        connectionIds: [CONNECTION_ID],
+        connectionMetadata: {}
+    });
+
+    return { nango, getConnection, execute };
+}
+
+function signToken(
+    rawBody: string,
+    { privateKey = PRIVATE_KEY, expiresIn = '5m' }: { privateKey?: string; expiresIn?: SignOptions['expiresIn'] } = {}
+): string {
+    const bodySha256 = crypto.createHash('sha256').update(rawBody, 'utf8').digest('hex');
+    return jwt.sign({ webhook_url: 'https://api.nango.dev/webhook/gong', body_sha256: bodySha256 }, privateKey, { algorithm: 'RS256', expiresIn });
+}
+
+function getBody(overrides?: Partial<GongWebhookPayload>): GongWebhookPayload {
+    return {
+        callData: { metaData: { id: 'call-123' } },
+        isTest: false,
+        ...overrides
+    };
+}
+
+describe('Gong webhook routing', () => {
+    it('routes a webhook after validating its signature', async () => {
+        const { nango, getConnection, execute } = getNangoMock();
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const headers = { authorization: `Bearer ${signToken(rawBody)}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isOk()).toBe(true);
+        expect(getConnection).toHaveBeenCalledWith(CONNECTION_ID);
+        expect(execute).toHaveBeenCalledWith({
+            body,
+            connectionIdentifierValue: CONNECTION_ID,
+            propName: 'connectionId'
+        });
+    });
+
+    it('verifies a signature using a bare base64 public key with no PEM wrapper', async () => {
+        const { nango, execute } = getNangoMock({ integrationPublicKey: BARE_PUBLIC_KEY });
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const headers = { authorization: `Bearer ${signToken(rawBody)}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledWith({
+            body,
+            connectionIdentifierValue: CONNECTION_ID,
+            propName: 'connectionId'
+        });
+    });
+
+    it('rejects a webhook with no connection id', async () => {
+        const { nango, getConnection, execute } = getNangoMock();
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const headers = { authorization: `Bearer ${signToken(rawBody)}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, rawBody, {});
+
+        expect(result.isErr()).toBe(true);
+        expect(getConnection).not.toHaveBeenCalled();
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects when the connection does not exist and no secret is configured to validate against', async () => {
+        const { nango, execute } = getNangoMock({ integrationPublicKey: null, connectionExists: false });
+        const body = getBody();
+
+        const result = await GongWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('returns success without dispatch when the connection does not exist but the integration signature is valid', async () => {
+        const { nango, execute } = getNangoMock({ connectionExists: false });
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const headers = { authorization: `Bearer ${signToken(rawBody)}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects a webhook when no public key is configured anywhere', async () => {
+        const { nango, execute } = getNangoMock({ integrationPublicKey: null });
+        const body = getBody();
+
+        const result = await GongWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it("falls back to the connection's public key when the integration has none", async () => {
+        const { nango, execute } = getNangoMock({ integrationPublicKey: null, connectionSecret: OTHER_PUBLIC_KEY });
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const headers = { authorization: `Bearer ${signToken(rawBody, { privateKey: OTHER_PRIVATE_KEY })}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledOnce();
+    });
+
+    it('prefers the integration public key over the connection public key', async () => {
+        const { nango, execute } = getNangoMock({ integrationPublicKey: PUBLIC_KEY, connectionSecret: OTHER_PUBLIC_KEY });
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        // signed with the connection's key only -- should fail since the integration key takes priority
+        const headers = { authorization: `Bearer ${signToken(rawBody, { privateKey: OTHER_PRIVATE_KEY })}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects an invalid connection public key', async () => {
+        const { nango, execute } = getNangoMock({ integrationPublicKey: null, connectionSecret: ['invalid-key'] });
+        const body = getBody();
+
+        const result = await GongWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects a webhook missing the authorization header when a key is configured', async () => {
+        const { nango, execute } = getNangoMock();
+        const body = getBody();
+
+        const result = await GongWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects a tampered signed payload before dispatch', async () => {
+        const { nango, execute } = getNangoMock();
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const headers = { authorization: `Bearer ${signToken(rawBody)}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, `${rawBody} `, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects an expired token before dispatch', async () => {
+        const { nango, execute } = getNangoMock();
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const headers = { authorization: `Bearer ${signToken(rawBody, { expiresIn: -10 })}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects a token signed with an untrusted key', async () => {
+        const { nango, execute } = getNangoMock();
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const headers = { authorization: `Bearer ${signToken(rawBody, { privateKey: OTHER_PRIVATE_KEY })}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('forwards the full body and connection ids on success', async () => {
+        const { nango } = getNangoMock();
+        const body = getBody({ isTest: true });
+        const rawBody = JSON.stringify(body);
+        const headers = { authorization: `Bearer ${signToken(rawBody)}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toMatchObject({
+                content: { status: 'success' },
+                statusCode: 200,
+                connectionIds: [CONNECTION_ID],
+                toForward: body
+            });
+        }
+    });
+});
