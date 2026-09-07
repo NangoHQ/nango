@@ -153,7 +153,6 @@ export enum Types {
 
     E2B_RUNNING_SANDBOXES = 'nango.server.e2b.sandboxes.running',
 
-    ORB_BILLING_EVENTS_INGESTED = 'nango.billing.orb.ingested',
     BILLING_USAGE_CACHE = 'nango.billing.usage.cache',
     BILLING_USAGE_ORB_MS = 'nango.billing.usage.orb.ms',
     BILLING_USAGE_ORB_ERRORS = 'nango.billing.usage.orb.errors',
