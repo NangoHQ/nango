@@ -12,11 +12,22 @@ import { InternalNango } from './internal-nango.js';
 import type { FathomWebhookResponse } from './types.js';
 
 const CONNECTION_ID = 'my-connection-id';
+const OTHER_CONNECTION_ID = 'someone-elses-connection-id';
 const EMAIL = 'recorder@example.com';
 const SIGNING_KEY = Buffer.alloc(32, 7);
 const SIGNING_SECRET = `whsec_${SIGNING_KEY.toString('base64')}`;
+const CONNECTION_SIGNING_KEY = Buffer.alloc(32, 9);
+const CONNECTION_SIGNING_SECRET = `whsec_${CONNECTION_SIGNING_KEY.toString('base64')}`;
+// A second connection with its own distinct secret, so replay/redirect tests can prove a
+// delivery signed for CONNECTION_ID's secret is rejected when routed at this one instead.
+const OTHER_CONNECTION_SIGNING_KEY = Buffer.alloc(32, 11);
+const OTHER_CONNECTION_SIGNING_SECRET = `whsec_${OTHER_CONNECTION_SIGNING_KEY.toString('base64')}`;
 
-function getNangoMock({ webhookSecret = SIGNING_SECRET }: { webhookSecret?: string | null } = {}) {
+function getNangoMock({
+    webhookSecret = SIGNING_SECRET,
+    connectionSecret = CONNECTION_SIGNING_SECRET,
+    connectionExists = true
+}: { webhookSecret?: string | null; connectionSecret?: unknown; connectionExists?: boolean } = {}) {
     const integration = getTestConfig({ provider: 'fathom', ...(webhookSecret !== null && { custom: { webhookSecret } }) });
     const nango = new InternalNango({
         team: seeders.getTestTeam(),
@@ -25,12 +36,24 @@ function getNangoMock({ webhookSecret = SIGNING_SECRET }: { webhookSecret?: stri
         integration,
         logContextGetter
     });
+    // Keyed by the requested connection id, so a test can assert on routing to a *different*
+    // connection than the one whose secret signed the delivery (the replay/redirect scenario),
+    // instead of always resolving the same connection regardless of which id was asked for.
+    const getConnection = vi.spyOn(nango, 'getConnectionForWebhook').mockImplementation((connectionId: string) => {
+        if (connectionId === OTHER_CONNECTION_ID) {
+            return Promise.resolve({ connectionId: OTHER_CONNECTION_ID, metadata: { webhookSecret: OTHER_CONNECTION_SIGNING_SECRET } });
+        }
+        if (!connectionExists) {
+            return Promise.resolve(null);
+        }
+        return Promise.resolve({ connectionId: CONNECTION_ID, metadata: connectionSecret !== null ? { webhookSecret: connectionSecret } : null });
+    });
     const execute = vi.spyOn(nango, 'executeScriptForWebhooks').mockResolvedValue({
         connectionIds: [CONNECTION_ID],
         connectionMetadata: {}
     });
 
-    return { nango, execute };
+    return { nango, getConnection, execute };
 }
 
 function getSignedHeaders(rawBody: string, key: Buffer = SIGNING_KEY, timestamp = Math.floor(Date.now() / 1000)): Record<string, string> {
@@ -68,19 +91,75 @@ function getBody(overrides?: Partial<FathomWebhookResponse>): FathomWebhookRespo
 }
 
 describe('Fathom webhook routing', () => {
-    it('routes by nangoConnectionId when present in the query, ignoring the email', async () => {
-        const { nango, execute } = getNangoMock();
+    it("routes by nangoConnectionId when present in the query, verified against that connection's own secret", async () => {
+        const { nango, getConnection, execute } = getNangoMock();
         const body = getBody();
         const rawBody = JSON.stringify(body);
+        const headers = getSignedHeaders(rawBody, CONNECTION_SIGNING_KEY);
 
-        const result = await FathomWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, { nangoConnectionId: CONNECTION_ID });
+        const result = await FathomWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
 
         expect(result.isOk()).toBe(true);
+        expect(getConnection).toHaveBeenCalledWith(CONNECTION_ID);
+        expect(execute).toHaveBeenCalledOnce();
         expect(execute).toHaveBeenCalledWith({
             body,
             connectionIdentifierValue: CONNECTION_ID,
             propName: 'connectionId'
         });
+    });
+
+    it("rejects redirecting a delivery signed for one connection to a different connection's nangoConnectionId", async () => {
+        // This is the replay/redirect scenario: Fathom never signs the destination URL, so a
+        // delivery validly signed with CONNECTION_ID's own secret must not be accepted when the
+        // query param is swapped to point at a different connection with its own distinct secret.
+        const { nango, execute } = getNangoMock();
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const headers = getSignedHeaders(rawBody, CONNECTION_SIGNING_KEY);
+
+        const result = await FathomWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: OTHER_CONNECTION_ID });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it("rejects routing by nangoConnectionId when signed with the shared integration secret instead of the connection's own secret", async () => {
+        const { nango, execute } = getNangoMock();
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const headers = getSignedHeaders(rawBody, SIGNING_KEY);
+
+        const result = await FathomWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects routing by nangoConnectionId when the connection has no webhook secret configured', async () => {
+        const { nango, execute } = getNangoMock({ connectionSecret: null });
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+
+        const result = await FathomWebhookRouting.default(nango, getSignedHeaders(rawBody, CONNECTION_SIGNING_KEY), body, rawBody, {
+            nangoConnectionId: CONNECTION_ID
+        });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects routing by nangoConnectionId when the connection does not exist', async () => {
+        const { nango, execute } = getNangoMock({ connectionExists: false });
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+
+        const result = await FathomWebhookRouting.default(nango, getSignedHeaders(rawBody, CONNECTION_SIGNING_KEY), body, rawBody, {
+            nangoConnectionId: CONNECTION_ID
+        });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
     });
 
     it('falls back to matching by recorded_by.email when no nangoConnectionId is in the query', async () => {
@@ -91,6 +170,7 @@ describe('Fathom webhook routing', () => {
         const result = await FathomWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, {});
 
         expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledOnce();
         expect(execute).toHaveBeenCalledWith({
             body,
             connectionIdentifierValue: EMAIL,
@@ -120,16 +200,6 @@ describe('Fathom webhook routing', () => {
         expect(execute).not.toHaveBeenCalled();
     });
 
-    it('rejects routing by nangoConnectionId when no secret is configured', async () => {
-        const { nango, execute } = getNangoMock({ webhookSecret: null });
-        const body = getBody();
-
-        const result = await FathomWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
-
-        expect(result.isErr()).toBe(true);
-        expect(execute).not.toHaveBeenCalled();
-    });
-
     it('still allows the email fallback when no secret is configured', async () => {
         const { nango, execute } = getNangoMock({ webhookSecret: null });
         const body = getBody();
@@ -137,6 +207,7 @@ describe('Fathom webhook routing', () => {
         const result = await FathomWebhookRouting.default(nango, {}, body, JSON.stringify(body), {});
 
         expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledOnce();
         expect(execute).toHaveBeenCalledWith({
             body,
             connectionIdentifierValue: EMAIL,

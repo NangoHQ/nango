@@ -47,32 +47,59 @@ function validate(secret: string, msgId: string, msgSignature: string, msgTimest
     return false;
 }
 
-const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body, rawBody, query) => {
-    const webhookSecret = nango.integration.custom?.['webhookSecret'];
+function verifySignature(secret: string, headers: Record<string, string>, rawBody: string | Buffer): 'valid' | 'missing' | 'invalid' {
+    const msgId = headers['webhook-id'] || headers['svix-id'];
+    const msgSignature = headers['webhook-signature'] || headers['svix-signature'];
+    const msgTimestamp = headers['webhook-timestamp'] || headers['svix-timestamp'];
 
-    if (webhookSecret) {
-        const msgId = headers['webhook-id'] || headers['svix-id'];
-        const msgSignature = headers['webhook-signature'] || headers['svix-signature'];
-        const msgTimestamp = headers['webhook-timestamp'] || headers['svix-timestamp'];
-
-        if (!msgId || !msgSignature || !msgTimestamp) {
-            return Err(new NangoError('webhook_missing_signature'));
-        }
-
-        if (!validate(webhookSecret, msgId, msgSignature, msgTimestamp, rawBody)) {
-            return Err(new NangoError('webhook_invalid_signature'));
-        }
+    if (!msgId || !msgSignature || !msgTimestamp) {
+        return 'missing';
     }
 
+    return validate(secret, msgId, msgSignature, msgTimestamp, rawBody) ? 'valid' : 'invalid';
+}
+
+/** Verifies against `secret` and maps a failure to the matching error, or returns null when valid. */
+function verifyOrError(secret: string, headers: Record<string, string>, rawBody: string | Buffer): NangoError | null {
+    const result = verifySignature(secret, headers, rawBody);
+    if (result === 'valid') {
+        return null;
+    }
+    return new NangoError(result === 'missing' ? 'webhook_missing_signature' : 'webhook_invalid_signature');
+}
+
+const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body, rawBody, query) => {
     // Prefer the nangoConnectionId query param when the webhook URL was registered with one;
     // otherwise fall back to matching on the recording owner's email, as before.
     const nangoConnectionId = query?.['nangoConnectionId'];
     const emailAddress = body.recorded_by?.email;
 
-    // nangoConnectionId is caller-supplied and can select any connection under this integration,
-    // so require a verified signature before trusting it for routing.
-    if (nangoConnectionId && !webhookSecret) {
-        return Err(new NangoError('webhook_missing_signature'));
+    if (nangoConnectionId) {
+        const connection = await nango.getConnectionForWebhook(nangoConnectionId);
+        if (!connection) {
+            return Err(new NangoError('webhook_invalid_secret', { reason: 'Unknown connection' }));
+        }
+
+        const connectionSecret = connection.metadata?.['webhookSecret'];
+        if (connectionSecret != null && typeof connectionSecret !== 'string') {
+            return Err(new NangoError('webhook_invalid_secret', { reason: 'Invalid webhook secret' }));
+        }
+        if (!connectionSecret) {
+            return Err(new NangoError('webhook_invalid_secret', { reason: 'No webhook secret configured to validate this request' }));
+        }
+
+        const error = verifyOrError(connectionSecret, headers, rawBody);
+        if (error) {
+            return Err(error);
+        }
+    } else {
+        const integrationSecret = nango.integration.custom?.['webhookSecret'];
+        if (integrationSecret) {
+            const error = verifyOrError(integrationSecret, headers, rawBody);
+            if (error) {
+                return Err(error);
+            }
+        }
     }
 
     const response = await nango.executeScriptForWebhooks(

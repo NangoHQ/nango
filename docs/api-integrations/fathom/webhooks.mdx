@@ -9,7 +9,7 @@ Fathom sends a webhook once a recording finishes processing — there's a single
 ## How it works
 
 1. Fathom sends a POST request to your Nango webhook URL when a recording you're subscribed to finishes processing.
-2. Nango verifies the delivery's signature (if you've set a **Webhook secret** on the integration — required when routing by `nangoConnectionId`), then routes the event to a connection.
+2. Nango verifies the delivery's signature (if you've set a **Webhook secret**), then routes the event to a connection.
 3. The payload includes the transcript, summary, and action items you asked for when creating the webhook — there's no separate API call needed to fetch them.
 
 ## Setup
@@ -51,19 +51,25 @@ In the Nango dashboard, open your Fathom integration and copy the **Webhook URL*
 
 ### 3. Set the webhook secret in Nango
 
-1. In the Nango dashboard, open your Fathom integration and go to the **Settings** tab.
-2. Enter the secret Fathom returned in the previous step into the **Webhook Secret** field.
+Where you store the secret Fathom returned depends on which routing mode you use — see [Connection matching](#connection-matching) below.
+
+- **Email-routed** (no `nangoConnectionId`): in the Nango dashboard, open your Fathom integration, go to the **Settings** tab, and enter the secret into the **Webhook Secret** field.
+- **`nangoConnectionId`-routed**: store the secret on that specific connection's metadata instead — see step 4 below. Do **not** use the integration-level **Webhook Secret** field for this mode.
 
 <Note>
-If no **Webhook secret** is set, Nango accepts email-routed deliveries without verifying their signature. Deliveries using `nangoConnectionId` always require a **Webhook secret** — see [Connection matching](#connection-matching).
+If no **Webhook secret** is set on the integration, Nango accepts email-routed deliveries without verifying their signature. Deliveries using `nangoConnectionId` always require a **webhook secret set on that specific connection** — see [Connection matching](#connection-matching).
 </Note>
+
+### 4. For `nangoConnectionId` routing: create one webhook per connection
+
+Fathom issues a distinct secret each time you create a webhook, so a single integration-level secret can't verify deliveries for more than one `nangoConnectionId`-routed connection. If you're routing more than one connection this way, repeat step 2 to create a **separate Fathom webhook per connection** — each with its own destination URL (`?nangoConnectionId=<CONNECTION-ID>`) and its own secret — then store each connection's secret as `webhookSecret` in that connection's metadata via [Set connection metadata](/reference/backend/http-api/connections/set-metadata).
 
 ## Connection matching
 
-Fathom's webhook is created once per workspace (one API key), but a workspace can have multiple team members recording meetings — so Nango supports two ways to route a delivery to a connection:
+A Fathom workspace can have multiple team members recording meetings, so Nango supports two ways to route a delivery to a connection:
 
-- **By email (default)** — if the destination URL has no `nangoConnectionId` query param, Nango matches the event's `recorded_by.email` against **`metadata.emailAddress`** on your connections. Use this when you have one Nango connection per team member and want each person's recordings routed to their own connection. Set `metadata.emailAddress` on each connection via [Set connection metadata](/reference/backend/http-api/connections/set-metadata).
-- **By `nangoConnectionId`** — append `?nangoConnectionId=<CONNECTION-ID>` to the destination URL when creating the webhook. Every delivery for that webhook routes to that one connection regardless of who recorded it. Use this when a single connection should receive everything for the workspace. Because the connection is chosen from a value in the URL, Nango requires a **Webhook secret** to be set on the integration for this mode — a delivery with `nangoConnectionId` is rejected if no secret is configured or its signature doesn't verify.
+- **By email (default)** — if the destination URL has no `nangoConnectionId` query param, Nango matches the event's `recorded_by.email` against **`metadata.emailAddress`** on your connections. Use this when you have one Nango connection per team member and want each person's recordings routed to their own connection. Set `metadata.emailAddress` on each connection via [Set connection metadata](/reference/backend/http-api/connections/set-metadata). Signature verification, if enabled, uses the integration-level **Webhook Secret**.
+- **By `nangoConnectionId`** — append `?nangoConnectionId=<CONNECTION-ID>` to the destination URL when creating the webhook. Every delivery for that webhook routes to that one connection regardless of who recorded it. Because the connection is chosen from a value in the URL, Nango requires a **webhook secret set on that connection's metadata** (not the integration-level one) to verify it — a delivery with `nangoConnectionId` is rejected if the connection doesn't exist, has no `webhookSecret` in its metadata, or its signature doesn't verify against it. If you route multiple connections this way, each needs its own Fathom webhook and its own secret — see step 4 above.
 
 If neither matches — no `nangoConnectionId` and no connection has a matching `metadata.emailAddress` — the delivery is still accepted, but isn't routed anywhere.
 
@@ -86,5 +92,7 @@ curl -X DELETE "https://api.nango.dev/proxy/external/v1/webhooks/<WEBHOOK-ID>" \
 ```
 
 Or delete it from **Settings → API Access → Manage** in the Fathom dashboard.
+
+If you created multiple webhooks for `nangoConnectionId` routing (one per connection, per [step 4](#4-for-nangoconnectionid-routing-create-one-webhook-per-connection)), repeat this for each webhook `id`.
 
 <Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>
