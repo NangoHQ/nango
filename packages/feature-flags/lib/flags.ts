@@ -57,15 +57,6 @@ export function buildFlags(client: FeatureFlagsClient) {
         shouldForwardAllProxyResponseHeaders(accountUuid: string) {
             return client.isEnabled('proxy-forward-all-response-headers', { targetingKey: accountUuid, accountUuid }, false);
         },
-        /**
-         * Whether the audit trail is enabled for this account, on top of its plan entitlement:
-         * percentage rollout plus a kill switch. Default `false`, so the rollout only ever advances
-         * by an explicit change to the flag.
-         */
-        isAuditTrailEnabled(accountUuid: string) {
-            // targetingKey drives gradual-rollout stickiness; accountUuid lets strategies allow/exclude specific accounts.
-            return client.isEnabled('audit-trail', { targetingKey: accountUuid, accountUuid }, false);
-        },
         /** Whether the Gmail webhook can be unverified. */
         allowUnauthorizedGmailWebhook(accountUuid: string) {
             return client.isEnabled('allow-unauthorized-gmail-webhook', { targetingKey: accountUuid, accountUuid }, false);

@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, migrate } from '@nangohq/audit';
-import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 import { Err } from '@nangohq/utils';
 
@@ -53,7 +52,6 @@ describe('GET /api/v1/audit-trail', () => {
         auditClient = auditClickhouseClient(process.env['CLICKHOUSE_URL']!);
         store = new ClickhouseAuditStore(auditClient);
         emitter = new AuditClient(store, store);
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(async () => {

@@ -67,7 +67,6 @@ describe('MFA verify audit — pending-login session (private API)', () => {
         auditSpy = vi.spyOn(audit, 'record');
         // getFlags() returns the stable noop facade in tests; force the MFA feature on.
         vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {

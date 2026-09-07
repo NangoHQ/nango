@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
 import { flags } from '@nangohq/utils';
 
 import { canAccessAuditTrail, canRecordAuditTrail, canViewAuditTrail } from './auditTrail.js';
@@ -21,20 +20,15 @@ vi.mock('@nangohq/utils', async () => {
     };
 });
 
-const UUID = 'acc-uuid';
 const customer = { session: {} } as Parameters<typeof canViewAuditTrail>[0];
 const operator = { session: { impersonatedBy: { accountId: 1, accountName: 'Nango', actorId: 7 } } } as Parameters<typeof canViewAuditTrail>[0];
 const entitled = { has_audit_trail_control_plane: true, has_audit_trail_access: true };
 const notEntitled = { has_audit_trail_control_plane: false, has_audit_trail_access: false };
 
-/** `unleash: null` leaves the noop provider in place, so the flag resolves to its default. */
-function setup({ optIn, hasPlan, unleash, backend = true }: { optIn: boolean; hasPlan: boolean; unleash: boolean | null; backend?: boolean }) {
+function setup({ optIn, hasPlan, backend = true }: { optIn: boolean; hasPlan: boolean; backend?: boolean }) {
     flags.hasAuditTrail = optIn;
     planFlag.enabled = hasPlan;
     backendFlag.configured = backend;
-    if (unleash != null) {
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(unleash);
-    }
 }
 
 describe('audit trail entitlement', () => {
@@ -47,100 +41,72 @@ describe('audit trail entitlement', () => {
 
     describe('the deployment opt-in', () => {
         it('turns everything on without a flag provider or a plan (local dev)', async () => {
-            setup({ optIn: true, hasPlan: false, unleash: null });
+            setup({ optIn: true, hasPlan: false });
 
-            await expect(canRecordAuditTrail(UUID, null)).resolves.toBe(true);
-            await expect(canAccessAuditTrail(UUID, null)).resolves.toBe(true);
+            await expect(canRecordAuditTrail(null)).resolves.toBe(true);
+            await expect(canAccessAuditTrail(null)).resolves.toBe(true);
         });
 
         it('stays off when the deployment opted in with nowhere to keep the trail', async () => {
-            setup({ optIn: true, hasPlan: false, unleash: null, backend: false });
+            setup({ optIn: true, hasPlan: false, backend: false });
 
-            await expect(canRecordAuditTrail(UUID, null)).resolves.toBe(false);
-            await expect(canAccessAuditTrail(UUID, null)).resolves.toBe(false);
-        });
-
-        it('cannot weaken the rollout flag or the entitlement where plans exist', async () => {
-            setup({ optIn: true, hasPlan: true, unleash: false });
-
-            await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
-            await expect(canAccessAuditTrail(UUID, entitled)).resolves.toBe(false);
+            await expect(canRecordAuditTrail(null)).resolves.toBe(false);
+            await expect(canAccessAuditTrail(null)).resolves.toBe(false);
         });
     });
 
-    describe('without the opt-in, so the rollout flag and the plan decide', () => {
-        it('is off when the flag cannot be evaluated, so the rollout only advances explicitly', async () => {
-            setup({ optIn: false, hasPlan: true, unleash: null });
+    describe('without the opt-in, so the plan decides', () => {
+        it('honours the plan, so an unentitled account stays off', async () => {
+            setup({ optIn: false, hasPlan: true });
 
-            await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
-            await expect(canAccessAuditTrail(UUID, entitled)).resolves.toBe(false);
-        });
-
-        it('is off when the flag is off, even for an entitled account (kill switch)', async () => {
-            setup({ optIn: false, hasPlan: true, unleash: false });
-
-            await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
-            await expect(canAccessAuditTrail(UUID, entitled)).resolves.toBe(false);
-        });
-
-        it('honours the plan once the flag is on, so a full rollout still excludes unentitled accounts', async () => {
-            setup({ optIn: false, hasPlan: true, unleash: true });
-
-            await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(true);
-            await expect(canAccessAuditTrail(UUID, entitled)).resolves.toBe(true);
-            await expect(canRecordAuditTrail(UUID, notEntitled)).resolves.toBe(false);
-            await expect(canAccessAuditTrail(UUID, notEntitled)).resolves.toBe(false);
+            await expect(canRecordAuditTrail(entitled)).resolves.toBe(true);
+            await expect(canAccessAuditTrail(entitled)).resolves.toBe(true);
+            await expect(canRecordAuditTrail(notEntitled)).resolves.toBe(false);
+            await expect(canAccessAuditTrail(notEntitled)).resolves.toBe(false);
         });
 
         it('gates recording and visibility independently, so an account can be recorded without seeing it', async () => {
-            setup({ optIn: false, hasPlan: true, unleash: true });
+            setup({ optIn: false, hasPlan: true });
             const recordedOnly = { has_audit_trail_control_plane: true, has_audit_trail_access: false };
 
-            await expect(canRecordAuditTrail(UUID, recordedOnly)).resolves.toBe(true);
-            await expect(canAccessAuditTrail(UUID, recordedOnly)).resolves.toBe(false);
+            await expect(canRecordAuditTrail(recordedOnly)).resolves.toBe(true);
+            await expect(canAccessAuditTrail(recordedOnly)).resolves.toBe(false);
         });
 
         it('denies a missing plan rather than falling open', async () => {
-            setup({ optIn: false, hasPlan: true, unleash: true });
+            setup({ optIn: false, hasPlan: true });
 
-            await expect(canRecordAuditTrail(UUID, null)).resolves.toBe(false);
-            await expect(canAccessAuditTrail(UUID, undefined)).resolves.toBe(false);
+            await expect(canRecordAuditTrail(null)).resolves.toBe(false);
+            await expect(canAccessAuditTrail(undefined)).resolves.toBe(false);
         });
 
-        // Self-hosted has no plans layer, so it stays off even once the interim flag is retired.
         it('stays off where there are no plans to read an entitlement from', async () => {
-            setup({ optIn: false, hasPlan: false, unleash: true });
+            setup({ optIn: false, hasPlan: false });
 
-            await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
-            await expect(canAccessAuditTrail(UUID, entitled)).resolves.toBe(false);
+            await expect(canRecordAuditTrail(entitled)).resolves.toBe(false);
+            await expect(canAccessAuditTrail(entitled)).resolves.toBe(false);
         });
     });
 
     describe('what a session can view', () => {
         it('holds the customer to the access entitlement', async () => {
-            setup({ optIn: false, hasPlan: true, unleash: true });
+            setup({ optIn: false, hasPlan: true });
 
-            await expect(canViewAuditTrail(customer, UUID, { has_audit_trail_control_plane: true, has_audit_trail_access: false })).resolves.toBe(false);
-            await expect(canViewAuditTrail(customer, UUID, entitled)).resolves.toBe(true);
+            await expect(canViewAuditTrail(customer, { has_audit_trail_control_plane: true, has_audit_trail_access: false })).resolves.toBe(false);
+            await expect(canViewAuditTrail(customer, entitled)).resolves.toBe(true);
         });
 
         it('lets an impersonating operator past the access entitlement', async () => {
-            setup({ optIn: false, hasPlan: true, unleash: true });
+            setup({ optIn: false, hasPlan: true });
 
-            await expect(canViewAuditTrail(operator, UUID, { has_audit_trail_control_plane: true, has_audit_trail_access: false })).resolves.toBe(true);
+            await expect(canViewAuditTrail(operator, { has_audit_trail_control_plane: true, has_audit_trail_access: false })).resolves.toBe(true);
         });
 
         it('still hides it from the operator when the account is not recorded, so an empty page cannot mislead', async () => {
-            setup({ optIn: false, hasPlan: true, unleash: true });
+            setup({ optIn: false, hasPlan: true });
 
-            await expect(canViewAuditTrail(operator, UUID, { has_audit_trail_control_plane: false, has_audit_trail_access: true })).resolves.toBe(false);
-            await expect(canViewAuditTrail(operator, UUID, notEntitled)).resolves.toBe(false);
-        });
-
-        it('cannot be reached by an operator once the rollout flag is off', async () => {
-            setup({ optIn: false, hasPlan: true, unleash: false });
-
-            await expect(canViewAuditTrail(operator, UUID, entitled)).resolves.toBe(false);
+            await expect(canViewAuditTrail(operator, { has_audit_trail_control_plane: false, has_audit_trail_access: true })).resolves.toBe(false);
+            await expect(canViewAuditTrail(operator, notEntitled)).resolves.toBe(false);
         });
     });
 });
