@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { IconButton } from '@nangohq/design-system';
 
 import { usePlanOverrideStore } from '@/features/planOverride';
-import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetPlans, useApiGetUpcomingInvoice, useCurrentPlan } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe';
@@ -27,8 +26,7 @@ export const Summary: React.FC = () => {
     // plan codes, and "changes to growth-v2" is not a sentence to show a customer.
     const { data: plansList, isPending: arePlansPending } = useApiGetPlans(env);
     const { data: paymentMethods } = useStripePaymentMethods(env);
-    const { data: metaData } = useMeta();
-    const onS26Pricing = isOnS26Pricing(plan, metaData?.data.s26Pricing === true);
+    const onS26Pricing = isOnS26Pricing(plan);
     const paymentMethod = paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
 
     // Behind a dev-tool flag until the figure is reconciled against real Orb invoices (NAN-6246).

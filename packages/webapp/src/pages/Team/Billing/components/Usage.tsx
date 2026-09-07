@@ -5,7 +5,6 @@ import { Alert, AlertActions, AlertDescription, AlertTitle, Button } from '@nang
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { usePlanOverrideStore } from '@/features/planOverride';
-import { useMeta } from '@/hooks/useMeta';
 import { useApiGetBillingPeriodCosts, useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
@@ -22,10 +21,9 @@ export const Usage: React.FC = () => {
     const env = useStore((state) => state.env);
     const { selectedMonth, isCurrentMonth } = useSelectedMonth();
     const { data: environmentData } = useCurrentPlan(env);
-    const { data: metaData } = useMeta();
     const plan = environmentData?.plan;
     const isFree = plan?.name === 'free';
-    const metrics = billedUsageMetrics(plan, metaData?.data.s26Pricing === true);
+    const metrics = billedUsageMetrics(plan);
 
     // Calculate timeframe for the selected month
     const timeframe = useMemo(() => {

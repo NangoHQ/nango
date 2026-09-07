@@ -20,7 +20,6 @@ import {
 import { PERMISSION_DENIED_REASON, PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Separator } from '@/components/ui/Separator';
-import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe.js';
@@ -54,9 +53,7 @@ export const Plans: React.FC = () => {
         return paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
     }, [paymentMethods]);
 
-    const { data: metaData } = useMeta();
-    const s26Pricing = metaData?.data.s26Pricing === true;
-    const showsNewPlans = isOnS26Pricing(currentPlan, s26Pricing);
+    const showsNewPlans = isOnS26Pricing(currentPlan);
 
     const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
         if (!currentPlan || !plansList) {
@@ -102,7 +99,7 @@ export const Plans: React.FC = () => {
                         addonState={addonState}
                         endsAt={currentPlan?.growth_features_ends_at ?? undefined}
                         pendingChangeAt={pendingChange?.at}
-                        closed={s26Pricing && !showsNewPlans && isRetiredPlan(plan.plan.code)}
+                        closed={!showsNewPlans && isRetiredPlan(plan.plan.code)}
                         paymentMethod={paymentMethod}
                     />
                 ))}
