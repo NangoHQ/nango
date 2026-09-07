@@ -8365,6 +8365,15 @@ monday:
     - workspaces:read
     - workspaces:write
 
+# source: https://developer.moneybird.com/authentication#scopes
+moneybird:
+    - bank
+    - documents
+    - estimates
+    - sales_invoices
+    - settings
+    - time_entries
+
 # source: https://developers.mural.co/public/docs/scopes
 mural:
     - identity:read
