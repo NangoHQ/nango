@@ -40,7 +40,7 @@ export class EncryptionManager extends Encryption {
 
     public encryptConnection(connection: Omit<DBConnectionDecrypted, 'end_user_id' | 'credentials_iv' | 'credentials_tag'>): Omit<DBConnection, 'end_user_id'> {
         if (!this.shouldEncrypt()) {
-            return connection as unknown as DBConnection;
+            throw new Error('NANGO_ENCRYPTION_KEY or NANGO_ENCRYPTION_KEY_WRAPPED is required to encrypt connections');
         }
 
         const [encryptedClientSecret, iv, authTag] = this.encryptSync(JSON.stringify(connection.credentials));
@@ -82,7 +82,7 @@ export class EncryptionManager extends Encryption {
 
     public encryptEnvironmentVariables(environmentVariables: Omit<DBEnvironmentVariable, 'id'>[]): Omit<DBEnvironmentVariable, 'id'>[] {
         if (!this.shouldEncrypt()) {
-            return environmentVariables;
+            throw new Error('NANGO_ENCRYPTION_KEY or NANGO_ENCRYPTION_KEY_WRAPPED is required to encrypt environment variables');
         }
 
         const encryptedEnvironmentVariables: DBEnvironmentVariable[] = Object.assign([], environmentVariables);
@@ -113,7 +113,7 @@ export class EncryptionManager extends Encryption {
 
     public encryptProviderConfig(config: ProviderConfig): ProviderConfig {
         if (!this.shouldEncrypt()) {
-            return config;
+            throw new Error('NANGO_ENCRYPTION_KEY or NANGO_ENCRYPTION_KEY_WRAPPED is required to encrypt provider configs');
         }
 
         const encryptedConfig: ProviderConfig = Object.assign({}, config);
@@ -205,7 +205,7 @@ export class EncryptionManager extends Encryption {
         const encryptionKeyHash = this.key ? await this.hashEncryptionKey(this.key, this.keySalt) : null;
 
         if (status === 'disabled') {
-            return;
+            throw new Error('NANGO_ENCRYPTION_KEY or NANGO_ENCRYPTION_KEY_WRAPPED is required (database is not encrypted)');
         }
         if (status === 'done') {
             return;
@@ -319,7 +319,7 @@ export class EncryptionManager extends Encryption {
 
     encryptAPISecret<T extends Pick<DBAPISecret, 'iv' | 'tag' | 'secret'>>(secret: T): T {
         if (!this.shouldEncrypt()) {
-            return secret;
+            throw new Error('NANGO_ENCRYPTION_KEY or NANGO_ENCRYPTION_KEY_WRAPPED is required to encrypt API secrets');
         }
         if (secret.iv && secret.tag) {
             return secret; // Already encrypted.
