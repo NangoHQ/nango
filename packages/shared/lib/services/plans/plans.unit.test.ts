@@ -247,6 +247,10 @@ describe('self-serve transitions', () => {
         }
     );
 
+    it('should keep pay-as-you-go out of the legacy card set', () => {
+        expect(getPlanDefinition('pay-as-you-go')?.hidden).toBe(true);
+    });
+
     it('should not offer retired plans to new accounts', () => {
         expect(getPlanDefinition('free')?.nextPlan).not.toContain('starter-v2');
         expect(getPlanDefinition('free')?.nextPlan).not.toContain('growth-v2');
