@@ -97,6 +97,15 @@ const route: WebhookHandler = async (nango, headers, body) => {
     const authHeader = headers['authorization'];
     const allowUnauthorized = await getFlags().allowUnauthorizedGmailWebhook(nango.team.uuid);
 
+    // Counted before validation on purpose. With the flag off an unsigned push is rejected below,
+    // and those are exactly the accounts still to be migrated, so they have to show up here.
+    if (!authHeader) {
+        nango.markUnverified({
+            reason: 'gmail_missing_authorization',
+            remediation: 'Recreate the Pub/Sub push subscription with an OIDC token'
+        });
+    }
+
     const valid = await validate(nango.integration, headers, { allowUnauthorized });
 
     if (!valid) {
@@ -117,15 +126,6 @@ const route: WebhookHandler = async (nango, headers, body) => {
         logger.error('Failed to parse webhook body:', err);
         return Err(new NangoError('webhook_invalid_body'));
     }
-    // Marked here rather than up front so it only counts webhooks we actually process. With the
-    // flag off the request is already rejected above, so reaching this point means it went through.
-    if (!authHeader) {
-        nango.markUnverified({
-            reason: 'gmail_missing_authorization',
-            remediation: 'Recreate the Pub/Sub push subscription with an OIDC token'
-        });
-    }
-
     const emailAddress = decodedBody?.emailAddress;
     const editedBodyWithCatchAll = {
         ...body,
