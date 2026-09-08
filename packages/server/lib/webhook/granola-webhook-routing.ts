@@ -67,7 +67,7 @@ const route: WebhookHandler<GranolaWebhookPayload> = async (nango, headers, body
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookType: 'event_type',
         connectionIdentifierValue,
         propName: 'connectionId'

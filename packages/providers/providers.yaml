@@ -7676,7 +7676,7 @@ elevio:
             type: string
             title: API Key
             description: The API key to your Elevio account
-            pattern: '\b[a-f0-9]{40}\b'
+            pattern: '[a-f0-9]+$'
             example: '4f3c12ef************************e9d41'
     connection_config:
         jwt:

@@ -29,6 +29,7 @@ function getNangoMock({
         environment: seeders.getTestEnvironment(),
         plan: seeders.getTestPlan(),
         integration,
+        request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
         logContextGetter
     });
     const getConnection = vi
@@ -77,7 +78,7 @@ describe('Granola webhook routing', () => {
         expect(result.isOk()).toBe(true);
         expect(getConnection).toHaveBeenCalledWith(CONNECTION_ID);
         expect(execute).toHaveBeenCalledWith({
-            body,
+            payload: body,
             webhookType: 'event_type',
             connectionIdentifierValue: CONNECTION_ID,
             propName: 'connectionId'
