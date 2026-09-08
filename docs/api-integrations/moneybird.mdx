@@ -12,7 +12,7 @@ Connect to Moneybird with Nango and see data flow in 2 minutes.
     <Step id="create-integration" title="Create the integration">
     In Nango, go to **Integrations**, select **Configure New Integration**, then select **Moneybird**. Enter the Client ID and Client Secret from your Moneybird OAuth application.
 
-    Nango selects `sales_invoices` by default, matching Moneybird's least-privilege default. Add only the scopes your integration needs.
+    If you do not specify scopes, Moneybird grants `sales_invoices` by default.
     </Step>
     <Step id="authorize-moneybird" title="Authorize Moneybird">
     Go to **Connections**, select **Add Test Connection**, then authorize access in Moneybird. Moneybird redirects back to Nango and Nango stores the access and refresh tokens for the connection.
@@ -23,7 +23,7 @@ Connect to Moneybird with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/administrations.json" \
+            curl "https://api.nango.dev/proxy/v2/administrations.json" \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -41,7 +41,7 @@ Connect to Moneybird with Nango and see data flow in 2 minutes.
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const response = await nango.get({
-            endpoint: '/administrations.json',
+            endpoint: '/v2/administrations.json',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
@@ -62,7 +62,7 @@ Connect to Moneybird with Nango and see data flow in 2 minutes.
 
 ## OAuth scopes
 
-Moneybird supports `sales_invoices`, `documents`, `estimates`, `bank`, `time_entries`, and `settings`. If no scope is supplied, Moneybird grants `sales_invoices`; Nango uses the same scope as its default.
+Moneybird supports `sales_invoices`, `documents`, `estimates`, `bank`, `time_entries`, and `settings`. If no scope is supplied, Moneybird grants `sales_invoices` by default.
 
 Accessing contacts requires at least one of `sales_invoices`, `documents`, `estimates`, `bank`, or `settings`. The `time_entries` scope alone does not grant contact access.
 

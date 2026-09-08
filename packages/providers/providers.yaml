@@ -15086,10 +15086,8 @@ moneybird:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    default_scopes:
-        - sales_invoices
     proxy:
-        base_url: https://moneybird.com/api/v2
+        base_url: https://moneybird.com/api
     docs: https://nango.dev/docs/api-integrations/moneybird
     setup_guide_url: https://nango.dev/docs/api-integrations/moneybird/how-to-register-your-own-moneybird-oauth-app
 
