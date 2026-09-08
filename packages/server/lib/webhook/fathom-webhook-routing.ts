@@ -25,6 +25,7 @@ function validate(secret: string, msgId: string, msgSignature: string, msgTimest
 
     const payloadString = Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody;
 
+    // TODO: sign with the raw msgTimestamp, already fixed NAN-6909
     const timestampNumber = Math.floor(timestamp);
     const toSign = `${msgId}.${timestampNumber}.${payloadString}`;
 
@@ -106,12 +107,12 @@ const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body
     const response = await nango.executeScriptForWebhooks(
         nangoConnectionId
             ? {
-                  body,
+                  payload: body,
                   connectionIdentifierValue: nangoConnectionId,
                   propName: 'connectionId'
               }
             : {
-                  body,
+                  payload: body,
                   connectionIdentifierValue: emailAddress,
                   propName: 'metadata.emailAddress'
               }

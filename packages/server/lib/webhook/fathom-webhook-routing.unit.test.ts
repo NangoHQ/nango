@@ -34,6 +34,7 @@ function getNangoMock({
         environment: seeders.getTestEnvironment(),
         plan: seeders.getTestPlan(),
         integration,
+        request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
         logContextGetter
     });
     // Keyed by the requested connection id, so a test can assert on routing to a *different*
@@ -103,7 +104,7 @@ describe('Fathom webhook routing', () => {
         expect(getConnection).toHaveBeenCalledWith(CONNECTION_ID);
         expect(execute).toHaveBeenCalledOnce();
         expect(execute).toHaveBeenCalledWith({
-            body,
+            payload: body,
             connectionIdentifierValue: CONNECTION_ID,
             propName: 'connectionId'
         });
@@ -172,7 +173,7 @@ describe('Fathom webhook routing', () => {
         expect(result.isOk()).toBe(true);
         expect(execute).toHaveBeenCalledOnce();
         expect(execute).toHaveBeenCalledWith({
-            body,
+            payload: body,
             connectionIdentifierValue: EMAIL,
             propName: 'metadata.emailAddress'
         });
@@ -209,7 +210,7 @@ describe('Fathom webhook routing', () => {
         expect(result.isOk()).toBe(true);
         expect(execute).toHaveBeenCalledOnce();
         expect(execute).toHaveBeenCalledWith({
-            body,
+            payload: body,
             connectionIdentifierValue: EMAIL,
             propName: 'metadata.emailAddress'
         });
