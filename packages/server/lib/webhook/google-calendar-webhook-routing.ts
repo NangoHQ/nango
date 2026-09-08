@@ -25,7 +25,7 @@ const route: WebhookHandler = async (nango, headers) => {
     }
 
     const baseArgs = {
-        body: headers,
+        payload: headers,
         ...(headers['x-goog-resource-state'] && { webhookTypeValue: headers['x-goog-resource-state'] })
     };
 

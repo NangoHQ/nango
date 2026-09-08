@@ -50,7 +50,7 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookTypeValue: topic ?? '',
         connectionIdentifierValue: subdomain,
         propName: 'subdomain'

@@ -59,7 +59,7 @@ const route: WebhookHandler<OutlookNotificationPayload> = async (nango, _headers
         }
 
         const response = await nango.executeScriptForWebhooks({
-            body: notification,
+            payload: notification,
             webhookType: 'changeType',
             connectionIdentifierValue: subscriptionId,
             propName: 'metadata.subscriptionIds'

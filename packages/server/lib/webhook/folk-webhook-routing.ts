@@ -58,7 +58,7 @@ const route: WebhookHandler<FolkWebhookPayload> = async (nango, headers, body, r
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookType: 'type',
         connectionIdentifierValue,
         propName: 'connectionId'
