@@ -8,7 +8,7 @@ import proxyService from './proxy.service.js';
 
 import type { ProxyQueryParams, ProxyRequestOutput } from './mcpProxySchema.js';
 import type { ProxyServiceError, ProxyServiceResponse } from './proxy.service.js';
-import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, OperationActor } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Server.MCP.Proxy');
@@ -29,6 +29,7 @@ export interface McpProxyRequest {
     decompress?: boolean | undefined;
     retryOn?: number[] | undefined;
     forwardHeadersOnRedirect?: boolean | undefined;
+    actor?: OperationActor | undefined;
 }
 
 /**
@@ -54,7 +55,8 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<R
         baseUrlOverride: params.baseUrlOverride,
         decompress: params.decompress,
         retryOn: params.retryOn,
-        forwardHeadersOnRedirect: params.forwardHeadersOnRedirect
+        forwardHeadersOnRedirect: params.forwardHeadersOnRedirect,
+        actor: params.actor
     });
 
     if (execution.result.isErr()) {

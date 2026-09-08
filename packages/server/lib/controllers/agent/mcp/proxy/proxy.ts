@@ -69,7 +69,8 @@ export const proxyTool = defineAgentSessionMcpTool({
                 path: args.path,
                 queryParams: args.query_params,
                 headers: args.headers,
-                body: args.body
+                body: args.body,
+                actor: { kind: 'session', id: session.id }
             });
 
             if (result.isErr()) {

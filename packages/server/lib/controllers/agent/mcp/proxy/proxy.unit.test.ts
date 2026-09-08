@@ -101,6 +101,14 @@ describe('proxyTool', () => {
         );
     });
 
+    it('stamps the session as the actor of the proxy call', async () => {
+        const request = vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse({ ok: true })) });
+
+        await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
+
+        expect(request).toHaveBeenCalledWith(expect.objectContaining({ actor: { kind: 'session', id: 'session-1' } }));
+    });
+
     it('appends query parameters and sends a JSON body', async () => {
         const request = vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse({ ok: true })) });
 
