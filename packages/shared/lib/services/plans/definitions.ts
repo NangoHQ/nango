@@ -163,7 +163,8 @@ export const payAsYouGoPlan: PlanDefinition = {
     prevPlan: ['free'],
     nextPlan: ['enterprise'],
     canChange: true,
-    hidden: false,
+    // Flipping this exposes the plan only in the legacy card set, which has no copy for it
+    hidden: true,
     // TODO: this plan has no base fee — it bills fully in arrears against a monthly minimum — so
     // basePrice is display-only here and nothing charges against it. It can't just be dropped: the
     // billing page labels it a "base fee" on the plan card and interpolates it unguarded into the
