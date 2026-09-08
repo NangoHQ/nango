@@ -9,7 +9,6 @@ import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/valid
 import proxyService from '../../services/proxy.service.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { egressTelemetryRecorder } from '../../utils/egressTelemetry.js';
-import { HOP_BY_HOP_HEADERS } from '../../utils/httpHeaders.js';
 
 import type { ProxyServiceError, ProxyServiceResponse } from '../../services/proxy.service.js';
 import type { ServerEgressCallsite } from '../../utils/egressTelemetry.js';
@@ -48,7 +47,16 @@ const PROXY_RESPONSE_HEADER_ALLOWLIST = new Set([
 
 // Headers from provider responses that must not be forwarded to the client.
 // content-length is handled per path via allowContentLength (stripped on buffered/error, optionally kept on stream).
-const PROXY_RESPONSE_HEADER_DENYLIST = HOP_BY_HOP_HEADERS;
+const PROXY_RESPONSE_HEADER_DENYLIST = new Set([
+    'connection',
+    'keep-alive',
+    'proxy-authenticate',
+    'proxy-authorization',
+    'te',
+    'trailer',
+    'transfer-encoding',
+    'upgrade'
+]);
 
 type ForwardableHeaderValue = string | number | string[];
 

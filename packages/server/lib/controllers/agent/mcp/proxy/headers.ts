@@ -1,25 +1,18 @@
-import { HOP_BY_HOP_HEADERS } from '../../../../utils/httpHeaders.js';
-
 import type { Provider } from '@nangohq/types';
 
 /**
  * Caller headers are merged over the credentials the proxy derives from the connection, so setting
- * one of these lets the agent authenticate as something other than the session's connection, or
- * reshape the hop itself. Provider query parameters are applied after the caller's and overwrite
- * them, so only headers need this.
+ * one of these lets the agent authenticate as something other than the session's connection.
+ * Provider query parameters are applied after the caller's and overwrite them, so only headers
+ * need this.
  *
- * Only this tool rejects them. proxy_request is reached with an API key that already holds the
- * whole environment, and scripts override headers deliberately, so there it grants nothing new.
+ * Credentials only. Every proxy entrypoint forwards the rest of what a caller sends, and lining
+ * those up is one decision for all three rather than something this tool should do alone.
+ *
+ * Only this tool rejects even these. proxy_request is reached with an API key that already holds
+ * the whole environment, and scripts override headers deliberately, so there it grants nothing new.
  */
-const REJECTED_HEADERS = new Set([
-    ...HOP_BY_HOP_HEADERS,
-    // Credentials, so the request stays authenticated as the session's connection.
-    'authorization',
-    'cookie',
-    // Framing, so the agent cannot describe a hop it is not making.
-    'content-length',
-    'host'
-]);
+const REJECTED_HEADERS = new Set(['authorization', 'cookie', 'proxy-authorization']);
 
 /**
  * Which headers the agent may not set. `authorization` is only the credential for bearer-style

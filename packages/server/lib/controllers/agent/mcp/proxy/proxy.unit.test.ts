@@ -161,17 +161,14 @@ describe('proxyTool', () => {
         expect(request).not.toHaveBeenCalled();
     });
 
-    it.each(['authorization', 'Authorization', 'cookie', 'proxy-authorization', 'transfer-encoding', 'host'])(
-        'refuses to forward the %s header the proxy sets itself',
-        async (header) => {
-            const request = vi.spyOn(proxyService, 'request');
+    it.each(['authorization', 'Authorization', 'cookie', 'proxy-authorization'])('refuses to forward the %s credential header', async (header) => {
+        const request = vi.spyOn(proxyService, 'request');
 
-            const result = await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1', headers: { [header]: 'attacker' } });
+        const result = await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1', headers: { [header]: 'attacker' } });
 
-            expect(errorOf(result).message).toContain(`cannot be passed: ${header}`);
-            expect(request).not.toHaveBeenCalled();
-        }
-    );
+        expect(errorOf(result).message).toContain(`cannot be passed: ${header}`);
+        expect(request).not.toHaveBeenCalled();
+    });
 
     it('still forwards ordinary headers', async () => {
         const request = vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse({ ok: true })) });
@@ -188,6 +185,14 @@ describe('proxyTool', () => {
 
         expect(errorOf(result).message).toContain('cannot be passed: X-Api-Key');
         expect(request).not.toHaveBeenCalled();
+    });
+
+    it('forwards hop-by-hop headers, which every proxy entrypoint still does', async () => {
+        const request = vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse({ ok: true })) });
+
+        await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1', headers: { 'transfer-encoding': 'chunked' } });
+
+        expect(request).toHaveBeenCalledWith(expect.objectContaining({ headers: { 'transfer-encoding': 'chunked' } }));
     });
 
     it('allows a provider header that is a constant rather than a credential', async () => {
