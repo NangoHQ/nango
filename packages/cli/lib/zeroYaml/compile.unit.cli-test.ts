@@ -148,10 +148,9 @@ describe('validateFunction', () => {
         expect(res.isOk()).toBe(true);
     });
 
-    it('rejects an http trigger with subscriptions', () => {
+    it('accepts an http trigger with subscriptions', () => {
         const res = validateFunction({ ...base, params: { trigger: { kind: 'http', subscriptions: ['issues'] } } });
-        assert(res.isErr());
-        expect(res.error.message).toContain("unsupported HTTP trigger options: 'subscriptions'");
+        expect(res.isOk()).toBe(true);
     });
 
     it('rejects an http trigger with debounce', () => {
@@ -166,7 +165,7 @@ describe('validateFunction', () => {
             params: { trigger: { kind: 'http', subscriptions: [], debounce: { windowMs: 1000 } } }
         });
         assert(res.isErr());
-        expect(res.error.message).toContain("unsupported HTTP trigger options: 'subscriptions', 'debounce'");
+        expect(res.error.message).toContain("unsupported HTTP trigger options: 'debounce'");
     });
 
     it('rejects unknown http trigger attributes', () => {
