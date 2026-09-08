@@ -23,14 +23,7 @@ interface PlanOverrideState {
     overdueOverride: boolean;
     /** Plan-limit state to simulate, or `null` to use real usage. Free plan only. */
     usageLimitOverride: UsageLimitOverride | null;
-    /**
-     * Reveals the current-period spend headline. Off until the figure is verified against real Orb
-     * invoices; delete this flag once it ships to everyone.
-     */
-    spendHeadlineEnabled: boolean;
-    /** Spend to simulate. Only meaningful with the flag on. */
     spendOverride: SpendOverride | null;
-    metricChargesEnabled: boolean;
     periodCostsOverride: PeriodCostsOverride | null;
     addonState: GrowthAddonState | null;
     paymentMethodOverride: boolean;
@@ -38,9 +31,7 @@ interface PlanOverrideState {
     setScheduledTarget: (code: PlanDefinition['code'] | null) => void;
     setOverdueOverride: (override: boolean) => void;
     setUsageLimitOverride: (override: UsageLimitOverride | null) => void;
-    setSpendHeadlineEnabled: (enabled: boolean) => void;
     setSpendOverride: (override: SpendOverride | null) => void;
-    setMetricChargesEnabled: (enabled: boolean) => void;
     setPeriodCostsOverride: (override: PeriodCostsOverride | null) => void;
     setAddonState: (state: GrowthAddonState | null) => void;
     setPaymentMethodOverride: (override: boolean) => void;
@@ -52,9 +43,7 @@ export const DEFAULTS = {
     scheduledTargetCode: null,
     overdueOverride: false,
     usageLimitOverride: null,
-    spendHeadlineEnabled: false,
     spendOverride: null,
-    metricChargesEnabled: false,
     periodCostsOverride: null,
     addonState: null,
     paymentMethodOverride: false
@@ -64,8 +53,7 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
     persist(
         (set) => ({
             ...DEFAULTS,
-            // Switching plan clears the states picked against the old one. `spendHeadlineEnabled`
-            // survives here — a rollout flag, not a simulated state — though Reset still clears it.
+            // Switching plan clears the states picked against the old one.
             setOverride: (overrideCode) =>
                 set({
                     overrideCode,
@@ -79,9 +67,7 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
             setScheduledTarget: (scheduledTargetCode) => set({ scheduledTargetCode }),
             setOverdueOverride: (overdueOverride) => set({ overdueOverride }),
             setUsageLimitOverride: (usageLimitOverride) => set({ usageLimitOverride }),
-            setSpendHeadlineEnabled: (spendHeadlineEnabled) => set({ spendHeadlineEnabled }),
             setSpendOverride: (spendOverride) => set({ spendOverride }),
-            setMetricChargesEnabled: (metricChargesEnabled) => set({ metricChargesEnabled }),
             setPeriodCostsOverride: (periodCostsOverride) => set({ periodCostsOverride }),
             setAddonState: (addonState) => set({ addonState }),
             setPaymentMethodOverride: (paymentMethodOverride) => set({ paymentMethodOverride }),
