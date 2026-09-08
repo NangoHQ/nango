@@ -79,7 +79,8 @@ describe('handlePlanChanged', () => {
         expect(updated.trial_end_at).not.toBeNull();
         expect(updated.trial_expired).toBe(false);
         // pg hands back the bigint column as a string
-        expect(Number(updated.connections_max)).toBe(10);
+        expect(updated.connections_max).toBe(10);
+        expect(updated.data_transfer_max).toBe(10_000_000_000);
     });
 
     it('keeps the growth feature set through a plan change while the add-on is active', async () => {
