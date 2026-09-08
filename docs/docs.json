@@ -1012,6 +1012,7 @@
               "api-integrations/amazon",
               "api-integrations/amazon-selling-partner",
               "api-integrations/amazon-selling-partner-beta",
+              "api-integrations/amplemarket",
               "api-integrations/amplitude",
               "api-integrations/amplitude-mcp",
               "api-integrations/amplitude-mcp-eu",
