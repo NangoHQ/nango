@@ -8,6 +8,8 @@ import {
     pubsub
 } from '@nangohq/shared';
 
+import { envs } from '../../env.js';
+
 import type { Config } from '@nangohq/shared';
 import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, Provider, UserProvidedProxyConfiguration } from '@nangohq/types';
 import type { AxiosError, AxiosResponse } from 'axios';
@@ -50,6 +52,7 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
                 },
                 proxyConfig: proxyConfigUnwrapped,
                 outboundPolicy: getServerOutboundUrlPolicy(),
+                maxWaitMs: envs.NANGO_PROXY_MAX_RETRY_WAIT_MS,
                 getConnection: () => connection,
                 getIntegrationConfig: async () => {
                     const integration = await configService.getProviderConfig(connection.provider_config_key, connection.environment_id);
