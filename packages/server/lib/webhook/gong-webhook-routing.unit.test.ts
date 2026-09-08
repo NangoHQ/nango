@@ -54,6 +54,7 @@ function getNangoMock({
         environment: seeders.getTestEnvironment(),
         plan: seeders.getTestPlan(),
         integration,
+        request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
         logContextGetter
     });
     const getConnection = vi
@@ -101,7 +102,7 @@ describe('Gong webhook routing', () => {
         expect(result.isOk()).toBe(true);
         expect(getConnection).toHaveBeenCalledWith(CONNECTION_ID);
         expect(execute).toHaveBeenCalledWith({
-            body,
+            payload: body,
             connectionIdentifierValue: CONNECTION_ID,
             propName: 'connectionId'
         });
@@ -117,7 +118,7 @@ describe('Gong webhook routing', () => {
 
         expect(result.isOk()).toBe(true);
         expect(execute).toHaveBeenCalledWith({
-            body,
+            payload: body,
             connectionIdentifierValue: CONNECTION_ID,
             propName: 'connectionId'
         });
@@ -283,6 +284,22 @@ describe('Gong webhook routing', () => {
         const body = getBody();
         const rawBody = JSON.stringify(body);
         const headers = { authorization: `Bearer ${signToken(rawBody, { webhookUrl: webhookUrlFor(CONNECTION_ID, uniqueKey) })}` };
+
+        const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledOnce();
+    });
+
+    it('accepts a webhook_url claim that echoes back the raw (unencoded) unique_key', async () => {
+        const uniqueKey = 'foo:bar@baz';
+        const { nango, execute } = getNangoMock({ uniqueKey });
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        // Same delivery, but the claim uses the raw unique_key rather than the percent-encoded form the
+        // dashboard displays - Gong may echo back either, depending on how the URL was pasted in.
+        const rawWebhookUrl = `${getGlobalWebhookReceiveUrl()}/${seeders.getTestEnvironment().uuid}/${uniqueKey}?nangoConnectionId=${CONNECTION_ID}`;
+        const headers = { authorization: `Bearer ${signToken(rawBody, { webhookUrl: rawWebhookUrl })}` };
 
         const result = await GongWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
 

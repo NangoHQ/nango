@@ -26,19 +26,21 @@ function toPemPublicKey(key: string): string {
 // nangoConnectionId query param), and echoes that exact URL back in the webhook_url claim. Checking
 // it against the URL the request actually came in on binds the signed delivery to one connection,
 // so a valid signature for connection A can't be replayed by requesting it with connection B's id.
-function isExpectedWebhookUrl(claimedUrl: string | undefined, expectedBaseUrl: string, connectionIdentifierValue: string): boolean {
+function isExpectedWebhookUrl(claimedUrl: string | undefined, expectedBaseUrls: string[], connectionIdentifierValue: string): boolean {
     if (!claimedUrl) {
         return false;
     }
 
     try {
         const claimed = new URL(claimedUrl);
-        const expected = new URL(expectedBaseUrl);
-        return (
-            claimed.origin === expected.origin &&
-            claimed.pathname === expected.pathname &&
-            claimed.searchParams.get('nangoConnectionId') === connectionIdentifierValue
-        );
+        if (claimed.searchParams.get('nangoConnectionId') !== connectionIdentifierValue) {
+            return false;
+        }
+
+        return expectedBaseUrls.some((expectedBaseUrl) => {
+            const expected = new URL(expectedBaseUrl);
+            return claimed.origin === expected.origin && claimed.pathname === expected.pathname;
+        });
     } catch {
         return false;
     }
@@ -50,7 +52,7 @@ function validate(
     publicKey: string,
     token: string,
     rawBody: string | Buffer,
-    webhookUrlContext: { expectedBaseUrl: string; connectionIdentifierValue: string }
+    webhookUrlContext: { expectedBaseUrls: string[]; connectionIdentifierValue: string }
 ): boolean {
     let claims: GongWebhookJwtClaims;
     try {
@@ -59,7 +61,7 @@ function validate(
         return false;
     }
 
-    if (!isExpectedWebhookUrl(claims.webhook_url, webhookUrlContext.expectedBaseUrl, webhookUrlContext.connectionIdentifierValue)) {
+    if (!isExpectedWebhookUrl(claims.webhook_url, webhookUrlContext.expectedBaseUrls, webhookUrlContext.connectionIdentifierValue)) {
         return false;
     }
 
@@ -83,7 +85,7 @@ function verifySignature(
     publicKey: string,
     headers: Record<string, string>,
     rawBody: string | Buffer,
-    webhookUrlContext: { expectedBaseUrl: string; connectionIdentifierValue: string }
+    webhookUrlContext: { expectedBaseUrls: string[]; connectionIdentifierValue: string }
 ): 'valid' | 'missing' | 'invalid' {
     const authHeader = headers['authorization'];
     if (!authHeader) {
@@ -103,8 +105,9 @@ const route: WebhookHandler<GongWebhookPayload> = async (nango, headers, body, r
         return Err(new NangoError('webhook_missing_connection_id'));
     }
 
+    const webhookBase = `${getGlobalWebhookReceiveUrl()}/${nango.environment.uuid}`;
     const webhookUrlContext = {
-        expectedBaseUrl: `${getGlobalWebhookReceiveUrl()}/${nango.environment.uuid}/${encodeURIComponent(nango.integration.unique_key)}`,
+        expectedBaseUrls: [`${webhookBase}/${encodeURIComponent(nango.integration.unique_key)}`, `${webhookBase}/${nango.integration.unique_key}`],
         connectionIdentifierValue
     };
 
@@ -152,7 +155,7 @@ const route: WebhookHandler<GongWebhookPayload> = async (nango, headers, body, r
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         connectionIdentifierValue,
         propName: 'connectionId'
     });
