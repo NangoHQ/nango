@@ -33,7 +33,7 @@ const route: WebhookHandler<HighLevelWebhookResponse> = async (nango, headers, b
             return Err(new NangoError('webhook_invalid_signature'));
         }
     } else {
-        logger.info('no webhook secret configured, skipping signature validation', { configId: nango.integration.id });
+        nango.markUnverified({ reason: 'highlevel_missing_webhook_secret', remediation: 'Set the webhook public key on the integration' });
     }
 
     const { companyId, locationId, altId, altType, type } = body;

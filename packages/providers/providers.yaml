@@ -4732,6 +4732,7 @@ checkr-partner:
     token_response_metadata:
         - checkr_account_id
     webhook_routing_script: checkrPartnerWebhookRouting
+    webhook_user_defined_secret: true
     post_connection_script: checkrPartnerPostConnection
     docs: https://nango.dev/docs/integrations/all/checkr-partner
     connection_config:
@@ -4758,6 +4759,7 @@ checkr-partner-staging:
     token_response_metadata:
         - checkr_account_id
     webhook_routing_script: checkrPartnerWebhookRouting
+    webhook_user_defined_secret: true
     post_connection_script: checkrPartnerPostConnection
     docs: https://nango.dev/docs/integrations/all/checkr-partner-staging
     connection_config:
@@ -22409,6 +22411,7 @@ slack:
             cursor_name_in_request: cursor
             limit_name_in_request: limit
     webhook_routing_script: slackWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/slack
     setup_guide_url: https://nango.dev/docs/api-integrations/slack/how-to-register-your-own-slack-api-oauth-app
 

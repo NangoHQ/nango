@@ -1,6 +1,9 @@
-import { createHash, createHmac, timingSafeEqual } from 'crypto';
+import { createHash, createHmac } from 'crypto';
 
+import { NangoError } from '@nangohq/shared';
 import { axiosInstance, Err, Ok } from '@nangohq/utils';
+
+import { safeCompare } from './signature.js';
 
 import type { ConnectWisePsaWebhookPayload, WebhookHandler } from './types.js';
 import type { Result } from '@nangohq/utils';
@@ -95,14 +98,7 @@ function validateSignature(sharedSecretKey: string, headerSignature: string, raw
         const calculatedSignature = createHmac('sha256', keyHash).update(rawBody, 'utf8').digest('base64');
 
         // Step 3: Compare signatures using timing-safe comparison
-        const calculatedBuffer = Buffer.from(calculatedSignature);
-        const headerBuffer = Buffer.from(headerSignature);
-
-        if (calculatedBuffer.length !== headerBuffer.length) {
-            return false;
-        }
-
-        return timingSafeEqual(calculatedBuffer, headerBuffer);
+        return safeCompare(calculatedSignature, headerSignature);
     } catch {
         return false;
     }
@@ -112,7 +108,7 @@ const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, header
     const signature = headers['x-content-signature'];
 
     if (!signature || typeof signature !== 'string') {
-        return Err(new Error('webhook_missing_signature', { cause: 'Missing signature header' }));
+        return Err(new NangoError('webhook_missing_signature'));
     }
 
     // Verify webhook signature using payload metadata key_url
@@ -120,17 +116,17 @@ const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, header
     const keyUrl = body.Metadata?.key_url;
 
     if (typeof keyUrl !== 'string') {
-        return Err(new Error('webhook_invalid_signature', { cause: 'Missing or invalid key_url in webhook metadata' }));
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     const signingKey = await fetchSigningKey(keyUrl);
 
     if (signingKey.isErr()) {
-        return Err(new Error('webhook_invalid_signature', { cause: signingKey.error }));
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     if (!validateSignature(signingKey.value, signature, rawBody)) {
-        return Err(new Error('webhook_invalid_signature', { cause: 'Signature validation failed' }));
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     const response = await nango.executeScriptForWebhooks({
