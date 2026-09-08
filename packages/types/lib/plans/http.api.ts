@@ -31,6 +31,7 @@ export interface PlanDefinition {
 
     cta?: string;
     hidden?: boolean;
+    retired?: boolean;
     flags: Omit<Partial<DBPlan>, 'id' | 'account_id' | 'name'>;
 }
 

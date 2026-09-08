@@ -111,6 +111,10 @@ export function resolvePlanChange(context: PlanChangeContext, subscription: Bill
         );
     }
 
+    if (getPlanDefinition(requested.newPlanCode as DBPlan['name'])?.retired) {
+        return Err(new PlanChangeError('transition_not_allowed'));
+    }
+
     // The Growth add-on is only available for a subset of the available plans; reject any request to
     // add it to a plan outside of that set.
     if (requested.withGrowthFeatures && !canHaveGrowthAddon(requested.newPlanCode as DBPlan['name'])) {

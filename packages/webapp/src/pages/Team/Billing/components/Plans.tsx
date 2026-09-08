@@ -105,7 +105,7 @@ export const Plans: React.FC = () => {
                         endsAt={currentPlan?.growth_features_ends_at ?? undefined}
                         pendingChangeAt={pendingChange?.at}
                         transition={transition}
-                        closed={!showsNewPlans && isRetiredPlan(plan.plan.code)}
+                        closed={isRetiredPlan(plan.plan.code)}
                         paymentMethod={paymentMethod}
                     />
                 ))}

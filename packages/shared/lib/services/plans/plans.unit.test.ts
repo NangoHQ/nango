@@ -232,6 +232,13 @@ describe('self-serve transitions', () => {
         expect(growth.prevPlan).toContain('free');
         expect(growth.nextPlan).toContain('enterprise');
     });
+
+    it('should not offer retired plans to new accounts', () => {
+        expect(getPlanDefinition('free')?.nextPlan).not.toEqual(expect.arrayContaining(['starter-v2', 'growth-v2']));
+        expect(starter.retired).toBe(true);
+        expect(growth.retired).toBe(true);
+        expect(getPlanDefinition('pay-as-you-go')?.hidden).toBe(false);
+    });
 });
 
 function makePlan({
