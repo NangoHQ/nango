@@ -1,9 +1,10 @@
 import * as crypto from 'node:crypto';
 
 import FormData from 'form-data';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { getProvider } from '@nangohq/providers';
+import * as utils from '@nangohq/utils';
 
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 import {
@@ -55,6 +56,75 @@ describe('buildProxyHeaders', () => {
             'my-token': 'sweet-secret-token',
             'x-test': 'test'
         });
+    });
+
+    it('does not throw when the request body is a non-serializable object (e.g. a stream) and the provider has custom headers', () => {
+        const circularBody: Record<string, unknown> = {};
+        circularBody['self'] = circularBody;
+
+        const config = getDefaultProxy({
+            method: 'PUT',
+            data: circularBody,
+            provider: {
+                auth_mode: 'API_KEY',
+                authorization_url: 'https://api.nangostarter.com',
+                token_url: 'https://api.nangostarter.com',
+                proxy: {
+                    base_url: 'https://api.nangostarter.com',
+                    headers: {
+                        'my-token': '${apiKey}'
+                    }
+                }
+            }
+        });
+
+        const reportSpy = vi.spyOn(utils, 'report').mockImplementation(() => undefined);
+
+        expect(() =>
+            buildProxyHeaders({
+                config,
+                url: 'https://api.nangostarter.com',
+                connection: getTestConnection({
+                    credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
+                })
+            })
+        ).not.toThrow();
+        expect(reportSpy).not.toHaveBeenCalled();
+
+        reportSpy.mockRestore();
+    });
+
+    it('does not throw, but reports, when the request body has a genuinely unserializable value (not a stream)', () => {
+        const config = getDefaultProxy({
+            method: 'PUT',
+            data: { amount: BigInt(10) },
+            provider: {
+                auth_mode: 'API_KEY',
+                authorization_url: 'https://api.nangostarter.com',
+                token_url: 'https://api.nangostarter.com',
+                proxy: {
+                    base_url: 'https://api.nangostarter.com',
+                    headers: {
+                        'my-token': '${apiKey}'
+                    }
+                }
+            }
+        });
+
+        const reportSpy = vi.spyOn(utils, 'report').mockImplementation(() => undefined);
+
+        expect(() =>
+            buildProxyHeaders({
+                config,
+                url: 'https://api.nangostarter.com',
+                connection: getTestConnection({
+                    credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
+                })
+            })
+        ).not.toThrow();
+        expect(reportSpy).toHaveBeenCalledOnce();
+
+        reportSpy.mockRestore();
     });
 
     it('should correctly construct headers for Basic auth', () => {

@@ -5,7 +5,7 @@ import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
 import { assertSafeOutboundUrlSync, getSafeHttpAgents, getSafeLookup } from '@nangohq/egress';
-import { Err, isBaseUrlOverrideDenied, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
+import { Err, isBaseUrlOverrideDenied, Ok, report, SIGNATURE_METHOD } from '@nangohq/utils';
 
 import {
     connectionCopyWithParsedConnectionConfig,
@@ -598,7 +598,16 @@ function getRawBody(method: string, data: unknown): string {
     if (typeof data === 'string') return data.startsWith('?') ? data.slice(1) : data;
     if (Buffer.isBuffer(data)) return data.toString('utf8');
     if (data instanceof URLSearchParams) return data.toString();
-    if (typeof data === 'object' && !(data instanceof FormData)) return JSON.stringify(data);
+    if (typeof data === 'object' && !(data instanceof FormData)) {
+        try {
+            return JSON.stringify(data);
+        } catch (err) {
+            if (!(err instanceof TypeError && err.message.startsWith('Converting circular structure to JSON'))) {
+                report(new Error('proxy_canonical_body_serialization_failed', { cause: err }));
+            }
+            return '';
+        }
+    }
     return '';
 }
 
