@@ -1,4 +1,3 @@
-import { permissions } from '@nangohq/authz';
 import { FieldLabel } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput.js';
@@ -21,11 +20,10 @@ export const Webhooks: React.FC = () => {
     const { mutateAsync: patchWebhookAsync } = usePatchWebhook(env);
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
-    const environment = environmentAndAccount?.environment;
 
     const { can } = usePermissions();
-    const canWriteWebhooks = can(permissions.canWriteProdWebhooks) || !environment?.is_production;
-    const canReadSigningKey = can(permissions.canReadProdSecretKey) || !environment?.is_production;
+    const canWriteWebhooks = can('environment:webhooks:update');
+    const canReadSigningKey = can('environment:settings:read_secret');
 
     const onSave = async (body: PatchWebhook['Body']) => {
         try {

@@ -21,6 +21,7 @@ describe('googleDriveWebhookRouting', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -60,6 +61,7 @@ describe('googleDriveWebhookRouting', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -103,6 +105,7 @@ describe('googleDriveWebhookRouting', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -130,6 +133,7 @@ describe('googleDriveWebhookRouting', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -144,5 +148,84 @@ describe('googleDriveWebhookRouting', () => {
             expect(result.value.statusCode).toBe(200);
         }
         expect(mock).not.toHaveBeenCalled();
+    });
+
+    it('rejects a missing channel token when a webhook secret is configured', async () => {
+        const integration = getTestConfig({ provider: 'google-drive', custom: { webhookSecret: 'channel-secret' } });
+        const mock = vi.fn();
+        const nangoMock = new InternalNango({
+            team: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: seeders.getTestPlan(),
+            integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
+            logContextGetter
+        });
+        nangoMock.executeScriptForWebhooks = mock;
+
+        const result = await GoogleDriveWebhookRouting.default(
+            nangoMock as unknown as InternalNango,
+            { 'x-goog-resource-id': EXAMPLE_RESOURCE_ID } as any,
+            {},
+            ''
+        );
+
+        expect(result.isErr()).toBe(true);
+        expect(mock).not.toHaveBeenCalled();
+    });
+
+    it('rejects a mismatched channel token when a webhook secret is configured', async () => {
+        const integration = getTestConfig({ provider: 'google-drive', custom: { webhookSecret: 'channel-secret' } });
+        const mock = vi.fn();
+        const nangoMock = new InternalNango({
+            team: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: seeders.getTestPlan(),
+            integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
+            logContextGetter
+        });
+        nangoMock.executeScriptForWebhooks = mock;
+
+        const result = await GoogleDriveWebhookRouting.default(
+            nangoMock as unknown as InternalNango,
+            {
+                'x-goog-resource-id': EXAMPLE_RESOURCE_ID,
+                'x-goog-channel-token': 'wrong'
+            } as any,
+            {},
+            ''
+        );
+
+        expect(result.isErr()).toBe(true);
+        expect(mock).not.toHaveBeenCalled();
+    });
+
+    it('routes when the channel token matches the webhook secret', async () => {
+        const integration = getTestConfig({ provider: 'google-drive', custom: { webhookSecret: 'channel-secret' } });
+        const mock = vi.fn().mockResolvedValueOnce({ connectionIds: ['conn-1'], connectionMetadata: {} });
+        const nangoMock = new InternalNango({
+            team: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: seeders.getTestPlan(),
+            integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
+            logContextGetter
+        });
+        nangoMock.executeScriptForWebhooks = mock;
+
+        const result = await GoogleDriveWebhookRouting.default(
+            nangoMock as unknown as InternalNango,
+            {
+                'x-goog-resource-id': EXAMPLE_RESOURCE_ID,
+                'x-goog-channel-token': 'channel-secret',
+                'x-goog-resource-state': 'change'
+            } as any,
+            {},
+            ''
+        );
+
+        expect(result.isOk()).toBe(true);
+        expect(mock).toHaveBeenCalledTimes(1);
     });
 });

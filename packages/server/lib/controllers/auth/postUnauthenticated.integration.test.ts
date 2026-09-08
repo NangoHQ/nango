@@ -41,6 +41,35 @@ describe(`GET ${endpoint}`, () => {
         });
     });
 
+    it('should reject creating a new connection at the connection cap', async () => {
+        const { env, apiKey, plan } = await seeders.seedAccountEnvAndUser();
+        const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+        const session = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { end_user: { id: 'capped-user', email: 'capped@example.com' } }
+        });
+        isSuccess(session.json);
+
+        await db.knex('plans').where({ id: plan.id }).update({ connections_max: 0 });
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { connect_session_token: session.json.data.token },
+            params: { providerConfigKey: config.unique_key }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: {
+                code: 'resource_capped',
+                message: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.'
+            }
+        });
+    });
+
     // webhook_url is privileged: an untrusted client must not be able to redirect a connection's webhooks
     // by passing it as a param. It is silently dropped and never persisted from this path.
     it('ignores a client-supplied webhook_url param and does not store it', async () => {
@@ -181,7 +210,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should be allowed to reconnect', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey, plan } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
         // Initial session token
@@ -199,6 +228,8 @@ describe(`GET ${endpoint}`, () => {
             params: { providerConfigKey: config.unique_key }
         });
         isSuccess(resConnect.json);
+
+        await db.knex('plans').where({ id: plan.id }).update({ connections_max: 1 });
 
         const connectionBefore = await connectionService.checkIfConnectionExists(db.knex, {
             connectionId: resConnect.json.connectionId,

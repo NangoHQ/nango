@@ -29,7 +29,7 @@ export const forwardWebhook = async ({
     webhookSettings: DBExternalWebhook | null;
     connectionIds: string[];
     webhookUrlOverrideByConnectionId: Map<string, string>;
-    payload: Record<string, any> | null;
+    payload: unknown;
     webhookOriginalHeaders: Record<string, string>;
     logContextGetter: LogContextGetter;
     onBytes?: (bytes: MeteredBytes, connectionId: string) => void;

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { hasMonthlySpend, isBilledPlan, isLegacyPlan, planAccruesCharges, showsSummaryStrip } from './planVisibility.js';
 import { buildSummaryState, pendingPlanChange, SPEND_TOOLTIP, SPEND_TOOLTIP_S26, SPEND_TOOLTIP_WITHOUT_CHARGES } from './summaryState.js';
 
+import type { PlanTransition } from './planTransition.js';
 import type { SummarySpend } from './summaryState.js';
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
@@ -23,7 +24,13 @@ function planOf(name: ApiPlan['name'], overrides: Partial<ApiPlan> = {}): ApiPla
 }
 function build(
     plan: ApiPlan,
-    opts: { paymentMethod?: StripePaymentMethod | null; canManageBilling?: boolean; spend?: SummarySpend | null; onS26Pricing?: boolean } = {}
+    opts: {
+        paymentMethod?: StripePaymentMethod | null;
+        canManageBilling?: boolean;
+        spend?: SummarySpend | null;
+        onS26Pricing?: boolean;
+        transition?: PlanTransition | null;
+    } = {}
 ) {
     return buildSummaryState({
         plan,
@@ -32,6 +39,7 @@ function build(
         canManageBilling: opts.canManageBilling ?? true,
         spend: opts.spend ?? null,
         onS26Pricing: opts.onS26Pricing ?? false,
+        transition: opts.transition ?? null,
         now: NOW
     });
 }
@@ -328,5 +336,30 @@ describe('pendingPlanChange guards', () => {
         const change = pendingPlanChange({ plan, plans: undefined, now: NOW });
         expect(change?.toCode).toBe('free');
         expect(change?.detail).toBe('no further charges after this period.');
+    });
+});
+
+describe('buildSummaryState with a scheduled migration', () => {
+    const migrating = planOf('growth-v2', { orb_future_plan: 'pay-as-you-go', orb_future_plan_at: '2026-10-01T00:00:00Z' });
+    const transition: PlanTransition = {
+        at: 'October 1, 2026',
+        toPlanTitle: 'Pay as you go',
+        fromCode: 'growth-v2',
+        fromTitle: 'Growth',
+        keepsGrowthAddOn: true
+    };
+
+    it('renames the date slot', () => {
+        expect(build(migrating, { transition }).date).toEqual({ label: 'TRANSITIONS ON', value: 'October 1, 2026' });
+    });
+
+    it('drops the footer, which the banner states in full', () => {
+        expect(build(migrating, { transition }).change).toBeNull();
+    });
+
+    it('keeps both for a scheduled change that is not a migration', () => {
+        const state = build(migrating);
+        expect(state.date).toEqual({ label: 'CHANGES ON', value: 'October 1, 2026' });
+        expect(state.change?.toPlanTitle).toBe('Pay as you go');
     });
 });

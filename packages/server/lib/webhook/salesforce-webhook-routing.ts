@@ -4,7 +4,7 @@ import type { WebhookHandler } from './types.js';
 
 const route: WebhookHandler = async (nango, _headers, body) => {
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookType: 'nango.eventType',
         connectionIdentifier: 'nango.connectionId',
         propName: 'connectionId'

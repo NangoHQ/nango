@@ -4,7 +4,7 @@ import { metrics, validateRequest } from '@nangohq/utils';
 
 import { immediateTaskSchema } from './postImmediate.js';
 
-import type { ImmediateSuccess, RateLimitPayload } from './postImmediate.js';
+import type { ImmediateSuccess, PostImmediate, RateLimitPayload } from './postImmediate.js';
 import type { SlidingWindowRateLimiter } from '@nangohq/kvstore';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
@@ -16,8 +16,6 @@ const method = 'POST';
 
 const MAX_BATCH_SIZE = 100;
 
-type ImmediateInput = z.infer<typeof immediateTaskSchema>;
-
 export type ImmediateBatchResult =
     | ImmediateSuccess
     | { error: { code: 'duplicate_task_name' | 'task_cap_exceeded'; message: string } }
@@ -27,7 +25,7 @@ export type PostImmediateBatch = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Body: {
-        tasks: ImmediateInput[];
+        tasks: PostImmediate['Body'][];
     };
     Error: ApiError<'immediate_batch_failed' | 'invalid_request'>;
     Success: { results: ImmediateBatchResult[] };

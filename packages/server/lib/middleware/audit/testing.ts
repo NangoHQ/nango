@@ -25,7 +25,8 @@ export const getConnectionByIdMock: Mock = vi.fn();
 export const getUserByIdMock: Mock = vi.fn();
 
 export async function auditModuleMock(importOriginal: () => Promise<typeof AuditModule>): Promise<object> {
-    return { ...(await importOriginal()), recordAuditEvent: recordMock };
+    // A unit run wires no store, so the backend has to be reported as configured for the entitlement to pass.
+    return { ...(await importOriginal()), recordAuditEvent: recordMock, auditBackend: { configured: true } };
 }
 
 export async function sharedModuleMock(importOriginal: () => Promise<typeof NangoShared>): Promise<object> {

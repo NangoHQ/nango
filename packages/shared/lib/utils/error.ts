@@ -33,6 +33,14 @@ export class AuthCredentialsError extends NangoInternalError {
     }
 }
 
+export class ConnectionCreationCappedError extends NangoInternalError {
+    constructor() {
+        super('resource_capped');
+        this.status = 400;
+        this.message = 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.';
+    }
+}
+
 export class NangoError extends NangoInternalError {
     public additional_properties?: Record<string, JsonValue> | undefined = undefined;
     public override readonly message: string;
@@ -680,8 +688,33 @@ export class NangoError extends NangoInternalError {
                 break;
 
             case 'webhook_invalid_secret':
-                this.status = 401;
-                this.message = 'Invalid or missing webhook secret';
+                this.status = 400;
+                this.message = 'Invalid webhook secret configuration';
+                break;
+
+            case 'webhook_invalid_body':
+                this.status = 400;
+                this.message = 'Invalid webhook body';
+                break;
+
+            case 'webhook_missing_shop_domain':
+                this.status = 400;
+                this.message = 'Webhook is missing the shop domain header';
+                break;
+
+            case 'webhook_missing_nango_connection_id':
+                this.status = 400;
+                this.message = 'Webhook is missing the Nango connection id';
+                break;
+
+            case 'webhook_no_connection':
+                this.status = 400;
+                this.message = 'No connection found for this webhook';
+                break;
+
+            case 'webhook_oauth2webhook_failed':
+                this.status = 500;
+                this.message = 'Failed to finish the connection from the webhook';
                 break;
 
             case 'webhook_invalid_payload':

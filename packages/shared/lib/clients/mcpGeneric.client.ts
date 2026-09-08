@@ -1,10 +1,10 @@
-import { discoverAuthorizationServerMetadata, discoverOAuthProtectedResourceMetadata, refreshAuthorization } from '@modelcontextprotocol/sdk/client/auth.js';
-import { OAuthClientInformationSchema, OAuthMetadataSchema } from '@modelcontextprotocol/sdk/shared/auth.js';
+import { discoverAuthorizationServerMetadata, discoverOAuthProtectedResourceMetadata, refreshAuthorization } from '@modelcontextprotocol/client';
+import { OAuthClientInformationSchema, OAuthMetadataSchema } from '@modelcontextprotocol/core';
 
 import { NangoError } from '../utils/error.js';
 
 import type { ServiceResponse } from '../models/Generic.js';
-import type { OAuthClientInformation, OAuthMetadata, OAuthProtectedResourceMetadata, OAuthTokens } from '@modelcontextprotocol/sdk/shared/auth.js';
+import type { OAuthClientInformation, OAuthMetadata, OAuthProtectedResourceMetadata, OAuthTokens } from '@modelcontextprotocol/client';
 import type { LogContext, LogContextStateless } from '@nangohq/logs';
 import type { DBConnectionDecrypted, OAuth2Credentials } from '@nangohq/types';
 

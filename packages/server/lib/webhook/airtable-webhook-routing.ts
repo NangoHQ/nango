@@ -7,7 +7,7 @@ const route: WebhookHandler<AirtableWebhookReference> = async (nango, _headers, 
     // able to route it correctly
     const editedBodyWithCatchAll = { ...body, type: '*' };
     const response = await nango.executeScriptForWebhooks({
-        body: editedBodyWithCatchAll,
+        payload: editedBodyWithCatchAll,
         webhookType: 'type',
         connectionIdentifier: 'webhook.id',
         propName: 'metadata.webhooks'

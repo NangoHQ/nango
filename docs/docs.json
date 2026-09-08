@@ -27,7 +27,10 @@
     "dark": "/images/Nango-Dark-Mode.svg",
     "href": "https://nango.dev"
   },
-  "favicon": "/favicon.png",
+  "favicon": {
+    "light": "/favicon-black.svg",
+    "dark": "/favicon-white.svg"
+  },
   "contextual": {
     "options": [
       "copy",
@@ -95,6 +98,14 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/typeform",
+      "destination": "/api-integrations/typeform"
+    },
+    {
+      "source": "/integrations/all/elevio",
+      "destination": "/api-integrations/elevio"
+    },
+    {
       "source": "/integrations/all/google-gemini",
       "destination": "/api-integrations/google-gemini"
     },
@@ -152,55 +163,55 @@
     },
     {
       "source": "/guides/mcp",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/guides/use-cases/mcp-server",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/overview",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/openai-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/anthropic-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/vercel-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/mastra-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/google-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/langchain-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/llamaindex-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/openai-agents-sdk",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/any-llm",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/implement-mcp-server",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/use-cases/syncs/implement-a-sync",
@@ -392,7 +403,7 @@
     },
     {
       "source": "/implementation-guides/platform/functions/tool-calling",
-      "destination": "/guides/functions/tool-calling"
+      "destination": "/guides/agent-sessions"
     },
     {
       "source": "/implementation-guides/platform/functions/storage",
@@ -697,6 +708,10 @@
     {
       "source": "/integrations/all/jobber",
       "destination": "/api-integrations/jobber"
+    },
+    {
+      "source": "/guides/functions/tool-calling",
+      "destination": "/guides/agent-sessions"
     }
   ],
   "navigation": {
@@ -742,6 +757,7 @@
                   "guides/auth/mcp-auth"
                 ]
               },
+              "guides/agent-sessions",
               {
                 "group": "Functions",
                 "expanded": false,
@@ -762,7 +778,6 @@
                   "guides/functions/action-functions",
                   "guides/functions/webhook-functions",
                   "guides/functions/event-functions",
-                  "guides/functions/tool-calling",
                   "guides/functions/storage",
                   "guides/functions/logging",
                   "guides/functions/rate-limits",
@@ -780,6 +795,7 @@
                   "guides/platform/environments",
                   "guides/platform/limits",
                   "guides/platform/security",
+                  "guides/platform/audit-trail",
                   "guides/platform/self-hosting",
                   "guides/platform/proxy-requests",
                   "guides/platform/webhooks-from-nango",
@@ -1228,7 +1244,7 @@
               "api-integrations/ecu360-production",
               "integrations/all/egnyte",
               "integrations/all/elevenlabs",
-              "integrations/all/elevio",
+              "api-integrations/elevio",
               "integrations/all/emarsys",
               "integrations/all/emarsys-oauth",
               "api-integrations/embat",
@@ -1532,6 +1548,7 @@
               "integrations/all/nationbuilder",
               "api-integrations/neon",
               "api-integrations/nerdio",
+              "api-integrations/netsapiens",
               "integrations/all/netsuite",
               "api-integrations/netsuite-client-credentials",
               "api-integrations/netsuite-tba",
@@ -1863,7 +1880,7 @@
               "integrations/all/twitter",
               "integrations/all/twitter-oauth2-cc",
               "api-integrations/twitter-v2",
-              "integrations/all/typeform",
+              "api-integrations/typeform",
               "integrations/all/typefully",
               "api-integrations/typefully-v2",
               "integrations/all/uber",

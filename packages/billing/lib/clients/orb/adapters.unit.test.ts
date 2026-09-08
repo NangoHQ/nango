@@ -1,126 +1,20 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { envs } from '../../envs.js';
 import {
     fromOrbAddress,
     fromOrbAlert,
     fromOrbCustomer,
     fromOrbPeriodCosts,
     fromOrbUpcomingInvoice,
+    growthAddonStateFromOrb,
     orbAmountToCents,
     orbMetricToUsageMetric,
-    toOrbEvent,
     toOrbPutCustomerPayload
 } from './adapters.js';
+import { growthAddonPriceId } from './catalogue.js';
 
-import type { BillingEvent, BillingInvoicingDetails } from '@nangohq/types';
+import type { BillingInvoicingDetails } from '@nangohq/types';
 import type Orb from 'orb-billing';
-
-vi.mock('uuidv7', () => ({ uuidv7: () => 'mock-uuid' }));
-
-// ─── toOrbEvent ───────────────────────────────────────────────────────────────
-
-describe('toOrbEvent', () => {
-    const baseProperties = {
-        idempotencyKey: 'idem-123',
-        timestamp: new Date('2024-01-15T10:00:00Z'),
-        accountId: 42
-    };
-
-    it('maps top-level scalar properties directly', () => {
-        const event: BillingEvent = {
-            type: 'proxy',
-            properties: { ...baseProperties, someString: 'hello', someNumber: 7, someBool: true } as any
-        };
-        const result = toOrbEvent(event);
-        expect(result.properties).toMatchObject({ someString: 'hello', someNumber: 7, someBool: true });
-    });
-
-    it('flattens nested object properties with dot notation', () => {
-        const event: BillingEvent = {
-            type: 'function_executions',
-            properties: { ...baseProperties, telemetry: { successes: 10, failures: 2 } } as any
-        };
-        const result = toOrbEvent(event);
-        expect(result.properties).toMatchObject({ 'telemetry.successes': 10, 'telemetry.failures': 2 });
-        expect(result.properties).not.toHaveProperty('telemetry');
-    });
-
-    it('skips falsy top-level properties', () => {
-        const event: BillingEvent = {
-            type: 'proxy',
-            properties: { ...baseProperties, nullProp: null, zeroProp: 0, falseProp: false } as any
-        };
-        const result = toOrbEvent(event);
-        expect(result.properties).not.toHaveProperty('nullProp');
-        expect(result.properties).not.toHaveProperty('zeroProp');
-        expect(result.properties).not.toHaveProperty('falseProp');
-    });
-
-    it('uses provided idempotencyKey', () => {
-        const event: BillingEvent = { type: 'proxy', properties: { ...baseProperties } as any };
-        const result = toOrbEvent(event);
-        expect(result.idempotency_key).toBe('idem-123');
-    });
-
-    it('generates a uuid when idempotencyKey is absent', () => {
-        const { idempotencyKey: _, ...propertiesWithoutKey } = baseProperties;
-        const event: BillingEvent = { type: 'proxy', properties: { ...propertiesWithoutKey } as any };
-        const result = toOrbEvent(event);
-        expect(result.idempotency_key).toBe('mock-uuid');
-    });
-
-    it('sets event_name, external_customer_id and timestamp correctly', () => {
-        const event: BillingEvent = { type: 'proxy', properties: { ...baseProperties } as any };
-        const result = toOrbEvent(event);
-        expect(result.event_name).toBe('proxy');
-        expect(result.external_customer_id).toBe('42');
-        expect(result.timestamp).toBe('2024-01-15T10:00:00.000Z');
-    });
-
-    it('appends "_http" when the event timestamp is at or after the cutover', () => {
-        const originalCutover = envs.BILLING_EVENTS_CUTOVER_AT;
-        try {
-            (envs as any).BILLING_EVENTS_CUTOVER_AT = '2000-01-01T00:00:00Z';
-            const event: BillingEvent = { type: 'proxy', properties: { ...baseProperties } as any };
-            expect(toOrbEvent(event).event_name).toBe('proxy_http');
-        } finally {
-            (envs as any).BILLING_EVENTS_CUTOVER_AT = originalCutover;
-        }
-    });
-
-    it('does not append "_http" when the event timestamp is before the cutover', () => {
-        const originalCutover = envs.BILLING_EVENTS_CUTOVER_AT;
-        try {
-            (envs as any).BILLING_EVENTS_CUTOVER_AT = '9999-01-01T00:00:00Z';
-            const event: BillingEvent = { type: 'proxy', properties: { ...baseProperties } as any };
-            expect(toOrbEvent(event).event_name).toBe('proxy');
-        } finally {
-            (envs as any).BILLING_EVENTS_CUTOVER_AT = originalCutover;
-        }
-    });
-
-    it('keys the suffix on each event timestamp independently — a batched pre-cutover event stays unsuffixed even when processed after cutover', () => {
-        // Same cutover instant, two events on either side of it: verifies the
-        // suffix is decided per-event, not from wall-clock at processing time.
-        const originalCutover = envs.BILLING_EVENTS_CUTOVER_AT;
-        try {
-            (envs as any).BILLING_EVENTS_CUTOVER_AT = '2024-06-01T00:00:00Z';
-            const beforeCutover: BillingEvent = {
-                type: 'proxy',
-                properties: { ...baseProperties, timestamp: new Date('2024-05-31T23:59:59.999Z') } as any
-            };
-            const atCutover: BillingEvent = {
-                type: 'proxy',
-                properties: { ...baseProperties, timestamp: new Date('2024-06-01T00:00:00.000Z') } as any
-            };
-            expect(toOrbEvent(beforeCutover).event_name).toBe('proxy');
-            expect(toOrbEvent(atCutover).event_name).toBe('proxy_http');
-        } finally {
-            (envs as any).BILLING_EVENTS_CUTOVER_AT = originalCutover;
-        }
-    });
-});
 
 // ─── toOrbPutCustomerPayload ──────────────────────────────────────────────────
 
@@ -475,9 +369,10 @@ const COMPUTE_HOURS_PROD = 'ZrAoynYimCwtmFSP';
 const DATA_TRANSFER_PROD = 'RNskBsYUvTYLsjV2';
 const CONNECTIONS_PROD = '8aAyMTG6HafmZpqJ';
 
-function usagePrice(metricId: string | null, total: string, name = 'Some price', priceId = 'price_1') {
+function usagePrice(metricId: string | null, subtotal: string, name = 'Some price', priceId = 'price_1', total = subtotal) {
     return {
         price_id: priceId,
+        subtotal,
         total,
         price: { price_type: 'usage_price', currency: 'USD', name, billable_metric: metricId ? { id: metricId } : null }
     };
@@ -488,6 +383,27 @@ function bucket(perPriceCosts: ReturnType<typeof usagePrice>[], timeframeEnd = '
 }
 
 describe('fromOrbPeriodCosts', () => {
+    it('reads the usage cost, not the total with a plan minimum folded in', () => {
+        const minimumShare = '16.111111111111111111111';
+        const costs = {
+            data: [
+                bucket([
+                    usagePrice(CONNECTIONS_PROD, '0.00', 'Connections', 'price_1', minimumShare),
+                    usagePrice(COMPUTE_HOURS_PROD, '0.00', 'Function compute time (h)', 'price_2', minimumShare),
+                    usagePrice(DATA_TRANSFER_PROD, '0.00', 'Data transfer (GB)', 'price_3', minimumShare)
+                ])
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ connections: 0, function_duration_seconds: 0, data_transfer: 0 });
+    });
+
+    it('keeps a used metric at its own cost when the minimum tops it up', () => {
+        const costs = { data: [bucket([usagePrice(CONNECTIONS_PROD, '0.29', 'Connections', 'price_1', '16.86')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ connections: 29 });
+    });
+
     it('maps a price to its metric and converts the amount to cents', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_PROD, '23.17', 'Sync records')])] };
 
@@ -564,7 +480,12 @@ describe('fromOrbPeriodCosts', () => {
             data: [
                 bucket([
                     usagePrice(RECORDS_PROD, '23.17'),
-                    { price_id: 'price_fixed', total: '500.00', price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null } }
+                    {
+                        price_id: 'price_fixed',
+                        subtotal: '500.00',
+                        total: '500.00',
+                        price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null }
+                    }
                 ])
             ]
         };
@@ -642,6 +563,7 @@ describe('fromOrbPeriodCosts', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_PROD, '1.00')])] };
         costs.data[0]!.per_price_costs.push({
             price_id: 'price_2',
+            subtotal: '1.00',
             total: '1.00',
             price: { price_type: 'usage_price', currency: 'EUR', name: 'Proxy requests', billable_metric: { id: WEBHOOKS_PROD } }
         });
@@ -676,7 +598,12 @@ describe('fromOrbPeriodCosts', () => {
         const costs = {
             data: [
                 bucket([
-                    { price_id: 'price_fixed', total: '500.00', price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null } }
+                    {
+                        price_id: 'price_fixed',
+                        subtotal: '500.00',
+                        total: '500.00',
+                        price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null }
+                    }
                 ])
             ]
         };
@@ -689,5 +616,92 @@ describe('fromOrbPeriodCosts', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_PROD, '0.004')])] };
 
         expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 0 });
+    });
+});
+
+describe('growthAddonStateFromOrb', () => {
+    const NOW = new Date('2026-09-01T00:00:00Z');
+    const addon = (endDate: string | null) => ({ id: 'pi_growth', end_date: endDate, price: { external_price_id: growthAddonPriceId } });
+    const otherPrice = { end_date: null, price: { external_price_id: 'payg-connections' } };
+
+    it('reports the add-on absent when the subscription only carries other prices', () => {
+        expect(growthAddonStateFromOrb([otherPrice], NOW)).toEqual({
+            hasGrowthFeatures: false,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: null
+        });
+    });
+
+    it('reports it active and open-ended when it has no end date', () => {
+        expect(growthAddonStateFromOrb([otherPrice, addon(null)], NOW)).toEqual({
+            hasGrowthFeatures: true,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: 'pi_growth'
+        });
+    });
+
+    it('reports it active with the date when removal is scheduled', () => {
+        const state = growthAddonStateFromOrb([addon('2026-10-01T00:00:00Z')], NOW);
+        expect(state).toEqual({
+            hasGrowthFeatures: true,
+            growthFeaturesEndsAt: new Date('2026-10-01T00:00:00Z'),
+            growthFeaturesPriceIntervalId: 'pi_growth'
+        });
+    });
+
+    it('reports it absent once the end date has passed', () => {
+        expect(growthAddonStateFromOrb([addon('2026-08-01T00:00:00Z')], NOW)).toEqual({
+            hasGrowthFeatures: false,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: null
+        });
+    });
+
+    it('reports it active with no end date when the end date is unparseable', () => {
+        expect(growthAddonStateFromOrb([addon('not-a-date')], NOW)).toEqual({
+            hasGrowthFeatures: true,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: 'pi_growth'
+        });
+    });
+
+    it('reports it active when the start date is unparseable', () => {
+        const started = { id: 'pi_growth', start_date: 'not-a-date', end_date: null, price: { external_price_id: growthAddonPriceId } };
+        expect(growthAddonStateFromOrb([started], NOW)).toEqual({
+            hasGrowthFeatures: true,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: 'pi_growth'
+        });
+    });
+
+    it('reports it absent while the interval has not started yet', () => {
+        const notYetStarted = {
+            id: 'pi_growth',
+            start_date: '2026-10-01T00:00:00Z',
+            end_date: null,
+            price: { external_price_id: growthAddonPriceId }
+        };
+        expect(growthAddonStateFromOrb([notYetStarted], NOW)).toEqual({
+            hasGrowthFeatures: false,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: null
+        });
+    });
+
+    it('reports it active once the interval has started', () => {
+        const started = { id: 'pi_growth', start_date: '2026-08-01T00:00:00Z', end_date: null, price: { external_price_id: growthAddonPriceId } };
+        expect(growthAddonStateFromOrb([started], NOW)).toEqual({
+            hasGrowthFeatures: true,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: 'pi_growth'
+        });
+    });
+
+    it('does not mistake a price with no external id for the add-on', () => {
+        expect(growthAddonStateFromOrb([{ end_date: null, price: { external_price_id: null } }], NOW)).toEqual({
+            hasGrowthFeatures: false,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: null
+        });
     });
 });

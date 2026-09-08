@@ -13,7 +13,7 @@ if [ "$FLAG_SERVE_CONNECT_UI" == "true" ]; then
   node "$dir/packages/server/dist/server.js" &
 
   # This is not recommended, you should serve Connect UI from a dedicated static website hosting
-  npm run -w @nangohq/connect-ui serve:unsafe &
+  "$dir/node_modules/.bin/serve" -s "$dir/packages/connect-ui/dist" -p "${NANGO_CONNECT_UI_PORT:-3009}" &
 
   # Wait for any process to exit
   wait -n
