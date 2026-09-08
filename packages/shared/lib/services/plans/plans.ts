@@ -11,6 +11,30 @@ import type { Knex } from 'knex';
 
 export const TRIAL_DURATION = ms('15days');
 
+type PgPlan = Omit<DBPlan, 'connections_max' | 'data_transfer_max'> & {
+    connections_max: string | number | null;
+    data_transfer_max: string | number | null;
+};
+
+const normalizeSafeInteger = (value: string | number | null, field: keyof Pick<DBPlan, 'connections_max' | 'data_transfer_max'>): number | null => {
+    if (value === null) {
+        return null;
+    }
+    const normalized = Number(value);
+    if (!Number.isSafeInteger(normalized)) {
+        throw new Error(`Invalid ${field} value returned from Postgres: ${value}`);
+    }
+    return normalized;
+};
+
+function normalizePlan(plan: PgPlan): DBPlan {
+    return {
+        ...plan,
+        connections_max: normalizeSafeInteger(plan.connections_max, 'connections_max'),
+        data_transfer_max: normalizeSafeInteger(plan.data_transfer_max, 'data_transfer_max')
+    };
+}
+
 function getTrialStartFields(
     plan: Pick<DBPlan, 'trial_start_at' | 'trial_extension_count'>
 ): Pick<DBPlan, 'trial_start_at' | 'trial_end_at' | 'trial_end_notified_at' | 'trial_extension_count' | 'trial_expired'> {
@@ -35,7 +59,7 @@ export async function getPlan(
         return Err(new Error('getPlan_missing_opts'));
     }
     try {
-        const query = db.from<DBPlan>('plans').select<DBPlan>('*');
+        const query = db.from<PgPlan>('plans').select<PgPlan>('*');
         if (opts.accountId) {
             query.where('account_id', opts.accountId);
         }
@@ -48,7 +72,7 @@ export async function getPlan(
                 .where('_nango_environments.id', opts.environmentId);
         }
         const res = await query.first();
-        return res ? Ok(res) : Err(new Error('unknown_plan_for_condition'));
+        return res ? Ok(normalizePlan(res)) : Err(new Error('unknown_plan_for_condition'));
     } catch (err) {
         return Err(new Error('failed_to_get_plan', { cause: err }));
     }
@@ -83,7 +107,7 @@ export async function createPlan(
             .onConflict('account_id')
             .ignore()
             .returning('*');
-        return Ok(res[0]!);
+        return Ok(normalizePlan(res[0] as PgPlan));
     } catch (err) {
         return Err(new Error('failed_to_create_plan', { cause: err }));
     }
@@ -134,19 +158,20 @@ export async function getTrialsApproachingExpiration(db: Knex, { daysLeft }: { d
             .where('trial_end_at', '<=', dateThreshold.toISOString())
             .whereNull('trial_end_notified_at')
             .where('plans.auto_idle', true);
-        return Ok(res);
+        return Ok(res.map((plan) => normalizePlan(plan as PgPlan)));
     } catch (err) {
         return Err(new Error('failed_to_get_trials', { cause: err }));
     }
 }
 
 export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
-    return await db
+    const plans = await db
         .from('plans')
         .select<DBPlan[]>('*')
         .where('plans.trial_end_at', '<=', db.raw('NOW()'))
         .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'))
         .where('plans.auto_idle', true);
+    return plans.map((plan) => normalizePlan(plan as PgPlan));
 }
 
 function isPlanUnchanged(currentPlan: DBPlan, newPlan: PlanDefinition): boolean {
