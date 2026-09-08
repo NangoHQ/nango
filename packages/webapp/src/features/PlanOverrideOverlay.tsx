@@ -9,12 +9,13 @@ import { Switch } from '@/components/ui/Switch';
 import { Tag } from '@/components/ui/Tag';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
-import { hasMonthlySpend } from '@/pages/Team/Billing/planVisibility';
+import { hasMonthlySpend, migratesToPayAsYouGo } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
 import { cn } from '@/utils/utils';
 import { DEFAULTS, usePlanOverrideStore } from './planOverride';
 
 import type { PeriodCostsOverride, SpendOverride, UsageLimitOverride } from './planOverride';
+import type { GrowthAddonState } from '@/pages/Team/Billing/planVisibility';
 import type { PlanDefinition } from '@nangohq/types';
 
 const REAL_PLAN_VALUE = '__real__';
@@ -25,6 +26,17 @@ const UNAVAILABLE_SPEND_VALUE = 'unavailable';
 // A base-only Starter bill, a mid-period Growth bill, and the startup deal's real zero.
 const SPEND_PRESETS_IN_CENTS = [0, 5000, 128430];
 const REAL_PERIOD_COSTS_VALUE = '__real_period_costs__';
+const REAL_ADDON_VALUE = '__real_addon__';
+function scheduledChangeKind(target: PlanDefinition['code'], from: PlanDefinition['code'] | null): string {
+    if (target === 'free') {
+        return 'cancellation';
+    }
+    // Enterprise lists Pay-as-you-go as an ordinary downgrade, so the source plan decides.
+    if (target === 'pay-as-you-go' && from && migratesToPayAsYouGo(from)) {
+        return 'migration';
+    }
+    return 'downgrade';
+}
 interface PlanOverrideContentProps {
     onBack: () => void;
     onClose: () => void;
@@ -42,14 +54,12 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     const setOverdueOverride = usePlanOverrideStore((s) => s.setOverdueOverride);
     const usageLimitOverride = usePlanOverrideStore((s) => s.usageLimitOverride);
     const setUsageLimitOverride = usePlanOverrideStore((s) => s.setUsageLimitOverride);
-    const spendHeadlineEnabled = usePlanOverrideStore((s) => s.spendHeadlineEnabled);
-    const setSpendHeadlineEnabled = usePlanOverrideStore((s) => s.setSpendHeadlineEnabled);
     const spendOverride = usePlanOverrideStore((s) => s.spendOverride);
     const setSpendOverride = usePlanOverrideStore((s) => s.setSpendOverride);
-    const metricChargesEnabled = usePlanOverrideStore((s) => s.metricChargesEnabled);
-    const setMetricChargesEnabled = usePlanOverrideStore((s) => s.setMetricChargesEnabled);
     const periodCostsOverride = usePlanOverrideStore((s) => s.periodCostsOverride);
     const setPeriodCostsOverride = usePlanOverrideStore((s) => s.setPeriodCostsOverride);
+    const addonState = usePlanOverrideStore((s) => s.addonState);
+    const setAddonState = usePlanOverrideStore((s) => s.setAddonState);
     const paymentMethodOverride = usePlanOverrideStore((s) => s.paymentMethodOverride);
     const setPaymentMethodOverride = usePlanOverrideStore((s) => s.setPaymentMethodOverride);
     const resetAll = usePlanOverrideStore((s) => s.resetAll);
@@ -58,6 +68,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     // aren't plan-specific — a downgraded account can still owe one — so that one is always offered.
     const { data: environmentData } = useCurrentPlan(env);
     const isFreePlan = environmentData?.plan?.name === 'free';
+    const isPayAsYouGo = environmentData?.plan?.name === 'pay-as-you-go';
     const leadsWithSpend = hasMonthlySpend(environmentData?.plan);
 
     // Several plans share a title — `starter` and `starter-legacy` are both "Starter (legacy)", as are
@@ -75,8 +86,21 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
         return duplicated;
     }, [plansList]);
 
-    const prevPlanCodes = plansList?.data.find((plan) => plan.code === overrideCode)?.prevPlan;
-    const scheduledChangeOptions = plansList?.data.filter((plan) => prevPlanCodes?.includes(plan.code));
+    const scheduledChangeOptions = useMemo(() => {
+        const definitions = plansList?.data ?? [];
+        const current = definitions.find((plan) => plan.code === overrideCode);
+        if (!current) {
+            return [];
+        }
+
+        const targets = new Set(current.prevPlan);
+        if (migratesToPayAsYouGo(current.code)) {
+            // We schedule the migration onto these plans, so `prevPlan` never lists it.
+            targets.add('pay-as-you-go');
+        }
+
+        return definitions.filter((plan) => targets.has(plan.code));
+    }, [plansList, overrideCode]);
 
     // `useCurrentPlan` already has the override applied, so the real plan has to come from the
     // un-overridden query or the caption would name whatever is being previewed.
@@ -130,7 +154,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                 </div>
 
                 <Section title="Plan state">
-                    {scheduledChangeOptions && scheduledChangeOptions.length > 0 && (
+                    {scheduledChangeOptions.length > 0 && (
                         <Row label="Scheduled change">
                             <Select
                                 value={scheduledTargetCode ?? NO_SCHEDULED_CHANGE_VALUE}
@@ -141,9 +165,26 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                                     <SelectItem value={NO_SCHEDULED_CHANGE_VALUE}>None</SelectItem>
                                     {scheduledChangeOptions.map((plan) => (
                                         <SelectItem key={plan.code} value={plan.code}>
-                                            {plan.code === 'free' ? 'Free (cancellation)' : `${plan.title} (downgrade)`}
+                                            {plan.title} ({scheduledChangeKind(plan.code, overrideCode)})
                                         </SelectItem>
                                     ))}
+                                </SelectContent>
+                            </Select>
+                        </Row>
+                    )}
+
+                    {isPayAsYouGo && (
+                        <Row label="Growth add-on" hint="Removal scheduled has no real source yet — it is preview-only.">
+                            <Select
+                                value={addonState ?? REAL_ADDON_VALUE}
+                                onValueChange={(value) => setAddonState(value === REAL_ADDON_VALUE ? null : (value as GrowthAddonState))}
+                            >
+                                <RowTrigger placeholder="Real" />
+                                <SelectContent>
+                                    <SelectItem value={REAL_ADDON_VALUE}>Real</SelectItem>
+                                    <SelectItem value="none">Not on plan</SelectItem>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="pending-removal">Removal scheduled</SelectItem>
                                 </SelectContent>
                             </Select>
                         </Row>
@@ -176,58 +217,46 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
 
                     {leadsWithSpend && (
                         <>
-                            <Row label="Spend headline" hint="Unverified against real Orb invoices, so customers do not see it yet.">
-                                <RowSwitch checked={spendHeadlineEnabled} onCheckedChange={setSpendHeadlineEnabled} />
+                            <Row label="Spend">
+                                <Select
+                                    value={spendOverride === null ? REAL_SPEND_VALUE : String(spendOverride)}
+                                    onValueChange={(value) =>
+                                        setSpendOverride(
+                                            value === REAL_SPEND_VALUE
+                                                ? null
+                                                : value === UNAVAILABLE_SPEND_VALUE
+                                                  ? UNAVAILABLE_SPEND_VALUE
+                                                  : (Number(value) as SpendOverride)
+                                        )
+                                    }
+                                >
+                                    <RowTrigger placeholder="Real" />
+                                    <SelectContent>
+                                        <SelectItem value={REAL_SPEND_VALUE}>Real</SelectItem>
+                                        {SPEND_PRESETS_IN_CENTS.map((cents) => (
+                                            <SelectItem key={cents} value={String(cents)}>
+                                                {(cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                                            </SelectItem>
+                                        ))}
+                                        <SelectItem value={UNAVAILABLE_SPEND_VALUE}>Unavailable</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </Row>
-                            {spendHeadlineEnabled && (
-                                <Row label="Spend" indent>
-                                    <Select
-                                        value={spendOverride === null ? REAL_SPEND_VALUE : String(spendOverride)}
-                                        onValueChange={(value) =>
-                                            setSpendOverride(
-                                                value === REAL_SPEND_VALUE
-                                                    ? null
-                                                    : value === UNAVAILABLE_SPEND_VALUE
-                                                      ? UNAVAILABLE_SPEND_VALUE
-                                                      : (Number(value) as SpendOverride)
-                                            )
-                                        }
-                                    >
-                                        <RowTrigger placeholder="Real" />
-                                        <SelectContent>
-                                            <SelectItem value={REAL_SPEND_VALUE}>Real</SelectItem>
-                                            {SPEND_PRESETS_IN_CENTS.map((cents) => (
-                                                <SelectItem key={cents} value={String(cents)}>
-                                                    {(cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                                                </SelectItem>
-                                            ))}
-                                            <SelectItem value={UNAVAILABLE_SPEND_VALUE}>Unavailable</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </Row>
-                            )}
 
-                            <Row label="Charges column" hint="Unverified against real Orb invoices, so customers do not see it yet.">
-                                <RowSwitch checked={metricChargesEnabled} onCheckedChange={setMetricChargesEnabled} />
+                            <Row label="Charges">
+                                <Select
+                                    value={periodCostsOverride ?? REAL_PERIOD_COSTS_VALUE}
+                                    onValueChange={(value) => setPeriodCostsOverride(value === REAL_PERIOD_COSTS_VALUE ? null : (value as PeriodCostsOverride))}
+                                >
+                                    <RowTrigger placeholder="Real" />
+                                    <SelectContent>
+                                        <SelectItem value={REAL_PERIOD_COSTS_VALUE}>Real</SelectItem>
+                                        <SelectItem value="populated">Some metrics</SelectItem>
+                                        <SelectItem value="zero">$0.00 on all</SelectItem>
+                                        <SelectItem value="unavailable">Unavailable</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </Row>
-                            {metricChargesEnabled && (
-                                <Row label="Charges" indent>
-                                    <Select
-                                        value={periodCostsOverride ?? REAL_PERIOD_COSTS_VALUE}
-                                        onValueChange={(value) =>
-                                            setPeriodCostsOverride(value === REAL_PERIOD_COSTS_VALUE ? null : (value as PeriodCostsOverride))
-                                        }
-                                    >
-                                        <RowTrigger placeholder="Real" />
-                                        <SelectContent>
-                                            <SelectItem value={REAL_PERIOD_COSTS_VALUE}>Real</SelectItem>
-                                            <SelectItem value="populated">Some metrics</SelectItem>
-                                            <SelectItem value="zero">$0.00 on all</SelectItem>
-                                            <SelectItem value="unavailable">Unavailable</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </Row>
-                            )}
                         </>
                     )}
                 </Section>

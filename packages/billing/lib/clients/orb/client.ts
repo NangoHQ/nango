@@ -1,6 +1,6 @@
 import Orb from 'orb-billing';
 
-import { Err, metrics, Ok, report, retry } from '@nangohq/utils';
+import { Err, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../envs.js';
 import {
@@ -10,7 +10,6 @@ import {
     fromOrbUpcomingInvoice,
     growthAddonStateFromOrb,
     orbMetricToUsageMetric,
-    toOrbEvent,
     toOrbPutCustomerPayload
 } from './adapters.js';
 import { growthAddonPriceId } from './catalogue.js';
@@ -18,7 +17,6 @@ import { growthAddonPriceId } from './catalogue.js';
 import type {
     BillingClient,
     BillingCustomer,
-    BillingEvent,
     BillingInvoicingDetails,
     BillingOverdueInvoices,
     BillingPeriodCosts,
@@ -40,41 +38,6 @@ export class OrbClient implements BillingClient {
             apiKey: envs.ORB_API_KEY || 'empty',
             maxRetries: envs.ORB_MAX_RETRIES
         });
-    }
-
-    async ingest(events: BillingEvent[]): Promise<Result<void>> {
-        // Orb limit the number of events per batch to 500
-        const batchSize = 500;
-        for (let i = 0; i < events.length; i += batchSize) {
-            const batch = events.slice(i, i + batchSize);
-            try {
-                const initialDelayMs = envs.ORB_RETRY_INITIAL_DELAY_MS;
-                await retry(
-                    () => {
-                        return this.orbSDK.events.ingest({
-                            events: batch.map(toOrbEvent)
-                        });
-                    },
-                    {
-                        maxAttempts: envs.ORB_RETRY_MAX_ATTEMPTS,
-                        maxWaitMs: Infinity,
-                        delayMs: (attempt) => initialDelayMs * 2 ** attempt + Math.random() * initialDelayMs, // exponential backoff with jitter
-                        retryOnError: (e) => {
-                            // retry only on 429
-                            if (e instanceof Orb.APIError) {
-                                return e.status === 429;
-                            }
-                            return false;
-                        }
-                    }
-                );
-                metrics.increment(metrics.Types.ORB_BILLING_EVENTS_INGESTED, batch.length, { success: 'true' });
-            } catch (err) {
-                metrics.increment(metrics.Types.ORB_BILLING_EVENTS_INGESTED, batch.length, { success: 'false' });
-                return Err(new Error('failed_to_ingest_events', { cause: err }));
-            }
-        }
-        return Ok(undefined);
     }
 
     async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {

@@ -3,7 +3,6 @@ import { Ok } from '@nangohq/utils';
 import type {
     BillingClient,
     BillingCustomer,
-    BillingEvent,
     BillingInvoicingDetails,
     BillingOverdueInvoices,
     BillingPeriodCosts,
@@ -43,10 +42,6 @@ function stubCustomer(
 }
 
 export class NoopBillingClient implements BillingClient {
-    ingest(_events: BillingEvent[]): Promise<Result<void>> {
-        return Promise.resolve(Ok(undefined));
-    }
-
     linkStripeToCustomer(_teamId: number, _customerId: string): Promise<Result<void>> {
         return Promise.resolve(Ok(undefined));
     }

@@ -83,6 +83,13 @@ type SearchFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> 
     Prefixed<DBFunctionConfigVersion, typeof VERSION_PREFIX> &
     Prefixed<FunctionIntegration, typeof INTEGRATION_PREFIX>;
 
+interface FunctionSearchFilter {
+    integrationKey: string;
+    name?: string | undefined;
+    enabled?: boolean | undefined;
+    trigger?: { kind: 'http'; hasSubscriptions: boolean } | undefined;
+}
+
 export async function search(
     trx: Knex,
     {
@@ -90,7 +97,7 @@ export async function search(
         filter
     }: {
         environmentId: number;
-        filter?: { integrationKey: string; name?: string | undefined } | undefined;
+        filter?: FunctionSearchFilter | undefined;
     }
 ): Promise<Result<CurrentFunctionConfig[]>> {
     try {
@@ -115,6 +122,19 @@ export async function search(
         }
         if (filter?.name !== undefined) {
             query.where('config.name', filter.name);
+        }
+        if (filter?.enabled !== undefined) {
+            query.where('config.enabled', filter.enabled);
+        }
+        if (filter?.trigger) {
+            // TODO: index subscriptions array length for performance
+            query.whereRaw("version.trigger->>'kind' = ?", [filter.trigger.kind]);
+            const subscriptionCount = `CASE
+                WHEN jsonb_typeof(version.trigger->'subscriptions') = 'array'
+                THEN jsonb_array_length(version.trigger->'subscriptions')
+                ELSE 0
+            END`;
+            query.whereRaw(`${subscriptionCount} ${filter.trigger.hasSubscriptions ? '>' : '='} 0`);
         }
 
         const rows = await query;
