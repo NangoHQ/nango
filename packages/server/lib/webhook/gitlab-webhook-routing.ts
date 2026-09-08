@@ -7,6 +7,23 @@ import type { WebhookHandler } from './types.js';
 
 const logger = getLogger('Webhook.Gitlab');
 
+const SIGNING_TOKEN_PREFIX = 'whsec_';
+const SIGNING_TOKEN_BYTES = 32;
+
+// GitLab signing tokens are whsec_ plus 32 base64 encoded bytes. Anything shorter would be used as
+// a weak hmac key, so it is not treated as a signing token at all.
+function isSigningToken(secret: string): boolean {
+    if (!secret.startsWith(SIGNING_TOKEN_PREFIX)) {
+        return false;
+    }
+
+    try {
+        return Buffer.from(secret.slice(SIGNING_TOKEN_PREFIX.length), 'base64').length === SIGNING_TOKEN_BYTES;
+    } catch {
+        return false;
+    }
+}
+
 function getBodyConnectionId(body: unknown): string | undefined {
     if (!body || typeof body !== 'object' || !('nangoConnectionId' in body)) {
         return undefined;
@@ -38,7 +55,7 @@ const route: WebhookHandler = async (nango, headers, body, rawBody, query) => {
         const signature = headers['webhook-signature'];
         const legacyToken = headers['x-gitlab-token'];
         const valid = signature
-            ? validateSvixSignature({ secret: webhookSecret, headers, rawBody }) === 'valid'
+            ? isSigningToken(webhookSecret) && validateSvixSignature({ secret: webhookSecret, headers, rawBody }) === 'valid'
             : Boolean(legacyToken && safeCompare(webhookSecret, legacyToken));
 
         if (!valid) {

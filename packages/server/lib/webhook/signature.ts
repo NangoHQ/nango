@@ -2,6 +2,11 @@ import crypto from 'node:crypto';
 
 const DEFAULT_TOLERANCE_SECONDS = 5 * 60;
 
+// Providers issue keys well above this. Svix is 24 bytes, GitLab 32. The floor only exists so a
+// truncated or misconfigured secret cannot become a brute forceable hmac key. Per provider key
+// contracts stay in the routing script, since they disagree on both length and prefix.
+const MIN_KEY_BYTES = 16;
+
 /**
  * Constant-time comparison that tolerates mismatched lengths.
  * timingSafeEqual throws when the two buffers differ in length, which turns a
@@ -101,7 +106,7 @@ export function validateSvixSignature({ secret, headers, rawBody, toleranceSecon
     }
 
     const key = Buffer.from(secret.replace(/^whsec_/, ''), 'base64');
-    if (key.length === 0) {
+    if (key.length < MIN_KEY_BYTES) {
         return 'invalid';
     }
 

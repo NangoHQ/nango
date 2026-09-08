@@ -63,31 +63,30 @@ describe('notion-webhook-routing', () => {
         expect(result.unwrap()).toMatchObject({ toForward: { verification_token: 'token-from-notion' } });
     });
 
-    it('rejects a handshake once a token is configured', async () => {
-        // Setup is done, so a verification_token body is just an unsigned event.
+    it('accepts a token only handshake even when a token is already configured', async () => {
+        // Notion sends a fresh handshake when a subscription is recreated, so a configured
+        // integration still has to be able to receive one or rotation is impossible.
         const { nango, execute } = makeNango();
-        const handshake = { verification_token: 'attacker-chosen' };
+        const handshake = { verification_token: 'replacement-token' };
 
         const result = await NotionWebhookRouting.default(nango, {}, handshake as never, JSON.stringify(handshake));
 
-        expect(result.isErr()).toBe(true);
-        expect(errType(result)).toBe('webhook_missing_signature');
+        expect(result.isOk()).toBe(true);
+        expect(result.unwrap()).toMatchObject({ toForward: { verification_token: 'replacement-token' } });
         expect(execute).not.toHaveBeenCalled();
     });
 
-    it('does not dispatch or forward a forged event that carries a verification_token', async () => {
-        // verification_token can be set on any payload, so the handshake branch must not be a way
-        // to smuggle an event past validation, into scripts or out to the customer's endpoint.
-        const { nango, execute } = makeNango({});
+    it('does not treat an event carrying a verification_token as a handshake', async () => {
+        // verification_token can be set on any payload, so only a body that is nothing but the
+        // token counts. Anything else goes through validation.
+        const { nango, execute } = makeNango();
         const forged = { verification_token: 'anything', type: 'page.created', workspace_id: 'ws-1' };
 
         const result = await NotionWebhookRouting.default(nango, {}, forged as never, JSON.stringify(forged));
 
-        expect(result.isOk()).toBe(true);
+        expect(result.isErr()).toBe(true);
+        expect(errType(result)).toBe('webhook_missing_signature');
         expect(execute).not.toHaveBeenCalled();
-        expect(result.unwrap()).toMatchObject({ toForward: { verification_token: 'anything' } });
-        expect((result.unwrap() as { toForward: Record<string, unknown> }).toForward).not.toHaveProperty('type');
-        expect((result.unwrap() as { toForward: Record<string, unknown> }).toForward).not.toHaveProperty('workspace_id');
     });
 
     it('routes a correctly signed event', async () => {

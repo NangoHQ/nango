@@ -8,7 +8,7 @@ import type { jobdivaWebhookResponse, WebhookHandler } from './types.js';
 const logger = getLogger('Webhook.JobDiva');
 
 const route: WebhookHandler<jobdivaWebhookResponse> = async (nango, headers, body, rawBody) => {
-    const signature = headers['X-Hub-Signature'];
+    const signature = headers['x-hub-signature'];
 
     if (nango.integration.custom?.['webhookSecret']) {
         if (!signature) {

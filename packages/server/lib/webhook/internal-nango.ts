@@ -43,7 +43,12 @@ export class InternalNango {
      */
     markUnverified(unverified: UnverifiedWebhook): void {
         this.unverified = unverified;
-        countUnverifiedWebhook(this.integration.provider, unverified.reason);
+        countUnverifiedWebhook({
+            accountId: this.team.id,
+            environmentId: this.environment.id,
+            provider: this.integration.provider,
+            reason: unverified.reason
+        });
     }
 
     async getConnectionForWebhook(connectionId: string): Promise<{ connectionId: string; metadata: Metadata | null } | null> {

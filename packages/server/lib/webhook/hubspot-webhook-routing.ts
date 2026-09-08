@@ -17,7 +17,7 @@ function isImportEvent(event: HubSpotWebhook): boolean {
 
 export function validate(integration: IntegrationConfig, headers: Record<string, any>, body: any): boolean {
     const signature = headers['x-hubspot-signature'];
-    if (!signature) {
+    if (!signature || !integration.oauth_client_secret) {
         return false;
     }
 
@@ -28,6 +28,11 @@ export function validate(integration: IntegrationConfig, headers: Record<string,
 }
 
 const route: WebhookHandler<HubSpotWebhook | HubSpotWebhook[]> = async (nango, headers, body) => {
+    if (!nango.integration.oauth_client_secret) {
+        logger.error('missing client secret', { configId: nango.integration.id });
+        return Err(new NangoError('webhook_invalid_secret', { reason: 'No client secret configured' }));
+    }
+
     if (!headers['x-hubspot-signature']) {
         logger.error('missing signature', { configId: nango.integration.id });
         return Err(new NangoError('webhook_missing_signature'));

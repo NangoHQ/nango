@@ -186,6 +186,46 @@ describe('Gitlab webhook routing', () => {
         expect(execute).not.toHaveBeenCalled();
     });
 
+    it('rejects a signed payload when the secret is not a conforming signing token', async () => {
+        // "abcd" base64 decodes to three bytes. Using it as an hmac key would be far weaker than
+        // the 32 byte token gitlab issues, so the svix path must not accept it at all.
+        const { nango, execute } = getNangoMock('whsec_abcd');
+        const body = { object_kind: 'issue' };
+        const rawBody = JSON.stringify(body);
+        const key = Buffer.from('abcd', 'base64');
+        const timestamp = Math.floor(Date.now() / 1000);
+        const signature = crypto.createHmac('sha256', key).update(`webhook-id.${timestamp}.${rawBody}`).digest('base64');
+
+        const result = await GitlabWebhookRouting.default(
+            nango,
+            {
+                'webhook-id': 'webhook-id',
+                'webhook-timestamp': String(timestamp),
+                'webhook-signature': `v1,${signature}`,
+                'x-gitlab-event': 'Issue Hook'
+            },
+            body,
+            rawBody,
+            { nangoConnectionId: CONNECTION_ID }
+        );
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects a signed payload when the secret has no whsec_ prefix', async () => {
+        const { nango, execute } = getNangoMock(SIGNING_KEY.toString('base64'));
+        const body = { object_kind: 'issue' };
+        const rawBody = JSON.stringify(body);
+
+        const result = await GitlabWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, {
+            nangoConnectionId: CONNECTION_ID
+        });
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
     it('acknowledges an unknown connection without dispatching or forwarding', async () => {
         // A 200 with no connection ids is forwarded to the environment webhook urls, and there is
         // no connection secret to verify against here, so this must not come back as a 200.

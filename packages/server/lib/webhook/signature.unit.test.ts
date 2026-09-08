@@ -139,6 +139,30 @@ describe('validateSvixSignature', () => {
         expect(validateSvixSignature({ secret, headers, rawBody })).toBe('valid');
     });
 
+    it('rejects a key shorter than the minimum even when the signature matches', () => {
+        // A three byte key would be brute forceable. Providers issue 24 bytes (svix) or 32
+        // (gitlab), so nothing legitimate lands under the floor.
+        const shortSecret = 'whsec_abcd';
+        const timestamp = Math.floor(Date.now() / 1000);
+        const key = Buffer.from('abcd', 'base64');
+        const signature = `v1,${crypto.createHmac('sha256', key).update(`msg_1.${timestamp}.${rawBody}`).digest('base64')}`;
+        const headers = { 'webhook-id': 'msg_1', 'webhook-timestamp': String(timestamp), 'webhook-signature': signature };
+
+        expect(validateSvixSignature({ secret: shortSecret, headers, rawBody })).toBe('invalid');
+    });
+
+    it('accepts a 24 byte svix key', () => {
+        // 24 bytes is 32 base64 characters, which is easy to mistake for 32 bytes. The floor must
+        // not reject it.
+        const key = Buffer.alloc(24, 3);
+        const bare = key.toString('base64');
+        const timestamp = Math.floor(Date.now() / 1000);
+        const signature = `v1,${crypto.createHmac('sha256', key).update(`msg_1.${timestamp}.${rawBody}`).digest('base64')}`;
+        const headers = { 'webhook-id': 'msg_1', 'webhook-timestamp': String(timestamp), 'webhook-signature': signature };
+
+        expect(validateSvixSignature({ secret: `whsec_${bare}`, headers, rawBody })).toBe('valid');
+    });
+
     it('reports missing headers', () => {
         expect(validateSvixSignature({ secret, headers: {}, rawBody })).toBe('missing_headers');
     });

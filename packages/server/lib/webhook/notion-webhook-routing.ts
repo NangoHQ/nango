@@ -7,11 +7,23 @@ import type { NotionWebhook, NotionWebhookVerification, WebhookHandler } from '.
 
 const logger = getLogger('Webhook.Notion');
 
+// The genuine handshake is only ever the token. Anything carrying extra fields is an event
+// wearing a verification_token, so it goes through validation instead.
+function isVerificationHandshake(body: unknown): body is NotionWebhookVerification {
+    return (
+        !!body &&
+        typeof body === 'object' &&
+        'verification_token' in body &&
+        typeof (body as NotionWebhookVerification).verification_token === 'string' &&
+        Object.keys(body).length === 1
+    );
+}
+
 const route: WebhookHandler<NotionWebhook | NotionWebhookVerification> = async (nango, headers, body, rawBody) => {
     const signature = headers['x-notion-signature'];
     const verificationToken = nango.integration.custom?.['webhookSecret'];
 
-    if (!verificationToken && 'verification_token' in body) {
+    if (isVerificationHandshake(body)) {
         logger.info('Received verification request, skipping signature validation', { configId: nango.integration.id });
         nango.markUnverified({ reason: 'notion_verification_handshake', remediation: 'Set the verification token on the integration' });
 

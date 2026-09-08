@@ -13,8 +13,18 @@ export interface UnverifiedWebhook {
     remediation?: string | undefined;
 }
 
-export function countUnverifiedWebhook(provider: string, reason: string): void {
-    metrics.increment(metrics.Types.WEBHOOK_INCOMING_UNVERIFIED, 1, { provider, reason });
+export function countUnverifiedWebhook({
+    accountId,
+    environmentId,
+    provider,
+    reason
+}: {
+    accountId: number;
+    environmentId: number;
+    provider: string;
+    reason: string;
+}): void {
+    metrics.increment(metrics.Types.WEBHOOK_INCOMING_UNVERIFIED, 1, { accountId, environmentId, provider, reason });
 }
 
 export function unverifiedWebhookMessage(integration: Integration, unverified: UnverifiedWebhook): string {
