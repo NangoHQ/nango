@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { NangoError } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
@@ -7,6 +8,8 @@ import type { WebhookHandler } from './types.js';
 import type { IntegrationConfig } from '@nangohq/types';
 
 const logger = getLogger('Webhook.GithubApp');
+
+const REMEDIATION = 'Copy the Webhook Secret from the Nango integration settings into your GitHub App webhook secret field';
 
 function validate(integration: IntegrationConfig, headerSignature: string, rawBody: string): boolean {
     if (!integration.oauth_client_secret) {
@@ -35,6 +38,17 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
         if (!valid) {
             logger.error('Github App webhook signature invalid');
             return Err(new NangoError('webhook_invalid_signature'));
+        }
+    } else {
+        // Counted before the flag is read on purpose. With the flag off the event is rejected below,
+        // and those are the accounts that still have to set the secret, so they have to show up here.
+        nango.markUnverified({ reason: 'github_app_missing_signature', remediation: REMEDIATION });
+
+        const allowUnauthorized = await getFlags().allowUnauthorizedGithubAppWebhook(nango.team.uuid);
+
+        if (!allowUnauthorized) {
+            logger.error('Github App webhook signature missing', { configId: nango.integration.id });
+            return Err(new NangoError('webhook_missing_signature'));
         }
     }
 
