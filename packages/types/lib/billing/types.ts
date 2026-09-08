@@ -3,12 +3,11 @@ import type { DBTeam } from '../team/db.js';
 import type { UsageMetric } from '../usage/index.js';
 
 export interface BillingClient {
-    ingest: (events: BillingEvent[]) => Promise<Result<void>>;
     linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>>;
     getOrCreateCustomer: (accountId: number, defaultTo: Pick<BillingInvoicingDetails, 'legalEntityName' | 'email'>) => Promise<Result<BillingCustomer>>;
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     putCustomer: (accountId: number, invoicingDetails: BillingInvoicingDetails) => Promise<Result<BillingCustomer>>;
-    getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
+    getSubscription: (accountId: number) => Promise<Result<BillingSubscription>>;
     getOverdueInvoices: (accountId: number) => Promise<Result<BillingOverdueInvoices>>;
     getUpcomingInvoice: (subscriptionId: string) => Promise<Result<BillingUpcomingInvoice | null>>;
     getPeriodCosts: (subscriptionId: string) => Promise<Result<BillingPeriodCosts | null>>;
@@ -17,8 +16,10 @@ export interface BillingClient {
     removeSpendAlert: (subscriptionId: string) => Promise<Result<void>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetrics>>;
-    upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
-    downgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<void>>;
+    upgrade: (opts: PlanChangeRequest) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
+    downgrade: (opts: PlanChangeRequest) => Promise<Result<void>>;
+    startGrowthAddon: (opts: { subscriptionId: string }) => Promise<Result<{ priceIntervalId: string | null }>>;
+    endGrowthAddon: (opts: { subscriptionId: string; priceIntervalId: string }) => Promise<Result<{ growthFeaturesEndsAt: Date | null }>>;
     applyPendingChanges: (opts: {
         pendingChangeId: string;
         /**
@@ -38,6 +39,11 @@ export interface BillingClient {
     cancelPendingChanges: (opts: { pendingChangeId: string }) => Promise<Result<void>>;
     verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true>;
     getPlanById(planId: string): Promise<Result<BillingPlan>>;
+}
+
+export interface PlanChangeRequest {
+    subscriptionId: string;
+    planExternalId: string;
 }
 
 export interface BillingCustomer {
@@ -73,6 +79,13 @@ export interface BillingSubscription {
     id: string;
     pendingChangeId?: string | undefined;
     planExternalId: string;
+    hasGrowthFeatures: boolean;
+    growthFeaturesEndsAt: Date | null;
+    /** Orb's price interval is the allocation of a price for a given time period.
+     * The Growth add-on is an external price that gets attached to the plan, so we must parse
+     * its interval in order to know whether there's a scheduled operation in the future.
+     */
+    growthFeaturesPriceIntervalId: string | null;
 }
 
 export interface BillingOverdueInvoices {
@@ -223,112 +236,3 @@ export interface BillingPlan {
     id: string;
     external_plan_id: string;
 }
-
-type BillingPropertyValue = string | number | boolean | Date | undefined;
-type BillingProperties = Record<string, BillingPropertyValue | Record<string, BillingPropertyValue>>;
-
-interface BillingEventBase<TType extends string, TProperties extends BillingProperties = BillingProperties> {
-    type: TType;
-    properties: {
-        timestamp: Date;
-        idempotencyKey?: string | undefined;
-        accountId: number;
-        count: number;
-    } & TProperties;
-}
-
-export type MarBillingEvent = BillingEventBase<
-    'monthly_active_records',
-    {
-        environmentId: number;
-        environmentName: string;
-        integrationId: string;
-        syncId: string;
-        model: string;
-    }
->;
-
-export type RecordsBillingEvent = BillingEventBase<
-    'records',
-    {
-        frequencyMs: number;
-        telemetry: {
-            sizeBytes: number;
-        };
-    }
->;
-
-export type ActionsBillingEvent = BillingEventBase<
-    'billable_actions',
-    {
-        environmentId: number;
-        environmentName: string;
-        integrationId: string;
-        actionName: string;
-    }
->;
-
-export type FunctionExecutionsBillingEvent = BillingEventBase<
-    'function_executions',
-    {
-        environmentId: number;
-        environmentName: string;
-        integrationId: string;
-        type: string;
-        functionName: string;
-        telemetry: {
-            successes: number;
-            failures: number;
-            durationMs: number;
-            compute: number;
-            customLogs: number;
-            proxyCalls: number;
-        };
-        frequencyMs?: number | undefined;
-    }
->;
-
-export type ProxyBillingEvent = BillingEventBase<
-    'proxy',
-    {
-        environmentId: number;
-        environmentName: string;
-        integrationId: string;
-        telemetry: {
-            successes: number;
-            failures: number;
-        };
-    }
->;
-
-export type WebhookForwardBillingEvent = BillingEventBase<
-    'webhook_forwards',
-    {
-        environmentId: number;
-        environmentName: string;
-        integrationId: string;
-        telemetry: {
-            successes: number;
-            failures: number;
-        };
-    }
->;
-
-export type ConnectionsBillingEvent = BillingEventBase<'billable_connections'>;
-
-export type ConnectionsBillingEventV2 = BillingEventBase<
-    'billable_connections_v2',
-    {
-        frequencyMs: number;
-    }
->;
-
-export type BillingEvent =
-    | MarBillingEvent
-    | RecordsBillingEvent
-    | ActionsBillingEvent
-    | ProxyBillingEvent
-    | WebhookForwardBillingEvent
-    | FunctionExecutionsBillingEvent
-    | ConnectionsBillingEvent
-    | ConnectionsBillingEventV2;

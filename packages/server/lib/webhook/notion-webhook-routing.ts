@@ -39,7 +39,7 @@ const route: WebhookHandler<NotionWebhook | NotionWebhookVerification> = async (
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookType: 'type',
         connectionIdentifier: 'workspace_id',
         propName: 'workspace_id'

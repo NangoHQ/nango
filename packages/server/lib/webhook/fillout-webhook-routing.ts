@@ -12,7 +12,7 @@ const route: WebhookHandler = async (nango, _headers, body) => {
 
         for (const event of body) {
             const response = await nango.executeScriptForWebhooks({
-                body: event,
+                payload: event,
                 webhookType: 'type',
                 connectionIdentifier: 'formId',
                 propName: 'metadata.formId'
@@ -33,7 +33,7 @@ const route: WebhookHandler = async (nango, _headers, body) => {
         });
     } else {
         const response = await nango.executeScriptForWebhooks({
-            body,
+            payload: body,
             webhookType: 'type',
             connectionIdentifier: 'formId',
             propName: 'metadata.formId'

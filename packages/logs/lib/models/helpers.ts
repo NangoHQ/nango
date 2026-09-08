@@ -106,6 +106,7 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'action:run': 'Action',
     'admin:impersonation': 'Admin logged into another account',
     'agent_session:create': 'Agent session created',
+    'agent_session:terminate': 'Agent session terminated',
     'auth:create_connection': 'Connection created',
     'auth:post_connection': 'post connection execution',
     'auth:refresh_token': 'Token refreshed',

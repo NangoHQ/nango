@@ -135,6 +135,16 @@ export async function deletePrivateKey(
     return Ok(undefined);
 }
 
+/**
+ * Deletes by entity reference rather than by value, so a key stored as a hash only can still be revoked.
+ */
+export async function deletePrivateKeysByEntityUuid(
+    db: knex.Knex,
+    { entityType, entityUuid }: { entityType: EntityType; entityUuid: string }
+): Promise<number> {
+    return await db.delete().from<DbPrivateKey>(PRIVATE_KEYS_TABLE).where({ entity_type: entityType, entity_uuid: entityUuid });
+}
+
 export function decryptPrivateKey(key: PrivateKey): Result<string | null, PrivateKeyError> {
     return key.encrypted ? decryptValue(key.encrypted) : Ok(null);
 }

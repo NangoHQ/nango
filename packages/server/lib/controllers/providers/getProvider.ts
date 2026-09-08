@@ -1,9 +1,11 @@
 import * as z from 'zod';
 
-import { getProvider } from '@nangohq/shared';
-import { basePublicUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { errorManager } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { providerToApi } from '../../formatters/provider.js';
 import { providerNameSchema } from '../../helpers/validation.js';
+import providerService from '../../services/provider.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { GetPublicProvider } from '@nangohq/types';
@@ -30,11 +32,17 @@ export const getPublicProvider = asyncWrapper<GetPublicProvider>((req, res) => {
     const lang = res.locals['lang'];
 
     const params: GetPublicProvider['Params'] = valParams.data;
-    const provider = getProvider(params.provider, lang);
-    if (!provider) {
-        res.status(404).send({ error: { code: 'not_found', message: `Unknown provider ${params.provider}` } });
+    const result = providerService.get({ providerName: params.provider, language: lang });
+    if (result.isErr()) {
+        if (result.error.code === 'not_found') {
+            res.status(404).send({ error: { code: 'not_found', message: result.error.message } });
+            return;
+        }
+
+        errorManager.report(result.error.cause instanceof Error ? result.error.cause : result.error);
+        res.status(500).send({ error: { code: 'server_error', message: result.error.message } });
         return;
     }
 
-    res.status(200).send({ data: { ...provider, name: params.provider, logo_url: `${basePublicUrl}/images/template-logos/${params.provider}.svg` } });
+    res.status(200).send({ data: providerToApi(result.value) });
 });

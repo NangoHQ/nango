@@ -40,6 +40,7 @@ describe('Autotask webhook routing', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -65,7 +66,7 @@ describe('Autotask webhook routing', () => {
         expect(result.isOk()).toBe(true);
         expect(mock).toHaveBeenCalledOnce();
         expect(mock).toHaveBeenCalledWith({
-            body,
+            payload: body,
             webhookType: 'EntityType',
             connectionIdentifier: 'Guid',
             propName: 'webhookGuid'
@@ -81,6 +82,7 @@ describe('Autotask webhook routing', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -107,7 +109,7 @@ describe('Autotask webhook routing', () => {
         expect(result.isOk()).toBe(true);
         expect(mock).toHaveBeenCalledOnce();
         expect(mock).toHaveBeenCalledWith({
-            body,
+            payload: body,
             webhookType: 'EntityType',
             connectionIdentifier: 'Guid',
             propName: 'webhookGuid'
@@ -123,6 +125,7 @@ describe('Autotask webhook routing', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -153,6 +156,7 @@ describe('Autotask webhook routing', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;

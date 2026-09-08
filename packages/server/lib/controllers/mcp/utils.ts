@@ -1,16 +1,12 @@
-import { normalizeObjectSchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import * as z from 'zod/v4';
 
 import { getLogger } from '@nangohq/utils';
 
-import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
-import type { CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
+import type { CallToolResult, JsonSchemaType, Tool } from '@modelcontextprotocol/server';
 
 const logger = getLogger('Server.MCP');
 
 const jsonSchema202012 = 'https://json-schema.org/draft/2020-12/schema';
-
-export const emptyObjectJsonSchema: Tool['inputSchema'] = { $schema: jsonSchema202012, type: 'object', properties: {} };
 
 export class PublicMcpError extends Error {
     constructor(message: string) {
@@ -54,22 +50,18 @@ export function mcpToolError(message: string): CallToolResult {
 }
 
 /**
- * MCP SDK 1.30 defaults Zod v4 conversion to draft-07 and does not expose a target option through
- * registerTool, so every server that lists tools converts its schemas itself.
- * TODO(NAN-6651): Remove once the MCP SDK emits JSON Schema 2020-12.
+ * MCP v2 can consume Zod schemas directly starting with Zod 4.2. Nango's Zod schemas
+ * cross workspace boundaries on 4.0, so convert them before wrapping them with the SDK's
+ * fromJsonSchema() instead of introducing incompatible Zod types.
+ * TODO(NAN-6651): Remove after upgrading the workspace to Zod 4.2 and passing Zod schemas directly.
  */
-export function toJsonSchema202012(schema: AnySchema | z.ZodType, io: 'input' | 'output'): Tool['inputSchema'] | undefined {
-    const objectSchema = normalizeObjectSchema(schema);
-    if (!objectSchema) {
-        return undefined;
-    }
-
-    const jsonSchema = z.toJSONSchema(objectSchema as z.ZodType, { target: 'draft-2020-12', io });
+export function toJsonSchema202012(schema: z.ZodType, io: 'input' | 'output'): Tool['inputSchema'] & JsonSchemaType {
+    const jsonSchema = z.toJSONSchema(schema, { target: 'draft-2020-12', io });
     if (jsonSchema.type !== 'object' || jsonSchema.$schema !== jsonSchema202012) {
         throw new Error(`Failed to generate a JSON Schema 2020-12 object for an MCP tool ${io} schema`);
     }
 
-    return jsonSchema as Tool['inputSchema'];
+    return jsonSchema as unknown as Tool['inputSchema'] & JsonSchemaType;
 }
 
 export function formatMcpArgumentsError(toolName: string, error: z.ZodError): string {

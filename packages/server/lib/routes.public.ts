@@ -8,6 +8,7 @@ import { connectUrl, flagEnforceCLIVersion, metrics } from '@nangohq/utils';
 
 import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 import { postPublicTriggerAction } from './controllers/action/postTriggerAction.js';
+import { deleteAgentSession } from './controllers/agent/deleteSession.js';
 import { getAgentSessionMcp, postAgentSessionMcp } from './controllers/agent/mcp/sessionMcp.js';
 import { postAgentSessions } from './controllers/agent/postSessions.js';
 import appAuthController from './controllers/appAuth.controller.js';
@@ -147,14 +148,15 @@ const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
     next();
 };
 
-function trackDeprecatedPublicEndpoint(endpoint: string, shouldSkip?: (req: Request) => boolean): RequestHandler {
+function trackDeprecatedPublicEndpoint(endpoint: string, isInternal?: (req: Request) => boolean): RequestHandler {
     return (req, res, next) => {
         const { account, environment } = res.locals as RequestLocals;
-        if (environment && !shouldSkip?.(req)) {
+        if (environment) {
             metrics.increment(metrics.Types.DEPRECATED_PUBLIC_ENDPOINT_USED, 1, {
                 accountId: account.id,
                 environmentId: environment.id,
-                endpoint
+                endpoint,
+                ...(isInternal && { internal: isInternal(req) ? 'true' : 'false' })
             });
         }
         next();
@@ -449,6 +451,7 @@ publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTe
 // Agent sessions
 publicAPI.use('/sessions', jsonContentTypeMiddleware);
 publicAPI.route('/sessions').post(apiAuth, withScope('environment:agent_sessions:write'), postAgentSessions);
+publicAPI.route('/sessions/:sessionId').delete(apiAuth, withScope('environment:agent_sessions:write'), deleteAgentSession);
 publicAPI.use('/session/:sessionId/mcp', jsonContentTypeMiddleware);
 publicAPI.route('/session/:sessionId/mcp').post(agentSessionAuth, postAgentSessionMcp);
 publicAPI.route('/session/:sessionId/mcp').get(agentSessionAuth, getAgentSessionMcp);

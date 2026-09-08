@@ -46,7 +46,6 @@ describe(`GET ${route}`, () => {
             data: {
                 invitedUsers: [],
                 isAdminTeam: false,
-                mfaFeatureEnabled: false,
                 account: {
                     id: account.id,
                     name: account.name,
