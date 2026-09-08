@@ -1438,6 +1438,28 @@ anrok:
             description: The API key for your Anrok account
             doc_section: '#step-1-finding-your-api-key'
 
+amplemarket:
+    display_name: Amplemarket
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.amplemarket.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /account-info
+    docs: https://nango.dev/docs/api-integrations/amplemarket
+    docs_connect: https://nango.dev/docs/api-integrations/amplemarket/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Amplemarket account
+            doc_section: '#step-1-finding-your-api-key'
+
 amplitude:
     display_name: Amplitude (Event Streaming API)
     categories:
