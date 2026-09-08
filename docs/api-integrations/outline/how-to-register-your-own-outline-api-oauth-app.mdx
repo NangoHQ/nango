@@ -1,0 +1,32 @@
+---
+title: 'How to register your own Outline OAuth app'
+sidebarTitle: 'Outline setup'
+description: 'Register an OAuth app with Outline and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Outline to obtain your OAuth credentials (Client ID & Client Secret). These are required to let your users grant your app access to their Outline account.
+
+<Steps>
+  <Step title="Open Applications settings">
+    In Outline, click your workspace name, then go to **Settings** -> **Applications**.
+  </Step>
+  <Step title="Create a new application">
+    Click **New App…**.
+  </Step>
+  <Step title="Fill in the application details">
+    - **Client type** — leave this on **Confidential**, Nango stores the client secret securely on your behalf.
+    - **Name** — an identifier for this app, shown to users on the consent screen.
+    - **Tagline** — a short description of what the app does (optional).
+    - **Callback URLs** — add `https://api.nango.dev/oauth/callback`, one URL per line.
+  </Step>
+  <Step title="Save and get your credentials">
+    Click **Create**, then open the app to copy its **Client ID** and **Client Secret**.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Outline's API documentation](https://www.getoutline.com/developers).
+
+---

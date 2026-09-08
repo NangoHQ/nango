@@ -16786,6 +16786,25 @@ oura:
         base_url: https://api.ouraring.com
     docs: https://nango.dev/docs/integrations/all/oura
 
+outline:
+    display_name: Outline
+    categories:
+        - knowledge-base
+    auth_mode: OAUTH2
+    authorization_url: https://app.getoutline.com/oauth/authorize
+    token_url: https://app.getoutline.com/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.getoutline.com/api
+    docs: https://nango.dev/docs/api-integrations/outline
+    setup_guide_url: https://nango.dev/docs/api-integrations/outline/how-to-register-your-own-outline-api-oauth-app
+
 outlook:
     display_name: Outlook
     categories:
