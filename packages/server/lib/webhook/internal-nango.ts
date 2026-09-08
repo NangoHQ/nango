@@ -18,6 +18,9 @@ export class InternalNango {
     readonly request: HttpRequest;
     readonly logContextGetter: LogContextGetter;
 
+    /** Set by a routing script when it let an unverified webhook through. */
+    unverified?: UnverifiedWebhook | undefined;
+
     constructor(opts: {
         team: DBTeam;
         environment: DBEnvironment;
@@ -34,8 +37,12 @@ export class InternalNango {
         this.logContextGetter = opts.logContextGetter;
     }
 
-    /** Record that this webhook was accepted without verifying it. */
+    /**
+     * Record that this webhook was accepted without verifying it. The warning is attached to the
+     * operations the dispatch and the forward already create rather than logged here.
+     */
     markUnverified(unverified: UnverifiedWebhook): void {
+        this.unverified = unverified;
         countUnverifiedWebhook(this.integration.provider, unverified.reason);
     }
 
@@ -131,7 +138,8 @@ export class InternalNango {
             environment: this.environment,
             integration: this.integration,
             request: this.request,
-            logContextGetter: this.logContextGetter
+            logContextGetter: this.logContextGetter,
+            ...(this.unverified ? { unverified: this.unverified } : {})
         };
     }
 }
