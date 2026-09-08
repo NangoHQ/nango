@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 994
+Provider count: 995
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -48,6 +48,7 @@ URL patterns:
 | `aircall` | Aircall (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/aircall.md) |  |  | support |
 | `aircall-basic` | Aircall (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/aircall-basic.md) | [connect](https://nango.dev/docs/integrations/all/aircall-basic/connect.md) |  | support |
 | `airtable` | Airtable | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/airtable.md) |  | [setup](https://nango.dev/docs/api-integrations/airtable/how-to-register-your-own-airtable-api-oauth-app.md) | popular, productivity |
+| `airtable-mcp` | Airtable (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/airtable-mcp.md) |  |  | productivity, mcp |
 | `airtable-pat` | Airtable (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/airtable-pat.md) | [connect](https://nango.dev/docs/integrations/all/airtable-pat/connect.md) |  | productivity |
 | `algolia` | Algolia | API_KEY | [docs](https://nango.dev/docs/integrations/all/algolia.md) | [connect](https://nango.dev/docs/integrations/all/algolia/connect.md) |  | search |
 | `altrata` | Altrata | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/altrata.md) | [connect](https://nango.dev/docs/api-integrations/altrata/connect.md) |  | analytics |

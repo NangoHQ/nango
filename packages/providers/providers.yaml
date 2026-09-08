@@ -1049,6 +1049,35 @@ airtable:
     docs: https://nango.dev/docs/api-integrations/airtable
     setup_guide_url: https://nango.dev/docs/api-integrations/airtable/how-to-register-your-own-airtable-api-oauth-app
 
+airtable-mcp:
+    display_name: Airtable (MCP)
+    categories:
+        - productivity
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://airtable.com/oauth2/v1/authorize
+    token_url: https://airtable.com/oauth2/v1/token
+    registration_url: https://airtable.com/oauth2/v1/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.airtable.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.airtable.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/airtable-mcp
+
 airtable-pat:
     display_name: Airtable (Personal Access Token)
     categories:
