@@ -77,7 +77,7 @@ const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body
     if (nangoConnectionId) {
         const connection = await nango.getConnectionForWebhook(nangoConnectionId);
         if (!connection) {
-            return Err(new NangoError('webhook_invalid_secret', { reason: 'Unknown connection' }));
+            return Err(new NangoError('webhook_invalid_secret', { reason: 'No webhook secret configured to validate this request' }));
         }
 
         const connectionSecret = connection.metadata?.['webhookSecret'];
@@ -93,6 +93,7 @@ const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body
             return Err(error);
         }
     } else {
+        // TODO: NAN-6909 mark as unverified
         const integrationSecret = nango.integration.custom?.['webhookSecret'];
         if (integrationSecret) {
             const error = verifyOrError(integrationSecret, headers, rawBody);
