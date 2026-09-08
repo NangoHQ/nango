@@ -81,14 +81,24 @@ describe('operations', () => {
 
     it('should filter by agent session and list the sessions it can filter on', async () => {
         const sessionId = nanoid();
+        const otherSessionId = nanoid();
         const inSession = getFormattedOperation({ ...operationPayload, actor: { kind: 'session', id: sessionId } }, { account, environment });
         await createOperation(inSession);
+        // A second session, so filtering by one has to exclude the other rather than every session actor
+        await createOperation(getFormattedOperation({ ...operationPayload, actor: { kind: 'session', id: otherSessionId } }, { account, environment }));
         await createOperation(getFormattedOperation({ ...operationPayload, actor: { kind: 'user', id: 1 } }, { account, environment }));
 
         const list = await listOperations({ accountId: account.id, environmentId: environment.id, limit: 10, agentSessions: [sessionId] });
         expect(list.items.map((item) => item.id)).toStrictEqual([inSession.id]);
 
         const filters = await listFilters({ accountId: account.id, environmentId: environment.id, limit: 10, category: 'agentSession' });
-        expect(filters.items.map((item) => item.key)).toStrictEqual([sessionId]);
+        expect(filters.items.map((item) => item.key).sort()).toStrictEqual([sessionId, otherSessionId].sort());
+    });
+
+    it('should ignore an empty agent session filter rather than excluding everything', async () => {
+        await createOperation(getFormattedOperation({ ...operationPayload, actor: { kind: 'session', id: nanoid() } }, { account, environment }));
+
+        const list = await listOperations({ accountId: account.id, environmentId: environment.id, limit: 10, agentSessions: [] });
+        expect(list.items.length).toBeGreaterThan(0);
     });
 });
