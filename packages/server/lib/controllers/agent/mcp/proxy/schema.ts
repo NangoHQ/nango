@@ -17,7 +17,9 @@ export const proxyInputSchema = z
             .describe('Query parameters to append to the path. An array value is repeated as one parameter per item.'),
         headers: proxyHeadersSchema
             .optional()
-            .describe('Extra request headers. Nango authenticates the request, so authentication and hop-by-hop headers are rejected rather than forwarded.'),
+            .describe(
+                'Extra request headers. Nango authenticates the request from the session connection, so credential headers are rejected rather than forwarded.'
+            ),
         body: z.json().optional().describe("The request body. Sent as JSON unless a 'content-type' header says otherwise.")
     })
     .strict();
