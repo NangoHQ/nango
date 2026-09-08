@@ -111,10 +111,6 @@ export function resolvePlanChange(context: PlanChangeContext, subscription: Bill
         );
     }
 
-    if (getPlanDefinition(requested.newPlanCode as DBPlan['name'])?.retired) {
-        return Err(new PlanChangeError('transition_not_allowed'));
-    }
-
     // The Growth add-on is only available for a subset of the available plans; reject any request to
     // add it to a plan outside of that set.
     if (requested.withGrowthFeatures && !canHaveGrowthAddon(requested.newPlanCode as DBPlan['name'])) {
@@ -124,6 +120,10 @@ export function resolvePlanChange(context: PlanChangeContext, subscription: Bill
     // Resolve the plan change direction: to upgrade, downgrade or do nothing.
     let planChange: PlanChange | null = null;
     if (requested.newPlanCode !== currentPlanDefinition.code) {
+        // Staying on a retired plan is not a transition, so the lockout only applies to a real move
+        if (getPlanDefinition(requested.newPlanCode as DBPlan['name'])?.retired) {
+            return Err(new PlanChangeError('transition_not_allowed'));
+        }
         if (currentPlanDefinition.nextPlan?.includes(requested.newPlanCode)) {
             planChange = 'upgrade';
         } else if (currentPlanDefinition.prevPlan?.includes(requested.newPlanCode)) {

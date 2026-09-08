@@ -69,6 +69,16 @@ describe('resolvePlanChange', () => {
         expect(res.isErr() && res.error.code).toBe('no_change_requested');
     });
 
+    it.each(['starter-v2', 'growth-v2'] as PlanDefinition['code'][])('rejects a move onto the retired %s', (to) => {
+        const res = resolve({ from: 'free', to });
+        expect(res.isErr() && res.error.code).toBe('transition_not_allowed');
+    });
+
+    it('lets an account already on a retired plan request that same plan', () => {
+        const res = resolve({ from: 'starter-v2', to: 'starter-v2' });
+        expect(res.isErr() && res.error.code).toBe('no_change_requested');
+    });
+
     it('rejects when Orb and the database disagree on the plan', () => {
         const res = resolve({ from: 'free', to: 'pay-as-you-go', subscription: { planExternalId: 'pay-as-you-go' } });
         expect(res.isErr() && res.error.code).toBe('out_of_sync');
