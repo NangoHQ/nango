@@ -17,7 +17,7 @@ describe('usageMonthFloorMs', () => {
     });
 
     it('uses the UTC month, not the local one', () => {
-        // West of Greenwich this instant is still August 31st, so a local-time floor would slip to August.
+        // Near midnight UTC on purpose: west of Greenwich this is still August 31st, so a local-time floor would slip.
         expect(usageMonthFloorMs('2026-09-01T00:30:00Z')).toBe(Date.UTC(2026, 8, 1));
     });
 

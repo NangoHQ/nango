@@ -59,8 +59,7 @@ export function useSelectedMonth(): UseSelectedMonth {
         return selectedMonth < currentMonth;
     }, [selectedMonth]);
 
-    // The floor is still the loose default until the team loads. Without this guard the arrow goes
-    // live on it and the click is clamped straight back.
+    // Until the team loads, the floor is the loose June default. Without this guard the arrow enables and the month snaps back.
     const canGoPrevious = Boolean(accountCreatedAt) && selectedMonth.getTime() > earliestMonthMs;
 
     return {
