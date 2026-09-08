@@ -1,16 +1,12 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { ErrorCode, ListToolsRequestSchema, McpError } from '@modelcontextprotocol/sdk/types.js';
-import * as z from 'zod/v4';
+import { fromJsonSchema, McpServer, ProtocolError, ProtocolErrorCode } from '@modelcontextprotocol/server';
 
-import { emptyObjectJsonSchema, toJsonSchema202012 } from '../../mcp/utils.js';
+import { toJsonSchema202012 } from '../../mcp/utils.js';
 import { executeSessionTool, executeTool } from './execute/execute.js';
 import { callAgentSessionTool, MAX_TOOL_NAME_LENGTH } from './sessionTool.js';
 import { toolSearchTool } from './toolSearch/search.js';
 
 import type { AgentSessionMcpContext, AgentSessionMcpTool } from './sessionTool.js';
-import type { RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
-import type { Tool } from '@modelcontextprotocol/sdk/types.js';
+import type { RegisteredTool, RequestId, Tool } from '@modelcontextprotocol/server';
 import type { AgentSession } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -48,14 +44,20 @@ const PINNED_TOOL_INPUT_SCHEMA: Tool['inputSchema'] = {
 
 /**
  * Without a declared input schema registerTool hands the callback its request extra, not the tool's
- * arguments. Optional because params.arguments is, and a tool that takes none is called without it.
+ * arguments. The SDK validates missing params.arguments as {}, while this open object accepts every
+ * object-shaped tool input.
  */
-const REGISTRATION_INPUT_SCHEMA = z.looseObject({}).optional() as unknown as AnySchema;
+const REGISTRATION_INPUT_SCHEMA = fromJsonSchema<Record<string, unknown>>({
+    type: 'object',
+    properties: {},
+    additionalProperties: true
+});
 
 const INTEGRATION_TOOL_METRIC = 'integration_tool';
 
-export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext, 'callable'>): McpServer {
+export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext, 'callable'>, requestBody?: unknown): McpServer {
     const { session, account } = params;
+    const originalToolArgumentsByRequestId = getOriginalToolArgumentsByRequestId(requestBody);
 
     const server = new McpServer(
         {
@@ -64,7 +66,7 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
         },
         {
             capabilities: {
-                tools: {}
+                tools: { listChanged: false }
             }
         }
     );
@@ -101,7 +103,13 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
             name,
             description: tool.description,
             metric: INTEGRATION_TOOL_METRIC,
-            run: async (args) => await executeSessionTool({ integrationId: tool.integrationId, toolName: tool.name, input: args, context })
+            run: async (args, requestId) => {
+                // MCP SDK v2 normalizes an omitted params.arguments to {} before invoking a tool.
+                // Use the untouched JSON-RPC body so no-input Nango actions still receive undefined;
+                // an explicit {} remains {} and is validated as provided input.
+                const input = originalToolArgumentsByRequestId.has(requestId) ? originalToolArgumentsByRequestId.get(requestId) : args;
+                return await executeSessionTool({ integrationId: tool.integrationId, toolName: tool.name, input, context });
+            }
         });
     }
 
@@ -116,14 +124,14 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
         description: string;
         metric: string;
         structured?: boolean;
-        run: (args: unknown) => Promise<Result<unknown>>;
+        run: (args: unknown, requestId: RequestId) => Promise<Result<unknown>>;
     }): RegisteredTool {
-        return server.registerTool(name, { description, inputSchema: REGISTRATION_INPUT_SCHEMA }, async (args: unknown) =>
-            callAgentSessionTool({ metric, accountId: account.id, structured, run: async () => await run(args) })
+        return server.registerTool(name, { description, inputSchema: REGISTRATION_INPUT_SCHEMA }, async (args: unknown, ctx) =>
+            callAgentSessionTool({ metric, accountId: account.id, structured, run: async () => await run(args, ctx.mcpReq.id) })
         );
     }
 
-    server.server.setRequestHandler(ListToolsRequestSchema, (request) => {
+    server.server.setRequestHandler('tools/list', (request) => {
         const offset = decodeCursor(request.params?.cursor);
         const page = listed.slice(offset, offset + TOOLS_PAGE_SIZE);
         const next = offset + page.length;
@@ -135,6 +143,46 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
     });
 
     return server;
+}
+
+/**
+ * Capture tool arguments before MCP SDK validation. The SDK turns an omitted arguments member into
+ * {}, so the raw body is the only place that still distinguishes omission from an explicit empty
+ * object. JSON-RPC IDs keep each original value associated with the right call in a batch request.
+ */
+function getOriginalToolArgumentsByRequestId(requestBody: unknown): Map<RequestId, unknown> {
+    const requests = Array.isArray(requestBody) ? requestBody : [requestBody];
+    const argumentsByRequestId = new Map<RequestId, unknown>();
+
+    for (const request of requests) {
+        if (!isRecord(request)) {
+            continue;
+        }
+
+        const method = request['method'];
+        if (method !== 'tools/call') {
+            continue;
+        }
+
+        const params = request['params'];
+        if (!isRecord(params)) {
+            continue;
+        }
+
+        const requestId = request['id'];
+        if (typeof requestId !== 'string' && typeof requestId !== 'number') {
+            continue;
+        }
+
+        const toolArguments = params['arguments'];
+        argumentsByRequestId.set(requestId, toolArguments);
+    }
+
+    return argumentsByRequestId;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
 }
 
 interface SessionTools {
@@ -151,7 +199,7 @@ export function buildSessionTools(session: AgentSession): SessionTools {
         (tool): SessionTool => ({
             name: claimToolName(tool.name, taken),
             description: tool.description,
-            inputSchema: toJsonSchema202012(tool.inputSchema, 'input') ?? emptyObjectJsonSchema,
+            inputSchema: toJsonSchema202012(tool.inputSchema, 'input'),
             ...(tool.outputSchema ? { outputSchema: toJsonSchema202012(tool.outputSchema, 'output') } : {}),
             ...(tool.annotations ? { annotations: tool.annotations } : {})
         })
@@ -226,7 +274,7 @@ function decodeCursor(cursor: string | undefined): number {
 
     const decoded = Buffer.from(cursor, 'base64url').toString('utf8');
     if (!/^\d+$/.test(decoded)) {
-        throw new McpError(ErrorCode.InvalidParams, 'Invalid cursor');
+        throw new ProtocolError(ProtocolErrorCode.InvalidParams, 'Invalid cursor');
     }
 
     return parseInt(decoded, 10);

@@ -1,9 +1,8 @@
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { createAgentSessionMcpServer } from './sessionServer.js';
 
-import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import type { GetAgentSessionMcp, PostAgentSessionMcp } from '@nangohq/types';
 
 export const postAgentSessionMcp = asyncWrapperWithEnvironment<PostAgentSessionMcp>(async (req, res) => {
@@ -14,16 +13,15 @@ export const postAgentSessionMcp = asyncWrapperWithEnvironment<PostAgentSessionM
         return;
     }
 
-    const server = createAgentSessionMcpServer({ account, environment, session });
-    const transport = new StreamableHTTPServerTransport();
+    const server = createAgentSessionMcpServer({ account, environment, session }, req.body);
+    const transport = new NodeStreamableHTTPServerTransport();
 
     res.on('close', () => {
         void transport.close();
         void server.close();
     });
 
-    // Casting because 'exactOptionalPropertyTypes: true' says `?: string` is not equal to `string | undefined`
-    await server.connect(transport as Transport);
+    await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
 });
 

@@ -1,11 +1,9 @@
 import { Trash2 } from 'lucide-react';
 
-import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
-import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 
 interface DeleteButtonProps {
@@ -17,11 +15,8 @@ interface DeleteButtonProps {
 }
 
 export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onDelete, open, onOpenChange, disabled }) => {
-    const { data } = useEnvironment(environmentName);
-    const environmentAndAccount = data?.environmentAndAccount;
-    const isProdEnv = environmentAndAccount?.environment.is_production;
     const { can } = usePermissions();
-    const canDeleteEnvironment = !isProdEnv || can(permissions.canDeleteProdEnvironment);
+    const canDeleteEnvironment = can('environment:delete');
     const isDisabled = Boolean(disabled) || !canDeleteEnvironment;
     const disabledReason = typeof disabled === 'string' ? disabled : !canDeleteEnvironment ? 'This action is not permitted for your role.' : undefined;
 

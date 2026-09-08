@@ -2,7 +2,7 @@ import { Err, metrics } from '@nangohq/utils';
 
 import { formatMcpArgumentsError, handleMcpToolError, jsonContent, jsonStructuredContent, PublicMcpError } from '../../mcp/utils.js';
 
-import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
+import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/server';
 import type { AgentSession, AgentSessionMetaTools, DBEnvironment, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type * as z from 'zod/v4';

@@ -1,5 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { fromJsonSchema, McpServer } from '@modelcontextprotocol/server';
 
 import { getLogger, hasApiKeyScope } from '@nangohq/utils';
 
@@ -25,11 +24,9 @@ import { getProvidersTool } from './providers/get.js';
 import { proxyRequestTool } from './proxy/request.js';
 import { setSyncsStateTool } from './syncs/setState.js';
 import { triggerSyncsTool } from './syncs/trigger.js';
-import { emptyObjectJsonSchema, handleMcpToolError, jsonStructuredContent, toJsonSchema202012 } from './utils.js';
+import { handleMcpToolError, jsonStructuredContent, toJsonSchema202012 } from './utils.js';
 
 import type { ManagementMcpContext, ManagementMcpRequiredScopes, ManagementMcpTool } from './managementTool.js';
-import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
-import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { ApiKeyScope, AuditPolicy } from '@nangohq/types';
 
 const logger = getLogger('Server.ManagementMcpServer');
@@ -58,6 +55,17 @@ const managementMcpTools: ManagementMcpTool[] = [
     getLogOperationTool
 ];
 
+// Schema conversion compiles AJV validators, so do it once rather than for every stateless MCP request.
+const managementMcpToolRegistrations = managementMcpTools.map((toolDefinition) => ({
+    toolDefinition,
+    config: {
+        description: toolDefinition.description,
+        inputSchema: fromJsonSchema(toJsonSchema202012(toolDefinition.inputSchema, 'input')),
+        ...(toolDefinition.outputSchema ? { outputSchema: fromJsonSchema(toJsonSchema202012(toolDefinition.outputSchema, 'output')) } : {}),
+        ...(toolDefinition.annotations ? { annotations: toolDefinition.annotations } : {})
+    }
+}));
+
 export function createManagementMcpServer(context: ManagementMcpContext, requestBody?: unknown): McpServer {
     const server = new McpServer(
         {
@@ -66,27 +74,19 @@ export function createManagementMcpServer(context: ManagementMcpContext, request
         },
         {
             capabilities: {
-                tools: {}
+                tools: { listChanged: false }
             }
         }
     );
 
     const toolCallArgumentsByName = parseToolCallArguments(requestBody);
-    const listedTools: ManagementMcpTool[] = [];
-    for (const toolDefinition of managementMcpTools) {
+    for (const { toolDefinition, config } of managementMcpToolRegistrations) {
         // callArguments is an array of args, one element per tool call. This is because MCP SDK supports batching, so
         // we can end up with multiple tool calls to the same tool. This is also the reason why we need to do loops over
         // args auditDeniedCallsForTool and auditInvalidDynamicCallsForTool - some of the tool calls to the same tool
         // call might be valid and some might not
         const callArguments = toolCallArgumentsByName.get(toolDefinition.name) ?? [];
 
-        // Need to cast because we have a different Zod version than the MCP SDK
-        const config = {
-            description: toolDefinition.description,
-            inputSchema: toolDefinition.inputSchema as unknown as AnySchema,
-            ...(toolDefinition.outputSchema ? { outputSchema: toolDefinition.outputSchema as unknown as AnySchema } : {}),
-            ...(toolDefinition.annotations ? { annotations: toolDefinition.annotations } : {})
-        };
         const registeredTool = server.registerTool(toolDefinition.name, config, async (args: unknown) => {
             try {
                 const result = await toolDefinition.handler(args, context);
@@ -108,28 +108,9 @@ export function createManagementMcpServer(context: ManagementMcpContext, request
         }
 
         auditInvalidDynamicCallsForTool({ callArguments, context, tool: toolDefinition });
-        listedTools.push(toolDefinition);
     }
 
-    server.server.setRequestHandler(ListToolsRequestSchema, () => ({
-        tools: listedTools.map(toListedTool)
-    }));
-
     return server;
-}
-
-function toListedTool(tool: ManagementMcpTool): Tool {
-    const inputSchema = toJsonSchema202012(tool.inputSchema, 'input') ?? emptyObjectJsonSchema;
-    const outputSchema = tool.outputSchema ? toJsonSchema202012(tool.outputSchema, 'output') : undefined;
-
-    return {
-        name: tool.name,
-        description: tool.description,
-        inputSchema,
-        ...(outputSchema ? { outputSchema } : {}),
-        ...(tool.annotations ? { annotations: tool.annotations } : {}),
-        execution: { taskSupport: 'forbidden' }
-    };
 }
 
 function auditDeniedCallsForTool({

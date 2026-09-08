@@ -507,22 +507,8 @@ const ENVS_SHAPE = z.object({
     ORB_API_KEY: z.string().optional(),
     ORB_WEBHOOKS_SECRET: z.string().optional(),
     ORB_MAX_RETRIES: z.coerce.number().optional().default(3),
-    ORB_RETRY_MAX_ATTEMPTS: z.coerce.number().optional().default(3),
-    ORB_RETRY_INITIAL_DELAY_MS: z.coerce.number().optional().default(10_000),
-    BILLING_INGEST_BATCH_SIZE: z.coerce.number().optional().default(500),
-    BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(5_000),
-    BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(100_000),
-    BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
     BILLING_EVENTS_S3_BUCKET: z.string().optional(),
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
-    // Temporary. ISO 8601 timestamp at which the S3-fed pipeline becomes
-    // authoritative for billing. Before this instant, S3 events ship as
-    // "<name>_s3" shadow and HTTP events ship canonical (unsuffixed). At
-    // and after this instant, the two swap roles — HTTP events pick up
-    // the "_http" suffix and S3 events become canonical. Unset (or set
-    // to a future date) to defer or roll back the cutover. Remove once
-    // the HTTP emission path is retired.
-    BILLING_EVENTS_CUTOVER_AT: z.string().datetime().optional(),
     BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
     // DLQ bucket Orb writes to when it can't ingest a billing event. Watched by the
     // metering DLQ monitor cron (CRON_BILLING_EVENTS_S3_DLQ_MONITOR_MINUTE).
@@ -757,6 +743,17 @@ const ENVS_SHAPE = z.object({
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
+    // The following are only considered in local, self-hosted and BYOC deployments that configure
+    // Postgres storage for the audit trail. The URL can point to the main database.
+    NANGO_AUDIT_POSTGRES_DATABASE_URL: z.url().optional(),
+    NANGO_AUDIT_POSTGRES_POOL_MAX: z.coerce.number().optional().default(5),
+    NANGO_AUDIT_POSTGRES_SSL: z.stringbool().optional().default(false),
+    NANGO_AUDIT_POSTGRES_RETENTION_DAYS: z.coerce.number().int().positive().optional().default(365),
+    NANGO_AUDIT_POSTGRES_PARTITION_INTERVAL_MS: z.coerce
+        .number()
+        .positive()
+        .max(6 * 3600 * 1000) // capped so tomorrow's partition is always created before midnight reaches it
+        .default(1 * 3600 * 1000),
     // .int() because these go straight into SQS request fields, which reject a fractional value outright.
     // One poll loop on purpose. Long polling returns as soon as a single message is available, so a batch
     // only grows while an insert is in flight — extra loops would be parked in ReceiveMessage and take those
@@ -917,6 +914,9 @@ const ENVS_SHAPE = z.object({
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
     NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),
+    NANGO_TASK_DISPATCH_RATE_LIMIT_THROTTLE_MAX_MS: z.coerce.number().min(0).optional().default(60_000),
+    NANGO_TASK_DISPATCH_DEFER_JITTER_RATIO: z.coerce.number().min(0).max(1).optional().default(0.2),
+    NANGO_TASK_DISPATCH_TASK_CAP_DEFER_MS: z.coerce.number().min(0).optional().default(15_000),
 
     // Sandboxes
     SANDBOX_PROVIDER: z.enum(['e2b', 'docker', 'agentcore']).optional(),

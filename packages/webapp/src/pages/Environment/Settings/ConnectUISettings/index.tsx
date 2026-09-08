@@ -2,7 +2,6 @@ import { useForm } from '@tanstack/react-form';
 import { ExternalLink, Info, Lock } from 'lucide-react';
 import React, { useRef } from 'react';
 
-import { permissions } from '@nangohq/authz';
 import { Button, Field, FieldError, FieldLabel, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -81,7 +80,7 @@ export const ConnectUISettings = () => {
     const plan = environmentData?.plan;
 
     const { can } = usePermissions();
-    const canManageConnectUI = can(permissions.canManageConnectUI);
+    const canManageConnectUI = can('account:connect_ui:update');
 
     const { data: connectUISettings } = useConnectUISettings(env);
     const { mutate: updateConnectUISettings, isPending: isUpdatingConnectUISettings } = useUpdateConnectUISettings(env);

@@ -26,6 +26,26 @@ describe(`POST ${endpoint}`, () => {
         shouldBeProtected(res);
     });
 
+    it('should return a resource capped error when creating a connection at the cap', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { connections_max: 0 } });
+        const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { provider_config_key: config.unique_key, credentials: { type: 'NONE' } }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: {
+                code: 'resource_capped',
+                message: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.'
+            }
+        });
+    });
+
     it('should validate oauth2 credentials', async () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {

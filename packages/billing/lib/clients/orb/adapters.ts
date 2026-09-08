@@ -1,30 +1,20 @@
-import { uuidv7 } from 'uuidv7';
+import { Err, Ok, report } from '@nangohq/utils';
 
-import { Err, Ok } from '@nangohq/utils';
-
-import { envs } from '../../envs.js';
+import { growthAddonPriceId } from './catalogue.js';
 import { putOrbCustomerSchema } from './types.js';
 
 import type {
     BillingAddress,
     BillingCustomer,
-    BillingEvent,
     BillingInvoicingDetails,
     BillingPeriodCosts,
     BillingSpendAlert,
+    BillingSubscription,
     BillingUpcomingInvoice,
     Result,
     UsageMetric
 } from '@nangohq/types';
 import type Orb from 'orb-billing';
-
-// Keyed on the EVENT's timestamp, not the wall clock, so a batched or
-// late-emitted event whose logical time is pre-cutover ships under the
-// pre-cutover name and vice versa. See BILLING_EVENTS_CUTOVER_AT in
-// packages/utils.
-function cutoverAppliesTo(eventTimestamp: Date): boolean {
-    return !!envs.BILLING_EVENTS_CUTOVER_AT && eventTimestamp >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
-}
 
 /**
  * Orb money as an integer number of cents, read off the decimal string rather than via
@@ -191,31 +181,6 @@ export function fromOrbAlert(alert: { id: string; currency: string | null; thres
     };
 }
 
-export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
-    const { idempotencyKey, timestamp, accountId, ...rest } = event.properties;
-
-    // orb doesn't accept nested properties, we need to flatten them with dot notation
-    const properties: Record<string, string | number | boolean> = {};
-    for (const [topLevelKey, value] of Object.entries(rest)) {
-        if (!value) continue;
-        if (typeof value === 'object') {
-            for (const [k, v] of Object.entries(value)) {
-                properties[`${topLevelKey}.${k}`] = v;
-            }
-        } else {
-            properties[topLevelKey] = value;
-        }
-    }
-
-    return {
-        event_name: `${event.type}${cutoverAppliesTo(timestamp) ? '_http' : ''}`,
-        idempotency_key: idempotencyKey || uuidv7(),
-        external_customer_id: accountId.toString(),
-        timestamp: timestamp.toISOString(),
-        properties
-    };
-}
-
 export function toOrbPutCustomerPayload(invoicingDetails: BillingInvoicingDetails): Result<Orb.CustomerUpdateByExternalIDParams> {
     const val = putOrbCustomerSchema.safeParse(invoicingDetails);
     if (!val.success) {
@@ -243,6 +208,49 @@ export function toOrbPutCustomerPayload(invoicingDetails: BillingInvoicingDetail
     }
 
     return Ok(payload);
+}
+
+/**
+ * Parses Orb's `price_intervals` for the presence of the growth add-on price and its active interval.
+ *
+ * An interval that hasn't started or has already finished gets ignored.
+ */
+export function growthAddonStateFromOrb(
+    priceIntervals: { id?: string; start_date?: string | null; end_date: string | null; price?: { external_price_id?: string | null } | null }[],
+    referenceDate: Date = new Date()
+): Pick<BillingSubscription, 'hasGrowthFeatures' | 'growthFeaturesEndsAt' | 'growthFeaturesPriceIntervalId'> {
+    for (const interval of priceIntervals) {
+        if (interval.price?.external_price_id !== growthAddonPriceId) {
+            continue;
+        }
+
+        const startsAt = parseOrbDate(interval.start_date, { field: 'start_date', priceIntervalId: interval.id });
+        if (startsAt && startsAt > referenceDate) {
+            continue;
+        }
+
+        const endsAt = parseOrbDate(interval.end_date, { field: 'end_date', priceIntervalId: interval.id });
+        if (endsAt && endsAt <= referenceDate) {
+            continue;
+        }
+
+        return { hasGrowthFeatures: true, growthFeaturesEndsAt: endsAt, growthFeaturesPriceIntervalId: interval.id ?? null };
+    }
+
+    return { hasGrowthFeatures: false, growthFeaturesEndsAt: null, growthFeaturesPriceIntervalId: null };
+}
+
+function parseOrbDate(value: string | null | undefined, context: { field: 'start_date' | 'end_date'; priceIntervalId: string | undefined }): Date | null {
+    if (!value) {
+        return null;
+    }
+    const parsed = new Date(value);
+    // Defensive check: we should never receive an invalid date from Orb.
+    if (Number.isNaN(parsed.getTime())) {
+        report(new Error('orb_unparseable_price_interval_date'), { ...context, value });
+        return null;
+    }
+    return parsed;
 }
 
 export function fromOrbCustomer(orbCustomer: Orb.Customer): BillingCustomer {

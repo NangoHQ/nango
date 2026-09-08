@@ -15,6 +15,7 @@ export interface FilterOption<T extends string = string> {
 
 interface FilterMultiSelectProps<T extends string = string> {
     label: string;
+    icon?: React.ReactNode;
     options: FilterOption<T>[];
     selected: T[];
     defaultSelect?: T[];
@@ -31,6 +32,7 @@ interface FilterMultiSelectProps<T extends string = string> {
 
 export function FilterMultiSelect<T extends string = string>({
     label,
+    icon,
     options,
     selected,
     defaultSelect = [],
@@ -181,7 +183,8 @@ export function FilterMultiSelect<T extends string = string>({
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="outline" size="md" disabled={disabled} className={cn('text-text-muted', isDirty && 'text-text-strong')}>
+                <Button variant="outline" size="md" disabled={disabled}>
+                    {icon}
                     {label}
                     {isDirty && (
                         <span

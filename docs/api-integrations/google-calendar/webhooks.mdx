@@ -25,7 +25,17 @@ Watching **additional calendars** uses a different metadata-based step; see [Con
 
 Copy the webhook URL from your Google Calendar integration page in the Nango dashboard, under the **Webhook URL** section. This is the HTTPS URL you will use as the channel `address` when creating notification channels.
 
-### 2. Create a notification channel (watch a resource)
+### 2. Set a webhook secret in Nango
+
+Google Calendar push notifications have no HMAC. The `token` you set on the channel is echoed back as `X-Goog-Channel-Token` and is the only way Nango can authenticate the request.
+
+1. In the Nango dashboard, open your Google Calendar integration and go to the **Settings** tab
+2. Under **Webhook Configuration**, enter a secret string in the **Webhook Secret** field
+3. Click **Save**. You will pass this same value as `token` when creating channels.
+
+Once a secret is saved, Nango rejects notifications that omit `X-Goog-Channel-Token` or send a different value. Existing channels created without `token` must be recreated.
+
+### 3. Create a notification channel (watch a resource)
 
 Create a notification channel for the calendar you want to watch by sending a `POST` request to the appropriate `watch` endpoint. See the [API reference](https://developers.google.com/workspace/calendar/api/guides/push#create-notification-channels) for the exact URI.
 
@@ -53,6 +63,10 @@ export default createOnEvent({
         const channelId = randomUUID();
         const expiration = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days in ms
         const webhookUrl = await nango.getWebhookURL();
+        const integration = await nango.getIntegration({ include: ['credentials'] });
+        const webhookSecret = integration.credentials && 'webhook_secret' in integration.credentials
+            ? integration.credentials.webhook_secret
+            : undefined;
 
         const config: ProxyConfiguration = {
             baseUrlOverride: 'https://www.googleapis.com/calendar',
@@ -63,12 +77,13 @@ export default createOnEvent({
                 // Webhook URL can be found on https://app.nango.dev/dev/integrations/google-calendar (your integration settings page)
                 address: webhookUrl,
                 expiration: expiration,
+                ...(webhookSecret && { token: webhookSecret }),
             },
         };
 
         const response = await nango.post(config);
 
-        // Store channel info so it can be used to stop notifications later (step 4)
+        // Store channel info so it can be used to stop notifications later (step 5)
         await nango.updateMetadata({
             googleCalendarChannelId: channelId,
             googleCalendarResourceId: response.data.resourceId,
@@ -88,6 +103,7 @@ curl -X POST "https://www.googleapis.com/calendar/v3/calendars/<CALENDAR_ID>/eve
     "id": "01234567-89ab-cdef-0123456789ab",
     "type": "web_hook",
     "address": "<REPLACE_WITH_NANGO_WEBHOOK_URL>",
+    "token": "<YOUR-WEBHOOK-SECRET>",
     "expiration": <EXPIRATION>
   }'
 ```
@@ -98,9 +114,10 @@ Replace:
 - **&lt;AUTH_TOKEN&gt;** — A valid OAuth 2.0 access token for the user who owns or has access to the calendar.
 - **address** — Your Nango webhook URL from the dashboard.
 - **id** — A unique string (e.g. UUID) identifying this channel; max 64 characters. It is echoed in `X-Goog-Channel-ID` on every notification.
+- **token** — The webhook secret from [step 2](#2-set-a-webhook-secret-in-nango). Google echoes it as `X-Goog-Channel-Token`. Required once a secret is saved on the integration.
 - **expiration** — (Optional) Unix timestamp in **milliseconds** when the channel should stop sending notifications. If omitted, Google applies a default; channels must be renewed before they expire.
 
-### 3. Renew the notification channel
+### 4. Renew the notification channel
 
 Google does **not** renew channels automatically. When a channel is close to its expiration, you must create a new channel by calling the `watch` endpoint again with a **new** unique `id`. After the new channel is created successfully, stop the old channel so only one remains active. See [Renew notification channels](https://developers.google.com/workspace/calendar/api/guides/push#renew-notification-channels).
 
@@ -135,6 +152,10 @@ export default createSync({
         const channelId = randomUUID();
         const expiration = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days in ms
         const webhookUrl = await nango.getWebhookURL();
+        const integration = await nango.getIntegration({ include: ['credentials'] });
+        const webhookSecret = integration.credentials && 'webhook_secret' in integration.credentials
+            ? integration.credentials.webhook_secret
+            : undefined;
 
         const config: ProxyConfiguration = {
             baseUrlOverride: 'https://www.googleapis.com/calendar',
@@ -145,6 +166,7 @@ export default createSync({
                 // Webhook URL can be found on https://app.nango.dev/dev/integrations/google-calendar (your integration settings page)
                 address: webhookUrl,
                 expiration: expiration,
+                ...(webhookSecret && { token: webhookSecret }),
             },
         };
 
@@ -163,7 +185,7 @@ export default createSync({
             }
         }
 
-        // Update stored channel info for use in stop notifications (step 4)
+        // Update stored channel info for use in stop notifications (step 5)
         await nango.updateMetadata({
             googleCalendarChannelId: channelId,
             googleCalendarResourceId: response.data.resourceId,
@@ -172,11 +194,11 @@ export default createSync({
 });
 ```
 
-### 4. Stop notifications on connection deletion
+### 5. Stop notifications on connection deletion
 
 If a connection is deleted in Nango but the channel remains active, Google may continue sending notifications until the channel expires. To stop notifications immediately for a deleted connection, call `channels.stop` before deletion.
 
-You can automate this with a `pre-connection-deletion` lifecycle event. This uses the `googleCalendarChannelId` and `googleCalendarResourceId` stored in metadata during channel creation (step 2) and renewal (step 3):
+You can automate this with a `pre-connection-deletion` lifecycle event. This uses the `googleCalendarChannelId` and `googleCalendarResourceId` stored in metadata during channel creation (step 3) and renewal (step 4):
 
 ```typescript
 import { createOnEvent, ProxyConfiguration } from 'nango';
@@ -212,7 +234,7 @@ export default createOnEvent({
 });
 ```
 
-### 5. Handle forwarded webhooks
+### 6. Handle forwarded webhooks
 
 When a Calendar notification arrives, Nango matches it to the correct connection and forwards it to your system. Notification messages have **no body**; Google sends only HTTP headers. Nango forwards those headers in the payload. Example structure:
 
@@ -223,6 +245,7 @@ When a Calendar notification arrives, Nango matches it to the correct connection
   "type": "forward",
   "payload": {
     "x-goog-channel-id": "01234567-89ab-cdef-0123456789ab",
+    "x-goog-channel-token": "your-webhook-secret",
     "x-goog-resource-id": "o3hgv1538sdjfh",
     "x-goog-resource-uri": "https://www.googleapis.com/calendar/v3/calendars/user@example.com/events",
     "x-goog-resource-state": "exists",
@@ -239,6 +262,7 @@ Relevant headers (see [Google's documentation](https://developers.google.com/wor
 | `x-goog-resource-state` | `sync` = channel created; `exists` = resource changed (create/update/delete). |
 | `x-goog-resource-uri` | The watched resource (e.g. which calendar's events). |
 | `x-goog-channel-id` | The channel `id` you sent when creating the channel. |
+| `x-goog-channel-token` | The `token` you set when creating the channel. Nango verifies this against the integration webhook secret when one is configured. |
 | `x-goog-message-number` | Incrementing message number for this channel. |
 
 Notifications do **not** include the changed events themselves—you must call the Calendar API (e.g. list events or get event) to fetch the updates. After receiving the webhook, trigger your sync or API calls for that connection:

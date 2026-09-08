@@ -46,7 +46,7 @@ describe('compileAll', () => {
         await fs.promises.copyFile(path.join(dir, 'github', 'functions', 'fetchIssues.ts'), path.join(dottedIntegrationFunctionsPath, 'fetchIssues.ts'));
         await fs.promises.appendFile(indexPath, "\nimport './github.js/functions/fetchIssues.js';\n");
         await fs.promises.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkg, null, 2));
-        await exec('npm i', { cwd: dir });
+        await exec('npm i --no-audit --no-fund', { cwd: dir });
         const result = await compileAllFunctions({ fullPath: dir, debug: false });
         result.unwrap();
         expect(result.isOk()).toBe(true);
@@ -148,10 +148,9 @@ describe('validateFunction', () => {
         expect(res.isOk()).toBe(true);
     });
 
-    it('rejects an http trigger with subscriptions', () => {
+    it('accepts an http trigger with subscriptions', () => {
         const res = validateFunction({ ...base, params: { trigger: { kind: 'http', subscriptions: ['issues'] } } });
-        assert(res.isErr());
-        expect(res.error.message).toContain("unsupported HTTP trigger options: 'subscriptions'");
+        expect(res.isOk()).toBe(true);
     });
 
     it('rejects an http trigger with debounce', () => {
@@ -166,7 +165,7 @@ describe('validateFunction', () => {
             params: { trigger: { kind: 'http', subscriptions: [], debounce: { windowMs: 1000 } } }
         });
         assert(res.isErr());
-        expect(res.error.message).toContain("unsupported HTTP trigger options: 'subscriptions', 'debounce'");
+        expect(res.error.message).toContain("unsupported HTTP trigger options: 'debounce'");
     });
 
     it('rejects unknown http trigger attributes', () => {

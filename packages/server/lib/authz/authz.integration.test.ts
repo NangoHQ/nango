@@ -1,7 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import * as featureFlags from '@nangohq/feature-flags';
 import { seeders, userService } from '@nangohq/shared';
 import { flags } from '@nangohq/utils';
 
@@ -16,7 +15,6 @@ describe('authz integration', () => {
         api = await runServer();
         flags.hasAuthRoles = true;
         // The audit-trail route is entitlement-gated too; keep it on so these cases exercise authz, not the gate.
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
     afterAll(() => {
         api.server.close();
@@ -521,10 +519,9 @@ describe('authz integration', () => {
             const devUser = await createUserWithRole(account.id, 'development_full_access');
             const session = await authenticateUser(api, devUser);
 
-            // @ts-expect-error authz test — /sync not in endpoint types
             const res = await api.fetch('/api/v1/sync', {
                 method: 'GET',
-                query: { env: 'prod' },
+                query: { env: 'prod', connection_id: 'conn', provider_config_key: 'github' },
                 session
             });
 
