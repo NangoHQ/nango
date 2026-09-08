@@ -2,7 +2,6 @@ import { ExternalLink, Info } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
 import { Alert, AlertActions, AlertButton, AlertDescription } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
@@ -22,10 +21,8 @@ export const BackendSettings: React.FC = () => {
     const environmentAndAccount = data?.environmentAndAccount;
     const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
 
-    const isProdEnv = environmentAndAccount?.environment.is_production || false;
-
     const { can } = usePermissions();
-    const canEditEnv = can(permissions.canWriteProdEnvironment) || !isProdEnv;
+    const canEditEnvironment = can('environment:settings:update');
 
     const [isEditingCallbackUrl, setIsEditingCallbackUrl] = useState(false);
 
@@ -71,7 +68,7 @@ export const BackendSettings: React.FC = () => {
                                 throw err;
                             }
                         }}
-                        canEdit={canEditEnv}
+                        canEdit={canEditEnvironment}
                     />
                     {isEditingCallbackUrl && (
                         <Alert variant="info">

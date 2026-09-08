@@ -65,13 +65,16 @@ export const scriptNameSchema = z
 export const functionTypeSchema = z.enum(['sync', 'action', 'on-event']);
 // On-event functions can't be targeted by name alone yet, so deletion is limited to sync/action.
 export const deletableFunctionTypeSchema = z.enum(['sync', 'action']);
+export const paginationQueryFields = {
+    page: z.coerce.number().int().min(0).optional().default(0),
+    limit: z.coerce.number().int().min(1).max(100).optional().default(20)
+};
 // Shared querystring fields for the function-list endpoints. The private route adds `env`; the public route
 // derives the environment from the secret key, so it spreads these as-is.
 export const functionListQueryFields = {
     type: functionTypeSchema.optional(),
     search: z.string().trim().min(1).max(255).optional(),
-    page: z.coerce.number().int().min(0).optional().default(0),
-    limit: z.coerce.number().int().min(1).max(100).optional().default(20)
+    ...paginationQueryFields
 };
 export const connectionIdSchema = z
     .string()
@@ -110,7 +113,17 @@ export const connectionCredential = z.union([
 ]);
 
 export const privateKeySchema = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsWith('-----END RSA PRIVATE KEY-----');
-export const publicKeySchema = z.string().startsWith('-----BEGIN PUBLIC KEY----').endsWith('-----END PUBLIC KEY-----');
+// Some providers (e.g. Gong's "Show public key" UI) hand out the bare base64 DER body with no
+// PEM wrapper - accept that form too, alongside the full PEM, rather than requiring callers to
+// wrap it themselves.
+export const publicKeySchema = z.union([
+    z.string().startsWith('-----BEGIN PUBLIC KEY----').endsWith('-----END PUBLIC KEY-----'),
+    z
+        .string()
+        .regex(/^[A-Za-z0-9+/]+={0,2}$/)
+        .min(100)
+        .max(2000)
+]);
 export const integrationCredentialsSchema = z.discriminatedUnion(
     'type',
     [

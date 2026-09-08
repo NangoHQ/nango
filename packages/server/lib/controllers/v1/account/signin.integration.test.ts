@@ -1,7 +1,6 @@
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
 import { mfaService, userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
@@ -50,7 +49,6 @@ async function enrollMfaUser(): Promise<{ email: string; password: string; user:
 describe(`POST ${signinRoute}`, () => {
     beforeAll(async () => {
         api = await runServer();
-        vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {

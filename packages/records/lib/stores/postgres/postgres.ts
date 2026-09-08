@@ -865,6 +865,7 @@ export class PostgresStore implements RecordsStore {
                 // https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html
                 {
                     maxAttempts: 3,
+                    maxWaitMs: Infinity,
                     delayMs: 500,
                     retryOnError: (err) => {
                         if ('code' in err) {
@@ -1160,7 +1161,8 @@ export class PostgresStore implements RecordsStore {
         limit,
         toCursorIncluded,
         batchSize = 1000,
-        dryRun = false
+        dryRun = false,
+        onProgress
     }: {
         connectionId: number;
         environmentId: number;
@@ -1170,6 +1172,7 @@ export class PostgresStore implements RecordsStore {
         toCursorIncluded?: string;
         batchSize?: number;
         dryRun?: boolean;
+        onProgress?: (progress: { deleted: number; page: number }) => void | Promise<void>;
     }): Promise<Result<{ count: number; lastCursor: string | null }>> {
         const activeSpan = tracer.scope().active();
         const span = tracer.startSpan('nango.records.deletedRecords', {
@@ -1212,6 +1215,7 @@ export class PostgresStore implements RecordsStore {
                 // Each batch starts right after the last processed record
                 // so the index scan doesn't re-traverse dead tuples from prior batches
                 let from: { updated_at: string; id: string } | null = null;
+                let page = 0;
 
                 do {
                     const toDelete = limit ? Math.min(batchSize, limit - totalRecords) : batchSize;
@@ -1313,6 +1317,9 @@ export class PostgresStore implements RecordsStore {
                     if (!partition && res[0]?.partition) {
                         partition = res[0].partition;
                     }
+
+                    page++;
+                    await onProgress?.({ deleted: totalRecords, page });
 
                     const lastDeletedRecord = res[res.length - 1];
                     if (lastDeletedRecord) {
@@ -1527,6 +1534,7 @@ export class PostgresStore implements RecordsStore {
                     // https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html
                     {
                         maxAttempts: 3,
+                        maxWaitMs: Infinity,
                         delayMs: 500,
                         retryOnError: (err) => {
                             if (err !== null && typeof err === 'object' && 'code' in err) {
@@ -1578,15 +1586,29 @@ export class PostgresStore implements RecordsStore {
         }
     }
 
-    async getCountsByModel({ connectionId, environmentId }: { connectionId: number; environmentId: number }): Promise<Result<Record<string, RecordCount>>> {
+    async getCountsByModel({
+        connectionId,
+        environmentId,
+        models
+    }: {
+        connectionId: number;
+        environmentId: number;
+        models?: string[] | undefined;
+    }): Promise<Result<Record<string, RecordCount>>> {
         try {
-            const results = await this.db
+            const query = this.db
                 .from(RECORD_COUNTS_TABLE)
                 .where({
                     connection_id: connectionId,
                     environment_id: environmentId
                 })
                 .select<RecordCount[]>('*');
+
+            if (models) {
+                query.whereIn('model', models);
+            }
+
+            const results = await query;
 
             const statsByModel: Record<string, RecordCount> = results.reduce(
                 (acc, result) => ({

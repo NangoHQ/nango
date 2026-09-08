@@ -33,7 +33,7 @@ const actionsNeedResources = {
 // Account-scoped endpoints (no `env`). Not strict: any stray query param is stripped rather than 400'd, so
 // a read never fails over an extra key.
 export const auditListQuery = z
-    .object({ cursor: z.string().optional(), ...filters })
+    .object({ cursor: z.string().optional(), showTotal: z.stringbool().optional(), ...filters })
     .refine(inOrder.check, inOrder.error)
     .refine(actionsNeedResources.check, actionsNeedResources.error);
 

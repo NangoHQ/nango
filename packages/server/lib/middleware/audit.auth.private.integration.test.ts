@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
 import { mfaService, userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
@@ -111,10 +110,6 @@ describe('audit — auth flows', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // getFlags() returns the stable noop facade in tests; roll the audit flag out to every account. MFA
-        // is forced on too so an enrolled user's sign-in takes the pending-MFA path.
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
-        vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {

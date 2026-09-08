@@ -1,11 +1,11 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { Client } from '@modelcontextprotocol/client';
+import { InMemoryTransport, ProtocolErrorCode } from '@modelcontextprotocol/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, flags, Ok } from '@nangohq/utils';
 
-import { audit } from '../../audit.js';
+import { audit, auditBackend } from '../../audit.js';
 import { triggerActionTool } from './actions/trigger.js';
 import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
@@ -25,13 +25,25 @@ import { triggerSyncsTool } from './syncs/trigger.js';
 import { withoutUnscopedTools } from './testUtils.js';
 import { PublicMcpError } from './utils.js';
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { McpServer } from '@modelcontextprotocol/server';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 describe('createManagementMcpServer', () => {
     afterEach(() => {
         flags.hasAuditTrail = false;
+        auditBackend.configured = false;
         vi.restoreAllMocks();
+    });
+
+    it('advertises that its tool list does not change during a connection', async () => {
+        const { client, server } = await createTestClient(['environment:*']);
+
+        try {
+            expect(client.getServerCapabilities()?.tools?.listChanged).toBe(false);
+        } finally {
+            await client.close();
+            await server.close();
+        }
     });
 
     it('exposes all management tools when the environment wildcard scope is granted', async () => {
@@ -196,8 +208,7 @@ describe('createManagementMcpServer', () => {
         const handlerSpy = vi.spyOn(createConnectSessionTool, 'handler');
         const unauthorized = await createTestClient(['environment:mcp']);
         try {
-            const result = await unauthorized.client.callTool({ name: 'connect_session_create', arguments: { end_user: { id: 'end-user-id' } } });
-            expect(result).toMatchObject({ isError: true });
+            await expectDisabledTool(unauthorized.client, 'connect_session_create', { end_user: { id: 'end-user-id' } });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -341,8 +352,7 @@ describe('createManagementMcpServer', () => {
         const handlerSpy = vi.spyOn(updateIntegrationsTool, 'handler');
         const unauthorized = await createTestClient(['environment:mcp']);
         try {
-            const result = await unauthorized.client.callTool({ name: 'integrations_update', arguments: { integration_id: 'github' } });
-            expect(result).toMatchObject({ isError: true });
+            await expectDisabledTool(unauthorized.client, 'integrations_update', { integration_id: 'github' });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -369,8 +379,7 @@ describe('createManagementMcpServer', () => {
         const handlerSpy = vi.spyOn(deleteIntegrationsTool, 'handler');
         const unauthorized = await createTestClient(['environment:mcp']);
         try {
-            const result = await unauthorized.client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'github' } });
-            expect(result).toMatchObject({ isError: true });
+            await expectDisabledTool(unauthorized.client, 'integrations_delete', { integration_id: 'github' });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -418,11 +427,12 @@ describe('createManagementMcpServer', () => {
         const handlerSpy = vi.spyOn(proxyRequestTool, 'handler');
         const unauthorized = await createTestClient(['environment:mcp']);
         try {
-            const result = await unauthorized.client.callTool({
-                name: 'proxy_request',
-                arguments: { method: 'GET', path: '/user', integration_id: 'github', connection_id: 'connection-id' }
+            await expectDisabledTool(unauthorized.client, 'proxy_request', {
+                method: 'GET',
+                path: '/user',
+                integration_id: 'github',
+                connection_id: 'connection-id'
             });
-            expect(result).toMatchObject({ isError: true });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -471,14 +481,11 @@ describe('createManagementMcpServer', () => {
         const handlerSpy = vi.spyOn(triggerActionTool, 'handler');
         const unauthorized = await createTestClient(['environment:mcp']);
         try {
-            const result = await unauthorized.client.callTool({
-                name: 'actions_trigger',
-                arguments: { action_name: 'create-issue', input: {}, integration_id: 'github', connection_id: 'connection-id' }
-            });
-
-            expect(result).toStrictEqual({
-                content: [{ type: 'text', text: 'MCP error -32602: Tool actions_trigger disabled' }],
-                isError: true
+            await expectDisabledTool(unauthorized.client, 'actions_trigger', {
+                action_name: 'create-issue',
+                input: {},
+                integration_id: 'github',
+                connection_id: 'connection-id'
             });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
@@ -534,9 +541,7 @@ describe('createManagementMcpServer', () => {
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
-            const result = await client.callTool({ name: 'connections_get', arguments: { connection_id: 'connection-id', integration_id: 'github' } });
-
-            expect(result).toMatchObject({ isError: true });
+            await expectDisabledTool(client, 'connections_get', { connection_id: 'connection-id', integration_id: 'github' });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -586,12 +591,7 @@ describe('createManagementMcpServer', () => {
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
-            const result = await client.callTool({ name: 'connections_list', arguments: {} });
-
-            expect(result).toStrictEqual({
-                content: [{ type: 'text', text: 'MCP error -32602: Tool connections_list disabled' }],
-                isError: true
-            });
+            await expectDisabledTool(client, 'connections_list', {});
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -673,12 +673,7 @@ describe('createManagementMcpServer', () => {
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
-            const result = await client.callTool({ name: 'functions_list', arguments: { integration_id: 'github' } });
-
-            expect(result).toStrictEqual({
-                content: [{ type: 'text', text: 'MCP error -32602: Tool functions_list disabled' }],
-                isError: true
-            });
+            await expectDisabledTool(client, 'functions_list', { integration_id: 'github' });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -793,14 +788,10 @@ describe('createManagementMcpServer', () => {
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
-            const result = await client.callTool({
-                name: 'syncs_set_state',
-                arguments: { integration_id: 'github', syncs: ['issues'], state: 'started' }
-            });
-
-            expect(result).toStrictEqual({
-                content: [{ type: 'text', text: 'MCP error -32602: Tool syncs_set_state disabled' }],
-                isError: true
+            await expectDisabledTool(client, 'syncs_set_state', {
+                integration_id: 'github',
+                syncs: ['issues'],
+                state: 'started'
             });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
@@ -838,15 +829,7 @@ describe('createManagementMcpServer', () => {
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
-            const result = await client.callTool({
-                name: 'syncs_trigger',
-                arguments: { integration_id: 'github', syncs: ['issues'] }
-            });
-
-            expect(result).toStrictEqual({
-                content: [{ type: 'text', text: 'MCP error -32602: Tool syncs_trigger disabled' }],
-                isError: true
-            });
+            await expectDisabledTool(client, 'syncs_trigger', { integration_id: 'github', syncs: ['issues'] });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -928,14 +911,11 @@ describe('createManagementMcpServer', () => {
         const handlerSpy = vi.spyOn(deployFunctionTool, 'handler');
         const unauthorized = await createTestClient(['environment:functions:*']);
         try {
-            const result = await unauthorized.client.callTool({
-                name: 'deploy_function',
-                arguments: { integration_id: 'github', function_name: 'issues', function_type: 'sync', code: 'code' }
-            });
-
-            expect(result).toStrictEqual({
-                content: [{ type: 'text', text: 'MCP error -32602: Tool deploy_function disabled' }],
-                isError: true
+            await expectDisabledTool(unauthorized.client, 'deploy_function', {
+                integration_id: 'github',
+                function_name: 'issues',
+                function_type: 'sync',
+                code: 'code'
             });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
@@ -1011,12 +991,7 @@ describe('createManagementMcpServer', () => {
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
-            const result = await client.callTool({ name: 'integrations_create', arguments: {} });
-
-            expect(result).toStrictEqual({
-                content: [{ type: 'text', text: 'MCP error -32602: Tool integrations_create disabled' }],
-                isError: true
-            });
+            await expectDisabledTool(client, 'integrations_create', {});
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -1027,6 +1002,7 @@ describe('createManagementMcpServer', () => {
 
     it('audits a requested mutation when its tool is disabled for insufficient scopes', async () => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const requestBody = {
             jsonrpc: '2.0',
@@ -1074,6 +1050,7 @@ describe('createManagementMcpServer', () => {
 
     it.each(['started', 'paused'] as const)('audits a denied sync state change as %s even when other arguments are invalid', async (state) => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const requestBody = {
             jsonrpc: '2.0',
@@ -1117,6 +1094,7 @@ describe('createManagementMcpServer', () => {
 
     it.each(['started', 'paused'] as const)('audits an authorized invalid sync state change as a failed %s attempt', async (state) => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const server = createManagementMcpServer(
             {
@@ -1150,6 +1128,7 @@ describe('createManagementMcpServer', () => {
 
     it('does not audit a denied sync state change when the state is invalid', async () => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const server = createManagementMcpServer(
             {
@@ -1219,12 +1198,7 @@ describe('createManagementMcpServer', () => {
             await expect(client.listTools()).resolves.toMatchObject({
                 tools: [{ name: 'docs_search' }, { name: 'docs_query_filesystem' }, { name: 'providers_get' }]
             });
-            const result = await client.callTool({ name: 'logs_list_operations', arguments: {} });
-
-            expect(result).toStrictEqual({
-                content: [{ type: 'text', text: 'MCP error -32602: Tool logs_list_operations disabled' }],
-                isError: true
-            });
+            await expectDisabledTool(client, 'logs_list_operations', {});
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -1345,6 +1319,13 @@ describe('createManagementMcpServer', () => {
         }
     });
 });
+
+async function expectDisabledTool(client: Client, name: string, args: Record<string, unknown>): Promise<void> {
+    await expect(client.callTool({ name, arguments: args })).rejects.toMatchObject({
+        code: ProtocolErrorCode.InvalidParams,
+        message: `Tool ${name} disabled`
+    });
+}
 
 async function createTestClient(grantedScopes: string[]): Promise<{ client: Client; server: McpServer }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();

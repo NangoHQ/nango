@@ -25,6 +25,7 @@ function validate(secret: string, msgId: string, msgSignature: string, msgTimest
 
     const payloadString = Buffer.isBuffer(rawBody) ? rawBody.toString('utf8') : rawBody;
 
+    // TODO: sign with the raw msgTimestamp, already fixed NAN-6909
     const timestampNumber = Math.floor(timestamp);
     const toSign = `${msgId}.${timestampNumber}.${payloadString}`;
 
@@ -47,28 +48,75 @@ function validate(secret: string, msgId: string, msgSignature: string, msgTimest
     return false;
 }
 
-const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body, rawBody) => {
-    if (nango.integration.custom?.['webhookSecret']) {
-        const msgId = headers['webhook-id'] || headers['svix-id'];
-        const msgSignature = headers['webhook-signature'] || headers['svix-signature'];
-        const msgTimestamp = headers['webhook-timestamp'] || headers['svix-timestamp'];
+function verifySignature(secret: string, headers: Record<string, string>, rawBody: string | Buffer): 'valid' | 'missing' | 'invalid' {
+    const msgId = headers['webhook-id'] || headers['svix-id'];
+    const msgSignature = headers['webhook-signature'] || headers['svix-signature'];
+    const msgTimestamp = headers['webhook-timestamp'] || headers['svix-timestamp'];
 
-        if (!msgId || !msgSignature || !msgTimestamp) {
-            return Err(new NangoError('webhook_missing_signature'));
+    if (!msgId || !msgSignature || !msgTimestamp) {
+        return 'missing';
+    }
+
+    return validate(secret, msgId, msgSignature, msgTimestamp, rawBody) ? 'valid' : 'invalid';
+}
+
+/** Verifies against `secret` and maps a failure to the matching error, or returns null when valid. */
+function verifyOrError(secret: string, headers: Record<string, string>, rawBody: string | Buffer): NangoError | null {
+    const result = verifySignature(secret, headers, rawBody);
+    if (result === 'valid') {
+        return null;
+    }
+    return new NangoError(result === 'missing' ? 'webhook_missing_signature' : 'webhook_invalid_signature');
+}
+
+const route: WebhookHandler<FathomWebhookResponse> = async (nango, headers, body, rawBody, query) => {
+    // Prefer the nangoConnectionId query param when the webhook URL was registered with one;
+    // otherwise fall back to matching on the recording owner's email, as before.
+    const nangoConnectionId = query?.['nangoConnectionId'];
+    const emailAddress = body.recorded_by?.email;
+
+    if (nangoConnectionId) {
+        const connection = await nango.getConnectionForWebhook(nangoConnectionId);
+        if (!connection) {
+            return Err(new NangoError('webhook_invalid_secret', { reason: 'No webhook secret configured to validate this request' }));
         }
 
-        if (!validate(nango.integration.custom['webhookSecret'], msgId, msgSignature, msgTimestamp, rawBody)) {
-            return Err(new NangoError('webhook_invalid_signature'));
+        const connectionSecret = connection.metadata?.['webhookSecret'];
+        if (connectionSecret != null && typeof connectionSecret !== 'string') {
+            return Err(new NangoError('webhook_invalid_secret', { reason: 'Invalid webhook secret' }));
+        }
+        if (!connectionSecret) {
+            return Err(new NangoError('webhook_invalid_secret', { reason: 'No webhook secret configured to validate this request' }));
+        }
+
+        const error = verifyOrError(connectionSecret, headers, rawBody);
+        if (error) {
+            return Err(error);
+        }
+    } else {
+        // TODO: NAN-6909 mark as unverified
+        const integrationSecret = nango.integration.custom?.['webhookSecret'];
+        if (integrationSecret) {
+            const error = verifyOrError(integrationSecret, headers, rawBody);
+            if (error) {
+                return Err(error);
+            }
         }
     }
 
-    const emailAddress = body.recorded_by?.email;
-
-    const response = await nango.executeScriptForWebhooks({
-        body,
-        connectionIdentifierValue: emailAddress,
-        propName: 'metadata.emailAddress'
-    });
+    const response = await nango.executeScriptForWebhooks(
+        nangoConnectionId
+            ? {
+                  payload: body,
+                  connectionIdentifierValue: nangoConnectionId,
+                  propName: 'connectionId'
+              }
+            : {
+                  payload: body,
+                  connectionIdentifierValue: emailAddress,
+                  propName: 'metadata.emailAddress'
+              }
+    );
 
     return Ok({
         content: { status: 'success' },

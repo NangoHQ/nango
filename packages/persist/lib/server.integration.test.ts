@@ -773,6 +773,67 @@ describe('Persist API', () => {
             );
             expect(response.status).toEqual(400);
         });
+
+        describe('streaming client (Accept: application/x-ndjson)', () => {
+            it('should stream progress and a terminal done line', async () => {
+                const model = 'DeleteHardStreamingModel';
+                await insertRecords(seed, model, [
+                    { id: '1', name: 'r1' },
+                    { id: '2', name: 'r2' },
+                    { id: '3', name: 'r3' }
+                ]);
+
+                const response = await fetch(
+                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/records/hard`,
+                    {
+                        method: 'DELETE',
+                        body: JSON.stringify({ model }),
+                        headers: {
+                            Authorization: `Bearer ${mockSecretKey}`,
+                            'Content-Type': 'application/json',
+                            Accept: 'application/x-ndjson'
+                        }
+                    }
+                );
+                expect(response.status).toEqual(200);
+                expect(response.headers.get('content-type')).toEqual('application/x-ndjson');
+
+                const lines = (await response.text())
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter((line) => line.length > 0)
+                    .map((line) => JSON.parse(line));
+
+                for (const line of lines.slice(0, -1)) {
+                    expect(line).toMatchObject({ status: 'in_progress', deleted: expect.any(Number), page: expect.any(Number) });
+                }
+                expect(lines.at(-1)).toMatchObject({ status: 'done', deletedCount: 3, hasMore: false });
+            });
+        });
+
+        describe('legacy client (no Accept: application/x-ndjson header)', () => {
+            it('should not stream in_progress lines to a legacy client', async () => {
+                const model = 'DeleteHardLegacyNoProgressModel';
+                await insertRecords(seed, model, [{ id: '1', name: 'r1' }]);
+
+                const response = await fetch(
+                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/records/hard`,
+                    {
+                        method: 'DELETE',
+                        body: JSON.stringify({ model }),
+                        headers: {
+                            Authorization: `Bearer ${mockSecretKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                const text = await response.text();
+
+                expect(text.trim().split('\n')).toHaveLength(1);
+                expect(JSON.parse(text)).toStrictEqual({ deletedCount: 1, hasMore: false });
+            });
+        });
     });
 
     describe('checkpoint', () => {

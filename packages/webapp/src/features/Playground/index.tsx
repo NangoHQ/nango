@@ -2,13 +2,11 @@ import { Play, RotateCcw, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
 import { Button, IconButton } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Sheet, SheetContent } from '@/components/ui/Sheet';
-import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegrationFlows } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
@@ -74,10 +72,8 @@ export const Playground: React.FC = () => {
 
     const { handleRun, handleCancel } = usePlayground(inputFields);
 
-    const { data: envData } = useEnvironment(env);
-    const environment = envData?.environmentAndAccount?.environment;
     const { can } = usePermissions();
-    const canUsePlayground = envData != null && (can(permissions.canUseProdPlayground) || !environment?.is_production);
+    const canUsePlayground = can('environment:syncs:execute');
 
     const clearInputError = useCallback((name: string) => clearPlaygroundInputError(name), [clearPlaygroundInputError]);
 

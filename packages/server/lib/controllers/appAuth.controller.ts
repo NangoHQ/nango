@@ -1,6 +1,15 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { accountService, configService, connectionService, errorManager, getProvider, githubAppClient, syncEndUserToConnection } from '@nangohq/shared';
+import {
+    accountService,
+    configService,
+    ConnectionCreationCappedError,
+    connectionService,
+    errorManager,
+    getProvider,
+    githubAppClient,
+    syncEndUserToConnection
+} from '@nangohq/shared';
 import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
@@ -229,6 +238,30 @@ class AppAuthController {
             });
             return;
         } catch (err) {
+            if (err instanceof ConnectionCreationCappedError) {
+                void logCtx.error(err.message);
+                await logCtx.failed();
+                void connectionCreationFailedHook(
+                    {
+                        connection: {
+                            connection_id: receivedConnectionId,
+                            provider_config_key: providerConfigKey,
+                            webhook_url_override: resolvedWebhookUrlOverride
+                        },
+                        environment,
+                        account,
+                        auth_mode: 'APP',
+                        error: {
+                            type: 'resource_capped',
+                            description: err.message
+                        },
+                        operation: 'unknown'
+                    },
+                    account
+                );
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, receivedConnectionId, WSErrBuilder.ResourceCapped(err.message));
+            }
+
             const prettyError = stringifyError(err, { pretty: true });
 
             const error = WSErrBuilder.UnknownError();

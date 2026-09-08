@@ -1,7 +1,6 @@
 import { Clock, Loader2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
-import { permissions } from '@nangohq/authz';
 import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -20,7 +19,7 @@ export const AutoIdlingBanner: React.FC = () => {
     const { isTrial, isTrialOver, daysRemaining } = useTrial(plan);
 
     const { can } = usePermissions();
-    const canExtendTrial = can(permissions.canChangePlan);
+    const canExtendTrial = can('account:plan:update');
 
     const [trialLoading, setTrialLoading] = useState(false);
 

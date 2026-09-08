@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { nextUsageResetDate } from '@/pages/Team/Billing/billingPeriod';
 import { LocalStorageKeys } from '@/utils/local-storage';
 
+import type { GrowthAddonState } from '@/pages/Team/Billing/planVisibility';
 import type { ApiPlan, GetBillingPeriodCosts, GetOverdueInvoices, GetStripePaymentMethods, GetUpcomingInvoice, PlanDefinition } from '@nangohq/types';
 
 /** Simulated aggregate usage state, matching what `getAggregateUsageState` can return. */
@@ -21,24 +23,17 @@ interface PlanOverrideState {
     overdueOverride: boolean;
     /** Plan-limit state to simulate, or `null` to use real usage. Free plan only. */
     usageLimitOverride: UsageLimitOverride | null;
-    /**
-     * Reveals the current-period spend headline. Off until the figure is verified against real Orb
-     * invoices; delete this flag once it ships to everyone.
-     */
-    spendHeadlineEnabled: boolean;
-    /** Spend to simulate. Only meaningful with the flag on. */
     spendOverride: SpendOverride | null;
-    metricChargesEnabled: boolean;
     periodCostsOverride: PeriodCostsOverride | null;
+    addonState: GrowthAddonState | null;
     paymentMethodOverride: boolean;
     setOverride: (code: PlanDefinition['code'] | null) => void;
     setScheduledTarget: (code: PlanDefinition['code'] | null) => void;
     setOverdueOverride: (override: boolean) => void;
     setUsageLimitOverride: (override: UsageLimitOverride | null) => void;
-    setSpendHeadlineEnabled: (enabled: boolean) => void;
     setSpendOverride: (override: SpendOverride | null) => void;
-    setMetricChargesEnabled: (enabled: boolean) => void;
     setPeriodCostsOverride: (override: PeriodCostsOverride | null) => void;
+    setAddonState: (state: GrowthAddonState | null) => void;
     setPaymentMethodOverride: (override: boolean) => void;
     resetAll: () => void;
 }
@@ -48,10 +43,9 @@ export const DEFAULTS = {
     scheduledTargetCode: null,
     overdueOverride: false,
     usageLimitOverride: null,
-    spendHeadlineEnabled: false,
     spendOverride: null,
-    metricChargesEnabled: false,
     periodCostsOverride: null,
+    addonState: null,
     paymentMethodOverride: false
 } satisfies Partial<PlanOverrideState>;
 
@@ -59,8 +53,7 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
     persist(
         (set) => ({
             ...DEFAULTS,
-            // Switching plan clears the states picked against the old one. `spendHeadlineEnabled`
-            // survives here — a rollout flag, not a simulated state — though Reset still clears it.
+            // Switching plan clears the states picked against the old one.
             setOverride: (overrideCode) =>
                 set({
                     overrideCode,
@@ -68,15 +61,15 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
                     overdueOverride: false,
                     usageLimitOverride: null,
                     spendOverride: null,
-                    periodCostsOverride: null
+                    periodCostsOverride: null,
+                    addonState: null
                 }),
             setScheduledTarget: (scheduledTargetCode) => set({ scheduledTargetCode }),
             setOverdueOverride: (overdueOverride) => set({ overdueOverride }),
             setUsageLimitOverride: (usageLimitOverride) => set({ usageLimitOverride }),
-            setSpendHeadlineEnabled: (spendHeadlineEnabled) => set({ spendHeadlineEnabled }),
             setSpendOverride: (spendOverride) => set({ spendOverride }),
-            setMetricChargesEnabled: (metricChargesEnabled) => set({ metricChargesEnabled }),
             setPeriodCostsOverride: (periodCostsOverride) => set({ periodCostsOverride }),
+            setAddonState: (addonState) => set({ addonState }),
             setPaymentMethodOverride: (paymentMethodOverride) => set({ paymentMethodOverride }),
             resetAll: () => set(DEFAULTS)
         }),
@@ -149,20 +142,36 @@ export function buildPeriodCostsOverride(override: PeriodCostsOverride): GetBill
 /** Overlays a dev-tool plan override (and optional simulated scheduled change) onto a real plan, for visual QA only. */
 export function applyPlanOverride(
     realPlan: ApiPlan | null | undefined,
-    { overridePlan, scheduledTarget }: { overridePlan?: PlanDefinition | null; scheduledTarget?: PlanDefinition | null }
+    {
+        overridePlan,
+        scheduledTarget,
+        addonState
+    }: { overridePlan?: PlanDefinition | null; scheduledTarget?: PlanDefinition | null; addonState?: GrowthAddonState | null }
 ): ApiPlan | null | undefined {
-    if (!realPlan || !overridePlan) {
+    if (!realPlan || (!overridePlan && !addonState)) {
         return realPlan;
     }
 
+    const withPlan: ApiPlan = overridePlan
+        ? {
+              ...realPlan,
+              // `flags` is typed against `DBPlan` (pre-serialization), so its never-set Date fields
+              // (trial_start_at, etc.) don't match `ApiPlan`'s stringified dates — safe to assert since
+              // plan definitions only ever set those fields to `null`, never an actual Date.
+              ...(overridePlan.flags as Partial<ApiPlan>),
+              name: overridePlan.code,
+              orb_future_plan: scheduledTarget?.code ?? null,
+              orb_future_plan_at: scheduledTarget ? nextUsageResetDate(new Date()).toISOString() : null
+          }
+        : realPlan;
+
+    if (!addonState) {
+        return withPlan;
+    }
+
     return {
-        ...realPlan,
-        // `flags` is typed against `DBPlan` (pre-serialization), so its never-set Date fields
-        // (trial_start_at, etc.) don't match `ApiPlan`'s stringified dates — safe to assert since
-        // plan definitions only ever set those fields to `null`, never an actual Date.
-        ...(overridePlan.flags as Partial<ApiPlan>),
-        name: overridePlan.code,
-        orb_future_plan: scheduledTarget?.code ?? null,
-        orb_future_plan_at: scheduledTarget ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : null
+        ...withPlan,
+        has_growth_features: addonState !== 'none',
+        growth_features_ends_at: addonState === 'pending-removal' ? nextUsageResetDate(new Date()).toISOString() : null
     };
 }

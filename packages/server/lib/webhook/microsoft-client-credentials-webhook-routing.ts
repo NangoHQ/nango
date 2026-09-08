@@ -44,7 +44,7 @@ const route: WebhookHandler<MicrosoftNotificationPayload> = async (nango, _heade
 
     for (const notification of validNotifications) {
         const response = await nango.executeScriptForWebhooks({
-            body: notification,
+            payload: notification,
             webhookType: 'changeType',
             connectionIdentifier: 'tenantId',
             propName: 'tenantId'
