@@ -29,7 +29,7 @@ import { openSupportChat } from '@/utils/support';
 import { isOnS26Pricing } from '@/utils/usage';
 import { cn } from '@/utils/utils';
 import { formatBillingDate, nextUsageResetDate } from '../billingPeriod.js';
-import { growthAddonState, isRetiredPlan } from '../planVisibility.js';
+import { growthAddonState } from '../planVisibility.js';
 import { pendingPlanChange } from '../summaryState.js';
 import { PlanChangeErrorAlert, usePlanChangeRequest } from '../usePlanChangeRequest.js';
 import { usePlanTransition } from '../usePlanTransition.js';
@@ -105,7 +105,7 @@ export const Plans: React.FC = () => {
                         endsAt={currentPlan?.growth_features_ends_at ?? undefined}
                         pendingChangeAt={pendingChange?.at}
                         transition={transition}
-                        closed={isRetiredPlan(plan.plan.code)}
+                        closed={plan.plan.retired ?? false}
                         paymentMethod={paymentMethod}
                     />
                 ))}
