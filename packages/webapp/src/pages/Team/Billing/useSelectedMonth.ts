@@ -1,7 +1,11 @@
 import { parseAsString, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
 
-import { EARLIEST_USAGE_MONTH_MS } from './usageBreakdown';
+import { useTeam } from '@/hooks/useTeam';
+import { useStore } from '@/store';
+import { usageMonthFloorMs, usageMonthFloorReason } from './usageMonthFloor';
+
+import type { UsageMonthFloorReason } from './usageMonthFloor';
 
 // Parser for month in YYYY-MM format, shared across the page header and the per-metric drill-in
 // steppers so they all read/write the same `?month` param and stay in sync.
@@ -13,16 +17,18 @@ interface UseSelectedMonth {
     /** False once at the current month (no future navigation). */
     canGoNext: boolean;
     isCurrentMonth: boolean;
-    /** False at the June-2026 ClickHouse floor — that's when the data starts. */
     canGoPrevious: boolean;
+    earliestMonth: Date;
+    earliestMonthReason: UsageMonthFloorReason;
 }
 
-/**
- * Selected usage month, backed by the `?month` URL param. The June-2026 floor is where the
- * ClickHouse data starts. Any component reading this hook stays in sync via the shared param.
- */
 export function useSelectedMonth(): UseSelectedMonth {
     const [monthParam, setMonthParam] = useQueryState('month', parseMonth);
+    const env = useStore((state) => state.env);
+    const { data: teamData } = useTeam(env);
+
+    const accountCreatedAt = teamData?.data.account.created_at;
+    const earliestMonthMs = useMemo(() => usageMonthFloorMs(accountCreatedAt), [accountCreatedAt]);
 
     const selectedMonth = useMemo(() => {
         const now = new Date();
@@ -38,8 +44,8 @@ export function useSelectedMonth(): UseSelectedMonth {
                 month = parsed > currentMonth ? currentMonth : parsed;
             }
         }
-        return month.getTime() < EARLIEST_USAGE_MONTH_MS ? new Date(EARLIEST_USAGE_MONTH_MS) : month;
-    }, [monthParam]);
+        return month.getTime() < earliestMonthMs ? new Date(earliestMonthMs) : month;
+    }, [monthParam, earliestMonthMs]);
 
     const setSelectedMonth = (date: Date) => {
         const year = date.getUTCFullYear();
@@ -53,7 +59,17 @@ export function useSelectedMonth(): UseSelectedMonth {
         return selectedMonth < currentMonth;
     }, [selectedMonth]);
 
-    const canGoPrevious = useMemo(() => selectedMonth.getTime() > EARLIEST_USAGE_MONTH_MS, [selectedMonth]);
+    // The floor is still the loose default until the team loads. Without this guard the arrow goes
+    // live on it and the click is clamped straight back.
+    const canGoPrevious = Boolean(accountCreatedAt) && selectedMonth.getTime() > earliestMonthMs;
 
-    return { selectedMonth, setSelectedMonth, canGoNext, canGoPrevious, isCurrentMonth: !canGoNext };
+    return {
+        selectedMonth,
+        setSelectedMonth,
+        canGoNext,
+        canGoPrevious,
+        isCurrentMonth: !canGoNext,
+        earliestMonth: new Date(earliestMonthMs),
+        earliestMonthReason: usageMonthFloorReason(earliestMonthMs)
+    };
 }
