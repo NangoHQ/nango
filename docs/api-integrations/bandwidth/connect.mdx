@@ -8,36 +8,52 @@ sidebarTitle: Bandwidth
 To authenticate with Bandwidth, you will need:
 1. **Client ID** - The Client ID of a Bandwidth API Credential.
 2. **Client Secret** - The Client Secret issued together with that Client ID.
+3. **API subdomain** - The Bandwidth product API (Messaging, Voice, Numbers, or Account) this connection calls by default.
 
-These are **API Credentials** created under **Account > API Credentials** in the Bandwidth Dashboard. They are not your Bandwidth Dashboard login and not a legacy API User username/password. Bandwidth is retiring API Users: new API Users could no longer be created after April 1, 2026, and all API Users stop working on December 2, 2026. Only API Credentials are supported here.
+These are **API Credentials** created under **Account > API Credentials** in the Bandwidth App. They are not your Bandwidth Dashboard login and not a legacy API User username/password. Bandwidth is retiring API Users: new API Users could no longer be created after April 1, 2026, and all API Users stop working on December 2, 2026. Only API Credentials are supported here.
 
 ### Prerequisites
 
-- You must have access to the [Bandwidth Dashboard](https://dashboard.bandwidth.com).
-- Your Dashboard user needs the **Credential Access** role to create API Credentials.
+- You must have access to the [Bandwidth App](https://dashboard.bandwidth.com).
+- Your user needs the **Credential Access** role to create API Credentials. If you don't see **API Credentials** under **Account**, ask your admin to assign this role.
 - Your account must be enabled for the products you want to call (Messaging, Voice, Numbers).
 
 ### Instructions
 
 #### Step 1: Create an API Credential
 
-1. Log in to the [Bandwidth Dashboard](https://dashboard.bandwidth.com).
-2. Go to **Account > API Credentials** and click **Create Credential**.
-3. Give the credential a name and set its scope. Use the **ACCOUNT** scope so the credential can access every sub-account it needs.
-4. Assign the roles for the APIs you will call, for example **Messaging**, **Voice** and **Numbers**. Keep the role set minimal.
-5. Optionally set an expiration date.
-6. Save the credential and copy the **Client ID** and **Client Secret**. The Client Secret is shown only once; store it securely. If you lose it, rotate the credential to get a new secret.
+1. Log in to the [Bandwidth App](https://dashboard.bandwidth.com).
+2. Go to **Account > API Credentials** and click **Create**.
+3. Fill in the required fields:
+   - **Description** - A note to help you identify these credentials.
+   - **Account scope** - Basic or admin level access.
+   - **Expiration** - Optionally set an expiration date for the initial Client Secret.
+   - **Roles** - The permissions for the APIs you will call, for example **Messaging**, **Voice** and **Numbers**. Keep the role set minimal.
+   - **Accounts** - The accounts these credentials can access.
+4. Click **Create** and copy the **Client ID** (starts with `CLI-`) and **Client Secret**. The Client Secret is shown only once; store it securely. If you lose it, create a new secret for the credential.
 
 See Bandwidth's guides on [managing API Credentials](https://dev.bandwidth.com/docs/account/credentials/management) and [migrating from API Users](https://dev.bandwidth.com/docs/account/credentials/migration) for details.
 
-#### Step 2: Enter credentials in the Connect UI
+#### Step 2: Choose the API subdomain
 
-Once you have your **Client ID** and **Client Secret**:
+Bandwidth's product APIs live on separate hosts. Pick the subdomain for the API you will call most; you can still reach the other hosts from the same connection with a [base URL override](/guides/platform/proxy-requests).
+
+| API | API subdomain | Host |
+|-----|---------------|------|
+| Messaging | `messaging` | `messaging.bandwidth.com` |
+| Voice | `voice` | `voice.bandwidth.com` |
+| Phone Number Lookup | `numbers` | `numbers.bandwidth.com` |
+| Numbers & Account (credentials, orders, sub-accounts) | `api` | `api.bandwidth.com` |
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Client ID**, **Client Secret**, and **API subdomain**:
 
 1. Open the form where you need to authenticate with Bandwidth.
-2. Enter your **Client ID** in the **Client ID** field.
-3. Enter your **Client Secret** in the **Client Secret** field.
-4. Submit the form, and you should be successfully authenticated.
+2. Select the **API subdomain** from Step 2.
+3. Enter your **Client ID** in the **Client ID** field.
+4. Enter your **Client Secret** in the **Client Secret** field.
+5. Submit the form, and you should be successfully authenticated.
 
 <img src="/api-integrations/bandwidth/form.png" style={{maxWidth: "450px" }}/>
 
