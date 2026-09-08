@@ -1006,6 +1006,7 @@
               "integrations/all/aircall",
               "integrations/all/aircall-basic",
               "api-integrations/airtable",
+              "api-integrations/airtable-mcp",
               "integrations/all/airtable-pat",
               "integrations/all/algolia",
               "api-integrations/altrata",
