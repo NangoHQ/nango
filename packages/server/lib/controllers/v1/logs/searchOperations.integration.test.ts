@@ -120,6 +120,26 @@ describe('POST /logs/operations', () => {
         });
     });
 
+    it('should filter by an operation type that has no dedicated column', async () => {
+        const { env, account, apiKey } = await seeders.seedAccountEnvAndUser();
+
+        const logCtx = await logContextGetter.create({ operation: { type: 'agent_session', action: 'create' } }, { account, environment: env });
+        await logCtx.success();
+        const other = await logContextGetter.create({ operation: { type: 'auth', action: 'create_connection' } }, { account, environment: env });
+        await other.success();
+
+        const res = await api.fetch('/api/v1/logs/operations', {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            body: { limit: 10, types: ['agent_session'] }
+        });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+        expect(res.json.data.map((op) => op.id)).toStrictEqual([logCtx.id]);
+    });
+
     it('should search logs and not return results from an other account', async () => {
         const { account, env } = await seeders.seedAccountEnvAndUser();
         const env2 = await seeders.seedAccountEnvAndUser();
