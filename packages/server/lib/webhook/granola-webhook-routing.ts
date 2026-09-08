@@ -50,7 +50,7 @@ const route: WebhookHandler<GranolaWebhookPayload> = async (nango, headers, body
     const connection = await nango.getConnectionForWebhook(connectionIdentifierValue);
 
     if (!connection) {
-        return Err(new NangoError('webhook_no_connection'));
+        return Err(new NangoError('webhook_invalid_secret', { reason: 'No webhook secret configured to validate this request' }));
     }
 
     const connectionSecret = connection.metadata?.['webhookSecret'];
