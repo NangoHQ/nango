@@ -1,4 +1,4 @@
-import { Forward, Layers, Link, Lock, Pause, Play, Plus, RefreshCw, Settings, Settings2, Trash2, X } from 'lucide-react';
+import { Ban, Bot, Forward, Layers, Link, Lock, Pause, Play, Plus, RefreshCw, Settings, Settings2, Trash2, User, X } from 'lucide-react';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
@@ -6,12 +6,30 @@ import { Tag } from '@/components/ui/Tag';
 
 import type { SearchOperationsData } from '@nangohq/types';
 
-export const OperationTag: React.FC<{ message: string; operation: SearchOperationsData['operation'] }> = ({ message, operation }) => {
+// agent_session is far longer than any other type name and it is the only one that also carries an action
+// icon, so the two together overflow the Type column. Shown short; the tooltip still spells it out.
+const typeLabels: Partial<Record<SearchOperationsData['operation']['type'], string>> = {
+    agent_session: 'session'
+};
+
+// Who triggered the operation, so an agent's work is visible without filtering by its session. On
+// agent_session operations the actor is the session the row is about rather than who triggered it, since
+// only an api key can create or terminate one, so those rows show no actor until an agent can do it.
+const actorIcons: Record<NonNullable<SearchOperationsData['actor']>['kind'], React.ReactNode> = {
+    session: <Bot className="w-3.5 h-3.5" />,
+    user: <User className="w-3.5 h-3.5" />
+};
+
+export const OperationTag: React.FC<{ message: string; operation: SearchOperationsData['operation']; actor?: SearchOperationsData['actor'] }> = ({
+    message,
+    operation,
+    actor
+}) => {
     return (
         <Tooltip delayDuration={0}>
             <TooltipTrigger>
                 <div className="flex items-center gap-1">
-                    <Tag>{operation.type}</Tag>
+                    <Tag>{typeLabels[operation.type] ?? operation.type}</Tag>
                     {operation.type === 'sync' && (
                         <Tag>
                             {operation.action === 'cancel' && <X className="w-3.5 h-3.5" />}
@@ -33,6 +51,15 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                             {operation.action === 'refresh_token' && <RefreshCw className="w-3.5 h-3.5" />}
                         </Tag>
                     )}
+
+                    {operation.type === 'agent_session' && (
+                        <Tag>
+                            {operation.action === 'create' && <Plus className="w-3.5 h-3.5" />}
+                            {operation.action === 'terminate' && <Ban className="w-3.5 h-3.5" />}
+                        </Tag>
+                    )}
+
+                    {actor && operation.type !== 'agent_session' && <Tag>{actorIcons[actor.kind]}</Tag>}
 
                     {operation.type === 'webhook' && (
                         <Tag>
