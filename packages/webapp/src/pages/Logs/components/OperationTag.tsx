@@ -55,7 +55,11 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                         </Tag>
                     )}
 
-                    {actor && operation.type !== 'agent_session' && <Tag>{actorIcons[actor.kind]}</Tag>}
+                    {actor && operation.type !== 'agent_session' && (
+                        <Tag role="img" aria-label={`Triggered by ${actor.kind}`}>
+                            {actorIcons[actor.kind]}
+                        </Tag>
+                    )}
 
                     {operation.type === 'webhook' && (
                         <Tag>
