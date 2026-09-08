@@ -7,15 +7,18 @@ import { createConfigSeed } from '../../../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../../../seeders/environment.seeder.js';
 import { search, upsert } from './functions.js';
 
-import type { DBFunctionConfigVersion } from '@nangohq/types';
+import type { DBFunctionConfigVersion, FunctionTriggerDefinition } from '@nangohq/types';
 
-function functionVersion(version: string): Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> {
+function functionVersion(
+    version: string,
+    trigger: FunctionTriggerDefinition = { kind: 'none' }
+): Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> {
     return {
         description: `Function ${version}`,
         file_location: `functions/${version}`,
         version,
         source: 'repo',
-        trigger: { kind: 'none' },
+        trigger,
         requires: { connection: true, outbound: false, invoke: false },
         capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
         limits: { concurrency: { perConnection: 'max' } },
@@ -127,6 +130,63 @@ describe(search, () => {
         const functions = (await search(db.knex, { environmentId: environment.id, filter: { integrationKey: github.unique_key, name: 'unknown' } })).unwrap();
 
         expect(functions).toStrictEqual([]);
+    });
+
+    it('filters functions with http trigger', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+
+        await upsert(db.knex, {
+            environmentId: environment.id,
+            integrationId: github.unique_key,
+            name: 'subscribed',
+            version: functionVersion('subscribed', { kind: 'http', subscriptions: ['push'] })
+        });
+        await upsert(db.knex, {
+            environmentId: environment.id,
+            integrationId: github.unique_key,
+            name: 'empty',
+            version: functionVersion('empty', { kind: 'http', subscriptions: [] })
+        });
+        await upsert(db.knex, {
+            environmentId: environment.id,
+            integrationId: github.unique_key,
+            name: 'none',
+            version: functionVersion('none', { kind: 'http' })
+        });
+        const disabled = (
+            await upsert(db.knex, {
+                environmentId: environment.id,
+                integrationId: github.unique_key,
+                name: 'disabled',
+                version: functionVersion('disabled', { kind: 'http', subscriptions: ['push'] })
+            })
+        ).unwrap();
+        await db.knex('function_configs').where({ id: disabled.config.id }).update({ enabled: false });
+
+        const subscribed = (
+            await search(db.knex, {
+                environmentId: environment.id,
+                filter: { integrationKey: github.unique_key, enabled: true, trigger: { kind: 'http', hasSubscriptions: true } }
+            })
+        ).unwrap();
+        const withoutSubscriptions = (
+            await search(db.knex, {
+                environmentId: environment.id,
+                filter: { integrationKey: github.unique_key, enabled: true, trigger: { kind: 'http', hasSubscriptions: false } }
+            })
+        ).unwrap();
+        const disabledSubscribed = (
+            await search(db.knex, {
+                environmentId: environment.id,
+                filter: { integrationKey: github.unique_key, enabled: false, trigger: { kind: 'http', hasSubscriptions: true } }
+            })
+        ).unwrap();
+
+        expect(subscribed.map((func) => func.config.name)).toEqual(['subscribed']);
+        expect(withoutSubscriptions.map((func) => func.config.name).sort()).toEqual(['empty', 'none']);
+        expect(disabledSubscribed.map((func) => func.config.name)).toEqual(['disabled']);
     });
 
     it('does not ignore empty filter values', async () => {

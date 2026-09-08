@@ -1,10 +1,10 @@
 ---
 title: 'Delete an environment API key'
-openapi: 'DELETE /environment/api-keys'
+openapi: 'DELETE /environments/{environmentUuid}/api-keys/{keyUuid}'
 ---
 
 <Info>
   Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
 </Info>
 
-Deletes an Environment API key. `environment_id` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create). `key_id` is the numeric ID returned when the key was [created](/reference/backend/http-api/environments/create-api-key).
+Deletes an Environment API key. `environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create). `keyUuid` is the UUID returned when the key was [created](/reference/backend/http-api/environments/create-api-key).

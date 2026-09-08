@@ -1,15 +1,24 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import {
+    exportRunnerPublicKey,
+    INTERNAL_SERVICE_AUDIENCE_JOBS,
+    INTERNAL_SERVICE_AUDIENCE_RUNNER,
+    verifyInternalServiceToken,
+    verifyRunnerDispatchToken
+} from '@nangohq/internal-auth';
 import { Ok } from '@nangohq/utils';
 
 import { RunnerRuntimeAdapter } from './runner.adapter.js';
 
 import type { NangoProps } from '@nangohq/types';
 
-const { getRunnerMock, mockEnvs } = vi.hoisted(() => ({
+const { getRunnerMock, getRunnersMock, mockEnvs } = vi.hoisted(() => ({
     getRunnerMock: vi.fn(),
+    getRunnersMock: vi.fn(),
     mockEnvs: {
-        NANGO_INTERNAL_AUTH_SIGNING_KEY: undefined as string | undefined
+        NANGO_INTERNAL_AUTH_SIGNING_KEY: undefined as string | undefined,
+        NANGO_INTERNAL_AUTH_REQUIRED: false
     }
 }));
 
@@ -19,7 +28,7 @@ vi.mock('../env.js', () => ({
 
 vi.mock('../runner/runner.js', () => ({
     getRunner: getRunnerMock,
-    getRunners: vi.fn()
+    getRunners: getRunnersMock
 }));
 
 vi.mock('@nangohq/utils', async (importOriginal) => {
@@ -128,6 +137,34 @@ describe('RunnerRuntimeAdapter internal auth', () => {
         const adapter = new RunnerRuntimeAdapter();
         const result = await adapter.invoke({ taskId: 'task-1', nangoProps: minimalNangoProps(), code: 'code', codeParams: {} });
         expect(result.isOk()).toBe(true);
-        expect(startMutate.mock.calls[0]?.[0].internalAuthToken).toEqual(expect.stringMatching(/^eyJ/));
+        const internalAuthToken = startMutate.mock.calls[0]?.[0].internalAuthToken as string;
+        expect(internalAuthToken).toEqual(expect.stringMatching(/^eyJ/));
+        expect(verifyInternalServiceToken(internalAuthToken, INTERNAL_SERVICE_AUDIENCE_JOBS, 'sign')).toMatchObject({
+            op: 'task',
+            taskId: 'task-1',
+            audience: INTERNAL_SERVICE_AUDIENCE_JOBS
+        });
+        expect(getRunnerMock).toHaveBeenCalledWith(1, expect.objectContaining({ token: expect.stringMatching(/^eyJ/) }));
+        const dispatchToken = getRunnerMock.mock.calls[0]?.[1]?.token as string;
+        expect(verifyRunnerDispatchToken(dispatchToken, INTERNAL_SERVICE_AUDIENCE_RUNNER, exportRunnerPublicKey('sign'))).toMatchObject({
+            op: 'task',
+            taskId: 'task-1',
+            audience: INTERNAL_SERVICE_AUDIENCE_RUNNER
+        });
+    });
+
+    it('passes a runner-audience token to getRunners on cancel when the signing key is set', async () => {
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        const abortMutate = vi.fn().mockResolvedValue(true);
+        getRunnersMock.mockResolvedValue(Ok([{ client: { abort: { mutate: abortMutate } } }]));
+        const adapter = new RunnerRuntimeAdapter();
+        const result = await adapter.cancel({ taskId: 'task-1', nangoProps: minimalNangoProps() });
+        expect(result.isOk()).toBe(true);
+        expect(getRunnersMock).toHaveBeenCalledWith(1, expect.objectContaining({ token: expect.stringMatching(/^eyJ/) }));
+        const dispatchToken = getRunnersMock.mock.calls[0]?.[1]?.token as string;
+        expect(verifyRunnerDispatchToken(dispatchToken, INTERNAL_SERVICE_AUDIENCE_RUNNER, exportRunnerPublicKey('sign'))).toMatchObject({
+            op: 'task',
+            taskId: 'task-1'
+        });
     });
 });

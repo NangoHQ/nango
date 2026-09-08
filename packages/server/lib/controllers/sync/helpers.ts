@@ -38,3 +38,8 @@ export function normalizeSyncParams(syncs: (string | { name: string; variant: st
         return { syncName: sync.name, syncVariant: sync.variant };
     });
 }
+
+/** `base` is the default variant, so it is left out of the id rather than spelled out. */
+export function syncTargetId(name: string, variant?: string): string {
+    return variant && variant !== 'base' ? `${name}::${variant}` : name;
+}

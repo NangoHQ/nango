@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
-import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
+import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 import type { DBConnectSession } from '../../services/connectSession.service.js';
 import type { DBCustomerKey, DBEndUser, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
@@ -35,6 +35,31 @@ describe(`POST ${endpoint}`, () => {
         });
 
         shouldBeProtected(res);
+    });
+
+    it('should enforce the connection cap for normal sessions but not preview sessions', async () => {
+        const { env, apiKey, plan, user } = await seeders.seedAccountEnvAndUser();
+        await db.knex('plans').where({ id: plan.id }).update({ connections_max: 0 });
+
+        const normalSession = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { end_user: { id: 'capped-user', email: 'capped@example.com' } }
+        });
+        isError(normalSession.json);
+        expect(normalSession.json.error.code).toBe('resource_capped');
+
+        const dashboardSession = await authenticateUser(api, user);
+        const previewSession = await api.fetch('/api/v1/connect/sessions', {
+            method: 'POST',
+            query: { env: env.name },
+            session: dashboardSession,
+            body: {
+                is_preview: true,
+                end_user: { id: 'preview-user', email: 'preview@nango.dev' }
+            }
+        });
+        isSuccess(previewSession.json);
     });
 
     it('should fail if no endUser', async () => {

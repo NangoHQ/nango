@@ -4,6 +4,7 @@ import { APIError, apiFetch } from '../utils/api';
 
 export interface ApiKeyListItem {
     id: number;
+    uuid: string;
     display_name: string;
     scopes: string[];
     secret: string;

@@ -68,6 +68,7 @@ afterEach(() => {
     envs.NANGO_INTERNAL_AUTH_REQUIRED = false;
     envs.NANGO_INTERNAL_AUTH_TOKEN = undefined;
     envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
+    envs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY = undefined;
 });
 
 describe('internalServiceAuthMiddleware', () => {
@@ -115,6 +116,22 @@ describe('internalServiceAuthMiddleware', () => {
         const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR));
         try {
             const res = await fetch(`${url}/v1/dequeue`, { method: 'POST', headers: { Authorization: 'Bearer secret' } });
+            expect(res.status).toBe(200);
+        } finally {
+            await close();
+        }
+    });
+
+    it('skips /health when skip matches the path', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const server = express();
+        server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, envs, skip: (req) => req.path === '/health' }));
+        server.get('/health', (_req, res) => {
+            res.json({ status: 'ok' });
+        });
+        const { url, close } = await listen(server);
+        try {
+            const res = await fetch(`${url}/health`);
             expect(res.status).toBe(200);
         } finally {
             await close();

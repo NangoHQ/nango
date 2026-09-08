@@ -1,6 +1,6 @@
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
-import { mintTaskAuthToken } from '../internal-auth.js';
+import { mintRunnerDispatchToken, mintTaskAuthToken } from '../internal-auth.js';
 import { getRunner, getRunners } from '../runner/runner.js';
 
 import type { RuntimeAdapter } from './adapter.js';
@@ -12,7 +12,8 @@ const logger = getLogger('RunnerRuntimeAdapter');
 export class RunnerRuntimeAdapter implements RuntimeAdapter {
     async cancel(params: { taskId: string; nangoProps: NangoProps }): Promise<Result<boolean>> {
         try {
-            const runners = await getRunners(params.nangoProps.team.id);
+            const token = mintRunnerDispatchToken({ taskId: params.taskId, nangoProps: params.nangoProps });
+            const runners = await getRunners(params.nangoProps.team.id, { token });
             if (runners.isErr()) {
                 return Err(runners.error);
             }
@@ -28,7 +29,8 @@ export class RunnerRuntimeAdapter implements RuntimeAdapter {
     }
 
     async invoke(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<boolean>> {
-        const runner = await getRunner(params.nangoProps.team.id);
+        const token = mintRunnerDispatchToken({ taskId: params.taskId, nangoProps: params.nangoProps });
+        const runner = await getRunner(params.nangoProps.team.id, { token });
         if (runner.isErr()) {
             return Err(runner.error);
         }

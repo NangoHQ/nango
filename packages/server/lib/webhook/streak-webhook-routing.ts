@@ -14,7 +14,7 @@ const route: WebhookHandler = async (nango, headers, body, _rawBody) => {
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         connectionIdentifierValue: streakWebhookToken,
         propName: 'streakWebhookToken'
     });

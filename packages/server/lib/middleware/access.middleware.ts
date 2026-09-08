@@ -91,6 +91,9 @@ export class AccessMiddleware {
         if (context.auth.apiKeyId !== undefined) {
             res.locals['apiKeyId'] = context.auth.apiKeyId;
         }
+        if (context.auth.apiKeyUuid !== undefined) {
+            res.locals['apiKeyUuid'] = context.auth.apiKeyUuid;
+        }
         if (context.auth.apiKeyDisplayName !== undefined) {
             res.locals['apiKeyDisplayName'] = context.auth.apiKeyDisplayName;
         }

@@ -1,0 +1,136 @@
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+import knexFactory from 'knex';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+
+import { migrate } from './migrate.js';
+import { dropExpiredPartitions, ensurePartitions } from './partitions.js';
+import { AUDIT_EVENTS_TABLE } from './schema.js';
+
+import type { Knex } from 'knex';
+
+const schema = 'audit_partitions_test';
+const foreignSchema = `${schema}_foreign`;
+dayjs.extend(utc);
+
+const now = new Date('2026-09-30T12:00:00Z');
+const day = (offset: number) => dayjs(now).utc().add(offset, 'day').toDate();
+
+let knex: Knex;
+
+async function partitions(): Promise<string[]> {
+    const { rows } = await knex.raw<{ rows: { relname: string }[] }>(
+        `SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+         WHERE n.nspname = ? AND c.relkind = 'r' AND c.relname ~ ? ORDER BY c.relname`,
+        [schema, `^${AUDIT_EVENTS_TABLE}_[0-9]{8}$`]
+    );
+    return rows.map((r) => r.relname);
+}
+
+beforeAll(async () => {
+    const url = `postgres://${process.env['NANGO_DB_USER']}:${process.env['NANGO_DB_PASSWORD']}@${process.env['NANGO_DB_HOST']}:${process.env['NANGO_DB_PORT']}`;
+    knex = knexFactory({ client: 'pg', connection: { connectionString: url } });
+    await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [schema]);
+    expect((await migrate({ knex, schema })).isOk()).toBe(true);
+});
+
+afterAll(async () => {
+    await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [schema]);
+    await knex.destroy();
+});
+
+beforeEach(async () => {
+    await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [foreignSchema]);
+    for (const name of await partitions()) {
+        await knex.raw('DROP TABLE IF EXISTS ??.??', [schema, name]);
+    }
+});
+
+describe('audit partition lifecycle', () => {
+    it('is idempotent, so every tick can ensure the same day', async () => {
+        expect((await ensurePartitions({ knex, schema, dates: [now] })).unwrap()).toEqual([`${AUDIT_EVENTS_TABLE}_20260930`]);
+        expect((await ensurePartitions({ knex, schema, dates: [now] })).unwrap()).toEqual([`${AUDIT_EVENTS_TABLE}_20260930`]);
+        expect(await partitions()).toEqual([`${AUDIT_EVENTS_TABLE}_20260930`]);
+    });
+
+    it('still ensures the other days when one of them cannot be created', async () => {
+        const overlapping = `${AUDIT_EVENTS_TABLE}_manual`;
+        const today = dayjs(now).utc().startOf('day');
+        await knex.raw(`CREATE TABLE ??.?? PARTITION OF ??.?? FOR VALUES FROM ('${today.toISOString()}') TO ('${today.add(1, 'day').toISOString()}')`, [
+            schema,
+            overlapping,
+            schema,
+            AUDIT_EVENTS_TABLE
+        ]);
+
+        expect((await ensurePartitions({ knex, schema, dates: [now, day(1)] })).isErr()).toBe(true);
+        expect(await partitions()).toEqual([`${AUDIT_EVENTS_TABLE}_${dayjs(day(1)).utc().format('YYYYMMDD')}`]);
+
+        await knex.raw('DROP TABLE IF EXISTS ??.??', [schema, overlapping]);
+    });
+
+    it('covers its whole day and neither of the neighbouring ones', async () => {
+        await ensurePartitions({ knex, schema, dates: [now] });
+        const insert = (occurredAt: string) =>
+            knex.raw(`INSERT INTO ??.?? (event, occurred_at) VALUES (?, ?)`, [
+                schema,
+                AUDIT_EVENTS_TABLE,
+                JSON.stringify({ id: '11111111-1111-4111-8111-111111111111', accountId: 1, occurredAt, resource: 'sync', action: 'paused' }),
+                occurredAt
+            ]);
+        await expect(insert('2026-09-30T00:00:00.000Z')).resolves.toMatchObject({ rowCount: 1 });
+        await expect(insert('2026-09-30T23:59:59.999Z')).resolves.toMatchObject({ rowCount: 1 });
+        await expect(insert('2026-09-29T23:59:59.999Z')).rejects.toThrow(/no partition of relation/);
+        await expect(insert('2026-10-01T00:00:00.000Z')).rejects.toThrow(/no partition of relation/);
+    });
+
+    it('leaves a detached table alone, even when its name looks expired', async () => {
+        await ensurePartitions({ knex, schema, dates: [day(-400)] });
+        const [detached] = await partitions();
+        await knex.raw(`ALTER TABLE ??.?? DETACH PARTITION ??.??`, [schema, AUDIT_EVENTS_TABLE, schema, detached]);
+        await ensurePartitions({ knex, schema, dates: [day(-399)] });
+
+        const res = await dropExpiredPartitions({ knex, schema, retentionDays: 365, now });
+        expect(res.isOk() && res.value).toEqual({ dropped: 1, skipped: 0 });
+        expect(await partitions()).toEqual([detached]);
+    });
+
+    it('does not drop a partition placed in another schema', async () => {
+        const foreign = `${schema}_foreign`;
+        const from = dayjs(day(-400)).utc().startOf('day');
+        await knex.raw('CREATE SCHEMA IF NOT EXISTS ??', [foreign]);
+        await knex.raw(`CREATE TABLE ??.?? PARTITION OF ??.?? FOR VALUES FROM ('${from.toISOString()}') TO ('${from.add(1, 'day').toISOString()}')`, [
+            foreign,
+            `${AUDIT_EVENTS_TABLE}_${from.format('YYYYMMDD')}`,
+            schema,
+            AUDIT_EVENTS_TABLE
+        ]);
+
+        const res = await dropExpiredPartitions({ knex, schema, retentionDays: 365, now });
+
+        expect(res.isOk() && res.value).toEqual({ dropped: 0, skipped: 0 });
+        await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [foreign]);
+    });
+
+    it('refuses a retention that would drop the partition holding live events', async () => {
+        await ensurePartitions({ knex, schema, dates: [day(-400), now] });
+
+        for (const retentionDays of [-1, 0, 1.5]) {
+            expect((await dropExpiredPartitions({ knex, schema, retentionDays, now })).isErr()).toBe(true);
+        }
+        expect(await partitions()).toHaveLength(2);
+    });
+
+    it('drops expired partitions and preserves the rest', async () => {
+        // -366 and -365 straddle the cutoff, so the pair pins where it falls
+        await ensurePartitions({ knex, schema, dates: [-400, -366, -365, -10, 0].map(day) });
+
+        const res = await dropExpiredPartitions({ knex, schema, retentionDays: 365, now });
+        expect(res.isOk() && res.value).toEqual({ dropped: 2, skipped: 0 });
+        expect(await partitions()).toEqual([
+            `${AUDIT_EVENTS_TABLE}_${dayjs(day(-365)).utc().format('YYYYMMDD')}`,
+            `${AUDIT_EVENTS_TABLE}_${dayjs(day(-10)).utc().format('YYYYMMDD')}`,
+            `${AUDIT_EVENTS_TABLE}_20260930`
+        ]);
+    });
+});

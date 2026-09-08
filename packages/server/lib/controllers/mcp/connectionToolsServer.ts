@@ -1,5 +1,4 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { Server } from '@modelcontextprotocol/server';
 import tracer from 'dd-trace';
 
 import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq/logs';
@@ -9,7 +8,7 @@ import { Err, metrics, Ok, truncateJson } from '@nangohq/utils';
 import { envs } from '../../env.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
-import type { CallToolRequest, CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
+import type { CallToolRequest, CallToolResult, Tool } from '@modelcontextprotocol/server';
 import type { Config } from '@nangohq/shared';
 import type { DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam, Result } from '@nangohq/types';
 import type { Span } from 'dd-trace';
@@ -41,7 +40,7 @@ export async function createConnectionToolsMcpServer(
 
     const actions = await getActionsForProvider(environment, providerConfig);
 
-    server.setRequestHandler(ListToolsRequestSchema, () => {
+    server.setRequestHandler('tools/list', () => {
         return {
             tools: actions.flatMap((action) => {
                 if (!action.enabled) {
@@ -54,7 +53,7 @@ export async function createConnectionToolsMcpServer(
         };
     });
 
-    server.setRequestHandler(CallToolRequestSchema, callToolRequestHandler(actions, account, environment, connection, providerConfig));
+    server.setRequestHandler('tools/call', callToolRequestHandler(actions, account, environment, connection, providerConfig));
 
     return Ok(server);
 }
@@ -81,7 +80,7 @@ function actionToTool(action: DBSyncConfig): Tool | null {
         name: action.sync_name,
         inputSchema: {
             type: 'object',
-            properties: inputSchema?.properties as Record<string, object>,
+            properties: inputSchema?.properties as Tool['inputSchema']['properties'],
             required: inputSchema?.required,
             description: inputSchema?.description
         },
@@ -113,12 +112,19 @@ function callToolRequestHandler(
             throw new Error(`Action ${name} not found`);
         }
 
-        const input = toolArguments ?? {};
-
         span.setTag('nango.actionName', action.sync_name)
             .setTag('nango.connectionId', connection.id)
             .setTag('nango.environmentId', environment.id)
             .setTag('nango.providerConfigKey', providerConfig.unique_key);
+
+        if (!action.enabled) {
+            metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { mcp_type: 'legacy_connection_tools', outcome: 'error' });
+            span.setTag('nango.error', 'disabled_action');
+            span.finish();
+            throw new Error('The action is disabled');
+        }
+
+        const input = toolArguments ?? {};
 
         const logCtx = await logContextGetter.create(
             { operation: { type: 'action', action: 'run' }, expiresAt: defaultOperationExpiration.action() },

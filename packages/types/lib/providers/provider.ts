@@ -245,6 +245,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         // jwt-specific
         header?: Record<string, string>;
         payload?: Record<string, string>;
+        singleUse?: boolean;
     };
     assertion_option?: Record<string, SimplifiedJSONSchema>;
     token_expires_in_ms?: number;

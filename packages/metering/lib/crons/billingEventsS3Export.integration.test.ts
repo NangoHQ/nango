@@ -243,19 +243,19 @@ describe('billingEventsS3Export', () => {
     // not (account, env, day). Account 999 has 3 events. 100 events on otherDay are excluded.
     describe('proxy', () => {
         it('emits one row per (account, day) with summed counts', async () => {
-            const rows = await runQuery('proxy', 'proxy_test');
+            const rows = await runQuery('proxy');
 
             expect(rows).toHaveLength(2);
             expect(rows).toContainEqual({
-                idempotency_key: `proxy_test:1:${targetDay}`,
-                event_name: 'proxy_test',
+                idempotency_key: `proxy:1:${targetDay}`,
+                event_name: 'proxy',
                 external_customer_id: '1',
                 timestamp: `${targetDay}T23:59:59.999Z`,
                 properties: { count: 14 }
             });
             expect(rows).toContainEqual({
-                idempotency_key: `proxy_test:999:${targetDay}`,
-                event_name: 'proxy_test',
+                idempotency_key: `proxy:999:${targetDay}`,
+                event_name: 'proxy',
                 external_customer_id: '999',
                 timestamp: `${targetDay}T23:59:59.999Z`,
                 properties: { count: 3 }
@@ -268,12 +268,12 @@ describe('billingEventsS3Export', () => {
     // durationSeconds=8, customLogs=20, compute=4*1200*2=9600.
     describe('function_executions', () => {
         it('carries count + telemetry properties', async () => {
-            const rows = await runQuery('function_executions', 'function_executions_test');
+            const rows = await runQuery('function_executions');
 
             expect(rows).toHaveLength(1);
             expect(rows[0]!).toEqual({
-                idempotency_key: `function_executions_test:1:${targetDay}`,
-                event_name: 'function_executions_test',
+                idempotency_key: `function_executions:1:${targetDay}`,
+                event_name: 'function_executions',
                 external_customer_id: '1',
                 timestamp: `${targetDay}T23:59:59.999Z`,
                 properties: {
@@ -290,7 +290,7 @@ describe('billingEventsS3Export', () => {
     // Counter. Account 1 has 8 events.
     describe('webhook_forwards', () => {
         it('emits summed counts', async () => {
-            const rows = await runQuery('webhook_forwards', 'webhook_forwards_test');
+            const rows = await runQuery('webhook_forwards');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({ count: 8 });
         });
@@ -299,7 +299,7 @@ describe('billingEventsS3Export', () => {
     // Counter. Account 1 has 2 events.
     describe('billable_actions', () => {
         it('emits summed counts', async () => {
-            const rows = await runQuery('billable_actions', 'billable_actions_test');
+            const rows = await runQuery('billable_actions');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({ count: 2 });
         });
@@ -308,7 +308,7 @@ describe('billingEventsS3Export', () => {
     // Counter. Account 1 has 3 events.
     describe('monthly_active_records', () => {
         it('emits summed counts', async () => {
-            const rows = await runQuery('monthly_active_records', 'monthly_active_records_test');
+            const rows = await runQuery('monthly_active_records');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({ count: 3 });
         });
@@ -320,7 +320,7 @@ describe('billingEventsS3Export', () => {
     // → AVG(300, 200) = 250. Matches Orb's average(count) semantic.
     describe('records', () => {
         it('emits sum-across-slices-per-batch then average-across-batches', async () => {
-            const rows = await runQuery('records', 'records_test');
+            const rows = await runQuery('records');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({ count: 250 });
         });
@@ -332,7 +332,7 @@ describe('billingEventsS3Export', () => {
     // → AVG(30, 20) = 25.
     describe('billable_connections_v2', () => {
         it('emits sum-across-slices-per-batch then average-across-batches', async () => {
-            const rows = await runQuery('billable_connections_v2', 'billable_connections_v2_test');
+            const rows = await runQuery('billable_connections_v2');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({ count: 25 });
         });
@@ -344,7 +344,7 @@ describe('billingEventsS3Export', () => {
     // so contributes 0; otherDay row is excluded by WHERE day.
     describe('data_transfer', () => {
         it('sums egressed_bytes over billable pairs with per-pair breakdown', async () => {
-            const rows = await runQuery('data_transfer', 'data_transfer_test');
+            const rows = await runQuery('data_transfer');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({
                 count: 1950,
@@ -366,7 +366,7 @@ describe('billingEventsS3Export', () => {
 
         it('keeps per-source export properties in sync with the billable view', async () => {
             const viewSources = await getBillableDataTransferViewSources();
-            const metric = METRICS.find((metric) => metric.canonicalEventName === 'data_transfer');
+            const metric = METRICS.find((metric) => metric.eventName === 'data_transfer');
             if (!metric) throw new Error('data_transfer metric missing');
 
             const exportSourceProperties = [...metric.select(targetDay, database).matchAll(EXPORT_SOURCE_PROPERTY_PATTERN)].map(([, property, source]) => {
@@ -384,8 +384,8 @@ describe('billingEventsS3Export', () => {
     });
 
     // Cross-cutting checks that exercise behaviour shared by every metric.
-    it('threads event_name suffix into idempotency_key and event_name', async () => {
-        const rows = await runQuery('proxy', 'proxy');
+    it('derives idempotency_key and event_name from the metric spec', async () => {
+        const rows = await runQuery('proxy');
         expect(rows.find((r: { external_customer_id: string }) => r.external_customer_id === '1')).toMatchObject({
             idempotency_key: `proxy:1:${targetDay}`,
             event_name: 'proxy'
@@ -393,9 +393,9 @@ describe('billingEventsS3Export', () => {
     });
 
     it('excludes rows for other days via WHERE day = ...', async () => {
-        const metric = METRICS.find((m) => m.canonicalEventName === 'proxy');
+        const metric = METRICS.find((m) => m.eventName === 'proxy');
         if (!metric) throw new Error('proxy metric missing');
-        const sql = metricRowsSql({ metric, day: '2030-01-01', eventName: 'proxy', database });
+        const sql = metricRowsSql({ metric, day: '2030-01-01', database });
         const c = clickhouseClient();
         if (!c) throw new Error('client not configured');
         try {
@@ -429,11 +429,11 @@ interface OrbRow {
     properties: Record<string, number>;
 }
 
-async function runQuery(canonicalEventName: string, eventName: string): Promise<OrbRow[]> {
-    const metric: MetricSpec | undefined = METRICS.find((m) => m.canonicalEventName === canonicalEventName);
-    if (!metric) throw new Error(`metric ${canonicalEventName} not in METRICS`);
+async function runQuery(eventName: string): Promise<OrbRow[]> {
+    const metric: MetricSpec | undefined = METRICS.find((m) => m.eventName === eventName);
+    if (!metric) throw new Error(`metric ${eventName} not in METRICS`);
 
-    const sql = metricRowsSql({ metric, day: targetDay, eventName, database });
+    const sql = metricRowsSql({ metric, day: targetDay, database });
     const c = clickhouseClient();
     if (!c) throw new Error('CLICKHOUSE_URL not set');
     try {

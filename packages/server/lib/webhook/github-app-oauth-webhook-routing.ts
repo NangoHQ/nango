@@ -51,7 +51,7 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookHeaderValue: headers['x-github-event'] as string,
         connectionIdentifier: 'installation.id',
         propName: 'installation_id'
@@ -120,7 +120,7 @@ async function handleCreateWebhook(nango: InternalNango, body: any): Promise<Res
                 connectionId: res.connection.connection_id,
                 providerConfigKey: res.connection.provider_config_key,
                 account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
+                environment: { uuid: environment.uuid, name: environment.name },
                 endUser: undefined,
                 auditAttribution: { kind: 'no-attribution', reason: 'provider webhook' }
             });

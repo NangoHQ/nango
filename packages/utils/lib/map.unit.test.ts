@@ -249,4 +249,48 @@ describe('TTLFixedSizeMap', () => {
         expect(map.get('c')).toBe(3);
         expect(map.size).toBe(2);
     });
+
+    it('should let a single entry override the default TTL', () => {
+        const map = new TTLFixedSizeMap<string, number>(10, 60_000);
+        map.set('short', 1, 1_000);
+        map.set('default', 2);
+
+        vi.advanceTimersByTime(1_000);
+        expect(map.get('short')).toBeUndefined();
+        expect(map.get('default')).toBe(2);
+    });
+
+    it('should throw on an invalid per-entry TTL', () => {
+        const map = new TTLFixedSizeMap<string, number>(10, 60_000);
+        expect(() => map.set('a', 1, NaN)).toThrow('ttlMs must be a finite, non-negative number.');
+        expect(() => map.set('a', 1, Infinity)).toThrow('ttlMs must be a finite, non-negative number.');
+        expect(() => map.set('a', 1, -1)).toThrow('ttlMs must be a finite, non-negative number.');
+    });
+
+    it('should report the time left before an entry expires', () => {
+        const map = new TTLFixedSizeMap<string, number>(10, 60_000);
+        map.set('a', 1);
+        expect(map.remainingMs('a')).toBe(60_000);
+
+        vi.advanceTimersByTime(20_000);
+        expect(map.remainingMs('a')).toBe(40_000);
+    });
+
+    it('should report no time left for missing or expired entries', () => {
+        const map = new TTLFixedSizeMap<string, number>(10, 60_000);
+        expect(map.remainingMs('missing')).toBe(0);
+
+        map.set('a', 1);
+        vi.advanceTimersByTime(60_000);
+        expect(map.remainingMs('a')).toBe(0);
+    });
+
+    it('should evict on remainingMs the same way get does', () => {
+        const map = new TTLFixedSizeMap<string, number>(10, 60_000);
+        map.set('a', 1);
+        vi.advanceTimersByTime(60_000);
+
+        expect(map.remainingMs('a')).toBe(0);
+        expect(map.size).toBe(0);
+    });
 });

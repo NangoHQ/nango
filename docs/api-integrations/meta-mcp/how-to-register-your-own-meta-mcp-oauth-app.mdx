@@ -1,0 +1,60 @@
+---
+title: 'How to register your own Meta Ads MCP OAuth app'
+sidebarTitle: 'Meta Ads MCP Setup'
+description: 'Register an OAuth app with Meta for the Ads MCP server and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Meta to obtain your OAuth credentials (App ID and App Secret) for the Ads MCP server. These are required to let your users grant your app access to their Meta ad accounts through MCP.
+
+<Steps>
+  <Step title="Create a Meta Developer account">
+    If you don't already have one, go to [Meta for Developers](https://developers.facebook.com/) and create a developer account.
+  </Step>
+  <Step title="Create or reuse a Business-type app">
+    1. Go to the [Meta Developer Dashboard](https://developers.facebook.com/apps/).
+    2. Click **Create App**, enter your **App name**, then click **Next**.
+    3. Select **Other**, then click **Next**.
+    4. Select **Business**, then click **Next**.
+    5. Select the Business portfolio to associate with the app, then click **Create app**.
+  </Step>
+  <Step title="Add the Ads MCP use case">
+    1. In the left sidebar, click **Use cases**, then **Add use case**.
+    2. In the popup, click **Ads and monetization**, select **Create & manage ads with ads MCP server**, then click **Save**.
+    This automatically adds **Facebook Login for Business** to your app, which handles the OAuth flow.
+  </Step>
+  <Step title="(Optional) Request Advanced Access for agencies and partners">
+    If you manage ads data on behalf of other businesses, you need Advanced Access on the `ads_mcp_management` permission and must submit your app for review:
+    1. On the **Use cases** screen, click **Customize** on the ads MCP server use case.
+    2. On the **Permissions and features** tab, click **Actions** next to `ads_mcp_management`, choose to request **Advanced Access**, then click **Go to app review**.
+  </Step>
+  <Step title="Configure OAuth settings">
+    1. From **Facebook Login for Business** > **Settings**, enable:
+       - **Client OAuth Login** ✅
+       - **Web OAuth Login** ✅
+    2. In **Valid OAuth Redirect URIs**, add: `https://api.nango.dev/oauth/callback`
+    3. Click **Save Changes**.
+    <Note>Meta also lets you authenticate by passing a pre-obtained access token instead of OAuth. Nango's Ads MCP integration uses OAuth for automatic token handling and refresh, so choose OAuth here.</Note>
+  </Step>
+  <Step title="Request the Ads MCP permissions">
+    In **App Review** > **Permissions and Features**, request:
+    - `ads_mcp_management` - required to use the Ads MCP server
+    - `ads_read` - read ads data
+    - `ads_management` - manage ads and campaigns
+    - `catalog_management` - manage product catalogs
+    - `business_management` - access Business Manager data
+    - `pages_show_list` - list Pages the user manages
+    - `instagram_basic` - read basic Instagram account data
+    <Note>Some [permissions](https://developers.facebook.com/docs/facebook-login/guides/permissions/review) may require App Review before going live.</Note>
+  </Step>
+  <Step title="Obtain your App credentials">
+    Go to **App Settings** > **Basic** in the left sidebar, then copy your **App ID** (this is your **Client ID**) and **App Secret** (this is your **Client Secret**). You'll need these when configuring the integration in Nango.
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see the [Ads MCP server documentation](https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-get-started).
+
+---

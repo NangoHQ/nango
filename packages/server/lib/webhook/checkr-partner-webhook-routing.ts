@@ -43,7 +43,7 @@ const route: WebhookHandler<CheckrBody> = async (nango, headers, body, rawBody) 
     const parsedBody = body;
 
     const response = await nango.executeScriptForWebhooks({
-        body: parsedBody,
+        payload: parsedBody,
         webhookType: 'type',
         connectionIdentifier: 'account_id',
         propName: 'checkr_account_id'

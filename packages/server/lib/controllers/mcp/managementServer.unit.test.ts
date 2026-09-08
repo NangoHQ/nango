@@ -1,11 +1,12 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { Client } from '@modelcontextprotocol/client';
+import { InMemoryTransport, ProtocolErrorCode } from '@modelcontextprotocol/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, flags, Ok } from '@nangohq/utils';
 
-import { audit } from '../../audit.js';
+import { audit, auditBackend } from '../../audit.js';
+import { triggerActionTool } from './actions/trigger.js';
 import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
 import { createConnectSessionTool } from './connectSessions/create.js';
@@ -17,17 +18,32 @@ import { deleteIntegrationsTool } from './integrations/delete.js';
 import { updateIntegrationsTool } from './integrations/update.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { createManagementMcpServer } from './managementServer.js';
+import { getProvidersTool } from './providers/get.js';
 import { proxyRequestTool } from './proxy/request.js';
-import { withoutDocsTools } from './testUtils.js';
+import { setSyncsStateTool } from './syncs/setState.js';
+import { triggerSyncsTool } from './syncs/trigger.js';
+import { withoutUnscopedTools } from './testUtils.js';
 import { PublicMcpError } from './utils.js';
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { McpServer } from '@modelcontextprotocol/server';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 describe('createManagementMcpServer', () => {
     afterEach(() => {
         flags.hasAuditTrail = false;
+        auditBackend.configured = false;
         vi.restoreAllMocks();
+    });
+
+    it('advertises that its tool list does not change during a connection', async () => {
+        const { client, server } = await createTestClient(['environment:*']);
+
+        try {
+            expect(client.getServerCapabilities()?.tools?.listChanged).toBe(false);
+        } finally {
+            await client.close();
+            await server.close();
+        }
     });
 
     it('exposes all management tools when the environment wildcard scope is granted', async () => {
@@ -45,6 +61,7 @@ describe('createManagementMcpServer', () => {
                     name: 'docs_query_filesystem',
                     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
                 },
+                { name: 'providers_get', annotations: { readOnlyHint: true, openWorldHint: false } },
                 {
                     name: 'connect_session_create',
                     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
@@ -67,6 +84,18 @@ describe('createManagementMcpServer', () => {
                 {
                     name: 'connections_get',
                     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
+                },
+                {
+                    name: 'syncs_set_state',
+                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+                },
+                {
+                    name: 'syncs_trigger',
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+                },
+                {
+                    name: 'actions_trigger',
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 {
                     name: 'proxy_request',
@@ -94,14 +123,52 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it('exposes documentation tools without an environment operation scope', async () => {
+    it('exposes documentation and provider tools without an environment operation scope', async () => {
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
             const result = await client.listTools();
 
-            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['docs_search', 'docs_query_filesystem']);
+            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['docs_search', 'docs_query_filesystem', 'providers_get']);
         } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns provider results as JSON text and structured content without an operation scope', async () => {
+        const response = {
+            name: 'github',
+            display_name: 'GitHub',
+            auth_mode: 'OAUTH2' as const,
+            docs: 'https://nango.dev/docs/api-integrations/github',
+            logo_url: 'https://api.nango.dev/images/template-logos/github.svg',
+            templates: []
+        };
+        const handlerSpy = vi.spyOn(getProvidersTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:mcp']);
+
+        try {
+            const listed = await client.listTools();
+            const providerTool = listed.tools.find((tool) => tool.name === 'providers_get');
+            expect(providerTool).toMatchObject({
+                annotations: { readOnlyHint: true, openWorldHint: false },
+                inputSchema: {
+                    type: 'object',
+                    required: ['provider'],
+                    additionalProperties: false
+                }
+            });
+
+            const result = await client.callTool({ name: 'providers_get', arguments: { provider: 'github', include_templates: true } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
             await client.close();
             await server.close();
         }
@@ -127,7 +194,7 @@ describe('createManagementMcpServer', () => {
         const authorized = await createTestClient(['environment:connect_sessions:write']);
         try {
             const result = await authorized.client.listTools();
-            const scopedTools = withoutDocsTools(result.tools);
+            const scopedTools = withoutUnscopedTools(result.tools);
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'connect_session_create',
@@ -141,8 +208,7 @@ describe('createManagementMcpServer', () => {
         const handlerSpy = vi.spyOn(createConnectSessionTool, 'handler');
         const unauthorized = await createTestClient(['environment:mcp']);
         try {
-            const result = await unauthorized.client.callTool({ name: 'connect_session_create', arguments: { end_user: { id: 'end-user-id' } } });
-            expect(result).toMatchObject({ isError: true });
+            await expectDisabledTool(unauthorized.client, 'connect_session_create', { end_user: { id: 'end-user-id' } });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -180,7 +246,7 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(withoutDocsTools(result.tools).map((tool) => tool.name)).toStrictEqual(['integrations_list']);
+            expect(withoutUnscopedTools(result.tools).map((tool) => tool.name)).toStrictEqual(['integrations_list']);
         } finally {
             await client.close();
             await server.close();
@@ -193,7 +259,7 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            const scopedTools = withoutDocsTools(result.tools);
+            const scopedTools = withoutUnscopedTools(result.tools);
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'integrations_get',
@@ -211,7 +277,7 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            const scopedTools = withoutDocsTools(result.tools);
+            const scopedTools = withoutUnscopedTools(result.tools);
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'integrations_create',
@@ -255,7 +321,7 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(withoutDocsTools(result.tools).map((tool) => tool.name)).toStrictEqual([
+            expect(withoutUnscopedTools(result.tools).map((tool) => tool.name)).toStrictEqual([
                 'integrations_list',
                 'integrations_get',
                 'integrations_create',
@@ -272,7 +338,7 @@ describe('createManagementMcpServer', () => {
         const authorized = await createTestClient(['environment:integrations:update']);
         try {
             const result = await authorized.client.listTools();
-            const scopedTools = withoutDocsTools(result.tools);
+            const scopedTools = withoutUnscopedTools(result.tools);
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'integrations_update',
@@ -286,8 +352,7 @@ describe('createManagementMcpServer', () => {
         const handlerSpy = vi.spyOn(updateIntegrationsTool, 'handler');
         const unauthorized = await createTestClient(['environment:mcp']);
         try {
-            const result = await unauthorized.client.callTool({ name: 'integrations_update', arguments: { integration_id: 'github' } });
-            expect(result).toMatchObject({ isError: true });
+            await expectDisabledTool(unauthorized.client, 'integrations_update', { integration_id: 'github' });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -300,7 +365,7 @@ describe('createManagementMcpServer', () => {
         const authorized = await createTestClient(['environment:integrations:delete']);
         try {
             const result = await authorized.client.listTools();
-            const scopedTools = withoutDocsTools(result.tools);
+            const scopedTools = withoutUnscopedTools(result.tools);
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'integrations_delete',
@@ -314,8 +379,7 @@ describe('createManagementMcpServer', () => {
         const handlerSpy = vi.spyOn(deleteIntegrationsTool, 'handler');
         const unauthorized = await createTestClient(['environment:mcp']);
         try {
-            const result = await unauthorized.client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'github' } });
-            expect(result).toMatchObject({ isError: true });
+            await expectDisabledTool(unauthorized.client, 'integrations_delete', { integration_id: 'github' });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -332,7 +396,7 @@ describe('createManagementMcpServer', () => {
             try {
                 const result = await client.listTools();
 
-                const scopedTools = withoutDocsTools(result.tools);
+                const scopedTools = withoutUnscopedTools(result.tools);
                 expect(scopedTools).toHaveLength(1);
                 expect(scopedTools[0]).toMatchObject({
                     name: 'connections_list',
@@ -349,7 +413,7 @@ describe('createManagementMcpServer', () => {
         const authorized = await createTestClient(['environment:proxy']);
         try {
             const result = await authorized.client.listTools();
-            const scopedTools = withoutDocsTools(result.tools);
+            const scopedTools = withoutUnscopedTools(result.tools);
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'proxy_request',
@@ -363,11 +427,12 @@ describe('createManagementMcpServer', () => {
         const handlerSpy = vi.spyOn(proxyRequestTool, 'handler');
         const unauthorized = await createTestClient(['environment:mcp']);
         try {
-            const result = await unauthorized.client.callTool({
-                name: 'proxy_request',
-                arguments: { method: 'GET', path: '/user', integration_id: 'github', connection_id: 'connection-id' }
+            await expectDisabledTool(unauthorized.client, 'proxy_request', {
+                method: 'GET',
+                path: '/user',
+                integration_id: 'github',
+                connection_id: 'connection-id'
             });
-            expect(result).toMatchObject({ isError: true });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -382,8 +447,72 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(withoutDocsTools(result.tools).map((tool) => tool.name)).toStrictEqual(['connections_list', 'connections_get']);
+            expect(withoutUnscopedTools(result.tools).map((tool) => tool.name)).toStrictEqual(['connections_list', 'connections_get']);
         } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('exposes and authorizes non-idempotent action triggering', async () => {
+        const authorized = await createTestClient(['environment:actions:execute']);
+        try {
+            const result = await authorized.client.listTools();
+            const scopedTools = withoutUnscopedTools(result.tools);
+            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools[0]).toMatchObject({
+                name: 'actions_trigger',
+                description: expect.stringContaining('time out within 90 seconds'),
+                inputSchema: {
+                    type: 'object',
+                    required: ['action_name', 'integration_id', 'connection_id'],
+                    additionalProperties: false
+                },
+                outputSchema: { type: 'object', required: ['data'], additionalProperties: false },
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
+            });
+            expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('async');
+            expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('max_retries');
+        } finally {
+            await authorized.client.close();
+            await authorized.server.close();
+        }
+
+        const handlerSpy = vi.spyOn(triggerActionTool, 'handler');
+        const unauthorized = await createTestClient(['environment:mcp']);
+        try {
+            await expectDisabledTool(unauthorized.client, 'actions_trigger', {
+                action_name: 'create-issue',
+                input: {},
+                integration_id: 'github',
+                connection_id: 'connection-id'
+            });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await unauthorized.client.close();
+            await unauthorized.server.close();
+        }
+    });
+
+    it('returns action responses as JSON text and structured content', async () => {
+        const response = { data: 'created' };
+        const handlerSpy = vi.spyOn(triggerActionTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:actions:execute']);
+
+        try {
+            const result = await client.callTool({
+                name: 'actions_trigger',
+                arguments: { action_name: 'create-issue', input: {}, integration_id: 'github', connection_id: 'connection-id' }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
             await client.close();
             await server.close();
         }
@@ -395,7 +524,7 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            const scopedTools = withoutDocsTools(result.tools);
+            const scopedTools = withoutUnscopedTools(result.tools);
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'connections_get',
@@ -412,9 +541,7 @@ describe('createManagementMcpServer', () => {
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
-            const result = await client.callTool({ name: 'connections_get', arguments: { connection_id: 'connection-id', integration_id: 'github' } });
-
-            expect(result).toMatchObject({ isError: true });
+            await expectDisabledTool(client, 'connections_get', { connection_id: 'connection-id', integration_id: 'github' });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -464,12 +591,7 @@ describe('createManagementMcpServer', () => {
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
-            const result = await client.callTool({ name: 'connections_list', arguments: {} });
-
-            expect(result).toStrictEqual({
-                content: [{ type: 'text', text: 'MCP error -32602: Tool connections_list disabled' }],
-                isError: true
-            });
+            await expectDisabledTool(client, 'connections_list', {});
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -533,7 +655,7 @@ describe('createManagementMcpServer', () => {
 
         try {
             const result = await client.listTools();
-            const scopedTools = withoutDocsTools(result.tools);
+            const scopedTools = withoutUnscopedTools(result.tools);
 
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
@@ -551,12 +673,7 @@ describe('createManagementMcpServer', () => {
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
-            const result = await client.callTool({ name: 'functions_list', arguments: { integration_id: 'github' } });
-
-            expect(result).toStrictEqual({
-                content: [{ type: 'text', text: 'MCP error -32602: Tool functions_list disabled' }],
-                isError: true
-            });
+            await expectDisabledTool(client, 'functions_list', { integration_id: 'github' });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -599,11 +716,156 @@ describe('createManagementMcpServer', () => {
         }
     });
 
+    it.each(['environment:syncs:execute', 'environment:syncs:*'])('exposes the sync tools with %s', async (scope) => {
+        const { client, server } = await createTestClient([scope]);
+
+        try {
+            const result = await client.listTools();
+            const scopedTools = withoutUnscopedTools(result.tools);
+
+            expect(scopedTools).toHaveLength(2);
+            expect(scopedTools[0]).toMatchObject({
+                name: 'syncs_set_state',
+                inputSchema: {
+                    type: 'object',
+                    required: ['syncs', 'integration_id', 'state'],
+                    additionalProperties: false
+                },
+                outputSchema: {
+                    type: 'object',
+                    required: ['success'],
+                    additionalProperties: false
+                },
+                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+            });
+            expect(scopedTools[0]?.inputSchema.properties).toEqual({
+                syncs: {
+                    minItems: 0,
+                    maxItems: 256,
+                    type: 'array',
+                    items: {
+                        anyOf: [
+                            { type: 'string' },
+                            {
+                                type: 'object',
+                                properties: { name: { type: 'string' }, variant: { type: 'string' } },
+                                required: ['name', 'variant'],
+                                additionalProperties: false
+                            }
+                        ]
+                    }
+                },
+                integration_id: { type: 'string', maxLength: 255, pattern: '^[a-zA-Z0-9~:.@ _-]+$' },
+                connection_id: { type: 'string', maxLength: 255, pattern: `^[a-zA-Z0-9,.;:=+~[\\]|@\${}"'\\\\/_ -]+$` },
+                state: { type: 'string', enum: ['started', 'paused'] }
+            });
+            expect(scopedTools[1]).toMatchObject({
+                name: 'syncs_trigger',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        reset: expect.objectContaining({ type: 'boolean', default: false }),
+                        empty_cache: expect.objectContaining({ type: 'boolean', default: false })
+                    },
+                    required: ['syncs', 'integration_id'],
+                    additionalProperties: false
+                },
+                outputSchema: {
+                    type: 'object',
+                    required: ['success'],
+                    additionalProperties: false
+                },
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+            });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('authorizes syncs_set_state before invoking the tool', async () => {
+        const handlerSpy = vi.spyOn(setSyncsStateTool, 'handler');
+        const { client, server } = await createTestClient(['environment:mcp']);
+
+        try {
+            await expectDisabledTool(client, 'syncs_set_state', {
+                integration_id: 'github',
+                syncs: ['issues'],
+                state: 'started'
+            });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns syncs_set_state results as JSON text and structured content', async () => {
+        const response = { success: true as const };
+        const handlerSpy = vi.spyOn(setSyncsStateTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:syncs:execute']);
+
+        try {
+            const result = await client.callTool({
+                name: 'syncs_set_state',
+                arguments: { integration_id: 'github', syncs: ['issues'], state: 'started' }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('authorizes syncs_trigger before invoking the tool', async () => {
+        const handlerSpy = vi.spyOn(triggerSyncsTool, 'handler');
+        const { client, server } = await createTestClient(['environment:mcp']);
+
+        try {
+            await expectDisabledTool(client, 'syncs_trigger', { integration_id: 'github', syncs: ['issues'] });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns syncs_trigger results as JSON text and structured content', async () => {
+        const response = { success: true as const };
+        const handlerSpy = vi.spyOn(triggerSyncsTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:syncs:execute']);
+
+        try {
+            const result = await client.callTool({
+                name: 'syncs_trigger',
+                arguments: { integration_id: 'github', syncs: ['issues'], reset: true, empty_cache: true }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
     it('exposes separate deployment tools and a read-only status tool', async () => {
         const authorized = await createTestClient(['environment:deploy']);
         try {
             const result = await authorized.client.listTools();
-            const scopedTools = withoutDocsTools(result.tools);
+            const scopedTools = withoutUnscopedTools(result.tools);
             expect(scopedTools).toHaveLength(3);
             expect(scopedTools).toMatchObject([
                 {
@@ -649,14 +911,11 @@ describe('createManagementMcpServer', () => {
         const handlerSpy = vi.spyOn(deployFunctionTool, 'handler');
         const unauthorized = await createTestClient(['environment:functions:*']);
         try {
-            const result = await unauthorized.client.callTool({
-                name: 'deploy_function',
-                arguments: { integration_id: 'github', function_name: 'issues', function_type: 'sync', code: 'code' }
-            });
-
-            expect(result).toStrictEqual({
-                content: [{ type: 'text', text: 'MCP error -32602: Tool deploy_function disabled' }],
-                isError: true
+            await expectDisabledTool(unauthorized.client, 'deploy_function', {
+                integration_id: 'github',
+                function_name: 'issues',
+                function_type: 'sync',
+                code: 'code'
             });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
@@ -732,12 +991,7 @@ describe('createManagementMcpServer', () => {
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
-            const result = await client.callTool({ name: 'integrations_create', arguments: {} });
-
-            expect(result).toStrictEqual({
-                content: [{ type: 'text', text: 'MCP error -32602: Tool integrations_create disabled' }],
-                isError: true
-            });
+            await expectDisabledTool(client, 'integrations_create', {});
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -748,6 +1002,7 @@ describe('createManagementMcpServer', () => {
 
     it('audits a requested mutation when its tool is disabled for insufficient scopes', async () => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const requestBody = {
             jsonrpc: '2.0',
@@ -778,7 +1033,7 @@ describe('createManagementMcpServer', () => {
             const event = auditSpy.mock.calls[0]?.[0];
             expect(event).toMatchObject({
                 accountId: 1,
-                environment: { id: 1, display: 'dev' },
+                environment: { id: 'test-environment', display: 'dev' },
                 actor: { type: 'api_key', id: '7', display: 'Management key' },
                 resource: 'integration',
                 action: 'created',
@@ -788,6 +1043,115 @@ describe('createManagementMcpServer', () => {
             });
             expect(typeof event?.occurredAt).toBe('string');
             expect(JSON.stringify(event)).not.toContain('credential-secret-value');
+        } finally {
+            await server.close();
+        }
+    });
+
+    it.each(['started', 'paused'] as const)('audits a denied sync state change as %s even when other arguments are invalid', async (state) => {
+        flags.hasAuditTrail = true;
+        auditBackend.configured = true;
+        const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+        const requestBody = {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'tools/call',
+            params: {
+                name: 'syncs_set_state',
+                arguments: { integration_id: 42, connection_id: 'connection-secret', syncs: [{ name: 'issues' }], state }
+            }
+        };
+        const server = createManagementMcpServer(
+            {
+                account: fakeAccount(),
+                environment: fakeEnvironment(),
+                plan: null,
+                grantedScopes: ['environment:mcp'],
+                audit: {
+                    kind: 'request',
+                    actor: { type: 'api_key', id: '7', display: 'Management key' },
+                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                }
+            },
+            requestBody
+        );
+
+        try {
+            await vi.waitFor(() => expect(auditSpy).toHaveBeenCalledOnce());
+            const event = auditSpy.mock.calls[0]?.[0];
+            expect(event).toMatchObject({
+                resource: 'sync',
+                action: state,
+                targets: [],
+                outcome: 'denied'
+            });
+            expect(event).not.toHaveProperty('metadata');
+            expect(JSON.stringify(event)).not.toContain('connection-secret');
+        } finally {
+            await server.close();
+        }
+    });
+
+    it.each(['started', 'paused'] as const)('audits an authorized invalid sync state change as a failed %s attempt', async (state) => {
+        flags.hasAuditTrail = true;
+        auditBackend.configured = true;
+        const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+        const server = createManagementMcpServer(
+            {
+                account: fakeAccount(),
+                environment: fakeEnvironment(),
+                plan: null,
+                grantedScopes: ['environment:syncs:execute'],
+                audit: {
+                    kind: 'request',
+                    actor: { type: 'api_key', id: '7', display: 'Management key' },
+                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                }
+            },
+            {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'syncs_set_state', arguments: { integration_id: 42, state } }
+            }
+        );
+
+        try {
+            await vi.waitFor(() => expect(auditSpy).toHaveBeenCalledOnce());
+            const event = auditSpy.mock.calls[0]?.[0];
+            expect(event).toMatchObject({ resource: 'sync', action: state, targets: [], outcome: 'failure' });
+            expect(event).not.toHaveProperty('metadata');
+        } finally {
+            await server.close();
+        }
+    });
+
+    it('does not audit a denied sync state change when the state is invalid', async () => {
+        flags.hasAuditTrail = true;
+        auditBackend.configured = true;
+        const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+        const server = createManagementMcpServer(
+            {
+                account: fakeAccount(),
+                environment: fakeEnvironment(),
+                plan: null,
+                grantedScopes: ['environment:mcp'],
+                audit: {
+                    kind: 'request',
+                    actor: { type: 'api_key', id: '7', display: 'Management key' },
+                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                }
+            },
+            {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'syncs_set_state', arguments: { state: 'invalid' } }
+            }
+        );
+
+        try {
+            expect(auditSpy).not.toHaveBeenCalled();
         } finally {
             await server.close();
         }
@@ -832,14 +1196,9 @@ describe('createManagementMcpServer', () => {
 
         try {
             await expect(client.listTools()).resolves.toMatchObject({
-                tools: [{ name: 'docs_search' }, { name: 'docs_query_filesystem' }]
+                tools: [{ name: 'docs_search' }, { name: 'docs_query_filesystem' }, { name: 'providers_get' }]
             });
-            const result = await client.callTool({ name: 'logs_list_operations', arguments: {} });
-
-            expect(result).toStrictEqual({
-                content: [{ type: 'text', text: 'MCP error -32602: Tool logs_list_operations disabled' }],
-                isError: true
-            });
+            await expectDisabledTool(client, 'logs_list_operations', {});
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
             handlerSpy.mockRestore();
@@ -960,6 +1319,13 @@ describe('createManagementMcpServer', () => {
         }
     });
 });
+
+async function expectDisabledTool(client: Client, name: string, args: Record<string, unknown>): Promise<void> {
+    await expect(client.callTool({ name, arguments: args })).rejects.toMatchObject({
+        code: ProtocolErrorCode.InvalidParams,
+        message: `Tool ${name} disabled`
+    });
+}
 
 async function createTestClient(grantedScopes: string[]): Promise<{ client: Client; server: McpServer }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();

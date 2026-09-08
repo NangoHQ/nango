@@ -1,0 +1,32 @@
+---
+title: 'Epic (FHIR) - How do I connect a health system?'
+sidebarTitle: 'Epic (FHIR)'
+---
+
+## Overview
+
+To authenticate with Epic, you need:
+
+1. **Interconnect Server URL** — Epic builds both the OAuth2 token endpoint (`<Interconnect Server URL>/oauth2/token`) and the FHIR API base (`<Interconnect Server URL>/api`) off this value, so Nango derives both automatically.
+
+This guide will walk you through finding your Interconnect Server URL. Client ID, Key ID, Private Key, and Scope are registered once on the integration itself, not per connection — see [How to register your own Epic app](/api-integrations/epic/how-to-register-your-own-epic-app) if you haven't done that yet.
+
+### Prerequisites
+
+- The health system has activated/installed your app from Epic's App Market, and their Epic administrator has mapped your Client ID to a local account.
+
+### Step 1: Finding your Interconnect Server URL
+
+Epic (or the health system's IT/Epic team) provides this when the health system activates your app from the App Market — it's specific to that health system's Epic environment, e.g. `fhir.epic.com/interconnect-fhir-oauth`.
+
+### Step 2: Enter your Interconnect Server URL in the Connect UI
+
+Once you have it:
+
+1. Open the form where you need to authenticate with Epic.
+2. Enter your **Interconnect Server URL** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/epic/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Epic.

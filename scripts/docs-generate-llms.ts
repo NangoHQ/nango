@@ -28,7 +28,7 @@ const resourceLinks: ResourceLink[] = [
     },
     {
         title: 'Talk to the team',
-        url: 'https://nango.dev/demo',
+        url: 'https://nango.dev/contact',
         description: 'Book a call with Nango for sales, onboarding, or technical questions.'
     },
     {

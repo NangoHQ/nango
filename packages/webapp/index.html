@@ -5,7 +5,25 @@
         <!-- Auth urls carry tokens in the path. Cloud serves this from a CDN, so the server's
              Referrer-Policy header doesn't apply. Must stay above any request-initiating tag. -->
         <meta name="referrer" content="strict-origin" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/favicon-16x16.png"
+            media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/favicon-32x32.png"
+            media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+        />
+        <link rel="shortcut icon" href="/favicon.ico" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-dark-16x16.png" media="(prefers-color-scheme: dark)" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-dark-32x32.png" media="(prefers-color-scheme: dark)" />
+        <link rel="shortcut icon" href="/favicon-dark.ico" media="(prefers-color-scheme: dark)" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#000000" />
         <meta name="description" content="Get OAuth tokens for APIs. Fast & secure." />

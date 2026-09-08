@@ -1,0 +1,99 @@
+---
+title: 'Meta Ads (MCP)'
+sidebarTitle: 'Meta Ads (MCP)'
+description: 'Connect AI tools to Meta Ads via the Model Context Protocol (MCP) to manage campaigns, ad sets, ads, insights, and catalogs'
+---
+
+## 🚀 Quickstart
+
+Connect to the Meta Ads MCP server with Nango and call MCP tools in minutes. Meta Ads MCP uses the same OAuth app model as the Meta Marketing API — you'll need to register your own app.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → _Meta Ads (MCP)_.
+    </Step>
+    <Step id="authorize-meta-ads" title="Authorize Meta Ads">
+        Go to [Connections](https://app.nango.dev/dev/connections) → _Add Test Connection_ → _Authorize_, then log in to your Meta Business account. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-meta-ads-mcp" title="Call the Meta Ads MCP API">
+        Make your first MCP request (initialize handshake). Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/ads" \
+                  -X POST \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "initialize",
+                    "params": {
+                        "protocolVersion": "2024-11-05",
+                        "capabilities": {},
+                        "clientInfo": {
+                            "name": "nango-client",
+                            "version": "1.0.0"
+                        }
+                    }
+                }'
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+                Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+                const res = await nango.post({
+                    endpoint: '/ads',
+                    providerConfigKey: '<INTEGRATION-ID>',
+                    connectionId: '<CONNECTION-ID>',
+                    body: {
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'initialize',
+                        params: {
+                            protocolVersion: '2024-11-05',
+                            capabilities: {},
+                            clientInfo: {
+                                name: 'nango-client',
+                                version: '1.0.0'
+                            }
+                        }
+                    }
+                });
+
+                console.log(res.data);
+                ```
+            </Tab>
+
+        </Tabs>
+        ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Meta Ads (MCP) integration guides
+
+Nango-maintained guides for Meta Ads MCP.
+
+- [How to register your own Meta Ads MCP OAuth app](/api-integrations/meta-mcp/how-to-register-your-own-meta-mcp-oauth-app)  
+Register an OAuth app with Meta for the Ads MCP server and obtain credentials to connect it to Nango.
+
+Official docs: [Ads MCP server overview](https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-overview)
+
+---

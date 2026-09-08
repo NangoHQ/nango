@@ -39,7 +39,7 @@ const route: WebhookHandler<LinearBody> = async (nango, headers, body, rawBody) 
     const parsedBody = body;
 
     const response = await nango.executeScriptForWebhooks({
-        body: parsedBody,
+        payload: parsedBody,
         webhookType: 'type',
         connectionIdentifier: 'organizationId'
     });

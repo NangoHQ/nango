@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR } from './constants.js';
-import { createInternalServiceToken } from './token.js';
+import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, INTERNAL_SERVICE_AUDIENCE_RUNNER } from './constants.js';
+import { exportRunnerPublicKey } from './ed25519.js';
+import { createInternalServiceToken, createRunnerDispatchToken } from './token.js';
 import { verifyInternalServiceCredential } from './verify.js';
 
 const signingKey = 'test-signing-key';
@@ -61,5 +62,25 @@ describe('verifyInternalServiceCredential', () => {
         }
         const auth = verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_JOBS, { signingKey });
         expect(auth).toBeNull();
+    });
+
+    it('accepts an EdDSA runner dispatch token with the public key and rejects HMAC minting with that public key', () => {
+        const token = createRunnerDispatchToken({ taskId: 'task-1', expiresInSecs: 120 }, signingKey);
+        const runnerPublicKey = exportRunnerPublicKey(signingKey);
+        expect(token).toEqual(expect.any(String));
+        expect(runnerPublicKey).toEqual(expect.any(String));
+        if (!token || !runnerPublicKey) {
+            return;
+        }
+        const auth = verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_RUNNER, { runnerPublicKey });
+        expect(auth).toMatchObject({ kind: 'eddsa', op: 'task', taskId: 'task-1', audience: INTERNAL_SERVICE_AUDIENCE_RUNNER });
+        expect(verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_RUNNER, { signingKey })).toBeNull();
+
+        const hmac = createInternalServiceToken({ audience: INTERNAL_SERVICE_AUDIENCE_RUNNER, taskId: 'task-1', expiresInSecs: 120 }, runnerPublicKey);
+        expect(hmac).toEqual(expect.any(String));
+        if (!hmac) {
+            return;
+        }
+        expect(verifyInternalServiceCredential(hmac, INTERNAL_SERVICE_AUDIENCE_RUNNER, { runnerPublicKey })).toBeNull();
     });
 });

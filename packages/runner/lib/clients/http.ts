@@ -1,6 +1,11 @@
+import { createInterface } from 'node:readline';
+import { Readable } from 'node:stream';
+
 import { networkError, retryWithBackoff, stringifyError, withInternalTls } from '@nangohq/utils';
 
 import { logger } from '../logger.js';
+
+import type { ReadableStream as WebReadableStream } from 'node:stream/web';
 
 function getErrorCode(error: unknown): string | undefined {
     if (typeof error !== 'object' || error === null) return undefined;
@@ -82,5 +87,22 @@ export async function httpFetch(url: string | URL, options?: HttpFetchOptions, b
             status: 502,
             headers: { 'Content-Type': 'application/json' }
         });
+    }
+}
+
+export async function* httpStreamNDJson(response: Response): AsyncGenerator<string, void, void> {
+    if (!response.body) {
+        return;
+    }
+    const rl = createInterface({ input: Readable.fromWeb(response.body as unknown as WebReadableStream) });
+    try {
+        for await (const line of rl) {
+            const trimmed = line.trim();
+            if (trimmed.length > 0) {
+                yield trimmed;
+            }
+        }
+    } finally {
+        rl.close();
     }
 }

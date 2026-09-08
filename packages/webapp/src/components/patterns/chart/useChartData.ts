@@ -134,6 +134,11 @@ export function visibleBreakdownTotal(rows: BreakdownChartRow[], visibleKeys: st
     return rows.reduce((sum, row) => sum + sumRow(row), 0);
 }
 
+/** Unplotted days are `null` (future) or `undefined` (a gap in a base series); a breakdown zero-fills its gaps. */
+export function countPlottedDays(rows: Record<string, string | number | null | undefined>[]): number {
+    return rows.filter((row) => Object.entries(row).some(([key, value]) => key !== 'date' && typeof value === 'number')).length;
+}
+
 /**
  * "No data this month", a property of the base metric (independent of breakdown).
  * Guarded on `data` being defined — an empty array is vacuously "every" falsy, which

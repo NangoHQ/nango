@@ -23,7 +23,7 @@ export interface AuthModes {
 
 export type AuthModeType = AuthModes[keyof AuthModes];
 
-export type AuthOperationType = 'creation' | 'override' | 'refresh' | 'unknown';
+export type AuthOperationType = 'creation' | 'override' | 'refresh' | 'deletion' | 'unknown';
 
 export interface OAuthAuthorizationMethod {
     BODY: 'body';
