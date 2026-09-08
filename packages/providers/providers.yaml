@@ -3199,8 +3199,8 @@ bandwidth:
             type: string
             title: Client Secret
             description: The Client Secret of your Bandwidth API Credential
-            pattern: '^[A-Za-z0-9._~+/=-]+$'
-            example: s3cr3t**********************
+            pattern: '^\S{20,}$'
+            example: aB3**************************************x9
             secret: true
             doc_section: '#step-1-create-an-api-credential'
 
