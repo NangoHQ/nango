@@ -42,6 +42,7 @@ export interface AgentSessionToolsetSummary {
 export interface AgentSessionMetaToolsSummary {
     nango_tool_search: boolean;
     nango_execute: boolean;
+    nango_proxy: boolean;
 }
 
 export interface AgentSessionUnknownMetaToolsPayload {

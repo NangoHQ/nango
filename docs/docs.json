@@ -98,12 +98,12 @@
       "destination": "/api-integrations/snowflake"
     },
     {
-      "source": "/integrations/all/typeform",
-      "destination": "/api-integrations/typeform"
+      "source": "/integrations/all/fathom",
+      "destination": "/api-integrations/fathom"
     },
     {
-      "source": "/integrations/all/elevio",
-      "destination": "/api-integrations/elevio"
+      "source": "/integrations/all/fathom/connect",
+      "destination": "/api-integrations/fathom/connect"
     },
     {
       "source": "/integrations/all/google-gemini",
@@ -1271,7 +1271,7 @@
               "integrations/all/fairing",
               "integrations/all/falai",
               "api-integrations/fanvue",
-              "integrations/all/fathom",
+              "api-integrations/fathom",
               "api-integrations/fathom-oauth",
               "api-integrations/fellow",
               "api-integrations/fern",
@@ -1469,6 +1469,7 @@
               "integrations/all/linkhut",
               "integrations/all/listmonk",
               "api-integrations/listrak",
+              "api-integrations/liveswitch",
               "api-integrations/livetennisapi",
               "api-integrations/lob",
               "api-integrations/lokalise",
