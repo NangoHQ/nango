@@ -8,6 +8,8 @@ import { createCursor, getFullIndexName, parseCursor } from './helpers.js';
 import type { estypes } from '@elastic/elasticsearch';
 import type {
     OperationRow,
+    SearchFiltersCategory,
+    SearchOperationsAgentSession,
     SearchOperationsConnection,
     SearchOperationsIntegration,
     SearchOperationsState,
@@ -53,6 +55,7 @@ export async function listOperations(opts: {
     integrations?: SearchOperationsIntegration[] | undefined;
     connections?: SearchOperationsConnection[] | undefined;
     syncs?: SearchOperationsSync[] | undefined;
+    agentSessions?: SearchOperationsAgentSession[] | undefined;
     period?: SearchPeriod | undefined;
     cursor?: string | null | undefined;
 }): Promise<ListOperations> {
@@ -107,6 +110,20 @@ export async function listOperations(opts: {
                 should: opts.syncs.map((sync) => {
                     return { term: { 'syncConfigName.keyword': sync } };
                 })
+            }
+        });
+    }
+
+    if (opts.agentSessions && (opts.agentSessions.length > 1 || opts.agentSessions[0] !== 'all')) {
+        // Where or
+        // Adding a must alongside the should resets minimum_should_match to 0, so it has to be explicit
+        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
+            bool: {
+                must: [{ term: { 'actor.kind': 'session' } }],
+                should: opts.agentSessions.map((agentSession) => {
+                    return { term: { 'actor.id': agentSession } };
+                }),
+                minimum_should_match: 1
             }
         });
     }
@@ -248,27 +265,33 @@ export async function listFilters(opts: {
     accountId: number;
     environmentId: number;
     limit: number;
-    category: 'integration' | 'syncConfig' | 'connection';
+    category: SearchFiltersCategory;
     search?: string | undefined;
 }): Promise<ListFilters> {
-    let aggField: string;
-    if (opts.category === 'integration') {
-        aggField = 'integrationName';
-    } else if (opts.category === 'connection') {
-        aggField = 'connectionName';
-    } else {
-        aggField = 'syncConfigName';
-    }
-
     const query: estypes.QueryDslQueryContainer = {
         bool: {
             must: [{ term: { accountId: opts.accountId } }, { term: { environmentId: opts.environmentId } }],
             should: []
         }
     };
+    const must = query.bool!.must as estypes.QueryDslQueryContainer[];
 
-    if (opts.search) {
-        (query.bool!.must as estypes.QueryDslQueryContainer[]).push({ match_phrase_prefix: { [aggField]: { query: opts.search } } });
+    let aggField: string;
+    let searchQuery: estypes.QueryDslQueryContainer | undefined;
+    if (opts.category === 'agentSession') {
+        // A session is only recorded as the operation actor, and actor.id is a keyword so it aggregates as is
+        // and has no analyzed sibling to phrase match on
+        aggField = 'actor.id';
+        must.push({ term: { 'actor.kind': 'session' } });
+        searchQuery = opts.search ? { prefix: { [aggField]: { value: opts.search } } } : undefined;
+    } else {
+        const field = opts.category === 'integration' ? 'integrationName' : opts.category === 'connection' ? 'connectionName' : 'syncConfigName';
+        aggField = `${field}.keyword`;
+        searchQuery = opts.search ? { match_phrase_prefix: { [field]: { query: opts.search } } } : undefined;
+    }
+
+    if (searchQuery) {
+        must.push(searchQuery);
     }
 
     const res = await client.search<
@@ -280,7 +303,7 @@ export async function listFilters(opts: {
         index: indexOperations.index,
         size: 0,
         track_total_hits: true,
-        aggs: { byName: { terms: { field: `${aggField}.keyword`, size: opts.limit } } },
+        aggs: { byName: { terms: { field: aggField, size: opts.limit } } },
         query
     });
     const agg = res.aggregations!['byName'];

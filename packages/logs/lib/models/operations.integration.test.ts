@@ -1,10 +1,12 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import { nanoid } from '@nangohq/utils';
+
 import { deleteIndex, migrateMapping } from '../es/helpers.js';
 import { indexOperations } from '../es/schema.js';
 import { getFormattedOperation } from './helpers.js';
 import { logContextGetter } from './logContextGetter.js';
-import { getOperation, listOperations, setTimeoutForAll } from './operations.js';
+import { createOperation, getOperation, listFilters, listOperations, setTimeoutForAll } from './operations.js';
 
 import type { ListOperations } from './operations.js';
 import type { OperationRowInsert } from '@nangohq/types';
@@ -75,5 +77,18 @@ describe('operations', () => {
 
         const op2 = await getOperation({ id: ctx2.id });
         expect(op2.state).toBe('running');
+    });
+
+    it('should filter by agent session and list the sessions it can filter on', async () => {
+        const sessionId = nanoid();
+        const inSession = getFormattedOperation({ ...operationPayload, actor: { kind: 'session', id: sessionId } }, { account, environment });
+        await createOperation(inSession);
+        await createOperation(getFormattedOperation({ ...operationPayload, actor: { kind: 'user', id: 1 } }, { account, environment }));
+
+        const list = await listOperations({ accountId: account.id, environmentId: environment.id, limit: 10, agentSessions: [sessionId] });
+        expect(list.items.map((item) => item.id)).toStrictEqual([inSession.id]);
+
+        const filters = await listFilters({ accountId: account.id, environmentId: environment.id, limit: 10, category: 'agentSession' });
+        expect(filters.items.map((item) => item.key)).toStrictEqual([sessionId]);
     });
 });

@@ -20,6 +20,7 @@ const validation = z
         integrations: z.array(z.string()).max(20).optional().default(['all']),
         connections: z.array(z.string()).max(20).optional().default(['all']),
         syncs: z.array(z.string()).max(20).optional().default(['all']),
+        agentSessions: z.array(z.string()).max(20).optional().default(['all']),
         period: z.object({ from: z.string().datetime(), to: z.string().datetime() }).optional(),
         cursor: z.string().or(z.null()).optional()
     })
@@ -57,6 +58,7 @@ export const searchOperations = asyncWrapperWithEnvironment<SearchOperations>(as
         integrations: body.integrations,
         connections: body.connections,
         syncs: body.syncs,
+        agentSessions: body.agentSessions,
         period: body.period,
         cursor: body.cursor
     });
