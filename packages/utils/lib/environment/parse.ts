@@ -250,6 +250,18 @@ const ENVS_SHAPE = z.object({
                 return z.NEVER;
             }
         }),
+    NANGO_PROXY_MAX_RETRY_WAIT_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(10 * 60 * 1000), // 10 minutes
+    NANGO_WEBHOOK_MAX_RETRY_WAIT_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(10 * 60 * 1000), // 10 minutes
     // Outbound URL policy (JSON), consumed by @nangohq/egress for proxy/webhook/uncontrolledFetch paths.
     NANGO_OUTBOUND_URL_POLICY: outboundUrlPolicySchema('NANGO_OUTBOUND_URL_POLICY'),
     // Outbound URL policy overlay for OAuth/token flows. Applied on top of NANGO_OUTBOUND_URL_POLICY,
@@ -507,22 +519,8 @@ const ENVS_SHAPE = z.object({
     ORB_API_KEY: z.string().optional(),
     ORB_WEBHOOKS_SECRET: z.string().optional(),
     ORB_MAX_RETRIES: z.coerce.number().optional().default(3),
-    ORB_RETRY_MAX_ATTEMPTS: z.coerce.number().optional().default(3),
-    ORB_RETRY_INITIAL_DELAY_MS: z.coerce.number().optional().default(10_000),
-    BILLING_INGEST_BATCH_SIZE: z.coerce.number().optional().default(500),
-    BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(5_000),
-    BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(100_000),
-    BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
     BILLING_EVENTS_S3_BUCKET: z.string().optional(),
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
-    // Temporary. ISO 8601 timestamp at which the S3-fed pipeline becomes
-    // authoritative for billing. Before this instant, S3 events ship as
-    // "<name>_s3" shadow and HTTP events ship canonical (unsuffixed). At
-    // and after this instant, the two swap roles — HTTP events pick up
-    // the "_http" suffix and S3 events become canonical. Unset (or set
-    // to a future date) to defer or roll back the cutover. Remove once
-    // the HTTP emission path is retired.
-    BILLING_EVENTS_CUTOVER_AT: z.string().datetime().optional(),
     BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
     // DLQ bucket Orb writes to when it can't ingest a billing event. Watched by the
     // metering DLQ monitor cron (CRON_BILLING_EVENTS_S3_DLQ_MONITOR_MINUTE).

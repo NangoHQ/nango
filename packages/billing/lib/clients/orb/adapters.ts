@@ -1,15 +1,11 @@
-import { uuidv7 } from 'uuidv7';
-
 import { Err, Ok, report } from '@nangohq/utils';
 
-import { envs } from '../../envs.js';
 import { growthAddonPriceId } from './catalogue.js';
 import { putOrbCustomerSchema } from './types.js';
 
 import type {
     BillingAddress,
     BillingCustomer,
-    BillingEvent,
     BillingInvoicingDetails,
     BillingPeriodCosts,
     BillingSpendAlert,
@@ -19,14 +15,6 @@ import type {
     UsageMetric
 } from '@nangohq/types';
 import type Orb from 'orb-billing';
-
-// Keyed on the EVENT's timestamp, not the wall clock, so a batched or
-// late-emitted event whose logical time is pre-cutover ships under the
-// pre-cutover name and vice versa. See BILLING_EVENTS_CUTOVER_AT in
-// packages/utils.
-function cutoverAppliesTo(eventTimestamp: Date): boolean {
-    return !!envs.BILLING_EVENTS_CUTOVER_AT && eventTimestamp >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
-}
 
 /**
  * Orb money as an integer number of cents, read off the decimal string rather than via
@@ -190,31 +178,6 @@ export function fromOrbAlert(alert: { id: string; currency: string | null; thres
         // remainder is float drift from the round-trip, not a real amount.
         thresholdInCents: Math.round(threshold.value * 100),
         currency: normalizeIsoCurrency(alert.currency)
-    };
-}
-
-export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
-    const { idempotencyKey, timestamp, accountId, ...rest } = event.properties;
-
-    // orb doesn't accept nested properties, we need to flatten them with dot notation
-    const properties: Record<string, string | number | boolean> = {};
-    for (const [topLevelKey, value] of Object.entries(rest)) {
-        if (!value) continue;
-        if (typeof value === 'object') {
-            for (const [k, v] of Object.entries(value)) {
-                properties[`${topLevelKey}.${k}`] = v;
-            }
-        } else {
-            properties[topLevelKey] = value;
-        }
-    }
-
-    return {
-        event_name: `${event.type}${cutoverAppliesTo(timestamp) ? '_http' : ''}`,
-        idempotency_key: idempotencyKey || uuidv7(),
-        external_customer_id: accountId.toString(),
-        timestamp: timestamp.toISOString(),
-        properties
     };
 }
 

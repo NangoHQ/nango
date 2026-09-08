@@ -98,6 +98,14 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/typeform",
+      "destination": "/api-integrations/typeform"
+    },
+    {
+      "source": "/integrations/all/elevio",
+      "destination": "/api-integrations/elevio"
+    },
+    {
       "source": "/integrations/all/google-gemini",
       "destination": "/api-integrations/google-gemini"
     },
@@ -116,6 +124,22 @@
     {
       "source": "/integrations/all/bigcommerce",
       "destination": "/api-integrations/bigcommerce"
+    },
+    {
+      "source": "/integrations/all/gong",
+      "destination": "/api-integrations/gong"
+    },
+    {
+      "source": "/integrations/all/gong-oauth",
+      "destination": "/api-integrations/gong-oauth"
+    },
+    {
+      "source": "/integrations/all/gong/connect",
+      "destination": "/api-integrations/gong/connect"
+    },
+    {
+      "source": "/integrations/all/gong/webhooks",
+      "destination": "/api-integrations/gong/webhooks"
     },
     {
       "source": "/introduction",
@@ -1220,7 +1244,7 @@
               "api-integrations/ecu360-production",
               "integrations/all/egnyte",
               "integrations/all/elevenlabs",
-              "integrations/all/elevio",
+              "api-integrations/elevio",
               "integrations/all/emarsys",
               "integrations/all/emarsys-oauth",
               "api-integrations/embat",
@@ -1301,8 +1325,8 @@
               "api-integrations/glean",
               "api-integrations/glean-oauth",
               "api-integrations/glyphic",
-              "integrations/all/gong",
-              "integrations/all/gong-oauth",
+              "api-integrations/gong",
+              "api-integrations/gong-oauth",
               "api-integrations/google",
               "api-integrations/google-ads",
               "api-integrations/google-analytics",
@@ -1856,7 +1880,7 @@
               "integrations/all/twitter",
               "integrations/all/twitter-oauth2-cc",
               "api-integrations/twitter-v2",
-              "integrations/all/typeform",
+              "api-integrations/typeform",
               "integrations/all/typefully",
               "api-integrations/typefully-v2",
               "integrations/all/uber",
