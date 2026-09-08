@@ -34,7 +34,7 @@ We run regular penetration tests, a secure development lifecycle, incident respo
 
 Everything is encrypted at rest at the storage layer. Rows marked **AES-256-GCM** carry an additional application-level layer: the value is encrypted before it is written, so it stays unreadable to anyone holding database access alone.
 
-Data is stored in a managed PostgreSQL database in AWS, network-isolated in a private VPC, with automated backups and point-in-time recovery. Self-hosted deployments run on infrastructure you control, and all retention periods are configurable when [self-hosting](/guides/platform/self-hosting).
+Data is stored in a managed PostgreSQL database in AWS, network-isolated in a private subnet, with automated backups and point-in-time recovery. Self-hosted deployments run on infrastructure you control, and all retention periods are configurable when [self-hosting](/guides/platform/self-hosting).
 
 ### Encryption & key management
 
