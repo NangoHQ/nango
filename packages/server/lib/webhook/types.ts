@@ -361,6 +361,11 @@ interface CRMMatches {
     error: string | null;
 }
 
+export interface GongWebhookPayload {
+    callData: Record<string, any>;
+    isTest: boolean;
+}
+
 export interface FolkWebhookPayload {
     id: string;
     type: string;

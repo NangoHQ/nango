@@ -9799,8 +9799,12 @@ gong:
         retry:
             after:
                 - 'retry-after'
-    docs: https://nango.dev/docs/integrations/all/gong
-    docs_connect: https://nango.dev/docs/integrations/all/gong/connect
+    webhook_routing_script: gongWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - nangoConnectionId
+    docs: https://nango.dev/docs/api-integrations/gong
+    docs_connect: https://nango.dev/docs/api-integrations/gong/connect
     credentials:
         username:
             type: string
@@ -9842,7 +9846,12 @@ gong-oauth:
         retry:
             after:
                 - 'retry-after'
-    docs: https://nango.dev/docs/integrations/all/gong-oauth
+    webhook_routing_script: gongWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - nangoConnectionId
+    docs: https://nango.dev/docs/api-integrations/gong-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/gong-oauth/how-to-register-your-own-gong-oauth-api-oauth-app
     connection_config:
         api_base_url_for_customer:
             type: string
