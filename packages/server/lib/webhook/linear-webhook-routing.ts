@@ -1,7 +1,7 @@
-import crypto from 'node:crypto';
-
 import { NangoError } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
+
+import { validateHmacSignature } from './signature.js';
 
 import type { WebhookHandler } from './types.js';
 import type { IntegrationConfig } from '@nangohq/types';
@@ -16,12 +16,12 @@ interface LinearBody {
 }
 
 function validate(integration: IntegrationConfig, headerSignature: string, rawBody: string): boolean {
-    if (!integration.custom?.['webhookSecret']) {
+    const secret = integration.custom?.['webhookSecret'];
+    if (!secret) {
         return false;
     }
 
-    const signature = crypto.createHmac('sha256', integration.custom['webhookSecret']).update(rawBody).digest('hex');
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(headerSignature));
+    return validateHmacSignature({ secret, rawBody, signature: headerSignature });
 }
 
 const route: WebhookHandler<LinearBody> = async (nango, headers, body, rawBody) => {

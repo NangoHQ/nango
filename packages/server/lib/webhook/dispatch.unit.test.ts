@@ -164,6 +164,55 @@ describe('webhook dispatch', () => {
         mocks.validateFunctionInput.mockImplementation((_version, input) => ({ isErr: () => false, value: input }));
     });
 
+    it('warns on the legacy execution operation when the webhook was unverified', async () => {
+        const publisher = { publish: vi.fn().mockResolvedValue({ enqueued: 2, failed: 0, failedActivityLogIds: [] }) };
+        mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
+
+        const logCtx1 = createLogCtx('log-1');
+        const logCtx2 = createLogCtx('log-2');
+        const nango = makeInternalNango([logCtx1, logCtx2]);
+
+        nango.markUnverified({ reason: 'github_missing_webhook_secret' });
+        await nango.executeScriptForWebhooks({ payload: { event: 'x' }, webhookTypeValue: 'push' });
+
+        // No operation of its own, the warning rides the ones the dispatch already creates.
+        for (const logCtx of [logCtx1, logCtx2]) {
+            expect(logCtx.warn).toHaveBeenCalledWith(expect.stringContaining('This webhook was not verified'), {
+                provider: 'github',
+                integration: 'github-dev',
+                reason: 'github_missing_webhook_secret'
+            });
+        }
+    });
+
+    it('carries the remediation it was given onto the operation', async () => {
+        mocks.envs.WEBHOOK_INGRESS_USE_DISPATCH_QUEUE = false;
+        const logCtx1 = createLogCtx('log-1');
+        const nango = makeInternalNango([logCtx1, createLogCtx('log-2')]);
+
+        nango.markUnverified({ reason: 'github_missing_webhook_secret', remediation: 'Set webhookSecret in the connection metadata' });
+        await nango.executeScriptForWebhooks({ payload: { event: 'x' }, webhookTypeValue: 'push' });
+
+        expect(logCtx1.warn).toHaveBeenCalledWith(
+            expect.stringContaining('Set webhookSecret in the connection metadata to enable verification'),
+            expect.objectContaining({ reason: 'github_missing_webhook_secret' })
+        );
+    });
+
+    it('does not warn when the webhook was verified', async () => {
+        const publisher = { publish: vi.fn().mockResolvedValue({ enqueued: 2, failed: 0, failedActivityLogIds: [] }) };
+        mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
+
+        const logCtx1 = createLogCtx('log-1');
+        const logCtx2 = createLogCtx('log-2');
+        const nango = makeInternalNango([logCtx1, logCtx2]);
+
+        await nango.executeScriptForWebhooks({ payload: { event: 'x' }, webhookTypeValue: 'push' });
+
+        expect(logCtx1.warn).not.toHaveBeenCalled();
+        expect(logCtx2.warn).not.toHaveBeenCalled();
+    });
+
     it('falls back to direct orchestrator dispatch when the feature flag is off', async () => {
         mocks.envs.WEBHOOK_INGRESS_USE_DISPATCH_QUEUE = false;
         const publisher = { publish: vi.fn() };

@@ -98,12 +98,12 @@
       "destination": "/api-integrations/snowflake"
     },
     {
-      "source": "/integrations/all/typeform",
-      "destination": "/api-integrations/typeform"
+      "source": "/integrations/all/fathom",
+      "destination": "/api-integrations/fathom"
     },
     {
-      "source": "/integrations/all/elevio",
-      "destination": "/api-integrations/elevio"
+      "source": "/integrations/all/fathom/connect",
+      "destination": "/api-integrations/fathom/connect"
     },
     {
       "source": "/integrations/all/google-gemini",
@@ -124,6 +124,22 @@
     {
       "source": "/integrations/all/bigcommerce",
       "destination": "/api-integrations/bigcommerce"
+    },
+    {
+      "source": "/integrations/all/gong",
+      "destination": "/api-integrations/gong"
+    },
+    {
+      "source": "/integrations/all/gong-oauth",
+      "destination": "/api-integrations/gong-oauth"
+    },
+    {
+      "source": "/integrations/all/gong/connect",
+      "destination": "/api-integrations/gong/connect"
+    },
+    {
+      "source": "/integrations/all/gong/webhooks",
+      "destination": "/api-integrations/gong/webhooks"
     },
     {
       "source": "/introduction",
@@ -1013,6 +1029,7 @@
               "api-integrations/amazon",
               "api-integrations/amazon-selling-partner",
               "api-integrations/amazon-selling-partner-beta",
+              "api-integrations/amplemarket",
               "api-integrations/amplitude",
               "api-integrations/amplitude-mcp",
               "api-integrations/amplitude-mcp-eu",
@@ -1256,7 +1273,7 @@
               "integrations/all/fairing",
               "integrations/all/falai",
               "api-integrations/fanvue",
-              "integrations/all/fathom",
+              "api-integrations/fathom",
               "api-integrations/fathom-oauth",
               "api-integrations/fellow",
               "api-integrations/fern",
@@ -1310,8 +1327,8 @@
               "api-integrations/glean",
               "api-integrations/glean-oauth",
               "api-integrations/glyphic",
-              "integrations/all/gong",
-              "integrations/all/gong-oauth",
+              "api-integrations/gong",
+              "api-integrations/gong-oauth",
               "api-integrations/google",
               "api-integrations/google-ads",
               "api-integrations/google-analytics",
@@ -1454,6 +1471,7 @@
               "integrations/all/linkhut",
               "integrations/all/listmonk",
               "api-integrations/listrak",
+              "api-integrations/liveswitch",
               "api-integrations/livetennisapi",
               "api-integrations/lob",
               "api-integrations/lokalise",
@@ -1578,6 +1596,7 @@
               "integrations/all/ory",
               "integrations/all/osu",
               "integrations/all/oura",
+              "api-integrations/outline",
               "api-integrations/outlook",
               "integrations/all/outreach",
               "api-integrations/paddle",
