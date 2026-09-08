@@ -186,7 +186,9 @@ describe('Gitlab webhook routing', () => {
         expect(execute).not.toHaveBeenCalled();
     });
 
-    it('returns success without dispatch when the connection does not exist', async () => {
+    it('acknowledges an unknown connection without dispatching or forwarding', async () => {
+        // A 200 with no connection ids is forwarded to the environment webhook urls, and there is
+        // no connection secret to verify against here, so this must not come back as a 200.
         const { nango, getConnection, execute } = getNangoMock();
         getConnection.mockResolvedValue(null);
         const body = { object_kind: 'issue' };
@@ -196,6 +198,8 @@ describe('Gitlab webhook routing', () => {
         });
 
         expect(result.isOk()).toBe(true);
+        expect(result.unwrap().statusCode).toBe(204);
+        expect(result.unwrap()).not.toHaveProperty('toForward');
         expect(execute).not.toHaveBeenCalled();
     });
 

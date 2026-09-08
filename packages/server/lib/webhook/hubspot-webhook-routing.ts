@@ -3,6 +3,8 @@ import crypto from 'node:crypto';
 import { NangoError } from '@nangohq/shared';
 import { Err, getLogger, metrics, Ok } from '@nangohq/utils';
 
+import { safeCompare } from './signature.js';
+
 import type { HubSpotWebhook, WebhookHandler } from './types.js';
 import type { IntegrationConfig } from '@nangohq/types';
 
@@ -15,18 +17,22 @@ function isImportEvent(event: HubSpotWebhook): boolean {
 
 export function validate(integration: IntegrationConfig, headers: Record<string, any>, body: any): boolean {
     const signature = headers['x-hubspot-signature'];
+    if (!signature) {
+        return false;
+    }
 
     const combinedSignature = `${integration.oauth_client_secret}${JSON.stringify(body)}`;
     const createdHash = crypto.createHash('sha256').update(combinedSignature).digest('hex');
 
-    const bufferLength = Math.max(Buffer.from(signature, 'hex').length, Buffer.from(createdHash, 'hex').length);
-    const signatureBuffer = Buffer.alloc(bufferLength, signature, 'hex');
-    const hashBuffer = Buffer.alloc(bufferLength, createdHash, 'hex');
-
-    return crypto.timingSafeEqual(signatureBuffer, hashBuffer);
+    return safeCompare(createdHash, signature, 'hex');
 }
 
 const route: WebhookHandler<HubSpotWebhook | HubSpotWebhook[]> = async (nango, headers, body) => {
+    if (!headers['x-hubspot-signature']) {
+        logger.error('missing signature', { configId: nango.integration.id });
+        return Err(new NangoError('webhook_missing_signature'));
+    }
+
     const valid = validate(nango.integration, headers, body);
 
     if (!valid) {

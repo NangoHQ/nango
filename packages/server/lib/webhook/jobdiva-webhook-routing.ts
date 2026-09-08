@@ -1,22 +1,11 @@
-import crypto from 'node:crypto';
-
 import { NangoError } from '@nangohq/shared';
-import { Err, getLogger, Ok, report } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
+
+import { validateHmacSignature } from './signature.js';
 
 import type { jobdivaWebhookResponse, WebhookHandler } from './types.js';
 
 const logger = getLogger('Webhook.JobDiva');
-
-function validate(secret: string, headerSignature: string, rawBody: string): boolean {
-    try {
-        const signature = crypto.createHmac('sha1', secret).update(rawBody).digest('hex');
-        const computedSignature = 'sha1=' + signature;
-        return crypto.timingSafeEqual(Buffer.from(computedSignature), Buffer.from(headerSignature));
-    } catch (err) {
-        report(new Error('Validation error', { cause: err }));
-        return false;
-    }
-}
 
 const route: WebhookHandler<jobdivaWebhookResponse> = async (nango, headers, body, rawBody) => {
     const signature = headers['X-Hub-Signature'];
@@ -27,12 +16,12 @@ const route: WebhookHandler<jobdivaWebhookResponse> = async (nango, headers, bod
             return Err(new NangoError('webhook_missing_signature'));
         }
 
-        if (!validate(nango.integration.custom['webhookSecret'], signature, rawBody)) {
+        if (!validateHmacSignature({ secret: nango.integration.custom['webhookSecret'], rawBody, signature, algorithm: 'sha1', prefix: 'sha1=' })) {
             logger.error('invalid signature', { configId: nango.integration.id });
             return Err(new NangoError('webhook_invalid_signature'));
         }
     } else {
-        logger.info('no webhook secret configured, skipping signature validation', { configId: nango.integration.id });
+        nango.markUnverified({ reason: 'jobdiva_missing_webhook_secret' });
     }
 
     const response = await nango.executeScriptForWebhooks({

@@ -3,8 +3,10 @@ import get from 'lodash-es/get.js';
 import { connectionService } from '@nangohq/shared';
 
 import { dispatchWebhookExecutions } from './dispatch.js';
+import { countUnverifiedWebhook } from './missing-secret.js';
 
 import type { DispatchContext } from './dispatch.js';
+import type { UnverifiedWebhook } from './missing-secret.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { ConnectionInternal, DBConnectionDecrypted, DBEnvironment, DBIntegrationDecrypted, DBPlan, DBTeam, HttpRequest, Metadata } from '@nangohq/types';
 
@@ -30,6 +32,11 @@ export class InternalNango {
         this.integration = opts.integration;
         this.request = opts.request;
         this.logContextGetter = opts.logContextGetter;
+    }
+
+    /** Record that this webhook was accepted without verifying it. */
+    markUnverified(unverified: UnverifiedWebhook): void {
+        countUnverifiedWebhook(this.integration.provider, unverified.reason);
     }
 
     async getConnectionForWebhook(connectionId: string): Promise<{ connectionId: string; metadata: Metadata | null } | null> {

@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 
 import { getFlags } from '@nangohq/feature-flags';
 import { environmentService, getGlobalWebhookReceiveUrl, NangoError } from '@nangohq/shared';
-import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
+import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { hashEmailAddress } from '../utils/pii.js';
 import { getGoogleJWKS } from './cache.js';
@@ -95,15 +95,9 @@ export async function validate(
 
 const route: WebhookHandler = async (nango, headers, body) => {
     const authHeader = headers['authorization'];
+    const allowUnauthorized = await getFlags().allowUnauthorizedGmailWebhook(nango.team.uuid);
 
-    if (!authHeader) {
-        metrics.increment(metrics.Types.WEBHOOK_INCOMING_UNVERIFIED, 1, {
-            accountId: nango.team.id,
-            reason: 'gmail_missing_authorization'
-        });
-    }
-
-    const valid = await validate(nango.integration, headers, { allowUnauthorized: await getFlags().allowUnauthorizedGmailWebhook(nango.team.uuid) });
+    const valid = await validate(nango.integration, headers, { allowUnauthorized });
 
     if (!valid) {
         logger.error('webhook signature invalid');
@@ -112,13 +106,26 @@ const route: WebhookHandler = async (nango, headers, body) => {
 
     let decodedBody: DecodedDataObject | null = null;
 
-    const encodedBody = typeof body.message.data === 'string' ? Buffer.from(body.message.data, 'base64').toString('utf8') : body;
+    if (typeof body?.message?.data !== 'string') {
+        logger.error('Webhook body is missing message.data', { configId: nango.integration.id });
+        return Err(new NangoError('webhook_invalid_body'));
+    }
+
     try {
-        decodedBody = JSON.parse(encodedBody);
+        decodedBody = JSON.parse(Buffer.from(body.message.data, 'base64').toString('utf8'));
     } catch (err) {
         logger.error('Failed to parse webhook body:', err);
         return Err(new NangoError('webhook_invalid_body'));
     }
+    // Marked here rather than up front so it only counts webhooks we actually process. With the
+    // flag off the request is already rejected above, so reaching this point means it went through.
+    if (!authHeader) {
+        nango.markUnverified({
+            reason: 'gmail_missing_authorization',
+            remediation: 'Recreate the Pub/Sub push subscription with an OIDC token'
+        });
+    }
+
     const emailAddress = decodedBody?.emailAddress;
     const editedBodyWithCatchAll = {
         ...body,
