@@ -2,7 +2,6 @@ import { Ellipsis, ExternalLink, Trash2, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
 import {
     Badge,
     Button,
@@ -116,8 +115,6 @@ export const TeamMembers: React.FC = () => {
 
     const [editingUser, setEditingUser] = useState<ApiUser | null>(null);
 
-    const mfaFeatureEnabled = data?.data.mfaFeatureEnabled ?? false;
-
     const allUsers: ((ApiTeamUser & { is_invitation: false }) | (ApiInvitation & { is_invitation: true }))[] = useMemo(
         () =>
             [
@@ -128,7 +125,7 @@ export const TeamMembers: React.FC = () => {
     );
 
     const { can } = usePermissions();
-    const canManageTeam = can(permissions.canManageTeam);
+    const canManageTeam = can('account:team:update');
 
     const onRemoveUser = async (user: ApiUser) => {
         try {
@@ -166,7 +163,7 @@ export const TeamMembers: React.FC = () => {
                                 </IconButton>
                             </div>
                         </TableHead>
-                        {mfaFeatureEnabled && <TableHead>2FA</TableHead>}
+                        <TableHead>2FA</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">{/* Actions */}</TableHead>
                     </TableRow>
@@ -201,17 +198,15 @@ export const TeamMembers: React.FC = () => {
                                 </div>
                             </TableCell>
 
-                            {mfaFeatureEnabled && (
-                                <TableCell>
-                                    {user.is_invitation ? (
-                                        <span className="text-text-secondary">—</span>
-                                    ) : user.mfaEnabled ? (
-                                        <Badge variant="success">Enabled</Badge>
-                                    ) : (
-                                        <Badge variant="ghost">Disabled</Badge>
-                                    )}
-                                </TableCell>
-                            )}
+                            <TableCell>
+                                {user.is_invitation ? (
+                                    <span className="text-text-secondary">—</span>
+                                ) : user.mfaEnabled ? (
+                                    <Badge variant="success">Enabled</Badge>
+                                ) : (
+                                    <Badge variant="ghost">Disabled</Badge>
+                                )}
+                            </TableCell>
 
                             <TableCell>
                                 {user.is_invitation ? (

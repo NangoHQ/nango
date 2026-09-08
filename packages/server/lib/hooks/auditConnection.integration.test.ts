@@ -4,7 +4,6 @@ import simpleOauth2 from 'simple-oauth2';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import * as featureFlags from '@nangohq/feature-flags';
 import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 
@@ -30,8 +29,6 @@ describe('connection.created — live-stack contract', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // Roll the flag out to every account here; each one still has to be entitled on its plan.
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {

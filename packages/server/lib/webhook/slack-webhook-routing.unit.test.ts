@@ -14,6 +14,7 @@ function makeNango(mock = vi.fn()) {
         environment: seeders.getTestEnvironment(),
         plan: seeders.getTestPlan(),
         integration,
+        request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
         logContextGetter
     });
     nango.executeScriptForWebhooks = mock;

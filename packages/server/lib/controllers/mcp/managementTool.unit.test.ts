@@ -3,7 +3,7 @@ import * as z from 'zod/v4';
 
 import { Err, flags, Ok } from '@nangohq/utils';
 
-import { audit } from '../../audit.js';
+import { audit, auditBackend } from '../../audit.js';
 import { defineManagementMcpTool } from './managementTool.js';
 import { PublicMcpError } from './utils.js';
 
@@ -32,6 +32,7 @@ type AuditedToolOutput = { data: { unique_key: string } };
 describe('defineManagementMcpTool', () => {
     afterEach(() => {
         flags.hasAuditTrail = false;
+        auditBackend.configured = false;
         vi.restoreAllMocks();
     });
 
@@ -213,6 +214,7 @@ describe('defineManagementMcpTool', () => {
 
     it('does not audit tools that explicitly opt out', async () => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record');
         const tool = defineManagementMcpTool({
             name: 'test_read_tool',
@@ -231,6 +233,7 @@ describe('defineManagementMcpTool', () => {
 
     it('does not change the tool result when the audit writer fails', async () => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Err(new Error('writer unavailable')));
         const tool = auditedTool(() => Ok({ data: { unique_key: 'github' } }));
 
@@ -243,6 +246,7 @@ describe('defineManagementMcpTool', () => {
 
 function enableAudit() {
     flags.hasAuditTrail = true;
+    auditBackend.configured = true;
     return vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
 }
 

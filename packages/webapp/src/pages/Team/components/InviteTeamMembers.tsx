@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useSearchParams } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
 import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, FieldLabel, IconButton, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -23,7 +22,7 @@ export const InviteTeamMembers = () => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { can } = usePermissions();
-    const canManageTeam = can(permissions.canManageTeam);
+    const canManageTeam = can('account:team:update');
     const { data: currentPlan } = useApiGetCurrentPlan(env);
     const hasRBAC = planHasRbac(currentPlan?.data);
 

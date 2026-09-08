@@ -52,7 +52,7 @@ const route: WebhookHandler<AutotaskWebhookPayload> = async (nango, headers, bod
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookType: 'EntityType',
         connectionIdentifier: 'Guid',
         propName: 'webhookGuid'

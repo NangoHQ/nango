@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, errorManager, getProvider, syncEndUserToConnection } from '@nangohq/shared';
+import { configService, ConnectionCreationCappedError, connectionService, getProvider, syncEndUserToConnection } from '@nangohq/shared';
 import { metrics, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
@@ -29,7 +29,7 @@ const paramValidation = z
     })
     .strict();
 
-export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicUnauthenticatedAuthorization>(async (req, res) => {
+export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicUnauthenticatedAuthorization>(async (req, res, next) => {
     const valBody = requireEmptyBody(req);
     if (valBody) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
@@ -236,6 +236,10 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
             ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
         });
 
-        errorManager.handleGenericError(err, req, res);
+        if (err instanceof ConnectionCreationCappedError) {
+            res.status(err.status).send({ error: { code: 'resource_capped', message: err.message } });
+            return;
+        }
+        next(err);
     }
 });

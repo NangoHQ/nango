@@ -136,10 +136,8 @@ export type ScopeSelector = Scope | ScopeWildcard;
 /** The concrete scopes a credential ends up holding, once wildcards are expanded. */
 export const ISSUABLE_SCOPES: readonly IssuableScope[] = [...PUBLIC_ENVIRONMENT_SCOPES, ...PUBLIC_ACCOUNT_SCOPES];
 
-const ISSUABLE = new Set<string>(ISSUABLE_SCOPES);
-
-export function isIssuable(scope: Scope): scope is IssuableScope {
-    return ISSUABLE.has(scope);
+export function isAccountScope(scope: string): boolean {
+    return scope.startsWith('account:');
 }
 
 /**

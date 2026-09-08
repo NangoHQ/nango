@@ -4,7 +4,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, errorNotificationService, refreshOrTestCredentials } from '@nangohq/shared';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
-import { authorizes } from '../../../../authz/resolve.js';
+import { principalCan } from '../../../../authz/principal.js';
 import { connectionFullToApi } from '../../../../formatters/connection.js';
 import { endUserToApi } from '../../../../formatters/endUser.js';
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
@@ -96,7 +96,7 @@ export const getConnection = asyncWrapperWithEnvironment<GetConnection>(async (r
         connection = credentialResponse.value;
     }
 
-    const includeCredentials = environment.is_production ? authorizes(res.locals, 'environment:connections:read_credentials') : true;
+    const includeCredentials = principalCan(res.locals, 'environment:connections:read_credentials');
 
     const errorLog = await errorNotificationService.auth.get(connection.id);
 

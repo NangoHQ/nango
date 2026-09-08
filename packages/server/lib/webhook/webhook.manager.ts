@@ -9,7 +9,7 @@ import { capping } from '../utils/usage.js';
 import * as webhookHandlers from './index.js';
 import { InternalNango } from './internal-nango.js';
 
-import type { WebhookHandlersMap, WebhookResponse } from './types.js';
+import type { WebhookHandlersMap, WebhookRequest, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { MaybeStampedEvent } from '@nangohq/pubsub';
 import type { Config } from '@nangohq/shared';
@@ -24,26 +24,35 @@ export async function routeWebhook({
     environment,
     account,
     integration,
-    headers,
+    request,
     plan,
-    body,
-    rawBody,
-    query,
     logContextGetter
 }: {
     environment: DBEnvironment;
     account: DBTeam;
     integration: Config;
+    request: WebhookRequest;
     plan?: DBPlan | undefined;
-    headers: Record<string, any>;
-    body: any;
-    rawBody: string;
-    query?: Record<string, string>;
     logContextGetter: LogContextGetter;
 }): Promise<WebhookResponse> {
+    const internalNango = new InternalNango({
+        team: account,
+        environment,
+        plan,
+        integration,
+        request: {
+            method: request.method,
+            path: request.path,
+            headers: request.headers,
+            query: request.query,
+            body: request.body
+        },
+        logContextGetter
+    });
+
     // Check if both body and headers are empty
-    const hasBody = body && (typeof body === 'object' ? Object.keys(body).length > 0 : true);
-    const hasHeaders = headers && Object.keys(headers).length > 0;
+    const hasBody = request.body && (typeof request.body === 'object' ? Object.keys(request.body).length > 0 : true);
+    const hasHeaders = Object.keys(request.rawHeaders).length > 0;
 
     if (!hasBody && !hasHeaders) {
         return {
@@ -69,17 +78,9 @@ export async function routeWebhook({
         };
     }
 
-    const internalNango = new InternalNango({
-        team: account,
-        environment,
-        plan,
-        integration,
-        logContextGetter
-    });
-
     const result: Result<WebhookResponse> = await tracer.trace(`webhook.route.${integration.provider}`, async () => {
         try {
-            const handlerResult = await handler(internalNango, headers, body, rawBody, query);
+            const handlerResult = await handler(internalNango, request.rawHeaders, request.body, request.rawBody, request.query);
             return handlerResult;
         } catch (err) {
             logger.error(`error processing incoming webhook for ${integration.unique_key} - `, err);
@@ -106,7 +107,7 @@ export async function routeWebhook({
     // Only forward webhook if there is no capping and the response was successful
     const cappingStatus = await capping.getStatus(plan || null, 'webhook_forwards');
     if (!cappingStatus.isCapped && res.statusCode === 200 && ((plan && plan.has_webhooks_forward) || !plan)) {
-        const webhookBodyToForward = 'toForward' in res ? res.toForward : body;
+        const webhookBodyToForward = 'toForward' in res ? res.toForward : request.body;
         const connectionIds = 'connectionIds' in res ? res.connectionIds : [];
 
         const webhookSettings = await externalWebhookService.get(environment.id);
@@ -141,7 +142,7 @@ export async function routeWebhook({
             connectionIds,
             webhookUrlOverrideByConnectionId,
             payload: webhookBodyToForward,
-            webhookOriginalHeaders: headers,
+            webhookOriginalHeaders: request.rawHeaders,
             logContextGetter,
             onBytes: (bytes, connectionId) => {
                 pendingEvents.push(

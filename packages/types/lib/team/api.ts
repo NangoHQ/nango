@@ -17,8 +17,6 @@ export type GetTeam = ApiEndpoint<{
             users: ApiTeamUser[];
             invitedUsers: ApiInvitation[];
             isAdminTeam: boolean;
-            // Whether MFA is available for this account. When false the dashboard hides per-member 2FA state.
-            mfaFeatureEnabled: boolean;
         };
     };
 }>;
