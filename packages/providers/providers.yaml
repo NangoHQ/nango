@@ -11870,9 +11870,9 @@ inteliquent:
         - communication
     auth_mode: BASIC
     proxy:
-        base_url: ${connectionConfig.apiBaseUrl} || https://services.inteliquent.com
+        base_url: https://${connectionConfig.subdomain}.inteliquent.com
         body:
-            privateKey: ${username}
+            privateKey: ${credentials.username}
         verification:
             method: POST
             headers:
@@ -11888,24 +11888,29 @@ inteliquent:
     docs: https://nango.dev/docs/api-integrations/inteliquent
     docs_connect: https://nango.dev/docs/api-integrations/inteliquent/connect
     connection_config:
-        apiBaseUrl:
+        subdomain:
             type: string
-            title: Inteliquent environment
-            description: The Services API environment the API Key was generated for.
+            title: API subdomain
+            description: The Inteliquent Services API subdomain for your environment.
             enum:
-                - https://services.inteliquent.com
-                - https://services-sandbox.inteliquent.com
-            doc_section: '#step-1-generate-an-api-key-and-api-secret'
+                - services
+                - services-sandbox
+            doc_section: '#step-2-find-your-api-subdomain'
+            order: 1
     credentials:
         username:
             type: string
             title: API Key
             description: Your Inteliquent API Key (not your portal username).
+            pattern: '^[A-Za-z0-9]+$'
+            example: E3A7RgBW********************
             doc_section: '#step-1-generate-an-api-key-and-api-secret'
         password:
             type: string
             title: API Secret
             description: Your Inteliquent API Secret (not your portal password).
+            pattern: '^[A-Za-z0-9]+$'
+            example: zZZLA0HX********************
             secret: true
             doc_section: '#step-1-generate-an-api-key-and-api-secret'
 
