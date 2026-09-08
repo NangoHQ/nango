@@ -6,7 +6,7 @@ import { mergeFlags } from './plans.js';
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
 describe('mergeFlags', () => {
-    it('should cap only connections and function runtime on the free plan', () => {
+    it('should cap only connections, function runtime and data transfer on the free plan', () => {
         expect(getPlanDefinition('free')?.flags).toMatchObject({
             connections_max: 10,
             function_duration_seconds_max: 36_000,
