@@ -23,7 +23,7 @@ export const getPublicEnvironments = asyncWrapper<GetPublicEnvironments>(async (
         return;
     }
 
-    const environments = await environmentService.getEnvironmentsByAccountId(account.id, query.data.name);
+    const environments = await environmentService.getEnvironmentsByAccountId(account.id, { name: query.data.name });
 
     res.status(200).send({
         data: environments.map(({ id, uuid, name, is_production }) => ({ id, uuid, name, is_production }))
