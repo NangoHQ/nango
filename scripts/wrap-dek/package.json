@@ -4,8 +4,13 @@
     "description": "Wrap/unwrap the Nango global DEK with an AWS KMS or GCP Cloud KMS master key (AWS Encryption SDK envelope)",
     "type": "module",
     "private": true,
+    "scripts": {
+        "sync-gcp": "cp ../../packages/kms/lib/gcp.ts ./gcp.ts"
+    },
     "dependencies": {
-        "@aws-crypto/client-node": "^5.0.0"
+        "@aws-crypto/client-node": "^5.0.0",
+        "@google-cloud/kms": "5.7.0",
+        "google-auth-library": "10.5.0"
     },
     "devDependencies": {
         "tsx": "^4.22.4"

@@ -13,8 +13,11 @@
  *
  * --gcp-key-name is a Cloud KMS crypto key resource:
  *   projects/PROJECT/locations/LOCATION/keyRings/RING/cryptoKeys/KEY
- * GCP calls use Application Default Credentials on the host (workload identity or a service
- * account) with roles/cloudkms.cryptoKeyEncrypterDecrypter scoped to that key.
+ * GCP calls use Application Default Credentials. Set GOOGLE_IMPERSONATE_SERVICE_ACCOUNT
+ * to impersonate that SA (ADC principal needs roles/iam.serviceAccountTokenCreator;
+ * the SA needs roles/cloudkms.cryptoKeyEncrypterDecrypter on the key).
+ *
+ *   export GOOGLE_IMPERSONATE_SERVICE_ACCOUNT=nango-terraform@PROJECT.iam.gserviceaccount.com
  *
  * --context is optional and repeatable; pairs are bound to the envelope on wrap and
  * verified against the envelope header on --decrypt.
@@ -90,9 +93,10 @@ if (values.decrypt) {
 
 async function resolveKeyring(keyArn: string | undefined, gcpKeyName: string | undefined, decrypt: boolean | undefined): Promise<KeyringNode> {
     if (gcpKeyName) {
-        // Loaded only for --gcp-key-name so a standalone wrap-dek install (AWS-only deps) still runs --key-arn.
-        const { GcpKmsKeyringNode } = await import('../../packages/kms/lib/gcp.js');
-        return new GcpKmsKeyringNode(gcpKeyName);
+        // Copied from packages/kms/lib/gcp.ts (`npm run sync-gcp`) so it uses this install's KeyringNode.
+        const { GcpKmsKeyringNode } = await import('./gcp.js');
+        const { defaultGcpKmsClient } = await import('./gcp-client.js');
+        return new GcpKmsKeyringNode(gcpKeyName, defaultGcpKmsClient());
     }
     if (!keyArn) {
         console.error('Missing wrapping key. Pass --key-arn <arn> or --gcp-key-name <resource>');
