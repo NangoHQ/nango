@@ -21,7 +21,7 @@ Connect to the bol.com Retailer API with Nango and make an authenticated request
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/retailers/current" \
+            curl "https://api.nango.dev/proxy/retailer/retailers/current" \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to the bol.com Retailer API with Nango and make an authenticated request
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const response = await nango.get({
-            endpoint: '/retailers/current',
+            endpoint: '/retailer/retailers/current',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });

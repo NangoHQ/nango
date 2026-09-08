@@ -1,34 +1,60 @@
 ---
-title: 'Connect a bol.com seller account'
-sidebarTitle: 'Connect bol.com'
+title: 'bol.com - How do I link my account?'
+sidebarTitle: 'bol.com'
 description: 'Create bol.com Retailer API client credentials and connect them to Nango'
 ---
 
 ## Overview
 
-The bol.com Retailer API uses OAuth 2.0 client credentials. You need a Client ID and Client Secret from the bol.com Seller Dashboard; no redirect URI is required.
+To authenticate with the bol.com Retailer API, you need:
 
-You must have a bol.com seller account with access to the Retailer API.
+1. **Client ID** - The identifier for your Retailer API client.
+2. **Client Secret** - The secret paired with your Client ID.
 
-<Steps>
-    <Step id="open-api-settings" title="Open API settings">
-    Sign in to the [bol.com Seller Dashboard](https://partnerplatform.bol.com/). Open your account profile, select **Settings**, then open **Services** > **API settings**.
-    </Step>
-    <Step id="add-technical-contact" title="Add a technical contact">
-    Add the technical contact responsible for the integration if one is not already configured. bol.com requires this before you can create Retailer API credentials.
-    </Step>
-    <Step id="create-client-credentials" title="Create client credentials">
-    Under **Client credentials for the Retailer API**, select **Create**, give the credential a recognizable name, and save it. Copy the generated Client ID, then select **Show secret** and copy the Client Secret.
+This guide walks you through creating both credentials and connecting them to Nango. bol.com uses OAuth 2.0 client credentials, so no user redirect is required.
 
-    <Warning>Store the Client Secret securely. Create a separate credential for each application or third party, and never share credentials between integrations.</Warning>
-    </Step>
-    <Step id="enter-credentials-in-nango" title="Enter the credentials in Nango">
-    In Nango, create or open the **bol.com** integration. Go to **Connections**, select **Add Test Connection**, and enter the Client ID and Client Secret.
+### Prerequisites
 
-    <img src="/api-integrations/bol-com/form.png" style={{maxWidth: "450px" }} />
+- A bol.com seller account with access to the Retailer API.
 
-    Nango sends the credentials to `https://login.bol.com/token` using HTTP Basic authentication and stores the returned short-lived access token. It requests a new token when the current one expires instead of requesting one for every API call.
-    </Step>
-</Steps>
+### Instructions
+
+#### Step 1: Open API settings
+
+1. Sign in to your [bol.com seller account](https://partnerplatform.bol.com/).
+2. Open your account profile and select **Settings**.
+3. Under **Services**, select **API settings**.
+
+<img src="/api-integrations/bol-com/api-settings.png" alt="bol.com seller account settings with API settings selected under Services" style={{maxWidth: "700px" }} />
+
+#### Step 2: Add a technical contact
+
+Enter and save the contact details for the person responsible for the integration. bol.com requires a technical contact before you can create API credentials.
+
+<img src="/api-integrations/bol-com/technical-contact.png" alt="bol.com API settings showing the technical contact form" style={{maxWidth: "700px" }} />
+
+<a id="create-client-credentials"></a>
+#### Step 3: Create client credentials
+
+1. Under **Client credentials for the Retailer API**, select **Create**.
+2. Enter a recognizable name for the credential and select **Create**.
+
+<img src="/api-integrations/bol-com/create-client-credentials.png" alt="bol.com dialog for naming and creating Retailer API client credentials" style={{maxWidth: "700px" }} />
+
+3. Copy the generated Client ID, then select **Show secret** and copy the Client Secret.
+
+<img src="/api-integrations/bol-com/show-client-secret.png" alt="bol.com Retailer API credentials with the Client ID and Show secret option" style={{maxWidth: "700px" }} />
+
+<Warning>The Client Secret is shown only when you reveal it. Store it securely and create separate credentials for each application or third party.</Warning>
+
+#### Step 4: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with bol.com.
+2. Enter your **Client ID** and **Client Secret** in their respective fields.
+3. Submit the form to connect your account.
+
+<img src="/api-integrations/bol-com/form.png" alt="bol.com Connect form with Client ID and Client Secret fields" style={{maxWidth: "450px" }} />
+
+You are now connected to the bol.com Retailer API.
 
 For more details, see [Getting access with API client credentials](https://partnerplatform.bol.com/en/idp/getting-access-with-api-client-credentials) and the [bol.com authentication guide](https://api.bol.com/retailer/public/Retailer-API/authentication.html).
