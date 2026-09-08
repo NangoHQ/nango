@@ -64,7 +64,7 @@ const route: WebhookHandler<HubSpotWebhook | HubSpotWebhook[]> = async (nango, h
 
             for (const event of sorted) {
                 const response = await nango.executeScriptForWebhooks({
-                    body: event,
+                    payload: event,
                     webhookType: 'subscriptionType',
                     connectionIdentifier: 'portalId'
                 });
@@ -88,7 +88,7 @@ const route: WebhookHandler<HubSpotWebhook | HubSpotWebhook[]> = async (nango, h
         }
 
         const response = await nango.executeScriptForWebhooks({
-            body,
+            payload: body,
             webhookType: 'subscriptionType',
             connectionIdentifier: 'portalId'
         });

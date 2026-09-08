@@ -4,12 +4,13 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 import { accountService, configService, getPlan, getProvider } from '@nangohq/shared';
-import { flagHasPlan, metrics, zodErrorToHTTP } from '@nangohq/utils';
+import { flagHasPlan, getHeaders, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { routeWebhook } from '../../../webhook/webhook.manager.js';
 
+import type { WebhookRequest } from '../../../webhook/types.js';
 import type { DBPlan, PostPublicWebhook } from '@nangohq/types';
 
 const paramValidation = z
@@ -28,7 +29,6 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
 
     await tracer.trace('server.sync.receiveWebhook', async (span) => {
         const { environmentUuid, providerConfigKey }: PostPublicWebhook['Params'] = req.params;
-        const headers = req.headers;
 
         try {
             const resEnv = await accountService.getAccountContext({ environmentUuid });
@@ -83,17 +83,24 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 return acc;
             }, {});
 
-            const query = Object.keys(queryFiltered).length > 0 ? queryFiltered : undefined;
+            const rawHeaders = getHeaders(req.headers);
+            const request: WebhookRequest = {
+                method: 'POST',
+                path: req.path,
+                headers: redactHeaders({ headers: rawHeaders }),
+                query: queryFiltered,
+                body: req.body,
+                // The raw headers and body are included for signature verification.
+                rawHeaders,
+                rawBody: req.rawBody!
+            };
 
             const response = await routeWebhook({
                 environment,
                 account,
                 plan,
                 integration,
-                headers,
-                body: req.body,
-                rawBody: req.rawBody!,
-                ...(query !== undefined ? { query } : {}),
+                request,
                 logContextGetter
             });
 
