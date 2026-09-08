@@ -95,6 +95,24 @@ describe('operations', () => {
         expect(filters.items.map((item) => item.key).sort()).toStrictEqual([sessionId, otherSessionId].sort());
     });
 
+    it('should return every operation type the session drove, not just its own', async () => {
+        const sessionId = nanoid();
+        const actor = { kind: 'session', id: sessionId } as const;
+        const created = getFormattedOperation({ operation: { type: 'agent_session', action: 'create' }, actor }, { account, environment });
+        const action = getFormattedOperation({ operation: { type: 'action', action: 'run' }, actor }, { account, environment });
+        const proxy = getFormattedOperation({ operation: { type: 'proxy', action: 'call' }, actor }, { account, environment });
+        await createOperation(created);
+        await createOperation(action);
+        await createOperation(proxy);
+
+        const list = await listOperations({ accountId: account.id, environmentId: environment.id, limit: 10, agentSessions: [sessionId] });
+        expect(list.items.map((item) => `${item.operation.type}:${item.operation.action}`).sort()).toStrictEqual([
+            'action:run',
+            'agent_session:create',
+            'proxy:call'
+        ]);
+    });
+
     it('should ignore an empty agent session filter rather than excluding everything', async () => {
         await createOperation(getFormattedOperation({ ...operationPayload, actor: { kind: 'session', id: nanoid() } }, { account, environment }));
 
