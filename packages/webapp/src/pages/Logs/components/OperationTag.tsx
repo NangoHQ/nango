@@ -6,15 +6,11 @@ import { Tag } from '@/components/ui/Tag';
 
 import type { SearchOperationsData } from '@nangohq/types';
 
-// agent_session is far longer than any other type name and it is the only one that also carries an action
-// icon, so the two together overflow the Type column. Shown short; the tooltip still spells it out.
+// shortening agent session to prevent column overflow
 const typeLabels: Partial<Record<SearchOperationsData['operation']['type'], string>> = {
     agent_session: 'session'
 };
 
-// Who triggered the operation, so an agent's work is visible without filtering by its session. On
-// agent_session operations the actor is the session the row is about rather than who triggered it, since
-// only an api key can create or terminate one, so those rows show no actor until an agent can do it.
 const actorIcons: Record<NonNullable<SearchOperationsData['actor']>['kind'], React.ReactNode> = {
     session: <Bot className="w-3.5 h-3.5" />,
     user: <User className="w-3.5 h-3.5" />

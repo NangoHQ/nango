@@ -41,9 +41,6 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         return !operation || !operation.endedAt || new Date(operation.endedAt).getTime() > Date.now() - 160_000;
     }, [operation]);
 
-    // The session id is worth showing on any operation that carries one, including the session's own
-    // create and terminate. "Tool" only replaces "Script" on work an agent actually drove, since a
-    // lifecycle operation has neither.
     const sessionId = operation?.actor?.kind === 'session' ? operation.actor.id : null;
     const isAgentToolCall = sessionId !== null && operation?.operation.type === 'action';
 

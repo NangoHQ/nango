@@ -115,7 +115,6 @@ export async function listOperations(opts: {
     }
 
     if (opts.agentSessions && (opts.agentSessions.length > 1 || opts.agentSessions[0] !== 'all')) {
-        // Where or
         // Adding a must alongside the should resets minimum_should_match to 0, so it has to be explicit
         (query.bool!.must as estypes.QueryDslQueryContainer[]).push({
             bool: {
