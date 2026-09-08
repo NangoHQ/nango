@@ -72,6 +72,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
             outboundPolicy: permissiveTestOutboundPolicy,
+            maxWaitMs: Infinity,
             onBytes
         });
 
@@ -102,6 +103,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
             outboundPolicy: permissiveTestOutboundPolicy,
+            maxWaitMs: Infinity,
             onBytes
         });
 
@@ -136,6 +138,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
             outboundPolicy: permissiveTestOutboundPolicy,
+            maxWaitMs: Infinity,
             onBytes: (c) => {
                 fires.push({ ...c });
             }
@@ -173,6 +176,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
             outboundPolicy: permissiveTestOutboundPolicy,
+            maxWaitMs: Infinity,
             onBytes: (c) => {
                 fires.push({ ...c });
             }
@@ -210,6 +214,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
             outboundPolicy: permissiveTestOutboundPolicy,
+            maxWaitMs: Infinity,
             onBytes
         });
 
@@ -244,6 +249,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
             outboundPolicy: permissiveTestOutboundPolicy,
+            maxWaitMs: Infinity,
             onBytes
         });
 
@@ -268,7 +274,8 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             }),
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
-            outboundPolicy: permissiveTestOutboundPolicy
+            outboundPolicy: permissiveTestOutboundPolicy,
+            maxWaitMs: Infinity
         });
 
         const result = (await proxy.request()).unwrap();
@@ -303,6 +310,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
             outboundPolicy: permissiveTestOutboundPolicy,
+            maxWaitMs: Infinity,
             onBytes
         });
 
@@ -333,6 +341,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
             outboundPolicy: permissiveTestOutboundPolicy,
+            maxWaitMs: Infinity,
             onBytes
         });
 
@@ -368,6 +377,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
             outboundPolicy: permissiveTestOutboundPolicy,
+            maxWaitMs: Infinity,
             onBytes
         });
 
@@ -399,6 +409,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
             outboundPolicy: permissiveTestOutboundPolicy,
+            maxWaitMs: Infinity,
             onBytes
         });
 

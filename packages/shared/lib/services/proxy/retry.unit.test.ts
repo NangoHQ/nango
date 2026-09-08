@@ -82,31 +82,31 @@ describe('getProxyRetryFromErr', () => {
 
 describe('getProxyRetryFromErr', () => {
     it('should not retry unknown error', () => {
-        const res = getProxyRetryFromErr({ err: new Error(), proxyConfig: getDefaultProxy({}) });
+        const res = getProxyRetryFromErr({ err: new Error(), proxyConfig: getDefaultProxy({}), maxWaitMs: Infinity });
         expect(res).toStrictEqual({ retry: false, reason: 'unknown_error' });
     });
 
     it.each(['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'])('should retry network error "%s"', (value) => {
         const err = new AxiosError('', value);
-        const res = getProxyRetryFromErr({ err, proxyConfig: getDefaultProxy({}) });
+        const res = getProxyRetryFromErr({ err, proxyConfig: getDefaultProxy({}), maxWaitMs: Infinity });
         expect(res).toStrictEqual({ retry: true, reason: 'network_error' });
     });
 
     it.each([200, 300, 400])('should not retry some status code "%d"', (value) => {
         const mockAxiosError = getDefaultError({ response: { status: value } });
-        const res = getProxyRetryFromErr({ err: mockAxiosError, proxyConfig: getDefaultProxy({}) });
+        const res = getProxyRetryFromErr({ err: mockAxiosError, proxyConfig: getDefaultProxy({}), maxWaitMs: Infinity });
         expect(res).toStrictEqual({ retry: false, reason: 'not_retryable' });
     });
 
     it.each([500, 501, 429])('should retry some status code "%d"', (value) => {
         const mockAxiosError = getDefaultError({ response: { status: value } });
-        const res = getProxyRetryFromErr({ err: mockAxiosError, proxyConfig: getDefaultProxy({}) });
+        const res = getProxyRetryFromErr({ err: mockAxiosError, proxyConfig: getDefaultProxy({}), maxWaitMs: Infinity });
         expect(res).toStrictEqual({ retry: true, reason: `status_code_${value}` });
     });
 
     it('should use retryOn even on valid status code', () => {
         const mockAxiosError = getDefaultError({ response: { status: 200 } });
-        const res = getProxyRetryFromErr({ err: mockAxiosError, proxyConfig: getDefaultProxy({ retryOn: [200] }) });
+        const res = getProxyRetryFromErr({ err: mockAxiosError, proxyConfig: getDefaultProxy({ retryOn: [200] }), maxWaitMs: Infinity });
         expect(res).toStrictEqual({ retry: true, reason: 'retry_on_200' });
     });
 
@@ -116,7 +116,8 @@ describe('getProxyRetryFromErr', () => {
                 const mockAxiosError = getDefaultError({ response: { status: 200 } });
                 const res = getProxyRetryFromErr({
                     err: mockAxiosError,
-                    proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: '', retry: { error_code: ['200', '429'] } } } })
+                    proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: '', retry: { error_code: ['200', '429'] } } } }),
+                    maxWaitMs: Infinity
                 });
                 expect(res).toStrictEqual({ retry: true, reason: 'provider_error_code_200' });
             });
@@ -127,7 +128,8 @@ describe('getProxyRetryFromErr', () => {
                 const mockAxiosError = getDefaultError({ response: { status: 200, headers: { 'x-top': '0' } } });
                 const res = getProxyRetryFromErr({
                     err: mockAxiosError,
-                    proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: '', retry: { remaining: 'x-top' } } } })
+                    proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: '', retry: { remaining: 'x-top' } } } }),
+                    maxWaitMs: Infinity
                 });
                 expect(res).toStrictEqual({ retry: true, reason: 'provider_remaining' });
             });
@@ -136,7 +138,8 @@ describe('getProxyRetryFromErr', () => {
                 const mockAxiosError = getDefaultError({ response: { status: 200, headers: { 'x-top': '1' } } });
                 const res = getProxyRetryFromErr({
                     err: mockAxiosError,
-                    proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: '', retry: { remaining: 'x-top' } } } })
+                    proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: '', retry: { remaining: 'x-top' } } } }),
+                    maxWaitMs: Infinity
                 });
                 expect(res).toStrictEqual({ retry: false, reason: 'not_retryable' });
             });
@@ -153,7 +156,8 @@ describe('getProxyRetryFromErr', () => {
                                 retry: { error_code: ['500', '400'] }
                             }
                         }
-                    })
+                    }),
+                    maxWaitMs: Infinity
                 });
                 expect(res).toStrictEqual({ retry: false, reason: 'not_retryable' });
             });
@@ -168,7 +172,8 @@ describe('getProxyRetryFromErr', () => {
                                 base_url: ''
                             }
                         }
-                    })
+                    }),
+                    maxWaitMs: Infinity
                 });
                 expect(res).toStrictEqual({ retry: true, reason: 'status_code_429' });
             });
@@ -185,7 +190,8 @@ describe('getProxyRetryFromErr', () => {
                                     retry: { error_code: ['5xx'] }
                                 }
                             }
-                        })
+                        }),
+                        maxWaitMs: Infinity
                     });
                     expect(res).toStrictEqual({ retry: true, reason: 'provider_error_code_5xx' });
                 });
@@ -201,7 +207,8 @@ describe('getProxyRetryFromErr', () => {
                                     retry: { error_code: ['5xx', '429'] }
                                 }
                             }
-                        })
+                        }),
+                        maxWaitMs: Infinity
                     });
                     expect(res).toStrictEqual({ retry: true, reason: 'provider_error_code_5xx' });
                 });
@@ -227,7 +234,8 @@ describe('getProxyRetryFromErr', () => {
                                     }
                                 }
                             }
-                        })
+                        }),
+                        maxWaitMs: Infinity
                     });
                     expect(res).toStrictEqual({ retry: true, reason: 'preconfigured_at', wait: 2000 });
                 });
@@ -254,7 +262,8 @@ describe('getProxyRetryFromErr', () => {
                                     }
                                 }
                             }
-                        })
+                        }),
+                        maxWaitMs: Infinity
                     });
                     expect(res).toStrictEqual({ retry: true, reason: 'preconfigured_at', wait: 4000 });
                 });
@@ -279,9 +288,84 @@ describe('getProxyRetryFromErr', () => {
                         retryHeader: {
                             at: ['x-primary-reset', 'x-fallback-reset']
                         }
-                    })
+                    }),
+                    maxWaitMs: Infinity
                 });
                 expect(res).toStrictEqual({ retry: true, reason: 'custom_at', wait: 4000 });
+            });
+        });
+
+        describe('wait cap', () => {
+            it('should fail fast (not retry) when a custom retry-after header implies an unreasonably long wait', () => {
+                const mockAxiosError = getDefaultError({
+                    response: {
+                        status: 429,
+                        headers: { 'retry-after': '3600' }
+                    }
+                });
+                const res = getProxyRetryFromErr({
+                    err: mockAxiosError,
+                    proxyConfig: getDefaultProxy({
+                        retryHeader: { after: 'retry-after' }
+                    }),
+                    maxWaitMs: 10 * 60 * 1000 // 10 minutes
+                });
+                expect(res).toStrictEqual({ retry: false, reason: 'custom_after_wait_too_long', wait: 3600000 });
+            });
+
+            it('should fail fast (not retry) when a preconfigured provider retry-after header implies an unreasonably long wait', () => {
+                const mockAxiosError = getDefaultError({
+                    response: {
+                        status: 429,
+                        headers: { 'retry-after': '3600' }
+                    }
+                });
+                const res = getProxyRetryFromErr({
+                    err: mockAxiosError,
+                    proxyConfig: getDefaultProxy({
+                        provider: {
+                            proxy: {
+                                base_url: '',
+                                retry: { after: ['retry-after'] }
+                            }
+                        }
+                    }),
+                    maxWaitMs: 10 * 60 * 1000 // 10 minutes
+                });
+                expect(res).toStrictEqual({ retry: false, reason: 'preconfigured_after_wait_too_long', wait: 3600000 });
+            });
+
+            it('should fail fast (not retry) when an in-body retry hint implies an unreasonably long wait', () => {
+                const body = {
+                    error: {
+                        message: 'User-rate limit exceeded.  Retry after 3600 seconds'
+                    }
+                };
+                const mockAxiosError = getDefaultError({
+                    response: {
+                        status: 429,
+                        data: body
+                    }
+                });
+                const res = getProxyRetryFromErr({
+                    err: mockAxiosError,
+                    proxyConfig: getDefaultProxy({
+                        provider: {
+                            proxy: {
+                                base_url: '',
+                                retry: {
+                                    in_body: {
+                                        strategy: 'after',
+                                        value: 'User-rate limit exceeded\\. +Retry after (.+) seconds',
+                                        path: 'error.message'
+                                    }
+                                }
+                            }
+                        }
+                    }),
+                    maxWaitMs: 10 * 60 * 1000 // 10 minutes
+                });
+                expect(res).toStrictEqual({ retry: false, reason: 'preconfigured_in_body:after_wait_too_long', wait: 3600000 });
             });
         });
     });
