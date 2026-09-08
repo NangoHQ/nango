@@ -1594,6 +1594,7 @@
               "integrations/all/ory",
               "integrations/all/osu",
               "integrations/all/oura",
+              "api-integrations/outline",
               "api-integrations/outlook",
               "integrations/all/outreach",
               "api-integrations/paddle",

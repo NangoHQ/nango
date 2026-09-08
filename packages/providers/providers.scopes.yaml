@@ -9045,6 +9045,11 @@ oura:
     - tag
     - workout
 
+# source: https://app.getoutline.com/.well-known/oauth-authorization-server (scopes_supported)
+outline:
+    - read
+    - write
+
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: providers.yaml default_scopes
 outlook:
