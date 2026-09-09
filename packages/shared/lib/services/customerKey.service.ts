@@ -52,6 +52,24 @@ type AccountKeySearch = {
 
 export type CustomerKeySearch = EnvironmentKeySearch | AccountKeySearch;
 
+type SafeCustomerKey = Omit<
+    DBCustomerKey,
+    'secret' | 'iv' | 'tag' | 'hashed' | 'sandbox_signing_secret' | 'sandbox_signing_secret_iv' | 'sandbox_signing_secret_tag'
+>;
+
+const SAFE_CUSTOMER_KEY_COLUMNS = [
+    'id',
+    'uuid',
+    'account_id',
+    'key_type',
+    'display_name',
+    'scopes',
+    'last_used_at',
+    'deleted_at',
+    'created_at',
+    'updated_at'
+] as const satisfies readonly (keyof SafeCustomerKey)[];
+
 class CustomerKeyService {
     private async acquireNameLock(trx: Knex, accountId: number, keyType: string): Promise<void> {
         const lockKey = stringToHash(`customer_key_name:${accountId}:${keyType}`);
@@ -275,8 +293,7 @@ class CustomerKeyService {
 
     /**
      * Looks up customer keys by account or environment scope, optionally narrowed to a specific
-     * key (`keyId`/`keyUuid`) or display name (environment scope only). Secrets stay encrypted
-     * unless `withSecrets` is set.
+     * key (`keyId`/`keyUuid`) or display name. Sensitive fields are replaced with placeholders unless `withSecrets` is set.
      */
     public async search(
         trx: Knex,
@@ -284,14 +301,28 @@ class CustomerKeyService {
         { withSecrets }: { withSecrets: boolean } = { withSecrets: false }
     ): Promise<Result<DBCustomerKey[]>> {
         try {
-            const rows = await this.customerKeysQuery(trx, filter)
-                .select<DBCustomerKey[]>(`${CUSTOMER_KEYS_TABLE}.*`)
-                .orderBy(`${CUSTOMER_KEYS_TABLE}.display_name`, 'asc');
+            const query = this.customerKeysQuery(trx, filter).orderBy(`${CUSTOMER_KEYS_TABLE}.display_name`, 'asc');
 
-            const result = withSecrets
-                ? rows.map((row) => getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey)
-                : rows;
-            return Ok(result);
+            if (withSecrets) {
+                const rows = await query.select<DBCustomerKey[]>(`${CUSTOMER_KEYS_TABLE}.*`);
+                const decrypted = rows.map(
+                    (row) => getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey
+                );
+                return Ok(decrypted);
+            }
+
+            const rows = await query.select<SafeCustomerKey[]>(SAFE_CUSTOMER_KEY_COLUMNS.map((column) => `${CUSTOMER_KEYS_TABLE}.${column}`));
+            const withPlaceholders = rows.map((row) => ({
+                ...row,
+                secret: '',
+                iv: '',
+                tag: '',
+                hashed: '',
+                sandbox_signing_secret: null,
+                sandbox_signing_secret_iv: null,
+                sandbox_signing_secret_tag: null
+            }));
+            return Ok(withPlaceholders);
         } catch (err) {
             return Err(err);
         }
