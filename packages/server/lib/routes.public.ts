@@ -189,7 +189,16 @@ publicAPI.use(
     })
 );
 publicAPI.use(bodyParser.raw({ type: 'text/xml', limit: bodyLimit }));
-publicAPI.use(express.urlencoded({ extended: true, limit: bodyLimit }));
+publicAPI.use(
+    express.urlencoded({
+        extended: true,
+        limit: bodyLimit,
+        // Slack signs the raw form body, so webhook routing needs it as sent.
+        verify: (req: Request, _, buf) => {
+            req.rawBody = buf.toString();
+        }
+    })
+);
 
 type ExtendedMulterLimits = multer.Options['limits'] & {
     fieldNestingDepth?: number;
