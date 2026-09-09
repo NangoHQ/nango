@@ -16,7 +16,7 @@ const plans = [
     { code: 'growth', title: 'Growth (v1)', keepsGrowthAddOnOnMigration: true },
     { code: 'starter-legacy', title: 'Starter (legacy)' },
     { code: 'scale-legacy', title: 'Scale (legacy)' },
-    { code: 'growth-legacy', title: 'Growth (legacy)' },
+    { code: 'growth-legacy', title: 'Growth (legacy)', keepsGrowthAddOnOnMigration: true },
     { code: 'enterprise', title: 'Enterprise' }
 ] as PlanDefinition[];
 
@@ -56,12 +56,11 @@ describe('planTransition', () => {
         expect(transitionOf(scheduled(name))).toBeNull();
     });
 
-    it.each(['growth-v2', 'growth'] as const)('carries the Growth add-on across for %s', (name) => {
+    it.each(['growth-v2', 'growth', 'growth-legacy'] as const)('carries the Growth add-on across for %s', (name) => {
         expect(transitionOf(scheduled(name))?.keepsGrowthAddOn).toBe(true);
     });
 
-    // Only `growth` and `growth-v2` set `keepsGrowthAddOnOnMigration`, so `growth-legacy` carries nothing.
-    it.each(['starter-v2', 'starter-legacy', 'scale-legacy', 'growth-legacy'] as const)('carries no add-on for %s', (name) => {
+    it.each(['starter-v2', 'starter-legacy', 'scale-legacy'] as const)('carries no add-on for %s', (name) => {
         expect(transitionOf(scheduled(name))?.keepsGrowthAddOn).toBe(false);
     });
 

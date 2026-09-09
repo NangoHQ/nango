@@ -354,6 +354,7 @@ export const growthLegacyPlan: PlanDefinition = {
     nextPlan: [],
     canChange: false,
     hidden: true,
+    keepsGrowthAddOnOnMigration: true,
     flags: {
         api_rate_limit_size: 'l',
         environments_max: 3,
