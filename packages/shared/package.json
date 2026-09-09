@@ -58,7 +58,7 @@
         "otpauth": "9.5.1",
         "parse-link-header": "2.0.0",
         "posthog-node": "5.37.1",
-        "qs": "6.15.3",
+        "qs": "6.16.0",
         "semver": "7.5.4",
         "simple-oauth2": "5.1.0",
         "undici": "6.28.0",
