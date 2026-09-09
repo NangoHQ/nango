@@ -18,7 +18,7 @@ export const listApiKeys = asyncWrapperWithEnvironment<ListApiKeys>(async (req, 
 
     const canReadSecret = principalCan(res.locals, 'environment:settings:read_secret');
 
-    const keysResult = await customerKeyService.getApiKeysByEnv(db.knex, environment.id);
+    const keysResult = await customerKeyService.search(db.knex, { type: 'environment', environmentId: environment.id }, { withSecrets: true });
     if (keysResult.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to retrieve API keys' } });
         return;

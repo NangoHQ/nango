@@ -35,18 +35,23 @@ export const getPublicEnvironmentApiKey = asyncWrapper<GetPublicApiKey>(async (r
         return;
     }
 
-    const key = await customerKeyService.getApiKeyByUuid(db.knex, params.data.keyUuid, environment.id, account.id);
+    const key = await customerKeyService.search(
+        db.knex,
+        { type: 'environment', environmentId: environment.id, accountId: account.id, keyUuid: params.data.keyUuid },
+        { withSecrets: true }
+    );
     if (key.isErr()) {
         report(key.error, { accountId: account.id, environmentId: environment.id, keyUuid: params.data.keyUuid });
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to retrieve API key' } });
         return;
     }
-    if (!key.value) {
+    const found = key.value[0];
+    if (!found) {
         res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });
         return;
     }
 
-    const { id, uuid, display_name, scopes, secret, last_used_at, created_at } = key.value;
+    const { id, uuid, display_name, scopes, secret, last_used_at, created_at } = found;
     res.status(200).send({
         data: {
             id,

@@ -501,7 +501,7 @@ describe('Public environment API key management', () => {
             isError(res.json);
             expect(res.json.error).toEqual({ code: 'not_found', message: 'Environment not found' });
 
-            const remaining = (await customerKeyService.getApiKeysByEnv(db.knex, second.env.id)).unwrap();
+            const remaining = (await customerKeyService.search(db.knex, { type: 'environment', environmentId: second.env.id })).unwrap();
             expect(remaining.map((key) => key.id)).toContain(created.id);
         });
 

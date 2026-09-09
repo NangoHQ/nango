@@ -221,7 +221,7 @@ describe('Account service', () => {
         const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
         const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!)).unwrap();
-        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+        const apiKeys = (await customerKeyService.search(db.knex, { type: 'environment', environmentId: environment!.id }, { withSecrets: true })).unwrap();
 
         const bySecretKey = await accountService.getAccountContext({ secretKey: apiKeys[0]!.secret });
 
@@ -298,7 +298,9 @@ describe('Account service', () => {
         const firstEnvironment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
         const secondEnvironment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
         await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
-        const [apiKey] = (await customerKeyService.getApiKeysByEnv(db.knex, firstEnvironment.id)).unwrap();
+        const [apiKey] = (
+            await customerKeyService.search(db.knex, { type: 'environment', environmentId: firstEnvironment.id }, { withSecrets: true })
+        ).unwrap();
 
         await db.knex('customer_keys_relations').insert({
             customer_key_id: apiKey!.id,
@@ -319,7 +321,9 @@ describe('Account service', () => {
         await plans.createPlan(db.knex, { account_id: firstAccount.id, name: 'free' });
         const secondAccount = await createTestAccount();
         const secondEnvironment = (await environmentService.createEnvironment(db.knex, { accountId: secondAccount.id, name: uuid() })).unwrap();
-        const [apiKey] = (await customerKeyService.getApiKeysByEnv(db.knex, firstEnvironment.id)).unwrap();
+        const [apiKey] = (
+            await customerKeyService.search(db.knex, { type: 'environment', environmentId: firstEnvironment.id }, { withSecrets: true })
+        ).unwrap();
 
         await db.knex('customer_keys_relations').where({ customer_key_id: apiKey!.id }).update({ entity_id: secondEnvironment.id });
 
@@ -347,7 +351,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
         await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
-        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+        const apiKeys = (await customerKeyService.search(db.knex, { type: 'environment', environmentId: environment!.id }, { withSecrets: true })).unwrap();
 
         await db
             .knex('customer_keys')
@@ -410,7 +414,7 @@ describe('Account service', () => {
         const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
         const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!)).unwrap();
-        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+        const apiKeys = (await customerKeyService.search(db.knex, { type: 'environment', environmentId: environment!.id }, { withSecrets: true })).unwrap();
         const apiKey = apiKeys[0]!;
         const signingSecret = decryptSandboxSigningSecret(apiKey)!;
         const dryrunId = '00000000-0000-4000-8000-000000000001';
@@ -514,7 +518,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
         await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
-        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+        const apiKeys = (await customerKeyService.search(db.knex, { type: 'environment', environmentId: environment!.id }, { withSecrets: true })).unwrap();
         const signingSecret = decryptSandboxSigningSecret(apiKeys[0]!)!;
         const now = Date.now();
         const sandboxToken = createSandboxApiKeyToken({
@@ -535,7 +539,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
         await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
-        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+        const apiKeys = (await customerKeyService.search(db.knex, { type: 'environment', environmentId: environment!.id }, { withSecrets: true })).unwrap();
         const apiKey = apiKeys[0]!;
         const signingSecret = decryptSandboxSigningSecret(apiKey)!;
 
@@ -596,7 +600,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
         await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
-        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+        const apiKeys = (await customerKeyService.search(db.knex, { type: 'environment', environmentId: environment!.id }, { withSecrets: true })).unwrap();
         const customerKeySecret = apiKeys[0]!.secret;
 
         const initial = await accountService.getAccountContext({ secretKey: customerKeySecret });
