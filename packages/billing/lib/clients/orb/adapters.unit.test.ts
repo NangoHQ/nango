@@ -390,8 +390,8 @@ function usagePrice(metricId: string | null, subtotal: string, name = 'Some pric
     };
 }
 
-function bucket(perPriceCosts: PriceCostFixture[], timeframeEnd = '2026-09-01T00:00:00+00:00') {
-    return { timeframe_end: timeframeEnd, per_price_costs: perPriceCosts };
+function bucket(perPriceCosts: PriceCostFixture[], timeframeEnd = '2026-09-01T00:00:00+00:00', timeframeStart = '2026-08-01T00:00:00+00:00') {
+    return { timeframe_start: timeframeStart, timeframe_end: timeframeEnd, per_price_costs: perPriceCosts };
 }
 
 describe('fromOrbPeriodCosts', () => {
@@ -626,6 +626,67 @@ describe('fromOrbPeriodCosts', () => {
         };
 
         expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 9900 });
+    });
+
+    it('adds up the consecutive segments a mid-period plan change splits the period into', () => {
+        const costs = {
+            data: [
+                bucket([usagePrice(RECORDS_PROD, '40.00', 'Sync records', 'price_old')], '2026-08-31T21:07:31+00:00', '2026-08-01T00:00:00+00:00'),
+                bucket(
+                    [usagePrice(COMPUTE_HOURS_PROD, '4.00', 'Function compute time (h)', 'price_new')],
+                    '2026-09-01T00:00:00+00:00',
+                    '2026-08-31T21:07:31+00:00'
+                )
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 4000, function_duration_seconds: 400 });
+    });
+
+    it('reads a fixed price whose series started later than the usage prices', () => {
+        const costs = {
+            data: [
+                bucket([usagePrice(CONNECTIONS_PROD, '12.00', 'Connections', 'price_usage')], '2026-10-01T00:00:00+00:00', '2026-09-03T00:00:00+00:00'),
+                bucket(
+                    [
+                        {
+                            price_id: 'price_addon',
+                            subtotal: '360.00',
+                            total: '360.00',
+                            price: { price_type: 'fixed_price', currency: 'USD', name: 'Growth Add-on', billable_metric: null }
+                        }
+                    ],
+                    '2026-10-01T00:00:00+00:00',
+                    '2026-09-07T00:00:00+00:00'
+                )
+            ]
+        };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ connections: 1200 });
+        expect(result?.fixedInCents).toBe(36_000);
+    });
+
+    it('keeps only the last bucket of each series, since a series accumulates', () => {
+        const costs = {
+            data: [
+                bucket([usagePrice(CONNECTIONS_PROD, '3.00', 'Connections', 'price_a')], '2026-08-15T00:00:00+00:00', '2026-08-01T00:00:00+00:00'),
+                bucket([usagePrice(CONNECTIONS_PROD, '9.00', 'Connections', 'price_a')], '2026-09-01T00:00:00+00:00', '2026-08-01T00:00:00+00:00')
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ connections: 900 });
+    });
+
+    it('skips a series whose end cannot be read rather than losing the rest', () => {
+        const costs = {
+            data: [
+                bucket([usagePrice(RECORDS_PROD, '7.00', 'Sync records', 'price_ok')], '2026-09-01T00:00:00+00:00', '2026-08-01T00:00:00+00:00'),
+                bucket([usagePrice(CONNECTIONS_PROD, '3.00', 'Connections', 'price_bad')], 'not-a-date', '2026-08-20T00:00:00+00:00')
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 700 });
     });
 
     it('returns null for a period that has already closed', () => {
