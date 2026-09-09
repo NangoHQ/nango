@@ -1,8 +1,9 @@
-import { ExternalLink, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button, FieldLabel } from '@nangohq/design-system';
 
+import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
@@ -63,20 +64,11 @@ export const SettingsTab = () => {
                     <div className="flex flex-col gap-2">
                         <div className="flex gap-2 items-center">
                             <FieldLabel htmlFor="webhook_url_override">Override webhook URL</FieldLabel>
-                            <InfoTooltip>
-                                Override the environment-wide webhook URL for this connection. Use this for local development. See{' '}
-                                <Button asChild variant="link-accent" size="sm">
-                                    <a
-                                        href="https://nango.dev/docs/guides/platform/environments#engineering-collaboration"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        Engineering collaboration
-                                        <ExternalLink />
-                                    </a>
-                                </Button>
-                                .
-                            </InfoTooltip>
+                            <InfoTooltip>Override the environment-wide webhook URL for this connection. Use this for local development.</InfoTooltip>
+                            <DocsIconLink
+                                href="https://nango.dev/docs/guides/platform/environments#engineering-collaboration"
+                                label="Engineering collaboration documentation"
+                            />
                         </div>
                         <EditableInput
                             id="webhook_url_override"

@@ -1,8 +1,3 @@
-import { Link } from 'react-router-dom';
-
-import { Button } from '@nangohq/design-system';
-
-import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 
 import type { Role } from '@nangohq/types';
@@ -32,29 +27,12 @@ export const RoleSelect: React.FC<{
                 {roles.map(({ value: v, label, description }) => {
                     const locked = !hasRBAC && v !== 'administrator';
                     return (
-                        <ConditionalTooltip
-                            key={v}
-                            condition={locked}
-                            contentClassName="pointer-events-auto"
-                            content={
-                                <span>
-                                    RBAC is only available with the Growth add-on.{' '}
-                                    <Button asChild variant="link-accent" size="sm">
-                                        <Link to={`/team/billing#plans`}>Upgrade</Link>
-                                    </Button>
-                                </span>
-                            }
-                            asChild
-                        >
-                            <span className="block">
-                                <SelectItem value={v} className="h-fit p-2 pr-6" disabled={locked}>
-                                    <div className="flex min-w-0 flex-col gap-1">
-                                        <span className="text-text-strong text-body-medium-regular">{label}</span>
-                                        <p className="text-text-secondary text-body-small-regular whitespace-normal">{description}</p>
-                                    </div>
-                                </SelectItem>
-                            </span>
-                        </ConditionalTooltip>
+                        <SelectItem key={v} value={v} className="h-fit p-2 pr-6" disabled={locked}>
+                            <div className="flex min-w-0 flex-col gap-1">
+                                <span className="text-text-strong text-body-medium-regular">{label}</span>
+                                <p className="text-text-secondary text-body-small-regular whitespace-normal">{description}</p>
+                            </div>
+                        </SelectItem>
                     );
                 })}
             </SelectContent>
