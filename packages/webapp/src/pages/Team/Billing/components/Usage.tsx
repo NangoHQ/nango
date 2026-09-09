@@ -43,8 +43,6 @@ export const Usage: React.FC = () => {
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
 
     const chargesEnabled = hasMonthlySpend(plan);
-    // Omit the current-month window so Orb uses the subscription's billing period. Past months use
-    // calendar windows.
     const {
         data: periodCosts,
         isPending: costsPending,

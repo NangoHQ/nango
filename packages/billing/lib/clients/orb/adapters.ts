@@ -100,8 +100,7 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, 
         (latest, bucket) => (latest && Date.parse(latest.timeframe_end) >= Date.parse(bucket.timeframe_end) ? latest : bucket),
         null
     );
-    // An ended subscription returns its stale final period instead of erroring, so a closed period
-    // counts only when the caller named the window. `NaN <= now` is false, so NaN needs its own check.
+    // Orb returns its last period after a subscription ends. Accept it only when the request includes dates.
     const periodEnd = period ? Date.parse(period.timeframe_end) : NaN;
     if (!period || Number.isNaN(periodEnd) || (!opts.explicitTimeframe && periodEnd <= now.getTime())) {
         return null;
@@ -110,16 +109,14 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, 
     const metrics: Partial<Record<UsageMetric, number>> = {};
     const malformedMetrics: UsageMetric[] = [];
     const flagged: BillingPeriodCosts['flagged'] = [];
-    // Process fixed prices after usage prices so they cannot set the period currency. A fixed-only
-    // subscription has no metric costs to report.
+    // Read currency from usage prices. A subscription with only fixed prices has no metric costs.
     const fixedPrices: { priceId: string; priceName: string; amountInCents: number | null; currency: string | null }[] = [];
     let fullyAttributed = true;
     let currency: string | null = null;
 
     for (const priceCost of period.per_price_costs) {
         const { price } = priceCost;
-        // Orb allocates plan-level minimums and discounts across price totals. Only the subtotal
-        // belongs to this usage price.
+        // Orb spreads minimum charges and discounts across price totals. Read usage charges from `subtotal`.
         const amountInCents = orbAmountToCents(priceCost.subtotal);
         const priceCurrency = normalizeIsoCurrency(price.currency);
 
@@ -164,8 +161,7 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, 
     let fixedInCents = 0;
     for (const fixed of fixedPrices) {
         if (fixed.amountInCents === null || fixed.currency !== currency) {
-            // Deliberately not `fullyAttributed`. That flag only decides whether an absent *metric*
-            // may read as $0.00, so setting it here would turn every real $0.00 usage row into a dash.
+            // Keep `fullyAttributed` unchanged. It describes usage prices, not fixed prices.
             flagged.push({ priceId: fixed.priceId, priceName: fixed.priceName, metric: null, amountInCents: fixed.amountInCents });
             continue;
         }

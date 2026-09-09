@@ -176,7 +176,7 @@ export type GetBillingPeriodCosts = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/billing/period-costs';
-    /** Omit both to get the period being billed now; name a window to cost a closed month. */
+    /** Omit `from` and `to` for the current billing period. Provide both for an explicit date range. */
     Querystring: { env: string; from?: string; to?: string };
     Success: {
         data: {
