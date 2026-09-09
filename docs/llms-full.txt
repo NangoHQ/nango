@@ -6672,7 +6672,7 @@ Source: https://nango.dev/docs/guides/platform/self-hosting.md
 Description: Run a dedicated Nango instance in your own cloud account.
 
 <Note>
-BYOC requires an [Enteprise plan](https://nango.dev/pricing) subscription. [Contact us](https://nango.dev/contact) for more details.
+BYOC requires an [Enterprise plan](https://nango.dev/pricing) subscription. [Contact us](https://nango.dev/contact) for more details.
 </Note>
 
 Bring Your Own Cloud (BYOC) gives you a dedicated Nango instance running inside your own AWS, GCP, or Azure account, in the region of your choice. Nango installs it, then operates, monitors, updates, and scales it for you.
@@ -6681,7 +6681,7 @@ Everything Nango handles — API credentials, synced records, logs, and the audi
 
 ## Choosing a deployment model
 
-We recommend Nango Cloud for most teams. It runs the full plaftrom, has the same [compliance certifications](/guides/platform/security#compliance) (SOC 2 type II, GDPR, HIPAA), has no scaling limits, and is used in production by Fortune 500 companies.
+We recommend Nango Cloud for most teams. It runs the full platform, has the same [compliance certifications](/guides/platform/security#compliance) (SOC 2 type II, GDPR, HIPAA), has no scaling limits, and is used in production by Fortune 500 companies.
 
 Choose **BYOC** when a specific requirement makes it necessary:
 
