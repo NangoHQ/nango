@@ -2272,9 +2272,9 @@ Example sessions:
 - A finance agent with a few read-only tools on an org's accounting system, and read & write access to a team's Slack
 - A developer agent with a team's Linear access and a user's personal GitHub access
 
-<Note>
+<Info>
     Agent sessions are in public beta. We are quickly expanding agent sessions, follow our [changelog](/updates/changelog) for announcements and improvements!
-</Note>
+</Info>
 
 ## Quickstart
 
