@@ -6681,7 +6681,7 @@ Everything Nango handles — API credentials, synced records, logs, and the audi
 
 ## Choosing a deployment model
 
-We recommend Nango Cloud for most teams. It runs the full platform, has the same [compliance certifications](/guides/platform/security#compliance) (SOC 2 type II, GDPR, HIPAA), has no scaling limits, and is used in production by Fortune 500 companies.
+We recommend **Nango Cloud** for most teams: No operational overhead, [SOC 2 Type II, GDPR and HIPAA compliant](/guides/platform/security#compliance), auto-scales to virtually any load, and is used in production by Fortune 500 companies.
 
 Choose **BYOC** when a specific requirement makes it necessary:
 
@@ -6695,7 +6695,7 @@ Self-hosting, fully managed by you, is also available.
 Please reach out, we are happy to help you evaluate which deployment fits best for your use case!
 
 <Info>
-Nango is also open source and can be [self-hosted for free](/guides/platform/free-self-hosting) for hobby projects and evaluation, with a limited feature set and no managed operations or support.
+Nango is open source and can be [self-hosted for free](/guides/platform/free-self-hosting) for hobby projects, with a limited feature set and no managed operations or support.
 </Info>
 
 ## How BYOC works
@@ -6724,16 +6724,16 @@ Nango maps each of these onto your cloud provider's managed services, and provis
 
 ## What Nango needs from you
 
-Broadly: a cloud account, and scoped access to it.
+A cloud account, and scoped access to it.
 
-You create a role or service account that Nango's deployment identity is allowed to assume. That grant has four properties worth reviewing with your security team:
+You create a role or service account that Nango's deployment identity can assume:
 
-- **Reviewable before you grant it.** Nango gives you the exact permission definition as an infrastructure-as-code template. You read it, then apply it.
-- **No long-lived keys.** Nango never holds a static credential for your account. Access works through short-lived tokens issued only while your grant stands.
-- **Scoped, and narrowable.** The grant covers what the deployment needs and nothing else. We can work with you to tighten it further — a dedicated account or project, custom roles, permission boundaries, or network restrictions.
-- **Revocable at any time.** Remove the grant and Nango's access ends immediately. Your instance keeps running; Nango simply cannot manage it until access is restored.
+- **Reviewable** — you get the exact permission definition as an infrastructure-as-code template before you apply it.
+- **No long-lived keys** — access uses short-lived tokens, issued only while the grant stands.
+- **Scoped** — it covers what the deployment needs. We can narrow it further with a dedicated account, custom roles, or network restrictions.
+- **Revocable** — remove the grant and access ends immediately. Your instance keeps running, but Nango can no longer manage it.
 
-Once the grant is in place, the first deployment typically completes in **under a week**.
+The first deployment typically completes in under a week.
 
 ## Security and shared responsibility
 
@@ -6743,7 +6743,7 @@ Once the grant is in place, the first deployment typically completes in **under 
 
 **You** are responsible for the cloud account it runs in: account-level access, the network perimeter and its configuration, your own IAM, and the cost of the cloud resources.
 
-We are happy to work with you on the boundary between those. For example, Network restrictions, org policies, audit alerts, etc.
+We are happy to work with you on the boundary between those.
 
 ### What leaves your account
 
