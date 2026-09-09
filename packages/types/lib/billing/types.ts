@@ -120,7 +120,6 @@ export interface BillingPeriodCosts {
     /** The individual prices behind `malformedMetrics` and a false `fullyAttributed`, for alerting —
      *  not sent over HTTP. */
     flagged: { priceId: string; priceName: string; metric: UsageMetric | null; amountInCents: number | null }[];
-    /** Unreadable fixed prices are recorded in `flagged` and omitted from this total. */
     fixedInCents: number;
     currency: string;
 }
