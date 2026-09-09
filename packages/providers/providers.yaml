@@ -15167,6 +15167,25 @@ monday:
     docs: https://nango.dev/docs/api-integrations/monday
     setup_guide_url: https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app
 
+moneybird:
+    display_name: Moneybird
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://moneybird.com/oauth/authorize
+    token_url: https://moneybird.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://moneybird.com/api
+    docs: https://nango.dev/docs/api-integrations/moneybird
+    setup_guide_url: https://nango.dev/docs/api-integrations/moneybird/how-to-register-your-own-moneybird-oauth-app
+
 momentum-io:
     display_name: Momentum.io
     categories:

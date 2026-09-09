@@ -1542,6 +1542,7 @@
               "api-integrations/mollie",
               "integrations/all/momentum-io",
               "api-integrations/monday",
+              "api-integrations/moneybird",
               "integrations/all/mural",
               "api-integrations/myob",
               "api-integrations/n8n",
