@@ -20,7 +20,7 @@ vi.mock('@nangohq/feature-flags', () => ({
 const APP_ID = '123456';
 const PRIVATE_KEY = 'private-key';
 const APP_LINK = 'https://github.com/apps/nango';
-const REMEDIATION = 'Copy the Webhook Secret from the Nango integration settings into your GitHub App webhook secret field';
+const REMEDIATION = 'Set the Nango webhook secret on the GitHub App';
 
 const body = { action: 'opened', installation: { id: 42 } };
 const rawBody = JSON.stringify(body);
