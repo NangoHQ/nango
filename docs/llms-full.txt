@@ -2257,12 +2257,6 @@ In both cases, your app only needs to open the Connect UI and pass the session t
 Source: https://nango.dev/docs/guides/agent-sessions.md
 Description: Optimized interface for AI agents to use integrations
 
-<Note>
-    Agent sessions are in public beta.
-    
-    Join our [beta Slack Channel](https://join.slack.com/share/enQtMTE5NDc2MjE1MjI1OTktNWM2OGUwMzI2NWQ2OWJhMzQ5YTA5YzEyNmQzZDVkMzlhOWRlMTBlYTFhYTZlMmU3MGQyOTc1NDljY2FkMzM4NQ) for feedback and notifications of breaking changes.
-</Note>
-
 Agent sessions are an optimized interface for AI agents to use integrations.
 
 Each session has three parts:
@@ -2277,6 +2271,10 @@ Example sessions:
 - A sales agent with a user's personal Gmail & Google Calendar, and a read-only org-wide Salesforce connection
 - A finance agent with a few read-only tools on an org's accounting system, and read & write access to a team's Slack
 - A developer agent with a team's Linear access and a user's personal GitHub access
+
+<Note>
+    Agent sessions are in public beta. We are quickly expanding agent sessions, follow our [changelog](/updates/changelog) for announcements and improvements!
+</Note>
 
 ## Quickstart
 
@@ -2615,7 +2613,7 @@ You can also use `pinned` without any `any` selectors, if you already know the e
 An integration that matches no connection does not fail creation. It appears in the toolset as `connected: false`, and its tool calls fail with a missing authorization error.
 
 <Note>
-Currently there is no way for the agent to ask the user to connect an unconnected integration. Let us know on the [Beta Slack channel](https://join.slack.com/share/enQtMTE5NDc2MjE1MjI1OTktNWM2OGUwMzI2NWQ2OWJhMzQ5YTA5YzEyNmQzZDVkMzlhOWRlMTBlYTFhYTZlMmU3MGQyOTc1NDljY2FkMzM4NQ) if you need this and we are happy to prioritize it.
+Currently there is no way for the agent to ask the user to connect an unconnected integration. Let us know if you need this and we are happy to prioritize it.
 </Note>
 
 ## Toolsets & tools
