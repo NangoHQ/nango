@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { environmentService, seeders } from '@nangohq/shared';
 
-import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
+import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -27,25 +27,27 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: apiKey.secret,
+            session,
             // @ts-expect-error - intentionally missing env query param
             query: {},
             body: { variables: [] }
         });
 
-        shouldRequireQueryEnv(res);
+        shouldRequireSessionEnv(res);
     });
 
     it('should validate body', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: apiKey.secret,
+            session,
             query: { env: env.name },
             // @ts-expect-error - intentionally invalid body
             body: { invalid: 'body' }
@@ -57,7 +59,8 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should store and retrieve environment variables', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
         const variables = [
             { name: 'TEST_VAR', value: 'test_value' },
@@ -66,7 +69,7 @@ describe(`POST ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: apiKey.secret,
+            session,
             query: { env: env.name },
             body: { variables }
         });
@@ -81,14 +84,15 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should store environment variable with value up to 4000 characters', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
         const largeValue = 'x'.repeat(4000);
         const variables = [{ name: 'LARGE_VALUE_VAR', value: largeValue }];
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: apiKey.secret,
+            session,
             query: { env: env.name },
             body: { variables }
         });
@@ -103,14 +107,15 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should store environment variable with name up to 256 characters', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
         const largeName = 'X'.repeat(256);
         const variables = [{ name: largeName, value: 'test_value' }];
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: apiKey.secret,
+            session,
             query: { env: env.name },
             body: { variables }
         });
@@ -125,14 +130,15 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should reject environment variable name exceeding 256 characters', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
         const tooLongName = 'X'.repeat(257);
         const variables = [{ name: tooLongName, value: 'test_value' }];
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: apiKey.secret,
+            session,
             query: { env: env.name },
             body: { variables }
         });
@@ -143,14 +149,15 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should reject environment variable value exceeding 4000 characters', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
         const tooLongValue = 'x'.repeat(4001);
         const variables = [{ name: 'TEST_VAR', value: tooLongValue }];
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: apiKey.secret,
+            session,
             query: { env: env.name },
             body: { variables }
         });
@@ -161,7 +168,8 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should reject more than 100 environment variables', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
         const variables = Array.from({ length: 101 }, (_, i) => ({
             name: `VAR_${i}`,
@@ -170,7 +178,7 @@ describe(`POST ${endpoint}`, () => {
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: apiKey.secret,
+            session,
             query: { env: env.name },
             body: { variables }
         });

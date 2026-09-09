@@ -73,13 +73,14 @@ export const LEGACY_USAGE_METRICS: readonly UsageMetric[] = [
 
 export const S26_USAGE_METRICS: readonly UsageMetric[] = ['connections', 'function_duration_seconds', 'data_transfer'];
 
-const PLANS_ON_S26_PRICING: readonly DBPlan['name'][] = ['free', 'free-uncapped'];
+const PLANS_ON_S26_PRICING: readonly DBPlan['name'][] = ['free', 'free-uncapped', 'pay-as-you-go'];
 
-export function billedUsageMetrics(plan: ApiPlan | null | undefined, s26PricingEnabled: boolean): readonly UsageMetric[] {
-    if (!plan || !s26PricingEnabled) {
-        return LEGACY_USAGE_METRICS;
-    }
-    return PLANS_ON_S26_PRICING.includes(plan.name) ? S26_USAGE_METRICS : LEGACY_USAGE_METRICS;
+export function isOnS26Pricing(plan: ApiPlan | null | undefined): boolean {
+    return !!plan && PLANS_ON_S26_PRICING.includes(plan.name);
+}
+
+export function billedUsageMetrics(plan: ApiPlan | null | undefined): readonly UsageMetric[] {
+    return isOnS26Pricing(plan) ? S26_USAGE_METRICS : LEGACY_USAGE_METRICS;
 }
 
 const SECONDS_PER_HOUR = 3600;

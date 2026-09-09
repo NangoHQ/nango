@@ -4,6 +4,7 @@ import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
     configService,
+    ConnectionCreationCappedError,
     connectionService,
     errorManager,
     ErrorSourceEnum,
@@ -234,7 +235,7 @@ export const postPublicTwoStepAuthorization = asyncWrapperWithEnvironment<PostPu
                 connectionId: updatedConnection.connection.connection_id,
                 providerConfigKey: updatedConnection.connection.provider_config_key,
                 account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
+                environment: { uuid: environment.uuid, name: environment.name },
                 endUser: res.locals.endUser
             }
         };
@@ -291,6 +292,10 @@ export const postPublicTwoStepAuthorization = asyncWrapperWithEnvironment<PostPu
             ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
         });
 
+        if (err instanceof ConnectionCreationCappedError) {
+            res.status(err.status).send({ error: { code: 'resource_capped', message: err.message } });
+            return;
+        }
         next(err);
     }
 });

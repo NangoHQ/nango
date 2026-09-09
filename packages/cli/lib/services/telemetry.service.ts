@@ -1,4 +1,5 @@
 import { getDeviceId } from '../state.js';
+import { cliFetch } from '../tls.js';
 import { getCliHeaders, isCliDebugEnabled, isTelemetryDisabled, printDebug, resolveHostport } from '../utils.js';
 
 import type { CliTelemetryEvent, PostCliTelemetry } from '@nangohq/types';
@@ -20,7 +21,7 @@ export function trackCliEvent(event: CliTelemetryEvent): void {
 
     const { deviceId, ephemeral } = getDeviceId();
     const body: PostCliTelemetry['Body'] = { deviceId, event, ephemeral };
-    void fetch(new URL('/cli/telemetry', resolveHostport()), {
+    void cliFetch(new URL('/cli/telemetry', resolveHostport()), {
         method: 'POST',
         body: JSON.stringify(body),
         headers: new Headers({ ...getCliHeaders(), 'content-type': 'application/json' }),

@@ -41,6 +41,7 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                             {operation.action === 'connection_create' && <Link className="w-3.5 h-3.5" />}
                             {operation.action === 'sync' && <RefreshCw className="w-3.5 h-3.5" />}
                             {operation.action === 'connection_refresh' && <Lock className="w-3.5 h-3.5" />}
+                            {operation.action === 'connection_delete' && <Trash2 className="w-3.5 h-3.5" />}
                         </Tag>
                     )}
                 </div>

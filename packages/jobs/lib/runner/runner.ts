@@ -1,6 +1,8 @@
+import { getInternalAuthBearerHeaderIfPresent } from '@nangohq/internal-auth';
 import { env, Err, isProd, Ok, retryWithBackoff, withInternalTls } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { mintRunnerDispatchToken } from '../internal-auth.js';
 import { getDefaultFleet } from '../runtime/runtimes.js';
 import { FleetRunner } from './fleet.runner.js';
 import { RemoteRunner } from './remote.runner.js';
@@ -38,21 +40,23 @@ function getRunnerIdForTeam(teamId: number): string {
     return isProd ? getRunnerId(`${teamId}`) : getRunnerId('default');
 }
 
-export async function getRunner(teamId: number): Promise<Result<Runner>> {
+type RunnerAuthOpts = { token?: string | null | undefined };
+
+export async function getRunner(teamId: number, auth?: RunnerAuthOpts): Promise<Result<Runner>> {
     try {
         const runnerId = getRunnerIdForTeam(teamId);
-        const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
+        const runner = await getOrStartRunner(runnerId, auth?.token).catch(() => getOrStartRunner(getRunnerId('default'), auth?.token));
         return Ok(runner);
     } catch (err) {
         return Err(new Error(`Failed to get runner for team ${teamId}`, { cause: err }));
     }
 }
 
-export async function getRunners(teamId: number): Promise<Result<Runner[]>> {
+export async function getRunners(teamId: number, auth?: RunnerAuthOpts): Promise<Result<Runner[]>> {
     try {
         const runnerId = getRunnerIdForTeam(teamId);
         if (envs.RUNNER_TYPE === 'REMOTE') {
-            const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
+            const runner = await getOrStartRunner(runnerId, auth?.token).catch(() => getOrStartRunner(getRunnerId('default'), auth?.token));
             return Ok([runner]);
         }
 
@@ -65,12 +69,12 @@ export async function getRunners(teamId: number): Promise<Result<Runner[]>> {
             return Err(nodes.error);
         }
 
-        const runners = nodes.value.filter((node) => node.url).map((node) => new FleetRunner(runnerId, node.url as string));
+        const runners = nodes.value.filter((node) => node.url).map((node) => new FleetRunner(runnerId, node.url as string, auth?.token));
         if (runners.length > 0) {
             return Ok(runners);
         }
 
-        const runner = await getOrStartRunner(runnerId).catch(() => getOrStartRunner(getRunnerId('default')));
+        const runner = await getOrStartRunner(runnerId, auth?.token).catch(() => getOrStartRunner(getRunnerId('default'), auth?.token));
         return Ok([runner]);
     } catch (err) {
         return Err(new Error(`Failed to get runners for team ${teamId}`, { cause: err }));
@@ -89,7 +93,15 @@ export async function idle(nodeId: number): Promise<Result<void>> {
 export async function notifyOnIdle(node: Node): Promise<Result<void>> {
     const res = await retryWithBackoff(
         async () => {
-            return await fetch(`${node.url}/notifyWhenIdle`, withInternalTls({ method: 'POST', body: JSON.stringify({ nodeId: node.id }) }));
+            const token = mintRunnerDispatchToken({ nodeId: String(node.id) });
+            return await fetch(
+                `${node.url}/notifyWhenIdle`,
+                withInternalTls({
+                    method: 'POST',
+                    body: JSON.stringify({ nodeId: node.id }),
+                    headers: getInternalAuthBearerHeaderIfPresent(token)
+                })
+            );
         },
         {
             numOfAttempts: 5
@@ -101,9 +113,9 @@ export async function notifyOnIdle(node: Node): Promise<Result<void>> {
     return Ok(undefined);
 }
 
-async function getOrStartRunner(runnerId: string): Promise<Runner> {
+async function getOrStartRunner(runnerId: string, token?: string | null): Promise<Runner> {
     if (envs.RUNNER_TYPE === 'REMOTE') {
-        return RemoteRunner.getOrStart(runnerId);
+        return RemoteRunner.getOrStart(runnerId, token);
     }
     const runnersFleet = getDefaultFleet();
     const getNode = await runnersFleet.getRunningNode(runnerId);
@@ -114,5 +126,5 @@ async function getOrStartRunner(runnerId: string): Promise<Runner> {
     if (!node.url) {
         throw new Error(`Node url is missing for runner '${runnerId}'`);
     }
-    return new FleetRunner(runnerId, node.url);
+    return new FleetRunner(runnerId, node.url, token);
 }

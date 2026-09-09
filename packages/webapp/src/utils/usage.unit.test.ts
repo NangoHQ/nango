@@ -11,6 +11,7 @@ import {
     getAggregateUsageState,
     getUsageState,
     getUsageStateTextColor,
+    isOnS26Pricing,
     LEGACY_USAGE_METRICS,
     NEAR_LIMIT_RATIO,
     S26_USAGE_METRICS
@@ -94,12 +95,13 @@ describe('getAggregateUsageState', () => {
 });
 
 describe('billedUsageMetrics', () => {
-    const on = (name: string) => billedUsageMetrics({ name } as ApiPlan, true);
+    const on = (name: string) => billedUsageMetrics({ name } as ApiPlan);
 
     // Deliberately restates the source map: a wrong value there has to fail against something.
     const BILLED_ON: Record<ApiPlan['name'], 's26' | 'legacy'> = {
         free: 's26',
         'free-uncapped': 's26',
+        'pay-as-you-go': 's26',
         'startup-deal': 'legacy',
         'starter-v2': 'legacy',
         'growth-v2': 'legacy',
@@ -118,12 +120,20 @@ describe('billedUsageMetrics', () => {
         }
     });
 
-    it('leaves the view untouched while the flag is off', () => {
-        expect(billedUsageMetrics({ name: 'free' } as ApiPlan, false)).toEqual(LEGACY_USAGE_METRICS);
+    it('falls back to the legacy set before the plan has loaded', () => {
+        expect(billedUsageMetrics(undefined)).toEqual(LEGACY_USAGE_METRICS);
+    });
+});
+
+describe('isOnS26Pricing', () => {
+    it('agrees with the metrics a plan is billed on', () => {
+        expect(isOnS26Pricing({ name: 'pay-as-you-go' } as ApiPlan)).toBe(true);
+        expect(isOnS26Pricing({ name: 'free' } as ApiPlan)).toBe(true);
+        expect(isOnS26Pricing({ name: 'growth-v2' } as ApiPlan)).toBe(false);
     });
 
-    it('falls back to the legacy set before the plan has loaded', () => {
-        expect(billedUsageMetrics(undefined, true)).toEqual(LEGACY_USAGE_METRICS);
+    it('is false before the plan has loaded', () => {
+        expect(isOnS26Pricing(undefined)).toBe(false);
     });
 });
 

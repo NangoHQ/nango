@@ -65,11 +65,13 @@ describe('API Keys endpoints', () => {
             isSuccess(res.json);
             expect(res.json.data).toMatchObject({
                 id: expect.any(Number),
+                uuid: expect.any(String),
                 display_name: 'CI Deploy Key',
                 scopes: ['environment:deploy'],
                 secret: expect.any(String),
                 created_at: expect.any(String)
             });
+            expect(res.json.data.uuid).toBeUUID();
         });
 
         it('should default to environment:* scopes', async () => {

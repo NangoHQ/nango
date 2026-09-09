@@ -1,3 +1,35 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet" />
+
+<!-- The webapp reads window._env at module scope (utils/env.ts); the dashboard gets it from /env.js, which Storybook doesn't serve.
+     Mirrors the full WindowEnv shape, since a story reaching a feature gate on a partial one throws. -->
+<script>
+    window._env = {
+        apiUrl: 'http://localhost:3003',
+        dashboardApiUrl: '/',
+        publicUrl: 'http://localhost:3000',
+        connectUrl: 'http://localhost:3009',
+        gitHash: undefined,
+        publicSentryKey: '',
+        publicPosthogKey: '',
+        publicPosthogHost: '',
+        publicLogoDevKey: '',
+        publicStripeKey: '',
+        publicPlainAppId: '',
+        isCloud: false,
+        isHosted: true,
+        isEnterprise: false,
+        features: {
+            logs: true,
+            scripts: true,
+            auth: true,
+            allowSignup: true,
+            managedAuth: true,
+            gettingStarted: true,
+            slack: true,
+            plan: true,
+            authRoles: true
+        }
+    };
+</script>

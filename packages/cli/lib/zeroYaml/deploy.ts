@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import columnify from 'columnify';
 import promptly from 'promptly';
 
+import { cliFetch } from '../tls.js';
 import { getCliHeaders, isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
@@ -544,7 +545,7 @@ async function postLegacyConfirmation({
     const url = new URL('/sync/deploy/confirmation', hostport);
 
     try {
-        const res = await fetch(url, {
+        const res = await cliFetch(url, {
             method: 'POST',
             body: JSON.stringify(body),
             headers: new Headers({
@@ -577,7 +578,7 @@ async function postLegacyDeploy({ hostport, body }: { hostport: string; body: Po
     const url = new URL('/sync/deploy', hostport);
 
     try {
-        const res = await fetch(url, {
+        const res = await cliFetch(url, {
             method: 'POST',
             body: JSON.stringify(body),
             headers: new Headers({
@@ -620,7 +621,7 @@ async function previewFunctionsDeployment({
     const url = new URL('/functions/deployments/bundle/preview', hostport);
 
     try {
-        const res = await fetch(url, {
+        const res = await cliFetch(url, {
             method: 'POST',
             body: JSON.stringify(body),
             headers: new Headers({
@@ -651,7 +652,7 @@ async function deployFunctions({
     const url = new URL('/functions/deployments/bundle', hostport);
 
     try {
-        const res = await fetch(url, {
+        const res = await cliFetch(url, {
             method: 'POST',
             body: JSON.stringify(body),
             headers: new Headers({

@@ -58,7 +58,7 @@ export interface OperationAdmin {
 }
 export interface OperationWebhook {
     type: 'webhook';
-    action: 'incoming' | 'forward' | 'sync' | 'connection_create' | 'connection_refresh';
+    action: 'incoming' | 'forward' | 'sync' | 'connection_create' | 'connection_refresh' | 'connection_delete';
 }
 
 export interface OperationDeploy {
@@ -68,7 +68,7 @@ export interface OperationDeploy {
 
 export interface OperationAgentSession {
     type: 'agent_session';
-    action: 'create';
+    action: 'create' | 'terminate';
 }
 
 export type OperationList =

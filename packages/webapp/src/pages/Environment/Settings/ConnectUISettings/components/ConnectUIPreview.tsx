@@ -41,6 +41,7 @@ export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: st
         queryKey: [env, 'preview-session-token'],
         queryFn: async () => {
             const res = await apiConnectSessions(env, {
+                is_preview: true,
                 end_user: {
                     id: 'previewUserId',
                     email: 'preview@nango.dev',

@@ -111,7 +111,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
 
         // capping
         const cappingStatus = await tracer.trace('function.prepare.cappingExecutions', async () =>
-            capping.getStatus(plan, 'function_executions', 'function_compute_gbms')
+            capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'function_duration_seconds')
         );
         if (cappingStatus.isCapped) {
             const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';

@@ -49,6 +49,7 @@ export const createAccountApiKey = asyncWrapper<CreateAccountApiKey>(async (req,
     res.status(200).send({
         data: {
             id: key.id,
+            uuid: key.uuid,
             display_name: key.display_name,
             scopes: (key.scopes ?? []) as AccountApiKeyScope[],
             secret: key.secret,

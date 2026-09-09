@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, flags, Ok } from '@nangohq/utils';
 
-import { audit } from '../../../audit.js';
+import { audit, auditBackend } from '../../../audit.js';
 import integrationService, { IntegrationServiceError } from '../../../services/integration.service.js';
 import { PublicMcpError } from '../utils.js';
 import { deleteIntegrationsTool } from './delete.js';
@@ -18,6 +18,7 @@ const context = {
 describe('integrationsDeleteTool', () => {
     afterEach(() => {
         flags.hasAuditTrail = false;
+        auditBackend.configured = false;
         vi.restoreAllMocks();
     });
 
@@ -80,6 +81,7 @@ describe('integrationsDeleteTool', () => {
 
     it('audits the deleted integration', async () => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         vi.spyOn(integrationService, 'delete').mockResolvedValue(Ok({ integrationId: 'github' }));
 
@@ -90,7 +92,8 @@ describe('integrationsDeleteTool', () => {
             expect(auditSpy).toHaveBeenCalledWith({
                 occurredAt: expect.any(String),
                 accountId: 1,
-                environment: { id: 42, display: 'dev' },
+                scope: 'environment',
+                environment: { id: 'e0000000-0000-4000-8000-000000000042', display: 'dev' },
                 actor: { type: 'api_key', id: '7', display: 'Management key' },
                 resource: 'integration',
                 action: 'deleted',
@@ -105,7 +108,7 @@ describe('integrationsDeleteTool', () => {
 function auditedContext(): ManagementMcpContext {
     return {
         account: { id: 1, uuid: 'account-uuid' },
-        environment: { id: 42, name: 'dev' },
+        environment: { id: 42, uuid: 'e0000000-0000-4000-8000-000000000042', name: 'dev' },
         grantedScopes: ['environment:integrations:delete'],
         audit: {
             actor: { type: 'api_key', id: '7', display: 'Management key' },

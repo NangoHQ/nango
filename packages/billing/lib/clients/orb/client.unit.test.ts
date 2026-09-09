@@ -141,7 +141,7 @@ describe('OrbClient.getPeriodCosts', () => {
                     per_price_costs: [
                         {
                             price_id: 'price_1',
-                            total: 'n/a',
+                            subtotal: 'n/a',
                             price: { price_type: 'usage_price', currency: 'USD', name: 'Sync records', billable_metric: { id: 'AinLoHESvrXqhEig' } }
                         }
                     ]
@@ -162,12 +162,12 @@ describe('OrbClient.getPeriodCosts', () => {
                     per_price_costs: [
                         {
                             price_id: 'price_1',
-                            total: 'n/a',
+                            subtotal: 'n/a',
                             price: { price_type: 'usage_price', currency: 'USD', name: 'Sync records', billable_metric: { id: 'AinLoHESvrXqhEig' } }
                         },
                         {
                             price_id: 'price_2',
-                            total: '2.24',
+                            subtotal: '2.24',
                             price: { price_type: 'usage_price', currency: 'USD', name: 'Webhook forwards', billable_metric: { id: 'j46jUSMMya8jqhkR' } }
                         }
                     ]

@@ -69,6 +69,7 @@ export type ExecuteActionProps = Omit<ExecuteProps, 'args'> & { args: ActionArgs
 export type ExecuteWebhookProps = Omit<ExecuteProps, 'args'> & { args: WebhookArgs };
 export type ExecuteOnEventProps = Omit<ExecuteProps, 'args'> & { args: OnEventArgs };
 export type ExecuteFunctionProps = Omit<ExecuteProps, 'args'> & { args: FunctionArgs };
+export type ExecuteFunctionBatchProps = Omit<ExecuteFunctionProps, 'args'> & { args: ExecuteFunctionProps['args'] & { async: true } }; // forcing async to true for batch execution
 export type ExecuteFunctionReturn = Result<{ kind: 'completed'; output: JsonValue } | { kind: 'scheduled'; taskId: string; retryKey: string }, ClientError>;
 export type ExecuteSyncProps = PostScheduleRun['Body'];
 

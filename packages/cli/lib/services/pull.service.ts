@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import chalk from 'chalk';
 
+import { cliFetch } from '../tls.js';
 import { parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { collectDependencies, fetchFileContent, GitHubNotFoundError, localizeIntegrationPath, resolveIntegrationFolder } from '../utils/githubTemplates.js';
 import { checkExistingFiles, updateIndexFile } from '../utils/integrationFiles.js';
@@ -70,7 +71,7 @@ export async function pullFunction(options: PullFunctionOptions): Promise<boolea
         }
         printDebug(`Fetching deployed function from ${url.href}`, debug);
 
-        const res = await fetch(url, { headers: { authorization: `Bearer ${process.env['NANGO_SECRET_KEY']}` } });
+        const res = await cliFetch(url, { headers: { authorization: `Bearer ${process.env['NANGO_SECRET_KEY']}` } });
         const body = (await res.json().catch(() => null)) as { type: ScriptTypeLiteral; code: string } | { error: { code: string; message?: string } } | null;
 
         if (!res.ok || !body || 'error' in body) {

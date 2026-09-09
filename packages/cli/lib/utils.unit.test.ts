@@ -1,9 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 
+import axios from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { detectPackageManager, getConfig, getConnection, http } from './utils.js';
+import { state } from './state.js';
+import { detectPackageManager, getConfig, getConnection, http, upgradeAction } from './utils.js';
+import { NANGO_VERSION } from './version.js';
 
 describe('detectPackageManager', () => {
     afterEach(() => {
@@ -206,5 +209,24 @@ describe('connection helpers', () => {
         if (result.isErr()) {
             expect(result.error.message).toContain('config lookup failed');
         }
+    });
+});
+
+describe('upgradeAction', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+        vi.restoreAllMocks();
+    });
+
+    it('checks the npm registry without the Nango API client', async () => {
+        vi.stubEnv('NANGO_CLI_UPGRADE_MODE', 'auto');
+        vi.spyOn(state, 'get').mockReturnValue(undefined);
+        const nangoHttpGet = vi.spyOn(http, 'get').mockRejectedValue(new Error('Nango API client must not be used for the npm registry'));
+        const registryGet = vi.spyOn(axios, 'get').mockResolvedValue({ data: { 'dist-tags': { latest: NANGO_VERSION } } });
+
+        await upgradeAction();
+
+        expect(registryGet).toHaveBeenCalledWith(expect.stringContaining('registry.npmjs.org/nango'));
+        expect(nangoHttpGet).not.toHaveBeenCalled();
     });
 });

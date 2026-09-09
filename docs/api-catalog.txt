@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 982
+Provider count: 997
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -48,12 +48,14 @@ URL patterns:
 | `aircall` | Aircall (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/aircall.md) |  |  | support |
 | `aircall-basic` | Aircall (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/aircall-basic.md) | [connect](https://nango.dev/docs/integrations/all/aircall-basic/connect.md) |  | support |
 | `airtable` | Airtable | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/airtable.md) |  | [setup](https://nango.dev/docs/api-integrations/airtable/how-to-register-your-own-airtable-api-oauth-app.md) | popular, productivity |
+| `airtable-mcp` | Airtable (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/airtable-mcp.md) |  |  | productivity, mcp |
 | `airtable-pat` | Airtable (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/airtable-pat.md) | [connect](https://nango.dev/docs/integrations/all/airtable-pat/connect.md) |  | productivity |
 | `algolia` | Algolia | API_KEY | [docs](https://nango.dev/docs/integrations/all/algolia.md) | [connect](https://nango.dev/docs/integrations/all/algolia/connect.md) |  | search |
 | `altrata` | Altrata | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/altrata.md) | [connect](https://nango.dev/docs/api-integrations/altrata/connect.md) |  | analytics |
 | `amazon` | Amazon | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/amazon.md) |  | [setup](https://nango.dev/docs/api-integrations/amazon/how-to-register-your-own-amazon-api-oauth-app.md) | dev-tools, e-commerce |
 | `amazon-selling-partner` | Amazon Selling Partner | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/amazon-selling-partner.md) | [connect](https://nango.dev/docs/api-integrations/amazon-selling-partner/connect.md) | [setup](https://nango.dev/docs/api-integrations/amazon-selling-partner/how-to-register-your-own-amazon-selling-partner-api-oauth-app.md) | dev-tools, e-commerce |
 | `amazon-selling-partner-beta` | Amazon Selling Partner (Beta) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/amazon-selling-partner-beta.md) | [connect](https://nango.dev/docs/api-integrations/amazon-selling-partner-beta/connect.md) | [setup](https://nango.dev/docs/api-integrations/amazon-selling-partner-beta/how-to-register-your-own-amazon-selling-partner-beta-api-oauth-app.md) | dev-tools, e-commerce |
+| `amplemarket` | Amplemarket | API_KEY | [docs](https://nango.dev/docs/api-integrations/amplemarket.md) | [connect](https://nango.dev/docs/api-integrations/amplemarket/connect.md) |  | marketing |
 | `amplitude` | Amplitude (Event Streaming API) | BASIC | [docs](https://nango.dev/docs/api-integrations/amplitude.md) | [connect](https://nango.dev/docs/api-integrations/amplitude/connect.md) |  | analytics |
 | `amplitude-mcp` | Amplitude (MCP US) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/amplitude-mcp.md) |  |  | analytics, mcp |
 | `amplitude-mcp-eu` | Amplitude (MCP EU) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/amplitude-mcp-eu.md) |  |  | analytics, mcp |
@@ -125,6 +127,7 @@ URL patterns:
 | `blackbaud-basic` | Blackbaud (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/blackbaud-basic.md) | [connect](https://nango.dev/docs/integrations/all/blackbaud-basic/connect.md) |  | crm |
 | `blandai` | BlandAI | API_KEY | [docs](https://nango.dev/docs/integrations/all/blandai.md) |  |  | support |
 | `bliro` | Bliro | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bliro.md) | [connect](https://nango.dev/docs/api-integrations/bliro/connect.md) |  | communication |
+| `bol-com` | bol.com | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bol-com.md) | [connect](https://nango.dev/docs/api-integrations/bol-com/connect.md) |  | e-commerce |
 | `boldsign` | BoldSign | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/boldsign.md) |  |  | legal |
 | `booking-com` | Booking.com | BASIC | [docs](https://nango.dev/docs/integrations/all/booking-com.md) |  |  | e-commerce |
 | `boondmanager` | BoondManager | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/boondmanager.md) |  | [setup](https://nango.dev/docs/api-integrations/boondmanager/how-to-register-your-own-boondmanager-api-oauth-app.md) | erp |
@@ -270,7 +273,7 @@ URL patterns:
 | `ecu360-production` | ECU360 (Production) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/ecu360-production.md) | [connect](https://nango.dev/docs/api-integrations/ecu360-production/connect.md) |  | other |
 | `egnyte` | Egnyte | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/egnyte.md) |  |  | storage |
 | `elevenlabs` | Eleven Labs | API_KEY | [docs](https://nango.dev/docs/integrations/all/elevenlabs.md) |  |  | dev-tools |
-| `elevio` | Elevio | API_KEY | [docs](https://nango.dev/docs/integrations/all/elevio.md) |  |  | knowledge-base, support |
+| `elevio` | Elevio | API_KEY | [docs](https://nango.dev/docs/api-integrations/elevio.md) | [connect](https://nango.dev/docs/api-integrations/elevio/connect.md) |  | knowledge-base, support |
 | `emarsys` | Emarsys Core API (WSSE) | SIGNATURE | [docs](https://nango.dev/docs/integrations/all/emarsys.md) |  |  | marketing |
 | `emarsys-oauth` | Emarsys (OAuth) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/emarsys-oauth.md) | [connect](https://nango.dev/docs/integrations/all/emarsys-oauth/connect.md) |  | marketing |
 | `embat` | Embat | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/embat.md) | [connect](https://nango.dev/docs/api-integrations/embat/connect.md) |  | accounting, banking |
@@ -278,6 +281,7 @@ URL patterns:
 | `entrata` | Entrata | BASIC | [docs](https://nango.dev/docs/integrations/all/entrata.md) |  |  | other |
 | `envoy` | Envoy | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/envoy.md) |  |  | productivity |
 | `epc-gov-uk` | Energy Performance Certificates (Gov.UK) | API_KEY | [docs](https://nango.dev/docs/api-integrations/epc-gov-uk.md) | [connect](https://nango.dev/docs/api-integrations/epc-gov-uk/connect.md) |  | other |
+| `epic` | Epic (FHIR) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/epic.md) | [connect](https://nango.dev/docs/api-integrations/epic/connect.md) | [setup](https://nango.dev/docs/api-integrations/epic/how-to-register-your-own-epic-app.md) | other |
 | `epic-games` | Epic Games | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/epic-games.md) |  |  | gaming |
 | `epost-klara` | ePost (KLARA) | API_KEY | [docs](https://nango.dev/docs/api-integrations/epost-klara.md) | [connect](https://nango.dev/docs/api-integrations/epost-klara/connect.md) |  | other |
 | `ergo` | Ergo | API_KEY | [docs](https://nango.dev/docs/api-integrations/ergo.md) | [connect](https://nango.dev/docs/api-integrations/ergo/connect.md) |  | productivity |
@@ -296,7 +300,7 @@ URL patterns:
 | `fairing` | Fairing | API_KEY | [docs](https://nango.dev/docs/integrations/all/fairing.md) | [connect](https://nango.dev/docs/integrations/all/fairing/connect.md) |  | marketing, analytics |
 | `falai` | fal.ai | API_KEY | [docs](https://nango.dev/docs/integrations/all/falai.md) |  |  | productivity, dev-tools |
 | `fanvue` | Fanvue | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/fanvue.md) |  | [setup](https://nango.dev/docs/api-integrations/fanvue/how-to-register-your-own-fanvue-oauth-app.md) | other |
-| `fathom` | Fathom | API_KEY | [docs](https://nango.dev/docs/integrations/all/fathom.md) | [connect](https://nango.dev/docs/integrations/all/fathom/connect.md) |  | communication, video |
+| `fathom` | Fathom | API_KEY | [docs](https://nango.dev/docs/api-integrations/fathom.md) | [connect](https://nango.dev/docs/api-integrations/fathom/connect.md) |  | communication, video |
 | `fathom-oauth` | Fathom (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/fathom-oauth.md) |  | [setup](https://nango.dev/docs/api-integrations/fathom-oauth/how-to-register-your-own-fathom-oauth-app.md) | communication, video |
 | `fellow` | Fellow | API_KEY | [docs](https://nango.dev/docs/api-integrations/fellow.md) | [connect](https://nango.dev/docs/api-integrations/fellow/connect.md) |  | productivity |
 | `fern` | Fern (Public API) | API_KEY | [docs](https://nango.dev/docs/api-integrations/fern.md) | [connect](https://nango.dev/docs/api-integrations/fern/connect.md) |  | dev-tools |
@@ -307,6 +311,7 @@ URL patterns:
 | `fillout` | Fillout (Oauth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fillout.md) |  |  | surveys |
 | `fillout-api-key` | Fillout (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/fillout-api-key.md) | [connect](https://nango.dev/docs/integrations/all/fillout-api-key/connect.md) |  | surveys |
 | `findymail` | FindyMail | API_KEY | [docs](https://nango.dev/docs/integrations/all/findymail.md) | [connect](https://nango.dev/docs/integrations/all/findymail/connect.md) |  | marketing, crm |
+| `finta` | Finta | API_KEY | [docs](https://nango.dev/docs/api-integrations/finta.md) | [connect](https://nango.dev/docs/api-integrations/finta/connect.md) |  | banking |
 | `firefish` | Firefish | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/firefish.md) |  |  | crm |
 | `fireflies` | Fireflies | API_KEY | [docs](https://nango.dev/docs/integrations/all/fireflies.md) |  |  | analytics, communication, productivity |
 | `firstbase` | Firstbase | API_KEY | [docs](https://nango.dev/docs/api-integrations/firstbase.md) | [connect](https://nango.dev/docs/api-integrations/firstbase/connect.md) |  | hr |
@@ -344,12 +349,13 @@ URL patterns:
 | `github-app-oauth` | GitHub (App OAuth) | CUSTOM | [docs](https://nango.dev/docs/api-integrations/github-app-oauth.md) |  | [setup](https://nango.dev/docs/api-integrations/github-app-oauth/how-to-register-your-own-github-app-api-oauth-app.md) | dev-tools, ticketing |
 | `github-pat` | Github (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/github-pat.md) | [connect](https://nango.dev/docs/integrations/all/github-pat/connect.md) |  | dev-tools, ticketing |
 | `gitlab` | GitLab | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gitlab.md) |  |  | dev-tools, ticketing |
+| `gitlab-group-token` | GitLab (Group Access Token) | API_KEY | [docs](https://nango.dev/docs/api-integrations/gitlab-group-token.md) | [connect](https://nango.dev/docs/api-integrations/gitlab-group-token/connect.md) |  | dev-tools, ticketing |
 | `gitlab-pat` | GitLab  (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/gitlab-pat.md) | [connect](https://nango.dev/docs/integrations/all/gitlab-pat/connect.md) |  | dev-tools, ticketing |
 | `glean` | Glean | API_KEY | [docs](https://nango.dev/docs/api-integrations/glean.md) | [connect](https://nango.dev/docs/api-integrations/glean/connect.md) |  | knowledge-base, productivity |
 | `glean-oauth` | Glean (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/glean-oauth.md) | [connect](https://nango.dev/docs/api-integrations/glean-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/glean-oauth/how-to-register-your-own-glean-oauth-app.md) | knowledge-base, productivity |
 | `glyphic` | Glyphic | API_KEY | [docs](https://nango.dev/docs/api-integrations/glyphic.md) | [connect](https://nango.dev/docs/api-integrations/glyphic/connect.md) |  | communication |
-| `gong` | Gong (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/gong.md) | [connect](https://nango.dev/docs/integrations/all/gong/connect.md) |  | communication, marketing, productivity, video |
-| `gong-oauth` | Gong (Oauth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gong-oauth.md) |  |  | communication, marketing, productivity, video, popular |
+| `gong` | Gong (Basic Auth) | BASIC | [docs](https://nango.dev/docs/api-integrations/gong.md) | [connect](https://nango.dev/docs/api-integrations/gong/connect.md) |  | communication, marketing, productivity, video |
+| `gong-oauth` | Gong (Oauth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/gong-oauth.md) |  | [setup](https://nango.dev/docs/api-integrations/gong-oauth/how-to-register-your-own-gong-oauth-api-oauth-app.md) | communication, marketing, productivity, video, popular |
 | `google` | Google | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google.md) |  | [setup](https://nango.dev/docs/api-integrations/google/how-to-register-your-own-google-api-oauth-app.md) | communication, dev-tools, productivity, social |
 | `google-ads` | Google Ads | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-ads.md) | [connect](https://nango.dev/docs/api-integrations/google-ads/connect.md) | [setup](https://nango.dev/docs/api-integrations/google-ads/how-to-register-your-own-google-ads-api-oauth-app.md) | marketing |
 | `google-analytics` | Google Analytics | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-analytics.md) |  | [setup](https://nango.dev/docs/api-integrations/google-analytics/how-to-register-your-own-google-analytics-api-oauth-app.md) | analytics |
@@ -383,6 +389,7 @@ URL patterns:
 | `grammarly-scim` | Grammarly SCIM | API_KEY | [docs](https://nango.dev/docs/integrations/all/grammarly-scim.md) | [connect](https://nango.dev/docs/integrations/all/grammarly-scim/connect.md) |  | productivity |
 | `granola` | Granola | API_KEY | [docs](https://nango.dev/docs/api-integrations/granola.md) | [connect](https://nango.dev/docs/api-integrations/granola/connect.md) |  | productivity, knowledge-base |
 | `granola-mcp` | Granola (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/granola-mcp.md) |  |  | productivity, knowledge-base, mcp |
+| `greenfield-meditech` | MEDITECH Greenfield | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/greenfield-meditech.md) | [connect](https://nango.dev/docs/api-integrations/greenfield-meditech/connect.md) | [setup](https://nango.dev/docs/api-integrations/greenfield-meditech/how-to-register-your-own-greenfield-meditech-api-oauth-app.md) | other |
 | `greenhouse` | Greenhouse (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/greenhouse.md) | [connect](https://nango.dev/docs/integrations/all/greenhouse/connect.md) |  | ats |
 | `greenhouse-assessment` | Greenhouse (Assessment API) | BASIC | [docs](https://nango.dev/docs/integrations/all/greenhouse-assessment.md) | [connect](https://nango.dev/docs/integrations/all/greenhouse-assessment/connect.md) |  | ats |
 | `greenhouse-basic` | Greenhouse (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/greenhouse-basic.md) | [connect](https://nango.dev/docs/integrations/all/greenhouse-basic/connect.md) |  | ats |
@@ -491,6 +498,7 @@ URL patterns:
 | `linkhut` | LinkHut | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/linkhut.md) |  |  | social |
 | `listmonk` | Listmonk | BASIC | [docs](https://nango.dev/docs/integrations/all/listmonk.md) |  |  | marketing |
 | `listrak` | Listrak | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/listrak.md) | [connect](https://nango.dev/docs/api-integrations/listrak/connect.md) |  | marketing |
+| `liveswitch` | LiveSwitch | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/liveswitch.md) |  | [setup](https://nango.dev/docs/api-integrations/liveswitch/how-to-register-your-own-liveswitch-api-oauth-app.md) | communication |
 | `livetennisapi` | Live Tennis API | API_KEY | [docs](https://nango.dev/docs/api-integrations/livetennisapi.md) | [connect](https://nango.dev/docs/api-integrations/livetennisapi/connect.md) |  | sports |
 | `lob` | Lob | BASIC | [docs](https://nango.dev/docs/api-integrations/lob.md) | [connect](https://nango.dev/docs/api-integrations/lob/connect.md) |  | marketing |
 | `lokalise` | Lokalise | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/lokalise.md) |  | [setup](https://nango.dev/docs/api-integrations/lokalise/how-to-register-your-own-lokalise-oauth-app.md) | productivity |
@@ -521,6 +529,7 @@ URL patterns:
 | `meilisearch` | Meilisearch | API_KEY | [docs](https://nango.dev/docs/api-integrations/meilisearch.md) | [connect](https://nango.dev/docs/api-integrations/meilisearch/connect.md) |  | search |
 | `mercury` | Mercury | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/mercury.md) | [connect](https://nango.dev/docs/api-integrations/mercury/connect.md) | [setup](https://nango.dev/docs/api-integrations/mercury/how-to-register-your-own-mercury-oauth-app.md) | accounting |
 | `meta-marketing-api` | Meta Marketing API | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/meta-marketing-api.md) |  | [setup](https://nango.dev/docs/api-integrations/meta-marketing-api/how-to-register-your-own-meta-marketing-api-oauth-app.md) | marketing |
+| `meta-mcp` | Meta Ads (MCP) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/meta-mcp.md) |  | [setup](https://nango.dev/docs/api-integrations/meta-mcp/how-to-register-your-own-meta-mcp-oauth-app.md) | marketing, mcp |
 | `metabase` | Metabase | API_KEY | [docs](https://nango.dev/docs/api-integrations/metabase.md) | [connect](https://nango.dev/docs/api-integrations/metabase/connect.md) |  | analytics |
 | `microsoft` | Microsoft | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/microsoft.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | communication, dev-tools, productivity |
 | `microsoft-admin` | Microsoft (Admin) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/microsoft-admin.md) | [connect](https://nango.dev/docs/integrations/all/microsoft-admin/connect.md) |  | communication, dev-tools, productivity, iam |
@@ -560,6 +569,7 @@ URL patterns:
 | `mollie` | Mollie | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/mollie.md) |  | [setup](https://nango.dev/docs/api-integrations/mollie/how-to-register-your-own-mollie-oauth-app.md) | payment |
 | `momentum-io` | Momentum.io | API_KEY | [docs](https://nango.dev/docs/integrations/all/momentum-io.md) | [connect](https://nango.dev/docs/integrations/all/momentum-io/connect.md) |  | productivity |
 | `monday` | Monday | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/monday.md) |  | [setup](https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app.md) | productivity, ticketing |
+| `moneybird` | Moneybird | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/moneybird.md) |  | [setup](https://nango.dev/docs/api-integrations/moneybird/how-to-register-your-own-moneybird-oauth-app.md) | accounting, invoicing |
 | `mural` | Mural | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/mural.md) |  |  | design |
 | `myob` | MYOB | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/myob.md) |  | [setup](https://nango.dev/docs/api-integrations/myob/how-to-register-your-own-myob-api-oauth-app.md) | accounting |
 | `n8n` | n8n | API_KEY | [docs](https://nango.dev/docs/api-integrations/n8n.md) | [connect](https://nango.dev/docs/api-integrations/n8n/connect.md) |  | productivity, dev-tools |
@@ -569,6 +579,7 @@ URL patterns:
 | `nationbuilder` | NationBuilder | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/nationbuilder.md) |  |  | crm |
 | `neon` | Neon | API_KEY | [docs](https://nango.dev/docs/api-integrations/neon.md) | [connect](https://nango.dev/docs/api-integrations/neon/connect.md) |  | dev-tools |
 | `nerdio` | Nerdio | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/nerdio.md) | [connect](https://nango.dev/docs/api-integrations/nerdio/connect.md) |  | other |
+| `netsapiens` | NetSapiens | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/netsapiens.md) | [connect](https://nango.dev/docs/api-integrations/netsapiens/connect.md) |  | communication |
 | `netsuite` | NetSuite (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/netsuite.md) |  |  | accounting, erp |
 | `netsuite-client-credentials` | NetSuite (Client Credentials) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/netsuite-client-credentials.md) | [connect](https://nango.dev/docs/api-integrations/netsuite-client-credentials/connect.md) |  | accounting, erp |
 | `netsuite-tba` | NetSuite (TBA) | TBA | [docs](https://nango.dev/docs/api-integrations/netsuite-tba.md) |  | [setup](https://nango.dev/docs/api-integrations/netsuite-tba/how-to-set-up-netsuite-tba-with-nango.md) | accounting, erp, popular |
@@ -579,6 +590,8 @@ URL patterns:
 | `ninjaone-rmm-oauth2` | NinjaOne RMM (OAuth2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2.md) |  | [setup](https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2/how-to-register-your-own-ninjaone-rmm-api-oauth-app.md) | support |
 | `ninjaone-saas-backup` | NinjaOne SaaS Backup | API_KEY | [docs](https://nango.dev/docs/api-integrations/ninjaone-saas-backup.md) | [connect](https://nango.dev/docs/api-integrations/ninjaone-saas-backup/connect.md) |  | storage, productivity |
 | `nocrm` | nocrm.io | API_KEY | [docs](https://nango.dev/docs/api-integrations/nocrm.md) | [connect](https://nango.dev/docs/api-integrations/nocrm/connect.md) |  | crm, productivity |
+| `nooks` | Nooks (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/nooks.md) |  | [setup](https://nango.dev/docs/api-integrations/nooks/how-to-register-your-own-nooks-api-oauth-app.md) | marketing |
+| `nooks-api-key` | Nooks (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/nooks-api-key.md) | [connect](https://nango.dev/docs/api-integrations/nooks-api-key/connect.md) |  | marketing |
 | `northbeam` | Northbeam | API_KEY | [docs](https://nango.dev/docs/api-integrations/northbeam.md) | [connect](https://nango.dev/docs/api-integrations/northbeam/connect.md) |  | analytics, marketing |
 | `notion` | Notion | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/notion.md) |  | [setup](https://nango.dev/docs/api-integrations/notion/how-to-register-your-own-notion-api-oauth-app.md) | knowledge-base, popular, productivity |
 | `notion-mcp` | Notion (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/notion-mcp.md) |  |  | knowledge-base, productivity, mcp |
@@ -611,6 +624,7 @@ URL patterns:
 | `ory` | Ory | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/ory.md) |  |  | iam |
 | `osu` | Osu | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/osu.md) |  |  | gaming |
 | `oura` | Oura | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/oura.md) |  |  | sports |
+| `outline` | Outline | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/outline.md) |  | [setup](https://nango.dev/docs/api-integrations/outline/how-to-register-your-own-outline-api-oauth-app.md) | knowledge-base |
 | `outlook` | Outlook | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/outlook.md) |  | [setup](https://nango.dev/docs/api-integrations/outlook/how-to-register-your-own-outlook-api-oauth-app.md) | communication, popular |
 | `outreach` | Outreach | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/outreach.md) |  |  | marketing |
 | `paddle` | Paddle | API_KEY | [docs](https://nango.dev/docs/api-integrations/paddle.md) | [connect](https://nango.dev/docs/api-integrations/paddle/connect.md) | [setup](https://nango.dev/docs/api-integrations/paddle/connect.md) | payment |
@@ -756,6 +770,7 @@ URL patterns:
 | `scavio` | Scavio | API_KEY | [docs](https://nango.dev/docs/api-integrations/scavio.md) | [connect](https://nango.dev/docs/api-integrations/scavio/connect.md) |  | dev-tools, e-commerce, social |
 | `schwab` | Schwab | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/schwab.md) |  | [setup](https://nango.dev/docs/api-integrations/schwab/how-to-register-your-own-schwab-oauth-app.md) | banking, accounting |
 | `scrapedo` | Scrape.do | API_KEY | [docs](https://nango.dev/docs/integrations/all/scrapedo.md) | [connect](https://nango.dev/docs/integrations/all/scrapedo/connect.md) |  | other |
+| `scrollstash-mcp` | ScrollStash (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/scrollstash-mcp.md) |  |  | mcp |
 | `sedna` | Sedna (OAuth) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/sedna.md) |  |  | communication |
 | `sedna-basic` | Sedna (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/sedna-basic.md) |  |  | communication |
 | `segment` | Segment | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/segment.md) |  |  | analytics, marketing |
@@ -899,7 +914,7 @@ URL patterns:
 | `twitter` | Twitter (v1) | OAUTH1 | [docs](https://nango.dev/docs/integrations/all/twitter.md) |  |  | marketing, social |
 | `twitter-oauth2-cc` | Twitter (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/twitter-oauth2-cc.md) |  |  | marketing, social |
 | `twitter-v2` | Twitter (v2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/twitter-v2.md) |  | [setup](https://nango.dev/docs/api-integrations/twitter-v2/how-to-register-your-own-twitter-v2-api-oauth-app.md) | marketing, social |
-| `typeform` | Typeform | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/typeform.md) |  |  | surveys |
+| `typeform` | Typeform | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/typeform.md) | [connect](https://nango.dev/docs/api-integrations/typeform/connect.md) | [setup](https://nango.dev/docs/api-integrations/typeform/how-to-register-your-own-typeform-api-oauth-app.md) | surveys |
 | `typefully` | Typefully | API_KEY | [docs](https://nango.dev/docs/integrations/all/typefully.md) |  |  | analytics, communication, social |
 | `typefully-v2` | Typefully (API v2) | API_KEY | [docs](https://nango.dev/docs/api-integrations/typefully-v2.md) | [connect](https://nango.dev/docs/api-integrations/typefully-v2/connect.md) |  | analytics, communication, social |
 | `uber` | Uber | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/uber.md) |  |  | other |

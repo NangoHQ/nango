@@ -33,11 +33,12 @@ describe('Public environment API key management', () => {
         api.server.close();
     });
 
-    describe('POST /environment/api-keys', () => {
+    describe('POST /environments/:environmentUuid/api-keys', () => {
         it('should be protected', async () => {
-            const res = await api.fetch('/environment/api-keys', {
+            const res = await api.fetch('/environments/:environmentUuid/api-keys', {
                 method: 'POST',
-                body: { environment_id: 1, display_name: 'unauthenticated' }
+                params: { environmentUuid: '123e4567-e89b-12d3-a456-426614174000' },
+                body: { display_name: 'unauthenticated' }
             });
 
             shouldBeProtected(res);
@@ -46,10 +47,11 @@ describe('Public environment API key management', () => {
         it('should deny environment API keys', async () => {
             const { env, apiKey } = await seedAccount();
 
-            const res = await api.fetch('/environment/api-keys', {
+            const res = await api.fetch('/environments/:environmentUuid/api-keys', {
                 method: 'POST',
                 token: apiKey.secret,
-                body: { environment_id: env.id, display_name: 'not-from-an-environment-key' }
+                params: { environmentUuid: env.uuid },
+                body: { display_name: 'not-from-an-environment-key' }
             });
 
             expect(res.res.status).toBe(403);
@@ -64,10 +66,11 @@ describe('Public environment API key management', () => {
             const { account, env } = await seedAccount();
             const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:delete']);
 
-            const res = await api.fetch('/environment/api-keys', {
+            const res = await api.fetch('/environments/:environmentUuid/api-keys', {
                 method: 'POST',
                 token: accountKey.secret,
-                body: { environment_id: env.id, display_name: 'not-with-delete-scope' }
+                params: { environmentUuid: env.uuid },
+                body: { display_name: 'not-with-delete-scope' }
             });
 
             expect(res.res.status).toBe(403);
@@ -82,21 +85,24 @@ describe('Public environment API key management', () => {
             const { account, env } = await seedAccount();
             const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:create']);
 
-            const res = await api.fetch('/environment/api-keys', {
+            const res = await api.fetch('/environments/:environmentUuid/api-keys', {
                 method: 'POST',
                 token: accountKey.secret,
-                body: { environment_id: env.id, display_name: 'provisioned-ci' }
+                params: { environmentUuid: env.uuid },
+                body: { display_name: 'provisioned-ci' }
             });
 
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
             expect(res.json.data).toEqual({
                 id: expect.any(Number),
+                uuid: expect.any(String),
                 display_name: 'provisioned-ci',
                 scopes: ['environment:*'],
                 secret: expect.any(String),
                 created_at: expect.any(String)
             });
+            expect(res.json.data.uuid).toBeUUID();
         });
 
         it('should not create a key for an environment from another account', async () => {
@@ -104,10 +110,11 @@ describe('Public environment API key management', () => {
             const second = await seedAccount();
             const accountKey = await createAccountKey(first.account.id, ['account:environments:api_keys:create']);
 
-            const res = await api.fetch('/environment/api-keys', {
+            const res = await api.fetch('/environments/:environmentUuid/api-keys', {
                 method: 'POST',
                 token: accountKey.secret,
-                body: { environment_id: second.env.id, display_name: 'cross-account' }
+                params: { environmentUuid: second.env.uuid },
+                body: { display_name: 'cross-account' }
             });
 
             expect(res.res.status).toBe(404);
@@ -116,11 +123,11 @@ describe('Public environment API key management', () => {
         });
     });
 
-    describe('DELETE /environment/api-keys', () => {
+    describe('DELETE /environments/:environmentUuid/api-keys/:keyUuid', () => {
         it('should be protected', async () => {
-            const res = await api.fetch('/environment/api-keys', {
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
                 method: 'DELETE',
-                body: { environment_id: 1, key_id: 1 }
+                params: { environmentUuid: '123e4567-e89b-12d3-a456-426614174000', keyUuid: '123e4567-e89b-12d3-a456-426614174001' }
             });
 
             shouldBeProtected(res);
@@ -131,32 +138,34 @@ describe('Public environment API key management', () => {
             const createKey = await createAccountKey(account.id, ['account:environments:api_keys:create']);
             const deleteKey = await createAccountKey(account.id, ['account:environments:api_keys:delete']);
 
-            const created = await api.fetch('/environment/api-keys', {
+            const created = await api.fetch('/environments/:environmentUuid/api-keys', {
                 method: 'POST',
                 token: createKey.secret,
-                body: { environment_id: env.id, display_name: 'scope-boundary' }
+                params: { environmentUuid: env.uuid },
+                body: { display_name: 'scope-boundary' }
             });
             expect(created.res.status).toBe(200);
             isSuccess(created.json);
 
-            const deniedDelete = await api.fetch('/environment/api-keys', {
+            const deniedDelete = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
                 method: 'DELETE',
                 token: createKey.secret,
-                body: { environment_id: env.id, key_id: created.json.data.id }
+                params: { environmentUuid: env.uuid, keyUuid: created.json.data.uuid }
             });
             expect(deniedDelete.res.status).toBe(403);
 
-            const deniedCreate = await api.fetch('/environment/api-keys', {
+            const deniedCreate = await api.fetch('/environments/:environmentUuid/api-keys', {
                 method: 'POST',
                 token: deleteKey.secret,
-                body: { environment_id: env.id, display_name: 'not-with-delete-scope' }
+                params: { environmentUuid: env.uuid },
+                body: { display_name: 'not-with-delete-scope' }
             });
             expect(deniedCreate.res.status).toBe(403);
 
-            const deleted = await api.fetch('/environment/api-keys', {
+            const deleted = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
                 method: 'DELETE',
                 token: deleteKey.secret,
-                body: { environment_id: env.id, key_id: created.json.data.id }
+                params: { environmentUuid: env.uuid, keyUuid: created.json.data.uuid }
             });
             expect(deleted.res.status).toBe(200);
             isSuccess(deleted.json);
@@ -175,10 +184,10 @@ describe('Public environment API key management', () => {
             ).unwrap();
             const deleteKey = await createAccountKey(first.account.id, ['account:environments:api_keys:delete']);
 
-            const res = await api.fetch('/environment/api-keys', {
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
                 method: 'DELETE',
                 token: deleteKey.secret,
-                body: { environment_id: second.env.id, key_id: created.id }
+                params: { environmentUuid: second.env.uuid, keyUuid: created.uuid }
             });
 
             expect(res.res.status).toBe(404);
@@ -193,18 +202,19 @@ describe('Public environment API key management', () => {
             const { account, env } = await seedAccount();
             const accountKey = await createAccountKey(account.id, ['account:*']);
 
-            const created = await api.fetch('/environment/api-keys', {
+            const created = await api.fetch('/environments/:environmentUuid/api-keys', {
                 method: 'POST',
                 token: accountKey.secret,
-                body: { environment_id: env.id, display_name: 'full-account-access' }
+                params: { environmentUuid: env.uuid },
+                body: { display_name: 'full-account-access' }
             });
             expect(created.res.status).toBe(200);
             isSuccess(created.json);
 
-            const deleted = await api.fetch('/environment/api-keys', {
+            const deleted = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
                 method: 'DELETE',
                 token: accountKey.secret,
-                body: { environment_id: env.id, key_id: created.json.data.id }
+                params: { environmentUuid: env.uuid, keyUuid: created.json.data.uuid }
             });
             expect(deleted.res.status).toBe(200);
             isSuccess(deleted.json);

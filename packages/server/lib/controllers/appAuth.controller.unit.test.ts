@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ConnectionCreationCappedError } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
 import appAuthController from './appAuth.controller.js';
@@ -100,7 +101,10 @@ describe('AppAuthController.connect', () => {
             activityLogId: 'activity-1',
             connectSessionId: 10
         });
-        mockGetAccountContext.mockResolvedValue({ environment: { id: 2, name: 'dev' }, account: { id: 1, name: 'acme' } });
+        mockGetAccountContext.mockResolvedValue({
+            environment: { id: 2, uuid: 'e0000000-0000-4000-8000-000000000002', name: 'dev' },
+            account: { id: 1, uuid: 'a0000000-0000-4000-8000-000000000001', name: 'acme' }
+        });
         mockGetProviderConfig.mockResolvedValue({ id: 1, unique_key: 'github-app', provider: 'github-app', oauth_client_id: 'app-123' });
         mockGetProvider.mockReturnValue({ auth_mode: 'APP', token_url: 'https://api.github.com/app/installations' });
         mockCreateCredentials.mockResolvedValue(Ok({ type: 'APP', jwtToken: 'jwt-token' }));
@@ -154,7 +158,7 @@ describe('AppAuthController.connect', () => {
             connectionId: 'conn-1',
             providerConfigKey: 'github-app',
             account: { id: 1 },
-            environment: { id: 2, name: 'dev' }
+            environment: { uuid: 'e0000000-0000-4000-8000-000000000002', name: 'dev' }
         });
     });
 
@@ -182,6 +186,35 @@ describe('AppAuthController.connect', () => {
                 connection: expect.objectContaining({
                     webhook_url_override: 'https://override.example.com/hook'
                 })
+            }),
+            expect.anything()
+        );
+    });
+
+    it('triggers the creation-failure hook when connection creation is capped', async () => {
+        mockUpsertConnection.mockRejectedValue(new ConnectionCreationCappedError());
+
+        const req = {
+            query: { installation_id: 'install-1', state: 'session-id' },
+            ip: '203.0.113.7',
+            get: vi.fn(() => 'vitest')
+        } as unknown as Request;
+        const res = {
+            locals: {},
+            redirect: vi.fn(),
+            sendStatus: vi.fn(),
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
+
+        await appAuthController.connect(req, res, vi.fn());
+
+        expect(mockConnectionCreationFailed).toHaveBeenCalledWith(
+            expect.objectContaining({
+                error: {
+                    type: 'resource_capped',
+                    description: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.'
+                }
             }),
             expect.anything()
         );

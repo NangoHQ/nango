@@ -1,5 +1,7 @@
+import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
-import { Err, Ok } from '@nangohq/utils';
+import { logContextGetter } from '@nangohq/logs';
+import { Err, Ok, report } from '@nangohq/utils';
 
 import type { Knex } from '@nangohq/database';
 import type {
@@ -8,7 +10,9 @@ import type {
     AgentSessionEndedReason,
     AgentSessionMetaTools,
     AgentSessionResolvedConnections,
-    DBEnvironment
+    AuditActor,
+    DBEnvironment,
+    DBTeam
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -40,7 +44,21 @@ export interface CreateAgentSessionParams {
 
 export type ExpiredAgentSession = Pick<AgentSession, 'id' | 'accountId' | 'environmentId' | 'expiresAt'>;
 
-type AgentSessionErrorCode = 'not_found' | 'creation_failed' | 'token_creation_failed';
+export type EndedSession = AgentSession & { endedAt: Date; endedReason: AgentSessionEndedReason };
+
+export interface EndedAgentSession {
+    session: EndedSession;
+    alreadyEnded: boolean;
+}
+
+export interface TerminateAgentSessionParams {
+    account: DBTeam;
+    environment: DBEnvironment;
+    sessionId: string;
+    endedBy: AuditActor;
+}
+
+type AgentSessionErrorCode = 'not_found' | 'creation_failed' | 'termination_failed' | 'token_creation_failed';
 
 export class AgentSessionError extends Error {
     public readonly code: AgentSessionErrorCode;
@@ -51,6 +69,18 @@ export class AgentSessionError extends Error {
         this.name = 'AgentSessionError';
         this.code = code;
         this.payload = payload ?? {};
+    }
+}
+
+export type AgentSessionTerminationErrorCode = 'not_found' | 'server_error';
+
+export class AgentSessionTerminationError extends Error {
+    public readonly code: AgentSessionTerminationErrorCode;
+
+    constructor({ code, message, cause }: { code: AgentSessionTerminationErrorCode; message: string; cause?: unknown }) {
+        super(message, { cause });
+        this.name = 'AgentSessionTerminationError';
+        this.code = code;
     }
 }
 
@@ -98,21 +128,77 @@ export async function getAgentSession(
     return Ok(toAgentSession(session));
 }
 
-export async function terminateAgentSession(
-    db: Knex,
-    { id, accountId, environmentId, reason }: { id: string; accountId: number; environmentId: number; reason: AgentSessionEndedReason }
-): Promise<Result<AgentSession, AgentSessionError>> {
-    const [session] = await db<DBAgentSession>(AGENT_SESSIONS_TABLE)
-        .where({ id, account_id: accountId, environment_id: environmentId })
-        .whereNull('ended_at')
-        .update({ ended_at: db.fn.now(), ended_reason: reason, updated_at: db.fn.now() })
-        .returning('*');
+/**
+ * Every entry point that terminates a session on a caller's behalf goes through here, so the session
+ * terminated operation and the termination error codes stay in one place.
+ *
+ * Terminating is idempotent: a session that was already ended keeps its original ended_at and does
+ * not get a second terminated operation.
+ */
+export async function terminateAgentSession(params: TerminateAgentSessionParams): Promise<Result<EndedAgentSession, AgentSessionTerminationError>> {
+    const { account, environment, sessionId, endedBy } = params;
 
-    if (session) {
-        return Ok(toAgentSession(session));
+    const ended = await endAgentSession(db.knex, {
+        id: sessionId,
+        accountId: account.id,
+        environmentId: environment.id,
+        reason: 'terminated'
+    });
+    if (ended.isErr()) {
+        if (ended.error.code === 'not_found') {
+            return Err(new AgentSessionTerminationError({ code: 'not_found', message: `Agent session '${sessionId}' not found` }));
+        }
+
+        report(ended.error);
+        return Err(new AgentSessionTerminationError({ code: 'server_error', message: 'Failed to terminate the agent session', cause: ended.error }));
     }
 
-    return getAgentSession(db, { id, accountId, environmentId });
+    const { session, alreadyEnded } = ended.value;
+    if (!alreadyEnded) {
+        const logCtx = await logContextGetter.create(
+            { operation: { type: 'agent_session', action: 'terminate' } },
+            { account, environment, meta: { endedBy, endedAt: session.endedAt.toISOString() } }
+        );
+
+        await logCtx.enrichOperation({ actor: { kind: 'session', id: session.id } });
+        void logCtx.info('Agent session terminated');
+        await logCtx.success();
+    }
+
+    return Ok(ended.value);
+}
+
+export async function endAgentSession(
+    db: Knex,
+    { id, accountId, environmentId, reason }: { id: string; accountId: number; environmentId: number; reason: AgentSessionEndedReason }
+): Promise<Result<EndedAgentSession, AgentSessionError>> {
+    try {
+        return await db.transaction(async (trx) => {
+            const [terminated] = await trx<DBAgentSession>(AGENT_SESSIONS_TABLE)
+                .where({ id, account_id: accountId, environment_id: environmentId })
+                .whereNull('ended_at')
+                .update({ ended_at: trx.fn.now(), ended_reason: reason, updated_at: trx.fn.now() })
+                .returning('*');
+
+            const session: Result<AgentSession, AgentSessionError> = terminated
+                ? Ok(toAgentSession(terminated))
+                : await getAgentSession(trx, { id, accountId, environmentId });
+            if (session.isErr()) {
+                return Err(session.error);
+            }
+
+            const { endedAt, endedReason } = session.value;
+            if (endedAt === null || endedReason === null) {
+                throw new Error(`Agent session '${id}' has no end state after being ended`);
+            }
+
+            await keystore.deletePrivateKeysByEntityUuid(trx, { entityType: 'agent_session', entityUuid: session.value.id });
+
+            return Ok({ session: { ...session.value, endedAt, endedReason }, alreadyEnded: !terminated });
+        });
+    } catch (err) {
+        return Err(terminationFailedError({ id, accountId, environmentId }, err));
+    }
 }
 
 // Agent session tokens are minted through the keystore for now. Once the unified authz project
@@ -199,6 +285,15 @@ function notFoundError({ id, accountId, environmentId }: { id: string; accountId
         code: 'not_found',
         message: `Agent session '${id}' not found`,
         payload: { id, accountId, environmentId }
+    });
+}
+
+function terminationFailedError({ id, accountId, environmentId }: { id: string; accountId: number; environmentId: number }, cause: unknown): AgentSessionError {
+    return new AgentSessionError({
+        code: 'termination_failed',
+        message: `Failed to terminate agent session '${id}'`,
+        payload: { id, accountId, environmentId },
+        cause
     });
 }
 

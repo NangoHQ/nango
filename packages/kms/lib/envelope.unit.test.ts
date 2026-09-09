@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 import { unwrapDek } from './envelope.js';
 
+import type { UnwrapDekOptions } from './envelope.js';
 import type { EncryptionContext, KeyringNode } from '@aws-crypto/client-node';
 
 const { encrypt } = buildClient(CommitmentPolicy.REQUIRE_ENCRYPT_REQUIRE_DECRYPT);
@@ -50,5 +51,12 @@ describe('unwrapDek', () => {
         const tampered = Buffer.from(await wrap(keyring, Buffer.from(testDek, 'base64')), 'base64');
         tampered[tampered.byteLength - 1] = tampered[tampered.byteLength - 1]! ^ 0xff;
         await expect(unwrapDek({ wrapped: tampered.toString('base64'), keyring, expectedContext })).rejects.toThrow();
+    });
+
+    it('should throw when more than one wrapping-key option is provided', async () => {
+        const keyring = testKeyring();
+        const wrapped = await wrap(keyring, Buffer.from(testDek, 'base64'));
+        const bothProviders = { wrapped, expectedContext, kmsKeyArn: 'arn:aws:kms:test', gcpKmsKeyName: 'projects/test/cryptoKeys/dek' };
+        await expect(unwrapDek(bothProviders as unknown as UnwrapDekOptions)).rejects.toThrow(/exactly one of kmsKeyArn, gcpKmsKeyName, or keyring/);
     });
 });

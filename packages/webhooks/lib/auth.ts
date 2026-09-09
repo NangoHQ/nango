@@ -22,7 +22,15 @@ import type {
 const AUTH_OPERATION_TO_TYPE = {
     creation: 'auth_creation',
     override: 'auth_override',
-    refresh: 'auth_refresh'
+    refresh: 'auth_refresh',
+    deletion: 'auth_deletion'
+} as const;
+
+const AUTH_OPERATION_TO_LOG_ACTION = {
+    creation: 'connection_create',
+    override: 'connection_refresh',
+    refresh: 'connection_refresh',
+    deletion: 'connection_delete'
 } as const;
 
 export async function sendAuth({
@@ -42,7 +50,7 @@ export async function sendAuth({
     environment: DBEnvironment;
     secret: DBAPISecret['secret'];
     webhookSettings: DBExternalWebhook | null;
-    auth_mode: AuthModeType;
+    auth_mode: AuthModeType | 'unknown';
     success: boolean;
     endUser?: InternalEndUser | null | undefined;
     error?: ErrorPayload;
@@ -108,7 +116,7 @@ export async function sendAuth({
         webhooks.push({ url: settings.secondary_url, type: 'secondary webhook url' });
     }
 
-    const action = operation === 'creation' ? 'connection_create' : 'connection_refresh';
+    const action = AUTH_OPERATION_TO_LOG_ACTION[operation];
     const logCtx = await logContextGetter.create(
         { operation: { type: 'webhook', action } },
         {

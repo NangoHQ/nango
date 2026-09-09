@@ -44,7 +44,7 @@ export const postInvite = asyncWrapper<PostInvite>(async (req, res) => {
     }
 
     if (!hasRbacRes.value && effectiveRole !== 'administrator') {
-        res.status(403).send({ error: { code: 'feature_disabled', message: 'Role-based access control requires a Growth plan or above' } });
+        res.status(403).send({ error: { code: 'feature_disabled', message: 'Role-based access control requires the Growth add-on' } });
         return;
     }
 
