@@ -9440,8 +9440,11 @@ curl --request POST \
 
 ### Account-level APIs
 
+- [List environments](/reference/backend/http-api/environments/list)
 - [Create an environment](/reference/backend/http-api/environments/create)
 - [Delete an environment](/reference/backend/http-api/environments/delete)
+- [List environment API keys](/reference/backend/http-api/environments/list-api-keys)
+- [Get an environment API key](/reference/backend/http-api/environments/get-api-key)
 - [Create an environment API key](/reference/backend/http-api/environments/create-api-key)
 - [Delete an environment API key](/reference/backend/http-api/environments/delete-api-key)
 
@@ -9472,6 +9475,29 @@ Those headers are sent back with every API response:
 - `X-RateLimit-Reset` provides a Unix timestamp representing the time at which the current rate limit window resets, and the remaining request count is replenished.
 
 If a client exceeds the rate limit, the API will respond with a 429 `Too Many Requests` status code. In this case, the `Retry-After` header is included, indicating the number of seconds the client should wait before making another request to avoid being rate-limited.
+
+## List environments
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/list.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:list` scope.
+</Info>
+
+<ResponseExample>
+```json Example Response
+{
+  "data": [
+    {
+      "id": 123,
+      "uuid": "123e4567-e89b-12d3-a456-426614174000",
+      "name": "staging",
+      "is_production": false
+    }
+  ]
+}
+```
+</ResponseExample>
 
 ## Create an environment
 
@@ -9510,6 +9536,57 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/delete.md
 Deletes an environment. `environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create).
 
 The reserved `prod` environment cannot be deleted.
+
+## List environment API keys
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/list-api-keys.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:api_keys:list` scope.
+</Info>
+
+<ResponseExample>
+```json Example Response
+{
+  "data": [
+    {
+      "id": 456,
+      "uuid": "123e4567-e89b-12d3-a456-426614174001",
+      "display_name": "provisioned-ci",
+      "scopes": ["environment:*"],
+      "last_used_at": null,
+      "created_at": "2026-08-18T12:00:00.000Z"
+    }
+  ]
+}
+```
+</ResponseExample>
+
+## Get an environment API key
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/get-api-key.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:api_keys:read` scope.
+</Info>
+
+Retrieves an Environment API key, including its secret.
+
+<ResponseExample>
+```json Example Response
+{
+  "data": {
+    "id": 456,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
+    "display_name": "provisioned-ci",
+    "scopes": ["environment:*"],
+    "secret": "<YOUR-ENVIRONMENT-API-KEY>",
+    "last_used_at": null,
+    "created_at": "2026-08-18T12:00:00.000Z"
+  }
+}
+```
+</ResponseExample>
 
 ## Create an environment API key
 
@@ -15139,6 +15216,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `back-market` | Back Market | API_KEY | [docs](https://nango.dev/docs/api-integrations/back-market.md) | [connect](https://nango.dev/docs/api-integrations/back-market/connect.md) |  | e-commerce |
 | `bamboohr` | BambooHR (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/bamboohr.md) | [connect](https://nango.dev/docs/api-integrations/bamboohr/connect.md) | [setup](https://nango.dev/docs/api-integrations/bamboohr/how-to-register-your-own-bamboohr-oauth-app.md) | hr |
 | `bamboohr-basic` | BambooHR (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/bamboohr-basic.md) | [connect](https://nango.dev/docs/integrations/all/bamboohr-basic/connect.md) |  | hr |
+| `bandwidth` | Bandwidth | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bandwidth.md) | [connect](https://nango.dev/docs/api-integrations/bandwidth/connect.md) |  | communication |
 | `basecamp` | Basecamp | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/basecamp.md) | [connect](https://nango.dev/docs/integrations/all/basecamp/connect.md) |  | productivity |
 | `baserow` | Baserow | API_KEY | [docs](https://nango.dev/docs/api-integrations/baserow.md) | [connect](https://nango.dev/docs/api-integrations/baserow/connect.md) |  | productivity, dev-tools |
 | `basin` | Basin | API_KEY | [docs](https://nango.dev/docs/api-integrations/basin.md) | [connect](https://nango.dev/docs/api-integrations/basin/connect.md) |  | dev-tools |

@@ -837,8 +837,11 @@
                       {
                         "group": "Environments",
                         "pages": [
+                          "reference/backend/http-api/environments/list",
                           "reference/backend/http-api/environments/create",
                           "reference/backend/http-api/environments/delete",
+                          "reference/backend/http-api/environments/list-api-keys",
+                          "reference/backend/http-api/environments/get-api-key",
                           "reference/backend/http-api/environments/create-api-key",
                           "reference/backend/http-api/environments/delete-api-key"
                         ]
@@ -1082,6 +1085,7 @@
               "api-integrations/back-market",
               "api-integrations/bamboohr",
               "integrations/all/bamboohr-basic",
+              "api-integrations/bandwidth",
               "integrations/all/basecamp",
               "api-integrations/baserow",
               "api-integrations/basin",
