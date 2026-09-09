@@ -91,7 +91,7 @@ export const Usage: React.FC = () => {
 
     const charges = isMigrating ? projectedCharges : orbCharges;
 
-    // `connections` is the only meter both models charge on, so a metric-keyed lookup collides.
+    // Drop the meter both pricings charge on: one lookup key cannot serve two `connections` rows.
     const legacyOnlyMetrics = LEGACY_USAGE_METRICS.filter((metric) => !S26_USAGE_METRICS.includes(metric));
     const rows: UsageTableRow[] = isMigrating
         ? [
@@ -129,8 +129,7 @@ export const Usage: React.FC = () => {
 
     return (
         <div className="w-full flex flex-col gap-4">
-            {/* The banner above the page already announces the migration, so this only explains why
-                the metrics changed — but an unscheduled legacy account still needs the old notice. */}
+            {/* A migrating account already has the migration banner. An unscheduled one has nothing else. */}
             {isLegacy && !isMigrating && (
                 <Alert variant="info">
                     <Info />
@@ -196,8 +195,8 @@ export const Usage: React.FC = () => {
     );
 };
 
-/** Summed from the same Orb figures the rows show, so the column adds up. Null, not 0, when Orb
- *  has nothing to state — 0 would render $0.00 for an account that has no figures at all. */
+/** Summed from the same Orb figures the rows show, so the column adds up. Returns null, not 0:
+ *  0 would show $0.00 as the bill for an account Orb has no figures for. */
 function currentPlanTotals(
     periodCosts: GetBillingPeriodCosts['Success'] | undefined,
     currency: string

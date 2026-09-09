@@ -13,8 +13,8 @@ import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 export type UsageRowVariant = 'caps' | 'usage' | 'charges' | 'comparison';
 
 export function usageRowGrid(variant: UsageRowVariant): string {
-    // Tailwind's scanner needs the full bracketed class literally in source to generate it, so this
-    // picks between complete strings rather than assembling one from a variable.
+    // Tailwind only generates a class it can see written out in source. Return whole strings here;
+    // never build one by interpolation.
     if (variant === 'caps') {
         return 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_124px_20px] items-center gap-4 px-6';
     }
@@ -46,7 +46,6 @@ interface UsageRowProps {
     chartMode: 'daily' | 'cumulative';
     variant: UsageRowVariant;
     charge?: UsageRowCharge;
-    /** Only the legacy meters and `connections` have one. */
     currentPlanCharge?: UsageRowCharge;
 }
 

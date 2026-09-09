@@ -206,7 +206,6 @@ export type GetProjectedCosts = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/billing/projected-costs';
-    /** A window is both dates or neither; one on its own is rejected. */
     Querystring: { env: string } | { env: string; from: string; to: string };
     Success: {
         data: {

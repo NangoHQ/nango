@@ -1,8 +1,8 @@
 import type { UsageMetric } from '@nangohq/types';
 
 /**
- * What a period of usage would cost on Pay-as-you-go. The rates stay in this package: `planToApi`
- * spreads every `DBPlan` column to the browser, and `@nangohq/types` is bundled into the webapp.
+ * What a period of usage would cost on Pay-as-you-go. Keep the rates here: `planToApi` copies every
+ * plan column into its response, and `@nangohq/types` ships inside the webapp bundle.
  */
 
 export type PayAsYouGoMetric = Extract<UsageMetric, 'connections' | 'function_duration_seconds' | 'data_transfer'>;
@@ -14,7 +14,7 @@ const CENTS_PER_COMPUTE_HOUR = 72;
 const CENTS_PER_TRANSFER_GB = 50;
 
 const SECONDS_PER_HOUR = 3600;
-/** Decimal GB, matching both the published rate and Orb's own billable metric. */
+/** Decimal GB, not GiB. Matches the published rate and Orb's own billable metric. */
 const BYTES_PER_GB = 1_000_000_000;
 
 const MINIMUM_IN_CENTS = 5_000;

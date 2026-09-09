@@ -32,7 +32,6 @@ function transitionOf(plan: ApiPlan) {
 }
 
 describe('planTransition', () => {
-    // Whoever Orb has scheduled, whatever plan they are on now.
     it.each([
         ['starter-v2', 'Starter'],
         ['growth-v2', 'Growth'],
@@ -55,7 +54,7 @@ describe('planTransition', () => {
         expect(transitionOf(scheduled(name))?.keepsGrowthAddOn).toBe(true);
     });
 
-    // Pay-as-you-go matches Starter without the add-on, so these carry nothing.
+    // Only `growth` and `growth-v2` set `keepsGrowthAddOnOnMigration`, so `growth-legacy` carries nothing.
     it.each(['starter-v2', 'starter-legacy', 'scale-legacy', 'growth-legacy'] as const)('carries no add-on for %s', (name) => {
         expect(transitionOf(scheduled(name))?.keepsGrowthAddOn).toBe(false);
     });

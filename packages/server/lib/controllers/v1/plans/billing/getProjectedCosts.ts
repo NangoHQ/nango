@@ -55,7 +55,7 @@ export const getProjectedCosts = asyncWrapper<GetProjectedCosts>(async (req, res
         return;
     }
 
-    // Orb's schedule alone. An `isSpendPlan` check would exclude the retired plans being migrated.
+    // Gate on Orb's schedule only. The retired plans being migrated all fail `isSpendPlan`.
     const changeAt = plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : null;
     const scheduled = plan.orb_future_plan === TARGET_PLAN && changeAt !== null && !Number.isNaN(changeAt.getTime()) && changeAt > new Date();
     // Staff impersonating an account also get the projection, to check the view on real data before
@@ -66,8 +66,8 @@ export const getProjectedCosts = asyncWrapper<GetProjectedCosts>(async (req, res
         return;
     }
 
-    // Named explicitly when the caller gives no window: the fallback walks counter metrics only,
-    // and `connections` is not one, so it would be projected as zero.
+    // Name the current month explicitly. Given no window, `getBillingUsage` returns only counter
+    // metrics, and `connections` is not one, so it would project as zero.
     const now = new Date();
     const timeframe =
         query.from && query.to
@@ -77,8 +77,8 @@ export const getProjectedCosts = asyncWrapper<GetProjectedCosts>(async (req, res
                   end: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1))
               };
 
-    // No `avgPerDay`: connections must be the period's running average, which is the quantity Orb
-    // meters and the quantity the migration email is generated from.
+    // Connections must be the period's running average: that is what Orb meters, and what the
+    // migration email quotes. Do not add `avgPerDay` — it reports each day's own count instead.
     const usage = await usageTracker.getBillingUsage('', account.id, {
         granularity: 'day',
         timeframe,

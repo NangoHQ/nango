@@ -124,7 +124,6 @@ describe('billedUsageMetrics', () => {
         expect(billedUsageMetrics(undefined)).toEqual(LEGACY_USAGE_METRICS);
     });
 
-    // Includes the retired plans, which is who the first migration batch is.
     it.each(['starter-v2', 'growth-v2', 'starter-legacy', 'growth', 'scale-legacy'] as const)('shows the new metrics to a scheduled %s account', (name) => {
         expect(billedUsageMetrics({ name } as ApiPlan, true)).toEqual(S26_USAGE_METRICS);
     });

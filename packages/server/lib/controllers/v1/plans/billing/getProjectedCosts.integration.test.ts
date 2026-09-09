@@ -137,7 +137,6 @@ describe(`GET ${route}`, () => {
         });
 
         it('should not open the staff preview to an ordinary signed-in session', async () => {
-            // Only `postImpersonate` sets `debugMode`, and only for the admin account.
             const seed = await seedPlan('growth-v2');
             const session = await authenticateUser(api, seed.user);
 

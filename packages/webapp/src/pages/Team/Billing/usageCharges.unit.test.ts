@@ -77,7 +77,6 @@ describe('buildUsageRowCharges', () => {
 
         expect(buildUsageRowCharges({ ...settled, data: success(costs) })?.('data_transfer').formatted).toBe('$0.00');
         expect(buildUsageRowCharges({ ...settled, data: success(costs), unpriced: 'dash' })?.('data_transfer').formatted).toBeNull();
-        // A metric the plan does price keeps its figure either way.
         expect(buildUsageRowCharges({ ...settled, data: success(costs), unpriced: 'dash' })?.('records').formatted).toBe('$1.00');
     });
 

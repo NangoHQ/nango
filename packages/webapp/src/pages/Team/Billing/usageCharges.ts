@@ -15,8 +15,8 @@ interface BuildArgs {
     isPending: boolean;
     isError: boolean;
     data: GetBillingPeriodCosts['Success'] | undefined;
-    /** How a metric the subscription has no price for reads. Beside a plan that does price it,
-     *  $0.00 invites a comparison of two numbers where only one exists, so `dash` suppresses it. */
+    /** How a metric the subscription has no price for reads. Use `dash` in the comparison: $0.00
+     *  beside a real charge reads as "free" rather than "not priced". */
     unpriced?: 'zero' | 'dash';
 }
 
@@ -64,10 +64,7 @@ interface BuildProjectedArgs {
     data: GetProjectedCosts['Success'] | undefined;
 }
 
-/**
- * Same lookup shape as {@link buildUsageRowCharges}, so the table renders either. Every metric here
- * is priced, so an absent one is a real $0 rather than money that went unattributed.
- */
+/** Every metric here is priced, so an absent one is a real $0 rather than money left unattributed. */
 export function buildProjectedCharges(args: BuildProjectedArgs): UsageChargeLookup {
     if (!args.enabled) {
         return null;

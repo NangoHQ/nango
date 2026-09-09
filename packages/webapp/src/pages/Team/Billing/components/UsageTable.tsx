@@ -17,7 +17,7 @@ export interface UsageTableRow {
     metric: UsageMetric;
     label: string;
     group?: string;
-    /** Overrides the table's lookup, which cannot tell one model's `connections` from the other's. */
+    /** Overrides the metric-keyed lookup. Both pricings meter `connections`, so the key picks the wrong row. */
     charge?: UsageRowCharge;
     currentPlanCharge?: UsageRowCharge;
     usage: number;
@@ -191,7 +191,6 @@ const UsageTotals: React.FC<{ variant: UsageTableProps['variant']; totals: Usage
     const comparing = variant === 'comparison';
     const difference = comparing ? billDifference(totals) : null;
 
-    // No top border: the last metric row already draws one, and two would show as a double line.
     return (
         <div className="bg-surface-input-muted">
             {/* The floor replaces the subtotal rather than adding to it, so it goes on this line. */}
