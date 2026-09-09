@@ -78,6 +78,45 @@ describe('route', () => {
                 }
             });
         });
+
+        it('should handle a body over the size limit', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const oversizedBody = JSON.stringify({ padding: 'a'.repeat(2 * 1024 * 1024) }); // over the 1mb limit on this router
+            const res = await fetch(`${api.url}/api/v1/environment/callback`, {
+                method: 'POST',
+                body: oversizedBody,
+                headers: { Authorization: `Bearer ${apiKey.secret}`, 'content-type': 'application/json' }
+            });
+
+            expect(res.status).toBe(413);
+            expect(await res.json()).toStrictEqual({
+                error: {
+                    code: 'request_too_large',
+                    message: expect.stringContaining('Request entity too large')
+                }
+            });
+        });
+    });
+
+    describe('POST /internal/shared-credentials', () => {
+        it('should report a sub-mb limit in kb, not as a rounded-to-zero mb value', async () => {
+            // The internal API's body limit (100kb) is below 1mb, so a naive bytes/1024/1024
+            // rounded to the nearest mb would report "0mb" here instead of a useful number.
+            const oversizedBody = JSON.stringify({ padding: 'a'.repeat(200 * 1024) }); // over the 100kb limit on this router
+            const res = await fetch(`${api.url}/internal/shared-credentials`, {
+                method: 'POST',
+                body: oversizedBody,
+                headers: { 'content-type': 'application/json' }
+            });
+
+            expect(res.status).toBe(413);
+            expect(await res.json()).toStrictEqual({
+                error: {
+                    code: 'request_too_large',
+                    message: 'Request entity too large (limit: 100kb)'
+                }
+            });
+        });
     });
 
     describe('Authenticated endpoints', () => {
