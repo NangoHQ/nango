@@ -114,19 +114,17 @@ export const EnvironmentDropdown: React.FC = () => {
                                 {(allowed) => (
                                     <div className="flex flex-col gap-2">
                                         {allowed && isMaxEnvironmentsReached && (
-                                            <p className="text-body-small-regular text-text-secondary">
-                                                Maximum number of environments reached.{' '}
-                                                {plan?.name.includes('legacy') ? (
-                                                    <>Contact Nango to add more.</>
-                                                ) : (
-                                                    <>
-                                                        <Button asChild variant="link-accent" size="xs">
-                                                            <Link to="/team/billing#plans">Upgrade</Link>
-                                                        </Button>{' '}
-                                                        to add more.
-                                                    </>
+                                            <div className="flex flex-col gap-1">
+                                                <p className="text-body-small-regular text-text-secondary">
+                                                    Maximum number of environments reached.
+                                                    {plan?.name.includes('legacy') && ' Contact Nango to add more.'}
+                                                </p>
+                                                {!plan?.name.includes('legacy') && (
+                                                    <DropdownMenuItem asChild>
+                                                        <Link to="/team/billing#plans">Upgrade to add more</Link>
+                                                    </DropdownMenuItem>
                                                 )}
-                                            </p>
+                                            </div>
                                         )}
                                         <Button
                                             disabled={!!isMaxEnvironmentsReached || !allowed}
