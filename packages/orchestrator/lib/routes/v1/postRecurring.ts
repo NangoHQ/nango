@@ -1,8 +1,9 @@
 import * as z from 'zod';
 
+import { isDuplicateScheduleNameError } from '@nangohq/scheduler';
 import { validateRequest } from '@nangohq/utils';
 
-import { syncArgsSchema } from '../../clients/validate.js';
+import { scheduleFunctionArgsSchema, syncArgsSchema } from '../../clients/validate.js';
 
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
@@ -11,6 +12,7 @@ import type { JsonObject } from 'type-fest';
 
 const path = '/v1/recurring';
 const method = 'POST';
+const recurringArgsSchema = z.discriminatedUnion('type', [syncArgsSchema, scheduleFunctionArgsSchema]);
 
 export type PostRecurring = Endpoint<{
     Method: typeof method;
@@ -32,9 +34,9 @@ export type PostRecurring = Endpoint<{
             startedToCompleted: number;
             heartbeat: number;
         };
-        args: JsonObject & { type: 'sync' };
+        args: z.input<typeof recurringArgsSchema>;
     };
-    Error: ApiError<'recurring_failed'>;
+    Error: ApiError<'recurring_failed' | 'duplicate_schedule_name'>;
     Success: { scheduleId: string };
 }>;
 
@@ -56,7 +58,7 @@ const bodySchemaBase = z
             startedToCompleted: z.number().int().positive(),
             heartbeat: z.number().int().positive()
         }),
-        args: syncArgsSchema
+        args: recurringArgsSchema
     })
     .strict();
 
@@ -78,7 +80,7 @@ const handler = (scheduler: Scheduler) => {
         const schedule = await scheduler.recurring({
             name: res.locals.parsedBody.name,
             state: res.locals.parsedBody.state,
-            payload: res.locals.parsedBody.args,
+            payload: res.locals.parsedBody.args as JsonObject, // Validation has applied Zod defaults, so we can safely cast to JsonObject
             startsAt: res.locals.parsedBody.startsAt,
             frequencyMs: res.locals.parsedBody.frequencyMs,
             groupKey: res.locals.parsedBody.group.key,
@@ -90,6 +92,10 @@ const handler = (scheduler: Scheduler) => {
             lastScheduledTaskState: null
         });
         if (schedule.isErr()) {
+            if (isDuplicateScheduleNameError(schedule.error)) {
+                res.status(409).json({ error: { code: 'duplicate_schedule_name', message: schedule.error.message } });
+                return;
+            }
             res.status(500).json({ error: { code: 'recurring_failed', message: schedule.error.message } });
             return;
         }

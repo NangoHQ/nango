@@ -102,7 +102,15 @@ export class OrchestratorClient {
     }
 
     public async recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }, ClientError>> {
-        const res = await this.routeFetch(postRecurringRoute)({
+        const res = await this.routeFetch(postRecurringRoute, {
+            // A duplicate schedule is a terminal answer, not a transient failure.
+            retryConfig: {
+                maxAttempts: 3,
+                maxWaitMs: Infinity,
+                delayMs: 50,
+                retryIf: (res) => 'error' in res && getErrorMessageForCode(res.error.payload, 'duplicate_schedule_name') === null
+            }
+        })({
             body: {
                 name: props.name,
                 state: props.state,
@@ -115,11 +123,19 @@ export class OrchestratorClient {
             }
         });
         if ('error' in res) {
+            const duplicateMessage = getErrorMessageForCode(res.error.payload, 'duplicate_schedule_name');
+            if (duplicateMessage !== null) {
+                return Err({
+                    name: 'duplicate_schedule_name',
+                    message: duplicateMessage || 'Schedule with this name already exists',
+                    payload: {}
+                });
+            }
             const startsAt = props.startsAt.toISOString();
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error creating recurring schedule`,
-                payload: { ...props, startsAt, response: res.error.payload as any }
+                payload: { ...props, startsAt, response: res.error.payload as any } as JsonValue
             });
         } else {
             return Ok(res);
@@ -744,6 +760,15 @@ export function isDuplicateTaskNameClientError(err: unknown): boolean {
 
     const error = err as { name?: string };
     return error.name === 'duplicate_task_name';
+}
+
+export function isDuplicateScheduleNameClientError(err: unknown): boolean {
+    if (!err || typeof err !== 'object') {
+        return false;
+    }
+
+    const error = err as { name?: string };
+    return error.name === 'duplicate_schedule_name';
 }
 
 export type ExecuteBatchEntryResult = Result<{ taskId: string; retryKey: string }, ClientError>;
