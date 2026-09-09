@@ -610,6 +610,14 @@ export function buildCanonicalParams(method: string, data: unknown, queryString:
             .replace(/[!'()*]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())
             .replace(/%[0-9a-f]{2}/g, (m) => m.toUpperCase());
 
+    const safeDecodeURIComponent = (s: string): string => {
+        try {
+            return decodeURIComponent(s);
+        } catch {
+            return s;
+        }
+    };
+
     const fromQueryString = (qs: string) =>
         qs
             .split('&')
@@ -617,8 +625,8 @@ export function buildCanonicalParams(method: string, data: unknown, queryString:
             .map((pair) => {
                 const i = pair.indexOf('=');
                 return {
-                    k: decodeURIComponent((i === -1 ? pair : pair.slice(0, i)).replace(/\+/g, '%20')),
-                    v: decodeURIComponent((i === -1 ? '' : pair.slice(i + 1)).replace(/\+/g, '%20'))
+                    k: safeDecodeURIComponent((i === -1 ? pair : pair.slice(0, i)).replace(/\+/g, '%20')),
+                    v: safeDecodeURIComponent((i === -1 ? '' : pair.slice(i + 1)).replace(/\+/g, '%20'))
                 };
             })
             .sort((a, b) => a.k.localeCompare(b.k))
@@ -787,13 +795,18 @@ export function buildProxyHeaders({
         const endpointQuery = parsedUrl.search.slice(1);
         const contentTypeHeader = Object.entries(config.headers ?? {}).find(([k]) => k.toLowerCase() === 'content-type');
         const contentType = contentTypeHeader ? String(contentTypeHeader[1]) : '';
+
+        // These exist for Duo's signing spec; only compute them when a header template actually
+        // uses them, since `params` parses the body as query-string-shaped and can throw otherwise.
+        const needsCanonicalParams = headerValues.some((value) => value.includes('${awsSigV4('));
+        const usesReplacer = (name: string) => needsCanonicalParams || headerValues.some((value) => value.includes(`\${${name}}`));
         const baseReplacers = {
             endpoint: config.endpoint,
             host: parsedUrl.host,
             path: endpointPath,
-            params: buildCanonicalParams(config.method, config.data, endpointQuery),
-            urlCanonicalParams: buildCanonicalParams('GET', undefined, endpointQuery),
-            bodyCanonicalParams: getRawBody(config.method, config.data),
+            ...(usesReplacer('params') && { params: buildCanonicalParams(config.method, config.data, endpointQuery) }),
+            ...(usesReplacer('urlCanonicalParams') && { urlCanonicalParams: buildCanonicalParams('GET', undefined, endpointQuery) }),
+            ...(usesReplacer('bodyCanonicalParams') && { bodyCanonicalParams: getRawBody(config.method, config.data) }),
             contentType
         };
 
