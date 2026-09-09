@@ -109,7 +109,7 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, 
     const metrics: Partial<Record<UsageMetric, number>> = {};
     const malformedMetrics: UsageMetric[] = [];
     const flagged: BillingPeriodCosts['flagged'] = [];
-    // Read currency from usage prices. A subscription with only fixed prices has no metric costs.
+    // Store fixed prices until usage prices set the currency. Without a usage price, return null.
     const fixedPrices: { priceId: string; priceName: string; amountInCents: number | null; currency: string | null }[] = [];
     let fullyAttributed = true;
     let currency: string | null = null;
@@ -159,9 +159,9 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, 
     }
 
     let fixedInCents = 0;
+    // Fixed prices do not change `fullyAttributed`. It reports whether every usage price maps to a metric.
     for (const fixed of fixedPrices) {
         if (fixed.amountInCents === null || fixed.currency !== currency) {
-            // Keep `fullyAttributed` unchanged. It describes usage prices, not fixed prices.
             flagged.push({ priceId: fixed.priceId, priceName: fixed.priceName, metric: null, amountInCents: fixed.amountInCents });
             continue;
         }
