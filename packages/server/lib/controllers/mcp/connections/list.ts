@@ -1,4 +1,4 @@
-import { connectionService } from '@nangohq/shared';
+import { CONNECTION_LIST_DEFAULT_LIMIT, connectionService } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
 import { defineManagementMcpTool } from '../managementTool.js';
@@ -24,7 +24,7 @@ export const listConnectionsTool = defineManagementMcpTool<typeof listConnection
             integrationIds: args.integration_id ? [args.integration_id] : undefined,
             endUserOrganizationId: args.end_user_organization_id,
             tags: args.tags,
-            ...(args.limit !== undefined ? { limit: args.limit } : {}),
+            limit: args.limit ?? CONNECTION_LIST_DEFAULT_LIMIT,
             page: args.page
         });
 

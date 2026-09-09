@@ -1,1 +1,4 @@
 export const PROD_ENVIRONMENT_NAME = 'prod';
+
+export const CONNECTION_LIST_MAX_LIMIT = 2000;
+export const CONNECTION_LIST_DEFAULT_LIMIT = 100;

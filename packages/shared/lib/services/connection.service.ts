@@ -18,6 +18,7 @@ import * as signatureClient from '../auth/signature.js';
 import { refreshMcpGenericCredentials } from '../clients/mcpGeneric.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
+import { CONNECTION_LIST_DEFAULT_LIMIT, CONNECTION_LIST_MAX_LIMIT } from '../constants.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { ConnectionCreationCappedError, NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
@@ -1287,7 +1288,7 @@ export class ConnectionService {
         endUserId,
         endUserOrganizationId,
         tags,
-        limit = 1000,
+        limit = CONNECTION_LIST_DEFAULT_LIMIT,
         page = 0
     }: {
         environmentId: number;
@@ -1301,6 +1302,9 @@ export class ConnectionService {
         limit?: number;
         page?: number | undefined;
     }): Promise<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
+        // Defense-in-depth: clamp limit even if callers bypass controller validation
+        limit = Math.min(Math.max(Math.trunc(limit), 1), CONNECTION_LIST_MAX_LIMIT);
+        page = Math.max(Math.trunc(page), 0);
         const query = db.readOnly
             // Filter and paginate connections
             .with('filtered_connections', (qb) => {
