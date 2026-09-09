@@ -16,9 +16,13 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
     const { user: sessionUser, plan } = res.locals;
 
     const environments = await environmentService.getEnvironmentsByAccountId(sessionUser.account_id);
+    if (environments.isErr()) {
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to retrieve environments' } });
+        return;
+    }
     res.status(200).send({
         data: {
-            environments: environments.map((env) => {
+            environments: environments.value.map((env) => {
                 return { id: env.id, account_id: sessionUser.account_id, name: env.name, is_production: env.is_production };
             }),
             version: NANGO_VERSION,

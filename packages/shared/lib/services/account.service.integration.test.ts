@@ -185,7 +185,7 @@ describe('Account service', () => {
         expect(account!.name).toBe(`${accountName}'s Team`);
 
         const environments = await environmentService.getEnvironmentsByAccountId(account!.id);
-        expect(environments).toHaveLength(defaultEnvironments.length);
+        expect(environments.unwrap()).toHaveLength(defaultEnvironments.length);
 
         const plan = await db.knex.select('*').from('plans').where({ account_id: account!.id }).first();
         expect(plan).toBeDefined();
