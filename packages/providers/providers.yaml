@@ -3723,6 +3723,38 @@ boldsign:
         base_url: https://api.boldsign.com
     docs: https://nango.dev/docs/integrations/all/boldsign
 
+bol-com:
+    display_name: bol.com
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    token_url: https://login.bol.com/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.bol.com
+        headers:
+            accept: application/vnd.retailer.v10+json
+    docs: https://nango.dev/docs/api-integrations/bol-com
+    docs_connect: https://nango.dev/docs/api-integrations/bol-com/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your bol.com Retailer API client ID.
+            example: 123e4567-****-****-****-426614174000
+            format: uuid
+            doc_section: '#create-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your bol.com Retailer API client secret.
+            example: AAECAwQF**************************************************************D0-Pw
+            pattern: '^[A-Za-z0-9_-]+$'
+            secret: true
+            doc_section: '#create-client-credentials'
+
 boondmanager:
     display_name: BoondManager
     categories:

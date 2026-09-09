@@ -15158,6 +15158,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `blackbaud-basic` | Blackbaud (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/blackbaud-basic.md) | [connect](https://nango.dev/docs/integrations/all/blackbaud-basic/connect.md) |  | crm |
 | `blandai` | BlandAI | API_KEY | [docs](https://nango.dev/docs/integrations/all/blandai.md) |  |  | support |
 | `bliro` | Bliro | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bliro.md) | [connect](https://nango.dev/docs/api-integrations/bliro/connect.md) |  | communication |
+| `bol-com` | bol.com | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bol-com.md) | [connect](https://nango.dev/docs/api-integrations/bol-com/connect.md) |  | e-commerce |
 | `boldsign` | BoldSign | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/boldsign.md) |  |  | legal |
 | `booking-com` | Booking.com | BASIC | [docs](https://nango.dev/docs/integrations/all/booking-com.md) |  |  | e-commerce |
 | `boondmanager` | BoondManager | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/boondmanager.md) |  | [setup](https://nango.dev/docs/api-integrations/boondmanager/how-to-register-your-own-boondmanager-api-oauth-app.md) | erp |

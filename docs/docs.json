@@ -1101,6 +1101,7 @@
               "integrations/all/blackbaud-basic",
               "integrations/all/blandai",
               "api-integrations/bliro",
+              "api-integrations/bol-com",
               "integrations/all/boldsign",
               "integrations/all/booking-com",
               "api-integrations/boondmanager",
