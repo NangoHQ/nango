@@ -107,7 +107,16 @@ export async function createPlan(
             .onConflict('account_id')
             .ignore()
             .returning('*');
-        return Ok(normalizePlan(res[0] as PgPlan));
+        const createdPlan = res[0];
+        if (createdPlan) {
+            return Ok(normalizePlan(createdPlan as PgPlan));
+        }
+
+        const existingPlan = await getPlan(db, { accountId: account_id });
+        if (existingPlan.isOk()) {
+            return existingPlan;
+        }
+        return Err(new Error('failed_to_create_plan', { cause: existingPlan.error }));
     } catch (err) {
         return Err(new Error('failed_to_create_plan', { cause: err }));
     }
