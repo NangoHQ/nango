@@ -102,7 +102,9 @@ export const Usage: React.FC = () => {
         : metrics.map((metric) => rowFor(metric));
 
     // No `charge`: Pay-as-you-go does not price these meters, so that column states nothing.
-    const legacyRows: UsageTableRow[] = legacyOnlyMetrics.map((metric) => rowFor(metric, orbCharges ? { currentPlanCharge: orbCharges(metric) } : {}));
+    const legacyRows: UsageTableRow[] = legacyOnlyMetrics.map((metric) =>
+        rowFor(metric, orbCurrentPlanCharges ? { currentPlanCharge: orbCurrentPlanCharges(metric) } : {})
+    );
     return (
         <div className="w-full flex flex-col gap-4">
             {/* A migrating account already has the transition banner. */}

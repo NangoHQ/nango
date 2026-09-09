@@ -16,7 +16,8 @@ const plans = [
     { code: 'growth', title: 'Growth (v1)', keepsGrowthAddOnOnMigration: true },
     { code: 'starter-legacy', title: 'Starter (legacy)' },
     { code: 'scale-legacy', title: 'Scale (legacy)' },
-    { code: 'growth-legacy', title: 'Growth (legacy)' }
+    { code: 'growth-legacy', title: 'Growth (legacy)' },
+    { code: 'enterprise', title: 'Enterprise' }
 ] as PlanDefinition[];
 
 function planOf(name: ApiPlan['name'], overrides: Partial<ApiPlan> = {}): ApiPlan {
@@ -39,8 +40,7 @@ describe('planTransition', () => {
         ['scale-legacy', 'Scale (legacy)'],
         ['growth-legacy', 'Growth (legacy)'],
         ['growth', 'Growth (v1)'],
-        ['starter', 'Starter (v1)'],
-        ['startup-deal', 'Startup deal']
+        ['starter', 'Starter (v1)']
     ] as const)('announces the migration for a scheduled %s account', (name, fromTitle) => {
         expect(transitionOf(scheduled(name))).toMatchObject({
             at: 'October 1, 2026',
@@ -48,6 +48,12 @@ describe('planTransition', () => {
             fromCode: name,
             fromTitle
         });
+    });
+
+    // Both can be scheduled onto Pay-as-you-go as an ordinary change, and each has its own copy
+    // for it. Neither is in the migration population.
+    it.each(['enterprise', 'startup-deal'] as const)('stays silent for a scheduled %s account', (name) => {
+        expect(transitionOf(scheduled(name))).toBeNull();
     });
 
     it.each(['growth-v2', 'growth'] as const)('carries the Growth add-on across for %s', (name) => {

@@ -1,3 +1,4 @@
+import { isRetiredPlan } from './planVisibility';
 import { pendingPlanChange } from './summaryState';
 
 import type { ApiPlan, DBPlan, PlanDefinition } from '@nangohq/types';
@@ -27,6 +28,12 @@ export function planTransition({
 
     const change = pendingPlanChange({ plan, plans, now });
     if (!change || change.toCode !== TARGET_CODE) {
+        return null;
+    }
+
+    // Enterprise and the startup deal can also be scheduled onto Pay-as-you-go, but that is an
+    // ordinary change and each has its own copy for it. Only a retired plan is migrating.
+    if (!isRetiredPlan(plan.name)) {
         return null;
     }
 
