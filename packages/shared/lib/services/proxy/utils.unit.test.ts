@@ -57,6 +57,65 @@ describe('buildProxyHeaders', () => {
         });
     });
 
+    it('does not throw when the request body is a non-serializable object (e.g. a stream) and the provider has custom headers', () => {
+        const circularBody: Record<string, unknown> = {};
+        circularBody['self'] = circularBody;
+
+        const config = getDefaultProxy({
+            method: 'PUT',
+            data: circularBody,
+            provider: {
+                auth_mode: 'API_KEY',
+                authorization_url: 'https://api.nangostarter.com',
+                token_url: 'https://api.nangostarter.com',
+                proxy: {
+                    base_url: 'https://api.nangostarter.com',
+                    headers: {
+                        'my-token': '${apiKey}'
+                    }
+                }
+            }
+        });
+
+        expect(() =>
+            buildProxyHeaders({
+                config,
+                url: 'https://api.nangostarter.com',
+                connection: getTestConnection({
+                    credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
+                })
+            })
+        ).not.toThrow();
+    });
+
+    it('does not throw when the request body has a genuinely unserializable value (not a stream)', () => {
+        const config = getDefaultProxy({
+            method: 'PUT',
+            data: { amount: BigInt(10) },
+            provider: {
+                auth_mode: 'API_KEY',
+                authorization_url: 'https://api.nangostarter.com',
+                token_url: 'https://api.nangostarter.com',
+                proxy: {
+                    base_url: 'https://api.nangostarter.com',
+                    headers: {
+                        'my-token': '${apiKey}'
+                    }
+                }
+            }
+        });
+
+        expect(() =>
+            buildProxyHeaders({
+                config,
+                url: 'https://api.nangostarter.com',
+                connection: getTestConnection({
+                    credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
+                })
+            })
+        ).not.toThrow();
+    });
+
     it('should correctly construct headers for Basic auth', () => {
         const config = getDefaultProxy({
             provider: {
