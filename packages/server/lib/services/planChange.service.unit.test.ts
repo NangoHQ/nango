@@ -190,6 +190,11 @@ describe('getPlanChangeContext', () => {
         expect(res.isErr() && res.error.code).toBe('invalid_plan');
     });
 
+    it('rejects a requested plan code that matches no definition', () => {
+        const res = context(plan({ name: 'free' }), 'not-a-plan');
+        expect(res.isErr() && res.error.code).toBe('invalid_plan');
+    });
+
     it('rejects a plan with no orb subscription to change', () => {
         const res = context(plan({ name: 'free', orb_subscription_id: null }));
         expect(res.isErr() && res.error.code).toBe('no_subscription');
