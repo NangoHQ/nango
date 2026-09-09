@@ -637,8 +637,6 @@ describe('fromOrbPeriodCosts', () => {
             ]
         };
 
-        // Were a fixed price allowed to establish the currency, an account whose usage prices have
-        // been removed would flip from "no charges" to a row of $0.00s.
         expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
     });
 

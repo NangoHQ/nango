@@ -42,13 +42,13 @@ export const Usage: React.FC = () => {
     // billing running-average, matching what each row's drill-in chart also requests.
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
 
-    // Orb answers for any window it is given, so a closed month states its charges too — the
-    // current period is just the case where no window is named.
     const chargesEnabled = hasMonthlySpend(plan);
     const {
         data: periodCosts,
         isPending: costsPending,
         isError: costsError
+        // The current month sends no window on purpose, so Orb uses its own billing period, which
+        // need not start on the 1st. A named window would cost the calendar month instead.
     } = useApiGetBillingPeriodCosts(env, plan, { enabled: chargesEnabled, ...(isCurrentMonth ? {} : { timeframe }) });
     const charges = buildUsageRowCharges({ enabled: chargesEnabled, isPending: costsPending, isError: costsError, data: periodCosts });
 

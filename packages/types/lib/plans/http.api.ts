@@ -176,8 +176,7 @@ export type GetBillingPeriodCosts = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/billing/period-costs';
-    /** Without `from`/`to` this answers for the period being billed now. Naming a window also asks
-     *  for a closed month, which Orb reports with the same per-price breakdown. */
+    /** Omit both to get the period being billed now; name a window to cost a closed month. */
     Querystring: { env: string; from?: string; to?: string };
     Success: {
         data: {

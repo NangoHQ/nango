@@ -100,9 +100,8 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, 
         (latest, bucket) => (latest && Date.parse(latest.timeframe_end) >= Date.parse(bucket.timeframe_end) ? latest : bucket),
         null
     );
-    // An ended subscription answers with its stale final period rather than erroring, so without a
-    // named window a closed period is not an answer. NaN must reject explicitly — NaN <= now is
-    // always false, so a malformed timeframe_end would otherwise read as current.
+    // An ended subscription returns its stale final period instead of erroring, so a closed period
+    // counts only when the caller named the window. `NaN <= now` is false, so NaN needs its own check.
     const periodEnd = period ? Date.parse(period.timeframe_end) : NaN;
     if (!period || Number.isNaN(periodEnd) || (!opts.explicitTimeframe && periodEnd <= now.getTime())) {
         return null;
@@ -111,9 +110,8 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, 
     const metrics: Partial<Record<UsageMetric, number>> = {};
     const malformedMetrics: UsageMetric[] = [];
     const flagged: BillingPeriodCosts['flagged'] = [];
-    // Held back until the usage prices have run: a fixed price must never be what establishes the
-    // period's currency, or a subscription carrying only a base fee would start reporting costs
-    // where it reports none today.
+    // Held back so a fixed price can never set the period's currency. If it could, a subscription
+    // carrying only a base fee would start reporting costs where it reports none.
     const fixedPrices: { priceId: string; priceName: string; amountInCents: number | null; currency: string | null }[] = [];
     let fullyAttributed = true;
     let currency: string | null = null;
@@ -166,9 +164,8 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, 
     let fixedInCents = 0;
     for (const fixed of fixedPrices) {
         if (fixed.amountInCents === null || fixed.currency !== currency) {
-            // Flagged for alerting but deliberately left out of `fullyAttributed`, which governs only
-            // whether an absent *metric* may read as $0 — money on a fixed price was never a metric's
-            // to claim. So an unreadable one understates `fixedInCents` and changes nothing else.
+            // Deliberately not `fullyAttributed`. That flag only decides whether an absent *metric*
+            // may read as $0.00, so setting it here would turn every real $0.00 usage row into a dash.
             flagged.push({ priceId: fixed.priceId, priceName: fixed.priceName, metric: null, amountInCents: fixed.amountInCents });
             continue;
         }

@@ -197,8 +197,7 @@ export class OrbClient implements BillingClient {
 
     async getPeriodCosts(subscriptionId: string, timeframe?: { start: Date; end: Date }): Promise<Result<BillingPeriodCosts | null>> {
         try {
-            // Cumulative so the last bucket carries the whole window, not a single day's. With no
-            // timeframe Orb defaults to the current billing period; a closed month has to be named.
+            // Cumulative so the last bucket carries the whole window, not a single day's.
             const costs = await this.orbSDK.subscriptions.fetchCosts(
                 subscriptionId,
                 {
