@@ -2,6 +2,7 @@ import { fromJsonSchema, McpServer, ProtocolError, ProtocolErrorCode } from '@mo
 
 import { toJsonSchema202012 } from '../../mcp/utils.js';
 import { executeSessionTool, executeTool } from './execute/execute.js';
+import { proxyTool } from './proxy/proxy.js';
 import { callAgentSessionTool, MAX_TOOL_NAME_LENGTH } from './sessionTool.js';
 import { toolSearchTool } from './toolSearch/search.js';
 
@@ -29,7 +30,7 @@ const JSON_SCHEMA_2020_12 = 'https://json-schema.org/draft/2020-12/schema';
 
 type SessionTool = Tool & { description: string };
 
-const META_TOOLS: AgentSessionMcpTool[] = [toolSearchTool, executeTool];
+const META_TOOLS: AgentSessionMcpTool[] = [toolSearchTool, executeTool, proxyTool];
 
 /**
  * The compiled toolset stores a name and a description per tool, not an argument schema, so a

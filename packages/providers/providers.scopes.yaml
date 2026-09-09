@@ -5786,6 +5786,31 @@ linkhut:
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 listrak: []
 
+# source: https://developer.liveswitch.com/docs/basic-concepts
+liveswitch:
+    - contacts
+    - contacts.write
+    - conversations
+    - conversations.write
+    - documents
+    - email
+    - me
+    - offline_access
+    - openid
+    - organizations
+    - organizations.write
+    - profile
+    - projects
+    - projects.write
+    - recordings
+    - spark-templates
+    - sparks
+    - sparks.write
+    - tags
+    - tags.write
+    - webhooks
+    - webhooks.write
+
 # source: https://developers.lokalise.com/reference/oauth-2-flow
 # source: https://developers.lokalise.com/reference/lokalise-rest-api
 lokalise:
@@ -8365,6 +8390,15 @@ monday:
     - workspaces:read
     - workspaces:write
 
+# source: https://developer.moneybird.com/authentication#scopes
+moneybird:
+    - bank
+    - documents
+    - estimates
+    - sales_invoices
+    - settings
+    - time_entries
+
 # source: https://developers.mural.co/public/docs/scopes
 mural:
     - identity:read
@@ -9019,6 +9053,11 @@ oura:
     - spo2Daily
     - tag
     - workout
+
+# source: https://app.getoutline.com/.well-known/oauth-authorization-server (scopes_supported)
+outline:
+    - read
+    - write
 
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: providers.yaml default_scopes

@@ -2313,7 +2313,7 @@ Example sessions:
         "notion": { "connected": true, "tools_pinned": 0, "tools_searchable": 12 },
         "slack": { "connected": true, "tools_pinned": 0, "tools_searchable": 7 }
       },
-      "meta_tools": { "nango_tool_search": true, "nango_execute": true }
+      "meta_tools": { "nango_tool_search": true, "nango_execute": true, "nango_proxy": false }
     }
   }
   ```
@@ -2500,9 +2500,10 @@ Create a session with the tools and access your agent needs.
     "notion": ["read_doc"]
   },
 
-  "meta_tools": {    // Optional, defaults to all
+  "meta_tools": {    // Optional. nango_proxy is off unless you turn it on
     "nango_tool_search": true,
-    "nango_execute": true
+    "nango_execute": true,
+    "nango_proxy": false
   },
 
   "expires_in": "1h" // Optional. Minimum "60s", maximum and default "15d".
@@ -2665,11 +2666,12 @@ Meta tools are Nango's own tools. They are always pinned to the MCP server's too
 | --- | --- |
 | `nango_tool_search` | Finds tools in the session's toolset from a plain-language description |
 | `nango_execute` | Runs one of the session's tools by name |
+| `nango_proxy` | Makes an authenticated request to a provider API, for when no tool fits |
 
-Both default to `true`. You can disable them on session creation with `meta_tools`:
+`nango_tool_search` and `nango_execute` default to `true`, `nango_proxy` to `false`. Set them on session creation with `meta_tools`:
 
 ```json
-{ "meta_tools": { "nango_execute": false } }
+{ "meta_tools": { "nango_execute": false, "nango_proxy": true } }
 ```
 
 ### nango_tool_search
@@ -2693,6 +2695,20 @@ Runs one of the session's tools by name, on the connection the session resolved 
 ```
 
 Execution is synchronous and goes through the same path as [triggering an action function](/reference/backend/http-api/action/trigger), so it is capped by the synchronous execution limit and appears in Nango logs like any other function run.
+
+### nango_proxy
+
+The escape hatch for when no tool in the session covers what the agent needs. It makes an authenticated HTTP request to a provider API on the connection the session resolved for that integration, so the agent names an integration and never a connection.
+
+```json
+{ "integration": "notion", "method": "POST", "path": "/v1/search", "body": { "query": "roadmap" } }
+```
+
+It also takes `query_params` and `headers`. Nango authenticates the request from the session's connection, so credential headers are rejected rather than forwarded, including the provider's own (`x-api-key` and the like) alongside `authorization`.
+
+The integration has to be one in the session's toolset with a resolved connection, but the path is not restricted to what the toolset exposes. That is why `nango_proxy` is off by default: turning it on lets the agent reach any endpoint of a connected integration.
+
+The result is the provider's `status`, `headers` and `body`, for JSON or UTF-8 text responses up to 5 MB. Binary and larger responses are not supported, and neither is file upload. Use the [HTTP proxy](/reference/backend/http-api/proxy) for those.
 
 ## Functions guide
 
@@ -6137,6 +6153,8 @@ Nango provides detailed filtering and searching of log messages by integration, 
 
 We recommend exploring the logs in your own Nango account under **Logs**.
 
+Logs are retained for **15 days**, then permanently deleted. 
+
 ## Logs MCP tools (Beta)
 
 The [Management MCP server](/reference/backend/management-mcp#logs) provides Beta tools for listing and filtering log operations and retrieving their messages from an MCP-compatible client.
@@ -6179,6 +6197,7 @@ The following operations are exported as traces:
 ## Related guides
 
 - [Function logging](/guides/functions/logging) - add custom logs from function code.
+- [Limits](/guides/platform/limits#log-retention) - log retention window.
 - [Webhooks from Nango](/guides/platform/webhooks-from-nango#webhook-retries-debugging) - debug webhook delivery.
 - [Common issues](/guides/platform/common-issues) - troubleshoot failed auth, sync, and proxy operations.
 
@@ -6329,6 +6348,10 @@ Each sync can have a maximum of **100 variants** per connection. For heavier wor
 
 Action functions have a maximum output payload size of **2MB**. For large payloads, use the [Proxy](/guides/platform/proxy-requests) instead.
 
+## Log retention
+
+[Logs](/guides/platform/observability) are retained for **15 days**, then permanently deleted.
+
 ## Data retention policies
 
 Nango automatically manages data retention for records in the sync cache:
@@ -6374,7 +6397,7 @@ These limits apply to all webhook types: auth, sync function completion, async a
 Source: https://nango.dev/docs/guides/platform/security.md
 Description: How Nango secures your API credentials and customer data.
 
-Nango is designed with security as a core principle. This page provides technical details about how Nango stores, encrypts, and manages API credentials.
+[Contact us](https://nango.dev/contact) if you have additional questions or if you require a security review for an Enterprise agreement.
 
 ## Compliance
 
@@ -6383,353 +6406,158 @@ Nango is **SOC 2 Type II** certified, **GDPR** compliant, and **HIPAA** complian
 | Certification | Details |
 | - | - |
 | SOC 2 Type II | Annual audit covering security, availability, and confidentiality. [View report →](https://trust.nango.dev) |
-| GDPR | Data Processing Agreement (DPA) automatically applies to all cloud accounts. [View DPA →](https://nango.dev/terms#dpa) |
-| HIPAA | Business Associate Agreement (BAA) available on request. [Contact us →](https://nango.dev/contact) |
+| GDPR | Data Processing Agreement (DPA) applies automatically to all cloud accounts. [View DPA →](https://nango.dev/terms#dpa) |
+| HIPAA | Business Associate Agreement (BAA) available with the [Growth add-on →](https://nango.dev/pricing) |
 
-Our security practices include:
+We run regular penetration tests, a secure development lifecycle, incident response procedures, and continuous monitoring. The [Trust Center](https://trust.nango.dev) has our current policies and audit reports.
 
-- Regular security assessments and penetration testing
-- Secure development lifecycle
-- Incident response procedures
-- Continuous monitoring and alerting
+## Data storage, retention & deletion
 
-For your own reviews, the [audit trail](/guides/platform/audit-trail) records who changed what in your account, when, and from where.
+### What Nango stores
 
-Visit our [Trust Center](https://trust.nango.dev) for the latest compliance documentation, security policies, and audit reports.
+| Data | Includes | Encryption | Retention |
+| - | - | - | - |
+| Connections | Credentials, configuration, and metadata | See [Connections](#connections) | Until you delete the connection |
+| Integration credentials | Your OAuth client secrets and custom provider settings | **AES-256-GCM** | Until you delete the integration |
+| Nango API keys | Account and environment API keys | **AES-256-GCM** | Until rotated or deleted |
+| Environment variables | Values you set per environment | **AES-256-GCM** | Until you delete them |
+| Synced records | Record payloads written to the [records cache](/guides/functions/syncs/records-cache) by sync functions | **AES-256-GCM** | Payload **30 days**, record **60 days** |
+| Nango logs | Auth flows, function executions, proxy requests | Storage-level | **15 days** on Nango Cloud |
+| Audit trail | Control-plane changes | Storage-level | **1 year** by default |
 
-## Credential storage
+Everything is encrypted at rest at the storage layer. Rows marked **AES-256-GCM** carry an additional application-level layer: the value is encrypted before it is written, so it stays unreadable to anyone holding database access alone.
 
-### What credentials are stored
+Data is stored in a managed PostgreSQL database in AWS, network-isolated in a private subnet, with automated backups and point-in-time recovery. Self-hosted deployments run on infrastructure you control, and all retention periods are configurable when [self-hosting](/guides/platform/self-hosting).
 
-Nango stores the following credential types depending on your API integrations:
+### Encryption & key management
 
-- **OAuth tokens**: Access tokens, refresh tokens, and associated metadata
-- **API keys**: For APIs using key-based authentication
-- **Client credentials**: OAuth client IDs and secrets for your integrations
-- **Connection configuration**: OAuth scopes, authorization parameters, and provider-specific settings
+**Key management** — Nango uses envelope encryption. A 256-bit data encryption key (DEK) performs the encryption and is itself stored only in wrapped form, encrypted under a key held in AWS KMS.
 
-### Storage infrastructure
+**Algorithm details** — AES-256-GCM with a 256-bit key, a fresh 12-byte initialization vector per encryption, and a 16-byte authentication tag. GCM is authenticated, so a tampered value fails to decrypt rather than returning corrupted data.
 
-Nango Cloud stores all data in **AWS Aurora PostgreSQL** databases hosted in AWS. The database infrastructure includes:
+**In transit** — TLS 1.2+ on all traffic: your application to Nango, dashboard access, and Nango's requests to external APIs.
 
-- Encryption at rest using AWS-managed keys
-- Automated backups with point-in-time recovery
-- Multi-AZ deployment for high availability
-- Network isolation within a private VPC
+<a id="connections"></a>
+### Connections
 
-For self-hosted deployments, you control the database infrastructure and can apply your own security policies.
+A connection holds everything Nango needs to call an external API on behalf of one of your customers:
 
-## Encryption
+| Field | Contents | Encryption |
+| - | - | - |
+| Credentials | OAuth access and refresh tokens, API keys, other provider credentials | **AES-256-GCM** |
+| Connection configuration | OAuth scopes, authorization parameters, provider-specific settings | Storage-level |
+| Metadata | Customer-specific configuration you set through the API or SDK | Storage-level |
 
-### Encryption at rest
+Connections are retained until you delete them. Deletion runs in two stages:
 
-All sensitive credentials are encrypted before being stored in the database using **AES-256-GCM** (Advanced Encryption Standard with Galois/Counter Mode).
+1. **Soft delete (immediate)** — the connection becomes inaccessible, its syncs stop, and scheduled tasks are cancelled.
+2. **Hard delete (31 days later)** — credentials, configuration, metadata, synced records, and job history are permanently removed. The window allows recovery from accidental deletion.
 
-| Property | Value |
-| - | - |
-| Algorithm | AES-256-GCM |
-| Key size | 256 bits (32 bytes) |
-| IV size | 12 bytes (generated per encryption) |
-| Auth tag size | 16 bytes |
+<Info>
+Logs and audit trail entries age out on their own schedule. They are not removed when you delete a connection and remain until their retention window ends.
+</Info>
 
-### What is encrypted
+<a id="synced-records-retention"></a>
+### Synced records
 
-The following data types are encrypted at rest:
+<Note>Applies only if you use the [records cache](/guides/functions/syncs/records-cache).</Note>
 
-- Connection credentials (OAuth tokens, API keys, etc.)
-- OAuth client secrets (your integration credentials)
-- Environment API keys
-- Account API keys
-- Environment variables
+Nango prunes the [records cache](/guides/functions/syncs/records-cache) so customer data is not held indefinitely:
 
-### Key management
+- **Payload pruning after 30 days** without a record update. The record ID and payload hash remain, so change detection and your syncs keep working — but the data is no longer retrievable from the cache.
+- **Hard deletion after 60 days** without a sync execution. All records data associated with this sync is deleted, including delta-detection hashes. If you start the sync again it starts with an empty cache.
 
-- **Nango Cloud**: Encryption keys are securely managed by Nango. All credentials are encrypted at rest.
-- **Self-hosted**: You must provide your own encryption key to enable encryption at rest.
+Treat the cache as a delivery mechanism, not a data store: [fetch promptly and keep your own copy](/guides/functions/syncs/sync-efficiency#consume-changes-promptly).
 
-### Encryption in transit
+<a id="audit-logging"></a>
+### Nango logs
 
-All data transmitted to and from Nango is encrypted using TLS 1.2+. This includes:
+[Nango logs](/guides/platform/observability) are the operational record of what ran in your account: auth flows, function executions, proxy requests. They are exportable via [OpenTelemetry](/guides/platform/observability#opentelemetry-export).
 
-- API requests between your application and Nango
-- Requests from Nango to external APIs (using each provider's TLS configuration)
-- Dashboard access
+For proxy requests and API calls made from your functions, Nango records the URL, method, status code, and headers — **never request or response bodies**, so customer data flowing through an API call is not written to the logs.
 
-## Data retention
+Headers are redacted before they are stored: `Authorization` always, plus the connection's credentials and any other configured secret values. Credentials are also stripped from logged URLs.
 
-### Active connections
+### Audit trail
 
-Credentials are stored for as long as the connection exists. You have full control over connection lifecycle:
-
-- Create connections when users authorize integrations
-- Delete connections at any time via the API or dashboard
-- Connections can be programmatically managed through your application
-
-#### Retention after deletion
-
-When a connection is deleted:
-
-1. **Immediate soft delete**: Connection is marked as deleted and becomes inaccessible
-2. **Associated data cleanup**: Sync functions are stopped, and scheduled tasks are cancelled
-3. **Hard delete after retention period**: Credentials and associated data are permanently removed from the database
-
-The default retention period is **31 days**. For self-hosted deployments, this is configurable.
-
-This retention period allows for:
-- Recovery from accidental deletions
-- Compliance with audit requirements
-- Graceful handling of in-flight operations
-
-#### What is deleted
-
-When a connection is permanently deleted, the following data is removed:
-
-- All stored credentials (tokens, keys, secrets)
-- Connection metadata and configuration
-- Sync records associated with the connection
-- Related job history and logs
-
-### Synced records retention
-
-<Note>
-This section only applies if you are using Functions of type Sync, e.g. for replicating data or receiving trigger notifications from an external API.
-</Note>
-
-Nango automatically manages data retention for records stored in the Nango records cache to ensure that sensitive user data is not stored indefinitely when it's no longer needed.
-
-#### Automated payload pruning (30 days)
-
-If a record has not been updated for **30 days**, Nango will automatically empty its payload.
-
-**Impact:**
-After pruning, the record's data fields are no longer retrievable from the Nango cache via the API or SDK. However, Nango retains the metadata needed for change detection (record ID and payload hash). Your sync functions will continue to work normally. This pruning does not impact sync execution or delta-detection capabilities.
-
-#### Automated hard deletion (60 days)
-
-If a sync has not executed for **60 days**, all records belonging to that sync will be permanently deleted.
-
-**Impact:**
-Complete removal of all records from the inactive sync, including metadata and payload hashes used for delta-detection. The sync itself remains configured but starts fresh on the next execution. Nango will no longer be able to detect changes against previously synced records.
-
-#### When do retention policies apply?
-
-- **30-day pruning countdown**: Starts from the last time a specific record was updated.
-- **60-day deletion countdown**: Starts from the last time a sync successfully executed.
-
-#### Best practices
-
-To work optimally with Nango's retention policies:
-
-**1. Fetch records promptly**
-
-Set up [webhooks from Nango](/guides/platform/webhooks-from-nango) to be notified when new data is available. Fetch the updated records immediately after receiving a sync webhook.
-
-**2. Use cursor-based synchronization**
-
-Track your sync progress using cursors to ensure you never miss records, even if webhooks are occasionally missed. Store the cursor of the last-fetched record and use it on subsequent fetches.
-
-**3. Store data in your own system**
-
-Don't use Nango's cache as your primary data store. Instead:
-- Store synced records in your own database
-- Use Nango as a synchronization pipeline
-- Keep your own copy of all critical data
-
-#### Longer retention requirements
-
-If your use case requires accessing record payloads from Nango's cache beyond the 30-day window, please reach out to the Nango team. We can work with you to ensure you don't experience breaking changes.
-
-## Deletion procedures
-
-### User-initiated deletion
-
-You can delete connections through:
-
-- **Dashboard**: Navigate to the connection and click "Delete"
-- **API**: Call the [delete connection endpoint](/reference/backend/http-api/connections/delete)
-- **SDK**: Use the `deleteConnection` method in any of our backend SDKs
-
-### Automatic cleanup
-
-Nango automatically cleans up:
-
-- Expired OAuth sessions
-- Expired connect session tokens
-- Orphaned data from deleted integrations
+The [audit trail](/guides/platform/audit-trail) records control-plane changes with actor, outcome, and originating IP: who created or deleted a connection, changed an integration, rotated an API key, or signed in. Entries are immutable and account-wide, exportable as CSV.
 
 ### Data purge requests
 
-For compliance requirements (e.g., GDPR), contact Nango support to request immediate data purges. We can expedite the deletion process when required by regulation.
+For compliance requirements such as GDPR, contact Nango support to request an immediate data purge. We can expedite deletion when regulation requires it.
 
-## Access controls
+## Access control
 
 ### API authentication
 
-Nango supports multiple authentication methods:
-
-| Method | Use case | Token lifetime |
+| Method | Grants access to | Lifetime |
 | - | - | - |
-| Environment API key | Server-to-server API access | Long-lived (until rotated) |
-| Connect session token | Frontend auth flows | 30 minutes |
+| Environment API key | A single [environment](/guides/platform/environments): integrations, connections, functions, records, proxy | Long-lived, until rotated |
+| Account API key | Account-level APIs only — never environment data | Long-lived, until rotated |
+| Connect session token | One end user's auth flow, in one environment | 30 minutes |
 | Session cookie | Dashboard access | Session-based |
 
-### Environment API key security
-
-- Environment API keys are environment-specific (dev, prod, etc.)
-- Keys can be rotated via the dashboard
-- All API requests require a valid Environment API key in the `Authorization` header
+See the [API keys reference](/reference/backend/http-api/api-keys) for key types, capabilities, scopes, and management.
 
 ### Environment isolation
 
-Each [environment](/guides/platform/environments) in your Nango account is completely isolated:
-
-- Separate credentials and connections
-- Separate integration configurations
-- Separate Environment API keys
-
-This ensures your production data is never accessible from development environments.
-
-<a id="audit-logging"></a>
-### Audit trail
-
-The [audit trail](/guides/platform/audit-trail) records control-plane changes with the actor, the outcome, and the originating IP: who created or deleted a connection, changed an integration, rotated an API key, changed a teammate's role, or signed in. Entries are immutable and account-wide, can be exported as CSV, and reading or exporting the trail is itself recorded.
-
-### Nango logs
-
-[Nango logs](/guides/platform/observability) are a separate, operational record of what ran in your Nango account: auth flows, function executions, proxy requests, etc. Logs can be exported via [OpenTelemetry](/guides/platform/observability#opentelemetry-export).
+Each [environment](/guides/platform/environments) is fully isolated — separate credentials, connections, integration configurations, and API keys — so production data is never reachable from a development environment.
 
 <a id="team-and-roles"></a>
-## Team & roles
+### Team roles (RBAC)
 
-Nango supports multiple team members per account with role-based access control (RBAC). Roles determine what each member can view and modify, particularly in production environments.
-
-### Role overview
-
-There are three roles:
+Roles govern what each team member can see and change.
 
 | | **Full Access** | **Support** | **Contributor** |
 | - | - | - | - |
-| **Summary** | Unrestricted access across all environments. The only role that can manage account settings, billing, and the team. | Designed for monitoring production without being able to change it. Full access in non-production environments. | Designed for developers who work exclusively in non-production environments. No production access at all. |
+| **Designed for** | Admins and production operators | Monitoring production without changing it | Developers working outside production |
+| Non-production: read, write, delete | ✓ | ✓ | ✓ |
+| Production: read non-sensitive data, trigger syncs | ✓ | ✓ | — |
+| Production: view API keys & credentials, write, delete | ✓ | — | — |
+| Manage team, billing, environments | ✓ | — | — |
 
-**Full Access is the default role** for just-in-time (JIT) provisioning when using SSO. When inviting members manually, you choose their role during the invitation flow.
-
-<Note>
-At least one Full Access member is required per account.
-</Note>
-
-### Permissions
-
-| | **Full Access** | **Support** | **Contributor** |
-| - | - | - | - |
-| Non-production: read (integrations, connections, syncs, logs) | ✓ | ✓ | ✓ |
-| Non-production: write / delete | ✓ | ✓ | ✓ |
-| Production: read (integrations, connections, syncs, logs) | ✓ | ✓ | — |
-| Production: trigger syncs | ✓ | ✓ | — |
-| Production: write / delete | ✓ | — | — |
-| Production: view API key | ✓ | — | — |
-| Production: view integration credentials | ✓ | — | — |
-| Production: view connection credentials | ✓ | — | — |
-| Invite / update / remove team members | ✓ | — | — |
-| Manage billing & plan | ✓ | — | — |
-| Configure Connect UI | ✓ | — | — |
-| Create environments / toggle production flag | ✓ | — | — |
-
-<Note>
-All environments appear in the dashboard switcher regardless of role, but access is enforced server-side — users are blocked from entering environments their role does not permit. Permissions cannot be bypassed by manipulating URLs or API parameters.
-</Note>
-
-### Production environment flag
-
-Whether an environment is considered production is configured in **Environment Settings → General**. The production status of the current environment is also visible in the environment dropdown at the top left of the dashboard.
-
-The flag can be set on any environment regardless of its name — not just `prod`. This lets you protect environments like `prod-eu`, `production`, or `live` the same way.
-
-Only **Full Access** members can toggle this flag. Once set, Support members get read-only access (without sensitive credentials) and Contributor members lose access entirely.
+**Full Access** is the default for just-in-time provisioning via SSO, and every account needs at least one. Manual invitations let you pick the role.
 
 <Info>
-The production flag currently governs role-based access. In the future it may also control additional environment traits to differentiate production-grade environments from development or staging ones.
-</Info>
-
-<Info>
-These roles apply to dashboard access only. They do not affect API authentication — any caller with a valid API key retains full API access regardless of their dashboard role.
+Roles apply to the dashboard only. They do not affect API authentication: any caller with a valid API key retains the access that key grants.
 </Info>
 
 <a id="sso"></a>
-## Single sign-on (SSO)
+### Single sign-on (SSO)
 
-Nango Cloud uses [WorkOS](https://workos.com) to power SSO.
-
-### Availability
+Nango Cloud uses [WorkOS](https://workos.com) for SAML SSO, supporting **Okta**, **Entra ID**, **OneLogin**, and 20+ other identity providers.
 
 | Plan | SSO support |
 | - | - |
 | Free / Pay-as-you-go | Google SSO only |
-| Growth add-on | SAML SSO with 20+ identity providers |
+| Growth add-on | SAML SSO |
 | Enterprise (Cloud) | SAML SSO + SCIM |
 | Enterprise (Self-hosted) | Not yet available (planned) |
 
-### Supported providers
+<Note>
+Nango has no SSO button on the login page — login must be initiated from your identity provider.
+</Note>
 
-Through WorkOS, Nango supports the main SSO providers, including **Okta**, **Entra ID**, **OneLogin** and 20+ other identity providers.
+<a id="ip-allowlist"></a>
+## Network access
 
-### How to enable SSO
+<a id="when-is-ip-allowlisting-required"></a>
+Allowlisting is only needed when **your customers' systems** restrict inbound traffic — private APIs behind a firewall, or systems that only accept approved IPs. Publicly accessible systems need no configuration.
 
-1. To enable SSO for your account, contact the Nango team (on our shared Slack channel or the [community](https://nango.dev/slack)).
-2. If you are on Pay-as-you-go, we will subscribe your workspace to the Growth add-on, which includes SAML SSO.
-3. We will invite an admin from your company to complete the SSO setup flow.
-
-### Setup flow
-
-During setup, your company admin can configure the **domains allowed to sign in**. User accounts are created automatically through just-in-time (JIT) provisioning.
-
-### How users log in
-
-Once SSO is configured, users sign in through your company's identity provider (IdP). Nango currently does not provide a dedicated SSO button on the login page — login must be initiated from the IdP side.
-
-## IP Allowlist
-
-Some integrations require network-level access controls that only allow inbound traffic from known IP addresses.
-This page lists the **public IP addresses used by Nango services** when making outbound requests.
-
-### When is IP allowlisting required?
-
-IP allowlisting is only required if **your customers' systems** restrict inbound network traffic.
-
-Common examples include:
-- Private or self-hosted APIs behind a firewall
-- Enterprise systems that only accept traffic from approved IPs
-- Third-party services with IP-based access controls
-
-If a system is publicly accessible without IP restrictions, **no allowlist configuration is needed**.
-
-### Nango public IP addresses
-
-Allowlist the following IP addresses to permit inbound traffic from Nango:
+Nango makes outbound requests from these public IP addresses:
 
 - `52.34.139.153`
 - `54.69.127.183`
 - `44.247.133.183`
 - `52.26.211.56`
 
-### IP address changes
+<Warning>
+These IPs may change as we scale. Allowlist all of them and review this page periodically; we will make reasonable efforts to announce breaking changes in advance.
+</Warning>
 
-While we aim to keep IP addresses stable, they **may change over time** as we scale or improve reliability.
+## Vulnerability disclosure
 
-To minimize disruption:
-- Ensure all listed IPs are allowlisted
-- Periodically review this page for updates
-
-We will make reasonable efforts to communicate breaking changes in advance.
-
-## API Key Scoping
-
-Nango supports scoped API keys, allowing you to follow the principle of least privilege when granting programmatic access to your environments. Each API key can be restricted to specific operations — for example, a CI/CD pipeline key that can only deploy, or a backend service key that can read connections but not manage integrations.
-
-For details on available scopes, advised profiles, and key management, see the [API Keys reference](/reference/backend/http-api/api-keys).
-
-<Tip>
-**Questions about security?** Please reach out in the [Slack community](https://nango.dev/slack) or contact security@nango.dev.
-</Tip>
+Security researchers can submit findings by following our [security policy](https://nango.dev/security). We appreciate responsible disclosures!
 
 ## Related guides
 
@@ -15251,12 +15079,14 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `aircall` | Aircall (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/aircall.md) |  |  | support |
 | `aircall-basic` | Aircall (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/aircall-basic.md) | [connect](https://nango.dev/docs/integrations/all/aircall-basic/connect.md) |  | support |
 | `airtable` | Airtable | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/airtable.md) |  | [setup](https://nango.dev/docs/api-integrations/airtable/how-to-register-your-own-airtable-api-oauth-app.md) | popular, productivity |
+| `airtable-mcp` | Airtable (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/airtable-mcp.md) |  |  | productivity, mcp |
 | `airtable-pat` | Airtable (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/airtable-pat.md) | [connect](https://nango.dev/docs/integrations/all/airtable-pat/connect.md) |  | productivity |
 | `algolia` | Algolia | API_KEY | [docs](https://nango.dev/docs/integrations/all/algolia.md) | [connect](https://nango.dev/docs/integrations/all/algolia/connect.md) |  | search |
 | `altrata` | Altrata | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/altrata.md) | [connect](https://nango.dev/docs/api-integrations/altrata/connect.md) |  | analytics |
 | `amazon` | Amazon | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/amazon.md) |  | [setup](https://nango.dev/docs/api-integrations/amazon/how-to-register-your-own-amazon-api-oauth-app.md) | dev-tools, e-commerce |
 | `amazon-selling-partner` | Amazon Selling Partner | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/amazon-selling-partner.md) | [connect](https://nango.dev/docs/api-integrations/amazon-selling-partner/connect.md) | [setup](https://nango.dev/docs/api-integrations/amazon-selling-partner/how-to-register-your-own-amazon-selling-partner-api-oauth-app.md) | dev-tools, e-commerce |
 | `amazon-selling-partner-beta` | Amazon Selling Partner (Beta) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/amazon-selling-partner-beta.md) | [connect](https://nango.dev/docs/api-integrations/amazon-selling-partner-beta/connect.md) | [setup](https://nango.dev/docs/api-integrations/amazon-selling-partner-beta/how-to-register-your-own-amazon-selling-partner-beta-api-oauth-app.md) | dev-tools, e-commerce |
+| `amplemarket` | Amplemarket | API_KEY | [docs](https://nango.dev/docs/api-integrations/amplemarket.md) | [connect](https://nango.dev/docs/api-integrations/amplemarket/connect.md) |  | marketing |
 | `amplitude` | Amplitude (Event Streaming API) | BASIC | [docs](https://nango.dev/docs/api-integrations/amplitude.md) | [connect](https://nango.dev/docs/api-integrations/amplitude/connect.md) |  | analytics |
 | `amplitude-mcp` | Amplitude (MCP US) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/amplitude-mcp.md) |  |  | analytics, mcp |
 | `amplitude-mcp-eu` | Amplitude (MCP EU) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/amplitude-mcp-eu.md) |  |  | analytics, mcp |
@@ -15474,7 +15304,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `ecu360-production` | ECU360 (Production) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/ecu360-production.md) | [connect](https://nango.dev/docs/api-integrations/ecu360-production/connect.md) |  | other |
 | `egnyte` | Egnyte | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/egnyte.md) |  |  | storage |
 | `elevenlabs` | Eleven Labs | API_KEY | [docs](https://nango.dev/docs/integrations/all/elevenlabs.md) |  |  | dev-tools |
-| `elevio` | Elevio | API_KEY | [docs](https://nango.dev/docs/integrations/all/elevio.md) |  |  | knowledge-base, support |
+| `elevio` | Elevio | API_KEY | [docs](https://nango.dev/docs/api-integrations/elevio.md) | [connect](https://nango.dev/docs/api-integrations/elevio/connect.md) |  | knowledge-base, support |
 | `emarsys` | Emarsys Core API (WSSE) | SIGNATURE | [docs](https://nango.dev/docs/integrations/all/emarsys.md) |  |  | marketing |
 | `emarsys-oauth` | Emarsys (OAuth) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/emarsys-oauth.md) | [connect](https://nango.dev/docs/integrations/all/emarsys-oauth/connect.md) |  | marketing |
 | `embat` | Embat | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/embat.md) | [connect](https://nango.dev/docs/api-integrations/embat/connect.md) |  | accounting, banking |
@@ -15501,7 +15331,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `fairing` | Fairing | API_KEY | [docs](https://nango.dev/docs/integrations/all/fairing.md) | [connect](https://nango.dev/docs/integrations/all/fairing/connect.md) |  | marketing, analytics |
 | `falai` | fal.ai | API_KEY | [docs](https://nango.dev/docs/integrations/all/falai.md) |  |  | productivity, dev-tools |
 | `fanvue` | Fanvue | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/fanvue.md) |  | [setup](https://nango.dev/docs/api-integrations/fanvue/how-to-register-your-own-fanvue-oauth-app.md) | other |
-| `fathom` | Fathom | API_KEY | [docs](https://nango.dev/docs/integrations/all/fathom.md) | [connect](https://nango.dev/docs/integrations/all/fathom/connect.md) |  | communication, video |
+| `fathom` | Fathom | API_KEY | [docs](https://nango.dev/docs/api-integrations/fathom.md) | [connect](https://nango.dev/docs/api-integrations/fathom/connect.md) |  | communication, video |
 | `fathom-oauth` | Fathom (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/fathom-oauth.md) |  | [setup](https://nango.dev/docs/api-integrations/fathom-oauth/how-to-register-your-own-fathom-oauth-app.md) | communication, video |
 | `fellow` | Fellow | API_KEY | [docs](https://nango.dev/docs/api-integrations/fellow.md) | [connect](https://nango.dev/docs/api-integrations/fellow/connect.md) |  | productivity |
 | `fern` | Fern (Public API) | API_KEY | [docs](https://nango.dev/docs/api-integrations/fern.md) | [connect](https://nango.dev/docs/api-integrations/fern/connect.md) |  | dev-tools |
@@ -15555,8 +15385,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `glean` | Glean | API_KEY | [docs](https://nango.dev/docs/api-integrations/glean.md) | [connect](https://nango.dev/docs/api-integrations/glean/connect.md) |  | knowledge-base, productivity |
 | `glean-oauth` | Glean (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/glean-oauth.md) | [connect](https://nango.dev/docs/api-integrations/glean-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/glean-oauth/how-to-register-your-own-glean-oauth-app.md) | knowledge-base, productivity |
 | `glyphic` | Glyphic | API_KEY | [docs](https://nango.dev/docs/api-integrations/glyphic.md) | [connect](https://nango.dev/docs/api-integrations/glyphic/connect.md) |  | communication |
-| `gong` | Gong (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/gong.md) | [connect](https://nango.dev/docs/integrations/all/gong/connect.md) |  | communication, marketing, productivity, video |
-| `gong-oauth` | Gong (Oauth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gong-oauth.md) |  |  | communication, marketing, productivity, video, popular |
+| `gong` | Gong (Basic Auth) | BASIC | [docs](https://nango.dev/docs/api-integrations/gong.md) | [connect](https://nango.dev/docs/api-integrations/gong/connect.md) |  | communication, marketing, productivity, video |
+| `gong-oauth` | Gong (Oauth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/gong-oauth.md) |  | [setup](https://nango.dev/docs/api-integrations/gong-oauth/how-to-register-your-own-gong-oauth-api-oauth-app.md) | communication, marketing, productivity, video, popular |
 | `google` | Google | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google.md) |  | [setup](https://nango.dev/docs/api-integrations/google/how-to-register-your-own-google-api-oauth-app.md) | communication, dev-tools, productivity, social |
 | `google-ads` | Google Ads | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-ads.md) | [connect](https://nango.dev/docs/api-integrations/google-ads/connect.md) | [setup](https://nango.dev/docs/api-integrations/google-ads/how-to-register-your-own-google-ads-api-oauth-app.md) | marketing |
 | `google-analytics` | Google Analytics | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-analytics.md) |  | [setup](https://nango.dev/docs/api-integrations/google-analytics/how-to-register-your-own-google-analytics-api-oauth-app.md) | analytics |
@@ -15699,6 +15529,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `linkhut` | LinkHut | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/linkhut.md) |  |  | social |
 | `listmonk` | Listmonk | BASIC | [docs](https://nango.dev/docs/integrations/all/listmonk.md) |  |  | marketing |
 | `listrak` | Listrak | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/listrak.md) | [connect](https://nango.dev/docs/api-integrations/listrak/connect.md) |  | marketing |
+| `liveswitch` | LiveSwitch | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/liveswitch.md) |  | [setup](https://nango.dev/docs/api-integrations/liveswitch/how-to-register-your-own-liveswitch-api-oauth-app.md) | communication |
 | `livetennisapi` | Live Tennis API | API_KEY | [docs](https://nango.dev/docs/api-integrations/livetennisapi.md) | [connect](https://nango.dev/docs/api-integrations/livetennisapi/connect.md) |  | sports |
 | `lob` | Lob | BASIC | [docs](https://nango.dev/docs/api-integrations/lob.md) | [connect](https://nango.dev/docs/api-integrations/lob/connect.md) |  | marketing |
 | `lokalise` | Lokalise | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/lokalise.md) |  | [setup](https://nango.dev/docs/api-integrations/lokalise/how-to-register-your-own-lokalise-oauth-app.md) | productivity |
@@ -15769,6 +15600,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `mollie` | Mollie | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/mollie.md) |  | [setup](https://nango.dev/docs/api-integrations/mollie/how-to-register-your-own-mollie-oauth-app.md) | payment |
 | `momentum-io` | Momentum.io | API_KEY | [docs](https://nango.dev/docs/integrations/all/momentum-io.md) | [connect](https://nango.dev/docs/integrations/all/momentum-io/connect.md) |  | productivity |
 | `monday` | Monday | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/monday.md) |  | [setup](https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app.md) | productivity, ticketing |
+| `moneybird` | Moneybird | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/moneybird.md) |  | [setup](https://nango.dev/docs/api-integrations/moneybird/how-to-register-your-own-moneybird-oauth-app.md) | accounting, invoicing |
 | `mural` | Mural | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/mural.md) |  |  | design |
 | `myob` | MYOB | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/myob.md) |  | [setup](https://nango.dev/docs/api-integrations/myob/how-to-register-your-own-myob-api-oauth-app.md) | accounting |
 | `n8n` | n8n | API_KEY | [docs](https://nango.dev/docs/api-integrations/n8n.md) | [connect](https://nango.dev/docs/api-integrations/n8n/connect.md) |  | productivity, dev-tools |
@@ -15823,6 +15655,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `ory` | Ory | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/ory.md) |  |  | iam |
 | `osu` | Osu | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/osu.md) |  |  | gaming |
 | `oura` | Oura | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/oura.md) |  |  | sports |
+| `outline` | Outline | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/outline.md) |  | [setup](https://nango.dev/docs/api-integrations/outline/how-to-register-your-own-outline-api-oauth-app.md) | knowledge-base |
 | `outlook` | Outlook | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/outlook.md) |  | [setup](https://nango.dev/docs/api-integrations/outlook/how-to-register-your-own-outlook-api-oauth-app.md) | communication, popular |
 | `outreach` | Outreach | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/outreach.md) |  |  | marketing |
 | `paddle` | Paddle | API_KEY | [docs](https://nango.dev/docs/api-integrations/paddle.md) | [connect](https://nango.dev/docs/api-integrations/paddle/connect.md) | [setup](https://nango.dev/docs/api-integrations/paddle/connect.md) | payment |
@@ -16111,7 +15944,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `twitter` | Twitter (v1) | OAUTH1 | [docs](https://nango.dev/docs/integrations/all/twitter.md) |  |  | marketing, social |
 | `twitter-oauth2-cc` | Twitter (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/twitter-oauth2-cc.md) |  |  | marketing, social |
 | `twitter-v2` | Twitter (v2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/twitter-v2.md) |  | [setup](https://nango.dev/docs/api-integrations/twitter-v2/how-to-register-your-own-twitter-v2-api-oauth-app.md) | marketing, social |
-| `typeform` | Typeform | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/typeform.md) |  |  | surveys |
+| `typeform` | Typeform | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/typeform.md) | [connect](https://nango.dev/docs/api-integrations/typeform/connect.md) | [setup](https://nango.dev/docs/api-integrations/typeform/how-to-register-your-own-typeform-api-oauth-app.md) | surveys |
 | `typefully` | Typefully | API_KEY | [docs](https://nango.dev/docs/integrations/all/typefully.md) |  |  | analytics, communication, social |
 | `typefully-v2` | Typefully (API v2) | API_KEY | [docs](https://nango.dev/docs/api-integrations/typefully-v2.md) | [connect](https://nango.dev/docs/api-integrations/typefully-v2/connect.md) |  | analytics, communication, social |
 | `uber` | Uber | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/uber.md) |  |  | other |
