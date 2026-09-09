@@ -36,7 +36,10 @@ interface UsageTableProps {
     /** The legacy meters, listed below the toggle. They keep the comparison grid so both tables line
      *  up, but no legacy meter is priced on Pay-as-you-go, so that column stays empty. */
     legacy?: boolean;
-    extraColumnTooltip?: string;
+    /** Beside the current plan's column header. */
+    currentPlanTooltip?: string;
+    /** Beside the Pay-as-you-go column header. */
+    projectedTooltip?: string;
 }
 
 /** The two right-hand column headers, which differ by variant. */
@@ -69,7 +72,8 @@ export const UsageTable: React.FC<UsageTableProps> = ({
     onRowOpenChange,
     currentPlanTitle,
     legacy,
-    extraColumnTooltip
+    currentPlanTooltip,
+    projectedTooltip
 }) => {
     const { thisPeriod, rightmost, extra } = usageColumnHeaders(variant, currentPlanTitle);
     return (
@@ -77,13 +81,20 @@ export const UsageTable: React.FC<UsageTableProps> = ({
             <div className={cn(usageRowGrid(variant), 'bg-surface-panel py-3 border-b border-border-default text-text-secondary type-label-xxs uppercase')}>
                 <span>{legacy ? 'Legacy metric' : 'Metric'}</span>
                 <span>{thisPeriod}</span>
-                <span>{rightmost}</span>
+                <span className="flex items-center gap-1.5">
+                    {rightmost}
+                    {currentPlanTooltip && (
+                        <InfoTooltip side="top" align="start">
+                            {currentPlanTooltip}
+                        </InfoTooltip>
+                    )}
+                </span>
                 {extra && (
                     <span className="flex items-center gap-1.5">
                         {!legacy && extra}
-                        {!legacy && extraColumnTooltip && (
+                        {!legacy && projectedTooltip && (
                             <InfoTooltip side="top" align="end">
-                                {extraColumnTooltip}
+                                {projectedTooltip}
                             </InfoTooltip>
                         )}
                     </span>

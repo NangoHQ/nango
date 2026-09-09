@@ -147,7 +147,8 @@ export const Usage: React.FC = () => {
                 variant={isMigrating ? 'comparison' : charges ? 'charges' : 'usage'}
                 charges={charges}
                 currentPlanTitle={transition?.fromTitle}
-                extraColumnTooltip={isMigrating ? 'Estimated amount based on new rates.' : undefined}
+                currentPlanTooltip={transition ? `Plan active until ${transition.at}.` : undefined}
+                projectedTooltip={isMigrating ? 'Estimated amount based on new rates.' : undefined}
             />
 
             {isMigrating && (
