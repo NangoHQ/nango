@@ -96,13 +96,13 @@ interface OrbCostBucket {
 }
 
 /**
- * A plan minimum raises `total` above `subtotal`, spreading itself across unused prices too.
- * A discount lowers it. The lower figure is what the metric earned in both cases.
+ * A plan minimum spreads itself over every price, pushing `total` above `subtotal`.
+ * A discount pulls it below. Either way, the lower number is what the customer is billed.
  */
 function chargeInCents(priceCost: { subtotal: string; total?: string | null }): number | null {
     const subtotal = orbAmountToCents(priceCost.subtotal);
-    // An absent `total` carries no adjustment to read, so the subtotal is the whole charge. An
-    // unparseable one does carry an adjustment, and reading past it would overstate the charge.
+    // No `total` at all means there is no adjustment, so `subtotal` is the whole charge. A `total`
+    // we cannot parse hides a real adjustment, so falling back would overstate what is owed.
     if (priceCost.total === undefined || priceCost.total === null) {
         return subtotal;
     }
