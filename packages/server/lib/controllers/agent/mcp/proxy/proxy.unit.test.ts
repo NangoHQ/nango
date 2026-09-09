@@ -2,10 +2,12 @@ import { Readable } from 'node:stream';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import proxyService, { ProxyServiceError } from '../../../../services/proxy.service.js';
 import { egressTelemetryRecorder } from '../../../../utils/egressTelemetry.js';
+import { PublicMcpError } from '../../../mcp/utils.js';
 import { buildSessionTools } from '../sessionServer.js';
 import { proxyTool } from './proxy.js';
 
@@ -76,6 +78,11 @@ function errorOf(result: Result<unknown>): Error {
     return result.error;
 }
 
+function codeOf(result: Result<unknown>): string | undefined {
+    const error = errorOf(result);
+    return error instanceof PublicMcpError ? error.code : undefined;
+}
+
 describe('proxyTool', () => {
     beforeEach(() => {
         vi.spyOn(egressTelemetryRecorder, 'record').mockImplementation(vi.fn());
@@ -134,7 +141,8 @@ describe('proxyTool', () => {
 
         const result = await callProxy({ integration: 'github', method: 'GET', path: '/user' });
 
-        expect(errorOf(result).message).toBe("Integration 'github' is not one of this session's integrations.");
+        expect(errorOf(result).message).toBe("Integration 'github' is not one of this session's integrations. Use one this session has.");
+        expect(codeOf(result)).toBe('unknown_integration');
         expect(request).not.toHaveBeenCalled();
     });
 
@@ -143,7 +151,10 @@ describe('proxyTool', () => {
 
         const result = await callProxy({ integration: 'slack', method: 'GET', path: '/api/auth.test' });
 
-        expect(errorOf(result).message).toBe("Integration 'slack' has no connection in this session.");
+        expect(errorOf(result).message).toBe(
+            "Integration 'slack' has no connection in this session, so no request to it can be authenticated. Tell the user it is not connected."
+        );
+        expect(codeOf(result)).toBe('integration_not_connected');
         expect(request).not.toHaveBeenCalled();
     });
 
@@ -152,7 +163,32 @@ describe('proxyTool', () => {
             result: Err(new ProxyServiceError({ code: 'connection_not_found', message: 'Connection not found', status: 404 }))
         });
 
-        expect(errorOf(await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1' })).message).toBe('Connection not found');
+        const result = await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
+
+        expect(errorOf(result).message).toBe(
+            "Connection not found. No request to 'notion' can be authenticated until then, so tell the user it needs to be reconnected."
+        );
+        expect(codeOf(result)).toBe('integration_not_connected');
+    });
+
+    it('tells the agent to wait when the provider itself refused the credential refresh', async () => {
+        vi.spyOn(proxyService, 'request').mockResolvedValue({
+            result: Err(
+                new ProxyServiceError({
+                    code: 'credentials_refresh_failed',
+                    message:
+                        "Failed to get connection credentials: 'The external API returned an error when trying to refresh the access token. Please try again later.'",
+                    status: 400,
+                    cause: new NangoError('refresh_token_external_error')
+                })
+            )
+        });
+
+        const result = await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
+
+        expect(codeOf(result)).toBe('temporarily_unavailable');
+        expect(errorOf(result).message).toContain('Try the call again in a moment');
+        expect(errorOf(result).message).not.toContain('reconnected');
     });
 
     it.each([
@@ -166,6 +202,7 @@ describe('proxyTool', () => {
         const result = await callProxy({ integration: 'notion', method, path, ...extra });
 
         expect(errorOf(result).message).toContain(expected);
+        expect(codeOf(result)).toBe('invalid_input');
         expect(request).not.toHaveBeenCalled();
     });
 
@@ -175,6 +212,7 @@ describe('proxyTool', () => {
         const result = await callProxy({ integration: 'notion', method: 'GET', path: '/v1/pages/1', headers: { [header]: 'attacker' } });
 
         expect(errorOf(result).message).toContain(`cannot be passed: ${header}`);
+        expect(codeOf(result)).toBe('invalid_input');
         expect(request).not.toHaveBeenCalled();
     });
 

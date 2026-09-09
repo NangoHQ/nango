@@ -33,7 +33,7 @@ export const executeTool = defineAgentSessionMcpTool({
 
         const tool = callable.get(args.tool);
         if (!tool) {
-            return Err(new PublicMcpError(unknownToolMessage(args.tool, session)));
+            return Err(new PublicMcpError(unknownToolMessage(args.tool, session), { code: 'tool_not_in_session' }));
         }
 
         return await executeSessionTool({ integrationId: tool.integrationId, toolName: tool.name, input: args.input, context });
@@ -68,17 +68,35 @@ export async function executeSessionTool({
 
     const integration = Object.hasOwn(session.compiledToolset, integrationId) ? session.compiledToolset[integrationId] : undefined;
     if (!integration) {
-        return Err(new PublicMcpError(`Integration '${integrationId}' is not one of this session's integrations.`));
+        return Err(
+            new PublicMcpError(`Integration '${integrationId}' is not one of this session's integrations. Use one this session has.`, {
+                code: 'unknown_integration',
+                integrationId
+            })
+        );
     }
 
     const isInToolset = [...integration.pinned, ...integration.searchable].some((tool) => tool.name === toolName);
     if (!isInToolset) {
-        return Err(new PublicMcpError(`Tool '${toolName}' is not in this session's toolset for integration '${integrationId}'.`));
+        return Err(
+            new PublicMcpError(
+                `Tool '${toolName}' is not in this session's toolset for integration '${integrationId}'. Use one of the session's own tools instead.`,
+                {
+                    code: 'tool_not_in_session',
+                    integrationId
+                }
+            )
+        );
     }
 
     const connection = Object.hasOwn(session.resolvedConnections, integrationId) ? session.resolvedConnections[integrationId] : undefined;
     if (!connection) {
-        return Err(new PublicMcpError(`Integration '${integrationId}' has no connection in this session.`));
+        return Err(
+            new PublicMcpError(
+                `Integration '${integrationId}' has no connection in this session, so none of its tools can run. Tell the user it is not connected.`,
+                { code: 'integration_not_connected', integrationId }
+            )
+        );
     }
 
     return await tracer.trace<Promise<Result<unknown>>>('server.mcp.agentSession.execute', async (span: Span) => {

@@ -1,13 +1,14 @@
 import tracer from 'dd-trace';
 
 import { getProvider } from '@nangohq/shared';
-import { Err } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
 import { executeMcpProxyRequest } from '../../../../services/mcpProxy.service.js';
 import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL } from '../../../../services/mcpProxyResponse.js';
 import { proxyRequestOutputSchema } from '../../../../services/mcpProxySchema.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { defineAgentSessionMcpTool } from '../sessionTool.js';
+import { proxyErrorToMcp } from './errors.js';
 import { rejectedHeaderNames } from './headers.js';
 import { proxyInputSchema } from './schema.js';
 
@@ -33,12 +34,22 @@ export const proxyTool = defineAgentSessionMcpTool({
         // Reaching an integration's API is gated on the session declaring it, so a toolset that
         // excluded an integration is not reachable through the escape hatch either.
         if (!Object.hasOwn(session.compiledToolset, integrationId)) {
-            return Err(new PublicMcpError(`Integration '${integrationId}' is not one of this session's integrations.`));
+            return Err(
+                new PublicMcpError(`Integration '${integrationId}' is not one of this session's integrations. Use one this session has.`, {
+                    code: 'unknown_integration',
+                    integrationId
+                })
+            );
         }
 
         const connection = Object.hasOwn(session.resolvedConnections, integrationId) ? session.resolvedConnections[integrationId] : undefined;
         if (!connection) {
-            return Err(new PublicMcpError(`Integration '${integrationId}' has no connection in this session.`));
+            return Err(
+                new PublicMcpError(
+                    `Integration '${integrationId}' has no connection in this session, so no request to it can be authenticated. Tell the user it is not connected.`,
+                    { code: 'integration_not_connected', integrationId }
+                )
+            );
         }
 
         // Which headers carry the credential depends on the provider, so this is checked here
@@ -47,7 +58,8 @@ export const proxyTool = defineAgentSessionMcpTool({
         if (rejectedHeaders.length > 0) {
             return Err(
                 new PublicMcpError(
-                    `Nango sets these headers itself, so they cannot be passed: ${rejectedHeaders.join(', ')}. The request is authenticated with the session's connection.`
+                    `Nango sets these headers itself, so they cannot be passed: ${rejectedHeaders.join(', ')}. The request is authenticated with the session's connection, so drop those headers and call again.`,
+                    { code: 'invalid_input', integrationId }
                 )
             );
         }
@@ -75,9 +87,10 @@ export const proxyTool = defineAgentSessionMcpTool({
 
             if (result.isErr()) {
                 span.setTag('nango.error', result.error);
+                return Err(proxyErrorToMcp({ error: result.error, integrationId }));
             }
 
-            return result;
+            return Ok(result.value);
         });
     }
 });

@@ -1,7 +1,10 @@
+import { Err, Ok } from '@nangohq/utils';
+
 import { executeMcpProxyRequest } from '../../../services/mcpProxy.service.js';
 import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL } from '../../../services/mcpProxyResponse.js';
 import { proxyRequestOutputSchema } from '../../../services/mcpProxySchema.js';
 import { defineManagementMcpTool } from '../managementTool.js';
+import { proxyRequestErrorToMcp } from './errors.js';
 import { proxyRequestInputSchema } from './schema.js';
 
 import type { ProxyRequestOutput } from '../../../services/mcpProxySchema.js';
@@ -21,7 +24,7 @@ export const proxyRequestTool: ManagementMcpTool<ProxyRequestOutput> = defineMan
         openWorldHint: true
     },
     async handler({ args, account, environment, plan }) {
-        return await executeMcpProxyRequest({
+        const result = await executeMcpProxyRequest({
             account,
             environment,
             plan,
@@ -38,5 +41,7 @@ export const proxyRequestTool: ManagementMcpTool<ProxyRequestOutput> = defineMan
             retryOn: args.retry_on,
             forwardHeadersOnRedirect: args.forward_headers_on_redirect
         });
+
+        return result.isErr() ? Err(proxyRequestErrorToMcp(result.error)) : Ok(result.value);
     }
 });
