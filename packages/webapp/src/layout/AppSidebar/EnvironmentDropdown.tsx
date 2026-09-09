@@ -5,7 +5,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Badge, Button } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
-import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar.js';
@@ -110,27 +109,25 @@ export const EnvironmentDropdown: React.FC = () => {
                                 </PermissionGate>
                             ))}
                         </div>
-                        <div className="border-t-[0.5px] border-border-muted p-2 [&_button]:w-full">
+                        <div className="border-t-[0.5px] border-border-muted p-2">
                             <PermissionGate condition={canCreateEnvironment} tooltipSide="right">
                                 {(allowed) => (
-                                    <ConditionalTooltip
-                                        condition={!!isMaxEnvironmentsReached}
-                                        content={
-                                            <>
-                                                Max number of environments reached.{' '}
+                                    <div className="flex flex-col gap-2">
+                                        {allowed && isMaxEnvironmentsReached && (
+                                            <p className="text-body-small-regular text-text-secondary">
+                                                Maximum number of environments reached.{' '}
                                                 {plan?.name.includes('legacy') ? (
-                                                    <>Contact Nango to add more</>
+                                                    <>Contact Nango to add more.</>
                                                 ) : (
                                                     <>
-                                                        <Button asChild variant="link-accent" size="sm">
-                                                            <Link to={`/team/billing`}>Upgrade</Link>
+                                                        <Button asChild variant="link-accent" size="xs">
+                                                            <Link to="/team/billing#plans">Upgrade</Link>
                                                         </Button>{' '}
-                                                        to add more
+                                                        to add more.
                                                     </>
                                                 )}
-                                            </>
-                                        }
-                                    >
+                                            </p>
+                                        )}
                                         <Button
                                             disabled={!!isMaxEnvironmentsReached || !allowed}
                                             variant="primary"
@@ -142,7 +139,7 @@ export const EnvironmentDropdown: React.FC = () => {
                                             {!!isMaxEnvironmentsReached && <Lock />}
                                             Create environment
                                         </Button>
-                                    </ConditionalTooltip>
+                                    </div>
                                 )}
                             </PermissionGate>
                         </div>

@@ -9,6 +9,7 @@ import { useSWRConfig } from 'swr';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 import Nango, { AuthError } from '@nangohq/frontend';
 
+import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { SecretInput } from '@/components/patterns/SecretInput';
 import { ScopesInput } from '../../components/patterns/ScopesInput';
 import { useEnvironment } from '../../hooks/useEnvironment';
@@ -870,19 +871,12 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
                                                 <HelpCircle className="h-5 ml-1 text-text-muted" />
                                             </TooltipTrigger>
-                                            <TooltipContent>
-                                                <span>Some integrations require extra configuration (cf. </span>
-                                                <a
-                                                    href="https://nango.dev/docs/guides/auth/customize-connect-ui#handle-apis-requiring-connection-specific-configuration-for-authorization"
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="text-text-link hover:text-text-link"
-                                                >
-                                                    docs
-                                                </a>
-                                                <span>).</span>
-                                            </TooltipContent>
+                                            <TooltipContent>Some integrations require extra configuration.</TooltipContent>
                                         </Tooltip>
+                                        <DocsIconLink
+                                            href="https://nango.dev/docs/guides/auth/customize-connect-ui#handle-apis-requiring-connection-specific-configuration-for-authorization"
+                                            label="Connection-specific configuration documentation"
+                                        />
                                     </div>
                                     <div className="mt-1">
                                         <input
