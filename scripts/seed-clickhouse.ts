@@ -122,7 +122,8 @@ function parseArgs() {
 /** Live Postgres counts the caps gauge uses for the AVG metrics (connections, records). */
 async function getDbCounts(accountId: number): Promise<{ connections: number; records: number }> {
     const connections = await connectionService.countByAccountId(accountId);
-    const envs = await environmentService.getEnvironmentsByAccountId(accountId);
+    const environments = await environmentService.getEnvironmentsByAccountId(accountId);
+    const envs = environments.isOk() ? environments.value : [];
     const environmentIds = envs.map((e) => e.id);
     let recordCount = 0;
     if (environmentIds.length > 0) {

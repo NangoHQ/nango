@@ -96,7 +96,8 @@ export async function exec(): Promise<void> {
         for (const plan of plansToPause) {
             logger.info('Trial over for account', plan.account_id);
 
-            const envs = await environmentService.getEnvironmentsByAccountId(plan.account_id);
+            const environments = await environmentService.getEnvironmentsByAccountId(plan.account_id);
+            const envs = environments.isOk() ? environments.value : [];
 
             for (const env of envs) {
                 const syncs = await getSyncsByEnvironmentId(env.id);
