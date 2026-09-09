@@ -66,12 +66,21 @@ export const getProjectedCosts = asyncWrapper<GetProjectedCosts>(async (req, res
         return;
     }
 
-    const timeframe = query.from && query.to ? { start: new Date(query.from), end: new Date(query.to) } : null;
+    // Named explicitly when the caller gives no window: the fallback walks counter metrics only,
+    // and `connections` is not one, so it would be projected as zero.
+    const now = new Date();
+    const timeframe =
+        query.from && query.to
+            ? { start: new Date(query.from), end: new Date(query.to) }
+            : {
+                  start: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)),
+                  end: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1))
+              };
 
     // The same opts the usage table requests, so charge ÷ displayed quantity equals the rate.
     const usage = await usageTracker.getBillingUsage('', account.id, {
         granularity: 'day',
-        ...(timeframe ? { timeframe } : {}),
+        timeframe,
         metrics: [...PAY_AS_YOU_GO_METRICS],
         avgPerDay: true
     });
@@ -99,7 +108,7 @@ export const getProjectedCosts = asyncWrapper<GetProjectedCosts>(async (req, res
         return;
     }
 
-    const periodComplete = timeframe !== null && timeframe.end <= new Date();
+    const periodComplete = timeframe.end <= now;
 
     res.status(200).send({
         data: {

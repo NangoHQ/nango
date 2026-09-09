@@ -78,7 +78,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
     const figures = showLimits && limit != null ? formatMetricPair(metric, usage, limit) : { usage: formatMetricUsage(metric, usage), limit: null };
     const exactFigure = formatMetricUsageExact(metric, usage) + (figures.limit != null ? ` / ${figures.limit}` : '');
     // The charge and usage queries resolve independently.
-    const isPending = variant === 'charges' ? charge?.pending : capsLoading;
+    const isPending = variant === 'charges' || variant === 'comparison' ? charge?.pending : capsLoading;
 
     return (
         <Collapsible open={open} onOpenChange={onOpenChange} className="border-b border-border-muted last:border-b-0 data-[state=open]:bg-surface-panel">
@@ -106,9 +106,12 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                         <div />
                     )}
                     {/* Dash = the plan has no price for this meter. Blank = the row states nothing. */}
-                    {variant === 'comparison' && (
-                        <div className="text-text-default type-text-regular-sm">{currentPlanCharge ? (currentPlanCharge.formatted ?? '—') : ''}</div>
-                    )}
+                    {variant === 'comparison' &&
+                        (currentPlanCharge?.pending ? (
+                            <Skeleton className="h-4 w-12" />
+                        ) : (
+                            <div className="text-text-default type-text-regular-sm">{currentPlanCharge ? (currentPlanCharge.formatted ?? '—') : ''}</div>
+                        ))}
                     {isPending ? (
                         <Skeleton className="h-4 w-12" />
                     ) : showLimits ? (

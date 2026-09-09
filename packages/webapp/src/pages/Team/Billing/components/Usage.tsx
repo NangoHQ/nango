@@ -123,7 +123,7 @@ export const Usage: React.FC = () => {
                   totalInCents: projected.data.totalInCents,
                   currency: projected.data.currency,
                   currentPlanTitle: transition.fromTitle,
-                  currentPlan: currentPlanTotals(periodCosts)
+                  currentPlan: currentPlanTotals(periodCosts, projected.data.currency)
               }
             : undefined;
 
@@ -199,9 +199,15 @@ export const Usage: React.FC = () => {
 /** Summed from the same Orb figures the rows show, so the column adds up. Null, not 0, when Orb
  *  has nothing to state — 0 would render $0.00 for an account that has no figures at all. */
 function currentPlanTotals(
-    periodCosts: GetBillingPeriodCosts['Success'] | undefined
+    periodCosts: GetBillingPeriodCosts['Success'] | undefined,
+    currency: string
 ): { usageInCents: number; fixedInCents: number; totalInCents: number } | null {
     if (!periodCosts || periodCosts.data.noCosts) {
+        return null;
+    }
+    // Both columns are formatted with the projection's currency, so a current plan billed in
+    // another one would print a fabricated figure. Withhold it rather than convert.
+    if (periodCosts.data.currency !== currency) {
         return null;
     }
     const { metrics, fixedInCents } = periodCosts.data;
