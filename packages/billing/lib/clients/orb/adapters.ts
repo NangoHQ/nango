@@ -20,8 +20,8 @@ import type Orb from 'orb-billing';
  * Orb money as an integer number of cents, read off the decimal string rather than via
  * `Number(x) * 100` — that is lossy, giving 1998.9999999999998 for '19.99' instead of 1999.
  */
-export function orbAmountToCents(amount: string): number | null {
-    const match = /^(-?)(\d+)(?:\.(\d*))?$/.exec(amount.trim());
+export function orbAmountToCents(amount: string | null | undefined): number | null {
+    const match = typeof amount === 'string' ? /^(-?)(\d+)(?:\.(\d*))?$/.exec(amount.trim()) : null;
     if (!match) {
         return null;
     }
@@ -90,8 +90,22 @@ interface OrbCostBucket {
     per_price_costs: {
         price_id: string;
         subtotal: string;
+        total?: string | null;
         price: { price_type: string; name: string; currency?: string | null; billable_metric?: { id: string } | null };
     }[];
+}
+
+/**
+ * A plan minimum raises `total` above `subtotal`, spreading itself across unused prices too.
+ * A discount lowers it. The lower figure is what the metric earned in both cases.
+ */
+function chargeInCents(priceCost: { subtotal: string; total?: string | null }): number | null {
+    const subtotal = orbAmountToCents(priceCost.subtotal);
+    const total = orbAmountToCents(priceCost.total);
+    if (subtotal === null || total === null) {
+        return subtotal ?? total;
+    }
+    return Math.min(subtotal, total);
 }
 
 export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, opts: { explicitTimeframe?: boolean } = {}): BillingPeriodCosts | null {
@@ -116,8 +130,7 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, 
 
     for (const priceCost of period.per_price_costs) {
         const { price } = priceCost;
-        // Orb spreads minimum charges and discounts across price totals. Read usage charges from `subtotal`.
-        const amountInCents = orbAmountToCents(priceCost.subtotal);
+        const amountInCents = chargeInCents(priceCost);
         const priceCurrency = normalizeIsoCurrency(price.currency);
 
         if (price.price_type === 'fixed_price') {
