@@ -72,6 +72,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: API keys](https://nango.dev/docs/reference/backend/http-api/api-keys.md): Manage Environment and Account API keys with scoped permissions for Nango.
 - [Backend: HTTP API: Authentication](https://nango.dev/docs/reference/backend/http-api/authentication.md)
 - [Backend: HTTP API: Rate limits](https://nango.dev/docs/reference/backend/http-api/rate-limits.md)
+- [Backend: HTTP API: Environments: List environments](https://nango.dev/docs/reference/backend/http-api/environments/list.md)
 - [Backend: HTTP API: Environments: Create an environment](https://nango.dev/docs/reference/backend/http-api/environments/create.md)
 - [Backend: HTTP API: Environments: Delete an environment](https://nango.dev/docs/reference/backend/http-api/environments/delete.md)
 - [Backend: HTTP API: Environments: Create an environment API key](https://nango.dev/docs/reference/backend/http-api/environments/create-api-key.md)

@@ -65,6 +65,7 @@ true satisfies [Exclude<ConcreteApiKeyScope, (typeof PUBLIC_ENVIRONMENT_SCOPES)[
  */
 export const PUBLIC_ACCOUNT_SCOPES = [
     // Environments
+    'account:environments:list',
     'account:environments:create', // any environment
     'account:environments:delete',
     'account:environments:set_production',

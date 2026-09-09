@@ -19,6 +19,16 @@ export type GetEnvironments = ApiEndpoint<{
     };
 }>;
 
+export type GetPublicEnvironments = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/environments';
+    Querystring: { name?: string | undefined };
+    Success: {
+        data: Pick<DBEnvironment, 'id' | 'uuid' | 'name' | 'is_production'>[];
+    };
+}>;
+
 export type PostEnvironment = ApiEndpoint<{
     Audit: AuditPolicy<'environment', 'created', 'account'>;
     Method: 'POST';

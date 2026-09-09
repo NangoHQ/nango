@@ -62,6 +62,7 @@ export type ApiKeyScope = ConcreteApiKeyScope | WildcardsFor<'environment'>;
 
 export const ACCOUNT_API_KEY_SCOPES = [
     // Environments
+    'account:environments:list',
     'account:environments:create',
     'account:environments:delete',
     'account:environments:set_production',
