@@ -266,6 +266,170 @@ describe('Public environment API key management', () => {
         });
     });
 
+    describe('GET /environments/:environmentUuid/api-keys/:keyUuid', () => {
+        it('should be protected', async () => {
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'GET',
+                params: {
+                    environmentUuid: '123e4567-e89b-12d3-a456-426614174000',
+                    keyUuid: '123e4567-e89b-12d3-a456-426614174001'
+                }
+            });
+
+            shouldBeProtected(res);
+        });
+
+        it('should deny environment API keys', async () => {
+            const { env, apiKey } = await seedAccount();
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: apiKey.uuid }
+            });
+
+            expect(res.res.status).toBe(403);
+            isError(res.json);
+            expect(res.json.error).toEqual({
+                code: 'forbidden',
+                message: 'Insufficient scope. Required: account:environments:api_keys:read'
+            });
+        });
+
+        it('should reject an invalid key UUID', async () => {
+            const { account, env } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:read']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'GET',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: 'not-a-uuid' }
+            });
+
+            expect(res.res.status).toBe(400);
+            isError(res.json);
+            expect(res.json.error.code).toBe('invalid_uri_params');
+        });
+
+        it('should reject an invalid environment UUID', async () => {
+            const { account, apiKey } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:read']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'GET',
+                token: accountKey.secret,
+                params: { environmentUuid: 'not-a-uuid', keyUuid: apiKey.uuid }
+            });
+
+            expect(res.res.status).toBe(400);
+            isError(res.json);
+            expect(res.json.error.code).toBe('invalid_uri_params');
+        });
+
+        it('should return not found for an unknown key in the environment', async () => {
+            const { account, env } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:read']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'GET',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: '123e4567-e89b-12d3-a456-426614174001' }
+            });
+
+            expect(res.res.status).toBe(404);
+            isError(res.json);
+            expect(res.json.error).toEqual({ code: 'not_found', message: 'API key not found' });
+        });
+
+        it('should require the read scope', async () => {
+            const { account, env } = await seedAccount();
+            const apiKey = (
+                await customerKeyService.createApiKey(db.knex, {
+                    accountId: account.id,
+                    environmentId: env.id,
+                    displayName: 'read-scope-key'
+                })
+            ).unwrap();
+            const listKey = await createAccountKey(account.id, ['account:environments:api_keys:list']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'GET',
+                token: listKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: apiKey.uuid }
+            });
+
+            expect(res.res.status).toBe(403);
+            isError(res.json);
+            expect(res.json.error).toEqual({
+                code: 'forbidden',
+                message: 'Insufficient scope. Required: account:environments:api_keys:read'
+            });
+        });
+
+        it('should return a key and its secret with the read scope', async () => {
+            const { account, env } = await seedAccount();
+            const apiKey = (
+                await customerKeyService.createApiKey(db.knex, {
+                    accountId: account.id,
+                    environmentId: env.id,
+                    displayName: 'readable-secret-key'
+                })
+            ).unwrap();
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:read']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'GET',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: apiKey.uuid }
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json).toStrictEqual({
+                data: {
+                    id: apiKey.id,
+                    uuid: apiKey.uuid,
+                    display_name: apiKey.display_name,
+                    scopes: ['environment:*'],
+                    secret: apiKey.secret,
+                    last_used_at: null,
+                    created_at: apiKey.created_at.toISOString()
+                }
+            });
+        });
+
+        it('should not reveal a key from another account', async () => {
+            const first = await seedAccount();
+            const second = await seedAccount();
+            const accountKey = await createAccountKey(first.account.id, ['account:environments:api_keys:read']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'GET',
+                token: accountKey.secret,
+                params: { environmentUuid: second.env.uuid, keyUuid: second.apiKey.uuid }
+            });
+
+            expect(res.res.status).toBe(404);
+            isError(res.json);
+            expect(res.json.error).toEqual({ code: 'not_found', message: 'Environment not found' });
+        });
+
+        it('should allow account:*', async () => {
+            const { account, env, apiKey } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:*']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'GET',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: apiKey.uuid }
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json.data.secret).toBe(apiKey.secret);
+        });
+    });
+
     describe('DELETE /environments/:environmentUuid/api-keys/:keyUuid', () => {
         it('should be protected', async () => {
             const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {

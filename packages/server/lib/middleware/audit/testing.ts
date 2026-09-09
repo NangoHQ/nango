@@ -19,7 +19,7 @@ export const getEnvironmentByIdMock: Mock = vi.fn();
 export const getEnvironmentByUuidMock: Mock = vi.fn();
 export const getApiKeyByIdMock: Mock = vi.fn();
 export const getAccountApiKeyByIdMock: Mock = vi.fn();
-export const getApiKeyByUuidMock: Mock = vi.fn();
+export const getApiKeyByUuidWithoutSecretsMock: Mock = vi.fn();
 export const getIntegrationSummaryMock: Mock = vi.fn();
 export const getConnectionByIdMock: Mock = vi.fn();
 export const getUserByIdMock: Mock = vi.fn();
@@ -40,7 +40,7 @@ export async function sharedModuleMock(importOriginal: () => Promise<typeof Nang
             ...actual.customerKeyService,
             getApiKeyById: getApiKeyByIdMock,
             getAccountApiKeyById: getAccountApiKeyByIdMock,
-            getApiKeyByUuid: getApiKeyByUuidMock
+            getApiKeyByUuidWithoutSecrets: getApiKeyByUuidWithoutSecretsMock
         },
         configService: { ...actual.configService, getIntegrationSummary: getIntegrationSummaryMock },
         accountService: { ...actual.accountService, getAccountById: getAccountByIdMock },
