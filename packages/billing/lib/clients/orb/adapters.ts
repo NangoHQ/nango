@@ -110,16 +110,16 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, 
     const metrics: Partial<Record<UsageMetric, number>> = {};
     const malformedMetrics: UsageMetric[] = [];
     const flagged: BillingPeriodCosts['flagged'] = [];
-    // Held back so a fixed price can never set the period's currency. If it could, a subscription
-    // carrying only a base fee would start reporting costs where it reports none.
+    // Process fixed prices after usage prices so they cannot set the period currency. A fixed-only
+    // subscription has no metric costs to report.
     const fixedPrices: { priceId: string; priceName: string; amountInCents: number | null; currency: string | null }[] = [];
     let fullyAttributed = true;
     let currency: string | null = null;
 
     for (const priceCost of period.per_price_costs) {
         const { price } = priceCost;
-        // `total` also carries the price's share of any plan-level minimum or discount — a $50 minimum
-        // lands as $16.67 on each of three unused metrics — so only `subtotal` is attributable to usage.
+        // Orb allocates plan-level minimums and discounts across price totals. Only the subtotal
+        // belongs to this usage price.
         const amountInCents = orbAmountToCents(priceCost.subtotal);
         const priceCurrency = normalizeIsoCurrency(price.currency);
 

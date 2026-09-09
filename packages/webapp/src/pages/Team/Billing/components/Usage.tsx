@@ -43,12 +43,12 @@ export const Usage: React.FC = () => {
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
 
     const chargesEnabled = hasMonthlySpend(plan);
+    // Omit the current-month window so Orb uses the subscription's billing period. Past months use
+    // calendar windows.
     const {
         data: periodCosts,
         isPending: costsPending,
         isError: costsError
-        // The current month sends no window on purpose, so Orb uses its own billing period, which
-        // need not start on the 1st. A named window would cost the calendar month instead.
     } = useApiGetBillingPeriodCosts(env, plan, { enabled: chargesEnabled, ...(isCurrentMonth ? {} : { timeframe }) });
     const charges = buildUsageRowCharges({ enabled: chargesEnabled, isPending: costsPending, isError: costsError, data: periodCosts });
 

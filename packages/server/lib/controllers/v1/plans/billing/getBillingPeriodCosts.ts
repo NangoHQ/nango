@@ -26,8 +26,6 @@ const querySchema = z
         from: z.iso.datetime().optional(),
         to: z.iso.datetime().optional()
     })
-    // Both or neither: one half of a window would otherwise fall through to the current period,
-    // answering with a different month's charges than the caller asked for.
     .refine((data) => (data.from === undefined) === (data.to === undefined), {
         message: 'from and to must be provided together',
         path: ['from']
