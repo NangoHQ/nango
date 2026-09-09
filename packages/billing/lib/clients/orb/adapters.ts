@@ -101,9 +101,15 @@ interface OrbCostBucket {
  */
 function chargeInCents(priceCost: { subtotal: string; total?: string | null }): number | null {
     const subtotal = orbAmountToCents(priceCost.subtotal);
+    // An absent `total` carries no adjustment to read, so the subtotal is the whole charge. An
+    // unparseable one does carry an adjustment, and reading past it would overstate the charge.
+    if (priceCost.total === undefined || priceCost.total === null) {
+        return subtotal;
+    }
+
     const total = orbAmountToCents(priceCost.total);
     if (subtotal === null || total === null) {
-        return subtotal ?? total;
+        return null;
     }
     return Math.min(subtotal, total);
 }

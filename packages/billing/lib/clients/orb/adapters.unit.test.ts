@@ -446,10 +446,40 @@ describe('fromOrbPeriodCosts', () => {
         expect(fromOrbPeriodCosts(costs, NOW)?.fixedInCents).toBe(25_000);
     });
 
-    it('falls back to the readable figure when only one of the two parses', () => {
+    it('rejects a total it cannot parse rather than billing the pre-adjustment subtotal', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_PROD, '23.17', 'Sync records', 'price_1', 'not-a-number')])] };
 
-        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 2317 });
+        expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
+    });
+
+    it('scopes an unreadable total to its own metric, the same as an unreadable subtotal', () => {
+        const costs = {
+            data: [bucket([usagePrice(RECORDS_PROD, '1.00'), usagePrice(COMPUTE_HOURS_PROD, '23.17', 'Function compute time (h)', 'price_2', 'not-a-number')])]
+        };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ records: 100 });
+        expect(result?.malformedMetrics).toEqual(['function_duration_seconds']);
+    });
+
+    it('flags a fixed price whose total is unreadable instead of adding the subtotal to fixed charges', () => {
+        const costs = {
+            data: [
+                bucket([
+                    usagePrice(RECORDS_PROD, '23.17'),
+                    {
+                        price_id: 'price_fixed',
+                        subtotal: '500.00',
+                        total: 'not-a-number',
+                        price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null }
+                    }
+                ])
+            ]
+        };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.fixedInCents).toBe(0);
+        expect(result?.flagged).toEqual([{ priceId: 'price_fixed', priceName: 'Base fee', metric: null, amountInCents: null }]);
     });
 
     it('reads the subtotal when the payload carries no total', () => {
