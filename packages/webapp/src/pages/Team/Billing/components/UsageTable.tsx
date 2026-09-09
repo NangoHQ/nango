@@ -15,10 +15,8 @@ import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 export interface UsageTableRow {
     metric: UsageMetric;
     label: string;
-    /** Heading this row sits under. Rows sharing one are grouped in order. */
     group?: string;
-    /** Overrides the table's `charges` lookup — needed once one table holds two pricing models,
-     *  since `connections` appears in both and a metric-keyed lookup cannot tell them apart. */
+    /** Overrides the table's lookup, which cannot tell one model's `connections` from the other's. */
     charge?: UsageRowCharge;
     currentPlanCharge?: UsageRowCharge;
     usage: number;
@@ -27,7 +25,6 @@ export interface UsageTableRow {
     data?: ApiBillingUsageMetric;
 }
 
-/** What the rows add up to, when the table is showing a bill rather than bare usage. */
 export interface UsageTableTotals {
     subtotalInCents: number;
     minimumInCents: number;
@@ -35,8 +32,6 @@ export interface UsageTableTotals {
     growthAddOnInCents: number;
     totalInCents: number;
     currency: string;
-    /** The current plan's name and its own charges for the same window, for the comparison. Null
-     *  when Orb can't state them — a plan without per-period spend, or an unlinked subscription. */
     currentPlanTitle?: string;
     currentPlan?: { usageInCents: number; fixedInCents: number; totalInCents: number } | null;
 }
@@ -54,9 +49,7 @@ interface UsageTableProps {
      *  (each row manages its own open state) when omitted. */
     isRowOpen?: (metric: UsageMetric) => boolean;
     onRowOpenChange?: (metric: UsageMetric, open: boolean) => void;
-    /** Footer lines under the rows. Omitted when the table isn't stating a bill. */
     totals?: UsageTableTotals;
-    /** Caveat for the rightmost comparison column, shown on an info icon beside its header. */
     extraColumnTooltip?: string;
 }
 
@@ -146,23 +139,19 @@ export const UsageTable: React.FC<UsageTableProps> = ({
     );
 };
 
-/** One footer line: label on the left, amounts in the same columns the per-metric charges sit in. */
 const TotalsLine: React.FC<{
     variant: UsageTableProps['variant'];
     label: string;
     amount: string | null;
     currentPlanAmount?: string | null;
-    /** Caveat on the Pay-as-you-go figure, shown on an info icon beside it. */
     tooltip?: string;
     strong?: boolean;
 }> = ({ variant, label, amount, currentPlanAmount, tooltip, strong }) => {
-    // Sized like a metric row: these lines continue the column rather than annotate it.
     const text = cn('tabular-nums', strong ? 'text-text-strong text-body-medium-medium' : 'text-text-default type-text-regular-sm');
     return (
         <div className={cn(usageRowGrid(variant), 'py-2.5')}>
             <span className={cn('truncate', strong ? 'text-text-strong text-body-medium-medium' : 'text-text-secondary type-text-regular-sm')}>{label}</span>
             <span />
-            {/* Blank rather than a dash: the current plan simply has no figure of this kind. */}
             {variant === 'comparison' && <span className={text}>{currentPlanAmount ?? ''}</span>}
             <span className="flex items-center gap-1.5">
                 <span className={text}>{amount ?? '—'}</span>
@@ -173,19 +162,16 @@ const TotalsLine: React.FC<{
     );
 };
 
-/** Why the usage line reads higher than the metrics above it add up to. */
 function minimumNote(totals: UsageTableTotals, money: (cents: number) => string | null): string {
     const minimum = money(totals.minimumInCents);
     return minimum ? `Accrued usage is below the ${minimum} monthly minimum.` : 'Accrued usage is below the monthly minimum.';
 }
 
-/** The difference between the two bills, as a badge variant. Null when there is nothing to compare. */
 function billDifference(totals: UsageTableTotals): { text: string; variant: BadgeProps['variant'] } | null {
     if (!totals.currentPlan) {
         return null;
     }
     const delta = totals.totalInCents - totals.currentPlan.totalInCents;
-    // Two identical totals say it themselves; a badge would only add noise.
     if (delta === 0) {
         return null;
     }
@@ -198,16 +184,10 @@ const UsageTotals: React.FC<{ variant: UsageTableProps['variant']; totals: Usage
     const comparing = variant === 'comparison';
     const difference = comparing ? billDifference(totals) : null;
 
-    // Both columns split the same way — what usage cost, then what is charged regardless of it —
-    // so the two bills are read the same way and each column's lines add up to its own total.
-    // One shared background across the block, so the summed lines read as one unit rather than
-    // leaving the total looking like another metric row.
-    // No top border of its own: the last metric row already draws one, and the shared background is
-    // what actually marks the block off.
+    // No top border: the last metric row already draws one, and two would show as a double line.
     return (
         <div className="bg-surface-input-muted">
-            {/* Under the minimum, the floor *is* the usage charge — it replaces the subtotal rather
-                than adding to it, so it goes on this line with the arithmetic explained on hover. */}
+            {/* The floor replaces the subtotal rather than adding to it, so it goes on this line. */}
             <TotalsLine
                 variant={variant}
                 label={comparing ? 'Usage charges' : 'Subtotal'}
@@ -230,14 +210,11 @@ const UsageTotals: React.FC<{ variant: UsageTableProps['variant']; totals: Usage
                     <span className="tabular-nums text-text-default text-body-medium-medium">
                         {totals.currentPlan ? (money(totals.currentPlan.totalInCents) ?? '—') : ''}
                     </span>
-                    {/* The difference is the answer the page exists to give, so it carries the same
-                        weight as the total it comes from rather than trailing it as a footnote. */}
                     <span className="flex items-baseline gap-2">
                         <span className="tabular-nums text-text-strong text-body-medium-medium">{money(totals.totalInCents) ?? '—'}</span>
                         {difference && (
-                            // Matches the total beside it in size and weight, which the Badge's own
-                            // `type-code-regular-xs` otherwise wins — the token stylesheet is
-                            // imported unlayered, so it outranks the utility without `!`.
+                            // The token stylesheet is imported unlayered, so the Badge's own
+                            // `type-code-regular-xs` wins without the `!`.
                             // eslint-disable-next-line react/forbid-component-props -- deliberate: this comparison view is short-lived, so the weight is not worth a design-system variant
                             <Badge variant={difference.variant} className="text-body-medium-medium!">
                                 {difference.text}

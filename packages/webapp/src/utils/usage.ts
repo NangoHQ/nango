@@ -80,9 +80,8 @@ export function isOnS26Pricing(plan: ApiPlan | null | undefined): boolean {
 }
 
 /**
- * The metrics to show an account, which is a different question from what it is billed on today: an
- * account with a scheduled migration is still billed on the legacy set, but the new one is what it
- * needs to see. The legacy set stays reachable behind the usage table's toggle.
+ * What to *show* an account, not what it is billed on. A scheduled account is still billed on the
+ * legacy set, but needs to see the new one.
  */
 export function billedUsageMetrics(plan: ApiPlan | null | undefined, hasScheduledTransition = false): readonly UsageMetric[] {
     return isOnS26Pricing(plan) || hasScheduledTransition ? S26_USAGE_METRICS : LEGACY_USAGE_METRICS;

@@ -26,7 +26,6 @@ const NOT_APPLICABLE = {
     notApplicable: true
 };
 
-// 34 connections, 64.3 hours of compute, 12.4 GB — the figures the design frame is drawn with.
 const USAGE = {
     connections: { total: 34 },
     function_duration_seconds: { total: 231_480 },
@@ -124,7 +123,6 @@ describe(`GET ${route}`, () => {
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
             expect(res.json.data).toStrictEqual(NOT_APPLICABLE);
-            // No migration means no projection to make, so the read must not happen at all.
             expect(getBillingUsageSpy).not.toHaveBeenCalled();
         });
 
@@ -139,8 +137,7 @@ describe(`GET ${route}`, () => {
         });
 
         it('should not open the staff preview to an ordinary signed-in session', async () => {
-            // The preview turns on `debugMode`, which only `postImpersonate` sets and only for the
-            // admin account. An account logging in normally must not reach its own projection.
+            // Only `postImpersonate` sets `debugMode`, and only for the admin account.
             const seed = await seedPlan('growth-v2');
             const session = await authenticateUser(api, seed.user);
 
@@ -161,8 +158,7 @@ describe(`GET ${route}`, () => {
             expect(getBillingUsageSpy).not.toHaveBeenCalled();
         });
 
-        // The retired plans fail both `isSpendPlan` and the old plan-name allowlist, yet they are
-        // exactly who is being migrated — 7 starter-legacy accounts in the first batch.
+        // The retired plans fail `isSpendPlan`, yet they are exactly who is being migrated.
         it.each(['starter-v2', 'growth-v2', 'starter-legacy', 'scale-legacy', 'growth-legacy'] as const)(
             'should project for a scheduled %s account',
             async (planName) => {

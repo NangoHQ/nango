@@ -162,15 +162,13 @@ export function applyPlanOverride(
               // plan definitions only ever set those fields to `null`, never an actual Date.
               ...(overridePlan.flags as Partial<ApiPlan>),
               name: overridePlan.code,
-              // An overridden plan must not inherit the real one's schedule, so this clears rather
-              // than leaves it.
+              // Cleared, so an overridden plan does not inherit the real one's date.
               orb_future_plan: null,
               orb_future_plan_at: null
           }
         : realPlan;
 
-    // Applied whether or not the plan itself is overridden, so a migration can be previewed on an
-    // account already sitting on a retired plan.
+    // Applied with or without a plan override, so a retired-plan account can be previewed as-is.
     const withPlan: ApiPlan = scheduledTarget
         ? { ...onPlan, orb_future_plan: scheduledTarget.code, orb_future_plan_at: nextUsageResetDate(new Date()).toISOString() }
         : onPlan;

@@ -266,11 +266,7 @@ export function useApiGetBillingPeriodCosts(
 
 export const GetProjectedCostsQueryKey = ['plans', 'billing', 'projected-costs'];
 
-/**
- * What the selected period would cost on Pay-as-you-go. Keyed on the timeframe rather than the
- * current month: this is ClickHouse-backed, so unlike the Orb figures above any month can be asked
- * for. `enabled` is the caller's call - only an account with a scheduled migration has an answer.
- */
+/** Keyed on the timeframe, not the current month: ClickHouse answers for any month. */
 export function useApiGetProjectedCosts(env: string, timeframe: { start: string; end: string }, options?: { enabled?: boolean }) {
     return useQuery<GetProjectedCosts['Success'], APIError>({
         enabled: Boolean(env) && (options?.enabled ?? false),

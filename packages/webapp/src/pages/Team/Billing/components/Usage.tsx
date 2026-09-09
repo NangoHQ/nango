@@ -54,11 +54,8 @@ export const Usage: React.FC = () => {
     } = useApiGetBillingPeriodCosts(env, plan, { enabled: orbChargesEnabled, ...(isCurrentMonth ? {} : { timeframe }) });
     const chargeArgs = { enabled: orbChargesEnabled, isPending: costsPending, isError: costsError, data: periodCosts };
     const orbCharges = buildUsageRowCharges(chargeArgs);
-    // Same figures, but beside the Pay-as-you-go column an unpriced meter reads as a dash rather
-    // than a $0.00 that looks like a comparable number.
     const orbCurrentPlanCharges = buildUsageRowCharges({ ...chargeArgs, unpriced: 'dash' });
 
-    // The projection is computed from ClickHouse, so unlike the Orb figures it answers for any month.
     const { data: projected, isPending: projectedPending, isError: projectedError } = useApiGetProjectedCosts(env, timeframe, { enabled: isMigrating });
     const projectedCharges = buildProjectedCharges({ enabled: isMigrating, isPending: projectedPending, isError: projectedError, data: projected });
 
@@ -94,14 +91,12 @@ export const Usage: React.FC = () => {
 
     const charges = isMigrating ? projectedCharges : orbCharges;
 
-    // One table, two pricing models. `connections` is the only meter both charge on, so it is the
-    // one row that can carry a figure in each column; every other meter belongs to one side only.
+    // `connections` is the only meter both models charge on, so a metric-keyed lookup collides.
     const legacyOnlyMetrics = LEGACY_USAGE_METRICS.filter((metric) => !S26_USAGE_METRICS.includes(metric));
     const rows: UsageTableRow[] = isMigrating
         ? [
               ...metrics.map((metric) =>
                   rowFor(metric, {
-                      // Headings earn their keep only once there are two sets of rows to tell apart.
                       ...(showOld ? { group: 'New metrics' } : {}),
                       charge: projectedCharges?.(metric),
                       ...(orbCurrentPlanCharges ? { currentPlanCharge: orbCurrentPlanCharges(metric) } : {})
@@ -111,8 +106,6 @@ export const Usage: React.FC = () => {
                   ? legacyOnlyMetrics.map((metric) =>
                         rowFor(metric, {
                             group: 'Old metrics',
-                            // A dash, matching how the other column states a meter its plan does not
-                            // price — Pay-as-you-go has no price for any of these.
                             charge: { formatted: null, pending: false },
                             ...(orbCharges ? { currentPlanCharge: orbCharges(metric) } : {})
                         })
@@ -203,11 +196,8 @@ export const Usage: React.FC = () => {
     );
 };
 
-/**
- * The current plan's own side of the comparison, summed from the same Orb figures the metric rows
- * show so the column adds up. Null when Orb has nothing to state, which reads as a blank column
- * rather than a row of dashes.
- */
+/** Summed from the same Orb figures the rows show, so the column adds up. Null, not 0, when Orb
+ *  has nothing to state — 0 would render $0.00 for an account that has no figures at all. */
 function currentPlanTotals(
     periodCosts: GetBillingPeriodCosts['Success'] | undefined
 ): { usageInCents: number; fixedInCents: number; totalInCents: number } | null {

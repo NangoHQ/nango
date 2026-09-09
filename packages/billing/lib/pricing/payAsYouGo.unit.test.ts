@@ -44,7 +44,6 @@ describe('projectPayAsYouGo', () => {
         expect(projection.totalInCents).toBe(5000);
     });
 
-    // The add-on is outside the minimum, so a Growth account under the floor pays both in full.
     it('adds the Growth add-on on top of the minimum, not inside it', () => {
         const projection = projectPayAsYouGo(quantities({ connections: 10 }), { isGrowth: true });
 

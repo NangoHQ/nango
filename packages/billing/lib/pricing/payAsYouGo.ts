@@ -1,11 +1,8 @@
 import type { UsageMetric } from '@nangohq/types';
 
 /**
- * What a period of usage would cost on Pay-as-you-go.
- *
- * The rates live here rather than anywhere reachable from the frontend: `planToApi` spreads every
- * `DBPlan` column to the browser, and `@nangohq/types` is bundled into the webapp. Callers get
- * computed cents; nothing ships a rate.
+ * What a period of usage would cost on Pay-as-you-go. The rates stay in this package: `planToApi`
+ * spreads every `DBPlan` column to the browser, and `@nangohq/types` is bundled into the webapp.
  */
 
 export type PayAsYouGoMetric = Extract<UsageMetric, 'connections' | 'function_duration_seconds' | 'data_transfer'>;
@@ -23,7 +20,7 @@ const BYTES_PER_GB = 1_000_000_000;
 const MINIMUM_IN_CENTS = 5_000;
 const GROWTH_ADD_ON_IN_CENTS = 45_000;
 
-/** Metered quantities in each metric's own stored unit: an average, whole seconds, and bytes. */
+/** Each metric in its stored unit: a running average, whole seconds, bytes. */
 export type PayAsYouGoQuantities = Record<PayAsYouGoMetric, number>;
 
 export interface PayAsYouGoProjection {
@@ -31,15 +28,13 @@ export interface PayAsYouGoProjection {
     metrics: Record<PayAsYouGoMetric, number>;
     subtotalInCents: number;
     minimumInCents: number;
-    /** True when usage came in under the minimum, so the total is the floor rather than the subtotal. */
     minimumApplied: boolean;
     growthAddOnInCents: number;
     totalInCents: number;
 }
 
 function quantity(value: number, metric: PayAsYouGoMetric): number {
-    // A metric with no rows reaches us as 0 already, so anything unusable here is a broken read.
-    // Refusing beats quoting a number we can't stand behind.
+    // A metric with no rows already reads as 0, so a non-finite value here means a broken read.
     if (!Number.isFinite(value) || value < 0) {
         throw new Error(`unusable_quantity_for_${metric}`);
     }
@@ -47,8 +42,7 @@ function quantity(value: number, metric: PayAsYouGoMetric): number {
 }
 
 export function projectPayAsYouGo(quantities: PayAsYouGoQuantities, { isGrowth }: { isGrowth: boolean }): PayAsYouGoProjection {
-    // Each charge converts to the unit its rate is published in before multiplying, and rounds once,
-    // so the rows always add up to the subtotal shown beneath them.
+    // Convert to each rate's published unit and round per metric, so the rows sum to the subtotal.
     const metrics: Record<PayAsYouGoMetric, number> = {
         connections: Math.round(quantity(quantities.connections, 'connections') * CENTS_PER_CONNECTION),
         function_duration_seconds: Math.round(
@@ -66,9 +60,7 @@ export function projectPayAsYouGo(quantities: PayAsYouGoQuantities, { isGrowth }
         minimumInCents: MINIMUM_IN_CENTS,
         minimumApplied: subtotalInCents < MINIMUM_IN_CENTS,
         growthAddOnInCents,
-        // The minimum covers the three usage prices only; the add-on sits outside it. Verified
-        // against a live Orb invoice, where a $0.18 usage period billed $46.67 of minimum plus the
-        // add-on in full rather than $50 all-in.
+        // The minimum covers the three usage prices only. The add-on sits outside it.
         totalInCents: Math.max(subtotalInCents, MINIMUM_IN_CENTS) + growthAddOnInCents
     };
 }

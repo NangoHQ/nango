@@ -19,7 +19,6 @@ export function usageRowGrid(variant: UsageRowVariant): string {
         return 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_124px_20px] items-center gap-4 px-6';
     }
     if (variant === 'comparison') {
-        // A second money column for the current plan, so old and new sit side by side on one row.
         return 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_124px_180px_20px] items-center gap-4 px-6';
     }
     return 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_124px_20px] items-center gap-4 px-6';
@@ -47,8 +46,7 @@ interface UsageRowProps {
     chartMode: 'daily' | 'cumulative';
     variant: UsageRowVariant;
     charge?: UsageRowCharge;
-    /** What the current plan charged for this metric. Only the legacy meters and `connections` have
-     *  one; everything else is new under Pay-as-you-go. */
+    /** Only the legacy meters and `connections` have one. */
     currentPlanCharge?: UsageRowCharge;
 }
 
@@ -107,8 +105,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                     ) : (
                         <div />
                     )}
-                    {/* The current plan's column, left of Pay-as-you-go. A dash means the plan has no
-                        price for this meter; blank means the row states nothing here at all. */}
+                    {/* Dash = the plan has no price for this meter. Blank = the row states nothing. */}
                     {variant === 'comparison' && (
                         <div className="text-text-default type-text-regular-sm">{currentPlanCharge ? (currentPlanCharge.formatted ?? '—') : ''}</div>
                     )}

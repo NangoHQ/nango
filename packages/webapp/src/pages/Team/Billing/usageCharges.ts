@@ -15,11 +15,8 @@ interface BuildArgs {
     isPending: boolean;
     isError: boolean;
     data: GetBillingPeriodCosts['Success'] | undefined;
-    /**
-     * What a metric the subscription carries no price for should read as. On its own a plan bills
-     * $0.00 for an unpriced meter, which is true. Side by side with a plan that does price it, that
-     * $0.00 invites the reader to compare two numbers where only one exists, so it reads as a dash.
-     */
+    /** How a metric the subscription has no price for reads. Beside a plan that does price it,
+     *  $0.00 invites a comparison of two numbers where only one exists, so `dash` suppresses it. */
     unpriced?: 'zero' | 'dash';
 }
 
@@ -68,11 +65,8 @@ interface BuildProjectedArgs {
 }
 
 /**
- * Charges an account would pay on Pay-as-you-go, in the same lookup shape as
- * {@link buildUsageRowCharges} so the table renders either without knowing which it got.
- *
- * Unlike the Orb figures, every metric here is priced, so an absent one is a real $0 rather than a
- * gap — there is no unattributed money to worry about.
+ * Same lookup shape as {@link buildUsageRowCharges}, so the table renders either. Every metric here
+ * is priced, so an absent one is a real $0 rather than money that went unattributed.
  */
 export function buildProjectedCharges(args: BuildProjectedArgs): UsageChargeLookup {
     if (!args.enabled) {

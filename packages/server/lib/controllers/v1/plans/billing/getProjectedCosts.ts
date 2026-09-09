@@ -32,8 +32,6 @@ const querySchema = z
         from: z.iso.datetime().optional(),
         to: z.iso.datetime().optional()
     })
-    // Both or neither: one half of a window would otherwise fall through to the current period,
-    // projecting a different month than the caller asked for.
     .refine((data) => (data.from === undefined) === (data.to === undefined), {
         message: 'from and to must be provided together',
         path: ['from']
@@ -57,14 +55,11 @@ export const getProjectedCosts = asyncWrapper<GetProjectedCosts>(async (req, res
         return;
     }
 
-    // Gated on Orb's schedule alone, matching the client's `planTransition` predicate — not on the
-    // current plan or on `isSpendPlan`, since the retired plans being migrated fail both.
+    // Orb's schedule alone. An `isSpendPlan` check would exclude the retired plans being migrated.
     const changeAt = plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : null;
     const scheduled = plan.orb_future_plan === TARGET_PLAN && changeAt !== null && !Number.isNaN(changeAt.getTime()) && changeAt > new Date();
-    // Nango staff impersonating an account also get the projection, so the transition view can be
-    // checked against real data before anything is scheduled in Orb — where the customer would see
-    // it. Read off the session, which only `postImpersonate` sets and only for the admin account, so
-    // an account cannot ask for its own projection this way.
+    // Staff impersonating an account also get the projection, to check the view on real data before
+    // scheduling anything. Only `postImpersonate` sets `debugMode`, so an account cannot ask itself.
     const previewing = req.session?.debugMode === true;
     if (!scheduled && !previewing) {
         res.status(200).send({ data: NOT_APPLICABLE });
@@ -73,8 +68,7 @@ export const getProjectedCosts = asyncWrapper<GetProjectedCosts>(async (req, res
 
     const timeframe = query.from && query.to ? { start: new Date(query.from), end: new Date(query.to) } : null;
 
-    // Same opts the usage table's own query uses, so a charge divided by the quantity on screen
-    // comes back to the published rate.
+    // The same opts the usage table requests, so charge ÷ displayed quantity equals the rate.
     const usage = await usageTracker.getBillingUsage('', account.id, {
         granularity: 'day',
         ...(timeframe ? { timeframe } : {}),
@@ -105,8 +99,6 @@ export const getProjectedCosts = asyncWrapper<GetProjectedCosts>(async (req, res
         return;
     }
 
-    // The current-plan side of the comparison comes from `period-costs` for the same window, so both
-    // columns are Orb's own figures for one usage set and the rows sum to each total.
     const periodComplete = timeframe !== null && timeframe.end <= new Date();
 
     res.status(200).send({

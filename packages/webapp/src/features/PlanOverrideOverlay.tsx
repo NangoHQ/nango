@@ -86,13 +86,11 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
         return duplicated;
     }, [plansList]);
 
-    // `useCurrentPlan` already has the override applied, so the real plan has to come from the
-    // un-overridden query or the caption would name whatever is being previewed.
+    // `useCurrentPlan` already has the override applied, so the real plan comes from here.
     const realPlanName = useEnvironment(env).data?.plan?.name;
 
     const scheduledChangeOptions = useMemo(() => {
         const definitions = plansList?.data ?? [];
-        // Falls back to the real plan, so previewing a schedule needs no override of the plan itself.
         const current = definitions.find((plan) => plan.code === (overrideCode ?? realPlanName));
         if (!current) {
             return [];

@@ -32,8 +32,7 @@ function transitionOf(plan: ApiPlan) {
 }
 
 describe('planTransition', () => {
-    // Whoever Orb has scheduled, whatever they are on now. An earlier version allowlisted
-    // starter-v2 and growth-v2, which left the legacy plans in the migration seeing nothing.
+    // Whoever Orb has scheduled, whatever plan they are on now.
     it.each([
         ['starter-v2', 'Starter'],
         ['growth-v2', 'Growth'],
