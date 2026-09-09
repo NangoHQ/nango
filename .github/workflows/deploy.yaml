@@ -316,7 +316,7 @@ jobs:
                     --header "content-type: application/json"\
                     --data "{ \"image\": \"${{ vars.LAMBDA_REPOSITORY_NAME }}:${{ github.sha }}\", \"imageType\":\"ecr\" }"
     deploy_agentcore:
-        if: inputs.service == 'agentcore' && inputs.stage != 'replit'
+        if: inputs.service == 'agentcore' && (inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production')
         runs-on: ubuntu-24.04-arm
         permissions:
             id-token: write
