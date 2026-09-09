@@ -598,7 +598,13 @@ function getRawBody(method: string, data: unknown): string {
     if (typeof data === 'string') return data.startsWith('?') ? data.slice(1) : data;
     if (Buffer.isBuffer(data)) return data.toString('utf8');
     if (data instanceof URLSearchParams) return data.toString();
-    if (typeof data === 'object' && !(data instanceof FormData)) return JSON.stringify(data);
+    if (typeof data === 'object' && !(data instanceof FormData)) {
+        try {
+            return JSON.stringify(data);
+        } catch {
+            return '';
+        }
+    }
     return '';
 }
 

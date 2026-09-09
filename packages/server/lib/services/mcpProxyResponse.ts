@@ -1,7 +1,7 @@
-import type { ProxyServiceResponse } from '../../../services/proxy.service.js';
+import type { ProxyServiceResponse } from './proxy.service.js';
 
 /**
- * Management MCP tool results are fully materialized and serialized into both text and structured content.
+ * MCP tool results are fully materialized and serialized into both text and structured content.
  * Keep the response small enough for MCP clients and direct callers to the streaming HTTP proxy for larger payloads.
  * Keep this value and docs/reference/backend/management-mcp.mdx in sync.
  */
@@ -77,7 +77,7 @@ async function readBoundedBody(body: ProxyServiceResponse['body']): Promise<Buff
             body.destroy();
             throw new ProxyResponseFormatError(
                 'response_too_large',
-                `The provider response exceeds the ${MAX_MCP_PROXY_RESPONSE_SIZE_LABEL} Management MCP limit. Use the HTTP proxy for large responses.`
+                `The provider response exceeds the ${MAX_MCP_PROXY_RESPONSE_SIZE_LABEL} MCP limit. Use the HTTP proxy for large responses.`
             );
         }
         chunks.push(buffer);

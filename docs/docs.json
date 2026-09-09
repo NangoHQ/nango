@@ -98,12 +98,12 @@
       "destination": "/api-integrations/snowflake"
     },
     {
-      "source": "/integrations/all/typeform",
-      "destination": "/api-integrations/typeform"
+      "source": "/integrations/all/fathom",
+      "destination": "/api-integrations/fathom"
     },
     {
-      "source": "/integrations/all/elevio",
-      "destination": "/api-integrations/elevio"
+      "source": "/integrations/all/fathom/connect",
+      "destination": "/api-integrations/fathom/connect"
     },
     {
       "source": "/integrations/all/google-gemini",
@@ -1022,12 +1022,14 @@
               "integrations/all/aircall",
               "integrations/all/aircall-basic",
               "api-integrations/airtable",
+              "api-integrations/airtable-mcp",
               "integrations/all/airtable-pat",
               "integrations/all/algolia",
               "api-integrations/altrata",
               "api-integrations/amazon",
               "api-integrations/amazon-selling-partner",
               "api-integrations/amazon-selling-partner-beta",
+              "api-integrations/amplemarket",
               "api-integrations/amplitude",
               "api-integrations/amplitude-mcp",
               "api-integrations/amplitude-mcp-eu",
@@ -1100,6 +1102,7 @@
               "integrations/all/blackbaud-basic",
               "integrations/all/blandai",
               "api-integrations/bliro",
+              "api-integrations/bol-com",
               "integrations/all/boldsign",
               "integrations/all/booking-com",
               "api-integrations/boondmanager",
@@ -1272,7 +1275,7 @@
               "integrations/all/fairing",
               "integrations/all/falai",
               "api-integrations/fanvue",
-              "integrations/all/fathom",
+              "api-integrations/fathom",
               "api-integrations/fathom-oauth",
               "api-integrations/fellow",
               "api-integrations/fern",
@@ -1541,6 +1544,7 @@
               "api-integrations/mollie",
               "integrations/all/momentum-io",
               "api-integrations/monday",
+              "api-integrations/moneybird",
               "integrations/all/mural",
               "api-integrations/myob",
               "api-integrations/n8n",
@@ -1595,6 +1599,7 @@
               "integrations/all/ory",
               "integrations/all/osu",
               "integrations/all/oura",
+              "api-integrations/outline",
               "api-integrations/outlook",
               "integrations/all/outreach",
               "api-integrations/paddle",

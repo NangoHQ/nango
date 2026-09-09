@@ -8,6 +8,7 @@ import { forwardWebhook } from '@nangohq/webhooks';
 import { capping } from '../utils/usage.js';
 import * as webhookHandlers from './index.js';
 import { InternalNango } from './internal-nango.js';
+import { unverifiedWebhookMessage } from './missing-secret.js';
 
 import type { WebhookHandlersMap, WebhookRequest, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
@@ -144,6 +145,9 @@ export async function routeWebhook({
             payload: webhookBodyToForward,
             webhookOriginalHeaders: request.rawHeaders,
             logContextGetter,
+            ...(internalNango.unverified
+                ? { unverified: { reason: internalNango.unverified.reason, message: unverifiedWebhookMessage(integration, internalNango.unverified) } }
+                : {}),
             onBytes: (bytes, connectionId) => {
                 pendingEvents.push(
                     makeDataTransferEvent({

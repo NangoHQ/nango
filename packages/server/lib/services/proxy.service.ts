@@ -28,7 +28,7 @@ import { connectionRefreshFailed, connectionRefreshSuccess } from '../hooks/hook
 import { capping } from '../utils/usage.js';
 
 import type { LogContext } from '@nangohq/logs';
-import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, InternalProxyConfiguration, ProxyFile, Result } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, InternalProxyConfiguration, OperationActor, ProxyFile, Result } from '@nangohq/types';
 import type { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 const MEMOIZED_CONNECTION_TTL = 60_000;
@@ -52,6 +52,8 @@ export interface ProxyServiceRequest {
     retryOn?: number[] | null | undefined;
     forwardHeadersOnRedirect?: boolean | undefined;
     activityLogId?: string | undefined;
+    /** Stamped on the operation this creates. Ignored when activityLogId points at an existing one. */
+    actor?: OperationActor | undefined;
     isSync?: boolean | undefined;
     isDryRun?: boolean | undefined;
 }
@@ -143,7 +145,7 @@ export class ProxyService {
             logCtx = params.activityLogId
                 ? logContextGetter.get({ id: params.activityLogId, accountId: account.id })
                 : await logContextGetter.create(
-                      { operation: { type: 'proxy', action: 'call' } },
+                      { operation: { type: 'proxy', action: 'call' }, actor: params.actor },
                       { account, environment },
                       params.isDryRun !== undefined ? { dryRun: params.isDryRun } : undefined
                   );
