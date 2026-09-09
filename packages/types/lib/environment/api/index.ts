@@ -203,6 +203,24 @@ export type PostPublicApiKey = ApiEndpoint<{
     Error: ApiError<'conflict' | 'resource_capped'>;
 }>;
 
+export type GetPublicApiKeys = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/environments/:environmentUuid/api-keys';
+    Params: { environmentUuid: string };
+    Querystring: { display_name?: string | undefined };
+    Success: {
+        data: {
+            id: number;
+            uuid: string;
+            display_name: string;
+            scopes: ApiKeyScope[];
+            last_used_at: string | null;
+            created_at: string;
+        }[];
+    };
+}>;
+
 export type DeletePublicApiKey = ApiEndpoint<{
     Audit: AuditPolicy<'api_key', 'deleted', 'environment'>;
     Method: 'DELETE';
