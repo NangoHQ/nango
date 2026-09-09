@@ -20,9 +20,9 @@ import { USAGE_METRIC_LABELS } from './usageMetrics';
 import { UsageTable } from './UsageTable';
 
 import type { UsageTableRow } from './UsageTable';
-import type { GetBillingPeriodCosts, UsageMetric } from '@nangohq/types';
+import type { UsageMetric } from '@nangohq/types';
 
-const showOldParam = parseAsBoolean.withDefault(false).withOptions({ history: 'replace' });
+const showLegacyParam = parseAsBoolean.withDefault(false).withOptions({ history: 'replace' });
 
 export const Usage: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -30,7 +30,7 @@ export const Usage: React.FC = () => {
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
     const isFree = plan?.name === 'free';
-    const [showOld, setShowOld] = useQueryState('oldMetrics', showOldParam);
+    const [showLegacy, setShowLegacy] = useQueryState('legacyMetrics', showLegacyParam);
     const transition = usePlanTransition();
     const isMigrating = transition !== null;
     const metrics = billedUsageMetrics(plan, isMigrating);
@@ -94,39 +94,16 @@ export const Usage: React.FC = () => {
     // Drop the meter both pricings charge on: one lookup key cannot serve two `connections` rows.
     const legacyOnlyMetrics = LEGACY_USAGE_METRICS.filter((metric) => !S26_USAGE_METRICS.includes(metric));
     const rows: UsageTableRow[] = isMigrating
-        ? [
-              ...metrics.map((metric) =>
-                  rowFor(metric, {
-                      ...(showOld ? { group: 'New metrics' } : {}),
-                      charge: projectedCharges?.(metric),
-                      ...(orbCurrentPlanCharges ? { currentPlanCharge: orbCurrentPlanCharges(metric) } : {})
-                  })
-              ),
-              ...(showOld
-                  ? legacyOnlyMetrics.map((metric) =>
-                        rowFor(metric, {
-                            group: 'Old metrics',
-                            charge: { formatted: null, pending: false },
-                            ...(orbCharges ? { currentPlanCharge: orbCharges(metric) } : {})
-                        })
-                    )
-                  : [])
-          ]
+        ? metrics.map((metric) =>
+              rowFor(metric, {
+                  charge: projectedCharges?.(metric),
+                  ...(orbCurrentPlanCharges ? { currentPlanCharge: orbCurrentPlanCharges(metric) } : {})
+              })
+          )
         : metrics.map((metric) => rowFor(metric));
-    const totals =
-        isMigrating && projected && !projected.data.notApplicable
-            ? {
-                  subtotalInCents: projected.data.subtotalInCents,
-                  minimumInCents: projected.data.minimumInCents,
-                  minimumApplied: projected.data.minimumApplied,
-                  growthAddOnInCents: projected.data.growthAddOnInCents,
-                  totalInCents: projected.data.totalInCents,
-                  currency: projected.data.currency,
-                  currentPlanTitle: transition.fromTitle,
-                  currentPlan: currentPlanTotals(periodCosts, projected.data.currency)
-              }
-            : undefined;
 
+    // No `charge`: Pay-as-you-go does not price these meters, so that column states nothing.
+    const legacyRows: UsageTableRow[] = legacyOnlyMetrics.map((metric) => rowFor(metric, orbCharges ? { currentPlanCharge: orbCharges(metric) } : {}));
     return (
         <div className="w-full flex flex-col gap-4">
             {/* A migrating account already has the migration banner. An unscheduled one has nothing else. */}
@@ -172,47 +149,41 @@ export const Usage: React.FC = () => {
                 chartMode="daily"
                 variant={isMigrating ? 'comparison' : charges ? 'charges' : 'usage'}
                 charges={charges}
-                totals={totals}
+                currentPlanTitle={transition?.fromTitle}
                 extraColumnTooltip={isMigrating ? 'Estimated amount based on new rates.' : undefined}
             />
 
             {isMigrating && (
                 <div className="flex items-center gap-2 px-1">
                     <Switch
-                        id="old-metrics"
-                        checked={showOld}
+                        id="legacy-metrics"
+                        checked={showLegacy}
                         onCheckedChange={(checked) => {
-                            void setShowOld(checked);
-                            track('web:usage:old_metrics_toggled', { shown: checked });
+                            void setShowLegacy(checked);
+                            track('web:usage:legacy_metrics_toggled', { shown: checked });
                         }}
                     />
-                    <label htmlFor="old-metrics" className="cursor-pointer text-text-secondary text-body-small-regular">
-                        Show old metrics
+                    <label htmlFor="legacy-metrics" className="cursor-pointer text-text-secondary text-body-small-regular">
+                        Show legacy billing metrics
                     </label>
                 </div>
+            )}
+
+            {isMigrating && showLegacy && (
+                <UsageTable
+                    rows={legacyRows}
+                    isLoading={isLoading}
+                    env={env}
+                    timeframe={timeframe}
+                    chartMode="daily"
+                    variant="comparison"
+                    currentPlanTitle={transition?.fromTitle}
+                    legacy
+                />
             )}
         </div>
     );
 };
-
-/** Summed from the same Orb figures the rows show, so the column adds up. Returns null, not 0:
- *  0 would show $0.00 as the bill for an account Orb has no figures for. */
-function currentPlanTotals(
-    periodCosts: GetBillingPeriodCosts['Success'] | undefined,
-    currency: string
-): { usageInCents: number; fixedInCents: number; totalInCents: number } | null {
-    if (!periodCosts || periodCosts.data.noCosts) {
-        return null;
-    }
-    // Both columns are formatted with the projection's currency, so a current plan billed in
-    // another one would print a fabricated figure. Withhold it rather than convert.
-    if (periodCosts.data.currency !== currency) {
-        return null;
-    }
-    const { metrics, fixedInCents } = periodCosts.data;
-    const usageInCents = Object.values(metrics).reduce<number>((sum, cents) => sum + cents, 0);
-    return { usageInCents, fixedInCents, totalInCents: usageInCents + fixedInCents };
-}
 
 function monthTimeframe(month: Date, offset: number): { start: string; end: string } {
     const start = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + offset, 1));

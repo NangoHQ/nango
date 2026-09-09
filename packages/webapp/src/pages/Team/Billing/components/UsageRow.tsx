@@ -123,7 +123,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                         </div>
                     ) : (
                         // On an uncapped plan a charge is what was billed, not a threshold crossed.
-                        <div className="text-text-default type-text-regular-sm">{charge?.formatted ?? '—'}</div>
+                        <div className="text-text-default type-text-regular-sm">{charge ? (charge.formatted ?? '—') : ''}</div>
                     )}
                     <ChevronDown className="size-5 text-text-muted transition-transform group-data-[state=open]:rotate-180" />
                 </div>
