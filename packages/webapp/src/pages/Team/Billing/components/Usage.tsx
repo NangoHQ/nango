@@ -2,7 +2,7 @@ import { ExternalLink, Info } from 'lucide-react';
 import { parseAsBoolean, useQueryState } from 'nuqs';
 import { useMemo } from 'react';
 
-import { Alert, AlertActions, AlertDescription, AlertTitle, Badge, Button } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Switch } from '@/components/ui/Switch';
@@ -134,10 +134,7 @@ export const Usage: React.FC = () => {
             )}
 
             <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                    <span className="text-text-strong text-body-medium-medium">Usage</span>
-                    {isMigrating && <Badge variant="brand">New pricing</Badge>}
-                </div>
+                <span className="text-text-strong text-body-medium-medium">Usage</span>
                 <MonthSelector />
             </div>
 
