@@ -71,6 +71,9 @@
             "path": "packages/orchestrator"
         },
         {
+            "path": "packages/oauth-server"
+        },
+        {
             "path": "packages/server"
         },
         {
