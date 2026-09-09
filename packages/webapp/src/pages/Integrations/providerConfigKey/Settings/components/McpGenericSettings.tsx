@@ -1,11 +1,13 @@
 import { FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
+import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
+import { APIError } from '@/utils/api';
 import { defaultCallback } from '@/utils/cloud';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
@@ -31,6 +33,27 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
             const message = 'Failed to update, an error occurred';
             toast({ title: message, variant: 'error' });
             throw new Error(message);
+        }
+    };
+
+    const handleScopesChange = async (scopes: string, countDifference: number) => {
+        try {
+            await patchIntegration({
+                authType: template.auth_mode,
+                scopes
+            } as PatchIntegration['Body']);
+            if (countDifference > 0) {
+                const plural = countDifference > 1 ? 'scopes' : 'scope';
+                toast({ title: `Added ${countDifference} new ${plural}`, variant: 'success' });
+            } else {
+                toast({ title: `Scope successfully removed`, variant: 'success' });
+            }
+        } catch (err) {
+            let errorMessage = 'Failed to update scopes';
+            if (err instanceof APIError && err.json.error.message) {
+                errorMessage = err.json.error.message;
+            }
+            throw new Error(errorMessage);
         }
     };
 
@@ -76,6 +99,12 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
                     placeholder="e.g., https://example.com/logo.png"
                     validate={validateUrl}
                 />
+            </div>
+
+            {/* Scopes */}
+            <div className="flex flex-col gap-2">
+                <FieldLabel htmlFor="scopes">Scopes</FieldLabel>
+                <ScopesInput scopesString={integration.oauth_scopes || ''} onChange={handleScopesChange} />
             </div>
         </div>
     );
