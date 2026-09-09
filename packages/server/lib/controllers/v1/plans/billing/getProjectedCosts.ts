@@ -77,12 +77,12 @@ export const getProjectedCosts = asyncWrapper<GetProjectedCosts>(async (req, res
                   end: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1))
               };
 
-    // The same opts the usage table requests, so charge ÷ displayed quantity equals the rate.
+    // No `avgPerDay`: connections must be the period's running average, which is the quantity Orb
+    // meters and the quantity the migration email is generated from.
     const usage = await usageTracker.getBillingUsage('', account.id, {
         granularity: 'day',
         timeframe,
-        metrics: [...PAY_AS_YOU_GO_METRICS],
-        avgPerDay: true
+        metrics: [...PAY_AS_YOU_GO_METRICS]
     });
     if (usage.isErr()) {
         report(usage.error);

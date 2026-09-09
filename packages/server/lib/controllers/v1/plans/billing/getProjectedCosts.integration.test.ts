@@ -236,10 +236,10 @@ describe(`GET ${route}`, () => {
                 expect.any(Number),
                 expect.objectContaining({
                     granularity: 'day',
-                    avgPerDay: true,
                     timeframe: { start: new Date('2026-08-01T00:00:00.000Z'), end: new Date('2026-09-01T00:00:00.000Z') }
                 })
             );
+            expect(getBillingUsageSpy.mock.calls[0]?.[2]).not.toHaveProperty('avgPerDay');
         });
 
         it('should fail loudly when the usage read fails, rather than quoting a wrong bill', async () => {
