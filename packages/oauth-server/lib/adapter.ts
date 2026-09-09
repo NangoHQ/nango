@@ -104,7 +104,6 @@ class PostgresOAuthAdapter implements Adapter {
 
     async consume(id: string): Promise<void> {
         const artifactIdHash = this.crypto.hash(id);
-        const consumedAt = new Date();
         const outcome = await this.options.knex.transaction(async (trx) => {
             // Read the immutable grant hash first so every grant-related operation acquires
             // the advisory lock before taking row locks. This avoids a lock-order deadlock
@@ -120,6 +119,7 @@ class PostgresOAuthAdapter implements Adapter {
                 .where({ model: this.model, artifact_id_hash: artifactIdHash })
                 .forUpdate()
                 .first<ArtifactRow>('artifact_id_hash', 'payload_encrypted', 'grant_id_hash', 'expires_at', 'consumed_at', 'revoked_at');
+            const consumedAt = new Date();
             if (!row || row.revoked_at || row.expires_at <= consumedAt) {
                 return 'invalid';
             }
@@ -236,7 +236,9 @@ async function lockGrant(trx: Knex.Transaction, grantIdHash: Buffer): Promise<vo
 }
 
 export async function deleteExpiredOAuthArtifacts(knex: Knex, limit: number): Promise<number> {
+    const expiresAt = new Date();
     return await knex(OAUTH_SERVER_ARTIFACTS_TABLE)
-        .whereIn('id', knex(OAUTH_SERVER_ARTIFACTS_TABLE).select('id').where('expires_at', '<=', new Date()).orderBy('expires_at', 'asc').limit(limit))
+        .where('expires_at', '<=', expiresAt)
+        .whereIn('id', knex(OAUTH_SERVER_ARTIFACTS_TABLE).select('id').where('expires_at', '<=', expiresAt).orderBy('expires_at', 'asc').limit(limit))
         .delete();
 }

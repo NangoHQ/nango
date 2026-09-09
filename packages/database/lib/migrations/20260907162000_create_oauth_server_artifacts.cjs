@@ -6,6 +6,10 @@ const tableName = 'oauth_server_artifacts';
  * @param {import('knex').Knex} knex
  */
 exports.up = async function (knex) {
+    if (await knex.schema.hasTable(tableName)) {
+        return;
+    }
+
     await knex.schema.createTable(tableName, (table) => {
         table.bigIncrements('id').primary();
         table.text('model').notNullable();

@@ -7,6 +7,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 import { createOAuthAdapter, deleteExpiredOAuthArtifacts, OAUTH_SERVER_ARTIFACTS_TABLE } from './adapter.js';
 import { createOAuthProvider } from './provider.js';
 
+import type { Knex } from 'knex';
 import type { AdapterPayload } from 'oidc-provider';
 
 const encryptionKey = Buffer.alloc(32, 's').toString('base64');
@@ -86,6 +87,39 @@ describe('PostgreSQL OAuth provider adapter', () => {
         await expect(refreshToken.upsert('late-refresh', artifactPayload('RefreshToken', grantId), 60)).rejects.toThrow(/revoked OAuth grant/);
     });
 
+    it('does not consume an artifact that expires while waiting for its row lock', async () => {
+        const authorizationCode = adapter('AuthorizationCode');
+        await authorizationCode.upsert('expiring-code', artifactPayload('AuthorizationCode', 'grant-expiring'), 60);
+        const row = await db.knex(OAUTH_SERVER_ARTIFACTS_TABLE).where({ model: 'AuthorizationCode' }).first<{ id: string }>('id');
+        if (!row) throw new Error('OAuth authorization code was not persisted');
+
+        const blocker = await db.knex.transaction();
+        const consumer = await db.knex.transaction();
+        try {
+            await blocker(OAUTH_SERVER_ARTIFACTS_TABLE).where({ id: row.id }).forUpdate().first('id');
+            const { rows } = await consumer.raw<{ rows: { pid: number }[] }>('SELECT pg_backend_pid() AS pid');
+            const backend = rows[0];
+            if (!backend) throw new Error('Consumer transaction has no PostgreSQL backend');
+
+            const consumed = adapter('AuthorizationCode', consumer).consume('expiring-code');
+            await waitForDatabaseLock(backend.pid);
+            await blocker(OAUTH_SERVER_ARTIFACTS_TABLE)
+                .where({ id: row.id })
+                .update({ expires_at: new Date(Date.now() + 100), updated_at: new Date() });
+            await new Promise((resolve) => setTimeout(resolve, 150));
+            await blocker.commit();
+
+            await expect(consumed).rejects.toThrow('invalid_grant');
+            await consumer.commit();
+        } finally {
+            if (!blocker.isCompleted()) await blocker.rollback();
+            if (!consumer.isCompleted()) await consumer.rollback();
+        }
+
+        const persisted = await db.knex(OAUTH_SERVER_ARTIFACTS_TABLE).where({ id: row.id }).first<{ consumed_at: Date | null }>('consumed_at');
+        expect(persisted?.consumed_at).toBeNull();
+    });
+
     it('serializes grant revocation with artifact creation and rejects late writes', async () => {
         const grantId = 'racing-grant';
         const accessToken = adapter('AccessToken');
@@ -111,6 +145,36 @@ describe('PostgreSQL OAuth provider adapter', () => {
         await expect(adapter('AccessToken').find('active-token')).resolves.toBeDefined();
     });
 
+    it('does not delete an artifact renewed while cleanup waits for its row', async () => {
+        const session = adapter('Session');
+        await session.upsert('renewed-session', artifactPayload('Session', 'grant-renewed'), -10);
+        const row = await db.knex(OAUTH_SERVER_ARTIFACTS_TABLE).where({ model: 'Session' }).first<{ id: string }>('id');
+        if (!row) throw new Error('OAuth session was not persisted');
+
+        const renewal = await db.knex.transaction();
+        const cleanup = await db.knex.transaction();
+        try {
+            await renewal(OAUTH_SERVER_ARTIFACTS_TABLE)
+                .where({ id: row.id })
+                .update({ expires_at: new Date(Date.now() + 60_000), updated_at: new Date() });
+            const { rows } = await cleanup.raw<{ rows: { pid: number }[] }>('SELECT pg_backend_pid() AS pid');
+            const backend = rows[0];
+            if (!backend) throw new Error('Cleanup transaction has no PostgreSQL backend');
+
+            const deleted = deleteExpiredOAuthArtifacts(cleanup, 1);
+            await waitForDatabaseLock(backend.pid);
+            await renewal.commit();
+
+            await expect(deleted).resolves.toBe(0);
+            await cleanup.commit();
+        } finally {
+            if (!renewal.isCompleted()) await renewal.rollback();
+            if (!cleanup.isCompleted()) await cleanup.rollback();
+        }
+
+        await expect(session.find('renewed-session')).resolves.toBeDefined();
+    });
+
     it('fails loudly for disabled models and never persists clients', async () => {
         expect(() => adapter('DeviceCode')).toThrow('Unsupported OAuth provider model: DeviceCode');
         await expect(adapter('AuthorizationCode').findByUserCode('unused-device-code')).resolves.toBeUndefined();
@@ -118,9 +182,9 @@ describe('PostgreSQL OAuth provider adapter', () => {
     });
 });
 
-function adapter(model: string) {
+function adapter(model: string, knex: Knex = db.knex) {
     return createOAuthAdapter({
-        knex: db.knex,
+        knex,
         encryptionKey
     })(model);
 }
@@ -135,4 +199,14 @@ function artifactPayload(kind: string, grantId: string): AdapterPayload {
         iat: now,
         exp: now + 600
     };
+}
+
+async function waitForDatabaseLock(pid: number): Promise<void> {
+    const deadline = Date.now() + 5_000;
+    while (Date.now() < deadline) {
+        const activity = await db.knex('pg_stat_activity').where({ pid }).first<{ wait_event_type: string | null }>('wait_event_type');
+        if (activity?.wait_event_type === 'Lock') return;
+        await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    throw new Error('Cleanup query did not wait for the concurrent session renewal');
 }
