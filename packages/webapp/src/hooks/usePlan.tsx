@@ -231,19 +231,25 @@ export const GetBillingPeriodCostsQueryKey = ['plans', 'billing', 'period-costs'
  * Shares the invoice's stale time deliberately: both read the same Orb figures, and different
  * windows would let two views of them disagree.
  */
-export function useApiGetBillingPeriodCosts(env: string, plan?: { name: string } | null, options?: { enabled?: boolean }) {
+export function useApiGetBillingPeriodCosts(
+    env: string,
+    plan?: { name: string } | null,
+    options?: { enabled?: boolean; timeframe?: { start: string; end: string } }
+) {
     const planName = plan?.name;
+    const timeframe = options?.timeframe;
     const periodCostsOverride = usePlanOverrideStore((s) => s.periodCostsOverride);
     return useQuery<GetBillingPeriodCosts['Success'], APIError>({
         enabled: Boolean(env) && (options?.enabled ?? false),
         staleTime: UPCOMING_INVOICE_STALE_TIME,
-        queryKey: [...GetBillingPeriodCostsQueryKey, env, planName, currentBillingPeriod(), periodCostsOverride],
+        queryKey: [...GetBillingPeriodCostsQueryKey, env, planName, timeframe?.start ?? currentBillingPeriod(), timeframe?.end, periodCostsOverride],
         queryFn: async (): Promise<GetBillingPeriodCosts['Success']> => {
             if (periodCostsOverride !== null) {
                 return buildPeriodCostsOverride(periodCostsOverride);
             }
 
-            const res = await apiFetch(`/api/v1/plans/billing/period-costs?env=${env}`, {
+            const window = timeframe ? `&from=${encodeURIComponent(timeframe.start)}&to=${encodeURIComponent(timeframe.end)}` : '';
+            const res = await apiFetch(`/api/v1/plans/billing/period-costs?env=${env}${window}`, {
                 method: 'GET'
             });
 

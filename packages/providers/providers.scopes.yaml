@@ -8390,6 +8390,15 @@ monday:
     - workspaces:read
     - workspaces:write
 
+# source: https://developer.moneybird.com/authentication#scopes
+moneybird:
+    - bank
+    - documents
+    - estimates
+    - sales_invoices
+    - settings
+    - time_entries
+
 # source: https://developers.mural.co/public/docs/scopes
 mural:
     - identity:read
@@ -9044,6 +9053,11 @@ oura:
     - spo2Daily
     - tag
     - workout
+
+# source: https://app.getoutline.com/.well-known/oauth-authorization-server (scopes_supported)
+outline:
+    - read
+    - write
 
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: providers.yaml default_scopes

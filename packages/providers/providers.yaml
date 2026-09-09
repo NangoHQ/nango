@@ -1049,6 +1049,35 @@ airtable:
     docs: https://nango.dev/docs/api-integrations/airtable
     setup_guide_url: https://nango.dev/docs/api-integrations/airtable/how-to-register-your-own-airtable-api-oauth-app
 
+airtable-mcp:
+    display_name: Airtable (MCP)
+    categories:
+        - productivity
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://airtable.com/oauth2/v1/authorize
+    token_url: https://airtable.com/oauth2/v1/token
+    registration_url: https://airtable.com/oauth2/v1/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.airtable.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.airtable.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/airtable-mcp
+
 airtable-pat:
     display_name: Airtable (Personal Access Token)
     categories:
@@ -1436,6 +1465,28 @@ anrok:
             type: string
             title: API Key
             description: The API key for your Anrok account
+            doc_section: '#step-1-finding-your-api-key'
+
+amplemarket:
+    display_name: Amplemarket
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.amplemarket.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /account-info
+    docs: https://nango.dev/docs/api-integrations/amplemarket
+    docs_connect: https://nango.dev/docs/api-integrations/amplemarket/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Amplemarket account
             doc_section: '#step-1-finding-your-api-key'
 
 amplitude:
@@ -3672,6 +3723,38 @@ boldsign:
         base_url: https://api.boldsign.com
     docs: https://nango.dev/docs/integrations/all/boldsign
 
+bol-com:
+    display_name: bol.com
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    token_url: https://login.bol.com/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.bol.com
+        headers:
+            accept: application/vnd.retailer.v10+json
+    docs: https://nango.dev/docs/api-integrations/bol-com
+    docs_connect: https://nango.dev/docs/api-integrations/bol-com/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your bol.com Retailer API client ID.
+            example: 123e4567-****-****-****-426614174000
+            format: uuid
+            doc_section: '#create-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your bol.com Retailer API client secret.
+            example: AAECAwQF**************************************************************D0-Pw
+            pattern: '^[A-Za-z0-9_-]+$'
+            secret: true
+            doc_section: '#create-client-credentials'
+
 boondmanager:
     display_name: BoondManager
     categories:
@@ -4732,6 +4815,7 @@ checkr-partner:
     token_response_metadata:
         - checkr_account_id
     webhook_routing_script: checkrPartnerWebhookRouting
+    webhook_user_defined_secret: true
     post_connection_script: checkrPartnerPostConnection
     docs: https://nango.dev/docs/integrations/all/checkr-partner
     connection_config:
@@ -4758,6 +4842,7 @@ checkr-partner-staging:
     token_response_metadata:
         - checkr_account_id
     webhook_routing_script: checkrPartnerWebhookRouting
+    webhook_user_defined_secret: true
     post_connection_script: checkrPartnerPostConnection
     docs: https://nango.dev/docs/integrations/all/checkr-partner-staging
     connection_config:
@@ -8274,13 +8359,17 @@ fathom:
                 - /external/v1/teams
     webhook_routing_script: fathomWebhookRouting
     webhook_user_defined_secret: true
-    docs: https://nango.dev/docs/integrations/all/fathom
-    docs_connect: https://nango.dev/docs/integrations/all/fathom/connect
+    webhook_allowed_query_params:
+        - nangoConnectionId
+    docs: https://nango.dev/docs/api-integrations/fathom
+    docs_connect: https://nango.dev/docs/api-integrations/fathom/connect
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your Fathom account
+            description: The API key for your Fathom account.
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            example: zEqdWLo1************CQ.GUMvH9T6*****************************MFUJAw
 
 fathom-oauth:
     display_name: Fathom (OAuth)
@@ -8299,6 +8388,8 @@ fathom-oauth:
         grant_type: refresh_token
     webhook_routing_script: fathomWebhookRouting
     webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - nangoConnectionId
     proxy:
         base_url: https://api.fathom.ai
         retry:
@@ -15158,6 +15249,25 @@ monday:
     docs: https://nango.dev/docs/api-integrations/monday
     setup_guide_url: https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app
 
+moneybird:
+    display_name: Moneybird
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://moneybird.com/oauth/authorize
+    token_url: https://moneybird.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://moneybird.com/api
+    docs: https://nango.dev/docs/api-integrations/moneybird
+    setup_guide_url: https://nango.dev/docs/api-integrations/moneybird/how-to-register-your-own-moneybird-oauth-app
+
 momentum-io:
     display_name: Momentum.io
     categories:
@@ -16945,6 +17055,25 @@ oura:
     proxy:
         base_url: https://api.ouraring.com
     docs: https://nango.dev/docs/integrations/all/oura
+
+outline:
+    display_name: Outline
+    categories:
+        - knowledge-base
+    auth_mode: OAUTH2
+    authorization_url: https://app.getoutline.com/oauth/authorize
+    token_url: https://app.getoutline.com/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.getoutline.com/api
+    docs: https://nango.dev/docs/api-integrations/outline
+    setup_guide_url: https://nango.dev/docs/api-integrations/outline/how-to-register-your-own-outline-api-oauth-app
 
 outlook:
     display_name: Outlook
@@ -22434,6 +22563,7 @@ slack:
             cursor_name_in_request: cursor
             limit_name_in_request: limit
     webhook_routing_script: slackWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/slack
     setup_guide_url: https://nango.dev/docs/api-integrations/slack/how-to-register-your-own-slack-api-oauth-app
 

@@ -1,0 +1,86 @@
+---
+title: 'Outline'
+sidebarTitle: 'Outline'
+description: 'Integrate your application with the Outline API'
+---
+
+## 🚀 Quickstart
+
+Connect to Outline with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Outline_.
+    </Step>
+    <Step title="Authorize Outline">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Outline. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Outline API">
+    Let's make your first request to the Outline API to fetch the authenticated user's info. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/auth.info" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/auth.info',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+<Note>
+Outline's API is RPC-style: every endpoint is a `POST` request to `https://app.getoutline.com/api/:method`, including read-only calls like `auth.info`.
+</Note>
+
+## 📚 Outline integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Outline OAuth app](/api-integrations/outline/how-to-register-your-own-outline-api-oauth-app)  
+Register an OAuth app with Outline and obtain credentials to connect it to Nango
+
+Official docs: [Outline API docs](https://www.getoutline.com/developers)
+
+## 🧩 Pre-built syncs & actions for Outline
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/outline/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
