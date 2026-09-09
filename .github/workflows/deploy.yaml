@@ -15,6 +15,7 @@ on:
                     - production
                     - replit
                     - charm-sandbox
+                    - byoc-gcp-1
             service:
                 type: choice
                 description: 'Service to deploy, defaults to server'
@@ -90,34 +91,34 @@ jobs:
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   aws-region: ${{ vars.AWS_REGION }}
             - name: Deploy Webapp to S3
-              if: inputs.stage != 'replit'
+              if: inputs.stage != 'replit' && inputs.stage != 'byoc-gcp-1'
               run: |
                   aws s3 sync packages/webapp/dist/ s3://${{ vars.APP_UI_BUCKET }} --delete
             - name: Create invalidation
-              if: inputs.stage != 'replit'
+              if: inputs.stage != 'replit' && inputs.stage != 'byoc-gcp-1'
               run: |
                   aws cloudfront create-invalidation --distribution-id ${{ vars.APP_UI_DISTRIBUTION_ID }} --paths "/*"
             - name: Auth to GCP (OIDC)
-              if: inputs.stage == 'replit'
+              if: inputs.stage == 'replit' || inputs.stage == 'byoc-gcp-1'
               uses: google-github-actions/auth@v2
               with:
                   workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
                   service_account: ${{ vars.GCP_DEPLOYER_SA }}
             - name: Setup gcloud SDK
-              if: inputs.stage == 'replit'
+              if: inputs.stage == 'replit' || inputs.stage == 'byoc-gcp-1'
               uses: google-github-actions/setup-gcloud@v2
               with:
                   project_id: ${{ vars.GCP_PROJECT_ID }}
             - name: Upload Webapp to GCS
-              if: inputs.stage == 'replit'
+              if: inputs.stage == 'replit' || inputs.stage == 'byoc-gcp-1'
               run: |
                   gsutil -m rsync -r -d packages/webapp/dist/ gs://${{ vars.APP_UI_BUCKET }}
             - name: Set cache-control for index.html
-              if: inputs.stage == 'replit'
+              if: inputs.stage == 'replit' || inputs.stage == 'byoc-gcp-1'
               run: |
                   gsutil setmeta -h "Cache-Control:no-store, no-cache, must-revalidate, max-age=0" "gs://${{ vars.APP_UI_BUCKET }}/index.html"
             - name: Invalidate Cloud CDN cache
-              if: inputs.stage == 'replit'
+              if: inputs.stage == 'replit' || inputs.stage == 'byoc-gcp-1'
               run: |
                   gcloud compute url-maps invalidate-cdn-cache ${{ vars.APP_UI_URL_MAP }} \
                     --path "/*" \
@@ -137,41 +138,41 @@ jobs:
             - name: Build Connect UI
               run: npm run ts-build && npm run -w @nangohq/connect-ui build
             - name: configure aws credentials
-              if: inputs.stage != 'replit'
+              if: inputs.stage != 'replit' && inputs.stage != 'byoc-gcp-1'
               uses: aws-actions/configure-aws-credentials@v4
               with:
                   role-to-assume: ${{ vars.DEPLOY_CONNECT_UI_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   aws-region: ${{ vars.AWS_REGION }}
             - name: Deploy Connect UI to S3
-              if: inputs.stage != 'replit'
+              if: inputs.stage != 'replit' && inputs.stage != 'byoc-gcp-1'
               run: |
                   aws s3 sync packages/connect-ui/dist/ s3://${{ vars.CONNECT_UI_BUCKET }} --delete
             - name: Create invalidation
-              if: inputs.stage != 'replit'
+              if: inputs.stage != 'replit' && inputs.stage != 'byoc-gcp-1'
               run: |
                   aws cloudfront create-invalidation --distribution-id ${{ vars.CONNECT_UI_DISTRIBUTION_ID }} --paths "/*"
             - name: Auth to GCP (OIDC)
-              if: inputs.stage == 'replit'
+              if: inputs.stage == 'replit' || inputs.stage == 'byoc-gcp-1'
               uses: google-github-actions/auth@v2
               with:
                   workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
                   service_account: ${{ vars.GCP_DEPLOYER_SA }}
             - name: Setup gcloud SDK
-              if: inputs.stage == 'replit'
+              if: inputs.stage == 'replit' || inputs.stage == 'byoc-gcp-1'
               uses: google-github-actions/setup-gcloud@v2
               with:
                   project_id: ${{ vars.GCP_PROJECT_ID }}
             - name: Upload Webapp to GCS
-              if: inputs.stage == 'replit'
+              if: inputs.stage == 'replit' || inputs.stage == 'byoc-gcp-1'
               run: |
                   gsutil -m rsync -r -d packages/connect-ui/dist/ gs://${{ vars.CONNECT_UI_BUCKET }}
             - name: Set cache-control for index.html
-              if: inputs.stage == 'replit'
+              if: inputs.stage == 'replit' || inputs.stage == 'byoc-gcp-1'
               run: |
                   gsutil setmeta -h "Cache-Control:no-store, no-cache, must-revalidate, max-age=0" "gs://${{ vars.CONNECT_UI_BUCKET }}/index.html"
             - name: Invalidate Cloud CDN cache
-              if: inputs.stage == 'replit'
+              if: inputs.stage == 'replit' || inputs.stage == 'byoc-gcp-1'
               run: |
                   gcloud compute url-maps invalidate-cdn-cache ${{ vars.CONNECT_UI_URL_MAP }} \
                     --path "/*" \
@@ -223,7 +224,7 @@ jobs:
                   path: nango-environments
 
             - name: Deploy ${{ inputs.service }} (AWS)
-              if: inputs.stage != 'replit' && inputs.stage != 'charm-sandbox'
+              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production'
               run: |
                   cd nango-environments
 
