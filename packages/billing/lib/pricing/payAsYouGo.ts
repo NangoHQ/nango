@@ -1,8 +1,8 @@
 import type { UsageMetric } from '@nangohq/types';
 
 /**
- * What a period of usage would cost on Pay-as-you-go. Keep the rates here: `planToApi` copies every
- * plan column into its response, and `@nangohq/types` ships inside the webapp bundle.
+ * Rates stay in this package. `planToApi` copies every plan column into its response, and
+ * `@nangohq/types` ships inside the webapp bundle.
  */
 
 export type PayAsYouGoMetric = Extract<UsageMetric, 'connections' | 'function_duration_seconds' | 'data_transfer'>;
@@ -14,7 +14,7 @@ const CENTS_PER_COMPUTE_HOUR = 72;
 const CENTS_PER_TRANSFER_GB = 50;
 
 const SECONDS_PER_HOUR = 3600;
-/** Decimal GB, not GiB. Matches the published rate and Orb's own billable metric. */
+/** Decimal GB, not GiB — the unit the published rate and Orb's metric both use. */
 const BYTES_PER_GB = 1_000_000_000;
 
 const MINIMUM_IN_CENTS = 5_000;
@@ -34,7 +34,7 @@ export interface PayAsYouGoProjection {
 }
 
 function quantity(value: number, metric: PayAsYouGoMetric): number {
-    // A metric with no rows already reads as 0, so a non-finite value here means a broken read.
+    // Zero is a real quantity. A non-finite one means the usage read failed.
     if (!Number.isFinite(value) || value < 0) {
         throw new Error(`unusable_quantity_for_${metric}`);
     }
@@ -42,7 +42,7 @@ function quantity(value: number, metric: PayAsYouGoMetric): number {
 }
 
 export function projectPayAsYouGo(quantities: PayAsYouGoQuantities, { isGrowth }: { isGrowth: boolean }): PayAsYouGoProjection {
-    // Convert to each rate's published unit and round per metric, so the rows sum to the subtotal.
+    // Round per metric, so the rows add up to the subtotal.
     const metrics: Record<PayAsYouGoMetric, number> = {
         connections: Math.round(quantity(quantities.connections, 'connections') * CENTS_PER_CONNECTION),
         function_duration_seconds: Math.round(

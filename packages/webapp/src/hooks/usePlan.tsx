@@ -270,8 +270,6 @@ export function useApiGetProjectedCosts(env: string, timeframe: { start: string;
     return useQuery<GetProjectedCosts['Success'], APIError>({
         enabled: Boolean(env) && (options?.enabled ?? false),
         staleTime: UPCOMING_INVOICE_STALE_TIME,
-        // Keyed on the timeframe, not just the env: ClickHouse answers for any month, so stepping
-        // the month must not reuse the previous answer.
         queryKey: [...GetProjectedCostsQueryKey, env, timeframe.start, timeframe.end],
         queryFn: async (): Promise<GetProjectedCosts['Success']> => {
             const res = await apiFetch(`/api/v1/plans/billing/projected-costs?env=${env}&from=${timeframe.start}&to=${timeframe.end}`, {

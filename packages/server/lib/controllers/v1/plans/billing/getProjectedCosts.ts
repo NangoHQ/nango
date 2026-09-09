@@ -58,8 +58,8 @@ export const getProjectedCosts = asyncWrapper<GetProjectedCosts>(async (req, res
     // Gate on Orb's schedule only. The retired plans being migrated all fail `isSpendPlan`.
     const changeAt = plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : null;
     const scheduled = plan.orb_future_plan === TARGET_PLAN && changeAt !== null && !Number.isNaN(changeAt.getTime()) && changeAt > new Date();
-    // Staff impersonating an account also get the projection, to check the view on real data before
-    // scheduling anything. Only `postImpersonate` sets `debugMode`, so an account cannot ask itself.
+    // Staff previewing an impersonated account get it too. Only `postImpersonate` sets `debugMode`,
+    // so an account cannot ask for itself.
     const previewing = req.session?.debugMode === true;
     if (!scheduled && !previewing) {
         res.status(200).send({ data: NOT_APPLICABLE });

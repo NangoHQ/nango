@@ -162,7 +162,6 @@ export function applyPlanOverride(
               // plan definitions only ever set those fields to `null`, never an actual Date.
               ...(overridePlan.flags as Partial<ApiPlan>),
               name: overridePlan.code,
-              // Null so an overridden plan does not inherit the real account's scheduled date.
               orb_future_plan: null,
               orb_future_plan_at: null
           }

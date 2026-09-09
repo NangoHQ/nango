@@ -198,10 +198,8 @@ export type GetBillingPeriodCosts = ApiEndpoint<{
     };
 }>;
 
-/**
- * What a period would cost on Pay-as-you-go. `totalInCents` applies the Pay-as-you-go floor, so it
- * is not comparable line-by-line with `GetBillingPeriodCosts`, which excludes plan minimums.
- */
+/** `totalInCents` applies the Pay-as-you-go floor, so it does not line up with
+ *  `GetBillingPeriodCosts`, which excludes plan minimums. */
 export type GetProjectedCosts = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';

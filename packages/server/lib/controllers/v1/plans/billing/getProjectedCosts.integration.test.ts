@@ -157,7 +157,6 @@ describe(`GET ${route}`, () => {
             expect(getBillingUsageSpy).not.toHaveBeenCalled();
         });
 
-        // The retired plans fail `isSpendPlan`, yet they are exactly who is being migrated.
         it.each(['starter-v2', 'growth-v2', 'starter-legacy', 'scale-legacy', 'growth-legacy'] as const)(
             'should project for a scheduled %s account',
             async (planName) => {

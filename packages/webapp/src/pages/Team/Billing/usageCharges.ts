@@ -15,8 +15,7 @@ interface BuildArgs {
     isPending: boolean;
     isError: boolean;
     data: GetBillingPeriodCosts['Success'] | undefined;
-    /** How a metric the subscription has no price for reads. Use `dash` in the comparison: $0.00
-     *  beside a real charge reads as "free" rather than "not priced". */
+    /** Use `dash` in the comparison: $0.00 beside a real charge reads as "free", not "not priced". */
     unpriced?: 'zero' | 'dash';
 }
 

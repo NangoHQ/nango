@@ -91,7 +91,6 @@ export const Usage: React.FC = () => {
 
     const charges = isMigrating ? projectedCharges : orbCharges;
 
-    // Drop the meter both pricings charge on: one lookup key cannot serve two `connections` rows.
     const legacyOnlyMetrics = LEGACY_USAGE_METRICS.filter((metric) => !S26_USAGE_METRICS.includes(metric));
     const rows: UsageTableRow[] = isMigrating
         ? metrics.map((metric) =>
@@ -106,7 +105,7 @@ export const Usage: React.FC = () => {
     const legacyRows: UsageTableRow[] = legacyOnlyMetrics.map((metric) => rowFor(metric, orbCharges ? { currentPlanCharge: orbCharges(metric) } : {}));
     return (
         <div className="w-full flex flex-col gap-4">
-            {/* A migrating account already has the migration banner. An unscheduled one has nothing else. */}
+            {/* A migrating account already has the transition banner. */}
             {isLegacy && !isMigrating && (
                 <Alert variant="info">
                     <Info />

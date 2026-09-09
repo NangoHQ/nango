@@ -9,7 +9,6 @@ import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 export interface UsageTableRow {
     metric: UsageMetric;
     label: string;
-    /** Overrides the metric-keyed lookup. Both pricings meter `connections`, so the key picks the wrong row. */
     charge?: UsageRowCharge;
     currentPlanCharge?: UsageRowCharge;
     usage: number;
@@ -31,14 +30,10 @@ interface UsageTableProps {
      *  (each row manages its own open state) when omitted. */
     isRowOpen?: (metric: UsageMetric) => boolean;
     onRowOpenChange?: (metric: UsageMetric, open: boolean) => void;
-    /** Names the current plan's column. The comparison heads it with the plan the account is on. */
     currentPlanTitle?: string;
-    /** The legacy meters, listed below the toggle. They keep the comparison grid so both tables line
-     *  up, but no legacy meter is priced on Pay-as-you-go, so that column stays empty. */
+    /** Keeps the comparison grid so the two tables line up, and blanks the Pay-as-you-go header. */
     legacy?: boolean;
-    /** Beside the current plan's column header. */
     currentPlanTooltip?: string;
-    /** Beside the Pay-as-you-go column header. */
     projectedTooltip?: string;
 }
 
