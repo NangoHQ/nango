@@ -1,0 +1,116 @@
+import z from 'zod';
+
+import { PAY_AS_YOU_GO_METRICS, projectPayAsYouGo } from '@nangohq/billing';
+import { getPlanDefinition } from '@nangohq/shared';
+import { report, zodErrorToHTTP } from '@nangohq/utils';
+
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { usageTracker } from '../../../../utils/usage.js';
+
+import type { GetProjectedCosts } from '@nangohq/types';
+
+const TARGET_PLAN = 'pay-as-you-go';
+
+const NOT_APPLICABLE: GetProjectedCosts['Success']['data'] = {
+    metrics: {},
+    subtotalInCents: 0,
+    minimumInCents: 0,
+    minimumApplied: false,
+    growthAddOnInCents: 0,
+    totalInCents: 0,
+    periodComplete: false,
+    currency: 'USD',
+    notApplicable: true
+};
+
+const querySchema = z
+    .strictObject({
+        env: z.string(),
+        from: z.iso.datetime().optional(),
+        to: z.iso.datetime().optional()
+    })
+    .refine((data) => !data.from || !data.to || new Date(data.from) <= new Date(data.to), {
+        message: 'From date must be before to date',
+        path: ['from']
+    });
+
+export const getProjectedCosts = asyncWrapper<GetProjectedCosts>(async (req, res) => {
+    const val = querySchema.safeParse(req.query);
+    if (!val.success) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(val.error) } });
+        return;
+    }
+    const query = val.data;
+
+    const { plan, account } = res.locals;
+    if (!plan) {
+        res.status(400).send({ error: { code: 'feature_disabled' } });
+        return;
+    }
+
+    // Gated on Orb's schedule alone, matching the client's `planTransition` predicate — not on the
+    // current plan or on `isSpendPlan`, since the retired plans being migrated fail both.
+    const changeAt = plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : null;
+    const scheduled = plan.orb_future_plan === TARGET_PLAN && changeAt !== null && !Number.isNaN(changeAt.getTime()) && changeAt > new Date();
+    // Nango staff impersonating an account also get the projection, so the transition view can be
+    // checked against real data before anything is scheduled in Orb — where the customer would see
+    // it. Read off the session, which only `postImpersonate` sets and only for the admin account, so
+    // an account cannot ask for its own projection this way.
+    const previewing = req.session?.debugMode === true;
+    if (!scheduled && !previewing) {
+        res.status(200).send({ data: NOT_APPLICABLE });
+        return;
+    }
+
+    const timeframe = query.from && query.to ? { start: new Date(query.from), end: new Date(query.to) } : null;
+
+    // Same opts the usage table's own query uses, so a charge divided by the quantity on screen
+    // comes back to the published rate.
+    const usage = await usageTracker.getBillingUsage('', account.id, {
+        granularity: 'day',
+        ...(timeframe ? { timeframe } : {}),
+        metrics: [...PAY_AS_YOU_GO_METRICS],
+        avgPerDay: true
+    });
+    if (usage.isErr()) {
+        report(usage.error);
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to get usage' } });
+        return;
+    }
+
+    const isGrowth = getPlanDefinition(plan.name)?.keepsGrowthAddOnOnMigration === true;
+
+    let projection: ReturnType<typeof projectPayAsYouGo>;
+    try {
+        projection = projectPayAsYouGo(
+            {
+                connections: usage.value.connections?.total ?? 0,
+                function_duration_seconds: usage.value.function_duration_seconds?.total ?? 0,
+                data_transfer: usage.value.data_transfer?.total ?? 0
+            },
+            { isGrowth }
+        );
+    } catch (err) {
+        report(err);
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to project costs' } });
+        return;
+    }
+
+    // The current-plan side of the comparison comes from `period-costs` for the same window, so both
+    // columns are Orb's own figures for one usage set and the rows sum to each total.
+    const periodComplete = timeframe !== null && timeframe.end <= new Date();
+
+    res.status(200).send({
+        data: {
+            metrics: projection.metrics,
+            subtotalInCents: projection.subtotalInCents,
+            minimumInCents: projection.minimumInCents,
+            minimumApplied: projection.minimumApplied,
+            growthAddOnInCents: projection.growthAddOnInCents,
+            totalInCents: projection.totalInCents,
+            periodComplete,
+            currency: 'USD',
+            notApplicable: false
+        }
+    });
+});

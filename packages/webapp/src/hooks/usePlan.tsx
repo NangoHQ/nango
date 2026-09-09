@@ -18,6 +18,7 @@ import type {
     GetOverdueInvoices,
     GetPlan,
     GetPlans,
+    GetProjectedCosts,
     GetSpendAlert,
     GetUpcomingInvoice,
     GetUsage,
@@ -52,10 +53,10 @@ function usePlanOverride(env: string, realPlan: ApiPlan | null | undefined): Api
     const scheduledTargetCode = usePlanOverrideStore((s) => s.scheduledTargetCode);
     const addonState = usePlanOverrideStore((s) => s.addonState);
     // Only fetch when an override is set, to avoid an extra /plans request on every load.
-    const { data: plansList } = useApiGetPlans(env, { enabled: Boolean(overrideCode) });
+    const { data: plansList } = useApiGetPlans(env, { enabled: Boolean(overrideCode || scheduledTargetCode) });
 
     return useMemo(() => {
-        if (!overrideCode && !addonState) {
+        if (!overrideCode && !addonState && !scheduledTargetCode) {
             return realPlan;
         }
         const overridePlan = plansList?.data.find((p) => p.code === overrideCode) ?? null;
@@ -254,6 +255,33 @@ export function useApiGetBillingPeriodCosts(
             });
 
             const json = (await res.json()) as GetBillingPeriodCosts['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
+}
+
+export const GetProjectedCostsQueryKey = ['plans', 'billing', 'projected-costs'];
+
+/**
+ * What the selected period would cost on Pay-as-you-go. Keyed on the timeframe rather than the
+ * current month: this is ClickHouse-backed, so unlike the Orb figures above any month can be asked
+ * for. `enabled` is the caller's call - only an account with a scheduled migration has an answer.
+ */
+export function useApiGetProjectedCosts(env: string, timeframe: { start: string; end: string }, options?: { enabled?: boolean }) {
+    return useQuery<GetProjectedCosts['Success'], APIError>({
+        enabled: Boolean(env) && (options?.enabled ?? false),
+        staleTime: UPCOMING_INVOICE_STALE_TIME,
+        queryKey: [...GetProjectedCostsQueryKey, env, timeframe.start, timeframe.end],
+        queryFn: async (): Promise<GetProjectedCosts['Success']> => {
+            const res = await apiFetch(`/api/v1/plans/billing/projected-costs?env=${env}&from=${timeframe.start}&to=${timeframe.end}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetProjectedCosts['Reply'];
             if (res.status !== 200 || 'error' in json) {
                 throw new APIError({ res, json });
             }

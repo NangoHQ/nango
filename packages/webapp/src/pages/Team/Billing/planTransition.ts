@@ -1,4 +1,3 @@
-import { migratesToPayAsYouGo } from './planVisibility';
 import { pendingPlanChange } from './summaryState';
 
 import type { ApiPlan, DBPlan, PlanDefinition } from '@nangohq/types';
@@ -22,7 +21,7 @@ export function planTransition({
     plans: PlanDefinition[] | undefined;
     now: Date;
 }): PlanTransition | null {
-    if (!plan || !migratesToPayAsYouGo(plan.name)) {
+    if (!plan) {
         return null;
     }
 
@@ -31,11 +30,13 @@ export function planTransition({
         return null;
     }
 
+    const definition = plans?.find((p) => p.code === plan.name);
+
     return {
         at: change.at,
         toPlanTitle: change.toPlanTitle,
         fromCode: plan.name,
-        fromTitle: plans?.find((p) => p.code === plan.name)?.title ?? plan.name,
-        keepsGrowthAddOn: plan.name === 'growth-v2'
+        fromTitle: definition?.title ?? plan.name,
+        keepsGrowthAddOn: definition?.keepsGrowthAddOnOnMigration ?? false
     };
 }

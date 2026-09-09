@@ -1,6 +1,6 @@
 import { formatMoneyFromCents } from './money';
 
-import type { GetBillingPeriodCosts, UsageMetric } from '@nangohq/types';
+import type { GetBillingPeriodCosts, GetProjectedCosts, UsageMetric } from '@nangohq/types';
 
 export interface UsageRowCharge {
     formatted: string | null;
@@ -15,6 +15,12 @@ interface BuildArgs {
     isPending: boolean;
     isError: boolean;
     data: GetBillingPeriodCosts['Success'] | undefined;
+    /**
+     * What a metric the subscription carries no price for should read as. On its own a plan bills
+     * $0.00 for an unpriced meter, which is true. Side by side with a plan that does price it, that
+     * $0.00 invites the reader to compare two numbers where only one exists, so it reads as a dash.
+     */
+    unpriced?: 'zero' | 'dash';
 }
 
 const NO_FIGURE: UsageRowCharge = { formatted: null, pending: false };
@@ -48,8 +54,43 @@ export function buildUsageRowCharges(args: BuildArgs): UsageChargeLookup {
         if (amountInCents === undefined) {
             // No price for this metric reads as zero, unless some other price went unattributed — that
             // money could belong to this metric, so it states no figure rather than claiming zero.
-            return fullyAttributed ? { formatted: formatMoneyFromCents(0, currency), pending: false } : NO_FIGURE;
+            return fullyAttributed && args.unpriced !== 'dash' ? { formatted: formatMoneyFromCents(0, currency), pending: false } : NO_FIGURE;
         }
         return { formatted: formatMoneyFromCents(amountInCents, currency), pending: false };
     };
+}
+
+interface BuildProjectedArgs {
+    enabled: boolean;
+    isPending: boolean;
+    isError: boolean;
+    data: GetProjectedCosts['Success'] | undefined;
+}
+
+/**
+ * Charges an account would pay on Pay-as-you-go, in the same lookup shape as
+ * {@link buildUsageRowCharges} so the table renders either without knowing which it got.
+ *
+ * Unlike the Orb figures, every metric here is priced, so an absent one is a real $0 rather than a
+ * gap — there is no unattributed money to worry about.
+ */
+export function buildProjectedCharges(args: BuildProjectedArgs): UsageChargeLookup {
+    if (!args.enabled) {
+        return null;
+    }
+
+    if (args.isPending) {
+        return () => PENDING;
+    }
+
+    if (args.isError || !args.data) {
+        return () => NO_FIGURE;
+    }
+
+    const { metrics, currency, notApplicable } = args.data.data;
+    if (notApplicable) {
+        return null;
+    }
+
+    return (metric) => ({ formatted: formatMoneyFromCents(metrics[metric] ?? 0, currency), pending: false });
 }

@@ -28,6 +28,11 @@ export interface PlanDefinition {
     nextPlan: string[] | null;
     prevPlan: string[] | null;
     basePrice?: number;
+    /**
+     * Whether an account on this plan carries the Growth add-on across a migration to Pay-as-you-go.
+     * Distinct from `DBPlan.has_growth_features`, which tracks an add-on bought *on* Pay-as-you-go.
+     */
+    keepsGrowthAddOnOnMigration?: boolean;
 
     cta?: string;
     hidden?: boolean;
@@ -191,6 +196,37 @@ export type GetBillingPeriodCosts = ApiEndpoint<{
             /** True when there's no billing period to report costs for — a free plan, no linked
              *  subscription, or an ended one. `metrics`/`currency` are otherwise never empty/null. */
             noCosts: boolean;
+        };
+    };
+}>;
+
+/**
+ * What a period would cost on Pay-as-you-go, for an account Orb has scheduled to move there.
+ *
+ * Carries computed cents only: the rates live server-side in `@nangohq/billing` and never ship.
+ * Not comparable line-by-line with `GetBillingPeriodCosts` — that one reports what Orb charged and
+ * excludes plan minimums, while `totalInCents` here applies the Pay-as-you-go floor.
+ */
+export type GetProjectedCosts = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/plans/billing/projected-costs';
+    Querystring: { env: string; from?: string; to?: string };
+    Success: {
+        data: {
+            /** Integer cents per metric, before the minimum. Only the metrics Pay-as-you-go bills on. */
+            metrics: Partial<Record<UsageMetric, number>>;
+            subtotalInCents: number;
+            minimumInCents: number;
+            /** True when usage came in under the minimum, so the total is the floor not the subtotal. */
+            minimumApplied: boolean;
+            growthAddOnInCents: number;
+            totalInCents: number;
+            /** False while the period is still running, so the comparison is not yet like-for-like. */
+            periodComplete: boolean;
+            currency: string;
+            /** True when nothing is scheduled, so there is no migration to project. Every figure is 0. */
+            notApplicable: boolean;
         };
     };
 }>;

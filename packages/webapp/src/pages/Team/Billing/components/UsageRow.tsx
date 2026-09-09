@@ -10,12 +10,19 @@ import { UsageChartCard } from './UsageChartCard';
 import type { UsageRowCharge } from '../usageCharges';
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
-export function usageRowGrid(variant: 'caps' | 'usage' | 'charges'): string {
+export type UsageRowVariant = 'caps' | 'usage' | 'charges' | 'comparison';
+
+export function usageRowGrid(variant: UsageRowVariant): string {
     // Tailwind's scanner needs the full bracketed class literally in source to generate it, so this
-    // picks between two complete strings rather than assembling one from a variable.
-    return variant === 'caps'
-        ? 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_124px_20px] items-center gap-4 px-6'
-        : 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_124px_20px] items-center gap-4 px-6';
+    // picks between complete strings rather than assembling one from a variable.
+    if (variant === 'caps') {
+        return 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_124px_20px] items-center gap-4 px-6';
+    }
+    if (variant === 'comparison') {
+        // A second money column for the current plan, so old and new sit side by side on one row.
+        return 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_124px_180px_20px] items-center gap-4 px-6';
+    }
+    return 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_124px_20px] items-center gap-4 px-6';
 }
 
 interface UsageRowProps {
@@ -38,8 +45,11 @@ interface UsageRowProps {
     onOpenChange?: (open: boolean) => void;
     /** 'cumulative' for Free (progress toward the cap), 'daily' for paid. */
     chartMode: 'daily' | 'cumulative';
-    variant: 'caps' | 'usage' | 'charges';
+    variant: UsageRowVariant;
     charge?: UsageRowCharge;
+    /** What the current plan charged for this metric. Only the legacy meters and `connections` have
+     *  one; everything else is new under Pay-as-you-go. */
+    currentPlanCharge?: UsageRowCharge;
 }
 
 /**
@@ -61,7 +71,8 @@ export const UsageRow: React.FC<UsageRowProps> = ({
     onOpenChange,
     chartMode,
     variant,
-    charge
+    charge,
+    currentPlanCharge
 }) => {
     const state = getUsageState(usage, limit);
     const percent = limit ? Math.round((usage / limit) * 100) : null;
@@ -95,6 +106,11 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                         </div>
                     ) : (
                         <div />
+                    )}
+                    {/* The current plan's column, left of Pay-as-you-go. A dash means the plan has no
+                        price for this meter; blank means the row states nothing here at all. */}
+                    {variant === 'comparison' && (
+                        <div className="text-text-default type-text-regular-sm">{currentPlanCharge ? (currentPlanCharge.formatted ?? '—') : ''}</div>
                     )}
                     {isPending ? (
                         <Skeleton className="h-4 w-12" />

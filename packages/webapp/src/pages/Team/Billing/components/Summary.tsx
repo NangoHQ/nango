@@ -55,9 +55,10 @@ export const Summary: React.FC = () => {
         return buildSummaryState({ plan, plans: plansList?.data, paymentMethod, canManageBilling, spend, onS26Pricing, transition, now: new Date() });
     }, [plan, plansList, arePlansPending, isSpendResolving, paymentMethod, canManageBilling, spend, onS26Pricing, transition]);
 
-    // Legacy, enterprise and free-uncapped accounts get no strip at all — their terms are negotiated
-    // per customer or nothing is billable, so every field would be empty or untrue.
-    if (plan && !showsSummaryStrip(plan)) {
+    // Legacy, enterprise and free-uncapped accounts get no strip — their terms are negotiated per
+    // customer or nothing is billable. A scheduled migration is the exception: the date has to land
+    // somewhere.
+    if (plan && !showsSummaryStrip(plan, transition !== null)) {
         return null;
     }
 
