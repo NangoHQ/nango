@@ -47,7 +47,7 @@ export const postPublicIntegration = asyncWrapperWithEnvironment<PostPublicInteg
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, account } = res.locals;
     const body: PostPublicIntegration['Body'] = valBody.data;
     const result = await integrationService.create({
         environmentId: environment.id,
@@ -58,7 +58,9 @@ export const postPublicIntegration = asyncWrapperWithEnvironment<PostPublicInteg
         forwardWebhooks: body.forward_webhooks,
         credentials: body.credentials,
         integrationConfig: body.integration_config,
-        custom: body.custom
+        custom: body.custom,
+        environment,
+        team: account
     });
     if (result.isErr()) {
         sendCreateIntegrationError(res, result.error);

@@ -6,10 +6,12 @@ import { Err, Ok } from '@nangohq/utils';
 import integrationService, { IntegrationService } from './integration.service.js';
 
 import type { Config, Orchestrator } from '@nangohq/shared';
-import type { DBSharedCredentials, Provider, SimplifiedJSONSchema } from '@nangohq/types';
+import type { DBEnvironment, DBSharedCredentials, DBTeam, Provider, SimplifiedJSONSchema } from '@nangohq/types';
 
 const createdAt = new Date('2026-01-01T00:00:00.000Z');
 const updatedAt = new Date('2026-01-02T00:00:00.000Z');
+const environmentFixture = { id: 42, uuid: 'environment-uuid', callback_url: null, name: 'dev' } as DBEnvironment;
+const teamFixture = { id: 1, name: 'Acme' } as DBTeam;
 
 describe('integrationService', () => {
     afterEach(() => {
@@ -549,6 +551,172 @@ describe('integrationService', () => {
                 machineErrorCode: '23505'
             });
         });
+
+        describe('MCP_OAUTH2', () => {
+            it('dynamically registers a client and stores the returned credentials', async () => {
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('dynamic'));
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+                const registerSpy = vi
+                    .spyOn(shared.mcpClient, 'registerClientId')
+                    .mockResolvedValue({ client_id: 'dcr-client-id', client_secret: 'dcr-secret' });
+                const createSpy = vi
+                    .spyOn(shared.configService, 'createProviderConfig')
+                    .mockResolvedValue(integrationFixture({ uniqueKey: 'mcp1', provider: 'mcp1' }));
+
+                const result = await integrationService.create({
+                    environmentId: 42,
+                    provider: 'mcp1',
+                    uniqueKey: 'mcp1',
+                    credentialSource: 'own',
+                    environment: environmentFixture,
+                    team: teamFixture
+                });
+
+                expect(result.isOk()).toBe(true);
+                expect(registerSpy).toHaveBeenCalledWith({ provider: mcpProviderFixture('dynamic'), environment: environmentFixture, team: teamFixture });
+                expect(createSpy).toHaveBeenCalledWith(
+                    expect.objectContaining({ oauth_client_id: 'dcr-client-id', oauth_client_secret: 'dcr-secret' }),
+                    mcpProviderFixture('dynamic')
+                );
+            });
+
+            it('takes user-supplied credentials for static client registration', async () => {
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('static'));
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+                const createSpy = vi
+                    .spyOn(shared.configService, 'createProviderConfig')
+                    .mockResolvedValue(integrationFixture({ uniqueKey: 'mcp2', provider: 'mcp2' }));
+
+                const result = await integrationService.create({
+                    environmentId: 42,
+                    provider: 'mcp2',
+                    uniqueKey: 'mcp2',
+                    credentialSource: 'own',
+                    credentials: { type: 'MCP_OAUTH2', client_id: 'my-client-id', client_secret: 'my-secret' },
+                    environment: environmentFixture,
+                    team: teamFixture
+                });
+
+                expect(result.isOk()).toBe(true);
+                expect(createSpy).toHaveBeenCalledWith(
+                    expect.objectContaining({ oauth_client_id: 'my-client-id', oauth_client_secret: 'my-secret' }),
+                    mcpProviderFixture('static')
+                );
+            });
+
+            it('rejects creating a static integration with no credentials', async () => {
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('static'));
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+                const createSpy = vi.spyOn(shared.configService, 'createProviderConfig');
+
+                const result = await integrationService.create({
+                    environmentId: 42,
+                    provider: 'mcp2',
+                    uniqueKey: 'mcp2',
+                    credentialSource: 'own',
+                    environment: environmentFixture,
+                    team: teamFixture
+                });
+
+                expect(result.isErr()).toBe(true);
+                if (result.isErr()) {
+                    expect(result.error).toMatchObject({ code: 'missing_credentials' });
+                }
+                expect(createSpy).not.toHaveBeenCalled();
+            });
+
+            it('rejects creating a static integration with only a client_id and no client_secret', async () => {
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('static'));
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+                const createSpy = vi.spyOn(shared.configService, 'createProviderConfig');
+
+                const result = await integrationService.create({
+                    environmentId: 42,
+                    provider: 'mcp2',
+                    uniqueKey: 'mcp2',
+                    credentialSource: 'own',
+                    credentials: { type: 'MCP_OAUTH2', client_id: 'my-client-id' },
+                    environment: environmentFixture,
+                    team: teamFixture
+                });
+
+                expect(result.isErr()).toBe(true);
+                if (result.isErr()) {
+                    expect(result.error).toMatchObject({ code: 'missing_credentials' });
+                }
+                expect(createSpy).not.toHaveBeenCalled();
+            });
+
+            it('rejects creating a dynamic integration with caller-supplied client_id/secret instead of silently discarding them', async () => {
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('dynamic'));
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+                const registerSpy = vi.spyOn(shared.mcpClient, 'registerClientId');
+                const createSpy = vi.spyOn(shared.configService, 'createProviderConfig');
+
+                const result = await integrationService.create({
+                    environmentId: 42,
+                    provider: 'mcp1',
+                    uniqueKey: 'mcp1',
+                    credentialSource: 'own',
+                    credentials: { type: 'MCP_OAUTH2', client_id: 'attacker-supplied' },
+                    environment: environmentFixture,
+                    team: teamFixture
+                });
+
+                expect(result.isErr()).toBe(true);
+                if (result.isErr()) {
+                    expect(result.error).toMatchObject({ code: 'incompatible_credentials' });
+                }
+                expect(registerSpy).not.toHaveBeenCalled();
+                expect(createSpy).not.toHaveBeenCalled();
+            });
+
+            it('registers a CIMD client_id when Nango is reachable over HTTPS', async () => {
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('cimd'));
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+                vi.spyOn(shared, 'getGlobalClientMetadataDocumentUrl').mockReturnValue('https://nango.example.com/oauth/client-metadata/environment-uuid/mcp3');
+                const createSpy = vi
+                    .spyOn(shared.configService, 'createProviderConfig')
+                    .mockResolvedValue(integrationFixture({ uniqueKey: 'mcp3', provider: 'mcp3' }));
+
+                const result = await integrationService.create({
+                    environmentId: 42,
+                    provider: 'mcp3',
+                    uniqueKey: 'mcp3',
+                    credentialSource: 'own',
+                    environment: environmentFixture,
+                    team: teamFixture
+                });
+
+                expect(result.isOk()).toBe(true);
+                expect(createSpy).toHaveBeenCalledWith(
+                    expect.objectContaining({ oauth_client_id: 'https://nango.example.com/oauth/client-metadata/environment-uuid/mcp3' }),
+                    mcpProviderFixture('cimd')
+                );
+            });
+
+            it('rejects creating a CIMD integration when Nango is not reachable over HTTPS', async () => {
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('cimd'));
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+                vi.spyOn(shared, 'getGlobalClientMetadataDocumentUrl').mockReturnValue(null);
+                const createSpy = vi.spyOn(shared.configService, 'createProviderConfig');
+
+                const result = await integrationService.create({
+                    environmentId: 42,
+                    provider: 'mcp3',
+                    uniqueKey: 'mcp3',
+                    credentialSource: 'own',
+                    environment: environmentFixture,
+                    team: teamFixture
+                });
+
+                expect(result.isErr()).toBe(true);
+                if (result.isErr()) {
+                    expect(result.error).toMatchObject({ code: 'invalid_integration_config' });
+                }
+                expect(createSpy).not.toHaveBeenCalled();
+            });
+        });
     });
 
     describe('update', () => {
@@ -724,6 +892,137 @@ describe('integrationService', () => {
                 machineErrorCode: '23505'
             });
         });
+
+        describe('MCP_OAUTH2', () => {
+            it('updates non-credential fields for a dynamically registered integration without touching its client_id/secret', async () => {
+                const integration = integrationFixture({
+                    uniqueKey: 'mcp1',
+                    provider: 'mcp1',
+                    oauth_client_id: 'dcr-client-id',
+                    oauth_client_secret: 'dcr-secret'
+                });
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('dynamic'));
+                const editSpy = vi.spyOn(shared.configService, 'editProviderConfig').mockResolvedValue(integration as never);
+
+                const result = await integrationService.update({
+                    environmentId: 42,
+                    integrationId: 'mcp1',
+                    displayName: 'Renamed display',
+                    credentials: { type: 'MCP_OAUTH2', scopes: 'offline_access,extra_scope' }
+                });
+
+                expect(result.isOk()).toBe(true);
+                expect(editSpy).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        display_name: 'Renamed display',
+                        oauth_client_id: 'dcr-client-id',
+                        oauth_client_secret: 'dcr-secret',
+                        oauth_scopes: 'offline_access,extra_scope'
+                    }),
+                    mcpProviderFixture('dynamic')
+                );
+            });
+
+            it('rejects setting client_id/secret on a dynamically registered integration', async () => {
+                const integration = integrationFixture({ uniqueKey: 'mcp1', provider: 'mcp1' });
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('dynamic'));
+                const editSpy = vi.spyOn(shared.configService, 'editProviderConfig');
+
+                const result = await integrationService.update({
+                    environmentId: 42,
+                    integrationId: 'mcp1',
+                    credentials: { type: 'MCP_OAUTH2', client_id: 'hacker-id' }
+                });
+
+                expect(result.isErr()).toBe(true);
+                if (result.isErr()) {
+                    expect(result.error).toMatchObject({ code: 'incompatible_credentials' });
+                }
+                expect(editSpy).not.toHaveBeenCalled();
+            });
+
+            it('rotates client_id/secret for a statically registered integration', async () => {
+                const integration = integrationFixture({
+                    uniqueKey: 'mcp2',
+                    provider: 'mcp2',
+                    oauth_client_id: 'my-client-id',
+                    oauth_client_secret: 'old-secret'
+                });
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('static'));
+                const editSpy = vi.spyOn(shared.configService, 'editProviderConfig').mockResolvedValue(integration as never);
+
+                const result = await integrationService.update({
+                    environmentId: 42,
+                    integrationId: 'mcp2',
+                    credentials: { type: 'MCP_OAUTH2', client_secret: 'new-secret' }
+                });
+
+                expect(result.isOk()).toBe(true);
+                expect(editSpy).toHaveBeenCalledWith(expect.objectContaining({ oauth_client_secret: 'new-secret' }), mcpProviderFixture('static'));
+            });
+
+            it('keeps a CIMD client_id in sync when the integration is renamed and Nango is reachable over HTTPS', async () => {
+                const integration = integrationFixture({
+                    uniqueKey: 'mcp3',
+                    provider: 'mcp3',
+                    oauth_client_id: 'https://nango.example.com/oauth/client-metadata/environment-uuid/mcp3'
+                });
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('cimd'));
+                vi.spyOn(shared.configService, 'getIdByProviderConfigKey').mockResolvedValue(null);
+                vi.spyOn(shared.connectionService, 'countConnections').mockResolvedValue(0);
+                vi.spyOn(shared, 'getGlobalClientMetadataDocumentUrl').mockReturnValue(
+                    'https://nango.example.com/oauth/client-metadata/environment-uuid/mcp3-renamed'
+                );
+                const editSpy = vi.spyOn(shared.configService, 'editProviderConfig').mockResolvedValue(integration as never);
+
+                const result = await integrationService.update({
+                    environmentId: 42,
+                    integrationId: 'mcp3',
+                    newIntegrationId: 'mcp3-renamed',
+                    environment: environmentFixture
+                });
+
+                expect(result.isOk()).toBe(true);
+                expect(editSpy).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        unique_key: 'mcp3-renamed',
+                        oauth_client_id: 'https://nango.example.com/oauth/client-metadata/environment-uuid/mcp3-renamed'
+                    }),
+                    mcpProviderFixture('cimd')
+                );
+            });
+
+            it('rejects renaming a CIMD integration when Nango is not reachable over HTTPS, instead of leaving a stale client_id', async () => {
+                const integration = integrationFixture({
+                    uniqueKey: 'mcp3',
+                    provider: 'mcp3',
+                    oauth_client_id: 'https://nango.example.com/oauth/client-metadata/environment-uuid/mcp3'
+                });
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('cimd'));
+                vi.spyOn(shared.configService, 'getIdByProviderConfigKey').mockResolvedValue(null);
+                vi.spyOn(shared.connectionService, 'countConnections').mockResolvedValue(0);
+                vi.spyOn(shared, 'getGlobalClientMetadataDocumentUrl').mockReturnValue(null);
+                const editSpy = vi.spyOn(shared.configService, 'editProviderConfig');
+
+                const result = await integrationService.update({
+                    environmentId: 42,
+                    integrationId: 'mcp3',
+                    newIntegrationId: 'mcp3-renamed',
+                    environment: environmentFixture
+                });
+
+                expect(result.isErr()).toBe(true);
+                if (result.isErr()) {
+                    expect(result.error).toMatchObject({ code: 'invalid_integration_config' });
+                }
+                expect(editSpy).not.toHaveBeenCalled();
+            });
+        });
     });
 
     describe('delete', () => {
@@ -870,6 +1169,16 @@ function configurableProviderFixture(): Provider {
     return {
         ...providerFixture('GitHub'),
         integration_config: { region: field }
+    } as Provider;
+}
+
+function mcpProviderFixture(clientRegistration: 'static' | 'dynamic' | 'cimd'): Provider {
+    return {
+        display_name: 'Test MCP',
+        auth_mode: 'MCP_OAUTH2',
+        client_registration: clientRegistration,
+        registration_url: 'https://mcp.example.com/register',
+        docs: ''
     } as Provider;
 }
 

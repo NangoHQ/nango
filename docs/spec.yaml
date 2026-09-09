@@ -5059,3 +5059,27 @@ components:
                       private_key:
                           type: string
                           pattern: '^-----BEGIN RSA PRIVATE KEY----.*-----END RSA PRIVATE KEY-----$'
+                - type: object
+                  required:
+                      - type
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - MCP_OAUTH2
+                      client_id:
+                          anyOf:
+                              - type: string
+                                minLength: 1
+                                maxLength: 255
+                              - type: 'null'
+                      client_secret:
+                          anyOf:
+                              - type: string
+                                minLength: 1
+                              - type: 'null'
+                      scopes:
+                          anyOf:
+                              - type: string
+                                pattern: '^[0-9a-zA-Z:/_.*-]+(,[0-9a-zA-Z:/_.*-]+)*$'
+                              - type: 'null'

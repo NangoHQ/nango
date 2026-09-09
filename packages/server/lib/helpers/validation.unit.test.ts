@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { webhookUrlSchema } from './validation.js';
+import { integrationCredentialsSchema, webhookUrlSchema } from './validation.js';
 
 const accepts = (url: string | undefined) => webhookUrlSchema.safeParse(url).success;
 
@@ -36,5 +36,38 @@ describe('webhookUrlSchema', () => {
 
     it('rejects denylisted hosts (e.g. localhost)', () => {
         expect(accepts('http://localhost/hook')).toBe(false);
+    });
+});
+
+describe('integrationCredentialsSchema (MCP_OAUTH2)', () => {
+    it('accepts a fully omitted credentials object (dynamic/cimd client registration)', () => {
+        const result = integrationCredentialsSchema.safeParse({ type: 'MCP_OAUTH2' });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data).toEqual({ type: 'MCP_OAUTH2' });
+        }
+    });
+
+    it('rejects explicit null for client_id/client_secret/scopes, same as every other credentials type', () => {
+        const result = integrationCredentialsSchema.safeParse({
+            type: 'MCP_OAUTH2',
+            client_id: null,
+            client_secret: null,
+            scopes: null
+        });
+        expect(result.success).toBe(false);
+    });
+
+    it('accepts client_id/client_secret/scopes when provided as strings', () => {
+        const result = integrationCredentialsSchema.safeParse({
+            type: 'MCP_OAUTH2',
+            client_id: 'abc',
+            client_secret: 'def',
+            scopes: 'offline_access,read'
+        });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data).toStrictEqual({ type: 'MCP_OAUTH2', client_id: 'abc', client_secret: 'def', scopes: 'offline_access,read' });
+        }
     });
 });

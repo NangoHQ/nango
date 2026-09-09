@@ -108,5 +108,12 @@ export function integrationCredentialsToPublicApi(credentials: IntegrationCreden
                 app_link: credentials.appLink,
                 private_key: credentials.privateKey
             };
+        case 'MCP_OAUTH2':
+            return {
+                type: credentials.type,
+                client_id: credentials.clientId,
+                client_secret: credentials.clientSecret,
+                scopes: credentials.scopes
+            };
     }
 }
