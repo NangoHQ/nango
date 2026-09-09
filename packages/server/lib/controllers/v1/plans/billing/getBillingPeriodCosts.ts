@@ -19,11 +19,20 @@ const NO_COSTS: GetBillingPeriodCosts['Success']['data'] = {
 
 const querySchema = z
     .strictObject({
-        env: z.string(),
+        env: z
+            .string()
+            .regex(/^[a-zA-Z0-9_-]+$/)
+            .max(255),
         from: z.iso.datetime().optional(),
         to: z.iso.datetime().optional()
     })
-    .refine((data) => !data.from || !data.to || new Date(data.from) <= new Date(data.to), {
+    // Both or neither: one half of a window would otherwise fall through to the current period,
+    // answering with a different month's charges than the caller asked for.
+    .refine((data) => (data.from === undefined) === (data.to === undefined), {
+        message: 'from and to must be provided together',
+        path: ['from']
+    })
+    .refine((data) => !data.from || !data.to || new Date(data.from) < new Date(data.to), {
         message: 'From date must be before to date',
         path: ['from']
     });

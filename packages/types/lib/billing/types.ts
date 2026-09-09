@@ -120,8 +120,9 @@ export interface BillingPeriodCosts {
     /** The individual prices behind `malformedMetrics` and a false `fullyAttributed`, for alerting —
      *  not sent over HTTP. */
     flagged: { priceId: string; priceName: string; metric: UsageMetric | null; amountInCents: number | null }[];
-    /** Integer cents from every fixed price — a plan's base fee, an add-on. Kept out of `metrics` so
-     *  no metric's charge absorbs money that isn't usage. */
+    /** Integer cents from the fixed prices that could be read in the period's currency — a plan's
+     *  base fee, an add-on. Kept out of `metrics` so no metric's charge absorbs money that isn't
+     *  usage; an unreadable one is reported via `flagged` and left out of this total. */
     fixedInCents: number;
     currency: string;
 }
