@@ -1,4 +1,3 @@
-import { Info } from 'lucide-react';
 import { Fragment } from 'react';
 
 import { Badge } from '@nangohq/design-system';
@@ -87,61 +86,55 @@ export const UsageTable: React.FC<UsageTableProps> = ({
 }) => {
     const { thisPeriod, rightmost, extra } = usageColumnHeaders(variant, totals?.currentPlanTitle);
     return (
-        <div className="flex flex-col gap-2">
-            <div className="w-full rounded border border-border-default overflow-hidden">
-                <div className={cn(usageRowGrid(variant), 'bg-surface-panel py-3 border-b border-border-default text-text-secondary type-label-xxs uppercase')}>
-                    <span>Metric</span>
-                    <span>{thisPeriod}</span>
-                    <span>{rightmost}</span>
-                    {extra && (
-                        <span className="flex items-center gap-1.5">
-                            {extra}
-                            {extraColumnTooltip && (
-                                <InfoTooltip side="top" align="end">
-                                    {extraColumnTooltip}
-                                </InfoTooltip>
-                            )}
-                        </span>
-                    )}
-                    <span />
-                </div>
-                {rows.map((row, index) => (
-                    <Fragment key={row.group ? `${row.group}:${row.metric}` : row.metric}>
-                        {row.group && row.group !== rows[index - 1]?.group && (
-                            <div
-                                className={cn(
-                                    usageRowGrid(variant),
-                                    'py-2 bg-surface-panel-inset border-b border-border-muted text-text-secondary type-label-xxs uppercase'
-                                )}
-                            >
-                                <span>{row.group}</span>
-                            </div>
+        <div className="w-full rounded border border-border-default overflow-hidden">
+            <div className={cn(usageRowGrid(variant), 'bg-surface-panel py-3 border-b border-border-default text-text-secondary type-label-xxs uppercase')}>
+                <span>Metric</span>
+                <span>{thisPeriod}</span>
+                <span>{rightmost}</span>
+                {extra && (
+                    <span className="flex items-center gap-1.5">
+                        {extra}
+                        {extraColumnTooltip && (
+                            <InfoTooltip side="top" align="end">
+                                {extraColumnTooltip}
+                            </InfoTooltip>
                         )}
-                        <UsageRow
-                            metric={row.metric}
-                            label={row.label}
-                            usage={row.usage}
-                            limit={row.limit}
-                            capsLoading={row.capsLoading}
-                            data={row.data}
-                            isLoading={isLoading}
-                            env={env}
-                            timeframe={timeframe}
-                            open={isRowOpen?.(row.metric)}
-                            onOpenChange={onRowOpenChange ? (open) => onRowOpenChange(row.metric, open) : undefined}
-                            chartMode={chartMode}
-                            variant={variant}
-                            charge={row.charge ?? charges?.(row.metric)}
-                            currentPlanCharge={row.currentPlanCharge}
-                        />
-                    </Fragment>
-                ))}
-                {totals && <UsageTotals variant={variant} totals={totals} />}
+                    </span>
+                )}
+                <span />
             </div>
-            <span className="flex items-center gap-1.5 text-text-muted text-body-small-regular px-1">
-                <Info className="size-3.5 shrink-0" />
-                Click any row to see its trend and breakdown.
-            </span>
+            {rows.map((row, index) => (
+                <Fragment key={row.group ? `${row.group}:${row.metric}` : row.metric}>
+                    {row.group && row.group !== rows[index - 1]?.group && (
+                        <div
+                            className={cn(
+                                usageRowGrid(variant),
+                                'py-2 bg-surface-panel-inset border-b border-border-muted text-text-secondary type-label-xxs uppercase'
+                            )}
+                        >
+                            <span>{row.group}</span>
+                        </div>
+                    )}
+                    <UsageRow
+                        metric={row.metric}
+                        label={row.label}
+                        usage={row.usage}
+                        limit={row.limit}
+                        capsLoading={row.capsLoading}
+                        data={row.data}
+                        isLoading={isLoading}
+                        env={env}
+                        timeframe={timeframe}
+                        open={isRowOpen?.(row.metric)}
+                        onOpenChange={onRowOpenChange ? (open) => onRowOpenChange(row.metric, open) : undefined}
+                        chartMode={chartMode}
+                        variant={variant}
+                        charge={row.charge ?? charges?.(row.metric)}
+                        currentPlanCharge={row.currentPlanCharge}
+                    />
+                </Fragment>
+            ))}
+            {totals && <UsageTotals variant={variant} totals={totals} />}
         </div>
     );
 };
