@@ -121,6 +121,9 @@ export function isAllowedRedirectUri(value: string): boolean {
 }
 
 export function secureCimdFetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
+    // Node's fetch types and the installed undici package use separate, structurally incompatible
+    // Dispatcher declarations. Bridge that type boundary explicitly; the runtime API is compatible.
     const dispatcher = getSafeUndiciDispatcher(CIMD_OUTBOUND_POLICY);
-    return fetch(input, { ...init, redirect: 'manual', dispatcher } as RequestInit) as Promise<Response>;
+    const requestInit = { ...init, redirect: 'manual' as const, dispatcher } as unknown as RequestInit;
+    return fetch(input, requestInit);
 }

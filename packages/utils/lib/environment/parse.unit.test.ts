@@ -66,7 +66,7 @@ describe('parse', () => {
         expect(parseEnvs(ENVS, {}).NANGO_MANAGEMENT_MCP_OAUTH_ENABLED).toBe(false);
     });
 
-    it('parses shared OAuth server settings without requiring them while disabled', () => {
+    it('parses shared OAuth server settings when OAuth is enabled', () => {
         const res = parseEnvs(ENVS, {
             NANGO_MANAGEMENT_MCP_OAUTH_ENABLED: 'true',
             NANGO_OAUTH_SERVER_BASE_URL: 'https://api.example.com',

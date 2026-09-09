@@ -7,7 +7,14 @@ const jwkSchema = z.looseObject({
     use: z.literal('sig'),
     alg: z.literal('RS256'),
     kty: z.literal('RSA'),
-    d: z.string().min(1)
+    n: z.string().min(1),
+    e: z.string().min(1),
+    d: z.string().min(1),
+    p: z.string().min(1),
+    q: z.string().min(1),
+    dp: z.string().min(1),
+    dq: z.string().min(1),
+    qi: z.string().min(1)
 });
 
 const jwksSchema = z.object({ keys: z.array(jwkSchema).min(1) });
