@@ -2,7 +2,6 @@ import tracer from 'dd-trace';
 import * as cron from 'node-cron';
 import { uuidv7 } from 'uuidv7';
 
-import { billing as usageBilling } from '@nangohq/billing';
 import { getLocking } from '@nangohq/kvstore';
 import { records } from '@nangohq/records';
 import { connectionService } from '@nangohq/shared';
@@ -12,7 +11,6 @@ import { flagHasUsage, getLogger, metrics } from '@nangohq/utils';
 import { envs } from '../env.js';
 
 import type { Lock } from '@nangohq/kvstore';
-import type { RecordsBillingEvent } from '@nangohq/types';
 import type { ClickhouseRawUsageEvent } from '@nangohq/usage';
 
 const logger = getLogger('cron.exportUsage');
@@ -50,8 +48,6 @@ export async function exec(): Promise<void> {
         const clickhouse = new Clickhouse();
 
         try {
-            // TODO: get rid of billing exports which are legacy events
-            await billing.exportBillableConnections();
             await observability.exportConnectionsMetrics();
             await observability.exportRecordsMetrics();
             await usage.exportMetrics(clickhouse);
@@ -167,6 +163,11 @@ const usage = {
     }
 };
 
+interface RecordsTotals {
+    count: number;
+    sizeBytes: number;
+}
+
 const observability = {
     exportConnectionsMetrics: async (): Promise<void> => {
         await tracer.trace<Promise<void>>('nango.cron.exportUsage.observability.connections', async (span) => {
@@ -176,18 +177,6 @@ const observability = {
                     throw counts.error;
                 }
                 for (const { accountId, count } of counts.value) {
-                    usageBilling.add([
-                        {
-                            type: 'billable_connections_v2' as const,
-                            properties: {
-                                accountId,
-                                count,
-                                timestamp: new Date(),
-                                frequencyMs: cronMinutes * 60 * 1000
-                            }
-                        }
-                    ]);
-
                     metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId });
                 }
             } catch (err) {
@@ -199,8 +188,7 @@ const observability = {
     exportRecordsMetrics: async (): Promise<void> => {
         await tracer.trace<Promise<void>>('nango.cron.exportUsage.observability.records', async (span) => {
             try {
-                const now = new Date();
-                const aggMetrics = new Map<number, RecordsBillingEvent>();
+                const aggMetrics = new Map<number, RecordsTotals>();
                 // records metrics are per environment, so we fetch the record counts first and then we need to:
                 // - get the account ids
                 // - aggregate per account
@@ -238,80 +226,23 @@ const observability = {
                                 const key = entry.account.id;
                                 const existingAgg = aggMetrics.get(key);
                                 if (existingAgg) {
-                                    existingAgg.properties.count += sum.count;
-                                    existingAgg.properties.telemetry.sizeBytes += sum.size_bytes;
+                                    existingAgg.count += sum.count;
+                                    existingAgg.sizeBytes += sum.size_bytes;
                                 } else {
-                                    aggMetrics.set(key, {
-                                        type: 'records' as const,
-                                        properties: {
-                                            count: sum.count,
-                                            accountId: entry.account.id,
-                                            timestamp: now,
-                                            frequencyMs: cronMinutes * 60 * 1000,
-                                            telemetry: { sizeBytes: sum.size_bytes }
-                                        }
-                                    });
+                                    aggMetrics.set(key, { count: sum.count, sizeBytes: sum.size_bytes });
                                 }
                             }
                         }
                     }
                 }
 
-                // ingest into billing
-                const toBilling = usageBilling.add(Array.from(aggMetrics.values()));
-                if (toBilling.isErr()) {
-                    logger.error(`Failed to ingest record billing events`);
-                }
-
-                // TODO ingest into clickhouse
-
-                // send to datadog
-                for (const {
-                    properties: {
-                        count,
-                        accountId,
-                        telemetry: { sizeBytes }
-                    }
-                } of aggMetrics.values()) {
+                for (const [accountId, { count, sizeBytes }] of aggMetrics) {
                     metrics.gauge(metrics.Types.RECORDS_TOTAL_COUNT, count, { accountId });
                     metrics.gauge(metrics.Types.RECORDS_TOTAL_SIZE_IN_BYTES, sizeBytes, { accountId });
                 }
             } catch (err) {
                 span.setTag('error', err);
                 logger.error('Failed to export records metrics', err);
-            }
-        });
-    }
-};
-
-const billing = {
-    exportBillableConnections: async (): Promise<void> => {
-        await tracer.trace<Promise<void>>('nango.cron.exportUsage.billing.connections', async (span) => {
-            try {
-                const now = new Date();
-                const res = await connectionService.billableConnections(now);
-                if (res.isErr()) {
-                    throw res.error;
-                }
-
-                const events = res.value.map(({ accountId, count }) => {
-                    return {
-                        type: 'billable_connections' as const,
-                        properties: {
-                            count,
-                            accountId,
-                            timestamp: now
-                        }
-                    };
-                });
-
-                const sendRes = usageBilling.add(events);
-                if (sendRes.isErr()) {
-                    throw sendRes.error;
-                }
-            } catch (err) {
-                span.setTag('error', err);
-                logger.error('Failed to export billable connections', err);
             }
         });
     }

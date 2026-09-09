@@ -40,6 +40,7 @@ export class KnexDatabase {
             },
             {
                 maxAttempts: 4,
+                maxWaitMs: Infinity,
                 delayMs: (attempt) => 500 * attempt
             }
         );

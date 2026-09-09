@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { Alert, AlertActions, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { usePlanOverrideStore } from '@/features/planOverride';
 import { useApiGetBillingPeriodCosts, useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
@@ -43,10 +42,12 @@ export const Usage: React.FC = () => {
     // billing running-average, matching what each row's drill-in chart also requests.
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
 
-    const metricChargesEnabled = usePlanOverrideStore((s) => s.metricChargesEnabled);
-    // Orb only holds costs for the period in progress, so a past month has no charge to state.
-    const chargesEnabled = metricChargesEnabled && isCurrentMonth && hasMonthlySpend(plan);
-    const { data: periodCosts, isPending: costsPending, isError: costsError } = useApiGetBillingPeriodCosts(env, plan, { enabled: chargesEnabled });
+    const chargesEnabled = hasMonthlySpend(plan);
+    const {
+        data: periodCosts,
+        isPending: costsPending,
+        isError: costsError
+    } = useApiGetBillingPeriodCosts(env, plan, { enabled: chargesEnabled, ...(isCurrentMonth ? {} : { timeframe }) });
     const charges = buildUsageRowCharges({ enabled: chargesEnabled, isPending: costsPending, isError: costsError, data: periodCosts });
 
     if (usageError) {

@@ -6,7 +6,7 @@ import { validateGoogleChannelToken } from './google-channel-token.js';
 import type { WebhookHandler } from './types.js';
 
 const route: WebhookHandler = async (nango, headers) => {
-    const tokenResult = validateGoogleChannelToken(nango.integration, headers);
+    const tokenResult = validateGoogleChannelToken(nango, headers);
     if (tokenResult.isErr()) {
         return Err(tokenResult.error);
     }
@@ -25,7 +25,7 @@ const route: WebhookHandler = async (nango, headers) => {
     }
 
     const baseArgs = {
-        body: headers,
+        payload: headers,
         ...(headers['x-goog-resource-state'] && { webhookTypeValue: headers['x-goog-resource-state'] })
     };
 

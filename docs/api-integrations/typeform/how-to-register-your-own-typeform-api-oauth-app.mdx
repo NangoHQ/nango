@@ -1,0 +1,36 @@
+---
+title: 'How to register your own Typeform OAuth app'
+sidebarTitle: 'Typeform setup'
+description: 'Register an OAuth app with Typeform and obtain credentials to connect it to Nango'
+---
+
+This guide shows you how to register your own app with Typeform to obtain your OAuth credentials (Client ID & Client Secret). These are required to let your users grant your app access to their Typeform account.
+
+<Steps>
+    <Step title="Go to Developer Apps">
+    Log in to Typeform, click the dropdown next to your organization name (upper-left corner), then select **Developer Apps** under the Organization section.
+    </Step>
+    <Step title="Register a new app">
+    Click **Register a new app** and fill in:
+    - **App Name** — your application's name
+    - **App website** — your app's homepage URL
+    - **Redirect URI(s)** — `https://api.nango.dev/oauth/callback`
+    </Step>
+    <Step title="Get your credentials">
+    After registering, copy the **Client Secret** immediately — Typeform only shows it once. Your **Client ID** stays visible in the Developer Apps panel afterward. If you lose the secret, use **Edit app** -> **Regenerate client secret**.
+    </Step>
+    <Step title="Configure scopes">
+    Include the `offline` scope so Typeform issues a refresh token — without it, Nango can't refresh the connection automatically. See [Typeform's scope list](https://www.typeform.com/developers/get-started/scopes) for the rest.
+    </Step>
+    <Step title="Add credentials to Nango">
+    In Nango, open your Typeform integration and enter the **Client ID** and **Client Secret** from the Developer Apps panel, plus the scopes your app needs.
+    </Step>
+</Steps>
+
+<Note>
+On Typeform's EU data center? OAuth app registration is the same, but you'll also need to set the Authorization host and API host when connecting — see the [connect guide](/api-integrations/typeform/connect).
+
+OAuth clients are region-specific: the new EU data center (`api.typeform.eu`) has its own separate authorization server, so a Client ID and Client Secret registered under the standard region (or the older EU data center) won't work there, and vice versa. If you need to support accounts on both, register a separate OAuth app in each region.
+</Note>
+
+For more details, see [Typeform's application docs](https://www.typeform.com/developers/get-started/applications/).

@@ -1,7 +1,7 @@
-import crypto from 'node:crypto';
-
 import { NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
+
+import { safeCompare } from './signature.js';
 
 import type { WebhookHandler } from './types.js';
 
@@ -19,12 +19,6 @@ interface OutlookNotification {
 
 interface OutlookNotificationPayload {
     value?: OutlookNotification[];
-}
-
-function safeCompare(expected: string, received: string): boolean {
-    const expectedBuffer = Buffer.from(expected);
-    const receivedBuffer = Buffer.from(received);
-    return expectedBuffer.length === receivedBuffer.length && crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
 }
 
 const route: WebhookHandler<OutlookNotificationPayload> = async (nango, _headers, body, _rawBody, query) => {
@@ -59,7 +53,7 @@ const route: WebhookHandler<OutlookNotificationPayload> = async (nango, _headers
         }
 
         const response = await nango.executeScriptForWebhooks({
-            body: notification,
+            payload: notification,
             webhookType: 'changeType',
             connectionIdentifierValue: subscriptionId,
             propName: 'metadata.subscriptionIds'
