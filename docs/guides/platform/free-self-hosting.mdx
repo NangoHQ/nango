@@ -1,0 +1,320 @@
+---
+title: 'Free self-hosting'
+sidebarTitle: 'Free self-hosting'
+description: 'Run Nango yourself for free, with a limited feature set.'
+---
+
+Nango is open source and can be self-hosted for free. This option is intended for hobby projects and evaluation: it covers **Auth** and **Proxy**, without the managed features and support included with Nango Cloud or [BYOC](/guides/platform/self-hosting).
+
+You run, configure, secure, scale, and update the instance yourself. For a production deployment in your own cloud account that Nango installs and operates for you, see [BYOC](/guides/platform/self-hosting).
+
+## What's included
+
+| Feature | Free self-hosted | Nango Cloud / BYOC |
+| --- | --- | --- |
+| API Auth | Yes | Yes |
+| Proxy | Yes | Yes |
+| Observability | Auth + proxy only | Full |
+| OpenTelemetry export | No | Yes |
+| Pre-built syncs, tools & triggers | No | Yes |
+| Syncs | No | Yes |
+| Tool calls | No | Yes |
+| Webhooks | No | Yes |
+| Triggers | No | Yes |
+| MCP server | No | Yes |
+| Customize auth branding | No | Yes |
+| RBAC | No | Yes |
+| MFA | No | Yes |
+| SAML SSO | No | Nango Cloud only |
+
+## Install Nango
+
+Nango ships as a single Docker image. To install it on a VM:
+
+```bash
+mkdir nango && cd nango
+wget https://raw.githubusercontent.com/NangoHQ/nango/master/docker-compose.yaml
+docker-compose up -d
+```
+
+This gets you a running instance with a bundled Postgres and Redis, which is enough to try Nango locally. Work through the sections below before pointing real traffic at it — at minimum set an [instance URL](#instance-url-and-callback-url) and an [encryption key](#encryption-key), and move to [external data stores](#production-data-stores).
+
+## Core configuration
+
+Set these as environment variables in the `.env` file, or directly in your hosting provider.
+
+<a id="instance-url-and-callback-url"></a>
+### Instance URL and callback URL
+
+```sh
+NANGO_SERVER_URL=<INSTANCE-URL>
+SERVER_PORT=<PORT>
+```
+
+The resulting default OAuth callback URL is `<INSTANCE-URL>/oauth/callback`. Register this URL with your OAuth providers, not `api.nango.dev`.
+
+If you front one Nango process with two ingresses (a public host for OAuth callbacks and webhooks, an internal host for the dashboard), set:
+
+```sh
+NANGO_DASHBOARD_API_URL=/
+```
+
+`/` keeps dashboard API requests on whichever host served the page. Callback and webhook URLs still use `NANGO_SERVER_URL`. Set an absolute URL instead if the dashboard is hosted separately from the API.
+
+<a id="encryption-key"></a>
+### Encryption key
+
+Set an encryption key so credentials, API keys, and app secrets are encrypted at rest. Generate a 256-bit base64-encoded key:
+
+```sh
+openssl rand -base64 32
+```
+
+Set the generated value as `NANGO_ENCRYPTION_KEY`:
+
+```sh
+NANGO_ENCRYPTION_KEY=<BASE64-256BIT-KEY>
+```
+
+After you restart the Nango server, database encryption happens automatically.
+
+<Warning>
+Set this before you store any credentials. In the free self-hosted version, the encryption key cannot be modified after it is set.
+
+`NANGO_ENCRYPTION_KEY` is also required for Connect UI. It is used to generate sessions for [Connect UI](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui). Without this key, Connect UI will not work.
+</Warning>
+
+## Connect UI
+
+To enable connect UI:
+
+```sh
+FLAG_SERVE_CONNECT_UI=true
+NANGO_CONNECT_UI_PORT=3009
+NANGO_PUBLIC_CONNECT_URL=<INSTANCE-URL>
+```
+
+Connect UI is then available by default at `<INSTANCE-URL>:3009`.
+
+### Hosting under a base path
+
+Connect UI works under any base path, for example behind a reverse proxy that routes services by path. Set `NANGO_PUBLIC_CONNECT_URL` to the full URL including the path:
+
+```sh
+NANGO_PUBLIC_CONNECT_URL=https://example.com/nango/connect
+```
+
+Nango uses this URL when generating links to Connect UI and in the dashboard's security headers, so it must match what end users load in the browser.
+
+Your reverse proxy must strip the base path prefix before forwarding to Connect UI: a request for `/nango/connect/assets/app.js` must reach Connect UI as `/assets/app.js`.
+
+Connect UI is a single-page app: the server must respond with `index.html` for any path that isn't a built asset, including the base path without a trailing slash. Nango's static file server handles this out of the box; if you serve the built `dist` from your own static host, enable its SPA fallback.
+
+<a id="production-data-stores"></a>
+## Production data stores
+
+The Postgres and Redis bundled with Docker Compose use local container storage and are not appropriate for production. Point Nango at external instances before you go live.
+
+### Postgres
+
+Connect Nango to an external Postgres database by setting the database environment variables:
+
+```sh
+NANGO_DB_USER=<REPLACE>
+NANGO_DB_PASSWORD=<REPLACE>
+NANGO_DB_HOST=<REPLACE>
+NANGO_DB_PORT=<REPLACE>
+NANGO_DB_NAME=<REPLACE>
+NANGO_DB_SSL=true
+```
+
+You can also use a database URL:
+
+```sh
+NANGO_DATABASE_URL=postgresql://user:password@host:port/dbname
+```
+
+Special characters in `NANGO_DATABASE_URL` must be URL encoded.
+
+<Note>
+Nango is incompatible with connection poolers using `pool_mode=transaction`. Use a direct database connection or configure the pooler to use a different mode.
+</Note>
+
+### Redis
+
+Connect Nango to an external Redis (or Valkey) with either a full URL or discrete variables:
+
+```sh
+NANGO_REDIS_URL=rediss://:<password>@<host>:<port>
+# or
+NANGO_REDIS_HOST=<host>
+NANGO_REDIS_PORT=<port>
+NANGO_REDIS_AUTH=<password>
+```
+
+Use the `rediss://` scheme (or discrete variables, which default to TLS) to enable in-transit encryption.
+
+#### IAM / short-lived token authentication
+
+Managed Redis with IAM authentication (for example GCP Memorystore for Valkey) uses a short-lived token as the password and requires the token to be refreshed before it expires. Instead of a static `NANGO_REDIS_AUTH`, point Nango at a file that an external process (such as a sidecar) keeps up to date:
+
+```sh
+NANGO_REDIS_HOST=<host>
+NANGO_REDIS_PORT=<port>
+NANGO_REDIS_AUTH_TOKEN_FILE=/path/to/token   # re-read on every (re)connect
+NANGO_REDIS_USERNAME=<username>              # optional; defaults to "default"
+```
+
+Nango reads the token file on every connection and reconnection, so a rotated token is always picked up without a restart. This is cloud-agnostic: anything that writes the current token to the file works. The writer must update the file atomically — write a temporary file and `rename()` it into place — so a reconnect never reads a half-written token and fails authentication. When `NANGO_REDIS_AUTH_TOKEN_FILE` is set, do not embed credentials in `NANGO_REDIS_URL`.
+
+## Logs
+
+Nango stores execution logs and powers the logs UI with either Elasticsearch or OpenSearch. To keep free self-hosted deployments lighter, this stack is optional.
+
+To enable logs:
+
+- Host an Elasticsearch or OpenSearch cluster.
+- Set `NANGO_LOGS_ENABLED=true`.
+- Configure the relevant `NANGO_LOGS_ES_*` environment variables (these apply to both providers).
+
+Nango uses Elasticsearch by default. To use OpenSearch instead, set:
+
+```sh
+NANGO_LOGS_PROVIDER=opensearch
+```
+
+Elasticsearch hosting options include:
+
+- Local: uncomment the service in [`docker-compose.yaml`](https://github.com/NangoHQ/nango/blob/master/docker-compose.yaml#L63) and run `docker-compose up`.
+- Elastic Cloud: use [elastic.co](https://www.elastic.co/).
+- Render: deploy an Elasticsearch instance with [Render](https://docs.render.com/deploy-elasticsearch).
+
+If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in your host logs.
+
+## Secure your instance
+
+### Secure the dashboard
+
+By default, the dashboard of your Nango instance is open to anyone who can access your instance URL.
+
+You can secure it with Basic Auth by setting the following environment variables and restarting the server:
+
+```bash
+FLAG_AUTH_ENABLED=false
+NANGO_DASHBOARD_USERNAME=<PICK-A-USERNAME>
+NANGO_DASHBOARD_PASSWORD=<PICK-A-PASSWORD>
+```
+
+### Proxy base URL override hardening
+
+The [proxy](/guides/platform/proxy-requests) can send authenticated requests to external APIs. Some proxy calls accept a **base URL override** (HTTP header `Base-Url-Override`, SDK `baseUrlOverride`, or an integration `custom.baseUrl`) to target a host that differs from the provider's default API base URL.
+
+Because the proxy makes outbound HTTP requests from your Nango server, a caller with permission to use the proxy could use an override to reach hosts that were not meant to be exposed — such as cloud metadata services or `localhost` on the host making the request. This is a classic **SSRF** risk.
+
+By default, Nango keeps base URL override **enabled** and blocks override targets and redirect hops whose hostnames match a built-in denylist (cloud metadata and loopback addresses). Configure these environment variables and restart the server after changes:
+
+```sh
+NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED=true
+NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='["169.254.169.254","metadata.google.internal","localhost","127.0.0.1","[::1]"]'
+```
+
+| Variable | Default | Purpose |
+| - | - | - |
+| `NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED` | `true` | Set to `false` to reject all base URL overrides |
+| `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST` | Secure defaults when unset | JSON array of hostnames or URLs to block; custom entries are merged with defaults |
+| `NANGO_OUTBOUND_URL_POLICY` | Secure defaults when unset | JSON object controlling SSRF protection for the proxy |
+| `NANGO_OUTBOUND_URL_POLICY_OAUTH` | Inherits the base policy; RFC1918 allowed | JSON object overlay controlling SSRF protection for OAuth/token flows (token, refresh, STS, JWT-bearer endpoints) |
+
+**Operator guidance:**
+
+- **Production:** keep the default denylist. Add environment-specific hosts if your deployment exposes additional internal endpoints.
+- **Legitimate localhost overrides (dev only):** set `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='[]'` to restore fail-open behavior.
+- **No overrides at all:** set `NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED=false`.
+
+Denylist matching is hostname-based and applies to redirect hops as well as the initial override target.
+
+### Outbound URL policy (DNS rebinding, private IPs, redirects)
+
+Beyond the hostname denylist, Nango routes every outbound connection through DNS-pinning agents that re-validate the *resolved* IP address — closing DNS-rebinding and redirect-to-internal-address SSRF holes. The behavior is controlled by `NANGO_OUTBOUND_URL_POLICY`, a JSON object (applied on top of the denylist).
+
+The `mode` field selects how hostnames are filtered:
+
+- **`denylist`** (default): every destination is reachable except hostnames on the denylist (plus the IP-based protections below). This is the out-of-the-box mode, since the denylist always carries the secure defaults.
+- **`allowlist`**: only hostnames in `allowlist` are reachable (a leading `.` matches subdomains); everything else is rejected. The denylist and the IP-based protections still apply on top, so allowlist is strictly *more* restrictive — a listed hostname that resolves to a blocked IP is still rejected.
+- **`permissive`**: no hostname-based filtering (the IP-based protections below still apply). You only reach this mode deliberately — either by emptying the denylist with no explicit mode, or by setting `mode: "permissive"`.
+
+<Note>
+The IP-based protections apply in **every** mode, including `permissive`. Loopback (`127.0.0.0/8`, `::1`) and unspecified addresses are **always** blocked; private/RFC1918/CGNAT addresses (`blockPrivateIps`) and link-local addresses — including the cloud-metadata IP `169.254.169.254` (`blockLinkLocal`) — are blocked by default.
+
+The denylist is **never empty by default** — it is always seeded with the secure defaults (`localhost`, `metadata.google.internal`, `169.254.169.254`, …). It only becomes empty if you explicitly opt out: either `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='[]'` (which then selects `permissive`) or `mode: "permissive"`. Even then, only hostname string matches such as `localhost` are dropped — literal or resolved internal IPs stay blocked unless you also set `blockPrivateIps`/`blockLinkLocal` to `false`.
+</Note>
+
+```sh
+# Block private/link-local IPs (default) and cap redirects at 3
+NANGO_OUTBOUND_URL_POLICY='{"blockPrivateIps":true,"blockLinkLocal":true,"maxRedirects":3}'
+
+# Allowlist mode: only the listed hostnames (and their subdomains) are reachable
+NANGO_OUTBOUND_URL_POLICY='{"mode":"allowlist","allowlist":[".hubspot.com","api.github.com"]}'
+```
+
+| Field | Default | Purpose |
+| - | - | - |
+| `mode` | `denylist` (auto-`permissive` only if you empty the denylist) | `denylist`, `allowlist`, or `permissive` (see above) |
+| `allowlist` | `[]` | In `allowlist` mode, hostnames (a leading `.` matches subdomains) that may be reached |
+| `blockPrivateIps` | `true` | Block RFC1918 / CGNAT addresses (all modes) |
+| `blockLinkLocal` | `true` | Block link-local addresses incl. `169.254.169.254` (all modes) |
+| `maxRedirects` | `5` | Maximum redirect hops followed |
+
+Each resolved address (including on every redirect hop) is validated; in `allowlist` mode, only listed hostnames are reachable regardless of IP.
+
+The same DNS-pinning protection also covers OAuth/token flows (token exchange, refresh, AWS STS, and JWT-bearer token endpoints). These use a separate overlay, `NANGO_OUTBOUND_URL_POLICY_OAUTH`, applied on top of `NANGO_OUTBOUND_URL_POLICY` but with the same JSON shape. The only difference is the default: `blockPrivateIps` is `false` for OAuth so integrations whose token endpoints live on a private network keep working. Loopback and unspecified addresses stay blocked regardless. Link-local/metadata addresses (including the cloud-metadata IP `169.254.169.254`) stay blocked by default through `blockLinkLocal`, but that check is disabled if you set `blockLinkLocal:false`. Lock OAuth down to public hosts only by setting `blockPrivateIps`:
+
+```sh
+NANGO_OUTBOUND_URL_POLICY_OAUTH='{"blockPrivateIps":true}'
+```
+
+### Custom websockets path
+
+The Nango server serves websockets from `/` by default for use by `@nangohq/frontend` during the API auth flow.
+
+To isolate websockets from the dashboard, set `NANGO_SERVER_WEBSOCKETS_PATH`:
+
+```sh
+NANGO_SERVER_WEBSOCKETS_PATH=</YOUR-WEBSOCKETS-PATH>
+```
+
+If you set a custom path, configure `websocketsPath` when initializing the `Nango` object in the `@nangohq/frontend` SDK:
+
+```js
+import Nango from '@nangohq/frontend';
+
+let nango = new Nango({ host: 'https://<YOUR-NANGO-INSTANCE>', websocketsPath: '</YOUR-WEBSOCKETS-PATH>' });
+```
+
+Connect UI discovers the custom path on its own (from the connect session), so `websocketsPath` only needs to be configured for direct `nango.auth()` calls. If Nango is served behind a reverse proxy under a sub-path, direct `nango.auth()` needs the full public path in `websocketsPath` (e.g. `/<API-BASE-PATH></YOUR-WEBSOCKETS-PATH>`) because the SDK resolves it from the origin, while Connect UI composes the public path automatically from the `apiURL` base path and `NANGO_SERVER_WEBSOCKETS_PATH`.
+
+## Update Nango
+
+```bash
+docker-compose stop
+docker-compose rm -f
+docker-compose pull
+docker-compose up -d
+```
+
+Free self-hosted instances track the public Docker image, so you choose when to upgrade and are responsible for testing the result. Check the [changelog](/updates/changelog) before updating.
+
+## Telemetry
+
+Self-hosted instances do not automatically send telemetry back to Nango. Operational metrics and logs stay within your own infrastructure.
+
+<Tip>
+If you need a production deployment that Nango installs and operates in your own cloud account, see [BYOC options](/guides/platform/self-hosting).
+</Tip>
+
+## Related guides
+
+- [BYOC](/guides/platform/self-hosting) - run a Nango-operated instance in your own cloud account.
+- [Security](/guides/platform/security) - review data, encryption, and access controls.
+- [Auth](/guides/auth/auth-guide) - connect end users to external APIs.
+- [Proxy](/guides/platform/proxy-requests) - make authenticated API requests.
