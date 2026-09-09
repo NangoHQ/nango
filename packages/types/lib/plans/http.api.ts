@@ -176,7 +176,9 @@ export type GetBillingPeriodCosts = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/billing/period-costs';
-    Querystring: { env: string };
+    /** Without `from`/`to` this answers for the period being billed now. Naming a window also asks
+     *  for a closed month, which Orb reports with the same per-price breakdown. */
+    Querystring: { env: string; from?: string; to?: string };
     Success: {
         data: {
             metrics: Partial<Record<UsageMetric, number>>;
@@ -185,6 +187,8 @@ export type GetBillingPeriodCosts = ApiEndpoint<{
             /** False when some usage price mapped to no metric of ours — an absent metric can't safely
              *  read as $0, since the money might be one of theirs. */
             fullyAttributed: boolean;
+            /** Cents from fixed prices — base fee, add-ons — which belong to no metric row. */
+            fixedInCents: number;
             currency: string | null;
             /** True when there's no billing period to report costs for — a free plan, no linked
              *  subscription, or an ended one. `metrics`/`currency` are otherwise never empty/null. */

@@ -18,7 +18,7 @@ describe('buildUsageRowCharges', () => {
     it('formats a charge in the response currency', () => {
         const charges = buildUsageRowCharges({
             ...settled,
-            data: success({ metrics: { records: 2317 }, malformedMetrics: [], fullyAttributed: true, currency: 'USD', noCosts: false })
+            data: success({ metrics: { records: 2317 }, malformedMetrics: [], fullyAttributed: true, fixedInCents: 0, currency: 'USD', noCosts: false })
         });
 
         expect(charges?.('records')).toEqual({ formatted: '$23.17', pending: false });
@@ -27,7 +27,7 @@ describe('buildUsageRowCharges', () => {
     it('states a real zero as zero rather than as no figure', () => {
         const charges = buildUsageRowCharges({
             ...settled,
-            data: success({ metrics: { records: 0 }, malformedMetrics: [], fullyAttributed: true, currency: 'USD', noCosts: false })
+            data: success({ metrics: { records: 0 }, malformedMetrics: [], fullyAttributed: true, fixedInCents: 0, currency: 'USD', noCosts: false })
         });
 
         expect(charges?.('records')).toEqual({ formatted: '$0.00', pending: false });
@@ -37,7 +37,7 @@ describe('buildUsageRowCharges', () => {
         // Real state: some accounts have had a metric's price removed by hand, so they owe nothing on it.
         const charges = buildUsageRowCharges({
             ...settled,
-            data: success({ metrics: { proxy: 100 }, malformedMetrics: [], fullyAttributed: true, currency: 'USD', noCosts: false })
+            data: success({ metrics: { proxy: 100 }, malformedMetrics: [], fullyAttributed: true, fixedInCents: 0, currency: 'USD', noCosts: false })
         });
 
         expect(charges?.('records')).toEqual({ formatted: '$0.00', pending: false });
@@ -46,7 +46,7 @@ describe('buildUsageRowCharges', () => {
     it('refuses to call an unpriced metric zero while another charge went unattributed', () => {
         const charges = buildUsageRowCharges({
             ...settled,
-            data: success({ metrics: { proxy: 100 }, malformedMetrics: [], fullyAttributed: false, currency: 'USD', noCosts: false })
+            data: success({ metrics: { proxy: 100 }, malformedMetrics: [], fullyAttributed: false, fixedInCents: 0, currency: 'USD', noCosts: false })
         });
 
         expect(charges?.('records').formatted).toBeNull();
@@ -62,6 +62,7 @@ describe('buildUsageRowCharges', () => {
                 metrics: { proxy: 100 },
                 malformedMetrics: ['records'],
                 fullyAttributed: true,
+                fixedInCents: 0,
                 currency: 'USD',
                 noCosts: false
             })
@@ -74,7 +75,7 @@ describe('buildUsageRowCharges', () => {
     it('states no figure for a currency it cannot format', () => {
         const charges = buildUsageRowCharges({
             ...settled,
-            data: success({ metrics: { records: 100 }, malformedMetrics: [], fullyAttributed: true, currency: 'credits', noCosts: false })
+            data: success({ metrics: { records: 100 }, malformedMetrics: [], fullyAttributed: true, fixedInCents: 0, currency: 'credits', noCosts: false })
         });
 
         expect(charges?.('records').formatted).toBeNull();
@@ -83,7 +84,7 @@ describe('buildUsageRowCharges', () => {
     it('states no figure when the server reports no billing period to cost', () => {
         const charges = buildUsageRowCharges({
             ...settled,
-            data: success({ metrics: {}, malformedMetrics: [], fullyAttributed: true, currency: null, noCosts: true })
+            data: success({ metrics: {}, malformedMetrics: [], fullyAttributed: true, fixedInCents: 0, currency: null, noCosts: true })
         });
 
         expect(charges?.('records')).toEqual({ formatted: null, pending: false });
@@ -100,7 +101,7 @@ describe('buildUsageRowCharges', () => {
             enabled: true,
             isPending: false,
             isError: true,
-            data: success({ metrics: { records: 2317 }, malformedMetrics: [], fullyAttributed: true, currency: 'USD', noCosts: false })
+            data: success({ metrics: { records: 2317 }, malformedMetrics: [], fullyAttributed: true, fixedInCents: 0, currency: 'USD', noCosts: false })
         });
 
         expect(charges?.('records')).toEqual({ formatted: null, pending: false });

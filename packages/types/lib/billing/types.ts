@@ -10,7 +10,7 @@ export interface BillingClient {
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription>>;
     getOverdueInvoices: (accountId: number) => Promise<Result<BillingOverdueInvoices>>;
     getUpcomingInvoice: (subscriptionId: string) => Promise<Result<BillingUpcomingInvoice | null>>;
-    getPeriodCosts: (subscriptionId: string) => Promise<Result<BillingPeriodCosts | null>>;
+    getPeriodCosts: (subscriptionId: string, timeframe?: { start: Date; end: Date }) => Promise<Result<BillingPeriodCosts | null>>;
     getSpendAlert: (subscriptionId: string) => Promise<Result<BillingSpendAlert | null>>;
     setSpendAlert: (subscriptionId: string, opts: { thresholdInCents: number }) => Promise<Result<BillingSpendAlert>>;
     removeSpendAlert: (subscriptionId: string) => Promise<Result<void>>;
@@ -120,6 +120,9 @@ export interface BillingPeriodCosts {
     /** The individual prices behind `malformedMetrics` and a false `fullyAttributed`, for alerting —
      *  not sent over HTTP. */
     flagged: { priceId: string; priceName: string; metric: UsageMetric | null; amountInCents: number | null }[];
+    /** Integer cents from every fixed price — a plan's base fee, an add-on. Kept out of `metrics` so
+     *  no metric's charge absorbs money that isn't usage. */
+    fixedInCents: number;
     currency: string;
 }
 

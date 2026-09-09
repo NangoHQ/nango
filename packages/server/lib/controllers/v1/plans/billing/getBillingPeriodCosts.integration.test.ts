@@ -12,11 +12,12 @@ let api: Awaited<ReturnType<typeof runServer>>;
 
 let getPeriodCostsSpy: any;
 
-const NO_COSTS = { metrics: {}, malformedMetrics: [], fullyAttributed: true, currency: null, noCosts: true };
+const NO_COSTS = { metrics: {}, malformedMetrics: [], fullyAttributed: true, fixedInCents: 0, currency: null, noCosts: true };
 const COSTS = {
     metrics: { records: 2317, connections: 0 },
     malformedMetrics: [],
     fullyAttributed: true,
+    fixedInCents: 0,
     currency: 'USD',
     noCosts: false
 };
@@ -102,12 +103,42 @@ describe(`GET ${route}`, () => {
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
             expect(res.json.data).toStrictEqual(COSTS);
-            expect(getPeriodCostsSpy).toHaveBeenCalledWith('orb_sub_123');
+            expect(getPeriodCostsSpy).toHaveBeenCalledWith('orb_sub_123', undefined);
+        });
+
+        it('should pass a named window through to Orb, so a closed month is costed', async () => {
+            const { apiKey } = await seedPlan('growth-v2');
+
+            const res = await api.fetch(route, {
+                method: 'GET',
+                token: apiKey.secret,
+                query: { env: 'dev', from: '2026-08-01T00:00:00.000Z', to: '2026-09-01T00:00:00.000Z' }
+            });
+
+            isSuccess(res.json);
+            expect(getPeriodCostsSpy).toHaveBeenCalledWith('orb_sub_123', {
+                start: new Date('2026-08-01T00:00:00.000Z'),
+                end: new Date('2026-09-01T00:00:00.000Z')
+            });
+        });
+
+        it('should reject a window that runs backwards', async () => {
+            const { apiKey } = await seedPlan('growth-v2');
+
+            const res = await api.fetch(route, {
+                method: 'GET',
+                token: apiKey.secret,
+                query: { env: 'dev', from: '2026-09-01T00:00:00.000Z', to: '2026-08-01T00:00:00.000Z' }
+            });
+
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('invalid_query_params');
         });
 
         it('should keep a zero charge as zero — the startup deal really does bill $0.00', async () => {
             const { apiKey } = await seedPlan('startup-deal');
-            getPeriodCostsSpy.mockResolvedValue(Ok({ metrics: { records: 0 }, malformedMetrics: [], fullyAttributed: true, currency: 'USD' }));
+            getPeriodCostsSpy.mockResolvedValue(Ok({ metrics: { records: 0 }, malformedMetrics: [], fullyAttributed: true, fixedInCents: 0, currency: 'USD' }));
 
             const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
 
@@ -116,6 +147,7 @@ describe(`GET ${route}`, () => {
                 metrics: { records: 0 },
                 malformedMetrics: [],
                 fullyAttributed: true,
+                fixedInCents: 0,
                 currency: 'USD',
                 noCosts: false
             });
@@ -135,7 +167,9 @@ describe(`GET ${route}`, () => {
 
         it('passes through fullyAttributed and malformedMetrics so the caller knows which figures to trust', async () => {
             const { apiKey } = await seedPlan('growth-v2');
-            getPeriodCostsSpy.mockResolvedValue(Ok({ metrics: { records: 100 }, malformedMetrics: ['proxy'], fullyAttributed: false, currency: 'USD' }));
+            getPeriodCostsSpy.mockResolvedValue(
+                Ok({ metrics: { records: 100 }, malformedMetrics: ['proxy'], fullyAttributed: false, fixedInCents: 0, currency: 'USD' })
+            );
 
             const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
 
@@ -144,6 +178,7 @@ describe(`GET ${route}`, () => {
                 metrics: { records: 100 },
                 malformedMetrics: ['proxy'],
                 fullyAttributed: false,
+                fixedInCents: 0,
                 currency: 'USD',
                 noCosts: false
             });

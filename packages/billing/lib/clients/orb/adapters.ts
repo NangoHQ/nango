@@ -94,39 +94,43 @@ interface OrbCostBucket {
     }[];
 }
 
-export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date): BillingPeriodCosts | null {
+export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, opts: { explicitTimeframe?: boolean } = {}): BillingPeriodCosts | null {
     // Cumulative buckets accumulate over the period, so the one ending last spans all of it.
     const period = costs.data.reduce<OrbCostBucket | null>(
         (latest, bucket) => (latest && Date.parse(latest.timeframe_end) >= Date.parse(bucket.timeframe_end) ? latest : bucket),
         null
     );
-    // An ended subscription still answers with its final period rather than erroring, and those costs
-    // are not what is being billed now. A NaN from a malformed timeframe_end must reject explicitly —
-    // NaN <= now.getTime() is always false, so it would otherwise read as a current period.
+    // An ended subscription answers with its stale final period rather than erroring, so without a
+    // named window a closed period is not an answer. NaN must reject explicitly — NaN <= now is
+    // always false, so a malformed timeframe_end would otherwise read as current.
     const periodEnd = period ? Date.parse(period.timeframe_end) : NaN;
-    if (!period || Number.isNaN(periodEnd) || periodEnd <= now.getTime()) {
+    if (!period || Number.isNaN(periodEnd) || (!opts.explicitTimeframe && periodEnd <= now.getTime())) {
         return null;
     }
 
     const metrics: Partial<Record<UsageMetric, number>> = {};
     const malformedMetrics: UsageMetric[] = [];
     const flagged: BillingPeriodCosts['flagged'] = [];
+    // Held back until the usage prices have run: a fixed price must never be what establishes the
+    // period's currency, or a subscription carrying only a base fee would start reporting costs
+    // where it reports none today.
+    const fixedPrices: { priceId: string; priceName: string; amountInCents: number | null; currency: string | null }[] = [];
     let fullyAttributed = true;
     let currency: string | null = null;
 
     for (const priceCost of period.per_price_costs) {
         const { price } = priceCost;
-        // Excluded, so the metrics never sum to the period's invoice total — the base fee isn't split
-        // across rows.
+        // `total` also carries the price's share of any plan-level minimum or discount — a $50 minimum
+        // lands as $16.67 on each of three unused metrics — so only `subtotal` is attributable to usage.
+        const amountInCents = orbAmountToCents(priceCost.subtotal);
+        const priceCurrency = normalizeIsoCurrency(price.currency);
+
         if (price.price_type === 'fixed_price') {
+            fixedPrices.push({ priceId: priceCost.price_id, priceName: price.name, amountInCents, currency: priceCurrency });
             continue;
         }
 
         const metric = price.billable_metric ? (orbBillableMetricToUsageMetric[price.billable_metric.id] ?? null) : null;
-        const priceCurrency = normalizeIsoCurrency(price.currency);
-        // `total` also carries the price's share of any plan-level minimum or discount — a $50 minimum
-        // lands as $16.67 on each of three unused metrics — so only `subtotal` is attributable to usage.
-        const amountInCents = orbAmountToCents(priceCost.subtotal);
         const readable = priceCurrency !== null && (currency === null || priceCurrency === currency) && amountInCents !== null;
 
         if (!readable) {
@@ -159,7 +163,19 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date):
         return null;
     }
 
-    return { metrics, malformedMetrics, fullyAttributed, flagged, currency };
+    let fixedInCents = 0;
+    for (const fixed of fixedPrices) {
+        if (fixed.amountInCents === null || fixed.currency !== currency) {
+            // Flagged for alerting but deliberately left out of `fullyAttributed`, which governs only
+            // whether an absent *metric* may read as $0 — money on a fixed price was never a metric's
+            // to claim. So an unreadable one understates `fixedInCents` and changes nothing else.
+            flagged.push({ priceId: fixed.priceId, priceName: fixed.priceName, metric: null, amountInCents: fixed.amountInCents });
+            continue;
+        }
+        fixedInCents += fixed.amountInCents;
+    }
+
+    return { metrics, malformedMetrics, fullyAttributed, flagged, fixedInCents, currency };
 }
 
 /**
