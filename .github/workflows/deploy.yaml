@@ -84,18 +84,18 @@ jobs:
               run: |
                   sed -E -i 's#(<meta name="nango-api-origin" content=")[^"]*(")#\1${{ vars.API_DOMAIN }}\2#' packages/webapp/dist/index.html
             - name: configure aws credentials
-              if: inputs.stage != 'replit'
+              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production'
               uses: aws-actions/configure-aws-credentials@v4
               with:
                   role-to-assume: ${{ vars.DEPLOY_APP_UI_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   aws-region: ${{ vars.AWS_REGION }}
             - name: Deploy Webapp to S3
-              if: inputs.stage != 'replit' && inputs.stage != 'byoc-gcp-1'
+              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production'
               run: |
                   aws s3 sync packages/webapp/dist/ s3://${{ vars.APP_UI_BUCKET }} --delete
             - name: Create invalidation
-              if: inputs.stage != 'replit' && inputs.stage != 'byoc-gcp-1'
+              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production'
               run: |
                   aws cloudfront create-invalidation --distribution-id ${{ vars.APP_UI_DISTRIBUTION_ID }} --paths "/*"
             - name: Auth to GCP (OIDC)
@@ -138,18 +138,18 @@ jobs:
             - name: Build Connect UI
               run: npm run ts-build && npm run -w @nangohq/connect-ui build
             - name: configure aws credentials
-              if: inputs.stage != 'replit' && inputs.stage != 'byoc-gcp-1'
+              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production'
               uses: aws-actions/configure-aws-credentials@v4
               with:
                   role-to-assume: ${{ vars.DEPLOY_CONNECT_UI_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   aws-region: ${{ vars.AWS_REGION }}
             - name: Deploy Connect UI to S3
-              if: inputs.stage != 'replit' && inputs.stage != 'byoc-gcp-1'
+              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production'
               run: |
                   aws s3 sync packages/connect-ui/dist/ s3://${{ vars.CONNECT_UI_BUCKET }} --delete
             - name: Create invalidation
-              if: inputs.stage != 'replit' && inputs.stage != 'byoc-gcp-1'
+              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production'
               run: |
                   aws cloudfront create-invalidation --distribution-id ${{ vars.CONNECT_UI_DISTRIBUTION_ID }} --paths "/*"
             - name: Auth to GCP (OIDC)
@@ -255,7 +255,7 @@ jobs:
                   git commit -m "Update ${{ inputs.service }} image tag to ${{ github.sha }} in ${{ inputs.stage }}"
                   git push origin main
     deploy_runners:
-        if: inputs.service == 'runner' && inputs.stage != 'replit'
+        if: inputs.service == 'runner' && (inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production')
         runs-on: ubuntu-latest
         environment: ${{ inputs.stage }}
         permissions:
@@ -274,7 +274,7 @@ jobs:
                     --header "content-type: application/json"\
                     --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\", \"imageType\":\"docker\" }"
     deploy_lambda:
-        if: inputs.service == 'lambda' && inputs.stage != 'replit'
+        if: inputs.service == 'lambda' && (inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production')
         runs-on: ubuntu-24.04-arm
         permissions:
             id-token: write
