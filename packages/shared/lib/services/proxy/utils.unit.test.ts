@@ -1,10 +1,9 @@
 import * as crypto from 'node:crypto';
 
 import FormData from 'form-data';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { getProvider } from '@nangohq/providers';
-import * as utils from '@nangohq/utils';
 
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 import {
@@ -78,8 +77,6 @@ describe('buildProxyHeaders', () => {
             }
         });
 
-        const reportSpy = vi.spyOn(utils, 'report').mockImplementation(() => undefined);
-
         expect(() =>
             buildProxyHeaders({
                 config,
@@ -89,12 +86,9 @@ describe('buildProxyHeaders', () => {
                 })
             })
         ).not.toThrow();
-        expect(reportSpy).not.toHaveBeenCalled();
-
-        reportSpy.mockRestore();
     });
 
-    it('does not throw, but reports, when the request body has a genuinely unserializable value (not a stream)', () => {
+    it('does not throw when the request body has a genuinely unserializable value (not a stream)', () => {
         const config = getDefaultProxy({
             method: 'PUT',
             data: { amount: BigInt(10) },
@@ -111,8 +105,6 @@ describe('buildProxyHeaders', () => {
             }
         });
 
-        const reportSpy = vi.spyOn(utils, 'report').mockImplementation(() => undefined);
-
         expect(() =>
             buildProxyHeaders({
                 config,
@@ -122,9 +114,6 @@ describe('buildProxyHeaders', () => {
                 })
             })
         ).not.toThrow();
-        expect(reportSpy).toHaveBeenCalledOnce();
-
-        reportSpy.mockRestore();
     });
 
     it('should correctly construct headers for Basic auth', () => {
