@@ -412,6 +412,7 @@ describe('fromOrbPeriodCosts', () => {
             malformedMetrics: [],
             fullyAttributed: true,
             flagged: [],
+            fixedInCents: 0,
             currency: 'USD'
         });
     });
@@ -475,7 +476,7 @@ describe('fromOrbPeriodCosts', () => {
         expect(fromOrbPeriodCosts(costs, NOW)?.metrics).not.toHaveProperty('records');
     });
 
-    it('excludes fixed prices, so the metrics exclude the base fee', () => {
+    it('reports a fixed price separately, so no metric absorbs the base fee', () => {
         const costs = {
             data: [
                 bucket([
@@ -495,6 +496,7 @@ describe('fromOrbPeriodCosts', () => {
             malformedMetrics: [],
             fullyAttributed: true,
             flagged: [],
+            fixedInCents: 50_000,
             currency: 'USD'
         });
     });
@@ -594,7 +596,34 @@ describe('fromOrbPeriodCosts', () => {
         expect(result?.fullyAttributed).toBe(false);
     });
 
-    it('returns null when every price is fixed, so no currency can be stated', () => {
+    it('leaves every metric figure untouched when a fixed price cannot be read', () => {
+        const withFixed = (fixedCurrency: string, subtotal: string) => ({
+            data: [
+                bucket([
+                    usagePrice(RECORDS_PROD, '23.17'),
+                    {
+                        price_id: 'price_fixed',
+                        subtotal,
+                        total: subtotal,
+                        price: { price_type: 'fixed_price', currency: fixedCurrency, name: 'Base fee', billable_metric: null }
+                    }
+                ])
+            ]
+        });
+
+        const mismatched = fromOrbPeriodCosts(withFixed('EUR', '500.00'), NOW);
+        expect(mismatched?.metrics).toEqual({ records: 2317 });
+        expect(mismatched?.fullyAttributed).toBe(true);
+        expect(mismatched?.fixedInCents).toBe(0);
+        expect(mismatched?.flagged).toHaveLength(1);
+
+        const unparseable = fromOrbPeriodCosts(withFixed('USD', 'n/a'), NOW);
+        expect(unparseable?.metrics).toEqual({ records: 2317 });
+        expect(unparseable?.fullyAttributed).toBe(true);
+        expect(unparseable?.fixedInCents).toBe(0);
+    });
+
+    it('returns null when every price is fixed, so a base fee alone never starts reporting costs', () => {
         const costs = {
             data: [
                 bucket([
