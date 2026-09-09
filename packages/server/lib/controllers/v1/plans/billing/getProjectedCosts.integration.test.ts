@@ -89,6 +89,18 @@ describe(`GET ${route}`, () => {
             shouldRequireQueryEnv(res);
         });
 
+        it.each([
+            ['from', { from: '2026-08-01T00:00:00.000Z' }],
+            ['to', { to: '2026-09-01T00:00:00.000Z' }]
+        ])('should reject %s without its pair, rather than projecting the current period', async (_name, half) => {
+            const { apiKey } = await scheduled('growth-v2');
+            const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev', ...half } });
+
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(getBillingUsageSpy).not.toHaveBeenCalled();
+        });
+
         it('should reject a timeframe that runs backwards', async () => {
             const { apiKey } = await scheduled('growth-v2');
             const res = await api.fetch(route, {
