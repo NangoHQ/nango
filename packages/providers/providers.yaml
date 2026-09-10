@@ -11997,6 +11997,56 @@ immybot:
             secret: true
             doc_section: '#step-2-create-a-client-secret'
 
+inteliquent:
+    display_name: Inteliquent
+    categories:
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.inteliquent.com
+        body:
+            privateKey: ${credentials.username}
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /Services/2.0.0/tnDetail
+            data:
+                tnSearchList:
+                    tnSearchItem:
+                        - tnMask: xxxxxxxxxx
+                pageSort:
+                    size: 1
+    docs: https://nango.dev/docs/api-integrations/inteliquent
+    docs_connect: https://nango.dev/docs/api-integrations/inteliquent/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API subdomain
+            description: The Inteliquent Services API subdomain for your environment.
+            enum:
+                - services
+                - services-sandbox
+            doc_section: '#step-2-find-your-api-subdomain'
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Inteliquent API Key (not your portal username).
+            pattern: '^[A-Za-z0-9]+$'
+            example: E3A7RgBW********************
+            doc_section: '#step-1-generate-an-api-key-and-api-secret'
+        password:
+            type: string
+            title: API Secret
+            description: Your Inteliquent API Secret (not your portal password).
+            pattern: '^[A-Za-z0-9]+$'
+            example: zZZLA0HX********************
+            secret: true
+            doc_section: '#step-1-generate-an-api-key-and-api-secret'
+
 intercom:
     display_name: Intercom
     categories:
