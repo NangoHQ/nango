@@ -5,13 +5,7 @@ import { OAUTH_AUTHORIZATION_PATH, OAUTH_DISCOVERY_PATH, OAUTH_JWKS_PATH, OAUTH_
 import { setupAuth } from './clients/auth.client.js';
 import { auditOAuthGrantApproved, auditOAuthGrantDenied } from './middleware/audit/index.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import {
-    approveOAuthConsent,
-    consumeOAuthLoginHandoff,
-    denyOAuthConsent,
-    getOAuthConsentInteraction,
-    oauthConsentCors
-} from './oauth/interaction.controller.js';
+import { approveOAuthConsent, denyOAuthConsent, getOAuthConsentInteraction, oauthConsentCors } from './oauth/interaction.controller.js';
 import { oauthServer } from './oauth/server.js';
 
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
@@ -34,7 +28,6 @@ oauthConsentAPI.options('/:uid/:decision', requireIssuerHost, oauthConsentCors);
 oauthConsentAPI.get('/:uid', oauthConsentCors, ...interactionHandlers(getOAuthConsentInteraction));
 oauthConsentAPI.post('/:uid/approve', oauthConsentCors, express.json({ limit: '4kb' }), ...interactionHandlers(approveOAuthConsent, auditOAuthGrantApproved));
 oauthConsentAPI.post('/:uid/deny', oauthConsentCors, express.json({ limit: '4kb' }), ...interactionHandlers(denyOAuthConsent, auditOAuthGrantDenied));
-oauthConsentAPI.post('/:uid/handoff', express.urlencoded({ extended: false, limit: '4kb' }), ...interactionHandlers(consumeOAuthLoginHandoff));
 oauthServerAPI.use('/oauth/consent', oauthConsentAPI);
 
 oauthServerAPI.get(OAUTH_DISCOVERY_PATH, ...providerHandlers);

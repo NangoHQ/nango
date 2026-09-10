@@ -2,7 +2,6 @@ exports.config = { transaction: true };
 
 const grantsTable = 'oauth_product_grants';
 const resourcesTable = 'oauth_product_grant_resources';
-const handoffsTable = 'oauth_login_handoffs';
 const interactionsTable = 'oauth_consent_interactions';
 
 /**
@@ -38,24 +37,6 @@ exports.up = async function (knex) {
 
         table.unique(['grant_id', 'resource'], { indexName: 'oauth_product_grant_resources_unique' });
         table.index(['resource'], 'oauth_product_grant_resources_resource_idx');
-    });
-
-    await knex.schema.createTable(handoffsTable, (table) => {
-        table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
-        table.binary('state_hash').notNullable().unique();
-        table.binary('code_hash').nullable().unique();
-        table.binary('interaction_uid_hash').notNullable();
-        table.text('issuer').notNullable();
-        table.text('return_destination').notNullable();
-        table.integer('user_id').nullable().references('id').inTable('_nango_users').onDelete('CASCADE');
-        table.integer('account_id').nullable().references('id').inTable('_nango_accounts').onDelete('CASCADE');
-        table.timestamp('expires_at', { useTz: true }).notNullable();
-        table.timestamp('issued_at', { useTz: true }).nullable();
-        table.timestamp('consumed_at', { useTz: true }).nullable();
-        table.timestamp('created_at', { useTz: true }).notNullable().defaultTo(knex.fn.now());
-
-        table.index(['expires_at'], 'oauth_login_handoffs_expires_at_idx');
-        table.index(['interaction_uid_hash'], 'oauth_login_handoffs_interaction_idx');
     });
 
     await knex.schema.createTable(interactionsTable, (table) => {

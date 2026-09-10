@@ -1,4 +1,5 @@
 import { parseOAuthServerConfig } from '@nangohq/oauth-server';
+import { basePublicUrl, dashboardApiUrl } from '@nangohq/utils';
 
 import { dek, envs } from '../env.js';
 
@@ -10,6 +11,8 @@ export interface NangoOAuthServerConfig {
 }
 
 export function getOAuthServerConfig(): NangoOAuthServerConfig | null {
+    assertOAuthServerUsesDashboardApiOrigin(envs.NANGO_OAUTH_SERVER_BASE_URL, dashboardApiUrl === '/' ? basePublicUrl : dashboardApiUrl);
+
     const resources: OAuthResourceConfig[] = [];
     if (envs.NANGO_MANAGEMENT_MCP_OAUTH_ENABLED) {
         if (!envs.NANGO_MANAGEMENT_MCP_SERVER_URL) {
@@ -32,4 +35,11 @@ export function getOAuthServerConfig(): NangoOAuthServerConfig | null {
         }),
         resources
     };
+}
+
+export function assertOAuthServerUsesDashboardApiOrigin(oauthServerBaseUrl: string | undefined, dashboardApiBaseUrl: string): void {
+    if (!oauthServerBaseUrl) return;
+    if (new URL(oauthServerBaseUrl).origin !== new URL(dashboardApiBaseUrl).origin) {
+        throw new Error('NANGO_OAUTH_SERVER_BASE_URL must use the same origin as the dashboard API');
+    }
 }
