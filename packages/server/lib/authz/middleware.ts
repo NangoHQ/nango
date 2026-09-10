@@ -39,15 +39,13 @@ export function can(scope: Scope, ...or: Scope[]) {
     };
 }
 
-/**
- * Slot in the public pipeline for naming the environment target.
- * Auth still infers a single-env key in SQL. This does not check key ownership — `can` / `authorize` owns `where`.
- */
 export function resolveEnvironment(_req: Request, res: Response, next: NextFunction): void {
+    // Keys with access to a single-env will already have an environment in the locals.
     if ((res.locals as Partial<RequestLocals>).environment) {
         next();
         return;
     }
-    // TODO: resolve a client-supplied env (header or otherwise). Do not invent an env here.
+
+    // TODO: resolve a client-supplied env (eg. through a `x-nango-environment` header)
     next();
 }
