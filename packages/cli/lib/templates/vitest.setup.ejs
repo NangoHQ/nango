@@ -1,5 +1,12 @@
 import { NangoActionMock, NangoSyncMock } from "nango/test";
 
+declare global {
+  var vitest: {
+    NangoActionMock: typeof NangoActionMock;
+    NangoSyncMock: typeof NangoSyncMock;
+  };
+}
+
 globalThis.vitest = {
   NangoActionMock,
   NangoSyncMock,
