@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { oauthConsentDecisionSchema, oauthConsentInteractionSchema, oauthLoginHandoffSuccessSchema } from './contracts.js';
+import { oauthConsentDecisionSchema, oauthConsentInteractionSchema, oauthLoginHandoffSuccessSchema, oauthLoginResumeSuccessSchema } from './contracts.js';
 
 describe('OAuth consent contracts', () => {
     it('accepts bounded multi-resource interaction data', () => {
@@ -39,5 +39,10 @@ describe('OAuth consent contracts', () => {
         expect(oauthLoginHandoffSuccessSchema.safeParse({ data: { consumeUrl: 'https://id.nango.dev/oauth/consent/id/handoff', code: 'short' } }).success).toBe(
             false
         );
+    });
+
+    it('accepts only an absolute provider resume URL', () => {
+        expect(oauthLoginResumeSuccessSchema.safeParse({ data: { resumeUrl: 'https://api.nango.dev/oauth/authorize/interaction-id' } }).success).toBe(true);
+        expect(oauthLoginResumeSuccessSchema.safeParse({ data: { resumeUrl: '/oauth/authorize/interaction-id' } }).success).toBe(false);
     });
 });

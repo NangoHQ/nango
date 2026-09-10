@@ -5,7 +5,12 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { z } from 'zod';
 
 import { Alert, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
-import { oauthConsentDecisionSuccessSchema, oauthConsentSuccessSchema, oauthLoginHandoffSuccessSchema } from '@nangohq/oauth-server/contracts';
+import {
+    oauthConsentDecisionSuccessSchema,
+    oauthConsentSuccessSchema,
+    oauthLoginHandoffSuccessSchema,
+    oauthLoginResumeSuccessSchema
+} from '@nangohq/oauth-server/contracts';
 
 import { apiFetch } from '@/utils/api';
 import { globalEnv } from '@/utils/env';
@@ -19,7 +24,7 @@ type PageState =
     | { kind: 'expired' | 'completed' | 'unavailable' }
     | { kind: 'error'; interaction?: OAuthConsentInteraction };
 
-const loginRequiredSchema = z.object({ error: z.object({ code: z.literal('login_required'), handoffState: z.string().min(32) }) });
+const loginRequiredSchema = z.object({ error: z.object({ code: z.literal('login_required'), handoffState: z.string().min(32).optional() }) });
 
 export function OAuthConsent() {
     const { uid } = useParams<{ uid: string }>();
@@ -42,10 +47,23 @@ export function OAuthConsent() {
             const json: unknown = await response.json();
             if (sequence !== requestSequence.current) return;
 
+            if (response.status === 202) {
+                const resumed = oauthLoginResumeSuccessSchema.safeParse(json);
+                if (!resumed.success) {
+                    setState({ kind: 'error' });
+                    return;
+                }
+                window.location.assign(resumed.data.data.resumeUrl);
+                return;
+            }
             if (response.status === 401) {
                 const login = loginRequiredSchema.safeParse(json);
                 if (!login.success) {
                     setState({ kind: 'error' });
+                    return;
+                }
+                if (!login.data.error.handoffState) {
+                    void navigate(`/signin?next=${encodeURIComponent(location.pathname)}`, { replace: true });
                     return;
                 }
                 const handoffResponse = await apiFetch('/api/v1/oauth/login-handoff', {

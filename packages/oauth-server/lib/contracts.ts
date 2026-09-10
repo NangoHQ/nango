@@ -35,6 +35,7 @@ export const oauthLoginHandoffSchema = z.object({ state: z.string().min(32).max(
 
 export const oauthConsentSuccessSchema = z.object({ data: oauthConsentInteractionSchema }).strict();
 export const oauthConsentDecisionSuccessSchema = z.object({ data: z.object({ resumeUrl: z.string().url().max(4096) }).strict() }).strict();
+export const oauthLoginResumeSuccessSchema = z.object({ data: z.object({ resumeUrl: z.string().url().max(4096) }).strict() }).strict();
 export const oauthLoginHandoffSuccessSchema = z
     .object({ data: z.object({ consumeUrl: z.string().url().max(4096), code: z.string().min(32).max(256) }).strict() })
     .strict();
