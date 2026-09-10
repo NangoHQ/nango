@@ -70,4 +70,23 @@ describe('integrationCredentialsSchema (MCP_OAUTH2)', () => {
             expect(result.data).toStrictEqual({ type: 'MCP_OAUTH2', client_id: 'abc', client_secret: 'def', scopes: 'offline_access,read' });
         }
     });
+
+    it("accepts space-delimited scopes matching OAuth2's standard scope wire format", () => {
+        const result = integrationCredentialsSchema.safeParse({
+            type: 'MCP_OAUTH2',
+            scopes: 'read write'
+        });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data).toStrictEqual({ type: 'MCP_OAUTH2', scopes: 'read write' });
+        }
+    });
+
+    it('accepts a mix of commas and spaces in scopes', () => {
+        const result = integrationCredentialsSchema.safeParse({
+            type: 'MCP_OAUTH2',
+            scopes: 'read, write offline_access'
+        });
+        expect(result.success).toBe(true);
+    });
 });

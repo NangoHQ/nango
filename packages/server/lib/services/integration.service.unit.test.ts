@@ -604,6 +604,27 @@ describe('integrationService', () => {
                 );
             });
 
+            it('normalizes space-delimited scopes to comma-delimited storage', async () => {
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('static'));
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+                const createSpy = vi
+                    .spyOn(shared.configService, 'createProviderConfig')
+                    .mockResolvedValue(integrationFixture({ uniqueKey: 'mcp2', provider: 'mcp2' }));
+
+                const result = await integrationService.create({
+                    environmentId: 42,
+                    provider: 'mcp2',
+                    uniqueKey: 'mcp2',
+                    credentialSource: 'own',
+                    credentials: { type: 'MCP_OAUTH2', client_id: 'my-client-id', client_secret: 'my-secret', scopes: 'read write offline_access' },
+                    environment: environmentFixture,
+                    team: teamFixture
+                });
+
+                expect(result.isOk()).toBe(true);
+                expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({ oauth_scopes: 'read,write,offline_access' }), mcpProviderFixture('static'));
+            });
+
             it('rejects creating a static integration with no credentials', async () => {
                 vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('static'));
                 vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
@@ -674,7 +695,9 @@ describe('integrationService', () => {
             it('registers a CIMD client_id when Nango is reachable over HTTPS', async () => {
                 vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('cimd'));
                 vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
-                vi.spyOn(shared, 'getGlobalClientMetadataDocumentUrl').mockReturnValue('https://nango.example.com/oauth/client-metadata/environment-uuid/mcp3');
+                vi.spyOn(shared, 'getGlobalClientMetadataDocumentUrl').mockImplementation(
+                    (environmentUuid, providerConfigKey) => `https://nango.example.com/oauth/client-metadata/${environmentUuid}/${providerConfigKey}`
+                );
                 const createSpy = vi
                     .spyOn(shared.configService, 'createProviderConfig')
                     .mockResolvedValue(integrationFixture({ uniqueKey: 'mcp3', provider: 'mcp3' }));
@@ -974,8 +997,8 @@ describe('integrationService', () => {
                 vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('cimd'));
                 vi.spyOn(shared.configService, 'getIdByProviderConfigKey').mockResolvedValue(null);
                 vi.spyOn(shared.connectionService, 'countConnections').mockResolvedValue(0);
-                vi.spyOn(shared, 'getGlobalClientMetadataDocumentUrl').mockReturnValue(
-                    'https://nango.example.com/oauth/client-metadata/environment-uuid/mcp3-renamed'
+                vi.spyOn(shared, 'getGlobalClientMetadataDocumentUrl').mockImplementation(
+                    (environmentUuid, providerConfigKey) => `https://nango.example.com/oauth/client-metadata/${environmentUuid}/${providerConfigKey}`
                 );
                 const editSpy = vi.spyOn(shared.configService, 'editProviderConfig').mockResolvedValue(integration as never);
 

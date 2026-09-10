@@ -343,6 +343,31 @@ export class IntegrationService {
                 integration.shared_credentials_id = sharedCredentials.value.id;
             } else {
                 applyCredentials(integration, params.credentials);
+                if (params.integrationConfig && Object.keys(params.integrationConfig).length > 0) {
+                    const resolvedConfig = resolveIntegrationConfig(provider, params.integrationConfig);
+                    if (resolvedConfig.isErr()) {
+                        return Err(
+                            new IntegrationServiceError({
+                                code: 'invalid_integration_config',
+                                message: resolvedConfig.error.message,
+                                cause: resolvedConfig.error
+                            })
+                        );
+                    }
+                    integration.custom = { ...integration.custom, ...resolvedConfig.value };
+                }
+
+                if (params.custom && Object.keys(params.custom).length > 0) {
+                    if (provider.integration_config) {
+                        return Err(
+                            new IntegrationServiceError({
+                                code: 'invalid_integration_config',
+                                message: 'This provider uses integration_config; set its values there instead of custom'
+                            })
+                        );
+                    }
+                    integration.custom = { ...integration.custom, ...params.custom };
+                }
 
                 if (provider.auth_mode === 'MCP_OAUTH2') {
                     const clientRegistration = (provider as ProviderMcpOAUTH2).client_registration;
@@ -374,32 +399,6 @@ export class IntegrationService {
                         integration.oauth_client_id = cimdResult.value;
                         integration.oauth_client_secret = '';
                     }
-                }
-
-                if (params.integrationConfig && Object.keys(params.integrationConfig).length > 0) {
-                    const resolvedConfig = resolveIntegrationConfig(provider, params.integrationConfig);
-                    if (resolvedConfig.isErr()) {
-                        return Err(
-                            new IntegrationServiceError({
-                                code: 'invalid_integration_config',
-                                message: resolvedConfig.error.message,
-                                cause: resolvedConfig.error
-                            })
-                        );
-                    }
-                    integration.custom = { ...integration.custom, ...resolvedConfig.value };
-                }
-
-                if (params.custom && Object.keys(params.custom).length > 0) {
-                    if (provider.integration_config) {
-                        return Err(
-                            new IntegrationServiceError({
-                                code: 'invalid_integration_config',
-                                message: 'This provider uses integration_config; set its values there instead of custom'
-                            })
-                        );
-                    }
-                    integration.custom = { ...integration.custom, ...params.custom };
                 }
             }
 
@@ -708,7 +707,13 @@ function applyCredentials(integration: DBCreateIntegration, credentials: CreateI
                 integration.oauth_client_secret = credentials.client_secret;
             }
             if (credentials.scopes !== undefined) {
-                integration.oauth_scopes = credentials.scopes;
+                integration.oauth_scopes = credentials.scopes
+                    ? credentials.scopes
+                          .trim()
+                          .split(/[,\s]+/)
+                          .filter(Boolean)
+                          .join(',')
+                    : credentials.scopes;
             }
             break;
         }
