@@ -34,6 +34,8 @@ import { Templates } from '@/pages/Integrations/providerConfigKey/Templates';
 import { IntegrationsList } from '@/pages/Integrations/Show';
 import { LogsShow } from '@/pages/Logs/Show';
 import { NotFound } from '@/pages/NotFound';
+import { OAuthConsent } from '@/pages/OAuth/Consent';
+import { OAuthContinue } from '@/pages/OAuth/Continue';
 import { AccountDiscovery } from '@/pages/Onboarding/AccountDiscovery';
 import { HearAboutUs } from '@/pages/Onboarding/HearAboutUs';
 import { Root } from '@/pages/Root';
@@ -147,6 +149,8 @@ const publicAuthRoutes = (() => {
 })();
 
 export const router = sentryCreateBrowserRouter([
+    { path: '/oauth/continue', element: <OAuthContinue /> },
+    { path: '/oauth/consent/:uid', element: <OAuthConsent /> },
     {
         path: '/',
         element: <Root />

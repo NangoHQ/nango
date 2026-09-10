@@ -7,6 +7,7 @@ import { pbkdf2, userService } from '@nangohq/shared';
 import { PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { deleteUserSessions } from '../../../../clients/auth.client.js';
+import { revokeUserOAuthGrants } from '../../../../oauth/grants.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { hasRecentMfa } from '../../account/mfa/elevation.js';
 import { isStepUpRefused, isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from '../../account/mfa/stepUp.js';
@@ -66,6 +67,7 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
 
         await userService.update({ id: user.id, hashed_password: hashedPassword, salt }, trx);
         await deleteUserSessions(user.id, { trx });
+        await revokeUserOAuthGrants(user.id, trx);
         return 'changed' as const;
     });
 

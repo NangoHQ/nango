@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { accountService, mfaService, recordMFALoginRefused, recordMFAVerifyFailure, userService } from '@nangohq/shared';
 
-import { safeReturnTo } from '../returnTo.js';
+import { safeOAuthContinuation, safeReturnTo } from '../returnTo.js';
 import { markMfaVerified } from './elevation.js';
 
 import type { DBUser, PostMFALoginVerification } from '@nangohq/types';
@@ -78,6 +78,7 @@ export async function isMFAEnabled(user: DBUser, trx: Knex = db.knex): Promise<b
 }
 
 async function loginUser(req: Request, user: DBUser): Promise<void> {
+    const continuation = safeOAuthContinuation(req.session.oauthContinuation);
     await new Promise<void>((resolve, reject) => {
         req.login(user, (err) => {
             if (err) {
@@ -88,12 +89,18 @@ async function loginUser(req: Request, user: DBUser): Promise<void> {
             resolve();
         });
     });
+    if (continuation) {
+        req.session.oauthContinuation = continuation;
+        await saveSession(req);
+    }
 }
 
 async function regenerateSession(req: Request): Promise<void> {
+    const continuation = safeOAuthContinuation(req.session.oauthContinuation);
     await new Promise<void>((resolve, reject) => {
         req.session.regenerate((err) => (err ? reject(err instanceof Error ? err : new Error(String(err))) : resolve()));
     });
+    if (continuation) req.session.oauthContinuation = continuation;
 }
 
 async function saveSession(req: Request): Promise<void> {

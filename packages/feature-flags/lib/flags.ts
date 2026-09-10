@@ -13,6 +13,9 @@ import type { FeatureFlagsClient } from './client.js';
  */
 export function buildFlags(client: FeatureFlagsClient) {
     return {
+        isOAuthConsentEnabled(accountUuid?: string) {
+            return client.isEnabled('oauth-server-consent', { targetingKey: accountUuid ?? 'anonymous', accountUuid }, false);
+        },
         /**
          * Whether OAuth callbacks missing the state cookie should be rejected for this account.
          * Default `false`

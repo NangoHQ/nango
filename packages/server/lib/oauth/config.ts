@@ -25,7 +25,7 @@ export function getOAuthServerConfig(): NangoOAuthServerConfig | null {
 
     return {
         config: parseOAuthServerConfig({
-            baseUrl: envs.NANGO_OAUTH_SERVER_BASE_URL,
+            baseUrl: envs.NANGO_OAUTH_SERVER_BASE_URL ?? (envs.NANGO_CLOUD ? 'https://id.nango.dev' : undefined),
             cookieKeys: envs.NANGO_OAUTH_SERVER_COOKIE_KEYS,
             encryptionKey: dek.get(),
             jwks: envs.NANGO_OAUTH_SERVER_JWKS

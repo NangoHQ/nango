@@ -15,7 +15,7 @@ if (globalEnv.publicPosthogKey) {
         // mask_personal_data_properties only covers ad/click params, so name the rest explicitly.
         // invite_email carries a requester's address and the first $pageview fires here, before
         // React can strip it from the URL.
-        custom_personal_data_properties: ['session_token', 'token', 'next', INVITE_PREFILL_PARAM],
+        custom_personal_data_properties: ['session_token', 'token', 'next', 'code', 'state', INVITE_PREFILL_PARAM],
         // The dashboard renders customer-supplied data that can contain PHI (NAN-6428):
         // mask all text by default, opt Nango-owned static chrome out with data-ph-unmask.
         mask_all_text: true,

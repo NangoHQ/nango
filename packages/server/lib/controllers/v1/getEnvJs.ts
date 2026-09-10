@@ -15,13 +15,17 @@ import {
     isHosted
 } from '@nangohq/utils';
 
+import { getOAuthServerConfig } from '../../oauth/config.js';
+
 import type { WindowEnv } from '@nangohq/types';
 import type { RequestHandler } from 'express';
 
 export const getEnvJs: RequestHandler = (_, res) => {
+    const oauthServerUrl = getOAuthServerConfig()?.config.baseUrl;
     const configObject: WindowEnv = {
         apiUrl: baseUrl,
         dashboardApiUrl,
+        ...(oauthServerUrl ? { oauthServerUrl } : {}),
         publicUrl: basePublicUrl,
         connectUrl: connectUrl,
         gitHash: envs.GIT_HASH,

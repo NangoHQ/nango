@@ -5,6 +5,7 @@ import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 import { envs } from '../../../../env.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
+import { safeOAuthContinuation } from '../returnTo.js';
 
 import type { InviteAccountState } from './postSignup.js';
 import type { DBInvitation, DBTeam } from '@nangohq/types';
@@ -221,6 +222,7 @@ export async function finalizeManagedAuthentication({
         return;
     }
 
+    if (!invitation || isNewUser) destination = safeOAuthContinuation(req.session.oauthContinuation) ?? destination;
     try {
         const pendingMfa = await loginOrStartPendingMfa(req, user, destination);
         if (pendingMfa) {

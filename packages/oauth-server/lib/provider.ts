@@ -27,6 +27,7 @@ export interface CreateOAuthProviderOptions {
     knex: Knex;
     config: OAuthServerParsedConfig;
     resources: readonly OAuthResourceConfig[];
+    beforeGrantRevoked?: ((trx: Knex.Transaction, grantIdHash: Buffer) => Promise<void>) | undefined;
 }
 
 interface OAuthResourceRegistry {
@@ -34,12 +35,12 @@ interface OAuthResourceRegistry {
     get(resource: string): OAuthResourceConfig | undefined;
 }
 
-export function createOAuthProvider({ knex, config, resources }: CreateOAuthProviderOptions): Provider {
+export function createOAuthProvider({ knex, config, resources, beforeGrantRevoked }: CreateOAuthProviderOptions): Provider {
     const registry = createResourceRegistry(resources);
     const allowedScopes = new Set(registry.supportedScopes);
 
     const configuration: Configuration = {
-        adapter: createOAuthAdapter({ knex, encryptionKey: config.encryptionKey }),
+        adapter: createOAuthAdapter({ knex, encryptionKey: config.encryptionKey, beforeGrantRevoked }),
         claims: {},
         clientAuthMethods: ['none'],
         clients: [],
@@ -85,13 +86,15 @@ export function createOAuthProvider({ knex, config, resources }: CreateOAuthProv
         findAccount: (_ctx, accountId) => ({ accountId, claims: () => ({ sub: accountId }) }),
         formats: { bitsOfOpaqueRandomness: 256 },
         interactions: {
-            // TODO(NAN-6924): Replace the test-only interaction handler with the authenticated API used by the React consent page.
             url: (_ctx, interaction) => `${OAUTH_ENDPOINT_PATH}/interaction/${encodeURIComponent(interaction.uid)}`
         },
         issueRefreshToken: (_ctx, client) => client.grantTypeAllowed('refresh_token'),
         jwks: config.jwks,
         pkce: { required: () => true },
         responseTypes: ['code'],
+        // A Nango product grant spans every resource approved in the authorization. Revoking any
+        // refresh or access token therefore revokes the complete provider grant as well.
+        revokeGrantPolicy: () => true,
         rotateRefreshToken: (ctx) => validateRefreshResource(ctx, registry),
         routes: {
             authorization: OAUTH_AUTHORIZATION_PATH,

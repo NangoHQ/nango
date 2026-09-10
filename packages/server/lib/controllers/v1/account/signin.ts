@@ -6,7 +6,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { userToAPI } from '../../../formatters/user.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { loginOrStartPendingMfa } from './mfa/login.js';
-import { safeReturnTo } from './returnTo.js';
+import { safeOAuthContinuation, safeReturnTo } from './returnTo.js';
 
 import type { RequestLocals } from '../../../utils/express.js';
 import type { DBUser, PostSignin } from '@nangohq/types';
@@ -67,7 +67,7 @@ export const signin = asyncWrapper<PostSignin>(async (req, res: Response<any, Re
         return;
     }
 
-    const destination = resolvePostLoginDestination(user, req.body.returnTo);
+    const destination = resolvePostLoginDestination(user, safeOAuthContinuation(req.session.oauthContinuation) ?? req.body.returnTo);
     const pendingMfa = await loginOrStartPendingMfa(req, user, destination);
     if (pendingMfa) {
         res.status(200).send({ data: { mfaRequired: true } });

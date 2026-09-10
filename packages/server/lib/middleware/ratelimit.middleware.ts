@@ -6,6 +6,7 @@ import { getRedisUrl } from '@nangohq/kvstore';
 import { flagHasAPIRateLimit, flagHasPlan, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { oauthTelemetryPath } from '../oauth/telemetry.js';
 import { createRateLimiterRedisClient } from '../utils/rateLimiterRedisClient.js';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -96,11 +97,12 @@ export const rateLimiterMiddleware = async (req: Request, res: Response<any, Par
         next();
     } catch (err) {
         if (err instanceof RateLimiterRes) {
-            logger.info(`Rate limit exceeded for ${key}. Request: ${req.method} ${req.path})`);
+            const path = oauthTelemetryPath(req.originalUrl) ?? req.path;
+            logger.info(`Rate limit exceeded for ${key}. Request: ${req.method} ${path})`);
 
             setXRateLimitHeaders(maxPoints, err);
             res.setHeader('Retry-After', Math.floor(err.msBeforeNext / 1000));
-            res.status(429).send({ error: { code: 'too_many_request', method: req.method, path: req.path } });
+            res.status(429).send({ error: { code: 'too_many_request', method: req.method, path } });
             return;
         }
 

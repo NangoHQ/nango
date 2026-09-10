@@ -8,6 +8,7 @@
         "build": "vite build",
         "preview": "vite preview",
         "test": "vitest",
+        "test:browser": "vitest run --config vitest.browser.config.ts",
         "tokens:usage": "node scripts/generate-token-usage.mjs"
     },
     "browserslist": {
@@ -63,6 +64,8 @@
         "@types/stringify-object": "4.0.5",
         "@uidotdev/usehooks": "2.4.1",
         "@vitejs/plugin-react-swc": "4.3.1",
+        "@vitest/browser-playwright": "4.1.9",
+        "axe-core": "4.12.0",
         "class-variance-authority": "0.7.1",
         "classnames": "2.5.1",
         "clsx": "2.1.1",
@@ -77,6 +80,7 @@
         "nuqs": "2.4.1",
         "postcss": "8.5.26",
         "posthog-js": "1.212.1",
+        "playwright": "1.61.0",
         "qrcode.react": "4.2.0",
         "radix-ui": "1.4.3",
         "react": "18.3.1",
@@ -99,6 +103,7 @@
         "vite-plugin-checker": "0.14.1",
         "vite-plugin-svgr": "5.2.0",
         "vitest": "4.1.9",
+        "vitest-browser-react": "2.2.0",
         "web-vitals": "2.1.4",
         "zod": "3.25.76",
         "zustand": "5.0.3"
