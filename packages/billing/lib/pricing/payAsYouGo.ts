@@ -4,13 +4,11 @@ export type PayAsYouGoMetric = Extract<UsageMetric, 'connections' | 'function_du
 
 export const PAY_AS_YOU_GO_METRICS: readonly PayAsYouGoMetric[] = ['connections', 'function_duration_seconds', 'data_transfer'];
 
-// Keep rates here: `planToApi` exposes plan fields, and `@nangohq/types` ships in the webapp.
 const CENTS_PER_CONNECTION = 29;
 const CENTS_PER_COMPUTE_HOUR = 72;
 const CENTS_PER_TRANSFER_GB = 50;
 
 const SECONDS_PER_HOUR = 3600;
-/** Decimal GB, not GiB; this matches the published rate and Orb metric. */
 const BYTES_PER_GB = 1_000_000_000;
 
 const MINIMUM_IN_CENTS = 5_000;

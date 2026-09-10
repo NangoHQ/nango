@@ -116,7 +116,6 @@ const PLAN_IS_RETIRED: Record<DBPlan['name'], boolean> = {
     'enterprise-cloud-hosted': false
 };
 
-/** Scheduled migrations need the strip even when the plan map hides it. */
 export function showsSummaryStrip(plan: ApiPlan | null | undefined, hasScheduledTransition = false): boolean {
     if (!plan) {
         return false;

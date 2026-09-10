@@ -15,7 +15,6 @@ interface BuildArgs {
     isPending: boolean;
     isError: boolean;
     data: GetBillingPeriodCosts['Success'] | undefined;
-    /** Use `dash` when $0.00 could be mistaken for a free price. */
     unpriced?: 'zero' | 'dash';
 }
 
@@ -63,7 +62,6 @@ interface BuildProjectedArgs {
     data: GetProjectedCosts['Success'] | undefined;
 }
 
-/** Every metric here is priced, so an absent one is a real $0 rather than money left unattributed. */
 export function buildProjectedCharges(args: BuildProjectedArgs): UsageChargeLookup {
     if (!args.enabled) {
         return null;

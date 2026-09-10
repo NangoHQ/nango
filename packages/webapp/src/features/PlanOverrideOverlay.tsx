@@ -86,7 +86,6 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
         return duplicated;
     }, [plansList]);
 
-    // `useCurrentPlan` already has the override applied, so the real plan comes from here.
     const realPlanName = useEnvironment(env).data?.plan?.name;
 
     const scheduledChangeOptions = useMemo(() => {

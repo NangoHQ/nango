@@ -57,7 +57,6 @@ export const getProjectedCosts = asyncWrapper<GetProjectedCosts>(async (req, res
 
     const changeAt = plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : null;
     const scheduled = plan.orb_future_plan === TARGET_PLAN && changeAt !== null && !Number.isNaN(changeAt.getTime()) && changeAt > new Date();
-    // Only `postImpersonate` can set `debugMode`, so an account cannot enable its own preview.
     const previewing = req.session?.debugMode === true;
     if (!scheduled && !previewing) {
         res.status(200).send({ data: NOT_APPLICABLE });

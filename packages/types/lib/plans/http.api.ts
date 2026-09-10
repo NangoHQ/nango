@@ -28,7 +28,6 @@ export interface PlanDefinition {
     nextPlan: string[] | null;
     prevPlan: string[] | null;
     basePrice?: number;
-    /** Source-plan rule for migrations; `DBPlan.has_growth_features` records the add-on on Pay-as-you-go. */
     keepsGrowthAddOnOnMigration?: boolean;
 
     cta?: string;
@@ -197,7 +196,6 @@ export type GetBillingPeriodCosts = ApiEndpoint<{
     };
 }>;
 
-/** Includes the Pay-as-you-go minimum; `GetBillingPeriodCosts` excludes plan minimums. */
 export type GetProjectedCosts = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';

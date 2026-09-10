@@ -31,7 +31,6 @@ export function planTransition({
         return null;
     }
 
-    // Enterprise and Startup deal transitions use their standard plan-change copy.
     if (!isRetiredPlan(plan.name)) {
         return null;
     }
