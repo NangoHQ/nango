@@ -1,5 +1,6 @@
 import express from 'express';
 
+import { resolveEnvironment } from './authz/middleware.js';
 import { getManagementMcp, postManagementMcp } from './controllers/mcp/management.js';
 import { envs } from './env.js';
 import authMiddleware from './middleware/access.middleware.js';
@@ -11,6 +12,7 @@ import { withEnvironmentTarget } from './middleware/scope.middleware.js';
 import type { Request, RequestHandler } from 'express';
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const envAuth: RequestHandler[] = [...apiAuth, resolveEnvironment];
 const bodyLimit = envs.NANGO_SERVER_PUBLIC_BODY_LIMIT;
 const managementMcpRouter = express.Router();
 
@@ -24,8 +26,8 @@ managementMcpRouter.use(
     }),
     jsonContentTypeMiddleware
 );
-managementMcpRouter.route('/mcp').post(apiAuth, withEnvironmentTarget, postManagementMcp);
-managementMcpRouter.route('/mcp').get(apiAuth, withEnvironmentTarget, getManagementMcp);
+managementMcpRouter.route('/mcp').post(envAuth, withEnvironmentTarget, postManagementMcp);
+managementMcpRouter.route('/mcp').get(envAuth, withEnvironmentTarget, getManagementMcp);
 managementMcpRouter.use((_, res) => {
     res.status(404).json({ error: { code: 'not_found', message: 'Not found' } });
 });

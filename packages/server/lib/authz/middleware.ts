@@ -39,5 +39,15 @@ export function can(scope: Scope, ...or: Scope[]) {
     };
 }
 
-export const withScope = can;
-export const withAnyScope = can;
+/**
+ * Slot in the public pipeline for naming the environment target.
+ * Auth still infers a single-env key in SQL. This does not check key ownership — `can` / `authorize` owns `where`.
+ */
+export function resolveEnvironment(_req: Request, res: Response, next: NextFunction): void {
+    if ((res.locals as Partial<RequestLocals>).environment) {
+        next();
+        return;
+    }
+    // TODO: resolve a client-supplied env (header or otherwise). Do not invent an env here.
+    next();
+}
