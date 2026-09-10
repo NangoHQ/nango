@@ -1,22 +1,17 @@
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 
 import { authenticateUser, isError, isSuccess, runServer } from '../../../../utils/tests.js';
 
-import type { MockInstance } from 'vitest';
-
 const mfaRoute = '/api/v1/account/mfa';
 
 let api: Awaited<ReturnType<typeof runServer>>;
-let mfaFlagSpy: MockInstance<ReturnType<typeof featureFlags.getFlags>['isMFAEnabled']>;
 
 describe('MFA settings', () => {
     beforeAll(async () => {
         api = await runServer();
-        mfaFlagSpy = vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {
@@ -69,18 +64,6 @@ describe('MFA settings', () => {
         expect(activation.res.status).toBe(400);
         isError(activation.json);
         expect(activation.json.error.code).toBe('invalid_mfa_code');
-    });
-
-    it('returns feature disabled when MFA is not enabled for the account', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
-        const cookie = await authenticateUser(api, user);
-        mfaFlagSpy.mockResolvedValueOnce(false);
-
-        const status = await api.fetch(mfaRoute, { method: 'GET', session: cookie });
-
-        expect(status.res.status).toBe(400);
-        isError(status.json);
-        expect(status.json.error.code).toBe('feature_disabled');
     });
 
     it('disables MFA with a valid code', async () => {

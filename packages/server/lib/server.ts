@@ -8,7 +8,6 @@ import * as cron from 'node-cron';
 import qs from 'qs';
 import { WebSocketServer } from 'ws';
 
-import { billing } from '@nangohq/billing';
 import db, { KnexDatabase } from '@nangohq/database';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
@@ -142,7 +141,6 @@ const close = once(() => {
         otlp.stop();
         await destroyKvstore();
         await destroyFeatureFlags();
-        await billing.shutdown();
         await egressTelemetryRecorder.shutdown();
         await pubsub.disconnect();
 

@@ -11,10 +11,12 @@ import { logger } from './logger.js';
 const orbConfigured = Boolean(envs.ORB_API_KEY);
 if (!orbConfigured) {
     logger.warning(
-        'ORB_API_KEY is not set — using a no-op billing client. Billing events are dropped and subscriptions/customers are stubbed. Expected in local dev and self-hosted; unexpected in a deployed environment.'
+        'ORB_API_KEY is not set — using a no-op billing client. Subscriptions and customers are stubbed. Expected in local dev and self-hosted; unexpected in a deployed environment.'
     );
 }
 export const billing = new Billing(orbConfigured ? new OrbClient() : new NoopBillingClient());
 
 export { getStripe } from './stripe.js';
 export { growthAddonStateFromOrb } from './clients/orb/adapters.js';
+export { PAY_AS_YOU_GO_METRICS, projectPayAsYouGo } from './pricing/payAsYouGo.js';
+export type { PayAsYouGoMetric, PayAsYouGoProjection, PayAsYouGoQuantities } from './pricing/payAsYouGo.js';

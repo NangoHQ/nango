@@ -3,7 +3,6 @@ import { Readable } from 'node:stream';
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
 import { logContextGetter } from '@nangohq/logs';
 import { getGlobalWebhookReceiveUrl, ProxyRequest, remoteFileService, seeders, syncManager } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
@@ -142,7 +141,6 @@ describe('POST /mcp management server', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {

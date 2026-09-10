@@ -69,6 +69,9 @@ import type {
     DeletePublicEnvironment,
     GetEnvironment,
     GetEnvironments,
+    GetPublicApiKey,
+    GetPublicApiKeys,
+    GetPublicEnvironments,
     ListApiKeys,
     PatchApiKey,
     PatchEnvironment,
@@ -130,6 +133,7 @@ import type {
     GetBillingUsage,
     GetBillingUsageTopDimensionValues,
     GetOverdueInvoices,
+    GetProjectedCosts,
     GetSpendAlert,
     GetUpcomingInvoice,
     PostPlanChange,
@@ -232,6 +236,9 @@ export type PublicApiEndpoints =
     | AllPublicProxy
     | PostPublicEnvironment
     | DeletePublicEnvironment
+    | GetPublicEnvironments
+    | GetPublicApiKey
+    | GetPublicApiKeys
     | PostPublicApiKey
     | DeletePublicApiKey;
 
@@ -255,6 +262,7 @@ export type PrivateApiEndpoints =
     | GetBillingUsageTopDimensionValues
     | GetUpcomingInvoice
     | GetBillingPeriodCosts
+    | GetProjectedCosts
     | GetSpendAlert
     | PutSpendAlert
     | DeleteSpendAlert

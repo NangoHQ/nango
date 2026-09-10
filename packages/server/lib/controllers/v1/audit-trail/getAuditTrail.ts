@@ -35,7 +35,7 @@ async function traced<T>(name: string, run: () => Promise<Result<T>>): Promise<R
 export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
     const { account, plan } = res.locals;
     // Checked ahead of validation: an unentitled account has no trail to read, whatever it asks for.
-    if (!(await canViewAuditTrail(req, account.uuid, plan))) {
+    if (!(await canViewAuditTrail(req, plan))) {
         res.status(403).send({ error: { code: 'feature_disabled', message: 'Audit trail is not enabled for this account' } });
         return;
     }

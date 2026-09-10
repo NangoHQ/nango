@@ -40,6 +40,9 @@ import { getPublicConnections } from './controllers/connection/getConnections.js
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import { deletePublicEnvironmentApiKey } from './controllers/environment/deleteApiKey.js';
 import { deletePublicEnvironment } from './controllers/environment/deleteEnvironment.js';
+import { getPublicEnvironmentApiKey } from './controllers/environment/getApiKey.js';
+import { getPublicEnvironmentApiKeys } from './controllers/environment/getApiKeys.js';
+import { getPublicEnvironments } from './controllers/environment/getEnvironments.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { postPublicEnvironmentApiKey } from './controllers/environment/postApiKey.js';
 import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
@@ -189,7 +192,16 @@ publicAPI.use(
     })
 );
 publicAPI.use(bodyParser.raw({ type: 'text/xml', limit: bodyLimit }));
-publicAPI.use(express.urlencoded({ extended: true, limit: bodyLimit }));
+publicAPI.use(
+    express.urlencoded({
+        extended: true,
+        limit: bodyLimit,
+        // Slack signs the raw form body, so webhook routing needs it as sent.
+        verify: (req: Request, _, buf) => {
+            req.rawBody = buf.toString();
+        }
+    })
+);
 
 type ExtendedMulterLimits = multer.Options['limits'] & {
     fieldNestingDepth?: number;
@@ -247,15 +259,18 @@ publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, withEnviron
 publicAPI.route('/providers/:provider/templates').get(apiAuth, withEnvironmentTarget, getPublicProviderTemplates);
 
 publicAPI.use('/environments', jsonContentTypeMiddleware);
+publicAPI.route('/environments').get(apiAuth, withScope('account:environments:list'), getPublicEnvironments);
 publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, withScope('account:environments:create'), postPublicEnvironment);
 publicAPI
     .route('/environments/:environmentUuid')
     .delete(apiAuth, auditPublicEnvironmentDeleted, withScope('account:environments:delete'), deletePublicEnvironment);
 publicAPI
     .route('/environments/:environmentUuid/api-keys')
+    .get(apiAuth, withScope('account:environments:api_keys:list'), getPublicEnvironmentApiKeys)
     .post(apiAuth, auditPublicApiKeyCreated, withScope('account:environments:api_keys:create'), postPublicEnvironmentApiKey);
 publicAPI
     .route('/environments/:environmentUuid/api-keys/:keyUuid')
+    .get(apiAuth, withScope('account:environments:api_keys:read'), getPublicEnvironmentApiKey)
     .delete(apiAuth, auditPublicApiKeyDeleted, withScope('account:environments:api_keys:delete'), deletePublicEnvironmentApiKey);
 
 // @deprecated rollbacked for one customer, to delete asap

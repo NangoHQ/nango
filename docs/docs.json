@@ -98,6 +98,14 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/fathom",
+      "destination": "/api-integrations/fathom"
+    },
+    {
+      "source": "/integrations/all/fathom/connect",
+      "destination": "/api-integrations/fathom/connect"
+    },
+    {
       "source": "/integrations/all/google-gemini",
       "destination": "/api-integrations/google-gemini"
     },
@@ -116,6 +124,22 @@
     {
       "source": "/integrations/all/bigcommerce",
       "destination": "/api-integrations/bigcommerce"
+    },
+    {
+      "source": "/integrations/all/gong",
+      "destination": "/api-integrations/gong"
+    },
+    {
+      "source": "/integrations/all/gong-oauth",
+      "destination": "/api-integrations/gong-oauth"
+    },
+    {
+      "source": "/integrations/all/gong/connect",
+      "destination": "/api-integrations/gong/connect"
+    },
+    {
+      "source": "/integrations/all/gong/webhooks",
+      "destination": "/api-integrations/gong/webhooks"
     },
     {
       "source": "/introduction",
@@ -813,8 +837,11 @@
                       {
                         "group": "Environments",
                         "pages": [
+                          "reference/backend/http-api/environments/list",
                           "reference/backend/http-api/environments/create",
                           "reference/backend/http-api/environments/delete",
+                          "reference/backend/http-api/environments/list-api-keys",
+                          "reference/backend/http-api/environments/get-api-key",
                           "reference/backend/http-api/environments/create-api-key",
                           "reference/backend/http-api/environments/delete-api-key"
                         ]
@@ -998,12 +1025,14 @@
               "integrations/all/aircall",
               "integrations/all/aircall-basic",
               "api-integrations/airtable",
+              "api-integrations/airtable-mcp",
               "integrations/all/airtable-pat",
               "integrations/all/algolia",
               "api-integrations/altrata",
               "api-integrations/amazon",
               "api-integrations/amazon-selling-partner",
               "api-integrations/amazon-selling-partner-beta",
+              "api-integrations/amplemarket",
               "api-integrations/amplitude",
               "api-integrations/amplitude-mcp",
               "api-integrations/amplitude-mcp-eu",
@@ -1056,6 +1085,7 @@
               "api-integrations/back-market",
               "api-integrations/bamboohr",
               "integrations/all/bamboohr-basic",
+              "api-integrations/bandwidth",
               "integrations/all/basecamp",
               "api-integrations/baserow",
               "api-integrations/basin",
@@ -1075,6 +1105,7 @@
               "integrations/all/blackbaud-basic",
               "integrations/all/blandai",
               "api-integrations/bliro",
+              "api-integrations/bol-com",
               "integrations/all/boldsign",
               "integrations/all/booking-com",
               "api-integrations/boondmanager",
@@ -1220,7 +1251,7 @@
               "api-integrations/ecu360-production",
               "integrations/all/egnyte",
               "integrations/all/elevenlabs",
-              "integrations/all/elevio",
+              "api-integrations/elevio",
               "integrations/all/emarsys",
               "integrations/all/emarsys-oauth",
               "api-integrations/embat",
@@ -1247,7 +1278,7 @@
               "integrations/all/fairing",
               "integrations/all/falai",
               "api-integrations/fanvue",
-              "integrations/all/fathom",
+              "api-integrations/fathom",
               "api-integrations/fathom-oauth",
               "api-integrations/fellow",
               "api-integrations/fern",
@@ -1301,8 +1332,8 @@
               "api-integrations/glean",
               "api-integrations/glean-oauth",
               "api-integrations/glyphic",
-              "integrations/all/gong",
-              "integrations/all/gong-oauth",
+              "api-integrations/gong",
+              "api-integrations/gong-oauth",
               "api-integrations/google",
               "api-integrations/google-ads",
               "api-integrations/google-analytics",
@@ -1387,6 +1418,8 @@
               "integrations/all/insightly",
               "api-integrations/instagram",
               "integrations/all/instantly",
+              "api-integrations/immybot",
+              "api-integrations/inteliquent",
               "api-integrations/intercom",
               "integrations/all/intuit",
               "integrations/all/ironclad",
@@ -1445,6 +1478,7 @@
               "integrations/all/linkhut",
               "integrations/all/listmonk",
               "api-integrations/listrak",
+              "api-integrations/liveswitch",
               "api-integrations/livetennisapi",
               "api-integrations/lob",
               "api-integrations/lokalise",
@@ -1516,6 +1550,7 @@
               "api-integrations/mollie",
               "integrations/all/momentum-io",
               "api-integrations/monday",
+              "api-integrations/moneybird",
               "integrations/all/mural",
               "api-integrations/myob",
               "api-integrations/n8n",
@@ -1525,6 +1560,7 @@
               "integrations/all/nationbuilder",
               "api-integrations/neon",
               "api-integrations/nerdio",
+              "api-integrations/netsapiens",
               "integrations/all/netsuite",
               "api-integrations/netsuite-client-credentials",
               "api-integrations/netsuite-tba",
@@ -1569,6 +1605,7 @@
               "integrations/all/ory",
               "integrations/all/osu",
               "integrations/all/oura",
+              "api-integrations/outline",
               "api-integrations/outlook",
               "integrations/all/outreach",
               "api-integrations/paddle",
@@ -1856,7 +1893,7 @@
               "integrations/all/twitter",
               "integrations/all/twitter-oauth2-cc",
               "api-integrations/twitter-v2",
-              "integrations/all/typeform",
+              "api-integrations/typeform",
               "integrations/all/typefully",
               "api-integrations/typefully-v2",
               "integrations/all/uber",

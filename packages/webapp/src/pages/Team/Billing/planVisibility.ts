@@ -116,11 +116,11 @@ const PLAN_IS_RETIRED: Record<DBPlan['name'], boolean> = {
     'enterprise-cloud-hosted': false
 };
 
-export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
+export function showsSummaryStrip(plan: ApiPlan | null | undefined, hasScheduledTransition = false): boolean {
     if (!plan) {
         return false;
     }
-    return SHOWS_SUMMARY_STRIP[plan.name];
+    return SHOWS_SUMMARY_STRIP[plan.name] || hasScheduledTransition;
 }
 
 export function isLegacyPlan(plan: ApiPlan | null | undefined): boolean {
@@ -156,7 +156,8 @@ export function isRetiredPlan(code: DBPlan['name']): boolean {
     return PLAN_IS_RETIRED[code];
 }
 
-export type GrowthAddonState = 'none' | 'active' | 'pending-removal';
+/** Only a scheduled migration sets `pending-activation`. `growthAddonState` never returns it. */
+export type GrowthAddonState = 'none' | 'active' | 'pending-removal' | 'pending-activation';
 
 /** A scheduled removal still reads as `has_growth_features` until its date, so the date separates the two. */
 export function growthAddonState(plan: ApiPlan | null | undefined): GrowthAddonState {

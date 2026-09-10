@@ -10,12 +10,17 @@ import { UsageChartCard } from './UsageChartCard';
 import type { UsageRowCharge } from '../usageCharges';
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
-export function usageRowGrid(variant: 'caps' | 'usage' | 'charges'): string {
-    // Tailwind's scanner needs the full bracketed class literally in source to generate it, so this
-    // picks between two complete strings rather than assembling one from a variable.
-    return variant === 'caps'
-        ? 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_124px_20px] items-center gap-4 px-6'
-        : 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_124px_20px] items-center gap-4 px-6';
+export type UsageRowVariant = 'caps' | 'usage' | 'charges' | 'comparison';
+
+// Tailwind only generates classes it sees in source. This helper must return whole strings.
+export function usageRowGrid(variant: UsageRowVariant): string {
+    if (variant === 'caps') {
+        return 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_124px_20px] items-center gap-4 px-6';
+    }
+    if (variant === 'comparison') {
+        return 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_124px_180px_20px] items-center gap-4 px-6';
+    }
+    return 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_124px_20px] items-center gap-4 px-6';
 }
 
 interface UsageRowProps {
@@ -38,8 +43,9 @@ interface UsageRowProps {
     onOpenChange?: (open: boolean) => void;
     /** 'cumulative' for Free (progress toward the cap), 'daily' for paid. */
     chartMode: 'daily' | 'cumulative';
-    variant: 'caps' | 'usage' | 'charges';
+    variant: UsageRowVariant;
     charge?: UsageRowCharge;
+    currentPlanCharge?: UsageRowCharge;
 }
 
 /**
@@ -61,7 +67,8 @@ export const UsageRow: React.FC<UsageRowProps> = ({
     onOpenChange,
     chartMode,
     variant,
-    charge
+    charge,
+    currentPlanCharge
 }) => {
     const state = getUsageState(usage, limit);
     const percent = limit ? Math.round((usage / limit) * 100) : null;
@@ -69,7 +76,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
     const figures = showLimits && limit != null ? formatMetricPair(metric, usage, limit) : { usage: formatMetricUsage(metric, usage), limit: null };
     const exactFigure = formatMetricUsageExact(metric, usage) + (figures.limit != null ? ` / ${figures.limit}` : '');
     // The charge and usage queries resolve independently.
-    const isPending = variant === 'charges' ? charge?.pending : capsLoading;
+    const isPending = variant === 'charges' || variant === 'comparison' ? charge?.pending : capsLoading;
 
     return (
         <Collapsible open={open} onOpenChange={onOpenChange} className="border-b border-border-muted last:border-b-0 data-[state=open]:bg-surface-panel">
@@ -96,6 +103,13 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                     ) : (
                         <div />
                     )}
+                    {/* A dash means unpriced. Blank means this row has no applicable figure. */}
+                    {variant === 'comparison' &&
+                        (currentPlanCharge?.pending ? (
+                            <Skeleton className="h-4 w-12" />
+                        ) : (
+                            <div className="text-text-default type-text-regular-sm">{currentPlanCharge ? (currentPlanCharge.formatted ?? '—') : ''}</div>
+                        ))}
                     {isPending ? (
                         <Skeleton className="h-4 w-12" />
                     ) : showLimits ? (
@@ -108,7 +122,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                         </div>
                     ) : (
                         // On an uncapped plan a charge is what was billed, not a threshold crossed.
-                        <div className="text-text-default type-text-regular-sm">{charge?.formatted ?? '—'}</div>
+                        <div className="text-text-default type-text-regular-sm">{charge ? (charge.formatted ?? '—') : ''}</div>
                     )}
                     <ChevronDown className="size-5 text-text-muted transition-transform group-data-[state=open]:rotate-180" />
                 </div>

@@ -1,6 +1,6 @@
 import { formatMoneyFromCents } from './money';
 
-import type { GetBillingPeriodCosts, UsageMetric } from '@nangohq/types';
+import type { GetBillingPeriodCosts, GetProjectedCosts, UsageMetric } from '@nangohq/types';
 
 export interface UsageRowCharge {
     formatted: string | null;
@@ -15,6 +15,7 @@ interface BuildArgs {
     isPending: boolean;
     isError: boolean;
     data: GetBillingPeriodCosts['Success'] | undefined;
+    unpriced?: 'zero' | 'dash';
 }
 
 const NO_FIGURE: UsageRowCharge = { formatted: null, pending: false };
@@ -48,8 +49,36 @@ export function buildUsageRowCharges(args: BuildArgs): UsageChargeLookup {
         if (amountInCents === undefined) {
             // No price for this metric reads as zero, unless some other price went unattributed — that
             // money could belong to this metric, so it states no figure rather than claiming zero.
-            return fullyAttributed ? { formatted: formatMoneyFromCents(0, currency), pending: false } : NO_FIGURE;
+            return fullyAttributed && args.unpriced !== 'dash' ? { formatted: formatMoneyFromCents(0, currency), pending: false } : NO_FIGURE;
         }
         return { formatted: formatMoneyFromCents(amountInCents, currency), pending: false };
     };
+}
+
+interface BuildProjectedArgs {
+    enabled: boolean;
+    isPending: boolean;
+    isError: boolean;
+    data: GetProjectedCosts['Success'] | undefined;
+}
+
+export function buildProjectedCharges(args: BuildProjectedArgs): UsageChargeLookup {
+    if (!args.enabled) {
+        return null;
+    }
+
+    if (args.isPending) {
+        return () => PENDING;
+    }
+
+    if (args.isError || !args.data) {
+        return () => NO_FIGURE;
+    }
+
+    const { metrics, currency, notApplicable } = args.data.data;
+    if (notApplicable) {
+        return null;
+    }
+
+    return (metric) => ({ formatted: formatMoneyFromCents(metrics[metric] ?? 0, currency), pending: false });
 }

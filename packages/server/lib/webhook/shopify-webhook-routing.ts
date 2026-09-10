@@ -1,15 +1,9 @@
-import crypto from 'node:crypto';
-
 import { NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import { validateHmacSignature } from './signature.js';
+
 import type { WebhookHandler } from './types.js';
-
-function validateShopifySignature(secret: string, headerSignature: string, rawBody: string): boolean {
-    const calculatedHmac = crypto.createHmac('sha256', secret).update(rawBody, 'utf8').digest('base64');
-
-    return crypto.timingSafeEqual(Buffer.from(calculatedHmac, 'base64'), Buffer.from(headerSignature, 'base64'));
-}
 
 function getHeader(headers: Record<string, any>, headerName: string): string | undefined {
     const lowerName = headerName.toLowerCase();
@@ -28,8 +22,17 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     const signature = getHeader(headers, 'x-shopify-hmac-sha256');
     const topic = getHeader(headers, 'x-shopify-topic');
     const shopDomain = getHeader(headers, 'x-shopify-shop-domain');
-    const url = new URL(`https://${shopDomain}`);
-    const subdomain = url.hostname.split('.')[0];
+
+    if (!shopDomain) {
+        return Err(new NangoError('webhook_missing_shop_domain'));
+    }
+
+    let subdomain: string | undefined;
+    try {
+        subdomain = new URL(`https://${shopDomain}`).hostname.split('.')[0];
+    } catch {
+        subdomain = undefined;
+    }
 
     if (!subdomain) {
         return Err(new NangoError('webhook_missing_shop_domain'));
@@ -44,13 +47,18 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
             return Err(new NangoError('webhook_missing_signature'));
         }
 
-        if (!validateShopifySignature(webhookSecret, signature, rawBody)) {
+        if (!validateHmacSignature({ secret: webhookSecret, rawBody, signature, digest: 'base64' })) {
             return Err(new NangoError('webhook_invalid_signature'));
         }
+    } else {
+        nango.markUnverified({
+            reason: 'shopify_missing_webhook_secret',
+            remediation: 'Set the client secret or webhook secret on the integration'
+        });
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookTypeValue: topic ?? '',
         connectionIdentifierValue: subdomain,
         propName: 'subdomain'

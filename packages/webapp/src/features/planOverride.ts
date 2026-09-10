@@ -23,14 +23,7 @@ interface PlanOverrideState {
     overdueOverride: boolean;
     /** Plan-limit state to simulate, or `null` to use real usage. Free plan only. */
     usageLimitOverride: UsageLimitOverride | null;
-    /**
-     * Reveals the current-period spend headline. Off until the figure is verified against real Orb
-     * invoices; delete this flag once it ships to everyone.
-     */
-    spendHeadlineEnabled: boolean;
-    /** Spend to simulate. Only meaningful with the flag on. */
     spendOverride: SpendOverride | null;
-    metricChargesEnabled: boolean;
     periodCostsOverride: PeriodCostsOverride | null;
     addonState: GrowthAddonState | null;
     paymentMethodOverride: boolean;
@@ -38,9 +31,7 @@ interface PlanOverrideState {
     setScheduledTarget: (code: PlanDefinition['code'] | null) => void;
     setOverdueOverride: (override: boolean) => void;
     setUsageLimitOverride: (override: UsageLimitOverride | null) => void;
-    setSpendHeadlineEnabled: (enabled: boolean) => void;
     setSpendOverride: (override: SpendOverride | null) => void;
-    setMetricChargesEnabled: (enabled: boolean) => void;
     setPeriodCostsOverride: (override: PeriodCostsOverride | null) => void;
     setAddonState: (state: GrowthAddonState | null) => void;
     setPaymentMethodOverride: (override: boolean) => void;
@@ -52,9 +43,7 @@ export const DEFAULTS = {
     scheduledTargetCode: null,
     overdueOverride: false,
     usageLimitOverride: null,
-    spendHeadlineEnabled: false,
     spendOverride: null,
-    metricChargesEnabled: false,
     periodCostsOverride: null,
     addonState: null,
     paymentMethodOverride: false
@@ -64,8 +53,7 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
     persist(
         (set) => ({
             ...DEFAULTS,
-            // Switching plan clears the states picked against the old one. `spendHeadlineEnabled`
-            // survives here — a rollout flag, not a simulated state — though Reset still clears it.
+            // Switching plan clears the states picked against the old one.
             setOverride: (overrideCode) =>
                 set({
                     overrideCode,
@@ -79,9 +67,7 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
             setScheduledTarget: (scheduledTargetCode) => set({ scheduledTargetCode }),
             setOverdueOverride: (overdueOverride) => set({ overdueOverride }),
             setUsageLimitOverride: (usageLimitOverride) => set({ usageLimitOverride }),
-            setSpendHeadlineEnabled: (spendHeadlineEnabled) => set({ spendHeadlineEnabled }),
             setSpendOverride: (spendOverride) => set({ spendOverride }),
-            setMetricChargesEnabled: (metricChargesEnabled) => set({ metricChargesEnabled }),
             setPeriodCostsOverride: (periodCostsOverride) => set({ periodCostsOverride }),
             setAddonState: (addonState) => set({ addonState }),
             setPaymentMethodOverride: (paymentMethodOverride) => set({ paymentMethodOverride }),
@@ -129,7 +115,7 @@ export function buildSpendOverride(override: SpendOverride): GetUpcomingInvoice[
  */
 export function buildPeriodCostsOverride(override: PeriodCostsOverride): GetBillingPeriodCosts['Success'] {
     if (override === 'unavailable') {
-        return { data: { metrics: {}, malformedMetrics: [], fullyAttributed: true, currency: null, noCosts: true } };
+        return { data: { metrics: {}, malformedMetrics: [], fullyAttributed: true, fixedInCents: 0, currency: null, noCosts: true } };
     }
     if (override === 'zero') {
         return {
@@ -137,6 +123,7 @@ export function buildPeriodCostsOverride(override: PeriodCostsOverride): GetBill
                 metrics: { connections: 0, proxy: 0, function_executions: 0, function_compute_gbms: 0, function_logs: 0, webhook_forwards: 0 },
                 malformedMetrics: [],
                 fullyAttributed: true,
+                fixedInCents: 50_000,
                 currency: 'USD',
                 noCosts: false
             }
@@ -147,6 +134,7 @@ export function buildPeriodCostsOverride(override: PeriodCostsOverride): GetBill
             metrics: { connections: 11352, proxy: 1200, function_executions: 500, function_compute_gbms: 2317, function_logs: 150, webhook_forwards: 0 },
             malformedMetrics: [],
             fullyAttributed: true,
+            fixedInCents: 50_000,
             currency: 'USD',
             noCosts: false
         }
@@ -162,11 +150,11 @@ export function applyPlanOverride(
         addonState
     }: { overridePlan?: PlanDefinition | null; scheduledTarget?: PlanDefinition | null; addonState?: GrowthAddonState | null }
 ): ApiPlan | null | undefined {
-    if (!realPlan || (!overridePlan && !addonState)) {
+    if (!realPlan || (!overridePlan && !addonState && !scheduledTarget)) {
         return realPlan;
     }
 
-    const withPlan: ApiPlan = overridePlan
+    const onPlan: ApiPlan = overridePlan
         ? {
               ...realPlan,
               // `flags` is typed against `DBPlan` (pre-serialization), so its never-set Date fields
@@ -174,10 +162,14 @@ export function applyPlanOverride(
               // plan definitions only ever set those fields to `null`, never an actual Date.
               ...(overridePlan.flags as Partial<ApiPlan>),
               name: overridePlan.code,
-              orb_future_plan: scheduledTarget?.code ?? null,
-              orb_future_plan_at: scheduledTarget ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : null
+              orb_future_plan: null,
+              orb_future_plan_at: null
           }
         : realPlan;
+
+    const withPlan: ApiPlan = scheduledTarget
+        ? { ...onPlan, orb_future_plan: scheduledTarget.code, orb_future_plan_at: nextUsageResetDate(new Date()).toISOString() }
+        : onPlan;
 
     if (!addonState) {
         return withPlan;

@@ -3,7 +3,6 @@ import type { DBTeam } from '../team/db.js';
 import type { UsageMetric } from '../usage/index.js';
 
 export interface BillingClient {
-    ingest: (events: BillingEvent[]) => Promise<Result<void>>;
     linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>>;
     getOrCreateCustomer: (accountId: number, defaultTo: Pick<BillingInvoicingDetails, 'legalEntityName' | 'email'>) => Promise<Result<BillingCustomer>>;
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
@@ -11,7 +10,7 @@ export interface BillingClient {
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription>>;
     getOverdueInvoices: (accountId: number) => Promise<Result<BillingOverdueInvoices>>;
     getUpcomingInvoice: (subscriptionId: string) => Promise<Result<BillingUpcomingInvoice | null>>;
-    getPeriodCosts: (subscriptionId: string) => Promise<Result<BillingPeriodCosts | null>>;
+    getPeriodCosts: (subscriptionId: string, timeframe?: { start: Date; end: Date }) => Promise<Result<BillingPeriodCosts | null>>;
     getSpendAlert: (subscriptionId: string) => Promise<Result<BillingSpendAlert | null>>;
     setSpendAlert: (subscriptionId: string, opts: { thresholdInCents: number }) => Promise<Result<BillingSpendAlert>>;
     removeSpendAlert: (subscriptionId: string) => Promise<Result<void>>;
@@ -121,6 +120,7 @@ export interface BillingPeriodCosts {
     /** The individual prices behind `malformedMetrics` and a false `fullyAttributed`, for alerting —
      *  not sent over HTTP. */
     flagged: { priceId: string; priceName: string; metric: UsageMetric | null; amountInCents: number | null }[];
+    fixedInCents: number;
     currency: string;
 }
 
@@ -237,112 +237,3 @@ export interface BillingPlan {
     id: string;
     external_plan_id: string;
 }
-
-type BillingPropertyValue = string | number | boolean | Date | undefined;
-type BillingProperties = Record<string, BillingPropertyValue | Record<string, BillingPropertyValue>>;
-
-interface BillingEventBase<TType extends string, TProperties extends BillingProperties = BillingProperties> {
-    type: TType;
-    properties: {
-        timestamp: Date;
-        idempotencyKey?: string | undefined;
-        accountId: number;
-        count: number;
-    } & TProperties;
-}
-
-export type MarBillingEvent = BillingEventBase<
-    'monthly_active_records',
-    {
-        environmentId: number;
-        environmentName: string;
-        integrationId: string;
-        syncId: string;
-        model: string;
-    }
->;
-
-export type RecordsBillingEvent = BillingEventBase<
-    'records',
-    {
-        frequencyMs: number;
-        telemetry: {
-            sizeBytes: number;
-        };
-    }
->;
-
-export type ActionsBillingEvent = BillingEventBase<
-    'billable_actions',
-    {
-        environmentId: number;
-        environmentName: string;
-        integrationId: string;
-        actionName: string;
-    }
->;
-
-export type FunctionExecutionsBillingEvent = BillingEventBase<
-    'function_executions',
-    {
-        environmentId: number;
-        environmentName: string;
-        integrationId: string;
-        type: string;
-        functionName: string;
-        telemetry: {
-            successes: number;
-            failures: number;
-            durationMs: number;
-            compute: number;
-            customLogs: number;
-            proxyCalls: number;
-        };
-        frequencyMs?: number | undefined;
-    }
->;
-
-export type ProxyBillingEvent = BillingEventBase<
-    'proxy',
-    {
-        environmentId: number;
-        environmentName: string;
-        integrationId: string;
-        telemetry: {
-            successes: number;
-            failures: number;
-        };
-    }
->;
-
-export type WebhookForwardBillingEvent = BillingEventBase<
-    'webhook_forwards',
-    {
-        environmentId: number;
-        environmentName: string;
-        integrationId: string;
-        telemetry: {
-            successes: number;
-            failures: number;
-        };
-    }
->;
-
-export type ConnectionsBillingEvent = BillingEventBase<'billable_connections'>;
-
-export type ConnectionsBillingEventV2 = BillingEventBase<
-    'billable_connections_v2',
-    {
-        frequencyMs: number;
-    }
->;
-
-export type BillingEvent =
-    | MarBillingEvent
-    | RecordsBillingEvent
-    | ActionsBillingEvent
-    | ProxyBillingEvent
-    | WebhookForwardBillingEvent
-    | FunctionExecutionsBillingEvent
-    | ConnectionsBillingEvent
-    | ConnectionsBillingEventV2;

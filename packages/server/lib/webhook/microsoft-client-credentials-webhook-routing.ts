@@ -1,6 +1,8 @@
 import { NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import { safeCompare } from './signature.js';
+
 import type { WebhookHandler } from './types.js';
 
 interface MicrosoftNotification {
@@ -34,7 +36,17 @@ const route: WebhookHandler<MicrosoftNotificationPayload> = async (nango, _heade
     }
 
     const expectedClientState = nango.integration.custom?.['webhookSecret'];
-    const validNotifications = expectedClientState ? notifications.filter((n) => n.clientState === expectedClientState) : notifications;
+
+    if (!expectedClientState) {
+        nango.markUnverified({
+            reason: 'microsoft_missing_client_state',
+            remediation: 'Set the clientState webhook secret on the integration'
+        });
+    }
+
+    const validNotifications = expectedClientState
+        ? notifications.filter((n) => typeof n.clientState === 'string' && safeCompare(expectedClientState, n.clientState))
+        : notifications;
 
     if (validNotifications.length === 0) {
         return Err(new NangoError('webhook_invalid_signature'));
@@ -44,7 +56,7 @@ const route: WebhookHandler<MicrosoftNotificationPayload> = async (nango, _heade
 
     for (const notification of validNotifications) {
         const response = await nango.executeScriptForWebhooks({
-            body: notification,
+            payload: notification,
             webhookType: 'changeType',
             connectionIdentifier: 'tenantId',
             propName: 'tenantId'

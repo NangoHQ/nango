@@ -2,14 +2,11 @@ import jwt from 'jsonwebtoken';
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
 import { userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
 import { isError, isSuccess, runServer } from '../../../utils/tests.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
-
-import type { MockInstance } from 'vitest';
 
 const signupRoute = '/api/v1/account/signup';
 const signinRoute = '/api/v1/account/signin';
@@ -19,7 +16,6 @@ const accountDiscoveryRoute = '/api/v1/account/onboarding/account-discovery';
 const mfaRoute = '/api/v1/account/mfa';
 
 let api: Awaited<ReturnType<typeof runServer>>;
-let mfaFlagSpy: MockInstance<ReturnType<typeof featureFlags.getFlags>['isMFAEnabled']>;
 
 async function signupVerifiedUser(): Promise<{ email: string; password: string }> {
     const email = `${nanoid()}@example.com`;
@@ -68,7 +64,6 @@ async function issueResetToken(email: string): Promise<string> {
 describe(`PUT ${resetPasswordRoute}`, () => {
     beforeAll(async () => {
         api = await runServer();
-        mfaFlagSpy = vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {
@@ -196,15 +191,11 @@ describe(`PUT ${resetPasswordRoute}`, () => {
         isSuccess(retry.json);
     });
 
-    it('should skip the second factor when the feature is off for the account', async () => {
-        const { email, password } = await signupVerifiedUser();
-        const session = await signin(email, password);
-        await enrollMfa(session);
+    it('should skip the second factor when the user has no factor enrolled', async () => {
+        const { email } = await signupVerifiedUser();
 
         const token = await issueResetToken(email);
-        mfaFlagSpy.mockResolvedValue(false);
         const { res, json } = await api.fetch(resetPasswordRoute, { method: 'PUT', body: { token, password: 'aZ1-newpass!?' } });
-        mfaFlagSpy.mockResolvedValue(true);
 
         expect(res.status).toBe(200);
         isSuccess(json);
