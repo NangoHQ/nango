@@ -61,7 +61,7 @@ export const Usage: React.FC = () => {
 
     // Orb reports no per-metric costs for a plan `isSpendPlan` excludes, so there is no column to
     // compare against and both tables drop it.
-    const comparing = isMigrating && orbChargesEnabled;
+    const comparing = isMigrating && orbChargesEnabled && showLegacy;
     const projectedNote = 'Estimated amount based on new rates.';
 
     if (usageError) {
@@ -143,6 +143,16 @@ export const Usage: React.FC = () => {
                 <span className="text-text-strong text-body-medium-medium">Usage</span>
                 <MonthSelector />
             </div>
+
+            {comparing && (
+                <Alert variant="info">
+                    <Info />
+                    <AlertDescription>
+                        Amounts below show what this usage costs today under your included allowance, and what the same usage would cost under Pay-as-you-go (no
+                        allowance).
+                    </AlertDescription>
+                </Alert>
+            )}
 
             <UsageTable
                 rows={rows}
