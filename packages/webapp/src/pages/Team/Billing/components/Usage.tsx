@@ -196,8 +196,8 @@ export const Usage: React.FC = () => {
                 <Alert variant="info">
                     <Info />
                     <AlertDescription>
-                        Amounts above show what this usage costs today under your included allowance, and what the same usage would cost under Pay-as-you-go (no
-                        allowance).
+                        Your current plan includes an allowance in its base fee, so you&apos;re charged only for usage beyond it. Pay-as-you-go has no allowance
+                        — you only pay for what you use.
                     </AlertDescription>
                 </Alert>
             )}
