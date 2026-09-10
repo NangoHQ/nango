@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ConnectionCreationCappedError } from '@nangohq/shared';
-import { Ok } from '@nangohq/utils';
+import { basePublicUrl, Ok } from '@nangohq/utils';
 
 import appAuthController from './appAuth.controller.js';
 
@@ -219,4 +219,31 @@ describe('AppAuthController.connect', () => {
             expect.anything()
         );
     });
+
+    it.each(['install', 'update'])(
+        'redirects to a fixed internal URL, ignoring an attacker-controlled Referer, when %s completes without state',
+        async (setupAction) => {
+            const redirect = vi.fn();
+            const req = {
+                query: { installation_id: 'install-1', setup_action: setupAction },
+                ip: '203.0.113.7',
+                get: vi.fn((header: string) => (header.toLowerCase() === 'referer' ? 'https://evil.example.com/phish' : undefined)),
+                headers: { referer: 'https://evil.example.com/phish' }
+            } as unknown as Request;
+            const res = {
+                locals: {},
+                redirect,
+                sendStatus: vi.fn(),
+                status: vi.fn().mockReturnThis(),
+                send: vi.fn().mockReturnThis()
+            } as unknown as Response;
+            const next = vi.fn();
+
+            await appAuthController.connect(req, res, next);
+
+            expect(redirect).toHaveBeenCalledWith(basePublicUrl);
+            expect(redirect).not.toHaveBeenCalledWith(expect.stringContaining('evil.example.com'));
+            expect(mockFindById).not.toHaveBeenCalled();
+        }
+    );
 });
