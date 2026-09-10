@@ -116,17 +116,11 @@ const PLAN_IS_RETIRED: Record<DBPlan['name'], boolean> = {
     'enterprise-cloud-hosted': false
 };
 
-const MIGRATES_TO_PAY_AS_YOU_GO: readonly DBPlan['name'][] = ['starter-v2', 'growth-v2'];
-
-export function migratesToPayAsYouGo(code: DBPlan['name']): boolean {
-    return MIGRATES_TO_PAY_AS_YOU_GO.includes(code);
-}
-
-export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
+export function showsSummaryStrip(plan: ApiPlan | null | undefined, hasScheduledTransition = false): boolean {
     if (!plan) {
         return false;
     }
-    return SHOWS_SUMMARY_STRIP[plan.name];
+    return SHOWS_SUMMARY_STRIP[plan.name] || hasScheduledTransition;
 }
 
 export function isLegacyPlan(plan: ApiPlan | null | undefined): boolean {

@@ -133,6 +133,7 @@ import type {
     GetBillingUsage,
     GetBillingUsageTopDimensionValues,
     GetOverdueInvoices,
+    GetProjectedCosts,
     GetSpendAlert,
     GetUpcomingInvoice,
     PostPlanChange,
@@ -261,6 +262,7 @@ export type PrivateApiEndpoints =
     | GetBillingUsageTopDimensionValues
     | GetUpcomingInvoice
     | GetBillingPeriodCosts
+    | GetProjectedCosts
     | GetSpendAlert
     | PutSpendAlert
     | DeleteSpendAlert

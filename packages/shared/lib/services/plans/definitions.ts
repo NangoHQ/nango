@@ -97,6 +97,7 @@ export const growthV1Plan: PlanDefinition = {
     canChange: true,
     hidden: true,
     basePrice: 500,
+    keepsGrowthAddOnOnMigration: true,
     flags: {
         api_rate_limit_size: 'xl',
         environments_max: 10,
@@ -155,6 +156,7 @@ export const growthV2Plan: PlanDefinition = {
     nextPlan: ['enterprise'],
     canChange: true,
     basePrice: 500,
+    keepsGrowthAddOnOnMigration: true,
     flags: growthV1Plan.flags
 };
 
@@ -352,6 +354,7 @@ export const growthLegacyPlan: PlanDefinition = {
     nextPlan: [],
     canChange: false,
     hidden: true,
+    keepsGrowthAddOnOnMigration: true,
     flags: {
         api_rate_limit_size: 'l',
         environments_max: 3,

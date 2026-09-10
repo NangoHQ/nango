@@ -123,6 +123,14 @@ describe('billedUsageMetrics', () => {
     it('falls back to the legacy set before the plan has loaded', () => {
         expect(billedUsageMetrics(undefined)).toEqual(LEGACY_USAGE_METRICS);
     });
+
+    it.each(['starter-v2', 'growth-v2', 'starter-legacy', 'growth', 'scale-legacy'] as const)('shows the new metrics to a scheduled %s account', (name) => {
+        expect(billedUsageMetrics({ name } as ApiPlan, true)).toEqual(S26_USAGE_METRICS);
+    });
+
+    it('leaves an unscheduled account on its own metrics', () => {
+        expect(billedUsageMetrics({ name: 'growth-v2' } as ApiPlan, false)).toEqual(LEGACY_USAGE_METRICS);
+    });
 });
 
 describe('isOnS26Pricing', () => {
