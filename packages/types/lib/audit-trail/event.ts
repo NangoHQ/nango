@@ -20,6 +20,7 @@ import type {
     MemberInvitedMetadata,
     MemberRoleChangedMetadata,
     MfaVerifiedMetadata,
+    OAuthGrantMetadata,
     SyncBaseMetadata,
     SyncFrequencyChangedMetadata,
     SyncTriggeredMetadata,
@@ -122,6 +123,11 @@ interface AuditEventTable {
         exported: AuditTrailFiltersMetadata;
         queried: AuditTrailQueriedMetadata;
     };
+    oauth_grant: {
+        approved: OAuthGrantMetadata;
+        denied: OAuthGrantMetadata;
+        revoked: OAuthGrantMetadata;
+    };
 }
 
 export type AuditResource = keyof AuditEventTable;
@@ -137,7 +143,18 @@ export type AuditMetadataFor<R extends AuditResource, A> = A extends keyof Audit
 
 export type AuditScope = 'account' | 'environment';
 
-export type AuditTargetType = 'connection' | 'sync' | 'function' | 'integration' | 'api_key' | 'member' | 'team' | 'user' | 'environment';
+export type AuditTargetType =
+    | 'connection'
+    | 'sync'
+    | 'function'
+    | 'integration'
+    | 'api_key'
+    | 'member'
+    | 'team'
+    | 'user'
+    | 'environment'
+    | 'oauth_grant'
+    | 'oauth_client';
 
 export interface AuditActor {
     type: AuditActorType;

@@ -74,6 +74,7 @@ export {
     auditMemberRoleChanged
 } from './member.middleware.js';
 export { auditMfaDisabled, auditMfaEnabled, auditMfaEnrolled, auditMfaRecoveryRegenerated, auditMfaVerified } from './mfa.middleware.js';
+export { auditOAuthGrantApproved, auditOAuthGrantDenied, auditOAuthGrantsRevoked } from './oauthGrant.middleware.js';
 export {
     auditPublicSyncFrequencyChanged,
     auditSyncCommand,

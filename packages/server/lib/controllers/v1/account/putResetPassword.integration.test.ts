@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import db from '@nangohq/database';
 import { userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
@@ -81,6 +82,21 @@ describe(`PUT ${resetPasswordRoute}`, () => {
         expect((await api.fetch(userRoute, { method: 'GET', session: sessionB })).res.status).toBe(200);
 
         const dbUser = await userService.getUserByEmail(email);
+        const [grant] = await db
+            .knex('oauth_product_grants')
+            .insert({
+                provider_grant_id_hash: Buffer.from(nanoid().padEnd(32, 'x')),
+                client_id_hash: Buffer.from(nanoid().padEnd(32, 'x')),
+                user_id: dbUser!.id,
+                account_id: dbUser!.account_id,
+                status: 'active',
+                expires_at: new Date(Date.now() + 600_000),
+                activated_at: new Date(),
+                created_at: new Date(),
+                updated_at: new Date()
+            })
+            .returning<{ id: string }[]>('id');
+        if (!grant) throw new Error('Failed to create test OAuth grant');
         const token = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
         await userService.editUserPassword({ id: dbUser!.id, reset_password_token: token, hashed_password: dbUser!.hashed_password });
 
@@ -94,6 +110,10 @@ describe(`PUT ${resetPasswordRoute}`, () => {
         // every session is forcibly logged out (the reset flow is anonymous, so none is spared)
         expect((await api.fetch(userRoute, { method: 'GET', session: sessionA })).res.status).toBe(401);
         expect((await api.fetch(userRoute, { method: 'GET', session: sessionB })).res.status).toBe(401);
+        expect(await db.knex('oauth_product_grants').where({ id: grant.id }).first('status', 'revocation_reason')).toMatchObject({
+            status: 'revoked',
+            revocation_reason: 'password_reset'
+        });
 
         const recoveredSession = await signin(email, 'aZ1-newpass!?');
         // password recovery must not make an existing user eligible for new-user account discovery.

@@ -44,6 +44,7 @@ const ignoreEnvPaths = [
     '/api/v1/account/onboarding/hear-about-us',
     '/api/v1/account/onboarding/account-discovery',
     '/api/v1/account/onboarding/request-invite',
+    '/api/v1/oauth/login-handoff',
     '/api/v1/account/mfa',
     '/api/v1/account/mfa/enroll',
     '/api/v1/account/mfa/activate',
