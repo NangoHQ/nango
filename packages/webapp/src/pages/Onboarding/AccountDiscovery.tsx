@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
@@ -9,11 +9,15 @@ import { useOnboardingAccountDiscovery, usePostOnboardingRequestInvite } from '@
 import DefaultLayout from '@/layout/DefaultLayout';
 import { track } from '@/utils/analytics';
 import { APIError } from '@/utils/api';
+import { getOAuthConsentDestination } from '@/utils/oauthConsent';
 
 const hearAboutUsRoute = '/onboarding/hear-about-us';
 
 export const AccountDiscovery: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const next = getOAuthConsentDestination(searchParams.get('next'));
+    const nextHearAboutUsRoute = next ? `${hearAboutUsRoute}?next=${encodeURIComponent(next)}` : hearAboutUsRoute;
     const { data, isLoading, error } = useOnboardingAccountDiscovery();
     const { mutateAsync: requestInvite, isPending: isRequestingInvite } = usePostOnboardingRequestInvite();
     const [requestError, setRequestError] = useState<'retry' | 'contact_admin' | null>(null);
@@ -32,15 +36,15 @@ export const AccountDiscovery: React.FC = () => {
 
     useEffect(() => {
         if (error) {
-            navigate(hearAboutUsRoute, { replace: true });
+            navigate(nextHearAboutUsRoute, { replace: true });
             return;
         }
 
         if (data && !data.data.suggestedAccountName) {
             // If there are no recommendations, redirect the user to hear-about-us:
-            navigate(hearAboutUsRoute, { replace: true });
+            navigate(nextHearAboutUsRoute, { replace: true });
         }
-    }, [data, error, navigate]);
+    }, [data, error, navigate, nextHearAboutUsRoute]);
 
     if (isLoading || !data?.data.suggestedAccountName) {
         return <AccountDiscoveryLoading />;
@@ -50,14 +54,14 @@ export const AccountDiscovery: React.FC = () => {
         <DefaultLayout className="gap-10">
             <h1 className="text-center text-text-strong text-title-group">Your team is already on Nango!</h1>
             {requestSent ? (
-                <InvitationRequestSent onExploreTemporaryAccount={() => navigate(hearAboutUsRoute)} />
+                <InvitationRequestSent onExploreTemporaryAccount={() => navigate(nextHearAboutUsRoute)} />
             ) : (
                 <InvitationRequestPrompt
                     suggestedAccountName={data.data.suggestedAccountName}
                     requestError={requestError}
                     isRequestingInvite={isRequestingInvite}
                     onRequest={requestToJoin}
-                    onContinueWithNewAccount={() => navigate(hearAboutUsRoute)}
+                    onContinueWithNewAccount={() => navigate(nextHearAboutUsRoute)}
                 />
             )}
         </DefaultLayout>

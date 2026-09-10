@@ -1,6 +1,7 @@
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import db from '@nangohq/database';
 import { userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
@@ -79,6 +80,22 @@ describe(`PUT ${passwordRoute}`, () => {
 
     it('should rotate the current session and invalidate all others after a password change', async () => {
         const { email, password } = await signupVerifiedUser();
+        const user = await userService.getUserByEmail(email);
+        const [grant] = await db
+            .knex('oauth_product_grants')
+            .insert({
+                provider_grant_id_hash: Buffer.from(nanoid().padEnd(32, 'x')),
+                client_id_hash: Buffer.from(nanoid().padEnd(32, 'x')),
+                user_id: user!.id,
+                account_id: user!.account_id,
+                status: 'active',
+                expires_at: new Date(Date.now() + 600_000),
+                activated_at: new Date(),
+                created_at: new Date(),
+                updated_at: new Date()
+            })
+            .returning<{ id: string }[]>('id');
+        if (!grant) throw new Error('Failed to create test OAuth grant');
 
         const currentSession = await signin(email, password);
         const otherSession = await signin(email, password);
@@ -109,6 +126,10 @@ describe(`PUT ${passwordRoute}`, () => {
 
         // the user who made the change stays authenticated via the rotated session
         expect((await api.fetch(userRoute, { method: 'GET', session: rotatedSession })).res.status).toBe(200);
+        expect(await db.knex('oauth_product_grants').where({ id: grant.id }).first('status', 'revocation_reason')).toMatchObject({
+            status: 'revoked',
+            revocation_reason: 'password_changed'
+        });
     });
 
     it('should require a second factor once the user has one enrolled', async () => {
