@@ -4,8 +4,7 @@ import path, { join } from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { compileAllFiles, compileSingleFile, getFileToCompile } from './services/compile.service.js';
-import { parse } from './services/config.service.js';
+import { compileAllFiles } from './services/compile.service.js';
 import { init } from './services/init.service.js';
 import { directoryMigration, endpointMigration } from './services/migration.service.js';
 import parserService from './services/parser.service.js';
@@ -170,18 +169,8 @@ describe('generate function tests', () => {
         await copyDirectoryAndContents(join(fixturesPath, `nango-yaml/v2/${name}/github`), join(dir, 'github'));
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/nango.yaml`), join(dir, 'nango.yaml'));
 
-        const parsing = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
-        if (parsing.isErr()) {
-            throw parsing.error;
-        }
-
-        const result = await compileSingleFile({
-            fullPath: dir,
-            file: getFileToCompile({ fullPath: dir, filePath: join(dir, './github/actions/gh-issues.ts') }),
-            parsed: parsing.value.parsed!,
-            debug: false
-        });
-        expect(result).toBe(false);
+        const result = await compileAllFiles({ fullPath: dir, debug: false });
+        expect(result.success).toBe(false);
     });
 
     it('should complain if a nango call is used incorrectly in a nested file', async () => {
@@ -192,18 +181,8 @@ describe('generate function tests', () => {
         await copyDirectoryAndContents(join(fixturesPath, `nango-yaml/v2/${name}/github`), join(dir, 'github'));
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/nango.yaml`), join(dir, 'nango.yaml'));
 
-        const parsing = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
-        if (parsing.isErr()) {
-            throw parsing.error;
-        }
-
-        const result = await compileSingleFile({
-            fullPath: dir,
-            file: getFileToCompile({ fullPath: dir, filePath: join(dir, './github/actions/gh-issues.ts') }),
-            parsed: parsing.value.parsed!,
-            debug: false
-        });
-        expect(result).toBe(false);
+        const result = await compileAllFiles({ fullPath: dir, debug: false });
+        expect(result.success).toBe(false);
     });
 
     it('should not allow imports higher than the current directory', async () => {
@@ -215,18 +194,8 @@ describe('generate function tests', () => {
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/nango.yaml`), join(dir, 'nango.yaml'));
         await fs.promises.copyFile(join(fixturesPath, `nango-yaml/v2/${name}/github/actions/welcomer.ts`), join(dir, 'welcomer.ts'));
 
-        const parsing = parse(path.resolve(join(fixturesPath, `nango-yaml/v2/${name}`)));
-        if (parsing.isErr()) {
-            throw parsing.error;
-        }
-
-        const result = await compileSingleFile({
-            fullPath: dir,
-            file: getFileToCompile({ fullPath: dir, filePath: join(dir, './github/actions/gh-issues.ts') }),
-            parsed: parsing.value.parsed!,
-            debug: false
-        });
-        expect(result).toBe(false);
+        const result = await compileAllFiles({ fullPath: dir, debug: false });
+        expect(result.success).toBe(false);
     });
 
     // Problem with double lines

@@ -90,7 +90,6 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
         environment,
         account,
         flows: cleanIncomingFlow(body.flowConfigs),
-        nangoYamlBody: body.nangoYamlBody,
         onEventScriptsByProvider: body.onEventScriptsByProvider,
         debug: body.debug,
         aggregatedJsonSchema: body.jsonSchema,

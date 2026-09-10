@@ -172,6 +172,11 @@ export const validationWithNangoYaml = commonValidation
     .extend({
         nangoYamlBody: z.string()
     })
+    .refine((data) => !data.nangoYamlBody, {
+        message:
+            'The `nango.yaml` configuration file is no longer supported. See the migration guide to Zero YAML: https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml',
+        path: ['nangoYamlBody']
+    })
     .transform((data) => ({
         ...data,
         deployMode: data.deployMode ?? (data.singleDeployMode ? 'single' : 'all'),
