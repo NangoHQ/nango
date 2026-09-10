@@ -6,16 +6,9 @@ import { z } from 'zod';
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
 import { oauthConsentDecisionSchema } from '@nangohq/oauth-server/contracts';
-import { basePublicUrl, dashboardApiUrl } from '@nangohq/utils';
+import { basePublicUrl } from '@nangohq/utils';
 
-import {
-    claimConsentDecision,
-    completeConsentDecision,
-    consumeLoginHandoff,
-    createLoginHandoff,
-    establishConsentInteraction,
-    releaseConsentDecision
-} from './interaction-state.service.js';
+import { claimConsentDecision, completeConsentDecision, establishConsentInteraction, releaseConsentDecision } from './interaction-state.service.js';
 import { activateProductGrant, compensateProductGrant, createPendingProductGrant } from './product-grant.service.js';
 import { oauthServer, oauthServerConfig } from './server.js';
 
@@ -24,9 +17,7 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import type { Client, Interaction } from 'oidc-provider';
 
 const routeParamsSchema = z.object({ uid: z.string().min(1).max(128) }).strict();
-const handoffBodySchema = z.object({ code: z.string().min(32).max(256) }).strict();
 const DASHBOARD_ORIGIN = new URL(basePublicUrl).origin;
-const DASHBOARD_SESSION_ORIGIN = dashboardApiUrl === '/' ? DASHBOARD_ORIGIN : new URL(dashboardApiUrl).origin;
 
 export const oauthConsentCors: RequestHandler = (req, res, next) => {
     const origin = req.get('origin');
@@ -86,19 +77,7 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
                 return;
             }
 
-            if (requireOAuthServer().issuer === DASHBOARD_SESSION_ORIGIN) {
-                res.status(401).send({ error: { code: 'login_required', message: 'Sign in to continue' } });
-                return;
-            }
-
-            const returnDestination = new URL(`/oauth/consent/${encodeURIComponent(uid)}/handoff`, requireOAuthServer().issuer).href;
-            const handoffState = await createLoginHandoff({
-                uid,
-                issuer: requireOAuthServer().issuer,
-                returnDestination,
-                interactionExpiresAt: new Date(interaction.exp * 1000)
-            });
-            res.status(401).send({ error: { code: 'login_required', message: 'Sign in to continue', handoffState } });
+            res.status(401).send({ error: { code: 'login_required', message: 'Sign in to continue' } });
             return;
         }
 
@@ -155,38 +134,6 @@ export const approveOAuthConsent: RequestHandler = async (req, res, next) => {
 
 export const denyOAuthConsent: RequestHandler = async (req, res, next) => {
     await decideConsent('denied', req, res, next);
-};
-
-export const consumeOAuthLoginHandoff: RequestHandler = async (req, res, next) => {
-    try {
-        const uid = parseUid(req, res);
-        if (!uid) return;
-        const body = handoffBodySchema.safeParse(req.body);
-        if (!body.success) {
-            sendError(res, 400, 'invalid_handoff');
-            return;
-        }
-        const interaction = await readProviderInteraction(req, res, uid);
-        if (!interaction) return;
-        if (interaction.session) {
-            sendError(res, 409, 'interaction_completed');
-            return;
-        }
-
-        const server = requireOAuthServer();
-        const returnDestination = new URL(`/oauth/consent/${encodeURIComponent(uid)}/handoff`, server.issuer).href;
-        const handoff = await consumeLoginHandoff({ code: body.data.code, uid, issuer: server.issuer, returnDestination });
-        if ('error' in handoff) {
-            sendError(res, handoff.error === 'expired' ? 410 : handoff.error === 'replayed' ? 409 : 403, mapHandoffError(handoff.error));
-            return;
-        }
-
-        await server.interactionFinished(req, res, {
-            login: { accountId: String(handoff.userId), amr: ['dashboard_session'] }
-        });
-    } catch (err) {
-        handleInteractionError(err, res, next);
-    }
 };
 
 async function decideConsent(decision: 'approved' | 'denied', req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -442,11 +389,6 @@ function requireOAuthConfig() {
     return oauthServerConfig;
 }
 
-function mapHandoffError(error: string): OAuthConsentErrorCode {
-    if (error === 'user_suspended' || error === 'account_unavailable') return error;
-    return 'invalid_handoff';
-}
-
 function sendError(res: Response, status: number, code: OAuthConsentErrorCode): void {
     res.status(status).send({ error: { code, message: publicErrorMessage(code) } });
 }
@@ -466,7 +408,6 @@ function publicErrorMessage(code: OAuthConsentErrorCode): string {
             return 'Your Nango account is not available';
         case 'invalid_csrf':
         case 'invalid_origin':
-        case 'invalid_handoff':
         case 'interaction_invalid':
             return 'This authorization request is invalid';
     }

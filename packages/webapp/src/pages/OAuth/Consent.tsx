@@ -2,17 +2,10 @@ import { CircleX, Clock3, ExternalLink, Loader2, ShieldCheck, TriangleAlert } fr
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { z } from 'zod';
 
 import { Alert, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
-import {
-    oauthConsentDecisionSuccessSchema,
-    oauthConsentSuccessSchema,
-    oauthLoginHandoffSuccessSchema,
-    oauthLoginResumeSuccessSchema
-} from '@nangohq/oauth-server/contracts';
+import { oauthConsentDecisionSuccessSchema, oauthConsentSuccessSchema, oauthLoginResumeSuccessSchema } from '@nangohq/oauth-server/contracts';
 
-import { apiFetch } from '@/utils/api';
 import { globalEnv } from '@/utils/env';
 
 import type { OAuthConsentInteraction } from '@nangohq/types';
@@ -23,8 +16,6 @@ type PageState =
     | { kind: 'submitting'; interaction: OAuthConsentInteraction; decision: 'approve' | 'deny' }
     | { kind: 'expired' | 'completed' | 'unavailable' }
     | { kind: 'error'; interaction?: OAuthConsentInteraction };
-
-const loginRequiredSchema = z.object({ error: z.object({ code: z.literal('login_required'), handoffState: z.string().min(32).optional() }) });
 
 export function OAuthConsent() {
     const { uid } = useParams<{ uid: string }>();
@@ -57,29 +48,7 @@ export function OAuthConsent() {
                 return;
             }
             if (response.status === 401) {
-                const login = loginRequiredSchema.safeParse(json);
-                if (!login.success) {
-                    setState({ kind: 'error' });
-                    return;
-                }
-                if (!login.data.error.handoffState) {
-                    void navigate(`/signin?next=${encodeURIComponent(location.pathname)}`, { replace: true });
-                    return;
-                }
-                const handoffResponse = await apiFetch('/api/v1/oauth/login-handoff', {
-                    method: 'POST',
-                    body: JSON.stringify({ state: login.data.error.handoffState })
-                });
-                if (handoffResponse.status === 401) {
-                    void navigate(`/signin?next=${encodeURIComponent(location.pathname)}`, { replace: true });
-                    return;
-                }
-                const handoff = oauthLoginHandoffSuccessSchema.safeParse(await handoffResponse.json());
-                if (!handoffResponse.ok || !handoff.success) {
-                    setState({ kind: handoffResponse.status === 410 ? 'expired' : 'error' });
-                    return;
-                }
-                submitLoginHandoff(handoff.data.data.consumeUrl, handoff.data.data.code);
+                void navigate(`/signin?next=${encodeURIComponent(location.pathname)}`, { replace: true });
                 return;
             }
             if (response.status === 409) {
@@ -289,17 +258,4 @@ function Status({ icon, title, description }: { icon: React.ReactNode; title: st
             {description && <p className="max-w-sm text-body-medium-regular text-text-secondary">{description}</p>}
         </div>
     );
-}
-
-function submitLoginHandoff(consumeUrl: string, code: string): void {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = consumeUrl;
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'code';
-    input.value = code;
-    form.append(input);
-    document.body.append(form);
-    form.submit();
 }

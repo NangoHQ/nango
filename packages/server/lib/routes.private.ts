@@ -193,7 +193,6 @@ import {
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import { postOAuthLoginHandoff } from './oauth/handoff.controller.js';
 import { isAllowedWebCorsOrigin } from './utils/cors.js';
 
 import type { Request, RequestHandler, Response } from 'express';
@@ -265,7 +264,6 @@ if (flagHasManagedAuth) {
 
 // --- Protected
 web.route('/meta').get(webAuth, getMeta);
-web.route('/oauth/login-handoff').post(webAuth, postOAuthLoginHandoff);
 web.route('/account/onboarding/hear-about-us').get(webAuth, getOnboardingHearAboutUs);
 web.route('/account/onboarding/hear-about-us').post(webAuth, postOnboardingHearAboutUs);
 web.route('/account/onboarding/account-discovery').get(webAuth, getOnboardingAccountDiscovery);
