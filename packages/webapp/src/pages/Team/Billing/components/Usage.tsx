@@ -144,16 +144,6 @@ export const Usage: React.FC = () => {
                 <MonthSelector />
             </div>
 
-            {comparing && (
-                <Alert variant="info">
-                    <Info />
-                    <AlertDescription>
-                        Amounts below show what this usage costs today under your included allowance, and what the same usage would cost under Pay-as-you-go (no
-                        allowance).
-                    </AlertDescription>
-                </Alert>
-            )}
-
             <UsageTable
                 rows={rows}
                 isLoading={isLoading}
@@ -200,6 +190,16 @@ export const Usage: React.FC = () => {
                     currentPlanTitle={transition?.fromTitle}
                     legacy
                 />
+            )}
+
+            {comparing && (
+                <Alert variant="info">
+                    <Info />
+                    <AlertDescription>
+                        Amounts above show what this usage costs today under your included allowance, and what the same usage would cost under Pay-as-you-go (no
+                        allowance).
+                    </AlertDescription>
+                </Alert>
             )}
         </div>
     );
