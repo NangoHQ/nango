@@ -1,9 +1,10 @@
-import { ChevronRight, ExternalLink } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import { Button, Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@nangohq/design-system';
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@nangohq/design-system';
 
+import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { KeyValueInput } from '../../../components/patterns/KeyValueInput';
 import { ScopesInput } from '../../../components/patterns/ScopesInput';
@@ -22,25 +23,20 @@ const FormLabelWithTooltip: React.FC<{
     children: React.ReactNode;
     required?: boolean;
     tooltip?: React.ReactNode;
-}> = ({ children, required, tooltip }) => {
+    docsHref?: string;
+    docsLabel?: string;
+}> = ({ children, required, tooltip, docsHref, docsLabel }) => {
     return (
-        <FormLabel className="flex gap-2 items-center">
-            {children}
-            {required && <span className="text-text-danger">*</span>}
+        <div className="flex items-center gap-2">
+            <FormLabel>
+                {children}
+                {required && <span className="text-text-danger">*</span>}
+            </FormLabel>
             {tooltip && <InfoTooltip side="right">{tooltip}</InfoTooltip>}
-        </FormLabel>
+            {docsHref && docsLabel && <DocsIconLink href={docsHref} label={docsLabel} />}
+        </div>
     );
 };
-
-// All 8 tooltip docs links on this page share the exact same shape — only the destination differs.
-const DocsLink: React.FC<{ href: string }> = ({ href }) => (
-    <Button asChild variant="link-accent" size="sm">
-        <a href={href} target="_blank" rel="noopener noreferrer">
-            Documentation
-            <ExternalLink />
-        </a>
-    </Button>
-);
 
 export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> = ({ isOauth2 }) => {
     const { control } = useFormContext<ConnectionFormData>();
@@ -73,13 +69,9 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                         <FormItem>
                                             <FormLabelWithTooltip
                                                 required
-                                                tooltip={
-                                                    <p>
-                                                        Uniquely identifies the end user.
-                                                        <br />
-                                                        <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-end-user-id" />
-                                                    </p>
-                                                }
+                                                tooltip="Uniquely identifies the end user."
+                                                docsHref="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-end-user-id"
+                                                docsLabel="End user ID documentation"
                                             >
                                                 ID
                                             </FormLabelWithTooltip>
@@ -96,13 +88,9 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabelWithTooltip
-                                                tooltip={
-                                                    <p>
-                                                        User&apos;s email.
-                                                        <br />
-                                                        <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-end-user-email" />
-                                                    </p>
-                                                }
+                                                tooltip="User's email."
+                                                docsHref="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-end-user-email"
+                                                docsLabel="End user email documentation"
                                             >
                                                 Email
                                             </FormLabelWithTooltip>
@@ -119,13 +107,9 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabelWithTooltip
-                                                tooltip={
-                                                    <p>
-                                                        User display name.
-                                                        <br />
-                                                        <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-end-user-display-name" />
-                                                    </p>
-                                                }
+                                                tooltip="User display name."
+                                                docsHref="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-end-user-display-name"
+                                                docsLabel="End user display name documentation"
                                             >
                                                 Display Name
                                             </FormLabelWithTooltip>
@@ -142,13 +126,9 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabelWithTooltip
-                                                tooltip={
-                                                    <p>
-                                                        Tags associated with the end user. Only accepts strings values, up to 64 keys.
-                                                        <br />
-                                                        <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create" />
-                                                    </p>
-                                                }
+                                                tooltip="Tags associated with the end user. Only accepts strings values, up to 64 keys."
+                                                docsHref="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create"
+                                                docsLabel="End user tags documentation"
                                             >
                                                 Tags
                                             </FormLabelWithTooltip>
@@ -177,13 +157,9 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabelWithTooltip
-                                                            tooltip={
-                                                                <p>
-                                                                    Query params passed to the OAuth flow (for OAuth2 only)
-                                                                    <br />
-                                                                    <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-authorization-params" />
-                                                                </p>
-                                                            }
+                                                            tooltip="Query params passed to the OAuth flow (for OAuth2 only)"
+                                                            docsHref="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-authorization-params"
+                                                            docsLabel="Authorization parameters documentation"
                                                         >
                                                             Override authorization parameters
                                                         </FormLabelWithTooltip>
@@ -202,13 +178,9 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabelWithTooltip
-                                                            tooltip={
-                                                                <p>
-                                                                    Allow end users to provide their own OAuth client ID and secret.
-                                                                    <br />
-                                                                    <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-client-id-override" />
-                                                                </p>
-                                                            }
+                                                            tooltip="Allow end users to provide their own OAuth client ID and secret."
+                                                            docsHref="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-client-id-override"
+                                                            docsLabel="Developer app credential override documentation"
                                                         >
                                                             Override developer app credentials
                                                         </FormLabelWithTooltip>
@@ -229,13 +201,9 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabelWithTooltip
-                                                            tooltip={
-                                                                <p>
-                                                                    Override oauth scopes
-                                                                    <br />
-                                                                    <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-scopes-override" />
-                                                                </p>
-                                                            }
+                                                            tooltip="Override OAuth scopes."
+                                                            docsHref="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-scopes-override"
+                                                            docsLabel="OAuth scope override documentation"
                                                         >
                                                             Override OAuth scopes
                                                         </FormLabelWithTooltip>
@@ -280,13 +248,9 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabelWithTooltip
-                                                        tooltip={
-                                                            <p>
-                                                                Override the documentation URL we show on the Connect UI for this connection.
-                                                                <br />
-                                                                <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-overrides-additional-properties-docs-connect" />
-                                                            </p>
-                                                        }
+                                                        tooltip="Override the documentation URL we show on the Connect UI for this connection."
+                                                        docsHref="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-overrides-additional-properties-docs-connect"
+                                                        docsLabel="Connect UI documentation override documentation"
                                                     >
                                                         Override end-user documentation URL
                                                     </FormLabelWithTooltip>

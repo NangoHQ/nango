@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Button } from '@nangohq/design-system';
 
+import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { KeyValueInput } from '@/components/patterns/KeyValueInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -9,7 +10,6 @@ import { useEnvironment, usePostVariables } from '../../../hooks/useEnvironment'
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
-import { DocsIconLink } from './components/DocsIconLink';
 import SettingsContent from './components/SettingsContent';
 
 import type { ApiEnvironmentVariable } from '@nangohq/types';
