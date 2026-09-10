@@ -38,7 +38,7 @@ export async function verifyZoomWebhookAndHandleHandshake(
     // https://developers.zoom.us/docs/api/webhooks/#endpoint-url-validation
     if (body.event === 'endpoint.url_validation') {
         const plainToken = body.payload?.plainToken;
-        if (!plainToken) {
+        if (typeof plainToken !== 'string' || !plainToken) {
             return Err(new NangoError('webhook_invalid_body'));
         }
 
