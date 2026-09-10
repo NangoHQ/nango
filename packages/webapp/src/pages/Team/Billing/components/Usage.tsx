@@ -158,7 +158,7 @@ export const Usage: React.FC = () => {
                           rightmostTooltip: transition ? `Plan active until ${transition.at}.` : undefined,
                           extraTooltip: projectedNote
                       }
-                    : isMigrating
+                    : isMigrating && charges
                       ? { rightmostHeader: 'Pay-as-you-go plan', rightmostTooltip: projectedNote }
                       : {})}
             />
