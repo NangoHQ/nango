@@ -37,7 +37,6 @@ const LAST_MONTH = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
 async function seedPlan(planName: DBPlan['name'], { futurePlan, futurePlanAt }: { futurePlan?: string | null; futurePlanAt?: Date | null } = {}) {
     const seed = await seeders.seedAccountEnvAndUser();
-    // A silently failed update would test the seeded default plan and pass for the wrong reason.
     const updated = await updatePlan(db.knex, {
         id: seed.plan.id,
         name: planName,

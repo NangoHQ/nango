@@ -15,7 +15,7 @@ interface BuildArgs {
     isPending: boolean;
     isError: boolean;
     data: GetBillingPeriodCosts['Success'] | undefined;
-    /** Use `dash` in the comparison: $0.00 beside a real charge reads as "free", not "not priced". */
+    /** Use `dash` when $0.00 could be mistaken for a free price. */
     unpriced?: 'zero' | 'dash';
 }
 

@@ -31,7 +31,6 @@ interface UsageTableProps {
     isRowOpen?: (metric: UsageMetric) => boolean;
     onRowOpenChange?: (metric: UsageMetric, open: boolean) => void;
     currentPlanTitle?: string;
-    /** Keeps the comparison grid so the two tables line up, and blanks the Pay-as-you-go header. */
     legacy?: boolean;
     currentPlanTooltip?: string;
     projectedTooltip?: string;

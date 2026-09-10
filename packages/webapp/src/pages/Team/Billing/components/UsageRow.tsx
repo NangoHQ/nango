@@ -12,9 +12,8 @@ import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
 export type UsageRowVariant = 'caps' | 'usage' | 'charges' | 'comparison';
 
+// Tailwind only generates classes it sees in source. This helper must return whole strings.
 export function usageRowGrid(variant: UsageRowVariant): string {
-    // Tailwind only generates a class it can see written out in source. Return whole strings here;
-    // never build one by interpolation.
     if (variant === 'caps') {
         return 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_124px_20px] items-center gap-4 px-6';
     }
@@ -104,7 +103,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                     ) : (
                         <div />
                     )}
-                    {/* Dash = the plan has no price for this meter. Blank = the row states nothing. */}
+                    {/* A dash means unpriced. Blank means this row has no applicable figure. */}
                     {variant === 'comparison' &&
                         (currentPlanCharge?.pending ? (
                             <Skeleton className="h-4 w-12" />

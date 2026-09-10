@@ -13,16 +13,16 @@ describe('projectPayAsYouGo', () => {
         const projection = projectPayAsYouGo(
             quantities({
                 connections: 34,
-                function_duration_seconds: 231_480, // 64.3 hours
-                data_transfer: 12_400_000_000 // 12.4 GB
+                function_duration_seconds: 231_480,
+                data_transfer: 12_400_000_000
             }),
             { isGrowth: false }
         );
 
         expect(projection.metrics).toEqual({
-            connections: 986, // 34 x $0.29
-            function_duration_seconds: 4630, // 64.3h x $0.72
-            data_transfer: 620 // 12.4GB x $0.50
+            connections: 986,
+            function_duration_seconds: 4630,
+            data_transfer: 620
         });
         expect(projection.subtotalInCents).toBe(6236);
     });

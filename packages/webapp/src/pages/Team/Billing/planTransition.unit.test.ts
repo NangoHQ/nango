@@ -50,8 +50,6 @@ describe('planTransition', () => {
         });
     });
 
-    // Both can be scheduled onto Pay-as-you-go as an ordinary change, and each has its own copy
-    // for it. Neither is in the migration population.
     it.each(['enterprise', 'startup-deal'] as const)('stays silent for a scheduled %s account', (name) => {
         expect(transitionOf(scheduled(name))).toBeNull();
     });

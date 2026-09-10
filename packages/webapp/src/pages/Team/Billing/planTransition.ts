@@ -31,8 +31,7 @@ export function planTransition({
         return null;
     }
 
-    // Enterprise and the startup deal can also be scheduled onto Pay-as-you-go, but that is an
-    // ordinary change and each has its own copy for it. Only a retired plan is migrating.
+    // Enterprise and Startup deal transitions use their standard plan-change copy.
     if (!isRetiredPlan(plan.name)) {
         return null;
     }

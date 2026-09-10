@@ -107,7 +107,7 @@ export const Usage: React.FC = () => {
     );
     return (
         <div className="w-full flex flex-col gap-4">
-            {/* A migrating account already has the transition banner. */}
+            {/* Migrating accounts already have the transition banner. */}
             {isLegacy && !isMigrating && (
                 <Alert variant="info">
                     <Info />

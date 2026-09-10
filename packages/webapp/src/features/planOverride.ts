@@ -167,7 +167,7 @@ export function applyPlanOverride(
           }
         : realPlan;
 
-    // Runs whether or not a plan is overridden, so a real retired-plan account can be previewed.
+    // Apply scheduled changes without a plan override, so real retired plans can be previewed.
     const withPlan: ApiPlan = scheduledTarget
         ? { ...onPlan, orb_future_plan: scheduledTarget.code, orb_future_plan_at: nextUsageResetDate(new Date()).toISOString() }
         : onPlan;
