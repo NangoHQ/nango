@@ -1112,7 +1112,7 @@ class OAuthController {
                 ?.split(',')
                 .map((s) => s.trim())
                 .filter(Boolean)
-                .join(' ');
+                .join(provider.scope_separator || ' ');
             const scopes = configuredScopes || discoveryResult.scopes;
 
             const clientMetadata: OAuthClientMetadata = {

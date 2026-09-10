@@ -4,6 +4,7 @@ import { EditableInput } from '@/components/patterns/EditableInput';
 import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { usePatchIntegration } from '@/hooks/useIntegration';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
@@ -18,6 +19,8 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
 }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
+    const { can } = usePermissions();
+    const canEdit = can('environment:integrations:update', environment);
     const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
 
     const callbackUrl = environment.callback_url || defaultCallback();
@@ -46,13 +49,15 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
                 const plural = countDifference > 1 ? 'scopes' : 'scope';
                 toast({ title: `Added ${countDifference} new ${plural}`, variant: 'success' });
             } else {
-                toast({ title: `Scope successfully removed`, variant: 'success' });
+                const plural = countDifference < -1 ? 'Scopes' : 'Scope';
+                toast({ title: `${plural} successfully removed`, variant: 'success' });
             }
         } catch (err) {
             let errorMessage = 'Failed to update scopes';
             if (err instanceof APIError && err.json.error.message) {
                 errorMessage = err.json.error.message;
             }
+            toast({ title: errorMessage, variant: 'error' });
             throw new Error(errorMessage);
         }
     };
@@ -77,6 +82,7 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
                     initialValue={integration.custom?.oauth_client_name || ''}
                     onSave={(value) => onSave({ clientName: value })}
                     validate={validateNotEmpty}
+                    canEdit={canEdit}
                 />
             </div>
 
@@ -87,6 +93,7 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
                     initialValue={integration.custom?.oauth_client_uri || ''}
                     onSave={(value) => onSave({ clientUri: value })}
                     validate={validateNotEmpty}
+                    canEdit={canEdit}
                 />
             </div>
 
@@ -98,13 +105,14 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
                     onSave={(value) => onSave({ clientLogoUri: value })}
                     placeholder="e.g., https://example.com/logo.png"
                     validate={validateUrl}
+                    canEdit={canEdit}
                 />
             </div>
 
             {/* Scopes */}
             <div className="flex flex-col gap-2">
                 <FieldLabel htmlFor="scopes">Scopes</FieldLabel>
-                <ScopesInput scopesString={integration.oauth_scopes || ''} onChange={handleScopesChange} />
+                <ScopesInput scopesString={integration.oauth_scopes || ''} onChange={handleScopesChange} readOnly={!canEdit} />
             </div>
         </div>
     );
