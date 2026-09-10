@@ -1,0 +1,36 @@
+---
+title: 'How to register your own HighQ OAuth app'
+sidebarTitle: 'HighQ setup'
+description: 'Register an OAuth app with HighQ and connect it to Nango'
+---
+
+This guide shows you how to register your own app with HighQ (Collaborate) to obtain your OAuth credentials (Client ID & Secret key). These are required to let your users grant your app access to their HighQ account.
+
+<Note>
+HighQ Collaborate is self-hosted per customer, so app registration is done by a **system administrator** inside your own Collaborate instance, not a shared developer portal. OAuth credentials are also scoped to that one instance — if your organization runs more than one Collaborate instance, you'll need to register a separate app (and set up a separate Nango integration) for each.
+</Note>
+
+<Steps>
+    <Step title="Open API application registration">
+    Log in to your Collaborate instance as a system administrator, open **System administration**, then select **API application registration**.
+
+    The API is enabled by default but can be disabled per instance. If you don't see **API application registration** in system administration, email [support@highq.com](mailto:support@highq.com) to have it enabled for your instance.
+    </Step>
+    <Step title="Add a new application">
+    Click **Add application**.
+    </Step>
+    <Step title="Fill in the application details">
+    - **Name** — identifies this integration for your admins (required)
+    - **Redirect URL** — the callback URL the OAuth code is sent to. Use `https://api.nango.dev/oauth/callback` for Nango Cloud
+    - Leave **Token expiration time**, **Status**, and **Show allow/deny screen** at their defaults unless you have a specific reason to change them
+    </Step>
+    <Step title="Save and get your credentials">
+    Save the application. HighQ generates and displays the **Client ID** and **Secret key** for this app — copy both. If you ever need a new secret, use **Generate key** on this same page.
+    </Step>
+</Steps>
+
+Once you have your Client ID and Secret key, see the [how do I link my account?](/api-integrations/highq/connect) guide to find your hostname, then follow the [quickstart](/api-integrations/highq#-quickstart) to connect in Nango.
+
+For more details, see [Thomson Reuters' OAuth2 documentation](https://developerportal.thomsonreuters.com/authentication/documents/api-access-mechanism-using-oauth2).
+
+---
