@@ -30,6 +30,7 @@
         "@nangohq/authz": "file:../authz",
         "@nangohq/design-system": "file:../design-system",
         "@nangohq/frontend": "0.71.6",
+        "@nangohq/oauth-server": "file:../oauth-server",
         "@nangohq/types": "file:../types",
         "@radix-ui/react-accordion": "1.2.2",
         "@radix-ui/react-avatar": "1.1.2",

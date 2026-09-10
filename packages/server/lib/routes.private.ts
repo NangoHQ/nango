@@ -178,6 +178,7 @@ import {
     auditMfaEnrolled,
     auditMfaRecoveryRegenerated,
     auditMfaVerified,
+    auditOAuthGrantsRevoked,
     auditPreBuiltDeployed,
     auditSyncCommand,
     auditSyncDisabled,
@@ -192,6 +193,7 @@ import {
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
+import { postOAuthLoginHandoff } from './oauth/handoff.controller.js';
 import { isAllowedWebCorsOrigin } from './utils/cors.js';
 
 import type { Request, RequestHandler, Response } from 'express';
@@ -244,7 +246,7 @@ if (flagHasAuth) {
     web.route('/account/logout').post(rateLimiterMiddleware, auditAuthLogout, postLogout);
     web.route('/account/signin').post(rateLimiterMiddleware, validateSigninRequest, auditAuthLogin, authenticateLocalSignin, signin);
     web.route('/account/forgot-password').post(rateLimiterMiddleware, postForgotPassword);
-    web.route('/account/reset-password').put(rateLimiterMiddleware, auditAuthPasswordReset, putResetPassword);
+    web.route('/account/reset-password').put(rateLimiterMiddleware, auditAuthPasswordReset, auditOAuthGrantsRevoked, putResetPassword);
     web.route('/account/resend-verification-email/by-uuid').post(rateLimiterMiddleware, resendVerificationEmailByUuid);
     web.route('/account/resend-verification-email/by-email').post(rateLimiterMiddleware, resendVerificationEmailByEmail);
     web.route('/account/email/:uuid').get(rateLimiterMiddleware, getEmailByUuid);
@@ -263,6 +265,7 @@ if (flagHasManagedAuth) {
 
 // --- Protected
 web.route('/meta').get(webAuth, getMeta);
+web.route('/oauth/login-handoff').post(webAuth, postOAuthLoginHandoff);
 web.route('/account/onboarding/hear-about-us').get(webAuth, getOnboardingHearAboutUs);
 web.route('/account/onboarding/hear-about-us').post(webAuth, postOnboardingHearAboutUs);
 web.route('/account/onboarding/account-discovery').get(webAuth, getOnboardingAccountDiscovery);
@@ -376,7 +379,7 @@ web.route('/connections/admin/:connectionId').delete(
 // User
 web.route('/user').get(webAuth, getUser);
 web.route('/user').patch(webAuth, auditUserUpdated, patchUser);
-web.route('/user/password').put(webAuth, auditAppAuthPasswordChanged, putUserPassword);
+web.route('/user/password').put(webAuth, auditAppAuthPasswordChanged, auditOAuthGrantsRevoked, putUserPassword);
 
 // Plain (in-app support chat)
 web.route('/plain').get(webAuth, getPlainHmac);

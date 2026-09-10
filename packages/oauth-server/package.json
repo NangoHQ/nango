@@ -5,6 +5,16 @@
     "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        },
+        "./contracts": {
+            "types": "./dist/contracts.d.ts",
+            "import": "./dist/contracts.js"
+        }
+    },
     "private": true,
     "scripts": {},
     "repository": {
@@ -15,9 +25,11 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
         "@nangohq/egress": "file:../egress",
+        "@nangohq/types": "file:../types",
         "@types/oidc-provider": "9.12.0",
         "knex": "3.1.0",
         "oidc-provider": "9.12.2",
+        "undici": "6.28.0",
         "zod": "4.0.5"
     },
     "devDependencies": {

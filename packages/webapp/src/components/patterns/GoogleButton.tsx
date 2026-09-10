@@ -7,13 +7,14 @@ interface Props {
     setServerErrorMessage: (message: string) => void;
     invitedAccountID?: number;
     token?: string;
+    returnTo?: string;
 }
 
-export default function GoogleButton({ text, setServerErrorMessage, token }: Props) {
+export default function GoogleButton({ text, setServerErrorMessage, token, returnTo }: Props) {
     const googleLogin = async () => {
         const res = await apiFetch(`/api/v1/account/managed/signup`, {
             method: 'POST',
-            body: JSON.stringify({ provider: 'GoogleOAuth', token })
+            body: JSON.stringify({ provider: 'GoogleOAuth', token, returnTo })
         });
 
         if (res.status === 200) {

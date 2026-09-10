@@ -27,6 +27,14 @@ export interface CreateOAuthProviderOptions {
     knex: Knex;
     config: OAuthServerParsedConfig;
     resources: readonly OAuthResourceConfig[];
+    interactionUrl?: (uid: string) => string;
+    beforeGrantRevocation?: (grantId: string, request: OAuthGrantRevocationRequest) => Promise<void>;
+}
+
+export interface OAuthGrantRevocationRequest {
+    clientId: string;
+    ip?: string;
+    userAgent?: string;
 }
 
 interface OAuthResourceRegistry {
@@ -34,7 +42,7 @@ interface OAuthResourceRegistry {
     get(resource: string): OAuthResourceConfig | undefined;
 }
 
-export function createOAuthProvider({ knex, config, resources }: CreateOAuthProviderOptions): Provider {
+export function createOAuthProvider({ knex, config, resources, interactionUrl, beforeGrantRevocation }: CreateOAuthProviderOptions): Provider {
     const registry = createResourceRegistry(resources);
     const allowedScopes = new Set(registry.supportedScopes);
 
@@ -76,7 +84,21 @@ export function createOAuthProvider({ knex, config, resources }: CreateOAuthProv
                 getResourceServerInfo: (ctx, resourceIndicator) => resourceServer(ctx, resourceIndicator, registry),
                 useGrantedResource: () => false
             },
-            revocation: { enabled: true },
+            revocation: {
+                enabled: true,
+                allowedPolicy: async (_ctx, client, token) => {
+                    if (token.clientId !== client.clientId) return false;
+                    if ('grantId' in token && typeof token.grantId === 'string' && beforeGrantRevocation) {
+                        const userAgent = _ctx.get('user-agent') || undefined;
+                        await beforeGrantRevocation(token.grantId, {
+                            clientId: client.clientId,
+                            ...(_ctx.ip ? { ip: _ctx.ip } : {}),
+                            ...(userAgent ? { userAgent } : {})
+                        });
+                    }
+                    return true;
+                }
+            },
             rpInitiatedLogout: { enabled: false },
             userinfo: { enabled: false }
         },
@@ -85,13 +107,14 @@ export function createOAuthProvider({ knex, config, resources }: CreateOAuthProv
         findAccount: (_ctx, accountId) => ({ accountId, claims: () => ({ sub: accountId }) }),
         formats: { bitsOfOpaqueRandomness: 256 },
         interactions: {
-            // TODO(NAN-6924): Replace the test-only interaction handler with the authenticated API used by the React consent page.
-            url: (_ctx, interaction) => `${OAUTH_ENDPOINT_PATH}/interaction/${encodeURIComponent(interaction.uid)}`
+            url: (_ctx, interaction) =>
+                interactionUrl ? interactionUrl(interaction.uid) : `${OAUTH_ENDPOINT_PATH}/interaction/${encodeURIComponent(interaction.uid)}`
         },
         issueRefreshToken: (_ctx, client) => client.grantTypeAllowed('refresh_token'),
         jwks: config.jwks,
         pkce: { required: () => true },
         responseTypes: ['code'],
+        revokeGrantPolicy: () => true,
         rotateRefreshToken: (ctx) => validateRefreshResource(ctx, registry),
         routes: {
             authorization: OAUTH_AUTHORIZATION_PATH,

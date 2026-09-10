@@ -1,3 +1,5 @@
+import { fetch } from 'undici';
+
 import { assertSafeOutboundUrl, getSafeUndiciDispatcher, isBlockedIpLiteral } from '@nangohq/egress';
 
 import type { OutboundUrlPolicy } from '@nangohq/egress';
@@ -121,9 +123,12 @@ export function isAllowedRedirectUri(value: string): boolean {
 }
 
 export function secureCimdFetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
-    // Node's fetch types and the installed undici package use separate, structurally incompatible
-    // Dispatcher declarations. Bridge that type boundary explicitly; the runtime API is compatible.
     const dispatcher = getSafeUndiciDispatcher(CIMD_OUTBOUND_POLICY);
-    const requestInit = { ...init, redirect: 'manual' as const, dispatcher } as unknown as RequestInit;
-    return fetch(input, requestInit);
+    // oidc-provider and TypeScript use the platform fetch types, while the hardened dispatcher is
+    // created by our pinned Undici version. Keep the request and response on the same Undici runtime,
+    // then bridge only the structurally equivalent Fetch API types at the package boundary.
+    return fetch(
+        input as Parameters<typeof fetch>[0],
+        { ...init, redirect: 'manual', dispatcher } as Parameters<typeof fetch>[1]
+    ) as unknown as Promise<Response>;
 }

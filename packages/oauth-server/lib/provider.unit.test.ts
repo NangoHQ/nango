@@ -54,6 +54,7 @@ describe('OAuth provider', () => {
     let provider: Provider;
     let clientId: string;
     let cimdFetches = 0;
+    const beforeGrantRevocation = vi.fn(() => Promise.resolve());
 
     beforeAll(async () => {
         vi.mocked(createOAuthAdapter).mockReturnValue(adapter);
@@ -111,7 +112,8 @@ describe('OAuth provider', () => {
                     resource: 'https://api.example.com/agent-sessions/session-1/mcp',
                     scopes: ['agent-session:*']
                 }
-            ]
+            ],
+            beforeGrantRevocation
         });
         const providerCallback = provider.callback();
         server = createServer((req, res) => {
@@ -307,6 +309,7 @@ describe('OAuth provider', () => {
         });
 
         expect(revocation.status).toBe(200);
+        expect(beforeGrantRevocation).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ clientId }));
         const refreshed = await postToken(origin, {
             grant_type: 'refresh_token',
             client_id: clientId,
