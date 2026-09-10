@@ -6,7 +6,7 @@ import { z } from 'zod';
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
 import { oauthConsentDecisionSchema } from '@nangohq/oauth-server/contracts';
-import { basePublicUrl } from '@nangohq/utils';
+import { basePublicUrl, dashboardApiUrl } from '@nangohq/utils';
 
 import {
     claimConsentDecision,
@@ -26,6 +26,7 @@ import type { Client, Interaction } from 'oidc-provider';
 const routeParamsSchema = z.object({ uid: z.string().min(1).max(128) }).strict();
 const handoffBodySchema = z.object({ code: z.string().min(32).max(256) }).strict();
 const DASHBOARD_ORIGIN = new URL(basePublicUrl).origin;
+const DASHBOARD_SESSION_ORIGIN = dashboardApiUrl === '/' ? DASHBOARD_ORIGIN : new URL(dashboardApiUrl).origin;
 
 export const oauthConsentCors: RequestHandler = (req, res, next) => {
     const origin = req.get('origin');
@@ -47,10 +48,49 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
     try {
         const uid = parseUid(req, res);
         if (!uid) return;
-        const interaction = await readProviderInteraction(req, res, uid);
+        const interaction = await readProviderInteraction(req, res, uid, { allowSubmittedLogin: true });
         if (!interaction) return;
 
         if (!interaction.session) {
+            if (req.user) {
+                const identity = await revalidateDashboardIdentity(req.user);
+                if ('error' in identity) {
+                    sendError(res, 403, identity.error);
+                    return;
+                }
+                if (!(await getFlags().isOAuthServerConsentEnabled(identity.account.uuid))) {
+                    sendError(res, 403, 'consent_disabled');
+                    return;
+                }
+                if (interaction.prompt.name !== 'login') {
+                    sendError(res, 404, 'interaction_invalid');
+                    return;
+                }
+
+                if (interaction.result?.login) {
+                    if (interaction.result.login.accountId !== String(identity.user.id)) {
+                        sendError(res, 409, 'interaction_completed');
+                        return;
+                    }
+                    res.status(202).send({ data: { resumeUrl: interaction.returnTo } });
+                    return;
+                }
+
+                const resumeUrl = await requireOAuthServer().interactionResult(
+                    req,
+                    res,
+                    { login: { accountId: String(identity.user.id), amr: ['dashboard_session'] } },
+                    { mergeWithLastSubmission: false }
+                );
+                res.status(202).send({ data: { resumeUrl } });
+                return;
+            }
+
+            if (requireOAuthServer().issuer === DASHBOARD_SESSION_ORIGIN) {
+                res.status(401).send({ error: { code: 'login_required', message: 'Sign in to continue' } });
+                return;
+            }
+
             const returnDestination = new URL(`/oauth/consent/${encodeURIComponent(uid)}/handoff`, requireOAuthServer().issuer).href;
             const handoffState = await createLoginHandoff({
                 uid,
@@ -98,6 +138,16 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
         handleInteractionError(err, res, next);
     }
 };
+
+async function revalidateDashboardIdentity(
+    sessionUser: Express.User
+): Promise<{ user: DBUser; account: DBTeam } | { error: 'user_suspended' | 'account_unavailable' }> {
+    const user = await db.knex<DBUser>('_nango_users').where({ id: sessionUser.id, account_id: sessionUser.account_id, suspended: false }).first();
+    if (!user) return { error: 'user_suspended' };
+    const account = await db.knex<DBTeam>('_nango_accounts').where({ id: user.account_id }).first();
+    if (!account) return { error: 'account_unavailable' };
+    return { user, account };
+}
 
 export const approveOAuthConsent: RequestHandler = async (req, res, next) => {
     await decideConsent('approved', req, res, next);
@@ -337,7 +387,12 @@ function boundedText(value: string | null | undefined, max: number, fallback: st
     return (normalized || fallback).slice(0, max);
 }
 
-async function readProviderInteraction(req: Request, res: Response, uid: string): Promise<Interaction | null> {
+async function readProviderInteraction(
+    req: Request,
+    res: Response,
+    uid: string,
+    { allowSubmittedLogin = false }: { allowSubmittedLogin?: boolean } = {}
+): Promise<Interaction | null> {
     const interaction = await requireOAuthServer().interactionDetails(req, res);
     if (interaction.uid !== uid) {
         sendError(res, 404, 'interaction_invalid');
@@ -347,7 +402,8 @@ async function readProviderInteraction(req: Request, res: Response, uid: string)
         sendError(res, 410, 'interaction_expired');
         return null;
     }
-    if (interaction.result) {
+    const submittedLogin = interaction.prompt.name === 'login' && interaction.result?.login && !interaction.result['error'];
+    if (interaction.result && !(allowSubmittedLogin && submittedLogin)) {
         sendError(res, 409, 'interaction_completed');
         return null;
     }
