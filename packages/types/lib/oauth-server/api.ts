@@ -39,7 +39,8 @@ export interface GetOAuthConsentInteraction {
     Params: { uid: string };
     Reply:
         | { status: 200; body: { data: OAuthConsentInteraction } }
-        | { status: 401; body: ApiError<'login_required'> & { error: { code: 'login_required'; handoffState: string } } }
+        | { status: 202; body: { data: { resumeUrl: string } } }
+        | { status: 401; body: ApiError<'login_required'> & { error: { code: 'login_required'; handoffState?: string } } }
         | { status: 403; body: ApiError<'consent_disabled' | 'user_suspended' | 'account_unavailable'> }
         | { status: 404 | 409 | 410; body: ApiError<'interaction_invalid' | 'interaction_completed' | 'interaction_expired'> };
 }

@@ -2,6 +2,7 @@ import express from 'express';
 
 import { OAUTH_AUTHORIZATION_PATH, OAUTH_DISCOVERY_PATH, OAUTH_JWKS_PATH, OAUTH_REVOCATION_PATH, OAUTH_TOKEN_PATH } from '@nangohq/oauth-server';
 
+import { setupAuth } from './clients/auth.client.js';
 import { auditOAuthGrantApproved, auditOAuthGrantDenied } from './middleware/audit/index.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import {
@@ -16,6 +17,8 @@ import { oauthServer } from './oauth/server.js';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
 export const oauthServerAPI = express.Router();
+const oauthConsentAPI = express.Router();
+setupAuth(oauthConsentAPI);
 
 const providerHandlers: RequestHandler[] = oauthServer
     ? [requireIssuerHost, rateLimiterMiddleware, asExpressHandler(oauthServer.callback())]
@@ -26,22 +29,13 @@ const interactionHandlers = (handler: RequestHandler, audit?: RequestHandler): R
         ? [requireIssuerHost, rateLimiterMiddleware, ...(audit ? [audit] : []), handler]
         : [(_req, res) => void res.status(404).json({ error: { code: 'not_found', message: 'Not found' } })];
 
-oauthServerAPI.options('/oauth/consent/:uid', requireIssuerHost, oauthConsentCors);
-oauthServerAPI.options('/oauth/consent/:uid/:decision', requireIssuerHost, oauthConsentCors);
-oauthServerAPI.get('/oauth/consent/:uid', oauthConsentCors, ...interactionHandlers(getOAuthConsentInteraction));
-oauthServerAPI.post(
-    '/oauth/consent/:uid/approve',
-    oauthConsentCors,
-    express.json({ limit: '4kb' }),
-    ...interactionHandlers(approveOAuthConsent, auditOAuthGrantApproved)
-);
-oauthServerAPI.post(
-    '/oauth/consent/:uid/deny',
-    oauthConsentCors,
-    express.json({ limit: '4kb' }),
-    ...interactionHandlers(denyOAuthConsent, auditOAuthGrantDenied)
-);
-oauthServerAPI.post('/oauth/consent/:uid/handoff', express.urlencoded({ extended: false, limit: '4kb' }), ...interactionHandlers(consumeOAuthLoginHandoff));
+oauthConsentAPI.options('/:uid', requireIssuerHost, oauthConsentCors);
+oauthConsentAPI.options('/:uid/:decision', requireIssuerHost, oauthConsentCors);
+oauthConsentAPI.get('/:uid', oauthConsentCors, ...interactionHandlers(getOAuthConsentInteraction));
+oauthConsentAPI.post('/:uid/approve', oauthConsentCors, express.json({ limit: '4kb' }), ...interactionHandlers(approveOAuthConsent, auditOAuthGrantApproved));
+oauthConsentAPI.post('/:uid/deny', oauthConsentCors, express.json({ limit: '4kb' }), ...interactionHandlers(denyOAuthConsent, auditOAuthGrantDenied));
+oauthConsentAPI.post('/:uid/handoff', express.urlencoded({ extended: false, limit: '4kb' }), ...interactionHandlers(consumeOAuthLoginHandoff));
+oauthServerAPI.use('/oauth/consent', oauthConsentAPI);
 
 oauthServerAPI.get(OAUTH_DISCOVERY_PATH, ...providerHandlers);
 oauthServerAPI.options(OAUTH_DISCOVERY_PATH, ...providerHandlers);
