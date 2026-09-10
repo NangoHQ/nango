@@ -86,6 +86,7 @@ const orbBillableMetricToUsageMetric: Record<string, UsageMetric> = {
 };
 
 interface OrbCostBucket {
+    timeframe_start: string;
     timeframe_end: string;
     per_price_costs: {
         price_id: string;
@@ -115,16 +116,29 @@ function chargeInCents(priceCost: { subtotal: string; total?: string | null }): 
 }
 
 export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, opts: { explicitTimeframe?: boolean } = {}): BillingPeriodCosts | null {
-    // Cumulative buckets accumulate over the period, so the one ending last spans all of it.
-    const period = costs.data.reduce<OrbCostBucket | null>(
-        (latest, bucket) => (latest && Date.parse(latest.timeframe_end) >= Date.parse(bucket.timeframe_end) ? latest : bucket),
-        null
-    );
+    // Orb returns a bucket series per price-interval start date, each accumulating only within its
+    // own non-overlapping span. So the period's cost is the last bucket of every series, added up.
+    const lastPerSeries = new Map<string, OrbCostBucket>();
+    let periodEnd = NaN;
+    for (const bucket of costs.data) {
+        const end = Date.parse(bucket.timeframe_end);
+        if (Number.isNaN(end)) {
+            continue;
+        }
+        if (Number.isNaN(periodEnd) || end > periodEnd) {
+            periodEnd = end;
+        }
+        const seen = lastPerSeries.get(bucket.timeframe_start);
+        if (!seen || Date.parse(seen.timeframe_end) < end) {
+            lastPerSeries.set(bucket.timeframe_start, bucket);
+        }
+    }
     // Orb returns its last period after a subscription ends. Accept it only when the request includes dates.
-    const periodEnd = period ? Date.parse(period.timeframe_end) : NaN;
-    if (!period || Number.isNaN(periodEnd) || (!opts.explicitTimeframe && periodEnd <= now.getTime())) {
+    if (Number.isNaN(periodEnd) || (!opts.explicitTimeframe && periodEnd <= now.getTime())) {
         return null;
     }
+
+    const perPriceCosts = [...lastPerSeries.values()].flatMap((bucket) => bucket.per_price_costs);
 
     const metrics: Partial<Record<UsageMetric, number>> = {};
     const malformedMetrics: UsageMetric[] = [];
@@ -134,7 +148,7 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, 
     let fullyAttributed = true;
     let currency: string | null = null;
 
-    for (const priceCost of period.per_price_costs) {
+    for (const priceCost of perPriceCosts) {
         const { price } = priceCost;
         const amountInCents = chargeInCents(priceCost);
         const priceCurrency = normalizeIsoCurrency(price.currency);
