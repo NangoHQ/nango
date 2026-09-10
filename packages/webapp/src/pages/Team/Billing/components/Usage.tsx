@@ -196,8 +196,8 @@ export const Usage: React.FC = () => {
                 <Alert variant="info">
                     <Info />
                     <AlertDescription>
-                        Your current plan includes an allowance in its base fee, so you&apos;re charged only for usage beyond it. Pay-as-you-go has no allowance
-                        — you only pay for what you use.
+                        Your current plan includes an allowance in its base fee, so you&apos;re charged only for usage beyond it. Pay-as-you-go has no
+                        allowance.
                     </AlertDescription>
                 </Alert>
             )}
