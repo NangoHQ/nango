@@ -1,0 +1,116 @@
+---
+title: 'How to set up webhooks with Zoom (Server-to-Server OAuth) on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Zoom meeting and webinar events in your app using Nango webhooks'
+---
+
+Zoom delivers webhooks through **Event Subscriptions**, configured once on your Marketplace app.
+
+<Note>
+This guide covers the **Zoom (Server-to-Server OAuth)** integration. For the regular **Zoom** integration (authorization code, one end user per connection), see its own [webhooks guide](/api-integrations/zoom/webhooks) instead — the setup differs enough between the two that they're documented separately.
+</Note>
+
+## How it works
+
+1. Zoom sends a POST request to your Nango webhook URL when a subscribed event occurs on the account that authorized your app.
+2. Nango verifies the delivery's signature against the **Webhook secret** on the integration, then routes the event to the connection identified by the `nangoConnectionId` query param on the webhook URL — required for this provider (see [step 1](#1-get-your-nango-webhook-url)).
+3. Nango forwards the event to your app, or triggers a sync.
+
+<Note>
+Zoom doesn't expose Event Subscriptions setup through any API — there's no endpoint to create a subscription, enable an event type, or retrieve the Secret Token. Everything in [Setup](#setup) is a one-time dashboard task, done once per app.
+</Note>
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Zoom (Server-to-Server OAuth) integration, copy the **Webhook URL**, and append `?nangoConnectionId=<CONNECTION-ID>` for the connection you want events routed to.
+
+<Note>
+A Server-to-Server app is typically set up for one account, so this is usually just the one connection. If you have more than one Zoom (Server-to-Server OAuth) connection under the same app, register a separate Event Subscription per connection (see [step 3](#3-add-event-subscriptions-in-zoom)), each with its own `nangoConnectionId`.
+</Note>
+
+### 2. Set the webhook secret in Nango
+
+1. Go to the [Zoom App Marketplace](https://marketplace.zoom.us/), open your app under **Develop → Build App**, then go to **Features → Access**.
+2. Turn on **Event Subscriptions**. Zoom immediately generates a **Secret Token** on this page — copy it.
+3. In the Nango dashboard, open your Zoom (Server-to-Server OAuth) integration, go to the **Settings** tab, and paste it into the **Webhook Secret** field.
+
+<Warning>
+Do this before creating any Event Subscription. Zoom validates the destination URL synchronously as part of both creating a subscription and saving the app, and Nango can only answer that validation request once the secret is set — see [step 3](#3-add-event-subscriptions-in-zoom).
+</Warning>
+
+<Note>
+Zoom issues one Secret Token per app, so the integration-level **Webhook secret** covers every connection in the common case. If a setup genuinely needs a different secret for one connection, set `webhookSecret` in that connection's metadata instead — Nango checks the integration-level secret first and falls back to the connection's metadata only when the integration-level one isn't set.
+</Note>
+
+### 3. Add Event Subscriptions in Zoom
+
+1. On the same **Features → Access** page, click **Add Event Subscription**.
+2. Under **Event notification endpoint URL**, paste your Nango webhook URL from [step 1](#1-get-your-nango-webhook-url).
+
+   Zoom immediately sends a validation request to that URL to confirm you control it — Nango answers this automatically since the **Webhook secret** is already set. If validation fails, double-check the secret matches the **Secret Token** from [step 2](#2-set-the-webhook-secret-in-nango) before retrying.
+3. Under the event subscription's scope, choose **"All users in your account"** — this app is only ever used by your own account.
+4. Click **Add events** and select the events you want to receive.
+5. Save the app.
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app** — Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync** — run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+## Payload
+
+Every delivery has the same shape: an `event` name, an `event_ts` timestamp, and a `payload` object carrying `account_id` plus the affected `object` (its fields vary by event):
+
+```json
+{
+  "event": "meeting.started",
+  "event_ts": 1626230691572,
+  "payload": {
+    "account_id": "Wk9PTV9BQ0NPVU5UX0lE",
+    "object": {
+      "id": "1234567890",
+      "uuid": "Wk9PTV9NRUVUSU5HX0lE",
+      "host_id": "Wk9PTV9VU0VSX0lE",
+      "topic": "My Meeting",
+      "type": 8,
+      "start_time": "2021-07-13T21:44:51Z",
+      "timezone": "America/Los_Angeles",
+      "duration": 60
+    }
+  }
+}
+```
+
+## Supported events
+
+`event` (used as the webhook type for `webhookSubscriptions`/`onWebhook`) is one of Zoom's namespaced event names. Common ones:
+
+| Event | Sent when |
+| --- | --- |
+| `meeting.started` | A meeting starts |
+| `meeting.ended` | A meeting ends |
+| `meeting.participant_joined` | A participant joins a meeting |
+| `meeting.participant_left` | A participant leaves a meeting |
+| `recording.completed` | A cloud recording finishes processing |
+| `webinar.started` | A webinar starts |
+| `webinar.ended` | A webinar ends |
+
+For the full list across meetings, webinars, recordings, phone, chat, and more, see [Zoom's webhook events reference](https://developers.zoom.us/docs/api/webhooks/#events).
+
+## Connection matching
+
+Nango routes by the `nangoConnectionId` query param on the destination URL — this is the only routing strategy for this provider; a delivery whose URL has no `nangoConnectionId` is rejected.
+
+<Warning>
+With no **Webhook secret** configured, every delivery is rejected outright — it never reaches routing.
+</Warning>
+
+## Rollback strategy
+
+To stop deliveries, remove the event notification endpoint (or disable **Event Subscriptions** entirely) from **Features → Access** on your app in the [Zoom App Marketplace](https://marketplace.zoom.us/). Re-enable notifications by creating a new subscription with the steps above.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

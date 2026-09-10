@@ -1,0 +1,139 @@
+---
+title: 'How to set up webhooks with Zoom on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Zoom meeting and webinar events in your app using Nango webhooks'
+---
+
+Zoom delivers webhooks through **Event Subscriptions**, configured once on your Marketplace app.
+
+<Note>
+This guide covers the **Zoom** integration (authorization code, one end user per connection). For **Zoom (Server-to-Server OAuth)**, see its own [webhooks guide](/api-integrations/zoom-cc/webhooks) instead — the setup differs enough between the two that they're documented separately.
+</Note>
+
+## How it works
+
+1. Zoom sends a POST request to your Nango webhook URL when a subscribed event occurs on any account that authorized your app.
+2. Nango verifies the delivery's signature against the **Webhook secret** on the integration, then matches the event's `payload.account_id` against `metadata.accountId` on your connections — see [step 4](#4-let-nango-match-events-to-a-connection).
+3. Nango forwards the event to your app, or triggers a sync.
+
+<Note>
+Zoom's dashboard can't scope a multi-tenant app's Event Subscriptions to one account — the only scope that covers accounts other than your own, **"Only for users who have added this app,"** applies to every authorizing account collectively and delivers them all to the same single destination URL. There's no way to register a separate URL per account. This is why `account_id`-based matching exists: with one shared URL for every tenant, Zoom's payload itself is the only place a specific account is identified.
+</Note>
+
+<Note>
+Zoom doesn't expose Event Subscriptions setup through any API — there's no endpoint to create a subscription, enable an event type, or retrieve the Secret Token. Everything in [Setup](#setup) is a one-time dashboard task, done once per app.
+</Note>
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Zoom integration and copy the **Webhook URL**. Use it as-is, with no query param — every account that authorizes your app sends events here, and Nango matches each one to a connection via `account_id`.
+
+### 2. Set the webhook secret in Nango
+
+1. Go to the [Zoom App Marketplace](https://marketplace.zoom.us/), open your app under **Develop → Build App**, then go to **Features → Access**.
+2. Turn on **Event Subscriptions**. Zoom immediately generates a **Secret Token** on this page — copy it.
+3. In the Nango dashboard, open your Zoom integration, go to the **Settings** tab, and paste it into the **Webhook Secret** field.
+
+<Warning>
+Do this before creating any Event Subscription. Zoom validates the destination URL synchronously as part of both creating a subscription and saving the app, and Nango can only answer that validation request once the secret is set — see [step 3](#3-add-event-subscriptions-in-zoom).
+</Warning>
+
+### 3. Add Event Subscriptions in Zoom
+
+1. On the same **Features → Access** page, click **Add Event Subscription**.
+2. Under **Event notification endpoint URL**, paste your Nango webhook URL from [step 1](#1-get-your-nango-webhook-url).
+
+   Zoom immediately sends a validation request to that URL to confirm you control it — Nango answers this automatically since the **Webhook secret** is already set. If validation fails, double-check the secret matches the **Secret Token** from [step 2](#2-set-the-webhook-secret-in-nango) before retrying.
+3. Under the event subscription's scope, choose **"Only for users who have added this app"** — this is the scope that covers every account that connects through your app, not just your own.
+4. Click **Add events** and select the events you want to receive.
+5. Save the app.
+
+This is a one-time setup — you don't need to repeat it as new accounts authorize your app.
+
+### 4. Let Nango match events to a connection
+
+An authorization-code connection has no Zoom account id stored anywhere by default, so Nango can't match `payload.account_id` to one until you save it. Add a [post-connection-creation script](/guides/functions/event-functions) that fetches it and saves it to the connection's metadata:
+
+```typescript
+import { createOnEvent } from 'nango';
+import z from 'zod';
+
+export default createOnEvent({
+    event: 'post-connection-creation',
+    description: "Save this connection's Zoom account id for webhook routing",
+    metadata: z.object({
+        accountId: z.string().optional()
+    }),
+    exec: async (nango) => {
+        const { data: user } = await nango.get({ endpoint: '/v2/users/me' });
+        await nango.updateMetadata({ accountId: user.account_id });
+    }
+});
+```
+
+If you already have connections from before adding this script, backfill their metadata with [Set connection metadata](/reference/backend/http-api/connections/set-metadata) using the same `account_id` from `GET /v2/users/me` for each one.
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app** — Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync** — run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+## Payload
+
+Every delivery has the same shape: an `event` name, an `event_ts` timestamp, and a `payload` object carrying `account_id` plus the affected `object` (its fields vary by event):
+
+```json
+{
+  "event": "meeting.started",
+  "event_ts": 1626230691572,
+  "payload": {
+    "account_id": "Wk9PTV9BQ0NPVU5UX0lE",
+    "object": {
+      "id": "1234567890",
+      "uuid": "Wk9PTV9NRUVUSU5HX0lE",
+      "host_id": "Wk9PTV9VU0VSX0lE",
+      "topic": "My Meeting",
+      "type": 8,
+      "start_time": "2021-07-13T21:44:51Z",
+      "timezone": "America/Los_Angeles",
+      "duration": 60
+    }
+  }
+}
+```
+
+## Supported events
+
+`event` (used as the webhook type for `webhookSubscriptions`/`onWebhook`) is one of Zoom's namespaced event names. Common ones:
+
+| Event | Sent when |
+| --- | --- |
+| `meeting.started` | A meeting starts |
+| `meeting.ended` | A meeting ends |
+| `meeting.participant_joined` | A participant joins a meeting |
+| `meeting.participant_left` | A participant leaves a meeting |
+| `recording.completed` | A cloud recording finishes processing |
+| `webinar.started` | A webinar starts |
+| `webinar.ended` | A webinar ends |
+
+For the full list across meetings, webinars, recordings, phone, chat, and more, see [Zoom's webhook events reference](https://developers.zoom.us/docs/api/webhooks/#events).
+
+## Connection matching
+
+Nango matches `payload.account_id` against `metadata.accountId` on your connections (populated in [step 4](#4-let-nango-match-events-to-a-connection)) — this is the only routing strategy for this provider; a `nangoConnectionId` query param on the webhook URL is not used.
+
+If nothing matches `payload.account_id`, the delivery is still accepted (so Zoom doesn't see an error and retry), but isn't routed to any connection.
+
+<Warning>
+With no **Webhook secret** configured, every delivery is rejected outright — it never reaches routing.
+</Warning>
+
+## Rollback strategy
+
+To stop deliveries, remove the event notification endpoint (or disable **Event Subscriptions** entirely) from **Features → Access** on your app in the [Zoom App Marketplace](https://marketplace.zoom.us/). Re-enable notifications by creating a new subscription with the steps above.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>
