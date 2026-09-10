@@ -2257,12 +2257,6 @@ In both cases, your app only needs to open the Connect UI and pass the session t
 Source: https://nango.dev/docs/guides/agent-sessions.md
 Description: Optimized interface for AI agents to use integrations
 
-<Note>
-    Agent sessions are in public beta.
-    
-    Join our [beta Slack Channel](https://join.slack.com/share/enQtMTE5NDc2MjE1MjI1OTktNWM2OGUwMzI2NWQ2OWJhMzQ5YTA5YzEyNmQzZDVkMzlhOWRlMTBlYTFhYTZlMmU3MGQyOTc1NDljY2FkMzM4NQ) for feedback and notifications of breaking changes.
-</Note>
-
 Agent sessions are an optimized interface for AI agents to use integrations.
 
 Each session has three parts:
@@ -2277,6 +2271,10 @@ Example sessions:
 - A sales agent with a user's personal Gmail & Google Calendar, and a read-only org-wide Salesforce connection
 - A finance agent with a few read-only tools on an org's accounting system, and read & write access to a team's Slack
 - A developer agent with a team's Linear access and a user's personal GitHub access
+
+<Info>
+    We are quickly expanding agent sessions, follow our [changelog](/updates/changelog) for announcements and improvements!
+</Info>
 
 ## Quickstart
 
@@ -2615,7 +2613,7 @@ You can also use `pinned` without any `any` selectors, if you already know the e
 An integration that matches no connection does not fail creation. It appears in the toolset as `connected: false`, and its tool calls fail with a missing authorization error.
 
 <Note>
-Currently there is no way for the agent to ask the user to connect an unconnected integration. Let us know on the [Beta Slack channel](https://join.slack.com/share/enQtMTE5NDc2MjE1MjI1OTktNWM2OGUwMzI2NWQ2OWJhMzQ5YTA5YzEyNmQzZDVkMzlhOWRlMTBlYTFhYTZlMmU3MGQyOTc1NDljY2FkMzM4NQ) if you need this and we are happy to prioritize it.
+Currently there is no way for the agent to ask the user to connect an unconnected integration. Let us know if you need this and we are happy to prioritize it.
 </Note>
 
 ## Toolsets & tools
@@ -9440,8 +9438,11 @@ curl --request POST \
 
 ### Account-level APIs
 
+- [List environments](/reference/backend/http-api/environments/list)
 - [Create an environment](/reference/backend/http-api/environments/create)
 - [Delete an environment](/reference/backend/http-api/environments/delete)
+- [List environment API keys](/reference/backend/http-api/environments/list-api-keys)
+- [Get an environment API key](/reference/backend/http-api/environments/get-api-key)
 - [Create an environment API key](/reference/backend/http-api/environments/create-api-key)
 - [Delete an environment API key](/reference/backend/http-api/environments/delete-api-key)
 
@@ -9472,6 +9473,29 @@ Those headers are sent back with every API response:
 - `X-RateLimit-Reset` provides a Unix timestamp representing the time at which the current rate limit window resets, and the remaining request count is replenished.
 
 If a client exceeds the rate limit, the API will respond with a 429 `Too Many Requests` status code. In this case, the `Retry-After` header is included, indicating the number of seconds the client should wait before making another request to avoid being rate-limited.
+
+## List environments
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/list.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:list` scope.
+</Info>
+
+<ResponseExample>
+```json Example Response
+{
+  "data": [
+    {
+      "id": 123,
+      "uuid": "123e4567-e89b-12d3-a456-426614174000",
+      "name": "staging",
+      "is_production": false
+    }
+  ]
+}
+```
+</ResponseExample>
 
 ## Create an environment
 
@@ -9510,6 +9534,57 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/delete.md
 Deletes an environment. `environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create).
 
 The reserved `prod` environment cannot be deleted.
+
+## List environment API keys
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/list-api-keys.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:api_keys:list` scope.
+</Info>
+
+<ResponseExample>
+```json Example Response
+{
+  "data": [
+    {
+      "id": 456,
+      "uuid": "123e4567-e89b-12d3-a456-426614174001",
+      "display_name": "provisioned-ci",
+      "scopes": ["environment:*"],
+      "last_used_at": null,
+      "created_at": "2026-08-18T12:00:00.000Z"
+    }
+  ]
+}
+```
+</ResponseExample>
+
+## Get an environment API key
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/get-api-key.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:api_keys:read` scope.
+</Info>
+
+Retrieves an Environment API key, including its secret.
+
+<ResponseExample>
+```json Example Response
+{
+  "data": {
+    "id": 456,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
+    "display_name": "provisioned-ci",
+    "scopes": ["environment:*"],
+    "secret": "<YOUR-ENVIRONMENT-API-KEY>",
+    "last_used_at": null,
+    "created_at": "2026-08-18T12:00:00.000Z"
+  }
+}
+```
+</ResponseExample>
 
 ## Create an environment API key
 
@@ -15139,6 +15214,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `back-market` | Back Market | API_KEY | [docs](https://nango.dev/docs/api-integrations/back-market.md) | [connect](https://nango.dev/docs/api-integrations/back-market/connect.md) |  | e-commerce |
 | `bamboohr` | BambooHR (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/bamboohr.md) | [connect](https://nango.dev/docs/api-integrations/bamboohr/connect.md) | [setup](https://nango.dev/docs/api-integrations/bamboohr/how-to-register-your-own-bamboohr-oauth-app.md) | hr |
 | `bamboohr-basic` | BambooHR (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/bamboohr-basic.md) | [connect](https://nango.dev/docs/integrations/all/bamboohr-basic/connect.md) |  | hr |
+| `bandwidth` | Bandwidth | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bandwidth.md) | [connect](https://nango.dev/docs/api-integrations/bandwidth/connect.md) |  | communication |
 | `basecamp` | Basecamp | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/basecamp.md) | [connect](https://nango.dev/docs/integrations/all/basecamp/connect.md) |  | productivity |
 | `baserow` | Baserow | API_KEY | [docs](https://nango.dev/docs/api-integrations/baserow.md) | [connect](https://nango.dev/docs/api-integrations/baserow/connect.md) |  | productivity, dev-tools |
 | `basin` | Basin | API_KEY | [docs](https://nango.dev/docs/api-integrations/basin.md) | [connect](https://nango.dev/docs/api-integrations/basin/connect.md) |  | dev-tools |
@@ -15471,6 +15547,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `insightly` | Insightly | BASIC | [docs](https://nango.dev/docs/integrations/all/insightly.md) |  |  | crm |
 | `instagram` | Instagram | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/instagram.md) |  | [setup](https://nango.dev/docs/api-integrations/instagram/how-to-register-your-own-instagram-api-oauth-app.md) | marketing, social |
 | `instantly` | Instantly | API_KEY | [docs](https://nango.dev/docs/integrations/all/instantly.md) | [connect](https://nango.dev/docs/integrations/all/instantly/connect.md) |  | marketing, communication |
+| `inteliquent` | Inteliquent | BASIC | [docs](https://nango.dev/docs/api-integrations/inteliquent.md) | [connect](https://nango.dev/docs/api-integrations/inteliquent/connect.md) |  | communication |
 | `intercom` | Intercom | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/intercom.md) | [connect](https://nango.dev/docs/api-integrations/intercom/connect.md) | [setup](https://nango.dev/docs/api-integrations/intercom/how-to-register-your-own-intercom-api-oauth-app.md) | marketing, popular, support, surveys, ticketing |
 | `intuit` | Intuit | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/intuit.md) |  |  | accounting |
 | `ironclad` | Ironclad | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ironclad.md) | [connect](https://nango.dev/docs/integrations/all/ironclad/connect.md) |  | legal |
