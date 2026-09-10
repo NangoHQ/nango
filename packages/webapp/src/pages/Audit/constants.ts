@@ -10,7 +10,6 @@ import type { ApiAuditTrailEvent, AuditAction, AuditActionOf, AuditEventKey, Aud
  */
 const actionsByResource = {
     oauth_grant: ['approved', 'denied', 'revoked'],
-    oauth_session: ['established'],
     connection: ['created', 'updated', 'metadata_updated', 'refreshed', 'deleted'],
     sync: ['enabled', 'disabled', 'paused', 'started', 'triggered', 'cancelled', 'frequency_changed', 'variant_created', 'variant_deleted'],
     function: ['deployed', 'upgraded', 'deleted'],
@@ -39,7 +38,6 @@ true satisfies [Exclude<AuditEventKey, ListedEvent>] extends [never] ? true : ne
 
 const resourceLabels: Record<AuditResource, string> = {
     oauth_grant: 'OAuth grant',
-    oauth_session: 'OAuth session',
     connection: 'Connection',
     sync: 'Sync',
     function: 'Function',

@@ -1,15 +1,14 @@
-import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 
 import { OAUTH_AUTHORIZATION_PATH, OAUTH_DISCOVERY_PATH, OAUTH_JWKS_PATH, OAUTH_REVOCATION_PATH, OAUTH_TOKEN_PATH } from '@nangohq/oauth-server';
 
-import { auditOAuthApproved, auditOAuthDenied, auditOAuthSession } from './middleware/audit/index.js';
+import { setupAuth } from './clients/auth.client.js';
+import { auditOAuthApproved, auditOAuthDenied } from './middleware/audit/index.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import {
     approveOAuthInteraction,
     authenticateOAuthSession,
-    consumeOAuthHandoff,
     denyOAuthInteraction,
     enterOAuthInteraction,
     oauthParsingError,
@@ -20,6 +19,8 @@ import { oauthConsent, oauthServer } from './oauth/server.js';
 import type { RequestHandler } from 'express';
 
 export const oauthServerAPI = express.Router();
+const browserSession = express.Router();
+setupAuth(browserSession);
 
 const issuerOnly: RequestHandler = (req, res, next) => {
     const issuer = oauthServer ? new URL(oauthServer.issuer) : null;
@@ -36,19 +37,18 @@ const issuerOnly: RequestHandler = (req, res, next) => {
 
 // Only mount on owned paths; legacy integration OAuth routes keep their own router.
 oauthServerAPI.use(
-    ['/oauth/interaction', '/oauth/handoff'],
+    '/oauth/interaction',
     issuerOnly,
-    cookieParser(),
+    browserSession,
     cors({ origin: oauthConsent?.dashboardOrigin ?? false, credentials: true, methods: ['GET', 'POST'], allowedHeaders: ['Content-Type'], maxAge: 600 }),
     rateLimiterMiddleware,
     express.json({ limit: '8kb' })
 );
-oauthServerAPI.use(['/oauth/interaction', '/oauth/handoff'], oauthParsingError);
+oauthServerAPI.use('/oauth/interaction', oauthParsingError);
 oauthServerAPI.get('/oauth/interaction/:uid', enterOAuthInteraction);
 oauthServerAPI.get('/oauth/interaction/:uid/details', readOAuthInteraction);
 oauthServerAPI.post('/oauth/interaction/:uid/approve', authenticateOAuthSession, auditOAuthApproved, approveOAuthInteraction);
 oauthServerAPI.post('/oauth/interaction/:uid/deny', authenticateOAuthSession, auditOAuthDenied, denyOAuthInteraction);
-oauthServerAPI.get('/oauth/handoff/callback', auditOAuthSession, consumeOAuthHandoff);
 
 const providerHandlers: RequestHandler[] = oauthServer
     ? [issuerOnly, rateLimiterMiddleware, asExpressHandler(oauthServer.callback())]

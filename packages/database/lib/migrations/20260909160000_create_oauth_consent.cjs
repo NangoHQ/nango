@@ -23,31 +23,6 @@ exports.up = async function (knex) {
             scopes TEXT[] NOT NULL,
             PRIMARY KEY(grant_id, resource)
         );
-        CREATE TABLE oauth_login_handoffs (
-            state_hash BYTEA PRIMARY KEY,
-            browser_hash BYTEA NOT NULL,
-            interaction_uid TEXT NOT NULL,
-            issuer TEXT NOT NULL,
-            return_to TEXT NOT NULL,
-            user_id INTEGER REFERENCES _nango_users(id) ON DELETE CASCADE,
-            account_id INTEGER REFERENCES _nango_accounts(id) ON DELETE CASCADE,
-            code_hash BYTEA UNIQUE,
-            code_expires_at TIMESTAMPTZ,
-            consumed_at TIMESTAMPTZ,
-            expires_at TIMESTAMPTZ NOT NULL
-        );
-        CREATE INDEX oauth_login_handoffs_expiry_idx ON oauth_login_handoffs(expires_at);
-        CREATE INDEX oauth_login_handoffs_user_idx ON oauth_login_handoffs(user_id);
-        CREATE INDEX oauth_login_handoffs_account_idx ON oauth_login_handoffs(account_id);
-        CREATE TABLE oauth_login_sessions (
-            token_hash BYTEA PRIMARY KEY,
-            user_id INTEGER NOT NULL REFERENCES _nango_users(id) ON DELETE CASCADE,
-            account_id INTEGER NOT NULL REFERENCES _nango_accounts(id) ON DELETE CASCADE,
-            expires_at TIMESTAMPTZ NOT NULL
-        );
-        CREATE INDEX oauth_login_sessions_expiry_idx ON oauth_login_sessions(expires_at);
-        CREATE INDEX oauth_login_sessions_user_idx ON oauth_login_sessions(user_id);
-        CREATE INDEX oauth_login_sessions_account_idx ON oauth_login_sessions(account_id);
         CREATE TABLE oauth_consent_decisions (
             interaction_hash BYTEA PRIMARY KEY,
             user_id INTEGER NOT NULL REFERENCES _nango_users(id) ON DELETE CASCADE,

@@ -5,20 +5,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { page, userEvent } from 'vitest/browser';
 
-import { decideInteraction, followOAuthRedirect, issueHandoff, OAuthError, readInteraction } from './api';
+import { decideInteraction, followOAuthRedirect, OAuthError, readInteraction, resumeOAuthInteraction } from './api';
 import { OAuthConsent } from './Consent';
 import { OAuthContinue } from './Continue';
 
 import type { OAuthConsentInteraction } from '@nangohq/types';
 
 vi.mock('@/utils/analytics', () => ({ track: vi.fn() }));
-vi.mock('@/utils/env', () => ({ globalEnv: { oauthServerUrl: 'https://id.nango.dev', dashboardApiUrl: 'https://api.nango.dev' } }));
+vi.mock('@/utils/env', () => ({ globalEnv: { oauthServerUrl: 'https://api.nango.dev', dashboardApiUrl: 'https://api.nango.dev' } }));
 vi.mock('./api', async (importOriginal) => ({
     ...(await importOriginal<object>()),
     readInteraction: vi.fn(),
     decideInteraction: vi.fn(),
     followOAuthRedirect: vi.fn(),
-    issueHandoff: vi.fn()
+    resumeOAuthInteraction: vi.fn()
 }));
 
 const uid = 'a'.repeat(32);
@@ -49,7 +49,7 @@ describe('OAuth consent browser experience', () => {
     beforeEach(async () => {
         vi.resetAllMocks();
         vi.mocked(readInteraction).mockResolvedValue({ data: { ...fixture, expiresAt: new Date(Date.now() + 600_000).toISOString() } });
-        vi.mocked(decideInteraction).mockResolvedValue({ data: { redirectUrl: `https://id.nango.dev/oauth/authorize/${uid}`, grantId: 'product-id' } });
+        vi.mocked(decideInteraction).mockResolvedValue({ data: { redirectUrl: `https://api.nango.dev/oauth/authorize/${uid}`, grantId: 'product-id' } });
         await page.viewport(1440, 1000);
     });
 
@@ -134,16 +134,18 @@ describe('OAuth consent browser experience', () => {
         expect(readInteraction).toHaveBeenCalledTimes(2);
     });
 
-    it('issues only one handoff under React StrictMode', async () => {
-        vi.mocked(issueHandoff).mockResolvedValue({ data: { redirectUrl: 'https://id.nango.dev/oauth/handoff/callback?code=opaque' } });
+    it('resumes the interaction after login under React StrictMode without a handoff API call', async () => {
         await render(
             <StrictMode>
-                <MemoryRouter initialEntries={[`/oauth/continue?state=${uid}`]}>
-                    <OAuthContinue />
+                <MemoryRouter initialEntries={[`/oauth/continue/${uid}`]}>
+                    <Routes>
+                        <Route path="/oauth/continue/:uid" element={<OAuthContinue />} />
+                    </Routes>
                 </MemoryRouter>
             </StrictMode>
         );
-        await vi.waitFor(() => expect(followOAuthRedirect).toHaveBeenCalled());
-        expect(issueHandoff).toHaveBeenCalledTimes(1);
+        await vi.waitFor(() => expect(resumeOAuthInteraction).toHaveBeenCalledWith(uid));
+        expect(readInteraction).not.toHaveBeenCalled();
+        expect(decideInteraction).not.toHaveBeenCalled();
     });
 });

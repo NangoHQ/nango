@@ -3,11 +3,11 @@ import { report } from '@nangohq/utils';
 
 import { asyncWrapper } from '../utils/asyncWrapper.js';
 import { oauthConsent } from './server.js';
-import { decisionBody, emptyObject, handoffBody, handoffQuery, interactionParams, OAuthConsentError } from './validation.js';
+import { decisionBody, emptyObject, interactionParams, OAuthConsentError } from './validation.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { OAuthConsentService } from './service.js';
-import type { GetOAuthHandoffCallback, GetOAuthInteraction, PostOAuthApprove, PostOAuthDeny, PostOAuthHandoff } from '@nangohq/types';
+import type { GetOAuthInteraction, PostOAuthApprove, PostOAuthDeny } from '@nangohq/types';
 import type { ErrorRequestHandler, Request, RequestHandler, Response } from 'express';
 
 export const oauthParsingError: ErrorRequestHandler = (err: unknown, _req, res, _next) => {
@@ -82,20 +82,5 @@ export const denyOAuthInteraction = asyncWrapper<PostOAuthDeny>(async (req, res)
         const body = decisionBody.safeParse(req.body);
         if (!body.success) throw new OAuthConsentError(400, 'invalid_body');
         res.json({ data: await consent().decide(req, res, uid(req), body.data.csrfToken, false) });
-    });
-});
-export const postOAuthHandoff = asyncWrapper<PostOAuthHandoff>(async (req, res) => {
-    await handleOAuthErrors(res, async () => {
-        const body = handoffBody.safeParse(req.body);
-        if (!body.success) throw new OAuthConsentError(400, 'invalid_body');
-        if (!emptyObject.safeParse(req.query).success) throw new OAuthConsentError(400, 'invalid_query_params');
-        res.json({ data: { redirectUrl: await consent().issueHandoff(req, res, body.data.state) } });
-    });
-});
-export const consumeOAuthHandoff = asyncWrapper<GetOAuthHandoffCallback>(async (req, res) => {
-    await handleOAuthErrors(res, async () => {
-        const query = handoffQuery.safeParse(req.query);
-        if (!query.success) throw new OAuthConsentError(400, 'invalid_handoff');
-        await consent().consumeHandoff(req, res, query.data.code);
     });
 });

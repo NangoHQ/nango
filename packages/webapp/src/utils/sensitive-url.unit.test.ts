@@ -10,6 +10,7 @@ const UUID = '8f14e45f-ceea-467a-9b0d-1e0a1b2c3d4e';
 describe('redactSensitiveText', () => {
     it('redacts issuer interactions, handoffs and OAuth callbacks', () => {
         expect(redactSensitiveText('/oauth/consent/secret-uid')).toBe('/oauth/consent/[redacted]');
+        expect(redactSensitiveText('/oauth/continue/secret-uid')).toBe('/oauth/continue/[redacted]');
         expect(redactSensitiveText('/oauth/interaction/secret-uid/approve')).toBe('/oauth/interaction/[redacted]/approve');
         expect(redactSensitiveText('https://id.nango.dev/oauth/handoff/callback?code=secret')).toBe(
             'https://id.nango.dev/oauth/handoff/callback?code=[redacted]'

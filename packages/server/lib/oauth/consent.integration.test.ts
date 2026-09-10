@@ -15,7 +15,6 @@ import { runServer } from '../utils/tests.js';
 import { resetPasswordSecret } from '../utils/utils.js';
 import { cleanOAuthConsent, GRANT_RESOURCES, PRODUCT_GRANTS, revokeUserOAuthGrants } from './grants.js';
 import { oauthConsent, oauthServer } from './server.js';
-import { hashSecret } from './service.js';
 
 import type * as ConfigModule from './config.js';
 import type { GetOAuthInteraction } from '@nangohq/types';
@@ -28,9 +27,10 @@ const fixtures = await vi.hoisted(async () => {
     process.env['WORKOS_API_KEY'] = 'sk_test_fixture';
     process.env['WORKOS_CLIENT_ID'] = 'client_fixture';
     process.env['NANGO_SERVER_URL'] = 'https://api.nango.test';
+    process.env['NANGO_DASHBOARD_API_URL'] = 'https://api.nango.test';
     process.env['NANGO_PUBLIC_SERVER_URL'] = 'https://app.nango.test';
     process.env['NANGO_MANAGEMENT_MCP_OAUTH_ENABLED'] = 'true';
-    process.env['NANGO_OAUTH_SERVER_BASE_URL'] = 'https://id.nango.test';
+    process.env['NANGO_OAUTH_SERVER_BASE_URL'] = 'https://api.nango.test';
     process.env['NANGO_OAUTH_SERVER_COOKIE_KEYS'] = JSON.stringify(['a'.repeat(32), 'b'.repeat(32)]);
     process.env['NANGO_OAUTH_SERVER_JWKS'] = JSON.stringify({ keys: [{ ...privateKey.export({ format: 'jwk' }), kid: 'test', use: 'sig', alg: 'RS256' }] });
     return {
@@ -66,14 +66,14 @@ let api: Awaited<ReturnType<typeof runServer>>;
 let seeded: Awaited<ReturnType<typeof seeders.seedAccountEnvAndUser>>;
 let enabled = true;
 const dashboardOrigin = 'https://app.nango.test';
-const issuer = 'https://id.nango.test';
+const issuer = 'https://api.nango.test';
 const management = 'https://mcp-test.nango.dev/mcp';
 
 class Browser {
     private cookies = new Map<string, string>();
     async request(url: string, init: RequestInit = {}) {
         const target = new URL(url);
-        const key = target.host === 'id.nango.test' ? 'issuer:' : 'dashboard:';
+        const key = `${target.host}:`;
         const cookie = [...this.cookies]
             .filter(([name]) => name.startsWith(key))
             .map(([, value]) => value)
@@ -109,8 +109,12 @@ class Browser {
             const pair = value.split(';')[0]!;
             this.cookies.set(`${key}${pair.split('=')[0]}`, pair);
             expect(value.toLowerCase()).not.toContain('domain=');
+            expect(pair).not.toMatch(/^nango_oauth_(login|bridge)=/);
         }
         return response;
+    }
+    clearCookie(name: string) {
+        this.cookies.delete(`api.nango.test:${name}`);
     }
     async json(url: string, body?: unknown, origin = dashboardOrigin) {
         return await this.request(url, {
@@ -143,21 +147,21 @@ async function begin(browser: Browser, multi = false) {
     if (multi) url.searchParams.append('resource', fixtures.secondResource);
     const auth = await browser.request(url.href);
     expect(auth.status).toBe(303);
-    const entry = await browser.request(new URL(auth.headers.get('location')!, issuer).href);
+    const entryUrl = new URL(auth.headers.get('location')!, issuer).href;
+    const uid = new URL(entryUrl).pathname.split('/').at(-1)!;
+    return { entryUrl, continuation: `/oauth/continue/${uid}`, uid, verifier };
+}
+
+async function beginSignedOut(browser: Browser) {
+    const flow = await begin(browser);
+    const entry = await browser.request(flow.entryUrl);
     expect(entry.status).toBe(303);
-    const continuation = new URL(entry.headers.get('location')!);
-    expect(continuation.pathname).toBe('/oauth/continue');
-    return { state: continuation.searchParams.get('state')!, verifier };
+    expect(entry.headers.get('location')).toBe(`${dashboardOrigin}/signin?next=${encodeURIComponent(flow.continuation)}`);
+    return flow;
 }
 
-async function handoff(browser: Browser, state: string) {
-    const response = await browser.json('https://api.nango.test/api/v1/oauth/handoff', { state });
-    expect(response.status).toBe(200);
-    return (await response.json()).data.redirectUrl as string;
-}
-
-async function finishBridge(browser: Browser, callback: string) {
-    let response = await browser.request(callback);
+async function reachConsent(browser: Browser, entryUrl: string) {
+    let response = await browser.request(entryUrl);
     expect(response.status).toBe(303);
     for (let count = 0; count < 6; count++) {
         const location = new URL(response.headers.get('location')!, issuer);
@@ -174,13 +178,12 @@ async function finishBridge(browser: Browser, callback: string) {
 async function consent(multi = false) {
     const browser = new Browser();
     await signIn(browser);
-    const { state, verifier } = await begin(browser, multi);
-    const callback = await handoff(browser, state);
-    const uid = await finishBridge(browser, callback);
+    const { entryUrl, verifier } = await begin(browser, multi);
+    const uid = await reachConsent(browser, entryUrl);
     const response = await browser.json(`${issuer}/oauth/interaction/${uid}/details`);
     expect(response.status).toBe(200);
     const { data } = (await response.json()) as GetOAuthInteraction['Success'];
-    return { browser, uid, data, verifier, callback };
+    return { browser, uid, data, verifier };
 }
 
 async function approve(flow: Awaited<ReturnType<typeof consent>>) {
@@ -242,7 +245,7 @@ describe('Nango OAuth login and consent', () => {
         vi.restoreAllMocks();
     });
 
-    it('bridges an existing dashboard session and issues tokens for a multi-resource product grant', async () => {
+    it('reuses the dashboard session and issues tokens for a multi-resource product grant without a bridge', async () => {
         const flow = await consent(true);
         expect(flow.data).toMatchObject({
             clientName: 'Example client',
@@ -276,10 +279,11 @@ describe('Nango OAuth login and consent', () => {
 
     it('resumes the exact interaction after signed-out password login', async () => {
         const browser = new Browser();
-        const { state } = await begin(browser);
-        expect((await browser.json('https://api.nango.test/api/v1/oauth/handoff', { state })).status).toBe(401);
-        expect(await signIn(browser)).toMatchObject({ url: `/oauth/continue?state=${state}` });
-        expect(await finishBridge(browser, await handoff(browser, state))).toBeTruthy();
+        const { entryUrl, continuation } = await beginSignedOut(browser);
+        expect(await signIn(browser)).toMatchObject({ url: continuation });
+        expect(await reachConsent(browser, entryUrl)).toBeTruthy();
+        // The one-time login destination is not carried into the authenticated session.
+        expect(await signIn(browser)).toMatchObject({ url: '/' });
     });
 
     it('preserves continuation through password login and MFA session regeneration', async () => {
@@ -292,20 +296,18 @@ describe('Nango OAuth login and consent', () => {
         expect(activation.status).toBe(200);
         const recoveryCode = (await activation.json()).data.recoveryCodes[0];
         const browser = new Browser();
-        const { state } = await begin(browser);
-        expect((await browser.json('https://api.nango.test/api/v1/oauth/handoff', { state })).status).toBe(401);
+        const { entryUrl, continuation, uid } = await beginSignedOut(browser);
         expect(await signIn(browser)).toMatchObject({ data: { mfaRequired: true } });
-        expect((await browser.json('https://api.nango.test/api/v1/oauth/handoff', { state })).status).toBe(401);
+        expect((await browser.json(`${issuer}/oauth/interaction/${uid}/details`)).status).toBe(401);
         const verified = await browser.json('https://api.nango.test/api/v1/account/mfa/login/verify', { type: 'recoveryCode', recoveryCode });
         expect(verified.status).toBe(200);
-        expect(await verified.json()).toMatchObject({ data: { url: `/oauth/continue?state=${state}` } });
-        expect(await finishBridge(browser, await handoff(browser, state))).toBeTruthy();
+        expect(await verified.json()).toMatchObject({ data: { url: continuation } });
+        expect(await reachConsent(browser, entryUrl)).toBeTruthy();
     });
 
     it.each([false, true])('resumes managed login (email verification: %s)', async (verifyEmail) => {
         const browser = new Browser();
-        const { state } = await begin(browser);
-        expect((await browser.json('https://api.nango.test/api/v1/oauth/handoff', { state })).status).toBe(401);
+        const { entryUrl, continuation } = await beginSignedOut(browser);
         const identity = { user: { email: seeded.user.email, firstName: 'Test', lastName: 'User' } };
         if (verifyEmail)
             fixtures.authenticateWithCode.mockRejectedValueOnce({
@@ -324,26 +326,28 @@ describe('Nango OAuth login and consent', () => {
             fixtures.authenticateWithEmailVerification.mockResolvedValueOnce(identity);
             const result = await browser.json('https://api.nango.test/api/v1/account/managed/verification', { code: '123456' });
             expect(result.status).toBe(200);
-            expect(await result.json()).toMatchObject({ data: { url: `${dashboardOrigin}/oauth/continue?state=${state}` } });
-        } else expect(callback.headers.get('location')).toBe(`${dashboardOrigin}/oauth/continue?state=${state}`);
-        expect(await finishBridge(browser, await handoff(browser, state))).toBeTruthy();
+            expect(await result.json()).toMatchObject({ data: { url: `${dashboardOrigin}${continuation}` } });
+        } else expect(callback.headers.get('location')).toBe(`${dashboardOrigin}${continuation}`);
+        expect(await reachConsent(browser, entryUrl)).toBeTruthy();
     });
 
     it('carries onboarding destinations with only the opaque continuation', async () => {
         const browser = new Browser();
         await signIn(browser);
-        const { state } = await begin(browser);
+        const { entryUrl, continuation } = await begin(browser);
         await db.knex('_nango_users').where({ id: seeded.user.id }).update({ account_discovery_pending: true });
-        expect(await handoff(browser, state)).toBe(
-            `${dashboardOrigin}/onboarding/account-discovery?next=${encodeURIComponent(`/oauth/continue?state=${state}`)}`
+        expect((await browser.request(entryUrl)).headers.get('location')).toBe(
+            `${dashboardOrigin}/onboarding/account-discovery?next=${encodeURIComponent(continuation)}`
         );
         const discovery = await browser.json('https://api.nango.test/api/v1/account/onboarding/account-discovery');
         expect(discovery.status).toBe(200);
         await db.knex('_nango_accounts').where({ id: seeded.account.id }).update({ found_us: null });
-        expect(await handoff(browser, state)).toBe(`${dashboardOrigin}/onboarding/hear-about-us?next=${encodeURIComponent(`/oauth/continue?state=${state}`)}`);
+        expect((await browser.request(entryUrl)).headers.get('location')).toBe(
+            `${dashboardOrigin}/onboarding/hear-about-us?next=${encodeURIComponent(continuation)}`
+        );
         const submitted = await browser.json('https://api.nango.test/api/v1/account/onboarding/hear-about-us', { source: 'skipped' });
         expect(submitted.status).toBe(200);
-        expect(await finishBridge(browser, await handoff(browser, state))).toBeTruthy();
+        expect(await reachConsent(browser, entryUrl)).toBeTruthy();
     });
 
     it('denies through the provider and does not create a product grant', async () => {
@@ -379,7 +383,7 @@ describe('Nango OAuth login and consent', () => {
 
     it('only exposes the provider on the configured issuer host and exact credentialed CORS origin', async () => {
         const browser = new Browser();
-        expect((await browser.request('https://api.nango.test/.well-known/oauth-authorization-server')).status).toBe(404);
+        expect((await browser.request('https://id.nango.test/.well-known/oauth-authorization-server')).status).toBe(404);
         expect((await browser.request(`${issuer}/oauth/authorize`, { headers: { 'X-Forwarded-Host': 'evil.example' } })).status).toBe(404);
         const response = await browser.request(`${issuer}/oauth/interaction/${'a'.repeat(32)}/details`, {
             method: 'OPTIONS',
@@ -394,67 +398,70 @@ describe('Nango OAuth login and consent', () => {
         ).not.toBe('https://evil.example');
     });
 
-    it('rejects handoff replay, browser mismatch, expiry and unsafe destinations', async () => {
+    it('requires both the dashboard session and the bound provider interaction cookie', async () => {
         const flow = await consent();
-        expect((await flow.browser.request(flow.callback)).status).toBe(400);
-        for (const mutation of ['browser', 'expiry', 'destination', 'issuer', 'interaction'] as const) {
-            const browser = new Browser();
-            await signIn(browser);
-            const { state } = await begin(browser);
-            const callback = await handoff(browser, state);
-            if (mutation === 'expiry')
-                await db
-                    .knex('oauth_login_handoffs')
-                    .where({ state_hash: hashSecret(state) })
-                    .update({ code_expires_at: new Date(0) });
-            if (mutation === 'destination')
-                await db
-                    .knex('oauth_login_handoffs')
-                    .where({ state_hash: hashSecret(state) })
-                    .update({ return_to: 'https://evil.example' });
-            if (mutation === 'issuer')
-                await db
-                    .knex('oauth_login_handoffs')
-                    .where({ state_hash: hashSecret(state) })
-                    .update({ issuer: 'https://evil.example' });
-            if (mutation === 'interaction')
-                await db
-                    .knex('oauth_login_handoffs')
-                    .where({ state_hash: hashSecret(state) })
-                    .update({ interaction_uid: 'x'.repeat(32), return_to: `${issuer}/oauth/interaction/${'x'.repeat(32)}` });
-            const result = await (mutation === 'browser' ? new Browser() : browser).request(callback);
-            expect(result.status, mutation).toBe(400);
-        }
+        const endpoint = `${issuer}/oauth/interaction/${flow.uid}`;
+        flow.browser.clearCookie('nango_oauth_interaction');
+        expect((await flow.browser.json(`${endpoint}/details`)).status).toBe(410);
+        expect((await flow.browser.json(`${endpoint}/approve`, { csrfToken: flow.data.csrfToken })).status).toBe(410);
+        expect(await db.knex(PRODUCT_GRANTS).where({ user_id: seeded.user.id })).toHaveLength(0);
     });
 
-    it('atomically consumes a 45-second, identity-bound handoff only once', async () => {
-        const browser = new Browser();
-        await signIn(browser);
-        const { state } = await begin(browser);
-        const callback = await handoff(browser, state);
-        const row = await db
-            .knex('oauth_login_handoffs')
-            .where({ state_hash: hashSecret(state) })
-            .first();
-        expect(row).toMatchObject({ user_id: seeded.user.id, account_id: seeded.account.id, issuer });
-        expect(row.code_hash).toHaveLength(32);
-        expect(row.code_hash).toEqual(hashSecret(new URL(callback).searchParams.get('code')!));
-        expect(row.code_expires_at.getTime() - Date.now()).toBeGreaterThan(30_000);
-        expect(row.code_expires_at.getTime() - Date.now()).toBeLessThanOrEqual(45_000);
-        const results = await Promise.all([browser.request(callback), browser.request(callback)]);
-        expect(results.map((result) => result.status).sort()).toEqual([303, 400]);
-        expect(await db.knex('oauth_login_sessions').where({ user_id: seeded.user.id })).toHaveLength(1);
+    it('requires a fresh login after logout even with provider cookies, but preserves existing grants', async () => {
+        const flow = await consent();
+        const { grantId, tokens } = await approve(flow);
+        await flow.browser.json(`${issuer}/api/v1/account/logout`, {});
+        await beginSignedOut(flow.browser);
+        expect(await db.knex(PRODUCT_GRANTS).where({ id: grantId }).first()).toMatchObject({ status: 'active' });
+        const refreshed = await flow.browser.request(`${issuer}/oauth/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                grant_type: 'refresh_token',
+                client_id: fixtures.clientId,
+                refresh_token: tokens.refresh_token,
+                resource: management
+            }).toString()
+        });
+        expect(refreshed.status).toBe(200);
+    });
+
+    it('rechecks the flag for a new authorization even when the provider remembers an earlier grant', async () => {
+        const flow = await consent();
+        await approve(flow);
+        enabled = false;
+        const { entryUrl } = await begin(flow.browser);
+        expect((await flow.browser.request(entryUrl)).status).toBe(403);
+        expect(await db.knex(PRODUCT_GRANTS).where({ user_id: seeded.user.id })).toHaveLength(1);
+    });
+
+    it('binds approval CSRF to the dashboard session, including same-user session rotation', async () => {
+        const flow = await consent();
+        await signIn(flow.browser);
+        const endpoint = `${issuer}/oauth/interaction/${flow.uid}`;
+        expect((await flow.browser.json(`${endpoint}/approve`, { csrfToken: flow.data.csrfToken })).status).toBe(403);
+        const details = await flow.browser.json(`${endpoint}/details`);
+        expect(details.status).toBe(200);
+        flow.data = (await details.json()).data;
+        await approve(flow);
+    });
+
+    it('rejects a different signed-in user on an already-bound interaction', async () => {
+        const flow = await consent();
+        const originalUser = seeded.user;
+        seeded = await seeders.seedAccountEnvAndUser();
+        await signIn(flow.browser);
+        expect((await flow.browser.json(`${issuer}/oauth/interaction/${flow.uid}/details`)).status).toBe(400);
+        expect(await db.knex(PRODUCT_GRANTS).where({ user_id: originalUser.id })).toHaveLength(0);
     });
 
     it('cannot resurrect a dashboard session while a password reset revokes it', async () => {
-        const browser = new Browser();
-        await signIn(browser);
-        const { state } = await begin(browser);
+        const flow = await consent();
         const blocker = await db.knex.transaction();
         try {
             await blocker('_nango_users').where({ id: seeded.user.id }).forUpdate().first();
-            const result = browser.json('https://api.nango.test/api/v1/oauth/handoff', { state });
-            // Observe the actual row-lock wait rather than sleeping and guessing where issuance is.
+            const result = flow.browser.json(`${issuer}/oauth/interaction/${flow.uid}/approve`, { csrfToken: flow.data.csrfToken });
+            // Observe approval waiting on the same user lock as password revocation.
             await vi.waitFor(async () => {
                 const waiting = await db.knex('pg_stat_activity').where({ wait_event_type: 'Lock' }).where('query', 'like', '%_nango_users%').first();
                 expect(waiting).toBeDefined();
@@ -588,7 +595,9 @@ describe('Nango OAuth login and consent', () => {
         expect(await db.knex(PRODUCT_GRANTS).where({ id: grantId }).first()).toMatchObject({ status: 'revoked' });
         expect(await oauthServer!.AccessToken.find(tokens.access_token)).toBeUndefined();
         expect(await oauthServer!.RefreshToken.find(tokens.refresh_token)).toBeUndefined();
-        expect((await flow.browser.json(`${issuer}/oauth/interaction/${flow.uid}/details`)).status).toBe(401);
+        // Password change intentionally reissues the caller's dashboard session. It may
+        // authenticate again, but the old decision stays completed and its grant is revoked.
+        expect((await flow.browser.json(`${issuer}/oauth/interaction/${flow.uid}/details`)).status).toBe(409);
     });
 
     it('revokes the product binding when the client revokes any token', async () => {
@@ -604,7 +613,7 @@ describe('Nango OAuth login and consent', () => {
         expect(await oauthServer!.RefreshToken.find(tokens.refresh_token)).toBeUndefined();
     });
 
-    it('revokes product grants, provider tokens and issuer sessions on password reset', async () => {
+    it('revokes product grants, provider tokens and the dashboard session on password reset', async () => {
         const flow = await consent(true);
         const { grantId, tokens } = await approve(flow);
         const token = jwt.sign({ userId: seeded.user.id }, resetPasswordSecret(), { expiresIn: '5m' });
@@ -617,7 +626,7 @@ describe('Nango OAuth login and consent', () => {
         expect(response.status).toBe(200);
         expect(await db.knex(PRODUCT_GRANTS).where({ id: grantId }).first()).toMatchObject({ status: 'revoked' });
         expect(await oauthServer!.RefreshToken.find(tokens.refresh_token)).toBeUndefined();
-        expect(await db.knex('oauth_login_sessions').where({ user_id: seeded.user.id })).toHaveLength(0);
+        expect((await flow.browser.json(`${issuer}/oauth/interaction/${flow.uid}/details`)).status).toBe(401);
     });
 
     it('compensates stale pending rows in a bounded cleanup batch', async () => {
@@ -630,7 +639,6 @@ describe('Nango OAuth login and consent', () => {
         await cleanOAuthConsent(1);
         expect(await db.knex(PRODUCT_GRANTS).where({ id: grantId }).first()).toMatchObject({ status: 'revoked' });
         await db.knex.transaction((trx) => revokeUserOAuthGrants(seeded.user.id, trx));
-        expect(await db.knex('oauth_login_sessions').where({ user_id: seeded.user.id })).toHaveLength(0);
         expect(oauthConsent).toBeTruthy();
     });
 });

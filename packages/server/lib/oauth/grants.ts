@@ -65,23 +65,17 @@ export async function revokeUserOAuthGrants(userId: number, trx: Knex.Transactio
             beforeGrantRevoked: revokeProductBinding
         });
     }
-    await trx('oauth_login_sessions').where({ user_id: userId }).delete();
-    await trx('oauth_login_handoffs').where({ user_id: userId }).delete();
 }
 
 export async function cleanOAuthConsent(limit: number): Promise<void> {
     const now = new Date();
-    for (const [table, key] of [
-        ['oauth_login_handoffs', 'state_hash'],
-        ['oauth_login_sessions', 'token_hash'],
-        ['oauth_consent_decisions', 'interaction_hash']
-    ] as const) {
-        await db
-            .knex(table)
-            .where('expires_at', '<=', now)
-            .whereIn(key, db.knex(table).select(key).where('expires_at', '<=', now).orderBy('expires_at').limit(limit))
-            .delete();
-    }
+    await db
+        .knex('oauth_consent_decisions')
+        .whereIn(
+            'interaction_hash',
+            db.knex('oauth_consent_decisions').select('interaction_hash').where('expires_at', '<=', now).orderBy('expires_at').limit(limit)
+        )
+        .delete();
     const stale = await db
         .knex<ProductGrant>(PRODUCT_GRANTS)
         .where({ status: 'pending' })

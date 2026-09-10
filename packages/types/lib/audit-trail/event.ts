@@ -45,9 +45,6 @@ interface AuditEventTable {
         denied: never;
         revoked: never;
     };
-    oauth_session: {
-        established: never;
-    };
     connection: {
         created: ConnectionMetadata;
         updated: ConnectionUpdatedMetadata;

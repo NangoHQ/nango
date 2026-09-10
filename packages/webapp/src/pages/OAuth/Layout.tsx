@@ -28,7 +28,7 @@ export function OAuthLayout({ children }: { children: ReactNode }) {
 export function OAuthFailure({ error, retry }: { error: unknown; retry: () => void }) {
     const code = error instanceof OAuthError ? error.code : 'server_error';
     const completed = code === 'interaction_completed';
-    const expired = ['interaction_expired', 'invalid_handoff'].includes(code);
+    const expired = code === 'interaction_expired';
     const unavailable = ['unauthorized', 'forbidden', 'feature_disabled', 'invalid_interaction'].includes(code);
     const recoverable = !completed && !expired && !unavailable;
     return (

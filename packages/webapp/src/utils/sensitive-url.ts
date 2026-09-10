@@ -10,7 +10,7 @@ const TOKEN_SEGMENT = String.raw`[^/?#&:\s"';]+`;
 // static `expired` and `verification` segments as tokens. Case-insensitive: react-router
 // matches routes case-insensitively, so /Signup/<token> serves the page too.
 const SENSITIVE_PATH_PATTERNS = [
-    new RegExp(String.raw`(/oauth/(?:consent|interaction|authorize)/)${TOKEN_SEGMENT}`, 'gi'),
+    new RegExp(String.raw`(/oauth/(?:consent|continue|interaction|authorize)/)${TOKEN_SEGMENT}`, 'gi'),
     new RegExp(String.raw`(/reset-password/)${TOKEN_SEGMENT}`, 'gi'),
     new RegExp(String.raw`(/signup/verification/)${TOKEN_SEGMENT}`, 'gi'),
     new RegExp(String.raw`(/verify-email/expired/)${TOKEN_SEGMENT}`, 'gi'),

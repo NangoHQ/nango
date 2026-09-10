@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { auditOAuthApproved, auditOAuthDenied, auditOAuthSession } from './oauth.middleware.js';
+import { auditOAuthApproved, auditOAuthDenied } from './oauth.middleware.js';
 import { fakeReq, fakeRes, installAuditMockDefaults, locals, recordMock, resetAuditMocks, runAudit } from './testing.js';
 
 vi.mock('../../audit.js', async (importOriginal) => (await import('./testing.js')).auditModuleMock(importOriginal as never));
@@ -42,21 +42,5 @@ describe('OAuth audit policy', () => {
             outcome: status === 200 ? 'success' : status === 403 ? 'denied' : 'failure',
             actor: { type: 'user', id: '7' }
         });
-    });
-
-    it('records session establishment after the callback resolves its identity', async () => {
-        const res = fakeRes({}, 303);
-        await new Promise<void>((resolve) => auditOAuthSession(fakeReq({ query: { code: 'secret' } }), res, () => resolve()));
-        res.locals = locals;
-        res.emit('finish');
-        await vi.waitFor(() => expect(recordMock).toHaveBeenCalled());
-        expect(recordMock.mock.calls[0]![0]).toMatchObject({
-            accountId: 42,
-            environment: null,
-            action: 'established',
-            outcome: 'success',
-            actor: { type: 'user', id: '7' }
-        });
-        expect(JSON.stringify(recordMock.mock.calls)).not.toContain('secret');
     });
 });

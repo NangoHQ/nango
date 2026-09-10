@@ -192,7 +192,6 @@ import {
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import { oauthParsingError, postOAuthHandoff } from './oauth/handlers.js';
 import { isAllowedWebCorsOrigin } from './utils/cors.js';
 
 import type { Request, RequestHandler, Response } from 'express';
@@ -240,8 +239,6 @@ web.use(bodyParser.raw({ limit: bodyLimit }));
 web.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
 // --- No auth
-web.use('/oauth/handoff', oauthParsingError);
-web.route('/oauth/handoff').post(rateLimiterMiddleware, postOAuthHandoff);
 if (flagHasAuth) {
     web.route('/account/signup').post(rateLimiterMiddleware, auditAuthSignup, signup);
     web.route('/account/logout').post(rateLimiterMiddleware, auditAuthLogout, postLogout);

@@ -3,7 +3,7 @@ const RETURN_TO_BASE_ORIGIN = 'https://internal.invalid';
 
 /** Only the server-created, opaque OAuth continuation survives login session rotation. */
 export function safeOAuthContinuation(value: string | undefined): string | undefined {
-    return value && /^\/oauth\/continue\?state=[A-Za-z0-9_-]{20,128}$/.test(value) ? value : undefined;
+    return value && /^\/oauth\/continue\/[A-Za-z0-9_-]{20,128}$/.test(value) ? value : undefined;
 }
 
 export function safeReturnTo(returnTo: string): string {

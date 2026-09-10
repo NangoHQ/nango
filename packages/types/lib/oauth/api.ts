@@ -16,7 +16,7 @@ export interface OAuthConsentInteraction {
     csrfToken: string;
 }
 
-export type OAuthInteractionError = ApiError<'unauthorized' | 'interaction_expired' | 'interaction_completed' | 'invalid_interaction' | 'invalid_handoff'>;
+export type OAuthInteractionError = ApiError<'unauthorized' | 'interaction_expired' | 'interaction_completed' | 'invalid_interaction'>;
 
 export type GetOAuthInteraction = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'read-only consent details' };
@@ -44,23 +44,5 @@ export type PostOAuthDeny = ApiEndpoint<{
     Params: { uid: string };
     Body: { csrfToken: string };
     Success: { data: { redirectUrl: string } };
-    Error: OAuthInteractionError;
-}>;
-
-export type PostOAuthHandoff = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'issues a short-lived bridge code; session establishment audited on consumption' };
-    Method: 'POST';
-    Path: '/api/v1/oauth/handoff';
-    Body: { state: string };
-    Success: { data: { redirectUrl: string } };
-    Error: OAuthInteractionError;
-}>;
-
-export type GetOAuthHandoffCallback = ApiEndpoint<{
-    Audit: AuditPolicy<'oauth_session', 'established', 'account'>;
-    Method: 'GET';
-    Path: '/oauth/handoff/callback';
-    Querystring: { code: string };
-    Success: never;
     Error: OAuthInteractionError;
 }>;

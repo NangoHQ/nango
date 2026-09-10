@@ -89,6 +89,12 @@ export function createOAuthProvider({ knex, config, resources, beforeGrantRevoke
             url: (_ctx, interaction) => `${OAUTH_ENDPOINT_PATH}/interaction/${encodeURIComponent(interaction.uid)}`
         },
         issueRefreshToken: (_ctx, client) => client.grantTypeAllowed('refresh_token'),
+        loadExistingGrant: async (ctx) => {
+            // Only resume this interaction's explicit consent. A remembered provider grant
+            // must not bypass the application's current login or consent checks on a new request.
+            const grantId = ctx.oidc.result?.consent?.grantId;
+            return grantId ? await ctx.oidc.provider.Grant.find(grantId) : undefined;
+        },
         jwks: config.jwks,
         pkce: { required: () => true },
         responseTypes: ['code'],

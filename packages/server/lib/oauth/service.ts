@@ -19,32 +19,11 @@ import type { OAuthProvider } from '@nangohq/oauth-server';
 import type { DBUser, OAuthConsentResource } from '@nangohq/types';
 import type { Request, Response } from 'express';
 
-const HANDOFFS = 'oauth_login_handoffs';
-const SESSIONS = 'oauth_login_sessions';
 const DECISIONS = 'oauth_consent_decisions';
-export const LOGIN_COOKIE = 'nango_oauth_login';
-const BROWSER_COOKIE = 'nango_oauth_bridge';
-const HANDOFF_TTL_MS = 45_000;
-const LOGIN_TTL_MS = 7 * 24 * 60 * 60_000;
 
 interface LoginSession {
-    token_hash: Buffer;
     user_id: number;
     account_id: number;
-    expires_at: Date;
-}
-interface Handoff {
-    user_id: number | null;
-    account_id: number | null;
-    expires_at: Date;
-    state_hash: Buffer;
-    browser_hash: Buffer;
-    interaction_uid: string;
-    issuer: string;
-    return_to: string;
-    code_hash: Buffer | null;
-    code_expires_at: Date | null;
-    consumed_at: Date | null;
 }
 
 export function opaqueSecret(): string {
@@ -53,8 +32,8 @@ export function opaqueSecret(): string {
 export function hashSecret(value: string): Buffer {
     return createHash('sha256').update(value).digest();
 }
-export function oauthContinuation(state: string): string {
-    return `/oauth/continue?state=${encodeURIComponent(state)}`;
+export function oauthContinuation(uid: string): string {
+    return `/oauth/continue/${encodeURIComponent(uid)}`;
 }
 
 export class OAuthConsentService {
@@ -69,10 +48,6 @@ export class OAuthConsentService {
         this.dashboardOrigin = new URL(dashboardOrigin).origin;
     }
 
-    private cookieOptions(maxAge: number) {
-        return { httpOnly: true, secure: this.issuer.startsWith('https:'), sameSite: 'lax' as const, path: '/oauth', maxAge };
-    }
-
     async enabled(accountUuid?: string): Promise<void> {
         if (!(await getFlags().isOAuthConsentEnabled(accountUuid))) throw new OAuthConsentError(403, 'feature_disabled');
     }
@@ -85,19 +60,13 @@ export class OAuthConsentService {
         const start = Date.now();
         try {
             return await tracer.trace('sessionAuth', async () => {
-                const token: unknown = req.cookies?.[LOGIN_COOKIE];
-                if (typeof token !== 'string') throw new OAuthConsentError(401, 'unauthorized');
-                const session = await db
-                    .knex<LoginSession>(SESSIONS)
-                    .where({ token_hash: hashSecret(token) })
-                    .where('expires_at', '>', new Date())
-                    .first();
-                if (!session) throw new OAuthConsentError(401, 'unauthorized');
-                const identity = await loadSessionIdentity(session.user_id, session.account_id);
-                if (!identity) throw new OAuthConsentError(401, 'unauthorized');
+                if (req.session.impersonatedBy) throw new OAuthConsentError(403, 'forbidden');
+                if (!req.isAuthenticated() || !req.user || req.session.pendingMfaLogin) throw new OAuthConsentError(401, 'unauthorized');
+                const identity = await loadSessionIdentity(req.user.id, req.user.account_id);
+                if (!identity || !identity.user.email_verified) throw new OAuthConsentError(401, 'unauthorized');
                 Object.assign(res.locals, identity, { authType: 'session', plan: await getPlanSafe(db.knex, { accountId: identity.account.id }) });
                 tagTraceUser(res.locals);
-                return session;
+                return { user_id: identity.user.id, account_id: identity.account.id };
             });
         } finally {
             metrics.duration(metrics.Types.AUTH_SESSION, Date.now() - start);
@@ -122,28 +91,28 @@ export class OAuthConsentService {
 
     async enter(req: Request, res: Response<any, RequestLocals>, uid: string): Promise<void> {
         const interaction = await this.interaction(req, res, uid);
-        let session: LoginSession | undefined;
-        try {
-            session = await this.session(req, res);
-        } catch (err) {
-            if (!(err instanceof OAuthConsentError)) throw err;
-        }
-        if (!session) {
-            const state = opaqueSecret();
-            const browser = opaqueSecret();
-            await db.knex(HANDOFFS).insert({
-                state_hash: hashSecret(state),
-                browser_hash: hashSecret(browser),
-                interaction_uid: uid,
-                issuer: this.issuer,
-                return_to: `${this.issuer}/oauth/interaction/${uid}`,
-                expires_at: new Date(interaction.exp * 1000)
-            });
-            res.cookie(BROWSER_COOKIE, browser, this.cookieOptions(Math.max(0, interaction.exp * 1000 - Date.now())));
-            res.redirect(303, `${this.dashboardOrigin}${oauthContinuation(state)}`);
+        const continuation = oauthContinuation(uid);
+        const next = encodeURIComponent(continuation);
+        if (req.session.impersonatedBy) throw new OAuthConsentError(403, 'forbidden');
+        if (!req.isAuthenticated() || req.session.pendingMfaLogin) {
+            // Persist only on a pre-login session. Never save an authenticated session here:
+            // an in-flight save could resurrect a session revoked by a password reset.
+            req.session.oauthContinuation = continuation;
+            await saveDashboardSession(req);
+            res.redirect(303, `${this.dashboardOrigin}/signin?next=${next}`);
             return;
         }
+        const session = await this.session(req, res);
         await this.enabled(res.locals.account.uuid);
+        const onboarding = res.locals.user.account_discovery_pending
+            ? 'account-discovery'
+            : (await accountService.shouldShowHearAboutUs(res.locals.account))
+              ? 'hear-about-us'
+              : null;
+        if (onboarding) {
+            res.redirect(303, `${this.dashboardOrigin}/onboarding/${onboarding}?next=${next}`);
+            return;
+        }
         const subject = this.subject(session);
         if (interaction.session?.accountId && interaction.session.accountId !== subject) throw new OAuthConsentError(400, 'invalid_interaction');
         if (interaction.prompt.name === 'login') {
@@ -158,128 +127,12 @@ export class OAuthConsentService {
         res.redirect(303, `${this.dashboardOrigin}/oauth/consent/${encodeURIComponent(uid)}`);
     }
 
-    async issueHandoff(req: Request, res: Response<any, RequestLocals>, state: string): Promise<string> {
-        this.expectedOrigin(req);
-        const handoff = await db
-            .knex<Handoff>(HANDOFFS)
-            .where({ state_hash: hashSecret(state), consumed_at: null, issuer: this.issuer })
-            .where('expires_at', '>', new Date())
-            .first();
-        if (!handoff || handoff.return_to !== `${this.issuer}/oauth/interaction/${handoff.interaction_uid}`)
-            throw new OAuthConsentError(400, 'invalid_handoff');
-        if (req.session.impersonatedBy) throw new OAuthConsentError(403, 'forbidden');
-        if (!req.isAuthenticated() || !req.user || req.session.pendingMfaLogin) {
-            req.session.oauthContinuation = oauthContinuation(state);
-            await saveDashboardSession(req);
-            throw new OAuthConsentError(401, 'unauthorized');
-        }
-        const principal = req.user;
-        return await db.knex.transaction(async (trx) => {
-            // Lock order matches password revocation and consumption: user, then handoff.
-            // Never save an authenticated dashboard session before this check: saving a
-            // stale in-flight request could resurrect a session deleted by a password reset.
-            await trx('_nango_users').where({ id: principal.id }).forUpdate().first('id');
-            const identity = await loadSessionIdentity(principal.id, principal.account_id, trx);
-            if (!identity || !identity.user.email_verified || !(await trx('_nango_sessions').where({ sid: req.sessionID }).first('sid')))
-                throw new OAuthConsentError(401, 'unauthorized');
-            const { user, account } = identity;
-            const current = await trx<Handoff>(HANDOFFS).where({ state_hash: handoff.state_hash }).forUpdate().first();
-            if (
-                !current ||
-                current.consumed_at ||
-                current.expires_at <= new Date() ||
-                (current.user_id && (current.user_id !== user.id || current.account_id !== account.id))
-            )
-                throw new OAuthConsentError(400, 'invalid_handoff');
-            await this.enabled(account.uuid);
-            const next = encodeURIComponent(oauthContinuation(state));
-            const onboarding = user.account_discovery_pending
-                ? 'account-discovery'
-                : (await accountService.shouldShowHearAboutUs(account))
-                  ? 'hear-about-us'
-                  : null;
-            if (onboarding) {
-                req.session.oauthContinuation = oauthContinuation(state);
-                await saveDashboardSession(req);
-                return `${this.dashboardOrigin}/onboarding/${onboarding}?next=${next}`;
-            }
-            const code = opaqueSecret();
-            await trx(HANDOFFS)
-                .where({ state_hash: handoff.state_hash })
-                .update({ user_id: user.id, account_id: account.id, code_hash: hashSecret(code), code_expires_at: new Date(Date.now() + HANDOFF_TTL_MS) });
-            delete req.session.oauthContinuation;
-            await saveDashboardSession(req);
-            Object.assign(res.locals, identity);
-            return `${this.issuer}/oauth/handoff/callback?code=${encodeURIComponent(code)}`;
-        });
-    }
-
-    async consumeHandoff(req: Request, res: Response<any, RequestLocals>, code: string): Promise<void> {
-        const browser: unknown = req.cookies?.[BROWSER_COOKIE];
-        if (typeof browser !== 'string') throw new OAuthConsentError(400, 'invalid_handoff');
-        const token = opaqueSecret();
-        const candidate = await db
-            .knex<Handoff>(HANDOFFS)
-            .where({ code_hash: hashSecret(code) })
-            .first('user_id');
-        if (!candidate?.user_id) throw new OAuthConsentError(400, 'invalid_handoff');
-        const redirectUrl = await db.knex.transaction(async (trx) => {
-            await trx('_nango_users').where({ id: candidate.user_id }).forUpdate().first('id');
-            const row = await trx<Handoff>(HANDOFFS)
-                .where({ code_hash: hashSecret(code) })
-                .forUpdate()
-                .first();
-            const now = new Date();
-            if (
-                !row ||
-                row.consumed_at ||
-                row.expires_at <= now ||
-                !row.code_expires_at ||
-                row.code_expires_at <= now ||
-                !row.browser_hash.equals(hashSecret(browser)) ||
-                row.issuer !== this.issuer ||
-                row.return_to !== `${this.issuer}/oauth/interaction/${row.interaction_uid}` ||
-                row.user_id !== candidate.user_id ||
-                !row.user_id ||
-                !row.account_id
-            )
-                throw new OAuthConsentError(400, 'invalid_handoff');
-            const identity = await loadSessionIdentity(row.user_id, row.account_id, trx);
-            if (!identity) throw new OAuthConsentError(400, 'invalid_handoff');
-            await this.enabled(identity.account.uuid);
-            const interaction = await this.interaction(req, res, row.interaction_uid);
-            if (interaction.session?.accountId && interaction.session.accountId !== this.subject({ user_id: row.user_id, account_id: row.account_id }))
-                throw new OAuthConsentError(400, 'invalid_handoff');
-            const existingToken: unknown = req.cookies?.[LOGIN_COOKIE];
-            if (typeof existingToken === 'string') {
-                const existing = await trx<LoginSession>(SESSIONS)
-                    .where({ token_hash: hashSecret(existingToken) })
-                    .where('expires_at', '>', now)
-                    .first();
-                if (existing && (existing.user_id !== row.user_id || existing.account_id !== row.account_id))
-                    throw new OAuthConsentError(400, 'invalid_handoff');
-            }
-            await trx(HANDOFFS).where({ state_hash: row.state_hash }).update({ consumed_at: now });
-            await trx(SESSIONS).insert({
-                token_hash: hashSecret(token),
-                user_id: row.user_id,
-                account_id: row.account_id,
-                expires_at: new Date(Date.now() + LOGIN_TTL_MS)
-            });
-            Object.assign(res.locals, identity, { authType: 'session', plan: await getPlanSafe(trx, { accountId: row.account_id }) });
-            return row.return_to;
-        });
-        res.cookie(LOGIN_COOKIE, token, this.cookieOptions(LOGIN_TTL_MS));
-        res.clearCookie(BROWSER_COOKIE, this.cookieOptions(0));
-        res.redirect(303, redirectUrl);
-    }
-
     private subject(session: Pick<LoginSession, 'user_id' | 'account_id'>): string {
         return `${session.user_id}:${session.account_id}`;
     }
     private csrf(req: Request, uid: string, session: LoginSession): string {
         return createHmac('sha256', this.options.config.cookieKeys[0]!)
-            .update(JSON.stringify([uid, session.user_id, session.account_id, req.cookies[LOGIN_COOKIE]]))
+            .update(JSON.stringify([uid, session.user_id, session.account_id, req.sessionID]))
             .digest('base64url');
     }
 
@@ -351,14 +204,8 @@ export class OAuthConsentService {
             withOAuthTransaction(trx, async () => {
                 await trx<DBUser>('_nango_users').where({ id: session.user_id }).forUpdate().first();
                 const identity = await loadSessionIdentity(session.user_id, session.account_id, trx);
-                if (!identity) throw new OAuthConsentError(401, 'unauthorized');
-                const token: string = req.cookies[LOGIN_COOKIE];
-                if (
-                    !(await trx(SESSIONS)
-                        .where({ token_hash: hashSecret(token) })
-                        .where('expires_at', '>', new Date())
-                        .first())
-                )
+                if (!identity || !identity.user.email_verified) throw new OAuthConsentError(401, 'unauthorized');
+                if (!(await trx('_nango_sessions').where({ sid: req.sessionID }).where('expired', '>', new Date()).first()))
                     throw new OAuthConsentError(401, 'unauthorized');
                 const { interaction, clientId, resources, scopes } = await this.validateRequest(req, res, uid, session);
                 const claimed = await trx(DECISIONS)

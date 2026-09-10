@@ -1,13 +1,11 @@
 import { z } from 'zod';
 
-import type { GetOAuthHandoffCallback, OAuthConsentInteraction, PostOAuthApprove, PostOAuthHandoff } from '@nangohq/types';
+import type { OAuthConsentInteraction, PostOAuthApprove } from '@nangohq/types';
 
 export const opaqueValue = z.string().regex(/^[A-Za-z0-9_-]{20,128}$/);
 export const interactionParams = z.strictObject({ uid: opaqueValue });
 export const emptyObject = z.strictObject({});
 export const decisionBody: z.ZodType<PostOAuthApprove['Body']> = z.strictObject({ csrfToken: opaqueValue });
-export const handoffBody: z.ZodType<PostOAuthHandoff['Body']> = z.strictObject({ state: opaqueValue });
-export const handoffQuery: z.ZodType<GetOAuthHandoffCallback['Querystring']> = z.strictObject({ code: opaqueValue });
 export const interactionResponse: z.ZodType<OAuthConsentInteraction> = z.strictObject({
     clientName: z.string().max(120),
     clientHostname: z.string().max(253),
@@ -31,7 +29,6 @@ export class OAuthConsentError extends Error {
             | 'interaction_expired'
             | 'interaction_completed'
             | 'invalid_interaction'
-            | 'invalid_handoff'
             | 'invalid_body'
             | 'invalid_query_params'
     ) {
