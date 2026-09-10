@@ -1,4 +1,5 @@
 import { parseOAuthServerConfig } from '@nangohq/oauth-server';
+import { basePublicUrl, dashboardApiUrl } from '@nangohq/utils';
 
 import { dek, envs } from '../env.js';
 
@@ -23,13 +24,20 @@ export function getOAuthServerConfig(): NangoOAuthServerConfig | null {
     }
     if (resources.length === 0) return null;
 
+    const sessionOrigin = new URL(dashboardApiUrl, basePublicUrl).origin;
+    const config = parseOAuthServerConfig({
+        baseUrl: envs.NANGO_OAUTH_SERVER_BASE_URL ?? sessionOrigin,
+        cookieKeys: envs.NANGO_OAUTH_SERVER_COOKIE_KEYS,
+        encryptionKey: dek.get(),
+        jwks: envs.NANGO_OAUTH_SERVER_JWKS
+    });
+    // Dashboard login and OAuth interactions must receive the same host-only cookie.
+    // Keep the override, but fail at startup instead of sending users around a login loop.
+    if (config.baseUrl !== sessionOrigin) {
+        throw new Error('NANGO_OAUTH_SERVER_BASE_URL must match the browser-facing dashboard API origin to reuse its session');
+    }
     return {
-        config: parseOAuthServerConfig({
-            baseUrl: envs.NANGO_OAUTH_SERVER_BASE_URL,
-            cookieKeys: envs.NANGO_OAUTH_SERVER_COOKIE_KEYS,
-            encryptionKey: dek.get(),
-            jwks: envs.NANGO_OAUTH_SERVER_JWKS
-        }),
+        config,
         resources
     };
 }

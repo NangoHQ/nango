@@ -8,6 +8,18 @@ const JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoibWF0ZWpAbmFuZ28uZG
 const UUID = '8f14e45f-ceea-467a-9b0d-1e0a1b2c3d4e';
 
 describe('redactSensitiveText', () => {
+    it('redacts issuer interactions, handoffs and OAuth callbacks', () => {
+        expect(redactSensitiveText('/oauth/consent/secret-uid')).toBe('/oauth/consent/[redacted]');
+        expect(redactSensitiveText('/oauth/continue/secret-uid')).toBe('/oauth/continue/[redacted]');
+        expect(redactSensitiveText('/oauth/interaction/secret-uid/approve')).toBe('/oauth/interaction/[redacted]/approve');
+        expect(redactSensitiveText('https://id.nango.dev/oauth/handoff/callback?code=secret')).toBe(
+            'https://id.nango.dev/oauth/handoff/callback?code=[redacted]'
+        );
+        expect(redactSensitiveText('/oauth/continue?state=secret')).toBe('/oauth/continue?state=[redacted]');
+        expect(redactSensitiveText('/signin?next=%2Foauth%2Fcontinue%3Fstate%3Dsecret')).not.toContain('secret');
+        expect(redactSensitiveText('https://client.example/callback?code=secret&state=secret')).not.toContain('secret');
+        expect(redactSensitiveText('/oauth/authorize?client_id=secret&redirect_uri=secret&code_challenge=secret')).not.toContain('secret');
+    });
     it('redacts the reset password token from a full url', () => {
         expect(redactSensitiveText(`https://app.nango.dev/reset-password/${JWT}`)).toBe('https://app.nango.dev/reset-password/[redacted]');
     });

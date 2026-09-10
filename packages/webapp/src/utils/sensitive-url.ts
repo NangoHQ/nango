@@ -10,6 +10,7 @@ const TOKEN_SEGMENT = String.raw`[^/?#&:\s"';]+`;
 // static `expired` and `verification` segments as tokens. Case-insensitive: react-router
 // matches routes case-insensitively, so /Signup/<token> serves the page too.
 const SENSITIVE_PATH_PATTERNS = [
+    new RegExp(String.raw`(/oauth/(?:consent|continue|interaction|authorize)/)${TOKEN_SEGMENT}`, 'gi'),
     new RegExp(String.raw`(/reset-password/)${TOKEN_SEGMENT}`, 'gi'),
     new RegExp(String.raw`(/signup/verification/)${TOKEN_SEGMENT}`, 'gi'),
     new RegExp(String.raw`(/verify-email/expired/)${TOKEN_SEGMENT}`, 'gi'),
@@ -23,7 +24,8 @@ const SENSITIVE_PATH_PATTERNS = [
 
 // Signin carries tokens in ?next=/<token route>/<token>, raw or percent-encoded. The path
 // patterns above only see literal slashes, and a percent-encoded uuid has no jwt catch-all.
-const NEXT_PARAM_PATTERN = /(next=(?:%2F|\/)(?:signup|reset-password|verify-email)(?:%2F|\/))[^&#\s"';]+/gi;
+const NEXT_PARAM_PATTERN = /(next=(?:%2F|\/)(?:signup|reset-password|verify-email|oauth)(?:%2F|\/))[^&#\s"';]+/gi;
+const OAUTH_QUERY_PATTERN = /([?&](?:code|state|code_challenge|redirect_uri|client_id)=)[^&#\s"';]+/gi;
 
 // No leading \b: a percent-encoded delimiter ends in a word char ('%2F'), which defeats it.
 const JWT_PATTERN = /eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]+/g;
@@ -31,7 +33,7 @@ const JWT_PATTERN = /eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]+/g;
 // Every string the patterns above can match contains one of these, so skipping on a miss can
 // never skip a redaction. Keep that true when adding a pattern: no delimiters, they vary by
 // encoding and case (`/signup/`, `%2Fsignup%2F`, `%2fsignup/`, …).
-const HINTS = ['reset-password', 'email', 'signup', 'invite', 'eyj'];
+const HINTS = ['reset-password', 'email', 'signup', 'invite', 'eyj', 'oauth', 'code=', 'state=', 'code_challenge=', 'redirect_uri=', 'client_id='];
 
 /**
  * Removes auth tokens from URLs and URL-shaped strings before they reach PostHog or Sentry.
@@ -52,6 +54,7 @@ export function redactSensitiveText(value: string): string {
         redacted = redacted.replace(pattern, `$1${REDACTED}`);
     }
     redacted = redacted.replace(NEXT_PARAM_PATTERN, `$1${REDACTED}`);
+    redacted = redacted.replace(OAUTH_QUERY_PATTERN, `$1${REDACTED}`);
 
     return redacted.replace(JWT_PATTERN, REDACTED);
 }

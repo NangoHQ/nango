@@ -22,6 +22,7 @@ import { envs } from '../env.js';
 import { agentSessionTokenSchema, connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
 import * as agentSessionService from '../services/agentSession.service.js';
 import * as connectSessionService from '../services/connectSession.service.js';
+import { loadSessionIdentity } from '../utils/sessionIdentity.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AgentSession, ApiKeyContext, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
@@ -707,17 +708,13 @@ export class AccessMiddleware {
  */
 async function fillLocalsFromSession(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
     try {
-        const user = await userService.getUserById(req.user!.id);
-        if (!user) {
+        const identity = await loadSessionIdentity(req.user!.id);
+        if (!identity) {
             res.status(401).send({ error: { code: 'unknown_user' } });
             return;
         }
 
-        const account = await accountService.getAccountById(db.knex, user.account_id);
-        if (!account) {
-            res.status(401).send({ error: { code: 'unknown_account' } });
-            return;
-        }
+        const { user, account } = identity;
 
         let plan: DBPlan | null = null;
         if (flagHasPlan) {

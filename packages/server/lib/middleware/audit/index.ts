@@ -88,3 +88,4 @@ export {
 } from './sync.middleware.js';
 export { auditTeamUpdated } from './team.middleware.js';
 export { auditUserUpdated } from './user.middleware.js';
+export { auditOAuthApproved, auditOAuthDenied } from './oauth.middleware.js';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
@@ -9,11 +9,12 @@ import { useOnboardingAccountDiscovery, usePostOnboardingRequestInvite } from '@
 import DefaultLayout from '@/layout/DefaultLayout';
 import { track } from '@/utils/analytics';
 import { APIError } from '@/utils/api';
-
-const hearAboutUsRoute = '/onboarding/hear-about-us';
+import { oauthContinuation } from '../OAuth/api';
 
 export const AccountDiscovery: React.FC = () => {
     const navigate = useNavigate();
+    const next = oauthContinuation(useLocation().search);
+    const hearAboutUsRoute = `/onboarding/hear-about-us${next ? `?next=${encodeURIComponent(next)}` : ''}`;
     const { data, isLoading, error } = useOnboardingAccountDiscovery();
     const { mutateAsync: requestInvite, isPending: isRequestingInvite } = usePostOnboardingRequestInvite();
     const [requestError, setRequestError] = useState<'retry' | 'contact_admin' | null>(null);
@@ -40,7 +41,7 @@ export const AccountDiscovery: React.FC = () => {
             // If there are no recommendations, redirect the user to hear-about-us:
             navigate(hearAboutUsRoute, { replace: true });
         }
-    }, [data, error, navigate]);
+    }, [data, error, navigate, hearAboutUsRoute]);
 
     if (isLoading || !data?.data.suggestedAccountName) {
         return <AccountDiscoveryLoading />;

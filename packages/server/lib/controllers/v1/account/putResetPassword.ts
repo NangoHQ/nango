@@ -6,6 +6,7 @@ import { pbkdf2, userService } from '@nangohq/shared';
 import { PBKDF2_ITERATIONS, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { deleteUserSessions } from '../../../clients/auth.client.js';
+import { revokeUserOAuthGrants } from '../../../oauth/grants.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
 import { isStepUpRefused, isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from './mfa/stepUp.js';
@@ -72,6 +73,7 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
         user.reset_password_token = null;
         await userService.editUserPassword(user, trx);
         await deleteUserSessions(user.id, { trx });
+        await revokeUserOAuthGrants(user.id, trx);
         return 'reset' as const;
     });
 

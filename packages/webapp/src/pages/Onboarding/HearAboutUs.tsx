@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Button } from '@nangohq/design-system';
 
@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { useOnboardingHearAboutUs, usePostOnboardingHearAboutUs } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { track } from '../../utils/analytics';
+import { oauthContinuation } from '../OAuth/api';
 
 import type { PostOnboardingHearAboutUs } from '@nangohq/types';
 
@@ -23,19 +24,20 @@ const HEAR_ABOUT_OPTIONS: { label: string; value: PostOnboardingHearAboutUs['Bod
 
 export const HearAboutUs: React.FC = () => {
     const navigate = useNavigate();
+    const destination = oauthContinuation(useLocation().search) ?? '/';
 
     const { data, isLoading, error } = useOnboardingHearAboutUs();
     const { mutateAsync: postHearAboutUs, isPending } = usePostOnboardingHearAboutUs();
 
     useEffect(() => {
         if (error) {
-            navigate('/', { replace: true });
+            navigate(destination, { replace: true });
             return;
         }
         if (data && !data.data.showHearAboutUs) {
-            navigate('/', { replace: true });
+            navigate(destination, { replace: true });
         }
-    }, [data, error, navigate]);
+    }, [data, error, navigate, destination]);
 
     const submit = async (source: PostOnboardingHearAboutUs['Body']['source']) => {
         track('web:signup:hear_about', { source });
@@ -43,7 +45,7 @@ export const HearAboutUs: React.FC = () => {
             await postHearAboutUs({ source });
         } finally {
             // Don't block on errors as this is not critical
-            navigate('/', { replace: true });
+            navigate(destination, { replace: true });
         }
     };
 
@@ -77,7 +79,7 @@ export const HearAboutUs: React.FC = () => {
 
             <div className="flex w-full flex-col gap-4">
                 {HEAR_ABOUT_OPTIONS.map(({ label, value }) => (
-                    <Button variant="outline" key={value} loading={isPending} onClick={() => submit(value)} className="w-full p-3 h-auto justify-start">
+                    <Button variant="outline" key={value} loading={isPending} onClick={() => submit(value)}>
                         {label}
                     </Button>
                 ))}

@@ -2,6 +2,8 @@ import helmet from 'helmet';
 
 import { basePublicUrl, baseUrl, connectUrl, connectUrlAsDocumentBase, dashboardApiUrl } from '@nangohq/utils';
 
+import { getOAuthServerConfig } from '../oauth/config.js';
+
 import type { RequestHandler } from 'express';
 
 // CSP path matching: no trailing slash = exact match (URL older SDKs load), with = prefix match (assets/routes).
@@ -22,6 +24,7 @@ export function securityMiddlewares(): RequestHandler[] {
     const apiCspSources = dashboardApiUrl === '/' ? [hostApi] : [...new Set([hostApi, dashboardApiUrl])];
     const apiWsCspSources = dashboardApiUrl === '/' ? [hostWs] : [...new Set([hostWs, websocketOrigin(dashboardApiUrl)])];
     const reportOnly = process.env['CSP_REPORT_ONLY'];
+    const oauthServerUrl = getOAuthServerConfig()?.config.baseUrl;
 
     return [
         helmet.xssFilter(),
@@ -48,6 +51,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://*.sentry.io',
                     hostPublic,
                     ...apiCspSources,
+                    ...(oauthServerUrl ? [oauthServerUrl] : []),
                     ...apiWsCspSources,
                     ...connectUrlCspSources,
                     'https://*.posthog.com',

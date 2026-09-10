@@ -24,6 +24,7 @@ import { deleteProviderConfigData } from '../deletion/deleteProviderConfigData.j
 import { deleteSyncConfigData } from '../deletion/deleteSyncConfigData.js';
 import { deleteSyncs } from '../deletion/deleteSyncs.js';
 import { envs } from '../env.js';
+import { cleanOAuthConsent } from '../oauth/grants.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
 import oauthSessionService from '../services/oauth-session.service.js';
 
@@ -129,6 +130,9 @@ export async function exec(): Promise<void> {
             name: 'oauth server artifacts',
             deleteFn: async () => await deleteExpiredOAuthArtifacts(db.knex, limit)
         });
+
+        // One bounded batch per run, including compensation for stale pending grants.
+        await cleanOAuthConsent(limit);
 
         // Delete invitations
         await batchDelete({

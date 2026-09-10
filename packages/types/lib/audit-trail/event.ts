@@ -40,6 +40,11 @@ export type AuditInterface = 'api' | 'mcp';
 // without a declared payload shape, and a shape cannot be declared for an action that does not exist.
 // `never` means the action carries no metadata.
 interface AuditEventTable {
+    oauth_grant: {
+        approved: never;
+        denied: never;
+        revoked: never;
+    };
     connection: {
         created: ConnectionMetadata;
         updated: ConnectionUpdatedMetadata;
@@ -137,7 +142,7 @@ export type AuditMetadataFor<R extends AuditResource, A> = A extends keyof Audit
 
 export type AuditScope = 'account' | 'environment';
 
-export type AuditTargetType = 'connection' | 'sync' | 'function' | 'integration' | 'api_key' | 'member' | 'team' | 'user' | 'environment';
+export type AuditTargetType = 'connection' | 'sync' | 'function' | 'integration' | 'api_key' | 'member' | 'team' | 'user' | 'environment' | 'oauth_grant';
 
 export interface AuditActor {
     type: AuditActorType;

@@ -13,6 +13,7 @@ import type { PostOnboardingHearAboutUs, UsageMetric } from '@nangohq/types';
  * Property values must be PostHog-serializable primitives (string | number | boolean).
  */
 export interface AnalyticsEvents {
+    'web:oauth:consent_decided': { decision: 'approve' | 'deny' };
     // Usage page (Billing)
     'web:usage:viewed': Record<string, never>;
     'web:usage:month_changed': { direction: 'previous' | 'next' };
