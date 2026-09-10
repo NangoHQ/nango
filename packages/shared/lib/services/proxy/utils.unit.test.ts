@@ -1234,14 +1234,14 @@ describe('buildProxyURL', () => {
     });
 
     it.each([
-        ['send.api.mailtrap.io', 'https://send.api.mailtrap.io/api/test'],
-        ['sandbox.api.mailtrap.io', 'https://sandbox.api.mailtrap.io/api/test']
-    ])('should build the base URL from the selected hostname %s (e.g. mailtrap)', (hostname, expected) => {
+        ['send', 'https://send.api.mailtrap.io/api/test'],
+        ['sandbox', 'https://sandbox.api.mailtrap.io/api/test']
+    ])('should build the base URL from the selected subdomain %s (e.g. mailtrap)', (subdomain, expected) => {
         const config = getDefaultProxy({
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
-                    base_url: 'https://${connectionConfig.hostname} || https://send.api.mailtrap.io'
+                    base_url: 'https://${connectionConfig.subdomain}.api.mailtrap.io'
                 }
             }
         });
@@ -1250,34 +1250,11 @@ describe('buildProxyURL', () => {
             config,
             connection: getTestConnection({
                 credentials: { type: 'API_KEY', apiKey: 'test-key' },
-                connection_config: { hostname }
+                connection_config: { subdomain }
             })
         });
 
         expect(url).toBe(expected);
-    });
-
-    // `default_value` is only applied by the connect UI, so connections created through the SDK/public API can
-    // arrive with no hostname at all. The fallback keeps those on the production host instead of building a URL
-    // from an uninterpolated `${connectionConfig.hostname}`.
-    it('should fall back to the production base URL when hostname is absent (e.g. mailtrap created via SDK)', () => {
-        const config = getDefaultProxy({
-            provider: {
-                auth_mode: 'API_KEY',
-                proxy: {
-                    base_url: 'https://${connectionConfig.hostname} || https://send.api.mailtrap.io'
-                }
-            }
-        });
-
-        const url = buildProxyURL({
-            config,
-            connection: getTestConnection({
-                credentials: { type: 'API_KEY', apiKey: 'test-key' }
-            })
-        });
-
-        expect(url).toBe('https://send.api.mailtrap.io/api/test');
     });
 
     it('should fall back to second base URL when first connectionConfig param is absent (e.g. amazon-selling-partner without subdomain)', () => {

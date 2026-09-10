@@ -13832,7 +13832,7 @@ mailtrap:
         - marketing
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.hostname} || https://send.api.mailtrap.io
+        base_url: https://${connectionConfig.subdomain}.api.mailtrap.io
         headers:
             api-token: ${apiKey}
     docs: https://nango.dev/docs/api-integrations/mailtrap
@@ -13842,21 +13842,19 @@ mailtrap:
             type: string
             title: API Token
             description: Your Mailtrap API token.
-            example: '0123456789abcdef0123456789abcdef'
+            example: a1b2c3d4********************e5f6
             pattern: '^[a-f0-9]{32}$'
             secret: true
             doc_section: '#step-2-getting-your-api-token'
     connection_config:
-        hostname:
+        subdomain:
             type: string
-            title: API Hostname
-            description: The Mailtrap API host to connect to.
-            default_value: send.api.mailtrap.io
-            format: hostname
+            title: API Environment
+            description: The Mailtrap API environment to connect to. Use 'send' for live or 'sandbox' for sandbox.
             order: 1
             enum:
-                - send.api.mailtrap.io
-                - sandbox.api.mailtrap.io
+                - send
+                - sandbox
             doc_section: '#step-1-choose-your-environment'
 
 mandrill:
