@@ -59,6 +59,11 @@ export const Usage: React.FC = () => {
     const { data: projected, isPending: projectedPending, isError: projectedError } = useApiGetProjectedCosts(env, timeframe, { enabled: isMigrating });
     const projectedCharges = buildProjectedCharges({ enabled: isMigrating, isPending: projectedPending, isError: projectedError, data: projected });
 
+    // Orb reports no per-metric costs for a plan `isSpendPlan` excludes, so there is no column to
+    // compare against and both tables drop it.
+    const comparing = isMigrating && orbChargesEnabled;
+    const projectedNote = 'Estimated amount based on new rates.';
+
     if (usageError) {
         return (
             <div className="w-full flex flex-col gap-6">
@@ -145,11 +150,17 @@ export const Usage: React.FC = () => {
                 env={env}
                 timeframe={timeframe}
                 chartMode="daily"
-                variant={isMigrating ? 'comparison' : charges ? 'charges' : 'usage'}
+                variant={comparing ? 'comparison' : charges ? 'charges' : 'usage'}
                 charges={charges}
                 currentPlanTitle={transition?.fromTitle}
-                currentPlanTooltip={transition ? `Plan active until ${transition.at}.` : undefined}
-                projectedTooltip={isMigrating ? 'Estimated amount based on new rates.' : undefined}
+                {...(comparing
+                    ? {
+                          rightmostTooltip: transition ? `Plan active until ${transition.at}.` : undefined,
+                          extraTooltip: projectedNote
+                      }
+                    : isMigrating
+                      ? { rightmostHeader: 'Pay-as-you-go plan', rightmostTooltip: projectedNote }
+                      : {})}
             />
 
             {isMigrating && (
@@ -175,7 +186,7 @@ export const Usage: React.FC = () => {
                     env={env}
                     timeframe={timeframe}
                     chartMode="daily"
-                    variant="comparison"
+                    variant={comparing ? 'comparison' : 'usage'}
                     currentPlanTitle={transition?.fromTitle}
                     legacy
                 />

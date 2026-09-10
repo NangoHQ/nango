@@ -32,17 +32,23 @@ interface UsageTableProps {
     onRowOpenChange?: (metric: UsageMetric, open: boolean) => void;
     currentPlanTitle?: string;
     legacy?: boolean;
-    currentPlanTooltip?: string;
-    projectedTooltip?: string;
+    /** Overrides the rightmost column's header, which otherwise names the current plan. */
+    rightmostHeader?: string;
+    rightmostTooltip?: string;
+    extraTooltip?: string;
 }
 
 /** The two right-hand column headers, which differ by variant. */
-function usageColumnHeaders(variant: UsageTableProps['variant'], currentPlanTitle?: string): { thisPeriod: string; rightmost: string; extra?: string } {
+function usageColumnHeaders(
+    variant: UsageTableProps['variant'],
+    currentPlanTitle?: string,
+    rightmostHeader?: string
+): { thisPeriod: string; rightmost: string; extra?: string } {
     switch (variant) {
         case 'caps':
             return { thisPeriod: 'Used / Limit', rightmost: '% of limit' };
         case 'charges':
-            return { thisPeriod: 'This period', rightmost: 'Charges' };
+            return { thisPeriod: 'This period', rightmost: rightmostHeader ?? 'Charges' };
         case 'comparison':
             return { thisPeriod: 'This period', rightmost: `${currentPlanTitle ?? 'Current'} plan`, extra: 'Pay-as-you-go plan' };
         case 'usage':
@@ -66,10 +72,11 @@ export const UsageTable: React.FC<UsageTableProps> = ({
     onRowOpenChange,
     currentPlanTitle,
     legacy,
-    currentPlanTooltip,
-    projectedTooltip
+    rightmostHeader,
+    rightmostTooltip,
+    extraTooltip
 }) => {
-    const { thisPeriod, rightmost, extra } = usageColumnHeaders(variant, currentPlanTitle);
+    const { thisPeriod, rightmost, extra } = usageColumnHeaders(variant, currentPlanTitle, rightmostHeader);
     return (
         <div className="w-full rounded border border-border-default overflow-hidden">
             <div className={cn(usageRowGrid(variant), 'bg-surface-panel py-3 border-b border-border-default text-text-secondary type-label-xxs uppercase')}>
@@ -77,18 +84,18 @@ export const UsageTable: React.FC<UsageTableProps> = ({
                 <span>{thisPeriod}</span>
                 <span className="flex items-center gap-1.5">
                     {rightmost}
-                    {currentPlanTooltip && (
+                    {rightmostTooltip && (
                         <InfoTooltip side="top" align="start">
-                            {currentPlanTooltip}
+                            {rightmostTooltip}
                         </InfoTooltip>
                     )}
                 </span>
                 {extra && (
                     <span className="flex items-center gap-1.5">
                         {!legacy && extra}
-                        {!legacy && projectedTooltip && (
+                        {!legacy && extraTooltip && (
                             <InfoTooltip side="top" align="end">
-                                {projectedTooltip}
+                                {extraTooltip}
                             </InfoTooltip>
                         )}
                     </span>
