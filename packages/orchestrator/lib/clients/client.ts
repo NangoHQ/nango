@@ -762,13 +762,4 @@ export function isDuplicateTaskNameClientError(err: unknown): boolean {
     return error.name === 'duplicate_task_name';
 }
 
-export function isDuplicateScheduleNameClientError(err: unknown): boolean {
-    if (!err || typeof err !== 'object') {
-        return false;
-    }
-
-    const error = err as { name?: string };
-    return error.name === 'duplicate_schedule_name';
-}
-
 export type ExecuteBatchEntryResult = Result<{ taskId: string; retryKey: string }, ClientError>;

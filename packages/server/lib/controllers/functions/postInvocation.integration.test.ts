@@ -67,12 +67,14 @@ async function seedFunction(trigger?: FunctionTriggerDefinition) {
     const { apiKey, env } = await seedAccount(['environment:functions:invocations']);
     const integration = await seeders.createConfigSeed(env, 'github', 'github');
     const connection = await seeders.createConnectionSeed({ env, provider: integration.unique_key, connectionId: 'test-connection' });
-    await functionConfigService.upsert(db.knex, {
-        environmentId: env.id,
-        integrationId: integration.unique_key,
-        name: 'test-function',
-        version: functionVersion(trigger)
-    });
+    await functionConfigService.upsert(db.knex, [
+        {
+            environmentId: env.id,
+            integrationId: integration.unique_key,
+            name: 'test-function',
+            version: functionVersion(trigger)
+        }
+    ]);
 
     return { apiKey, connection, integration, env };
 }

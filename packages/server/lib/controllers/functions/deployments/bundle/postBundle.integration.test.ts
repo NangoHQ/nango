@@ -3,7 +3,6 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
 import { configService, functionConfigService, remoteFileService, seeders } from '@nangohq/shared';
-import { Err } from '@nangohq/utils';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
@@ -212,10 +211,10 @@ describe('function deployment bundle endpoints', () => {
         const uploadSpy = vi.spyOn(remoteFileService, 'upload').mockImplementation(({ destinationPath }) => Promise.resolve(destinationPath));
         const originalUpsert = functionConfigService.upsert;
         const upsertSpy = vi.spyOn(functionConfigService, 'upsert').mockImplementation(async (trx, params) => {
-            if (params.integrationId === 'gitlab') {
-                return Err(new Error('Failed to upsert function'));
-            }
-            return await originalUpsert(trx, params);
+            return await originalUpsert(
+                trx,
+                params.map((param) => (param.integrationId === 'gitlab' ? { ...param, integrationId: 'missing-integration' } : param))
+            );
         });
         const secondFunction = {
             ...validFunction,

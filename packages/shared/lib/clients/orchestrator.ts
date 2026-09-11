@@ -47,6 +47,7 @@ import type {
     DBConnection,
     DBConnectionDecrypted,
     DBEnvironment,
+    DBFunctionInstance,
     DBSyncConfig,
     FunctionTrigger
 } from '@nangohq/types';
@@ -94,6 +95,19 @@ export interface OrchestratorClientInterface {
     searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn>;
     getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<GetOutputReturn>;
 }
+
+const FunctionScheduleId = {
+    get: ({ environmentId, id }: { environmentId: number; id: number }): string => {
+        return `environment:${environmentId}:function:${id}`;
+    },
+    parse: (id: string): Result<{ environmentId: number; id: number }> => {
+        const parts = id.split(':');
+        if (parts.length !== 4 || parts[0] !== 'environment' || isNaN(Number(parts[1])) || parts[2] !== 'function' || !parts[3] || isNaN(Number(parts[3]))) {
+            return Err(`Invalid function id: ${id}. expected format: environment:<environmentId>:function:<id>`);
+        }
+        return Ok({ environmentId: Number(parts[1]), id: Number(parts[3]) });
+    }
+};
 
 const ScheduleName = {
     get: ({ environmentId, syncId }: { environmentId: number; syncId: string }): string => {
@@ -924,6 +938,52 @@ export class Orchestrator {
             }
             return Err(new Error('Failed to schedule sync', { cause: err }));
         }
+    }
+
+    async scheduleFunctions(
+        functions: {
+            connection: ConnectionInternal;
+            instance: DBFunctionInstance;
+            frequency: string;
+            autoStart: boolean;
+        }[]
+    ): Promise<Result<void>> {
+        try {
+            // TODO: batch recurring
+            for (const { instance, connection, frequency, autoStart } of functions) {
+                const environmentId = connection.environment_id;
+                const frequencyMs = this.getFrequencyMs(instance.frequency || frequency);
+                if (frequencyMs.isErr()) {
+                    return Err(frequencyMs.error);
+                }
+                const schedule = await this.client.recurring({
+                    name: FunctionScheduleId.get({ environmentId: connection.environment_id, id: instance.id }),
+                    state: autoStart ? 'STARTED' : 'PAUSED',
+                    frequencyMs: frequencyMs.value,
+                    group: {
+                        key: `function:scheduled:environment:${environmentId}`,
+                        maxConcurrency: 0
+                    },
+                    retry: { max: 0 },
+                    timeoutSettingsInSecs: {
+                        createdToStarted: 60 * 60, // 1 hour
+                        startedToCompleted: 60 * 60 * 24, // 1 day
+                        heartbeat: 5 * 60 // 5 minutes
+                    },
+                    startsAt: new Date(),
+                    args: {
+                        type: 'function',
+                        instanceId: instance.id
+                    }
+                });
+                if (schedule.isErr()) {
+                    return Err(schedule.error);
+                }
+            }
+        } catch (err) {
+            return Err(new Error('Failed to schedule functions', { cause: err }));
+        }
+        return Ok(undefined);
     }
 
     private getFrequencyMs(runs: string): Result<number> {
