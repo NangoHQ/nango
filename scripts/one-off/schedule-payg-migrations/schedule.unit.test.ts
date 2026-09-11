@@ -15,10 +15,9 @@ afterEach(() => {
 });
 
 describe('pay-as-you-go migration arguments', () => {
-    it('accepts a mode, CSV path, and optional execute guard', () => {
-        expect(parseArgs(['test', './customers.csv'])).toEqual({ mode: 'test', inputPath: './customers.csv', execute: false, throttleMs: DEFAULT_THROTTLE_MS });
-        expect(parseArgs(['live', './customers.csv', '--execute', '--throttle-ms=500'])).toEqual({
-            mode: 'live',
+    it('accepts a CSV path and optional execution settings', () => {
+        expect(parseArgs(['./customers.csv'])).toEqual({ inputPath: './customers.csv', execute: false, throttleMs: DEFAULT_THROTTLE_MS });
+        expect(parseArgs(['./customers.csv', '--execute', '--throttle-ms=500'])).toEqual({
             inputPath: './customers.csv',
             execute: true,
             throttleMs: 500
@@ -26,10 +25,11 @@ describe('pay-as-you-go migration arguments', () => {
     });
 
     it('rejects unexpected or incomplete arguments', () => {
-        expect(() => parseArgs(['test'])).toThrow('Usage:');
-        expect(() => parseArgs(['staging', './customers.csv'])).toThrow('Usage:');
-        expect(() => parseArgs(['test', './customers.csv', '--force'])).toThrow('Usage:');
-        expect(() => parseArgs(['test', './customers.csv', '--throttle-ms=-1'])).toThrow('non-negative integer');
+        expect(() => parseArgs([])).toThrow('Usage:');
+        expect(() => parseArgs(['./customers.csv', './another.csv'])).toThrow('Usage:');
+        expect(() => parseArgs(['./customers.csv', '--force'])).toThrow('Usage:');
+        expect(() => parseArgs(['./customers.csv', '--throttle-ms=-1'])).toThrow('non-negative integer');
+        expect(() => parseArgs(['./customers.csv', '--throttle-ms='])).toThrow('non-negative integer');
     });
 });
 
@@ -65,7 +65,6 @@ describe('pay-as-you-go migration scheduling', () => {
                 }
             },
             rows,
-            mode: 'test',
             execute: false
         });
 
@@ -90,8 +89,8 @@ describe('pay-as-you-go migration scheduling', () => {
         const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
         const client = { subscriptions: { list, fetchSchedule: vi.fn().mockReturnValue(listResult([])), schedulePlanChange: vi.fn() } };
 
-        await scheduleMigrations({ client, rows, mode: 'test', execute: false });
-        const summary = await scheduleMigrations({ client, rows, mode: 'test', execute: false });
+        await scheduleMigrations({ client, rows, execute: false });
+        const summary = await scheduleMigrations({ client, rows, execute: false });
 
         expect(summary).toEqual({ dryRun: 0, scheduled: 0, skipped: 1, failed: 0 });
         expect(client.subscriptions.schedulePlanChange).not.toHaveBeenCalled();
@@ -114,7 +113,6 @@ describe('pay-as-you-go migration scheduling', () => {
                 }
             },
             rows,
-            mode: 'test',
             execute: true,
             throttleMs: 0
         });
@@ -141,7 +139,6 @@ describe('pay-as-you-go migration scheduling', () => {
                 { accountId: '123', currentPlan: 'growth-legacy' },
                 { accountId: '456', currentPlan: 'starter-legacy' }
             ],
-            mode: 'test',
             execute: false
         });
 
@@ -169,7 +166,6 @@ describe('pay-as-you-go migration scheduling', () => {
                 { accountId: '123', currentPlan: 'growth-legacy' },
                 { accountId: '456', currentPlan: 'starter-legacy' }
             ],
-            mode: 'test',
             execute: true,
             throttleMs: 250
         });
@@ -201,7 +197,6 @@ describe('pay-as-you-go migration scheduling', () => {
                 }
             },
             rows: [{ accountId: '68', currentPlan: 'growth-v2' }],
-            mode: 'test',
             execute: true,
             throttleMs: 0
         });

@@ -7,8 +7,6 @@ import { parseMigrationCsv } from './csv.js';
 
 import type { MigrationRow } from './csv.js';
 
-export type Mode = 'test' | 'live';
-
 interface OrbSubscription {
     id: string;
     customer: { external_customer_id: string | null };
@@ -43,41 +41,43 @@ export interface Summary {
 
 export const DEFAULT_THROTTLE_MS = 2_000;
 
-const PAYG_EXTERNAL_PLAN_IDS: Record<Mode, string> = {
-    test: 'pay-as-you-go',
-    live: 'pay-as-you-go'
-};
+const PAYG_EXTERNAL_PLAN_ID = 'pay-as-you-go';
 
 const SUBSCRIPTION_LOOKUP_BATCH_SIZE = 100;
 
 function usage(): string {
-    return 'Usage: npx tsx scripts/one-off/schedule-payg-migrations/schedule.ts <test|live> <input.csv> [--execute] [--throttle-ms=<milliseconds>]';
+    return 'Usage: npx tsx scripts/one-off/schedule-payg-migrations/schedule.ts <input.csv> [--execute] [--throttle-ms=<milliseconds>]';
 }
 
-export function parseArgs(args: string[]): { mode: Mode; inputPath: string; execute: boolean; throttleMs: number } {
+export function parseArgs(args: string[]): { inputPath: string; execute: boolean; throttleMs: number } {
     const execute = args.includes('--execute');
     const throttleArgument = args.find((arg) => arg.startsWith('--throttle-ms='));
     const positional = args.filter((arg) => arg !== '--execute' && arg !== throttleArgument);
 
     if (
-        positional.length !== 2 ||
+        positional.length !== 1 ||
         args.some((arg) => arg.startsWith('--') && arg !== '--execute' && arg !== throttleArgument) ||
         args.filter((arg) => arg.startsWith('--throttle-ms=')).length > 1
     ) {
         throw new Error(usage());
     }
 
-    const [mode, inputPath] = positional;
-    if ((mode !== 'test' && mode !== 'live') || !inputPath) {
+    const [inputPath] = positional;
+    if (!inputPath) {
         throw new Error(usage());
     }
 
-    const throttleMs = throttleArgument ? Number(throttleArgument.slice('--throttle-ms='.length)) : DEFAULT_THROTTLE_MS;
+    const throttleValue = throttleArgument?.slice('--throttle-ms='.length);
+    if (throttleValue === '') {
+        throw new Error('--throttle-ms must be a non-negative integer');
+    }
+
+    const throttleMs = throttleValue === undefined ? DEFAULT_THROTTLE_MS : Number(throttleValue);
     if (!Number.isSafeInteger(throttleMs) || throttleMs < 0) {
         throw new Error('--throttle-ms must be a non-negative integer');
     }
 
-    return { mode, inputPath, execute, throttleMs };
+    return { inputPath, execute, throttleMs };
 }
 
 function logSkip(accountId: string, reason: string): void {
@@ -144,17 +144,15 @@ async function getActiveSubscriptionsByAccountId(
 export async function scheduleMigrations({
     client,
     rows,
-    mode,
     execute,
     throttleMs = DEFAULT_THROTTLE_MS
 }: {
     client: ScheduleClient;
     rows: MigrationRow[];
-    mode: Mode;
     execute: boolean;
     throttleMs?: number;
 }): Promise<Summary> {
-    const planExternalId = PAYG_EXTERNAL_PLAN_IDS[mode];
+    const planExternalId = PAYG_EXTERNAL_PLAN_ID;
     const summary: Summary = { dryRun: 0, scheduled: 0, skipped: 0, failed: 0 };
     let hasAttemptedSchedule = false;
 
@@ -242,20 +240,20 @@ export async function scheduleMigrations({
 }
 
 async function main(): Promise<void> {
-    const { mode, inputPath, execute, throttleMs } = parseArgs(process.argv.slice(2));
+    const { inputPath, execute, throttleMs } = parseArgs(process.argv.slice(2));
     const apiKey = process.env['ORB_API_KEY'];
     if (!apiKey) {
         throw new Error('ORB_API_KEY is not set');
     }
 
     const rows = parseMigrationCsv(await readFile(inputPath, 'utf8'));
-    console.log(`Loaded ${rows.length} CSV row(s) for Orb ${mode} mode.`);
+    console.log(`Loaded ${rows.length} CSV row(s).`);
     if (!execute) {
         console.log('Dry-run only. Review the output, then rerun with --execute to schedule eligible migrations.');
     }
 
     const client = new Orb({ apiKey });
-    const summary = await scheduleMigrations({ client, rows, mode, execute, throttleMs });
+    const summary = await scheduleMigrations({ client, rows, execute, throttleMs });
     if (summary.failed > 0) {
         process.exitCode = 1;
     }
