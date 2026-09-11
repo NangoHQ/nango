@@ -129,15 +129,14 @@ const close = once(() => {
 
     cron.getTasks().forEach((task) => task.stop());
 
-    // server.close() waits for every open connection and an upgraded websocket never closes on its
-    // own, so terminating the clients from inside its callback waits on itself forever.
+    // server.close() runs its callback only once every connection is gone, and an upgraded websocket
+    // never closes on its own. Terminate the clients here, not in that callback.
     wss.close();
     for (const client of wss.clients) {
         client.terminate();
     }
 
-    // Each await below reaches an external service and can hang, leaving the process alive with
-    // its database pool open.
+    // Each await below can hang on an external service, leaving the process alive with its pool open.
     setTimeout(() => {
         logger.error(`Closing did not finish within ${envs.SERVER_SHUTDOWN_TIMEOUT_MS}ms, exiting`);
         process.exit(1);
