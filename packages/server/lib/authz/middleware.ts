@@ -39,5 +39,13 @@ export function can(scope: Scope, ...or: Scope[]) {
     };
 }
 
-export const withScope = can;
-export const withAnyScope = can;
+export function resolveEnvironment(_req: Request, res: Response, next: NextFunction): void {
+    // Keys with access to a single-env will already have an environment in the locals.
+    if ((res.locals as Partial<RequestLocals>).environment) {
+        next();
+        return;
+    }
+
+    // TODO: resolve a client-supplied env (eg. through a `x-nango-environment` header)
+    next();
+}

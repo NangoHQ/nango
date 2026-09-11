@@ -2,8 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { flags } from '@nangohq/utils';
 
-import { withAnyScope as withAnyScopeAlias, withScope as withScopeAlias } from '../middleware/scope.middleware.js';
-import { can, withAnyScope, withScope } from './middleware.js';
+import { can } from './middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { ApiKeyPrincipal, DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
@@ -39,13 +38,6 @@ describe('can', () => {
     });
     afterAll(() => {
         flags.hasAuthRoles = originalFlag;
-    });
-
-    it('is the function exported as withScope and withAnyScope', () => {
-        expect(withScope).toBe(can);
-        expect(withAnyScope).toBe(can);
-        expect(withScopeAlias).toBe(can);
-        expect(withAnyScopeAlias).toBe(can);
     });
 
     it('calls next() when the principal holds the scope', () => {
