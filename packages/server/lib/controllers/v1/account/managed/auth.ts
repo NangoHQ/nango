@@ -5,6 +5,7 @@ import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 import { envs } from '../../../../env.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
+import { safeReturnTo } from '../returnTo.js';
 
 import type { InviteAccountState } from './postSignup.js';
 import type { DBInvitation, DBTeam } from '@nangohq/types';
@@ -39,10 +40,17 @@ interface ManagedAuthVerificationRequiredError {
 export function parseManagedAuthState(state: string): InviteAccountState | null {
     try {
         const res = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
-        if (!res || !(typeof res === 'object') || !('token' in res)) {
+        if (!res || !(typeof res === 'object')) {
             return null;
         }
-        return res as InviteAccountState;
+        const candidate = res as Record<string, unknown>;
+        if (candidate['token'] !== undefined && typeof candidate['token'] !== 'string') return null;
+        if (candidate['returnTo'] !== undefined && typeof candidate['returnTo'] !== 'string') return null;
+        if (candidate['token'] === undefined && candidate['returnTo'] === undefined) return null;
+        return {
+            ...(typeof candidate['token'] === 'string' ? { token: candidate['token'] } : {}),
+            ...(typeof candidate['returnTo'] === 'string' ? { returnTo: safeReturnTo(candidate['returnTo']) } : {})
+        };
     } catch {
         return null;
     }
@@ -203,7 +211,7 @@ export async function finalizeManagedAuthentication({
 
     clearManagedAuthEmailVerification(req);
 
-    let destination = '/';
+    let destination = state?.returnTo ?? '/';
     try {
         if (invitation && isNewUser) {
             // New user with an invitation: created directly in the invited team, auto-accept and proceed
@@ -213,7 +221,8 @@ export async function finalizeManagedAuthentication({
             destination = `/signup/${invitation.token}`;
         } else if (isNewUser) {
             // New user without an invitation: redirect to account discovery onboarding
-            destination = '/onboarding/account-discovery';
+            const next = state?.returnTo ? `?next=${encodeURIComponent(state.returnTo)}` : '';
+            destination = `/onboarding/account-discovery${next}`;
         }
     } catch (err) {
         report(err);

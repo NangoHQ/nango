@@ -22,6 +22,10 @@ export function buildFlags(client: FeatureFlagsClient) {
             // accountUuid is exposed as a property so strategies can allow/exclude specific accounts.
             return client.isEnabled('oauth-state-cookie-enforcement', { targetingKey: accountUuid, accountUuid }, false);
         },
+        /** Whether OAuth consent is enabled for this account. Default `false`. */
+        isOAuthServerConsentEnabled(accountUuid: string) {
+            return client.isEnabled('oauth-server-consent', { targetingKey: accountUuid, accountUuid }, false);
+        },
         isAttioWebhookDedupeEnabled(accountUuid: string) {
             return client.isEnabled('attio-webhook-dedupe', { targetingKey: accountUuid, accountUuid }, false);
         },

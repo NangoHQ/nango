@@ -17,6 +17,21 @@ declare global {
             managedSignup?: boolean;
             authSucceeded?: boolean;
             authPendingMfa?: { userId: number };
+            oauthConsent?: {
+                userId: number;
+                userEmail: string;
+                accountId: number;
+                clientHostname: string;
+                resourceHostnames: string[];
+                scopes: string[];
+                productGrantId?: string;
+            };
+            oauthGrantRevocations?: {
+                userId: number;
+                userEmail: string;
+                accountId: number;
+                grants: Array<{ id: string; resourceHostnames: string[]; scopes: string[] }>;
+            };
             connectionUpsert?: {
                 operation: import('@nangohq/types').AuthOperationType;
                 connectionId: string;

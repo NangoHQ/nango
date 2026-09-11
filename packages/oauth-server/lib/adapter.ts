@@ -26,6 +26,24 @@ interface OAuthAdapterOptions {
     encryptionKey: string;
 }
 
+export function hashOAuthIdentifier(value: string, encryptionKey: string): Buffer {
+    return createArtifactCrypto(encryptionKey).hash(value);
+}
+
+export async function revokeOAuthGrantByHash({
+    knex,
+    encryptionKey,
+    grantIdHash,
+    reason
+}: OAuthAdapterOptions & { grantIdHash: Buffer; reason: string }): Promise<void> {
+    const crypto = createArtifactCrypto(encryptionKey);
+    const now = new Date();
+    await knex.transaction(async (trx) => {
+        await lockGrant(trx, grantIdHash);
+        await revokeGrant(trx, crypto, grantIdHash, now, { reason });
+    });
+}
+
 export function createOAuthAdapter(options: OAuthAdapterOptions): (model: string) => Adapter {
     return (model) => new PostgresOAuthAdapter(model, options);
 }
@@ -125,7 +143,7 @@ class PostgresOAuthAdapter implements Adapter {
             }
             if (row.consumed_at) {
                 if (row.grant_id_hash) {
-                    await this.revokeGrant(trx, row.grant_id_hash, consumedAt, { reason: 'artifact_replay' });
+                    await revokeGrant(trx, this.crypto, row.grant_id_hash, consumedAt, { reason: 'artifact_replay' });
                 }
                 return 'replayed';
             }
@@ -165,37 +183,8 @@ class PostgresOAuthAdapter implements Adapter {
 
         await this.options.knex.transaction(async (trx) => {
             await lockGrant(trx, grantIdHash);
-            await this.revokeGrant(trx, grantIdHash, now, { grantId }, expiresAt);
+            await revokeGrant(trx, this.crypto, grantIdHash, now, { grantId }, expiresAt);
         });
-    }
-
-    private async revokeGrant(
-        trx: Knex.Transaction,
-        grantIdHash: Buffer,
-        revokedAt: Date,
-        payload: Record<string, string>,
-        expiresAt = new Date(revokedAt.getTime() + OAUTH_GRANT_TTL_SECONDS * 1000)
-    ): Promise<void> {
-        await trx(OAUTH_SERVER_ARTIFACTS_TABLE)
-            .insert({
-                model: REVOCATION_MODEL,
-                artifact_id_hash: grantIdHash,
-                payload_encrypted: this.crypto.encrypt(REVOCATION_MODEL, grantIdHash, payload),
-                grant_id_hash: grantIdHash,
-                session_uid_hash: null,
-                expires_at: expiresAt,
-                consumed_at: null,
-                revoked_at: revokedAt,
-                created_at: revokedAt,
-                updated_at: revokedAt
-            })
-            .onConflict(['model', 'artifact_id_hash'])
-            .merge({ expires_at: expiresAt, revoked_at: revokedAt, updated_at: revokedAt });
-
-        await trx(OAUTH_SERVER_ARTIFACTS_TABLE)
-            .where({ grant_id_hash: grantIdHash })
-            .whereNot({ model: REVOCATION_MODEL })
-            .update({ revoked_at: revokedAt, updated_at: revokedAt });
     }
 
     private async findByHash(column: 'artifact_id_hash' | 'session_uid_hash', hash: Buffer): Promise<AdapterPayload | undefined> {
@@ -219,6 +208,36 @@ class PostgresOAuthAdapter implements Adapter {
         }
         return payload;
     }
+}
+
+async function revokeGrant(
+    trx: Knex.Transaction,
+    crypto: ReturnType<typeof createArtifactCrypto>,
+    grantIdHash: Buffer,
+    revokedAt: Date,
+    payload: Record<string, string>,
+    expiresAt = new Date(revokedAt.getTime() + OAUTH_GRANT_TTL_SECONDS * 1000)
+): Promise<void> {
+    await trx(OAUTH_SERVER_ARTIFACTS_TABLE)
+        .insert({
+            model: REVOCATION_MODEL,
+            artifact_id_hash: grantIdHash,
+            payload_encrypted: crypto.encrypt(REVOCATION_MODEL, grantIdHash, payload),
+            grant_id_hash: grantIdHash,
+            session_uid_hash: null,
+            expires_at: expiresAt,
+            consumed_at: null,
+            revoked_at: revokedAt,
+            created_at: revokedAt,
+            updated_at: revokedAt
+        })
+        .onConflict(['model', 'artifact_id_hash'])
+        .merge({ expires_at: expiresAt, revoked_at: revokedAt, updated_at: revokedAt });
+
+    await trx(OAUTH_SERVER_ARTIFACTS_TABLE)
+        .where({ grant_id_hash: grantIdHash })
+        .whereNot({ model: REVOCATION_MODEL })
+        .update({ revoked_at: revokedAt, updated_at: revokedAt });
 }
 
 function expiration(payload: AdapterPayload, expiresIn: number | undefined): Date {

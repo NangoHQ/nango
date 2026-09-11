@@ -3,6 +3,8 @@ export interface WindowEnv {
     apiUrl: string;
     /** Where the dashboard sends its own API requests. Equals `apiUrl` unless NANGO_DASHBOARD_API_URL is set. `/` means same-origin. */
     dashboardApiUrl: string;
+    /** OAuth authorization-server issuer used by the browser consent API. */
+    oauthServerUrl: string | undefined;
     publicUrl: string;
     connectUrl: string;
     gitHash: string | undefined;

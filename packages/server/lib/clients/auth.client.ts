@@ -26,6 +26,8 @@ const sessionStore = new KnexSessionStore({
     sidfieldname: 'sid'
 });
 
+let passportConfigured = false;
+
 /**
  * Delete a user's web sessions, e.g. after a password change so that other
  * devices/browsers are forced to re-authenticate. Passport stores the
@@ -58,6 +60,11 @@ export function setupAuth(app: express.Router) {
 
     app.use(passport.initialize());
     app.use(passport.session());
+
+    // The dashboard session is mounted both on the private API and on the OAuth consent API.
+    // Passport strategies and serializers are process-global, so configure them only once.
+    if (passportConfigured) return;
+    passportConfigured = true;
 
     if (flagHasAuth) {
         passport.use(
@@ -106,22 +113,22 @@ export function setupAuth(app: express.Router) {
                 const user = await userService.getUserById(0);
 
                 if (!isBasicAuthEnabled) {
-                    return void done(null, user);
+                    return done(null, user);
                 }
 
                 if (username !== process.env['NANGO_DASHBOARD_USERNAME']) {
-                    return void done(null, false);
+                    return done(null, false);
                 }
 
                 if (password !== process.env['NANGO_DASHBOARD_PASSWORD']) {
-                    return void done(null, false);
+                    return done(null, false);
                 }
 
                 if (!user) {
-                    return void done(null, false);
+                    return done(null, false);
                 }
 
-                return void done(null, user);
+                return done(null, user);
             })
         );
     }
@@ -134,7 +141,7 @@ export function setupAuth(app: express.Router) {
 
     passport.deserializeUser(function (user: Express.User, cb) {
         process.nextTick(function () {
-            return void cb(null, user);
+            return cb(null, user);
         });
     });
 }

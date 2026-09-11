@@ -179,6 +179,7 @@ import {
     auditMfaEnrolled,
     auditMfaRecoveryRegenerated,
     auditMfaVerified,
+    auditOAuthGrantsRevoked,
     auditPreBuiltDeployed,
     auditSyncCommand,
     auditSyncDisabled,
@@ -245,7 +246,7 @@ if (flagHasAuth) {
     web.route('/account/logout').post(rateLimiterMiddleware, auditAuthLogout, postLogout);
     web.route('/account/signin').post(rateLimiterMiddleware, validateSigninRequest, auditAuthLogin, authenticateLocalSignin, signin);
     web.route('/account/forgot-password').post(rateLimiterMiddleware, postForgotPassword);
-    web.route('/account/reset-password').put(rateLimiterMiddleware, auditAuthPasswordReset, putResetPassword);
+    web.route('/account/reset-password').put(rateLimiterMiddleware, auditAuthPasswordReset, auditOAuthGrantsRevoked, putResetPassword);
     web.route('/account/resend-verification-email/by-uuid').post(rateLimiterMiddleware, resendVerificationEmailByUuid);
     web.route('/account/resend-verification-email/by-email').post(rateLimiterMiddleware, resendVerificationEmailByEmail);
     web.route('/account/email/:uuid').get(rateLimiterMiddleware, getEmailByUuid);
@@ -378,7 +379,7 @@ web.route('/connections/admin/:connectionId').delete(
 // User
 web.route('/user').get(webAuth, getUser);
 web.route('/user').patch(webAuth, auditUserUpdated, patchUser);
-web.route('/user/password').put(webAuth, auditAppAuthPasswordChanged, putUserPassword);
+web.route('/user/password').put(webAuth, auditAppAuthPasswordChanged, auditOAuthGrantsRevoked, putUserPassword);
 
 // Plain (in-app support chat)
 web.route('/plain').get(webAuth, getPlainHmac);
