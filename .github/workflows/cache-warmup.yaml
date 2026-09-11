@@ -22,8 +22,6 @@ jobs:
             - run: npm ci
 
     warm-playwright-cache:
-        # tests-connect-ui saves only under its own PR's ref, and should-run skips it on the master
-        # push after a merge-queue merge, so this job writes the entry every PR restores from.
         runs-on: blacksmith-4vcpu-ubuntu-2404
         permissions:
             contents: read
