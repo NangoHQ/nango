@@ -219,6 +219,7 @@ const ENVS_SHAPE = z.object({
         .optional()
         .default(16 * 1024),
     SERVER_SHUTDOWN_DELAY_MS: z.coerce.number().optional().default(0),
+    SERVER_SHUTDOWN_TIMEOUT_MS: z.coerce.number().optional().default(15_000),
     SERVER_EGRESS_TELEMETRY_BATCH_SIZE: z.coerce.number().int().positive().default(1_000),
     SERVER_EGRESS_TELEMETRY_FLUSH_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
     SERVER_EGRESS_TELEMETRY_MAX_QUEUE_SIZE: z.coerce.number().int().positive().default(100_000),
