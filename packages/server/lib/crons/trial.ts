@@ -92,8 +92,12 @@ export async function exec(): Promise<void> {
 
         // Disable all scripts
         const orchestrator = getOrchestrator();
-        const plansToPause = await getExpiredTrials(db.knex);
-        for (const plan of plansToPause) {
+        const expiredTrials = await getExpiredTrials(db.knex);
+        if (expiredTrials.isErr()) {
+            logger.error('Failed to get expired trials', expiredTrials.error);
+            return;
+        }
+        for (const plan of expiredTrials.value) {
             logger.info('Trial over for account', plan.account_id);
 
             const envs = await environmentService.getEnvironmentsByAccountId(plan.account_id);

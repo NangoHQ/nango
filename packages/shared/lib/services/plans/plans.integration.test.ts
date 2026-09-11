@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 
 import { seedAccountEnvAndUser } from '../../seeders/global.seeder.js';
-import { getPlan, handlePlanChanged, setGrowthAddon } from './plans.js';
+import { createPlan, getPlan, handlePlanChanged, setGrowthAddon } from './plans.js';
 
 describe('handlePlanChanged', () => {
     beforeAll(async () => {
@@ -20,6 +20,14 @@ describe('handlePlanChanged', () => {
         });
 
         expect(res.unwrap()).toBe(false);
+    });
+
+    it('returns the existing plan when one already exists for the account', async () => {
+        const { account, plan } = await seedAccountEnvAndUser();
+
+        const existingPlan = await createPlan(db.knex, { account_id: account.id, name: 'growth-v2' });
+
+        expect(existingPlan.unwrap()).toMatchObject({ id: plan.id, name: plan.name });
     });
 
     it('reports a change and applies the new plan', async () => {
@@ -78,9 +86,8 @@ describe('handlePlanChanged', () => {
         expect(updated.auto_idle).toBe(true);
         expect(updated.trial_end_at).not.toBeNull();
         expect(updated.trial_expired).toBe(false);
-        // pg hands back the bigint column as a string
-        expect(updated.connections_max).toBe('10');
-        expect(updated.data_transfer_max).toBe('10000000000');
+        expect(updated.connections_max).toBe(10);
+        expect(updated.data_transfer_max).toBe(10_000_000_000);
     });
 
     it('keeps the growth feature set through a plan change while the add-on is active', async () => {
