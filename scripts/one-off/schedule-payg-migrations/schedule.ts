@@ -116,7 +116,9 @@ async function getActiveSubscriptionsByAccountId(
     const subscriptions = new Map(accountIds.map((accountId) => [accountId, [] as OrbSubscription[]]));
     const errors = new Map<string, Error>();
 
-    for (const accountIdBatch of chunk(accountIds, SUBSCRIPTION_LOOKUP_BATCH_SIZE)) {
+    const accountIdBatches = chunk(accountIds, SUBSCRIPTION_LOOKUP_BATCH_SIZE);
+    for (const [batchIndex, accountIdBatch] of accountIdBatches.entries()) {
+        console.log(`Looking up active Orb subscriptions: batch ${batchIndex + 1}/${accountIdBatches.length} (${accountIdBatch.length} account(s)).`);
         try {
             // The SDK's async iterator follows Orb's cursors, so a malformed account with multiple
             // active subscriptions cannot hide behind the endpoint's maximum page size of 100.
@@ -130,6 +132,7 @@ async function getActiveSubscriptionsByAccountId(
                     subscriptions.get(accountId)?.push(subscription);
                 }
             }
+            console.log(`Finished active Orb subscription lookup: batch ${batchIndex + 1}/${accountIdBatches.length}.`);
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
             for (const accountId of accountIdBatch) {
@@ -208,6 +211,8 @@ export async function scheduleMigrations({
                     row.accountId,
                     `Orb has a future plan change to ${futureChange.plan?.external_plan_id || '(unknown plan)'} starting ${futureChange.start_date}`
                 );
+                // sleep half the time we'd sleep when scheduling so we don't get rate limited on fetchSchedule calls.
+                await sleep(throttleMs / 2);
                 continue;
             }
 
