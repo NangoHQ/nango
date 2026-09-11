@@ -1,0 +1,31 @@
+---
+title: 'How to register your own Pandadoc OAuth app'
+sidebarTitle: 'Pandadoc setup'
+description: 'Register an OAuth app with Pandadoc and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Pandadoc to obtain your OAuth credentials (Client ID & Client Secret). These are required to let your users grant your app access to their Pandadoc account.
+
+<Note>
+Pandadoc's global (`pandadoc.com`) and EU (`pandadoc.eu`) regions are fully separate account ecosystems — accounts and apps aren't shared between them. Register your app in the **same region** as the accounts you want to connect. If you need to support both regions, register an app in each and create two Nango integrations, one per region (see the [how do I link my account?](/api-integrations/pandadoc/connect) guide for how the **Region** field ties a connection to the matching app).
+</Note>
+
+<Steps>
+    <Step title="Open the Developer Dashboard">
+    Log in to your Pandadoc account (`app.pandadoc.com` for global, `app.pandadoc.eu` for EU), then open the [Developer Dashboard](https://developers.pandadoc.com/) and go to the **My Applications** tab.
+    </Step>
+    <Step title="Create a new application">
+    Create a new application, providing:
+    - **Application Name** and **Application Author**
+    - **Redirect URI** — use `https://api.nango.dev/oauth/callback` for Nango Cloud
+    </Step>
+    <Step title="Get your credentials">
+    Once created, Pandadoc generates a **Client ID** and **Client Secret** for the app — copy both. You'll need them when configuring the integration in Nango.
+    </Step>
+</Steps>
+
+Once you have your Client ID and Client Secret, follow the [quickstart](/api-integrations/pandadoc#quickstart) to connect in Nango.
+
+For more details, see [Pandadoc's OAuth 2.0 documentation](https://developers.pandadoc.com/reference/authentication-process).
+
+---

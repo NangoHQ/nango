@@ -99,7 +99,8 @@ export async function executeSessionTool({
             input,
             isAsync: false,
             retryMax: RETRY_MAX,
-            span
+            span,
+            actor: { kind: 'session', id: session.id }
         });
 
         if (result.isErr()) {

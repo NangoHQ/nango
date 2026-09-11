@@ -4767,6 +4767,9 @@ highlevel-white-label:
     - voice-ai-dashboard.readonly
     - workflows.readonly
 
+# source: https://developerportal.thomsonreuters.com/authentication/documents/api-access-mechanism-using-oauth2 (no scopes parameter — API access is governed by the authenticated user's Collaborate permissions)
+highq: []
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 hover: []
 
@@ -9143,7 +9146,7 @@ pagerduty:
     - services.read
     - write
 
-# source: https://app.pandadoc.com/.well-known/oauth-authorization-server (scopes_supported)
+# source: https://app.pandadoc.com/.well-known/oauth-authorization-server + https://app.pandadoc.eu/.well-known/oauth-authorization-server (scopes_supported, identical for both regions)
 pandadoc:
     - read
     - read+write
