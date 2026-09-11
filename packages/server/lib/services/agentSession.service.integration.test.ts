@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
+import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 
 import {
@@ -12,9 +13,11 @@ import {
     endAgentSession,
     getAgentSession,
     getAgentSessionByToken,
-    listExpiredAgentSessions
+    listExpiredAgentSessions,
+    terminateAgentSession
 } from './agentSession.service.js';
 
+import type { LogContextOrigin } from '@nangohq/logs';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, DBEnvironment, DBTeam } from '@nangohq/types';
 
 const table = 'agent_sessions';
@@ -26,6 +29,10 @@ describe('agentSession service', () => {
     beforeAll(async () => {
         await multipleMigrations();
         await keystore.migrate(db.knex);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     beforeEach(async () => {
@@ -171,6 +178,17 @@ describe('agentSession service', () => {
         expect(retried.alreadyEnded).toBe(true);
         expect(retried.session.endedAt).toStrictEqual(terminated.session.endedAt);
         expect(retried.session.endedReason).toBe('terminated');
+    });
+
+    it('records the terminated operation without a payload', async () => {
+        const session = await createSession({ account, environment });
+        const create = vi
+            .spyOn(logContextGetter, 'create')
+            .mockResolvedValue({ enrichOperation: vi.fn(), info: vi.fn(), success: vi.fn() } as unknown as LogContextOrigin);
+
+        (await terminateAgentSession({ account, environment, sessionId: session.id })).unwrap();
+
+        expect(create).toHaveBeenCalledWith({ operation: { type: 'agent_session', action: 'terminate' } }, { account, environment });
     });
 
     it('revokes the session token when the session is terminated', async () => {
