@@ -296,7 +296,7 @@ describe(`POST ${route}`, () => {
                 method: 'POST',
                 query: { env: 'dev' },
                 session,
-                body: { orbId: 'starter-v2', withGrowthFeatures: false }
+                body: { orbId: 'pay-as-you-go', withGrowthFeatures: false }
             });
 
             expect(billing.client.cancelPendingChanges).toHaveBeenCalledWith({ pendingChangeId: 'pending_123' });
@@ -306,6 +306,41 @@ describe(`POST ${route}`, () => {
     });
 
     describe('Upgrade Flow', () => {
+        it.each(['starter-v2', 'growth-v2'])('should reject an upgrade from free to retired plan %s', async (retiredPlan) => {
+            const { plan, user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
+            await setupPlan({
+                id: plan.id,
+                name: 'free',
+                orb_subscription_id: 'sub_123'
+            });
+
+            const mockSubscription: BillingSubscription = {
+                id: 'sub_123',
+                planExternalId: 'free',
+                hasGrowthFeatures: false,
+                growthFeaturesEndsAt: null,
+                growthFeaturesPriceIntervalId: null
+            };
+
+            getSubscriptionSpy.mockResolvedValue(Ok(mockSubscription));
+
+            const res = await api.fetch(route, {
+                method: 'POST',
+                query: { env: 'dev' },
+                session,
+                body: { orbId: retiredPlan, withGrowthFeatures: false }
+            });
+
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error).toStrictEqual({
+                code: 'invalid_body',
+                message: 'team cannot change to this plan'
+            });
+            expect(upgradeSpy).not.toHaveBeenCalled();
+        });
+
         it('should reject an upgrade from starter-v2 to growth-v2', async () => {
             const { plan, user } = await seeders.seedAccountEnvAndUser();
             const session = await authenticateUser(api, user);
@@ -366,7 +401,7 @@ describe(`POST ${route}`, () => {
                 method: 'POST',
                 query: { env: 'dev' },
                 session,
-                body: { orbId: 'starter-v2', withGrowthFeatures: false }
+                body: { orbId: 'pay-as-you-go', withGrowthFeatures: false }
             });
 
             isError(res.json);
@@ -405,7 +440,7 @@ describe(`POST ${route}`, () => {
                 method: 'POST',
                 query: { env: 'dev' },
                 session,
-                body: { orbId: 'starter-v2', withGrowthFeatures: false }
+                body: { orbId: 'pay-as-you-go', withGrowthFeatures: false }
             });
 
             isSuccess(res.json);
@@ -448,7 +483,7 @@ describe(`POST ${route}`, () => {
                 method: 'POST',
                 query: { env: 'dev' },
                 session,
-                body: { orbId: 'starter-v2', withGrowthFeatures: false }
+                body: { orbId: 'pay-as-you-go', withGrowthFeatures: false }
             });
 
             isSuccess(res.json);
@@ -487,7 +522,7 @@ describe(`POST ${route}`, () => {
                 method: 'POST',
                 query: { env: 'dev' },
                 session,
-                body: { orbId: 'starter-v2', withGrowthFeatures: false }
+                body: { orbId: 'pay-as-you-go', withGrowthFeatures: false }
             });
 
             isSuccess(res.json);
@@ -566,7 +601,7 @@ describe(`POST ${route}`, () => {
                 method: 'POST',
                 query: { env: 'dev' },
                 session,
-                body: { orbId: 'starter-v2', withGrowthFeatures: false }
+                body: { orbId: 'pay-as-you-go', withGrowthFeatures: false }
             });
 
             // Left for Orb's `expiration_time` and the next attempt's cleanup rather than compensated here
@@ -601,7 +636,7 @@ describe(`POST ${route}`, () => {
                 method: 'POST',
                 query: { env: 'dev' },
                 session,
-                body: { orbId: 'starter-v2', withGrowthFeatures: false }
+                body: { orbId: 'pay-as-you-go', withGrowthFeatures: false }
             });
 
             isError(res.json);
@@ -881,7 +916,7 @@ describe(`POST ${route}`, () => {
                 method: 'POST',
                 query: { env: 'dev' },
                 session,
-                body: { orbId: 'starter-v2', withGrowthFeatures: true }
+                body: { orbId: 'enterprise', withGrowthFeatures: true }
             });
 
             isError(res.json);
@@ -1109,7 +1144,7 @@ describe(`POST ${route}`, () => {
                 method: 'POST',
                 query: { env: 'dev' },
                 session,
-                body: { orbId: 'starter-v2', withGrowthFeatures: false }
+                body: { orbId: 'pay-as-you-go', withGrowthFeatures: false }
             });
 
             isError(res.json);
