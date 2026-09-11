@@ -8,7 +8,10 @@ import type { Result } from '@nangohq/utils';
 
 export type DeploymentBundleReconciliation = {
     created: FunctionDeploymentArtifact[];
-    updated: FunctionDeploymentArtifact[];
+    updated: {
+        before: CurrentFunctionConfig;
+        after: FunctionDeploymentArtifact;
+    }[];
     unchanged: FunctionDeploymentArtifact[];
     deleted: CurrentFunctionConfig[];
 };
@@ -37,7 +40,7 @@ export function reconcile({
         );
         const incomingIdentities = new Set<string>();
         const created: FunctionDeploymentArtifact[] = [];
-        const updated: FunctionDeploymentArtifact[] = [];
+        const updated: { before: CurrentFunctionConfig; after: FunctionDeploymentArtifact }[] = [];
         const unchanged: FunctionDeploymentArtifact[] = [];
 
         for (const artifact of functions) {
@@ -57,7 +60,10 @@ export function reconcile({
             } else if (current.currentVersion.version === version.value) {
                 unchanged.push(artifact);
             } else {
-                updated.push(artifact);
+                updated.push({
+                    before: current,
+                    after: artifact
+                });
             }
         }
 

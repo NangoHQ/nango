@@ -4,7 +4,7 @@ import type { FunctionDeploymentBundleSuccess, PostFunctionDeploymentBundlePrevi
 export function toResponse(reconciliation: DeploymentBundleReconciliation): FunctionDeploymentBundleSuccess {
     return {
         created: reconciliation.created.map(({ integrationId, name }) => ({ integrationId, name })),
-        updated: reconciliation.updated.map(({ integrationId, name }) => ({ integrationId, name })),
+        updated: reconciliation.updated.map(({ after: { integrationId, name } }) => ({ integrationId, name })),
         unchanged: reconciliation.unchanged.map(({ integrationId, name }) => ({ integrationId, name })),
         deleted: reconciliation.deleted.map((current) => ({ integrationId: current.integration.unique_key, name: current.config.name }))
     };

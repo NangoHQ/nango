@@ -42,18 +42,22 @@ describe(search, () => {
         const firstIntegration = await createConfigSeed(environment, 'github-first', 'github');
         const secondIntegration = await createConfigSeed(environment, 'github-second', 'github');
 
-        await upsert(db.knex, {
-            environmentId: environment.id,
-            integrationId: firstIntegration.unique_key,
-            name: 'firstFunction',
-            version: functionVersion('first-version')
-        });
-        await upsert(db.knex, {
-            environmentId: environment.id,
-            integrationId: secondIntegration.unique_key,
-            name: 'secondFunction',
-            version: functionVersion('second-version')
-        });
+        await upsert(db.knex, [
+            {
+                environmentId: environment.id,
+                integrationId: firstIntegration.unique_key,
+                name: 'firstFunction',
+                version: functionVersion('first-version')
+            }
+        ]);
+        await upsert(db.knex, [
+            {
+                environmentId: environment.id,
+                integrationId: secondIntegration.unique_key,
+                name: 'secondFunction',
+                version: functionVersion('second-version')
+            }
+        ]);
 
         const functions = (
             await search(db.knex, {
@@ -74,12 +78,14 @@ describe(search, () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
         const github = await createConfigSeed(environment, 'github', 'github');
-        await upsert(db.knex, {
-            environmentId: environment.id,
-            integrationId: github.unique_key,
-            name: 'function',
-            version: functionVersion('version')
-        });
+        await upsert(db.knex, [
+            {
+                environmentId: environment.id,
+                integrationId: github.unique_key,
+                name: 'function',
+                version: functionVersion('version')
+            }
+        ]);
 
         const functions = (await search(db.knex, { environmentId: environment.id, filter: { integrationKey: 'unknown' } })).unwrap();
 
@@ -98,8 +104,7 @@ describe(search, () => {
             version: functionVersion('123')
         };
 
-        await upsert(db.knex, config);
-        await upsert(db.knex, { ...config, name: 'secondFunction', version: functionVersion('456') });
+        await upsert(db.knex, [config, { ...config, name: 'secondFunction', version: functionVersion('456') }]);
 
         const functions = (
             await search(db.knex, {
@@ -120,12 +125,14 @@ describe(search, () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
         const github = await createConfigSeed(environment, 'github', 'github');
-        await upsert(db.knex, {
-            environmentId: environment.id,
-            integrationId: github.unique_key,
-            name: 'function',
-            version: functionVersion('version')
-        });
+        await upsert(db.knex, [
+            {
+                environmentId: environment.id,
+                integrationId: github.unique_key,
+                name: 'function',
+                version: functionVersion('version')
+            }
+        ]);
 
         const functions = (await search(db.knex, { environmentId: environment.id, filter: { integrationKey: github.unique_key, name: 'unknown' } })).unwrap();
 
@@ -137,33 +144,41 @@ describe(search, () => {
         const environment = await createEnvironmentSeed(account.id);
         const github = await createConfigSeed(environment, 'github', 'github');
 
-        await upsert(db.knex, {
-            environmentId: environment.id,
-            integrationId: github.unique_key,
-            name: 'subscribed',
-            version: functionVersion('subscribed', { kind: 'http', subscriptions: ['push'] })
-        });
-        await upsert(db.knex, {
-            environmentId: environment.id,
-            integrationId: github.unique_key,
-            name: 'empty',
-            version: functionVersion('empty', { kind: 'http', subscriptions: [] })
-        });
-        await upsert(db.knex, {
-            environmentId: environment.id,
-            integrationId: github.unique_key,
-            name: 'none',
-            version: functionVersion('none', { kind: 'http' })
-        });
-        const disabled = (
-            await upsert(db.knex, {
+        await upsert(db.knex, [
+            {
                 environmentId: environment.id,
                 integrationId: github.unique_key,
-                name: 'disabled',
-                version: functionVersion('disabled', { kind: 'http', subscriptions: ['push'] })
-            })
+                name: 'subscribed',
+                version: functionVersion('subscribed', { kind: 'http', subscriptions: ['push'] })
+            }
+        ]);
+        await upsert(db.knex, [
+            {
+                environmentId: environment.id,
+                integrationId: github.unique_key,
+                name: 'empty',
+                version: functionVersion('empty', { kind: 'http', subscriptions: [] })
+            }
+        ]);
+        await upsert(db.knex, [
+            {
+                environmentId: environment.id,
+                integrationId: github.unique_key,
+                name: 'none',
+                version: functionVersion('none', { kind: 'http' })
+            }
+        ]);
+        const disabled = (
+            await upsert(db.knex, [
+                {
+                    environmentId: environment.id,
+                    integrationId: github.unique_key,
+                    name: 'disabled',
+                    version: functionVersion('disabled', { kind: 'http', subscriptions: ['push'] })
+                }
+            ])
         ).unwrap();
-        await db.knex('function_configs').where({ id: disabled.config.id }).update({ enabled: false });
+        await db.knex('function_configs').where({ id: disabled[0]!.config.id }).update({ enabled: false });
 
         const subscribed = (
             await search(db.knex, {
@@ -193,12 +208,14 @@ describe(search, () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
         const github = await createConfigSeed(environment, 'github', 'github');
-        await upsert(db.knex, {
-            environmentId: environment.id,
-            integrationId: github.unique_key,
-            name: 'function',
-            version: functionVersion('version')
-        });
+        await upsert(db.knex, [
+            {
+                environmentId: environment.id,
+                integrationId: github.unique_key,
+                name: 'function',
+                version: functionVersion('version')
+            }
+        ]);
 
         const emptyIntegrationKey = (await search(db.knex, { environmentId: environment.id, filter: { integrationKey: '' } })).unwrap();
         const emptyName = (await search(db.knex, { environmentId: environment.id, filter: { integrationKey: github.unique_key, name: '' } })).unwrap();
