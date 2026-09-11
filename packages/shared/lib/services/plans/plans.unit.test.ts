@@ -232,6 +232,32 @@ describe('self-serve transitions', () => {
         expect(growth.prevPlan).toContain('free');
         expect(growth.nextPlan).toContain('enterprise');
     });
+
+    it.each(['starter-v2', 'growth-v2', 'starter', 'growth', 'starter-legacy', 'scale-legacy', 'growth-legacy'] as DBPlan['name'][])(
+        'should mark %s retired',
+        (code) => {
+            expect(getPlanDefinition(code)?.retired).toBe(true);
+        }
+    );
+
+    it.each(['free', 'free-uncapped', 'pay-as-you-go', 'startup-deal', 'enterprise', 'enterprise-cloud-hosted'] as DBPlan['name'][])(
+        'should leave %s on sale',
+        (code) => {
+            expect(getPlanDefinition(code)?.retired ?? false).toBe(false);
+        }
+    );
+
+    it('should keep pay-as-you-go out of the legacy card set', () => {
+        expect(getPlanDefinition('pay-as-you-go')?.hidden).toBe(true);
+    });
+
+    it('should not offer retired plans to new accounts', () => {
+        expect(getPlanDefinition('free')?.nextPlan).not.toContain('starter-v2');
+        expect(getPlanDefinition('free')?.nextPlan).not.toContain('growth-v2');
+        expect(getPlanDefinition('free')?.nextPlan).toContain('pay-as-you-go');
+        expect(starter.retired).toBe(true);
+        expect(growth.retired).toBe(true);
+    });
 });
 
 function makePlan({

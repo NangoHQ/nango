@@ -32,6 +32,8 @@ export interface PlanDefinition {
 
     cta?: string;
     hidden?: boolean;
+    /** No longer sold, but accounts already on it keep it. */
+    retired?: boolean;
     flags: Omit<Partial<DBPlan>, 'id' | 'account_id' | 'name'>;
 }
 
