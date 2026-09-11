@@ -38,7 +38,7 @@ import {
     providerClientManager,
     syncEndUserToConnection
 } from '@nangohq/shared';
-import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
+import { basePublicUrl, errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
@@ -1244,7 +1244,7 @@ class OAuthController {
         const action = req.query['setup_action'] as string;
 
         if (!state && installation_id && action) {
-            res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
+            res.redirect(basePublicUrl);
             return;
         }
         if (state == null) {
@@ -1646,7 +1646,7 @@ class OAuthController {
         if (session.authMode === 'CUSTOM' && req.query['setup_action'] === 'update' && installationId) {
             // this means the update request was performed from the provider itself
             if (!req.query['state']) {
-                res.redirect(req.get('referer') || req.get('Referer') || req.headers.referer || 'https://github.com');
+                res.redirect(basePublicUrl);
 
                 return;
             }
