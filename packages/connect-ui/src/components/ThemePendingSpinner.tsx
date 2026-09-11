@@ -18,8 +18,9 @@ export const ThemePendingSpinner: React.FC = () => {
     }
 
     return (
+        // Without `pointer-events-none` this overlay swallows clicks and every click closes the flow.
         // The dialog's own loading view announces the load; a status role here would announce it twice.
-        <div aria-hidden="true" className="absolute h-screen w-screen flex items-center justify-center">
+        <div aria-hidden="true" className="absolute h-screen w-screen flex items-center justify-center pointer-events-none">
             <LoaderCircle className="size-8 animate-spin text-gray-500" />
         </div>
     );

@@ -1,5 +1,5 @@
 import { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } from '@tanstack/react-router';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 
@@ -57,6 +57,8 @@ describe('Layout', () => {
         expect(getComputedStyle(overlay()).opacity).toBe('0');
         expect(getComputedStyle(overlay()).backgroundColor).toBe('rgba(0, 0, 0, 0)');
         expect(document.documentElement.classList.contains('dark')).toBe(false);
+        // The focus trap would otherwise drop keyboard and screen reader users into an invisible dialog.
+        expect(document.querySelector('#connect-ui-dialog')?.contains(document.activeElement)).toBe(false);
         await expectAccessibleInBothThemes(container);
     });
 
@@ -73,6 +75,7 @@ describe('Layout', () => {
         await expect.element(page.getByRole('dialog')).toBeInTheDocument();
         expect(getComputedStyle(overlay()).opacity).toBe('1');
         expect(document.documentElement.classList.contains('dark')).toBe(false);
+        await vi.waitFor(() => expect(document.querySelector('#connect-ui-dialog')?.contains(document.activeElement)).toBe(true));
     });
 
     it('applies the configured dark theme to the document', async () => {
