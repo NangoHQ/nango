@@ -1,0 +1,46 @@
+---
+title: Tracify - How do I link my account?
+sidebarTitle: Tracify
+---
+
+## Overview
+
+To authenticate with Tracify Analytics, you need:
+
+1. **Analytics API Token** - A token with access to the Tracify Analytics API.
+2. **Site ID** - The Tracify site to query.
+3. **Preset ID** - The attribution preset to use for analytics queries.
+
+This guide describes how to create a Tracify Analytics connection for the pre-built analytics templates.
+
+### Prerequisites
+
+- You must have a Tracify account with access to the site you want to query.
+- The account must have permission to create Analytics API tokens.
+
+### Step 1: Generating an Analytics API Token
+
+1. Sign in to the [Tracify dashboard](https://dashboard.tracify.ai/).
+2. Open **Settings > API Tokens**.
+3. Create an **Analytics access** token.
+4. Copy the token and store it securely. You may not be able to view it again.
+
+### Step 2: Finding your Site ID
+
+1. Open the Tracify dashboard's [Store Information settings](https://dashboard.tracify.ai/settings).
+2. Copy the **Site ID** for the store that Nango should query.
+
+### Step 3: Finding your Preset ID
+
+1. Open the Tracify dashboard's [Presets settings](https://dashboard.tracify.ai/settings/presets).
+2. Copy the **Preset ID** for the attribution preset that Nango should use.
+
+### Step 4: Enter credentials in the Connect UI
+
+Open the Tracify authentication form and enter:
+
+- **Analytics API Token**: The token created in Step 1.
+- **Site ID**: The UUID of the store from Step 2.
+- **Preset ID**: The attribution preset ID from Step 3.
+
+Submit the form to create the connection. Nango validates the token with a read-only KPI request. The token is sent to Tracify only as the `tracify-token` header.

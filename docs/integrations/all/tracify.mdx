@@ -1,0 +1,69 @@
+---
+title: Tracify
+sidebarTitle: Tracify
+description: Query Tracify Analytics through Nango.
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/tracify/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/tracify/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+
+| Pre-requisite | Status | Comment |
+| --- | --- | --- |
+| Tracify account | ⚠️ | An account with access to the site is required. |
+| Test access | ⚠️ | Use a test or customer account with Analytics access. |
+| Partnership | ❓ | Not required for this contribution. |
+| App review | ❓ | Not required for API-token access. |
+| Security audit | ❓ | Not required for API-token access. |
+
+## Setup guide
+
+See [How to connect Tracify](https://nango.dev/docs/integrations/all/tracify/connect) for the connection steps.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/NangoHQ/nango/tree/master/docs/integrations/all/tracify.mdx)</Note>
+
+## Useful links
+
+- [Tracify Analytics API documentation](https://tracify.dev/analytics-api/)
+- [Tracify Analytics API token settings](https://dashboard.tracify.ai/settings/api-tokens)
+- [Tracify API OpenAPI specification](https://tracify-api.tracify.ai/analytics/api/v1/openapi.json)
+
+<Note>Contribute useful links by [editing this page](https://github.com/NangoHQ/nango/tree/master/docs/integrations/all/tracify.mdx)</Note>
+
+## API gotchas
+
+- Tracify Analytics requires the `tracify-token` header. This integration sends the Nango API key as that header.
+- Analytics requests require both a `siteId` and a `presetId`. Nango stores these as connection configuration and sends the site ID as the API's `csids` query parameter.
+- Data from the last 24 hours is preliminary and may change after processing. Re-request recent periods when finalized data is required.
+- This provider is scoped to Tracify Analytics; its pre-built templates call only retrieval endpoints. The standard Nango proxy itself is intentionally not restricted to this route list.
+
+## KPI endpoints and template functions
+
+Tracify Analytics provides these eight read-only retrieval routes used by the pre-built templates. The provider config supplies authentication and the standard Nango proxy; it does not restrict the proxy to this route list.
+
+| Tracify route | Method |
+| --- | --- |
+| `/analytics/api/v1/kpis/overview/` | `GET` |
+| `/analytics/api/v1/kpis/channels/` | `GET` |
+| `/analytics/api/v1/kpis/channels/{channel}/` | `GET` |
+| `/analytics/api/v1/kpis/channels/{channel}/exports/{task_id}` | `GET` |
+| `/analytics/api/v1/kpis/channels/{channel}/{breakdown_dimension}` | `GET` |
+| `/analytics/api/v1/kpis/nvr_daily_breakdown/{channel}` | `GET` |
+| `/analytics/api/v1/kpis/nvr_daily_breakdown` | `GET` |
+| `/analytics/api/v1/kpis/discount_codes` | `GET` |
+
+NVR requests are limited to seven days by the Tracify API. The generated **Pre-built tooling** section above is the source of truth for available Nango template functions.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/NangoHQ/nango/tree/master/docs/integrations/all/tracify.mdx)</Note>
+
+<Card title="Connect to Tracify" icon="link" href="/integrations/all/tracify/connect" horizontal>
+  Guide to connect to Tracify using Nango Connect UI.
+</Card>
