@@ -4,6 +4,7 @@ export interface GlobalOptions {
     interactive: boolean;
     dependencyUpdate: boolean;
     telemetry?: boolean;
+    sourcemap?: boolean;
 }
 
 export type ENV = 'local' | 'cloud';

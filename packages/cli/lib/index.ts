@@ -257,8 +257,9 @@ program
     .description(
         'Compile the integration files to JavaScript and update the .nango directory. This is useful for one off changes instead of watching for changes continuously.'
     )
+    .option('--no-sourcemap', 'Disable inline source maps in compiled function bundles.')
     .action(async function (this: Command) {
-        const { debug, interactive, dependencyUpdate } = this.opts<GlobalOptions>();
+        const { debug, interactive, dependencyUpdate, sourcemap } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
 
         const precheck = await verificationService.ensureZeroYaml({ fullPath, debug });
@@ -271,7 +272,7 @@ program
             return;
         }
 
-        const res = await compileAllFunctions({ fullPath, debug, interactive });
+        const res = await compileAllFunctions({ fullPath, debug, interactive, sourcemap });
         if (res.isErr()) {
             process.exitCode = NangoCliExitCode.CompileError;
         }
@@ -310,6 +311,7 @@ program
     .option('--validate, --validation', 'Optional: Enforce input, output and records validation', false)
     .option('--save, --save-responses', 'Optional: Save all dry run responses to <integration>/tests/<name>.test.json for unit tests', false)
     .option('--diagnostics', 'Optional: Display performance diagnostics including memory usage and CPU metrics', false)
+    .option('--no-sourcemap', 'Disable inline source maps in compiled function bundles.')
     .action(async function (this: Command) {
         const {
             autoConfirm,
@@ -324,7 +326,8 @@ program
             variant,
             metadata,
             checkpoint,
-            diagnostics
+            diagnostics,
+            sourcemap
         } = this.opts();
         const shouldValidate = validation || saveResponses;
         const fullPath = process.cwd();
@@ -424,7 +427,7 @@ program
             return;
         }
 
-        const res = await compileAllFunctions({ fullPath, debug, interactive });
+        const res = await compileAllFunctions({ fullPath, debug, interactive, sourcemap });
         if (res.isErr()) {
             process.exitCode = NangoCliExitCode.CompileError;
             return;
@@ -483,9 +486,10 @@ program
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
     .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
+    .option('--no-sourcemap', 'Disable inline source maps in compiled function bundles.')
     .action(async function (this: Command, environment?: string) {
         const options = this.opts<DeployOptions>();
-        const { debug, interactive, dependencyUpdate } = options;
+        const { debug, interactive, dependencyUpdate, sourcemap } = options;
         const fullPath = process.cwd();
 
         try {
@@ -510,7 +514,7 @@ program
             return;
         }
 
-        const resCompile = await compileAllFunctions({ fullPath, debug, interactive });
+        const resCompile = await compileAllFunctions({ fullPath, debug, interactive, sourcemap });
         if (resCompile.isErr()) {
             process.exitCode = NangoCliExitCode.CompileError;
             return;
