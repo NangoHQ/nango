@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 
 import get from 'lodash-es/get.js';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { accountService, connectionService, getProvider, NangoError } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
@@ -32,12 +33,23 @@ function validate(integration: IntegrationConfig, headerSignature: string, rawBo
 const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     const signature = headers['x-hub-signature-256'];
 
+    // Verified before handleCreateWebhook, so an unsigned installation event cannot finalize a
+    // pending connection.
     if (signature) {
         const valid = validate(nango.integration, signature, rawBody);
 
         if (!valid) {
             logger.error('Github App webhook signature invalid. Exiting');
             return Err(new NangoError('webhook_invalid_signature'));
+        }
+    } else {
+        nango.markUnverified({ reason: 'github_app_missing_signature', remediation: 'Set the Nango webhook secret on the GitHub App' });
+
+        const allowUnauthorized = await getFlags().allowUnauthorizedGithubAppWebhook(nango.team.uuid);
+
+        if (!allowUnauthorized) {
+            logger.error('Github App webhook signature missing. Exiting', { configId: nango.integration.id });
+            return Err(new NangoError('webhook_missing_signature'));
         }
     }
 
