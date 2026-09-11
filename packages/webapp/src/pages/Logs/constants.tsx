@@ -163,7 +163,8 @@ export const typesOptions: FilterOption<SearchOperationsType>[] = [
         label: 'Agent session',
         children: [
             { label: 'Agent session created', value: 'agent_session:create' },
-            { label: 'Agent session terminated', value: 'agent_session:terminate' }
+            { label: 'Agent session terminated', value: 'agent_session:terminate' },
+            { label: 'Agent session tool search', value: 'agent_session:tool_search' }
         ]
     }
 ];
@@ -172,6 +173,7 @@ export const typesList = Object.keys({
     'admin:impersonation': null,
     'agent_session:create': null,
     'agent_session:terminate': null,
+    'agent_session:tool_search': null,
     'auth:connection_test': null,
     'auth:create_connection': null,
     'auth:post_connection': null,
