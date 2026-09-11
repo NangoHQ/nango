@@ -2,7 +2,7 @@ import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
-import { isPgLockNotAvailableError, ScheduleLockedError } from '../errors.js';
+import { DuplicateScheduleNameError, isPgLockNotAvailableError, ScheduleLockedError } from '../errors.js';
 
 import type { Schedule, ScheduleProps, ScheduleState, TaskState } from '../types.js';
 import type { Result } from '@nangohq/utils';
@@ -117,6 +117,7 @@ export const DbSchedule = {
     })
 };
 
+/** Create a schedule, or resurrect the existing schedule when its state is DELETED. */
 export async function create(db: knex.Knex, props: ScheduleProps): Promise<Result<Schedule>> {
     const now = new Date();
     const newSchedule: Schedule = {
@@ -131,10 +132,32 @@ export async function create(db: knex.Knex, props: ScheduleProps): Promise<Resul
         lastScheduledTaskId: null,
         nextExecutionAt: now
     };
+    const values = DbSchedule.to(newSchedule);
     try {
-        const inserted = await db.from<DbSchedule>(SCHEDULES_TABLE).insert(DbSchedule.to(newSchedule)).returning('*');
+        const inserted = await db
+            .from<DbSchedule>(SCHEDULES_TABLE)
+            .insert(values)
+            .onConflict('name')
+            .merge({
+                state: values.state,
+                starts_at: values.starts_at,
+                frequency: values.frequency,
+                payload: values.payload,
+                group_key: values.group_key,
+                retry_max: values.retry_max,
+                created_to_started_timeout_secs: values.created_to_started_timeout_secs,
+                started_to_completed_timeout_secs: values.started_to_completed_timeout_secs,
+                heartbeat_timeout_secs: values.heartbeat_timeout_secs,
+                updated_at: values.updated_at,
+                deleted_at: null,
+                last_scheduled_task_id: null,
+                last_scheduled_task_state: null,
+                next_execution_at: values.next_execution_at
+            })
+            .where(`${SCHEDULES_TABLE}.state`, 'DELETED')
+            .returning('*');
         if (!inserted?.[0]) {
-            return Err(new Error(`Error: no schedule '${props.name}' created`));
+            return Err(new DuplicateScheduleNameError(props.name));
         }
         return Ok(DbSchedule.from(inserted[0]));
     } catch (err) {

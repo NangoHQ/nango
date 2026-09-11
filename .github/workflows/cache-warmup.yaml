@@ -20,3 +20,14 @@ jobs:
             - uses: ./.github/actions/setup-node
 
             - run: npm ci
+
+    warm-playwright-cache:
+        runs-on: blacksmith-4vcpu-ubuntu-2404
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: ./.github/actions/setup-node
+
+            - uses: ./.github/actions/playwright-browsers

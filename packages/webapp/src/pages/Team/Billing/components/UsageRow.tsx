@@ -13,15 +13,22 @@ import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 export type UsageRowVariant = 'caps' | 'usage' | 'charges' | 'comparison';
 
 // Tailwind only generates classes it sees in source. This helper must return whole strings.
-export function usageRowGrid(variant: UsageRowVariant): string {
+export function usageTableGrid(variant: UsageRowVariant, planNamedCharges = false): string {
+    // A row's `px-6` shrinks its first and last subgrid tracks. The last column is 44px so the 20px chevron survives that.
     if (variant === 'caps') {
-        return 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_124px_20px] items-center gap-4 px-6';
+        return 'grid grid-cols-[minmax(0,2fr)_minmax(112px,max-content)_minmax(0,2fr)_124px_44px] gap-x-4';
     }
     if (variant === 'comparison') {
-        return 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_124px_180px_20px] items-center gap-4 px-6';
+        return 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_180px_180px_44px] gap-x-4';
     }
-    return 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_124px_20px] items-center gap-4 px-6';
+    if (planNamedCharges) {
+        return 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_180px_44px] gap-x-4';
+    }
+    return 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_124px_44px] gap-x-4';
 }
+
+/** Maps a row onto the table's columns. Drop it from any wrapper in between and that row's cells stop lining up. */
+export const usageRowCells = 'col-span-full grid grid-cols-subgrid';
 
 interface UsageRowProps {
     metric: UsageMetric;
@@ -79,55 +86,56 @@ export const UsageRow: React.FC<UsageRowProps> = ({
     const isPending = variant === 'charges' || variant === 'comparison' ? charge?.pending : capsLoading;
 
     return (
-        <Collapsible open={open} onOpenChange={onOpenChange} className="border-b border-border-muted last:border-b-0 data-[state=open]:bg-surface-panel">
-            <CollapsibleTrigger className="group w-full text-left py-4 transition-colors data-[state=closed]:hover:bg-surface-panel data-[state=open]:border-b data-[state=open]:border-border-muted">
-                <div className={usageRowGrid(variant)}>
-                    <div className="flex flex-col min-w-0">
-                        <span className="text-text-default type-text-regular-sm truncate">{label}</span>
-                    </div>
-                    {variant !== 'usage' ? (
-                        // Fixed track: every row's bar starts at the same x, whatever the figure's width.
-                        <div className={cn('items-center gap-5', showLimits ? 'grid grid-cols-[80px_minmax(0,1fr)]' : 'flex')}>
-                            {capsLoading ? (
-                                <Skeleton className={cn('h-5', showLimits ? 'w-full' : 'w-32')} />
-                            ) : (
-                                <>
-                                    <span className="text-text-default type-text-regular-sm truncate" title={exactFigure}>
-                                        {figures.usage}
-                                        {figures.limit != null && <span className="text-text-muted"> / {figures.limit}</span>}
-                                    </span>
-                                    {showLimits && limit != null && <UsageBar usage={usage} limit={limit} className="max-w-[200px]" />}
-                                </>
-                            )}
-                        </div>
-                    ) : (
-                        <div />
-                    )}
-                    {/* A dash means unpriced. Blank means this row has no applicable figure. */}
-                    {variant === 'comparison' &&
-                        (currentPlanCharge?.pending ? (
-                            <Skeleton className="h-4 w-12" />
-                        ) : (
-                            <div className="text-text-default type-text-regular-sm">{currentPlanCharge ? (currentPlanCharge.formatted ?? '—') : ''}</div>
-                        ))}
-                    {isPending ? (
-                        <Skeleton className="h-4 w-12" />
-                    ) : showLimits ? (
-                        <div className={cn('type-text-regular-sm', getUsageStateTextColor(state))}>
-                            {limit == null ? '—' : state === 'over' ? 'Limit reached' : `${percent}%`}
-                        </div>
-                    ) : variant === 'usage' ? (
-                        <div className="text-text-default type-text-regular-sm" title={formatMetricUsageExact(metric, usage)}>
-                            {figures.usage}
-                        </div>
-                    ) : (
-                        // On an uncapped plan a charge is what was billed, not a threshold crossed.
-                        <div className="text-text-default type-text-regular-sm">{charge ? (charge.formatted ?? '—') : ''}</div>
-                    )}
-                    <ChevronDown className="size-5 text-text-muted transition-transform group-data-[state=open]:rotate-180" />
+        <Collapsible
+            open={open}
+            onOpenChange={onOpenChange}
+            className={cn(usageRowCells, 'border-b border-border-muted last:border-b-0 data-[state=open]:bg-surface-panel')}
+        >
+            <CollapsibleTrigger
+                className={cn(
+                    usageRowCells,
+                    'group items-center text-left py-4 px-6 transition-colors data-[state=closed]:hover:bg-surface-panel data-[state=open]:border-b data-[state=open]:border-border-muted'
+                )}
+            >
+                <div className="flex flex-col min-w-0">
+                    <span className="text-text-default type-text-regular-sm truncate">{label}</span>
                 </div>
+                {variant === 'usage' ? (
+                    <div />
+                ) : capsLoading ? (
+                    // Matches the caps column's 112px floor, so a month switch doesn't resize the column.
+                    <Skeleton className="h-5 w-28" />
+                ) : (
+                    <span className="text-text-default type-text-regular-sm truncate" title={exactFigure}>
+                        {figures.usage}
+                        {figures.limit != null && <span className="text-text-muted"> / {figures.limit}</span>}
+                    </span>
+                )}
+                {showLimits && <div>{limit != null && !capsLoading && <UsageBar usage={usage} limit={limit} className="max-w-[200px]" />}</div>}
+                {/* A dash means unpriced. Blank means this row has no applicable figure. */}
+                {variant === 'comparison' &&
+                    (currentPlanCharge?.pending ? (
+                        <Skeleton className="h-4 w-12" />
+                    ) : (
+                        <div className="text-text-default type-text-regular-sm">{currentPlanCharge ? (currentPlanCharge.formatted ?? '—') : ''}</div>
+                    ))}
+                {isPending ? (
+                    <Skeleton className="h-4 w-12" />
+                ) : showLimits ? (
+                    <div className={cn('type-text-regular-sm', getUsageStateTextColor(state))}>
+                        {limit == null ? '—' : state === 'over' ? 'Limit reached' : `${percent}%`}
+                    </div>
+                ) : variant === 'usage' ? (
+                    <div className="text-text-default type-text-regular-sm" title={formatMetricUsageExact(metric, usage)}>
+                        {figures.usage}
+                    </div>
+                ) : (
+                    // On an uncapped plan a charge is what was billed, not a threshold crossed.
+                    <div className="text-text-default type-text-regular-sm">{charge ? (charge.formatted ?? '—') : ''}</div>
+                )}
+                <ChevronDown className="size-5 text-text-muted transition-transform group-data-[state=open]:rotate-180" />
             </CollapsibleTrigger>
-            <CollapsibleContent>
+            <CollapsibleContent className="col-span-full">
                 <UsageChartCard
                     metric={metric}
                     data={data}

@@ -2,6 +2,131 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.71.7] - 2026-09-11
+
+### Added
+
+- *(mcp)* Add providers get tool (#7283) by @marcindobry
+- *(server)* Tag internal callers instead of excluding them from deprecated endpoint metric (#7353) by @hassan254-prog
+- *(audit)* Day-partitioned Postgres schema for the self-hosted audit trail (#7335) by @pfreixes
+- *(audit)* Daily partition lifecycle for the self-hosted audit table (#7343) by @pfreixes
+- Add deploy all workflow (#7380) by @rossmcewan
+- *(audit)* Show how many events a read matches (#7365) by @macko911
+- *(agent-sessions)* Add DELETE /sessions/{id} to terminate a session (NAN-6598) (#7336) by @agusayerza
+- *(webhooks)* Back off throttled groups on jobs SQS consumer (NAN-6407) (#7328) by @agusayerza
+- *(webhooks)* Defer saturated dispatch messages in SQS (NAN-6406) (#7334) by @agusayerza
+- *(orch)* Add executeFunctionBatch (#7374) by @TBonnin
+- *(audit)* Postgres writer and reader for the self-hosted audit trail (#7346) by @pfreixes
+- *(plans)* Add the growth add-on for pay-as-you-go (#7301) by @ErickRDev
+- *(audit)* Run the Postgres migration and partition daemon from the server (#7355) by @pfreixes
+- *(webapp)* Rework the audit trail filter UI (#7397) by @macko911
+- Add screenshot to the agent sessions changelog entry (#7411) by @sapnesh-nango
+- *(providers)* Add outlook webhook support (#7389) by @rbwest
+- *(webapp)* Let customers add and remove the Growth add-on (#7402) by @macko911
+- *(syncs)* Paginate and virtualize the connection Syncs tab (NAN-6819) (#7369) by @macko911
+- *(integrations)* Add support for netsapiens (#7361) by @mayankj
+- *(webapp)* Show the Pay-as-you-go migration in-app (#7425) by @macko911
+- *(integrations)* Add eu base url to typeform (#7407) by @hassan254-prog
+- *(webapp)* Show spend and per-metric charges to all customers (#7364) by @macko911
+- Add support for webhook functions (#7384) by @TBonnin
+- Allow setting function http trigger subscriptions (#7428) by @TBonnin
+- *(webhooks)* Add webhook support for granola (#7357) by @hassan254-prog
+- *(webhooks)* Add gong webhooks (#7434) by @hassan254-prog
+- *(integrations)* Add LiveSwitch provider (#7158) by @LevSky22
+- *(agent-session)* Create proxy tool (#7414) by @agusayerza
+- *(webhooks)* Improve fathom webhooks to use query as the connection id value (#7410) by @hassan254-prog
+- *(integrations)* Add support for outline (#7440) by @hassan254-prog
+- *(webapp)* Polish the audit event drawer and export dialog (#7417) by @macko911
+- *(integrations)* Add support for amplemarket (#7442) by @hassan254-prog
+- *(integrations)* Add support for airtable mcp (#7450) by @hassan254-prog
+- *(docs)* Add log retention to docs (#7435) by @rossmcewan
+- *(integrations)* Add support for Moneybird (#7433) by @recepbayraktar
+- *(integrations)* Add bol.com OAuth2 client-credentials provider (#7436) by @recepbayraktar
+- *(billing)* Show per-metric charges for past months on the billing page (#7457) by @macko911
+- *(server)* Return a specific error for oversized request bodies (#7368) by @hassan254-prog
+- *(api)* Add public environment list endpoint (#7342) by @ErickRDev
+- *(api)* List environment API keys (#7350) by @ErickRDev
+- *(api)* Get environment API keys by UUID (#7352) by @ErickRDev
+- *(integrations)* Add Bandwidth OAuth2 client-credentials provider (#7359) by @mayankj
+- *(integrations)* Add support for inteliquent (#7360) by @mayankj
+- *(webapp)* Show existing customers what they'd pay on the new pricing (#7458) by @macko911
+- *(github)* Add deployment for byoc-gcp-1 (#7461) by @rossmcewan
+- *(orch)* Add support for scheduled functions (#7460) by @TBonnin
+- *(cli)* Add --no-sourcemap flag to disable inline source maps (#7506) by @hassan254-prog
+
+### Changed
+
+- *(granola)* Correct plan requirement and desktop app flow (#7347) by @viictoo
+- Alphabetize the APIs & Integrations nav list (#7345) by @viictoo
+- Update version in manifest by @actions-user
+- Draft the agent sessions guide (NAN-6832) (#7317) by @agusayerza
+- Match the website favicon (#7367) by @macko911
+- Audit trail (NAN-6487) (#7164) by @pfreixes
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/1efbe17acea944b505ac50b3453862788b5c4b5b by Marcin Dobrowolski by @github-actions[bot]
+- Retire the permission vocabulary for scopes (#7341) by @kaposke
+- Update version in manifest by @actions-user
+- Document agent session termination (#7391) by @agusayerza
+- *(mcp)* Upgrade TypeScript SDK to v2 (#7383) by @marcindobry
+- Update AGENTS.md (#7406) by @marcindobry
+- Changelog for audit trail, agent sessions beta, new pricing, and August roundup (#7409) by @sapnesh-nango
+- Update for new pricing plans (#7390) by @rguldener
+- *(billing)* Remove the s26-pricing flag (#7426) by @macko911
+- *(audit)* Retire the audit-trail rollout flag (#7429) by @pfreixes
+- *(proxy)* Remove the proxy-forward-all-response-headers flag (NAN-6922) (#7431) by @agusayerza
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/56c9369bd7c6878a7fce4fb05f7825a8a31a6d76 by Marcin Dobrowolski by @github-actions[bot]
+- *(mfa)* Retire the mfa rollout flag (NAN-6921) (#7432) by @agusayerza
+- *(billing)* Retire the HTTP billing events sent to Orb (NAN-6503) (#7427) by @pfreixes
+- Restructure the security guide (#7437) by @rguldener
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/59fd4bfe9087379986552ee73b41209ea298d65e by Victor Lang'at by @github-actions[bot]
+- Update version in manifest by @actions-user
+- Update version in manifest by @actions-user
+- Link self-hosting audit trail setup from changelog (#7471) by @mintlify[bot]
+- *(agent-sessions)* Tone down beta messaging (#7475) by @rguldener
+
+### Fixed
+
+- *(sync)* Resolve variant-scoped model recordCount (#7270) by @hassan254-prog
+- *(audit)* Let the auth type name the connect session, not the end user (#7348) by @pfreixes
+- Npm audit fix (#7349) by @rossmcewan
+- *(dockerfile)* Fix vulns in image (#7351) by @rossmcewan
+- *(syncs)* Batch schedule search fan-out (#7318) by @macko911
+- *(webapp)* Adapt favicons to the browser theme (#7366) by @macko911
+- *(billing)* Read Orb subtotal for metric charges (#7371) by @macko911
+- *(vulns)* Npm audit fix (#7376) by @rossmcewan
+- *(docker)* Remove npm from docker images (#7381) by @rossmcewan
+- *(docker)* Cleanup lambda npm (#7382) by @rossmcewan
+- *(server)* Validate google incoming webhooks (#7373) by @rossmcewan
+- *(persist)* Stream deleteHardAllRecords progress to avoid client timeout on large deletes (#7375) by @hassan254-prog
+- *(design-system)* Attach tooltip arrow to chip (#7395) by @macko911
+- *(connect)* Allow previews at the connection cap (#7379) by @marcindobry
+- *(cli)* Stop compile test hanging on npm audit (#7396) by @macko911
+- *(providers)* Disable PKCE for Digits OAuth2 (#7399) by @hassan254-prog
+- *(webhooks)* Dedupe Attio record events (#7386) by @agusayerza
+- *(syncs)* Render rows in production builds (NAN-6914) (#7418) by @macko911
+- *(orchestrator)* Drain the processor queue after the loop exits (NAN-6896) (#7403) by @pfreixes
+- *(jobs)* Decouple the consumer and server shutdowns (NAN-6896) (#7404) by @pfreixes
+- *(server)* Block unverified gmail webhooks with env setting (#7424) by @rossmcewan
+- *(server)* Prevent disabled MCP action execution (#7439) by @marcindobry
+- *(connect-ui)* Keep base-path recovery out of the CDN build (#7401) by @macko911
+- *(server)* Clamp proxy retry to maximum duration (#7264) by @rbwest
+- *(webapp)* Keep dev tools while impersonating customers (#7444) by @macko911
+- *(webhooks)* Enforce signature validation in webhook routing scripts (#7430) by @agusayerza
+- *(server)* Return 500 when secret key auth hits an unexpected error (NAN-4668) (#7456) by @pfreixes
+- *(proxy)* Stop getRawBody from crashing on stream request bodies (#7441) by @hassan254-prog
+- *(webapp)* Stop showing usage months from before the account existed (#7438) by @macko911
+- *(billing)* Show discounted metrics as billed (#7468) by @macko911
+- *(proxy)* Don't crash on a bare '%' in the request body for providers that don't need canonical params (#7469) by @hassan254-prog
+- *(webapp)* Hide the current-plan column when it has no charges (#7483) by @macko911
+- *(provider)* Allow hyphen in pipelinecrm api key (#7489) by @rbwest
+- *(billing)* Stop accounts from self-serve upgrading to a retired plan (#7451) by @macko911
+- *(ci)* Stop Ubuntu mirror outages from failing the connect-ui tests (#7504) by @macko911
+- *(providers)* Fix supabase regex key (#7491) by @hassan254-prog
+- *(runner)* Allow node:-prefixed core module specifiers in sandboxed scripts (#7488) by @hassan254-prog
+- *(server)* Surface a clear 400 for unsupported multipart Content-Type on /proxy (#7498) by @hassan254-prog
+- *(webapp)* Stop the usage table cutting off figures and wrapping headers (#7499) by @macko911
+- Vulnerability fixes (#7486) by @rossmcewan
+- *(wrap-dek)* Changes to support gcp kms (#7445) by @rossmcewan
+
 ## [v0.71.6] - 2026-09-02
 
 ### Added
@@ -7881,6 +8006,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.71.7]: https://github.com/NangoHQ/nango/compare/v0.71.6..v0.71.7
 [v0.71.6]: https://github.com/NangoHQ/nango/compare/v0.71.5..v0.71.6
 [v0.71.5]: https://github.com/NangoHQ/nango/compare/v0.71.4..v0.71.5
 [v0.71.4]: https://github.com/NangoHQ/nango/compare/v0.71.3..v0.71.4

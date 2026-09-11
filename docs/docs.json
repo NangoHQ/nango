@@ -98,6 +98,10 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/pandadoc",
+      "destination": "/api-integrations/pandadoc"
+    },
+    {
       "source": "/integrations/all/fathom",
       "destination": "/api-integrations/fathom"
     },
@@ -1401,6 +1405,7 @@
               "integrations/all/hibob-service-user",
               "api-integrations/highlevel",
               "api-integrations/highlevel-white-label",
+              "api-integrations/highq",
               "integrations/all/holded",
               "api-integrations/holded-v2",
               "integrations/all/hover",
@@ -1413,6 +1418,8 @@
               "api-integrations/ids-fulfillment",
               "api-integrations/immybot",
               "integrations/all/incident-io",
+              "api-integrations/infor",
+              "api-integrations/infor-cc",
               "api-integrations/ingenious-build",
               "api-integrations/ingenious-build-pat",
               "integrations/all/insightly",
@@ -1611,8 +1618,10 @@
               "api-integrations/paddle",
               "integrations/all/pagerduty",
               "api-integrations/paligo",
-              "integrations/all/pandadoc",
+              "api-integrations/pandadoc",
               "integrations/all/pandadoc-api-key",
+              "api-integrations/pandadoc-mcp",
+              "api-integrations/pandadoc-mcp-eu",
               "integrations/all/passportal",
               "api-integrations/pave",
               "integrations/all/pax8",

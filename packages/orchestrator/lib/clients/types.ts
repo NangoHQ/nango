@@ -58,6 +58,9 @@ interface FunctionArgs {
     trigger: FunctionTrigger;
     async: boolean;
 }
+interface ScheduleFunctionArgs {
+    instanceId: number;
+}
 export type SchedulesReturn = Result<OrchestratorSchedule[]>;
 export type VoidReturn = Result<void, ClientError>;
 export type ExecuteProps = SetOptional<ImmediateProps, 'retry' | 'timeoutSettingsInSecs'>;
@@ -81,7 +84,7 @@ export interface OrchestratorSchedule {
     nextDueDate: Date | null;
 }
 
-export type OrchestratorTask = TaskSync | TaskSyncAbort | TaskAction | TaskWebhook | TaskOnEvent | TaskAbort | TaskFunction;
+export type OrchestratorTask = TaskSync | TaskSyncAbort | TaskAction | TaskWebhook | TaskOnEvent | TaskAbort | TaskFunction | TaskScheduleFunction;
 
 interface TaskCommonFields {
     id: string;
@@ -103,6 +106,7 @@ interface TaskCommon extends TaskCommonFields {
     isSyncAbort(this: OrchestratorTask): this is TaskSyncAbort;
     isAbort(this: OrchestratorTask): this is TaskAbort;
     isFunction(this: OrchestratorTask): this is TaskFunction;
+    isScheduleFunction(this: OrchestratorTask): this is TaskScheduleFunction;
 }
 export interface TaskAbort extends TaskCommon, AbortArgs {}
 export function TaskAbort(props: TaskCommonFields & AbortArgs): TaskAbort {
@@ -126,7 +130,8 @@ export function TaskAbort(props: TaskCommonFields & AbortArgs): TaskAbort {
         isOnEvent: (): this is TaskOnEvent => false,
         isSyncAbort: (): this is TaskSyncAbort => false,
         isAbort: (): this is TaskAbort => true,
-        isFunction: (): this is TaskFunction => false
+        isFunction: (): this is TaskFunction => false,
+        isScheduleFunction: (): this is TaskScheduleFunction => false
     };
 }
 
@@ -155,7 +160,8 @@ export function TaskSync(props: TaskCommonFields & SyncArgs & SyncExecutionArgs)
         isOnEvent: (): this is TaskOnEvent => false,
         isSyncAbort: (): this is TaskSyncAbort => false,
         isAbort: (): this is TaskAbort => false,
-        isFunction: (): this is TaskFunction => false
+        isFunction: (): this is TaskFunction => false,
+        isScheduleFunction: (): this is TaskScheduleFunction => false
     };
 }
 
@@ -185,7 +191,8 @@ export function TaskSyncAbort(props: TaskCommonFields & SyncArgs & AbortArgs): T
         isOnEvent: (): this is TaskOnEvent => false,
         isSyncAbort: (): this is TaskSyncAbort => true,
         isAbort: (): this is TaskAbort => false,
-        isFunction: (): this is TaskFunction => false
+        isFunction: (): this is TaskFunction => false,
+        isScheduleFunction: (): this is TaskScheduleFunction => false
     };
 }
 
@@ -213,7 +220,8 @@ export function TaskAction(props: TaskCommonFields & ActionArgs): TaskAction {
         isOnEvent: (): this is TaskOnEvent => false,
         isSyncAbort: (): this is TaskSyncAbort => false,
         isAbort: (): this is TaskAbort => false,
-        isFunction: (): this is TaskFunction => false
+        isFunction: (): this is TaskFunction => false,
+        isScheduleFunction: (): this is TaskScheduleFunction => false
     };
 }
 
@@ -241,7 +249,8 @@ export function TaskWebhook(props: TaskCommonFields & WebhookArgs): TaskWebhook 
         isOnEvent: (): this is TaskOnEvent => false,
         isSyncAbort: (): this is TaskSyncAbort => false,
         isAbort: (): this is TaskAbort => false,
-        isFunction: (): this is TaskFunction => false
+        isFunction: (): this is TaskFunction => false,
+        isScheduleFunction: (): this is TaskScheduleFunction => false
     };
 }
 
@@ -270,7 +279,8 @@ export function TaskOnEvent(props: TaskCommonFields & OnEventArgs): TaskOnEvent 
         isOnEvent: (): this is TaskOnEvent => true,
         isSyncAbort: (): this is TaskSyncAbort => false,
         isAbort: (): this is TaskAbort => false,
-        isFunction: (): this is TaskFunction => false
+        isFunction: (): this is TaskFunction => false,
+        isScheduleFunction: (): this is TaskScheduleFunction => false
     };
 }
 
@@ -298,7 +308,33 @@ export function TaskFunction(props: TaskCommonFields & FunctionArgs): TaskFuncti
         isOnEvent: (): this is TaskOnEvent => false,
         isSyncAbort: (): this is TaskSyncAbort => false,
         isAbort: (): this is TaskAbort => false,
-        isFunction: (): this is TaskFunction => true
+        isFunction: (): this is TaskFunction => true,
+        isScheduleFunction: (): this is TaskScheduleFunction => false
+    };
+}
+
+export interface TaskScheduleFunction extends TaskCommon, ScheduleFunctionArgs {}
+export function TaskScheduleFunction(props: TaskCommonFields & ScheduleFunctionArgs): TaskScheduleFunction {
+    return {
+        id: props.id,
+        name: props.name,
+        state: props.state,
+        attempt: props.attempt,
+        retryKey: props.retryKey,
+        attemptMax: props.attemptMax,
+        instanceId: props.instanceId,
+        groupKey: props.groupKey,
+        groupMaxConcurrency: props.groupMaxConcurrency,
+        ownerKey: props.ownerKey,
+        heartbeatTimeoutSecs: props.heartbeatTimeoutSecs,
+        isSync: (): this is TaskSync => false,
+        isWebhook: (): this is TaskWebhook => false,
+        isAction: (): this is TaskAction => false,
+        isOnEvent: (): this is TaskOnEvent => false,
+        isSyncAbort: (): this is TaskSyncAbort => false,
+        isAbort: (): this is TaskAbort => false,
+        isFunction: (): this is TaskFunction => false,
+        isScheduleFunction: (): this is TaskScheduleFunction => true
     };
 }
 
