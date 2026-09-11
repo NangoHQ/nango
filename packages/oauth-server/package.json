@@ -1,0 +1,30 @@
+{
+    "name": "@nangohq/oauth-server",
+    "version": "1.0.0",
+    "description": "Reusable OAuth authorization server infrastructure for Nango",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "private": true,
+    "scripts": {},
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/oauth-server"
+    },
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "dependencies": {
+        "@nangohq/egress": "file:../egress",
+        "@types/oidc-provider": "9.12.0",
+        "knex": "3.1.0",
+        "oidc-provider": "9.12.2",
+        "zod": "4.0.5"
+    },
+    "devDependencies": {
+        "@nangohq/database": "file:../database",
+        "vitest": "4.1.9"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}

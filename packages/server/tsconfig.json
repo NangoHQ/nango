@@ -42,6 +42,9 @@
             "path": "../orchestrator"
         },
         {
+            "path": "../oauth-server"
+        },
+        {
             "path": "../records"
         },
         {
