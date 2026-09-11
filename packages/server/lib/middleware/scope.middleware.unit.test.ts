@@ -10,7 +10,7 @@ const accountId = 10;
 const environmentId = 100;
 
 const account = { id: accountId } as DBTeam;
-const environment = { id: environmentId } as DBEnvironment;
+const environment = { id: environmentId, account_id: accountId, is_production: false } as DBEnvironment;
 
 function principal(overrides: Partial<ApiKeyPrincipal> = {}): ApiKeyPrincipal {
     return {
@@ -32,7 +32,7 @@ const withoutAccount: Partial<RequestLocals> = { environment, apiKeyPrincipal: p
 const withoutEnvironment: Partial<RequestLocals> = { account, apiKeyPrincipal: principal() };
 const withoutPrincipal: Partial<RequestLocals> = { account, environment };
 
-type ScopeMiddleware = (req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction) => void;
+type ScopeMiddleware = ReturnType<typeof withScope>;
 
 function run(middleware: ScopeMiddleware, requestLocals: Partial<RequestLocals>) {
     const res = {
@@ -145,6 +145,22 @@ describe('withScope', () => {
         expect(next).not.toHaveBeenCalled();
         expect(status).toHaveBeenCalledWith(403);
         expect(json).toHaveBeenCalledWith({ error: { code: 'forbidden', message: 'Insufficient scope. Required: environment:deploy' } });
+    });
+
+    it('responds 400 when an environment scope is checked with no environment', () => {
+        const { next, status, json } = run(withScope('environment:deploy'), withoutEnvironment);
+
+        expect(next).not.toHaveBeenCalled();
+        expect(status).toHaveBeenCalledWith(400);
+        expect(json).toHaveBeenCalledWith({ error: { code: 'missing_environment' } });
+    });
+
+    it('responds 500 when locals carry no principal', () => {
+        const { next, status, json } = run(withScope('environment:deploy'), withoutPrincipal);
+
+        expect(next).not.toHaveBeenCalled();
+        expect(status).toHaveBeenCalledWith(500);
+        expect(json).toHaveBeenCalledWith({ error: { code: 'missing_principal' } });
     });
 });
 

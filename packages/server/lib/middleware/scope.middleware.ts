@@ -1,5 +1,7 @@
 import { authorizeApiKey, canAccessApiKeyTarget } from '@nangohq/utils';
 
+import { can } from '../authz/middleware.js';
+
 import type { RequestLocals } from '../utils/express.js';
 import type { ApiKeyAuthorizationTarget, CustomerKeyScope } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -51,28 +53,5 @@ export function withEnvironmentTarget(_req: Request, res: Response<unknown, Part
     next();
 }
 
-export function withScope(requiredScope: CustomerKeyScope) {
-    return function (_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
-        const allowed = hasAuthorizedScope({ locals: res.locals, requiredScope });
-
-        if (allowed) {
-            next();
-            return;
-        }
-
-        res.status(403).json({ error: { code: 'forbidden', message: `Insufficient scope. Required: ${requiredScope}` } });
-    };
-}
-
-export function withAnyScope(...requiredScopes: CustomerKeyScope[]) {
-    return function (_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
-        const allowed = requiredScopes.some((requiredScope) => hasAuthorizedScope({ locals: res.locals, requiredScope }));
-
-        if (allowed) {
-            next();
-            return;
-        }
-
-        res.status(403).json({ error: { code: 'forbidden', message: `Insufficient scope. Required one of: ${requiredScopes.join(' or ')}` } });
-    };
-}
+export const withScope = can;
+export const withAnyScope = can;
