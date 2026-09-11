@@ -18207,7 +18207,7 @@ pipelinecrm:
             title: API Key
             description: Authenticates API requests as a specific Pipeline CRM user.
             example: Ksh3************ol5g
-            pattern: '^[A-Za-z0-9]{20}$'
+            pattern: '^[A-Za-z0-9-]{20}$'
             doc_section: '#step-2-finding-your-api-key'
 
 pivotaltracker:

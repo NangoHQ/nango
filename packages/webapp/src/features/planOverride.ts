@@ -150,11 +150,11 @@ export function applyPlanOverride(
         addonState
     }: { overridePlan?: PlanDefinition | null; scheduledTarget?: PlanDefinition | null; addonState?: GrowthAddonState | null }
 ): ApiPlan | null | undefined {
-    if (!realPlan || (!overridePlan && !addonState)) {
+    if (!realPlan || (!overridePlan && !addonState && !scheduledTarget)) {
         return realPlan;
     }
 
-    const withPlan: ApiPlan = overridePlan
+    const onPlan: ApiPlan = overridePlan
         ? {
               ...realPlan,
               // `flags` is typed against `DBPlan` (pre-serialization), so its never-set Date fields
@@ -162,10 +162,14 @@ export function applyPlanOverride(
               // plan definitions only ever set those fields to `null`, never an actual Date.
               ...(overridePlan.flags as Partial<ApiPlan>),
               name: overridePlan.code,
-              orb_future_plan: scheduledTarget?.code ?? null,
-              orb_future_plan_at: scheduledTarget ? nextUsageResetDate(new Date()).toISOString() : null
+              orb_future_plan: null,
+              orb_future_plan_at: null
           }
         : realPlan;
+
+    const withPlan: ApiPlan = scheduledTarget
+        ? { ...onPlan, orb_future_plan: scheduledTarget.code, orb_future_plan_at: nextUsageResetDate(new Date()).toISOString() }
+        : onPlan;
 
     if (!addonState) {
         return withPlan;
