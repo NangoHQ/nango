@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { logContextGetter } from '@nangohq/logs';
+import { logContextGetter, searchOperationsTypes } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
@@ -138,6 +138,19 @@ describe('POST /logs/operations', () => {
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
         expect(res.json.data.map((op) => op.id)).toStrictEqual([logCtx.id]);
+    });
+
+    it('should accept every type it offers at once', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch('/api/v1/logs/operations', {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            body: { limit: 10, types: searchOperationsTypes }
+        });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
     });
 
     it('should search logs and not return results from an other account', async () => {

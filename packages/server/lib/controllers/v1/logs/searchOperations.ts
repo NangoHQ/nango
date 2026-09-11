@@ -16,7 +16,7 @@ const validation = z
             .max(10)
             .optional()
             .default(['all']),
-        types: z.array(z.enum(searchOperationsTypes)).max(20).optional().default(['all']),
+        types: z.array(z.enum(searchOperationsTypes)).max(searchOperationsTypes.length).optional().default(['all']),
         integrations: z.array(z.string()).max(20).optional().default(['all']),
         connections: z.array(z.string()).max(20).optional().default(['all']),
         syncs: z.array(z.string()).max(20).optional().default(['all']),
