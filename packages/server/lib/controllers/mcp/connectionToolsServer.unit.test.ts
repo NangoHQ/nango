@@ -40,7 +40,15 @@ describe('createConnectionToolsMcpServer', () => {
             const listed = await client.listTools();
             expect(listed.tools).toEqual([]);
 
-            await expect(client.callTool({ name: 'delete-repository', arguments: {} })).rejects.toThrow('The action is disabled');
+            const result = await client.callTool({ name: 'delete-repository', arguments: {} });
+            expect(result.isError).toBe(true);
+            expect(result.content).toStrictEqual([
+                {
+                    type: 'text',
+                    text: "Tool 'delete-repository' is not available on integration 'github'. Use another tool for the task, or tell the user it cannot be done."
+                }
+            ]);
+            expect(result._meta).toStrictEqual({ 'nango/error_code': 'tool_not_available', 'nango/integration_id': 'github' });
 
             expect(mocks.triggerAction).not.toHaveBeenCalled();
             expect(metrics.increment).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {

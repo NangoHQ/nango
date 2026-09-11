@@ -67,6 +67,16 @@ function errorOf(result: Result<unknown>): Error {
     return result.error;
 }
 
+function codeOf(result: Result<unknown>): string | undefined {
+    const error = errorOf(result);
+    return error instanceof PublicMcpError ? error.code : undefined;
+}
+
+function integrationOf(result: Result<unknown>): string | undefined {
+    const error = errorOf(result);
+    return error instanceof PublicMcpError ? error.integrationId : undefined;
+}
+
 describe('executeSessionTool', () => {
     beforeEach(() => {
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
@@ -116,14 +126,20 @@ describe('executeSessionTool', () => {
 
         expect(result.isErr()).toBe(true);
         expect(errorOf(result)).toBeInstanceOf(PublicMcpError);
-        expect(errorOf(result).message).toBe("Tool 'delete_doc' is not in this session's toolset for integration 'notion'.");
+        expect(errorOf(result).message).toBe(
+            "Tool 'delete_doc' is not in this session's toolset for integration 'notion'. Use one of the session's own tools instead."
+        );
+        expect(codeOf(result)).toBe('tool_not_in_session');
+        expect(integrationOf(result)).toBe('notion');
         expect(executeAction).not.toHaveBeenCalled();
     });
 
     it('refuses an integration the session does not have', async () => {
         const result = await execute('read_doc', { integrationId: 'slack' });
 
-        expect(errorOf(result).message).toBe("Integration 'slack' is not one of this session's integrations.");
+        expect(errorOf(result).message).toBe("Integration 'slack' is not one of this session's integrations. Use one this session has.");
+        expect(codeOf(result)).toBe('unknown_integration');
+        expect(integrationOf(result)).toBe('slack');
         expect(executeAction).not.toHaveBeenCalled();
     });
 
@@ -131,7 +147,7 @@ describe('executeSessionTool', () => {
         const result = await execute('read_doc', { integrationId });
 
         expect(errorOf(result)).toBeInstanceOf(PublicMcpError);
-        expect(errorOf(result).message).toBe(`Integration '${integrationId}' is not one of this session's integrations.`);
+        expect(errorOf(result).message).toBe(`Integration '${integrationId}' is not one of this session's integrations. Use one this session has.`);
         expect(executeAction).not.toHaveBeenCalled();
     });
 
@@ -145,7 +161,11 @@ describe('executeSessionTool', () => {
         const result = await execute('read_doc', { context: context({ resolvedConnections: {} }) });
 
         expect(errorOf(result)).toBeInstanceOf(PublicMcpError);
-        expect(errorOf(result).message).toBe("Integration 'notion' has no connection in this session.");
+        expect(errorOf(result).message).toBe(
+            "Integration 'notion' has no connection in this session, so none of its tools can run. Tell the user it is not connected."
+        );
+        expect(codeOf(result)).toBe('integration_not_connected');
+        expect(integrationOf(result)).toBe('notion');
         expect(executeAction).not.toHaveBeenCalled();
     });
 
@@ -158,7 +178,11 @@ describe('executeSessionTool', () => {
         const result = await execute('read_doc');
 
         expect(errorOf(result)).toBeInstanceOf(PublicMcpError);
-        expect(errorOf(result).message).toBe("Tool 'read_doc' is no longer deployed on integration 'notion'.");
+        expect(errorOf(result).message).toBe(
+            "Tool 'read_doc' is not available on integration 'notion'. Use another tool for the task, or tell the user it cannot be done."
+        );
+        expect(codeOf(result)).toBe('tool_not_in_session');
+        expect(integrationOf(result)).toBe('notion');
     });
 
     it("passes the action's own failure back to the agent", async () => {
@@ -169,7 +193,60 @@ describe('executeSessionTool', () => {
 
         const result = await execute('read_doc');
 
-        expect(errorOf(result).message).toBe('the doc is locked');
+        expect(errorOf(result).message).toBe(
+            "Tool 'read_doc' ran on integration 'notion' and failed: the doc is locked. Read the failure before deciding whether to call it again with different input or to tell the user."
+        );
+        expect(codeOf(result)).toBe('tool_failed');
+    });
+
+    it('surfaces the reason an action failure carries, and nothing else its payload holds', async () => {
+        executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(
+                new ActionExecutionError({
+                    code: 'action_failed',
+                    message: 'wrapped',
+                    nangoError: {
+                        message: 'Failed to perform the action',
+                        payload: {
+                            error: {
+                                message: 'the document is locked',
+                                stack: 'at handler (/srv/app.js:1:1)',
+                                authorization: 'Bearer super-secret-token'
+                            }
+                        }
+                    } as never
+                })
+            )
+        });
+
+        const result = await execute('read_doc');
+
+        expect(errorOf(result).message).toBe(
+            "Tool 'read_doc' ran on integration 'notion' and failed: Failed to perform the action: the document is locked. Read the failure before deciding whether to call it again with different input or to tell the user."
+        );
+    });
+
+    it('does not repeat a reason the error message already carries', async () => {
+        executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(
+                new ActionExecutionError({
+                    code: 'action_failed',
+                    message: 'wrapped',
+                    nangoError: {
+                        message: 'The action script failed with an error: {"name":"Error","message":"the document is locked"}',
+                        payload: { error: 'the document is locked' }
+                    } as never
+                })
+            )
+        });
+
+        const result = await execute('read_doc');
+
+        expect(errorOf(result).message).toBe(
+            'Tool \'read_doc\' ran on integration \'notion\' and failed: The action script failed with an error: {"name":"Error","message":"the document is locked"}. Read the failure before deciding whether to call it again with different input or to tell the user.'
+        );
     });
 
     it('hides an internal failure from the agent', async () => {
@@ -208,6 +285,7 @@ describe('nango_execute', () => {
         const result = await executeTool.handler({ integration: 'notion', tool: 'read_doc' }, context());
 
         expect(errorOf(result).message).toContain('Invalid nango_execute arguments');
+        expect(codeOf(result)).toBe('invalid_input');
         expect(executeAction).not.toHaveBeenCalled();
     });
 
@@ -219,6 +297,7 @@ describe('nango_execute', () => {
         expect(errorOf(result).message).toBe(
             "Tool 'notion__delete_doc' is not one of this session's tools. Use nango_tool_search to find one, or call a tool by the name it is listed under."
         );
+        expect(codeOf(result)).toBe('tool_not_in_session');
         expect(executeAction).not.toHaveBeenCalled();
     });
 

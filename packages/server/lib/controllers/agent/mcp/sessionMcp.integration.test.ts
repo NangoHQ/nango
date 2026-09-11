@@ -294,6 +294,7 @@ describe('/session/:sessionId/mcp', () => {
         expect(res.json.result.content[0].text).toBe(
             "Tool 'zendesk__get_ticket' is not one of this session's tools. Use nango_tool_search to find one, or call a tool by the name it is listed under."
         );
+        expect(res.json.result._meta['nango/error_code']).toBe('tool_not_in_session');
     });
 
     it('rejects the integration plus tool shape the tool no longer takes', async () => {
@@ -304,6 +305,7 @@ describe('/session/:sessionId/mcp', () => {
 
         expect(res.json.result.isError).toBe(true);
         expect(res.json.result.content[0].text).toContain('Invalid nango_execute arguments');
+        expect(res.json.result._meta['nango/error_code']).toBe('invalid_input');
     });
 
     it('rejects arguments that name no tool', async () => {
@@ -324,7 +326,10 @@ describe('/session/:sessionId/mcp', () => {
 
         const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { tool: 'notion__upsert_doc' } });
 
-        expect(res.json.result.content[0].text).toBe("Tool 'upsert_doc' is disabled on integration 'notion'.");
+        expect(res.json.result.content[0].text).toBe(
+            "Tool 'upsert_doc' is not available on integration 'notion'. Use another tool for the task, or tell the user it cannot be done."
+        );
+        expect(res.json.result._meta).toStrictEqual({ 'nango/error_code': 'tool_not_in_session', 'nango/integration_id': 'notion' });
     });
 
     it('refuses a tool on an integration the tenant never connected', async () => {
@@ -334,7 +339,10 @@ describe('/session/:sessionId/mcp', () => {
         const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { tool: 'zendesk__create_ticket' } });
 
         expect(res.json.result.isError).toBe(true);
-        expect(res.json.result.content[0].text).toBe("Integration 'zendesk' has no connection in this session.");
+        expect(res.json.result.content[0].text).toBe(
+            "Integration 'zendesk' has no connection in this session, so none of its tools can run. Tell the user it is not connected."
+        );
+        expect(res.json.result._meta).toStrictEqual({ 'nango/error_code': 'integration_not_connected', 'nango/integration_id': 'zendesk' });
     });
 
     it('runs a searchable tool called by its own name, though it is never listed', async () => {
@@ -346,7 +354,9 @@ describe('/session/:sessionId/mcp', () => {
         expect(listed.json.result.tools.map((tool: { name: string }) => tool.name)).not.toContain('notion__upsert_doc');
 
         const res = await callTool({ token, mcpPath, name: 'notion__upsert_doc', args: {} });
-        expect(res.json.result.content[0].text).toBe("Tool 'upsert_doc' is disabled on integration 'notion'.");
+        expect(res.json.result.content[0].text).toBe(
+            "Tool 'upsert_doc' is not available on integration 'notion'. Use another tool for the task, or tell the user it cannot be done."
+        );
     });
 
     // arguments is optional in MCP, and a tool that takes none is often called without it.
@@ -362,7 +372,9 @@ describe('/session/:sessionId/mcp', () => {
             body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'notion__read_doc' } }
         });
 
-        expect(res.json.result.content[0].text).toBe("Tool 'read_doc' is disabled on integration 'notion'.");
+        expect(res.json.result.content[0].text).toBe(
+            "Tool 'read_doc' is not available on integration 'notion'. Use another tool for the task, or tell the user it cannot be done."
+        );
     });
 
     it('runs a pinned tool called by its own name', async () => {
@@ -372,7 +384,9 @@ describe('/session/:sessionId/mcp', () => {
 
         const res = await callTool({ token, mcpPath, name: 'notion__read_doc', args: { id: '1' } });
 
-        expect(res.json.result.content[0].text).toBe("Tool 'read_doc' is disabled on integration 'notion'.");
+        expect(res.json.result.content[0].text).toBe(
+            "Tool 'read_doc' is not available on integration 'notion'. Use another tool for the task, or tell the user it cannot be done."
+        );
     });
 
     it('finds a searchable tool that is deliberately not listed', async () => {

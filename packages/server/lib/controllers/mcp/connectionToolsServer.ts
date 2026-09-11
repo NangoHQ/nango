@@ -3,16 +3,25 @@ import tracer from 'dd-trace';
 
 import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { configService, getActionsByProviderConfigKey } from '@nangohq/shared';
-import { Err, metrics, Ok, truncateJson } from '@nangohq/utils';
+import { Err, getLogger, metrics, Ok, truncateJson } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { getOrchestrator } from '../../utils/utils.js';
+import { mcpToolError, safeFailureDetail } from './utils.js';
 
 import type { CallToolRequest, CallToolResult, Tool } from '@modelcontextprotocol/server';
 import type { Config } from '@nangohq/shared';
 import type { DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam, Result } from '@nangohq/types';
 import type { Span } from 'dd-trace';
 import type { JSONSchema7 } from 'json-schema';
+
+const logger = getLogger('Server.MCP.ConnectionTools');
+
+type ConnectionToolErrorCode = 'tool_not_available' | 'tool_failed' | 'internal_error';
+
+function connectionToolError(message: string, code: ConnectionToolErrorCode, integrationId: string): CallToolResult {
+    return mcpToolError(message, { code, integrationId });
+}
 
 export async function createConnectionToolsMcpServer(
     account: DBTeam,
@@ -109,7 +118,11 @@ function callToolRequestHandler(
 
         if (!action) {
             span.finish();
-            throw new Error(`Action ${name} not found`);
+            return connectionToolError(
+                `Tool '${name}' is not one of this connection's tools. Call one of the tools listed for this connection.`,
+                'tool_not_available',
+                providerConfig.unique_key
+            );
         }
 
         span.setTag('nango.actionName', action.sync_name)
@@ -121,7 +134,11 @@ function callToolRequestHandler(
             metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { mcp_type: 'legacy_connection_tools', outcome: 'error' });
             span.setTag('nango.error', 'disabled_action');
             span.finish();
-            throw new Error('The action is disabled');
+            return connectionToolError(
+                `Tool '${action.sync_name}' is not available on integration '${providerConfig.unique_key}'. Use another tool for the task, or tell the user it cannot be done.`,
+                'tool_not_available',
+                providerConfig.unique_key
+            );
         }
 
         const input = toolArguments ?? {};
@@ -153,7 +170,15 @@ function callToolRequestHandler(
             });
         } catch (err) {
             metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { mcp_type: 'legacy_connection_tools', outcome: 'error' });
-            throw err;
+            logger.error('Failed to run a connection tool', { err, actionName: action.sync_name });
+            span.setTag('nango.error', err);
+            span.finish();
+            await logCtx.failed();
+            return connectionToolError(
+                `Tool '${action.sync_name}' could not be run. Trying once more is reasonable, and tell the user if it keeps failing.`,
+                'internal_error',
+                providerConfig.unique_key
+            );
         }
 
         metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
@@ -162,6 +187,8 @@ function callToolRequestHandler(
         });
 
         if (actionResponse.isOk()) {
+            span.finish();
+
             if (!('data' in actionResponse.value)) {
                 // Shouldn't happen with sync actions.
                 return {
@@ -179,9 +206,14 @@ function callToolRequestHandler(
             };
         } else {
             span.setTag('nango.error', actionResponse.error);
+            span.finish();
             await logCtx.failed();
 
-            throw new Error(JSON.stringify(actionResponse.error));
+            return connectionToolError(
+                `Tool '${action.sync_name}' ran on integration '${providerConfig.unique_key}' and failed: ${safeFailureDetail(actionResponse.error)}. Read the failure before deciding whether to call it again with different input or to tell the user.`,
+                'tool_failed',
+                providerConfig.unique_key
+            );
         }
     };
 }
