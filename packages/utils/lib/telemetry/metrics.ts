@@ -49,6 +49,7 @@ export enum Types {
     PROXY_SUCCESS = 'nango.server.proxy.success',
     PROXY_FAILURE = 'nango.server.proxy.failure',
     DATA_TRANSFER = 'nango.dataTransfer',
+    BILLED_DATA_TRANSFER = 'nango.billed.dataTransfer',
     PROXY_REDIRECT = 'nango.server.proxy.redirect',
     PROXY_BASE_URL_OVERRIDE_DENIED = 'nango.server.proxy.baseUrlOverrideDenied',
 
@@ -66,6 +67,7 @@ export enum Types {
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
 
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
+    FUNCTION_EXECUTIONS_SECONDS = 'nango.jobs.function.executions.seconds',
 
     WEBHOOK_INCOMING_RECEIVED = 'nango.webhook.incoming.received',
     WEBHOOK_INCOMING_RATE_LIMITED = 'nango.webhook.incoming.rateLimited',
