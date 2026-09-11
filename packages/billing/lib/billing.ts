@@ -54,8 +54,8 @@ export class Billing {
         return await this.client.getUpcomingInvoice(subscriptionId);
     }
 
-    async getPeriodCosts(subscriptionId: string): Promise<Result<BillingPeriodCosts | null>> {
-        return await this.client.getPeriodCosts(subscriptionId);
+    async getPeriodCosts(subscriptionId: string, timeframe?: { start: Date; end: Date }): Promise<Result<BillingPeriodCosts | null>> {
+        return await this.client.getPeriodCosts(subscriptionId, timeframe);
     }
 
     async getSpendAlert(subscriptionId: string): Promise<Result<BillingSpendAlert | null>> {

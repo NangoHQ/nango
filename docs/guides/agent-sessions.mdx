@@ -4,12 +4,6 @@ sidebarTitle: 'Agent sessions'
 description: 'Optimized interface for AI agents to use integrations'
 ---
 
-<Note>
-    Agent sessions are in public beta.
-    
-    Join our [beta Slack Channel](https://join.slack.com/share/enQtMTE5NDc2MjE1MjI1OTktNWM2OGUwMzI2NWQ2OWJhMzQ5YTA5YzEyNmQzZDVkMzlhOWRlMTBlYTFhYTZlMmU3MGQyOTc1NDljY2FkMzM4NQ) for feedback and notifications of breaking changes.
-</Note>
-
 Agent sessions are an optimized interface for AI agents to use integrations.
 
 Each session has three parts:
@@ -24,6 +18,10 @@ Example sessions:
 - A sales agent with a user's personal Gmail & Google Calendar, and a read-only org-wide Salesforce connection
 - A finance agent with a few read-only tools on an org's accounting system, and read & write access to a team's Slack
 - A developer agent with a team's Linear access and a user's personal GitHub access
+
+<Info>
+    We are quickly expanding agent sessions, follow our [changelog](/updates/changelog) for announcements and improvements!
+</Info>
 
 ## Quickstart
 
@@ -60,7 +58,7 @@ Example sessions:
         "notion": { "connected": true, "tools_pinned": 0, "tools_searchable": 12 },
         "slack": { "connected": true, "tools_pinned": 0, "tools_searchable": 7 }
       },
-      "meta_tools": { "nango_tool_search": true, "nango_execute": true }
+      "meta_tools": { "nango_tool_search": true, "nango_execute": true, "nango_proxy": false }
     }
   }
   ```
@@ -247,9 +245,10 @@ Create a session with the tools and access your agent needs.
     "notion": ["read_doc"]
   },
 
-  "meta_tools": {    // Optional, defaults to all
+  "meta_tools": {    // Optional. nango_proxy is off unless you turn it on
     "nango_tool_search": true,
-    "nango_execute": true
+    "nango_execute": true,
+    "nango_proxy": false
   },
 
   "expires_in": "1h" // Optional. Minimum "60s", maximum and default "15d".
@@ -361,7 +360,7 @@ You can also use `pinned` without any `any` selectors, if you already know the e
 An integration that matches no connection does not fail creation. It appears in the toolset as `connected: false`, and its tool calls fail with a missing authorization error.
 
 <Note>
-Currently there is no way for the agent to ask the user to connect an unconnected integration. Let us know on the [Beta Slack channel](https://join.slack.com/share/enQtMTE5NDc2MjE1MjI1OTktNWM2OGUwMzI2NWQ2OWJhMzQ5YTA5YzEyNmQzZDVkMzlhOWRlMTBlYTFhYTZlMmU3MGQyOTc1NDljY2FkMzM4NQ) if you need this and we are happy to prioritize it.
+Currently there is no way for the agent to ask the user to connect an unconnected integration. Let us know if you need this and we are happy to prioritize it.
 </Note>
 
 ## Toolsets & tools
@@ -412,11 +411,12 @@ Meta tools are Nango's own tools. They are always pinned to the MCP server's too
 | --- | --- |
 | `nango_tool_search` | Finds tools in the session's toolset from a plain-language description |
 | `nango_execute` | Runs one of the session's tools by name |
+| `nango_proxy` | Makes an authenticated request to a provider API, for when no tool fits |
 
-Both default to `true`. You can disable them on session creation with `meta_tools`:
+`nango_tool_search` and `nango_execute` default to `true`, `nango_proxy` to `false`. Set them on session creation with `meta_tools`:
 
 ```json
-{ "meta_tools": { "nango_execute": false } }
+{ "meta_tools": { "nango_execute": false, "nango_proxy": true } }
 ```
 
 ### nango_tool_search
@@ -440,3 +440,17 @@ Runs one of the session's tools by name, on the connection the session resolved 
 ```
 
 Execution is synchronous and goes through the same path as [triggering an action function](/reference/backend/http-api/action/trigger), so it is capped by the synchronous execution limit and appears in Nango logs like any other function run.
+
+### nango_proxy
+
+The escape hatch for when no tool in the session covers what the agent needs. It makes an authenticated HTTP request to a provider API on the connection the session resolved for that integration, so the agent names an integration and never a connection.
+
+```json
+{ "integration": "notion", "method": "POST", "path": "/v1/search", "body": { "query": "roadmap" } }
+```
+
+It also takes `query_params` and `headers`. Nango authenticates the request from the session's connection, so credential headers are rejected rather than forwarded, including the provider's own (`x-api-key` and the like) alongside `authorization`.
+
+The integration has to be one in the session's toolset with a resolved connection, but the path is not restricted to what the toolset exposes. That is why `nango_proxy` is off by default: turning it on lets the agent reach any endpoint of a connected integration.
+
+The result is the provider's `status`, `headers` and `body`, for JSON or UTF-8 text responses up to 5 MB. Binary and larger responses are not supported, and neither is file upload. Use the [HTTP proxy](/reference/backend/http-api/proxy) for those.

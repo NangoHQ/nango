@@ -4,6 +4,7 @@ import { errorToObject, truncateJson } from '@nangohq/utils';
 
 import { getOrchestrator } from '../utils/utils.js';
 import { computeIdempotencyKey } from './dispatch.js';
+import { warnUnverifiedWebhook } from './missing-secret.js';
 
 import type { DispatchContext, PreparedDispatchExecution, WebhookConnection } from './dispatch.js';
 import type { LogContext } from '@nangohq/logs';
@@ -137,6 +138,10 @@ async function prepareFunctionExecution({
         );
         if (logCtx instanceof LogContextOrigin) {
             logCtx.attachSpan(new OtlpSpan(logCtx.operation));
+        }
+
+        if (context.unverified) {
+            warnUnverifiedWebhook(logCtx, context.integration, context.unverified);
         }
 
         // a function that declares no input schema receives no trigger.input.

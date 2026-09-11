@@ -7,6 +7,7 @@ import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { recordConnectionCreated } from '../hooks/auditConnection.js';
 import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
+import { safeCompare } from './signature.js';
 
 import type { InternalNango } from './internal-nango.js';
 import type { WebhookHandler } from './types.js';
@@ -25,10 +26,7 @@ function validate(integration: IntegrationConfig, headerSignature: string, rawBo
 
     const signature = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
 
-    const trusted = Buffer.from(`sha256=${signature}`, 'ascii');
-    const untrusted = Buffer.from(headerSignature, 'ascii');
-
-    return crypto.timingSafeEqual(trusted, untrusted);
+    return safeCompare(`sha256=${signature}`, headerSignature);
 }
 
 const route: WebhookHandler = async (nango, headers, body, rawBody) => {

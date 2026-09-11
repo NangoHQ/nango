@@ -4,10 +4,9 @@ import { useMemo } from 'react';
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { track } from '@/utils/analytics';
-import { EARLIEST_USAGE_MONTH_MS } from '../usageBreakdown';
 import { useSelectedMonth } from '../useSelectedMonth';
 
-const EARLIEST_USAGE_MONTH_LABEL = new Date(EARLIEST_USAGE_MONTH_MS).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const formatMonth = (date: Date) => date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
 /**
  * Month selector backed by the shared `?month` param (`useSelectedMonth`): chevron buttons flanking
@@ -16,9 +15,16 @@ const EARLIEST_USAGE_MONTH_LABEL = new Date(EARLIEST_USAGE_MONTH_MS).toLocaleDat
  * paid plans.
  */
 export const MonthSelector: React.FC = () => {
-    const { selectedMonth, setSelectedMonth, canGoNext, canGoPrevious } = useSelectedMonth();
+    const { selectedMonth, setSelectedMonth, canGoNext, canGoPrevious, earliestMonth, earliestMonthReason } = useSelectedMonth();
 
-    const monthDisplay = useMemo(() => selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }), [selectedMonth]);
+    const monthDisplay = useMemo(() => formatMonth(selectedMonth), [selectedMonth]);
+    const earliestMonthTooltip = useMemo(
+        () =>
+            earliestMonthReason === 'account-created'
+                ? `Your account was created in ${formatMonth(earliestMonth)}.`
+                : `Usage tracking is only available from ${formatMonth(earliestMonth)}.`,
+        [earliestMonth, earliestMonthReason]
+    );
 
     const step = (delta: number) => {
         track('web:usage:month_changed', { direction: delta < 0 ? 'previous' : 'next' });
@@ -45,7 +51,7 @@ export const MonthSelector: React.FC = () => {
                             {previousButton}
                         </span>
                     </TooltipTrigger>
-                    <TooltipContent>Usage tracking is only available from {EARLIEST_USAGE_MONTH_LABEL}.</TooltipContent>
+                    <TooltipContent>{earliestMonthTooltip}</TooltipContent>
                 </Tooltip>
             )}
             <span className="text-text-strong text-body-medium-medium min-w-28 text-center">{monthDisplay}</span>

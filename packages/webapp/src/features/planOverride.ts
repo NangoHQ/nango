@@ -115,7 +115,7 @@ export function buildSpendOverride(override: SpendOverride): GetUpcomingInvoice[
  */
 export function buildPeriodCostsOverride(override: PeriodCostsOverride): GetBillingPeriodCosts['Success'] {
     if (override === 'unavailable') {
-        return { data: { metrics: {}, malformedMetrics: [], fullyAttributed: true, currency: null, noCosts: true } };
+        return { data: { metrics: {}, malformedMetrics: [], fullyAttributed: true, fixedInCents: 0, currency: null, noCosts: true } };
     }
     if (override === 'zero') {
         return {
@@ -123,6 +123,7 @@ export function buildPeriodCostsOverride(override: PeriodCostsOverride): GetBill
                 metrics: { connections: 0, proxy: 0, function_executions: 0, function_compute_gbms: 0, function_logs: 0, webhook_forwards: 0 },
                 malformedMetrics: [],
                 fullyAttributed: true,
+                fixedInCents: 50_000,
                 currency: 'USD',
                 noCosts: false
             }
@@ -133,6 +134,7 @@ export function buildPeriodCostsOverride(override: PeriodCostsOverride): GetBill
             metrics: { connections: 11352, proxy: 1200, function_executions: 500, function_compute_gbms: 2317, function_logs: 150, webhook_forwards: 0 },
             malformedMetrics: [],
             fullyAttributed: true,
+            fixedInCents: 50_000,
             currency: 'USD',
             noCosts: false
         }
@@ -148,11 +150,11 @@ export function applyPlanOverride(
         addonState
     }: { overridePlan?: PlanDefinition | null; scheduledTarget?: PlanDefinition | null; addonState?: GrowthAddonState | null }
 ): ApiPlan | null | undefined {
-    if (!realPlan || (!overridePlan && !addonState)) {
+    if (!realPlan || (!overridePlan && !addonState && !scheduledTarget)) {
         return realPlan;
     }
 
-    const withPlan: ApiPlan = overridePlan
+    const onPlan: ApiPlan = overridePlan
         ? {
               ...realPlan,
               // `flags` is typed against `DBPlan` (pre-serialization), so its never-set Date fields
@@ -160,10 +162,14 @@ export function applyPlanOverride(
               // plan definitions only ever set those fields to `null`, never an actual Date.
               ...(overridePlan.flags as Partial<ApiPlan>),
               name: overridePlan.code,
-              orb_future_plan: scheduledTarget?.code ?? null,
-              orb_future_plan_at: scheduledTarget ? nextUsageResetDate(new Date()).toISOString() : null
+              orb_future_plan: null,
+              orb_future_plan_at: null
           }
         : realPlan;
+
+    const withPlan: ApiPlan = scheduledTarget
+        ? { ...onPlan, orb_future_plan: scheduledTarget.code, orb_future_plan_at: nextUsageResetDate(new Date()).toISOString() }
+        : onPlan;
 
     if (!addonState) {
         return withPlan;

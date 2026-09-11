@@ -28,6 +28,7 @@ export interface PlanDefinition {
     nextPlan: string[] | null;
     prevPlan: string[] | null;
     basePrice?: number;
+    keepsGrowthAddOnOnMigration?: boolean;
 
     cta?: string;
     hidden?: boolean;
@@ -178,7 +179,8 @@ export type GetBillingPeriodCosts = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/billing/period-costs';
-    Querystring: { env: string };
+    /** Omitting `from` and `to` uses the current billing period. */
+    Querystring: { env: string; from?: string; to?: string };
     Success: {
         data: {
             metrics: Partial<Record<UsageMetric, number>>;
@@ -187,10 +189,32 @@ export type GetBillingPeriodCosts = ApiEndpoint<{
             /** False when some usage price mapped to no metric of ours — an absent metric can't safely
              *  read as $0, since the money might be one of theirs. */
             fullyAttributed: boolean;
+            fixedInCents: number;
             currency: string | null;
             /** True when there's no billing period to report costs for — a free plan, no linked
              *  subscription, or an ended one. `metrics`/`currency` are otherwise never empty/null. */
             noCosts: boolean;
+        };
+    };
+}>;
+
+export type GetProjectedCosts = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/plans/billing/projected-costs';
+    Querystring: { env: string } | { env: string; from: string; to: string };
+    Success: {
+        data: {
+            metrics: Partial<Record<UsageMetric, number>>;
+            subtotalInCents: number;
+            minimumInCents: number;
+            minimumApplied: boolean;
+            growthAddOnInCents: number;
+            totalInCents: number;
+            periodComplete: boolean;
+            currency: string;
+            /** True when no Pay-as-you-go migration is scheduled. */
+            notApplicable: boolean;
         };
     };
 }>;
