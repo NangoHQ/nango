@@ -30,14 +30,4 @@ jobs:
 
             - uses: ./.github/actions/setup-node
 
-            - name: Resolve Playwright version
-              id: playwright
-              run: echo "version=$(node -p "require('./packages/connect-ui/package.json').devDependencies.playwright")" >> "$GITHUB_OUTPUT"
-
-            - name: Cache Playwright browsers
-              uses: actions/cache@v4
-              with:
-                  path: ~/.cache/ms-playwright
-                  key: ms-playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-
-            - run: npx --yes playwright@${{ steps.playwright.outputs.version }} install chromium
+            - uses: ./.github/actions/playwright-browsers

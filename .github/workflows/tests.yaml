@@ -142,17 +142,6 @@ jobs:
             # connect-ui imports @nangohq/types and @nangohq/frontend; build their dist first.
             - run: npm run ts-build -- --noCheck
 
-            - name: Resolve Playwright version
-              id: playwright
-              run: echo "version=$(node -p "require('./packages/connect-ui/package.json').devDependencies.playwright")" >> "$GITHUB_OUTPUT"
-
-            - name: Cache Playwright browsers
-              uses: actions/cache@v4
-              with:
-                  path: ~/.cache/ms-playwright
-                  key: ms-playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-
-            # Browser Mode needs the Chromium binary (ignore-scripts blocks the postinstall download).
-            - run: npx playwright install chromium
+            - uses: ./.github/actions/playwright-browsers
 
             - run: npm test -w packages/connect-ui
