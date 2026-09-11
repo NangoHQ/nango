@@ -14,11 +14,7 @@ import type { ZoomWebhookPayload } from './types.js';
 const CONNECTION_ID = 'my-connection-id';
 const SECRET = 'a-secret-token-with-plenty-of-entropy';
 
-function getNangoMock({
-    webhookSecret = SECRET,
-    connectionSecret,
-    connectionExists = true
-}: { webhookSecret?: string | null; connectionSecret?: unknown; connectionExists?: boolean } = {}) {
+function getNangoMock({ webhookSecret = SECRET }: { webhookSecret?: string | null } = {}) {
     const integration = getTestConfig({ provider: 'zoom-cc', ...(webhookSecret !== null && { custom: { webhookSecret } }) });
     const nango = new InternalNango({
         team: seeders.getTestTeam(),
@@ -28,17 +24,12 @@ function getNangoMock({
         request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
         logContextGetter
     });
-    const getConnection = vi
-        .spyOn(nango, 'getConnectionForWebhook')
-        .mockResolvedValue(
-            connectionExists ? { connectionId: CONNECTION_ID, metadata: connectionSecret !== undefined ? { webhookSecret: connectionSecret } : null } : null
-        );
     const execute = vi.spyOn(nango, 'executeScriptForWebhooks').mockResolvedValue({
         connectionIds: [CONNECTION_ID],
         connectionMetadata: {}
     });
 
-    return { nango, getConnection, execute };
+    return { nango, execute };
 }
 
 function getSignedHeaders(rawBody: string, secret: string = SECRET, timestamp = Math.floor(Date.now() / 1000)): Record<string, string> {
@@ -64,12 +55,12 @@ function getBody(overrides?: Partial<ZoomWebhookPayload>): ZoomWebhookPayload {
 }
 
 describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
-    it('routes a webhook after validating its signature', async () => {
+    it('routes a webhook by payload.account_id after validating its signature', async () => {
         const { nango, execute } = getNangoMock();
         const body = getBody();
         const rawBody = JSON.stringify(body);
 
-        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, { nangoConnectionId: CONNECTION_ID });
+        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody);
 
         expect(result.isOk()).toBe(true);
         expect(execute).toHaveBeenCalledWith({
@@ -80,44 +71,22 @@ describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
         });
     });
 
-    it('rejects a webhook when no secret is configured on the integration or the connection', async () => {
+    it('rejects a webhook when no secret is configured on the integration', async () => {
         const { nango, execute } = getNangoMock({ webhookSecret: null });
         const body = getBody();
         const rawBody = JSON.stringify(body);
 
-        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, { nangoConnectionId: CONNECTION_ID });
+        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody);
 
         expect(result.isErr()).toBe(true);
         expect(execute).not.toHaveBeenCalled();
-    });
-
-    it('rejects an invalid connection webhookSecret', async () => {
-        const { nango, execute } = getNangoMock({ webhookSecret: null, connectionSecret: ['not-a-string'] });
-        const body = getBody();
-        const rawBody = JSON.stringify(body);
-
-        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, { nangoConnectionId: CONNECTION_ID });
-
-        expect(result.isErr()).toBe(true);
-        expect(execute).not.toHaveBeenCalled();
-    });
-
-    it('does not look up the connection when an integration secret is already configured', async () => {
-        const { nango, getConnection } = getNangoMock();
-        const body = getBody();
-        const rawBody = JSON.stringify(body);
-
-        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, { nangoConnectionId: CONNECTION_ID });
-
-        expect(result.isOk()).toBe(true);
-        expect(getConnection).not.toHaveBeenCalled();
     });
 
     it('rejects a webhook missing signature headers', async () => {
         const { nango, execute } = getNangoMock();
         const body = getBody();
 
-        const result = await ZoomCcWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
+        const result = await ZoomCcWebhookRouting.default(nango, {}, body, JSON.stringify(body));
 
         expect(result.isErr()).toBe(true);
         expect(execute).not.toHaveBeenCalled();
@@ -129,7 +98,7 @@ describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
         const rawBody = JSON.stringify(body);
         const headers = { ...getSignedHeaders(rawBody), 'x-zm-signature': `v0=${'0'.repeat(64)}` };
 
-        const result = await ZoomCcWebhookRouting.default(nango, headers, body, rawBody, { nangoConnectionId: CONNECTION_ID });
+        const result = await ZoomCcWebhookRouting.default(nango, headers, body, rawBody);
 
         expect(result.isErr()).toBe(true);
         expect(execute).not.toHaveBeenCalled();
@@ -141,9 +110,7 @@ describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
         const rawBody = JSON.stringify(body);
         const staleTimestamp = Math.floor(Date.now() / 1000) - (90 * 60 + 1);
 
-        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody, SECRET, staleTimestamp), body, rawBody, {
-            nangoConnectionId: CONNECTION_ID
-        });
+        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody, SECRET, staleTimestamp), body, rawBody);
 
         expect(result.isErr()).toBe(true);
         expect(execute).not.toHaveBeenCalled();
@@ -154,7 +121,7 @@ describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
         const body = getBody();
         const rawBody = JSON.stringify(body);
 
-        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, `${rawBody} `, { nangoConnectionId: CONNECTION_ID });
+        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, `${rawBody} `);
 
         expect(result.isErr()).toBe(true);
         expect(execute).not.toHaveBeenCalled();
@@ -165,7 +132,7 @@ describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
         const body = getBody({ event: 'meeting.ended' });
         const rawBody = JSON.stringify(body);
 
-        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, { nangoConnectionId: CONNECTION_ID });
+        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -184,7 +151,7 @@ describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
             const body = getBody({ event: 'endpoint.url_validation', payload: { plainToken: 'qgg8vlvZRS6UYooatFL8Aw' } });
             const rawBody = JSON.stringify(body);
 
-            const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, {});
+            const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody);
 
             expect(result.isOk()).toBe(true);
             if (result.isOk()) {
@@ -204,7 +171,7 @@ describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
             const body = getBody({ event: 'endpoint.url_validation', payload: { plainToken: 'qgg8vlvZRS6UYooatFL8Aw' } });
             const rawBody = JSON.stringify(body);
 
-            const result = await ZoomCcWebhookRouting.default(nango, {}, body, rawBody, {});
+            const result = await ZoomCcWebhookRouting.default(nango, {}, body, rawBody);
 
             expect(result.isErr()).toBe(true);
             expect(execute).not.toHaveBeenCalled();
@@ -215,7 +182,7 @@ describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
             const body = getBody({ event: 'endpoint.url_validation', payload: {} });
             const rawBody = JSON.stringify(body);
 
-            const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, {});
+            const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody);
 
             expect(result.isErr()).toBe(true);
             expect(execute).not.toHaveBeenCalled();

@@ -14,7 +14,7 @@ const route: WebhookHandler<ZoomWebhookPayload> = async (nango, headers, body, r
         payload: body,
         webhookType: 'event',
         connectionIdentifier: 'payload.account_id',
-        propName: 'metadata.accountId'
+        propName: 'accountId'
     });
 
     return Ok({

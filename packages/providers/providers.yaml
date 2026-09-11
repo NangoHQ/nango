@@ -27851,6 +27851,7 @@ zoom:
     webhook_user_defined_secret: true
     webhook_allowed_query_params:
         - nangoConnectionId
+    post_connection_script: zoomPostConnection
     docs: https://nango.dev/docs/api-integrations/zoom
     setup_guide_url: https://nango.dev/docs/api-integrations/zoom/how-to-register-your-own-zoom-api-oauth-app
 

@@ -56,7 +56,7 @@ function getBody(overrides?: Partial<ZoomWebhookPayload>): ZoomWebhookPayload {
 }
 
 describe('Zoom webhook routing', () => {
-    it('matches by metadata.accountId after validating the signature', async () => {
+    it('matches by connection_config.accountId after validating the signature', async () => {
         const { nango, execute } = getNangoMock();
         const body = getBody();
         const rawBody = JSON.stringify(body);
@@ -69,14 +69,14 @@ describe('Zoom webhook routing', () => {
             payload: body,
             webhookType: 'event',
             connectionIdentifier: 'payload.account_id',
-            propName: 'metadata.accountId'
+            propName: 'accountId'
         });
     });
 
     // A nangoConnectionId query param plays no role in this provider's routing -- Zoom's dashboard
-    // can't scope a multi-tenant app's Event Subscriptions to one account, so metadata.accountId is
+    // can't scope a multi-tenant app's Event Subscriptions to one account, so account-id matching is
     // the only viable match. Confirms the query param is simply ignored, not honored as a shortcut.
-    it('ignores a nangoConnectionId query param and still matches by metadata.accountId', async () => {
+    it('ignores a nangoConnectionId query param and still matches by connection_config.accountId', async () => {
         const { nango, getConnection, execute } = getNangoMock();
         const body = getBody();
         const rawBody = JSON.stringify(body);
@@ -89,11 +89,11 @@ describe('Zoom webhook routing', () => {
             payload: body,
             webhookType: 'event',
             connectionIdentifier: 'payload.account_id',
-            propName: 'metadata.accountId'
+            propName: 'accountId'
         });
     });
 
-    it('accepts but routes nowhere when no metadata.accountId matches', async () => {
+    it('accepts but routes nowhere when no connection_config.accountId matches', async () => {
         const { nango, execute } = getNangoMock();
         execute.mockResolvedValue({ connectionIds: [], connectionMetadata: {} });
         const body = getBody();

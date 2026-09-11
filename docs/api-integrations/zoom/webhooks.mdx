@@ -13,7 +13,7 @@ This guide covers the **Zoom** integration (authorization code, one end user per
 ## How it works
 
 1. Zoom sends a POST request to your Nango webhook URL when a subscribed event occurs on any account that authorized your app.
-2. Nango verifies the delivery's signature against the **Webhook secret** on the integration, then matches the event's `payload.account_id` against `metadata.accountId` on your connections — see [step 4](#4-let-nango-match-events-to-a-connection).
+2. Nango verifies the delivery's signature against the **Webhook secret** on the integration, then matches the event's `payload.account_id` against `connection_config.accountId` on your connections — see [step 4](#4-nango-captures-your-zoom-account-id).
 3. Nango forwards the event to your app, or triggers a sync.
 
 <Note>
@@ -52,28 +52,13 @@ Do this before creating any Event Subscription. Zoom validates the destination U
 
 This is a one-time setup — you don't need to repeat it as new accounts authorize your app.
 
-### 4. Let Nango match events to a connection
+### 4. Nango captures your Zoom account id
 
-An authorization-code connection has no Zoom account id stored anywhere by default, so Nango can't match `payload.account_id` to one until you save it. Add a [post-connection-creation script](/guides/functions/event-functions) that fetches it and saves it to the connection's metadata:
+An authorization-code connection has no Zoom account id stored anywhere by default, so Nango can't match `payload.account_id` to one until it's saved. Nango does this for you automatically: right after a connection is created, a built-in step calls `GET /v2/users/me` and stores the result as `connection_config.accountId` on the connection. There's nothing to set up.
 
-```typescript
-import { createOnEvent } from 'nango';
-import z from 'zod';
-
-export default createOnEvent({
-    event: 'post-connection-creation',
-    description: "Save this connection's Zoom account id for webhook routing",
-    metadata: z.object({
-        accountId: z.string().optional()
-    }),
-    exec: async (nango) => {
-        const { data: user } = await nango.get({ endpoint: '/v2/users/me' });
-        await nango.updateMetadata({ accountId: user.account_id });
-    }
-});
-```
-
-If you already have connections from before adding this script, backfill their metadata with [Set connection metadata](/reference/backend/http-api/connections/set-metadata) using the same `account_id` from `GET /v2/users/me` for each one.
+<Note>
+Connections created before this became the default have no `connection_config.accountId` and won't receive webhooks. Reconnect them (have the end user go through OAuth again) to trigger this step and start routing correctly — there's no API to backfill `connection_config` on an existing connection the way there is for metadata.
+</Note>
 
 ## Handle the webhook
 
@@ -124,7 +109,7 @@ For the full list across meetings, webinars, recordings, phone, chat, and more, 
 
 ## Connection matching
 
-Nango matches `payload.account_id` against `metadata.accountId` on your connections (populated in [step 4](#4-let-nango-match-events-to-a-connection)) — this is the only routing strategy for this provider; a `nangoConnectionId` query param on the webhook URL is not used.
+Nango matches `payload.account_id` against `connection_config.accountId` on your connections (populated in [step 4](#4-nango-captures-your-zoom-account-id)) — this is the only routing strategy for this provider; a `nangoConnectionId` query param on the webhook URL is not used.
 
 If nothing matches `payload.account_id`, the delivery is still accepted (so Zoom doesn't see an error and retry), but isn't routed to any connection.
 
