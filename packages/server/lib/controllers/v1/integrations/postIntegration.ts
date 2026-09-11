@@ -1,13 +1,14 @@
-import { configService, getGlobalClientMetadataDocumentUrl, getProvider, mcpClient, sharedCredentialsService } from '@nangohq/shared';
+import { configService, getProvider, sharedCredentialsService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToApi } from '../../../formatters/integration.js';
 import { resolveIntegrationConfig } from '../../../services/integrationConfig.js';
+import { cleanupMcpClientRegistration, registerMcpOAuth2Client } from '../../../services/mcpClientRegistration.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { buildIntegrationConfig } from './buildIntegrationConfig.js';
 import { postIntegrationBodySchema } from './validation.js';
 
-import type { IntegrationConfig, PostIntegration, ProviderMcpOAUTH2 } from '@nangohq/types';
+import type { IntegrationConfig, PostIntegration } from '@nangohq/types';
 
 export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -91,31 +92,24 @@ export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(asyn
     } else {
         const config = await buildIntegrationConfig(body, environment.id);
 
+        let mcpRegistration = null;
         if (provider.auth_mode === 'MCP_OAUTH2') {
-            const clientRegistration = (provider as ProviderMcpOAUTH2).client_registration;
-            if (clientRegistration === 'dynamic') {
-                const mcpRegistration = await mcpClient.registerClientId({ provider, environment, team: account });
-                config.oauth_client_id = mcpRegistration.client_id;
-                config.oauth_client_secret = mcpRegistration.client_secret || '';
-            } else if (clientRegistration === 'cimd') {
-                const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, config.unique_key);
-                if (!cimdUrl) {
-                    res.status(400).send({
-                        error: {
-                            code: 'invalid_body',
-                            message: 'Client ID metadata documents require your Nango instance to be reachable at a public HTTPS URL'
-                        }
-                    });
-                    return;
-                }
-                config.oauth_client_id = cimdUrl;
-                config.oauth_client_secret = '';
+            const registration = await registerMcpOAuth2Client({ provider, uniqueKey: config.unique_key, environment, team: account });
+            if (registration.isErr()) {
+                res.status(400).send({ error: { code: 'invalid_body', message: registration.error.message } });
+                return;
+            }
+            if (registration.value) {
+                mcpRegistration = registration.value;
+                config.oauth_client_id = registration.value.oauth_client_id;
+                config.oauth_client_secret = registration.value.oauth_client_secret;
             }
             // static: client_id/secret come from body.auth
         }
 
         const createdIntegration = await configService.createProviderConfig(config, provider);
         if (!createdIntegration) {
+            await cleanupMcpClientRegistration(mcpRegistration);
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to create integration' } });
             return;
         }

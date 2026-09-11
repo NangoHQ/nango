@@ -6,7 +6,6 @@ import {
     getGlobalWebhookReceiveUrl,
     getProvider,
     getProviders,
-    mcpClient,
     sharedCredentialsService
 } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
@@ -14,8 +13,10 @@ import { Err, getLogger, Ok } from '@nangohq/utils';
 import { getIntegrationCredentials } from '../utils/integrations.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { resolveIntegrationConfig } from './integrationConfig.js';
+import { cleanupMcpClientRegistration, registerMcpOAuth2Client } from './mcpClientRegistration.js';
 
 import type { IntegrationCredentials } from '../utils/integrations.js';
+import type { McpClientRegistration } from './mcpClientRegistration.js';
 import type { DBCreateIntegration, DBEnvironment, DBTeam, IntegrationConfig, Provider, ProviderMcpOAUTH2 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -258,6 +259,7 @@ export class IntegrationService {
     }
 
     async create(params: CreateIntegrationParams): Promise<Result<CreatedIntegration, CreateIntegrationServiceError>> {
+        let mcpRegistration: McpClientRegistration | null = null;
         try {
             const provider = getProvider(params.provider);
             if (!provider) {
@@ -370,40 +372,31 @@ export class IntegrationService {
                 }
 
                 if (provider.auth_mode === 'MCP_OAUTH2') {
-                    const clientRegistration = (provider as ProviderMcpOAUTH2).client_registration;
-                    if (clientRegistration === 'dynamic') {
-                        if (!params.environment || !params.team) {
-                            return Err(
-                                new IntegrationServiceError({
-                                    code: 'create_failed',
-                                    message: 'environment and team are required to dynamically register an MCP_OAUTH2 client'
-                                })
-                            );
-                        }
-                        const mcpRegistration = await mcpClient.registerClientId({ provider, environment: params.environment, team: params.team });
-                        integration.oauth_client_id = mcpRegistration.client_id;
-                        integration.oauth_client_secret = mcpRegistration.client_secret || '';
-                    } else if (clientRegistration === 'cimd') {
-                        if (!params.environment) {
-                            return Err(
-                                new IntegrationServiceError({
-                                    code: 'create_failed',
-                                    message: 'environment is required to build an MCP_OAUTH2 client ID metadata document URL'
-                                })
-                            );
-                        }
-                        const cimdResult = resolveCimdClientId(params.environment.uuid, integration.unique_key);
-                        if (cimdResult.isErr()) {
-                            return Err(cimdResult.error);
-                        }
-                        integration.oauth_client_id = cimdResult.value;
-                        integration.oauth_client_secret = '';
+                    const registration = await registerMcpOAuth2Client({
+                        provider,
+                        uniqueKey: integration.unique_key,
+                        environment: params.environment,
+                        team: params.team
+                    });
+                    if (registration.isErr()) {
+                        return Err(
+                            new IntegrationServiceError({
+                                code: registration.error.code === 'cimd_url_unavailable' ? 'invalid_integration_config' : 'create_failed',
+                                message: registration.error.message
+                            })
+                        );
+                    }
+                    if (registration.value) {
+                        mcpRegistration = registration.value;
+                        integration.oauth_client_id = registration.value.oauth_client_id;
+                        integration.oauth_client_secret = registration.value.oauth_client_secret;
                     }
                 }
             }
 
             const created = await configService.createProviderConfig(integration, provider);
             if (!created) {
+                await cleanupMcpClientRegistration(mcpRegistration);
                 this.logger.error('Integration creation failed', {
                     failureCode: 'create_failed',
                     errorKind: 'empty_result'
@@ -413,6 +406,7 @@ export class IntegrationService {
 
             return Ok({ integration: created, provider });
         } catch (err) {
+            await cleanupMcpClientRegistration(mcpRegistration);
             this.logCreateFailure('create_failed', err);
             return Err(
                 new IntegrationServiceError({

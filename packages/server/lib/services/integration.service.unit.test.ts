@@ -580,6 +580,37 @@ describe('integrationService', () => {
                 );
             });
 
+            it('deregisters a dynamically-registered client when persisting the integration fails', async () => {
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('dynamic'));
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+                vi.spyOn(shared.mcpClient, 'registerClientId').mockResolvedValue({
+                    client_id: 'dcr-client-id',
+                    client_secret: 'dcr-secret',
+                    registration_client_uri: 'https://provider.example.com/register/dcr-client-id',
+                    registration_access_token: 'dcr-management-token'
+                });
+                vi.spyOn(shared.configService, 'createProviderConfig').mockResolvedValue(null);
+                const deregisterSpy = vi.spyOn(shared.mcpClient, 'deregisterClientId').mockResolvedValue(undefined);
+
+                const result = await integrationService.create({
+                    environmentId: 42,
+                    provider: 'mcp1',
+                    uniqueKey: 'mcp1',
+                    credentialSource: 'own',
+                    environment: environmentFixture,
+                    team: teamFixture
+                });
+
+                expect(result.isErr()).toBe(true);
+                if (result.isErr()) {
+                    expect(result.error).toMatchObject({ code: 'create_failed' });
+                }
+                expect(deregisterSpy).toHaveBeenCalledWith({
+                    registrationClientUri: 'https://provider.example.com/register/dcr-client-id',
+                    registrationAccessToken: 'dcr-management-token'
+                });
+            });
+
             it('takes user-supplied credentials for static client registration', async () => {
                 vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('static'));
                 vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);

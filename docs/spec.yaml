@@ -5081,11 +5081,11 @@ components:
                       scopes:
                           anyOf:
                               - type: string
-                                pattern: '^[0-9a-zA-Z:/_.*-]+(,[0-9a-zA-Z:/_.*-]+)*$'
+                                pattern: '^(?:[0-9a-zA-Z:/_.*-]+([, ]+[0-9a-zA-Z:/_.*-]+)*)?$'
                               - type: 'null'
 
         IntegrationCredentialsInput:
-            description: Integration credentials schema for different authentication types, as accepted in create/update request bodies. Optional fields may be omitted but must not be null.
+            description: Integration credentials schema accepted in create/update request bodies. For MCP_OAUTH2, static creation requires both client_id and client_secret; dynamic and CIMD providers reject those fields because Nango manages them. Optional fields may be omitted but must not be null.
             oneOf:
                 - type: object
                   required:
@@ -5180,4 +5180,4 @@ components:
                           minLength: 1
                       scopes:
                           type: string
-                          pattern: '^[0-9a-zA-Z:/_.*-]+(,[0-9a-zA-Z:/_.*-]+)*$'
+                          pattern: '^(?:[0-9a-zA-Z:/_.*-]+([, ]+[0-9a-zA-Z:/_.*-]+)*)?$'
