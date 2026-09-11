@@ -9140,7 +9140,7 @@ pagerduty:
     - services.read
     - write
 
-# source: https://app.pandadoc.com/.well-known/oauth-authorization-server (scopes_supported)
+# source: https://app.pandadoc.com/.well-known/oauth-authorization-server + https://app.pandadoc.eu/.well-known/oauth-authorization-server (scopes_supported, identical for both regions)
 pandadoc:
     - read
     - read+write

@@ -1,0 +1,100 @@
+---
+title: 'Pandadoc (MCP)'
+sidebarTitle: 'Pandadoc (MCP)'
+description: 'Connect AI tools to Pandadoc via the Model Context Protocol (MCP) to create, send, and track documents'
+---
+
+## 🚀 Quickstart
+
+Connect to the Pandadoc MCP server with Nango and call MCP tools in minutes. Pandadoc MCP uses OAuth 2.0 with **dynamic client registration**, so no app registration is required.
+
+<Note>
+This integration connects to Pandadoc's global MCP server (`mcp.pandadoc.com`). If your Pandadoc account is on the EU region (`app.pandadoc.eu`), use the [Pandadoc (MCP EU)](/api-integrations/pandadoc-mcp-eu) integration instead — authentication fails if the server region doesn't match your account's region.
+</Note>
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Pandadoc (MCP)_.
+    </Step>
+    <Step title="Authorize">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Pandadoc. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call a Pandadoc MCP tool">
+    Make your first MCP request (initialize handshake). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/mcp" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {
+                        "name": "nango-client",
+                        "version": "1.0.0"
+                    }
+                }
+            }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/v1/mcp',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'initialize',
+                params: {
+                    protocolVersion: '2024-11-05',
+                    capabilities: {},
+                    clientInfo: {
+                        name: 'nango-client',
+                        version: '1.0.0'
+                    }
+                }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Pandadoc (MCP) guides
+
+Nango uses **dynamic client registration** with Pandadoc's MCP OAuth server. You do not need to register an MCP application.
+
+Official resources: [Getting started with the Pandadoc MCP server](https://developers.pandadoc.com/docs/getting-started-with-mcp)
+
+---

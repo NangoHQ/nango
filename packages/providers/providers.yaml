@@ -17207,8 +17207,8 @@ pandadoc:
     categories:
         - legal
     auth_mode: OAUTH2
-    authorization_url: https://app.pandadoc.com/oauth2/authorize
-    token_url: https://api.pandadoc.com/oauth2/access_token
+    authorization_url: https://app.${connectionConfig.region}/oauth2/authorize || https://app.pandadoc.com/oauth2/authorize
+    token_url: https://api.${connectionConfig.region}/oauth2/access_token || https://api.pandadoc.com/oauth2/access_token
     authorization_params:
         response_type: code
     token_params:
@@ -17216,8 +17216,18 @@ pandadoc:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api.pandadoc.com
-    docs: https://nango.dev/docs/integrations/all/pandadoc
+        base_url: https://api.${connectionConfig.region} || https://api.pandadoc.com
+    docs: https://nango.dev/docs/api-integrations/pandadoc
+    docs_connect: https://nango.dev/docs/api-integrations/pandadoc/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/pandadoc/how-to-register-your-own-pandadoc-api-oauth-app
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: Your Pandadoc account's data region.
+            enum:
+                - pandadoc.com
+                - pandadoc.eu
 
 pandadoc-api-key:
     display_name: Pandadoc (API Key)
@@ -17244,6 +17254,50 @@ pandadoc-api-key:
             doc_section: '#step-1-generating-your-api-key'
             example: 3039ba033eb1410caa0a2227158d63c9d6502cd8
             pattern: '^[a-fA-F0-9]+$'
+
+pandadoc-mcp:
+    display_name: Pandadoc (MCP)
+    categories:
+        - legal
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.pandadoc.com/authorize
+    token_url: https://mcp.pandadoc.com/token
+    registration_url: https://mcp.pandadoc.com/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.pandadoc.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/pandadoc-mcp
+
+pandadoc-mcp-eu:
+    display_name: Pandadoc (MCP EU)
+    categories:
+        - legal
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.pandadoc.eu/authorize
+    token_url: https://mcp.pandadoc.eu/token
+    registration_url: https://mcp.pandadoc.eu/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.pandadoc.eu
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/pandadoc-mcp-eu
 
 paddle:
     display_name: Paddle
