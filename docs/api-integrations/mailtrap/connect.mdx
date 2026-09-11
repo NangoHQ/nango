@@ -1,0 +1,46 @@
+---
+title: Mailtrap - How do I link my account?
+sidebarTitle: Mailtrap
+---
+
+## Overview
+
+To authenticate with Mailtrap, you will need:
+
+1. **API Token** - A token that lets an application send email through the Mailtrap API on your behalf.
+2. **API Environment** - Whether this connection sends real email or test email.
+
+This guide walks you through finding each of these values.
+
+### Prerequisites
+
+- A Mailtrap account with a verified sending domain.
+
+### Instructions
+
+#### Step 1: Choose your environment
+
+Decide which environment this connection should use. You select it as the **API Environment** in Step 3:
+
+| Value | Sends to |
+|---|---|
+| `send` | Real recipients. Pre-selected, so you can skip this step. |
+| `sandbox` | A Mailtrap sandbox inbox, so nothing reaches real recipients. |
+
+#### Step 2: Getting your API token
+
+1. Log in to your Mailtrap account and go to [API Tokens](https://mailtrap.io/settings/api-tokens).
+2. Click **Add Token**, give it a name, and select the permissions it needs.
+3. Copy the generated token. Store it securely — it is only displayed once.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **API Token**:
+
+1. Open the form where you need to authenticate with Mailtrap.
+2. Enter your **API Token** in the API Token field, and select the **API Environment** you chose in Step 1.
+3. Submit the form to complete authentication.
+
+<img src="/api-integrations/mailtrap/form.png" alt="Mailtrap connection form with API Token and API Environment fields" style={{maxWidth: "450px" }}/>
+
+You are now connected to Mailtrap.

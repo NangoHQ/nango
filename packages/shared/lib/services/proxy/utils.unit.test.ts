@@ -1457,6 +1457,30 @@ describe('buildProxyURL', () => {
         expect(url).toBe('https://amplitude.com/api/test');
     });
 
+    it.each([
+        ['send', 'https://send.api.mailtrap.io/api/test'],
+        ['sandbox', 'https://sandbox.api.mailtrap.io/api/test']
+    ])('should build the base URL from the selected subdomain %s (e.g. mailtrap)', (subdomain, expected) => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://${connectionConfig.subdomain}.api.mailtrap.io'
+                }
+            }
+        });
+
+        const url = buildProxyURL({
+            config,
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'test-key' },
+                connection_config: { subdomain }
+            })
+        });
+
+        expect(url).toBe(expected);
+    });
+
     it('should fall back to second base URL when first connectionConfig param is absent (e.g. amazon-selling-partner without subdomain)', () => {
         const url = buildProxyURL({
             config: getDefaultProxy({
