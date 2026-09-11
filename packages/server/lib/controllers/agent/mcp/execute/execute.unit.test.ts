@@ -87,6 +87,12 @@ describe('executeSessionTool', () => {
         );
     });
 
+    it('stamps the session as the actor of the run', async () => {
+        await execute('read_doc');
+
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ actor: { kind: 'session', id: 'session-1' } }));
+    });
+
     it('runs a searchable tool, which is callable without being listed', async () => {
         const result = await execute('upsert_doc');
 
