@@ -87,7 +87,7 @@ export const UsageTable: React.FC<UsageTableProps> = ({
                 )}
             >
                 <span>{legacy ? 'Legacy metric' : 'Metric'}</span>
-                {/* The figure and its bar are separate columns, so the one header covers both. */}
+                {/* The caps figure and its bar are separate columns, so this header spans both. */}
                 <span className={cn(variant === 'caps' && 'col-span-2')}>{thisPeriod}</span>
                 <span className="flex items-center gap-1.5">
                     {rightmost}

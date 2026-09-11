@@ -14,7 +14,7 @@ export type UsageRowVariant = 'caps' | 'usage' | 'charges' | 'comparison';
 
 // Tailwind only generates classes it sees in source. This helper must return whole strings.
 export function usageTableGrid(variant: UsageRowVariant, planNamedCharges = false): string {
-    // The last column is 44px rather than the chevron's 20px because a row's `px-6` shrinks its first and last subgrid tracks.
+    // A row's `px-6` shrinks its first and last subgrid tracks. The last column is 44px so the 20px chevron survives that.
     if (variant === 'caps') {
         return 'grid grid-cols-[minmax(0,2fr)_minmax(112px,max-content)_minmax(0,2fr)_124px_44px] gap-x-4';
     }
@@ -27,7 +27,7 @@ export function usageTableGrid(variant: UsageRowVariant, planNamedCharges = fals
     return 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_124px_44px] gap-x-4';
 }
 
-/** Maps a row onto the table's columns. Every level between the two needs it, or the tracks stop here. */
+/** Maps a row onto the table's columns. Drop it from any wrapper in between and that row's cells stop lining up. */
 export const usageRowCells = 'col-span-full grid grid-cols-subgrid';
 
 interface UsageRowProps {
