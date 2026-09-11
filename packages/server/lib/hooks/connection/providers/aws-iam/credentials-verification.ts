@@ -3,11 +3,30 @@ import crypto from 'crypto';
 import type { InternalNango as Nango } from '../../credentials-verification-script.js';
 import type { AWSAuthHeader, AWSAuthHeaderParams, AWSIAMRequestParams, ErrorResponse, GetCallerIdentityResponse } from './types.js';
 
+/**
+ * Resolve the STS host for a given AWS region.
+ *
+ * The legacy global endpoint `sts.amazonaws.com` only accepts SigV4 signatures
+ * scoped to `us-east-1`, which breaks credential verification for any user who
+ * picks a different region in the Connect UI. Using the regional STS endpoint
+ * keeps the user-entered region in the SigV4 scope and additionally unlocks
+ * AWS GovCloud and China partitions, where `sts.amazonaws.com` is unreachable.
+ *
+ * See: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_enable-regions.html
+ */
+function getStsHost(region: string): string {
+    if (region.startsWith('cn-')) {
+        return `sts.${region}.amazonaws.com.cn`;
+    }
+    return `sts.${region}.amazonaws.com`;
+}
+
 export default async function execute(nango: Nango) {
     try {
         const { credentials, provider_config_key, connection_config } = nango.getConnection();
 
         const { username, password } = credentials as { username: string; password: string };
+        const region = connection_config['region'] as string;
 
         const requestParams: AWSIAMRequestParams = {
             method: 'GET',
@@ -19,6 +38,7 @@ export default async function execute(nango: Nango) {
             }
         };
 
+        const host = getStsHost(region);
         const queryParams = new URLSearchParams(requestParams.params).toString();
         const { authorizationHeader, date } = getAWSAuthHeader({
             method: requestParams.method,
@@ -27,11 +47,12 @@ export default async function execute(nango: Nango) {
             querystring: queryParams,
             accessKeyId: username,
             secretAccessKey: password,
-            region: connection_config['region']
+            region,
+            host
         });
 
         await nango.proxy<ErrorResponse | GetCallerIdentityResponse>({
-            baseUrlOverride: `https://sts.amazonaws.com`,
+            baseUrlOverride: `https://${host}`,
             endpoint: '/',
             params: requestParams.params,
             headers: {
@@ -46,9 +67,7 @@ export default async function execute(nango: Nango) {
 }
 
 function getAWSAuthHeader(params: AWSAuthHeaderParams): AWSAuthHeader {
-    const { method, service, path, querystring, accessKeyId, secretAccessKey, region } = params;
-
-    const host = 'sts.amazonaws.com';
+    const { method, service, path, querystring, accessKeyId, secretAccessKey, region, host } = params;
 
     const date = new Date().toISOString().replace(/[:-]|\.\d{3}/g, '');
     const payloadHash = crypto.createHash('sha256').update('').digest('hex');
