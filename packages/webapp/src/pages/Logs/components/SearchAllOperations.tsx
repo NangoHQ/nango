@@ -37,6 +37,7 @@ const parseTypes = parseAsArrayOf(parseAsStringEnum(typesList), ',').withDefault
 const parseIntegrations = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
 const parseConnections = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
 const parseSyncs = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
+const parseAgentSessions = parseAsArrayOf(parseAsString, ',').withDefault(['all']).withOptions({ history: 'push' });
 const parsePeriod = parseAsArrayOf(parseAsTimestamp, ',').withOptions({ history: 'push' }).withDefault(Object.values(last24hPreset.toPeriod()!));
 
 export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
@@ -53,6 +54,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
     const [integrations, setIntegrations] = useQueryState('integrations', parseIntegrations);
     const [connections, setConnections] = useQueryState('connections', parseConnections);
     const [syncs, setSyncs] = useQueryState('syncs', parseSyncs);
+    const [agentSessions, setAgentSessions] = useQueryState('agentSessions', parseAgentSessions);
     const [period, setPeriod] = useQueryState('period', parsePeriod);
 
     // We optimize the refresh and memory when the users is waiting for new operations (= scroll is on top)
@@ -86,7 +88,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
         unknown[],
         string | null
     >({
-        queryKey: [env, 'logs:operations:infinite', states, types, integrations, connections, syncs, period, debouncedSearch],
+        queryKey: [env, 'logs:operations:infinite', states, types, integrations, connections, syncs, agentSessions, period, debouncedSearch],
         queryFn: async ({ pageParam, signal }) => {
             let periodCopy: SearchOperations['Body']['period'];
             // Slide the window automatically when live
@@ -106,6 +108,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     integrations,
                     connections,
                     syncs,
+                    agentSessions,
                     period: periodCopy,
                     // Search is post-filtering the list of operations, it can change the actual number of returned operations
                     // It's more efficient to increase the limit of pre-filtered operations we get, and do less round trip
@@ -149,7 +152,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
 
     const trim = useCallback(() => {
         queryClient.setQueryData(
-            [env, 'logs:operations:infinite', states, types, integrations, connections, syncs, period, debouncedSearch],
+            [env, 'logs:operations:infinite', states, types, integrations, connections, syncs, agentSessions, period, debouncedSearch],
             (oldData: any) => {
                 if (!oldData || !oldData.pages || oldData.pages.length <= 1) {
                     return oldData;
@@ -162,7 +165,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 };
             }
         );
-    }, [env, states, types, integrations, connections, syncs, period]);
+    }, [env, states, types, integrations, connections, syncs, agentSessions, period]);
 
     const flatData = useMemo<OperationRowType[]>(() => {
         return data?.pages?.flatMap((page) => page.data) ?? [];
@@ -271,6 +274,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     <SearchableMultiSelect label="Integration" selected={integrations} category={'integration'} onChange={setIntegrations} max={20} />
                     <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} max={20} />
                     <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} max={20} />
+                    <SearchableMultiSelect label="Agent session" selected={agentSessions} category={'agentSession'} onChange={setAgentSessions} max={20} />
 
                     <PeriodSelector
                         isLive={!manualLoadMore && isLive}
