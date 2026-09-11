@@ -27,6 +27,24 @@ describe('exitOnListenFailure', () => {
         await new Promise<void>((resolve) => holder.close(() => resolve()));
     });
 
+    it('should run before a listener registered earlier', async () => {
+        vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+        const order: string[] = [];
+
+        const holder = http.createServer();
+        await new Promise<void>((resolve) => holder.listen(0, resolve));
+        const port = (holder.address() as { port: number }).port;
+
+        const loser = http.createServer();
+        loser.on('error', () => order.push('earlier'));
+        exitOnListenFailure(loser, () => order.push('ours'));
+        loser.listen(port);
+
+        await vi.waitFor(() => expect(order).toStrictEqual(['ours', 'earlier']));
+
+        await new Promise<void>((resolve) => holder.close(() => resolve()));
+    });
+
     it('should not exit for an error raised after the server is listening', async () => {
         const exit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
         const onFailure = vi.fn();
