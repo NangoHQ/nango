@@ -14833,6 +14833,33 @@ microsoft-dynamics-365-finance-and-operations-cc:
             doc_section: '#step-2-finding-your-environment-url'
             order: 2
 
+microsoft-dataverse:
+    display_name: Microsoft Dataverse (Dynamics 365 CRM)
+    alias: microsoft-dynamics-365-finance-and-operations
+    categories:
+        - crm
+    docs: https://nango.dev/docs/api-integrations/microsoft-dataverse
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-dataverse/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-dataverse/how-to-register-your-own-microsoft-dataverse-api-oauth-app
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization's Microsoft Entra ID tenant.
+            format: uuid
+            example: 00000000-0000-0000-0000-000000000000
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+        environmentUrl:
+            type: string
+            title: Environment URL
+            description: The domain of your Dataverse environment.
+            example: contoso.api.crm.dynamics.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-2-finding-your-environment-url'
+            order: 2
+
 microsoft-ads:
     display_name: Microsoft Ads
     alias: microsoft
