@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { expiresInToMs, metaToolsSummary, parseMetaTools, toolsetSummary, toolsetToolNames } from './agentSessionCreation.service.js';
+import {
+    expiresInToMs,
+    metaToolsSummary,
+    parseMetaTools,
+    resolvedConnectionsSummary,
+    toolsetSummary,
+    toolsetToolNames
+} from './agentSessionCreation.service.js';
 
 describe('expiresInToMs', () => {
     it.each([
@@ -36,6 +43,18 @@ describe('toolsetSummary', () => {
         expect(summary).toStrictEqual({
             notion: { connected: true, tools_pinned: 1, tools_searchable: 1 },
             reddit: { connected: false, tools_pinned: 0, tools_searchable: 1 }
+        });
+    });
+});
+
+describe('resolvedConnectionsSummary', () => {
+    it('drops the internal connection and config ids', () => {
+        expect(
+            resolvedConnectionsSummary({
+                notion: { integrationId: 'notion', provider: 'notion', connectionId: 'notion-1', internalConnectionId: 1, configId: 10 }
+            })
+        ).toStrictEqual({
+            notion: { integrationId: 'notion', provider: 'notion', connectionId: 'notion-1' }
         });
     });
 });
