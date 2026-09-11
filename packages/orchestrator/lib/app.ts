@@ -2,7 +2,7 @@ import './tracer.js';
 
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { DatabaseClient, defaultDatabaseClientOptions, Scheduler } from '@nangohq/scheduler';
-import { once, report, stringifyError } from '@nangohq/utils';
+import { exitOnListenFailure, once, report, stringifyError } from '@nangohq/utils';
 
 import { BackpressureMonitor } from './backpressure-monitor.js';
 import { envs } from './env.js';
@@ -88,6 +88,7 @@ try {
     const api = server.listen(port, () => {
         logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);
     });
+    exitOnListenFailure(api, (err) => logger.error(`Failed to listen on port ${port}: ${err.code ?? err.message}`));
     if (envs.NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS && envs.NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS > 0) {
         api.keepAliveTimeout = envs.NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS;
         api.headersTimeout = envs.NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS + 1000;

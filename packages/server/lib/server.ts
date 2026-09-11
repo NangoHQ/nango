@@ -15,7 +15,7 @@ import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
-import { flags, getLogger, NANGO_VERSION, once, report } from '@nangohq/utils';
+import { exitOnListenFailure, flags, getLogger, NANGO_VERSION, once, report } from '@nangohq/utils';
 
 import { destroyAuditDb, migrateAuditDb, startAuditPartitions } from './auditDb.js';
 import publisher from './clients/publisher.client.js';
@@ -114,6 +114,7 @@ if (pubsubConnect.isErr()) {
 await initializeFeatureFlags();
 
 const port = getServerPort();
+exitOnListenFailure(server, (err) => logger.error(`Failed to listen on port ${port}: ${err.code ?? err.message}`));
 server.listen(port, () => {
     logger.info(`✅ Nango Server with version ${NANGO_VERSION} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
     logger.info(`Role-based authorization: ${flags.hasAuthRoles ? 'enabled' : 'disabled'}`);

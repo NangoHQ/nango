@@ -5,7 +5,7 @@ import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } 
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs } from '@nangohq/logs';
 import { records } from '@nangohq/records';
-import { getLogger, once, report } from '@nangohq/utils';
+import { exitOnListenFailure, getLogger, once, report } from '@nangohq/utils';
 
 import { autoDeletingDaemon } from './daemons/autodeleting.daemon.js';
 import { autoPruningDaemon } from './daemons/autopruning.daemon.js';
@@ -46,6 +46,7 @@ try {
     api = server.listen(port, () => {
         logger.info(`🚀 API ready at http://localhost:${port}`);
     });
+    exitOnListenFailure(api, (err) => logger.error(`Failed to listen on port ${port}: ${err.code ?? err.message}`));
     if (envs.NANGO_PERSIST_KEEP_ALIVE_TIMEOUT_MS && envs.NANGO_PERSIST_KEEP_ALIVE_TIMEOUT_MS > 0) {
         api.keepAliveTimeout = envs.NANGO_PERSIST_KEEP_ALIVE_TIMEOUT_MS;
         api.headersTimeout = envs.NANGO_PERSIST_KEEP_ALIVE_TIMEOUT_MS + 1000;

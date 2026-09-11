@@ -6,7 +6,7 @@ import { generateImage } from '@nangohq/fleet';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp } from '@nangohq/logs';
 import { getOtlpRoutes } from '@nangohq/shared';
-import { getLogger, once, report, stringifyError } from '@nangohq/utils';
+import { exitOnListenFailure, getLogger, once, report, stringifyError } from '@nangohq/utils';
 
 import { orchestratorClient } from './clients.js';
 import { envs } from './env.js';
@@ -40,6 +40,7 @@ try {
     const port = envs.NANGO_JOBS_PORT;
     const orchestratorUrl = envs.ORCHESTRATOR_SERVICE_URL;
     const srv = server.listen(port);
+    exitOnListenFailure(srv, (err) => logger.error(`Failed to listen on port ${port}: ${err.code ?? err.message}`));
     if (envs.NANGO_JOBS_KEEP_ALIVE_TIMEOUT_MS && envs.NANGO_JOBS_KEEP_ALIVE_TIMEOUT_MS > 0) {
         srv.keepAliveTimeout = envs.NANGO_JOBS_KEEP_ALIVE_TIMEOUT_MS;
         srv.headersTimeout = envs.NANGO_JOBS_KEEP_ALIVE_TIMEOUT_MS + 1000;
