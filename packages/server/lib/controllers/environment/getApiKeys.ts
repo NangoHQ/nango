@@ -36,7 +36,7 @@ export const getPublicEnvironmentApiKeys = asyncWrapper<GetPublicApiKeys>(async 
         return;
     }
 
-    const keys = await customerKeyService.getApiKeysByEnvWithoutSecrets(db.knex, environment.id, query.data.display_name);
+    const keys = await customerKeyService.search(db.knex, { type: 'environment', environmentId: environment.id, displayName: query.data.display_name });
     if (keys.isErr()) {
         report(keys.error, { accountId: account.id, environmentId: environment.id });
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to retrieve API keys' } });

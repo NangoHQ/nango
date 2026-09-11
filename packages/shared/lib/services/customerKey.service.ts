@@ -34,7 +34,41 @@ export class CustomerKeyError extends Error {
 /** What the audit trail needs to name a key: the public identifier and its label, never its secret. */
 export type ApiKeyRef = Pick<DBCustomerKey, 'uuid' | 'display_name'>;
 
-type AccountApiKeyRecord = Pick<DBCustomerKey, 'id' | 'uuid' | 'display_name' | 'scopes' | 'secret' | 'iv' | 'tag' | 'last_used_at' | 'created_at'>;
+type EnvironmentKeySearch = {
+    type: 'environment';
+    environmentId: number;
+    accountId?: number;
+    keyId?: number;
+    keyUuid?: string;
+    displayName?: string | undefined;
+};
+
+type AccountKeySearch = {
+    type: 'account';
+    accountId: number;
+    keyId?: number;
+    keyUuid?: string;
+};
+
+export type CustomerKeySearch = EnvironmentKeySearch | AccountKeySearch;
+
+type SafeCustomerKey = Omit<
+    DBCustomerKey,
+    'secret' | 'iv' | 'tag' | 'hashed' | 'sandbox_signing_secret' | 'sandbox_signing_secret_iv' | 'sandbox_signing_secret_tag'
+>;
+
+const SAFE_CUSTOMER_KEY_COLUMNS = [
+    'id',
+    'uuid',
+    'account_id',
+    'key_type',
+    'display_name',
+    'scopes',
+    'last_used_at',
+    'deleted_at',
+    'created_at',
+    'updated_at'
+] as const satisfies readonly (keyof SafeCustomerKey)[];
 
 class CustomerKeyService {
     private async acquireNameLock(trx: Knex, accountId: number, keyType: string): Promise<void> {
@@ -42,12 +76,40 @@ class CustomerKeyService {
         await trx.raw(`SELECT pg_advisory_xact_lock(?) as "lock_customer_key_name_${keyType}"`, [lockKey]);
     }
 
-    private activeAccountApiKeys(trx: Knex, accountId: number) {
-        return trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-            .where(`${CUSTOMER_KEYS_TABLE}.account_id`, accountId)
-            .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
-            .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
-            .whereRaw(`EXISTS (SELECT 1 FROM unnest(COALESCE(${CUSTOMER_KEYS_TABLE}.scopes, ARRAY[]::TEXT[])) AS scope WHERE scope LIKE 'account:%')`);
+    private customerKeysQuery(trx: Knex, filter: CustomerKeySearch) {
+        let query = trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api').whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`);
+
+        switch (filter.type) {
+            case 'environment': {
+                query = query
+                    .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
+                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
+                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, filter.environmentId);
+                if (filter.accountId !== undefined) {
+                    query = query.where(`${CUSTOMER_KEYS_TABLE}.account_id`, filter.accountId);
+                }
+                if (filter.displayName !== undefined) {
+                    query = query.where(`${CUSTOMER_KEYS_TABLE}.display_name`, filter.displayName);
+                }
+                break;
+            }
+
+            case 'account': {
+                query = query
+                    .where(`${CUSTOMER_KEYS_TABLE}.account_id`, filter.accountId)
+                    .whereRaw(`EXISTS (SELECT 1 FROM unnest(COALESCE(${CUSTOMER_KEYS_TABLE}.scopes, ARRAY[]::TEXT[])) AS scope WHERE scope LIKE 'account:%')`);
+                break;
+            }
+        }
+
+        if (filter.keyId !== undefined) {
+            query = query.where(`${CUSTOMER_KEYS_TABLE}.id`, filter.keyId);
+        }
+        if (filter.keyUuid !== undefined) {
+            query = query.where(`${CUSTOMER_KEYS_TABLE}.uuid`, filter.keyUuid);
+        }
+
+        return query;
     }
 
     /**
@@ -139,13 +201,14 @@ class CustomerKeyService {
             const created = await trx.transaction(async (innerTrx) => {
                 await this.acquireNameLock(innerTrx, accountId, 'api');
 
-                const existing = await this.activeAccountApiKeys(innerTrx, accountId).select('id').where('display_name', displayName).first();
+                const accountKeyQuery = this.customerKeysQuery(innerTrx, { type: 'account', accountId });
 
+                const existing = await accountKeyQuery.clone().select('id').where('display_name', displayName).first();
                 if (existing) {
                     throw new CustomerKeyError('duplicate_api_key', { display_name: displayName });
                 }
 
-                const count = await this.activeAccountApiKeys(innerTrx, accountId).count<{ total: string }[]>('* as total').first();
+                const count = await accountKeyQuery.clone().count<{ total: string }[]>('* as total').first();
                 if (count && Number(count.total) >= MAX_API_KEYS_PER_ACCOUNT) {
                     throw new CustomerKeyError('resource_capped', { max: MAX_API_KEYS_PER_ACCOUNT });
                 }
@@ -228,74 +291,41 @@ class CustomerKeyService {
         }
     }
 
-    public async getAccountApiKeys(trx: Knex, accountId: number): Promise<Result<AccountApiKeyRecord[]>> {
+    /**
+     * Looks up customer keys by account or environment scope, optionally narrowed to a specific
+     * key (`keyId`/`keyUuid`) or display name. Sensitive fields are replaced with placeholders unless `withSecrets` is set.
+     */
+    public async search(
+        trx: Knex,
+        filter: CustomerKeySearch,
+        { withSecrets }: { withSecrets: boolean } = { withSecrets: false }
+    ): Promise<Result<DBCustomerKey[]>> {
         try {
-            const rows = await this.activeAccountApiKeys(trx, accountId)
-                .select('id', 'uuid', 'display_name', 'scopes', 'secret', 'iv', 'tag', 'last_used_at', 'created_at')
-                .orderBy('display_name', 'asc');
+            const query = this.customerKeysQuery(trx, filter).orderBy(`${CUSTOMER_KEYS_TABLE}.display_name`, 'asc');
 
-            const decrypted = rows.map(
-                (row) => getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as AccountApiKeyRecord
-            );
-            return Ok(decrypted);
+            if (withSecrets) {
+                const rows = await query.select<DBCustomerKey[]>(`${CUSTOMER_KEYS_TABLE}.*`);
+                const decrypted = rows.map(
+                    (row) => getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey
+                );
+                return Ok(decrypted);
+            }
+
+            const rows = await query.select<SafeCustomerKey[]>(SAFE_CUSTOMER_KEY_COLUMNS.map((column) => `${CUSTOMER_KEYS_TABLE}.${column}`));
+            const withPlaceholders = rows.map((row) => ({
+                ...row,
+                secret: '',
+                iv: '',
+                tag: '',
+                hashed: '',
+                sandbox_signing_secret: null,
+                sandbox_signing_secret_iv: null,
+                sandbox_signing_secret_tag: null
+            }));
+            return Ok(withPlaceholders);
         } catch (err) {
             return Err(err);
         }
-    }
-
-    public async getAccountApiKeyById(trx: Knex, keyId: number, accountId: number): Promise<Result<ApiKeyRef | undefined>> {
-        try {
-            const row = await this.activeAccountApiKeys(trx, accountId)
-                .select(`${CUSTOMER_KEYS_TABLE}.uuid`, `${CUSTOMER_KEYS_TABLE}.display_name`)
-                .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
-                .first();
-            return Ok(row ? { uuid: row.uuid, display_name: row.display_name } : undefined);
-        } catch (err) {
-            return Err(err);
-        }
-    }
-
-    public async getApiKeyById(trx: Knex, keyId: number, envId: number, accountId: number): Promise<Result<ApiKeyRef | undefined>> {
-        try {
-            const row = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-                .select(`${CUSTOMER_KEYS_TABLE}.uuid`, `${CUSTOMER_KEYS_TABLE}.display_name`)
-                .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
-                .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
-                .where(`${CUSTOMER_KEYS_TABLE}.account_id`, accountId)
-                .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
-                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
-                .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
-                .first();
-            return Ok(row ? { uuid: row.uuid, display_name: row.display_name } : undefined);
-        } catch (err) {
-            return Err(err);
-        }
-    }
-
-    public async getApiKeyByUuidWithoutSecrets(trx: Knex, keyUuid: string, envId: number, accountId: number): Promise<Result<DBCustomerKey | null>> {
-        try {
-            const row = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-                .select(`${CUSTOMER_KEYS_TABLE}.*`)
-                .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
-                .where(`${CUSTOMER_KEYS_TABLE}.uuid`, keyUuid)
-                .where(`${CUSTOMER_KEYS_TABLE}.account_id`, accountId)
-                .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
-                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
-                .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
-                .first();
-            return Ok(row ?? null);
-        } catch (err) {
-            return Err(err);
-        }
-    }
-
-    public async getApiKeyByUuid(trx: Knex, keyUuid: string, envId: number, accountId: number): Promise<Result<DBCustomerKey | null>> {
-        const encryptedKey = await this.getApiKeyByUuidWithoutSecrets(trx, keyUuid, envId, accountId);
-        return encryptedKey.map((key) => {
-            return key !== null ? getEncryptionManager().decryptAPISecret(key) : null;
-        });
     }
 
     public async createWebhookSigningKey(
@@ -349,57 +379,6 @@ class CustomerKeyService {
         } catch (err) {
             return Err(err);
         }
-    }
-
-    public async getApiKeysByEnv(trx: Knex, envId: number): Promise<Result<DBCustomerKey[]>> {
-        try {
-            const rows = await this.apiKeysByEnvironmentQuery(trx, envId).select<DBCustomerKey[]>(`${CUSTOMER_KEYS_TABLE}.*`);
-
-            const decrypted = rows.map(
-                (row) => getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey
-            );
-            return Ok(decrypted);
-        } catch (err) {
-            return Err(err);
-        }
-    }
-
-    public async getApiKeysByEnvWithoutSecrets(
-        trx: Knex,
-        envId: number,
-        displayName?: string
-    ): Promise<Result<Pick<DBCustomerKey, 'id' | 'uuid' | 'display_name' | 'scopes' | 'last_used_at' | 'created_at'>[]>> {
-        try {
-            const rows = await this.apiKeysByEnvironmentQuery(trx, envId, { displayName }).select<
-                Pick<DBCustomerKey, 'id' | 'uuid' | 'display_name' | 'scopes' | 'last_used_at' | 'created_at'>[]
-            >(
-                `${CUSTOMER_KEYS_TABLE}.id`,
-                `${CUSTOMER_KEYS_TABLE}.uuid`,
-                `${CUSTOMER_KEYS_TABLE}.display_name`,
-                `${CUSTOMER_KEYS_TABLE}.scopes`,
-                `${CUSTOMER_KEYS_TABLE}.last_used_at`,
-                `${CUSTOMER_KEYS_TABLE}.created_at`
-            );
-
-            return Ok(rows);
-        } catch (err) {
-            return Err(err);
-        }
-    }
-
-    private apiKeysByEnvironmentQuery(trx: Knex, environmentId: number, { displayName }: { displayName?: string | undefined } = {}) {
-        return trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-            .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
-            .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-            .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, environmentId)
-            .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
-            .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
-            .modify((query) => {
-                if (displayName !== undefined) {
-                    query.where(`${CUSTOMER_KEYS_TABLE}.display_name`, displayName);
-                }
-            })
-            .orderBy(`${CUSTOMER_KEYS_TABLE}.display_name`, 'asc');
     }
 
     private webhookSigningKeyForEnv(trx: Knex, envId: number) {
@@ -588,9 +567,7 @@ class CustomerKeyService {
 
     public async deleteAccountApiKey(trx: Knex, keyId: number, accountId: number): Promise<Result<void>> {
         try {
-            const updated = await this.activeAccountApiKeys(trx, accountId)
-                .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
-                .update({ deleted_at: trx.fn.now() as unknown as Date });
+            const updated = await this.customerKeysQuery(trx, { type: 'account', accountId, keyId }).update({ deleted_at: trx.fn.now() as unknown as Date });
             if (updated === 0) {
                 return Err(new CustomerKeyError('no_such_api_secret', { id: keyId }));
             }
