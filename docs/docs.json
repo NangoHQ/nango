@@ -255,7 +255,7 @@
     },
     {
       "source": "/guides/platform/free-self-hosting/configuration",
-      "destination": "/guides/platform/self-hosting"
+      "destination": "/guides/platform/free-self-hosting"
     },
     {
       "source": "/implementation-guides/platform/functions/customer-configuration",
