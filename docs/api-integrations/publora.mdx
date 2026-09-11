@@ -1,0 +1,96 @@
+---
+title: 'Publora'
+sidebarTitle: 'Publora'
+description: 'Integrate your application with the Publora API'
+---
+
+## Quickstart
+
+Connect to Publora with Nango and see data flow in 2 minutes. The Publora API uses API key authentication, so no user redirect is required.
+
+<Steps>
+    <Step title="Create the integration" id="create-integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Publora_.
+    </Step>
+    <Step title="Connect Publora" id="connect-publora">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your Publora API key, then save.
+    </Step>
+    <Step title="Call the Publora API" id="call-publora-api">
+    Let's make your first request to the Publora API: list the social accounts the key can publish to. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v1/platform-connections" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v1/platform-connections',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app" id="implement-nango">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## Publora integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to get your Publora API key](/api-integrations/publora/connect)
+Generate an API key in the Publora dashboard and connect it to Nango
+
+Official docs: [Publora API docs](https://docs.publora.com)
+
+## Pre-built syncs & actions for Publora
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/publora/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## Common scopes
+
+Publora does not use scopes. An API key grants access to every social account connected to the Publora workspace it belongs to.
+
+## API gotchas
+
+- Publora authenticates with an `x-publora-key: API_KEY` request header, not `Authorization: Bearer`.
+- Every endpoint lives under `/api/v1`, so proxy calls look like `/api/v1/create-post`.
+- Posting targets are opaque connection IDs in the form `platform-id`, for example `linkedin-n20H8w1Omj`. Read them from `GET /api/v1/platform-connections` and pass them verbatim in `platforms`; they cannot be constructed from a platform name.
+- `POST /api/v1/create-post` without `scheduledTime` saves a draft. With an ISO 8601 UTC timestamp it schedules the post. A timestamp in the past is treated as immediate.
+- Instagram, TikTok and YouTube reject posts without media. Attach `mediaUrls` (public https URLs that Publora downloads server-side) or upload files through `/api/v1/get-upload-url` and `/api/v1/complete-media/{mediaFileId}`.
+- Pinterest can be connected but cannot be published to.
+- Character limits differ per network and are enforced by Publora at publish time, not at creation time.
+- The free Starter plan allows 15 posts a month across three connected accounts, which is enough to test an integration end to end without a card.
+- The same API key also authenticates Publora's remote MCP server at `https://mcp.publora.com/mcp`, if you would rather drive it from an agent.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/publora.mdx)</Note>
