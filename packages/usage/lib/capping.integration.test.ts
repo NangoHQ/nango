@@ -70,6 +70,16 @@ describe('Usage', () => {
             expect(status.metrics.function_duration_seconds).toEqual({ limit: 5, current: 5, isCapped: true });
             expect(status.message).toContain('You have reached the maximum function runtime');
         });
+        it('caps billable data transfer when the byte limit is reached', async () => {
+            const plan = { account_id: 1, data_transfer_max: 10_000_000_000 } as any;
+            await usageTracker.incr({ accountId: 1, metric: 'data_transfer', delta: 10_000_000_000 });
+
+            const status = await capping.getStatus(plan, 'data_transfer');
+
+            expect(status.isCapped).toBe(true);
+            expect(status.metrics.data_transfer).toEqual({ limit: 10_000_000_000, current: 10_000_000_000, isCapped: true });
+            expect(status.message).toContain('You have reached the data transfer limits for your plan. Upgrade to continue using.');
+        });
         it('should cap if one of the limits is exceeded', async () => {
             const plan = { account_id: 1, connections_max: 5, function_executions_max: 5 } as any;
             await usageTracker.incr({ accountId: 1, metric: 'connections', delta: 99 }); // Exceed the limit
