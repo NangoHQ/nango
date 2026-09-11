@@ -24452,6 +24452,47 @@ trakstar-hire:
             default_value: ''
             hidden: true
 
+tracify:
+    display_name: Tracify
+    categories:
+        - analytics
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://tracify-api.tracify.ai
+        headers:
+            tracify-token: ${apiKey}
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+            endpoints:
+                - /analytics/api/v1/kpis/overview/?csids=${connectionConfig.siteId}&preset_id=${connectionConfig.presetId}&start_date=1970-01-01&end_date=1970-01-01&granularity=none&requested_metrics=customer_revenue
+    docs: https://nango.dev/docs/integrations/all/tracify
+    docs_connect: https://nango.dev/docs/integrations/all/tracify/connect
+    connection_config:
+        siteId:
+            type: string
+            title: Site ID
+            description: The Tracify site ID to query.
+            format: uuid
+            order: 1
+            doc_section: '#step-2-finding-your-site-id'
+        presetId:
+            type: string
+            title: Preset ID
+            description: The Tracify attribution preset ID to use for analytics queries.
+            order: 2
+            doc_section: '#step-3-finding-your-preset-id'
+    credentials:
+        apiKey:
+            type: string
+            title: Analytics API Token
+            description: Your Tracify Analytics API token. Nango sends it as the tracify-token header.
+            secret: true
+            order: 1
+            doc_section: '#step-1-generating-an-analytics-api-token'
+
 trafft:
     display_name: Trafft
     categories:
