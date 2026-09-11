@@ -6484,6 +6484,10 @@ microsoft-ads:
 microsoft-business-central:
     - https://api.businesscentral.dynamics.com/.default
 
+# source: Azure Portal API permissions picker for "Dynamics CRM" delegated permissions
+microsoft-dataverse:
+    - user_impersonation
+
 # source: Azure Portal API permissions picker for "Dynamics ERP" (Microsoft.ERP)
 microsoft-dynamics-365-finance-and-operations:
     - .default

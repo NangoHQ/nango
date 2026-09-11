@@ -1,0 +1,84 @@
+---
+title: 'Microsoft Dataverse (Dynamics 365 CRM)'
+sidebarTitle: 'Microsoft Dataverse'
+description: 'Integrate your application with the Microsoft Dataverse (Dynamics 365 CRM) API'
+---
+
+## 🚀 Quickstart
+
+Connect to Microsoft Dataverse with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Microsoft Dataverse (Dynamics 365 CRM)_.
+    </Step>
+    <Step id="authorize-dataverse" title="Authorize Microsoft Dataverse">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your **Tenant ID** and **Environment URL**, and log in to Microsoft Dataverse. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-the-api" title="Call the Microsoft Dataverse API">
+    Let's make your first request to the Dataverse Web API (confirm the connected user's identity). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/data/v9.2/WhoAmI" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/data/v9.2/WhoAmI',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Microsoft Dataverse integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Microsoft Dataverse OAuth app](/api-integrations/microsoft-dataverse/how-to-register-your-own-microsoft-dataverse-api-oauth-app)  
+Register an OAuth app with Microsoft Entra ID and obtain credentials to connect Microsoft Dataverse to Nango
+
+- [How do I link my account?](/api-integrations/microsoft-dataverse/connect)  
+Find your Tenant ID and Environment URL to connect Microsoft Dataverse
+
+Official docs: [Use OAuth authentication with Microsoft Dataverse](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/authenticate-oauth)
+
+## 🧩 Pre-built syncs & actions for Microsoft Dataverse
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/microsoft-dataverse/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
