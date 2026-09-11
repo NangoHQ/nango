@@ -11,12 +11,12 @@ import type { Knex } from 'knex';
 
 export const TRIAL_DURATION = ms('15days');
 
-type PgPlan = Omit<DBPlan, 'connections_max' | 'data_transfer_max'> & {
-    connections_max: string | number | null;
-    data_transfer_max: string | number | null;
-};
+const BIGINT_COLUMNS = ['connections_max', 'data_transfer_max'] as const;
+type BigintColumn = (typeof BIGINT_COLUMNS)[number];
 
-const normalizeSafeInteger = (value: string | number | null, field: keyof Pick<DBPlan, 'connections_max' | 'data_transfer_max'>): number | null => {
+type PgPlan = Omit<DBPlan, BigintColumn> & Record<BigintColumn, string | number | null>;
+
+const normalizeSafeInteger = (value: string | number | null, field: BigintColumn): number | null => {
     if (value === null) {
         return null;
     }
@@ -28,11 +28,11 @@ const normalizeSafeInteger = (value: string | number | null, field: keyof Pick<D
 };
 
 function normalizePlan(plan: PgPlan): DBPlan {
-    return {
-        ...plan,
-        connections_max: normalizeSafeInteger(plan.connections_max, 'connections_max'),
-        data_transfer_max: normalizeSafeInteger(plan.data_transfer_max, 'data_transfer_max')
-    };
+    const normalized = { ...plan } as DBPlan;
+    for (const field of BIGINT_COLUMNS) {
+        normalized[field] = normalizeSafeInteger(plan[field], field);
+    }
+    return normalized;
 }
 
 function getTrialStartFields(
@@ -59,7 +59,7 @@ export async function getPlan(
         return Err(new Error('getPlan_missing_opts'));
     }
     try {
-        const query = db.from<PgPlan>('plans').select<PgPlan>('*');
+        const query = db.from<PgPlan>('plans').select('*');
         if (opts.accountId) {
             query.where('account_id', opts.accountId);
         }
@@ -97,7 +97,7 @@ export async function createPlan(
 ): Promise<Result<DBPlan>> {
     try {
         const res = await db
-            .from<DBPlan>('plans')
+            .from<PgPlan>('plans')
             .insert({
                 ...rest,
                 created_at: new Date(),
@@ -107,9 +107,10 @@ export async function createPlan(
             .onConflict('account_id')
             .ignore()
             .returning('*');
+
         const createdPlan = res[0];
         if (createdPlan) {
-            return Ok(normalizePlan(createdPlan as PgPlan));
+            return Ok(normalizePlan(createdPlan));
         }
 
         const existingPlan = await getPlan(db, { accountId: account_id });
@@ -161,26 +162,30 @@ export async function getTrialsApproachingExpiration(db: Knex, { daysLeft }: { d
     dateThreshold.setDate(dateThreshold.getDate() + daysLeft);
     try {
         const res = await db
-            .from<DBPlan>('plans')
-            .select<DBPlan[]>('plans.*')
+            .from<PgPlan>('plans')
+            .select('plans.*')
             .join('_nango_accounts', '_nango_accounts.id', 'plans.account_id')
             .where('trial_end_at', '<=', dateThreshold.toISOString())
             .whereNull('trial_end_notified_at')
             .where('plans.auto_idle', true);
-        return Ok(res.map((plan) => normalizePlan(plan as PgPlan)));
+        return Ok(res.map((plan) => normalizePlan(plan)));
     } catch (err) {
         return Err(new Error('failed_to_get_trials', { cause: err }));
     }
 }
 
-export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
-    const plans = await db
-        .from('plans')
-        .select<DBPlan[]>('*')
-        .where('plans.trial_end_at', '<=', db.raw('NOW()'))
-        .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'))
-        .where('plans.auto_idle', true);
-    return plans.map((plan) => normalizePlan(plan as PgPlan));
+export async function getExpiredTrials(db: Knex): Promise<Result<DBPlan[]>> {
+    try {
+        const plans = await db
+            .from<PgPlan>('plans')
+            .select('*')
+            .where('plans.trial_end_at', '<=', db.raw('NOW()'))
+            .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'))
+            .where('plans.auto_idle', true);
+        return Ok(plans.map((plan) => normalizePlan(plan)));
+    } catch (err) {
+        return Err(new Error('failed_to_get_expired_trials', { cause: err }));
+    }
 }
 
 function isPlanUnchanged(currentPlan: DBPlan, newPlan: PlanDefinition): boolean {
