@@ -6,7 +6,9 @@ import { useClickAway, useKeyPressEvent } from 'react-use';
 import { triggerClose } from '@/lib/events';
 import { useI18n } from '@/lib/i18n';
 import { useGlobal } from '@/lib/store';
+import { useAppliedTheme } from '@/lib/theme';
 import NangoLogoSVG from '@/svg/logo.svg?react';
+import { ThemePendingSpinner } from './ThemePendingSpinner';
 
 import type { FocusTrapProps } from 'focus-trap-react';
 
@@ -30,9 +32,12 @@ const focusTrapOptions = {
 export const Layout: React.FC = () => {
     const ref = useRef<HTMLDivElement>(null);
 
-    const { isEmbedded, showWatermark, isAuthLink } = useGlobal();
+    const { isEmbedded, settings, isAuthLink } = useGlobal();
     const { t } = useI18n();
-    const isDarkTheme = document.documentElement.classList.contains('dark');
+    const appliedTheme = useAppliedTheme();
+    const showWatermark = settings?.showWatermark ?? false;
+    // Paint nothing rather than hiding the tree: the request that resolves the theme runs in the routed view.
+    const themePendingClass = appliedTheme ? '' : 'opacity-0';
 
     useClickAway(ref, (event: MouseEvent | TouchEvent) => {
         const target = event.target instanceof Element ? event.target : null;
@@ -58,87 +63,93 @@ export const Layout: React.FC = () => {
 
     if (isEmbedded) {
         return (
-            <div
-                ref={ref}
-                aria-label={t('common.dialogLabel')}
-                aria-labelledby="connect-ui-title"
-                aria-modal="true"
-                className="h-screen w-screen flex flex-col max-w-[500px] max-h-[700px] rounded-md bg-elevated p-px overflow-hidden"
-                id="connect-ui-dialog"
-                role="dialog"
-                tabIndex={-1}
-            >
-                <FocusTrap focusTrapOptions={focusTrapOptions}>
-                    <div className="contents">
-                        <div
-                            className="flex-1 w-full bg-surface text-text-primary rounded-md -only:rounded-b-none overflow-y-auto outline-none"
-                            id="connect-ui-dialog-content"
-                            tabIndex={-1}
-                        >
-                            <div className="min-h-full p-10 flex flex-col">
-                                <Outlet />
+            <>
+                {!appliedTheme && <ThemePendingSpinner />}
+                <div
+                    ref={ref}
+                    aria-label={t('common.dialogLabel')}
+                    aria-labelledby="connect-ui-title"
+                    aria-modal="true"
+                    className={`h-screen w-screen flex flex-col max-w-[500px] max-h-[700px] rounded-md bg-elevated p-px overflow-hidden ${themePendingClass}`}
+                    id="connect-ui-dialog"
+                    role="dialog"
+                    tabIndex={-1}
+                >
+                    <FocusTrap active={Boolean(appliedTheme)} focusTrapOptions={focusTrapOptions}>
+                        <div className="contents">
+                            <div
+                                className="flex-1 w-full bg-surface text-text-primary rounded-md -only:rounded-b-none overflow-y-auto outline-none"
+                                id="connect-ui-dialog-content"
+                                tabIndex={-1}
+                            >
+                                <div className="min-h-full p-10 flex flex-col">
+                                    <Outlet />
+                                </div>
                             </div>
+                            {showWatermark && (
+                                <div className="p-5 w-full text-center">
+                                    <a
+                                        className="shrink-0 text-xs text-text-tertiary"
+                                        href="https://www.nango.dev?utm_source=connectui"
+                                        rel="noopener noreferrer"
+                                        target="_blank"
+                                    >
+                                        Secured by
+                                        <NangoLogoSVG aria-hidden="true" className="h-4 w-auto inline-block ml-2" />
+                                    </a>
+                                </div>
+                            )}
                         </div>
-                        {showWatermark && (
-                            <div className="p-5 w-full text-center">
-                                <a
-                                    className="shrink-0 text-xs text-text-tertiary"
-                                    href="https://www.nango.dev?utm_source=connectui"
-                                    rel="noopener noreferrer"
-                                    target="_blank"
-                                >
-                                    Secured by
-                                    <NangoLogoSVG aria-hidden="true" className="h-4 w-auto inline-block ml-2" />
-                                </a>
-                            </div>
-                        )}
-                    </div>
-                </FocusTrap>
-            </div>
+                    </FocusTrap>
+                </div>
+            </>
         );
     }
 
     return (
-        <div
-            className={`absolute h-screen w-screen overflow-hidden flex flex-col justify-center items-center sm:p-14 ${isAuthLink ? (isDarkTheme ? 'bg-black' : 'bg-gray-100') : 'bg-subtle/80'}`}
-        >
+        <>
+            {!appliedTheme && <ThemePendingSpinner />}
             <div
-                ref={ref}
-                aria-label={t('common.dialogLabel')}
-                aria-labelledby="connect-ui-title"
-                aria-modal="true"
-                className="flex flex-col w-full h-full sm:w-[500px] sm:h-[700px] sm:rounded-md bg-elevated p-px overflow-hidden"
-                id="connect-ui-dialog"
-                role="dialog"
-                tabIndex={-1}
+                className={`absolute h-screen w-screen overflow-hidden flex flex-col justify-center items-center sm:p-14 ${appliedTheme ? (isAuthLink ? (appliedTheme === 'dark' ? 'bg-black' : 'bg-gray-100') : 'bg-subtle/80') : themePendingClass}`}
             >
-                <FocusTrap focusTrapOptions={focusTrapOptions}>
-                    <div className="contents">
-                        <div
-                            className="flex-1 w-full bg-surface text-text-primary sm:rounded-md -only:rounded-b-none overflow-y-auto outline-none"
-                            id="connect-ui-dialog-content"
-                            tabIndex={-1}
-                        >
-                            <div className="min-h-full p-5 sm:p-10 flex flex-col">
-                                <Outlet />
+                <div
+                    ref={ref}
+                    aria-label={t('common.dialogLabel')}
+                    aria-labelledby="connect-ui-title"
+                    aria-modal="true"
+                    className="flex flex-col w-full h-full sm:w-[500px] sm:h-[700px] sm:rounded-md bg-elevated p-px overflow-hidden"
+                    id="connect-ui-dialog"
+                    role="dialog"
+                    tabIndex={-1}
+                >
+                    <FocusTrap active={Boolean(appliedTheme)} focusTrapOptions={focusTrapOptions}>
+                        <div className="contents">
+                            <div
+                                className="flex-1 w-full bg-surface text-text-primary sm:rounded-md -only:rounded-b-none overflow-y-auto outline-none"
+                                id="connect-ui-dialog-content"
+                                tabIndex={-1}
+                            >
+                                <div className="min-h-full p-5 sm:p-10 flex flex-col">
+                                    <Outlet />
+                                </div>
                             </div>
+                            {showWatermark && (
+                                <div className="p-5 w-full text-center">
+                                    <a
+                                        className="shrink-0 text-xs text-text-tertiary"
+                                        href="https://www.nango.dev?utm_source=connectui"
+                                        rel="noopener noreferrer"
+                                        target="_blank"
+                                    >
+                                        Secured by
+                                        <NangoLogoSVG aria-hidden="true" className="h-4 w-auto inline-block ml-2" />
+                                    </a>
+                                </div>
+                            )}
                         </div>
-                        {showWatermark && (
-                            <div className="p-5 w-full text-center">
-                                <a
-                                    className="shrink-0 text-xs text-text-tertiary"
-                                    href="https://www.nango.dev?utm_source=connectui"
-                                    rel="noopener noreferrer"
-                                    target="_blank"
-                                >
-                                    Secured by
-                                    <NangoLogoSVG aria-hidden="true" className="h-4 w-auto inline-block ml-2" />
-                                </a>
-                            </div>
-                        )}
-                    </div>
-                </FocusTrap>
+                    </FocusTrap>
+                </div>
             </div>
-        </div>
+        </>
     );
 };

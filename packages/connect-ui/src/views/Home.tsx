@@ -9,7 +9,7 @@ import { getConnectSession } from '@/lib/api';
 import { triggerReady } from '@/lib/events';
 import { useGlobal } from '@/lib/store';
 import { telemetry } from '@/lib/telemetry';
-import { isValidTheme, setTheme } from '@/lib/theme';
+import { isValidTheme } from '@/lib/theme';
 import { updateSettings } from '@/lib/updateSettings';
 
 import type { ConnectUIEventSettingsChanged, ConnectUIEventToken } from '@nangohq/frontend';
@@ -21,15 +21,18 @@ const NO_SESSION_TOKEN_TIMEOUT_MS = 10000;
 
 export const Home: React.FC = () => {
     const navigate = useNavigate();
-    const { sessionToken, setApiURL, setAuthLink, setSession, setSessionToken, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview } = useGlobal();
+    const { sessionToken, theme, setApiURL, setAuthLink, setSession, setSessionToken, setDetectClosedAuthWindow, setIsEmbedded, setIsPreview, setTheme } =
+        useGlobal();
     const [noSessionToken, setNoSessionToken] = useState(false);
 
     const { data, error } = useQuery({ enabled: sessionToken !== null, queryKey: ['sessionToken'], queryFn: getConnectSession });
     const apiURL = useSearchParam('apiURL');
-    const theme = useSearchParam('theme');
+    const themeParam = useSearchParam('theme');
     const isEmbedded = useSearchParam('embedded');
     const isPreview = useSearchParam('preview') === 'true';
     const detectClosedAuthWindow = useSearchParam('detectClosedAuthWindow');
+
+    const themeOverride = themeParam && isValidTheme(themeParam) ? themeParam : undefined;
 
     useEffect(() => {
         // Listen to parent
@@ -86,14 +89,32 @@ export const Home: React.FC = () => {
         if (detectClosedAuthWindow) setDetectClosedAuthWindow(detectClosedAuthWindow === 'true');
         if (isEmbedded) setIsEmbedded(isEmbedded === 'true');
         if (isPreview) setIsPreview(isPreview);
-        if (theme && isValidTheme(theme)) setTheme(theme);
+        if (themeOverride) setTheme(themeOverride);
         setAuthLink(window.self === window.top);
-    }, [apiURL, detectClosedAuthWindow, isEmbedded, isPreview, setApiURL, setDetectClosedAuthWindow, setAuthLink, setIsEmbedded, setIsPreview, theme]);
+    }, [
+        apiURL,
+        detectClosedAuthWindow,
+        isEmbedded,
+        isPreview,
+        setApiURL,
+        setDetectClosedAuthWindow,
+        setAuthLink,
+        setIsEmbedded,
+        setIsPreview,
+        themeOverride,
+        setTheme
+    ]);
+
+    // The error views are themed, so they need a theme even when the settings never arrive.
+    useEffect(() => {
+        if (!theme && !themeOverride && (error || noSessionToken)) {
+            setTheme('system');
+        }
+    }, [error, noSessionToken, theme, themeOverride, setTheme]);
 
     useEffect(() => {
         if (data) {
             setSession(data.data);
-            const themeOverride = theme && isValidTheme(theme) ? theme : undefined;
             updateSettings(data.data.connectUISettings, themeOverride);
             void navigate({ to: '/integrations' });
         }

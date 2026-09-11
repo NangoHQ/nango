@@ -25,7 +25,9 @@ const STORE_DEFAULTS: StorePatch = {
     isAuthLink: false,
     detectClosedAuthWindow: false,
     isPreview: false,
-    showWatermark: false
+    // Views render inside Layout, which paints nothing until the theme is known.
+    theme: 'light',
+    settings: null
 };
 
 /**
