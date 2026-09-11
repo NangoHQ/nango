@@ -13,7 +13,7 @@ This guide covers the **Zoom (Server-to-Server OAuth)** integration. For the reg
 ## How it works
 
 1. Zoom sends a POST request to your Nango webhook URL when a subscribed event occurs on the account that authorized your app.
-2. Nango verifies the delivery's signature against the **Webhook secret** on the integration, then routes the event to the connection identified by the `nangoConnectionId` query param on the webhook URL — required for this provider (see [step 1](#1-get-your-nango-webhook-url)).
+2. Nango verifies the delivery's signature against the **Webhook secret** on the integration, then matches the event's `payload.account_id` against `connection_config.accountId` on your connections — the same **Account ID** you entered when connecting (see [how do I link my account?](/api-integrations/zoom-cc/connect#step-1-creating-a-server-to-server-oauth-app)).
 3. Nango forwards the event to your app, or triggers a sync.
 
 <Note>
@@ -24,10 +24,10 @@ Zoom doesn't expose Event Subscriptions setup through any API — there's no end
 
 ### 1. Get your Nango webhook URL
 
-In the Nango dashboard, open your Zoom (Server-to-Server OAuth) integration, copy the **Webhook URL**, and append `?nangoConnectionId=<CONNECTION-ID>` for the connection you want events routed to.
+In the Nango dashboard, open your Zoom (Server-to-Server OAuth) integration and copy the **Webhook URL**. Use it as-is, with no query param — Nango matches each delivery to a connection via `account_id`.
 
 <Note>
-A Server-to-Server app is typically set up for one account, so this is usually just the one connection. If you have more than one Zoom (Server-to-Server OAuth) connection under the same app, register a separate Event Subscription per connection (see [step 3](#3-add-event-subscriptions-in-zoom)), each with its own `nangoConnectionId`.
+A Server-to-Server app is typically set up for one account, so this is usually just the one connection. If you have more than one Zoom (Server-to-Server OAuth) connection (each its own app, with its own Account ID), register a separate Event Subscription per app (see [step 3](#3-add-event-subscriptions-in-zoom)) — each app has its own **Features → Access** page.
 </Note>
 
 ### 2. Set the webhook secret in Nango
@@ -41,7 +41,7 @@ Do this before creating any Event Subscription. Zoom validates the destination U
 </Warning>
 
 <Note>
-Zoom issues one Secret Token per app, so the integration-level **Webhook secret** covers every connection in the common case. If a setup genuinely needs a different secret for one connection, set `webhookSecret` in that connection's metadata instead — Nango checks the integration-level secret first and falls back to the connection's metadata only when the integration-level one isn't set.
+Zoom issues one Secret Token per app, so the integration-level **Webhook secret** covers every connection under that app — there's no per-connection override.
 </Note>
 
 ### 3. Add Event Subscriptions in Zoom
@@ -103,7 +103,9 @@ For the full list across meetings, webinars, recordings, phone, chat, and more, 
 
 ## Connection matching
 
-Nango routes by the `nangoConnectionId` query param on the destination URL — this is the only routing strategy for this provider; a delivery whose URL has no `nangoConnectionId` is rejected.
+Nango matches `payload.account_id` against `connection_config.accountId` on your connections — this is the only routing strategy for this provider; a `nangoConnectionId` query param on the webhook URL is not used.
+
+If nothing matches `payload.account_id`, the delivery is still accepted (so Zoom doesn't see an error and retry), but isn't routed to any connection.
 
 <Warning>
 With no **Webhook secret** configured, every delivery is rejected outright — it never reaches routing.

@@ -27868,8 +27868,6 @@ zoom-cc:
         base_url: https://api.zoom.us
     webhook_routing_script: zoomCcWebhookRouting
     webhook_user_defined_secret: true
-    webhook_allowed_query_params:
-        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/zoom-cc
     docs_connect: https://nango.dev/docs/api-integrations/zoom-cc/connect
     connection_config:

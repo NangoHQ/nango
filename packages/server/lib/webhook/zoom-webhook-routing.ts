@@ -5,7 +5,7 @@ import { verifyZoomWebhookAndHandleHandshake } from './zoom-webhook-shared.js';
 import type { WebhookHandler, ZoomWebhookPayload } from './types.js';
 
 const route: WebhookHandler<ZoomWebhookPayload> = async (nango, headers, body, rawBody) => {
-    const handled = await verifyZoomWebhookAndHandleHandshake(nango, headers, body, rawBody, undefined);
+    const handled = verifyZoomWebhookAndHandleHandshake(nango, headers, body, rawBody);
     if (handled) {
         return handled;
     }

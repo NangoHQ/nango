@@ -144,7 +144,7 @@ describe('Zoom webhook routing', () => {
         const { nango, execute } = getNangoMock();
         const body = getBody();
         const rawBody = JSON.stringify(body);
-        const staleTimestamp = Math.floor(Date.now() / 1000) - 301;
+        const staleTimestamp = Math.floor(Date.now() / 1000) - (90 * 60 + 1);
 
         const result = await ZoomWebhookRouting.default(nango, getSignedHeaders(rawBody, SECRET, staleTimestamp), body, rawBody, {});
 

@@ -75,8 +75,8 @@ describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
         expect(execute).toHaveBeenCalledWith({
             payload: body,
             webhookType: 'event',
-            connectionIdentifierValue: CONNECTION_ID,
-            propName: 'connectionId'
+            connectionIdentifier: 'payload.account_id',
+            propName: 'accountId'
         });
     });
 
@@ -89,23 +89,6 @@ describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
 
         expect(result.isErr()).toBe(true);
         expect(execute).not.toHaveBeenCalled();
-    });
-
-    it('falls back to the connection webhookSecret when no integration secret is configured', async () => {
-        const { nango, getConnection, execute } = getNangoMock({ webhookSecret: null, connectionSecret: SECRET });
-        const body = getBody();
-        const rawBody = JSON.stringify(body);
-
-        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, { nangoConnectionId: CONNECTION_ID });
-
-        expect(result.isOk()).toBe(true);
-        expect(getConnection).toHaveBeenCalledWith(CONNECTION_ID);
-        expect(execute).toHaveBeenCalledWith({
-            payload: body,
-            webhookType: 'event',
-            connectionIdentifierValue: CONNECTION_ID,
-            propName: 'connectionId'
-        });
     });
 
     it('rejects an invalid connection webhookSecret', async () => {
@@ -156,7 +139,7 @@ describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
         const { nango, execute } = getNangoMock();
         const body = getBody();
         const rawBody = JSON.stringify(body);
-        const staleTimestamp = Math.floor(Date.now() / 1000) - 301;
+        const staleTimestamp = Math.floor(Date.now() / 1000) - (90 * 60 + 1);
 
         const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody, SECRET, staleTimestamp), body, rawBody, {
             nangoConnectionId: CONNECTION_ID
@@ -172,19 +155,6 @@ describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
         const rawBody = JSON.stringify(body);
 
         const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, `${rawBody} `, { nangoConnectionId: CONNECTION_ID });
-
-        expect(result.isErr()).toBe(true);
-        expect(execute).not.toHaveBeenCalled();
-    });
-
-    // A Server-to-Server app is set up for one account/connection, so unlike the regular Zoom
-    // provider, there's no payload.account_id fallback -- nangoConnectionId is always required.
-    it('rejects a signed webhook with no nangoConnectionId', async () => {
-        const { nango, execute } = getNangoMock();
-        const body = getBody();
-        const rawBody = JSON.stringify(body);
-
-        const result = await ZoomCcWebhookRouting.default(nango, getSignedHeaders(rawBody), body, rawBody, {});
 
         expect(result.isErr()).toBe(true);
         expect(execute).not.toHaveBeenCalled();
