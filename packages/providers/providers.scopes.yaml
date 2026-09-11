@@ -4949,6 +4949,9 @@ hubstaff:
     - tasks:read
     - tasks:write
 
+# source: https://docs.infor.com/inforos/2026.x/en-us/useradminlib_cloud/apigatewayag_cloud/vya1611685179822.html (scopes are disabled by default; when a tenant enables "Enforced Per Authorized App", the admin defines custom scope names per authorized app — there is no fixed, vendor-wide scope catalog)
+infor: []
+
 # source: https://developers.facebook.com/docs/instagram-basic-display-api/overview/permissions
 instagram:
     - user_media
