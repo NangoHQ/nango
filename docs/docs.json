@@ -1401,6 +1401,7 @@
               "integrations/all/hibob-service-user",
               "api-integrations/highlevel",
               "api-integrations/highlevel-white-label",
+              "api-integrations/highq",
               "integrations/all/holded",
               "api-integrations/holded-v2",
               "integrations/all/hover",

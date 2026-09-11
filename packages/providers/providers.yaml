@@ -11480,6 +11480,35 @@ highlevel-white-label:
     docs: https://nango.dev/docs/api-integrations/highlevel-white-label
     setup_guide_url: https://nango.dev/docs/api-integrations/highlevel-white-label/how-to-register-your-own-highlevel-white-label-api-oauth-app
 
+highq:
+    display_name: HighQ
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/authorize.action
+    token_url: https://${connectionConfig.hostname}/api/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            auth-type: OAUTH2
+    docs: https://nango.dev/docs/api-integrations/highq
+    docs_connect: https://nango.dev/docs/api-integrations/highq/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/highq/how-to-register-your-own-highq-api-oauth-app
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your HighQ Collaborate hostname, including your instance path.
+            prefix: https://
+            example: acme.highq.com/main
+            doc_section: '#step-1-find-your-hostname'
+
 holded:
     display_name: Holded
     categories:
