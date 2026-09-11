@@ -75,7 +75,7 @@ export const Layout: React.FC = () => {
                     role="dialog"
                     tabIndex={-1}
                 >
-                    <FocusTrap focusTrapOptions={focusTrapOptions}>
+                    <FocusTrap active={Boolean(appliedTheme)} focusTrapOptions={focusTrapOptions}>
                         <div className="contents">
                             <div
                                 className="flex-1 w-full bg-surface text-text-primary rounded-md -only:rounded-b-none overflow-y-auto outline-none"
@@ -122,7 +122,7 @@ export const Layout: React.FC = () => {
                     role="dialog"
                     tabIndex={-1}
                 >
-                    <FocusTrap focusTrapOptions={focusTrapOptions}>
+                    <FocusTrap active={Boolean(appliedTheme)} focusTrapOptions={focusTrapOptions}>
                         <div className="contents">
                             <div
                                 className="flex-1 w-full bg-surface text-text-primary sm:rounded-md -only:rounded-b-none overflow-y-auto outline-none"

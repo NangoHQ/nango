@@ -4,6 +4,9 @@ import { useGlobal } from './store';
 
 import type { ConnectUIThemeSettings, Theme } from '@nangohq/types';
 
+// An unpainted dialog is worse than one that switches theme, so stop waiting eventually.
+const THEME_TIMEOUT_MS = 10000;
+
 export function isValidTheme(theme: string): theme is Theme {
     return ['light', 'dark', 'system'].includes(theme);
 }
@@ -18,6 +21,14 @@ export function useAppliedTheme(): 'light' | 'dark' | null {
     const systemTheme = useSystemTheme();
 
     const appliedTheme = theme === null ? null : theme === 'system' ? systemTheme : theme;
+
+    useEffect(() => {
+        if (theme !== null) {
+            return;
+        }
+        const timeout = setTimeout(() => useGlobal.getState().setTheme('system'), THEME_TIMEOUT_MS);
+        return () => clearTimeout(timeout);
+    }, [theme]);
 
     // Before paint, so the first frame of a themed view is never the wrong theme.
     useLayoutEffect(() => {
