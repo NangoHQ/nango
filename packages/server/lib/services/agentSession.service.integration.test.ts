@@ -10,6 +10,7 @@ import {
     createAgentSession,
     createAgentSessionToken,
     endAgentSession,
+    expireAgentSessions,
     getAgentSession,
     getAgentSessionByToken,
     listExpiredAgentSessions
@@ -296,7 +297,35 @@ describe('agentSession service', () => {
         expect(expired.map(({ id }) => id)).not.toContain(expiredEnded.id);
         expect(expired.map(({ id }) => id)).not.toContain(active.id);
     });
+
+    it('ends expired sessions and revokes their tokens', async () => {
+        const expired = await createSession({ account, environment, expiresAt: new Date(Date.now() + 300) });
+        const active = await createSession({ account, environment, expiresAt: new Date(Date.now() + 60_000) });
+        (await createAgentSessionToken(db.knex, expired)).unwrap();
+        (await createAgentSessionToken(db.knex, active)).unwrap();
+
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        expect(await expireAgentSessions(db.knex, { limit: 10 })).toBe(1);
+
+        const ended = (await getAgentSession(db.knex, { id: expired.id, accountId: account.id, environmentId: environment.id })).unwrap();
+        expect(ended.endedAt).not.toBeNull();
+        expect(ended.endedReason).toBe('expired');
+
+        expect(await keysFor(expired.id)).toBe(0);
+        expect(await keysFor(active.id)).toBe(1);
+
+        const stillActive = (await getAgentSession(db.knex, { id: active.id, accountId: account.id, environmentId: environment.id })).unwrap();
+        expect(stillActive.endedAt).toBeNull();
+
+        expect(await expireAgentSessions(db.knex, { limit: 10 })).toBe(0);
+    });
 });
+
+async function keysFor(sessionId: string): Promise<number> {
+    const keys = await db.knex.from(keystore.PRIVATE_KEYS_TABLE).where({ entity_type: 'agent_session', entity_uuid: sessionId });
+    return keys.length;
+}
 
 async function createSession({
     account,
