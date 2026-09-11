@@ -1,6 +1,6 @@
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { cn } from '@/utils/utils';
-import { UsageRow, usageRowGrid } from './UsageRow';
+import { UsageRow, usageRowCells, usageTableGrid } from './UsageRow';
 
 import type { UsageChargeLookup, UsageRowCharge } from '../usageCharges';
 import type { UsageRowVariant } from './UsageRow';
@@ -77,11 +77,18 @@ export const UsageTable: React.FC<UsageTableProps> = ({
     extraTooltip
 }) => {
     const { thisPeriod, rightmost, extra } = usageColumnHeaders(variant, currentPlanTitle, rightmostHeader);
+    const planNamedCharges = rightmostHeader !== undefined;
     return (
-        <div className="w-full rounded border border-border-default overflow-hidden">
-            <div className={cn(usageRowGrid(variant), 'bg-surface-panel py-3 border-b border-border-default text-text-secondary type-label-xxs uppercase')}>
+        <div className={cn('w-full rounded border border-border-default overflow-hidden', usageTableGrid(variant, planNamedCharges))}>
+            <div
+                className={cn(
+                    usageRowCells,
+                    'items-center bg-surface-panel py-3 px-6 border-b border-border-default text-text-secondary type-label-xxs uppercase'
+                )}
+            >
                 <span>{legacy ? 'Legacy metric' : 'Metric'}</span>
-                <span>{thisPeriod}</span>
+                {/* The figure and its bar are separate columns, so the one header covers both. */}
+                <span className={cn(variant === 'caps' && 'col-span-2')}>{thisPeriod}</span>
                 <span className="flex items-center gap-1.5">
                     {rightmost}
                     {rightmostTooltip && (
