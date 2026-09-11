@@ -27968,6 +27968,11 @@ zoom:
             cursor_path_in_response: next_page_token
             cursor_name_in_request: next_page_token
             limit_name_in_request: page_size
+    webhook_routing_script: zoomWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - nangoConnectionId
+    post_connection_script: zoomPostConnection
     docs: https://nango.dev/docs/api-integrations/zoom
     setup_guide_url: https://nango.dev/docs/api-integrations/zoom/how-to-register-your-own-zoom-api-oauth-app
 
@@ -27983,6 +27988,8 @@ zoom-cc:
         account_id: ${connectionConfig.accountId}
     proxy:
         base_url: https://api.zoom.us
+    webhook_routing_script: zoomCcWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/zoom-cc
     docs_connect: https://nango.dev/docs/api-integrations/zoom-cc/connect
     connection_config:

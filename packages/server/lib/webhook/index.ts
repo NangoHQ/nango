@@ -39,4 +39,6 @@ export { default as videoaskWebhookRouting } from './videoask-webhook-routing.js
 export { default as jobberWebhookRouting } from './jobber-webhook-routing.js';
 export { default as gongWebhookRouting } from './gong-webhook-routing.js';
 export { default as granolaWebhookRouting } from './granola-webhook-routing.js';
+export { default as zoomWebhookRouting } from './zoom-webhook-routing.js';
+export { default as zoomCcWebhookRouting } from './zoom-cc-webhook-routing.js';
 export type * from './types.js';
