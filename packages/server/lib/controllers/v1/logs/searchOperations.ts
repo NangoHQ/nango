@@ -21,6 +21,10 @@ const validation = z
                 z.enum([
                     'all',
                     'action',
+                    'agent_session',
+                    'agent_session:create',
+                    'agent_session:terminate',
+                    'agent_session:tool_search',
                     'sync',
                     'events',
                     'sync:init',
