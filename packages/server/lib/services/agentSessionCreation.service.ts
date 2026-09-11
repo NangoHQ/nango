@@ -18,6 +18,7 @@ import type {
     AgentSessionPinnedTools,
     AgentSessionResolvedConnections,
     AgentSessionTenantConnections,
+    AgentSessionToolNames,
     AgentSessionToolsetPolicy,
     AgentSessionToolsetSummary,
     DBEnvironment,
@@ -127,7 +128,7 @@ export async function createAgentSession(params: CreateAgentSessionParams): Prom
             meta: {
                 requested: requestedConfig(params),
                 resolvedConnections: created.value.session.resolvedConnections,
-                toolset: created.value.session.compiledToolset,
+                toolset: toolsetToolNames(created.value.session.compiledToolset),
                 metaTools: created.value.session.metaTools,
                 expiresAt: created.value.session.expiresAt.toISOString()
             }
@@ -166,6 +167,19 @@ export function toolsetSummary(
                 connected: Object.hasOwn(resolvedConnections, integrationId),
                 tools_pinned: integration.pinned.length,
                 tools_searchable: integration.searchable.length
+            }
+        ])
+    );
+}
+
+export function toolsetToolNames(toolset: AgentSessionCompiledToolset): Record<string, AgentSessionToolNames> {
+    return Object.fromEntries(
+        Object.entries(toolset).map(([integrationId, integration]) => [
+            integrationId,
+            {
+                provider: integration.provider,
+                pinned: integration.pinned.map((tool) => tool.name),
+                searchable: integration.searchable.map((tool) => tool.name)
             }
         ])
     );

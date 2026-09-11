@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { expiresInToMs, metaToolsSummary, parseMetaTools, toolsetSummary } from './agentSessionCreation.service.js';
+import { expiresInToMs, metaToolsSummary, parseMetaTools, toolsetSummary, toolsetToolNames } from './agentSessionCreation.service.js';
 
 describe('expiresInToMs', () => {
     it.each([
@@ -36,6 +36,24 @@ describe('toolsetSummary', () => {
         expect(summary).toStrictEqual({
             notion: { connected: true, tools_pinned: 1, tools_searchable: 1 },
             reddit: { connected: false, tools_pinned: 0, tools_searchable: 1 }
+        });
+    });
+});
+
+describe('toolsetToolNames', () => {
+    it('keeps the tool names and drops the descriptions', () => {
+        expect(
+            toolsetToolNames({
+                notion: {
+                    provider: 'notion',
+                    pinned: [{ name: 'read_doc', description: 'Read a doc' }],
+                    searchable: [{ name: 'upsert_doc', description: 'Upsert a doc' }]
+                },
+                reddit: { provider: 'reddit', pinned: [], searchable: [{ name: 'search_posts', description: 'Search posts' }] }
+            })
+        ).toStrictEqual({
+            notion: { provider: 'notion', pinned: ['read_doc'], searchable: ['upsert_doc'] },
+            reddit: { provider: 'reddit', pinned: [], searchable: ['search_posts'] }
         });
     });
 });
