@@ -14,9 +14,13 @@ export const getEnvironments = asyncWrapper<GetEnvironments>(async (req, res) =>
 
     const accountId = res.locals.account.id;
     const environments = await environmentService.getEnvironmentsByAccountId(accountId);
+    if (environments.isErr()) {
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to retrieve environments' } });
+        return;
+    }
 
     res.status(200).send({
-        data: environments.map((env) => {
+        data: environments.value.map((env) => {
             return { name: env.name, is_production: env.is_production };
         })
     });

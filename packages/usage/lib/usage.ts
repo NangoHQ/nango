@@ -610,7 +610,8 @@ export class UsageTracker implements IUsageTracker {
     }
 
     private async getRecordsUsage(accountId: number): Promise<Result<number>> {
-        const envs = await environmentService.getEnvironmentsByAccountId(accountId);
+        const environments = await environmentService.getEnvironmentsByAccountId(accountId);
+        const envs = environments.isOk() ? environments.value : [];
         let count = 0;
         if (envs.length > 0) {
             const envIds = envs.map((e) => e.id);
