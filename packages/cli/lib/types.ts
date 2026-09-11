@@ -1,10 +1,13 @@
+export const SOURCEMAP_OPTIONS = ['inline', 'false'] as const;
+export type SourcemapOption = (typeof SOURCEMAP_OPTIONS)[number];
+
 export interface GlobalOptions {
     autoConfirm: boolean;
     debug: boolean;
     interactive: boolean;
     dependencyUpdate: boolean;
     telemetry?: boolean;
-    sourcemap?: boolean;
+    sourcemap?: SourcemapOption;
 }
 
 export type ENV = 'local' | 'cloud';

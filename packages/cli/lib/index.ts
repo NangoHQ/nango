@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 
 import chalk from 'chalk';
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import * as dotenv from 'dotenv';
 import figlet from 'figlet';
 
@@ -24,6 +24,7 @@ import { pullFromCatalog, pullFunction } from './services/pull.service.js';
 import { trackCliEvent } from './services/telemetry.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
+import { SOURCEMAP_OPTIONS } from './types.js';
 import { getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
 import { MissingArgumentError } from './utils/errors.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
@@ -257,7 +258,7 @@ program
     .description(
         'Compile the integration files to JavaScript and update the .nango directory. This is useful for one off changes instead of watching for changes continuously.'
     )
-    .option('--no-sourcemap', 'Disable inline source maps in compiled function bundles.')
+    .addOption(new Option('--sourcemap <mode>', 'Source map mode for compiled function bundles.').choices(SOURCEMAP_OPTIONS).default('inline'))
     .action(async function (this: Command) {
         const { debug, interactive, dependencyUpdate, sourcemap } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
@@ -311,7 +312,7 @@ program
     .option('--validate, --validation', 'Optional: Enforce input, output and records validation', false)
     .option('--save, --save-responses', 'Optional: Save all dry run responses to <integration>/tests/<name>.test.json for unit tests', false)
     .option('--diagnostics', 'Optional: Display performance diagnostics including memory usage and CPU metrics', false)
-    .option('--no-sourcemap', 'Disable inline source maps in compiled function bundles.')
+    .addOption(new Option('--sourcemap <mode>', 'Source map mode for compiled function bundles.').choices(SOURCEMAP_OPTIONS).default('inline'))
     .action(async function (this: Command) {
         const {
             autoConfirm,
@@ -486,7 +487,7 @@ program
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
     .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
-    .option('--no-sourcemap', 'Disable inline source maps in compiled function bundles.')
+    .addOption(new Option('--sourcemap <mode>', 'Source map mode for compiled function bundles.').choices(SOURCEMAP_OPTIONS).default('inline'))
     .action(async function (this: Command, environment?: string) {
         const options = this.opts<DeployOptions>();
         const { debug, interactive, dependencyUpdate, sourcemap } = options;

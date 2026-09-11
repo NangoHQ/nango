@@ -16,6 +16,7 @@ import { parseIntegrationDefinitions } from './definitions.js';
 import { badExportCompilerError, CompileError, fileErrorToText, ReadableError, tsDiagnosticToText } from './utils.js';
 
 // import type { BabelErrorType } from './constants.js';
+import type { SourcemapOption } from '../types.js';
 import type { Feature, Result } from '@nangohq/types';
 
 /**
@@ -30,12 +31,12 @@ export async function compileAllFunctions({
     fullPath,
     debug,
     interactive = true,
-    sourcemap = true
+    sourcemap = 'inline'
 }: {
     fullPath: string;
     debug: boolean;
     interactive?: boolean;
-    sourcemap?: boolean | undefined;
+    sourcemap?: SourcemapOption | undefined;
 }): Promise<Result<boolean>> {
     const spinnerFactory = new Spinner({ interactive });
     let spinner = spinnerFactory.start('Typechecking');
@@ -196,11 +197,11 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
 export async function bundleFile({
     entryPoint,
     projectRootPath,
-    sourcemap = true
+    sourcemap = 'inline'
 }: {
     entryPoint: string;
     projectRootPath: string;
-    sourcemap?: boolean | undefined;
+    sourcemap?: SourcemapOption | undefined;
 }): Promise<Result<string>> {
     const friendlyPath = entryPoint.replace(/\.js$/, '.ts').replace(projectRootPath, '.');
     try {
@@ -208,7 +209,7 @@ export async function bundleFile({
         const res = await build({
             entryPoints: [entryPoint],
             bundle: true,
-            sourcemap: sourcemap ? 'inline' : false,
+            sourcemap: sourcemap === 'false' ? false : sourcemap,
             format: 'cjs',
             target: 'esnext',
             platform: 'node',
@@ -392,11 +393,11 @@ export async function bundleFile({
 export async function compileFunction({
     entryPoint,
     projectRootPath,
-    sourcemap = true
+    sourcemap = 'inline'
 }: {
     entryPoint: string;
     projectRootPath: string;
-    sourcemap?: boolean | undefined;
+    sourcemap?: SourcemapOption | undefined;
 }): Promise<Result<boolean>> {
     const rel = path.relative(projectRootPath, entryPoint);
     // File are compiled to build/integration-type-script-name.cjs
