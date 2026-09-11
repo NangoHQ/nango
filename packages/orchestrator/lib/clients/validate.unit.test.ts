@@ -5,6 +5,44 @@ import { validateTask } from './validate.js';
 import type { Task } from '@nangohq/scheduler';
 
 describe('validateTask', () => {
+    it('deserializes a dequeued scheduled function task', () => {
+        const result = validateTask({
+            id: '4a14038c-3a57-4a4d-bb9e-c8a5e85474ae',
+            name: 'scheduled-function-task',
+            groupKey: 'function:instance:123',
+            groupMaxConcurrency: 1,
+            state: 'STARTED',
+            retryKey: null,
+            retryCount: 0,
+            retryMax: 0,
+            ownerKey: null,
+            heartbeatTimeoutSecs: 60,
+            startsAfter: new Date(),
+            createdToStartedTimeoutSecs: 30,
+            startedToCompletedTimeoutSecs: 120,
+            createdAt: new Date(),
+            lastStateTransitionAt: new Date(),
+            lastHeartbeatAt: new Date(),
+            output: null,
+            terminated: false,
+            scheduleId: 'c1952e1f-b385-4db0-b4ef-a7ad52a034c9',
+            payload: {
+                type: 'function',
+                instanceId: 123
+            }
+        } as Task);
+
+        const task = result.unwrap();
+        expect(task.isScheduleFunction()).toBe(true);
+        if (task.isScheduleFunction()) {
+            expect(task).toMatchObject({
+                instanceId: 123,
+                attempt: 1,
+                attemptMax: 1
+            });
+        }
+    });
+
     it('deserializes a dequeued function task', () => {
         const result = validateTask({
             id: '4a14038c-3a57-4a4d-bb9e-c8a5e85474ae',

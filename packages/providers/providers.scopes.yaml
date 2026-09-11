@@ -4767,6 +4767,9 @@ highlevel-white-label:
     - voice-ai-dashboard.readonly
     - workflows.readonly
 
+# source: https://developerportal.thomsonreuters.com/authentication/documents/api-access-mechanism-using-oauth2 (no scopes parameter — API access is governed by the authenticated user's Collaborate permissions)
+highq: []
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 hover: []
 
