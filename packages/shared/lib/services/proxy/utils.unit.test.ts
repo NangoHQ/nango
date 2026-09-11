@@ -1,7 +1,7 @@
 import * as crypto from 'node:crypto';
 
 import FormData from 'form-data';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getProvider } from '@nangohq/providers';
 
@@ -839,6 +839,171 @@ describe('buildProxyHeaders', () => {
         expect(result['authorization']).toMatch(/SignedHeaders=[^,]*\bcontent-type\b/);
         expect(result['x-amz-target']).toBe('DynamoDB_20120810.GetItem');
         expect(result['content-type']).toBe('application/x-amz-json-1.0');
+    });
+
+    it('does not throw on a request body containing a bare "%" for a provider whose header templates never reference the canonical-params replacers', () => {
+        const config = getDefaultProxy({
+            method: 'PUT',
+            baseUrlOverride: 'https://s3.us-east-1.amazonaws.com',
+            data: JSON.stringify({ text: 'We closed 50% of the pipeline this quarter, up from 30% last quarter.' }),
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://api.fireflies.ai',
+                    headers: { authorization: 'Bearer ${apiKey}' }
+                }
+            }
+        });
+
+        expect(() =>
+            buildProxyHeaders({
+                config,
+                url: 'https://s3.us-east-1.amazonaws.com/some-bucket/some-key.json',
+                connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'fireflies-key' } })
+            })
+        ).not.toThrow();
+    });
+
+    it('still computes params from the request body for a provider whose header template references ${params}', () => {
+        const config = getDefaultProxy({
+            method: 'POST',
+            data: 'name=My%20Group',
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://api.duosecurity.com',
+                    headers: { 'x-duo-params': '${params}' }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.duosecurity.com/admin/v1/groups',
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'duo-key' } })
+        });
+
+        expect(result['x-duo-params']).toBe('name=My%20Group');
+    });
+
+    it('resolves ${params} for the real cisco-duo-admin provider config, not just a synthetic one', () => {
+        const provider = getProvider('cisco-duo-admin');
+        if (!provider) {
+            throw new Error('cisco-duo-admin provider is missing');
+        }
+
+        const config = getDefaultProxy({
+            method: 'POST',
+            data: 'realname=Test%20User',
+            provider
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api-test.duosecurity.com/admin/v1/users',
+            connection: getTestConnection({
+                credentials: { type: 'BASIC', username: 'ikey', password: 'skey' },
+                connection_config: { hostname: 'api-test.duosecurity.com' }
+            })
+        });
+
+        expect(result['authorization']).not.toContain('${');
+        expect(result['authorization']).toMatch(/^Basic [A-Za-z0-9+/=]+$/);
+    });
+
+    it('resolves ${bodyCanonicalParams} for the real streamline-ai provider config end-to-end through buildProxyHeaders', () => {
+        const provider = getProvider('streamline-ai');
+        if (!provider) {
+            throw new Error('streamline-ai provider is missing');
+        }
+
+        const body = JSON.stringify({ requestFormId: 'requestform_1', status: 'submitted' });
+        const config = getDefaultProxy({
+            method: 'POST',
+            data: body,
+            provider
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://acme.streamline.ai/api/v0/requests',
+            connection: getTestConnection({ credentials: { type: 'BASIC', username: 'slak_test123', password: 'test-ed25519-key' } })
+        });
+
+        expect(result['content-digest']).not.toContain('${');
+        expect(result['content-digest']).toBe(`sha-256=:${crypto.createHash('sha256').update(body, 'utf8').digest('base64')}:`);
+    });
+
+    describe('${awsSigV4(...)} (real aws-iam provider config)', () => {
+        beforeEach(() => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+        });
+
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it('signs the actual request body, not an empty one (regression: awsSigV4 does not literally contain "${bodyCanonicalParams}")', () => {
+            const provider = getProvider('aws-iam');
+            if (!provider) {
+                throw new Error('aws-iam provider is missing');
+            }
+            const connection = getTestConnection({ credentials: { type: 'BASIC', username: 'AKIAEXAMPLE', password: 'secretkeyexample' } });
+
+            const withBody = buildProxyHeaders({
+                config: getDefaultProxy({ method: 'POST', data: 'Action=ListUsers&Version=2010-05-08', provider }),
+                url: 'https://iam.amazonaws.com/',
+                connection
+            });
+            const withoutBody = buildProxyHeaders({
+                config: getDefaultProxy({ method: 'POST', provider }),
+                url: 'https://iam.amazonaws.com/',
+                connection
+            });
+
+            expect(withBody['authorization']).not.toContain('${');
+            expect(withBody['authorization']).not.toBe(withoutBody['authorization']);
+        });
+
+        it('signs the actual request body for aws-inspector2 too, whose header template also matches the connectionConfig branch', () => {
+            const provider = getProvider('aws-inspector2');
+            if (!provider) {
+                throw new Error('aws-inspector2 provider is missing');
+            }
+            const connection = getTestConnection({
+                credentials: { type: 'BASIC', username: 'AKIAEXAMPLE', password: 'secretkeyexample' },
+                connection_config: { region: 'us-east-1' }
+            });
+
+            const withBody = buildProxyHeaders({
+                config: getDefaultProxy({ method: 'POST', data: 'findingArns=arn:aws:inspector2:us-east-1:123456789012:finding/abc', provider }),
+                url: 'https://inspector2.us-east-1.amazonaws.com/',
+                connection
+            });
+            const withoutBody = buildProxyHeaders({
+                config: getDefaultProxy({ method: 'POST', provider }),
+                url: 'https://inspector2.us-east-1.amazonaws.com/',
+                connection
+            });
+
+            expect(withBody['authorization']).not.toContain('${');
+            expect(withBody['authorization']).not.toBe(withoutBody['authorization']);
+        });
+    });
+});
+
+describe('buildCanonicalParams (malformed percent-encoding)', () => {
+    it('falls back to the raw value instead of throwing on a bare "%" in a POST body', () => {
+        expect(() => buildCanonicalParams('POST', '50% of users', '')).not.toThrow();
+    });
+
+    it('falls back to the raw value instead of throwing on a bare "%" in a Buffer body', () => {
+        expect(() => buildCanonicalParams('POST', Buffer.from('50% of users'), '')).not.toThrow();
+    });
+
+    it('falls back to the raw value instead of throwing on a bare "%" in a GET query string', () => {
+        expect(() => buildCanonicalParams('GET', undefined, 'q=50% off')).not.toThrow();
     });
 });
 

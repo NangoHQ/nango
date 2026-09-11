@@ -36,7 +36,9 @@ export interface FromScheduleProps {
     scheduleName: string;
     extra: JsonObject;
 }
-export type ScheduleProps = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'nextExecutionAt'>;
+export type ScheduleProps = Omit<Schedule, 'id' | 'state' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'nextExecutionAt'> & {
+    state: Exclude<ScheduleState, 'DELETED'>;
+};
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const scheduleStates = ['PAUSED', 'STARTED', 'DELETED'] as const;

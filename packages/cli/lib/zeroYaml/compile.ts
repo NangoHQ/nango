@@ -16,6 +16,7 @@ import { parseIntegrationDefinitions } from './definitions.js';
 import { badExportCompilerError, CompileError, fileErrorToText, ReadableError, tsDiagnosticToText } from './utils.js';
 
 // import type { BabelErrorType } from './constants.js';
+import type { SourcemapOption } from '../types.js';
 import type { Feature, Result } from '@nangohq/types';
 
 /**
@@ -29,11 +30,13 @@ import type { Feature, Result } from '@nangohq/types';
 export async function compileAllFunctions({
     fullPath,
     debug,
-    interactive = true
+    interactive = true,
+    sourcemap = 'inline'
 }: {
     fullPath: string;
     debug: boolean;
     interactive?: boolean;
+    sourcemap?: SourcemapOption | undefined;
 }): Promise<Result<boolean>> {
     const spinnerFactory = new Spinner({ interactive });
     let spinner = spinnerFactory.start('Typechecking');
@@ -76,7 +79,7 @@ export async function compileAllFunctions({
             spinner.text = `${text} - ${entryPoint}`;
             printDebug(`Building ${entryPointFullPath}`, debug);
 
-            const buildRes = await compileFunction({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
+            const buildRes = await compileFunction({ entryPoint: entryPointFullPath, projectRootPath: fullPath, sourcemap });
             if (buildRes.isErr()) {
                 spinner.fail(`Failed to build ${entryPoint}`);
                 console.log('');
@@ -191,14 +194,22 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
 /**
  * Bundles the entry file using esbuild and returns the bundled code as a string (in memory).
  */
-export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<string>> {
+export async function bundleFile({
+    entryPoint,
+    projectRootPath,
+    sourcemap = 'inline'
+}: {
+    entryPoint: string;
+    projectRootPath: string;
+    sourcemap?: SourcemapOption | undefined;
+}): Promise<Result<string>> {
     const friendlyPath = entryPoint.replace(/\.js$/, '.ts').replace(projectRootPath, '.');
     try {
         const { plugin, bag } = nangoPlugin({ entryPoint });
         const res = await build({
             entryPoints: [entryPoint],
             bundle: true,
-            sourcemap: 'inline',
+            sourcemap: sourcemap === 'false' ? false : sourcemap,
             format: 'cjs',
             target: 'esnext',
             platform: 'node',
@@ -379,7 +390,15 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
  * We use esbuild to compile the code to .cjs.
  * node.vm only supports CJS and we also bundle all imported files in the same file.
  */
-export async function compileFunction({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
+export async function compileFunction({
+    entryPoint,
+    projectRootPath,
+    sourcemap = 'inline'
+}: {
+    entryPoint: string;
+    projectRootPath: string;
+    sourcemap?: SourcemapOption | undefined;
+}): Promise<Result<boolean>> {
     const rel = path.relative(projectRootPath, entryPoint);
     // File are compiled to build/integration-type-script-name.cjs
     // Because it's easier to manipulate the files and it's easier in S3
@@ -388,7 +407,7 @@ export async function compileFunction({ entryPoint, projectRootPath }: { entryPo
     // Ensure the output directory exists
     await fs.promises.mkdir(path.dirname(outfile), { recursive: true });
 
-    const bundleResult = await bundleFile({ entryPoint, projectRootPath });
+    const bundleResult = await bundleFile({ entryPoint, projectRootPath, sourcemap });
     if (bundleResult.isErr()) {
         return Err(bundleResult.error);
     }

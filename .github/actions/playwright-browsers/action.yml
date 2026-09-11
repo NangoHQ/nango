@@ -1,0 +1,20 @@
+name: 'Playwright browsers'
+description: 'Restores the cached Chromium build for the pinned Playwright version, downloading it on a miss.'
+
+runs:
+    using: 'composite'
+    steps:
+        - name: Resolve Playwright version
+          id: playwright
+          shell: bash
+          run: echo "version=$(node -p "require('./packages/connect-ui/package.json').devDependencies.playwright")" >> "$GITHUB_OUTPUT"
+
+        - name: Cache Playwright browsers
+          uses: actions/cache@v4
+          with:
+              path: ~/.cache/ms-playwright
+              key: ms-playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+        # Browser Mode needs the Chromium binary (ignore-scripts blocks the postinstall download).
+        - shell: bash
+          run: npx --yes playwright@${{ steps.playwright.outputs.version }} install chromium
