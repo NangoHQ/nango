@@ -28,9 +28,11 @@ export function orbAmountToCents(amount: string | null | undefined): number | nu
 
     // Groups 2 and 3 are guaranteed by the pattern, but `noUncheckedIndexedAccess` can't see that.
     const whole = match[2] ?? '0';
-    // Some invoices carry more than two decimals; the extra digits are dropped, not rounded.
-    const fraction = match[3] ?? '';
-    const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0').slice(0, 2));
+    // The costs endpoint answers in full float precision, where two cents arrives as
+    // 0.01999999999999999872 and dropping the extra digits rather than rounding makes it one.
+    const fraction = (match[3] ?? '').padEnd(3, '0');
+    const roundsUp = Number(fraction[2]) >= 5;
+    const cents = Number(whole) * 100 + Number(fraction.slice(0, 2)) + (roundsUp ? 1 : 0);
     return match[1] === '-' ? -cents : cents;
 }
 
