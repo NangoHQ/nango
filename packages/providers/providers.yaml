@@ -11697,6 +11697,129 @@ incident-io:
             pattern: 'inc_[a-f0-9]{64}$'
             doc_section: '#step-1-generating-your-api-key'
 
+infor:
+    display_name: Infor (ION API)
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.ssoUrl}/${connectionConfig.tenant}/as/authorization.oauth2
+    token_url: https://${connectionConfig.ssoUrl}/${connectionConfig.tenant}/as/token.oauth2
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.ionApiUrl}/${connectionConfig.tenant}
+    docs: https://nango.dev/docs/api-integrations/infor
+    docs_connect: https://nango.dev/docs/api-integrations/infor/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/infor/how-to-register-your-own-infor-api-oauth-app
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: Your Infor OS tenant identifier.
+            example: ACME_PRD
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 1
+        ssoUrl:
+            type: string
+            title: Authorization Server URL
+            description: The authorization server hostname for your tenant.
+            example: mingle-sso.inforcloudsuite.com
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 2
+        ionApiUrl:
+            type: string
+            title: ION API Gateway URL
+            description: The ION API gateway hostname for your tenant.
+            example: mingle-ionapi.inforcloudsuite.com
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 3
+
+infor-cc:
+    display_name: Infor (ION API, Resource Owner Grant)
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.ssoUrl}/${connectionConfig.tenant}/as/token.oauth2
+    token_params:
+        grant_type: password
+        username: ${credentials.saak}
+        password: ${credentials.sask}
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.ionApiUrl}/${connectionConfig.tenant}
+    docs: https://nango.dev/docs/api-integrations/infor-cc
+    docs_connect: https://nango.dev/docs/api-integrations/infor-cc/connect
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: Your Infor OS tenant identifier.
+            example: ACME_PRD
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 1
+        ssoUrl:
+            type: string
+            title: Authorization Server URL
+            description: The authorization server hostname for your tenant.
+            example: mingle-sso.inforcloudsuite.com
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 2
+        ionApiUrl:
+            type: string
+            title: ION API Gateway URL
+            description: The ION API gateway hostname for your tenant.
+            example: mingle-ionapi.inforcloudsuite.com
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 3
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Authorized App's Client ID.
+            doc_section: '#step-1-finding-your-credentials'
+            order: 1
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Authorized App's Client Secret.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+            order: 2
+        saak:
+            type: string
+            title: Service Account Access Key
+            description: Your Service Account's Access Key.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+            order: 3
+        sask:
+            type: string
+            title: Service Account Secret Key
+            description: Your Service Account's Secret Key.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+            order: 4
+
 ingenious-build:
     display_name: INGENIOUS.BUILD
     categories:

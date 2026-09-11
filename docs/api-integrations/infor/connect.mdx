@@ -1,0 +1,40 @@
+---
+title: 'Infor - How do I link my account?'
+sidebarTitle: 'Infor Connect'
+---
+
+## Overview
+
+To connect Infor in Nango, you need to provide:
+
+1. **Tenant** — Your Infor OS tenant identifier.
+2. **Authorization Server URL** — The base URL of Infor's authorization server for your tenant.
+3. **ION API Gateway URL** — The base URL of the ION API gateway for your tenant.
+
+This guide walks you through finding all three values in your `.ionapi` credentials file, then authorizing through Infor OS.
+
+### Prerequisites
+
+- You must have registered an app in Infor OS and downloaded its `.ionapi` credentials file — see [how to register your own Infor OAuth app](/api-integrations/infor/how-to-register-your-own-infor-api-oauth-app).
+
+### Step 1: Open your .ionapi credentials file
+
+The `.ionapi` file downloaded during app registration is a JSON file. Open it in a text editor.
+
+### Step 2: Finding your Tenant and URLs
+
+In the JSON file, find these fields:
+
+- **`ti`** — your **Tenant** (for example, `ACME_PRD`).
+- **`pu`** — your **Authorization Server URL**. Enter the hostname only, without `https://` (for example, `mingle-sso.inforcloudsuite.com`).
+- **`iu`** — your **ION API Gateway URL**. Enter the hostname only, without `https://` (for example, `mingle-ionapi.inforcloudsuite.com`).
+
+### Step 3: Authorize the connection
+
+1. Open the form where you need to authenticate with Infor.
+2. Enter the **Tenant**, **Authorization Server URL**, and **ION API Gateway URL** in their designated fields.
+3. Submit the form, then log in with your Infor OS account and grant the requested permissions.
+
+<img src="/api-integrations/infor/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Infor.

@@ -1,0 +1,45 @@
+---
+title: 'Infor (Resource Owner Grant) - How do I link my account?'
+sidebarTitle: 'Infor Connect (Resource Owner Grant)'
+---
+
+## Overview
+
+To connect Infor in Nango using the Resource Owner Grant, you need to provide:
+
+1. **Client ID** and **Client Secret** — your Authorized App's OAuth credentials.
+2. **Service Account Access Key** and **Service Account Secret Key** — credentials for a Service Account bound to that app.
+3. **Tenant**, **Authorization Server URL**, and **ION API Gateway URL** — your Infor OS tenant and its endpoints.
+
+This guide walks you through finding all of these in your `.ionapi` credentials file.
+
+### Prerequisites
+
+- You must have registered an Authorized App in Infor OS — see [how to register your own Infor OAuth app](/api-integrations/infor/how-to-register-your-own-infor-api-oauth-app). Use **Type: Backend Service** instead of **Web** — this flow doesn't use a redirect URI.
+
+### Step 1: Finding your credentials
+
+When downloading your app's credentials, check the box to include a **service account access key and secret key for the downloaded file** (this option isn't needed for the standard [Infor (ION API)](/api-integrations/infor/connect) integration, but is required here). Open the downloaded `.ionapi` JSON file and find:
+
+- **`ci`** — your **Client ID**.
+- **`cs`** — your **Client Secret**.
+- **`saak`** — your **Service Account Access Key**.
+- **`sask`** — your **Service Account Secret Key**.
+
+### Step 2: Finding your Tenant and URLs
+
+In the same file, find:
+
+- **`ti`** — your **Tenant** (for example, `ACME_PRD`).
+- **`pu`** — your **Authorization Server URL**. Enter the hostname only, without `https://` (for example, `mingle-sso.inforcloudsuite.com`).
+- **`iu`** — your **ION API Gateway URL**. Enter the hostname only, without `https://` (for example, `mingle-ionapi.inforcloudsuite.com`).
+
+### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Infor.
+2. Enter the **Client ID**, **Client Secret**, **Service Account Access Key**, **Service Account Secret Key**, **Tenant**, **Authorization Server URL**, and **ION API Gateway URL** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/infor-cc/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Infor.
