@@ -92,6 +92,8 @@ import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
 import {
+    auditAgentSessionCreated,
+    auditAgentSessionTerminated,
     auditConnectionCreated,
     auditFunctionDeployedCli,
     auditFunctionDeployedFromTemplate,
@@ -465,8 +467,8 @@ publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTe
 
 // Agent sessions
 publicAPI.use('/sessions', jsonContentTypeMiddleware);
-publicAPI.route('/sessions').post(apiAuth, withScope('environment:agent_sessions:write'), postAgentSessions);
-publicAPI.route('/sessions/:sessionId').delete(apiAuth, withScope('environment:agent_sessions:write'), deleteAgentSession);
+publicAPI.route('/sessions').post(apiAuth, auditAgentSessionCreated, withScope('environment:agent_sessions:write'), postAgentSessions);
+publicAPI.route('/sessions/:sessionId').delete(apiAuth, auditAgentSessionTerminated, withScope('environment:agent_sessions:write'), deleteAgentSession);
 publicAPI.use('/session/:sessionId/mcp', jsonContentTypeMiddleware);
 publicAPI.route('/session/:sessionId/mcp').post(agentSessionAuth, postAgentSessionMcp);
 publicAPI.route('/session/:sessionId/mcp').get(agentSessionAuth, getAgentSessionMcp);
