@@ -42,7 +42,8 @@ export const updateIntegrationsTool = defineManagementMcpTool<typeof updateInteg
             credentials: args.credentials,
             forwardWebhooks: args.forward_webhooks,
             integrationConfig: args.integration_config,
-            custom: args.custom
+            custom: args.custom,
+            environment
         });
 
         return result

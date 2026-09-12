@@ -50,7 +50,8 @@ describe('updateIntegrationsTool', () => {
             credentials: { type: 'OAUTH2', client_id: 'client-id', client_secret: 'client-secret' },
             forwardWebhooks: false,
             integrationConfig: { region: 'eu' },
-            custom: { tenant: 'acme' }
+            custom: { tenant: 'acme' },
+            environment: context.environment
         });
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {

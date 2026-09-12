@@ -2216,6 +2216,91 @@ If you are missing a catalog MCP server you can [request it](/integrations/contr
    In the Nango UI: [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → choose the MCP provider (e.g. _HubSpot (MCP)_, _Notion MCP_).  
    Some providers, for example HubSpot MCP, require you to [register an MCP auth app](/api-integrations/hubspot-mcp/how-to-register-your-own-hubspot-mcp-api-oauth-app) and add **Client ID** and **Client Secret** in Nango. But most support dynamic client registrations: You can just enable them on Nango, and Nango registers a client for you in the background.
 
+   <Accordion title="For agents">
+     Create the integration with the API. MCP providers use the `MCP_OAUTH2` credentials type. Nango supports three client registration modes, set per provider in the catalog:
+
+     | Mode | Who registers the client | `client_id`/`client_secret` in requests |
+     |------|---------------------------|-------------------------------------------|
+     | **static** | You, on the provider's developer portal | Required on create, editable on update |
+     | **dynamic** (DCR) | Nango, automatically, via the MCP server's dynamic client registration endpoint | Omit entirely — Nango manages them |
+     | **cimd** (Client ID Metadata Document) | Nango, by publishing a metadata document the provider fetches at connect time | Omit entirely — Nango manages them. Requires your Nango instance to be reachable at a public HTTPS URL (always true on Nango Cloud; a self-hosted instance must set `NANGO_SERVER_URL` to a public `https://` URL) |
+
+     <Tabs>
+       <Tab title="cURL (static — client registered with the provider)">
+       ```bash
+       curl --request POST \
+         --url https://api.nango.dev/integrations \
+         --header 'Authorization: Bearer <NANGO-API-KEY>' \
+         --header 'Content-Type: application/json' \
+         --data '{
+           "unique_key": "<INTEGRATION-ID>",
+           "provider": "<PROVIDER>",
+           "credentials": {
+             "type": "MCP_OAUTH2",
+             "client_id": "<CLIENT-ID>",
+             "client_secret": "<CLIENT-SECRET>"
+           }
+         }'
+       ```
+       </Tab>
+       <Tab title="cURL (dynamic or cimd)">
+       ```bash
+       curl --request POST \
+         --url https://api.nango.dev/integrations \
+         --header 'Authorization: Bearer <NANGO-API-KEY>' \
+         --header 'Content-Type: application/json' \
+         --data '{
+           "unique_key": "<INTEGRATION-ID>",
+           "provider": "<PROVIDER>"
+         }'
+       ```
+       Nango registers (or publishes) the OAuth client automatically — omit `credentials` entirely.
+       </Tab>
+     </Tabs>
+
+     **Read it back** — [Get an integration](/reference/backend/http-api/integration/get) with `?include=credentials` to see the stored `client_id`/`client_secret`/`scopes` (requires the `environment:integrations:read_credentials` scope):
+
+     ```bash
+     curl --request GET \
+       --url 'https://api.nango.dev/integrations/<INTEGRATION-ID>?include=credentials' \
+       --header 'Authorization: Bearer <NANGO-API-KEY>'
+     ```
+
+     [List all integrations](/reference/backend/http-api/integration/list) works the same as for any other provider:
+
+     ```bash
+     curl --request GET \
+       --url https://api.nango.dev/integrations \
+       --header 'Authorization: Bearer <NANGO-API-KEY>'
+     ```
+
+     **Update** — rotate credentials or change scopes with the same `MCP_OAUTH2` credentials shape. `client_id`/`client_secret` can only be set for `static` providers; Nango rejects the request if you try to set them on a `dynamic` or `cimd` integration, since it manages those itself:
+
+     ```bash
+     curl --request PATCH \
+       --url https://api.nango.dev/integrations/<INTEGRATION-ID> \
+       --header 'Authorization: Bearer <NANGO-API-KEY>' \
+       --header 'Content-Type: application/json' \
+       --data '{
+         "credentials": {
+           "type": "MCP_OAUTH2",
+           "client_secret": "<NEW-CLIENT-SECRET>",
+           "scopes": "<SCOPE-1>,<SCOPE-2>"
+         }
+       }'
+     ```
+
+     **Delete** — same as any other integration:
+
+     ```bash
+     curl --request DELETE \
+       --url https://api.nango.dev/integrations/<INTEGRATION-ID> \
+       --header 'Authorization: Bearer <NANGO-API-KEY>'
+     ```
+
+     For all fields and response shapes, see [Create](/reference/backend/http-api/integration/create), [Get](/reference/backend/http-api/integration/get), [List](/reference/backend/http-api/integration/list), [Update](/reference/backend/http-api/integration/update), and [Delete an integration](/reference/backend/http-api/integration/delete).
+   </Accordion>
+
 2. **Run the same auth flow as standard OAuth**  
    - Backend: [create a Connect session](/guides/auth/auth-guide#generate-session-token) with `allowed_integrations: ['<integration-id>']` (e.g. `hubspot-mcp`, `notion-mcp`).  
    - Frontend: [open the Connect UI](/guides/auth/auth-guide#trigger-auth-flow) with the session token.  
