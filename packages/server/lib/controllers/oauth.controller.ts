@@ -1063,6 +1063,7 @@ class OAuthController {
     }
 
     private async mcpGenericRequest({
+        provider,
         config,
         session,
         req,
@@ -1087,7 +1088,7 @@ class OAuthController {
         const connectionId = session.connectionId;
 
         try {
-            const mcpServerUrl = connectionConfig['mcp_server_url'];
+            const mcpServerUrl = provider.mcp_server_url || connectionConfig['mcp_server_url'];
             if (!mcpServerUrl) {
                 const error = WSErrBuilder.InvalidConnectionConfig('mcp_server_url', JSON.stringify(connectionConfig));
                 void logCtx.error(error.message);
@@ -1105,7 +1106,14 @@ class OAuthController {
                 return;
             }
 
-            const { metadata, resourceMetadata, scopes } = discoveryResult;
+            const { metadata, resourceMetadata } = discoveryResult;
+
+            const configuredScopes = config.oauth_scopes
+                ?.split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+                .join(provider.scope_separator || ' ');
+            const scopes = configuredScopes || discoveryResult.scopes;
 
             const clientMetadata: OAuthClientMetadata = {
                 redirect_uris: [callbackUrl],
