@@ -175,6 +175,13 @@ async function createSession(apiKey: string, body: Partial<PostAgentSessionsBody
     return { sessionId: res.json.data.session_id, token: res.json.data.session_token, mcpPath: new URL(res.json.data.mcp_url).pathname };
 }
 
+async function expireSession(sessionId: string): Promise<void> {
+    await db.knex
+        .from('agent_sessions')
+        .where({ id: sessionId })
+        .update({ expires_at: new Date(Date.now() - 60_000) });
+}
+
 async function disableAction({ environmentId, name }: { environmentId: number; name: string }): Promise<void> {
     await db.knex.from<DBSyncConfig>('_nango_sync_configs').where({ environment_id: environmentId, sync_name: name }).update({ enabled: false });
 }
@@ -227,6 +234,18 @@ describe('/session/:sessionId/mcp', () => {
         const res = await listTools({ token: apiKey, mcpPath });
 
         expect(res.status).toBe(401);
+    });
+
+    it('rejects a session token once the session has expired', async () => {
+        const { apiKey } = await seedTenant();
+        const { sessionId, token, mcpPath } = await createSession(apiKey);
+
+        await expireSession(sessionId);
+
+        const res = await listTools({ token, mcpPath });
+
+        expect(res.status).toBe(401);
+        expect(res.json.error.code).toBe('agent_session_ended');
     });
 
     it('rejects a session token pointed at another session url', async () => {

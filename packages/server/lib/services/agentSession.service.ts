@@ -276,6 +276,28 @@ export async function listExpiredAgentSessions(db: Knex, { limit }: { limit: num
     }));
 }
 
+export async function expireAgentSessions(db: Knex, { limit }: { limit: number }): Promise<number> {
+    const sessions = await listExpiredAgentSessions(db, { limit });
+
+    let expired = 0;
+    for (const session of sessions) {
+        const ended = await endAgentSession(db, {
+            id: session.id,
+            accountId: session.accountId,
+            environmentId: session.environmentId,
+            reason: 'expired'
+        });
+        if (ended.isErr()) {
+            report(ended.error);
+            continue;
+        }
+
+        expired++;
+    }
+
+    return expired;
+}
+
 function jsonb(db: Knex, value: object): Knex.Raw {
     return db.raw('?::jsonb', [JSON.stringify(value)]);
 }
