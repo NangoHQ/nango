@@ -1,0 +1,49 @@
+---
+title: Omnisend - How do I link my account?
+sidebarTitle: Omnisend
+---
+
+## Overview
+
+To connect Omnisend to Nango, you need one credential:
+
+- **API Key** — An Omnisend API key with the scopes required by your selected functions.
+
+The provider uses Omnisend's current API authentication format and sends the required API version header automatically.
+
+## Prerequisites
+
+- An Omnisend account with access to API keys.
+- Permission to create an API key with the required scopes.
+
+<a id="step-1-open-omnisend-api-keys"></a>
+## Step 1: Open Omnisend API keys
+
+Sign in to Omnisend and open the API key settings in your account. Use Omnisend's documentation if the location differs for your account:
+
+[Omnisend API key documentation](https://api-docs.omnisend.com/docs/api-key)
+
+<a id="step-2-create-an-omnisend-api-key"></a>
+## Step 2: Create an Omnisend API key
+
+Create a key with only the scopes needed by your application. Read scopes are sufficient for the read-only sync functions. Write scopes are required for action functions that create, update, send, enable, disable, or delete provider resources.
+
+Copy the key when Omnisend displays it and store it securely. Do not commit it or expose it in browser code.
+
+<a id="step-3-connect-omnisend-in-nango"></a>
+## Step 3: Connect Omnisend in Nango
+
+Open the Omnisend connection form in Nango and enter:
+
+- **API Key:** Your Omnisend API key
+
+Select **Connect**. Nango verifies the credential with `GET /api/campaigns?limit=1`.
+
+The provider automatically sends:
+
+```http
+Authorization: Omnisend-API-Key <your-api-key>
+Omnisend-Version: 2026-03-15
+```
+
+Never send the API key to a client-side application.
