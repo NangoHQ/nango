@@ -17013,6 +17013,34 @@ orange-logic:
             order: 1
             doc_section: '#step-1-find-your-orange-logic-url'
 
+omnisend:
+    display_name: Omnisend
+    categories:
+        - marketing
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.omnisend.com
+        headers:
+            authorization: Omnisend-API-Key ${apiKey}
+            omnisend-version: '2026-03-15'
+        verification:
+            method: GET
+            endpoints:
+                - /api/campaigns?limit=1
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/integrations/all/omnisend
+    docs_connect: https://nango.dev/docs/integrations/all/omnisend/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Omnisend API key with the scopes required by your selected functions.
+            secret: true
+            doc_section: '#step-2-create-an-omnisend-api-key'
+
 openai:
     display_name: OpenAI
     categories:

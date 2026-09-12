@@ -1,0 +1,46 @@
+---
+title: Omnisend
+sidebarTitle: Omnisend
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/omnisend/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/omnisend/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+
+| Pre-requisite | Status | Comment |
+| --- | --- | --- |
+| Omnisend account | ✅ | Required |
+| API key | ✅ | Create an API key with the scopes required by the functions you use |
+| Partnership | ❓ | Not required for this provider configuration |
+| App review | ❓ | Not required for API-key authentication |
+| Security audit | ❓ | Not required for API-key authentication |
+
+## Setup guide
+
+Follow the [Omnisend connection guide](/integrations/all/omnisend/connect) to create an API key and connect it through Nango.
+
+## Useful links
+
+- [Omnisend API documentation](https://api-docs.omnisend.com/)
+- [Omnisend API authentication and version migration](https://api-docs.omnisend.com/docs/migrate-from-v5-to-v2026-03-15)
+- [Omnisend API reference](https://api-docs.omnisend.com/v2026-03-15/reference)
+- [Omnisend API key documentation](https://api-docs.omnisend.com/docs/api-key)
+
+## API gotchas
+
+- The current API requires `Authorization: Omnisend-API-Key <API_KEY>` on every request.
+- The current API also requires `Omnisend-Version: 2026-03-15` on every request. This provider sends the header automatically.
+- API keys are scoped. A key can authenticate successfully while an individual function still returns an authorization error because its scope is missing.
+- Campaign send/test, automation enable/disable, event creation, deletes, and other write functions can have immediate provider-side effects. Use the minimum scopes and expose only the functions appropriate for your application.
+- List endpoints use cursor pagination. The pre-built sync functions handle the documented cursor envelope for their supported collections.
+- The provider verification request is `GET /api/campaigns?limit=1`; it only verifies authentication and does not create or send anything.
+
+<Card title="Connect to Omnisend" icon="link" href="/integrations/all/omnisend/connect" horizontal>
+  Guide to connect to Omnisend using Nango Connect.
+</Card>
