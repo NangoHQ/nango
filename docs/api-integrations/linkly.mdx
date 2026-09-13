@@ -1,0 +1,85 @@
+---
+title: 'Linkly'
+sidebarTitle: 'Linkly'
+description: 'Integrate your application with the Linkly API'
+---
+
+Linkly is a URL shortener with click tracking: branded short links, UTM tagging, link rotators, retargeting pixels and click analytics by country, platform, referrer and campaign.
+
+## 🚀 Quickstart
+
+Connect to Linkly with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Linkly_.
+    </Step>
+    <Step id="authorize-linkly" title="Connect Linkly">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Linkly_ -> enter your API key and click _Authorize_. See the [connect guide](/api-integrations/linkly/connect) for how to obtain a key.
+    </Step>
+    <Step id="call-linkly-api" title="Call the Linkly API">
+    Let's make your first request to the Linkly API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v1/workspaces" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v1/workspaces',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Linkly Integration Guides
+
+- [Connect to Linkly](/api-integrations/linkly/connect)
+Obtain your Linkly API key and connect it to Nango.
+
+Official docs: [Linkly API docs](https://linklyhq.com/support/short-link-creation-api) · [OpenAPI spec](https://api.linklyhq.com/api/openapi)
+
+## 🧩 Pre-built syncs & actions for Linkly
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/linkly/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Most endpoints are scoped to a workspace: `GET /api/v1/workspaces` returns the workspace IDs your key can access, and link and analytics endpoints live under `/api/v1/workspace/{workspace_id}/...`.
+- `POST /api/v1/link` both creates and updates: send `url` and `workspace_id` to create, or `id` plus the fields to change to update.
+- Click analytics (`/clicks` and `/clicks/counters/{counter}`) accept `start`/`end` as `YYYY-MM-DD` and return JSON by default; pass `format=csv` for exports.
+
+---
