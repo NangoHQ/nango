@@ -27,6 +27,7 @@ export interface CreateOAuthProviderOptions {
     knex: Knex;
     config: OAuthServerParsedConfig;
     resources: readonly OAuthResourceConfig[];
+    accountExists: (accountId: string) => boolean | Promise<boolean>;
 }
 
 interface OAuthResourceRegistry {
@@ -34,7 +35,7 @@ interface OAuthResourceRegistry {
     get(resource: string): OAuthResourceConfig | undefined;
 }
 
-export function createOAuthProvider({ knex, config, resources }: CreateOAuthProviderOptions): Provider {
+export function createOAuthProvider({ knex, config, resources, accountExists }: CreateOAuthProviderOptions): Provider {
     const registry = createResourceRegistry(resources);
     const allowedScopes = new Set(registry.supportedScopes);
 
@@ -82,7 +83,12 @@ export function createOAuthProvider({ knex, config, resources }: CreateOAuthProv
         },
         fetch: secureCimdFetch,
         fetchResponseBodyLimits: { 'client_id metadata document': CIMD_MAX_DOCUMENT_BYTES },
-        findAccount: (_ctx, accountId) => ({ accountId, claims: () => ({ sub: accountId }) }),
+        findAccount: async (_ctx, accountId) => {
+            if (!(await accountExists(accountId))) {
+                return undefined;
+            }
+            return { accountId, claims: () => ({ sub: accountId }) };
+        },
         formats: { bitsOfOpaqueRandomness: 256 },
         interactions: {
             // TODO(NAN-6924): Replace the test-only interaction handler with the authenticated API used by the React consent page.

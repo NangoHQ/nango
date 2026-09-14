@@ -44,6 +44,7 @@ describe('PostgreSQL OAuth provider adapter', () => {
         const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
         const options = {
             knex: db.knex,
+            accountExists: () => true,
             config: {
                 baseUrl: 'http://localhost',
                 cookieKeys: ['a'.repeat(32), 'b'.repeat(32)],

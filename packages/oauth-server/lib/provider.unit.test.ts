@@ -23,6 +23,8 @@ vi.mock('./cimd.js', async (importOriginal) => {
 });
 
 const artifacts = new Map<string, AdapterPayload>();
+const TEST_ACCOUNT_ID = 'test-account';
+const existingAccounts = new Set([TEST_ACCOUNT_ID]);
 const adapter = (model: string): Adapter => ({
     upsert: (id, payload) => {
         artifacts.set(`${model}:${id}`, payload);
@@ -96,6 +98,7 @@ describe('OAuth provider', () => {
         clientId = 'https://client.example.com/oauth/metadata.json';
         provider = createOAuthProvider({
             knex: vi.fn() as unknown as Knex,
+            accountExists: (accountId) => existingAccounts.has(accountId),
             config: {
                 baseUrl: 'http://localhost',
                 cookieKeys: ['a'.repeat(32), 'b'.repeat(32)],
@@ -202,6 +205,26 @@ describe('OAuth provider', () => {
         expect(replay.response.status).toBe(400);
         expect(replay.body['error']).toBe('invalid_grant');
         expect(cimdFetches).toBe(1);
+    });
+
+    it('rejects token exchange when the referenced account no longer exists', async () => {
+        const authorization = await authorize(provider, origin, clientId);
+        existingAccounts.delete(TEST_ACCOUNT_ID);
+        try {
+            const result = await postToken(origin, {
+                grant_type: 'authorization_code',
+                client_id: clientId,
+                code: authorization.code,
+                redirect_uri: 'https://client.example.com/callback',
+                code_verifier: authorization.verifier,
+                resource: 'https://mcp.example.com/mcp'
+            });
+
+            expect(result.response.status).toBe(400);
+            expect(result.body['error']).toBe('invalid_grant');
+        } finally {
+            existingAccounts.add(TEST_ACCOUNT_ID);
+        }
     });
 
     it('grants several resources in one authorization flow and issues a resource-specific token for each', async () => {
@@ -381,7 +404,7 @@ async function finishTestInteraction(provider: Provider, req: IncomingMessage, r
     const interaction = await provider.interactionDetails(req, res);
     res.setHeader('x-test-prompt', `${interaction.prompt.name}:${interaction.prompt.reasons.join(',')}:${JSON.stringify(interaction.prompt.details)}`);
     if (interaction.prompt.name === 'login') {
-        await provider.interactionFinished(req, res, { login: { accountId: 'test-account', amr: ['test'], remember: false } });
+        await provider.interactionFinished(req, res, { login: { accountId: TEST_ACCOUNT_ID, amr: ['test'], remember: false } });
         return;
     }
     if (interaction.prompt.name !== 'consent') {
@@ -389,7 +412,7 @@ async function finishTestInteraction(provider: Provider, req: IncomingMessage, r
     }
 
     const clientId = interactionParam(interaction, 'client_id');
-    const grant = interaction.grantId ? await provider.Grant.find(interaction.grantId) : new provider.Grant({ accountId: 'test-account', clientId });
+    const grant = interaction.grantId ? await provider.Grant.find(interaction.grantId) : new provider.Grant({ accountId: TEST_ACCOUNT_ID, clientId });
     if (!grant) throw new Error('Test grant disappeared');
     let addedScopes = false;
     const missingOidcScopes: unknown = interaction.prompt.details['missingOIDCScope'];
