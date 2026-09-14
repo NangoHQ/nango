@@ -49,11 +49,7 @@ export async function exec(now = new Date()): Promise<void> {
         await enableGrowthAddon(now);
         await disableGrowthAddon(now);
     } finally {
-        try {
-            await locking.release(lock);
-        } catch (err) {
-            logger.error('Error releasing lock', { lock: lock.key, error: err });
-        }
+        await locking.release(lock);
     }
 }
 
