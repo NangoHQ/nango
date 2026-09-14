@@ -70,10 +70,9 @@ export function chooseMcpClientIdMethod(
 
 /**
  * Discovers OAuth scopes from server metadata, with preference for resource metadata scopes.
- * This is informational only -- the discovered scopes are surfaced to the caller (e.g. for display)
- * but are never used to build the actual scope request when creating/authorizing a client. A
- * server's advertised scopes_supported can include scopes this client isn't entitled to (e.g.
- * admin-only ones), so only customer-configured scopes are ever requested.
+ * Used as a fallback only when the customer hasn't configured scopes explicitly -- a server's
+ * advertised scopes_supported can include scopes this client isn't entitled to (e.g. admin-only
+ * ones), so a customer-configured value always takes precedence over this.
  */
 function discoverScopes(resourceMetadata?: OAuthProtectedResourceMetadata, metadata?: OAuthMetadata): string[] | undefined {
     const resourceScopes = resourceMetadata?.scopes_supported;
