@@ -34,18 +34,26 @@ This guide shows you how to register your own GitHub App to obtain your OAuth cr
 
         Note: If your app doesn't need to act on behalf of a user, this field can be left blank.
     </Step>
-    <Step title="Configure user authorization settings (optional)">
+    <Step id="configure-user-authorization" title="Configure user authorization settings">
         1. By default, **Expire user authorization tokens** is selected. GitHub recommends keeping this option enabled.
         2. If you want users to authorize your app when they install it, select **Request user authorization (OAuth) during installation**.
         3. If you want to use device flow to generate a user access token, select **Enable Device Flow**.
+
+        <Note>
+        Item 2 decides which Nango integration you set up, and the next step depends on it. Leave it unselected for **GitHub (App)**. Select it for [**GitHub (App OAuth)**](/api-integrations/github-app-oauth/how-to-register-your-own-github-app-api-oauth-app), which authorizes the user and installs the app in one flow.
+        </Note>
     </Step>
     <Step id="configure-setup-url" title="Configure setup URL">
-        1. Under **Setup URL**, enter `https://api.nango.dev/app-auth/connect`. This value is the same for every integration in an environment, so you can fill it in now. If you use a custom callback URL, take that URL and replace `oauth/callback` with `app-auth/connect`. Nango also shows the exact value on the integration page once you create it.
-        2. Select **Redirect on update** under **Post installation**.
-        3. If you selected **Request user authorization (OAuth) during installation** in the previous step, you won't be able to enter a URL here.
+        What you do here depends on the previous step.
+
+        If you left user authorization during installation unselected, under **Setup URL** enter `https://api.nango.dev/app-auth/connect`. This value is the same for every integration in an environment, so you can fill it in now. If you use a custom callback URL, take that URL and replace `oauth/callback` with `app-auth/connect`. Nango also shows the exact value on the integration page once you create it.
+
+        If you selected it, GitHub disables the **Setup URL** field. The connection completes through the callback URL and the installation webhook instead, so there is nothing to enter. Keep the callback URL you set earlier and follow [GitHub App OAuth setup](/api-integrations/github-app-oauth/how-to-register-your-own-github-app-api-oauth-app) for the rest.
+
+        In both cases, select **Redirect on update** under **Post installation**.
 
         <Warning>
-        The setup URL is what completes the connection. GitHub sends the installation ID there after an install, and without it the app installs on GitHub but no connection appears in Nango.
+        When the setup URL field is available, it is what completes the connection. GitHub sends the installation ID there after an install, and without it the app installs on GitHub but no connection appears in Nango.
         </Warning>
 
         <Note>The Setup URL is not to be confused with the Callback URL, which can stay empty.</Note>
