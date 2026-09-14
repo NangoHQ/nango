@@ -553,6 +553,12 @@ const ENVS_SHAPE = z.object({
     AWS_INTEGRATIONS_REGION: z.string().optional(),
     AWS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
 
+    GCS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
+
+    AZURE_INTEGRATIONS_ACCOUNT_NAME: z.string().optional(),
+    AZURE_INTEGRATIONS_CONTAINER_NAME: z.string().optional(),
+    AZURE_INTEGRATIONS_ACCOUNT_KEY: z.string().optional(),
+
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),

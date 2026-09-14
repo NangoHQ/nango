@@ -1,70 +1,40 @@
-import { createHash } from 'node:crypto';
-import { Readable } from 'stream';
-
-import { CopyObjectCommand, DeleteObjectsCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import archiver from 'archiver';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { isCloud, isEnterprise, isLocal, isTest, report, useS3 } from '@nangohq/utils';
+import { isCloud, isEnterprise, isLocal, isTest, report, useRemoteStorage } from '@nangohq/utils';
 
 import { NangoError } from '../../utils/error.js';
 import errorManager from '../../utils/error.manager.js';
 import localFileService from './local.service.js';
+import { createObjectStore, resolveObjectStoreConfig } from './storage/index.js';
 
 import type { ServiceResponse } from '../../models/Generic.js';
-import type { GetObjectCommandOutput, S3ClientConfig } from '@aws-sdk/client-s3';
+import type { ObjectStore } from './storage/index.js';
 import type { DBSyncConfig } from '@nangohq/types';
 import type { Response } from 'express';
-
-function getCredentials() {
-    const accessKeyId = process.env['AWS_INTEGRATIONS_ACCESS_KEY_ID'] || process.env['AWS_ACCESS_KEY_ID'];
-    const secretAccessKey = process.env['AWS_INTEGRATIONS_SECRET_ACCESS_KEY'] || process.env['AWS_SECRET_ACCESS_KEY'];
-    if (!accessKeyId || !secretAccessKey) {
-        return undefined;
-    }
-    return {
-        accessKeyId,
-        secretAccessKey
-    };
-}
-
-function getRegion() {
-    return process.env['AWS_INTEGRATIONS_REGION'] || process.env['AWS_REGION'] || 'us-west-2';
-}
-
-function getBucketName() {
-    return process.env['AWS_INTEGRATIONS_BUCKET_NAME'] || process.env['AWS_BUCKET_NAME'] || 'nangodev-customer-integrations';
-}
-
-function contentMd5(content: string): string {
-    return createHash('md5').update(content, 'utf8').digest('hex');
-}
-
-function etagMatchesContent(etag: string | undefined, content: string): boolean {
-    if (!etag) {
-        return false;
-    }
-    return etag.replace(/"/g, '') === contentMd5(content);
-}
+import type { Readable } from 'node:stream';
 
 class RemoteFileService {
-    private client: S3Client;
-    private useS3: boolean;
+    private store: ObjectStore | undefined;
+    private useRemote: boolean;
 
-    bucket = getBucketName();
     publicRoute = 'integration-templates';
     publicZeroYamlRoute = 'templates-zero';
 
     constructor() {
-        const region = getRegion();
         if (isEnterprise) {
-            this.useS3 = useS3;
+            this.useRemote = useRemoteStorage;
         } else {
-            this.useS3 = !isLocal && !isTest;
+            this.useRemote = !isLocal && !isTest;
         }
-        const credentials = getCredentials();
-        const config: S3ClientConfig = credentials ? { region, credentials } : { region };
-        this.client = new S3Client(config);
+        if (this.useRemote) {
+            this.store = createObjectStore(resolveObjectStoreConfig(process.env));
+        }
+    }
+
+    private getStore(): ObjectStore {
+        this.store ??= createObjectStore(resolveObjectStoreConfig(process.env));
+        return this.store;
     }
 
     async upload({
@@ -76,20 +46,14 @@ class RemoteFileService {
         destinationPath: string;
         destinationLocalFileName: string;
     }): Promise<string | null> {
-        if (!this.useS3) {
+        if (!this.useRemote) {
             localFileService.putIntegrationFile({ fileName: destinationLocalFileName, fileContent: content });
 
             return '_LOCAL_FILE_';
         }
 
         try {
-            await this.client.send(
-                new PutObjectCommand({
-                    Bucket: this.bucket,
-                    Key: destinationPath,
-                    Body: content
-                })
-            );
+            await this.getStore().put(destinationPath, content);
 
             return destinationPath;
         } catch (err) {
@@ -100,21 +64,16 @@ class RemoteFileService {
     }
 
     async checkIfChanged({ content, objectKey }: { content: string; objectKey: string }): Promise<boolean> {
-        if (!this.useS3) {
+        if (!this.useRemote) {
             return true;
         }
 
-        try {
-            const head = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: objectKey }));
-            return !etagMatchesContent(head.ETag, content);
-        } catch {
-            return true;
-        }
+        return !(await this.getStore().hasSameContent(objectKey, content));
     }
 
     /**
      * Copy
-     * @desc copy an existing public integration file to user's location in s3,
+     * @desc copy an existing public integration file to user's location in remote storage,
      * on local copy to the set local destination
      */
     async copy({
@@ -126,79 +85,44 @@ class RemoteFileService {
         destinationPath: string;
         /**
          * sic
-         * Destination when not uploading to S3
-         * This method handles when S3 is not enabled (like locally)
+         * Destination when not uploading to remote storage
+         * This method handles when remote storage is not enabled (like locally)
          * TODO: We probably need to do it outside but until now it's like this
          */
         destinationLocalFileName: string;
     }): Promise<string | null> {
-        const s3FilePath = `${this.publicZeroYamlRoute}/${sourcePath}`;
+        const sourceKey = `${this.publicZeroYamlRoute}/${sourcePath}`;
         try {
             if (isCloud) {
-                await this.client.send(
-                    new CopyObjectCommand({
-                        Bucket: this.bucket,
-                        Key: destinationPath,
-                        CopySource: `${this.bucket}/${s3FilePath}`
-                    })
-                );
+                await this.getStore().copy(sourceKey, destinationPath);
 
                 return destinationPath;
             } else {
-                const fileContent = await this.getFile(s3FilePath);
+                const fileContent = await this.getFile(sourceKey);
                 if (fileContent) {
                     localFileService.putIntegrationFile({ fileName: destinationLocalFileName, fileContent });
                 }
                 return '_LOCAL_FILE_';
             }
         } catch (err) {
-            report(err, { filePath: s3FilePath });
+            report(err, { filePath: sourceKey });
 
             return null;
         }
     }
 
     getFile(fileName: string): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const getObjectCommand = new GetObjectCommand({
-                Bucket: this.bucket,
-                Key: fileName
-            });
-            this.client
-                .send(getObjectCommand)
-                .then((response: GetObjectCommandOutput) => {
-                    if (response.Body && response.Body instanceof Readable) {
-                        const responseDataChunks: Buffer[] = [];
-
-                        response.Body.once('error', (err) => reject(err));
-
-                        response.Body.on('data', (chunk) => responseDataChunks.push(chunk));
-
-                        response.Body.once('end', () => resolve(Buffer.concat(responseDataChunks).toString()));
-                    } else {
-                        reject(new Error('Response body is undefined or not a Readable stream'));
-                    }
-                })
-                .catch((err: unknown) => {
-                    reject(err as Error);
-                });
-        });
+        return this.getStore().get(fileName);
     }
 
     async getStream(fileName: string): Promise<ServiceResponse<Readable | null>> {
         try {
-            const getObjectCommand = new GetObjectCommand({
-                Bucket: this.bucket,
-                Key: fileName
-            });
+            const body = await this.getStore().getStream(fileName);
 
-            const response = await this.client.send(getObjectCommand);
-
-            if (response?.Body && response.Body instanceof Readable) {
-                return { success: true, error: null, response: response.Body };
-            } else {
-                return { success: false, error: null, response: null };
+            if (body) {
+                return { success: true, error: null, response: body };
             }
+            return { success: false, error: null, response: null };
         } catch {
             const error = new NangoError('integration_file_not_found');
             return { success: false, error, response: null };
@@ -206,18 +130,11 @@ class RemoteFileService {
     }
 
     async deleteFiles(fileNames: string[]): Promise<void> {
-        if (!isCloud && !this.useS3) {
+        if (!isCloud && !this.useRemote) {
             return;
         }
 
-        const deleteObjectsCommand = new DeleteObjectsCommand({
-            Bucket: this.bucket,
-            Delete: {
-                Objects: fileNames.map((fileName) => ({ Key: fileName }))
-            }
-        });
-
-        await this.client.send(deleteObjectsCommand);
+        await this.getStore().delete(fileNames);
     }
 
     async zipAndSendPublicFiles({
@@ -256,7 +173,7 @@ class RemoteFileService {
     }
 
     async zipAndSendFlow({ res, syncConfig, providerConfigKey }: { res: Response; syncConfig: DBSyncConfig; providerConfigKey: string }): Promise<void> {
-        if (!isCloud && !this.useS3) {
+        if (!isCloud && !this.useRemote) {
             return localFileService.zipAndSendFlow({ res, syncConfig, providerConfigKey });
         } else {
             const files: { name: string; content: Readable }[] = [];
