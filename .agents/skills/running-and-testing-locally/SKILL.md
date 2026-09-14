@@ -67,19 +67,6 @@ npm run dev:watch:apps
 
 Wait for the TypeScript build to complete in Terminal 1 before starting services in Terminal 2. The server runs database migrations automatically on startup (`NANGO_MIGRATE_AT_START` defaults to true).
 
-## Verify the stack started — do this every time
-
-**The webapp answering on 3000 is not evidence the stack is up.** The server starts last and can die while Vite keeps serving 3000 and 3009, so the dashboard loads and every API call fails.
-
-Gate on the server's health endpoint, and bound the wait:
-
-```bash
-for i in $(seq 1 18); do curl --max-time 2 -sf http://localhost:3003/health && break; sleep 5; done
-curl --max-time 2 -s http://localhost:3003/health   # expect {"result":"ok"}
-```
-
-If that doesn't come back OK, read the Terminal 2 output before restarting or waiting longer. The server runs under nodemon, so a fatal error prints and is followed by `[nodemon] clean exit - waiting for changes before restart` while the other services keep running. That line is the signal to stop waiting: the cause is right above it.
-
 ## Selective Service Commands
 
 Run individual services when you only need to restart one:
@@ -294,7 +281,7 @@ _No flows documented yet — add the first one!_
 
 | Issue | Symptom | Fix |
 |-------|---------|-----|
-| **Migration from another worktree** | Server dies on startup (nodemon keeps waiting): `The migration directory is corrupt, the following files are missing: <file>.cjs`. Webapp still serves 3000, so only API calls fail | See **Migration mismatch across worktrees** below |
+| **Migration missing from checkout** | Server dies on startup: `The migration directory is corrupt, the following files are missing: <file>.cjs`. Webapp still serves 3000, so only API calls fail | See **Migration mismatch** below |
 | Feature looks unchanged | Your branch's UI never appears, no errors anywhere | The feature may be using its declared flag default — see **Feature flags locally** |
 | Docker not running | `Cannot connect to the Docker daemon` | Start Docker Desktop |
 | Port already in use | `EADDRINUSE` on startup | Kill the process on that port: `lsof -ti:PORT \| xargs kill` |
@@ -307,9 +294,9 @@ _No flows documented yet — add the first one!_
 | Can't log in on fresh DB | No account exists yet | Sign up first at http://localhost:3000/signup, then check server logs for the verification callback URL |
 | Elasticsearch errors in logs | Logs-related warnings | Safe to ignore if `NANGO_LOGS_ENABLED="false"` — logs go to stdout instead |
 
-### Migration mismatch across worktrees
+### Migration mismatch
 
-Worktrees share one `nango-db` but keep their own migration files, so a migration another worktree ran stops knex starting yours:
+The database remembers every migration it ran, so knex refuses to start when your checkout lacks one of those files. This happens after switching to a branch without it, or when another worktree sharing `nango-db` ran it:
 
 ```
 The migration directory is corrupt, the following files are missing: <file>.cjs
@@ -322,6 +309,6 @@ git fetch origin master -q && git ls-tree -r origin/master --name-only | grep <m
 ```
 
 - **On master** — your branch is behind; bring it up to date with `origin/master` and the file comes along.
-- **Not on master** — it came from an unmerged branch. For a verification run, skip boot-time migrations with `NANGO_MIGRATE_AT_START=false npm run dev:watch:apps` (your branch's own pending migrations won't run either), or use a throwaway database as in `ui-visual-debugging`. To fix the shared DB instead, inspect the migration in its owning worktree; if its `up` is safe to rerun with no data side effects, remove its ledger row: `delete from nango._nango_auth_migrations where name = '<migration-filename>';`. Otherwise reset the database.
+- **Not on master** — it came from an unmerged branch. For a verification run, skip boot-time migrations with `NANGO_MIGRATE_AT_START=false npm run dev:watch:apps` (your branch's own pending migrations won't run either), or use a throwaway database as in `ui-visual-debugging`. To fix the database instead, inspect the migration on its branch; if its `up` is safe to rerun with no data side effects, remove its ledger row: `delete from nango._nango_auth_migrations where name = '<migration-filename>';`. Otherwise reset the database.
 
-It happens in the other direction too: once you run a branch that adds a migration, your other worktrees won't start until they have that file.
+It happens in the other direction too: once you run a branch that adds a migration, any checkout without that file won't start until it has it.
