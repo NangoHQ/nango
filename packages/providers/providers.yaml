@@ -13670,6 +13670,9 @@ linkly:
             type: string
             title: API Key
             description: The API key for your Linkly account
+            secret: true
+            pattern: '^[A-Za-z0-9+/]{22}==$'
+            example: aB3d**************uk2Q==
             doc_section: '#step-1-finding-your-api-key'
 
 livetennisapi:
