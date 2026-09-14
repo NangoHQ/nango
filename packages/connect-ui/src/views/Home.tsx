@@ -105,7 +105,6 @@ export const Home: React.FC = () => {
         setTheme
     ]);
 
-    // The error views are themed, so they need a theme even when the settings never arrive.
     useEffect(() => {
         if (!theme && !themeOverride && (error || noSessionToken)) {
             setTheme('system');

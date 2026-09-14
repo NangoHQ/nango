@@ -12,7 +12,6 @@ import { expectAccessibleInBothThemes } from '@/test/a11y';
 import type * as EventsModule from '@/lib/events';
 import type { ConnectUISettings, Theme } from '@nangohq/types';
 
-// `triggerClose` posts to the parent frame, which isn't observable from inside Vitest's test iframe.
 vi.mock('@/lib/events', async (importActual) => {
     const actual = await importActual<typeof EventsModule>();
     return { ...actual, triggerClose: vi.fn() };
@@ -27,7 +26,6 @@ function settingsFixture(overrides?: Partial<ConnectUISettings>): ConnectUISetti
     };
 }
 
-/** Renders Layout as the root route so the assertions are about the dialog shell, not a view. */
 async function renderLayout(seed: { theme: Theme | null; settings?: ConnectUISettings }): Promise<HTMLElement> {
     useGlobal.setState({ isEmbedded: false, isAuthLink: false, settings: null, ...seed });
 
@@ -97,7 +95,6 @@ describe('Layout', () => {
         expect(triggerClose).toHaveBeenCalled();
     });
 
-    // Guards the deadlock: hide this view and the request that resolves the theme never runs.
     it('keeps the routed view mounted while the theme is unknown', async () => {
         await renderLayout({ theme: null });
 
