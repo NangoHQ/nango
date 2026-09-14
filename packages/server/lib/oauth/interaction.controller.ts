@@ -42,42 +42,42 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
         const interaction = await readProviderInteraction(req, res, uid, { allowSubmittedLogin: true });
         if (!interaction) return;
 
-        if (!interaction.session) {
-            if (req.user) {
-                const identity = await revalidateDashboardIdentity(req.user);
-                if ('error' in identity) {
-                    sendError(res, 403, identity.error);
-                    return;
-                }
-                if (!(await getFlags().isOAuthServerConsentEnabled(identity.account.uuid))) {
-                    sendError(res, 403, 'consent_disabled');
-                    return;
-                }
-                if (interaction.prompt.name !== 'login') {
-                    sendError(res, 404, 'interaction_invalid');
-                    return;
-                }
-
-                if (interaction.result?.login) {
-                    if (interaction.result.login.accountId !== String(identity.user.id)) {
-                        sendError(res, 409, 'interaction_completed');
-                        return;
-                    }
-                    res.status(202).send({ data: { resumeUrl: interaction.returnTo } });
-                    return;
-                }
-
-                const resumeUrl = await requireOAuthServer().interactionResult(
-                    req,
-                    res,
-                    { login: { accountId: String(identity.user.id), amr: ['dashboard_session'] } },
-                    { mergeWithLastSubmission: false }
-                );
-                res.status(202).send({ data: { resumeUrl } });
+        if (interaction.prompt.name === 'login') {
+            if (!req.user) {
+                res.status(401).send({ error: { code: 'login_required', message: 'Sign in to continue' } });
                 return;
             }
 
-            res.status(401).send({ error: { code: 'login_required', message: 'Sign in to continue' } });
+            const identity = await revalidateDashboardIdentity(req.user);
+            if ('error' in identity) {
+                sendError(res, 403, identity.error);
+                return;
+            }
+            if (!(await getFlags().isOAuthServerConsentEnabled(identity.account.uuid))) {
+                sendError(res, 403, 'consent_disabled');
+                return;
+            }
+            if (interaction.result?.login) {
+                if (interaction.result.login.accountId !== String(identity.user.id)) {
+                    sendError(res, 409, 'interaction_completed');
+                    return;
+                }
+                res.status(202).send({ data: { resumeUrl: interaction.returnTo } });
+                return;
+            }
+
+            const resumeUrl = await requireOAuthServer().interactionResult(
+                req,
+                res,
+                { login: { accountId: String(identity.user.id), amr: ['dashboard_session'], ts: Date.now() / 1000 } },
+                { mergeWithLastSubmission: false }
+            );
+            res.status(202).send({ data: { resumeUrl } });
+            return;
+        }
+
+        if (!interaction.session) {
+            sendError(res, 404, 'interaction_invalid');
             return;
         }
 

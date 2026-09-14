@@ -3,12 +3,14 @@ import crypto from 'node:crypto';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
+import { revokeOAuthSessionsBySubjectInTransaction } from '@nangohq/oauth-server';
 import { pbkdf2, userService } from '@nangohq/shared';
 import { PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { deleteUserSessions } from '../../../../clients/auth.client.js';
-import { revokeProviderArtifacts, revokeUserProductGrants } from '../../../../oauth/product-grant.service.js';
-import { oauthServerConfig } from '../../../../oauth/server.js';
+import { dek } from '../../../../env.js';
+import { toOAuthGrantRevocationAuditFacts } from '../../../../middleware/audit/oauthGrant.middleware.js';
+import { revokeUserProductGrants } from '../../../../oauth/product-grant.service.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { hasRecentMfa } from '../../account/mfa/elevation.js';
 import { isStepUpRefused, isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from '../../account/mfa/stepUp.js';
@@ -60,6 +62,7 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
 
     const salt = crypto.randomBytes(16).toString('base64');
     const hashedPassword = (await pbkdf2(body.newPassword, salt, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
+    const encryptionKey = dek.get();
 
     let revokedGrants: RevokedUserProductGrant[] = [];
     const outcome = await db.knex.transaction(async (trx) => {
@@ -70,7 +73,8 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
 
         await userService.update({ id: user.id, hashed_password: hashedPassword, salt }, trx);
         await deleteUserSessions(user.id, { trx });
-        revokedGrants = await revokeUserProductGrants(user.id, 'password_changed', trx);
+        await revokeOAuthSessionsBySubjectInTransaction({ trx, encryptionKey, subjectId: String(user.id), reason: 'password_changed' });
+        revokedGrants = await revokeUserProductGrants(user.id, encryptionKey, 'password_changed', trx);
         return 'changed' as const;
     });
 
@@ -85,20 +89,8 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
 
     req.audit = {
         ...req.audit,
-        oauthGrantRevocations: toAuditFacts(revokedGrants, user)
+        oauthGrantRevocations: toOAuthGrantRevocationAuditFacts(revokedGrants, user)
     };
-
-    if (oauthServerConfig && revokedGrants.length > 0) {
-        try {
-            await revokeProviderArtifacts(
-                revokedGrants.map((grant) => grant.providerGrantIdHash),
-                oauthServerConfig.config.encryptionKey,
-                'password_changed'
-            );
-        } catch (err) {
-            report(err);
-        }
-    }
 
     // Re-issue a fresh session so the user who just changed their password stays logged in seamlessly.
     // req.logIn regenerates the session id internally (passport's fixation guard), rotating the current
@@ -113,16 +105,3 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
 
     res.status(200).send({ success: true });
 });
-
-function toAuditFacts(grants: RevokedUserProductGrant[], user: DBUser): NonNullable<Express.AuditFacts['oauthGrantRevocations']> {
-    return {
-        userId: user.id,
-        userEmail: user.email,
-        accountId: user.account_id,
-        grants: grants.map((grant) => ({
-            id: grant.id,
-            resourceHostnames: grant.resources.map(({ resource }) => new URL(resource).hostname),
-            scopes: [...new Set(grant.resources.flatMap(({ scopes }) => scopes))]
-        }))
-    };
-}

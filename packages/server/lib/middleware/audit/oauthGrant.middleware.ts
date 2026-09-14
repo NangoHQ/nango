@@ -2,9 +2,9 @@ import { auditEventDropped, recordAuditEvent } from '../../audit.js';
 import { canRecordAuditTrailForAccount } from '../../utils/auditTrail.js';
 import { auditRequestFields, logger, outcomeFromStatus } from './auditable.js';
 
-import type { RevokedProductGrant } from '../../oauth/product-grant.service.js';
-import type { OAuthGrantRevocationRequest } from '@nangohq/oauth-server';
-import type { AuditEvent } from '@nangohq/types';
+import type { RevokedProductGrant, RevokedUserProductGrant } from '../../oauth/product-grant.service.js';
+import type { OAuthGrantRevocationOutcome, OAuthGrantRevocationRequest } from '@nangohq/oauth-server';
+import type { AuditEvent, DBUser } from '@nangohq/types';
 import type { Request, RequestHandler } from 'express';
 
 function auditOAuthConsent(action: 'approved' | 'denied'): RequestHandler {
@@ -85,7 +85,27 @@ async function recordUserGrantRevocations(facts: NonNullable<Express.AuditFacts[
     }
 }
 
-export async function recordOAuthGrantRevocation(grant: RevokedProductGrant, request: OAuthGrantRevocationRequest): Promise<void> {
+export function toOAuthGrantRevocationAuditFacts(
+    grants: RevokedUserProductGrant[],
+    user: Pick<DBUser, 'id' | 'email' | 'account_id'>
+): NonNullable<Express.AuditFacts['oauthGrantRevocations']> {
+    return {
+        userId: user.id,
+        userEmail: user.email,
+        accountId: user.account_id,
+        grants: grants.map((grant) => ({
+            id: grant.id,
+            resourceHostnames: grant.resources.map(({ resource }) => new URL(resource).hostname),
+            scopes: [...new Set(grant.resources.flatMap(({ scopes }) => scopes))]
+        }))
+    };
+}
+
+export async function recordOAuthGrantRevocation(
+    grant: RevokedProductGrant,
+    request: OAuthGrantRevocationRequest,
+    outcome: OAuthGrantRevocationOutcome
+): Promise<void> {
     try {
         if (!(await canRecordAuditTrailForAccount({ id: grant.accountId }))) return;
         const clientHostname = new URL(request.clientId).hostname;
@@ -103,7 +123,7 @@ export async function recordOAuthGrantRevocation(grant: RevokedProductGrant, req
                 ...(request.ip ? { ip: request.ip } : {}),
                 ...(request.userAgent ? { userAgent: request.userAgent } : {})
             },
-            outcome: 'success',
+            outcome,
             metadata: {
                 clientHostname,
                 resourceHostnames: grant.resources.map(({ resource }) => new URL(resource).hostname),

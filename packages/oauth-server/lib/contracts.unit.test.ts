@@ -20,18 +20,27 @@ describe('OAuth consent contracts', () => {
         ).toBe(true);
     });
 
-    it('rejects unknown fields and verified client claims', () => {
+    const interaction = () => ({
+        interactionId: 'interaction-id',
+        expiresAt: new Date(Date.now() + 60_000).toISOString(),
+        csrfToken: 'x'.repeat(32),
+        client: { name: 'Example client', hostname: 'client.example.com', verified: false as const },
+        callbackHostname: 'client.example.com',
+        account: { name: 'Example account' },
+        resources: [{ resource: 'https://api.example.com/mcp', hostname: 'api.example.com', scopes: ['environment:*'] }]
+    });
+
+    it('rejects unknown fields', () => {
         const base = {
-            interactionId: 'interaction-id',
-            expiresAt: new Date(Date.now() + 60_000).toISOString(),
-            csrfToken: 'x'.repeat(32),
-            client: { name: 'Example client', hostname: 'client.example.com', verified: true },
-            callbackHostname: 'client.example.com',
-            account: { name: 'Example account' },
-            resources: [{ resource: 'https://api.example.com/mcp', hostname: 'api.example.com', scopes: ['environment:*'] }],
+            ...interaction(),
             authorizationUrl: 'https://issuer.example.com/oauth/authorize?secret=value'
         };
         expect(oauthConsentInteractionSchema.safeParse(base).success).toBe(false);
+    });
+
+    it('rejects verified client claims', () => {
+        const base = interaction();
+        expect(oauthConsentInteractionSchema.safeParse({ ...base, client: { ...base.client, verified: true } }).success).toBe(false);
     });
 
     it('requires strong CSRF values', () => {

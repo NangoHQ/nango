@@ -25,6 +25,7 @@ vi.mock('./cimd.js', async (importOriginal) => {
 const artifacts = new Map<string, AdapterPayload>();
 const TEST_ACCOUNT_ID = 'test-account';
 const existingAccounts = new Set([TEST_ACCOUNT_ID]);
+let failNextRefreshTokenDestroy = false;
 const adapter = (model: string): Adapter => ({
     upsert: (id, payload) => {
         artifacts.set(`${model}:${id}`, payload);
@@ -39,6 +40,10 @@ const adapter = (model: string): Adapter => ({
         return Promise.resolve();
     },
     destroy: (id) => {
+        if (model === 'RefreshToken' && failNextRefreshTokenDestroy) {
+            failNextRefreshTokenDestroy = false;
+            return Promise.reject(new Error('simulated provider revocation failure'));
+        }
         artifacts.delete(`${model}:${id}`);
         return Promise.resolve();
     },
@@ -56,7 +61,8 @@ describe('OAuth provider', () => {
     let provider: Provider;
     let clientId: string;
     let cimdFetches = 0;
-    const beforeGrantRevocation = vi.fn(() => Promise.resolve());
+    const grantRevocationCompleted = vi.fn((_outcome: 'success' | 'failure') => Promise.resolve());
+    const prepareGrantRevocation = vi.fn(() => Promise.resolve(grantRevocationCompleted));
 
     beforeAll(async () => {
         vi.mocked(createOAuthAdapter).mockReturnValue(adapter);
@@ -99,7 +105,7 @@ describe('OAuth provider', () => {
         clientId = 'https://client.example.com/oauth/metadata.json';
         provider = createOAuthProvider({
             knex: vi.fn() as unknown as Knex,
-            accountExists: (accountId) => existingAccounts.has(accountId),
+            subjectExists: (accountId) => existingAccounts.has(accountId),
             config: {
                 baseUrl: 'http://localhost',
                 cookieKeys: ['a'.repeat(32), 'b'.repeat(32)],
@@ -116,7 +122,7 @@ describe('OAuth provider', () => {
                     scopes: ['agent-session:*']
                 }
             ],
-            beforeGrantRevocation
+            prepareGrantRevocation
         });
         const providerCallback = provider.callback();
         server = createServer((req, res) => {
@@ -332,7 +338,8 @@ describe('OAuth provider', () => {
         });
 
         expect(revocation.status).toBe(200);
-        expect(beforeGrantRevocation).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ clientId }));
+        expect(prepareGrantRevocation).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ clientId }));
+        expect(grantRevocationCompleted).toHaveBeenLastCalledWith('success');
         const refreshed = await postToken(origin, {
             grant_type: 'refresh_token',
             client_id: clientId,
@@ -341,6 +348,21 @@ describe('OAuth provider', () => {
         });
         expect(refreshed.response.status).toBe(400);
         expect(refreshed.body['error']).toBe('invalid_grant');
+    });
+
+    it('reports a failed revocation only after provider cleanup fails', async () => {
+        const authorization = await authorize(provider, origin, clientId);
+        const tokens = await exchangeCode(origin, clientId, authorization.code, authorization.verifier);
+        failNextRefreshTokenDestroy = true;
+
+        const revocation = await fetch(`${origin}/oauth/revoke`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ client_id: clientId, token: stringValue(tokens['refresh_token']), token_type_hint: 'refresh_token' })
+        });
+
+        expect(revocation.status).toBe(500);
+        expect(grantRevocationCompleted).toHaveBeenLastCalledWith('failure');
     });
 
     it('does not follow redirects or cache invalid and oversized CIMD responses', async () => {
@@ -407,7 +429,7 @@ async function finishTestInteraction(provider: Provider, req: IncomingMessage, r
     const interaction = await provider.interactionDetails(req, res);
     res.setHeader('x-test-prompt', `${interaction.prompt.name}:${interaction.prompt.reasons.join(',')}:${JSON.stringify(interaction.prompt.details)}`);
     if (interaction.prompt.name === 'login') {
-        await provider.interactionFinished(req, res, { login: { accountId: TEST_ACCOUNT_ID, amr: ['test'], remember: false } });
+        await provider.interactionFinished(req, res, { login: { accountId: TEST_ACCOUNT_ID, amr: ['test'], remember: false, ts: Date.now() / 1000 } });
         return;
     }
     if (interaction.prompt.name !== 'consent') {

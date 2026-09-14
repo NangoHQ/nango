@@ -14,7 +14,7 @@ export default function GoogleButton({ text, setServerErrorMessage, token, retur
     const googleLogin = async () => {
         const res = await apiFetch(`/api/v1/account/managed/signup`, {
             method: 'POST',
-            body: JSON.stringify({ provider: 'GoogleOAuth', token, returnTo })
+            body: JSON.stringify({ provider: 'GoogleOAuth', token, returnTo: token ? undefined : returnTo })
         });
 
         if (res.status === 200) {

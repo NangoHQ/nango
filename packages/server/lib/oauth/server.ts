@@ -5,6 +5,7 @@ import { basePublicUrl } from '@nangohq/utils';
 import { recordOAuthGrantRevocation } from '../middleware/audit/oauthGrant.middleware.js';
 import { getOAuthServerConfig } from './config.js';
 import { revokeProductGrantByProviderId } from './product-grant.service.js';
+import { oauthSubjectExists } from './subject.service.js';
 
 import type { OAuthProvider } from '@nangohq/oauth-server';
 
@@ -17,20 +18,12 @@ function createNangoOAuthServer(): OAuthProvider | null {
     return createOAuthProvider({
         knex: db.knex,
         ...oauthServerConfig,
-        accountExists,
+        subjectExists: oauthSubjectExists,
         interactionUrl: (uid) => new URL(`/oauth/consent/${encodeURIComponent(uid)}`, basePublicUrl).href,
-        beforeGrantRevocation: async (grantId, request) => {
+        prepareGrantRevocation: async (grantId, request) => {
             const revoked = await revokeProductGrantByProviderId(grantId, oauthServerConfig.config.encryptionKey, 'token_revocation');
-            if (revoked) await recordOAuthGrantRevocation(revoked, request);
+            if (!revoked) return;
+            return async (outcome) => await recordOAuthGrantRevocation(revoked, request, outcome);
         }
     });
-}
-
-async function accountExists(accountId: string): Promise<boolean> {
-    const id = Number(accountId);
-    if (!Number.isSafeInteger(id) || id <= 0 || accountId !== String(id)) {
-        return false;
-    }
-    const account = await db.knex<{ id: number }>('_nango_accounts').where({ id }).first('id');
-    return account !== undefined;
 }
