@@ -78,7 +78,7 @@ export class NoopBillingClient implements BillingClient {
         return Promise.resolve(Ok(null));
     }
 
-    getPeriodCosts(_subscriptionId: string): Promise<Result<BillingPeriodCosts | null>> {
+    getPeriodCosts(_subscriptionId: string, _timeframe?: { start: Date; end: Date }): Promise<Result<BillingPeriodCosts | null>> {
         return Promise.resolve(Ok(null));
     }
 

@@ -4767,6 +4767,9 @@ highlevel-white-label:
     - voice-ai-dashboard.readonly
     - workflows.readonly
 
+# source: https://developerportal.thomsonreuters.com/authentication/documents/api-access-mechanism-using-oauth2 (no scopes parameter — API access is governed by the authenticated user's Collaborate permissions)
+highq: []
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 hover: []
 
@@ -4945,6 +4948,9 @@ hubstaff:
     - profile
     - tasks:read
     - tasks:write
+
+# source: https://docs.infor.com/inforos/2026.x/en-us/useradminlib_cloud/apigatewayag_cloud/vya1611685179822.html (scopes are disabled by default; when a tenant enables "Enforced Per Authorized App", the admin defines custom scope names per authorized app — there is no fixed, vendor-wide scope catalog)
+infor: []
 
 # source: https://developers.facebook.com/docs/instagram-basic-display-api/overview/permissions
 instagram:
@@ -6477,6 +6483,10 @@ microsoft-ads:
 # source: providers.yaml base_url (Microsoft client credentials resource scope pattern)
 microsoft-business-central:
     - https://api.businesscentral.dynamics.com/.default
+
+# source: Azure Portal API permissions picker for "Dynamics CRM" delegated permissions
+microsoft-dataverse:
+    - user_impersonation
 
 # source: Azure Portal API permissions picker for "Dynamics ERP" (Microsoft.ERP)
 microsoft-dynamics-365-finance-and-operations:
@@ -8390,6 +8400,15 @@ monday:
     - workspaces:read
     - workspaces:write
 
+# source: https://developer.moneybird.com/authentication#scopes
+moneybird:
+    - bank
+    - documents
+    - estimates
+    - sales_invoices
+    - settings
+    - time_entries
+
 # source: https://developers.mural.co/public/docs/scopes
 mural:
     - identity:read
@@ -9131,7 +9150,7 @@ pagerduty:
     - services.read
     - write
 
-# source: https://app.pandadoc.com/.well-known/oauth-authorization-server (scopes_supported)
+# source: https://app.pandadoc.com/.well-known/oauth-authorization-server + https://app.pandadoc.eu/.well-known/oauth-authorization-server (scopes_supported, identical for both regions)
 pandadoc:
     - read
     - read+write

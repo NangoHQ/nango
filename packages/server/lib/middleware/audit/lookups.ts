@@ -117,7 +117,7 @@ export function publicEnvApiKeyTarget(keyUuid: unknown, environmentUuid: unknown
         if (!environment) {
             return undefined;
         }
-        const result = await customerKeyService.getApiKeyByUuid(db.knex, id, environment.id, account.id);
+        const result = await customerKeyService.getApiKeyByUuidWithoutSecrets(db.knex, id, environment.id, account.id);
         if (result.isErr()) {
             throw result.error;
         }

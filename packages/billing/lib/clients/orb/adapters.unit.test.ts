@@ -292,6 +292,11 @@ describe('orbAmountToCents', () => {
         expect(orbAmountToCents('-5.00')).toBe(-500);
     });
 
+    it('returns null when there is no amount at all, rather than throwing', () => {
+        expect(orbAmountToCents(undefined)).toBeNull();
+        expect(orbAmountToCents(null)).toBeNull();
+    });
+
     it('returns null for anything that is not a plain decimal', () => {
         expect(orbAmountToCents('')).toBeNull();
         expect(orbAmountToCents('abc')).toBeNull();
@@ -369,7 +374,14 @@ const COMPUTE_HOURS_PROD = 'ZrAoynYimCwtmFSP';
 const DATA_TRANSFER_PROD = 'RNskBsYUvTYLsjV2';
 const CONNECTIONS_PROD = '8aAyMTG6HafmZpqJ';
 
-function usagePrice(metricId: string | null, subtotal: string, name = 'Some price', priceId = 'price_1', total = subtotal) {
+interface PriceCostFixture {
+    price_id: string;
+    subtotal: string;
+    total?: string;
+    price: { price_type: string; currency: string | null; name: string; billable_metric: { id: string } | null };
+}
+
+function usagePrice(metricId: string | null, subtotal: string, name = 'Some price', priceId = 'price_1', total = subtotal): PriceCostFixture {
     return {
         price_id: priceId,
         subtotal,
@@ -378,7 +390,7 @@ function usagePrice(metricId: string | null, subtotal: string, name = 'Some pric
     };
 }
 
-function bucket(perPriceCosts: ReturnType<typeof usagePrice>[], timeframeEnd = '2026-09-01T00:00:00+00:00') {
+function bucket(perPriceCosts: PriceCostFixture[], timeframeEnd = '2026-09-01T00:00:00+00:00') {
     return { timeframe_end: timeframeEnd, per_price_costs: perPriceCosts };
 }
 
@@ -404,6 +416,88 @@ describe('fromOrbPeriodCosts', () => {
         expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ connections: 29 });
     });
 
+    it('charges a discounted metric what was billed, not what the usage earned', () => {
+        const costs = { data: [bucket([usagePrice(COMPUTE_HOURS_PROD, '4894.88', 'Function compute time (h)', 'price_1', '4483.63')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ function_duration_seconds: 448_363 });
+    });
+
+    it('charges nothing for a metric whose usage is fully waived', () => {
+        const costs = { data: [bucket([usagePrice(COMPUTE_HOURS_PROD, '1133.53', 'Function compute time (h)', 'price_1', '0.00')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ function_duration_seconds: 0 });
+    });
+
+    it('discounts a fixed price too, so the base fee reads what was billed', () => {
+        const costs = {
+            data: [
+                bucket([
+                    usagePrice(RECORDS_PROD, '23.17'),
+                    {
+                        price_id: 'price_fixed',
+                        subtotal: '500.00',
+                        total: '250.00',
+                        price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null }
+                    }
+                ])
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.fixedInCents).toBe(25_000);
+    });
+
+    it('rejects a total it cannot parse rather than billing the pre-adjustment subtotal', () => {
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '23.17', 'Sync records', 'price_1', 'not-a-number')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
+    });
+
+    it('scopes an unreadable total to its own metric, the same as an unreadable subtotal', () => {
+        const costs = {
+            data: [bucket([usagePrice(RECORDS_PROD, '1.00'), usagePrice(COMPUTE_HOURS_PROD, '23.17', 'Function compute time (h)', 'price_2', 'not-a-number')])]
+        };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ records: 100 });
+        expect(result?.malformedMetrics).toEqual(['function_duration_seconds']);
+    });
+
+    it('flags a fixed price whose total is unreadable instead of adding the subtotal to fixed charges', () => {
+        const costs = {
+            data: [
+                bucket([
+                    usagePrice(RECORDS_PROD, '23.17'),
+                    {
+                        price_id: 'price_fixed',
+                        subtotal: '500.00',
+                        total: 'not-a-number',
+                        price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null }
+                    }
+                ])
+            ]
+        };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.fixedInCents).toBe(0);
+        expect(result?.flagged).toEqual([{ priceId: 'price_fixed', priceName: 'Base fee', metric: null, amountInCents: null }]);
+    });
+
+    it('reads the subtotal when the payload carries no total', () => {
+        const costs = {
+            data: [
+                bucket([
+                    {
+                        price_id: 'price_1',
+                        subtotal: '23.17',
+                        price: { price_type: 'usage_price', currency: 'USD', name: 'Sync records', billable_metric: { id: RECORDS_PROD } }
+                    }
+                ])
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 2317 });
+    });
+
     it('maps a price to its metric and converts the amount to cents', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_PROD, '23.17', 'Sync records')])] };
 
@@ -412,6 +506,7 @@ describe('fromOrbPeriodCosts', () => {
             malformedMetrics: [],
             fullyAttributed: true,
             flagged: [],
+            fixedInCents: 0,
             currency: 'USD'
         });
     });
@@ -475,7 +570,7 @@ describe('fromOrbPeriodCosts', () => {
         expect(fromOrbPeriodCosts(costs, NOW)?.metrics).not.toHaveProperty('records');
     });
 
-    it('excludes fixed prices, so the metrics exclude the base fee', () => {
+    it('reports a fixed price separately, so no metric absorbs the base fee', () => {
         const costs = {
             data: [
                 bucket([
@@ -495,6 +590,7 @@ describe('fromOrbPeriodCosts', () => {
             malformedMetrics: [],
             fullyAttributed: true,
             flagged: [],
+            fixedInCents: 50_000,
             currency: 'USD'
         });
     });
@@ -594,7 +690,34 @@ describe('fromOrbPeriodCosts', () => {
         expect(result?.fullyAttributed).toBe(false);
     });
 
-    it('returns null when every price is fixed, so no currency can be stated', () => {
+    it('leaves every metric figure untouched when a fixed price cannot be read', () => {
+        const withFixed = (fixedCurrency: string, subtotal: string) => ({
+            data: [
+                bucket([
+                    usagePrice(RECORDS_PROD, '23.17'),
+                    {
+                        price_id: 'price_fixed',
+                        subtotal,
+                        total: subtotal,
+                        price: { price_type: 'fixed_price', currency: fixedCurrency, name: 'Base fee', billable_metric: null }
+                    }
+                ])
+            ]
+        });
+
+        const mismatched = fromOrbPeriodCosts(withFixed('EUR', '500.00'), NOW);
+        expect(mismatched?.metrics).toEqual({ records: 2317 });
+        expect(mismatched?.fullyAttributed).toBe(true);
+        expect(mismatched?.fixedInCents).toBe(0);
+        expect(mismatched?.flagged).toHaveLength(1);
+
+        const unparseable = fromOrbPeriodCosts(withFixed('USD', 'n/a'), NOW);
+        expect(unparseable?.metrics).toEqual({ records: 2317 });
+        expect(unparseable?.fullyAttributed).toBe(true);
+        expect(unparseable?.fixedInCents).toBe(0);
+    });
+
+    it('returns null when every price is fixed, so a base fee alone never starts reporting costs', () => {
         const costs = {
             data: [
                 bucket([

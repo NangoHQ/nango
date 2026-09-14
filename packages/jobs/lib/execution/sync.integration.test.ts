@@ -9,7 +9,7 @@ import { Ok, stringifyError } from '@nangohq/utils';
 import { envs } from '../env.js';
 import { handleSyncSuccess, startSync } from './sync.js';
 
-import type { TaskAbort, TaskAction, TaskFunction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
+import type { TaskAbort, TaskAction, TaskFunction, TaskOnEvent, TaskScheduleFunction, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { ReturnedRecord, UnencryptedRecordData } from '@nangohq/records';
 import type { Sync, Job as SyncJob } from '@nangohq/shared';
 import type { ConnectionJobs, DBSyncConfig, SyncResult } from '@nangohq/types';
@@ -212,7 +212,8 @@ const runJob = async (
         isOnEvent: (): this is TaskOnEvent => false,
         isSyncAbort: (): this is TaskSyncAbort => false,
         isAbort: (): this is TaskAbort => false,
-        isFunction: (): this is TaskFunction => false
+        isFunction: (): this is TaskFunction => false,
+        isScheduleFunction: (): this is TaskScheduleFunction => false
     };
     const nangoProps = await startSync(task, mockStartScript);
     if (nangoProps.isErr()) {
