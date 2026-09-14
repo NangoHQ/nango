@@ -22,6 +22,14 @@ describe('recordFunctionExecution', () => {
         });
     });
 
+    it('clamps a negative duration to zero', () => {
+        const duration = vi.spyOn(metrics, 'duration').mockImplementation(() => undefined);
+
+        recordFunctionExecution({ accountId: 1, type: 'sync', success: true, durationMs: -250, runtime: 'runner' });
+
+        expect(duration).toHaveBeenCalledWith('nango.jobs.function.duration_ms', 0, expect.anything());
+    });
+
     it('omits the runtime tag when unknown', () => {
         const duration = vi.spyOn(metrics, 'duration').mockImplementation(() => undefined);
 

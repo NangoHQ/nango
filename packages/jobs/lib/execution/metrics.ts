@@ -17,7 +17,7 @@ export function recordFunctionExecution({
     durationMs: number;
     runtime: FunctionRuntime | undefined;
 }): void {
-    metrics.duration(metrics.Types.FUNCTION_DURATION_MS, durationMs, {
+    metrics.duration(metrics.Types.FUNCTION_DURATION_MS, Math.max(0, durationMs), {
         accountId,
         type,
         success: String(success),
