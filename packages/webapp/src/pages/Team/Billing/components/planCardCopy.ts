@@ -62,7 +62,7 @@ export const S26_PLAN_CARDS: readonly S26PlanCard[] = [
         price: '$0',
         priceSuffix: '/mo',
         tagline: 'Hard-capped limits, reset every month.',
-        features: ['10 connections', '10h compute time', '10GB data transfer', 'API auth with 900+ APIs', 'Pre-built tools, triggers & syncs', 'Logs']
+        features: ['10 connections', '10h compute time', '10GB data transfer', 'API auth with 1000+ APIs', 'Pre-built tools, triggers & syncs', 'Logs']
     },
     {
         code: 'pay-as-you-go',
