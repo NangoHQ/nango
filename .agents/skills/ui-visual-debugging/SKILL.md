@@ -79,7 +79,7 @@ When auth is needed, follow the local credentials and verification-log workflow 
 
 ## Startup Troubleshooting
 
-If server startup fails with a Knex error like `The migration directory is corrupt, the following files are missing`, the local database has migrations from another branch. Do not reset the user's database without confirmation. For visual validation only, use a temporary database:
+If server startup fails with a Knex error like `The migration directory is corrupt, the following files are missing`, the local database has migrations from another branch (see **Migration mismatch across worktrees** in `running-and-testing-locally` to tell a branch behind master from an unmerged one). Do not reset the user's database without confirmation. For visual validation only, use a temporary database:
 
 ```bash
 docker exec nango-db psql -U nango -d postgres -c "DROP DATABASE IF EXISTS nango_ui_skill_validation WITH (FORCE)"

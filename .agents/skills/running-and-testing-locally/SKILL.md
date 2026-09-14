@@ -78,11 +78,7 @@ for i in $(seq 1 18); do curl --max-time 2 -sf http://localhost:3003/health && b
 curl --max-time 2 -s http://localhost:3003/health   # expect {"result":"ok"}
 ```
 
-If that doesn't come back OK, read the log before restarting or waiting longer. The server logs its fatal error and exits, so the cause is already there:
-
-```bash
-grep -E 'uncaughtException|"level":"error"' <stack-log> | head -5
-```
+If that doesn't come back OK, read the Terminal 2 output before restarting or waiting longer. The server runs under nodemon, so a fatal error prints and is followed by `[nodemon] clean exit - waiting for changes before restart` while the other services keep running. That line is the signal to stop waiting: the cause is right above it.
 
 ## Selective Service Commands
 
@@ -144,9 +140,7 @@ NANGO_FEATURE_FLAG_OAUTH_STATE_COOKIE_ENFORCEMENT=true
 
 The env var is the flag key uppercased with dashes as underscores. Keys live in `packages/feature-flags/lib/flags.ts`. Restart the server after changing one.
 
-**`NANGO_CLOUD=true` silently disables all of this** — `buildProvider` falls back to noop, so every flag reads its default. The only sign is one startup line: `NANGO_FLAG_PROVIDER=env is not supported on cloud; using noop provider`. Setting `NANGO_CLOUD=false` restores flags but switches the dashboard to the classic getting-started page ([NAN-6919](https://linear.app/nango/issue/NAN-6919)).
-
-Some surfaces use a browser dev-tool override instead of a server flag — `Ctrl+Shift+D` opens that panel.
+**`NANGO_CLOUD=true` silently disables all of this** — `buildProvider` falls back to noop, so every flag reads its default. The only sign is one startup line: `NANGO_FLAG_PROVIDER=env is not supported on cloud; using noop provider`. Leave `NANGO_CLOUD` unset locally (it defaults to false); setting it true also flips CORS, admin routes, secret-key lookup, file storage and log format. The unset default shows the classic getting-started dashboard ([NAN-6919](https://linear.app/nango/issue/NAN-6919)).
 
 ## Browser Testing Workflow
 
@@ -300,7 +294,7 @@ _No flows documented yet — add the first one!_
 
 | Issue | Symptom | Fix |
 |-------|---------|-----|
-| **Migration from another worktree** | Server exits on startup: `The migration directory is corrupt, the following files are missing: <file>.cjs`. Webapp still serves 3000, so only API calls fail | See **Migration mismatch across worktrees** below |
+| **Migration from another worktree** | Server dies on startup (nodemon keeps waiting): `The migration directory is corrupt, the following files are missing: <file>.cjs`. Webapp still serves 3000, so only API calls fail | See **Migration mismatch across worktrees** below |
 | Feature looks unchanged | Your branch's UI never appears, no errors anywhere | The feature may be using its declared flag default — see **Feature flags locally** |
 | Docker not running | `Cannot connect to the Docker daemon` | Start Docker Desktop |
 | Port already in use | `EADDRINUSE` on startup | Kill the process on that port: `lsof -ti:PORT \| xargs kill` |
@@ -327,7 +321,7 @@ Check where that file lives, because the fix differs:
 git fetch origin master -q && git ls-tree -r origin/master --name-only | grep <migration-filename>
 ```
 
-- **On master** — your branch is behind. Ask the user before rebasing onto `origin/master`; the migration file comes with the rebase.
-- **Not on master** — it came from an unmerged branch, so no rebase produces it. Inspect the migration in its owning worktree. If its `up` is safe to rerun and has no data side effects, remove its ledger row: `delete from nango._nango_auth_migrations where name = '<migration-filename>';`. Otherwise reset the database, or reverse every schema and data change before removing the row.
+- **On master** — your branch is behind; bring it up to date with `origin/master` and the file comes along.
+- **Not on master** — it came from an unmerged branch. For a verification run, skip boot-time migrations with `NANGO_MIGRATE_AT_START=false npm run dev:watch:apps` (your branch's own pending migrations won't run either), or use a throwaway database as in `ui-visual-debugging`. To fix the shared DB instead, inspect the migration in its owning worktree; if its `up` is safe to rerun with no data side effects, remove its ledger row: `delete from nango._nango_auth_migrations where name = '<migration-filename>';`. Otherwise reset the database.
 
 It happens in the other direction too: once you run a branch that adds a migration, your other worktrees won't start until they have that file.
