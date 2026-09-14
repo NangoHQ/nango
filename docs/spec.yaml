@@ -4531,7 +4531,7 @@ components:
                           description: Configure your integration webhooks to point to this URL
                       credentials:
                           anyOf:
-                              - $ref: '#/components/schemas/IntegrationCredentials'
+                              - $ref: '#/components/schemas/IntegrationCredentialsWithConfig'
                               - type: 'null'
 
         ConnectSessionInput:
@@ -5263,3 +5263,47 @@ components:
                       private_key:
                           type: string
                           pattern: '^-----BEGIN RSA PRIVATE KEY----.*-----END RSA PRIVATE KEY-----$'
+                - type: object
+                  required:
+                      - type
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - MCP_OAUTH2_GENERIC
+                      client_name:
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                      client_uri:
+                          type: string
+                          maxLength: 255
+                      client_logo_uri:
+                          type: string
+                          maxLength: 255
+
+        IntegrationCredentialsWithConfig:
+            description: >
+                Same as IntegrationCredentials, plus the shape returned for providers that declare an
+                `integration_config` schema (e.g. aws-sigv4, epic, private-api-generic) instead of fixed
+                credentials fields. This variant is response-only -- it can't be submitted on create or update.
+            oneOf:
+                - $ref: '#/components/schemas/IntegrationCredentials'
+                - type: object
+                  required:
+                      - type
+                      - auth_mode
+                      - integration_config
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - INTEGRATION_CONFIG
+                      auth_mode:
+                          type: string
+                          description: The provider's actual auth mode (e.g. AWS_SIGV4, TWO_STEP, API_KEY).
+                      integration_config:
+                          type: object
+                          additionalProperties:
+                              type: string
+                          description: The provider's `integration_config` values, keyed by the fields it declares.

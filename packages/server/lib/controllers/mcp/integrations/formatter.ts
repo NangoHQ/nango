@@ -65,5 +65,14 @@ export function integrationCredentialsToMcp(credentials: IntegrationCredentials)
                 app_link: credentials.appLink,
                 private_key: credentials.privateKey
             };
+        case 'MCP_OAUTH2_GENERIC':
+            return {
+                type: credentials.type,
+                client_name: credentials.clientName,
+                client_uri: credentials.clientUri,
+                client_logo_uri: credentials.clientLogoUri
+            };
+        case 'INTEGRATION_CONFIG':
+            return { type: credentials.type, auth_mode: credentials.authMode, integration_config: credentials.integration_config };
     }
 }
