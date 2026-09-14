@@ -643,6 +643,17 @@ describe('fromOrbPeriodCosts', () => {
         expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 4000, function_duration_seconds: 400 });
     });
 
+    it('adds a metric priced on both sides of a mid-period plan change', () => {
+        const costs = {
+            data: [
+                bucket([usagePrice(RECORDS_PROD, '40.00', 'Sync records', 'price_old')], '2026-08-31T21:07:31+00:00', '2026-08-01T00:00:00+00:00'),
+                bucket([usagePrice(RECORDS_PROD, '5.00', 'Records', 'price_new')], '2026-09-01T00:00:00+00:00', '2026-08-31T21:07:31+00:00')
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 4500 });
+    });
+
     it('reads a fixed price whose series started later than the usage prices', () => {
         const costs = {
             data: [
