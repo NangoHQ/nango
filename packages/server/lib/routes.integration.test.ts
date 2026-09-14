@@ -62,6 +62,22 @@ describe('route', () => {
         });
     });
 
+    describe('OAuth server', () => {
+        it.each(['/oauth/authorize', '/.well-known/oauth-authorization-server'])('does not expose %s when the issuer is disabled', async (path) => {
+            const res = await fetch(`${api.url}${path}`);
+
+            expect(res.status).toBe(404);
+            expect((await res.json()) as unknown).toStrictEqual({ error: { code: 'not_found', message: 'Not found' } });
+        });
+
+        it("does not intercept Nango's existing OAuth routes", async () => {
+            const res = await fetch(`${api.url}/oauth/client-metadata/not-a-uuid/provider`);
+
+            expect(res.status).toBe(400);
+            expect((await res.json()) as { error: { code: string } }).toMatchObject({ error: { code: 'invalid_uri_params' } });
+        });
+    });
+
     describe('GET /api/v1/environment/callback', () => {
         it('should handle invalid json', async () => {
             const { apiKey } = await seeders.seedAccountEnvAndUser();
