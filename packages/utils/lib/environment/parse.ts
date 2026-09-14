@@ -547,6 +547,7 @@ const ENVS_SHAPE = z.object({
     AWS_REGION: z.string().optional(),
     AWS_BUCKET_NAME: z.string().optional(),
     AWS_ACCESS_KEY_ID: z.string().optional(),
+    AWS_SECRET_ACCESS_KEY: z.string().optional(),
 
     AWS_INTEGRATIONS_ACCESS_KEY_ID: z.string().optional(),
     AWS_INTEGRATIONS_SECRET_ACCESS_KEY: z.string().optional(),

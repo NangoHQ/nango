@@ -3,6 +3,7 @@ import archiver from 'archiver';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { isCloud, isEnterprise, isLocal, isTest, report, useRemoteStorage } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager from '../../utils/error.manager.js';
 import localFileService from './local.service.js';
@@ -28,12 +29,12 @@ class RemoteFileService {
             this.useRemote = !isLocal && !isTest;
         }
         if (this.useRemote) {
-            this.store = createObjectStore(resolveObjectStoreConfig(process.env));
+            this.store = createObjectStore(resolveObjectStoreConfig(envs));
         }
     }
 
     private getStore(): ObjectStore {
-        this.store ??= createObjectStore(resolveObjectStoreConfig(process.env));
+        this.store ??= createObjectStore(resolveObjectStoreConfig(envs));
         return this.store;
     }
 
