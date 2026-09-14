@@ -1,3 +1,7 @@
+import { runWithConcurrencyLimit } from '@nangohq/utils';
+
+import { envs } from '../../../env.js';
+
 export function formatDeleteError(key: string | undefined, reason: unknown): string {
     const message = reason instanceof Error ? reason.message : typeof reason === 'string' && reason.length > 0 ? reason : 'delete failed';
     return `${key ?? 'unknown'}: ${message}`;
@@ -11,12 +15,14 @@ export function throwIfDeleteErrors(provider: string, errors: string[]): void {
 }
 
 export async function deleteEach(keys: string[], deleteOne: (key: string) => Promise<unknown>, provider: string): Promise<void> {
-    const results = await Promise.allSettled(keys.map((key) => deleteOne(key)));
-    const errors = results.flatMap((result, i) => {
-        if (result.status === 'fulfilled') {
-            return [];
+    const results = await runWithConcurrencyLimit(keys, envs.OBJECT_STORE_DELETE_CONCURRENCY, async (key) => {
+        try {
+            await Promise.resolve().then(() => deleteOne(key));
+            return undefined;
+        } catch (err) {
+            return formatDeleteError(key, err);
         }
-        return [formatDeleteError(keys[i], result.reason)];
     });
+    const errors = results.filter((error): error is string => error !== undefined);
     throwIfDeleteErrors(provider, errors);
 }

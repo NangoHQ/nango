@@ -559,6 +559,7 @@ const ENVS_SHAPE = z.object({
     AZURE_INTEGRATIONS_ACCOUNT_NAME: z.string().optional(),
     AZURE_INTEGRATIONS_CONTAINER_NAME: z.string().optional(),
     AZURE_INTEGRATIONS_ACCOUNT_KEY: z.string().optional(),
+    OBJECT_STORE_DELETE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(16),
 
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
