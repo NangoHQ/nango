@@ -4,7 +4,7 @@ import { useGlobal } from './store';
 
 import type { ConnectUIThemeSettings, Theme } from '@nangohq/types';
 
-const THEME_TIMEOUT_MS = 10000;
+const THEME_TIMEOUT_MS = 3000;
 
 export function isValidTheme(theme: string): theme is Theme {
     return ['light', 'dark', 'system'].includes(theme);
