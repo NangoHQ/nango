@@ -53,7 +53,7 @@ class PostgresOAuthAdapter implements Adapter {
         const grantIdHash = grantId ? this.crypto.hash(grantId) : null;
         const now = new Date();
         const mutableFields = {
-            payload_encrypted: this.crypto.encrypt(this.model, artifactIdHash, payload),
+            payload_encrypted: await this.crypto.encrypt(this.model, artifactIdHash, payload),
             grant_id_hash: grantIdHash,
             session_uid_hash: payload.uid ? this.crypto.hash(payload.uid) : null,
             expires_at: expiration(payload, expiresIn),
@@ -180,7 +180,7 @@ class PostgresOAuthAdapter implements Adapter {
             .insert({
                 model: REVOCATION_MODEL,
                 artifact_id_hash: grantIdHash,
-                payload_encrypted: this.crypto.encrypt(REVOCATION_MODEL, grantIdHash, payload),
+                payload_encrypted: await this.crypto.encrypt(REVOCATION_MODEL, grantIdHash, payload),
                 grant_id_hash: grantIdHash,
                 session_uid_hash: null,
                 expires_at: expiresAt,
@@ -213,7 +213,7 @@ class PostgresOAuthAdapter implements Adapter {
             return undefined;
         }
 
-        const payload = this.crypto.decrypt<AdapterPayload>(this.model, row.artifact_id_hash, row.payload_encrypted);
+        const payload = await this.crypto.decrypt<AdapterPayload>(this.model, row.artifact_id_hash, row.payload_encrypted);
         if (row.consumed_at) {
             payload.consumed = Math.floor(row.consumed_at.getTime() / 1000);
         }

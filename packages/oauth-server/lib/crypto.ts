@@ -1,13 +1,17 @@
-import { createCipheriv, createDecipheriv, createHmac, hkdfSync, randomBytes } from 'node:crypto';
+import { createHmac, hkdfSync } from 'node:crypto';
+
+import { flattenedDecrypt, FlattenedEncrypt } from 'jose';
+
+import type { FlattenedJWE } from 'jose';
 
 const ENCRYPTION_VERSION = 1;
-const IV_LENGTH = 12;
-const AUTH_TAG_LENGTH = 16;
+const KEY_MANAGEMENT_ALGORITHM = 'dir';
+const CONTENT_ENCRYPTION_ALGORITHM = 'A256GCM';
 
 export interface ArtifactCrypto {
     hash(value: string): Buffer;
-    encrypt(model: string, artifactIdHash: Buffer, value: unknown): Buffer;
-    decrypt<T>(model: string, artifactIdHash: Buffer, value: Buffer): T;
+    encrypt(model: string, artifactIdHash: Buffer, value: unknown): Promise<Buffer>;
+    decrypt<T>(model: string, artifactIdHash: Buffer, value: Buffer): Promise<T>;
 }
 
 export function createArtifactCrypto(encryptionKey: string): ArtifactCrypto {
@@ -23,26 +27,26 @@ export function createArtifactCrypto(encryptionKey: string): ArtifactCrypto {
         hash(value) {
             return createHmac('sha256', lookupKey).update(value, 'utf8').digest();
         },
-        encrypt(model: string, artifactIdHash: Buffer, value: unknown) {
-            const iv = randomBytes(IV_LENGTH);
-            const cipher = createCipheriv('aes-256-gcm', payloadEncryptionKey, iv);
-            cipher.setAAD(aad(model, artifactIdHash));
-            const ciphertext = Buffer.concat([cipher.update(JSON.stringify(value), 'utf8'), cipher.final()]);
-            return Buffer.concat([Buffer.from([ENCRYPTION_VERSION]), iv, cipher.getAuthTag(), ciphertext]);
+        async encrypt(model: string, artifactIdHash: Buffer, value: unknown) {
+            const encrypted = await new FlattenedEncrypt(Buffer.from(JSON.stringify(value), 'utf8'))
+                .setProtectedHeader({ alg: KEY_MANAGEMENT_ALGORITHM, enc: CONTENT_ENCRYPTION_ALGORITHM, v: ENCRYPTION_VERSION })
+                .setAdditionalAuthenticatedData(aad(model, artifactIdHash))
+                .encrypt(payloadEncryptionKey);
+            return Buffer.from(JSON.stringify(encrypted), 'utf8');
         },
-        decrypt<T>(model: string, artifactIdHash: Buffer, value: Buffer) {
-            if (value.length < 1 + IV_LENGTH + AUTH_TAG_LENGTH || value[0] !== ENCRYPTION_VERSION) {
+        async decrypt<T>(model: string, artifactIdHash: Buffer, value: Buffer) {
+            const encrypted = JSON.parse(value.toString('utf8')) as FlattenedJWE;
+            const { plaintext, protectedHeader, additionalAuthenticatedData } = await flattenedDecrypt(encrypted, payloadEncryptionKey, {
+                keyManagementAlgorithms: [KEY_MANAGEMENT_ALGORITHM],
+                contentEncryptionAlgorithms: [CONTENT_ENCRYPTION_ALGORITHM]
+            });
+            if (protectedHeader?.['v'] !== ENCRYPTION_VERSION) {
                 throw new Error('Unsupported OAuth artifact encryption format');
             }
-
-            const ivStart = 1;
-            const tagStart = ivStart + IV_LENGTH;
-            const ciphertextStart = tagStart + AUTH_TAG_LENGTH;
-            const decipher = createDecipheriv('aes-256-gcm', payloadEncryptionKey, value.subarray(ivStart, tagStart));
-            decipher.setAAD(aad(model, artifactIdHash));
-            decipher.setAuthTag(value.subarray(tagStart, ciphertextStart));
-            const plaintext = Buffer.concat([decipher.update(value.subarray(ciphertextStart)), decipher.final()]);
-            return JSON.parse(plaintext.toString('utf8')) as T;
+            if (!additionalAuthenticatedData || !Buffer.from(additionalAuthenticatedData).equals(aad(model, artifactIdHash))) {
+                throw new Error('OAuth artifact authenticated context does not match');
+            }
+            return JSON.parse(Buffer.from(plaintext).toString('utf8')) as T;
         }
     };
 }
