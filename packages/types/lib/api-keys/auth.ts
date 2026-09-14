@@ -29,6 +29,8 @@ export interface ApiKeyAuthDetails {
     source: Exclude<ApiKeyAuthSource, 'connect_session'>;
     scopes?: string[];
     apiKeyId?: number;
+    /** Public identifier of a customer key; absent for the other auth sources, which have no key row. */
+    apiKeyUuid?: string;
     apiKeyDisplayName?: string;
     purpose?: 'dryrun' | 'deploy';
     dryrunId?: string;

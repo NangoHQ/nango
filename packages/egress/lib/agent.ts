@@ -37,7 +37,14 @@ async function resolvePinnedAddresses(hostname: string, policy: OutboundUrlPolic
         return cached.addresses;
     }
 
-    const url = `http://${formatHostForUrlAuthority(hostname)}/`;
+    const scheme = policy.allowedSchemes.values().next().value;
+    if (!scheme) {
+        throw new Error('Outbound URL policy must allow at least one scheme');
+    }
+    // A DNS lookup receives only a hostname, not the original request URL. Use one of the
+    // policy's allowed schemes for hostname validation rather than inventing an HTTP URL,
+    // which would incorrectly reject callers whose policy deliberately allows HTTPS only.
+    const url = `${scheme}//${formatHostForUrlAuthority(hostname)}/`;
     const syncResult = validateOutboundUrlSync(url, policy);
     if (!syncResult.ok) {
         throw syncResult.error;

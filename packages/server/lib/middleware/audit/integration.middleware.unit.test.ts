@@ -26,7 +26,7 @@ describe('integration audit middleware (unit)', () => {
             action: 'deleted',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
             targets: [{ type: 'integration', id: 'algolia-prod', display: 'Algolia Prod' }],
             metadata: { provider: 'algolia' }
         });

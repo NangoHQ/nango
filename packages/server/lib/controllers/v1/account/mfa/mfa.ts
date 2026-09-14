@@ -1,6 +1,5 @@
 import * as z from 'zod';
 
-import { getFlags } from '@nangohq/feature-flags';
 import { MFAError, mfaService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -49,20 +48,8 @@ function getAuthenticatedUser<T>(res: Response<T, RequestLocals>) {
     return user;
 }
 
-async function isMFAEnabled<T>(res: Response<T, RequestLocals>): Promise<boolean> {
-    return await getFlags().isMFAEnabled(res.locals['account'].uuid);
-}
-
-function rejectDisabledFeature<T>(res: Response<T, RequestLocals>) {
-    res.status(400).send({ error: { code: 'feature_disabled' } } as T);
-}
-
 export const getMFAStatus = asyncWrapper<GetMFAStatus>(async (req, res) => {
     if (!validateQuery(req, res)) {
-        return;
-    }
-    if (!(await isMFAEnabled(res))) {
-        rejectDisabledFeature(res);
         return;
     }
 
@@ -72,10 +59,6 @@ export const getMFAStatus = asyncWrapper<GetMFAStatus>(async (req, res) => {
 
 export const postMFAEnrollment = asyncWrapper<PostMFAEnrollment>(async (req, res) => {
     if (!validateQuery(req, res)) {
-        return;
-    }
-    if (!(await isMFAEnabled(res))) {
-        rejectDisabledFeature(res);
         return;
     }
 
@@ -93,10 +76,6 @@ export const postMFAEnrollment = asyncWrapper<PostMFAEnrollment>(async (req, res
 
 export const postMFAActivation = asyncWrapper<PostMFAActivation>(async (req, res) => {
     if (!validateQuery(req, res)) {
-        return;
-    }
-    if (!(await isMFAEnabled(res))) {
-        rejectDisabledFeature(res);
         return;
     }
 
@@ -123,10 +102,6 @@ export const postMFAActivation = asyncWrapper<PostMFAActivation>(async (req, res
 
 export const postMFARecoveryCodes = asyncWrapper<PostMFARecoveryCodes>(async (req, res) => {
     if (!validateQuery(req, res)) {
-        return;
-    }
-    if (!(await isMFAEnabled(res))) {
-        rejectDisabledFeature(res);
         return;
     }
 
@@ -158,10 +133,6 @@ export const postMFARecoveryCodes = asyncWrapper<PostMFARecoveryCodes>(async (re
 
 export const deleteMFA = asyncWrapper<DeleteMFA>(async (req, res) => {
     if (!validateQuery(req, res)) {
-        return;
-    }
-    if (!(await isMFAEnabled(res))) {
-        rejectDisabledFeature(res);
         return;
     }
 

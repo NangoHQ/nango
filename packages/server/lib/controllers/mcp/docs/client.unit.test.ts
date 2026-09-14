@@ -1,3 +1,4 @@
+import { SdkErrorCode, SdkHttpError } from '@modelcontextprotocol/client';
 import { describe, expect, it, vi } from 'vitest';
 
 import { PublicMcpError } from '../utils.js';
@@ -59,25 +60,26 @@ describe('DocsMcpClient', () => {
         expect(connectedClient.close).toHaveBeenCalledOnce();
     });
 
-    it.each([new Error('429 Too Many Requests'), new Error('Search rate limit exceeded'), Object.assign(new Error('Upstream request failed'), { code: 429 })])(
-        'adds direct MCP guidance to rate limit errors',
-        async (error) => {
-            const callTool = vi.fn<ConnectedDocsMcpClient['callTool']>().mockRejectedValue(error);
-            const connectedClient = mockConnectedClient(callTool);
-            const client = new DocsMcpClient(() => Promise.resolve(connectedClient));
+    it.each([
+        new Error('429 Too Many Requests'),
+        new Error('Search rate limit exceeded'),
+        new SdkHttpError(SdkErrorCode.ClientHttpNotImplemented, 'Upstream request failed', { status: 429 })
+    ])('adds direct MCP guidance to rate limit errors', async (error) => {
+        const callTool = vi.fn<ConnectedDocsMcpClient['callTool']>().mockRejectedValue(error);
+        const connectedClient = mockConnectedClient(callTool);
+        const client = new DocsMcpClient(() => Promise.resolve(connectedClient));
 
-            const result = await client.callTool('search_nango_docs', { query: 'authentication' });
+        const result = await client.callTool('search_nango_docs', { query: 'authentication' });
 
-            expect(result.isErr()).toBe(true);
-            if (result.isErr()) {
-                expect(result.error).toBeInstanceOf(PublicMcpError);
-                expect(result.error.message).toBe(
-                    'The Nango documentation MCP returned 429 Too Many Requests. Connect to the Nango documentation MCP directly at https://nango.dev/docs/mcp.'
-                );
-            }
-            expect(connectedClient.close).toHaveBeenCalledOnce();
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toBe(
+                'The Nango documentation MCP returned 429 Too Many Requests. Connect to the Nango documentation MCP directly at https://nango.dev/docs/mcp.'
+            );
         }
-    );
+        expect(connectedClient.close).toHaveBeenCalledOnce();
+    });
 
     it('adds direct MCP guidance when an upstream tool result reports a rate limit', async () => {
         const callTool = vi.fn<ConnectedDocsMcpClient['callTool']>().mockResolvedValue({

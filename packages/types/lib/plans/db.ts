@@ -9,6 +9,7 @@ export interface DBPlan extends Timestamps {
         | 'free'
         | 'free-uncapped'
         | 'startup-deal'
+        | 'pay-as-you-go'
         | 'starter-v2'
         | 'growth-v2'
         | 'enterprise'
@@ -29,6 +30,8 @@ export interface DBPlan extends Timestamps {
     orb_future_plan: string | null;
     orb_future_plan_at: Date | null;
     orb_subscribed_at: Date | null;
+    has_growth_features: boolean;
+    growth_features_ends_at: Date | null;
 
     // Trial
     // Remove all values when you upgrade a customer

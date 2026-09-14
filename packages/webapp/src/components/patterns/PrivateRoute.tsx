@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
-
-import { useEnvironment } from '../../hooks/useEnvironment';
 import { useMeta } from '../../hooks/useMeta';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useUser } from '../../hooks/useUser';
@@ -29,8 +26,6 @@ export const PrivateRoute: React.FC = () => {
     const setBaseUrl = useStore((state) => state.setBaseUrl);
     const setDebugMode = useStore((state) => state.setDebugMode);
     const setEnv = useStore((state) => state.setEnv);
-    const { data: environmentData } = useEnvironment(env);
-    const environmentAndAccount = environmentData?.environmentAndAccount;
 
     useEffect(() => {
         if (!meta || metaError) {
@@ -44,7 +39,8 @@ export const PrivateRoute: React.FC = () => {
     }, [meta, metaError]);
 
     useEffect(() => {
-        if (!meta || metaError) {
+        // The env check below reads the user's grants; deciding before they land bounces the user.
+        if (!meta || metaError || !user) {
             return;
         }
 
@@ -60,8 +56,10 @@ export const PrivateRoute: React.FC = () => {
             }
         }
 
+        const matchedEnv = meta.environments.find(({ name }) => name === currentEnv);
+
         // The store set does not match available envs
-        if (!meta.environments.find(({ name }) => name === currentEnv)) {
+        if (!matchedEnv) {
             if (currentEnv !== 'dev' && meta.environments.find(({ name }) => name === 'dev')) {
                 // If the specified env is not dev and it's available we set the store value so the back home button works
                 // because of self hosting we can't assume dev is always there
@@ -73,30 +71,27 @@ export const PrivateRoute: React.FC = () => {
 
             // Only show the not-found page for env-specific paths
             setNotFoundEnv(!nonEnvPath);
+        } else if (!can('environment:settings:read', matchedEnv)) {
+            const fallback = meta.environments.find((environment) => environment.name !== currentEnv && can('environment:settings:read', environment));
+            setEnv(fallback ? fallback.name : meta.environments[0].name);
+            // Only show the unauthorized page for env-specific paths
+            setUnauthorizedEnv(!nonEnvPath);
+            setNotFoundEnv(false);
         } else {
-            const matchedEnv = meta.environments.find(({ name }) => name === currentEnv);
-            if (matchedEnv?.is_production && !can(permissions.canAccessProdEnvironment)) {
-                // User navigated directly to a production env they don't have access to
-                const fallback = meta.environments.find(({ name, is_production }) => name !== currentEnv && !is_production);
-                setEnv(fallback ? fallback.name : meta.environments[0].name);
-                // Only show the unauthorized page for env-specific paths
-                setUnauthorizedEnv(!nonEnvPath);
-            } else {
-                setEnv(currentEnv);
-                setUnauthorizedEnv(false);
-            }
+            setEnv(currentEnv);
+            setUnauthorizedEnv(false);
             setNotFoundEnv(false);
         }
 
         // it's ready when datastore and path are finally reconciliated
         setReady(true);
-    }, [meta, loadingMeta, env, metaError, setEnv, can, location.pathname]);
+    }, [meta, loadingMeta, env, metaError, setEnv, can, user, location.pathname]);
 
     useEffect(() => {
-        if (user && environmentAndAccount && meta && !meta.debugMode) {
+        if (user && meta && !meta.debugMode) {
             identify(user);
         }
-    }, [user, environmentAndAccount, meta, identify]);
+    }, [user, meta, identify]);
 
     if (userError || metaError) {
         return <Navigate to="/signin" replace />;

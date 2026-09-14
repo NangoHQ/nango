@@ -259,6 +259,7 @@ All `operation` values are:
 - `creation`: a new connection has been created
 - `override`: a connection has been re-authorized
 - `refresh`: an OAuth connection's access token has failed to refresh, or has recovered after a previous failure
+- `deletion`: a connection has been deleted
 
 Payload received following a refresh token error:
 
@@ -310,6 +311,30 @@ Nango retries refreshing on its periodic cycle, so a single refresh failure does
 
 <Note>
   This recovery webhook is only sent when a refresh succeeds after a previous refresh failure — not on every routine successful refresh. It's gated by the same webhook setting as refresh failures.
+</Note>
+
+Payload received following a connection deletion:
+
+```json
+{
+    "type": "auth",
+    "operation": "deletion",
+    "connectionId": "<your-connection-id>",
+    "authMode": "OAUTH2 | BASIC | API_KEY | ...",
+    "providerConfigKey": "<your-integration-id>",
+    "provider": "<your-provider-key>",
+    "environment": "DEV | PROD | ...",
+    "success": true,
+    "tags": {
+        "end_user_id": "<your-end-user-id>",
+        "end_user_email": "<your-end-user-email>",
+        "organization_id": "<your-organization-id>"
+    }
+}
+```
+
+<Note>
+  This webhook is only sent when a connection is deleted directly through the dashboard or the API. It is not sent for bulk deletions caused by deleting an integration or environment.
 </Note>
 
 ### Sync webhooks

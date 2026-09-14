@@ -3,7 +3,6 @@ import './tracer.js';
 import * as cron from 'node-cron';
 
 import { auditClickhouseClient, ClickhouseAuditStore, migrate as migrateAudit } from '@nangohq/audit';
-import { billing } from '@nangohq/billing';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { DefaultTransport } from '@nangohq/pubsub';
 import { Clickhouse, getUsageTracker, migrate as migrateUsage } from '@nangohq/usage';
@@ -109,10 +108,6 @@ try {
         const disconnect = await pubsubTransport.disconnect();
         if (disconnect.isErr()) {
             logger.error('Error disconnecting from ActiveMQ', disconnect.error);
-        }
-        const billingShutdown = await billing.shutdown();
-        if (billingShutdown.isErr()) {
-            logger.error('Error shutting down billing', billingShutdown.error);
         }
         const clickhouseShutdown = await clickhouse.shutdown();
         if (clickhouseShutdown.isErr()) {

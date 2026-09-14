@@ -118,7 +118,7 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
             return;
         }
         // Runs before authentication, so there is no res.locals.plan to read the entitlement from.
-        if (!(await canRecordAuditTrail(principal.account.uuid, await getPlanSafe(db.knex, { accountId: principal.account.id })))) {
+        if (!(await canRecordAuditTrail(await getPlanSafe(db.knex, { accountId: principal.account.id })))) {
             return;
         }
         const ref = { type: 'user' as const, id: String(principal.userId), display: principal.userEmail };
@@ -128,6 +128,7 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
         const common = {
             occurredAt,
             accountId: principal.account.id,
+            scope: 'account' as const,
             environment: null,
             actor,
             targets: [ref],

@@ -1,14 +1,11 @@
 import * as OTPAuth from 'otpauth';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 import { flags } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
-
-import type { MockInstance } from 'vitest';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -166,11 +163,8 @@ describe(`POST ${endpoint}`, () => {
 });
 
 describe(`POST ${endpoint} with a dashboard session`, () => {
-    let mfaFlagSpy: MockInstance<ReturnType<typeof featureFlags.getFlags>['isMFAEnabled']>;
-
     beforeAll(async () => {
         api = await runServer();
-        mfaFlagSpy = vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
     });
     afterAll(() => {
         api.server.close();
@@ -179,7 +173,6 @@ describe(`POST ${endpoint} with a dashboard session`, () => {
     afterEach(() => {
         flags.hasAdminCapabilities = false;
         envs.NANGO_IMPERSONATION_MFA_REQUIRED = true;
-        mfaFlagSpy.mockResolvedValue(true);
     });
 
     async function enrollAndActivate(session: string) {
@@ -340,30 +333,6 @@ describe(`POST ${endpoint} with a dashboard session`, () => {
             body: { accountUUID, loginReason: 'support' }
         });
 
-        isSuccess(res.json);
-        expect(res.res.status).toBe(200);
-    });
-
-    it('should challenge even when the account MFA feature flag is off', async () => {
-        const { session, totp } = await seedAdmin({ withFactor: true });
-        const accountUUID = await seedTarget();
-        mfaFlagSpy.mockResolvedValue(false);
-
-        const refused = await api.fetch(endpoint, {
-            method: 'POST',
-            query: { env: 'dev' },
-            session,
-            body: { accountUUID, loginReason: 'support', code: '000000' }
-        });
-        isError(refused.json);
-        expect(refused.json).toStrictEqual<typeof refused.json>({ error: { code: 'invalid_mfa_code' } });
-
-        const res = await api.fetch(endpoint, {
-            method: 'POST',
-            query: { env: 'dev' },
-            session,
-            body: { accountUUID, loginReason: 'support', code: nextCode(totp!) }
-        });
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
     });

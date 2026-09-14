@@ -1,8 +1,8 @@
 import { createClient } from '@clickhouse/client';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { migrate } from '../clickhouse/migrate.js';
 import { AuditClient } from '../client.js';
-import { migrate } from '../migrate.js';
 import { ClickhouseAuditStore } from './clickhouse.js';
 
 import type { ClickHouseClient } from '@clickhouse/client';
@@ -36,6 +36,7 @@ async function insertEvent({
         version: '2026-07-16',
         occurredAt,
         accountId,
+        scope: 'environment',
         environment: null,
         actor: { type: 'user', id: '5', display: 'a@b.co' },
         resource,
@@ -167,7 +168,8 @@ describe('AuditClient.record through ClickhouseAuditStore', () => {
         const event: AuditEvent = {
             occurredAt: at(5000),
             accountId: 7,
-            environment: { id: 2, display: 'dev' },
+            scope: 'environment',
+            environment: { id: 'e0000000-0000-4000-8000-000000000001', display: 'dev' },
             actor: { type: 'user', id: '5', display: 'a@b.co' },
             resource: 'connection',
             action: 'deleted',
@@ -183,6 +185,19 @@ describe('AuditClient.record through ClickhouseAuditStore', () => {
         expect(events[0]!.version).toBe('2026-07-16');
         expect(events[0]!.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
         expect(events[0]!.resource).toBe('connection');
+    });
+});
+
+describe('ClickhouseAuditStore.count bounding', () => {
+    it('reports a floor once the scan hits its cap, rather than an exact figure', async () => {
+        // The store caps its scan at the export ceiling; a smaller cap keeps the fixture cheap.
+        const bounded = new ClickhouseAuditStore(client, undefined, 3);
+        for (let i = 0; i < 5; i++) {
+            await insertEvent({ id: `99999999-9999-9999-9999-99999999999${i}`, accountId: 12, occurredAt: at(7000 + i) });
+        }
+
+        expect((await bounded.count({ accountId: 12 })).unwrap()).toEqual({ value: 3, relation: 'gte' });
+        expect((await bounded.count({ accountId: 12, from: at(7003) })).unwrap()).toEqual({ value: 2, relation: 'eq' });
     });
 });
 

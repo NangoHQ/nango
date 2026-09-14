@@ -1,13 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { buildPaymentMethodOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
 
 import type { GetStripePaymentMethods, PostStripeCollectPayment } from '@nangohq/types';
 
 export function useStripePaymentMethods(env: string) {
+    const paymentMethodOverride = usePlanOverrideStore((s) => s.paymentMethodOverride);
     return useQuery<GetStripePaymentMethods['Success'], APIError>({
-        queryKey: ['stripe', 'payment_methods'],
+        queryKey: ['stripe', 'payment_methods', paymentMethodOverride],
         queryFn: async (): Promise<GetStripePaymentMethods['Success']> => {
+            if (paymentMethodOverride) {
+                return buildPaymentMethodOverride();
+            }
+
             const res = await apiFetch(`/api/v1/stripe/payment_methods?env=${env}`, {
                 method: 'GET'
             });

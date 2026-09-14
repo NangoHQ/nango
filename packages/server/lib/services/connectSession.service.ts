@@ -1,10 +1,8 @@
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { buildTagsFromEndUser, configService, connectionTagsSchema } from '@nangohq/shared';
+import { buildTagsFromEndUser, configService, ConnectionCreationCappedError, connectionService, connectionTagsSchema } from '@nangohq/shared';
 import { buildConnectUiSessionLink, Err, Ok } from '@nangohq/utils';
-
-import { connectionCreationStartCapCheck } from '../hooks/hooks.js';
 
 import type { Knex } from '@nangohq/database';
 import type {
@@ -208,6 +206,7 @@ export interface CreateConnectSessionParams {
     account: DBTeam;
     environment: DBEnvironment;
     plan: DBPlan | null;
+    isPreview?: boolean | undefined;
     endUser: InternalEndUser | null;
     tags?: Tags | undefined;
     allowedIntegrations?: string[] | undefined;
@@ -230,16 +229,8 @@ class ConnectSessionTransactionError extends Error {
 
 export async function createConnectSession(params: CreateConnectSessionParams): Promise<Result<CreatedConnectSession, CreateConnectSessionError>> {
     try {
-        if (params.plan) {
-            const cap = await connectionCreationStartCapCheck({ creationType: 'create', team: params.account, plan: params.plan });
-            if (cap.capped) {
-                return Err(
-                    new CreateConnectSessionError({
-                        code: 'resource_capped',
-                        message: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.'
-                    })
-                );
-            }
+        if (params.plan && !params.isPreview) {
+            await connectionService.enforceCreationCap(params.environment.id);
         }
 
         // Enforce that integrations in `integrationsConfigDefaults` and `overrides` exist
@@ -328,6 +319,9 @@ export async function createConnectSession(params: CreateConnectSessionParams): 
             return Ok({ token, connectLink: buildConnectUiSessionLink(token), expiresAt: storedPrivateKey.expiresAt });
         });
     } catch (err) {
+        if (err instanceof ConnectionCreationCappedError) {
+            return Err(new CreateConnectSessionError({ code: 'resource_capped', message: err.message, cause: err }));
+        }
         if (err instanceof ConnectSessionTransactionError) {
             return Err(err.serviceError);
         }

@@ -1,5 +1,11 @@
 import type { InternalNango } from './internal-nango.js';
+import type { HttpRequest } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+export type WebhookRequest = HttpRequest & {
+    rawHeaders: Record<string, string>;
+    rawBody: string;
+};
 
 export type WebhookHandler<T = any> = (
     internalNango: InternalNango,
@@ -355,6 +361,11 @@ interface CRMMatches {
     error: string | null;
 }
 
+export interface GongWebhookPayload {
+    callData: Record<string, any>;
+    isTest: boolean;
+}
+
 export interface FolkWebhookPayload {
     id: string;
     type: string;
@@ -393,5 +404,15 @@ export interface JobberWebhookPayload {
             itemId: string;
             occurredAt: string;
         };
+    };
+}
+
+export interface GranolaWebhookPayload {
+    event_id: string;
+    event_type: 'note.generated' | 'note.edited' | 'note.access_granted';
+    note_id: string;
+    occurred_at: string;
+    data?: {
+        changed_fields: string[];
     };
 }

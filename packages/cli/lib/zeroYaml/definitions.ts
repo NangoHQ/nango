@@ -361,17 +361,9 @@ export function validateFunction({
             return Err(new Error(`Function '${fnPath}' has an invalid trigger definition: ${details}`));
         }
     }
-    // TODO: Add support for HTTP trigger options (subscriptions, debounce)
-    if (params.trigger?.kind === 'http') {
-        const unsupportedOptions = [
-            ...(params.trigger.subscriptions !== undefined ? ['subscriptions'] : []),
-            ...(params.trigger.debounce !== undefined ? ['debounce'] : [])
-        ];
-        if (unsupportedOptions.length > 0) {
-            return Err(
-                new Error(`Function '${fnPath}' uses unsupported HTTP trigger options: ${unsupportedOptions.map((option) => `'${option}'`).join(', ')}.`)
-            );
-        }
+    // TODO: Add support for HTTP trigger options (debounce)
+    if (params.trigger?.kind === 'http' && params.trigger.debounce !== undefined) {
+        return Err(new Error(`Function '${fnPath}' uses unsupported HTTP trigger options: 'debounce'.`));
     }
     if (params.data?.models) {
         return Err(new Error(`Function '${fnPath}' declares 'data.models', which is not supported yet.`));

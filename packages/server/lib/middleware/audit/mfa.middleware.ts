@@ -68,7 +68,7 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
             return;
         }
         // Runs before authentication, so there is no res.locals.plan to read the entitlement from.
-        if (!(await canRecordAuditTrail(account.uuid, await getPlanSafe(db.knex, { accountId: account.id })))) {
+        if (!(await canRecordAuditTrail(await getPlanSafe(db.knex, { accountId: account.id })))) {
             return;
         }
         const bodyType = (req.body as Partial<PostMFALoginVerification['Body']>)?.type;
@@ -77,6 +77,7 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
         const event: AuditEvent = {
             occurredAt,
             accountId: account.id,
+            scope: mfaVerifiedPolicy.scope,
             environment: null,
             actor: { type: 'user', id: String(user.id), display: user.email },
             resource: mfaVerifiedPolicy.resource,

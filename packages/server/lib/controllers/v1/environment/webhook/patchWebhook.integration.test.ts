@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
-import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
+import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../../utils/tests.js';
 
 const route = '/api/v1/environments/webhook';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -28,24 +28,26 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
         const res = await api.fetch(
             route,
             // @ts-expect-error missing query on purpose
-            { method: 'PATCH', token: apiKey.secret, body: { primary_url: 'https://example.com/webhook' } }
+            { method: 'PATCH', session, body: { primary_url: 'https://example.com/webhook' } }
         );
 
-        shouldRequireQueryEnv(res);
+        shouldRequireSessionEnv(res);
     });
 
     it('should reject denylisted webhook URLs', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
         const res = await api.fetch(route, {
             method: 'PATCH',
             query: { env: env.name },
-            token: apiKey.secret,
+            session,
             body: { primary_url: 'http://localhost/webhook' }
         });
 
@@ -55,12 +57,13 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should reject custom denylisted webhook URLs', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
         const res = await api.fetch(route, {
             method: 'PATCH',
             query: { env: env.name },
-            token: apiKey.secret,
+            session,
             body: { primary_url: 'https://denylisted-proxy-test.invalid/webhook' }
         });
 
@@ -70,12 +73,13 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should reject nango.dev webhook URLs', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
         const res = await api.fetch(route, {
             method: 'PATCH',
             query: { env: env.name },
-            token: apiKey.secret,
+            session,
             body: { primary_url: 'https://api.nango.dev/webhook' }
         });
 
@@ -85,13 +89,14 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should accept allowed webhook URLs', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
         const primaryUrl = 'https://example.com/webhook';
 
         const res = await api.fetch(route, {
             method: 'PATCH',
             query: { env: env.name },
-            token: apiKey.secret,
+            session,
             body: { primary_url: primaryUrl }
         });
 

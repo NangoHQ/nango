@@ -31,14 +31,14 @@ describe('EnvProvider', () => {
     });
 
     it('serves a boolean from its env var', async () => {
-        process.env['NANGO_FEATURE_FLAG_AUDIT_TRAIL'] = 'true';
+        process.env['NANGO_FEATURE_FLAG_EXAMPLE_FLAG'] = 'true';
         const provider = new EnvProvider();
-        await expect(provider.resolveBooleanEvaluation('audit-trail', false, {}, noopLogger)).resolves.toEqual({ value: true, reason: 'STATIC' });
+        await expect(provider.resolveBooleanEvaluation('example-flag', false, {}, noopLogger)).resolves.toEqual({ value: true, reason: 'STATIC' });
     });
 
     it('returns the default when no var is set', async () => {
         const provider = new EnvProvider();
-        await expect(provider.resolveBooleanEvaluation('audit-trail', true, {}, noopLogger)).resolves.toEqual({ value: true, reason: 'DEFAULT' });
+        await expect(provider.resolveBooleanEvaluation('example-flag', true, {}, noopLogger)).resolves.toEqual({ value: true, reason: 'DEFAULT' });
     });
 
     it.each([
@@ -48,22 +48,22 @@ describe('EnvProvider', () => {
         ['false', false],
         ['False', false]
     ])('reads %s as the boolean %s', async (raw, expected) => {
-        process.env['NANGO_FEATURE_FLAG_AUDIT_TRAIL'] = raw;
+        process.env['NANGO_FEATURE_FLAG_EXAMPLE_FLAG'] = raw;
         const provider = new EnvProvider();
-        await expect(provider.resolveBooleanEvaluation('audit-trail', !expected, {}, noopLogger)).resolves.toEqual({ value: expected, reason: 'STATIC' });
+        await expect(provider.resolveBooleanEvaluation('example-flag', !expected, {}, noopLogger)).resolves.toEqual({ value: expected, reason: 'STATIC' });
     });
 
     it.each(['1', '0', 'yes', 'no', 'on', 'off', 'maybe', ''])('returns the default and a type mismatch for the boolean %s', async (raw) => {
-        process.env['NANGO_FEATURE_FLAG_AUDIT_TRAIL'] = raw;
+        process.env['NANGO_FEATURE_FLAG_EXAMPLE_FLAG'] = raw;
         const provider = new EnvProvider();
-        await expect(provider.resolveBooleanEvaluation('audit-trail', false, {}, noopLogger)).resolves.toEqual({
+        await expect(provider.resolveBooleanEvaluation('example-flag', false, {}, noopLogger)).resolves.toEqual({
             value: false,
             reason: 'ERROR',
             errorCode: ErrorCode.TYPE_MISMATCH,
-            errorMessage: 'NANGO_FEATURE_FLAG_AUDIT_TRAIL is not a valid boolean'
+            errorMessage: 'NANGO_FEATURE_FLAG_EXAMPLE_FLAG is not a valid boolean'
         });
         expect(mockLogger.warning).toHaveBeenCalledWith('Ignoring feature flag value, it does not match the flag type', {
-            flag: 'audit-trail',
+            flag: 'example-flag',
             type: 'boolean',
             value: raw
         });
@@ -123,9 +123,9 @@ describe('EnvProvider', () => {
     });
 
     it('ignores the evaluation context', async () => {
-        process.env['NANGO_FEATURE_FLAG_AUDIT_TRAIL'] = 'true';
+        process.env['NANGO_FEATURE_FLAG_EXAMPLE_FLAG'] = 'true';
         const provider = new EnvProvider();
-        await expect(provider.resolveBooleanEvaluation('audit-trail', false, { targetingKey: 'uuid1' }, noopLogger)).resolves.toEqual({
+        await expect(provider.resolveBooleanEvaluation('example-flag', false, { targetingKey: 'uuid1' }, noopLogger)).resolves.toEqual({
             value: true,
             reason: 'STATIC'
         });
@@ -133,16 +133,16 @@ describe('EnvProvider', () => {
 
     it('ignores vars that are not flags', async () => {
         process.env['NANGO_FLAG_PROVIDER'] = 'env';
-        process.env['AUDIT_TRAIL'] = 'true';
+        process.env['EXAMPLE_FLAG'] = 'true';
         const provider = new EnvProvider();
-        await expect(provider.resolveBooleanEvaluation('audit-trail', false, {}, noopLogger)).resolves.toEqual({ value: false, reason: 'DEFAULT' });
+        await expect(provider.resolveBooleanEvaluation('example-flag', false, {}, noopLogger)).resolves.toEqual({ value: false, reason: 'DEFAULT' });
     });
 
     it('logs the flags it serves', () => {
-        process.env['NANGO_FEATURE_FLAG_AUDIT_TRAIL'] = 'true';
+        process.env['NANGO_FEATURE_FLAG_EXAMPLE_FLAG'] = 'true';
         process.env['NANGO_FEATURE_FLAG_MFA'] = 'false';
         new EnvProvider();
-        expect(mockLogger.info).toHaveBeenCalledWith('Serving feature flags from env vars: audit-trail, mfa');
+        expect(mockLogger.info).toHaveBeenCalledWith('Serving feature flags from env vars: example-flag, mfa');
     });
 
     it('warns when it has no flag to serve', () => {

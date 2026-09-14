@@ -129,7 +129,12 @@ export function checkIntegrationsExist(
     return errors.length > 0 ? errors : false;
 }
 
-export async function generateSession(res: Response<any, RequestLocalsWithEnvironment>, body: PostConnectSessions['Body'], plan?: DBPlan | null) {
+export async function generateSession(
+    res: Response<any, RequestLocalsWithEnvironment>,
+    body: PostConnectSessions['Body'],
+    plan?: DBPlan | null,
+    isPreview = false
+) {
     const mapped = mapDeprecatedConnectionConfigWebhookUrl(body);
     if (!mapped.ok) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: mapped.issues }) } });
@@ -156,6 +161,7 @@ export async function generateSession(res: Response<any, RequestLocalsWithEnviro
         account,
         environment,
         plan: plan ?? null,
+        isPreview,
         endUser,
         tags: body.tags,
         allowedIntegrations: body.allowed_integrations,

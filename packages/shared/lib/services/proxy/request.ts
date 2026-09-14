@@ -25,6 +25,7 @@ interface Props {
     getConnection: () => MaybePromise<ConnectionForProxy>;
     getIntegrationConfig: () => MaybePromise<IntegrationConfigForProxy>;
     outboundPolicy: OutboundUrlPolicy;
+    maxWaitMs: number;
 }
 
 /**
@@ -79,6 +80,11 @@ export class ProxyRequest {
      */
     outboundPolicy: Props['outboundPolicy'];
 
+    /**
+     * Waits longer than this fail fast instead of holding the request open.
+     */
+    maxWaitMs: number;
+
     constructor(props: Props) {
         this.config = props.proxyConfig;
         this.logger = props.logger;
@@ -87,6 +93,7 @@ export class ProxyRequest {
         this.getConnection = props.getConnection;
         this.getIntegrationConfig = props.getIntegrationConfig;
         this.outboundPolicy = props.outboundPolicy;
+        this.maxWaitMs = props.maxWaitMs;
     }
 
     /**
@@ -160,8 +167,9 @@ export class ProxyRequest {
                 },
                 {
                     max: this.config.retries || 0,
+                    maxWaitMs: this.maxWaitMs,
                     onError: async ({ err, nextWait, max, attempt }) => {
-                        let retry = getProxyRetryFromErr({ err, proxyConfig: this.config });
+                        let retry = getProxyRetryFromErr({ err, proxyConfig: this.config, maxWaitMs: this.maxWaitMs });
 
                         // Only call onError if it's an actionable error
                         if (retry.reason !== 'unknown_error' && this.onError) {

@@ -48,6 +48,7 @@ export async function handleCreateApiKey({
     res.status(200).send({
         data: {
             id: key.id,
+            uuid: key.uuid,
             display_name: key.display_name,
             scopes: (key.scopes ?? []) as ApiKeyScope[],
             secret: key.secret,

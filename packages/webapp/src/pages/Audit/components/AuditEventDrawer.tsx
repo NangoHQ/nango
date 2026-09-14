@@ -2,31 +2,46 @@ import { Prism } from '@mantine/prism';
 import { X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import { Button } from '@nangohq/design-system';
+
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
-import { Tag } from '@/components/ui/Tag';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { formatDateToLogFormat } from '@/utils/utils';
-import { actionLabel, actorLabel, environmentLabel, resourceLabel, targetsLabel, targetTypesLabel, viaLabel } from '../constants';
+import { actorLabel, environmentLabel, eventLabel, viaLabel } from '../constants';
+import { OutcomeTag } from './OutcomeTag';
 
-import type { ApiAuditTrailEvent, AuditOutcome } from '@nangohq/types';
+import type { ApiAuditTrailEvent } from '@nangohq/types';
 
-const outcomeVariant: Record<AuditOutcome, React.ComponentProps<typeof Tag>['variant']> = {
-    success: 'success',
-    failure: 'alert',
-    denied: 'warning'
-};
+// Chosen so an ordinary event shows in full: outside function deploys, nothing in production carries more
+// than ten targets, and a single-target event's JSON runs to about thirty lines.
+const TARGETS_SHOWN_COLLAPSED = 10;
+const JSON_LINES_SHOWN_COLLAPSED = 40;
+
+const ExpandToggle: React.FC<{ expanded: boolean; hidden: number; noun: string; onClick: () => void }> = ({ expanded, hidden, noun, onClick }) => (
+    <Button variant="link-accent" size="sm" aria-expanded={expanded} onClick={onClick}>
+        {expanded ? 'Show less' : `Show ${hidden.toLocaleString()} more ${noun}`}
+    </Button>
+);
 
 const Meta: React.FC<{ label: string; value: string; mono?: boolean }> = ({ label, value, mono }) => (
     <>
-        <dt className="text-text-muted">{label}</dt>
+        <dt className="uppercase text-text-muted">{label}</dt>
         <dd className={mono ? 'font-code break-all' : 'break-all'}>{value}</dd>
     </>
 );
 
 export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: () => void }> = ({ event, onClose }) => {
     const [open, setOpen] = useState(true);
+    const [allTargets, setAllTargets] = useState(false);
+    const [allJson, setAllJson] = useState(false);
     const darkMode = useThemeStore(darkModeSelector);
     const json = useMemo(() => JSON.stringify(event, null, 2), [event]);
+    const jsonLines = useMemo(() => json.split('\n'), [json]);
+    const jsonHiddenLines = Math.max(jsonLines.length - JSON_LINES_SHOWN_COLLAPSED, 0);
+    const shownJson = allJson || jsonHiddenLines === 0 ? json : jsonLines.slice(0, JSON_LINES_SHOWN_COLLAPSED).join('\n');
+
+    const targetsHidden = Math.max(event.targets.length - TARGETS_SHOWN_COLLAPSED, 0);
+    const shownTargets = allTargets || targetsHidden === 0 ? event.targets : event.targets.slice(0, TARGETS_SHOWN_COLLAPSED);
     const via = viaLabel(event.via);
 
     return (
@@ -45,46 +60,62 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
                 className="w-full sm:w-[720px] max-w-none sm:max-w-none p-0 bg-surface-page text-text-strong border-l-border-muted"
             >
                 <SheetTitle className="sr-only">Audit event details</SheetTitle>
-                <div className="relative h-full select-text overflow-y-auto p-8">
-                    <div className="absolute right-6 top-8 flex items-center gap-1">
+                <div className="h-full select-text overflow-y-auto">
+                    <div className="flex h-14 items-center justify-between border-b border-border-muted px-6">
+                        <h2 className="text-lg font-semibold">Audit event</h2>
                         <SheetClose
                             title="Close"
-                            className="bg-transparent text-text-muted hover:text-text-strong focus:text-text-strong transition-colors size-8 flex items-center justify-center"
+                            className="-mr-2 flex size-8 items-center justify-center bg-transparent text-text-muted transition-colors hover:text-text-strong focus:text-text-strong"
                         >
                             <X size={16} />
                         </SheetClose>
                     </div>
 
-                    <h2 className="text-xl font-semibold">Audit event</h2>
-                    <div className="flex items-center gap-3 mt-3 mb-6">
-                        <Tag variant={outcomeVariant[event.outcome]}>{event.outcome}</Tag>
-                        <span className="text-text-muted text-s font-code">{formatDateToLogFormat(event.occurredAt)}</span>
+                    <div className="flex h-14 items-center justify-between border-b border-border-muted px-6">
+                        <span className="font-code text-s">{formatDateToLogFormat(event.occurredAt)}</span>
+                        <OutcomeTag outcome={event.outcome} />
                     </div>
 
-                    <dl className="grid grid-cols-[130px_1fr] gap-x-4 gap-y-2 text-s mb-6">
-                        <Meta label="Environment" value={environmentLabel(event.environment)} />
+                    <dl className="grid grid-cols-[180px_1fr] gap-x-4 gap-y-5 px-6 py-6 text-s">
                         <Meta label="Actor" value={actorLabel(event.actor)} />
                         {via && <Meta label="Via" value={via} />}
-                        <Meta label="Resource" value={resourceLabel(event.resource)} />
-                        <Meta label="Action" value={actionLabel(event)} />
-                        <Meta label="Target" value={targetsLabel(event.targets)} />
-                        {event.targets.length > 0 && <Meta label="Target type" value={targetTypesLabel(event.targets)} />}
+                        <Meta label="Event" value={eventLabel(event)} />
+                        <dt className="uppercase text-text-muted">
+                            {event.targets.length > 1 ? `Targets · ${event.targets.length.toLocaleString()}` : 'Target'}
+                        </dt>
+                        <dd className="break-all">
+                            {event.targets.length === 0 ? (
+                                '—'
+                            ) : (
+                                <>
+                                    <ul>
+                                        {shownTargets.map((target, index) => (
+                                            <li key={`${target.type}:${target.id}:${index}`}>{target.display ?? target.id}</li>
+                                        ))}
+                                    </ul>
+                                    {targetsHidden > 0 && (
+                                        <ExpandToggle expanded={allTargets} hidden={targetsHidden} noun="targets" onClick={() => setAllTargets(!allTargets)} />
+                                    )}
+                                </>
+                            )}
+                        </dd>
+                        <Meta label="Environment" value={environmentLabel(event)} />
                         {event.context.ip && <Meta label="IP" value={event.context.ip} mono />}
                         {event.context.userAgent && <Meta label="User agent" value={event.context.userAgent} />}
                         <Meta label="Event ID" value={event.id} mono />
                         <Meta label="Version" value={event.version} mono />
                     </dl>
 
-                    <h4 className="font-semibold text-sm mb-2">Event</h4>
-                    <div className="text-text-muted text-sm bg-surface-panel-inset py-2">
+                    <div className="mx-6 mb-6 rounded bg-surface-panel-inset p-4 text-sm text-text-muted">
                         <Prism
                             language="json"
                             className="transparent-code"
                             colorScheme={darkMode ? 'dark' : 'light'}
                             styles={() => ({ code: { padding: '0', whiteSpace: 'pre-wrap' } })}
                         >
-                            {json}
+                            {shownJson}
                         </Prism>
+                        {jsonHiddenLines > 0 && <ExpandToggle expanded={allJson} hidden={jsonHiddenLines} noun="lines" onClick={() => setAllJson(!allJson)} />}
                     </div>
                 </div>
             </SheetContent>

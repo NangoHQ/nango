@@ -65,9 +65,12 @@ true satisfies [Exclude<ConcreteApiKeyScope, (typeof PUBLIC_ENVIRONMENT_SCOPES)[
  */
 export const PUBLIC_ACCOUNT_SCOPES = [
     // Environments
+    'account:environments:list',
     'account:environments:create', // any environment
     'account:environments:delete',
     'account:environments:set_production',
+    'account:environments:api_keys:list',
+    'account:environments:api_keys:read',
     'account:environments:api_keys:create',
     'account:environments:api_keys:delete'
 ] as const satisfies readonly AccountApiKeyScope[];
@@ -79,7 +82,7 @@ true satisfies [Exclude<ConcreteAccountApiKeyScope, (typeof PUBLIC_ACCOUNT_SCOPE
  * When adding a public endpoint that requires one of these, move the scope to the public list. The time of moving is also
  * a good moment to reconsider its name.
  * Wildcards in API keys (eg. `environment:*`, `account:*`) don't expand to these. When moved to the public list, wildcard keys will start covering it.
- * Some scopes only make sense in roles (therefore in this list), like `environment:api_keys:read_secret` (environment keys shouldn't be able to read an environment keys secrets)
+ * Some scopes only make sense in roles (therefore in this list), like `environment:settings:read_secret` (environment keys shouldn't be able to read an environment keys secrets)
  */
 export const PRIVATE_SCOPES = [
     // ── account namespace ──
@@ -92,13 +95,17 @@ export const PRIVATE_SCOPES = [
     'account:billing:payment_methods:list',
     'account:billing:payment_methods:create',
     'account:billing:payment_methods:delete',
+    'account:billing:spend_alert:read',
+    'account:billing:spend_alert:update',
     'account:plan:update',
     'account:audit_trail:read',
     'account:api_keys:list',
 
     // ── environment namespace ──
     'environment:api_keys:list',
+    'environment:api_keys:create',
     'environment:api_keys:update',
+    'environment:api_keys:delete',
     'environment:settings:read',
     'environment:settings:update',
     'environment:variables:update',
@@ -112,7 +119,6 @@ export const PRIVATE_SCOPES = [
     // The account-level equivalent is `account:environments:delete`.
     'environment:delete',
     // Hand back a credential stronger than the caller's, so whoever holds one could widen themselves.
-    'environment:api_keys:read_secret',
     'environment:settings:read_secret'
 ] as const;
 
@@ -133,10 +139,8 @@ export type ScopeSelector = Scope | ScopeWildcard;
 /** The concrete scopes a credential ends up holding, once wildcards are expanded. */
 export const ISSUABLE_SCOPES: readonly IssuableScope[] = [...PUBLIC_ENVIRONMENT_SCOPES, ...PUBLIC_ACCOUNT_SCOPES];
 
-const ISSUABLE = new Set<string>(ISSUABLE_SCOPES);
-
-export function isIssuable(scope: Scope): scope is IssuableScope {
-    return ISSUABLE.has(scope);
+export function isAccountScope(scope: string): boolean {
+    return scope.startsWith('account:');
 }
 
 /**

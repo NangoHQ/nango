@@ -1,17 +1,11 @@
-import { issuedGrant, ROLES } from '@nangohq/authz';
+import { authorize, issuedGrant, ROLES, targetForScope } from '@nangohq/authz';
 import { flagHasPlan, flags } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { Grant, Principal, PrincipalSubject, ScopeSelector, WhereSelector } from '@nangohq/authz';
-import type { ApiKeyPrincipal } from '@nangohq/types';
+import type { Grant, Principal, PrincipalSubject, Scope, ScopeSelector, WhereSelector } from '@nangohq/authz';
+import type { ApiKeyPrincipal, Role } from '@nangohq/types';
 
-/** What a caller reaches when RBAC does not apply: the flag is off, or the plan has no RBAC. */
-const UNRESTRICTED: Grant[] = [
-    { can: ['environment:*'], where: ['env:*'] },
-    { can: ['account:*'], where: ['account'] }
-];
-
-function rbacApplies(locals: Partial<RequestLocals>): boolean {
+function rbacApplies(locals: { plan?: { has_rbac: boolean } | null }): boolean {
     if (!flags.hasAuthRoles) {
         return false;
     }
@@ -47,7 +41,7 @@ function subjectForKey(key: ApiKeyPrincipal): PrincipalSubject {
 
 /**
  * The grants behind the current request, or null when nothing authenticated well enough to have any.
- * Nothing authorizes from this yet — it is compared against the legacy answer and counted.
+ * Roles authorize from this; the key path compares against the legacy answer and counts.
  */
 export function buildPrincipal(locals: Partial<RequestLocals>): Principal | null {
     const account = locals.account;
@@ -60,7 +54,7 @@ export function buildPrincipal(locals: Partial<RequestLocals>): Principal | null
         return {
             subject: { type: 'user', id: String(user.id), display: user.email },
             accountId: account.id,
-            grants: rbacApplies(locals) ? ROLES[user.role] : UNRESTRICTED
+            grants: grantsForRole(user.role, locals.plan)
         };
     }
 
@@ -72,10 +66,33 @@ export function buildPrincipal(locals: Partial<RequestLocals>): Principal | null
     return null;
 }
 
+/** Administrator grants when RBAC does not apply. */
+export function grantsForRole(role: Role, plan?: { has_rbac: boolean } | null): readonly Grant[] {
+    return ROLES[rbacApplies({ plan: plan ?? null }) ? role : 'administrator'];
+}
+
 /** `buildPrincipal`, computed once per request and kept on locals for later handlers. */
 export function principalFor(locals: Partial<RequestLocals>): Principal | null {
     if (locals.principal === undefined) {
         locals.principal = buildPrincipal(locals);
     }
     return locals.principal;
+}
+
+export class MissingPrincipalError extends Error {
+    readonly scope: Scope;
+
+    constructor(scope: Scope) {
+        super('missing_principal');
+        this.name = 'MissingPrincipalError';
+        this.scope = scope;
+    }
+}
+
+export function principalCan(locals: Partial<RequestLocals>, scope: Scope): boolean {
+    const principal = principalFor(locals);
+    if (!principal) {
+        throw new MissingPrincipalError(scope);
+    }
+    return authorize(principal, scope, targetForScope(scope, principal.accountId, locals.environment ?? null));
 }

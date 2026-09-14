@@ -16,13 +16,17 @@ export const getInvitationMock: Mock = vi.fn();
 export const getAccountByIdMock: Mock = vi.fn();
 export const getPlanSafeMock: Mock = vi.fn();
 export const getEnvironmentByIdMock: Mock = vi.fn();
-export const getApiKeyDisplayNameMock: Mock = vi.fn();
+export const getEnvironmentByUuidMock: Mock = vi.fn();
+export const getApiKeyByIdMock: Mock = vi.fn();
+export const getAccountApiKeyByIdMock: Mock = vi.fn();
+export const getApiKeyByUuidWithoutSecretsMock: Mock = vi.fn();
 export const getIntegrationSummaryMock: Mock = vi.fn();
 export const getConnectionByIdMock: Mock = vi.fn();
 export const getUserByIdMock: Mock = vi.fn();
 
 export async function auditModuleMock(importOriginal: () => Promise<typeof AuditModule>): Promise<object> {
-    return { ...(await importOriginal()), recordAuditEvent: recordMock };
+    // A unit run wires no store, so the backend has to be reported as configured for the entitlement to pass.
+    return { ...(await importOriginal()), recordAuditEvent: recordMock, auditBackend: { configured: true } };
 }
 
 export async function sharedModuleMock(importOriginal: () => Promise<typeof NangoShared>): Promise<object> {
@@ -31,8 +35,13 @@ export async function sharedModuleMock(importOriginal: () => Promise<typeof Nang
         ...actual,
         getInvitation: getInvitationMock,
         getPlanSafe: getPlanSafeMock,
-        environmentService: { ...actual.environmentService, getByIdWithoutSecrets: getEnvironmentByIdMock },
-        customerKeyService: { ...actual.customerKeyService, getApiKeyDisplayName: getApiKeyDisplayNameMock },
+        environmentService: { ...actual.environmentService, getByIdWithoutSecrets: getEnvironmentByIdMock, getByUuidWithoutSecrets: getEnvironmentByUuidMock },
+        customerKeyService: {
+            ...actual.customerKeyService,
+            getApiKeyById: getApiKeyByIdMock,
+            getAccountApiKeyById: getAccountApiKeyByIdMock,
+            getApiKeyByUuidWithoutSecrets: getApiKeyByUuidWithoutSecretsMock
+        },
         configService: { ...actual.configService, getIntegrationSummary: getIntegrationSummaryMock },
         accountService: { ...actual.accountService, getAccountById: getAccountByIdMock },
         connectionService: { ...actual.connectionService, getConnectionById: getConnectionByIdMock },
@@ -76,16 +85,17 @@ export function fakeRes(locals: Record<string, unknown>, statusCode = 200) {
 
 export const locals = {
     account: { id: 42, uuid: 'acc-uuid' },
-    environment: { id: 9, name: 'dev' },
+    environment: { id: 9, uuid: 'e0000000-0000-4000-8000-000000000009', name: 'dev' },
     authType: 'session',
     user: { id: 7, email: 'dev@example.com' }
 };
 
 export const secretKeyLocals = {
     account: { id: 42, uuid: 'acc-uuid' },
-    environment: { id: 9, name: 'dev' },
+    environment: { id: 9, uuid: 'e0000000-0000-4000-8000-000000000009', name: 'dev' },
     authType: 'secretKey',
     apiKeyId: 5,
+    apiKeyUuid: 'c0000000-0000-4000-8000-000000000005',
     apiKeyDisplayName: 'ci-key'
 };
 

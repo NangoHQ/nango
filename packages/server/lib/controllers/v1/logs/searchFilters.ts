@@ -9,7 +9,7 @@ import type { SearchFilters } from '@nangohq/types';
 
 const validation = z
     .object({
-        category: z.enum(['integration', 'connection', 'syncConfig']),
+        category: z.enum(['integration', 'connection', 'syncConfig', 'agentSession']),
         search: z.string().optional()
     })
     .strict();

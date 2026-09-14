@@ -1,0 +1,40 @@
+---
+title: Typeform - How do I link my account?
+sidebarTitle: Typeform
+---
+
+## Overview
+
+To authenticate with Typeform, you need:
+1. **Authorization Host** - The Typeform host that issues authorization codes for your region.
+2. **API Host** - The Typeform host that serves the API for your region.
+
+This guide will walk you through finding the correct values for your account.
+
+### Prerequisites:
+
+- A Typeform integration already configured in Nango with a Client ID and Client Secret - see the [OAuth client setup guide](/api-integrations/typeform/how-to-register-your-own-typeform-api-oauth-app) if that hasn't been done yet.
+- If you're an Enterprise customer, know whether your account is on Typeform's standard region or one of its EU Responses Data Centers - ask your Typeform Customer Success Manager if you're unsure.
+
+### Instructions:
+
+#### Step 1: Identify your hosts
+
+Use the table below to find the correct hosts for your region:
+
+| Region | Authorization Host (`authHost`) | API Host (`apiHost`) |
+|---|---|---|
+| US (default) | `api.typeform.com` | `api.typeform.com` |
+| EU | `api.typeform.com` | `api.eu.typeform.com` |
+| New EU | `api.typeform.eu` | `api.typeform.eu` |
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have identified the correct hosts:
+1. Open the form where you need to authenticate with Typeform.
+2. Enter the **Authorization Host** and **API Host** in their respective fields.
+3. Submit the form to begin the OAuth flow and connect your Typeform account.
+
+<img src="/api-integrations/typeform/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Typeform.

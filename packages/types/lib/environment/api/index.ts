@@ -19,13 +19,23 @@ export type GetEnvironments = ApiEndpoint<{
     };
 }>;
 
+export type GetPublicEnvironments = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/environments';
+    Querystring: { name?: string | undefined };
+    Success: {
+        data: Pick<DBEnvironment, 'id' | 'uuid' | 'name' | 'is_production'>[];
+    };
+}>;
+
 export type PostEnvironment = ApiEndpoint<{
     Audit: AuditPolicy<'environment', 'created', 'account'>;
     Method: 'POST';
     Path: '/api/v1/environments';
     Body: { name: string };
     Success: {
-        data: Pick<DBEnvironment, 'id' | 'name'>;
+        data: Pick<DBEnvironment, 'id' | 'uuid' | 'name'>;
     };
     Error: ApiError<'conflict' | 'resource_capped' | 'invalid_is_prod_flag'>;
 }>;
@@ -45,7 +55,7 @@ export type PostPublicEnvironment = ApiEndpoint<{
         otlp_headers?: { name: string; value: string }[] | undefined;
     };
     Success: {
-        data: Pick<DBEnvironment, 'id' | 'name'>;
+        data: Pick<DBEnvironment, 'id' | 'uuid' | 'name'>;
     };
     Error: ApiError<'conflict' | 'resource_capped' | 'invalid_is_prod_flag'>;
 }>;
@@ -53,8 +63,8 @@ export type PostPublicEnvironment = ApiEndpoint<{
 export type DeletePublicEnvironment = ApiEndpoint<{
     Audit: AuditPolicy<'environment', 'deleted', 'account'>;
     Method: 'DELETE';
-    Path: '/environments/:environmentId';
-    Params: { environmentId: number };
+    Path: '/environments/:environmentUuid';
+    Params: { environmentUuid: string };
     Success: never;
     Error: ApiError<'cannot_delete_prod_environment'>;
 }>;
@@ -141,6 +151,7 @@ export type ListApiKeys = ApiEndpoint<{
     Success: {
         data: {
             id: number;
+            uuid: string;
             display_name: string;
             scopes: ApiKeyScope[];
             secret: string;
@@ -161,6 +172,7 @@ export type CreateApiKey = ApiEndpoint<{
     Success: {
         data: {
             id: number;
+            uuid: string;
             display_name: string;
             scopes: ApiKeyScope[];
             secret: string;
@@ -173,14 +185,15 @@ export type CreateApiKey = ApiEndpoint<{
 export type PostPublicApiKey = ApiEndpoint<{
     Audit: AuditPolicy<'api_key', 'created', 'environment'>;
     Method: 'POST';
-    Path: '/environment/api-keys';
+    Path: '/environments/:environmentUuid/api-keys';
+    Params: { environmentUuid: string };
     Body: {
-        environment_id: number;
         display_name: string;
     };
     Success: {
         data: {
             id: number;
+            uuid: string;
             display_name: string;
             scopes: ApiKeyScope[];
             secret: string;
@@ -190,14 +203,47 @@ export type PostPublicApiKey = ApiEndpoint<{
     Error: ApiError<'conflict' | 'resource_capped'>;
 }>;
 
+export type GetPublicApiKeys = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/environments/:environmentUuid/api-keys';
+    Params: { environmentUuid: string };
+    Querystring: { display_name?: string | undefined };
+    Success: {
+        data: {
+            id: number;
+            uuid: string;
+            display_name: string;
+            scopes: ApiKeyScope[];
+            last_used_at: string | null;
+            created_at: string;
+        }[];
+    };
+}>;
+
+export type GetPublicApiKey = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/environments/:environmentUuid/api-keys/:keyUuid';
+    Params: { environmentUuid: string; keyUuid: string };
+    Success: {
+        data: {
+            id: number;
+            uuid: string;
+            display_name: string;
+            scopes: ApiKeyScope[];
+            secret: string;
+            last_used_at: string | null;
+            created_at: string;
+        };
+    };
+}>;
+
 export type DeletePublicApiKey = ApiEndpoint<{
     Audit: AuditPolicy<'api_key', 'deleted', 'environment'>;
     Method: 'DELETE';
-    Path: '/environment/api-keys';
-    Body: {
-        environment_id: number;
-        key_id: number;
-    };
+    Path: '/environments/:environmentUuid/api-keys/:keyUuid';
+    Params: { environmentUuid: string; keyUuid: string };
     Success: { success: true };
 }>;
 

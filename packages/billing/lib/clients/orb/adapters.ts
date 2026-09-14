@@ -1,37 +1,27 @@
-import { uuidv7 } from 'uuidv7';
+import { Err, Ok, report } from '@nangohq/utils';
 
-import { Err, Ok } from '@nangohq/utils';
-
-import { envs } from '../../envs.js';
+import { growthAddonPriceId } from './catalogue.js';
 import { putOrbCustomerSchema } from './types.js';
 
 import type {
     BillingAddress,
     BillingCustomer,
-    BillingEvent,
     BillingInvoicingDetails,
     BillingPeriodCosts,
     BillingSpendAlert,
+    BillingSubscription,
     BillingUpcomingInvoice,
     Result,
     UsageMetric
 } from '@nangohq/types';
 import type Orb from 'orb-billing';
 
-// Keyed on the EVENT's timestamp, not the wall clock, so a batched or
-// late-emitted event whose logical time is pre-cutover ships under the
-// pre-cutover name and vice versa. See BILLING_EVENTS_CUTOVER_AT in
-// packages/utils.
-function cutoverAppliesTo(eventTimestamp: Date): boolean {
-    return !!envs.BILLING_EVENTS_CUTOVER_AT && eventTimestamp >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
-}
-
 /**
  * Orb money as an integer number of cents, read off the decimal string rather than via
  * `Number(x) * 100` — that is lossy, giving 1998.9999999999998 for '19.99' instead of 1999.
  */
-export function orbAmountToCents(amount: string): number | null {
-    const match = /^(-?)(\d+)(?:\.(\d*))?$/.exec(amount.trim());
+export function orbAmountToCents(amount: string | null | undefined): number | null {
+    const match = typeof amount === 'string' ? /^(-?)(\d+)(?:\.(\d*))?$/.exec(amount.trim()) : null;
     if (!match) {
         return null;
     }
@@ -78,6 +68,9 @@ const orbBillableMetricToUsageMetric: Record<string, UsageMetric> = {
     S6QcTddptFM8tvFc: 'function_executions',
     SuusTqcXhhZVq2w4: 'function_compute_gbms',
     '7TXEdbnT3gWPqkns': 'function_logs',
+    // The new pricing reuses `connections` above, so only two of its three metrics are new here.
+    RNskBsYUvTYLsjV2: 'data_transfer',
+    ZrAoynYimCwtmFSP: 'function_duration_seconds',
     // test mode, shared by dev, staging and local
     QFf9VosRcMWkZvZq: 'connections',
     T9MRaCkFi4SEf2ku: 'proxy',
@@ -85,49 +78,73 @@ const orbBillableMetricToUsageMetric: Record<string, UsageMetric> = {
     D8Gu4UPEJ3tUWJJ3: 'webhook_forwards',
     '29oZqvoENLmauqkY': 'function_executions',
     '4jYMmFPKUQAKKL2T': 'function_compute_gbms',
-    '62CoZikHXhPoS6yt': 'function_logs'
+    '62CoZikHXhPoS6yt': 'function_logs',
+    // Test mode prices connections on its own metric rather than reusing the one above.
+    d43sZsrkdUE9gCUv: 'connections',
+    '5wA8CWsfttHSaTw3': 'function_duration_seconds',
+    cJe5pcF2MQ8pvBrF: 'data_transfer'
 };
 
 interface OrbCostBucket {
     timeframe_end: string;
     per_price_costs: {
         price_id: string;
-        total: string;
+        subtotal: string;
+        total?: string | null;
         price: { price_type: string; name: string; currency?: string | null; billable_metric?: { id: string } | null };
     }[];
 }
 
-export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date): BillingPeriodCosts | null {
+/**
+ * A plan minimum spreads itself over every price, pushing `total` above `subtotal`.
+ * A discount pulls it below. Either way, the lower number is what the customer is billed.
+ */
+function chargeInCents(priceCost: { subtotal: string; total?: string | null }): number | null {
+    const subtotal = orbAmountToCents(priceCost.subtotal);
+    // No `total` at all means there is no adjustment, so `subtotal` is the whole charge. A `total`
+    // we cannot parse hides a real adjustment, so falling back would overstate what is owed.
+    if (priceCost.total === undefined || priceCost.total === null) {
+        return subtotal;
+    }
+
+    const total = orbAmountToCents(priceCost.total);
+    if (subtotal === null || total === null) {
+        return null;
+    }
+    return Math.min(subtotal, total);
+}
+
+export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, opts: { explicitTimeframe?: boolean } = {}): BillingPeriodCosts | null {
     // Cumulative buckets accumulate over the period, so the one ending last spans all of it.
     const period = costs.data.reduce<OrbCostBucket | null>(
         (latest, bucket) => (latest && Date.parse(latest.timeframe_end) >= Date.parse(bucket.timeframe_end) ? latest : bucket),
         null
     );
-    // An ended subscription still answers with its final period rather than erroring, and those costs
-    // are not what is being billed now. A NaN from a malformed timeframe_end must reject explicitly —
-    // NaN <= now.getTime() is always false, so it would otherwise read as a current period.
+    // Orb returns its last period after a subscription ends. Accept it only when the request includes dates.
     const periodEnd = period ? Date.parse(period.timeframe_end) : NaN;
-    if (!period || Number.isNaN(periodEnd) || periodEnd <= now.getTime()) {
+    if (!period || Number.isNaN(periodEnd) || (!opts.explicitTimeframe && periodEnd <= now.getTime())) {
         return null;
     }
 
     const metrics: Partial<Record<UsageMetric, number>> = {};
     const malformedMetrics: UsageMetric[] = [];
     const flagged: BillingPeriodCosts['flagged'] = [];
+    // Store fixed prices until usage prices set the currency. Without a usage price, return null.
+    const fixedPrices: { priceId: string; priceName: string; amountInCents: number | null; currency: string | null }[] = [];
     let fullyAttributed = true;
     let currency: string | null = null;
 
     for (const priceCost of period.per_price_costs) {
         const { price } = priceCost;
-        // Excluded, so the metrics never sum to the period's invoice total — the base fee isn't split
-        // across rows.
+        const amountInCents = chargeInCents(priceCost);
+        const priceCurrency = normalizeIsoCurrency(price.currency);
+
         if (price.price_type === 'fixed_price') {
+            fixedPrices.push({ priceId: priceCost.price_id, priceName: price.name, amountInCents, currency: priceCurrency });
             continue;
         }
 
         const metric = price.billable_metric ? (orbBillableMetricToUsageMetric[price.billable_metric.id] ?? null) : null;
-        const priceCurrency = normalizeIsoCurrency(price.currency);
-        const amountInCents = orbAmountToCents(priceCost.total);
         const readable = priceCurrency !== null && (currency === null || priceCurrency === currency) && amountInCents !== null;
 
         if (!readable) {
@@ -160,7 +177,17 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date):
         return null;
     }
 
-    return { metrics, malformedMetrics, fullyAttributed, flagged, currency };
+    let fixedInCents = 0;
+    // Fixed prices do not change `fullyAttributed`. It reports whether every usage price maps to a metric.
+    for (const fixed of fixedPrices) {
+        if (fixed.amountInCents === null || fixed.currency !== currency) {
+            flagged.push({ priceId: fixed.priceId, priceName: fixed.priceName, metric: null, amountInCents: fixed.amountInCents });
+            continue;
+        }
+        fixedInCents += fixed.amountInCents;
+    }
+
+    return { metrics, malformedMetrics, fullyAttributed, flagged, fixedInCents, currency };
 }
 
 /**
@@ -179,31 +206,6 @@ export function fromOrbAlert(alert: { id: string; currency: string | null; thres
         // remainder is float drift from the round-trip, not a real amount.
         thresholdInCents: Math.round(threshold.value * 100),
         currency: normalizeIsoCurrency(alert.currency)
-    };
-}
-
-export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
-    const { idempotencyKey, timestamp, accountId, ...rest } = event.properties;
-
-    // orb doesn't accept nested properties, we need to flatten them with dot notation
-    const properties: Record<string, string | number | boolean> = {};
-    for (const [topLevelKey, value] of Object.entries(rest)) {
-        if (!value) continue;
-        if (typeof value === 'object') {
-            for (const [k, v] of Object.entries(value)) {
-                properties[`${topLevelKey}.${k}`] = v;
-            }
-        } else {
-            properties[topLevelKey] = value;
-        }
-    }
-
-    return {
-        event_name: `${event.type}${cutoverAppliesTo(timestamp) ? '_http' : ''}`,
-        idempotency_key: idempotencyKey || uuidv7(),
-        external_customer_id: accountId.toString(),
-        timestamp: timestamp.toISOString(),
-        properties
     };
 }
 
@@ -234,6 +236,49 @@ export function toOrbPutCustomerPayload(invoicingDetails: BillingInvoicingDetail
     }
 
     return Ok(payload);
+}
+
+/**
+ * Parses Orb's `price_intervals` for the presence of the growth add-on price and its active interval.
+ *
+ * An interval that hasn't started or has already finished gets ignored.
+ */
+export function growthAddonStateFromOrb(
+    priceIntervals: { id?: string; start_date?: string | null; end_date: string | null; price?: { external_price_id?: string | null } | null }[],
+    referenceDate: Date = new Date()
+): Pick<BillingSubscription, 'hasGrowthFeatures' | 'growthFeaturesEndsAt' | 'growthFeaturesPriceIntervalId'> {
+    for (const interval of priceIntervals) {
+        if (interval.price?.external_price_id !== growthAddonPriceId) {
+            continue;
+        }
+
+        const startsAt = parseOrbDate(interval.start_date, { field: 'start_date', priceIntervalId: interval.id });
+        if (startsAt && startsAt > referenceDate) {
+            continue;
+        }
+
+        const endsAt = parseOrbDate(interval.end_date, { field: 'end_date', priceIntervalId: interval.id });
+        if (endsAt && endsAt <= referenceDate) {
+            continue;
+        }
+
+        return { hasGrowthFeatures: true, growthFeaturesEndsAt: endsAt, growthFeaturesPriceIntervalId: interval.id ?? null };
+    }
+
+    return { hasGrowthFeatures: false, growthFeaturesEndsAt: null, growthFeaturesPriceIntervalId: null };
+}
+
+function parseOrbDate(value: string | null | undefined, context: { field: 'start_date' | 'end_date'; priceIntervalId: string | undefined }): Date | null {
+    if (!value) {
+        return null;
+    }
+    const parsed = new Date(value);
+    // Defensive check: we should never receive an invalid date from Orb.
+    if (Number.isNaN(parsed.getTime())) {
+        report(new Error('orb_unparseable_price_interval_date'), { ...context, value });
+        return null;
+    }
+    return parsed;
 }
 
 export function fromOrbCustomer(orbCustomer: Orb.Customer): BillingCustomer {

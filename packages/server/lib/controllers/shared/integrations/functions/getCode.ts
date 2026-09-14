@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { configService, getSyncAndActionConfigsBySyncNameAndConfigId, localFileService, onEventScriptService, remoteFileService } from '@nangohq/shared';
-import { report, useS3 } from '@nangohq/utils';
+import { report, useRemoteStorage } from '@nangohq/utils';
 
 import type { RequestLocalsWithEnvironment } from '../../../../utils/express.js';
 import type { DBEnvironment, GetFunctionCode, ScriptTypeLiteral } from '@nangohq/types';
@@ -21,7 +21,7 @@ interface FunctionMatch {
 }
 
 async function getFunctionTsCode({ match, providerConfigKey }: { match: FunctionMatch; providerConfigKey: string }): Promise<string | null> {
-    if (!useS3) {
+    if (!useRemoteStorage) {
         const fileName = `${providerConfigKey}/${scriptTypeToFolder[match.type]}/${match.name}.ts`;
         const check = localFileService.checkForIntegrationSourceFile(fileName);
         if (!check.result) {

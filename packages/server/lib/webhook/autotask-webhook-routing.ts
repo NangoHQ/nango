@@ -1,7 +1,7 @@
-import crypto from 'node:crypto';
-
 import { NangoError } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
+
+import { validateHmacSignature } from './signature.js';
 
 import type { AutotaskWebhookPayload, WebhookHandler } from './types.js';
 import type { IntegrationConfig } from '@nangohq/types';
@@ -14,16 +14,12 @@ const logger = getLogger('Webhook.Autotask');
  * See: https://www.autotask.net/help/developerhelp/Content/APIs/Webhooks/SecretKeyPayloadVerification.htm
  */
 function validate(integration: IntegrationConfig, headerSignature: string, rawBody: string): boolean {
-    if (!integration.custom?.['webhookSecret']) {
+    const secret = integration.custom?.['webhookSecret'];
+    if (!secret) {
         return false;
     }
 
-    const prefix = 'sha1=';
-    const providedHash = headerSignature.startsWith(prefix) ? headerSignature.substring(prefix.length) : headerSignature;
-    const computedHash = crypto.createHmac('sha1', integration.custom['webhookSecret']).update(rawBody).digest('base64');
-    const computedBuf = Buffer.from(computedHash);
-    const providedBuf = Buffer.from(providedHash);
-    return computedBuf.length === providedBuf.length && crypto.timingSafeEqual(computedBuf, providedBuf);
+    return validateHmacSignature({ secret, rawBody, signature: headerSignature, algorithm: 'sha1', digest: 'base64', prefix: 'sha1=' });
 }
 
 /**
@@ -52,7 +48,7 @@ const route: WebhookHandler<AutotaskWebhookPayload> = async (nango, headers, bod
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookType: 'EntityType',
         connectionIdentifier: 'Guid',
         propName: 'webhookGuid'

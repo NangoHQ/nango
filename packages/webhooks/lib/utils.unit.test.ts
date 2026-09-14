@@ -4,7 +4,7 @@ import { axiosInstance, stringifyStable } from '@nangohq/utils';
 
 import { allowAllWebhookOutbound } from './helpers/setup.unit.js';
 import { TestWebhookServer } from './helpers/test.js';
-import { deliver, getHmacSignatureHeader, getSignatureHeaderUnsafe, resolveWebhookSettings } from './utils.js';
+import { deliver, getHmacSignatureHeader, getSignatureHeaderUnsafe, resolveWebhookSettings, shouldSend } from './utils.js';
 
 import type { DBAPISecret, DBExternalWebhook } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
@@ -121,6 +121,7 @@ describe('resolveWebhookSettings', () => {
         on_auth_refresh_error: true,
         on_sync_error: true,
         on_async_action_completion: true,
+        on_connection_deletion: true,
         created_at: new Date(),
         updated_at: new Date()
     };
@@ -149,6 +150,41 @@ describe('resolveWebhookSettings', () => {
         resolveWebhookSettings(envSettings, 'https://dev-tunnel.example.com/hook');
         expect(envSettings.primary_url).toBe('https://env-primary.example.com/hook');
         expect(envSettings.secondary_url).toBe('https://env-secondary.example.com/hook');
+    });
+});
+
+describe('shouldSend', () => {
+    const baseSettings: DBExternalWebhook = {
+        id: 1,
+        environment_id: 1,
+        primary_url: 'https://example.com/hook',
+        secondary_url: null,
+        on_sync_completion_always: false,
+        on_auth_creation: false,
+        on_auth_refresh_error: false,
+        on_sync_error: false,
+        on_async_action_completion: false,
+        on_connection_deletion: false,
+        created_at: new Date(),
+        updated_at: new Date()
+    };
+
+    it('sends auth_deletion webhooks when on_connection_deletion is enabled', () => {
+        expect(shouldSend({ webhookSettings: { ...baseSettings, on_connection_deletion: true }, success: true, type: 'auth_deletion' })).toBe(true);
+    });
+
+    it('does not send auth_deletion webhooks when on_connection_deletion is disabled', () => {
+        expect(shouldSend({ webhookSettings: { ...baseSettings, on_connection_deletion: false }, success: true, type: 'auth_deletion' })).toBe(false);
+    });
+
+    it('does not send auth_deletion webhooks when no webhook URL is configured', () => {
+        expect(
+            shouldSend({
+                webhookSettings: { ...baseSettings, primary_url: null, secondary_url: null, on_connection_deletion: true },
+                success: true,
+                type: 'auth_deletion'
+            })
+        ).toBe(false);
     });
 });
 

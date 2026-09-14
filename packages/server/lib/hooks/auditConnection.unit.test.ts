@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flags } from '@nangohq/utils';
 
 import { recordMock } from '../middleware/audit/testing.js';
-import { noteConnectionUpsert, recordConnectionCreated } from './auditConnection.js';
+import { connectionCreatedActor, noteConnectionUpsert, oauthAuthType, recordConnectionCreated } from './auditConnection.js';
 
 import type { Request } from 'express';
 
@@ -15,7 +15,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         providerConfigKey: 'algolia-prod',
         operation: 'creation' as const,
         account: { id: 42, uuid: 'acc-uuid' },
-        environment: { id: 9, name: 'dev' },
+        environment: { id: 9, uuid: 'e0000000-0000-4000-8000-000000000001', name: 'dev' },
         auditAttribution: { kind: 'no-attribution', reason: 'no request' } as const
     };
 
@@ -43,7 +43,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
             action: 'created',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000001', display: 'dev' },
             actor: { type: 'api_key', id: '5', display: 'ci-key' },
             targets: [{ type: 'connection', id: 'conn-42' }],
             context: { ip: '203.0.113.7', userAgent: 'vitest' }
@@ -58,7 +58,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
             resource: 'connection',
             action: 'created',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000001', display: 'dev' },
             actor: { type: 'unknown', id: 'unknown', display: 'unknown' },
             context: {},
             targets: [{ type: 'connection', id: 'conn-42' }]
@@ -77,7 +77,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         });
         expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000001', display: 'dev' },
             actor: { type: 'connect_session', id: 'customer-user-1', display: 'buyer@customer.com' },
             context: { ip: '203.0.113.7', userAgent: 'chrome' }
         });
@@ -131,7 +131,7 @@ describe('noteConnectionUpsert', () => {
         connectionId: 'conn-1',
         providerConfigKey: 'github',
         account: { id: 1, uuid: 'uuid-1' },
-        environment: { id: 2, name: 'dev' }
+        environment: { id: 2, uuid: 'e0000000-0000-4000-8000-000000000002', name: 'dev' }
     });
 
     it('records what the handler reports', () => {
@@ -153,5 +153,40 @@ describe('noteConnectionUpsert', () => {
         const req = {} as Request;
         noteConnectionUpsert(req, upsert('override'));
         expect(req.audit?.connectionUpsert?.operation).toBe('override');
+    });
+});
+
+describe('connectionCreatedActor', () => {
+    const unknown = { type: 'unknown', id: 'unknown', display: 'unknown' } as const;
+    const endUser = { endUserId: 'customer-user-1', email: 'buyer@customer.com', tags: null };
+
+    it('names the connect session and the end user it carries', () => {
+        expect(connectionCreatedActor(unknown, endUser, 'connectSession')).toEqual({
+            type: 'connect_session',
+            id: 'customer-user-1',
+            display: 'buyer@customer.com'
+        });
+    });
+
+    it('names the connect session even when it carries no end user', () => {
+        expect(connectionCreatedActor(unknown, null, 'connectSession')).toEqual({ type: 'connect_session', id: 'unknown' });
+    });
+
+    it('names the public key when the flow started with one', () => {
+        expect(connectionCreatedActor(unknown, undefined, 'publicKey')).toEqual({ type: 'public_key', id: 'unknown' });
+    });
+
+    it('names nobody when no oauth session was behind the creation', () => {
+        expect(connectionCreatedActor(unknown, undefined, undefined)).toEqual({ type: 'unknown', id: 'unknown', display: 'unknown' });
+    });
+});
+
+describe('oauthAuthType', () => {
+    it('names a public key start, which no connect session can explain', () => {
+        expect(oauthAuthType({ connectSessionId: null })).toBe('publicKey');
+    });
+
+    it('names the connect session that started the flow', () => {
+        expect(oauthAuthType({ connectSessionId: 7 })).toBe('connectSession');
     });
 });

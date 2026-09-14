@@ -250,6 +250,7 @@ describe('Account service', () => {
                 source: 'customer_key',
                 scopes: ['environment:*'],
                 apiKeyId: expect.any(Number),
+                apiKeyUuid: expect.any(String),
                 apiKeyDisplayName: 'Default - Full access'
             }
         });
@@ -276,6 +277,7 @@ describe('Account service', () => {
                 source: 'customer_key',
                 scopes: ['account:environments:create'],
                 apiKeyId: apiKey.id,
+                apiKeyUuid: expect.any(String),
                 apiKeyDisplayName: 'Account automation'
             },
             principal: {
@@ -359,6 +361,7 @@ describe('Account service', () => {
             source: 'customer_key',
             scopes: ['environment:deploy'],
             apiKeyId: expect.any(Number),
+            apiKeyUuid: expect.any(String),
             apiKeyDisplayName: 'Default - Full access'
         });
     });
@@ -448,6 +451,7 @@ describe('Account service', () => {
                 source: 'sandbox_token',
                 scopes: ['environment:*', 'environment:connections:read', 'environment:integrations:read', 'environment:proxy'],
                 apiKeyId: apiKey.id,
+                apiKeyUuid: expect.any(String),
                 purpose: 'dryrun',
                 dryrunId
             }
@@ -488,6 +492,7 @@ describe('Account service', () => {
             source: 'sandbox_token',
             scopes: ['environment:deploy'],
             apiKeyId: parentKey.id,
+            apiKeyUuid: expect.any(String),
             purpose: 'deploy',
             deploymentId
         });
@@ -499,6 +504,7 @@ describe('Account service', () => {
             source: 'sandbox_token',
             scopes: [],
             apiKeyId: parentKey.id,
+            apiKeyUuid: expect.any(String),
             purpose: 'deploy',
             deploymentId
         });
@@ -580,6 +586,7 @@ describe('Account service', () => {
             source: 'sandbox_token',
             scopes: ['environment:records:read', 'environment:connections:read', 'environment:integrations:read', 'environment:proxy'],
             apiKeyId: parentKey.id,
+            apiKeyUuid: expect.any(String),
             purpose: 'dryrun',
             dryrunId
         });

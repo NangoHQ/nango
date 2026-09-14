@@ -31,7 +31,7 @@ import type {
 // Canonical audit event vocabulary — the single source of truth shared by the emit side
 // (@nangohq/audit's AuditEvent) and the read/API side (ApiAuditTrailEvent).
 export type AuditTrailVersion = '2026-07-16';
-export type AuditActorType = 'user' | 'api_key' | 'connect_session' | 'anonymous' | 'unknown';
+export type AuditActorType = 'user' | 'api_key' | 'public_key' | 'connect_session' | 'anonymous' | 'unknown';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
 export type AuditViaType = 'impersonation';
 export type AuditInterface = 'api' | 'mcp';
@@ -216,7 +216,8 @@ export type AuditResourceAction = {
 interface AuditEventCommon {
     occurredAt: string;
     accountId: number;
-    environment: { id: number; display: string } | null;
+    scope: AuditScope;
+    environment: { id: string; display: string } | null;
     actor: AuditActor;
     via?: AuditVia[];
     targets: AuditTarget[];

@@ -83,7 +83,8 @@ export {
     auditSyncPaused,
     auditSyncStarted,
     auditSyncVariantCreated,
-    auditSyncVariantDeleted
+    auditSyncVariantDeleted,
+    syncTargets
 } from './sync.middleware.js';
 export { auditTeamUpdated } from './team.middleware.js';
 export { auditUserUpdated } from './user.middleware.js';

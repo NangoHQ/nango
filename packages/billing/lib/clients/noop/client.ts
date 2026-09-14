@@ -3,7 +3,6 @@ import { Ok } from '@nangohq/utils';
 import type {
     BillingClient,
     BillingCustomer,
-    BillingEvent,
     BillingInvoicingDetails,
     BillingOverdueInvoices,
     BillingPeriodCosts,
@@ -13,7 +12,8 @@ import type {
     BillingUpcomingInvoice,
     BillingUsageMetrics,
     DBTeam,
-    GetBillingUsageOpts
+    GetBillingUsageOpts,
+    PlanChangeRequest
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -42,10 +42,6 @@ function stubCustomer(
 }
 
 export class NoopBillingClient implements BillingClient {
-    ingest(_events: BillingEvent[]): Promise<Result<void>> {
-        return Promise.resolve(Ok(undefined));
-    }
-
     linkStripeToCustomer(_teamId: number, _customerId: string): Promise<Result<void>> {
         return Promise.resolve(Ok(undefined));
     }
@@ -62,8 +58,16 @@ export class NoopBillingClient implements BillingClient {
         return Promise.resolve(Ok(stubCustomer(accountId, invoicingDetails)));
     }
 
-    getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
-        return Promise.resolve(Ok({ id: `local-sub-${accountId}`, planExternalId: 'free' }));
+    getSubscription(accountId: number): Promise<Result<BillingSubscription>> {
+        return Promise.resolve(
+            Ok({
+                id: `local-sub-${accountId}`,
+                planExternalId: 'free',
+                hasGrowthFeatures: false,
+                growthFeaturesEndsAt: null,
+                growthFeaturesPriceIntervalId: null
+            })
+        );
     }
 
     getOverdueInvoices(_accountId: number): Promise<Result<BillingOverdueInvoices>> {
@@ -74,7 +78,7 @@ export class NoopBillingClient implements BillingClient {
         return Promise.resolve(Ok(null));
     }
 
-    getPeriodCosts(_subscriptionId: string): Promise<Result<BillingPeriodCosts | null>> {
+    getPeriodCosts(_subscriptionId: string, _timeframe?: { start: Date; end: Date }): Promise<Result<BillingPeriodCosts | null>> {
         return Promise.resolve(Ok(null));
     }
 
@@ -91,23 +95,38 @@ export class NoopBillingClient implements BillingClient {
     }
 
     createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {
-        return Promise.resolve(Ok({ id: `local-sub-${team.id}`, planExternalId }));
+        return Promise.resolve(
+            Ok({ id: `local-sub-${team.id}`, planExternalId, hasGrowthFeatures: false, growthFeaturesEndsAt: null, growthFeaturesPriceIntervalId: null })
+        );
     }
 
     getUsage(_subscriptionId: string, _opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
         return Promise.resolve(Ok({}));
     }
 
-    upgrade(_opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
+    upgrade(_opts: PlanChangeRequest): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
         return Promise.resolve(Ok({ pendingChangeId: 'local-pending-change', amountInCents: null }));
     }
 
-    downgrade(_opts: { subscriptionId: string; planExternalId: string }): Promise<Result<void>> {
+    downgrade(_opts: PlanChangeRequest): Promise<Result<void>> {
         return Promise.resolve(Ok(undefined));
     }
 
-    applyPendingChanges(_opts: { pendingChangeId: string; paymentExternalId: string; amountCollected: string }): Promise<Result<BillingSubscription>> {
-        return Promise.resolve(Ok({ id: 'local-sub', planExternalId: 'free' }));
+    applyPendingChanges(_opts: {
+        pendingChangeId: string;
+        payment?: { externalId: string; amountCollected: string } | undefined;
+    }): Promise<Result<BillingSubscription>> {
+        return Promise.resolve(
+            Ok({ id: 'local-sub', planExternalId: 'free', hasGrowthFeatures: false, growthFeaturesEndsAt: null, growthFeaturesPriceIntervalId: null })
+        );
+    }
+
+    startGrowthAddon(_opts: { subscriptionId: string }): Promise<Result<{ priceIntervalId: string | null }>> {
+        return Promise.resolve(Ok({ priceIntervalId: 'local-price-interval' }));
+    }
+
+    endGrowthAddon(_opts: { subscriptionId: string; priceIntervalId: string }): Promise<Result<{ growthFeaturesEndsAt: Date | null }>> {
+        return Promise.resolve(Ok({ growthFeaturesEndsAt: null }));
     }
 
     cancelPendingChanges(_opts: { pendingChangeId: string }): Promise<Result<void>> {

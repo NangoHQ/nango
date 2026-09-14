@@ -1,0 +1,114 @@
+import * as z from 'zod';
+
+import { records as recordsService } from '@nangohq/records';
+import { connectionService, listConnectionSyncs } from '@nangohq/shared';
+import { getLogger, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
+
+import { connectionIdSchema, envSchema, paginationQueryFields, providerConfigKeySchema, syncNameSchema, variantSchema } from '../../../helpers/validation.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../../utils/utils.js';
+
+import type { RecordCount } from '@nangohq/records';
+import type { ListedSync } from '@nangohq/shared';
+import type { ApiConnectionSync, GetConnectionSyncs } from '@nangohq/types';
+
+const logger = getLogger('connections.syncs');
+
+const orchestrator = getOrchestrator();
+
+const queryStringValidation = z
+    .object({
+        env: envSchema,
+        connection_id: connectionIdSchema,
+        provider_config_key: providerConfigKeySchema,
+        name: syncNameSchema.optional(),
+        variant: variantSchema.optional(),
+        ...paginationQueryFields
+    })
+    .strict();
+
+export const getConnectionSyncs = asyncWrapperWithEnvironment<GetConnectionSyncs>(async (req, res) => {
+    const emptyBody = requireEmptyBody(req as any);
+    if (emptyBody) {
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(emptyBody.error) } });
+        return;
+    }
+
+    const queryParamValues = queryStringValidation.safeParse(req.query);
+    if (!queryParamValues.success) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryParamValues.error) } });
+        return;
+    }
+
+    const { environment } = res.locals;
+    const query = queryParamValues.data satisfies GetConnectionSyncs['Querystring'];
+
+    const connection = await connectionService.getConnectionForPrivateApi({
+        connectionId: query.connection_id,
+        providerConfigKey: query.provider_config_key,
+        environmentId: environment.id
+    });
+
+    if (connection.isErr()) {
+        res.status(404).send({ error: { code: 'not_found', message: 'Failed to find connection' } });
+        return;
+    }
+
+    const { syncs, total } = await listConnectionSyncs({
+        connection: connection.value.connection,
+        orchestrator,
+        name: query.name,
+        variant: query.variant,
+        limit: query.limit,
+        offset: query.page * query.limit
+    });
+
+    const recordCounts = await getRecordCountsForPage({ syncs, connectionId: connection.value.connection.id, environmentId: environment.id });
+
+    res.status(200).send({
+        data: syncs.map((sync) => toApi(sync, recordCounts)),
+        pagination: { total, page: query.page, limit: query.limit }
+    });
+});
+
+async function getRecordCountsForPage({
+    syncs,
+    connectionId,
+    environmentId
+}: {
+    syncs: ListedSync[];
+    connectionId: number;
+    environmentId: number;
+}): Promise<Record<string, RecordCount> | null> {
+    const models = new Set<string>();
+    for (const sync of syncs) {
+        for (const model of sync.models) {
+            models.add(toRecordModelName(model, sync.variant));
+        }
+    }
+    if (models.size === 0) {
+        return {};
+    }
+
+    const counts = await recordsService.getCountsByModel({ connectionId, environmentId, models: [...models] });
+    if (counts.isErr()) {
+        logger.error(`Failed to get record counts for connection ${connectionId} in environment ${environmentId}: ${stringifyError(counts.error)}`);
+        return null;
+    }
+
+    return counts.value;
+}
+
+function toRecordModelName(model: string, variant: string): string {
+    return variant === 'base' ? model : `${model}::${variant}`;
+}
+
+function toApi(sync: ListedSync, recordCounts: Record<string, RecordCount> | null): ApiConnectionSync {
+    return {
+        ...sync,
+        record_count:
+            recordCounts === null
+                ? null
+                : Object.fromEntries(sync.models.map((model) => [model, recordCounts[toRecordModelName(model, sync.variant)]?.count ?? 0]))
+    };
+}

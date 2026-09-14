@@ -25,7 +25,7 @@ describe('mfa audit middleware (unit)', () => {
             action: 'enabled',
             outcome: 'failure',
             accountId: 42,
-            // account-scoped policy → environment is never attributed.
+            scope: 'account',
             environment: null,
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
             targets: [{ type: 'user', id: '7', display: 'dev@example.com' }]
@@ -39,7 +39,7 @@ describe('mfa audit middleware (unit)', () => {
     ])('mfa login verify: records the method for type %s', async (type, method) => {
         const req = fakeReq({ body: { type }, session: { pendingMfaLogin: { userId: 7 } } });
         const event = await runAudit(auditMfaVerified, req, fakeRes(locals));
-        expect(event).toMatchObject({ resource: 'mfa', action: 'verified', accountId: 42, environment: null, metadata: { method } });
+        expect(event).toMatchObject({ resource: 'mfa', action: 'verified', accountId: 42, scope: 'account', environment: null, metadata: { method } });
     });
 
     it('mfa login verify: a non-string type is not coerced into a method', async () => {

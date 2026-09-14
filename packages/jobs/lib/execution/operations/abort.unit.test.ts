@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as shared from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import { mintRunnerDispatchToken } from '../../internal-auth.js';
 import { logger } from '../../logger.js';
 import { getRunners } from '../../runner/runner.js';
 import { abortTask, abortTaskWithId } from './abort.js';
@@ -34,6 +35,10 @@ vi.mock('./state.js', () => ({
     setTaskSuccess: mockSetTaskSuccess
 }));
 
+vi.mock('../../internal-auth.js', () => ({
+    mintRunnerDispatchToken: vi.fn(() => null)
+}));
+
 vi.mock('../../runner/runner.js', () => ({
     getRunners: vi.fn()
 }));
@@ -53,6 +58,7 @@ describe('abortTaskWithId', () => {
         mockPutTaskAbort.mockResolvedValue(Ok(undefined));
         mockSetTaskSuccess.mockResolvedValue(Ok({} as never));
         mockOrchestratorFailed.mockResolvedValue(Ok({} as never));
+        vi.mocked(mintRunnerDispatchToken).mockReturnValue(null);
     });
 
     afterEach(() => {
@@ -71,8 +77,22 @@ describe('abortTaskWithId', () => {
 
         expect(result.isOk()).toBe(true);
         expect(mockPutTaskAbort).toHaveBeenCalledWith({ environmentId: 1, taskId: 'task-1' });
+        expect(getRunners).toHaveBeenCalledWith(42, { token: null });
         expect(abortA).toHaveBeenCalledWith({ taskId: 'task-1' });
         expect(abortB).toHaveBeenCalledWith({ taskId: 'task-1' });
+    });
+
+    it('passes a minted runner-audience token to getRunners', async () => {
+        vi.mocked(mintRunnerDispatchToken).mockReturnValue('runner.jwt');
+        const abortA = vi.fn().mockResolvedValue(true);
+
+        (getRunners as unknown as { mockResolvedValue: (value: any) => void }).mockResolvedValue(Ok([{ client: { abort: { mutate: abortA } } }] as any[]));
+
+        const result = await abortTaskWithId({ taskId: 'task-token', teamId: 42, environmentId: 1 });
+
+        expect(result.isOk()).toBe(true);
+        expect(mintRunnerDispatchToken).toHaveBeenCalledWith({ taskId: 'task-token' });
+        expect(getRunners).toHaveBeenCalledWith(42, { token: 'runner.jwt' });
     });
 
     it('succeeds with a single runner that confirms abort', async () => {
@@ -136,6 +156,7 @@ describe('abortTask', () => {
         mockPutTaskAbort.mockResolvedValue(Ok(undefined));
         mockSetTaskSuccess.mockResolvedValue(Ok({} as never));
         mockOrchestratorFailed.mockResolvedValue(Ok({} as never));
+        vi.mocked(mintRunnerDispatchToken).mockReturnValue(null);
     });
 
     afterEach(() => {

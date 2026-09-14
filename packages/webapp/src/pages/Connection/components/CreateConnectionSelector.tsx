@@ -5,7 +5,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam, useUnmount } from 'react-use';
 import { useSWRConfig } from 'swr';
 
-import { permissions } from '@nangohq/authz';
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 import Nango from '@nangohq/frontend';
 
@@ -69,11 +68,10 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const env = useStore((state) => state.env);
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
-    const environment = environmentAndAccount?.environment;
     const { data: listIntegrationData, isLoading: listIntegrationPending } = useListIntegrations(env);
 
     const { can } = usePermissions();
-    const canCreateTestConnection = can(permissions.canWriteProdConnections) || !environment?.is_production;
+    const canCreateTestConnection = can('environment:connections:update');
 
     const connectUI = useRef<ConnectUI>();
     const isDarkMode = useThemeStore(darkModeSelector);

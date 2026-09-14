@@ -36,3 +36,53 @@ export const PLAN_CARD_LIMITS: Partial<Record<PlanDefinition['code'], string[]>>
 };
 
 export const ENTERPRISE_PLAN_DESCRIPTION = 'Custom needs and volume discounts';
+
+export interface S26PlanCard {
+    code: PlanDefinition['code'];
+    /** Free-text rather than `basePrice`: Enterprise has no figure and Pay-as-you-go's isn't a flat fee. */
+    price: string;
+    priceSuffix?: string;
+    tagline: string;
+    features: string[];
+    addonTeaser?: string;
+}
+
+export const GROWTH_ADDON_PRICE = 450;
+
+export const GROWTH_ADDON_COPY = {
+    title: 'Growth add-on',
+    price: `$${GROWTH_ADDON_PRICE}/mo`,
+    features: 'Shared Slack channel, unlimited environments, RBAC, realtime logs export, SAML SSO, HIPAA, and 5-day integration delivery.'
+};
+
+/** In the order they are offered. */
+export const S26_PLAN_CARDS: readonly S26PlanCard[] = [
+    {
+        code: 'free',
+        price: '$0',
+        priceSuffix: '/mo',
+        tagline: 'Hard-capped limits, reset every month.',
+        features: ['10 connections', '10h compute time', '10GB data transfer', 'API auth with 900+ APIs', 'Pre-built tools, triggers & syncs', 'Logs']
+    },
+    {
+        code: 'pay-as-you-go',
+        price: '$50',
+        priceSuffix: '/mo minimum',
+        tagline: '$50 in credits per month included.',
+        features: ['$0.29 / connection / mo', '$0.72 / h of compute time', '$0.50 / GB data transfer', 'SOC 2 Type II'],
+        addonTeaser: `${GROWTH_ADDON_COPY.title} available for ${GROWTH_ADDON_COPY.price}`
+    },
+    {
+        code: 'enterprise',
+        price: 'Custom',
+        tagline: 'Volume discounts, self-hosting, custom terms.',
+        features: [
+            'Volume discounts with commitments',
+            'Includes Growth add-on',
+            'SCIM, audit trail, SLA',
+            'Enterprise support',
+            'Self-hosting & BYOC options available',
+            '2-day requested integration delivery'
+        ]
+    }
+];

@@ -4,6 +4,7 @@ import type { DBPlan } from '@nangohq/types';
 // anything. An annual contract's own invoice states its whole contract total, not one period's charge.
 // Exhaustive, so a new plan has to be classified rather than inheriting a figure.
 const SPEND_PLANS: Record<DBPlan['name'], boolean> = {
+    'pay-as-you-go': true,
     'starter-v2': true,
     'growth-v2': true,
     'startup-deal': true,

@@ -5,7 +5,7 @@ import { seeders, updatePlan, userService } from '@nangohq/shared';
 import { roles } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
-import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
+import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../../utils/tests.js';
 
 const route = '/api/v1/team/users/:id';
 const nonDefaultRole = roles.find((role) => role !== envs.DEFAULT_USER_ROLE);
@@ -36,25 +36,27 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
         const res = await api.fetch(route, {
             method: 'PATCH',
-            token: apiKey.secret,
+            session,
             params: { id: 1 },
             body: { role: 'production_support' },
             // @ts-expect-error missing query on purpose
             query: {}
         });
 
-        shouldRequireQueryEnv(res);
+        shouldRequireSessionEnv(res);
     });
 
     it('should validate body', async () => {
-        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
         const res = await api.fetch(route, {
             method: 'PATCH',
             query: { env: 'dev' },
-            token: apiKey.secret,
+            session,
             params: { id: 1 },
             // @ts-expect-error invalid role on purpose
             body: { role: 'invalid_role' }

@@ -1,3 +1,5 @@
+import { validate as isUuid } from 'uuid';
+
 import type { Request } from 'express';
 
 export function param(req: Request<any, any, any, any>, key: string): unknown {
@@ -20,6 +22,10 @@ export function positiveInt(value: unknown): number | undefined {
 
 export function nonEmptyString(value: unknown): string | undefined {
     return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
+export function uuid(value: unknown): string | undefined {
+    return typeof value === 'string' && isUuid(value) ? value : undefined;
 }
 
 export function omitUndefined<T extends object>(obj: { [K in keyof T]?: T[K] | undefined }): T | undefined {

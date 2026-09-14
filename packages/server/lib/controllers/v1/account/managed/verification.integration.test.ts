@@ -5,7 +5,6 @@ import { mfaService, seeders, userService } from '@nangohq/shared';
 import { nanoid, normalizeEmail } from '@nangohq/utils';
 
 import type { runServer as runServerType } from '../../../../utils/tests.js';
-import type * as featureFlagsType from '@nangohq/feature-flags';
 
 const workosMocks = vi.hoisted(() => {
     process.env['FLAG_MANAGED_AUTH_ENABLED'] = 'true';
@@ -40,13 +39,11 @@ type RunServer = typeof runServerType;
 
 let api: Awaited<ReturnType<RunServer>>;
 let runServer: RunServer;
-let featureFlags: typeof featureFlagsType;
 
 describe(`POST ${route}`, () => {
     beforeAll(async () => {
         vi.resetModules();
         ({ runServer } = await import('../../../../utils/tests.js'));
-        featureFlags = await import('@nangohq/feature-flags');
         api = await runServer();
     });
 
@@ -204,8 +201,6 @@ describe(`POST ${route}`, () => {
     });
 
     it('should challenge MFA before completing a managed auth login', async () => {
-        vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
-
         const { user } = await seeders.seedAccountEnvAndUser();
         const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
         const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
@@ -241,8 +236,6 @@ describe(`POST ${route}`, () => {
     });
 
     it('should not challenge MFA when the user has no active factor', async () => {
-        vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
-
         const { user } = await seeders.seedAccountEnvAndUser();
 
         workosMocks.authenticateWithCode.mockResolvedValue({

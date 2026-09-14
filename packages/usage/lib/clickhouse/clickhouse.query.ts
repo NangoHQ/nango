@@ -117,7 +117,6 @@ export function tableForMetric(metric: UsageMetric): string {
         case 'function_executions':
         case 'function_logs':
         case 'function_compute_gbms':
-            return `daily_function_executions`;
         case 'function_duration_seconds':
             return `daily_function_executions_v2`;
         case 'webhook_forwards':

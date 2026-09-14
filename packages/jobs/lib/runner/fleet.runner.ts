@@ -9,8 +9,9 @@ export class FleetRunner implements Runner {
     public runnerType: RunnerType = RunnerType.Fleet;
     constructor(
         public readonly id: string,
-        public readonly url: string
+        public readonly url: string,
+        token?: string | null
     ) {
-        this.client = getRunnerClient(this.url, runnerHttpOpts);
+        this.client = getRunnerClient(this.url, runnerHttpOpts, { token });
     }
 }

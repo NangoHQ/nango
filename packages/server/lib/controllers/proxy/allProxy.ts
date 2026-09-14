@@ -2,7 +2,6 @@ import { finished, PassThrough } from 'node:stream';
 
 import * as z from 'zod';
 
-import { getFlags } from '@nangohq/feature-flags';
 import { getHeaders, getLogger, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
@@ -36,14 +35,6 @@ const schemaHeaders = z.object({
     'nango-is-sync': z.enum(['true', 'false']).optional(),
     'nango-is-dry-run': z.enum(['true', 'false']).optional()
 });
-
-// Legacy buffered-path allowlist used when proxy-forward-all-response-headers is off.
-const PROXY_RESPONSE_HEADER_ALLOWLIST = new Set([
-    'content-type',
-    'mcp-session-id', // MCP RFC — https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#session-management
-    'x-request-id',
-    'x-correlation-id'
-]);
 
 // Headers from provider responses that must not be forwarded to the client.
 // content-length is handled per path via allowContentLength (stripped on buffered/error, optionally kept on stream).
@@ -84,15 +75,6 @@ export function filterProxyResponseHeaders(headers: Record<string, unknown> | ob
         }
     }
     return filtered;
-}
-
-function applyAllowlistedResponseHeaders(res: Response, headers: Record<string, unknown> | object) {
-    for (const header of PROXY_RESPONSE_HEADER_ALLOWLIST) {
-        const value = (headers as Record<string, unknown>)[header];
-        if (typeof value === 'string' && value !== '') {
-            res.setHeader(header, value);
-        }
-    }
 }
 
 function applyFilteredResponseHeaders(res: Response, headers: Record<string, unknown> | object, options?: { allowContentLength?: boolean }) {
@@ -139,7 +121,6 @@ export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async 
             files = req.files as ProxyFile[];
         }
 
-        const forwardAllResponseHeaders = await getFlags().shouldForwardAllProxyResponseHeaders(account.uuid);
         const execution = await proxyService.request({
             account,
             environment,
@@ -177,16 +158,14 @@ export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async 
                 res,
                 responseStream,
                 logCtx,
-                onEgressedBytes: recordEgressedBytes,
-                forwardAllResponseHeaders
+                onEgressedBytes: recordEgressedBytes
             });
         } else {
             handleErrorResponse({
                 res,
                 responseStream,
                 logCtx,
-                onEgressedBytes: recordEgressedBytes,
-                forwardAllResponseHeaders
+                onEgressedBytes: recordEgressedBytes
             });
         }
     } catch (err) {
@@ -258,14 +237,12 @@ export function handleResponse({
     res,
     responseStream,
     logCtx,
-    onEgressedBytes,
-    forwardAllResponseHeaders = false
+    onEgressedBytes
 }: {
     res: Response;
     responseStream: Pick<ProxyServiceResponse, 'status' | 'headers' | 'body' | 'wasCompressed' | 'complete'>;
     logCtx?: LogContext | undefined;
     onEgressedBytes?: ((egressedBytes: number) => void) | undefined;
-    forwardAllResponseHeaders?: boolean;
 }) {
     const contentDisposition = responseStream.headers['content-disposition'] || '';
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
@@ -274,9 +251,7 @@ export function handleResponse({
     const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
 
     if (isChunked || isAttachmentOrInline) {
-        const passthroughHeaders = forwardAllResponseHeaders
-            ? filterProxyResponseHeaders(responseStream.headers, { allowContentLength: true })
-            : (Object.fromEntries(Object.entries(responseStream.headers)) as OutgoingHttpHeaders);
+        const passthroughHeaders = filterProxyResponseHeaders(responseStream.headers, { allowContentLength: true });
         if (responseStream.wasCompressed) {
             // axios decompressed the response, so the `content-length` header is no longer valid
             delete passthroughHeaders['content-length'];
@@ -345,20 +320,14 @@ export function handleResponse({
         }
 
         if (responseStream.status === 204) {
-            if (forwardAllResponseHeaders) {
-                applyFilteredResponseHeaders(res, responseStream.headers);
-            }
+            applyFilteredResponseHeaders(res, responseStream.headers);
             res.status(204).end();
             onEgressedBytes?.(0);
             void responseStream.complete();
             return;
         }
 
-        if (forwardAllResponseHeaders) {
-            applyFilteredResponseHeaders(res, responseStream.headers);
-        } else {
-            applyAllowlistedResponseHeaders(res, responseStream.headers);
-        }
+        applyFilteredResponseHeaders(res, responseStream.headers);
 
         try {
             res.send(Buffer.concat(responseData));
@@ -377,14 +346,12 @@ export function handleErrorResponse({
     res,
     responseStream,
     logCtx,
-    onEgressedBytes,
-    forwardAllResponseHeaders = false
+    onEgressedBytes
 }: {
     res: Response;
     responseStream: Pick<ProxyServiceResponse, 'status' | 'headers' | 'body'>;
     logCtx?: LogContext | undefined;
     onEgressedBytes?: ((egressedBytes: number) => void) | undefined;
-    forwardAllResponseHeaders?: boolean;
 }): void {
     const errorStream = responseStream.body;
     const chunks: Buffer[] = [];
@@ -418,10 +385,7 @@ export function handleErrorResponse({
         }
 
         const responseStatus = responseStream.status || 500;
-        const responseHeaders = forwardAllResponseHeaders ? filterProxyResponseHeaders(responseStream.headers || {}) : { ...responseStream.headers };
-        if (!forwardAllResponseHeaders) {
-            delete responseHeaders['transfer-encoding'];
-        }
+        const responseHeaders = filterProxyResponseHeaders(responseStream.headers || {});
         void logCtx?.error('Failed with this body', { body: parsedBody });
 
         res.status(responseStatus).set(responseHeaders).send(data);

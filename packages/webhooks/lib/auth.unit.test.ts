@@ -42,6 +42,7 @@ const webhookSettings: DBExternalWebhook = {
     on_auth_refresh_error: true,
     on_sync_error: true,
     on_async_action_completion: true,
+    on_connection_deletion: true,
     created_at: new Date(),
     updated_at: new Date()
 };
@@ -317,6 +318,55 @@ describe('Webhooks: auth notification tests', () => {
             success: true,
             operation: 'refresh'
         });
+    });
+
+    it('Should send an auth webhook with operation deletion when on_connection_deletion is checked', async () => {
+        await sendAuth({
+            connection,
+            success: true,
+            environment: {
+                name: 'dev',
+                id: 1
+            } as DBEnvironment,
+            secret,
+            webhookSettings: {
+                ...webhookSettings,
+                secondary_url: '',
+                on_connection_deletion: true
+            },
+            providerConfig,
+            account,
+            auth_mode: 'OAUTH2',
+            operation: 'deletion'
+        });
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        expect(deliverMock.mock.calls[0]![0].webhooks).toEqual([{ url: primaryUrl, type: 'webhook url' }]);
+        expect(deliverMock.mock.calls[0]![0].body).toMatchObject({
+            type: 'auth',
+            operation: 'deletion',
+            success: true
+        });
+    });
+
+    it('Should not send an auth webhook with operation deletion when on_connection_deletion is not checked', async () => {
+        await sendAuth({
+            connection,
+            success: true,
+            environment: {
+                name: 'dev',
+                id: 1
+            } as DBEnvironment,
+            secret,
+            webhookSettings: {
+                ...webhookSettings,
+                on_connection_deletion: false
+            },
+            providerConfig,
+            account,
+            auth_mode: 'OAUTH2',
+            operation: 'deletion'
+        });
+        expect(deliverMock).not.toHaveBeenCalled();
     });
 
     it('sends only to the per-connection webhook URL override (env secondary is dropped)', async () => {

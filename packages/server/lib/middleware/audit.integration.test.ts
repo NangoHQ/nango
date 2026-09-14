@@ -1,7 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import * as featureFlags from '@nangohq/feature-flags';
 import { customerKeyService, seeders, updatePlan, userService } from '@nangohq/shared';
 import { flags, getLogger } from '@nangohq/utils';
 
@@ -41,8 +40,6 @@ describe('audit middleware — live-stack contract', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // Roll the flag out to every account here; each one still has to be entitled on its plan.
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {
@@ -106,8 +103,8 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'updated',
                 outcome: 'denied',
                 accountId: account.id,
-                environment: { id: env.id, display: env.name },
-                actor: { type: 'api_key', id: String(apiKey.id) }
+                environment: { id: env.uuid, display: env.name },
+                actor: { type: 'api_key', id: apiKey.uuid }
             });
         });
 
@@ -137,7 +134,7 @@ describe('audit middleware — live-stack contract', () => {
                 outcome: 'denied',
                 accountId: account.id,
                 environment: null,
-                actor: { type: 'api_key', id: String(accountKey.id), display: 'Production only' },
+                actor: { type: 'api_key', id: accountKey.uuid, display: 'Production only' },
                 metadata: { name: 'denied-environment' }
             });
         });
@@ -277,17 +274,19 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records an environment creation with the response id and is account-scoped', async () => {
-            const { plan, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const { plan, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             await updatePlan(db.knex, { id: plan.id, environments_max: 10 });
+            const session = await authenticateUser(api, user);
 
             const res = await api.fetch('/api/v1/environments', {
                 method: 'POST',
-                token: apiKey.secret,
+                session,
                 body: { name: 'staging' }
             });
 
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
+            expect(res.json.data.uuid).toBeUUID();
             const createdId = String(res.json.data.id);
             await vi.waitFor(() => {
                 expect(auditEvent('environment', 'created')).toBeDefined();
@@ -322,7 +321,7 @@ describe('audit middleware — live-stack contract', () => {
 
             expect(create.res.status).toBe(200);
             isSuccess(create.json);
-            const createdId = String(create.json.data.id);
+            const createdId = create.json.data.uuid;
             await vi.waitFor(() => {
                 expect(auditEvent('environment', 'created')).toBeDefined();
             });
@@ -332,16 +331,16 @@ describe('audit middleware — live-stack contract', () => {
                 outcome: 'success',
                 accountId: account.id,
                 environment: null,
-                actor: { type: 'api_key', id: String(accountKey.id), display: 'Environment automation' },
+                actor: { type: 'api_key', id: accountKey.uuid, display: 'Environment automation' },
                 targets: [{ type: 'environment', id: createdId, display: 'public-staging' }],
                 metadata: { name: 'public-staging' }
             });
 
             auditSpy.mockClear();
-            const deletion = await api.fetch('/environments/:environmentId', {
+            const deletion = await api.fetch('/environments/:environmentUuid', {
                 method: 'DELETE',
                 token: accountKey.secret,
-                params: { environmentId: create.json.data.id }
+                params: { environmentUuid: create.json.data.uuid }
             });
 
             expect(deletion.res.status).toBe(204);
@@ -354,7 +353,7 @@ describe('audit middleware — live-stack contract', () => {
                 outcome: 'success',
                 accountId: account.id,
                 environment: null,
-                actor: { type: 'api_key', id: String(accountKey.id), display: 'Environment automation' },
+                actor: { type: 'api_key', id: accountKey.uuid, display: 'Environment automation' },
                 targets: [{ type: 'environment', id: createdId, display: 'public-staging' }]
             });
         });
@@ -386,7 +385,7 @@ describe('audit middleware — live-stack contract', () => {
                 outcome: 'success',
                 accountId: account.id,
                 actor: { type: 'user', id: String(user.id), display: user.email },
-                targets: [{ type: 'api_key', id: String(create.json.data.id), display: name }],
+                targets: [{ type: 'api_key', id: create.json.data.uuid, display: name }],
                 metadata: { displayName: name, scopes: granted }
             });
             expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(create.json.data.secret);
@@ -402,15 +401,16 @@ describe('audit middleware — live-stack contract', () => {
                 })
             ).unwrap();
 
-            const create = await api.fetch('/environment/api-keys', {
+            const create = await api.fetch('/environments/:environmentUuid/api-keys', {
                 method: 'POST',
                 token: accountKey.secret,
-                body: { environment_id: env.id, display_name: 'provisioned-ci' }
+                params: { environmentUuid: env.uuid },
+                body: { display_name: 'provisioned-ci' }
             });
 
             expect(create.res.status).toBe(200);
             isSuccess(create.json);
-            const createdId = String(create.json.data.id);
+            const createdId = create.json.data.uuid;
             const secret = create.json.data.secret;
             await vi.waitFor(() => {
                 expect(auditEvent('api_key', 'created')).toBeDefined();
@@ -420,19 +420,18 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'created',
                 outcome: 'success',
                 accountId: account.id,
-                environment: { id: env.id, display: env.name },
-                actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
+                environment: { id: env.uuid, display: env.name },
+                actor: { type: 'api_key', id: accountKey.uuid, display: 'Key automation' },
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
                 metadata: { displayName: 'provisioned-ci', scopes: ['environment:*'] }
             });
-            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain('environmentId');
             expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
 
             auditSpy.mockClear();
-            const deletion = await api.fetch('/environment/api-keys', {
+            const deletion = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
                 method: 'DELETE',
                 token: accountKey.secret,
-                body: { environment_id: env.id, key_id: create.json.data.id }
+                params: { environmentUuid: env.uuid, keyUuid: create.json.data.uuid }
             });
 
             expect(deletion.res.status).toBe(200);
@@ -444,18 +443,19 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'deleted',
                 outcome: 'success',
                 accountId: account.id,
-                environment: { id: env.id, display: env.name },
-                actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
+                environment: { id: env.uuid, display: env.name },
+                actor: { type: 'api_key', id: accountKey.uuid, display: 'Key automation' },
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }]
             });
         });
 
         it('records an api key creation without ever recording the secret value', async () => {
-            const { apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const { user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const session = await authenticateUser(api, user);
 
             const res = await api.fetch('/api/v1/environment/api-keys', {
                 method: 'POST',
-                token: apiKey.secret,
+                session,
                 // @ts-expect-error querystring is not typed on this endpoint
                 query: { env: 'dev' },
                 body: { display_name: 'ci-key', scopes: ['environment:*'] }
@@ -463,7 +463,7 @@ describe('audit middleware — live-stack contract', () => {
 
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
-            const createdId = String(res.json.data.id);
+            const createdId = res.json.data.uuid;
             const secret = res.json.data.secret;
             await vi.waitFor(() => {
                 expect(auditEvent('api_key', 'created')).toBeDefined();
@@ -493,7 +493,7 @@ describe('audit middleware — live-stack contract', () => {
 
             expect(create.res.status).toBe(200);
             isSuccess(create.json);
-            const createdId = String(create.json.data.id);
+            const createdId = create.json.data.uuid;
             const secret = create.json.data.secret;
             await vi.waitFor(() => {
                 expect(auditEvent('api_key', 'created')).toBeDefined();

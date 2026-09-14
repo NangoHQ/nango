@@ -24,6 +24,8 @@ export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
 
 export type CreateEnvironmentErrorCode = 'invalid_is_prod_flag' | 'conflict' | 'resource_capped' | 'creation_failed';
 
+type EnvironmentIdentifier = { type: 'id'; id: number } | { type: 'uuid'; uuid: string };
+
 export class CreateEnvironmentError extends Error {
     constructor(
         public readonly code: CreateEnvironmentErrorCode,
@@ -76,12 +78,20 @@ class EnvironmentService {
         return Ok(name === PROD_ENVIRONMENT_NAME ? true : (isProduction ?? false));
     }
 
-    async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'id' | 'name' | 'is_production'>[]> {
+    async getEnvironmentsByAccountId(
+        account_id: number,
+        filter: { name?: string | undefined } = {}
+    ): Promise<Pick<DBEnvironment, 'id' | 'uuid' | 'name' | 'is_production'>[]> {
         try {
             const result = await db.knex
-                .select<Pick<DBEnvironment, 'name' | 'id' | 'is_production'>[]>('id', 'name', 'is_production')
+                .select<Pick<DBEnvironment, 'id' | 'uuid' | 'name' | 'is_production'>[]>('id', 'uuid', 'name', 'is_production')
                 .from<DBEnvironment>(TABLE)
                 .where({ account_id, deleted: false })
+                .modify((query) => {
+                    if (filter.name !== undefined) {
+                        query.where({ name: filter.name });
+                    }
+                })
                 .orderBy('name', 'asc');
 
             if (result == null || result.length == 0) {
@@ -102,7 +112,7 @@ class EnvironmentService {
 
     async getById(id: number): Promise<DBEnvironment | null> {
         return await db.readOnly.transaction(async (trx) => {
-            const env = await this.findByIdWithoutSecrets(trx, id);
+            const env = await this.getWithoutSecrets(trx, { type: 'id', id });
             if (!env) {
                 return null;
             }
@@ -112,12 +122,22 @@ class EnvironmentService {
     }
 
     async getByIdWithoutSecrets(id: number, accountId: number | null = null): Promise<DBEnvironment | null> {
-        return await db.readOnly.transaction((trx) => this.findByIdWithoutSecrets(trx, id, accountId));
+        return await db.readOnly.transaction((trx) => this.getWithoutSecrets(trx, { type: 'id', id, accountId }));
     }
 
-    private async findByIdWithoutSecrets(trx: Knex, id: number, accountId: number | null = null): Promise<DBEnvironment | null> {
+    async getByUuidWithoutSecrets(uuid: string, accountId: number | null = null): Promise<DBEnvironment | null> {
+        return await db.readOnly.transaction((trx) => this.getWithoutSecrets(trx, { type: 'uuid', uuid, accountId }));
+    }
+
+    private async getWithoutSecrets(trx: Knex, identifier: EnvironmentIdentifier & { accountId?: number | null }): Promise<DBEnvironment | null> {
+        const accountId = identifier.accountId ?? null;
         try {
-            const query = trx<DBEnvironment>(TABLE).select('*').where({ id, deleted: false });
+            const query = trx<DBEnvironment>(TABLE).select('*').where({ deleted: false });
+            if (identifier.type === 'id') {
+                query.andWhere({ id: identifier.id });
+            } else {
+                query.andWhere({ uuid: identifier.uuid });
+            }
             if (accountId !== null) {
                 query.andWhere({ account_id: accountId });
             }
@@ -125,13 +145,11 @@ class EnvironmentService {
             return environment ?? null;
         } catch (err) {
             errorManager.report(err, {
-                environmentId: id,
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
                 ...(accountId !== null && { accountId }),
-                metadata: {
-                    id
-                }
+                ...(identifier.type === 'id' ? { environmentId: identifier.id } : { environmentUuid: identifier.uuid }),
+                metadata: identifier.type === 'id' ? { id: identifier.id } : { uuid: identifier.uuid }
             });
             return null;
         }
@@ -242,7 +260,8 @@ class EnvironmentService {
                         on_auth_creation: true,
                         on_auth_refresh_error: true,
                         on_sync_completion_always: true,
-                        on_sync_error: true
+                        on_sync_error: true,
+                        on_connection_deletion: true
                     }
                 });
 

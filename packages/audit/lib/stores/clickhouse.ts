@@ -4,20 +4,50 @@ import { Err, getLogger, metrics, Ok, stringifyError } from '@nangohq/utils';
 
 import { sanitizeClickhouseError } from '../error.js';
 
-import type { AuditBatchWriter, AuditReader, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from '../store.js';
+import type { AuditBatchWriter, AuditReader, AuditTrailFilter, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from '../store.js';
 import type { ClickHouseClient } from '@clickhouse/client';
-import type { ApiAuditTrailEvent, SerializedAuditEvent } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditExportMaxRows, AuditTrailTotal, SerializedAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('audit');
 
 const AUDIT_RETENTION_DAYS = 365;
 const READ_QUERY_MAX_EXECUTION_SECONDS = 30;
+// Shorter than the list's: the count is optional to the response, so a heavy one gives up rather than holding the read open.
+const COUNT_QUERY_MAX_EXECUTION_SECONDS = 5;
+// The export's ceiling, so "50,000+" in the header says exactly one thing: an export of this window truncates.
+const COUNT_SCAN_LIMIT: AuditExportMaxRows = 50_000;
+
+function buildFilter({ accountId, from, to, resources, actions }: AuditTrailFilter): { conditions: string[]; params: Record<string, unknown> } {
+    const params: Record<string, unknown> = { account_id: accountId };
+    const conditions = ['account_id = {account_id:Int64}'];
+    if (resources?.length) {
+        if (actions?.length) {
+            // Every requested pair, matched against the materialized concatenation. Two separate
+            // conditions would prune per column and let a granule through on a pair it doesn't hold.
+            conditions.push('resource_action IN {resource_actions:Array(String)}');
+            params['resource_actions'] = resources.flatMap((resource) => actions.map((action) => `${resource}.${action}`));
+        } else {
+            conditions.push('resource IN {resources:Array(String)}');
+            params['resources'] = resources;
+        }
+    }
+    if (from) {
+        conditions.push('occurred_at >= parseDateTime64BestEffortOrNull({from:String}, 3)');
+        params['from'] = from;
+    }
+    if (to) {
+        conditions.push('occurred_at <= parseDateTime64BestEffortOrNull({to:String}, 3)');
+        params['to'] = to;
+    }
+    return { conditions, params };
+}
 
 export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, AuditReader {
     constructor(
         private readonly client: ClickHouseClient,
-        private readonly retentionDays = AUDIT_RETENTION_DAYS
+        private readonly retentionDays = AUDIT_RETENTION_DAYS,
+        private readonly countScanLimit: number = COUNT_SCAN_LIMIT
     ) {}
 
     // Never throws, so every call emits exactly one ingest-result metric — callers rely on that to
@@ -62,27 +92,8 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
     // Both key on the event id, so they only catch a redelivery of the same event; a re-emit carries a fresh id and reads as two. A thinned page is the
     // only side effect, which is why `hasMore` keys off the raw count.
     async list({ accountId, limit, before, from, to, resources, actions }: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>> {
-        const params: Record<string, unknown> = { account_id: accountId, limit: limit + 1 };
-        const conditions = ['account_id = {account_id:Int64}'];
-        if (resources?.length) {
-            if (actions?.length) {
-                // Every requested pair, matched against the materialized concatenation. Two separate
-                // conditions would prune per column and let a granule through on a pair it doesn't hold.
-                conditions.push('resource_action IN {resource_actions:Array(String)}');
-                params['resource_actions'] = resources.flatMap((resource) => actions.map((action) => `${resource}.${action}`));
-            } else {
-                conditions.push('resource IN {resources:Array(String)}');
-                params['resources'] = resources;
-            }
-        }
-        if (from) {
-            conditions.push('occurred_at >= parseDateTime64BestEffortOrNull({from:String}, 3)');
-            params['from'] = from;
-        }
-        if (to) {
-            conditions.push('occurred_at <= parseDateTime64BestEffortOrNull({to:String}, 3)');
-            params['to'] = to;
-        }
+        const { conditions, params } = buildFilter({ accountId, from, to, resources, actions });
+        params['limit'] = limit + 1;
         if (before) {
             conditions.push('(occurred_at, id) < ({before_ts:DateTime64(3)}, {before_id:UUID})');
             params['before_ts'] = before.occurredAt;
@@ -121,6 +132,47 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
         } catch (err) {
             logger.error(`Failed to list audit trail events: ${stringifyError(err)}`);
             return Err('failed_to_list_audit_trail_events');
+        }
+    }
+
+    async count(filter: AuditTrailFilter): Promise<Result<AuditTrailTotal>> {
+        const { conditions, params } = buildFilter(filter);
+        params['scan_limit'] = this.countScanLimit + 1;
+
+        // The inner LIMIT bounds the read however large the account or the window. uniq is approximate,
+        // which also folds the duplicate rows a ReplacingMergeTree holds until a merge runs.
+        const sql = `
+            SELECT uniq(id) AS total, count() AS scanned
+            FROM (
+                SELECT id
+                FROM audit_trail_events
+                WHERE ${conditions.join(' AND ')}
+                LIMIT {scan_limit:UInt32}
+            )
+        `;
+
+        try {
+            const res = await this.client.query({
+                query: sql,
+                format: 'JSONEachRow',
+                query_params: params,
+                clickhouse_settings: { max_execution_time: COUNT_QUERY_MAX_EXECUTION_SECONDS }
+            });
+            const [row] = await res.json<{ total: string; scanned: string }>();
+            const total = Number(row?.total);
+            const scanned = Number(row?.scanned);
+
+            if (!Number.isFinite(total) || !Number.isFinite(scanned)) {
+                return Err('failed_to_count_audit_trail_events');
+            }
+
+            // Keyed on rows read, not distinct values: the LIMIT caps rows, so duplicates inside the prefix
+            // would otherwise leave a truncated count looking exact.
+            return scanned > this.countScanLimit ? Ok({ value: this.countScanLimit, relation: 'gte' }) : Ok({ value: total, relation: 'eq' });
+        } catch (err) {
+            // Warning, not error: the caller is expected to carry on without the number.
+            logger.warning(`Failed to count audit trail events for account ${filter.accountId}: ${stringifyError(err)}`);
+            return Err('failed_to_count_audit_trail_events');
         }
     }
 }
