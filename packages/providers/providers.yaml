@@ -18077,7 +18077,9 @@ publora:
         apiKey:
             type: string
             title: API Key
-            description: Your Publora API key, generated in Settings > API keys. It starts with sk_
+            description: Your Publora API key.
+            pattern: '^sk_[a-z0-9]{8}(_[a-z0-9]{8})?\.[a-f0-9]{52}$'
+            example: sk_mrmbzomn_1a2b3c4d.964793af****************************************0ab
             doc_section: '#step-1-creating-your-api-key'
 
 rocketlane:
