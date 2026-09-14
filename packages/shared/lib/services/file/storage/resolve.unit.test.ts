@@ -43,6 +43,42 @@ describe(resolveObjectStoreConfig, () => {
         });
     });
 
+    it('uses a complete dedicated credential pair over a complete generic pair', () => {
+        expect(
+            resolveObjectStoreConfig({
+                AWS_INTEGRATIONS_REGION: 'eu-west-1',
+                AWS_INTEGRATIONS_BUCKET_NAME: 'integrations',
+                AWS_INTEGRATIONS_ACCESS_KEY_ID: 'dedicated-id',
+                AWS_INTEGRATIONS_SECRET_ACCESS_KEY: 'dedicated-secret',
+                AWS_ACCESS_KEY_ID: 'generic-id',
+                AWS_SECRET_ACCESS_KEY: 'generic-secret'
+            }).credentials
+        ).toEqual({ accessKeyId: 'dedicated-id', secretAccessKey: 'dedicated-secret' });
+    });
+
+    it('does not mix a partial dedicated credential with a generic one', () => {
+        expect(
+            resolveObjectStoreConfig({
+                AWS_INTEGRATIONS_REGION: 'eu-west-1',
+                AWS_INTEGRATIONS_BUCKET_NAME: 'integrations',
+                AWS_INTEGRATIONS_ACCESS_KEY_ID: 'dedicated-id',
+                AWS_ACCESS_KEY_ID: 'generic-id',
+                AWS_SECRET_ACCESS_KEY: 'generic-secret'
+            }).credentials
+        ).toEqual({ accessKeyId: 'generic-id', secretAccessKey: 'generic-secret' });
+    });
+
+    it('omits credentials when neither pair is complete', () => {
+        expect(
+            resolveObjectStoreConfig({
+                AWS_INTEGRATIONS_REGION: 'eu-west-1',
+                AWS_INTEGRATIONS_BUCKET_NAME: 'integrations',
+                AWS_INTEGRATIONS_ACCESS_KEY_ID: 'dedicated-id',
+                AWS_SECRET_ACCESS_KEY: 'generic-secret'
+            }).credentials
+        ).toBeUndefined();
+    });
+
     it('prefers dedicated S3 integrations env vars over generic AWS ones', () => {
         expect(
             resolveObjectStoreConfig({

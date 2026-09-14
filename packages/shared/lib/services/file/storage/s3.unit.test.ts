@@ -65,6 +65,17 @@ describe(S3ObjectStore, () => {
         expect(command).toMatchObject({ input: { Bucket: bucket, Key: 'dest.js', CopySource: `${bucket}/src.js` } });
     });
 
+    it('percent-encodes CopySource keys', async () => {
+        const send = vi.fn().mockResolvedValue({});
+        const store = new S3ObjectStore(mockClient(send), bucket);
+
+        await store.copy('path/my file+v1#.js', 'dest.js');
+
+        expect(send.mock.calls[0]?.[0]).toMatchObject({
+            input: { CopySource: `${bucket}/path/my%20file%2Bv1%23.js` }
+        });
+    });
+
     it('deletes objects and no-ops on an empty list', async () => {
         const send = vi.fn().mockResolvedValue({});
         const store = new S3ObjectStore(mockClient(send), bucket);
@@ -76,6 +87,27 @@ describe(S3ObjectStore, () => {
         const command = send.mock.calls[0]?.[0];
         expect(command).toBeInstanceOf(DeleteObjectsCommand);
         expect(command).toMatchObject({ input: { Bucket: bucket, Delete: { Objects: [{ Key: 'a.js' }, { Key: 'b.js' }] } } });
+    });
+
+    it('splits deletes into batches of 1000', async () => {
+        const send = vi.fn().mockResolvedValue({});
+        const store = new S3ObjectStore(mockClient(send), bucket);
+        const keys = Array.from({ length: 1001 }, (_, i) => `${i}.js`);
+
+        await store.delete(keys);
+
+        expect(send).toHaveBeenCalledTimes(2);
+        expect(send.mock.calls[0]?.[0]).toMatchObject({ input: { Delete: { Objects: keys.slice(0, 1000).map((Key) => ({ Key })) } } });
+        expect(send.mock.calls[1]?.[0]).toMatchObject({ input: { Delete: { Objects: [{ Key: '1000.js' }] } } });
+    });
+
+    it('throws when S3 reports partial delete failures', async () => {
+        const send = vi.fn().mockResolvedValue({
+            Errors: [{ Key: 'a.js', Code: 'AccessDenied', Message: 'forbidden' }]
+        });
+        const store = new S3ObjectStore(mockClient(send), bucket);
+
+        await expect(store.delete(['a.js', 'b.js'])).rejects.toThrow(/a\.js: forbidden/);
     });
 
     it('compares content against the S3 ETag', async () => {

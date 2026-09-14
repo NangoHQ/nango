@@ -7,6 +7,12 @@ import { etagMatchesContent } from './hash.js';
 import type { ObjectStore } from './types.js';
 import type { S3Client } from '@aws-sdk/client-s3';
 
+export const S3_DELETE_BATCH_SIZE = 1000;
+
+function encodeCopySource(bucket: string, key: string): string {
+    return [bucket, ...key.split('/')].map(encodeURIComponent).join('/');
+}
+
 async function streamToString(body: Readable): Promise<string> {
     const chunks: Uint8Array[] = [];
     for await (const chunk of body) {
@@ -74,7 +80,7 @@ export class S3ObjectStore implements ObjectStore {
             new CopyObjectCommand({
                 Bucket: this.bucket,
                 Key: destinationKey,
-                CopySource: `${this.bucket}/${sourceKey}`
+                CopySource: encodeCopySource(this.bucket, sourceKey)
             })
         );
     }
@@ -84,14 +90,23 @@ export class S3ObjectStore implements ObjectStore {
             return;
         }
 
-        await this.client.send(
-            new DeleteObjectsCommand({
-                Bucket: this.bucket,
-                Delete: {
-                    Objects: keys.map((key) => ({ Key: key }))
-                }
-            })
-        );
+        for (let i = 0; i < keys.length; i += S3_DELETE_BATCH_SIZE) {
+            const batch = keys.slice(i, i + S3_DELETE_BATCH_SIZE);
+            const response = await this.client.send(
+                new DeleteObjectsCommand({
+                    Bucket: this.bucket,
+                    Delete: {
+                        Objects: batch.map((key) => ({ Key: key }))
+                    }
+                })
+            );
+
+            const errors = response.Errors ?? [];
+            if (errors.length > 0) {
+                const details = errors.map((error) => `${error.Key ?? 'unknown'}: ${error.Message ?? error.Code ?? 'delete failed'}`).join(', ');
+                throw new Error(`Failed to delete S3 objects: ${details}`);
+            }
+        }
     }
 
     async hasSameContent(key: string, content: string): Promise<boolean> {

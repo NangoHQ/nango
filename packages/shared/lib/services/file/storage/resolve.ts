@@ -52,13 +52,18 @@ export function isAzureConfigured(envs: ObjectStoreEnvs): boolean {
     return Boolean(envs.AZURE_INTEGRATIONS_ACCOUNT_NAME && envs.AZURE_INTEGRATIONS_CONTAINER_NAME);
 }
 
-function getS3Credentials(envs: ObjectStoreEnvs): S3ObjectStoreConfig['credentials'] {
-    const accessKeyId = envs.AWS_INTEGRATIONS_ACCESS_KEY_ID || envs.AWS_ACCESS_KEY_ID;
-    const secretAccessKey = envs.AWS_INTEGRATIONS_SECRET_ACCESS_KEY || envs.AWS_SECRET_ACCESS_KEY;
+function completeCredentialPair(accessKeyId: string | undefined, secretAccessKey: string | undefined): S3ObjectStoreConfig['credentials'] {
     if (!accessKeyId || !secretAccessKey) {
         return undefined;
     }
     return { accessKeyId, secretAccessKey };
+}
+
+function getS3Credentials(envs: ObjectStoreEnvs): S3ObjectStoreConfig['credentials'] {
+    return (
+        completeCredentialPair(envs.AWS_INTEGRATIONS_ACCESS_KEY_ID, envs.AWS_INTEGRATIONS_SECRET_ACCESS_KEY) ??
+        completeCredentialPair(envs.AWS_ACCESS_KEY_ID, envs.AWS_SECRET_ACCESS_KEY)
+    );
 }
 
 function s3Config(envs: ObjectStoreEnvs): S3ObjectStoreConfig {
