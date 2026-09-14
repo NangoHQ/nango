@@ -1,7 +1,14 @@
 // Reserved TLD (RFC 2606) used only to resolve relative paths; a returnTo that escapes this origin is rejected.
 const RETURN_TO_BASE_ORIGIN = 'https://internal.invalid';
 
+export const MAX_RETURN_TO_LENGTH = 1024;
+
 export function safeReturnTo(returnTo: string): string {
+    // Rejecting an over-long value here rather than at the request schema keeps it from blocking login.
+    if (returnTo.length > MAX_RETURN_TO_LENGTH) {
+        return '/';
+    }
+
     try {
         const url = new URL(returnTo, RETURN_TO_BASE_ORIGIN);
         if (url.origin === RETURN_TO_BASE_ORIGIN) {
