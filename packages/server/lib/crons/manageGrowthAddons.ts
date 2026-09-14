@@ -14,6 +14,14 @@ const cronMinutes = 60;
 const cronExpression = `*/${cronMinutes} * * * *`;
 const lockTtlMs = cronMinutes * 60 * 1000;
 
+type GrowthAddonSchedulingColumn = keyof Pick<DBPlan, 'growth_features_starts_at' | 'growth_features_ends_at'>;
+type GrowthAddonOperation = 'enable' | 'disable';
+
+const growthAddonOperations = {
+    enable: { hasGrowthFeatures: true, schedulingColumn: 'growth_features_starts_at' },
+    disable: { hasGrowthFeatures: false, schedulingColumn: 'growth_features_ends_at' }
+} as const satisfies Record<GrowthAddonOperation, { hasGrowthFeatures: boolean; schedulingColumn: GrowthAddonSchedulingColumn }>;
+
 export function manageGrowthAddonsCron(): void {
     if (!flagHasPlan) {
         return;
@@ -87,11 +95,10 @@ async function disableGrowthAddon(date: Date) {
     }
 }
 
-async function updateGrowthAddonState(date: Date, operation: 'enable' | 'disable'): Promise<number[]> {
+async function updateGrowthAddonState(date: Date, operation: GrowthAddonOperation): Promise<number[]> {
+    const { hasGrowthFeatures, schedulingColumn } = growthAddonOperations[operation];
     const accountIds = await Promise.all(
         getPlansWithAddonSupport().map(async (plan) => {
-            const hasGrowthFeatures = operation === 'enable';
-            const schedulingColumn = operation === 'enable' ? 'growth_features_starts_at' : 'growth_features_ends_at';
             const addonFlags = getGrowthAddonFlags(plan, hasGrowthFeatures);
 
             const updated = await db.knex
