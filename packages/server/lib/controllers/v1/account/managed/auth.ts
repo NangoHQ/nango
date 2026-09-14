@@ -5,11 +5,15 @@ import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 import { envs } from '../../../../env.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
+import { MAX_RETURN_TO_LENGTH, safeReturnTo } from '../returnTo.js';
 
-import type { InviteAccountState } from './postSignup.js';
+import type { ManagedAuthState } from './postSignup.js';
 import type { DBInvitation, DBTeam } from '@nangohq/types';
 import type { User, WorkOS } from '@workos-inc/node';
 import type { Request, Response } from 'express';
+
+// A returnTo at the cap, a uuid token and the JSON scaffolding, base64'd, with room to spare.
+const MAX_MANAGED_AUTH_STATE_LENGTH = (MAX_RETURN_TO_LENGTH + 256) * 2;
 
 interface FinalizeManagedAuthParams {
     req: Request;
@@ -36,13 +40,37 @@ interface ManagedAuthVerificationRequiredError {
     };
 }
 
-export function parseManagedAuthState(state: string): InviteAccountState | null {
+export function parseManagedAuthState(state: string): ManagedAuthState | null {
+    // The IdP hands `state` back to us verbatim, so anyone who can start a login controls its bytes.
+    if (state.length > MAX_MANAGED_AUTH_STATE_LENGTH) {
+        return null;
+    }
+
     try {
-        const res = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
-        if (!res || !(typeof res === 'object') || !('token' in res)) {
+        const res: unknown = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
+        if (!res || typeof res !== 'object') {
             return null;
         }
-        return res as InviteAccountState;
+
+        const { token, returnTo } = res as Record<string, unknown>;
+        if (token !== undefined && typeof token !== 'string') {
+            return null;
+        }
+        if (returnTo !== undefined && typeof returnTo !== 'string') {
+            return null;
+        }
+        if (token === undefined && returnTo === undefined) {
+            return null;
+        }
+
+        const parsed: ManagedAuthState = {};
+        if (token !== undefined) {
+            parsed.token = token;
+        }
+        if (returnTo !== undefined) {
+            parsed.returnTo = returnTo;
+        }
+        return parsed;
     } catch {
         return null;
     }
@@ -203,6 +231,9 @@ export async function finalizeManagedAuthentication({
 
     clearManagedAuthEmailVerification(req);
 
+    // Sanitized again here, not just where the state is built: the IdP round-trip makes it untrusted input.
+    const requestedDestination = state?.returnTo ? safeReturnTo(state.returnTo) : '/';
+
     let destination = '/';
     try {
         if (invitation && isNewUser) {
@@ -211,6 +242,8 @@ export async function finalizeManagedAuthentication({
         } else if (invitation) {
             // Existing user with an invitation: let them explicitly accept or decline on the invite page
             destination = `/signup/${invitation.token}`;
+        } else if (requestedDestination !== '/') {
+            destination = requestedDestination;
         } else if (isNewUser) {
             // New user without an invitation: redirect to account discovery onboarding
             destination = '/onboarding/account-discovery';
