@@ -551,11 +551,19 @@ const ENVS_SHAPE = z.object({
     AWS_REGION: z.string().optional(),
     AWS_BUCKET_NAME: z.string().optional(),
     AWS_ACCESS_KEY_ID: z.string().optional(),
+    AWS_SECRET_ACCESS_KEY: z.string().optional(),
 
     AWS_INTEGRATIONS_ACCESS_KEY_ID: z.string().optional(),
     AWS_INTEGRATIONS_SECRET_ACCESS_KEY: z.string().optional(),
     AWS_INTEGRATIONS_REGION: z.string().optional(),
     AWS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
+
+    GCS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
+
+    AZURE_INTEGRATIONS_ACCOUNT_NAME: z.string().optional(),
+    AZURE_INTEGRATIONS_CONTAINER_NAME: z.string().optional(),
+    AZURE_INTEGRATIONS_ACCOUNT_KEY: z.string().optional(),
+    OBJECT_STORE_DELETE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(16),
 
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
