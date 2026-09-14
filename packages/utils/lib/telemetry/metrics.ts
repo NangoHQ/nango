@@ -66,6 +66,7 @@ export enum Types {
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
 
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
+    FUNCTION_DURATION_MS = 'nango.jobs.function.duration_ms',
 
     WEBHOOK_INCOMING_RECEIVED = 'nango.webhook.incoming.received',
     WEBHOOK_INCOMING_RATE_LIMITED = 'nango.webhook.incoming.rateLimited',

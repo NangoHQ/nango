@@ -27,6 +27,7 @@ import { bigQueryClient } from '../clients.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { pubsub } from '../utils/pubsub.js';
+import { recordFunctionExecution } from './metrics.js';
 import { startScript } from './operations/start.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
@@ -341,6 +342,8 @@ export async function handleWebhookSuccess({
         }
     }
 
+    recordFunctionExecution({ accountId: team.id, type: 'webhook', success: true, durationMs: telemetryBag.durationMs, runtime: functionRuntime });
+
     void pubsub.publisher.publish({
         subject: 'usage',
         type: 'usage.function_executions',
@@ -546,6 +549,8 @@ async function onFailure({
             endUser,
             source: syncConfig?.source
         });
+        recordFunctionExecution({ accountId: team.id, type: 'webhook', success: false, durationMs: telemetryBag?.durationMs ?? 0, runtime: functionRuntime });
+
         void pubsub.publisher.publish({
             subject: 'usage',
             type: 'usage.function_executions',

@@ -38,6 +38,7 @@ import { logger } from '../logger.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { pubsub } from '../utils/pubsub.js';
+import { recordFunctionExecution } from './metrics.js';
 import { abortTaskWithId } from './operations/abort.js';
 import { startScript } from './operations/start.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
@@ -588,6 +589,8 @@ export async function handleSyncSuccess({
             }
         }
 
+        recordFunctionExecution({ accountId: team.id, type: 'sync', success: true, durationMs: telemetryBag.durationMs, runtime: functionRuntime });
+
         void pubsub.publisher.publish({
             subject: 'usage',
             type: 'usage.function_executions',
@@ -1018,6 +1021,8 @@ async function onFailure({
     }
 
     if (team) {
+        recordFunctionExecution({ accountId: team.id, type: 'sync', success: false, durationMs: telemetryBag?.durationMs ?? 0, runtime: functionRuntime });
+
         void pubsub.publisher.publish({
             subject: 'usage',
             type: 'usage.function_executions',
