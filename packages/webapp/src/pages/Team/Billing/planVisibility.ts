@@ -156,13 +156,12 @@ export function isRetiredPlan(code: DBPlan['name']): boolean {
     return PLAN_IS_RETIRED[code];
 }
 
-/** Only a scheduled migration sets `pending-activation`. `growthAddonState` never returns it. */
 export type GrowthAddonState = 'none' | 'active' | 'pending-removal' | 'pending-activation';
 
-/** A scheduled removal still reads as `has_growth_features` until its date, so the date separates the two. */
+/** Scheduled transitions retain their current flag until their date, so the dates separate them from steady states. */
 export function growthAddonState(plan: ApiPlan | null | undefined): GrowthAddonState {
     if (!plan?.has_growth_features) {
-        return 'none';
+        return plan?.growth_features_starts_at ? 'pending-activation' : 'none';
     }
     return plan.growth_features_ends_at ? 'pending-removal' : 'active';
 }

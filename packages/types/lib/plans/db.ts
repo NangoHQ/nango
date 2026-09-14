@@ -31,6 +31,7 @@ export interface DBPlan extends Timestamps {
     orb_future_plan_at: Date | null;
     orb_subscribed_at: Date | null;
     has_growth_features: boolean;
+    growth_features_starts_at: Date | null;
     growth_features_ends_at: Date | null;
 
     // Trial

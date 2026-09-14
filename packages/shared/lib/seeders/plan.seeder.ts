@@ -6,6 +6,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         account_id: 1,
         name: 'free',
         has_growth_features: false,
+        growth_features_starts_at: null,
         growth_features_ends_at: null,
         stripe_customer_id: null,
         stripe_payment_id: null,

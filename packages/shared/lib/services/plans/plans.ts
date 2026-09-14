@@ -176,6 +176,7 @@ export async function setGrowthAddon(
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
         has_growth_features: hasGrowthFeatures,
+        growth_features_starts_at: null,
         growth_features_ends_at: hasGrowthFeatures ? endsAt : null,
         ...flags
     });
@@ -314,6 +315,7 @@ function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPla
             case 'updated_at':
             // Growth add-on related, skip them
             case 'has_growth_features':
+            case 'growth_features_starts_at':
             case 'growth_features_ends_at':
                 break;
             // BOOLEAN FLAGS - keep override if false

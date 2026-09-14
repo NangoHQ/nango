@@ -275,6 +275,7 @@ function makePlan({
         account_id: 1,
         name: code,
         has_growth_features: hasGrowthFeatures,
+        growth_features_starts_at: null,
         growth_features_ends_at: null,
         created_at: new Date(),
         updated_at: new Date(),
