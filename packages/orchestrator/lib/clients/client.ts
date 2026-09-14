@@ -101,49 +101,32 @@ export class OrchestratorClient {
         }
     }
 
-    public async recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }, ClientError>> {
-        const res = await this.routeFetch(postRecurringRoute, {
-            // A duplicate schedule is a terminal answer, not a transient failure.
-            retryConfig: {
-                maxAttempts: 3,
-                maxWaitMs: Infinity,
-                delayMs: 50,
-                retryIf: (res) => 'error' in res && getErrorMessageForCode(res.error.payload, 'duplicate_schedule_name') === null
-            }
-        })({
-            body: {
-                name: props.name,
-                state: props.state,
-                startsAt: props.startsAt,
-                frequencyMs: props.frequencyMs,
-                group: props.group,
-                retry: props.retry,
-                timeoutSettingsInSecs: props.timeoutSettingsInSecs,
-                args: props.args
-            }
-        });
+    public async recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }, ClientError>>;
+    public async recurring(props: RecurringProps[]): Promise<Result<{ scheduleIds: string[] }, ClientError>>;
+    public async recurring(props: RecurringProps | RecurringProps[]): Promise<Result<{ scheduleId: string } | { scheduleIds: string[] }, ClientError>> {
+        const res = await this.routeFetch(postRecurringRoute)({ body: props });
         if ('error' in res) {
-            const duplicateMessage = getErrorMessageForCode(res.error.payload, 'duplicate_schedule_name');
-            if (duplicateMessage !== null) {
-                return Err({
-                    name: 'duplicate_schedule_name',
-                    message: duplicateMessage || 'Schedule with this name already exists',
-                    payload: {}
-                });
-            }
-            const startsAt = props.startsAt.toISOString();
             return Err({
                 name: res.error.code,
-                message: res.error.message || `Error creating recurring schedule`,
-                payload: { ...props, startsAt, response: res.error.payload as any } as JsonValue
+                message: res.error.message || 'Error creating recurring schedules',
+                payload: { response: res.error.payload as any }
             });
-        } else {
-            return Ok(res);
         }
+        return Ok(res);
     }
 
     public async pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
         return this.setSyncState({ scheduleName, state: 'PAUSED' });
+    }
+
+    public async deleteSchedules({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn> {
+        for (let offset = 0; offset < scheduleNames.length; offset += 1000) {
+            const result = await this.setSyncStates({ scheduleNames: scheduleNames.slice(offset, offset + 1000), state: 'DELETED' });
+            if (result.isErr()) {
+                return result;
+            }
+        }
+        return Ok(undefined);
     }
 
     public async unpauseSync({ scheduleName, preserveIfPaused }: { scheduleName: string; preserveIfPaused?: boolean | undefined }): Promise<VoidReturn> {
@@ -155,7 +138,7 @@ export class OrchestratorClient {
     }
 
     public async deleteSyncs({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn> {
-        return this.setSyncStates({ scheduleNames, state: 'DELETED' });
+        return this.deleteSchedules({ scheduleNames });
     }
 
     private async setSyncStates({ scheduleNames, state }: { scheduleNames: string[]; state: 'STARTED' | 'PAUSED' | 'DELETED' }): Promise<VoidReturn> {

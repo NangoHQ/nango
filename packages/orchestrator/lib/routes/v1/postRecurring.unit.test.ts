@@ -4,7 +4,6 @@ import getPort from 'get-port';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
-import { DuplicateScheduleNameError } from '@nangohq/scheduler';
 import { Err, Ok } from '@nangohq/utils';
 
 import { getServer } from '../../server.js';
@@ -13,7 +12,7 @@ import type { Scheduler } from '@nangohq/scheduler';
 import type { Server } from 'node:http';
 
 const scheduleId = '01994dc2-b6a7-7e46-964d-5f520e57a082';
-const recurring = vi.fn(() => Promise.resolve(Ok({ id: scheduleId })));
+const recurring = vi.fn(() => Promise.resolve(Ok([{ id: scheduleId }])));
 const scheduler = { recurring } as unknown as Scheduler;
 const rateLimiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'recurring-route-test', limit: 100, windowMs: 60_000 });
 const port = await getPort();
@@ -68,20 +67,22 @@ describe('POST /v1/recurring', () => {
 
         expect(response.status).toBe(200);
         await expect(response.json()).resolves.toStrictEqual({ scheduleId });
-        expect(recurring).toHaveBeenCalledWith({
-            name: body.name,
-            state: body.state,
-            startsAt: new Date(body.startsAt),
-            frequencyMs: body.frequencyMs,
-            groupKey: body.group.key,
-            retryMax: body.retry.max,
-            createdToStartedTimeoutSecs: body.timeoutSettingsInSecs.createdToStarted,
-            startedToCompletedTimeoutSecs: body.timeoutSettingsInSecs.startedToCompleted,
-            heartbeatTimeoutSecs: body.timeoutSettingsInSecs.heartbeat,
-            lastScheduledTaskId: null,
-            lastScheduledTaskState: null,
-            payload: { ...body.args, emptyCache: false }
-        });
+        expect(recurring).toHaveBeenCalledWith([
+            {
+                name: body.name,
+                state: body.state,
+                startsAt: new Date(body.startsAt),
+                frequencyMs: body.frequencyMs,
+                groupKey: body.group.key,
+                retryMax: body.retry.max,
+                createdToStartedTimeoutSecs: body.timeoutSettingsInSecs.createdToStarted,
+                startedToCompletedTimeoutSecs: body.timeoutSettingsInSecs.startedToCompleted,
+                heartbeatTimeoutSecs: body.timeoutSettingsInSecs.heartbeat,
+                lastScheduledTaskId: null,
+                lastScheduledTaskState: null,
+                payload: { ...body.args, emptyCache: false }
+            }
+        ]);
     });
 
     it('creates recurring function schedules', async () => {
@@ -102,23 +103,62 @@ describe('POST /v1/recurring', () => {
 
         expect(response.status).toBe(200);
         await expect(response.json()).resolves.toStrictEqual({ scheduleId });
-        expect(recurring).toHaveBeenCalledWith({
-            name: body.name,
-            state: body.state,
-            startsAt: new Date(body.startsAt),
-            frequencyMs: body.frequencyMs,
-            groupKey: body.group.key,
-            retryMax: body.retry.max,
-            createdToStartedTimeoutSecs: body.timeoutSettingsInSecs.createdToStarted,
-            startedToCompletedTimeoutSecs: body.timeoutSettingsInSecs.startedToCompleted,
-            heartbeatTimeoutSecs: body.timeoutSettingsInSecs.heartbeat,
-            lastScheduledTaskId: null,
-            lastScheduledTaskState: null,
-            payload: body.args
-        });
+        expect(recurring).toHaveBeenCalledWith([
+            {
+                name: body.name,
+                state: body.state,
+                startsAt: new Date(body.startsAt),
+                frequencyMs: body.frequencyMs,
+                groupKey: body.group.key,
+                retryMax: body.retry.max,
+                createdToStartedTimeoutSecs: body.timeoutSettingsInSecs.createdToStarted,
+                startedToCompletedTimeoutSecs: body.timeoutSettingsInSecs.startedToCompleted,
+                heartbeatTimeoutSecs: body.timeoutSettingsInSecs.heartbeat,
+                lastScheduledTaskId: null,
+                lastScheduledTaskState: null,
+                payload: body.args
+            }
+        ]);
     });
 
-    it('returns a conflict when the schedule already exists', async () => {
+    it('creates a batch of recurring schedules and returns their IDs', async () => {
+        const scheduleIds = [scheduleId, '01994dc2-b6a7-7e46-964d-5f520e57a083'];
+        const body = [123, 124].map((instanceId) => ({
+            name: `environment:789:function:${instanceId}`,
+            state: 'STARTED' as const,
+            startsAt: '2026-09-15T10:00:00.000Z',
+            frequencyMs: 300_000,
+            group: { key: 'function:environment:789', maxConcurrency: 0 },
+            retry: { max: 0 },
+            timeoutSettingsInSecs: { createdToStarted: 86_400, startedToCompleted: 900, heartbeat: 120 },
+            args: { type: 'function', instanceId }
+        }));
+        recurring.mockResolvedValueOnce(Ok(scheduleIds.map((id) => ({ id }))));
+
+        const response = await post(body);
+
+        expect(response.status).toBe(200);
+        await expect(response.json()).resolves.toStrictEqual({ scheduleIds });
+        expect(recurring).toHaveBeenCalledTimes(1);
+        expect(recurring).toHaveBeenCalledWith(
+            body.map((entry) => ({
+                name: entry.name,
+                state: entry.state,
+                startsAt: new Date(entry.startsAt),
+                frequencyMs: entry.frequencyMs,
+                groupKey: entry.group.key,
+                retryMax: entry.retry.max,
+                createdToStartedTimeoutSecs: entry.timeoutSettingsInSecs.createdToStarted,
+                startedToCompletedTimeoutSecs: entry.timeoutSettingsInSecs.startedToCompleted,
+                heartbeatTimeoutSecs: entry.timeoutSettingsInSecs.heartbeat,
+                lastScheduledTaskId: null,
+                lastScheduledTaskState: null,
+                payload: entry.args
+            }))
+        );
+    });
+
+    it('returns a server error when schedule creation fails', async () => {
         const body = {
             name: 'environment:789:function:123',
             state: 'STARTED' as const,
@@ -129,13 +169,13 @@ describe('POST /v1/recurring', () => {
             timeoutSettingsInSecs: { createdToStarted: 3600, startedToCompleted: 86_400, heartbeat: 300 },
             args: { type: 'function', instanceId: 123 }
         };
-        recurring.mockResolvedValueOnce(Err(new DuplicateScheduleNameError(body.name)) as never);
+        recurring.mockResolvedValueOnce(Err(new Error('database unavailable')) as never);
 
         const response = await post(body);
 
-        expect(response.status).toBe(409);
+        expect(response.status).toBe(500);
         await expect(response.json()).resolves.toStrictEqual({
-            error: { code: 'duplicate_schedule_name', message: `Schedule '${body.name}' already exists` }
+            error: { code: 'recurring_failed', message: 'database unavailable' }
         });
     });
 

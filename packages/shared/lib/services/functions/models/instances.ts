@@ -50,18 +50,28 @@ export async function upsert(db: Knex, instances: FunctionInstanceUpsert[]): Pro
     }
 }
 
-export async function search(trx: Knex, { functionConfigIds }: { functionConfigIds: number[] }): Promise<Result<DBFunctionInstance[]>> {
+export async function search(
+    trx: Knex,
+    { functionConfigIds, afterId, limit }: { functionConfigIds: number[]; afterId?: number; limit?: number }
+): Promise<Result<DBFunctionInstance[]>> {
     if (functionConfigIds.length === 0) {
         return Ok([]);
     }
 
     try {
-        const instances = await trx
+        const query = trx
             .from<DBFunctionInstance>(INSTANCES_TABLE)
             .select('*')
             .whereIn('function_config_id', functionConfigIds)
-            .whereNull('deleted_at');
-        return Ok(instances);
+            .whereNull('deleted_at')
+            .orderBy('id');
+        if (afterId !== undefined) {
+            query.where('id', '>', afterId);
+        }
+        if (limit !== undefined) {
+            query.limit(limit);
+        }
+        return Ok(await query);
     } catch (err) {
         return Err(new Error('failed_to_search_function_instances', { cause: err }));
     }
