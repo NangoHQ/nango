@@ -227,7 +227,12 @@ export const Signin: React.FC = () => {
                             </div>
                         )}
 
-                        <GoogleButton text="Sign in with Google" setServerErrorMessage={setServerErrorMessage} token={inviteToken} />
+                        <GoogleButton
+                            text="Sign in with Google"
+                            setServerErrorMessage={setServerErrorMessage}
+                            token={inviteToken}
+                            returnTo={next ?? undefined}
+                        />
                     </div>
                 )}
 
