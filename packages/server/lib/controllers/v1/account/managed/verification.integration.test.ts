@@ -287,7 +287,7 @@ describe(`POST ${route}`, () => {
         }
     });
 
-    it('should keep the destination across the email verification detour', async () => {
+    it('should keep the destination across the email verification detour, ahead of onboarding', async () => {
         const email = `${nanoid()}@example.com`;
 
         workosMocks.authenticateWithCode.mockRejectedValue({
@@ -320,7 +320,6 @@ describe(`POST ${route}`, () => {
         });
 
         expect(postVerificationRes.res.status).toBe(200);
-        // Beats the account-discovery onboarding this brand-new user would otherwise land on
         expect(postVerificationRes.json).toStrictEqual({ data: { url: 'http://localhost:3003/team/billing' } });
     });
 });

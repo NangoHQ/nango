@@ -12,7 +12,6 @@ import type { DBInvitation, DBTeam } from '@nangohq/types';
 import type { User, WorkOS } from '@workos-inc/node';
 import type { Request, Response } from 'express';
 
-// A returnTo at the cap, a uuid token and the JSON scaffolding, base64'd, with room to spare.
 const MAX_MANAGED_AUTH_STATE_LENGTH = (MAX_RETURN_TO_LENGTH + 256) * 2;
 
 interface FinalizeManagedAuthParams {
@@ -231,7 +230,7 @@ export async function finalizeManagedAuthentication({
 
     clearManagedAuthEmailVerification(req);
 
-    // Sanitized again here, not just where the state is built: the IdP round-trip makes it untrusted input.
+    // The state came back through the IdP. Sanitize before it reaches the redirect.
     const requestedDestination = state?.returnTo ? safeReturnTo(state.returnTo) : '/';
 
     let destination = '/';
