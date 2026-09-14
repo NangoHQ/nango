@@ -123,6 +123,7 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, 
     for (const bucket of costs.data) {
         const end = Date.parse(bucket.timeframe_end);
         if (Number.isNaN(end)) {
+            report(new Error('orb_unparseable_cost_bucket_date'), { field: 'timeframe_end', value: bucket.timeframe_end });
             continue;
         }
         if (Number.isNaN(periodEnd) || end > periodEnd) {
