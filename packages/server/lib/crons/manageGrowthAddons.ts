@@ -2,11 +2,11 @@ import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
-import { PLANS_WITH_GROWTH_ADD_ON } from '@nangohq/shared';
+import { getGrowthAddonFlags, getPlanDefinition, PLANS_WITH_GROWTH_ADD_ON } from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics } from '@nangohq/utils';
 
 import type { Lock } from '@nangohq/kvstore';
-import type { DBPlan } from '@nangohq/types';
+import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
 const logger = getLogger('cron.growthFeatures');
 
@@ -34,7 +34,7 @@ export function manageGrowthAddonsCron(): void {
     });
 }
 
-export async function exec(now = new Date()): Promise<void> {
+export async function exec(date = new Date()): Promise<void> {
     const locking = await getLocking();
     let lock: Lock | undefined;
     try {
@@ -46,8 +46,8 @@ export async function exec(now = new Date()): Promise<void> {
 
     try {
         await reportCorruptedPlans();
-        await enableGrowthAddon(now);
-        await disableGrowthAddon(now);
+        await enableGrowthAddon(date);
+        await disableGrowthAddon(date);
     } finally {
         await locking.release(lock);
     }
@@ -73,30 +73,52 @@ async function reportCorruptedPlans() {
     metrics.gauge(metrics.Types.GROWTH_ADDON_CORRUPTED_STATE_COUNT, corrupted.length);
 }
 
-async function enableGrowthAddon(snapshot: Date) {
-    const enabled = await db.knex
-        .from<DBPlan>('plans')
-        .whereIn('name', PLANS_WITH_GROWTH_ADD_ON)
-        .whereNotNull('growth_features_starts_at')
-        .where('growth_features_starts_at', '<=', snapshot)
-        .update({ has_growth_features: true, growth_features_starts_at: null, updated_at: db.knex.fn.now() })
-        .returning('*');
-
-    if (enabled.length > 0) {
-        logger.info('Enabled growth add-on for accounts.', { accountIds: enabled.map((p) => p.account_id) });
+async function enableGrowthAddon(date: Date) {
+    const accountIds = await updateGrowthAddonState(date, 'enable');
+    if (accountIds.length > 0) {
+        logger.info('Enabled growth add-on for accounts.', { accountIds: accountIds });
     }
 }
 
-async function disableGrowthAddon(snapshot: Date) {
-    const disabled = await db.knex
-        .from<DBPlan>('plans')
-        .where('has_growth_features', true)
-        .whereNotNull('growth_features_ends_at')
-        .where('growth_features_ends_at', '<=', snapshot)
-        .update({ has_growth_features: false, growth_features_ends_at: null, updated_at: db.knex.fn.now() })
-        .returning('*');
-
-    if (disabled.length > 0) {
-        logger.info('Disabled growth add-on for accounts.', { accountIds: disabled.map((p) => p.account_id) });
+async function disableGrowthAddon(date: Date) {
+    const accountIds = await updateGrowthAddonState(date, 'disable');
+    if (accountIds.length > 0) {
+        logger.info('Disabled growth add-on for accounts.', { accountIds: accountIds });
     }
+}
+
+async function updateGrowthAddonState(date: Date, operation: 'enable' | 'disable'): Promise<number[]> {
+    const accountIds = await Promise.all(
+        getPlansWithAddonSupport().map(async (plan) => {
+            const hasGrowthFeatures = operation === 'enable';
+            const schedulingColumn = operation === 'enable' ? 'growth_features_starts_at' : 'growth_features_ends_at';
+            const addonFlags = getGrowthAddonFlags(plan, hasGrowthFeatures);
+
+            const updated = await db.knex
+                .from<DBPlan>('plans')
+                .where('name', plan.code)
+                .whereNotNull(schedulingColumn)
+                .where(schedulingColumn, '<=', date)
+                .update({
+                    has_growth_features: hasGrowthFeatures,
+                    [schedulingColumn]: null,
+                    ...addonFlags,
+                    updated_at: db.knex.fn.now()
+                })
+                .returning('account_id');
+
+            return updated.map((plan) => plan.account_id);
+        })
+    );
+    return accountIds.flat();
+}
+
+function getPlansWithAddonSupport(): PlanDefinition[] {
+    return PLANS_WITH_GROWTH_ADD_ON.map((planCode) => {
+        const definition = getPlanDefinition(planCode);
+        if (!definition) {
+            throw new Error(`Missing plan definition for ${planCode}`);
+        }
+        return definition;
+    });
 }

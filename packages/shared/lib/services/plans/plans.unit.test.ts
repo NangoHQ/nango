@@ -1,11 +1,30 @@
 import { describe, expect, it } from 'vitest';
 
 import { getPlanDefinition, plansList } from './definitions.js';
-import { mergeFlags } from './plans.js';
+import { getGrowthAddonFlags, mergeFlags } from './plans.js';
 
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
 describe('mergeFlags', () => {
+    it('restores growth feature flags to the plan defaults when the add-on is disabled', () => {
+        const definition = getPlanDefinition('pay-as-you-go')!;
+
+        expect(getGrowthAddonFlags(definition, true)).toMatchObject({
+            has_otel: true,
+            has_rbac: true,
+            can_override_docs_connect_url: true,
+            can_customize_connect_ui_theme: true,
+            can_disable_connect_ui_watermark: true
+        });
+        expect(getGrowthAddonFlags(definition, false)).toMatchObject({
+            has_otel: false,
+            has_rbac: false,
+            can_override_docs_connect_url: false,
+            can_customize_connect_ui_theme: false,
+            can_disable_connect_ui_watermark: false
+        });
+    });
+
     it('should cap only connections and function runtime on the free plan', () => {
         expect(getPlanDefinition('free')?.flags).toMatchObject({
             connections_max: 10,
