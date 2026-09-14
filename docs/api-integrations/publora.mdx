@@ -83,7 +83,6 @@ Publora does not use scopes. An API key grants access to every social account co
 
 ## API gotchas
 
-- Publora authenticates with an `x-publora-key: API_KEY` request header, not `Authorization: Bearer`.
 - Every endpoint lives under `/api/v1`, so proxy calls look like `/api/v1/create-post`.
 - Posting targets are opaque connection IDs in the form `platform-id`, for example `linkedin-n20H8w1Omj`. Read them from `GET /api/v1/platform-connections` and pass them verbatim in `platforms`; they cannot be constructed from a platform name.
 - `POST /api/v1/create-post` without `scheduledTime` saves a draft. With an ISO 8601 UTC timestamp it schedules the post. A timestamp in the past is treated as immediate.
