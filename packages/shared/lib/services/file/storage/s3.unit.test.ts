@@ -110,6 +110,22 @@ describe(S3ObjectStore, () => {
         await expect(store.delete(['a.js', 'b.js'])).rejects.toThrow(/a\.js: forbidden/);
     });
 
+    it('continues later batches when an earlier batch has partial failures', async () => {
+        const send = vi
+            .fn()
+            .mockResolvedValueOnce({
+                Errors: [{ Key: '0.js', Code: 'AccessDenied', Message: 'forbidden' }]
+            })
+            .mockResolvedValueOnce({
+                Errors: [{ Key: '1000.js', Code: 'AccessDenied', Message: 'also forbidden' }]
+            });
+        const store = new S3ObjectStore(mockClient(send), bucket);
+        const keys = Array.from({ length: 1001 }, (_, i) => `${i}.js`);
+
+        await expect(store.delete(keys)).rejects.toThrow(/0\.js: forbidden.*1000\.js: also forbidden/);
+        expect(send).toHaveBeenCalledTimes(2);
+    });
+
     it('compares content against the S3 ETag', async () => {
         const content = 'source';
         const send = vi.fn().mockImplementation((command) => {

@@ -90,6 +90,8 @@ export class S3ObjectStore implements ObjectStore {
             return;
         }
 
+        const errors: string[] = [];
+
         for (let i = 0; i < keys.length; i += S3_DELETE_BATCH_SIZE) {
             const batch = keys.slice(i, i + S3_DELETE_BATCH_SIZE);
             const response = await this.client.send(
@@ -101,11 +103,13 @@ export class S3ObjectStore implements ObjectStore {
                 })
             );
 
-            const errors = response.Errors ?? [];
-            if (errors.length > 0) {
-                const details = errors.map((error) => `${error.Key ?? 'unknown'}: ${error.Message ?? error.Code ?? 'delete failed'}`).join(', ');
-                throw new Error(`Failed to delete S3 objects: ${details}`);
+            for (const error of response.Errors ?? []) {
+                errors.push(`${error.Key ?? 'unknown'}: ${error.Message ?? error.Code ?? 'delete failed'}`);
             }
+        }
+
+        if (errors.length > 0) {
+            throw new Error(`Failed to delete S3 objects: ${errors.join(', ')}`);
         }
     }
 
