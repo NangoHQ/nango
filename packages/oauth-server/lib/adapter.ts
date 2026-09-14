@@ -65,24 +65,47 @@ class PostgresOAuthAdapter implements Adapter {
         await this.options.knex.transaction(async (trx) => {
             if (grantIdHash) {
                 await lockGrant(trx, grantIdHash);
-                const revoked = await trx(OAUTH_SERVER_ARTIFACTS_TABLE)
-                    .where({ model: REVOCATION_MODEL, artifact_id_hash: grantIdHash })
-                    .where('expires_at', '>', now)
-                    .first<Pick<ArtifactRow, 'artifact_id_hash'>>('artifact_id_hash');
-                if (revoked) {
-                    throw new Error('Cannot persist an artifact for a revoked OAuth grant');
-                }
             }
 
-            await trx(OAUTH_SERVER_ARTIFACTS_TABLE)
-                .insert({
-                    model: this.model,
-                    artifact_id_hash: artifactIdHash,
-                    ...mutableFields,
-                    created_at: now
-                })
+            const [upserted] = await trx(OAUTH_SERVER_ARTIFACTS_TABLE)
+                .insert(
+                    trx.raw(
+                        `(
+                            model, artifact_id_hash, payload_encrypted, grant_id_hash, session_uid_hash,
+                            expires_at, consumed_at, revoked_at, created_at, updated_at
+                        )
+                        SELECT
+                            :model, :artifactIdHash, :payloadEncrypted, :grantIdHash, :sessionUidHash,
+                            :expiresAt, :consumedAt, :revokedAt, :createdAt, :updatedAt
+                        WHERE NOT EXISTS (
+                            SELECT 1
+                            FROM :table:
+                            WHERE model = :revocationModel
+                                AND artifact_id_hash = :grantIdHash
+                                AND expires_at > :updatedAt
+                        )`,
+                        {
+                            table: OAUTH_SERVER_ARTIFACTS_TABLE,
+                            revocationModel: REVOCATION_MODEL,
+                            model: this.model,
+                            artifactIdHash,
+                            payloadEncrypted: mutableFields.payload_encrypted,
+                            grantIdHash,
+                            sessionUidHash: mutableFields.session_uid_hash,
+                            expiresAt: mutableFields.expires_at,
+                            consumedAt: mutableFields.consumed_at,
+                            revokedAt: mutableFields.revoked_at,
+                            createdAt: now,
+                            updatedAt: mutableFields.updated_at
+                        }
+                    )
+                )
                 .onConflict(['model', 'artifact_id_hash'])
-                .merge(mutableFields);
+                .merge(mutableFields)
+                .returning<Pick<ArtifactRow, 'artifact_id_hash'>[]>('artifact_id_hash');
+            if (!upserted) {
+                throw new Error('Cannot persist an artifact for a revoked OAuth grant');
+            }
         });
     }
 
