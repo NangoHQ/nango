@@ -7,7 +7,7 @@ import { contentMd5Base64 } from './hash.js';
 
 import type { GcsBucketClient, GcsFileClient } from './gcs.js';
 
-function memoryBucket(): { bucket: GcsBucketClient; files: Map<string, string> } {
+function memoryBucket({ failDeletes = new Set<string>() }: { failDeletes?: Set<string> } = {}): { bucket: GcsBucketClient; files: Map<string, string> } {
     const files = new Map<string, string>();
 
     const bucket: GcsBucketClient = {
@@ -36,6 +36,9 @@ function memoryBucket(): { bucket: GcsBucketClient; files: Map<string, string> }
                     return Promise.resolve();
                 },
                 delete() {
+                    if (failDeletes.has(name)) {
+                        return Promise.reject(new Error('forbidden'));
+                    }
                     files.delete(name);
                     return Promise.resolve();
                 },
@@ -92,5 +95,20 @@ describe(GcsObjectStore, () => {
         await expect(store.hasSameContent('path/file.js', 'source')).resolves.toBe(true);
         await expect(store.hasSameContent('path/file.js', 'other')).resolves.toBe(false);
         await expect(store.hasSameContent('missing.js', 'source')).resolves.toBe(false);
+    });
+
+    it('continues remaining deletes and reports every failed key', async () => {
+        const { bucket, files } = memoryBucket({ failDeletes: new Set(['fail.js', 'also-fail.js']) });
+        const store = new GcsObjectStore(bucket);
+        await store.put('keep.js', 'keep');
+        await store.put('fail.js', 'fail');
+        await store.put('ok.js', 'ok');
+        await store.put('also-fail.js', 'fail');
+
+        await expect(store.delete(['fail.js', 'ok.js', 'also-fail.js'])).rejects.toThrow(/fail\.js: forbidden.*also-fail\.js: forbidden/);
+        expect(files.has('keep.js')).toBe(true);
+        expect(files.has('ok.js')).toBe(false);
+        expect(files.has('fail.js')).toBe(true);
+        expect(files.has('also-fail.js')).toBe(true);
     });
 });

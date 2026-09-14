@@ -3,6 +3,7 @@ import { Readable } from 'node:stream';
 import { DefaultAzureCredential } from '@azure/identity';
 import { BlobServiceClient, StorageSharedKeyCredential } from '@azure/storage-blob';
 
+import { deleteEach } from './delete.js';
 import { contentMd5Digest } from './hash.js';
 
 import type { AzureObjectStoreConfig } from './resolve.js';
@@ -60,7 +61,7 @@ export class AzureObjectStore implements ObjectStore {
     }
 
     async delete(keys: string[]): Promise<void> {
-        await Promise.all(keys.map((key) => this.container.getBlockBlobClient(key).deleteIfExists()));
+        await deleteEach(keys, (key) => this.container.getBlockBlobClient(key).deleteIfExists(), 'Azure');
     }
 
     async hasSameContent(key: string, content: string): Promise<boolean> {

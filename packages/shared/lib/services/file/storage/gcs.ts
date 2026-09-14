@@ -1,5 +1,6 @@
 import { Storage } from '@google-cloud/storage';
 
+import { deleteEach } from './delete.js';
 import { contentMd5Base64 } from './hash.js';
 
 import type { ObjectStore } from './types.js';
@@ -49,7 +50,7 @@ export class GcsObjectStore implements ObjectStore {
     }
 
     async delete(keys: string[]): Promise<void> {
-        await Promise.all(keys.map((key) => this.bucket.file(key).delete({ ignoreNotFound: true })));
+        await deleteEach(keys, (key) => this.bucket.file(key).delete({ ignoreNotFound: true }), 'GCS');
     }
 
     async hasSameContent(key: string, content: string): Promise<boolean> {

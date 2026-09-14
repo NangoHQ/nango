@@ -2,6 +2,7 @@ import { Readable } from 'node:stream';
 
 import { CopyObjectCommand, DeleteObjectsCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 
+import { formatDeleteError, throwIfDeleteErrors } from './delete.js';
 import { etagMatchesContent } from './hash.js';
 
 import type { ObjectStore } from './types.js';
@@ -104,13 +105,11 @@ export class S3ObjectStore implements ObjectStore {
             );
 
             for (const error of response.Errors ?? []) {
-                errors.push(`${error.Key ?? 'unknown'}: ${error.Message ?? error.Code ?? 'delete failed'}`);
+                errors.push(formatDeleteError(error.Key, error.Message ?? error.Code));
             }
         }
 
-        if (errors.length > 0) {
-            throw new Error(`Failed to delete S3 objects: ${errors.join(', ')}`);
-        }
+        throwIfDeleteErrors('S3', errors);
     }
 
     async hasSameContent(key: string, content: string): Promise<boolean> {
