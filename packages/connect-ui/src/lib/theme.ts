@@ -4,7 +4,6 @@ import { useGlobal } from './store';
 
 import type { ConnectUIThemeSettings, Theme } from '@nangohq/types';
 
-// Nothing else guarantees a theme: a route loaded directly never runs the connect session request.
 const THEME_TIMEOUT_MS = 10000;
 
 export function isValidTheme(theme: string): theme is Theme {
@@ -16,7 +15,6 @@ export function useAppliedTheme(): { appliedTheme: 'light' | 'dark'; isPending: 
     const settings = useGlobal((state) => state.settings);
     const systemTheme = useSystemTheme();
 
-    // The OS preference until the settings land. For a `system` default that is already the configured theme.
     const appliedTheme = !theme || theme === 'system' ? systemTheme : theme;
 
     useEffect(() => {
@@ -27,7 +25,6 @@ export function useAppliedTheme(): { appliedTheme: 'light' | 'dark'; isPending: 
         return () => clearTimeout(timeout);
     }, [theme]);
 
-    // Before paint, so the first frame of a themed view is never the wrong theme.
     useLayoutEffect(() => {
         document.documentElement.classList.toggle('dark', appliedTheme === 'dark');
         if (settings) {

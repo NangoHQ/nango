@@ -25,7 +25,6 @@ const STORE_DEFAULTS: StorePatch = {
     isAuthLink: false,
     detectClosedAuthWindow: false,
     isPreview: false,
-    // Views render inside Layout's dialog, which stays unpainted until the theme is known.
     theme: 'light',
     settings: null
 };
