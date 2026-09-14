@@ -79,7 +79,7 @@ class JobsClient {
                     internalAuthToken
                 });
             }
-            const body = await resp.text().catch(() => '');
+            const body = (await resp.text().catch(() => '')).slice(0, 1000);
             return Err(`put_task_failed: status=${resp.status} response='${body}'`);
         }
         return Ok(undefined as PutTask['Success']);
