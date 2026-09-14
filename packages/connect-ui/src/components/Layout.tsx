@@ -36,7 +36,7 @@ export const Layout: React.FC = () => {
     const { t } = useI18n();
     const { appliedTheme, isPending } = useAppliedTheme();
     const showWatermark = settings?.showWatermark ?? false;
-    // Unpainted, not unmounted: the request that resolves the theme runs in the routed view.
+    // Hide the dialog rather than skip rendering it: the code inside fetches the theme.
     const themePendingClass = isPending ? 'opacity-0' : '';
 
     useClickAway(ref, (event: MouseEvent | TouchEvent) => {
