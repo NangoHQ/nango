@@ -1106,14 +1106,17 @@ class OAuthController {
                 return;
             }
 
-            const { metadata, resourceMetadata } = discoveryResult;
+            const { metadata, resourceMetadata, scopes: discoveredScopes } = discoveryResult;
 
-            const configuredScopes = config.oauth_scopes
-                ?.split(',')
-                .map((s) => s.trim())
-                .filter(Boolean)
-                .join(provider.scope_separator || ' ');
-            const scopes = configuredScopes || discoveryResult.scopes;
+            const scopeSeparator = provider.scope_separator || ' ';
+            const scopes =
+                config.oauth_scopes === null || config.oauth_scopes === undefined
+                    ? discoveredScopes?.join(scopeSeparator)
+                    : config.oauth_scopes
+                          .split(',')
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                          .join(scopeSeparator);
 
             const clientMetadata: OAuthClientMetadata = {
                 redirect_uris: [callbackUrl],
