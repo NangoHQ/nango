@@ -17023,7 +17023,7 @@ omnisend:
         base_url: https://api.omnisend.com
         headers:
             authorization: Omnisend-API-Key ${apiKey}
-            omnisend-version: '2026-03-15'
+            omnisend-version: ${connectionConfig.apiVersion} || '2026-03-15'
         verification:
             method: GET
             endpoints:
@@ -17031,14 +17031,21 @@ omnisend:
         retry:
             after:
                 - 'retry-after'
-    docs: https://nango.dev/docs/integrations/all/omnisend
-    docs_connect: https://nango.dev/docs/integrations/all/omnisend/connect
+    docs: https://nango.dev/docs/api-integrations/omnisend
+    docs_connect: https://nango.dev/docs/api-integrations/omnisend/connect
+    connection_config:
+        apiVersion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
     credentials:
         apiKey:
             type: string
             title: API Key
             description: Your Omnisend API key with the scopes required by your selected functions.
-            secret: true
+            example: 1a2b****************************9z
+            pattern: '^[A-Za-z0-9_-]+$'
             doc_section: '#step-2-create-an-omnisend-api-key'
 
 openai:
