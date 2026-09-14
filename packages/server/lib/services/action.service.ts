@@ -7,7 +7,7 @@ import { getOrchestrator } from '../utils/utils.js';
 
 import type { LogContextOrigin } from '@nangohq/logs';
 import type { NangoError } from '@nangohq/shared';
-import type { AsyncActionResponse, DBEnvironment, DBTeam, Result } from '@nangohq/types';
+import type { AsyncActionResponse, DBEnvironment, DBTeam, OperationActor, Result } from '@nangohq/types';
 import type { Span } from 'dd-trace';
 
 export type ActionExecutionSuccess = AsyncActionResponse | { data: unknown };
@@ -48,7 +48,8 @@ export async function executeAction({
     input,
     isAsync,
     retryMax,
-    span
+    span,
+    actor
 }: {
     account: DBTeam;
     environment: DBEnvironment;
@@ -59,6 +60,7 @@ export async function executeAction({
     isAsync: boolean;
     retryMax: number;
     span: Span;
+    actor?: OperationActor | undefined;
 }): Promise<ActionExecution> {
     let logCtx: LogContextOrigin | undefined;
     try {
@@ -87,7 +89,7 @@ export async function executeAction({
             .setTag('nango.providerConfigKey', providerConfigKey);
 
         logCtx = await logContextGetter.create(
-            { operation: { type: 'action', action: 'run' }, expiresAt: defaultOperationExpiration.action() },
+            { operation: { type: 'action', action: 'run' }, expiresAt: defaultOperationExpiration.action(), actor },
             {
                 account,
                 environment,

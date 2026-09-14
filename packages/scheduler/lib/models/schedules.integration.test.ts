@@ -4,6 +4,7 @@ import { uuidv7 } from 'uuidv7';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { getTestDbClient } from '../db/helpers.test.js';
+import { isDuplicateScheduleNameError } from '../errors.js';
 import * as schedules from './schedules.js';
 
 import type { Schedule } from '../types.js';
@@ -39,6 +40,69 @@ describe('Schedules', () => {
             deletedAt: null,
             lastScheduledTaskId: null
         });
+    });
+    it('should fail to create a schedule when it already exists', async () => {
+        const schedule = await createSchedule(db);
+
+        const duplicate = await schedules.create(db, {
+            name: schedule.name,
+            state: 'PAUSED',
+            payload: { foo: 'updated' },
+            startsAt: new Date(),
+            frequencyMs: 600_000,
+            groupKey: 'updated-group-key',
+            retryMax: 2,
+            createdToStartedTimeoutSecs: 2,
+            startedToCompletedTimeoutSecs: 3,
+            heartbeatTimeoutSecs: 4,
+            lastScheduledTaskId: null,
+            lastScheduledTaskState: null
+        });
+
+        expect(duplicate.isErr()).toBe(true);
+        expect(duplicate.isErr() && isDuplicateScheduleNameError(duplicate.error)).toBe(true);
+        const existing = (await schedules.get(db, schedule.id)).unwrap();
+        expect(existing.payload).toEqual({ foo: 'bar' });
+    });
+    it('should resurrect a soft-deleted schedule', async () => {
+        const schedule = await createSchedule(db);
+        const taskId = uuidv7();
+        await schedules.setLastScheduledTask(db, [{ id: schedule.id, taskId, taskState: 'SUCCEEDED' }]);
+        await schedules.remove(db, schedule.id);
+
+        const resurrected = (
+            await schedules.create(db, {
+                name: schedule.name,
+                state: 'PAUSED',
+                payload: { foo: 'restored' },
+                startsAt: new Date(),
+                frequencyMs: 600_000,
+                groupKey: 'restored-group-key',
+                retryMax: 2,
+                createdToStartedTimeoutSecs: 2,
+                startedToCompletedTimeoutSecs: 3,
+                heartbeatTimeoutSecs: 4,
+                lastScheduledTaskId: null,
+                lastScheduledTaskState: null
+            })
+        ).unwrap();
+
+        expect(resurrected).toMatchObject({
+            id: schedule.id,
+            name: schedule.name,
+            state: 'PAUSED',
+            payload: { foo: 'restored' },
+            frequencyMs: 600_000,
+            groupKey: 'restored-group-key',
+            retryMax: 2,
+            createdToStartedTimeoutSecs: 2,
+            startedToCompletedTimeoutSecs: 3,
+            heartbeatTimeoutSecs: 4,
+            deletedAt: null,
+            lastScheduledTaskId: null,
+            lastScheduledTaskState: null
+        });
+        expect(resurrected.createdAt).toEqual(schedule.createdAt);
     });
     it('should be successfully retrieved', async () => {
         const schedule = await createSchedule(db);

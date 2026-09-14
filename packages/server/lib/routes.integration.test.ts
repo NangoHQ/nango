@@ -119,6 +119,30 @@ describe('route', () => {
         });
     });
 
+    describe('POST /proxy', () => {
+        it('should return a clear 400 instead of a generic 500 for an unsupported multipart Content-Type', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await fetch(`${api.url}/proxy/some/path`, {
+                method: 'POST',
+                body: '--boundary123\r\nContent-Type: application/json\r\n\r\n{}\r\n--boundary123--',
+                headers: {
+                    Authorization: `Bearer ${apiKey.secret}`,
+                    'Provider-Config-Key': 'does-not-matter',
+                    'Connection-Id': 'does-not-matter',
+                    'Content-Type': 'multipart/related; boundary=boundary123'
+                }
+            });
+
+            expect(res.status).toBe(400);
+            expect(await res.json()).toStrictEqual({
+                error: {
+                    code: 'unsupported_content_type',
+                    message: expect.stringContaining('Unsupported content type: multipart/related')
+                }
+            });
+        });
+    });
+
     describe('Authenticated endpoints', () => {
         it('should return 401 if unknown bearer token', async () => {
             const res = await fetch(`${api.url}/providers`, {

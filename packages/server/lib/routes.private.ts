@@ -105,6 +105,7 @@ import { getPlainHmac } from './controllers/v1/plain/getHmac.js';
 import { deleteSpendAlert } from './controllers/v1/plans/billing/deleteSpendAlert.js';
 import { getBillingPeriodCosts } from './controllers/v1/plans/billing/getBillingPeriodCosts.js';
 import { getOverdueInvoices } from './controllers/v1/plans/billing/getOverdueInvoices.js';
+import { getProjectedCosts } from './controllers/v1/plans/billing/getProjectedCosts.js';
 import { getSpendAlert } from './controllers/v1/plans/billing/getSpendAlert.js';
 import { getUpcomingInvoice } from './controllers/v1/plans/billing/getUpcomingInvoice.js';
 import { putInvoicingDetails } from './controllers/v1/plans/billing/putInvoicingDetails.js';
@@ -297,6 +298,7 @@ web.route('/plans/billing/invoicing').put(webAuth, auditBillingDetailsChanged, c
 web.route('/plans/billing/overdue').get(webAuth, getOverdueInvoices);
 web.route('/plans/billing/upcoming-invoice').get(webAuth, getUpcomingInvoice);
 web.route('/plans/billing/period-costs').get(webAuth, getBillingPeriodCosts);
+web.route('/plans/billing/projected-costs').get(webAuth, getProjectedCosts);
 web.route('/plans/billing/spend-alert').get(webAuth, can('account:billing:spend_alert:read'), getSpendAlert);
 web.route('/plans/billing/spend-alert').put(webAuth, auditBillingSpendAlertChanged, can('account:billing:spend_alert:update'), putSpendAlert);
 web.route('/plans/billing/spend-alert').delete(webAuth, auditBillingSpendAlertRemoved, can('account:billing:spend_alert:update'), deleteSpendAlert);

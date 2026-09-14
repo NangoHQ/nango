@@ -5,13 +5,7 @@ export const freePlan: PlanDefinition = {
     title: 'Free',
     description: 'For hobby and testing.',
     prevPlan: null,
-    // TODO: drop 'starter-v2' and 'growth-v2' when pay-as-you-go stops being hidden.
-    // They're sunset and shouldn't be sold to new accounts, but removing them before
-    // the pay-as-you-go card is exposed would leave Free accounts with no self-serve
-    // upgrade at all: their cards fall back to "Contact us" and postChange rejects
-    // the transition. Existing customers are unaffected either way, their moves are
-    // driven by starterV2Plan/growthV2Plan and the downgrade matrix.
-    nextPlan: ['starter-v2', 'growth-v2', 'pay-as-you-go', 'enterprise'],
+    nextPlan: ['pay-as-you-go', 'enterprise'],
     canChange: true,
     basePrice: 0,
     flags: {
@@ -55,6 +49,7 @@ export const starterV1Plan: PlanDefinition = {
     nextPlan: null,
     canChange: true,
     hidden: true,
+    retired: true,
     basePrice: 50,
     flags: {
         api_rate_limit_size: 'l',
@@ -96,7 +91,9 @@ export const growthV1Plan: PlanDefinition = {
     nextPlan: null,
     canChange: true,
     hidden: true,
+    retired: true,
     basePrice: 500,
+    keepsGrowthAddOnOnMigration: true,
     flags: {
         api_rate_limit_size: 'xl',
         environments_max: 10,
@@ -137,6 +134,7 @@ export const starterV2Plan: PlanDefinition = {
     prevPlan: ['free'],
     nextPlan: ['enterprise'],
     canChange: true,
+    retired: true,
     basePrice: 50,
     flags: {
         ...starterV1Plan.flags,
@@ -154,7 +152,9 @@ export const growthV2Plan: PlanDefinition = {
     prevPlan: ['free'],
     nextPlan: ['enterprise'],
     canChange: true,
+    retired: true,
     basePrice: 500,
+    keepsGrowthAddOnOnMigration: true,
     flags: growthV1Plan.flags
 };
 
@@ -165,9 +165,7 @@ export const payAsYouGoPlan: PlanDefinition = {
     prevPlan: ['free'],
     nextPlan: ['enterprise'],
     canChange: true,
-    // TODO: flip the flag once we're ready to roll the plan out.
-    // Not offered in the dashboard yet, the billing page work lands separately.
-    // Flipping this to false is the only switch needed to expose the plan.
+    // Flipping this exposes the plan only in the legacy card set, which has no copy for it
     hidden: true,
     // TODO: this plan has no base fee — it bills fully in arrears against a monthly minimum — so
     // basePrice is display-only here and nothing charges against it. It can't just be dropped: the
@@ -270,6 +268,7 @@ export const starterLegacyPlan: PlanDefinition = {
     nextPlan: [],
     canChange: false,
     hidden: true,
+    retired: true,
     flags: {
         api_rate_limit_size: 'l',
         environments_max: 3,
@@ -311,6 +310,7 @@ export const scaleLegacyPlan: PlanDefinition = {
     nextPlan: [],
     canChange: false,
     hidden: true,
+    retired: true,
     flags: {
         api_rate_limit_size: 'l',
         environments_max: 3,
@@ -352,6 +352,8 @@ export const growthLegacyPlan: PlanDefinition = {
     nextPlan: [],
     canChange: false,
     hidden: true,
+    retired: true,
+    keepsGrowthAddOnOnMigration: true,
     flags: {
         api_rate_limit_size: 'l',
         environments_max: 3,

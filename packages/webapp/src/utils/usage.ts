@@ -79,8 +79,9 @@ export function isOnS26Pricing(plan: ApiPlan | null | undefined): boolean {
     return !!plan && PLANS_ON_S26_PRICING.includes(plan.name);
 }
 
-export function billedUsageMetrics(plan: ApiPlan | null | undefined): readonly UsageMetric[] {
-    return isOnS26Pricing(plan) ? S26_USAGE_METRICS : LEGACY_USAGE_METRICS;
+/** Selects displayed metrics. A scheduled migration shows the new set before billing changes. */
+export function billedUsageMetrics(plan: ApiPlan | null | undefined, hasScheduledTransition = false): readonly UsageMetric[] {
+    return isOnS26Pricing(plan) || hasScheduledTransition ? S26_USAGE_METRICS : LEGACY_USAGE_METRICS;
 }
 
 const SECONDS_PER_HOUR = 3600;

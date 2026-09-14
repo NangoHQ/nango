@@ -18,3 +18,5 @@ export const billing = new Billing(orbConfigured ? new OrbClient() : new NoopBil
 
 export { getStripe } from './stripe.js';
 export { growthAddonStateFromOrb } from './clients/orb/adapters.js';
+export { PAY_AS_YOU_GO_METRICS, projectPayAsYouGo } from './pricing/payAsYouGo.js';
+export type { PayAsYouGoMetric, PayAsYouGoProjection, PayAsYouGoQuantities } from './pricing/payAsYouGo.js';
