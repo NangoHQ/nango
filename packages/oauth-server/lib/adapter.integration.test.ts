@@ -4,7 +4,7 @@ import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import { createOAuthAdapter, deleteExpiredOAuthArtifacts, OAUTH_SERVER_ARTIFACTS_TABLE } from './adapter.js';
+import { createOAuthAdapter, deleteExpiredOAuthArtifacts, OAUTH_SERVER_ARTIFACTS_TABLE, revokeOAuthSessionsBySubjectInTransaction } from './adapter.js';
 import { createOAuthProvider } from './provider.js';
 
 import type { Knex } from 'knex';
@@ -44,7 +44,7 @@ describe('PostgreSQL OAuth provider adapter', () => {
         const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
         const options = {
             knex: db.knex,
-            accountExists: () => true,
+            subjectExists: () => true,
             config: {
                 baseUrl: 'http://localhost',
                 cookieKeys: ['a'.repeat(32), 'b'.repeat(32)],
@@ -134,6 +134,29 @@ describe('PostgreSQL OAuth provider adapter', () => {
         expect(tombstone).toBeDefined();
     });
 
+    it('revokes subject sessions and prevents an in-flight session from rotating after revocation', async () => {
+        const session = adapter('Session');
+        const subjectId = 'user-42';
+        const stalePayload = {
+            ...artifactPayload('Session', 'unused'),
+            accountId: subjectId,
+            loginTs: Date.now() / 1000 - 60,
+            uid: 'session-uid'
+        };
+        await session.upsert('original-session', stalePayload, 600);
+
+        await db.knex.transaction(async (trx) => {
+            await revokeOAuthSessionsBySubjectInTransaction({ trx, encryptionKey, subjectId, reason: 'password_changed' });
+        });
+
+        await expect(session.find('original-session')).resolves.toBeUndefined();
+        await expect(session.upsert('rotated-stale-session', stalePayload, 600)).rejects.toThrow(/revoked OAuth grant or session/);
+
+        const freshPayload = { ...stalePayload, loginTs: Date.now() / 1000 + 0.001, uid: 'fresh-session-uid' };
+        await expect(session.upsert('fresh-session', freshPayload, 600)).resolves.toBeUndefined();
+        await expect(session.find('fresh-session')).resolves.toMatchObject({ accountId: subjectId });
+    });
+
     it('rejects expired artifacts independently and deletes them in bounded batches', async () => {
         await adapter('AuthorizationCode').upsert('expired-code', artifactPayload('AuthorizationCode', 'grant-expired'), -10);
         await adapter('RefreshToken').upsert('expired-refresh', artifactPayload('RefreshToken', 'grant-expired'), -10);
@@ -198,7 +221,8 @@ function artifactPayload(kind: string, grantId: string): AdapterPayload {
         accountId: 'account-uuid',
         clientId: 'https://client.example.com/metadata.json',
         iat: now,
-        exp: now + 600
+        exp: now + 600,
+        ...(kind === 'Session' ? { loginTs: now } : {})
     };
 }
 

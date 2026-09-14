@@ -10,6 +10,7 @@ import type { Configuration, KoaContextWithOIDC, ResourceServer } from 'oidc-pro
 const ACCESS_TOKEN_TTL_SECONDS = 60 * 60;
 const AUTHORIZATION_CODE_TTL_SECONDS = 60;
 const INTERACTION_TTL_SECONDS = 10 * 60;
+const pendingGrantRevocations = new WeakMap<object, OAuthGrantRevocationCompletion>();
 
 export const OAUTH_ENDPOINT_PATH = '/oauth';
 export const OAUTH_AUTHORIZATION_PATH = `${OAUTH_ENDPOINT_PATH}/authorize`;
@@ -27,9 +28,9 @@ export interface CreateOAuthProviderOptions {
     knex: Knex;
     config: OAuthServerParsedConfig;
     resources: readonly OAuthResourceConfig[];
-    accountExists: (accountId: string) => boolean | Promise<boolean>;
+    subjectExists: (subjectId: string) => boolean | Promise<boolean>;
     interactionUrl?: (uid: string) => string;
-    beforeGrantRevocation?: (grantId: string, request: OAuthGrantRevocationRequest) => Promise<void>;
+    prepareGrantRevocation?: (grantId: string, request: OAuthGrantRevocationRequest) => Promise<OAuthGrantRevocationCompletion | undefined>;
 }
 
 export interface OAuthGrantRevocationRequest {
@@ -38,19 +39,15 @@ export interface OAuthGrantRevocationRequest {
     userAgent?: string;
 }
 
+export type OAuthGrantRevocationOutcome = 'success' | 'failure';
+export type OAuthGrantRevocationCompletion = (outcome: OAuthGrantRevocationOutcome) => Promise<void>;
+
 interface OAuthResourceRegistry {
     supportedScopes: readonly string[];
     get(resource: string): OAuthResourceConfig | undefined;
 }
 
-export function createOAuthProvider({
-    knex,
-    config,
-    resources,
-    accountExists,
-    interactionUrl,
-    beforeGrantRevocation
-}: CreateOAuthProviderOptions): Provider {
+export function createOAuthProvider({ knex, config, resources, subjectExists, interactionUrl, prepareGrantRevocation }: CreateOAuthProviderOptions): Provider {
     const registry = createResourceRegistry(resources);
     const allowedScopes = new Set(registry.supportedScopes);
 
@@ -96,13 +93,16 @@ export function createOAuthProvider({
                 enabled: true,
                 allowedPolicy: async (_ctx, client, token) => {
                     if (token.clientId !== client.clientId) return false;
-                    if ('grantId' in token && typeof token.grantId === 'string' && beforeGrantRevocation) {
+                    if ('grantId' in token && typeof token.grantId === 'string' && prepareGrantRevocation) {
                         const userAgent = _ctx.get('user-agent') || undefined;
-                        await beforeGrantRevocation(token.grantId, {
+                        const completion = await prepareGrantRevocation(token.grantId, {
                             clientId: client.clientId,
                             ...(_ctx.ip ? { ip: _ctx.ip } : {}),
                             ...(userAgent ? { userAgent } : {})
                         });
+                        if (completion) {
+                            pendingGrantRevocations.set(_ctx, completion);
+                        }
                     }
                     return true;
                 }
@@ -113,7 +113,7 @@ export function createOAuthProvider({
         fetch: secureCimdFetch,
         fetchResponseBodyLimits: { 'client_id metadata document': CIMD_MAX_DOCUMENT_BYTES },
         findAccount: async (_ctx, accountId) => {
-            if (!(await accountExists(accountId))) {
+            if (!(await subjectExists(accountId))) {
                 return undefined;
             }
             return { accountId, claims: () => ({ sub: accountId }) };
@@ -187,7 +187,14 @@ function installOAuthOnlyMiddleware(provider: Provider): void {
             return;
         }
 
-        await next();
+        try {
+            await next();
+        } catch (err) {
+            await completeGrantRevocation(ctx, 'failure');
+            throw err;
+        }
+
+        await completeGrantRevocation(ctx, ctx.status >= 200 && ctx.status < 400 ? 'success' : 'failure');
 
         if (ctx.status !== 200 || !ctx.body || typeof ctx.body !== 'object' || Array.isArray(ctx.body)) {
             return;
@@ -209,6 +216,13 @@ function installOAuthOnlyMiddleware(provider: Provider): void {
         delete body['id_token_signing_alg_values_supported'];
         delete body['subject_types_supported'];
     });
+}
+
+async function completeGrantRevocation(ctx: object, outcome: OAuthGrantRevocationOutcome): Promise<void> {
+    const completion = pendingGrantRevocations.get(ctx);
+    if (!completion) return;
+    pendingGrantRevocations.delete(ctx);
+    await completion(outcome);
 }
 
 function validateRefreshResource(ctx: KoaContextWithOIDC, registry: OAuthResourceRegistry): true {

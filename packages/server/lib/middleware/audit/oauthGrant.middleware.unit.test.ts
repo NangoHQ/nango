@@ -99,7 +99,8 @@ describe('OAuth grant audit middleware (unit)', () => {
                 userEmail: 'dev@example.com',
                 resources: [{ resource: 'https://mcp.example.com/mcp', scopes: ['environment:*'] }]
             },
-            { clientId: 'https://client.example.com/oauth/metadata.json', ip: '203.0.113.7', userAgent: 'vitest' }
+            { clientId: 'https://client.example.com/oauth/metadata.json', ip: '203.0.113.7', userAgent: 'vitest' },
+            'success'
         );
 
         expect(recordMock).toHaveBeenCalledWith(

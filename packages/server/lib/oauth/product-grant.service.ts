@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { hashOAuthIdentifier, OAUTH_GRANT_TTL_SECONDS, revokeOAuthGrantByHash } from '@nangohq/oauth-server';
+import { hashOAuthIdentifier, OAUTH_GRANT_TTL_SECONDS, revokeOAuthGrantByHashInTransaction } from '@nangohq/oauth-server';
 
 import type { Knex } from 'knex';
 
@@ -126,6 +126,7 @@ export async function revokeProductGrantByProviderId(grantId: string, encryption
         ]);
         if (!user) throw new Error('OAuth product grant user binding is unavailable');
         await markProductGrantsRevoked(trx(OAUTH_PRODUCT_GRANTS_TABLE).where({ id: grant.id }), reason);
+        await revokeOAuthGrantByHashInTransaction({ trx, encryptionKey, grantIdHash: hash, reason });
         return {
             id: grant.id,
             accountId: grant.account_id,
@@ -139,11 +140,16 @@ export async function revokeProductGrantByProviderId(grantId: string, encryption
 export async function compensateProductGrant(id: string, grantId: string, encryptionKey: string, reason: string): Promise<void> {
     await db.knex.transaction(async (trx) => {
         await markProductGrantsRevoked(trx(OAUTH_PRODUCT_GRANTS_TABLE).where({ id }), reason);
+        await revokeOAuthGrantByHashInTransaction({ trx, encryptionKey, grantIdHash: hashOAuthIdentifier(grantId, encryptionKey), reason });
     });
-    await revokeOAuthGrantByHash({ knex: db.knex, encryptionKey, grantIdHash: hashOAuthIdentifier(grantId, encryptionKey), reason });
 }
 
-export async function revokeUserProductGrants(userId: number, reason: string, trx: Knex = db.knex): Promise<RevokedUserProductGrant[]> {
+export async function revokeUserProductGrants(
+    userId: number,
+    encryptionKey: string,
+    reason: string,
+    trx: Knex.Transaction
+): Promise<RevokedUserProductGrant[]> {
     const rows = await trx(OAUTH_PRODUCT_GRANTS_TABLE)
         .where({ user_id: userId })
         .whereIn('status', ['pending', 'active'])
@@ -165,6 +171,9 @@ export async function revokeUserProductGrants(userId: number, reason: string, tr
             rows.map((row) => row.id)
         )
         .update({ status: 'revoked', revoked_at: now, revocation_reason: reason, updated_at: now });
+    for (const row of rows) {
+        await revokeOAuthGrantByHashInTransaction({ trx, encryptionKey, grantIdHash: row.provider_grant_id_hash, reason });
+    }
     return rows.map((row) => ({
         id: row.id,
         accountId: row.account_id,
@@ -174,15 +183,9 @@ export async function revokeUserProductGrants(userId: number, reason: string, tr
     }));
 }
 
-export async function revokeProviderArtifacts(grantHashes: Buffer[], encryptionKey: string, reason: string): Promise<void> {
-    for (const grantIdHash of grantHashes) {
-        await revokeOAuthGrantByHash({ knex: db.knex, encryptionKey, grantIdHash, reason });
-    }
-}
-
 export async function cleanupStalePendingProductGrants(encryptionKey: string, limit: number): Promise<number> {
     const staleBefore = new Date(Date.now() - 15 * 60 * 1000);
-    const hashes = await db.knex.transaction(async (trx) => {
+    return await db.knex.transaction(async (trx) => {
         const rows = await trx(OAUTH_PRODUCT_GRANTS_TABLE)
             .where({ status: 'pending' })
             .where('created_at', '<=', staleBefore)
@@ -191,7 +194,7 @@ export async function cleanupStalePendingProductGrants(encryptionKey: string, li
             .forUpdate()
             .skipLocked()
             .select<Pick<ProductGrantRow, 'id' | 'provider_grant_id_hash'>[]>('id', 'provider_grant_id_hash');
-        if (rows.length === 0) return [];
+        if (rows.length === 0) return 0;
 
         const now = new Date();
         await trx(OAUTH_PRODUCT_GRANTS_TABLE)
@@ -200,11 +203,16 @@ export async function cleanupStalePendingProductGrants(encryptionKey: string, li
                 rows.map((row) => row.id)
             )
             .update({ status: 'revoked', revoked_at: now, revocation_reason: 'stale_pending', updated_at: now });
-        return rows.map((row) => row.provider_grant_id_hash);
+        for (const row of rows) {
+            await revokeOAuthGrantByHashInTransaction({
+                trx,
+                encryptionKey,
+                grantIdHash: row.provider_grant_id_hash,
+                reason: 'stale_pending'
+            });
+        }
+        return rows.length;
     });
-
-    await revokeProviderArtifacts(hashes, encryptionKey, 'stale_pending');
-    return hashes.length;
 }
 
 async function markProductGrantsRevoked(query: Knex.QueryBuilder, reason: string): Promise<number> {

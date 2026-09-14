@@ -3,6 +3,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import db from '@nangohq/database';
 
 const OAUTH_CONSENT_INTERACTIONS_TABLE = 'oauth_consent_interactions';
+const PROCESSING_CLEANUP_GRACE_MS = 5 * 60 * 1000;
 
 interface ConsentRow {
     csrf_token_hash: Buffer;
@@ -93,12 +94,23 @@ export async function releaseConsentDecision(uid: string): Promise<void> {
 
 export async function deleteExpiredOAuthInteractionState(limit: number): Promise<number> {
     const now = new Date();
+    const processingBefore = new Date(now.getTime() - PROCESSING_CLEANUP_GRACE_MS);
+    const expiredRows = db
+        .knex(OAUTH_CONSENT_INTERACTIONS_TABLE)
+        .select('interaction_uid_hash')
+        .where('expires_at', '<=', now)
+        .where((query) => {
+            query.whereNot('status', 'processing').orWhere('updated_at', '<=', processingBefore);
+        })
+        .orderBy('expires_at')
+        .limit(limit);
     return await db
         .knex(OAUTH_CONSENT_INTERACTIONS_TABLE)
-        .whereIn(
-            'interaction_uid_hash',
-            db.knex(OAUTH_CONSENT_INTERACTIONS_TABLE).select('interaction_uid_hash').where('expires_at', '<=', now).orderBy('expires_at').limit(limit)
-        )
+        .whereIn('interaction_uid_hash', expiredRows)
+        .where('expires_at', '<=', now)
+        .where((query) => {
+            query.whereNot('status', 'processing').orWhere('updated_at', '<=', processingBefore);
+        })
         .delete();
 }
 

@@ -23,10 +23,9 @@ import { deleteEnvironmentData } from '../deletion/deleteEnvironmentData.js';
 import { deleteProviderConfigData } from '../deletion/deleteProviderConfigData.js';
 import { deleteSyncConfigData } from '../deletion/deleteSyncConfigData.js';
 import { deleteSyncs } from '../deletion/deleteSyncs.js';
-import { envs } from '../env.js';
+import { dek, envs } from '../env.js';
 import { deleteExpiredOAuthInteractionState } from '../oauth/interaction-state.service.js';
 import { cleanupStalePendingProductGrants } from '../oauth/product-grant.service.js';
-import { oauthServerConfig } from '../oauth/server.js';
 import { expireAgentSessions } from '../services/agentSession.service.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
 import oauthSessionService from '../services/oauth-session.service.js';
@@ -147,14 +146,11 @@ export async function exec(): Promise<void> {
             deleteFn: async () => await deleteExpiredOAuthInteractionState(limit)
         });
 
-        if (oauthServerConfig) {
-            const encryptionKey = oauthServerConfig.config.encryptionKey;
-            await batchDelete({
-                ...opts,
-                name: 'stale pending oauth product grants',
-                deleteFn: async () => await cleanupStalePendingProductGrants(encryptionKey, limit)
-            });
-        }
+        await batchDelete({
+            ...opts,
+            name: 'stale pending oauth product grants',
+            deleteFn: async () => await cleanupStalePendingProductGrants(dek.get(), limit)
+        });
 
         // Delete invitations
         await batchDelete({

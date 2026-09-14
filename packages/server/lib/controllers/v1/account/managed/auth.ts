@@ -7,7 +7,6 @@ import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../ut
 import { loginOrStartPendingMfa } from '../mfa/login.js';
 import { safeReturnTo } from '../returnTo.js';
 
-import type { InviteAccountState } from './postSignup.js';
 import type { DBInvitation, DBTeam } from '@nangohq/types';
 import type { User, WorkOS } from '@workos-inc/node';
 import type { Request, Response } from 'express';
@@ -37,9 +36,19 @@ interface ManagedAuthVerificationRequiredError {
     };
 }
 
+export interface InviteAccountState {
+    token?: string;
+    returnTo?: string;
+}
+
+export function encodeManagedAuthState(state: InviteAccountState): string {
+    const value = state.token ? { token: state.token } : state.returnTo ? { returnTo: state.returnTo } : null;
+    return value ? Buffer.from(JSON.stringify(value)).toString('base64') : '';
+}
+
 export function parseManagedAuthState(state: string): InviteAccountState | null {
     try {
-        const res = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
+        const res = JSON.parse(Buffer.from(state, 'base64').toString('utf8')) as unknown;
         if (!res || !(typeof res === 'object')) {
             return null;
         }
@@ -211,7 +220,7 @@ export async function finalizeManagedAuthentication({
 
     clearManagedAuthEmailVerification(req);
 
-    let destination = state?.returnTo ?? '/';
+    let destination = state?.token ? '/' : (state?.returnTo ?? '/');
     try {
         if (invitation && isNewUser) {
             // New user with an invitation: created directly in the invited team, auto-accept and proceed

@@ -2,9 +2,11 @@ import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
+import { hashOAuthIdentifier } from '@nangohq/oauth-server';
 import { userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
+import { dek } from '../../../../env.js';
 import { isError, isSuccess, runServer } from '../../../../utils/tests.js';
 
 const signupRoute = '/api/v1/account/signup';
@@ -81,6 +83,8 @@ describe(`PUT ${passwordRoute}`, () => {
     it('should rotate the current session and invalidate all others after a password change', async () => {
         const { email, password } = await signupVerifiedUser();
         const user = await userService.getUserByEmail(email);
+        const oauthSessionId = `oauth-session-${nanoid()}`;
+        await insertOAuthSessionArtifact(oauthSessionId, user!.id);
         const [grant] = await db
             .knex('oauth_product_grants')
             .insert({
@@ -123,6 +127,7 @@ describe(`PUT ${passwordRoute}`, () => {
 
         // the other session is forcibly logged out
         expect((await api.fetch(userRoute, { method: 'GET', session: otherSession })).res.status).toBe(401);
+        expect(await oauthSessionRevokedAt(oauthSessionId)).toBeInstanceOf(Date);
 
         // the user who made the change stays authenticated via the rotated session
         expect((await api.fetch(userRoute, { method: 'GET', session: rotatedSession })).res.status).toBe(200);
@@ -303,3 +308,30 @@ describe(`PUT ${passwordRoute}`, () => {
         isSuccess(json);
     });
 });
+
+async function insertOAuthSessionArtifact(id: string, userId: number): Promise<void> {
+    const now = new Date();
+    const encryptionKey = dek.get();
+    await db.knex('oauth_server_artifacts').insert({
+        model: 'Session',
+        artifact_id_hash: hashOAuthIdentifier(id, encryptionKey),
+        payload_encrypted: Buffer.from('test-payload'),
+        grant_id_hash: null,
+        session_uid_hash: hashOAuthIdentifier(`uid-${id}`, encryptionKey),
+        subject_id_hash: hashOAuthIdentifier(String(userId), encryptionKey),
+        session_authenticated_at: new Date(now.getTime() - 60_000),
+        expires_at: new Date(now.getTime() + 600_000),
+        consumed_at: null,
+        revoked_at: null,
+        created_at: now,
+        updated_at: now
+    });
+}
+
+async function oauthSessionRevokedAt(id: string): Promise<Date | null | undefined> {
+    const row = await db
+        .knex('oauth_server_artifacts')
+        .where({ model: 'Session', artifact_id_hash: hashOAuthIdentifier(id, dek.get()) })
+        .first<{ revoked_at: Date | null }>('revoked_at');
+    return row?.revoked_at;
+}
