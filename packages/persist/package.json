@@ -30,7 +30,7 @@
         "dayjs": "1.11.19",
         "dd-trace": "5.117.0",
         "express": "5.1.0",
-        "qs": "6.15.3",
+        "qs": "6.16.0",
         "zod": "4.0.5"
     },
     "devDependencies": {
