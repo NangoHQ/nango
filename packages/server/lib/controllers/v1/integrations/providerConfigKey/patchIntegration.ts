@@ -1,7 +1,8 @@
-import { configService, connectionService, getGlobalClientMetadataDocumentUrl, getProvider } from '@nangohq/shared';
+import { configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { resolveIntegrationConfig } from '../../../../services/integrationConfig.js';
+import { resolveCimdUrl } from '../../../../services/mcpClientRegistration.js';
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { patchIntegrationBodySchema } from '../validation.js';
 import { validationParams } from './getIntegration.js';
@@ -66,17 +67,12 @@ export const patchIntegration = asyncWrapperWithEnvironment<PatchIntegration>(as
 
         // The CIMD-based client_id embeds the unique_key, keep it in sync on rename
         if (provider.auth_mode === 'MCP_OAUTH2' && (provider as ProviderMcpOAUTH2).client_registration === 'cimd') {
-            const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, integration.unique_key);
-            if (!cimdUrl) {
-                res.status(400).send({
-                    error: {
-                        code: 'invalid_body',
-                        message: 'Client ID metadata documents require your Nango instance to be reachable at a public HTTPS URL'
-                    }
-                });
+            const cimdResult = resolveCimdUrl(environment.uuid, integration.unique_key);
+            if (cimdResult.isErr()) {
+                res.status(400).send({ error: { code: 'invalid_body', message: cimdResult.error.message } });
                 return;
             }
-            integration.oauth_client_id = cimdUrl;
+            integration.oauth_client_id = cimdResult.value;
         }
     }
 

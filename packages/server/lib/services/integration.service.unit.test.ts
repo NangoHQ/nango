@@ -580,6 +580,40 @@ describe('integrationService', () => {
                 );
             });
 
+            it('persists the RFC 7592 management URI/token so the client can be deregistered later', async () => {
+                vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('dynamic'));
+                vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+                vi.spyOn(shared.mcpClient, 'registerClientId').mockResolvedValue({
+                    client_id: 'dcr-client-id',
+                    client_secret: 'dcr-secret',
+                    registration_client_uri: 'https://provider.example.com/register/dcr-client-id',
+                    registration_access_token: 'dcr-management-token'
+                });
+                const createSpy = vi
+                    .spyOn(shared.configService, 'createProviderConfig')
+                    .mockResolvedValue(integrationFixture({ uniqueKey: 'mcp1', provider: 'mcp1' }));
+
+                const result = await integrationService.create({
+                    environmentId: 42,
+                    provider: 'mcp1',
+                    uniqueKey: 'mcp1',
+                    credentialSource: 'own',
+                    environment: environmentFixture,
+                    team: teamFixture
+                });
+
+                expect(result.isOk()).toBe(true);
+                expect(createSpy).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        custom: expect.objectContaining({
+                            mcpRegistrationClientUri: 'https://provider.example.com/register/dcr-client-id',
+                            mcpRegistrationAccessToken: 'dcr-management-token'
+                        })
+                    }),
+                    mcpProviderFixture('dynamic')
+                );
+            });
+
             it('deregisters a dynamically-registered client when persisting the integration fails', async () => {
                 vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('dynamic'));
                 vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
@@ -1157,6 +1191,42 @@ describe('integrationService', () => {
                 integrationId: 'github',
                 errorKind: 'missing_database_id'
             });
+        });
+
+        it('deregisters a dynamically-registered MCP client on delete', async () => {
+            const orchestrator = {} as Orchestrator;
+            const service = new IntegrationService(undefined, orchestrator);
+            const integration = integrationFixture({
+                uniqueKey: 'asana-mcp',
+                provider: 'asana-mcp',
+                id: 7,
+                custom: { mcpRegistrationClientUri: 'https://mcp.example.com/register/abc', mcpRegistrationAccessToken: 'reg-token' }
+            });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+            vi.spyOn(shared.configService, 'deleteProviderConfig').mockResolvedValue(true);
+            const deregisterSpy = vi.spyOn(shared.mcpClient, 'deregisterClientId').mockResolvedValue(undefined);
+
+            const result = await service.delete({ environmentId: 42, integrationId: 'asana-mcp' });
+
+            expect(result.isOk()).toBe(true);
+            expect(deregisterSpy).toHaveBeenCalledWith({
+                registrationClientUri: 'https://mcp.example.com/register/abc',
+                registrationAccessToken: 'reg-token'
+            });
+        });
+
+        it('does not attempt deregistration for an integration with no MCP registration', async () => {
+            const orchestrator = {} as Orchestrator;
+            const service = new IntegrationService(undefined, orchestrator);
+            const integration = integrationFixture({ uniqueKey: 'github', provider: 'github', id: 7 });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+            vi.spyOn(shared.configService, 'deleteProviderConfig').mockResolvedValue(true);
+            const deregisterSpy = vi.spyOn(shared.mcpClient, 'deregisterClientId').mockResolvedValue(undefined);
+
+            const result = await service.delete({ environmentId: 42, integrationId: 'github' });
+
+            expect(result.isOk()).toBe(true);
+            expect(deregisterSpy).not.toHaveBeenCalled();
         });
 
         it('wraps and logs unexpected persistence deletion failures', async () => {

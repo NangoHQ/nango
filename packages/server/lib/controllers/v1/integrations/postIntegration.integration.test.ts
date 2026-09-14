@@ -337,4 +337,53 @@ describe(`POST ${endpoint}`, () => {
             }
         });
     });
+
+    it('should reject a static MCP_OAUTH2 provider with no client credentials', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: env.name },
+            token: apiKey.secret,
+            body: {
+                provider: 'asana-mcp',
+                useSharedCredentials: false
+            }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'invalid_body', message: 'Missing credentials' }
+        });
+    });
+
+    it('should normalize comma/space-delimited scopes for a static MCP_OAUTH2 provider', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: env.name },
+            token: apiKey.secret,
+            body: {
+                provider: 'asana-mcp',
+                useSharedCredentials: false,
+                integrationId: 'asana-mcp-normalize-test',
+                auth: {
+                    authType: 'MCP_OAUTH2',
+                    clientId: 'test-client',
+                    clientSecret: 'test-secret',
+                    scopes: 'read write,admin access'
+                }
+            }
+        });
+
+        isSuccess(res.json);
+
+        const getRes = await api.fetch('/api/v1/integrations/:providerConfigKey', {
+            method: 'GET',
+            query: { env: env.name },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'asana-mcp-normalize-test' }
+        });
+        isSuccess(getRes.json);
+        expect(getRes.json.data.integration).toMatchObject({ oauth_scopes: 'read,write,admin,access' });
+    });
 });

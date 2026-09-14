@@ -55,19 +55,27 @@ export async function registerMcpOAuth2Client({
         if (!environment) {
             return Err(new McpClientRegistrationError('missing_environment', 'environment is required to build an MCP_OAUTH2 client ID metadata document URL'));
         }
-        const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, uniqueKey);
-        if (!cimdUrl) {
-            return Err(
-                new McpClientRegistrationError(
-                    'cimd_url_unavailable',
-                    'Client ID metadata documents require your Nango instance to be reachable at a public HTTPS URL'
-                )
-            );
+        const cimdResult = resolveCimdUrl(environment.uuid, uniqueKey);
+        if (cimdResult.isErr()) {
+            return Err(cimdResult.error);
         }
-        return Ok({ oauth_client_id: cimdUrl, oauth_client_secret: '' });
+        return Ok({ oauth_client_id: cimdResult.value, oauth_client_secret: '' });
     }
 
     return Ok(null);
+}
+
+export function resolveCimdUrl(environmentUuid: string, uniqueKey: string): Result<string, McpClientRegistrationError> {
+    const cimdUrl = getGlobalClientMetadataDocumentUrl(environmentUuid, uniqueKey);
+    if (!cimdUrl) {
+        return Err(
+            new McpClientRegistrationError(
+                'cimd_url_unavailable',
+                'Client ID metadata documents require your Nango instance to be reachable at a public HTTPS URL'
+            )
+        );
+    }
+    return Ok(cimdUrl);
 }
 
 export async function cleanupMcpClientRegistration(registration: McpClientRegistration | null | undefined): Promise<void> {
@@ -78,4 +86,31 @@ export async function cleanupMcpClientRegistration(registration: McpClientRegist
         registrationClientUri: registration.registrationClientUri,
         registrationAccessToken: registration.registrationAccessToken
     });
+}
+
+const REGISTRATION_CLIENT_URI_KEY = 'mcpRegistrationClientUri';
+const REGISTRATION_ACCESS_TOKEN_KEY = 'mcpRegistrationAccessToken';
+
+export function mcpRegistrationCustomFields(registration: McpClientRegistration | null | undefined): Record<string, string> | undefined {
+    if (!registration?.registrationClientUri) {
+        return undefined;
+    }
+    return {
+        [REGISTRATION_CLIENT_URI_KEY]: registration.registrationClientUri,
+        ...(registration.registrationAccessToken && { [REGISTRATION_ACCESS_TOKEN_KEY]: registration.registrationAccessToken })
+    };
+}
+
+export function mcpRegistrationFromCustom(custom: Record<string, string> | null | undefined): McpClientRegistration | null {
+    const registrationClientUri = custom?.[REGISTRATION_CLIENT_URI_KEY];
+    if (!registrationClientUri) {
+        return null;
+    }
+    const registrationAccessToken = custom?.[REGISTRATION_ACCESS_TOKEN_KEY];
+    return {
+        oauth_client_id: '',
+        oauth_client_secret: '',
+        registrationClientUri,
+        ...(registrationAccessToken && { registrationAccessToken })
+    };
 }

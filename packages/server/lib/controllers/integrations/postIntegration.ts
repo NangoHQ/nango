@@ -119,7 +119,7 @@ function sendCreateIntegrationError(res: Response, error: CreateIntegrationServi
             });
             return;
         case 'incompatible_credentials':
-            res.status(400).send({ error: { code: 'invalid_body', message: 'incompatible credentials auth type and provider auth' } });
+            res.status(400).send({ error: { code: 'invalid_body', message: error.message } });
             return;
         case 'missing_credentials':
             res.status(400).send({ error: { code: 'invalid_body', message: 'Missing credentials' } });

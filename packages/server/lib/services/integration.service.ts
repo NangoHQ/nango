@@ -1,19 +1,17 @@
 import db from '@nangohq/database';
-import {
-    configService,
-    connectionService,
-    getGlobalClientMetadataDocumentUrl,
-    getGlobalWebhookReceiveUrl,
-    getProvider,
-    getProviders,
-    sharedCredentialsService
-} from '@nangohq/shared';
+import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider, getProviders, sharedCredentialsService } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { getIntegrationCredentials } from '../utils/integrations.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { resolveIntegrationConfig } from './integrationConfig.js';
-import { cleanupMcpClientRegistration, registerMcpOAuth2Client } from './mcpClientRegistration.js';
+import {
+    cleanupMcpClientRegistration,
+    mcpRegistrationCustomFields,
+    mcpRegistrationFromCustom,
+    registerMcpOAuth2Client,
+    resolveCimdUrl
+} from './mcpClientRegistration.js';
 
 import type { IntegrationCredentials } from '../utils/integrations.js';
 import type { McpClientRegistration } from './mcpClientRegistration.js';
@@ -390,6 +388,10 @@ export class IntegrationService {
                         mcpRegistration = registration.value;
                         integration.oauth_client_id = registration.value.oauth_client_id;
                         integration.oauth_client_secret = registration.value.oauth_client_secret;
+                        const registrationCustom = mcpRegistrationCustomFields(registration.value);
+                        if (registrationCustom) {
+                            integration.custom = { ...integration.custom, ...registrationCustom };
+                        }
                     }
                 }
             }
@@ -491,9 +493,9 @@ export class IntegrationService {
                             })
                         );
                     }
-                    const cimdResult = resolveCimdClientId(params.environment.uuid, integration.unique_key);
+                    const cimdResult = resolveCimdUrl(params.environment.uuid, integration.unique_key);
                     if (cimdResult.isErr()) {
-                        return Err(cimdResult.error);
+                        return Err(new IntegrationServiceError({ code: 'invalid_integration_config', message: cimdResult.error.message }));
                     }
                     integration.oauth_client_id = cimdResult.value;
                 }
@@ -592,6 +594,8 @@ export class IntegrationService {
                 return Err(new IntegrationServiceError({ code: 'delete_failed', message: 'Failed to delete integration' }));
             }
 
+            await cleanupMcpClientRegistration(mcpRegistrationFromCustom(integration.custom));
+
             return Ok({ integrationId: integration.unique_key });
         } catch (err) {
             this.logDeleteFailure({
@@ -641,19 +645,6 @@ function getSafeMachineErrorCode(error: unknown): { machineErrorCode?: string } 
     }
 
     return {};
-}
-
-function resolveCimdClientId(environmentUuid: string, uniqueKey: string): Result<string, IntegrationServiceError<'invalid_integration_config'>> {
-    const cimdUrl = getGlobalClientMetadataDocumentUrl(environmentUuid, uniqueKey);
-    if (!cimdUrl) {
-        return Err(
-            new IntegrationServiceError({
-                code: 'invalid_integration_config',
-                message: 'Client ID metadata documents require your Nango instance to be reachable at a public HTTPS URL'
-            })
-        );
-    }
-    return Ok(cimdUrl);
 }
 
 function applyCredentials(integration: DBCreateIntegration, credentials: CreateIntegrationCredentials | undefined): void {

@@ -1,3 +1,5 @@
+import { isAxiosError } from 'axios';
+
 import { axiosInstance as axios, report } from '@nangohq/utils';
 
 import { getGlobalOAuthCallbackUrl } from '../utils/utils.js';
@@ -68,6 +70,7 @@ export async function deregisterClientId({
     try {
         await axios.delete(registrationClientUri, registrationAccessToken ? { headers: { Authorization: `Bearer ${registrationAccessToken}` } } : {});
     } catch (err) {
-        report(err);
+        const detail = isAxiosError(err) ? (err.response ? `status ${err.response.status}` : (err.code ?? 'network error')) : 'unknown error';
+        report(new Error(`Failed to deregister MCP client (${detail})`));
     }
 }

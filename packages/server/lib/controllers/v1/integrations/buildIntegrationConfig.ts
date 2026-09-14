@@ -71,7 +71,13 @@ export async function buildIntegrationConfig(body: PostIntegration['Body'], envi
         } else if (auth.authType === 'MCP_OAUTH2') {
             config.oauth_client_id = auth.clientId ?? null;
             config.oauth_client_secret = auth.clientSecret ?? null;
-            config.oauth_scopes = auth.scopes ?? null;
+            config.oauth_scopes = auth.scopes
+                ? auth.scopes
+                      .trim()
+                      .split(/[,\s]+/)
+                      .filter(Boolean)
+                      .join(',')
+                : (auth.scopes ?? null);
         } else if (auth.authType === 'MCP_OAUTH2_GENERIC') {
             const { clientName, clientUri, clientLogoUri } = auth;
             config.custom = {

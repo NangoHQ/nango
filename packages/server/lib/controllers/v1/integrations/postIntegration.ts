@@ -3,7 +3,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToApi } from '../../../formatters/integration.js';
 import { resolveIntegrationConfig } from '../../../services/integrationConfig.js';
-import { cleanupMcpClientRegistration, registerMcpOAuth2Client } from '../../../services/mcpClientRegistration.js';
+import { cleanupMcpClientRegistration, mcpRegistrationCustomFields, registerMcpOAuth2Client } from '../../../services/mcpClientRegistration.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { buildIntegrationConfig } from './buildIntegrationConfig.js';
 import { postIntegrationBodySchema } from './validation.js';
@@ -103,11 +103,25 @@ export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(asyn
                 mcpRegistration = registration.value;
                 config.oauth_client_id = registration.value.oauth_client_id;
                 config.oauth_client_secret = registration.value.oauth_client_secret;
+                const registrationCustom = mcpRegistrationCustomFields(registration.value);
+                if (registrationCustom) {
+                    config.custom = { ...config.custom, ...registrationCustom };
+                }
+            } else if (!config.oauth_client_id || !config.oauth_client_secret) {
+                // static: client_id/secret must come from body.auth -- registerMcpOAuth2Client() doesn't
+                // act on 'static' providers, so this is the only place that can catch them missing.
+                res.status(400).send({ error: { code: 'invalid_body', message: 'Missing credentials' } });
+                return;
             }
-            // static: client_id/secret come from body.auth
         }
 
-        const createdIntegration = await configService.createProviderConfig(config, provider);
+        let createdIntegration: IntegrationConfig | null;
+        try {
+            createdIntegration = await configService.createProviderConfig(config, provider);
+        } catch (err) {
+            await cleanupMcpClientRegistration(mcpRegistration);
+            throw err;
+        }
         if (!createdIntegration) {
             await cleanupMcpClientRegistration(mcpRegistration);
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to create integration' } });
