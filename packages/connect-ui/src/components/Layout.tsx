@@ -34,12 +34,15 @@ export const Layout: React.FC = () => {
 
     const { isEmbedded, settings, isAuthLink } = useGlobal();
     const { t } = useI18n();
-    const appliedTheme = useAppliedTheme();
+    const { appliedTheme, isPending } = useAppliedTheme();
     const showWatermark = settings?.showWatermark ?? false;
     // Paint nothing rather than hiding the tree: the request that resolves the theme runs in the routed view.
-    const themePendingClass = appliedTheme ? '' : 'opacity-0';
+    const themePendingClass = isPending ? 'opacity-0' : '';
 
     useClickAway(ref, (event: MouseEvent | TouchEvent) => {
+        // Nothing to click outside of yet, and the click lands on what looks like an empty page.
+        if (isPending) return;
+
         const target = event.target instanceof Element ? event.target : null;
 
         if (target?.closest('[data-slot="select-content"]')) return;
@@ -64,7 +67,6 @@ export const Layout: React.FC = () => {
     if (isEmbedded) {
         return (
             <>
-                {!appliedTheme && <ThemePendingSpinner />}
                 <div
                     ref={ref}
                     aria-label={t('common.dialogLabel')}
@@ -75,7 +77,7 @@ export const Layout: React.FC = () => {
                     role="dialog"
                     tabIndex={-1}
                 >
-                    <FocusTrap active={Boolean(appliedTheme)} focusTrapOptions={focusTrapOptions}>
+                    <FocusTrap active={!isPending} focusTrapOptions={focusTrapOptions}>
                         <div className="contents">
                             <div
                                 className="flex-1 w-full bg-surface text-text-primary rounded-md -only:rounded-b-none overflow-y-auto outline-none"
@@ -102,27 +104,27 @@ export const Layout: React.FC = () => {
                         </div>
                     </FocusTrap>
                 </div>
+                {isPending && <ThemePendingSpinner />}
             </>
         );
     }
 
     return (
         <>
-            {!appliedTheme && <ThemePendingSpinner />}
             <div
-                className={`absolute h-screen w-screen overflow-hidden flex flex-col justify-center items-center sm:p-14 ${appliedTheme ? (isAuthLink ? (appliedTheme === 'dark' ? 'bg-black' : 'bg-gray-100') : 'bg-subtle/80') : themePendingClass}`}
+                className={`absolute h-screen w-screen overflow-hidden flex flex-col justify-center items-center sm:p-14 ${isAuthLink ? (appliedTheme === 'dark' ? 'bg-black' : 'bg-gray-100') : 'bg-subtle/80'}`}
             >
                 <div
                     ref={ref}
                     aria-label={t('common.dialogLabel')}
                     aria-labelledby="connect-ui-title"
                     aria-modal="true"
-                    className="flex flex-col w-full h-full sm:w-[500px] sm:h-[700px] sm:rounded-md bg-elevated p-px overflow-hidden"
+                    className={`flex flex-col w-full h-full sm:w-[500px] sm:h-[700px] sm:rounded-md bg-elevated p-px overflow-hidden ${themePendingClass}`}
                     id="connect-ui-dialog"
                     role="dialog"
                     tabIndex={-1}
                 >
-                    <FocusTrap active={Boolean(appliedTheme)} focusTrapOptions={focusTrapOptions}>
+                    <FocusTrap active={!isPending} focusTrapOptions={focusTrapOptions}>
                         <div className="contents">
                             <div
                                 className="flex-1 w-full bg-surface text-text-primary sm:rounded-md -only:rounded-b-none overflow-y-auto outline-none"
@@ -150,6 +152,7 @@ export const Layout: React.FC = () => {
                     </FocusTrap>
                 </div>
             </div>
+            {isPending && <ThemePendingSpinner />}
         </>
     );
 };

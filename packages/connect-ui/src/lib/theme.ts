@@ -12,18 +12,18 @@ export function isValidTheme(theme: string): theme is Theme {
 }
 
 /**
- * Applies the theme and returns it, `null` until the connect session delivers the settings.
- * Resolving that `null` to a default makes the UI paint in one theme and then switch to another.
+ * Applies a theme and reports whether it is the configured one. Until the connect session delivers
+ * the settings it is the OS preference, which is the configured theme for a `system` default.
  */
-export function useAppliedTheme(): 'light' | 'dark' | null {
+export function useAppliedTheme(): { appliedTheme: 'light' | 'dark'; isPending: boolean } {
     const theme = useGlobal((state) => state.theme);
     const settings = useGlobal((state) => state.settings);
     const systemTheme = useSystemTheme();
 
-    const appliedTheme = theme === null ? null : theme === 'system' ? systemTheme : theme;
+    const appliedTheme = !theme || theme === 'system' ? systemTheme : theme;
 
     useEffect(() => {
-        if (theme !== null) {
+        if (theme) {
             return;
         }
         const timeout = setTimeout(() => useGlobal.getState().setTheme('system'), THEME_TIMEOUT_MS);
@@ -32,16 +32,13 @@ export function useAppliedTheme(): 'light' | 'dark' | null {
 
     // Before paint, so the first frame of a themed view is never the wrong theme.
     useLayoutEffect(() => {
-        if (!appliedTheme) {
-            return;
-        }
         document.documentElement.classList.toggle('dark', appliedTheme === 'dark');
         if (settings) {
             setColors(settings.theme, appliedTheme);
         }
     }, [appliedTheme, settings]);
 
-    return appliedTheme;
+    return { appliedTheme, isPending: !theme };
 }
 
 function useSystemTheme(): 'light' | 'dark' {
@@ -65,10 +62,14 @@ function setColors(theme: ConnectUIThemeSettings, appliedTheme: 'light' | 'dark'
     const root = document.documentElement;
     const primary = theme[appliedTheme].primary;
 
-    if (primary) {
-        root.style.setProperty('--color-primary', primary);
-        root.style.setProperty('--color-on-primary', hexColorIsDark(cssColorToHex(primary)) ? '#ffffff' : '#000000');
+    if (!primary) {
+        root.style.removeProperty('--color-primary');
+        root.style.removeProperty('--color-on-primary');
+        return;
     }
+
+    root.style.setProperty('--color-primary', primary);
+    root.style.setProperty('--color-on-primary', hexColorIsDark(cssColorToHex(primary)) ? '#ffffff' : '#000000');
 }
 
 /**

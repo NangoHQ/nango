@@ -4,11 +4,19 @@ import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 
 import { Layout } from '@/components/Layout';
+import { triggerClose } from '@/lib/events';
 import { I18nProvider } from '@/lib/i18n';
 import { useGlobal } from '@/lib/store';
 import { expectAccessibleInBothThemes } from '@/test/a11y';
 
+import type * as EventsModule from '@/lib/events';
 import type { ConnectUISettings, Theme } from '@nangohq/types';
+
+// `triggerClose` posts to the parent frame, which isn't observable from inside Vitest's test iframe.
+vi.mock('@/lib/events', async (importActual) => {
+    const actual = await importActual<typeof EventsModule>();
+    return { ...actual, triggerClose: vi.fn() };
+});
 
 function settingsFixture(overrides?: Partial<ConnectUISettings>): ConnectUISettings {
     return {
@@ -35,12 +43,20 @@ async function renderLayout(seed: { theme: Theme | null; settings?: ConnectUISet
     return container;
 }
 
-function overlay(): HTMLElement {
-    const dialog = document.querySelector('#connect-ui-dialog');
-    if (!dialog?.parentElement) {
+function dialog(): HTMLElement {
+    const element = document.querySelector<HTMLElement>('#connect-ui-dialog');
+    if (!element) {
         throw new Error('dialog not rendered');
     }
-    return dialog.parentElement;
+    return element;
+}
+
+function backdrop(): HTMLElement {
+    const element = dialog().parentElement;
+    if (!element) {
+        throw new Error('backdrop not rendered');
+    }
+    return element;
 }
 
 describe('Layout', () => {
@@ -48,18 +64,37 @@ describe('Layout', () => {
         useGlobal.setState({ theme: null, settings: null });
         document.documentElement.style.removeProperty('--color-primary');
         document.documentElement.style.removeProperty('--color-on-primary');
+        vi.mocked(triggerClose).mockClear();
     });
 
-    it('paints nothing while the theme is unknown', async () => {
+    it('leaves the dialog unpainted while the theme is unknown', async () => {
         const container = await renderLayout({ theme: null });
 
         await expect.element(page.getByRole('dialog')).toBeInTheDocument();
-        expect(getComputedStyle(overlay()).opacity).toBe('0');
-        expect(getComputedStyle(overlay()).backgroundColor).toBe('rgba(0, 0, 0, 0)');
-        expect(document.documentElement.classList.contains('dark')).toBe(false);
+        expect(getComputedStyle(dialog()).opacity).toBe('0');
+        // The backdrop paints from the OS preference, which is the configured theme for a `system` default.
+        expect(getComputedStyle(backdrop()).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
         // The focus trap would otherwise drop keyboard and screen reader users into an invisible dialog.
-        expect(document.querySelector('#connect-ui-dialog')?.contains(document.activeElement)).toBe(false);
+        expect(dialog().contains(document.activeElement)).toBe(false);
         await expectAccessibleInBothThemes(container);
+    });
+
+    it('ignores a backdrop click while the dialog is unpainted', async () => {
+        await renderLayout({ theme: null });
+
+        await expect.element(page.getByRole('dialog')).toBeInTheDocument();
+        backdrop().dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+
+        expect(triggerClose).not.toHaveBeenCalled();
+    });
+
+    it('closes on a backdrop click once the dialog is painted', async () => {
+        await renderLayout({ theme: 'light', settings: settingsFixture() });
+
+        await expect.element(page.getByRole('dialog')).toBeInTheDocument();
+        backdrop().dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+
+        expect(triggerClose).toHaveBeenCalled();
     });
 
     // Guards the deadlock: hide this view and the request that resolves the theme never runs.
@@ -73,7 +108,7 @@ describe('Layout', () => {
         await renderLayout({ theme: 'light', settings: settingsFixture() });
 
         await expect.element(page.getByRole('dialog')).toBeInTheDocument();
-        expect(getComputedStyle(overlay()).opacity).toBe('1');
+        expect(getComputedStyle(dialog()).opacity).toBe('1');
         expect(document.documentElement.classList.contains('dark')).toBe(false);
         await vi.waitFor(() => expect(document.querySelector('#connect-ui-dialog')?.contains(document.activeElement)).toBe(true));
     });
