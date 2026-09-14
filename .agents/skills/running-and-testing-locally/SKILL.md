@@ -74,8 +74,8 @@ Wait for the TypeScript build to complete in Terminal 1 before starting services
 Gate on the server's health endpoint, and bound the wait:
 
 ```bash
-for i in $(seq 1 18); do curl -sf http://localhost:3003/health && break; sleep 5; done
-curl -s http://localhost:3003/health   # expect {"result":"ok"}
+for i in $(seq 1 18); do curl --max-time 2 -sf http://localhost:3003/health && break; sleep 5; done
+curl --max-time 2 -s http://localhost:3003/health   # expect {"result":"ok"}
 ```
 
 If that doesn't come back OK, read the log before restarting or waiting longer. The server logs its fatal error and exits, so the cause is already there:
@@ -135,7 +135,7 @@ ORCHESTRATOR_SERVICE_URL="http://localhost:3008"
 
 ### Feature flags locally
 
-Flags default to **off** locally, so a feature behind one shows the pre-flag UI and looks like your branch didn't take effect:
+Unset flags use the default declared at each call site. A default-off feature can therefore show its pre-flag UI and look like your branch didn't take effect, while other flags remain enabled by default:
 
 ```ini
 NANGO_FLAG_PROVIDER=env
@@ -301,7 +301,7 @@ _No flows documented yet — add the first one!_
 | Issue | Symptom | Fix |
 |-------|---------|-----|
 | **Migration from another worktree** | Server exits on startup: `The migration directory is corrupt, the following files are missing: <file>.cjs`. Webapp still serves 3000, so only API calls fail | See **Migration mismatch across worktrees** below |
-| Feature looks unchanged | Your branch's UI never appears, no errors anywhere | The feature is behind a flag that defaults off — see **Feature flags locally** |
+| Feature looks unchanged | Your branch's UI never appears, no errors anywhere | The feature may be using its declared flag default — see **Feature flags locally** |
 | Docker not running | `Cannot connect to the Docker daemon` | Start Docker Desktop |
 | Port already in use | `EADDRINUSE` on startup | Kill the process on that port: `lsof -ti:PORT \| xargs kill` |
 | DB connection refused | Server crashes on startup | Check `npm run dev:docker` — wait for postgres to be ready |
@@ -327,7 +327,7 @@ Check where that file lives, because the fix differs:
 git fetch origin master -q && git ls-tree -r origin/master --name-only | grep <migration-filename>
 ```
 
-- **On master** — your branch is behind. Rebase onto `origin/master` and the file comes with it.
-- **Not on master** — it came from an unmerged branch, so no rebase produces it. Drop the row: `delete from nango._nango_auth_migrations where name = '<migration-filename>';`. This does not undo the schema change, so reset the database if your code reads a column it altered.
+- **On master** — your branch is behind. Ask the user before rebasing onto `origin/master`; the migration file comes with the rebase.
+- **Not on master** — it came from an unmerged branch, so no rebase produces it. Inspect the migration in its owning worktree. If its `up` is safe to rerun and has no data side effects, remove its ledger row: `delete from nango._nango_auth_migrations where name = '<migration-filename>';`. Otherwise reset the database, or reverse every schema and data change before removing the row.
 
 It happens in the other direction too: once you run a branch that adds a migration, your other worktrees won't start until they have that file.
