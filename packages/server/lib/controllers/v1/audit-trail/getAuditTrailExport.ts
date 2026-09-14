@@ -15,7 +15,7 @@ const FILE_NAME = 'nango-audit-trail.csv';
 
 export const getAuditTrailExport = asyncWrapper<GetAuditTrailExport>(async (req, res) => {
     const { account, plan } = res.locals;
-    if (!(await canViewAuditTrail(req, account.uuid, plan))) {
+    if (!(await canViewAuditTrail(req, plan))) {
         res.status(403).send({ error: { code: 'feature_disabled', message: 'Audit trail is not enabled for this account' } });
         return;
     }

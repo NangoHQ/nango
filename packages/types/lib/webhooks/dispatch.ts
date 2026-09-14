@@ -1,29 +1,13 @@
+import type { FunctionTrigger } from '../function/trigger.js';
 import type { JsonValue } from 'type-fest';
 
-/**
- * SQS message envelope for the webhook task-dispatch queue.
- *
- * The server produces one of these per (syncConfig × webhook subscription × connection)
- * triple resulting from an inbound provider webhook. The jobs consumer parses these and
- * calls the orchestrator to schedule the actual webhook task using `taskName` as the
- * idempotency key.
- */
-export interface WebhookDispatchMessage {
+interface DispatchMessageBase {
     version: 1;
-    kind: 'webhook';
-    /**
-     * Deterministic scheduler task name; used by the orchestrator as the
-     * idempotency key so duplicate SQS deliveries resolve to the same task.
-     */
-    taskName: string;
     createdAt: string;
     accountId: number;
     integrationId: number;
     provider: string;
-    parentSyncName: string;
-    /** Webhook subscription name matched on the inbound payload; passed to executeWebhook as args.webhookName. */
-    webhookName: string;
-    /** Activity log id created before enqueue; reused so redelivery of this published message keeps the same taskName. */
+    /** Activity log created before enqueue and reused by the eventual execution. */
     activityLogId: string;
     connection: {
         id: number;
@@ -31,5 +15,37 @@ export interface WebhookDispatchMessage {
         provider_config_key: string;
         environment_id: number;
     };
+}
+
+/**
+ * SQS message envelope for the webhook task-dispatch queue.
+ *
+ * The server produces one of these per (syncConfig × webhook subscription × connection)
+ * triple resulting from an inbound provider webhook. The jobs consumer parses these and
+ * calls the orchestrator to schedule the legacy webhook task using `taskName` as its
+ * task name.
+ */
+export interface LegacyDispatchMessage extends DispatchMessageBase {
+    kind: 'webhook';
+    /** Deterministic scheduler task name used to deduplicate queue redeliveries. */
+    taskName: string;
+    parentSyncName: string;
+    /** Webhook subscription name matched on the inbound payload; passed to executeWebhook as args.webhookName. */
+    webhookName: string;
     payload: JsonValue;
 }
+
+export interface FunctionDispatchMessage extends DispatchMessageBase {
+    kind: 'function';
+    /** Deterministic key used to deduplicate queue redeliveries. */
+    idempotencyKey: string;
+    functionName: string;
+    trigger: Omit<Extract<FunctionTrigger, { kind: 'http' }>, 'request' | 'connection'> & {
+        request: Extract<FunctionTrigger, { kind: 'http' }>['request'];
+        subscriptions: string[];
+        connection: NonNullable<Extract<FunctionTrigger, { kind: 'http' }>['connection']>;
+    };
+    maxConcurrency: number;
+}
+
+export type DispatchMessage = LegacyDispatchMessage | FunctionDispatchMessage;

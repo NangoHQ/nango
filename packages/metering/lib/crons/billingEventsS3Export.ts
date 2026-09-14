@@ -18,15 +18,6 @@ const bucket = envs.BILLING_EVENTS_S3_BUCKET;
 const roleArn = envs.BILLING_EVENTS_S3_WRITER_ROLE_ARN;
 const region = envs.BILLING_EVENTS_S3_REGION;
 
-// Keyed on the DATA DAY, not the wall clock. Matters at the seam: the
-// Aug 1 00:15 UTC firing exports July 31 data, and July 31 is still
-// pre-cutover — so those rows must ship as "_s3" shadow, not canonical.
-// See BILLING_EVENTS_CUTOVER_AT in packages/utils.
-function dayIsPostCutover(day: string): boolean {
-    if (!envs.BILLING_EVENTS_CUTOVER_AT) return false;
-    return new Date(`${day}T00:00:00Z`) >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
-}
-
 const LOCK_KEY = 'lock:cron:billingEventsS3Export';
 // Cron fires hourly; lock should expire well before the next tick.
 const lockTtlMs = 30 * 60 * 1000;
@@ -38,8 +29,7 @@ const s3 = new S3Client({ region });
 
 const DEFAULT_DATABASE = 'usage';
 export interface MetricSpec {
-    /** Canonical Orb event_name; the suffix is appended at SQL gen time. */
-    canonicalEventName:
+    eventName:
         | 'proxy'
         | 'function_executions'
         | 'data_transfer'
@@ -62,7 +52,7 @@ export interface MetricSpec {
 // pre-aggregated layout. See https://linear.app/nango/document/orb-billable-metrics-2e0859635bc1
 export const METRICS: MetricSpec[] = [
     {
-        canonicalEventName: 'proxy',
+        eventName: 'proxy',
         select: (day, database) => `
             SELECT
                 account_id, day,
@@ -73,7 +63,7 @@ export const METRICS: MetricSpec[] = [
         `
     },
     {
-        canonicalEventName: 'function_executions',
+        eventName: 'function_executions',
         select: (day, database) => `
             SELECT
                 account_id, day,
@@ -90,7 +80,7 @@ export const METRICS: MetricSpec[] = [
         `
     },
     {
-        canonicalEventName: 'webhook_forwards',
+        eventName: 'webhook_forwards',
         select: (day, database) => `
             SELECT
                 account_id, day,
@@ -101,7 +91,7 @@ export const METRICS: MetricSpec[] = [
         `
     },
     {
-        canonicalEventName: 'billable_actions',
+        eventName: 'billable_actions',
         select: (day, database) => `
             SELECT
                 account_id, day,
@@ -112,7 +102,7 @@ export const METRICS: MetricSpec[] = [
         `
     },
     {
-        canonicalEventName: 'monthly_active_records',
+        eventName: 'monthly_active_records',
         select: (day, database) => `
             SELECT
                 account_id, day,
@@ -123,12 +113,12 @@ export const METRICS: MetricSpec[] = [
         `
     },
     {
-        canonicalEventName: 'records',
+        eventName: 'records',
         // Reconstruct Orb's average(count) semantic from the typed-projection MV:
         // inner: SUM across all slices (env/integration/connection/model) per (account, day, batch_id)
         //        → per-firing account total. batch_id is one UUID per metering cron firing.
         // outer: AVG across batches per (account, day)
-        //        → daily average count, matching what Orb received from the legacy HTTP path.
+        //        → daily average count.
         select: (day, database) => `
             SELECT
                 account_id, day,
@@ -143,7 +133,7 @@ export const METRICS: MetricSpec[] = [
         `
     },
     {
-        canonicalEventName: 'billable_connections_v2',
+        eventName: 'billable_connections_v2',
         // Same sum-across-slices-per-batch then average-across-batches pattern as records.
         select: (day, database) => `
             SELECT
@@ -159,7 +149,7 @@ export const METRICS: MetricSpec[] = [
         `
     },
     {
-        canonicalEventName: 'data_transfer',
+        eventName: 'data_transfer',
         // We only bill for egress traffic that can be labeled as DTO.
         // `count` here is the sum of all egressing bytes in the billable view;
         // the per-source properties break that total down into its individual contributors.
@@ -211,14 +201,6 @@ export function billingEventsS3ExportCron(): void {
     });
 }
 
-function addEventNameSuffix(eventName: MetricSpec['canonicalEventName'], day: string): string {
-    if (eventName === 'data_transfer') {
-        // data_transfer is a new event and thus doesn't need the suffix to support live traffic cutoff.
-        return eventName;
-    }
-    return `${eventName}${dayIsPostCutover(day) ? '' : '_s3'}`;
-}
-
 export async function exec(): Promise<void> {
     await tracer.trace<Promise<void>>('nango.cron.billingEventsS3Export', async () => {
         logger.info(`Starting`);
@@ -232,47 +214,46 @@ export async function exec(): Promise<void> {
             let anyFailure = false;
             try {
                 for (const metric of METRICS) {
-                    const eventName = addEventNameSuffix(metric.canonicalEventName, day);
-                    const key = objectKey({ day, eventName });
+                    const key = objectKey({ day, eventName: metric.eventName });
                     const start = process.hrtime.bigint();
                     // Tracks which step is in flight so a catch can tag the failure
                     // without us having to introspect the thrown error.
                     let step: 's3_check' | 'export' = 's3_check';
                     try {
                         if (await objectExists(key)) {
-                            logger.info(`Skipping ${eventName} for day=${day} (already in s3://${bucket}/${key})`);
+                            logger.info(`Skipping ${metric.eventName} for day=${day} (already in s3://${bucket}/${key})`);
                             continue;
                         }
                         step = 'export';
-                        logger.info(`Exporting ${eventName} for day=${day}`);
+                        logger.info(`Exporting ${metric.eventName} for day=${day}`);
                         // ClickHouse populates `written_rows` in the X-ClickHouse-Summary
                         // response header once the multipart upload to S3 is complete
                         // (INSERT INTO FUNCTION s3(...) is atomic — the object either
                         // exists fully or not at all), so on the success path this row
                         // count matches the line count in the S3 file exactly.
-                        const res = await client.command({ query: exportSql({ metric, day, eventName, key }) });
+                        const res = await client.command({ query: exportSql({ metric, day, key }) });
                         const writtenRows = Number(res.summary?.written_rows ?? 0);
-                        logger.info(`Exported ${eventName} for day=${day} (rows=${writtenRows})`);
+                        logger.info(`Exported ${metric.eventName} for day=${day} (rows=${writtenRows})`);
                         metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT, 1, {
-                            metric: metric.canonicalEventName,
+                            metric: metric.eventName,
                             success: 'true'
                         });
                         metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_ROWS, writtenRows, {
-                            metric: metric.canonicalEventName
+                            metric: metric.eventName
                         });
                     } catch (err) {
                         // Per-metric catch so a single failure (e.g. CH timeout on
                         // a heavy table) does not abort the rest of the run.
                         anyFailure = true;
-                        logger.error(`Failed to export ${eventName} for day=${day} at step=${step}`, err);
+                        logger.error(`Failed to export ${metric.eventName} for day=${day} at step=${step}`, err);
                         metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT, 1, {
-                            metric: metric.canonicalEventName,
+                            metric: metric.eventName,
                             success: 'false',
                             step
                         });
                     } finally {
                         metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_DURATION_MS, Number(process.hrtime.bigint() - start) / 1e6, {
-                            metric: metric.canonicalEventName
+                            metric: metric.eventName
                         });
                     }
                 }
@@ -332,21 +313,11 @@ async function withLock(fn: () => Promise<void>): Promise<void> {
  * production runtime, and directly by the integration test (querying it via
  * `client.query` and asserting on the rows).
  */
-export function metricRowsSql({
-    metric,
-    day,
-    eventName,
-    database = DEFAULT_DATABASE
-}: {
-    metric: MetricSpec;
-    day: string;
-    eventName: string;
-    database?: string;
-}): string {
+export function metricRowsSql({ metric, day, database = DEFAULT_DATABASE }: { metric: MetricSpec; day: string; database?: string }): string {
     return `
         SELECT
-            concat('${eventName}:', toString(account_id), ':', toString(day)) AS idempotency_key,
-            '${eventName}' AS event_name,
+            concat('${metric.eventName}:', toString(account_id), ':', toString(day)) AS idempotency_key,
+            '${metric.eventName}' AS event_name,
             toString(account_id) AS external_customer_id,
             -- End-of-day so the timestamp falls within Orb's account grace period at
             -- ingestion time (cron runs the day after, so 00:00:00 of D is older than
@@ -363,7 +334,7 @@ function objectKey({ day, eventName }: { day: string; eventName: string }): stri
     return `${dayCompact}/${eventName}.jsonl`;
 }
 
-function exportSql({ metric, day, eventName, key }: { metric: MetricSpec; day: string; eventName: string; key: string }): string {
+function exportSql({ metric, day, key }: { metric: MetricSpec; day: string; key: string }): string {
     const url = `https://${bucket}.s3.amazonaws.com/${key}`;
 
     // Argument order matters: ClickHouse 25.8+ docs show s3(url, format, extra_credentials(...)).
@@ -374,7 +345,7 @@ function exportSql({ metric, day, eventName, key }: { metric: MetricSpec; day: s
             'JSONEachRow',
             extra_credentials(role_arn = '${roleArn}')
         )
-        ${metricRowsSql({ metric, day, eventName })}
+        ${metricRowsSql({ metric, day })}
     `;
 }
 

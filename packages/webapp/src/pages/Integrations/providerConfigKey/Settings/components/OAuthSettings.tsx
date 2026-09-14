@@ -1,7 +1,6 @@
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
-import { permissions } from '@nangohq/authz';
 import { Alert, AlertDescription, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
@@ -27,7 +26,7 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
     const { confirm, DialogComponent } = useConfirmDialog();
 
     const { can } = usePermissions();
-    const canEdit = !environment.is_production || can(permissions.canWriteProdIntegrations);
+    const canEdit = can('environment:integrations:update', environment);
 
     const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
     const [isEditingClientId, setIsEditingClientId] = useState(false);

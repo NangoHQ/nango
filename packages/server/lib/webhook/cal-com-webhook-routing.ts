@@ -1,22 +1,9 @@
-import crypto from 'node:crypto';
-
 import { NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import { validateHmacSignature } from './signature.js';
+
 import type { WebhookHandler } from './types.js';
-
-function validateCalComSignature(secret: string, headerSignature: string, rawBody: string): boolean {
-    const signature = crypto.createHmac('sha256', secret).update(rawBody, 'utf8').digest('hex');
-
-    const expectedBuffer = Buffer.from(signature, 'hex');
-    const receivedBuffer = Buffer.from(headerSignature, 'hex');
-
-    if (expectedBuffer.length !== receivedBuffer.length) {
-        return false;
-    }
-
-    return crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
-}
 
 const route: WebhookHandler = async (nango, headers, body, rawBody, query) => {
     // https://cal.com/docs/developing/guides/automation/webhooks#verifying-the-authenticity-of-the-received-payload
@@ -28,9 +15,11 @@ const route: WebhookHandler = async (nango, headers, body, rawBody, query) => {
             return Err(new NangoError('webhook_missing_signature'));
         }
 
-        if (!validateCalComSignature(webhookSecret, signatureHeader, rawBody)) {
+        if (!validateHmacSignature({ secret: webhookSecret, rawBody, signature: signatureHeader })) {
             return Err(new NangoError('webhook_invalid_signature'));
         }
+    } else {
+        nango.markUnverified({ reason: 'cal_com_missing_webhook_secret' });
     }
 
     const connectionIdentifierValue = query?.['nangoConnectionId'] ?? body.nangoConnectionId;
@@ -40,7 +29,7 @@ const route: WebhookHandler = async (nango, headers, body, rawBody, query) => {
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookType: 'triggerEvent',
         connectionIdentifierValue,
         propName: 'connectionId'

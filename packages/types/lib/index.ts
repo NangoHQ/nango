@@ -131,6 +131,5 @@ export type * from './functions/api.js';
 export type * from './functions/domain.js';
 
 export type * from './lambda/index.js';
-export type * from './authz/types.js';
 
 export type * from './pubsub/events.js';

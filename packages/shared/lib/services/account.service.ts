@@ -573,6 +573,7 @@ class AccountService {
                     pending_secret: DBAPISecret | null;
                     auth_scopes: string[] | null;
                     auth_api_key_id: number;
+                    auth_api_key_uuid: string;
                     sandbox_signing_secret: string | null;
                     sandbox_signing_secret_iv: string | null;
                     sandbox_signing_secret_tag: string | null;
@@ -582,6 +583,7 @@ class AccountService {
                     WITH matched_customer_key AS (
                         SELECT
                             ck.id,
+                            ck.uuid,
                             ckr.entity_id AS environment_id,
                             ck.scopes,
                             ck.sandbox_signing_secret,
@@ -603,6 +605,7 @@ class AccountService {
                         row_to_json(pending_secret.*) AS pending_secret,
                         matched_customer_key.scopes AS auth_scopes,
                         matched_customer_key.id AS auth_api_key_id,
+                        matched_customer_key.uuid AS auth_api_key_uuid,
                         matched_customer_key.sandbox_signing_secret,
                         matched_customer_key.sandbox_signing_secret_iv,
                         matched_customer_key.sandbox_signing_secret_tag
@@ -657,6 +660,7 @@ class AccountService {
                           source: 'sandbox_token' as const,
                           scopes,
                           apiKeyId: row.auth_api_key_id,
+                          apiKeyUuid: row.auth_api_key_uuid,
                           purpose: verified.purpose,
                           dryrunId: verified.dryrun_id
                       }
@@ -664,6 +668,7 @@ class AccountService {
                           source: 'sandbox_token' as const,
                           scopes,
                           apiKeyId: row.auth_api_key_id,
+                          apiKeyUuid: row.auth_api_key_uuid,
                           purpose: verified.purpose,
                           deploymentId: verified.deployment_id
                       };
@@ -735,12 +740,13 @@ class AccountService {
                 environment_ids: number[];
                 auth_scopes: string[] | null;
                 auth_api_key_id: number;
+                auth_api_key_uuid: string;
                 auth_display_name: string;
             }[];
         }>(
             `
                 WITH matched_customer_key AS (
-                    SELECT ck.id, ck.account_id, ck.scopes, ck.display_name
+                    SELECT ck.id, ck.uuid, ck.account_id, ck.scopes, ck.display_name
                     FROM customer_keys ck
                     WHERE ck.hashed = ?
                       AND ck.key_type = 'api'
@@ -782,6 +788,7 @@ class AccountService {
                     matched_with_environments.environment_ids,
                     matched_with_environments.scopes AS auth_scopes,
                     matched_with_environments.id AS auth_api_key_id,
+                    matched_with_environments.uuid AS auth_api_key_uuid,
                     matched_with_environments.display_name AS auth_display_name
                 FROM matched_with_environments
                 JOIN _nango_accounts ON _nango_accounts.id = matched_with_environments.account_id
@@ -835,6 +842,7 @@ class AccountService {
             source: 'customer_key',
             scopes: row.auth_scopes ?? [],
             apiKeyId: row.auth_api_key_id,
+            apiKeyUuid: row.auth_api_key_uuid,
             apiKeyDisplayName: row.auth_display_name
         };
 

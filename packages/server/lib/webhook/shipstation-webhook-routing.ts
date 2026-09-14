@@ -36,7 +36,7 @@ const route: WebhookHandler<ShipStationWebhook> = async (nango, headers, body) =
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookType: 'resource_type',
         connectionIdentifierValue,
         propName

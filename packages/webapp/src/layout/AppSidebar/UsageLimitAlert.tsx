@@ -4,7 +4,6 @@ import { Alert, AlertActions, AlertDescription, AlertTitle } from '@nangohq/desi
 
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { usePlanOverrideStore } from '@/features/planOverride';
-import { useMeta } from '@/hooks/useMeta';
 import { useStore } from '@/store';
 import { useApiGetUsage, useCurrentPlan } from '../../hooks/usePlan.js';
 import { billedUsageMetrics, getAggregateUsageState } from '../../utils/usage.js';
@@ -29,10 +28,9 @@ export default function UsageLimitAlert() {
     const env = useStore((state) => state.env);
     const { data: usage } = useApiGetUsage(env);
     const { data: environmentData } = useCurrentPlan(env);
-    const { data: metaData } = useMeta();
     const usageLimitOverride = usePlanOverrideStore((s) => s.usageLimitOverride);
 
-    const metrics = billedUsageMetrics(environmentData?.plan, metaData?.data.s26Pricing === true);
+    const metrics = billedUsageMetrics(environmentData?.plan);
     // Dev-tool override (planOverride.ts) — real usage rarely sits near a cap on demand.
     const state = usageLimitOverride ?? getAggregateUsageState(usage?.data ?? {}, metrics);
     if (state !== 'near' && state !== 'over') {

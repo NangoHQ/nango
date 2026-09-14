@@ -16,6 +16,7 @@ import { serializeError } from 'serialize-error';
 
 import { cloudHost, localhostUrl } from './constants.js';
 import { getDeviceId, state } from './state.js';
+import { getCliHttpsAgent } from './tls.js';
 import { Err, Ok } from './utils/result.js';
 import { NANGO_VERSION } from './version.js';
 
@@ -141,7 +142,7 @@ export async function upgradeAction(debug = false) {
         if (debug) {
             printDebug(`Version ${version} of nango is installed.`);
         }
-        const response = await http.get(`https://registry.npmjs.org/${resolved.name}`);
+        const response = await axios.get(`https://registry.npmjs.org/${resolved.name}`);
         const latestVersion = response.data['dist-tags'].latest;
 
         if (debug) {
@@ -291,6 +292,7 @@ http.interceptors.request.use((config) => {
     for (const [key, value] of Object.entries(cliHeaders)) {
         config.headers.set(key, value);
     }
+    config.httpsAgent = getCliHttpsAgent() ?? defaultHttpsAgent;
     return config;
 });
 

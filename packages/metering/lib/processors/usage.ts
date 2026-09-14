@@ -1,6 +1,5 @@
 import tracer from 'dd-trace';
 
-import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
 import { connectionService } from '@nangohq/shared';
@@ -65,7 +64,7 @@ export class UsageProcessor {
         try {
             switch (event.type) {
                 case 'usage.monthly_active_records': {
-                    const { connectionId, environmentId, environmentName, integrationId, accountId, syncId, model } = event.payload.properties;
+                    const { connectionId, environmentId, integrationId, accountId } = event.payload.properties;
                     const connection = await connectionService.checkIfConnectionExists(db.knex, {
                         connectionId,
                         providerConfigKey: integrationId,
@@ -80,24 +79,7 @@ export class UsageProcessor {
                     const mar = event.payload.value;
                     metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
 
-                    this.clickhouse.add([event]);
-
-                    return billing.add([
-                        {
-                            type: 'monthly_active_records',
-                            properties: {
-                                count: mar,
-                                idempotencyKey: event.idempotencyKey,
-                                timestamp: event.createdAt,
-                                accountId,
-                                environmentId,
-                                environmentName,
-                                integrationId,
-                                syncId,
-                                model
-                            }
-                        }
-                    ]);
+                    return this.clickhouse.add([event]);
                 }
                 case 'usage.records': {
                     const { accountId } = event.payload.properties;
@@ -107,28 +89,11 @@ export class UsageProcessor {
                         delta: event.payload.value
                     });
                     this.logIncrError('records', accountId, incrRecords);
-                    return Ok(undefined); // No billing action for records, just tracking usage
+                    // Not ingested into Clickhouse here: records totals are point-in-time, so the exportUsage cron computes them hourly
+                    return Ok(undefined);
                 }
                 case 'usage.actions': {
-                    const { accountId, environmentId, environmentName, integrationId, actionName } = event.payload.properties;
-
-                    this.clickhouse.add([event]);
-
-                    return billing.add([
-                        {
-                            type: 'billable_actions',
-                            properties: {
-                                count: event.payload.value,
-                                idempotencyKey: event.idempotencyKey,
-                                timestamp: event.createdAt,
-                                accountId,
-                                environmentId,
-                                environmentName,
-                                integrationId,
-                                actionName
-                            }
-                        }
-                    ]);
+                    return this.clickhouse.add([event]);
                 }
                 case 'usage.connections': {
                     const { accountId } = event.payload.properties;
@@ -145,22 +110,11 @@ export class UsageProcessor {
                         await this.usageTracker.revalidate({ accountId, metric: 'records' });
                     }
 
-                    // No billing action for connections, just tracking usage
+                    // Not ingested into Clickhouse here: connection totals are point-in-time, so the exportUsage cron computes them hourly
                     return Ok(undefined);
                 }
                 case 'usage.function_executions': {
-                    const {
-                        accountId,
-                        environmentId,
-                        environmentName,
-                        integrationId,
-                        functionName,
-                        type,
-                        telemetryBag,
-                        frequencyMs,
-                        success,
-                        runtime = 'runner'
-                    } = event.payload.properties;
+                    const { accountId, type, telemetryBag, frequencyMs, success, runtime = 'runner' } = event.payload.properties;
                     const compute = telemetryBag ? telemetryBag.durationMs * telemetryBag.memoryGb : 0;
                     const durationSeconds = Math.max(0, Math.ceil((telemetryBag?.durationMs ?? 0) / 1000));
                     const customLogs = telemetryBag?.customLogs ?? 0;
@@ -192,34 +146,7 @@ export class UsageProcessor {
                     this.logIncrError('function_logs', accountId, incrLogs);
 
                     // Clickhouse
-                    this.clickhouse.add([event]);
-
-                    // Billing
-                    billing.add([
-                        {
-                            type: 'function_executions',
-                            properties: {
-                                accountId,
-                                type,
-                                count: event.payload.value,
-                                idempotencyKey: event.idempotencyKey,
-                                timestamp: event.createdAt,
-                                telemetry: {
-                                    successes: success ? event.payload.value : 0,
-                                    failures: success ? 0 : event.payload.value,
-                                    durationMs: telemetryBag?.durationMs ?? 0,
-                                    compute,
-                                    customLogs,
-                                    proxyCalls: telemetryBag?.proxyCalls ?? 0
-                                },
-                                environmentId,
-                                environmentName,
-                                integrationId,
-                                functionName,
-                                ...(frequencyMs ? { frequencyMs } : {})
-                            }
-                        }
-                    ]);
+                    const added = this.clickhouse.add([event]);
 
                     //Datadog
                     const durationMs = telemetryBag?.durationMs || 0;
@@ -247,76 +174,32 @@ export class UsageProcessor {
                         frequencyBucket,
                         functionRuntime: runtime
                     });
-                    return Ok(undefined);
+                    return added;
                 }
                 case 'usage.proxy': {
-                    const { accountId, environmentId, environmentName, integrationId, success } = event.payload.properties;
-                    // Usage tracking
+                    const { accountId } = event.payload.properties;
                     await this.usageTracker.incr({
                         accountId,
                         metric: 'proxy',
                         delta: event.payload.value
                     });
-                    // Clickhouse
-                    this.clickhouse.add([event]);
-                    // Billing
-                    billing.add([
-                        {
-                            type: 'proxy',
-                            properties: {
-                                count: event.payload.value,
-                                idempotencyKey: event.idempotencyKey,
-                                timestamp: event.createdAt,
-                                accountId,
-                                environmentId,
-                                environmentName,
-                                integrationId,
-                                telemetry: {
-                                    successes: success ? event.payload.value : 0,
-                                    failures: success ? 0 : event.payload.value
-                                }
-                            }
-                        }
-                    ]);
-                    return Ok(undefined);
+                    return this.clickhouse.add([event]);
                 }
                 case 'usage.webhook_forward': {
-                    const { accountId, environmentId, environmentName, integrationId, success } = event.payload.properties;
+                    const { accountId } = event.payload.properties;
                     const incrWebhook = await this.usageTracker.incr({
                         accountId,
                         metric: 'webhook_forwards',
                         delta: event.payload.value
                     });
                     this.logIncrError('webhook_forwards', accountId, incrWebhook);
-                    // Clickhouse
-                    this.clickhouse.add([event]);
-                    // Billing
-                    billing.add([
-                        {
-                            type: 'webhook_forwards',
-                            properties: {
-                                count: event.payload.value,
-                                idempotencyKey: event.idempotencyKey,
-                                timestamp: event.createdAt,
-                                accountId,
-                                environmentId,
-                                environmentName,
-                                integrationId,
-                                telemetry: {
-                                    successes: success ? event.payload.value : 0,
-                                    failures: success ? 0 : event.payload.value
-                                }
-                            }
-                        }
-                    ]);
-                    return Ok(undefined);
+                    return this.clickhouse.add([event]);
                 }
                 case 'usage.data_transfer': {
                     const { package: pkg, callsite, ingressedBytes, egressedBytes } = event.payload.properties;
                     metrics.increment(metrics.Types.DATA_TRANSFER, ingressedBytes, { package: pkg, callsite, direction: 'ingress' });
                     metrics.increment(metrics.Types.DATA_TRANSFER, egressedBytes, { package: pkg, callsite, direction: 'egress' });
-                    this.clickhouse.add([event]);
-                    return Ok(undefined);
+                    return this.clickhouse.add([event]);
                 }
                 default:
                     ((_exhaustiveCheck: never) => {

@@ -3,7 +3,6 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { AUDIT_EXPORT_MAX_ROWS, auditClickhouseClient, AuditClient, ClickhouseAuditStore, migrate } from '@nangohq/audit';
-import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 
 import { authenticateUser, isError, runServer } from '../../../utils/tests.js';
@@ -34,7 +33,7 @@ function auditEvent(accountId: number, occurredAt: string, resourceAction: Audit
         occurredAt,
         accountId,
         scope: 'environment',
-        environment: { id: 2, display: 'dev' },
+        environment: { id: 'e0000000-0000-4000-8000-000000000001', display: 'dev' },
         actor: { type: 'user', id: '5', display: 'a@b.co' },
         targets: [{ type: 'connection', id: '10' }],
         context: { ip: '1.2.3.4', userAgent: 'curl/8' },
@@ -60,7 +59,6 @@ describe('GET /api/v1/audit-trail/export', () => {
         auditClient = auditClickhouseClient(process.env['CLICKHOUSE_URL']!);
         store = new ClickhouseAuditStore(auditClient);
         emitter = new AuditClient(store, store);
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(async () => {

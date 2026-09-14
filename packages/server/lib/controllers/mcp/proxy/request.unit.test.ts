@@ -4,18 +4,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import { MAX_MCP_PROXY_RESPONSE_BYTES } from '../../../services/mcpProxyResponse.js';
 import proxyService, { ProxyServiceError } from '../../../services/proxy.service.js';
 import { egressTelemetryRecorder } from '../../../utils/egressTelemetry.js';
 import { PublicMcpError } from '../utils.js';
 import { proxyRequestTool } from './request.js';
-import { MAX_MCP_PROXY_RESPONSE_BYTES } from './response.js';
 
 import type { ProxyServiceResponse } from '../../../services/proxy.service.js';
 import type { ManagementMcpContext } from '../managementTool.js';
 
 const context = {
     account: { id: 1, uuid: 'account-uuid' },
-    environment: { id: 42, name: 'dev' },
+    environment: { id: 42, uuid: 'e0000000-0000-4000-8000-000000000042', name: 'dev' },
     plan: null,
     grantedScopes: ['environment:proxy']
 } as ManagementMcpContext;
@@ -96,6 +96,22 @@ describe('proxyRequestTool', () => {
             egressedBytes: Buffer.byteLength('{"created":true}'),
             count: 1
         });
+    });
+
+    it('keeps an extreme exponent in exponential notation instead of writing it out', async () => {
+        // toFixed() would turn this 25 byte literal into ten million characters, well past the response limit.
+        mockProxyResponse('{"tiny":1.00000000000001e-9999999,"id":123456789012345678901234567890}', 'application/json');
+
+        const result = await requestThroughTool();
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.body).toStrictEqual({
+                tiny: '1.00000000000001e-9999999',
+                // Well inside the range, so a large id is still written out in full.
+                id: '123456789012345678901234567890'
+            });
+        }
     });
 
     it('returns normal JSON while preserving unsafe and high-precision numbers as strings', async () => {

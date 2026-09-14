@@ -8,7 +8,6 @@ import * as cron from 'node-cron';
 import qs from 'qs';
 import { WebSocketServer } from 'ws';
 
-import { billing } from '@nangohq/billing';
 import db, { KnexDatabase } from '@nangohq/database';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
@@ -18,6 +17,7 @@ import { records } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
 import { flags, getLogger, NANGO_VERSION, once, report } from '@nangohq/utils';
 
+import { destroyAuditDb, migrateAuditDb, startAuditPartitions } from './auditDb.js';
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
 import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
@@ -86,10 +86,13 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await records.migrate();
     await migrateFleets();
     await tasks.migrate();
+    await migrateAuditDb();
     await db.destroy();
 } else {
     logger.info('Not migrating database');
 }
+
+const auditPartitions = startAuditPartitions();
 
 // Preload providers
 getProviders();
@@ -129,6 +132,8 @@ const close = once(() => {
     server.close(async () => {
         wss.close();
         await stopFleets();
+        await auditPartitions?.abort();
+        await destroyAuditDb();
         await tasks.stop();
         await db.destroy();
         await records.close();
@@ -136,7 +141,6 @@ const close = once(() => {
         otlp.stop();
         await destroyKvstore();
         await destroyFeatureFlags();
-        await billing.shutdown();
         await egressTelemetryRecorder.shutdown();
         await pubsub.disconnect();
 

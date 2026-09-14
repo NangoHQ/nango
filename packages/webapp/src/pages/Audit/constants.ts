@@ -1,7 +1,8 @@
-import { formatKeyToLabel } from '@/utils/utils';
+// Relative, not `@/`: the root vitest config has no alias, and this module is reachable from a unit test.
+import { formatKeyToLabel } from '../../utils/utils';
 
 import type { FilterOption } from '@/components/patterns/FilterMultiSelect';
-import type { ApiAuditTrailEvent, AuditAction, AuditActionOf, AuditEventKey, AuditResource, AuditScope } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditAction, AuditActionOf, AuditEventKey, AuditResource } from '@nangohq/types';
 
 /**
  * Runtime twin of the audit event vocabulary, which `@nangohq/types` carries as types only. Kept in
@@ -55,13 +56,40 @@ export const ALL = 'all';
 export type ResourceFilter = AuditResource | typeof ALL;
 export type ActionFilter = AuditAction | typeof ALL;
 
+const allResources = Object.keys(actionsByResource) as AuditResource[];
+
+const byLabel = (a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label);
+
 export const resourceOptions: FilterOption<ResourceFilter>[] = [
     { value: ALL, label: 'All' },
-    ...(Object.keys(actionsByResource) as AuditResource[]).map((resource) => ({ value: resource, label: resourceLabels[resource] }))
+    ...allResources.map((resource) => ({ value: resource, label: resourceLabels[resource] })).sort(byLabel)
 ];
 
-export function actionOptionsFor(resource: AuditResource): FilterOption<ActionFilter>[] {
-    return [{ value: ALL, label: 'All' }, ...actionsByResource[resource].map((action) => ({ value: action, label: formatKeyToLabel(action) }))];
+export const resourceValues: ResourceFilter[] = [ALL, ...allResources];
+export const actionValues: ActionFilter[] = [ALL, ...new Set(allResources.flatMap((resource) => actionsByResource[resource] as readonly AuditAction[]))];
+
+export function actionOptionsForResources(resources: AuditResource[]): FilterOption<ActionFilter>[] {
+    const scope = resources.length ? resources : allResources;
+    const actions = new Set(scope.flatMap((resource) => actionsByResource[resource] as readonly AuditAction[]));
+    const options = [...actions].map((action) => ({ value: action, label: formatKeyToLabel(action) })).sort(byLabel);
+    return [{ value: ALL, label: 'All' }, ...options];
+}
+
+function selectionLabel<T>(values: T[], toLabel: (value: T) => string): string {
+    return values.length ? values.map(toLabel).join(', ') : 'All';
+}
+
+export function resourceSelectionLabel(resources: AuditResource[]): string {
+    return selectionLabel(resources, (resource) => resourceLabels[resource]);
+}
+
+export function actionSelectionLabel(actions: AuditAction[]): string {
+    return selectionLabel(actions, formatKeyToLabel);
+}
+
+/** The API rejects `actions` without `resources`, so an action-only filter names the resources that declare it. */
+export function resourcesOwningActions(actions: AuditAction[]): AuditResource[] {
+    return allResources.filter((resource) => (actionsByResource[resource] as readonly AuditAction[]).some((action) => actions.includes(action)));
 }
 
 export function actorLabel(actor: ApiAuditTrailEvent['actor']): string {
@@ -72,32 +100,21 @@ export function viaLabel(via: ApiAuditTrailEvent['via']): string | undefined {
     return via?.map((entry) => `${entry.display ?? entry.id} (${entry.type}${entry.actorId ? `, actor ${entry.actorId}` : ''})`).join(', ');
 }
 
-export function resourceLabel(resource: ApiAuditTrailEvent['resource']): string {
-    return resourceLabels[resource] ?? resource;
+export function eventLabel(event: Pick<ApiAuditTrailEvent, 'resource' | 'action'>): string {
+    // Falls back to the raw key: a newer backend can send a resource this build has no label for.
+    return `${resourceLabels[event.resource] ?? event.resource} · ${formatKeyToLabel(event.action)}`;
 }
 
-export function actionLabel(event: Pick<ApiAuditTrailEvent, 'action'>): string {
-    return event.action.replace(/_/g, ' ');
+/** First target plus a count, so a deploy touching a dozen functions still occupies one row. */
+export function targetsSummary(targets: ApiAuditTrailEvent['targets']): { first: string; rest: number } | null {
+    const [first, ...rest] = targets.map((target) => target.display ?? target.id);
+    return first ? { first, rest: rest.length } : null;
 }
 
-export function targetsLabel(targets: ApiAuditTrailEvent['targets']): string {
-    return targets.map((target) => target.display ?? target.id).join(', ') || '—';
-}
-
-export function targetTypesLabel(targets: ApiAuditTrailEvent['targets']): string {
-    return [...new Set(targets.map((target) => target.type))].join(', ');
-}
-
-const scopeLabels: Record<AuditScope, string> = {
-    account: 'Account',
-    environment: 'Environment'
-};
-
-export function scopeLabel(scope: ApiAuditTrailEvent['scope']): string {
-    return scopeLabels[scope];
-}
-
-// The scope column says why this is empty, so the cell no longer stands in for it.
-export function environmentLabel(environment: ApiAuditTrailEvent['environment']): string {
-    return environment?.display ?? '—';
+export function environmentLabel(event: Pick<ApiAuditTrailEvent, 'environment' | 'scope'>): string {
+    if (event.environment) {
+        return event.environment.display;
+    }
+    // An environment-scoped event can store a null environment, and `scope` is absent before NAN-6802.
+    return event.scope === 'environment' ? '—' : 'Account-level';
 }

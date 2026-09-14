@@ -4,6 +4,7 @@ import * as cron from 'node-cron';
 import db from '@nangohq/database';
 import { deleteExpiredPrivateKeys } from '@nangohq/keystore';
 import { getLocking } from '@nangohq/kvstore';
+import { deleteExpiredOAuthArtifacts } from '@nangohq/oauth-server';
 import { deleteFunctionAsyncJobsOlderThan } from '@nangohq/sandbox';
 import {
     configService,
@@ -23,6 +24,7 @@ import { deleteProviderConfigData } from '../deletion/deleteProviderConfigData.j
 import { deleteSyncConfigData } from '../deletion/deleteSyncConfigData.js';
 import { deleteSyncs } from '../deletion/deleteSyncs.js';
 import { envs } from '../env.js';
+import { expireAgentSessions } from '../services/agentSession.service.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
 import oauthSessionService from '../services/oauth-session.service.js';
 
@@ -109,6 +111,13 @@ export async function exec(): Promise<void> {
             deleteFn: async () => await deleteExpiredConnectSession(db.knex, { olderThan: deleteConnectionSessionOlderThan, limit })
         });
 
+        // Expire agent sessions
+        await batchDelete({
+            ...opts,
+            name: 'expired agent sessions',
+            deleteFn: async () => await expireAgentSessions(db.knex, { limit })
+        });
+
         // Delete private keys
         await batchDelete({
             ...opts,
@@ -121,6 +130,12 @@ export async function exec(): Promise<void> {
             ...opts,
             name: 'oauth sessions',
             deleteFn: async () => await oauthSessionService.deleteExpiredSessions({ limit, olderThan: deleteOauthSessionOlderThan })
+        });
+
+        await batchDelete({
+            ...opts,
+            name: 'oauth server artifacts',
+            deleteFn: async () => await deleteExpiredOAuthArtifacts(db.knex, limit)
         });
 
         // Delete invitations

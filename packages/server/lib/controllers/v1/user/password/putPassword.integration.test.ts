@@ -1,13 +1,10 @@
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
 import { userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
 import { isError, isSuccess, runServer } from '../../../../utils/tests.js';
-
-import type { MockInstance } from 'vitest';
 
 const signupRoute = '/api/v1/account/signup';
 const signinRoute = '/api/v1/account/signin';
@@ -17,7 +14,6 @@ const mfaRoute = '/api/v1/account/mfa';
 const STEP_MS = 30 * 1000;
 
 let api: Awaited<ReturnType<typeof runServer>>;
-let mfaFlagSpy: MockInstance<ReturnType<typeof featureFlags.getFlags>['isMFAEnabled']>;
 
 async function signupVerifiedUser(): Promise<{ email: string; password: string }> {
     const email = `${nanoid()}@example.com`;
@@ -59,7 +55,6 @@ async function enrollMfa(session: string): Promise<{ totp: OTPAuth.TOTP; recover
 describe(`PUT ${passwordRoute}`, () => {
     beforeAll(async () => {
         api = await runServer();
-        mfaFlagSpy = vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {
@@ -273,18 +268,15 @@ describe(`PUT ${passwordRoute}`, () => {
         expect(json).toStrictEqual({ error: { code: 'invalid_mfa_code' } });
     });
 
-    it('should skip the second factor when the feature is off for the account', async () => {
+    it('should skip the second factor when the user has no factor enrolled', async () => {
         const { email, password } = await signupVerifiedUser();
         const session = await signin(email, password);
-        await enrollMfa(session);
 
-        mfaFlagSpy.mockResolvedValue(false);
         const { res, json } = await api.fetch(passwordRoute, {
             method: 'PUT',
             session,
             body: { oldPassword: password, newPassword: 'aZ1-newpass!?' }
         });
-        mfaFlagSpy.mockResolvedValue(true);
 
         expect(res.status).toBe(200);
         isSuccess(json);

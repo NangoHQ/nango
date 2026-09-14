@@ -53,7 +53,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -79,7 +78,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -107,7 +105,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -138,7 +135,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -170,7 +166,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -443,6 +438,55 @@ describe('OrchestratorClient', async () => {
             if (res.isErr()) {
                 expect(res.error.name).toBe('fetch_failed');
                 expect(JSON.stringify(res.error.payload)).toContain('duplicate task names within batch');
+            }
+        });
+    });
+    describe('executeFunctionBatch', () => {
+        it('should schedule a batch of asynchronous functions in a single call', async () => {
+            const groupKey = nanoid();
+            const batchSize = 5;
+            const propsList = Array.from({ length: batchSize }, () => ({
+                name: nanoid(),
+                group: { key: groupKey, maxConcurrency: 0 },
+                retry: { count: 0, max: 0 },
+                ownerKey: 'environment:1',
+                args: {
+                    functionName: 'native-function',
+                    connection: { id: 1, connection_id: 'C', provider_config_key: 'P', environment_id: 1 },
+                    activityLogId: 'a',
+                    trigger: {
+                        kind: 'http' as const,
+                        input: { issue: 123 },
+                        request: {
+                            method: 'POST' as const,
+                            path: '/webhook',
+                            headers: {},
+                            query: {},
+                            body: { issue: 123 }
+                        },
+                        subscriptions: ['issues'],
+                        connection: { connectionId: 'C', integrationId: 'P' }
+                    },
+                    async: true as const
+                }
+            }));
+
+            const res = await client.executeFunctionBatch(propsList);
+            expect(res.isOk()).toBe(true);
+            if (res.isOk()) {
+                expect(res.value).toHaveLength(batchSize);
+                for (const entry of res.value) {
+                    expect(entry.isOk()).toBe(true);
+                }
+            }
+
+            const tasks = (await client.dequeue({ groupKeyPattern: groupKey, limit: batchSize, longPolling: false })).unwrap();
+            expect(tasks).toHaveLength(batchSize);
+            for (const task of tasks) {
+                expect(task.isFunction()).toBe(true);
+                if (task.isFunction()) {
+                    expect(task.trigger).toMatchObject({ kind: 'http', subscriptions: ['issues'] });
+                }
             }
         });
     });

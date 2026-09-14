@@ -1,13 +1,11 @@
 import { Braces } from 'lucide-react';
 
-import { permissions } from '@nangohq/authz';
 import { FieldLabel } from '@nangohq/design-system';
 
 import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePostConnectionMetadata } from '@/hooks/useConnections';
-import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
@@ -106,10 +104,8 @@ export const ConnectionExtras = ({
     rawTokenResponse: Record<string, unknown> | null;
 }) => {
     const env = useStore((state) => state.env);
-    const { data } = useEnvironment(env);
-    const environment = data?.environmentAndAccount?.environment;
     const { can } = usePermissions();
-    const canEditConnection = can(permissions.canWriteProdConnections) || !environment?.is_production;
+    const canEditConnection = can('environment:connections:update');
 
     const { mutateAsync: postConnectionMetadata } = usePostConnectionMetadata();
 

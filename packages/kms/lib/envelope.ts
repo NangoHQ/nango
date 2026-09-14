@@ -1,6 +1,6 @@
 import { buildClient, CommitmentPolicy, KmsKeyringNode } from '@aws-crypto/client-node';
 
-import { GcpKmsKeyringNode } from './gcp_kms_keyring.js';
+import { GcpKmsKeyringNode } from './gcp.js';
 
 import type { EncryptionContext, KeyringNode } from '@aws-crypto/client-node';
 

@@ -3,8 +3,7 @@ import { Err, getLogger, metrics } from '@nangohq/utils';
 import { recordManagementMcpAudit } from './audit.js';
 import { formatMcpArgumentsError, PublicMcpError } from './utils.js';
 
-import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
-import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
+import type { ToolAnnotations } from '@modelcontextprotocol/server';
 import type {
     ApiKeyScope,
     AuditActionOf,
@@ -34,7 +33,7 @@ export interface ManagementMcpContext {
     audit?: AuditAttribution | undefined;
 }
 
-export type ManagementMcpSchema = AnySchema | z.ZodType;
+export type ManagementMcpSchema = z.ZodType;
 export type ManagementMcpRequiredScopes = { none: true } | { every: ApiKeyScope[] } | { anyOf: ApiKeyScope[] };
 
 type DynamicManagementMcpAudit = {

@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/authz",
     "version": "1.0.0",
-    "description": "Authorization permissions for Nango",
+    "description": "Scopes, grants and roles for Nango",
     "type": "module",
     "main": "./dist/index.js",
     "typings": "./dist/index.d.ts",

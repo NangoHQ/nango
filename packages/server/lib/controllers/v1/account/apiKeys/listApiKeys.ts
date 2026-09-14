@@ -23,6 +23,7 @@ export const listAccountApiKeys = asyncWrapper<ListAccountApiKeys>(async (req, r
     res.status(200).send({
         data: result.value.map((key) => ({
             id: key.id,
+            uuid: key.uuid,
             display_name: key.display_name,
             scopes: (key.scopes ?? []) as AccountApiKeyScope[],
             secret: key.secret,

@@ -4,7 +4,7 @@ import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
 import { envs } from '../../../env.js';
-import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
+import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../utils/tests.js';
 
 const route = '/api/v1/environments/current';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -26,14 +26,15 @@ describe(`GET ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
 
         const res = await api.fetch(route, {
             method: 'GET',
-            token: apiKey.secret
+            session
         });
 
-        shouldRequireQueryEnv(res);
+        shouldRequireSessionEnv(res);
     });
 
     it('should return environment and account data', async () => {

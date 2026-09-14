@@ -1,4 +1,4 @@
-import type { ApiAuditTrailEvent, SerializedAuditEvent } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditTrailTotal, SerializedAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export interface AuditTrailCursor {
@@ -6,15 +6,18 @@ export interface AuditTrailCursor {
     id: string;
 }
 
-export interface ListAuditTrailEventsParams {
+export interface AuditTrailFilter {
     accountId: number;
-    limit: number;
-    before?: AuditTrailCursor | undefined;
     from?: string | undefined;
     to?: string | undefined;
     resources?: string[] | undefined;
     /** Narrows `resources`; ignored on its own, since a match needs both halves of `resource.action`. */
     actions?: string[] | undefined;
+}
+
+export interface ListAuditTrailEventsParams extends AuditTrailFilter {
+    limit: number;
+    before?: AuditTrailCursor | undefined;
 }
 
 export interface AuditTrailPage {
@@ -33,4 +36,5 @@ export interface AuditBatchWriter {
 
 export interface AuditReader {
     list(params: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>>;
+    count(params: AuditTrailFilter): Promise<Result<AuditTrailTotal>>;
 }

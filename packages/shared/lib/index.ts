@@ -43,6 +43,7 @@ export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
 export { MFAError, recordMFALoginRefused, recordMFAVerifyFailure, recordMFAVerifySuccess } from './services/mfa.service.js';
 export { CustomerKeyError, MAX_API_KEYS_PER_ACCOUNT } from './services/customerKey.service.js';
+export type { ApiKeyRef } from './services/customerKey.service.js';
 export {
     GetConnectionError,
     type ConnectionIntegrationMatchRow,

@@ -5,13 +5,7 @@ export const freePlan: PlanDefinition = {
     title: 'Free',
     description: 'For hobby and testing.',
     prevPlan: null,
-    // TODO: drop 'starter-v2' and 'growth-v2' when pay-as-you-go stops being hidden.
-    // They're sunset and shouldn't be sold to new accounts, but removing them before
-    // the pay-as-you-go card is exposed would leave Free accounts with no self-serve
-    // upgrade at all: their cards fall back to "Contact us" and postChange rejects
-    // the transition. Existing customers are unaffected either way, their moves are
-    // driven by starterV2Plan/growthV2Plan and the downgrade matrix.
-    nextPlan: ['starter-v2', 'growth-v2', 'pay-as-you-go', 'enterprise'],
+    nextPlan: ['pay-as-you-go', 'enterprise'],
     canChange: true,
     basePrice: 0,
     flags: {
@@ -19,13 +13,13 @@ export const freePlan: PlanDefinition = {
         environments_max: 2,
         has_otel: false,
         connections_max: 10,
-        records_max: 100_000,
-        proxy_max: 100_000,
-        function_executions_max: 100_000,
-        function_compute_gbms_max: 50_000_000,
-        function_duration_seconds_max: null,
-        webhook_forwards_max: 100_000,
-        function_logs_max: 100_000,
+        records_max: null,
+        proxy_max: null,
+        function_executions_max: null,
+        function_compute_gbms_max: null,
+        function_duration_seconds_max: 36_000,
+        webhook_forwards_max: null,
+        function_logs_max: null,
         sync_frequency_secs_min: 30,
         auto_idle: true,
         monthly_actions_max: 1000,
@@ -55,6 +49,7 @@ export const starterV1Plan: PlanDefinition = {
     nextPlan: null,
     canChange: true,
     hidden: true,
+    retired: true,
     basePrice: 50,
     flags: {
         api_rate_limit_size: 'l',
@@ -96,7 +91,9 @@ export const growthV1Plan: PlanDefinition = {
     nextPlan: null,
     canChange: true,
     hidden: true,
+    retired: true,
     basePrice: 500,
+    keepsGrowthAddOnOnMigration: true,
     flags: {
         api_rate_limit_size: 'xl',
         environments_max: 10,
@@ -135,8 +132,9 @@ export const starterV2Plan: PlanDefinition = {
     title: 'Starter',
     description: 'For small teams.',
     prevPlan: ['free'],
-    nextPlan: ['growth-v2', 'enterprise'],
+    nextPlan: ['enterprise'],
     canChange: true,
+    retired: true,
     basePrice: 50,
     flags: {
         ...starterV1Plan.flags,
@@ -151,10 +149,12 @@ export const growthV2Plan: PlanDefinition = {
     code: 'growth-v2',
     title: 'Growth',
     description: 'For growing teams.',
-    prevPlan: ['free', 'starter-v2'],
+    prevPlan: ['free'],
     nextPlan: ['enterprise'],
     canChange: true,
+    retired: true,
     basePrice: 500,
+    keepsGrowthAddOnOnMigration: true,
     flags: growthV1Plan.flags
 };
 
@@ -165,9 +165,7 @@ export const payAsYouGoPlan: PlanDefinition = {
     prevPlan: ['free'],
     nextPlan: ['enterprise'],
     canChange: true,
-    // TODO: flip the flag once we're ready to roll the plan out.
-    // Not offered in the dashboard yet, the billing page work lands separately.
-    // Flipping this to false is the only switch needed to expose the plan.
+    // Flipping this exposes the plan only in the legacy card set, which has no copy for it
     hidden: true,
     // TODO: this plan has no base fee — it bills fully in arrears against a monthly minimum — so
     // basePrice is display-only here and nothing charges against it. It can't just be dropped: the
@@ -270,6 +268,7 @@ export const starterLegacyPlan: PlanDefinition = {
     nextPlan: [],
     canChange: false,
     hidden: true,
+    retired: true,
     flags: {
         api_rate_limit_size: 'l',
         environments_max: 3,
@@ -311,6 +310,7 @@ export const scaleLegacyPlan: PlanDefinition = {
     nextPlan: [],
     canChange: false,
     hidden: true,
+    retired: true,
     flags: {
         api_rate_limit_size: 'l',
         environments_max: 3,
@@ -352,6 +352,8 @@ export const growthLegacyPlan: PlanDefinition = {
     nextPlan: [],
     canChange: false,
     hidden: true,
+    retired: true,
+    keepsGrowthAddOnOnMigration: true,
     flags: {
         api_rate_limit_size: 'l',
         environments_max: 3,
@@ -384,6 +386,28 @@ export const growthLegacyPlan: PlanDefinition = {
         lambda_tenant_isolation: true
     }
 };
+
+/**
+ * The feature flags the growth add-on grants.
+ *
+ * NOTE: Only the boolean flags are listed here, the numeric limits (e.g. `api_rate_limit_size`, `environments_max`)
+ * are resolved via `mergePlanFlags` following the precedence rules implemented therein.
+ * This is so a hand-granted limit is not pulled back down when the add-on is disabled. */
+type GrowthFeatureFlag = 'has_otel' | 'has_rbac' | 'can_override_docs_connect_url' | 'can_customize_connect_ui_theme' | 'can_disable_connect_ui_watermark';
+
+export const GROWTH_FEATURE_FLAGS = {
+    has_otel: true,
+    has_rbac: true,
+    can_override_docs_connect_url: true,
+    can_customize_connect_ui_theme: true,
+    can_disable_connect_ui_watermark: true
+} satisfies Record<GrowthFeatureFlag, boolean>;
+
+export const PLANS_WITH_GROWTH_ADD_ON: PlanDefinition['code'][] = ['pay-as-you-go'];
+
+export function canHaveGrowthAddon(planCode: PlanDefinition['code']): boolean {
+    return PLANS_WITH_GROWTH_ADD_ON.includes(planCode);
+}
 
 export const plansList: PlanDefinition[] = [
     freePlan,

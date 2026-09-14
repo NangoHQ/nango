@@ -32,7 +32,7 @@ export function recordManagementMcpAudit({
         occurredAt: new Date().toISOString(),
         accountId: account.id,
         scope: policy.scope,
-        environment: policy.scope === 'account' ? null : { id: environment.id, display: environment.name },
+        environment: policy.scope === 'account' ? null : { id: environment.uuid, display: environment.name },
         actor: auditContext.actor,
         resource: policy.resource,
         action: policy.action,
@@ -42,12 +42,12 @@ export function recordManagementMcpAudit({
         ...(metadata ? { metadata } : {})
     } as AuditEvent;
 
-    void emit(account.uuid, plan, event);
+    void emit(plan, event);
 }
 
-async function emit(accountUuid: string, plan: DBPlan | null, event: AuditEvent): Promise<void> {
+async function emit(plan: DBPlan | null, event: AuditEvent): Promise<void> {
     try {
-        if (!(await canRecordAuditTrail(accountUuid, plan))) {
+        if (!(await canRecordAuditTrail(plan))) {
             return;
         }
 

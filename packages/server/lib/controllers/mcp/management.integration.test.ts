@@ -3,14 +3,14 @@ import { Readable } from 'node:stream';
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
 import { logContextGetter } from '@nangohq/logs';
 import { getGlobalWebhookReceiveUrl, ProxyRequest, remoteFileService, seeders, syncManager } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
+import * as actionService from '../../services/action.service.js';
 import { authenticateUser, runServer } from '../../utils/tests.js';
-import { withoutDocsTools } from './testUtils.js';
+import { withoutUnscopedTools } from './testUtils.js';
 
 import type { ApiKeyScope } from '@nangohq/types';
 import type { InternalAxiosRequestConfig } from 'axios';
@@ -141,7 +141,6 @@ describe('POST /mcp management server', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {
@@ -164,6 +163,7 @@ describe('POST /mcp management server', () => {
         expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual([
             'docs_search',
             'docs_query_filesystem',
+            'providers_get',
             'connect_session_create',
             'integrations_list',
             'integrations_get',
@@ -173,6 +173,8 @@ describe('POST /mcp management server', () => {
             'connections_list',
             'connections_get',
             'syncs_set_state',
+            'syncs_trigger',
+            'actions_trigger',
             'proxy_request',
             'functions_list',
             'deploy_function',
@@ -183,7 +185,7 @@ describe('POST /mcp management server', () => {
         ]);
     });
 
-    it('lists only documentation tools with the legacy mcp scope', async () => {
+    it('lists unscoped tools with the legacy mcp scope', async () => {
         const { secret } = await createKeyWithScopes(['environment:mcp']);
         const res = await mcpPost({
             token: secret,
@@ -191,7 +193,62 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['docs_search', 'docs_query_filesystem']);
+        expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['docs_search', 'docs_query_filesystem', 'providers_get']);
+    });
+
+    it('gets a provider with templates without an additional operation scope', async () => {
+        const { secret } = await createKeyWithScopes(['environment:mcp']);
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'providers_get', arguments: { provider: 'github', include_templates: true } }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
+        expect(res.json.result.structuredContent).toMatchObject({
+            name: 'github',
+            display_name: 'GitHub (User OAuth)',
+            auth_mode: 'OAUTH2',
+            logo_url: expect.stringMatching('/images/template-logos/github.svg$')
+        });
+        expect(res.json.result.structuredContent.templates.length).toBeGreaterThan(0);
+        expect(res.json.result.structuredContent.templates).toContainEqual(expect.objectContaining({ name: 'issues', type: 'sync' }));
+    });
+
+    it('returns public provider errors for invalid arguments and unknown providers', async () => {
+        const { secret } = await createKeyWithScopes(['environment:mcp']);
+        const invalid = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'providers_get', arguments: { provider: 'github', include_templates: 'true' } }
+            }
+        });
+
+        expect(invalid.json.result).toMatchObject({ isError: true });
+        expect(invalid.json.result.content[0].text).toContain('Invalid arguments for tool providers_get');
+
+        const missing = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: { name: 'providers_get', arguments: { provider: 'missing' } }
+            }
+        });
+
+        expect(missing.json.result).toStrictEqual({
+            content: [{ type: 'text', text: 'Unknown provider missing' }],
+            isError: true
+        });
     });
 
     it('rejects each management tool when its required scope is missing', async () => {
@@ -206,6 +263,8 @@ describe('POST /mcp management server', () => {
             'connections_list',
             'connections_get',
             'syncs_set_state',
+            'syncs_trigger',
+            'actions_trigger',
             'proxy_request',
             'functions_list',
             'deploy_function',
@@ -227,10 +286,54 @@ describe('POST /mcp management server', () => {
             });
 
             expect(res.status).toBe(200);
-            expect(res.json.result).toStrictEqual({
-                content: [{ type: 'text', text: `MCP error -32602: Tool ${toolName} disabled` }],
-                isError: true
+            expect(res.json.error).toMatchObject({
+                code: -32602,
+                message: `Tool ${toolName} disabled`
             });
+        }
+    });
+
+    it('triggers an action for the authenticated environment', async () => {
+        const { secret, env, account } = await createKeyWithScopes(['environment:actions:execute']);
+        const response = { issue_id: 'issue-123', created: true };
+        const executeActionSpy = vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: response }) });
+
+        try {
+            const res = await mcpPost({
+                token: secret,
+                body: {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'tools/call',
+                    params: {
+                        name: 'actions_trigger',
+                        arguments: {
+                            action_name: 'create-issue',
+                            input: { title: 'MCP support' },
+                            integration_id: 'github',
+                            connection_id: 'connection-id'
+                        }
+                    }
+                }
+            });
+
+            expect(res.status).toBe(200);
+            expect(parseToolText(res)).toStrictEqual({ data: response });
+            expect(res.json.result.structuredContent).toStrictEqual({ data: response });
+            expect(executeActionSpy).toHaveBeenCalledOnce();
+            expect(executeActionSpy.mock.calls[0]?.[0]).toMatchObject({
+                account,
+                environment: env,
+                connectionId: 'connection-id',
+                providerConfigKey: 'github',
+                actionName: 'create-issue',
+                input: { title: 'MCP support' },
+                isAsync: false,
+                retryMax: 0
+            });
+            expect(executeActionSpy.mock.calls[0]?.[0].span).toBeDefined();
+        } finally {
+            executeActionSpy.mockRestore();
         }
     });
 
@@ -255,9 +358,9 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(res.json.result).toStrictEqual({
-            content: [{ type: 'text', text: 'MCP error -32602: Tool integrations_create disabled' }],
-            isError: true
+        expect(res.json.error).toMatchObject({
+            code: -32602,
+            message: 'Tool integrations_create disabled'
         });
 
         await vi.waitFor(() => {
@@ -266,7 +369,7 @@ describe('POST /mcp management server', () => {
                 .find((candidate) => candidate.accountId === account.id && candidate.resource === 'integration' && candidate.action === 'created');
             expect(event).toMatchObject({
                 accountId: account.id,
-                environment: { id: env.id, display: env.name },
+                environment: { id: env.uuid, display: env.name },
                 actor: { type: 'api_key', id: expect.any(String) },
                 resource: 'integration',
                 action: 'created',
@@ -286,7 +389,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(withoutDocsTools(res.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual([
+        expect(withoutUnscopedTools(res.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual([
             'logs_list_operations',
             'logs_get_operation'
         ]);
@@ -300,7 +403,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(withoutDocsTools(res.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_list']);
+        expect(withoutUnscopedTools(res.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_list']);
     });
 
     it('lists the functions tool with functions:list scope', async () => {
@@ -311,7 +414,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        const scopedTools = withoutDocsTools(res.json.result.tools);
+        const scopedTools = withoutUnscopedTools(res.json.result.tools);
         expect(scopedTools).toHaveLength(1);
         expect(scopedTools[0]).toMatchObject({
             name: 'functions_list',
@@ -406,7 +509,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(withoutDocsTools(res.json.result.tools)).toMatchObject([
+        expect(withoutUnscopedTools(res.json.result.tools)).toMatchObject([
             {
                 name: 'deploy_function',
                 annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
@@ -469,7 +572,7 @@ describe('POST /mcp management server', () => {
                 .find((candidate) => candidate.accountId === account.id && candidate.resource === 'function' && candidate.action === 'deployed');
             expect(event).toMatchObject({
                 accountId: account.id,
-                environment: { id: env.id, display: env.name },
+                environment: { id: env.uuid, display: env.name },
                 resource: 'function',
                 action: 'deployed',
                 targets: [{ type: 'function', id: 'tables' }],
@@ -544,7 +647,10 @@ describe('POST /mcp management server', () => {
                 token: secret,
                 body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
             });
-            expect(withoutDocsTools(listed.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['syncs_set_state']);
+            expect(withoutUnscopedTools(listed.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual([
+                'syncs_set_state',
+                'syncs_trigger'
+            ]);
 
             const syncs = ['issues', { name: 'users', variant: 'incremental' }];
             for (const [id, state] of ['started', 'paused'].entries()) {
@@ -657,6 +763,73 @@ describe('POST /mcp management server', () => {
         });
     });
 
+    it('executes and audits the sync trigger tool with reset and cache options', async () => {
+        const { secret, env, account } = await createKeyWithScopes(['environment:syncs:execute']);
+        const runSyncCommandSpy = vi.spyOn(syncManager, 'runSyncCommand').mockResolvedValue({ success: true, response: true, error: null });
+
+        try {
+            const res = await mcpPost({
+                token: secret,
+                body: {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'tools/call',
+                    params: {
+                        name: 'syncs_trigger',
+                        arguments: {
+                            integration_id: 'github',
+                            connection_id: 'connection-id',
+                            syncs: ['issues', { name: 'users', variant: 'incremental' }],
+                            reset: true,
+                            empty_cache: true
+                        }
+                    }
+                }
+            });
+
+            expect(res.status).toBe(200);
+            expect(parseToolText(res)).toStrictEqual({ success: true });
+            expect(res.json.result.structuredContent).toStrictEqual({ success: true });
+            expect(runSyncCommandSpy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    environment: env,
+                    providerConfigKey: 'github',
+                    connectionId: 'connection-id',
+                    syncIdentifiers: [
+                        { syncName: 'issues', syncVariant: 'base' },
+                        { syncName: 'users', syncVariant: 'incremental' }
+                    ],
+                    command: 'RUN_FULL',
+                    deleteRecords: true,
+                    initiator: 'MCP call'
+                })
+            );
+
+            await vi.waitFor(() => {
+                expect(auditSpy).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        accountId: account.id,
+                        resource: 'sync',
+                        action: 'triggered',
+                        outcome: 'success',
+                        targets: [
+                            { type: 'sync', id: 'issues' },
+                            { type: 'sync', id: 'users::incremental' }
+                        ],
+                        metadata: {
+                            providerConfigKey: 'github',
+                            connectionId: 'connection-id',
+                            reset: true,
+                            emptyCache: true
+                        }
+                    })
+                );
+            });
+        } finally {
+            runSyncCommandSpy.mockRestore();
+        }
+    });
+
     it.each(['environment:connections:list', 'environment:connections:list_credentials'] as const)('lists the connections tool with %s', async (scope) => {
         const { secret } = await createKeyWithScopes([scope]);
         const res = await mcpPost({
@@ -665,7 +838,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        const scopedTools = withoutDocsTools(res.json.result.tools);
+        const scopedTools = withoutUnscopedTools(res.json.result.tools);
         expect(scopedTools).toHaveLength(1);
         expect(scopedTools[0]).toMatchObject({
             name: 'connections_list',
@@ -681,7 +854,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        const scopedTools = withoutDocsTools(res.json.result.tools);
+        const scopedTools = withoutUnscopedTools(res.json.result.tools);
         expect(scopedTools).toHaveLength(1);
         expect(scopedTools[0]).toMatchObject({ name: 'connections_get', annotations: { readOnlyHint: false } });
     });
@@ -944,7 +1117,7 @@ describe('POST /mcp management server', () => {
                 token: secret,
                 body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
             });
-            const scopedTools = withoutDocsTools(listed.json.result.tools);
+            const scopedTools = withoutUnscopedTools(listed.json.result.tools);
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'proxy_request',
@@ -1040,7 +1213,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        const scopedTools = withoutDocsTools(res.json.result.tools);
+        const scopedTools = withoutUnscopedTools(res.json.result.tools);
         expect(scopedTools).toHaveLength(1);
         expect(scopedTools[0]).toMatchObject({
             name: 'integrations_get',
@@ -1056,7 +1229,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(withoutDocsTools(res.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_create']);
+        expect(withoutUnscopedTools(res.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_create']);
     });
 
     it('lists and executes the integration update tool with integrations:update scope', async () => {
@@ -1067,7 +1240,7 @@ describe('POST /mcp management server', () => {
             token: secret,
             body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
         });
-        expect(withoutDocsTools(listed.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_update']);
+        expect(withoutUnscopedTools(listed.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_update']);
 
         const res = await mcpPost({
             token: secret,
@@ -1457,7 +1630,7 @@ describe('POST /mcp management server', () => {
         });
         expect(accountMcpAuditEvents()[0]).toMatchObject({
             accountId: account.id,
-            environment: { id: env.id, display: env.name },
+            environment: { id: env.uuid, display: env.name },
             actor: { type: 'api_key', id: expect.any(String) },
             resource: 'integration',
             action: 'created',
