@@ -34,23 +34,57 @@ export class CustomerKeyError extends Error {
 /** What the audit trail needs to name a key: the public identifier and its label, never its secret. */
 export type ApiKeyRef = Pick<DBCustomerKey, 'uuid' | 'display_name'>;
 
-type EnvironmentKeySearch = {
+type EnvironmentKeyScope = {
     type: 'environment';
     environmentId: number;
-    accountId?: number;
-    keyId?: number;
-    keyUuid?: string;
+    accountId: number;
+};
+
+type EnvironmentKeyListSearch = EnvironmentKeyScope & {
+    keyId?: never;
+    keyUuid?: never;
     displayName?: string | undefined;
 };
 
-type AccountKeySearch = {
-    type: 'account';
-    accountId: number;
-    keyId?: number;
-    keyUuid?: string;
+type EnvironmentKeyByIdSearch = EnvironmentKeyScope & {
+    keyId: number;
+    keyUuid?: never;
+    displayName?: never;
 };
 
-export type CustomerKeySearch = EnvironmentKeySearch | AccountKeySearch;
+type EnvironmentKeyByUuidSearch = EnvironmentKeyScope & {
+    keyId?: never;
+    keyUuid: string;
+    displayName?: never;
+};
+
+type AccountKeyScope = {
+    type: 'account';
+    accountId: number;
+};
+
+type AccountKeyListSearch = AccountKeyScope & {
+    keyId?: never;
+    keyUuid?: never;
+};
+
+type AccountKeyByIdSearch = AccountKeyScope & {
+    keyId: number;
+    keyUuid?: never;
+};
+
+type AccountKeyByUuidSearch = AccountKeyScope & {
+    keyId?: never;
+    keyUuid: string;
+};
+
+export type CustomerKeySearch =
+    | EnvironmentKeyListSearch
+    | AccountKeyListSearch
+    | EnvironmentKeyByIdSearch
+    | EnvironmentKeyByUuidSearch
+    | AccountKeyByIdSearch
+    | AccountKeyByUuidSearch;
 
 type SafeCustomerKey = Omit<
     DBCustomerKey,
@@ -84,10 +118,8 @@ class CustomerKeyService {
                 query = query
                     .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
                     .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, filter.environmentId);
-                if (filter.accountId !== undefined) {
-                    query = query.where(`${CUSTOMER_KEYS_TABLE}.account_id`, filter.accountId);
-                }
+                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, filter.environmentId)
+                    .where(`${CUSTOMER_KEYS_TABLE}.account_id`, filter.accountId);
                 if (filter.displayName !== undefined) {
                     query = query.where(`${CUSTOMER_KEYS_TABLE}.display_name`, filter.displayName);
                 }
