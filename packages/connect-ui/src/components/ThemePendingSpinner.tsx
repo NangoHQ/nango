@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 // Long enough that a fast connect session paints the dialog with no spinner in between.
 const SPINNER_DELAY_MS = 250;
 
-/** Stands in for the dialog while it is mounted but unpainted. */
 export const ThemePendingSpinner: React.FC = () => {
     const [showSpinner, setShowSpinner] = useState(false);
 

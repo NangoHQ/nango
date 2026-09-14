@@ -72,7 +72,7 @@ describe('Layout', () => {
 
         await expect.element(page.getByRole('dialog')).toBeInTheDocument();
         expect(getComputedStyle(dialog()).opacity).toBe('0');
-        // The backdrop paints from the OS preference, which is the configured theme for a `system` default.
+        // The backdrop is exempt from the gate: only the dialog waits for the configured theme.
         expect(getComputedStyle(backdrop()).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
         // The focus trap would otherwise drop keyboard and screen reader users into an invisible dialog.
         expect(dialog().contains(document.activeElement)).toBe(false);

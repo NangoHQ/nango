@@ -4,22 +4,19 @@ import { useGlobal } from './store';
 
 import type { ConnectUIThemeSettings, Theme } from '@nangohq/types';
 
-// An unpainted dialog is worse than one that switches theme, so stop waiting eventually.
+// Nothing else guarantees a theme: a route loaded directly never runs the connect session request.
 const THEME_TIMEOUT_MS = 10000;
 
 export function isValidTheme(theme: string): theme is Theme {
     return ['light', 'dark', 'system'].includes(theme);
 }
 
-/**
- * Applies a theme and reports whether it is the configured one. Until the connect session delivers
- * the settings it is the OS preference, which is the configured theme for a `system` default.
- */
 export function useAppliedTheme(): { appliedTheme: 'light' | 'dark'; isPending: boolean } {
     const theme = useGlobal((state) => state.theme);
     const settings = useGlobal((state) => state.settings);
     const systemTheme = useSystemTheme();
 
+    // The OS preference until the settings land. For a `system` default that is already the configured theme.
     const appliedTheme = !theme || theme === 'system' ? systemTheme : theme;
 
     useEffect(() => {
