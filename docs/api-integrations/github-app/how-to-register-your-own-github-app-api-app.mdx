@@ -49,8 +49,12 @@ This guide shows you how to register your own GitHub App to obtain your OAuth cr
     <Step title="Configure webhook settings">
         1. Keep **Active** selected to receive webhook events (recommended).
         2. Under **Webhook URL**, enter the webhook URL from your Nango integration configuration.
-        3. Under **Webhook secret**, enter the webhook secret from your Nango integration configuration. This secret is used to verify webhook payloads from GitHub, so keep it secure and never expose it publicly.
+        3. Under **Webhook secret**, enter the webhook secret from your Nango integration configuration. This is required. GitHub only signs webhook payloads when the secret is set, and Nango verifies every payload it receives. Keep it secure and never expose it publicly.
         4. Under **SSL verification**, keep **Enable SSL verification** selected (recommended).
+
+        <Warning>
+        Nango rejects a webhook that arrives with no `x-hub-signature-256` header, and it is not forwarded to your app. An app set up without the webhook secret looks correctly configured on GitHub but delivers nothing.
+        </Warning>
     </Step>
     <Step title="Set app permissions">
         1. Under **Permissions**, choose the permissions your app needs. For each permission, select the dropdown menu and click **Read-only**, **Read & write**, or **No access**.
