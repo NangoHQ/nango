@@ -33,7 +33,6 @@ import { useToast } from '@/hooks/useToast';
 import { useUser } from '@/hooks/useUser';
 import { useDeleteTeamUser, usePatchTeamUser, useTeam } from '../../../hooks/useTeam';
 import { useStore } from '../../../store';
-import { RbacUpgradePrompt } from './RbacUpgradePrompt';
 import { RoleSelect } from './RoleSelect';
 
 import type { ApiInvitation, ApiTeamUser, ApiUser, Role } from '@nangohq/types';
@@ -85,7 +84,6 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                         <Field>
                             <FieldLabel>Role</FieldLabel>
                             <RoleSelect value={role} onChange={setRole} hasRBAC={hasRBAC} triggerClassName="w-full" />
-                            {!hasRBAC && <RbacUpgradePrompt />}
                         </Field>
                     </div>
                 </DialogBody>
@@ -205,13 +203,12 @@ export const TeamMembers: React.FC = () => {
                                                     </PopoverClose>
                                                 </div>
                                                 <p className="text-body-small-regular text-text-secondary">
-                                                    This role is treated as Full access because RBAC requires the Growth add-on.
-                                                </p>
-                                                <div>
+                                                    This role is treated as Full access.{' '}
                                                     <Button asChild variant="link-accent" size="xs">
-                                                        <Link to="/team/billing#plans">Upgrade to reactivate this role</Link>
-                                                    </Button>
-                                                </div>
+                                                        <Link to="/team/billing#plans">Add the Growth add-on</Link>
+                                                    </Button>{' '}
+                                                    to apply this role.
+                                                </p>
                                             </PopoverContent>
                                         </Popover>
                                     )}

@@ -14,7 +14,6 @@ import { planHasRbac, useApiGetCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { emptyRow, INVITE_PREFILL_PARAM, inviteSchema, parseInvitePrefillEmail } from './inviteForm';
-import { RbacUpgradePrompt } from './RbacUpgradePrompt';
 import { RoleSelect } from './RoleSelect';
 
 import type { InviteFormData } from './inviteForm';
@@ -89,10 +88,7 @@ export const InviteTeamMembers = () => {
                             <div className="flex gap-2">
                                 <div className="flex flex-1 gap-9">
                                     <FieldLabel className="flex-1">Email</FieldLabel>
-                                    <div className="flex flex-1 flex-col gap-1">
-                                        <FieldLabel>Member role</FieldLabel>
-                                        {!hasRBAC && <RbacUpgradePrompt />}
-                                    </div>
+                                    <FieldLabel className="flex-1">Member role</FieldLabel>
                                 </div>
                                 <div className="w-8 shrink-0" aria-hidden />
                             </div>
