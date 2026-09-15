@@ -1,7 +1,7 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTriggerDefinition } from '../function/config.js';
-import type { DeployedNangoFunction, FunctionType, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
+import type { FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
@@ -284,12 +284,12 @@ export interface FunctionListFilters {
 }
 
 export interface FunctionListSuccess {
-    data: DeployedNangoFunction[];
+    data: ListedNangoFunction[];
     pagination: { total: number; page: number; limit: number };
 }
 
-export interface DeployedFunctionSuccess {
-    data: DeployedNangoFunction;
+export interface ListedFunctionSuccess {
+    data: ListedNangoFunction;
 }
 
 export interface FunctionDeletionSuccess {
@@ -315,7 +315,7 @@ export type GetIntegrationFunction = ApiEndpoint<{
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
     Querystring: { env: string; type?: FunctionType };
     Params: { providerConfigKey: string; functionName: string };
-    Success: DeployedFunctionSuccess;
+    Success: ListedFunctionSuccess;
 }>;
 
 export type DeleteIntegrationFunction = ApiEndpoint<{
@@ -353,7 +353,7 @@ export type GetPublicIntegrationFunction = ApiEndpoint<{
     Path: '/integrations/:uniqueKey/functions/:name';
     Querystring: { type?: FunctionType };
     Params: { uniqueKey: string; name: string };
-    Success: DeployedFunctionSuccess;
+    Success: ListedFunctionSuccess;
 }>;
 
 export type DeletePublicIntegrationFunction = ApiEndpoint<{

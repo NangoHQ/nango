@@ -7,7 +7,7 @@ import { InternalMcpError, PublicMcpError } from '../utils.js';
 import { listFunctionsTool } from './list.js';
 
 import type { ManagementMcpContext } from '../managementTool.js';
-import type { DeployedNangoFunction } from '@nangohq/types';
+import type { ListedNangoFunction } from '@nangohq/types';
 
 describe('listFunctionsTool', () => {
     afterEach(() => {
@@ -124,7 +124,7 @@ const context = {
     grantedScopes: ['environment:functions:list']
 } as ManagementMcpContext;
 
-const functionFixture: DeployedNangoFunction = {
+const functionFixture: ListedNangoFunction = {
     id: 1,
     name: 'create-issue',
     type: 'action',
