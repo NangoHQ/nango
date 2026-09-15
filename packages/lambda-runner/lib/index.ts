@@ -86,7 +86,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
     const request: FunctionExecutionRequest = parsedRequest;
 
     const nangoProps = { ...(request.nangoProps as unknown as NangoProps) };
-    const persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
+    const persistClient = new PersistClient({ token: PersistClient.tokenFromNangoProps(nangoProps) });
     const locks = new HttpLocks({ persistClient, environmentId: nangoProps.environmentId });
 
     if (nangoProps.scriptType === 'sync' && nangoProps.syncId) {

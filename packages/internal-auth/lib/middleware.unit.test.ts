@@ -1,8 +1,15 @@
 import express from 'express';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR } from './constants.js';
-import { internalServiceAuthMiddleware, requireFleetAuth, requireTaskBoundAuth } from './middleware.js';
+import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, INTERNAL_SERVICE_AUDIENCE_PERSIST } from './constants.js';
+import {
+    internalServiceAuthMiddleware,
+    requireAction,
+    requireConnectionBoundAuth,
+    requireEnvironmentBoundAuth,
+    requireFleetAuth,
+    requireTaskBoundAuth
+} from './middleware.js';
 import { createInternalServiceToken } from './token.js';
 
 import type { InternalAuthEnvs } from './credential.js';
@@ -354,6 +361,126 @@ describe('jobs route policy', () => {
         try {
             const res = await fetch(`${url}/runners/1/idle`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
             expect(res.status).toBe(200);
+        } finally {
+            await close();
+        }
+    });
+});
+
+function persistScopedApp() {
+    const server = express();
+    server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_PERSIST, envs }));
+    server.use('/environment/:environmentId', requireEnvironmentBoundAuth());
+    server.use('/environment/:environmentId/connection/:nangoConnectionId', requireConnectionBoundAuth());
+    server.post('/environment/:environmentId/log', requireAction('persist:log'), (_req, res) => {
+        res.status(201).end();
+    });
+    server.post('/environment/:environmentId/connection/:nangoConnectionId/records', requireAction('persist:records'), (_req, res) => {
+        res.status(201).end();
+    });
+    return server;
+}
+
+describe('capability scope policy', () => {
+    it('allows a matching environment, connection, and action', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        const token = createInternalServiceToken(
+            {
+                taskId: 'task-1',
+                audience: INTERNAL_SERVICE_AUDIENCE_PERSIST,
+                environmentId: 9,
+                connectionId: 42,
+                actions: ['persist:records'],
+                expiresInSecs: 120
+            },
+            'sign'
+        );
+        const { url, close } = await listen(persistScopedApp());
+        try {
+            const res = await fetch(`${url}/environment/9/connection/42/records`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(201);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a token minted for a different environment', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        const token = createInternalServiceToken(
+            {
+                taskId: 'task-1',
+                audience: INTERNAL_SERVICE_AUDIENCE_PERSIST,
+                environmentId: 9,
+                connectionId: 42,
+                actions: ['persist:log'],
+                expiresInSecs: 120
+            },
+            'sign'
+        );
+        const { url, close } = await listen(persistScopedApp());
+        try {
+            const res = await fetch(`${url}/environment/8/log`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a token minted for a different connection', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        const token = createInternalServiceToken(
+            {
+                taskId: 'task-1',
+                audience: INTERNAL_SERVICE_AUDIENCE_PERSIST,
+                environmentId: 9,
+                connectionId: 42,
+                actions: ['persist:records'],
+                expiresInSecs: 120
+            },
+            'sign'
+        );
+        const { url, close } = await listen(persistScopedApp());
+        try {
+            const res = await fetch(`${url}/environment/9/connection/99/records`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a token missing the required action', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        const token = createInternalServiceToken(
+            {
+                taskId: 'task-1',
+                audience: INTERNAL_SERVICE_AUDIENCE_PERSIST,
+                environmentId: 9,
+                connectionId: 42,
+                actions: ['persist:log'],
+                expiresInSecs: 120
+            },
+            'sign'
+        );
+        const { url, close } = await listen(persistScopedApp());
+        try {
+            const res = await fetch(`${url}/environment/9/connection/42/records`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(401);
         } finally {
             await close();
         }

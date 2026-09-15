@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS } from '@nangohq/internal-auth';
+import { INTERNAL_SERVICE_TASK_CAPABILITY_AUDIENCES } from '@nangohq/internal-auth';
 import { Ok } from '@nangohq/utils';
 
 import { LambdaRuntimeAdapter } from './lambda.adapter.js';
@@ -285,9 +285,11 @@ describe('LambdaRuntimeAdapter – internal auth mint', () => {
         const invokeCommand = (mockLambdaSend.mock.calls[0]! as unknown[])[0] as { input?: { Payload?: string } };
         const payload = JSON.parse(invokeCommand.input!.Payload as string);
         expect(taskJwtClaims(payload.internalAuthToken)).toEqual({
-            aud: INTERNAL_SERVICE_AUDIENCE_JOBS,
+            aud: [...INTERNAL_SERVICE_TASK_CAPABILITY_AUDIENCES],
             task_id: 'task-mint'
         });
+        expect(payload.nangoProps).not.toHaveProperty('secretKey');
+        expect(payload.nangoProps.taskAuthToken).toBe(payload.internalAuthToken);
         expect(payload).toHaveProperty('code');
     });
 
@@ -306,9 +308,10 @@ describe('LambdaRuntimeAdapter – internal auth mint', () => {
         const payload = JSON.parse(invokeCommand.input!.Payload as string);
         expect(payload).toHaveProperty('codeRef');
         expect(taskJwtClaims(payload.internalAuthToken)).toEqual({
-            aud: INTERNAL_SERVICE_AUDIENCE_JOBS,
+            aud: [...INTERNAL_SERVICE_TASK_CAPABILITY_AUDIENCES],
             task_id: 'task-mint-s3'
         });
+        expect(payload.nangoProps).not.toHaveProperty('secretKey');
     });
 });
 

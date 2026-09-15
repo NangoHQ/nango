@@ -40,13 +40,21 @@ const deleteHardAllRecordsTerminalLineSchema = z.discriminatedUnion('status', [
 
 export class PersistClient {
     private baseUrl: string;
-    private secretKey: string;
+    private token: string;
     private userAgent: string;
 
-    constructor({ secretKey }: { secretKey: string }) {
-        this.secretKey = secretKey;
+    constructor({ token }: { token: string }) {
+        this.token = token;
         this.baseUrl = getPersistAPIUrl();
         this.userAgent = getUserAgent('sdk');
+    }
+
+    static tokenFromNangoProps(nangoProps: { taskAuthToken?: string; secretKey?: string }): string {
+        const token = nangoProps.taskAuthToken ?? nangoProps.secretKey;
+        if (!token) {
+            throw new Error('Missing taskAuthToken');
+        }
+        return token;
     }
 
     /**
@@ -91,7 +99,7 @@ export class PersistClient {
         const response = await httpFetch(url, {
             method,
             headers: {
-                Authorization: `Bearer ${this.secretKey}`,
+                Authorization: `Bearer ${this.token}`,
                 'Content-Type': 'application/json'
             },
             body,
@@ -252,7 +260,7 @@ export class PersistClient {
         const response = await httpFetch(`${this.baseUrl}${path}`, {
             method: 'DELETE',
             headers: {
-                Authorization: `Bearer ${this.secretKey}`,
+                Authorization: `Bearer ${this.token}`,
                 'Content-Type': 'application/json',
                 // Tells persist it can stream an NDJSON response. Older runners/lambdas that
                 // don't send this get a single buffered JSON response instead. Remove this
@@ -321,7 +329,7 @@ export class PersistClient {
         const response = await httpFetch(`${this.baseUrl}${path}`, {
             method: 'DELETE',
             headers: {
-                Authorization: `Bearer ${this.secretKey}`,
+                Authorization: `Bearer ${this.token}`,
                 'Content-Type': 'application/json',
                 // Tells persist it can stream an NDJSON response. Older runners/lambdas that
                 // don't send this get a single buffered JSON response instead. Remove this

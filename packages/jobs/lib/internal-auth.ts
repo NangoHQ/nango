@@ -3,7 +3,9 @@ import {
     createRunnerDispatchToken,
     exportRunnerPublicKey,
     INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS,
-    INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS
+    INTERNAL_SERVICE_TASK_CAPABILITY_AUDIENCES,
+    INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS,
+    taskActionsForScriptType
 } from '@nangohq/internal-auth';
 
 import { envs } from './env.js';
@@ -16,11 +18,32 @@ function taskExpiresInSecs(nangoProps?: Pick<NangoProps, 'lifecycle'>): number {
 }
 
 /**
- * Mint a task-bound HMAC JWT for putTask/heartbeat. Returns null when the signing key is unset so
+ * Mint a task-bound HMAC JWT for persist/jobs/server. Returns null when the signing key is unset so
  * invoke stays a no-op until infra is in place.
  */
-export function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, 'lifecycle'>): string | null {
-    return createInternalServiceToken({ taskId, expiresInSecs: taskExpiresInSecs(nangoProps) }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+export function mintTaskAuthToken(
+    taskId: string,
+    nangoProps: Pick<NangoProps, 'lifecycle'> & Partial<Pick<NangoProps, 'environmentId' | 'nangoConnectionId' | 'syncId' | 'scriptType'>>
+): string | null {
+    return createInternalServiceToken(
+        {
+            taskId,
+            audience: INTERNAL_SERVICE_TASK_CAPABILITY_AUDIENCES,
+            expiresInSecs: taskExpiresInSecs(nangoProps),
+            ...(nangoProps.environmentId !== undefined ? { environmentId: nangoProps.environmentId } : {}),
+            ...(nangoProps.nangoConnectionId !== undefined ? { connectionId: nangoProps.nangoConnectionId } : {}),
+            ...(nangoProps.syncId !== undefined ? { syncId: nangoProps.syncId } : {}),
+            ...(nangoProps.scriptType ? { actions: taskActionsForScriptType(nangoProps.scriptType) } : {})
+        },
+        envs.NANGO_INTERNAL_AUTH_SIGNING_KEY
+    );
+}
+
+/** Strip secretKey and attach the capability token for runner dispatch. */
+export function nangoPropsForRunner(taskId: string, nangoProps: NangoProps): NangoProps {
+    const { secretKey: _secretKey, ...rest } = nangoProps;
+    const taskAuthToken = mintTaskAuthToken(taskId, nangoProps) ?? nangoProps.taskAuthToken;
+    return taskAuthToken ? { ...rest, taskAuthToken } : rest;
 }
 
 /**

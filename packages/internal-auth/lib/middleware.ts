@@ -32,6 +32,18 @@ export function isNodeBoundAuth(auth: InternalServiceAuth | undefined, nodeId: s
     return Boolean(isSignedAuth(auth) && auth?.op === 'node' && nodeId && auth.nodeId === nodeId);
 }
 
+export function isEnvironmentBoundAuth(auth: InternalServiceAuth | undefined, environmentId: number | undefined): boolean {
+    return Boolean(isSignedAuth(auth) && auth?.op === 'task' && environmentId !== undefined && auth.environmentId === environmentId);
+}
+
+export function isConnectionBoundAuth(auth: InternalServiceAuth | undefined, connectionId: number | undefined): boolean {
+    return Boolean(isSignedAuth(auth) && auth?.op === 'task' && connectionId !== undefined && auth.connectionId === connectionId);
+}
+
+export function hasAction(auth: InternalServiceAuth | undefined, action: string): boolean {
+    return Boolean(isSignedAuth(auth) && auth?.actions?.includes(action));
+}
+
 function isSignedAuth(auth: InternalServiceAuth | undefined): boolean {
     return auth?.kind === 'hmac' || auth?.kind === 'eddsa';
 }
@@ -104,6 +116,64 @@ export function requireFleetAuth(envs: InternalAuthEnvs): (req: Request, res: Re
         const auth = getInternalServiceAuth(res);
         const nodeId = routeParam(req, 'nodeId');
         if (isNodeBoundAuth(auth, nodeId)) {
+            next();
+            return;
+        }
+        unauthorized(res, 'unauthorized', 'Unauthorized');
+    };
+}
+
+/**
+ * When a signed task JWT is on locals, `:environmentId` must match. Secret-key callers (no JWT
+ * locals) pass through so persist can keep its fallback path.
+ */
+export function requireEnvironmentBoundAuth(): (req: Request, res: Response, next: NextFunction) => void {
+    return (req, res, next) => {
+        const auth = getInternalServiceAuth(res);
+        if (!auth) {
+            next();
+            return;
+        }
+        const environmentId = Number(routeParam(req, 'environmentId'));
+        if (isEnvironmentBoundAuth(auth, environmentId)) {
+            next();
+            return;
+        }
+        unauthorized(res, 'unauthorized', 'Unauthorized');
+    };
+}
+
+/**
+ * When a signed task JWT is on locals, `:nangoConnectionId` must match. Secret-key callers pass
+ * through.
+ */
+export function requireConnectionBoundAuth(): (req: Request, res: Response, next: NextFunction) => void {
+    return (req, res, next) => {
+        const auth = getInternalServiceAuth(res);
+        if (!auth) {
+            next();
+            return;
+        }
+        const connectionId = Number(routeParam(req, 'nangoConnectionId'));
+        if (isConnectionBoundAuth(auth, connectionId)) {
+            next();
+            return;
+        }
+        unauthorized(res, 'unauthorized', 'Unauthorized');
+    };
+}
+
+/**
+ * When a signed task JWT is on locals, it must include `action`. Secret-key callers pass through.
+ */
+export function requireAction(action: string): (req: Request, res: Response, next: NextFunction) => void {
+    return (_req, res, next) => {
+        const auth = getInternalServiceAuth(res);
+        if (!auth) {
+            next();
+            return;
+        }
+        if (hasAction(auth, action)) {
             next();
             return;
         }
