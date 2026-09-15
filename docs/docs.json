@@ -1604,6 +1604,7 @@
               "integrations/all/open-hands",
               "integrations/all/openai",
               "integrations/all/openai-admin",
+              "api-integrations/openrouter",
               "api-integrations/optum-real",
               "api-integrations/oracle-cloud-identity",
               "integrations/all/oracle-hcm",

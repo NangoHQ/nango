@@ -17097,6 +17097,32 @@ open-hands:
             example: 'aNVlyRBLGWJgnVp1vwXN7TkO1MCYxeIDz'
             doc_section: '#step-1-finding-your-api-key'
 
+openrouter:
+    display_name: OpenRouter
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://openrouter.ai/api
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v1/key
+    docs: https://nango.dev/docs/api-integrations/openrouter
+    docs_connect: https://nango.dev/docs/api-integrations/openrouter/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your OpenRouter API key
+            pattern: '^sk-or-v1-[a-zA-Z0-9]+$'
+            example: sk-or-v1-****************
+            doc_section: '#step-1-create-an-api-key'
+
 optum-real:
     display_name: Optum Real
     categories:
