@@ -8527,6 +8527,30 @@ fern:
             order: 1
             doc_section: '#step-2-find-your-docs-url'
 
+fireworks-ai:
+    display_name: Fireworks AI
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.fireworks.ai/inference
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v1/models
+    docs: https://nango.dev/docs/api-integrations/fireworks-ai
+    docs_connect: https://nango.dev/docs/api-integrations/fireworks-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Fireworks AI API key
+            doc_section: '#step-1-create-an-api-key'
+
 freeagent:
     display_name: FreeAgent
     categories:

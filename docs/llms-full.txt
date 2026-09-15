@@ -15423,6 +15423,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `finta` | Finta | API_KEY | [docs](https://nango.dev/docs/api-integrations/finta.md) | [connect](https://nango.dev/docs/api-integrations/finta/connect.md) |  | banking |
 | `firefish` | Firefish | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/firefish.md) |  |  | crm |
 | `fireflies` | Fireflies | API_KEY | [docs](https://nango.dev/docs/integrations/all/fireflies.md) |  |  | analytics, communication, productivity |
+| `fireworks-ai` | Fireworks AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/fireworks-ai.md) | [connect](https://nango.dev/docs/api-integrations/fireworks-ai/connect.md) |  | dev-tools, productivity |
 | `firstbase` | Firstbase | API_KEY | [docs](https://nango.dev/docs/api-integrations/firstbase.md) | [connect](https://nango.dev/docs/api-integrations/firstbase/connect.md) |  | hr |
 | `fiserv` | Fiserv (OAuth) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/fiserv.md) |  |  | banking, payment |
 | `fiserv-api-key` | Fiserv (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/fiserv-api-key.md) |  |  | banking, payment |
