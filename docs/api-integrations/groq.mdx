@@ -1,0 +1,81 @@
+---
+title: 'Groq'
+sidebarTitle: 'Groq'
+description: 'Integrate your application with the Groq API'
+---
+
+Groq runs open models on its LPU inference engine and exposes them through an OpenAI-compatible API.
+
+## 🚀 Quickstart
+
+Connect to Groq with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Groq_.
+    </Step>
+    <Step id="authorize-groq" title="Connect Groq">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Groq API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-groq-api" title="Call the Groq API">
+    Let's make your first request to the Groq API. The endpoint below lists the models the connected API key can access. Replace the placeholders with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/models" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/models',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Groq integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/groq/connect)
+Learn how to create a Groq API key and use it to connect your account.
+
+Official docs: [Groq API reference](https://console.groq.com/docs/api-reference)
+
+## 🧩 Pre-built syncs & actions for Groq
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/groq/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
