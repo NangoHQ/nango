@@ -1391,6 +1391,7 @@
               "integrations/all/greenhouse-job-board",
               "integrations/all/greenhouse-onboarding",
               "api-integrations/grist",
+              "api-integrations/groq",
               "integrations/all/gumroad",
               "integrations/all/guru",
               "integrations/all/guru-scim",
