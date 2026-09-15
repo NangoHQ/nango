@@ -1227,6 +1227,7 @@
               "api-integrations/dayforce",
               "integrations/all/deel",
               "integrations/all/deel-sandbox",
+              "api-integrations/deepseek",
               "api-integrations/demodesk",
               "api-integrations/dentally",
               "integrations/all/devin",
