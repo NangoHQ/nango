@@ -1,11 +1,13 @@
-import { Err, metrics } from '@nangohq/utils';
+import { Err, getLogger, metrics } from '@nangohq/utils';
 
-import { formatMcpArgumentsError, handleMcpToolError, jsonContent, jsonStructuredContent, PublicMcpError } from '../../mcp/utils.js';
+import { formatMcpArgumentsError, InternalMcpError, jsonContent, jsonStructuredContent, mcpToolError, PublicMcpError } from '../../mcp/utils.js';
 
 import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/server';
 import type { AgentSession, AgentSessionMetaTools, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type * as z from 'zod/v4';
+
+const logger = getLogger('Server.MCP.AgentSession');
 
 /** The MCP limit on a tool name, which is what a session tool's slug is clipped to fit. */
 export const MAX_TOOL_NAME_LENGTH = 64;
@@ -53,7 +55,11 @@ export function defineAgentSessionMcpTool<TInputSchema extends z.ZodType>(tool: 
         async handler(args, context) {
             const parsedArgs = tool.inputSchema.safeParse(args ?? {});
             if (!parsedArgs.success) {
-                return Err(new PublicMcpError(formatMcpArgumentsError(tool.name, parsedArgs.error)));
+                return Err(
+                    new PublicMcpError(`${formatMcpArgumentsError(tool.name, parsedArgs.error)}. Correct the arguments and call it again.`, {
+                        code: 'invalid_input'
+                    })
+                );
             }
 
             return await tool.handler({ ...context, args: parsedArgs.data });
@@ -77,7 +83,7 @@ export async function callAgentSessionTool({
         result = await run();
     } catch (err) {
         metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { accountId, mcp_type: 'agent_session', tool: metric, outcome: 'error' });
-        return handleMcpToolError(err, metric);
+        return handleAgentSessionToolError(err, metric);
     }
 
     metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
@@ -88,7 +94,7 @@ export async function callAgentSessionTool({
     });
 
     if (result.isErr()) {
-        return handleMcpToolError(result.error, metric);
+        return handleAgentSessionToolError(result.error, metric);
     }
 
     // structuredContent has to be a JSON object, and only a tool that declared an output schema
@@ -98,4 +104,18 @@ export async function callAgentSessionTool({
 
 function isJsonObject(value: unknown): value is object {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function handleAgentSessionToolError(err: unknown, toolName: string): CallToolResult {
+    if (err instanceof PublicMcpError) {
+        return mcpToolError(err.message, { code: err.code, integrationId: err.integrationId });
+    }
+
+    if (!(err instanceof InternalMcpError)) {
+        logger.error('Agent session MCP tool handler failed', { err, toolName });
+    }
+
+    return mcpToolError('The tool could not be run. Trying once more is reasonable, and tell the user if it keeps failing.', {
+        code: 'internal_error'
+    });
 }

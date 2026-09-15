@@ -3,15 +3,26 @@ import * as z from 'zod/v4';
 import { getLogger } from '@nangohq/utils';
 
 import type { CallToolResult, JsonSchemaType, Tool } from '@modelcontextprotocol/server';
+import type { NangoError } from '@nangohq/shared';
 
 const logger = getLogger('Server.MCP');
 
 const jsonSchema202012 = 'https://json-schema.org/draft/2020-12/schema';
 
+export interface McpErrorContext {
+    code?: string | undefined;
+    integrationId?: string | undefined;
+}
+
 export class PublicMcpError extends Error {
-    constructor(message: string) {
+    public readonly code: string | undefined;
+    public readonly integrationId: string | undefined;
+
+    constructor(message: string, context: McpErrorContext = {}) {
         super(message);
         this.name = 'PublicMcpError';
+        this.code = context.code;
+        this.integrationId = context.integrationId;
     }
 }
 
@@ -22,6 +33,25 @@ export class InternalMcpError extends Error {
         super('Internal error');
         this.name = 'InternalMcpError';
     }
+}
+
+const MAX_FAILURE_DETAIL_LENGTH = 500;
+
+export function safeFailureDetail(error: NangoError): string {
+    const detail = error.payload && typeof error.payload === 'object' ? error.payload['error'] : undefined;
+
+    const reason =
+        typeof detail === 'string'
+            ? detail
+            : detail && typeof detail === 'object' && 'message' in detail && typeof detail.message === 'string'
+              ? detail.message
+              : undefined;
+
+    if (!reason || error.message.includes(reason)) {
+        return error.message;
+    }
+
+    return `${error.message}: ${reason.slice(0, MAX_FAILURE_DETAIL_LENGTH)}`;
 }
 
 export function jsonContent(data: unknown): CallToolResult {
@@ -42,10 +72,18 @@ export function jsonStructuredContent(data: object): CallToolResult {
     };
 }
 
-export function mcpToolError(message: string): CallToolResult {
+export function mcpToolError(message: string, context: McpErrorContext = {}): CallToolResult {
+    const { code, integrationId } = context;
+
+    const meta = {
+        ...(code ? { 'nango/error_code': code } : {}),
+        ...(integrationId ? { 'nango/integration_id': integrationId } : {})
+    };
+
     return {
         content: [{ type: 'text', text: message }],
-        isError: true
+        isError: true,
+        ...(Object.keys(meta).length > 0 ? { _meta: meta } : {})
     };
 }
 
