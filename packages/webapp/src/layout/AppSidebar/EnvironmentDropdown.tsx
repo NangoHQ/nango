@@ -11,6 +11,7 @@ import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar.js';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useCurrentPlan } from '@/hooks/usePlan';
+import { isLegacyPlan } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
 import { isNonEnvPath } from '@/utils/routes';
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
@@ -32,7 +33,7 @@ export const EnvironmentDropdown: React.FC = () => {
     const navigate = useNavigate();
 
     const isMaxEnvironmentsReached = envs && plan && envs.length >= plan.environments_max;
-    const isLegacyPlan = plan?.name.includes('legacy');
+    const isLegacy = isLegacyPlan(plan);
 
     const onSelect = (selected: string) => {
         if (selected === env) {
@@ -129,7 +130,7 @@ export const EnvironmentDropdown: React.FC = () => {
                             </PermissionGate>
                             {canCreateEnvironment &&
                                 isMaxEnvironmentsReached &&
-                                (isLegacyPlan ? (
+                                (isLegacy ? (
                                     <p className="text-body-small-regular text-text-secondary">
                                         Max number of environments reached. Contact Nango to add more.
                                     </p>
