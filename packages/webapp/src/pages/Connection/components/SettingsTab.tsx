@@ -1,12 +1,10 @@
 import { Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, FieldLabel } from '@nangohq/design-system';
+import { Button, FieldDescription, FieldLabel } from '@nangohq/design-system';
 
-import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteConnection, usePatchConnection } from '@/hooks/useConnections';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -62,14 +60,7 @@ export const SettingsTab = () => {
             <div className="flex justify-between items-start gap-11">
                 <div className="w-full flex flex-col gap-10">
                     <div className="flex flex-col gap-2">
-                        <div className="flex gap-2 items-center">
-                            <FieldLabel htmlFor="webhook_url_override">Override webhook URL</FieldLabel>
-                            <InfoTooltip>Override the environment-wide webhook URL for this connection. Use this for local development.</InfoTooltip>
-                            <DocsIconLink
-                                href="https://nango.dev/docs/guides/platform/environments#engineering-collaboration"
-                                label="Engineering collaboration documentation"
-                            />
-                        </div>
+                        <FieldLabel htmlFor="webhook_url_override">Override webhook URL</FieldLabel>
                         <EditableInput
                             id="webhook_url_override"
                             placeholder="https://example.com/webhooks-from-nango"
@@ -78,6 +69,19 @@ export const SettingsTab = () => {
                             validate={(value) => validateUrl(value, true)}
                             canEdit={canWriteConnection}
                         />
+                        <FieldDescription>
+                            Sends this connection&apos;s webhooks here instead of the environment-wide URL. Useful for local development — see{' '}
+                            <Button asChild variant="link-accent" size="xs">
+                                <a
+                                    href="https://nango.dev/docs/guides/platform/environments#engineering-collaboration"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    engineering collaboration
+                                </a>
+                            </Button>
+                            .
+                        </FieldDescription>
                     </div>
                     <div className="w-full flex items-center justify-between">
                         <span className="text-body-medium-semi text-text-strong">Connection deletion</span>
