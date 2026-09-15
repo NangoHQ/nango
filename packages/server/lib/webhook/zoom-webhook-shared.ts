@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
 
+import { getKVStore } from '@nangohq/kvstore';
 import { NangoError } from '@nangohq/shared';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { validateV0Signature } from './signature.js';
 
@@ -9,13 +10,13 @@ import type { InternalNango } from './internal-nango.js';
 import type { WebhookResponse, ZoomWebhookPayload } from './types.js';
 import type { Result } from '@nangohq/utils';
 
-// https://developers.zoom.us/docs/api/webhooks/#unsuccessful-delivery
-// Zoom retries a failed delivery up to 3 times, at +5min, +25min and +85min
-// Their docs don't say whether a retry keeps the original x-zm-request-timestamp or gets a fresh one, so we assume
-// the former (a plain re-POST of the queued request is the simpler thing to build) and set the
-// tolerance past the last retry, with some room to spare.
+const logger = getLogger('Webhook.Zoom');
 
-const RETRY_TOLERANCE_SECONDS = 90 * 60;
+// Zoom retries a failed delivery up to 3 times (+5min/+25min/+85min). Confirmed live: each retry
+// is freshly signed with a new timestamp, not a replay -- so the default tolerance is enough, and
+// x-zm-request-id (stable across retries) is what we dedupe on below instead.
+
+const DEDUPE_TTL_MS = 90 * 60 * 1000; // covers the full +5min/+25min/+85min retry schedule, with room to spare
 
 export function verifyZoomWebhookAndHandleHandshake(
     nango: InternalNango,
@@ -33,8 +34,7 @@ export function verifyZoomWebhookAndHandleHandshake(
         headers,
         rawBody,
         signatureHeader: 'x-zm-signature',
-        timestampHeader: 'x-zm-request-timestamp',
-        toleranceSeconds: RETRY_TOLERANCE_SECONDS
+        timestampHeader: 'x-zm-request-timestamp'
     });
     if (result !== 'valid') {
         return Err(new NangoError(result === 'missing_headers' ? 'webhook_missing_signature' : 'webhook_invalid_signature'));
@@ -56,4 +56,42 @@ export function verifyZoomWebhookAndHandleHandshake(
     }
 
     return null;
+}
+
+export interface ZoomWebhookDedupeClaim {
+    key: string;
+    token: string;
+}
+
+export async function claimZoomWebhookDedupe(nango: InternalNango, requestId: string | undefined): Promise<ZoomWebhookDedupeClaim | null | undefined> {
+    if (!requestId) {
+        return undefined;
+    }
+
+    const key = `zoom:webhook:dedupe:${nango.integration.id}:${requestId}`;
+    const token = crypto.randomUUID();
+
+    try {
+        const store = await getKVStore();
+        await store.set(key, token, { canOverride: false, ttlMs: DEDUPE_TTL_MS });
+        return { key, token };
+    } catch (err) {
+        if (err instanceof Error && err.message === 'set_key_already_exists') {
+            return null;
+        }
+        logger.error('zoom webhook dedupe claim failed', { error: err, integrationId: nango.integration.id });
+        return undefined;
+    }
+}
+
+export async function releaseZoomWebhookDedupeClaim(claim: ZoomWebhookDedupeClaim | null | undefined): Promise<void> {
+    if (!claim) {
+        return;
+    }
+    try {
+        const store = await getKVStore();
+        await store.deleteIfValueEquals(claim.key, claim.token);
+    } catch (err) {
+        logger.error('zoom webhook dedupe release failed', { error: err, key: claim.key });
+    }
 }

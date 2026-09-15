@@ -103,13 +103,19 @@ For the full list across meetings, webinars, recordings, phone, chat, and more, 
 
 ## Connection matching
 
-Nango matches `payload.account_id` against `connection_config.accountId` on your connections — this is the only routing strategy for this provider; a `nangoConnectionId` query param on the webhook URL is not used.
+Nango matches `payload.account_id` against `connection_config.accountId` on your connections.
 
 If nothing matches `payload.account_id`, the delivery is still accepted (so Zoom doesn't see an error and retry), but isn't routed to any connection.
 
 <Warning>
 With no **Webhook secret** configured, every delivery is rejected outright — it never reaches routing.
 </Warning>
+
+## Retries and duplicate deliveries
+
+Zoom retries a failed delivery (any non-2xx response) up to 3 times, at +5min, +25min, and +85min. Each attempt, including retries, carries a freshly signed timestamp — not a replay of the original request.
+
+Nango also dedupes by the delivery's `x-zm-request-id`, which stays the same across retries. If the same delivery arrives again after already being processed, Nango accepts it (so Zoom stops retrying) but doesn't forward it or re-trigger a sync a second time.
 
 ## Rollback strategy
 

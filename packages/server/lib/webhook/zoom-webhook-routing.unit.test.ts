@@ -144,12 +144,45 @@ describe('Zoom webhook routing', () => {
         const { nango, execute } = getNangoMock();
         const body = getBody();
         const rawBody = JSON.stringify(body);
-        const staleTimestamp = Math.floor(Date.now() / 1000) - (90 * 60 + 1);
+        const staleTimestamp = Math.floor(Date.now() / 1000) - (5 * 60 + 1);
 
         const result = await ZoomWebhookRouting.default(nango, getSignedHeaders(rawBody, SECRET, staleTimestamp), body, rawBody, {});
 
         expect(result.isErr()).toBe(true);
         expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('dedupes retried deliveries that share the same x-zm-request-id', async () => {
+        const { nango, execute } = getNangoMock();
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const requestId = `test-${crypto.randomUUID()}`;
+        const headers = { ...getSignedHeaders(rawBody), 'x-zm-request-id': requestId };
+
+        const first = await ZoomWebhookRouting.default(nango, headers, body, rawBody, {});
+        const retryHeaders = { ...getSignedHeaders(rawBody), 'x-zm-request-id': requestId };
+        const retry = await ZoomWebhookRouting.default(nango, retryHeaders, body, rawBody, {});
+
+        expect(first.isOk()).toBe(true);
+        expect(retry.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledOnce();
+    });
+
+    it('releases the dedupe claim on dispatch failure so a genuine retry is not swallowed', async () => {
+        const { nango, execute } = getNangoMock();
+        execute.mockRejectedValueOnce(new Error('transient dispatch failure'));
+        const body = getBody();
+        const rawBody = JSON.stringify(body);
+        const requestId = `test-${crypto.randomUUID()}`;
+        const headers = { ...getSignedHeaders(rawBody), 'x-zm-request-id': requestId };
+
+        await expect(ZoomWebhookRouting.default(nango, headers, body, rawBody, {})).rejects.toThrow('transient dispatch failure');
+
+        const retryHeaders = { ...getSignedHeaders(rawBody), 'x-zm-request-id': requestId };
+        const retry = await ZoomWebhookRouting.default(nango, retryHeaders, body, rawBody, {});
+
+        expect(retry.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledTimes(2);
     });
 
     it('rejects a tampered payload', async () => {
