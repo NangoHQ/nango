@@ -70,7 +70,7 @@ export const SettingsTab = () => {
                             canEdit={canWriteConnection}
                         />
                         <FieldDescription>
-                            Sends this connection&apos;s webhooks here instead of the environment-wide URL. Useful for local development — see{' '}
+                            Overrides the environment-wide webhook URL for local development — see{' '}
                             <Button asChild variant="link-accent" size="xs">
                                 <a
                                     href="https://nango.dev/docs/guides/platform/environments#engineering-collaboration"

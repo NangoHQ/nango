@@ -188,10 +188,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                 <FormControl>
                                                     <Input placeholder="https://example.com/webhooks-from-nango" {...field} />
                                                 </FormControl>
-                                                <FormDescription>
-                                                    Sends this connection&apos;s webhooks here instead of the environment-wide URL. Useful for local
-                                                    development.
-                                                </FormDescription>
+                                                <FormDescription>Overrides the environment-wide webhook URL for local development.</FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
