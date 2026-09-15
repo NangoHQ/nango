@@ -16,7 +16,7 @@ function createNangoOAuthServer(): OAuthProvider | null {
         knex: db.knex,
         ...oauthServerConfig,
         userExists,
-        interactionUrl: (uid) => new URL(`/oauth/consent/${encodeURIComponent(uid)}`, basePublicUrl).href
+        interactionUrl: (uid) => new URL(`/oauth/consent/${encodeURIComponent(uid)}/review`, basePublicUrl).href
     });
 }
 

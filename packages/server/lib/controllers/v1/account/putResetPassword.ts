@@ -7,7 +7,7 @@ import { pbkdf2, userService } from '@nangohq/shared';
 import { PBKDF2_ITERATIONS, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { deleteUserSessions } from '../../../clients/auth.client.js';
-import { dek } from '../../../env.js';
+import { dek, envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
 import { isStepUpRefused, isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from './mfa/stepUp.js';
@@ -63,8 +63,6 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
     }
 
     const hashedPassword = (await pbkdf2(password, user.salt, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
-    const encryptionKey = dek.get();
-
     const outcome = await db.knex.transaction(async (trx) => {
         const stepUp = await verifyStepUpMfa(user, mfa, trx);
         if (isStepUpRefused(stepUp)) {
@@ -75,7 +73,9 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
         user.reset_password_token = null;
         await userService.editUserPassword(user, trx);
         await deleteUserSessions(user.id, { trx });
-        await revokeOAuthUserInTransaction({ trx, encryptionKey, userId: String(user.id) });
+        if (envs.NANGO_OAUTH_SERVER_BASE_URL) {
+            await revokeOAuthUserInTransaction({ trx, encryptionKey: dek.get(), userId: String(user.id) });
+        }
         return 'reset' as const;
     });
 

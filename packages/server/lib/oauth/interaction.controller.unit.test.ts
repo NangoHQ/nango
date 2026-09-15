@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getOAuthConsentInteraction } from './interaction.controller.js';
+import { basePublicUrl } from '@nangohq/utils';
+
+import { getOAuthConsentInteraction, oauthConsentCors } from './interaction.controller.js';
 
 import type { NextFunction, Request, Response } from 'express';
 import type { Interaction } from 'oidc-provider';
@@ -29,6 +31,25 @@ describe('OAuth consent interaction controller', () => {
             };
             return query;
         });
+    });
+
+    it('allows dashboard requests carrying Sentry tracing headers', () => {
+        const origin = new URL(basePublicUrl).origin;
+        const req = {
+            method: 'OPTIONS',
+            get: vi.fn((name: string) => (name === 'origin' ? origin : undefined))
+        } as unknown as Request;
+        const setHeader = vi.fn();
+        const sendStatus = vi.fn();
+        const res = { setHeader, sendStatus } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        oauthConsentCors(req, res, next);
+
+        expect(setHeader).toHaveBeenCalledWith('Access-Control-Allow-Origin', origin);
+        expect(setHeader).toHaveBeenCalledWith('Access-Control-Allow-Headers', 'Content-Type, sentry-trace, baggage');
+        expect(sendStatus).toHaveBeenCalledWith(204);
+        expect(next).not.toHaveBeenCalled();
     });
 
     it('honors prompt=login even when an OAuth session already exists', async () => {

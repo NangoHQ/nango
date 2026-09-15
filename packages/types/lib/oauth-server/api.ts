@@ -19,7 +19,7 @@ export interface OAuthConsentInteraction {
         name: string;
         hostname: string;
     };
-    callbackHostname: string;
+    redirectUri: string;
     account: {
         name: string;
     };

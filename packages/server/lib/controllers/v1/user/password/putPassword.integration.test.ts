@@ -6,7 +6,7 @@ import { hashOAuthIdentifier } from '@nangohq/oauth-server';
 import { userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
-import { dek } from '../../../../env.js';
+import { dek, envs } from '../../../../env.js';
 import { isError, isSuccess, runServer } from '../../../../utils/tests.js';
 
 const signupRoute = '/api/v1/account/signup';
@@ -95,11 +95,14 @@ describe(`PUT ${passwordRoute}`, () => {
         expect((await api.fetch(userRoute, { method: 'GET', session: currentSession })).res.status).toBe(200);
         expect((await api.fetch(userRoute, { method: 'GET', session: otherSession })).res.status).toBe(200);
 
-        const { res, json } = await api.fetch(passwordRoute, {
-            method: 'PUT',
-            session: currentSession,
-            body: { oldPassword: password, newPassword: 'aZ1-newpass!?' }
-        });
+        const { res, json } = await withOAuthServerEnabled(
+            async () =>
+                await api.fetch(passwordRoute, {
+                    method: 'PUT',
+                    session: currentSession,
+                    body: { oldPassword: password, newPassword: 'aZ1-newpass!?' }
+                })
+        );
         expect(res.status).toBe(200);
         isSuccess(json);
 
@@ -291,7 +294,37 @@ describe(`PUT ${passwordRoute}`, () => {
         expect(res.status).toBe(200);
         isSuccess(json);
     });
+
+    it('should change the password without an encryption key when OAuth is disabled', async () => {
+        const { email, password } = await signupVerifiedUser();
+        const session = await signin(email, password);
+        const getEncryptionKey = vi.spyOn(dek, 'get').mockReturnValue('');
+
+        try {
+            const { res, json } = await api.fetch(passwordRoute, {
+                method: 'PUT',
+                session,
+                body: { oldPassword: password, newPassword: 'aZ1-newpass!?' }
+            });
+
+            expect(envs.NANGO_OAUTH_SERVER_BASE_URL).toBeUndefined();
+            expect(res.status).toBe(200);
+            isSuccess(json);
+        } finally {
+            getEncryptionKey.mockRestore();
+        }
+    });
 });
+
+async function withOAuthServerEnabled<T>(callback: () => Promise<T>): Promise<T> {
+    const previousBaseUrl = envs.NANGO_OAUTH_SERVER_BASE_URL;
+    envs.NANGO_OAUTH_SERVER_BASE_URL = 'http://localhost:3003';
+    try {
+        return await callback();
+    } finally {
+        envs.NANGO_OAUTH_SERVER_BASE_URL = previousBaseUrl;
+    }
+}
 
 async function insertOAuthSessionArtifact(id: string, userId: number): Promise<void> {
     const now = new Date();

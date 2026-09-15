@@ -16,6 +16,8 @@ export const OAUTH_AUTHORIZATION_PATH = `${OAUTH_ENDPOINT_PATH}/authorize`;
 export const OAUTH_TOKEN_PATH = `${OAUTH_ENDPOINT_PATH}/token`;
 export const OAUTH_REVOCATION_PATH = `${OAUTH_ENDPOINT_PATH}/revoke`;
 export const OAUTH_JWKS_PATH = `${OAUTH_ENDPOINT_PATH}/jwks`;
+export const OAUTH_SESSION_END_PATH = `${OAUTH_ENDPOINT_PATH}/session/end`;
+export const OAUTH_SESSION_END_CONFIRM_PATH = `${OAUTH_SESSION_END_PATH}/confirm`;
 export const OAUTH_DISCOVERY_PATH = '/.well-known/oauth-authorization-server';
 
 export interface OAuthResourceConfig {
@@ -104,6 +106,7 @@ export function createOAuthProvider({ knex, config, resource, userExists, intera
         rotateRefreshToken: (ctx) => validateRefreshResource(ctx, resource),
         routes: {
             authorization: OAUTH_AUTHORIZATION_PATH,
+            end_session: OAUTH_SESSION_END_PATH,
             jwks: OAUTH_JWKS_PATH,
             revocation: OAUTH_REVOCATION_PATH,
             token: OAUTH_TOKEN_PATH

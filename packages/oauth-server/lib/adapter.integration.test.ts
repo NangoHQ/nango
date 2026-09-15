@@ -161,6 +161,27 @@ describe('PostgreSQL OAuth provider adapter', () => {
         await expect(revokeOAuthGrant({ knex: db.knex, encryptionKey, grantId })).resolves.toBeUndefined();
     });
 
+    it('preserves an in-progress interaction when its previous grant is revoked', async () => {
+        const grantId = 'grant-before-account-switch';
+        const interactionId = 'account-switch-interaction';
+        await adapter('Grant').upsert(grantId, { ...artifactPayload('Grant', grantId), accountId: 'original-user' }, 600);
+        await adapter('Interaction').upsert(
+            interactionId,
+            {
+                ...artifactPayload('Interaction', grantId),
+                params: {},
+                prompt: { name: 'login', reasons: [], details: {} },
+                returnTo: `/oauth/authorize/${interactionId}`
+            },
+            600
+        );
+
+        await adapter('AccessToken').revokeByGrantId(grantId);
+
+        await expect(adapter('Grant').find(grantId)).resolves.toBeUndefined();
+        await expect(adapter('Interaction').find(interactionId)).resolves.toBeDefined();
+    });
+
     it('allows only one consent decision to claim an interaction', async () => {
         const interactionId = 'concurrent-consent';
         const interaction = adapter('Interaction');

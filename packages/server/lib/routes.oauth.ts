@@ -1,6 +1,13 @@
 import express from 'express';
 
-import { OAUTH_AUTHORIZATION_PATH, OAUTH_DISCOVERY_PATH, OAUTH_JWKS_PATH, OAUTH_REVOCATION_PATH, OAUTH_TOKEN_PATH } from '@nangohq/oauth-server';
+import {
+    OAUTH_AUTHORIZATION_PATH,
+    OAUTH_DISCOVERY_PATH,
+    OAUTH_JWKS_PATH,
+    OAUTH_REVOCATION_PATH,
+    OAUTH_SESSION_END_CONFIRM_PATH,
+    OAUTH_TOKEN_PATH
+} from '@nangohq/oauth-server';
 
 import { setupAuth } from './clients/auth.client.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
@@ -37,6 +44,7 @@ oauthServerAPI.post(OAUTH_TOKEN_PATH, ...providerHandlers);
 oauthServerAPI.options(OAUTH_TOKEN_PATH, ...providerHandlers);
 oauthServerAPI.post(OAUTH_REVOCATION_PATH, ...providerHandlers);
 oauthServerAPI.options(OAUTH_REVOCATION_PATH, ...providerHandlers);
+oauthServerAPI.post(OAUTH_SESSION_END_CONFIRM_PATH, ...providerHandlers);
 oauthServerAPI.get(OAUTH_JWKS_PATH, ...providerHandlers);
 oauthServerAPI.options(OAUTH_JWKS_PATH, ...providerHandlers);
 

@@ -4,13 +4,13 @@ import { encodeManagedAuthState, parseManagedAuthState } from './auth.js';
 
 describe('managed authentication continuation state', () => {
     it('preserves a safe OAuth consent continuation', () => {
-        const state = Buffer.from(JSON.stringify({ returnTo: '/oauth/consent/interaction-id' })).toString('base64');
-        expect(parseManagedAuthState(state)).toEqual({ returnTo: '/oauth/consent/interaction-id' });
+        const state = Buffer.from(JSON.stringify({ returnTo: '/oauth/consent/interaction-id/review' })).toString('base64');
+        expect(parseManagedAuthState(state)).toEqual({ returnTo: '/oauth/consent/interaction-id/review' });
     });
 
     it('decodes UTF-8 continuations without corrupting the path', () => {
-        const state = Buffer.from(JSON.stringify({ returnTo: '/oauth/consent/café' })).toString('base64');
-        expect(parseManagedAuthState(state)).toEqual({ returnTo: '/oauth/consent/caf%C3%A9' });
+        const state = Buffer.from(JSON.stringify({ returnTo: '/oauth/consent/café/review' })).toString('base64');
+        expect(parseManagedAuthState(state)).toEqual({ returnTo: '/oauth/consent/caf%C3%A9/review' });
     });
 
     it('gives invitation state precedence over a return path', () => {
