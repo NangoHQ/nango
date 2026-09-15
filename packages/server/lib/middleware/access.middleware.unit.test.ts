@@ -161,7 +161,7 @@ describe('secretKeyAuth', () => {
     });
 
     it('rejects a script capability token minted for a different environment', async () => {
-        vi.spyOn(accountService, 'getAccountContext').mockResolvedValue(null);
+        const lookup = vi.spyOn(accountService, 'getAccountContext').mockResolvedValue(null);
         const token = createInternalServiceToken(
             {
                 taskId: 'task-1',
@@ -177,6 +177,7 @@ describe('secretKeyAuth', () => {
         const { next, status } = await runSecretKeyAuth(`Bearer ${token}`, { isScript: true, method: 'GET', path: '/connections/abc' });
 
         expect(status).toHaveBeenCalledWith(401);
+        expect(lookup).toHaveBeenCalledWith({ environmentId: 99 });
         expect(next).not.toHaveBeenCalled();
     });
 });

@@ -1,7 +1,13 @@
 import express from 'express';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createInternalServiceToken, INTERNAL_SERVICE_AUDIENCE_PERSIST, TASK_CAPABILITY_ACTIONS } from '@nangohq/internal-auth';
+import {
+    createInternalServiceToken,
+    INTERNAL_SERVICE_AUDIENCE_PERSIST,
+    requireConnectionBoundAuth,
+    requireTaskBoundAuth,
+    TASK_CAPABILITY_ACTIONS
+} from '@nangohq/internal-auth';
 import { accountService } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
@@ -35,7 +41,11 @@ const { connectionService } = await import('@nangohq/shared');
 function app() {
     const server = express();
     server.use('/environment/:environmentId', authMiddleware);
+    server.use('/environment/:environmentId/connection/:nangoConnectionId', requireConnectionBoundAuth());
     server.use('/environment/:environmentId/connection/:nangoConnectionId', connectionOwnershipMiddleware);
+    server.put('/environment/:environmentId/runner/task/:taskId/abort', requireTaskBoundAuth(), (_req, res) => {
+        res.status(201).end();
+    });
     server.post('/environment/:environmentId/log', (_req, res) => {
         res.status(201).end();
     });
@@ -173,6 +183,74 @@ describe('persist capability token auth', () => {
             });
             expect(res.status).toBe(401);
             expect(accountService.getPersistAuthContextByEnvironmentId).not.toHaveBeenCalled();
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a token missing the required action', async () => {
+        vi.mocked(accountService.getPersistAuthContextByEnvironmentId).mockResolvedValue(persistContext(9));
+        vi.mocked(connectionService.connectionExistsForEnvironment).mockResolvedValue(true);
+        const token = createInternalServiceToken(
+            {
+                taskId: 'task-1',
+                audience: INTERNAL_SERVICE_AUDIENCE_PERSIST,
+                environmentId: 9,
+                connectionId: 42,
+                actions: [TASK_CAPABILITY_ACTIONS.persistLog],
+                expiresInSecs: 120
+            },
+            'sign'
+        );
+        const { url, close } = await listen(app());
+        try {
+            const recordsRes = await fetch(`${url}/environment/9/connection/42/records`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(recordsRes.status).toBe(401);
+
+            const recordsToken = createInternalServiceToken(
+                {
+                    taskId: 'task-1',
+                    audience: INTERNAL_SERVICE_AUDIENCE_PERSIST,
+                    environmentId: 9,
+                    connectionId: 42,
+                    actions: [TASK_CAPABILITY_ACTIONS.persistRecords],
+                    expiresInSecs: 120
+                },
+                'sign'
+            );
+            const logRes = await fetch(`${url}/environment/9/log`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${recordsToken}` }
+            });
+            expect(logRes.status).toBe(401);
+            expect(accountService.getPersistAuthContextByEnvironmentId).not.toHaveBeenCalled();
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a persist:abort token for a different task', async () => {
+        vi.mocked(accountService.getPersistAuthContextByEnvironmentId).mockResolvedValue(persistContext(9));
+        const token = createInternalServiceToken(
+            {
+                taskId: 'task-1',
+                audience: INTERNAL_SERVICE_AUDIENCE_PERSIST,
+                environmentId: 9,
+                actions: [TASK_CAPABILITY_ACTIONS.persistAbort],
+                expiresInSecs: 120
+            },
+            'sign'
+        );
+        const { url, close } = await listen(app());
+        try {
+            const res = await fetch(`${url}/environment/9/runner/task/task-2/abort`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(401);
         } finally {
             await close();
         }

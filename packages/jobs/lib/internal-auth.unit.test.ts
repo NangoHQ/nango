@@ -5,6 +5,7 @@ import {
     INTERNAL_SERVICE_AUDIENCE_RUNNER,
     INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS,
     INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS,
+    taskActionsForScriptType,
     verifyInternalServiceToken,
     verifyRunnerDispatchToken
 } from '@nangohq/internal-auth';
@@ -52,7 +53,8 @@ describe('mintTaskAuthToken', () => {
             taskId: 'task-1',
             audience: 'jobs',
             environmentId: 9,
-            connectionId: 42
+            connectionId: 42,
+            actions: taskActionsForScriptType('sync')
         });
         expect(verifyInternalServiceToken(token, 'persist', 'sign').ok).toBe(true);
         expect(verifyInternalServiceToken(token, 'server', 'sign').ok).toBe(true);
@@ -109,6 +111,29 @@ describe('nangoPropsForRunner', () => {
         });
         expect(props).not.toHaveProperty('secretKey');
         expect(props.taskAuthToken).toEqual(expect.stringMatching(/^eyJ/));
+    });
+
+    it('keeps secretKey when no capability token can be minted', () => {
+        const props = nangoPropsForRunner('task-1', {
+            scriptType: 'sync',
+            environmentId: 9,
+            nangoConnectionId: 42,
+            secretKey: 'sk-local-fallback',
+            connectionId: 'conn',
+            environmentName: 'dev',
+            providerConfigKey: 'google',
+            provider: 'google',
+            team: { id: 1, name: 't' },
+            activityLogId: 'log',
+            debug: false,
+            startedAt: new Date(),
+            endUser: null,
+            runnerFlags: {} as never,
+            logger: { level: 'info' },
+            syncConfig: {} as never
+        });
+        expect(props.secretKey).toBe('sk-local-fallback');
+        expect(props.taskAuthToken).toBeUndefined();
     });
 });
 

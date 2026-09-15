@@ -81,10 +81,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; telemetryRecorder?: TelemetryRecorder; locks: Locks }) {
         super(props);
 
-        const bearer = props.taskAuthToken ?? props.secretKey;
-        if (!bearer) {
-            throw new Error('Parameter taskAuthToken is required');
-        }
+        const token = PersistClient.tokenFromNangoProps(props);
 
         this.nango = new Nango(
             {
@@ -92,7 +89,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 isSync: false,
                 dryRun: isTest,
                 ...props,
-                secretKey: bearer
+                secretKey: token
             },
             {
                 ...internalAxiosProps,
@@ -112,7 +109,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
         if (!this.syncConfig) throw new Error('Parameter syncConfig is required');
 
-        this.persistClient = runnerProps?.persistClient || new PersistClient({ token: PersistClient.tokenFromNangoProps(props) });
+        this.persistClient = runnerProps?.persistClient || new PersistClient({ token });
         this.telemetryRecorder = runnerProps?.telemetryRecorder;
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
         this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name });
@@ -468,10 +465,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; telemetryRecorder?: TelemetryRecorder; locks: Locks }) {
         super(props);
 
-        const bearer = props.taskAuthToken ?? props.secretKey;
-        if (!bearer) {
-            throw new Error('Parameter taskAuthToken is required');
-        }
+        const token = PersistClient.tokenFromNangoProps(props);
 
         this.nango = new Nango(
             {
@@ -479,7 +473,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 isSync: true,
                 dryRun: isTest,
                 ...props,
-                secretKey: bearer
+                secretKey: token
             },
             {
                 ...internalAxiosProps,
@@ -499,7 +493,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         if (!this.syncJobId) throw new Error('Parameter syncJobId is required');
         if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
 
-        this.persistClient = runnerProps?.persistClient || new PersistClient({ token: PersistClient.tokenFromNangoProps(props) });
+        this.persistClient = runnerProps?.persistClient || new PersistClient({ token });
         this.telemetryRecorder = runnerProps?.telemetryRecorder;
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
         this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name, variant: this.variant });

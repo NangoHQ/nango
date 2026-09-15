@@ -39,11 +39,14 @@ export function mintTaskAuthToken(
     );
 }
 
-/** Strip secretKey and attach the capability token for runner dispatch. */
+/** Attach the capability token for runner dispatch. Strip secretKey only when a token was minted. */
 export function nangoPropsForRunner(taskId: string, nangoProps: NangoProps): NangoProps {
-    const { secretKey: _secretKey, ...rest } = nangoProps;
     const taskAuthToken = mintTaskAuthToken(taskId, nangoProps) ?? nangoProps.taskAuthToken;
-    return taskAuthToken ? { ...rest, taskAuthToken } : rest;
+    if (!taskAuthToken) {
+        return nangoProps;
+    }
+    const { secretKey: _secretKey, ...rest } = nangoProps;
+    return { ...rest, taskAuthToken };
 }
 
 /**
