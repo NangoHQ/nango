@@ -18673,6 +18673,40 @@ pleo:
                 - external
                 - external.staging
 
+pleo-api-key:
+    display_name: Pleo (API Key)
+    categories:
+        - payment
+        - invoicing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiSubdomain}.pleo.io
+        verification:
+            method: GET
+            endpoints:
+                - /v1/installations/me
+        headers:
+            authorization: Basic ${base64(${apiKey}:)}
+    docs: https://nango.dev/docs/api-integrations/pleo-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/pleo-api-key/connect
+    connection_config:
+        apiSubdomain:
+            type: string
+            title: API Subdomain
+            description: The API subdomain for your Pleo environment.
+            enum:
+                - external
+                - external.staging
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Pleo Standalone API Key.
+            example: pls_********************************_620d75
+            pattern: '^pls_[a-f0-9]+_[a-f0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
+
 podium:
     display_name: Podium
     categories:
