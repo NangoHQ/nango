@@ -15836,6 +15836,38 @@ neon:
             example: napi_1a2b3c4d5e6f****************************************************
             doc_section: '#step-1-creating-an-api-key'
 
+neon-mcp:
+    display_name: Neon (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.neon.tech/api/authorize
+    token_url: https://mcp.neon.tech/api/token
+    registration_url: https://mcp.neon.tech/api/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.neon.tech/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - read
+        - write
+    proxy:
+        base_url: https://mcp.neon.tech
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/neon-mcp
+
 nerdio:
     display_name: Nerdio
     categories:
