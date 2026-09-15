@@ -1,3 +1,4 @@
+import { NangoSyncMock } from 'nango/test';
 import { afterEach, vi, expect, it, describe } from 'vitest';
 
 import createSync from '../syncs/<%= syncName %>.js';
@@ -6,7 +7,7 @@ describe('<%= integration %> <%= syncName %> tests', () => {
   const models = '<%= modelName %>'.split(',');
 
   const createTestContext = () => {
-    const nangoMock = new global.vitest.NangoSyncMock({
+    const nangoMock = new NangoSyncMock({
       dirname: __dirname,
       name: "<%= syncName %>",
       Model: "<%= modelName %>"
