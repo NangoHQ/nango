@@ -12,12 +12,24 @@ export const NON_ENV_PATH_PREFIXES = [
 // Raising this past the server's MAX_RETURN_TO_LENGTH sends destinations it silently resolves to `/`.
 export const MAX_NEXT_LENGTH = 1024;
 
-export const signinPathWithNext = (location: { pathname: string; search: string; hash: string }): string => {
+export const signinPathWithNext = (location: { pathname: string; search: string; hash: string }, options?: { expired?: boolean }): string => {
     const destination = location.pathname + location.search + location.hash;
-    if (destination === '/' || destination.length > MAX_NEXT_LENGTH) {
-        return '/signin';
+    const params: string[] = [];
+
+    if (destination !== '/' && destination.length <= MAX_NEXT_LENGTH) {
+        params.push(`next=${encodeURIComponent(destination)}`);
     }
-    return `/signin?next=${encodeURIComponent(destination)}`;
+    if (options?.expired) {
+        params.push('error=session_expired');
+    }
+
+    return params.length > 0 ? `/signin?${params.join('&')}` : '/signin';
+};
+
+const PUBLIC_AUTH_PATH_PREFIXES = ['/signin', '/signup', '/forgot-password', '/reset-password', '/verify-email'];
+
+export const isPublicAuthPath = (pathname: string): boolean => {
+    return PUBLIC_AUTH_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 };
 
 export const isNonEnvPath = (pathname: string): boolean => {
