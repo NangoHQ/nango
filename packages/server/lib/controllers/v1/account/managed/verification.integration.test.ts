@@ -35,6 +35,8 @@ vi.mock('../../../../clients/workos.client.js', () => ({
 
 const route = '/api/v1/account/managed/verification';
 
+const encodeState = (state: Record<string, string>) => encodeURIComponent(Buffer.from(JSON.stringify(state)).toString('base64'));
+
 type RunServer = typeof runServerType;
 
 let api: Awaited<ReturnType<RunServer>>;
@@ -249,5 +251,75 @@ describe(`POST ${route}`, () => {
 
         expect(callbackRes.status).toBe(302);
         expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/');
+    });
+
+    it('should redirect to the destination carried in the state', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: { email: user.email, firstName: 'Managed', lastName: 'User' },
+            organizationId: undefined
+        });
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${encodeState({ returnTo: '/team/billing' })}`, {
+            redirect: 'manual'
+        });
+
+        expect(callbackRes.status).toBe(302);
+        expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/team/billing');
+    });
+
+    it('should sanitize a destination that escapes the dashboard origin', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+
+        for (const returnTo of ['//evil.com', '/\t//evil.com', '/\\evil.com', 'https://evil.com']) {
+            workosMocks.authenticateWithCode.mockResolvedValue({
+                user: { email: user.email, firstName: 'Managed', lastName: 'User' },
+                organizationId: undefined
+            });
+
+            const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${encodeState({ returnTo })}`, {
+                redirect: 'manual'
+            });
+
+            expect(callbackRes.status).toBe(302);
+            expect(callbackRes.headers.get('location'), `returnTo=${JSON.stringify(returnTo)}`).toBe('http://localhost:3003/');
+        }
+    });
+
+    it('should keep the destination across the email verification detour, ahead of onboarding', async () => {
+        const email = `${nanoid()}@example.com`;
+
+        workosMocks.authenticateWithCode.mockRejectedValue({
+            rawData: {
+                code: 'email_verification_required',
+                message: 'Email ownership must be verified before authentication.',
+                pending_authentication_token: 'pending_token_123',
+                email,
+                email_verification_id: 'email_verification_123'
+            }
+        });
+
+        workosMocks.authenticateWithEmailVerification.mockResolvedValue({
+            user: { email, firstName: 'Managed', lastName: 'User' },
+            organizationId: undefined
+        });
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${encodeState({ returnTo: '/team/billing' })}`, {
+            redirect: 'manual'
+        });
+
+        expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/signin/verify');
+        const sessionCookie = callbackRes.headers.getSetCookie()[0]?.split(';')[0];
+        expect(sessionCookie).toBeTruthy();
+
+        const postVerificationRes = await api.fetch('/api/v1/account/managed/verification', {
+            method: 'POST',
+            session: sessionCookie!,
+            body: { code: '123456' }
+        });
+
+        expect(postVerificationRes.res.status).toBe(200);
+        expect(postVerificationRes.json).toStrictEqual({ data: { url: 'http://localhost:3003/team/billing' } });
     });
 });
