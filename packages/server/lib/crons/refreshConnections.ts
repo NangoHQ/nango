@@ -20,7 +20,7 @@ const cronMinutes = envs.CRON_REFRESH_CONNECTIONS_EVERY_MIN;
 const limit = envs.CRON_REFRESH_CONNECTIONS_LIMIT;
 
 export function refreshConnectionsCron(): void {
-    // set env var CRON_REFRESH_CONNECTIONS_EVERY_MIN to 0 to disable
+    // set env var CRON_MANAGE_GROWTH_ADDONS_EVERY_MIN to 0 to disable
     if (cronMinutes <= 0) {
         return;
     }
