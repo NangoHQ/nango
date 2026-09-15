@@ -1888,6 +1888,7 @@
               "integrations/all/tldv",
               "api-integrations/toast",
               "integrations/all/todoist",
+              "api-integrations/together-ai",
               "api-integrations/toggl",
               "api-integrations/torii",
               "api-integrations/trading-economics",

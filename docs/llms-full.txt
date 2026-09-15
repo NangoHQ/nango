@@ -16007,6 +16007,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `tldv` | tl;dv | API_KEY | [docs](https://nango.dev/docs/integrations/all/tldv.md) | [connect](https://nango.dev/docs/integrations/all/tldv/connect.md) |  | productivity |
 | `toast` | Toast | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/toast.md) | [connect](https://nango.dev/docs/api-integrations/toast/connect.md) |  | erp |
 | `todoist` | Todoist | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/todoist.md) |  |  | productivity, ticketing |
+| `together-ai` | Together AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/together-ai.md) | [connect](https://nango.dev/docs/api-integrations/together-ai/connect.md) |  | dev-tools, productivity |
 | `toggl` | Toggl Track | BASIC | [docs](https://nango.dev/docs/api-integrations/toggl.md) | [connect](https://nango.dev/docs/api-integrations/toggl/connect.md) |  | productivity |
 | `torii` | Torii | API_KEY | [docs](https://nango.dev/docs/api-integrations/torii.md) | [connect](https://nango.dev/docs/api-integrations/torii/connect.md) |  | productivity |
 | `trading-economics` | Trading Economics | API_KEY | [docs](https://nango.dev/docs/api-integrations/trading-economics.md) | [connect](https://nango.dev/docs/api-integrations/trading-economics/connect.md) |  | analytics |

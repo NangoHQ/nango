@@ -24846,6 +24846,30 @@ thrivecart-api-key:
             example: 'ASYDV5S8-0BSO1SH2-4BH5PO7U-YF8SV3CZ'
             pattern: '^[A-Z0-9]{8}-[A-Z0-9]{10}-[A-Z0-9]{8}-[A-Z0-9]{8}$'
 
+together-ai:
+    display_name: Together AI
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.together.xyz
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v1/models
+    docs: https://nango.dev/docs/api-integrations/together-ai
+    docs_connect: https://nango.dev/docs/api-integrations/together-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Together AI API key
+            doc_section: '#step-1-create-an-api-key'
+
 trading-economics:
     display_name: Trading Economics
     categories:
