@@ -206,7 +206,6 @@ const ENVS_SHAPE = z.object({
     // `/` keeps requests on whichever host served the dashboard (same-origin).
     NANGO_DASHBOARD_API_URL: z.url().or(z.literal('/')).optional(),
     NANGO_MANAGEMENT_MCP_SERVER_URL: z.url().optional(),
-    NANGO_MANAGEMENT_MCP_OAUTH_ENABLED: z.stringbool().optional().default(false),
     NANGO_OAUTH_SERVER_BASE_URL: z.url().optional(),
     NANGO_OAUTH_SERVER_COOKIE_KEYS: z.string().optional(),
     NANGO_OAUTH_SERVER_JWKS: z.string().optional(),

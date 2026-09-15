@@ -5,16 +5,6 @@
     "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "import": "./dist/index.js"
-        },
-        "./contracts": {
-            "types": "./dist/contracts.d.ts",
-            "import": "./dist/contracts.js"
-        }
-    },
     "private": true,
     "scripts": {},
     "repository": {
@@ -34,7 +24,6 @@
     },
     "devDependencies": {
         "@nangohq/database": "file:../database",
-        "@nangohq/types": "file:../types",
         "vitest": "4.1.9"
     },
     "files": [

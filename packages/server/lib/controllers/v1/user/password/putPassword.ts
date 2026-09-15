@@ -3,20 +3,17 @@ import crypto from 'node:crypto';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { revokeOAuthSessionsBySubjectInTransaction } from '@nangohq/oauth-server';
+import { revokeOAuthUserInTransaction } from '@nangohq/oauth-server';
 import { pbkdf2, userService } from '@nangohq/shared';
 import { PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { deleteUserSessions } from '../../../../clients/auth.client.js';
 import { dek } from '../../../../env.js';
-import { toOAuthGrantRevocationAuditFacts } from '../../../../middleware/audit/oauthGrant.middleware.js';
-import { revokeUserProductGrants } from '../../../../oauth/product-grant.service.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { hasRecentMfa } from '../../account/mfa/elevation.js';
 import { isStepUpRefused, isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from '../../account/mfa/stepUp.js';
 import { passwordSchema } from '../../account/signup.js';
 
-import type { RevokedUserProductGrant } from '../../../../oauth/product-grant.service.js';
 import type { DBUser, PutUserPassword } from '@nangohq/types';
 
 /** One TOTP step: any shorter and the only code the user has is the one just spent at login. */
@@ -64,7 +61,6 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
     const hashedPassword = (await pbkdf2(body.newPassword, salt, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
     const encryptionKey = dek.get();
 
-    let revokedGrants: RevokedUserProductGrant[] = [];
     const outcome = await db.knex.transaction(async (trx) => {
         const stepUp = await verifyStepUpMfa(user, body.mfa, trx, { recentlyVerified });
         if (isStepUpRefused(stepUp)) {
@@ -73,8 +69,7 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
 
         await userService.update({ id: user.id, hashed_password: hashedPassword, salt }, trx);
         await deleteUserSessions(user.id, { trx });
-        await revokeOAuthSessionsBySubjectInTransaction({ trx, encryptionKey, subjectId: String(user.id), reason: 'password_changed' });
-        revokedGrants = await revokeUserProductGrants(user.id, encryptionKey, 'password_changed', trx);
+        await revokeOAuthUserInTransaction({ trx, encryptionKey, userId: String(user.id) });
         return 'changed' as const;
     });
 
@@ -86,11 +81,6 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
         res.status(400).send({ error: { code: 'invalid_mfa_code' } });
         return;
     }
-
-    req.audit = {
-        ...req.audit,
-        oauthGrantRevocations: toOAuthGrantRevocationAuditFacts(revokedGrants, user)
-    };
 
     // Re-issue a fresh session so the user who just changed their password stays logged in seamlessly.
     // req.logIn regenerates the session id internally (passport's fixation guard), rotating the current

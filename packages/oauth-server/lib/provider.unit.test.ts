@@ -25,7 +25,6 @@ vi.mock('./cimd.js', async (importOriginal) => {
 const artifacts = new Map<string, AdapterPayload>();
 const TEST_ACCOUNT_ID = 'test-account';
 const existingAccounts = new Set([TEST_ACCOUNT_ID]);
-let failNextRefreshTokenDestroy = false;
 const adapter = (model: string): Adapter => ({
     upsert: (id, payload) => {
         artifacts.set(`${model}:${id}`, payload);
@@ -40,10 +39,6 @@ const adapter = (model: string): Adapter => ({
         return Promise.resolve();
     },
     destroy: (id) => {
-        if (model === 'RefreshToken' && failNextRefreshTokenDestroy) {
-            failNextRefreshTokenDestroy = false;
-            return Promise.reject(new Error('simulated provider revocation failure'));
-        }
         artifacts.delete(`${model}:${id}`);
         return Promise.resolve();
     },
@@ -61,9 +56,6 @@ describe('OAuth provider', () => {
     let provider: Provider;
     let clientId: string;
     let cimdFetches = 0;
-    const grantRevocationCompleted = vi.fn((_outcome: 'success' | 'failure') => Promise.resolve());
-    const prepareGrantRevocation = vi.fn(() => Promise.resolve(grantRevocationCompleted));
-
     beforeAll(async () => {
         vi.mocked(createOAuthAdapter).mockReturnValue(adapter);
         vi.mocked(allowCimdFetch).mockImplementation((candidate) => Promise.resolve(candidate.startsWith('https://client.example.com/oauth/')));
@@ -94,7 +86,7 @@ describe('OAuth provider', () => {
                         grant_types: ['authorization_code', 'refresh_token'],
                         response_types: ['code'],
                         token_endpoint_auth_method: 'none',
-                        scope: 'environment:* agent-session:*'
+                        scope: 'environment:*'
                     }),
                     { status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'max-age=3600' } }
                 )
@@ -105,24 +97,17 @@ describe('OAuth provider', () => {
         clientId = 'https://client.example.com/oauth/metadata.json';
         provider = createOAuthProvider({
             knex: vi.fn() as unknown as Knex,
-            subjectExists: (accountId) => existingAccounts.has(accountId),
+            userExists: (accountId) => existingAccounts.has(accountId),
             config: {
                 baseUrl: 'http://localhost',
                 cookieKeys: ['a'.repeat(32), 'b'.repeat(32)],
                 encryptionKey: Buffer.alloc(32, 's').toString('base64'),
                 jwks: { keys: [{ ...privateKey.export({ format: 'jwk' }), kid: 'test-key', use: 'sig', alg: 'RS256' }] }
             },
-            resources: [
-                {
-                    resource: 'https://mcp.example.com/mcp',
-                    scopes: ['environment:*']
-                },
-                {
-                    resource: 'https://api.example.com/agent-sessions/session-1/mcp',
-                    scopes: ['agent-session:*']
-                }
-            ],
-            prepareGrantRevocation
+            resource: {
+                resource: 'https://mcp.example.com/mcp',
+                scopes: ['environment:*']
+            }
         });
         const providerCallback = provider.callback();
         server = createServer((req, res) => {
@@ -156,7 +141,6 @@ describe('OAuth provider', () => {
         expect(discovery).not.toHaveProperty('registration_endpoint');
         expect(discovery).not.toHaveProperty('userinfo_endpoint');
         expect(discovery['scopes_supported']).toContain('environment:*');
-        expect(discovery['scopes_supported']).toContain('agent-session:*');
         expect(discovery['scopes_supported']).not.toContain('openid');
     });
 
@@ -235,37 +219,6 @@ describe('OAuth provider', () => {
         }
     });
 
-    it('grants several resources in one authorization flow and issues a resource-specific token for each', async () => {
-        const managementResource = 'https://mcp.example.com/mcp';
-        const agentSessionResource = 'https://api.example.com/agent-sessions/session-1/mcp';
-        const authorization = await authorize(provider, origin, clientId, [managementResource, agentSessionResource], 'environment:* agent-session:*');
-        const managementTokens = await exchangeCode(origin, clientId, authorization.code, authorization.verifier, managementResource);
-
-        expect(managementTokens).toMatchObject({
-            token_type: 'Bearer',
-            expires_in: 3600,
-            scope: 'environment:*'
-        });
-        expect(artifacts.get(`AccessToken:${stringValue(managementTokens['access_token'])}`)).toMatchObject({
-            aud: managementResource,
-            scope: 'environment:*'
-        });
-
-        const agentSessionTokens = await postToken(origin, {
-            grant_type: 'refresh_token',
-            client_id: clientId,
-            refresh_token: stringValue(managementTokens['refresh_token']),
-            resource: agentSessionResource
-        });
-        expect(agentSessionTokens.response.status).toBe(200);
-        expect(agentSessionTokens.body).toMatchObject({ token_type: 'Bearer', expires_in: 3600, scope: 'agent-session:*' });
-        expect(artifacts.get(`AccessToken:${stringValue(agentSessionTokens.body['access_token'])}`)).toMatchObject({
-            aud: agentSessionResource,
-            scope: 'agent-session:*'
-        });
-        expect(provider.issuer).toBe('http://localhost');
-    });
-
     it('requires the exact resource at authorization and token boundaries', async () => {
         const authorization = await authorize(provider, origin, clientId);
         const missingAtToken = await postToken(origin, {
@@ -288,6 +241,16 @@ describe('OAuth provider', () => {
         const location = response.headers.get('location');
         if (!location) throw new Error('Missing authorization error redirect');
         expect(new URL(location).searchParams.get('error')).toBe('invalid_target');
+
+        const duplicateVerifier = randomBytes(32).toString('base64url');
+        const duplicateAuthorization = new URL(`${origin}/oauth/authorize`);
+        duplicateAuthorization.search = authorizationParams(clientId, duplicateVerifier, [
+            'https://mcp.example.com/mcp',
+            'https://mcp.example.com/mcp'
+        ]).toString();
+        const duplicateResponse = await fetch(duplicateAuthorization, { redirect: 'manual' });
+        expect(duplicateResponse.status).toBe(303);
+        expect(new URL(duplicateResponse.headers.get('location')!).searchParams.get('error')).toBe('invalid_target');
 
         const refreshAuthorization = await authorize(provider, origin, clientId);
         const tokens = await exchangeCode(origin, clientId, refreshAuthorization.code, refreshAuthorization.verifier);
@@ -338,8 +301,6 @@ describe('OAuth provider', () => {
         });
 
         expect(revocation.status).toBe(200);
-        expect(prepareGrantRevocation).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ clientId }));
-        expect(grantRevocationCompleted).toHaveBeenLastCalledWith('success');
         const refreshed = await postToken(origin, {
             grant_type: 'refresh_token',
             client_id: clientId,
@@ -348,21 +309,6 @@ describe('OAuth provider', () => {
         });
         expect(refreshed.response.status).toBe(400);
         expect(refreshed.body['error']).toBe('invalid_grant');
-    });
-
-    it('reports a failed revocation only after provider cleanup fails', async () => {
-        const authorization = await authorize(provider, origin, clientId);
-        const tokens = await exchangeCode(origin, clientId, authorization.code, authorization.verifier);
-        failNextRefreshTokenDestroy = true;
-
-        const revocation = await fetch(`${origin}/oauth/revoke`, {
-            method: 'POST',
-            headers: { 'content-type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ client_id: clientId, token: stringValue(tokens['refresh_token']), token_type_hint: 'refresh_token' })
-        });
-
-        expect(revocation.status).toBe(500);
-        expect(grantRevocationCompleted).toHaveBeenLastCalledWith('failure');
     });
 
     it('does not follow redirects or cache invalid and oversized CIMD responses', async () => {

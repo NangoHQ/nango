@@ -5,15 +5,13 @@ import { getOAuthConsentInteraction } from './interaction.controller.js';
 import type { NextFunction, Request, Response } from 'express';
 import type { Interaction } from 'oidc-provider';
 
-const { knexMock, isConsentEnabledMock, interactionDetailsMock, interactionResultMock } = vi.hoisted(() => ({
+const { knexMock, interactionDetailsMock, interactionResultMock } = vi.hoisted(() => ({
     knexMock: vi.fn(),
-    isConsentEnabledMock: vi.fn(),
     interactionDetailsMock: vi.fn(),
     interactionResultMock: vi.fn()
 }));
 
 vi.mock('@nangohq/database', () => ({ default: { knex: knexMock } }));
-vi.mock('@nangohq/feature-flags', () => ({ getFlags: () => ({ isOAuthServerConsentEnabled: isConsentEnabledMock }) }));
 vi.mock('./server.js', () => ({
     oauthServer: { interactionDetails: interactionDetailsMock, interactionResult: interactionResultMock },
     oauthServerConfig: null
@@ -22,7 +20,6 @@ vi.mock('./server.js', () => ({
 describe('OAuth consent interaction controller', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        isConsentEnabledMock.mockResolvedValue(true);
         interactionResultMock.mockResolvedValue('https://issuer.example.com/oauth/authorize/resume');
         knexMock.mockImplementation((table: string) => {
             const row = table === '_nango_users' ? { id: 7, account_id: 42, email: 'user@example.com', suspended: false } : { id: 42, uuid: 'account-uuid' };

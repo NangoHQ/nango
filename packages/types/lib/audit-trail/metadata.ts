@@ -128,12 +128,6 @@ export interface MfaVerifiedMetadata {
     method?: 'totp' | 'recovery_code';
 }
 
-export interface OAuthGrantMetadata {
-    clientHostname?: string;
-    resourceHostnames?: string[];
-    scopes?: string[];
-}
-
 export interface BillingSpendAlertChangedMetadata {
     thresholdInCents?: number;
 }

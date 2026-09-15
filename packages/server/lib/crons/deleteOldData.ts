@@ -23,9 +23,7 @@ import { deleteEnvironmentData } from '../deletion/deleteEnvironmentData.js';
 import { deleteProviderConfigData } from '../deletion/deleteProviderConfigData.js';
 import { deleteSyncConfigData } from '../deletion/deleteSyncConfigData.js';
 import { deleteSyncs } from '../deletion/deleteSyncs.js';
-import { dek, envs } from '../env.js';
-import { deleteExpiredOAuthInteractionState } from '../oauth/interaction-state.service.js';
-import { cleanupStalePendingProductGrants } from '../oauth/product-grant.service.js';
+import { envs } from '../env.js';
 import { expireAgentSessions } from '../services/agentSession.service.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
 import oauthSessionService from '../services/oauth-session.service.js';
@@ -138,18 +136,6 @@ export async function exec(): Promise<void> {
             ...opts,
             name: 'oauth server artifacts',
             deleteFn: async () => await deleteExpiredOAuthArtifacts(db.knex, limit)
-        });
-
-        await batchDelete({
-            ...opts,
-            name: 'oauth interaction state',
-            deleteFn: async () => await deleteExpiredOAuthInteractionState(limit)
-        });
-
-        await batchDelete({
-            ...opts,
-            name: 'stale pending oauth product grants',
-            deleteFn: async () => await cleanupStalePendingProductGrants(dek.get(), limit)
         });
 
         // Delete invitations

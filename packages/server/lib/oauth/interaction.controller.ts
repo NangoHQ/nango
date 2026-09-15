@@ -4,12 +4,9 @@ import { errors } from 'oidc-provider';
 import { z } from 'zod';
 
 import db from '@nangohq/database';
-import { getFlags } from '@nangohq/feature-flags';
-import { oauthConsentDecisionSchema } from '@nangohq/oauth-server/contracts';
-import { basePublicUrl } from '@nangohq/utils';
+import { claimOAuthInteraction, releaseOAuthInteraction, revokeOAuthGrant } from '@nangohq/oauth-server';
+import { basePublicUrl, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
-import { claimConsentDecision, completeConsentDecision, establishConsentInteraction, releaseConsentDecision } from './interaction-state.service.js';
-import { activateProductGrant, compensateProductGrant, createPendingProductGrant } from './product-grant.service.js';
 import { oauthServer, oauthServerConfig } from './server.js';
 
 import type { DBTeam, DBUser, OAuthConsentErrorCode, OAuthConsentInteraction, OAuthConsentResource } from '@nangohq/types';
@@ -18,6 +15,7 @@ import type { Client, Interaction } from 'oidc-provider';
 
 const routeParamsSchema = z.object({ uid: z.string().min(1).max(128) }).strict();
 const DASHBOARD_ORIGIN = new URL(basePublicUrl).origin;
+type ValidatedOAuthResource = OAuthConsentResource & { resource: string };
 
 export const oauthConsentCors: RequestHandler = (req, res, next) => {
     const origin = req.get('origin');
@@ -53,10 +51,6 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
                 sendError(res, 403, identity.error);
                 return;
             }
-            if (!(await getFlags().isOAuthServerConsentEnabled(identity.account.uuid))) {
-                sendError(res, 403, 'consent_disabled');
-                return;
-            }
             if (interaction.result?.login) {
                 if (interaction.result.login.accountId !== String(identity.user.id)) {
                     sendError(res, 409, 'interaction_completed');
@@ -86,31 +80,15 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
             sendError(res, context.status, context.error);
             return;
         }
-        if (!(await getFlags().isOAuthServerConsentEnabled(context.account.uuid))) {
-            sendError(res, 403, 'consent_disabled');
-            return;
-        }
-
-        const csrfToken = await establishConsentInteraction({
-            uid,
-            userId: context.user.id,
-            accountId: context.account.id,
-            expiresAt: new Date(interaction.exp * 1000)
-        });
-        if (!csrfToken) {
-            sendError(res, 409, 'interaction_completed');
-            return;
-        }
-
         res.status(200).send({
             data: {
-                interactionId: uid,
-                expiresAt: new Date(interaction.exp * 1000).toISOString(),
-                csrfToken,
                 client: context.client,
                 callbackHostname: context.callbackHostname,
                 account: { name: boundedText(context.account.name, 120, 'Nango account') },
-                resources: context.resources
+                resource: {
+                    hostname: context.resource.hostname,
+                    scopes: context.resource.scopes
+                }
             } satisfies OAuthConsentInteraction
         });
     } catch (err) {
@@ -138,13 +116,15 @@ export const denyOAuthConsent: RequestHandler = async (req, res, next) => {
 
 async function decideConsent(decision: 'approved' | 'denied', req: Request, res: Response, next: NextFunction): Promise<void> {
     let uid: string | undefined;
-    let productGrant: { id: string; providerGrantId: string; encryptionKey: string } | undefined;
+    let providerGrantId: string | undefined;
+    let interactionClaimed = false;
+    let resultPersisted = false;
     try {
         uid = parseUid(req, res);
         if (!uid || !requireExpectedOrigin(req, res)) return;
-        const body = oauthConsentDecisionSchema.safeParse(req.body);
-        if (!body.success) {
-            sendError(res, 400, 'invalid_csrf');
+        const emptyBody = requireEmptyBody(req);
+        if (emptyBody) {
+            res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(emptyBody.error) } });
             return;
         }
         const interaction = await readProviderInteraction(req, res, uid);
@@ -159,33 +139,14 @@ async function decideConsent(decision: 'approved' | 'denied', req: Request, res:
             sendError(res, context.status, context.error);
             return;
         }
-        req.audit = {
-            ...req.audit,
-            oauthConsent: {
-                userId: context.user.id,
-                userEmail: context.user.email,
-                accountId: context.account.id,
-                clientHostname: context.client.hostname,
-                resourceHostnames: context.resources.map((resource) => resource.hostname),
-                scopes: [...new Set(context.resources.flatMap((resource) => resource.scopes))]
-            }
-        };
-        if (!(await getFlags().isOAuthServerConsentEnabled(context.account.uuid))) {
-            sendError(res, 403, 'consent_disabled');
-            return;
-        }
-        const claim = await claimConsentDecision({
-            uid,
-            csrfToken: body.data.csrfToken,
-            userId: context.user.id,
-            accountId: context.account.id
+        const config = requireOAuthConfig();
+        interactionClaimed = await claimOAuthInteraction({
+            knex: db.knex,
+            encryptionKey: config.config.encryptionKey,
+            interactionId: uid
         });
-        if (claim !== 'claimed') {
-            sendError(
-                res,
-                claim === 'expired' ? 410 : claim === 'completed' ? 409 : 403,
-                claim === 'expired' ? 'interaction_expired' : claim === 'completed' ? 'interaction_completed' : 'invalid_csrf'
-            );
+        if (!interactionClaimed) {
+            sendError(res, 409, 'interaction_completed');
             return;
         }
 
@@ -197,7 +158,7 @@ async function decideConsent(decision: 'approved' | 'denied', req: Request, res:
                 { error: 'access_denied', error_description: 'The authorization request was denied' },
                 { mergeWithLastSubmission: false }
             );
-            await completeConsentDecision(uid, 'denied');
+            resultPersisted = true;
             res.status(200).send({ data: { resumeUrl } });
             return;
         }
@@ -205,48 +166,49 @@ async function decideConsent(decision: 'approved' | 'denied', req: Request, res:
         const newGrantProperties = {
             accountId: String(context.user.id),
             clientId: context.clientId,
-            jti: randomBytes(32).toString('base64url')
+            jti: randomBytes(32).toString('base64url'),
+            iat: context.authenticatedAt
         };
         const grant = interaction.grantId ? await server.Grant.find(interaction.grantId) : new server.Grant(newGrantProperties);
         if (!grant) throw new Error('Existing OAuth grant could not be loaded');
-        const providerGrantId = grant.jti;
-        if (!providerGrantId) throw new Error('OAuth provider grant identifier could not be reserved');
-        grant.addOIDCScope([...new Set(context.resources.flatMap((resource) => resource.scopes))]);
-        for (const resource of context.resources) grant.addResourceScope(resource.resource, resource.scopes);
-
-        const config = requireOAuthConfig();
-        productGrant = {
-            id: (
-                await createPendingProductGrant({
-                    grantId: providerGrantId,
-                    clientId: context.clientId,
-                    encryptionKey: config.config.encryptionKey,
-                    userId: context.user.id,
-                    accountId: context.account.id,
-                    resources: context.resources
-                })
-            ).id,
-            providerGrantId,
-            encryptionKey: config.config.encryptionKey
-        };
-        if (req.audit.oauthConsent) req.audit.oauthConsent.productGrantId = productGrant.id;
+        const reservedGrantId = grant.jti;
+        if (!reservedGrantId) throw new Error('OAuth provider grant identifier could not be reserved');
+        grant.addOIDCScope(context.resource.scopes);
+        grant.addResourceScope(context.resource.resource, context.resource.scopes);
 
         const savedProviderGrantId = await grant.save();
-        if (savedProviderGrantId !== productGrant.providerGrantId) throw new Error('OAuth provider changed its reserved grant identifier');
-        await activateProductGrant(productGrant.id, context.resources);
+        if (savedProviderGrantId !== reservedGrantId) throw new Error('OAuth provider changed its reserved grant identifier');
+        providerGrantId = savedProviderGrantId;
         const resumeUrl = await server.interactionResult(req, res, { consent: { grantId: providerGrantId } });
-        await completeConsentDecision(uid, 'approved');
+        resultPersisted = true;
         res.status(200).send({ data: { resumeUrl } });
     } catch (err) {
-        if (productGrant) {
+        if (providerGrantId) {
             try {
-                await compensateProductGrant(productGrant.id, productGrant.providerGrantId, productGrant.encryptionKey, 'approval_failed');
+                await revokeOAuthGrant({
+                    knex: db.knex,
+                    encryptionKey: requireOAuthConfig().config.encryptionKey,
+                    grantId: providerGrantId
+                });
             } catch (err) {
+                if (uid && interactionClaimed && !resultPersisted) {
+                    await releaseOAuthInteraction({
+                        knex: db.knex,
+                        encryptionKey: requireOAuthConfig().config.encryptionKey,
+                        interactionId: uid
+                    });
+                }
                 next(err);
                 return;
             }
         }
-        if (uid) await releaseConsentDecision(uid);
+        if (uid && interactionClaimed && !resultPersisted) {
+            await releaseOAuthInteraction({
+                knex: db.knex,
+                encryptionKey: requireOAuthConfig().config.encryptionKey,
+                interactionId: uid
+            });
+        }
         handleInteractionError(err, res, next);
     }
 }
@@ -258,7 +220,8 @@ async function validateInteraction(interaction: Interaction): Promise<
           clientId: string;
           client: OAuthConsentInteraction['client'];
           callbackHostname: string;
-          resources: OAuthConsentResource[];
+          resource: ValidatedOAuthResource;
+          authenticatedAt: number;
       }
     | { status: 403 | 404 | 409 | 410; error: OAuthConsentErrorCode }
 > {
@@ -273,55 +236,53 @@ async function validateInteraction(interaction: Interaction): Promise<
     const account = await db.knex<DBTeam>('_nango_accounts').where({ id: user.account_id }).first();
     if (!account) return { status: 403, error: 'account_unavailable' };
 
+    const sessionCookie = interaction.session.cookie;
+    if (!sessionCookie) return { status: 404, error: 'interaction_invalid' };
+    const providerSession = await requireOAuthServer().Session.find(sessionCookie);
+    if (
+        !providerSession ||
+        providerSession.accountId !== String(user.id) ||
+        typeof providerSession.loginTs !== 'number' ||
+        !Number.isFinite(providerSession.loginTs) ||
+        providerSession.loginTs <= 0
+    ) {
+        return { status: 404, error: 'interaction_invalid' };
+    }
+
     const clientId = readStringParam(interaction, 'client_id');
     const redirectUri = readStringParam(interaction, 'redirect_uri');
     if (!clientId || !redirectUri) return { status: 404, error: 'interaction_invalid' };
     const client = await requireOAuthServer().Client.find(clientId);
     if (!client || !client.redirectUriAllowed(redirectUri)) return { status: 404, error: 'interaction_invalid' };
 
-    const resources = validateRequestedResources(interaction);
-    if (!resources) return { status: 404, error: 'interaction_invalid' };
+    const resource = validateRequestedResource(interaction);
+    if (!resource) return { status: 404, error: 'interaction_invalid' };
     return {
         user,
         account,
         clientId,
         client: displayClient(client, clientId),
         callbackHostname: new URL(redirectUri).hostname,
-        resources
+        resource,
+        authenticatedAt: providerSession.loginTs
     };
 }
 
-function validateRequestedResources(interaction: Interaction): OAuthConsentResource[] | null {
+function validateRequestedResource(interaction: Interaction): ValidatedOAuthResource | null {
     const config = requireOAuthConfig();
     const resourceParam = interaction.params['resource'];
-    const requested = Array.isArray(resourceParam) ? resourceParam : typeof resourceParam === 'string' ? [resourceParam] : [];
-    if (requested.length === 0 || requested.length > 16 || new Set(requested).size !== requested.length || requested.some((item) => typeof item !== 'string')) {
-        return null;
-    }
+    if (resourceParam !== config.resource.resource) return null;
     const requestedScopes = readStringParam(interaction, 'scope')?.split(' ').filter(Boolean) ?? [];
-    if (requestedScopes.length === 0 || requestedScopes.length > 64) return null;
-
-    const resources: OAuthConsentResource[] = [];
-    const grantedScopeUnion = new Set<string>();
-    for (const resource of requested as string[]) {
-        const configured = config.resources.find((candidate) => candidate.resource === resource);
-        if (!configured) return null;
-        const allowed = new Set(configured.scopes);
-        const scopes = requestedScopes.filter((scope) => allowed.has(scope));
-        if (scopes.length === 0) return null;
-        scopes.forEach((scope) => grantedScopeUnion.add(scope));
-        resources.push({ resource, hostname: new URL(resource).hostname, scopes });
-    }
-    if (requestedScopes.some((scope) => !grantedScopeUnion.has(scope))) return null;
-    return resources;
+    const allowedScopes = new Set(config.resource.scopes);
+    if (requestedScopes.length === 0 || requestedScopes.some((scope) => !allowedScopes.has(scope))) return null;
+    return { resource: config.resource.resource, hostname: new URL(config.resource.resource).hostname, scopes: requestedScopes };
 }
 
 function displayClient(client: Client, clientId: string): OAuthConsentInteraction['client'] {
     const hostname = new URL(clientId).hostname;
     return {
         name: boundedText(client.clientName, 120, hostname),
-        hostname,
-        verified: false
+        hostname
     };
 }
 
@@ -395,8 +356,6 @@ function sendError(res: Response, status: number, code: OAuthConsentErrorCode): 
 
 function publicErrorMessage(code: OAuthConsentErrorCode): string {
     switch (code) {
-        case 'consent_disabled':
-            return 'OAuth consent is not available';
         case 'interaction_expired':
             return 'This authorization request has expired';
         case 'interaction_completed':
@@ -406,7 +365,6 @@ function publicErrorMessage(code: OAuthConsentErrorCode): string {
         case 'user_suspended':
         case 'account_unavailable':
             return 'Your Nango account is not available';
-        case 'invalid_csrf':
         case 'invalid_origin':
         case 'interaction_invalid':
             return 'This authorization request is invalid';
