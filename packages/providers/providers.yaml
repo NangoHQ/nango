@@ -13859,11 +13859,20 @@ lovable-mcp:
         - dev-tools
         - mcp
     auth_mode: MCP_OAUTH2
-    client_registration: cimd
+    client_registration: dynamic
     authorization_url: https://lovable.dev/oauth/authorize
     token_url: https://lovable.dev/oauth/token
+    registration_url: https://lovable.dev/oauth/register
+    default_scopes:
+        - offline
     authorization_params:
         response_type: code
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
     token_params:
         grant_type: authorization_code
     refresh_params:
