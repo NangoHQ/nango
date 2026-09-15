@@ -108,7 +108,8 @@ describe('OAuth provider', () => {
             resource: {
                 resource: 'https://mcp.example.com/mcp',
                 scopes: ['environment:*']
-            }
+            },
+            interactionUrl: (uid) => `/oauth/interaction/${encodeURIComponent(uid)}`
         });
         const providerCallback = provider.callback();
         server = createServer((req, res) => {

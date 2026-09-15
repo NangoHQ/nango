@@ -30,7 +30,8 @@ export interface CreateOAuthProviderOptions {
     config: OAuthServerParsedConfig;
     resource: OAuthResourceConfig;
     userExists: (userId: string) => boolean | Promise<boolean>;
-    interactionUrl?: (uid: string) => string;
+    // The consent page may be hosted separately from the OAuth endpoints.
+    interactionUrl: (uid: string) => string;
 }
 
 export function createOAuthProvider({ knex, config, resource, userExists, interactionUrl }: CreateOAuthProviderOptions): Provider {
@@ -77,8 +78,11 @@ export function createOAuthProvider({ knex, config, resource, userExists, intera
             },
             revocation: {
                 enabled: true,
-                // Public clients have no client secret, so explicitly limit revocation to
-                // the client identified by the token rather than accepting any CIMD client.
+                // oidc-provider calls this for POST /oauth/revoke after authenticating the
+                // client and finding the submitted token. In practice, the client is the MCP
+                // application asking to disconnect, and the token is the access or refresh
+                // credential Nango previously issued to that application. Public clients have
+                // no secret, so one application may revoke only its own tokens.
                 allowedPolicy: (_ctx, client, token) => token.clientId === client.clientId
             },
             rpInitiatedLogout: { enabled: false },
@@ -95,8 +99,7 @@ export function createOAuthProvider({ knex, config, resource, userExists, intera
         },
         formats: { bitsOfOpaqueRandomness: 256 },
         interactions: {
-            url: (_ctx, interaction) =>
-                interactionUrl ? interactionUrl(interaction.uid) : `${OAUTH_ENDPOINT_PATH}/interaction/${encodeURIComponent(interaction.uid)}`
+            url: (_ctx, interaction) => interactionUrl(interaction.uid)
         },
         issueRefreshToken: (_ctx, client) => client.grantTypeAllowed('refresh_token'),
         jwks: config.jwks,

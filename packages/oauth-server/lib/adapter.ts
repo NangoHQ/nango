@@ -150,10 +150,16 @@ class PostgresOAuthAdapter implements Adapter {
         }
 
         const artifactIdHash = this.crypto.hash(id);
-        const grantId = this.model === GRANT_MODEL ? id : GRANT_MEMBER_MODELS.has(this.model) ? payload.grantId : undefined;
+        const grantId = this.model === GRANT_MODEL ? id : GRANT_MEMBER_MODELS.has(this.model) ? requireGrantId(this.model, payload.grantId) : undefined;
         const grantIdHash = grantId ? this.crypto.hash(grantId) : null;
         // accountId is oidc-provider's name for the OAuth subject; its value here is the Nango user ID.
         const userId = (this.model === SESSION_MODEL || this.model === GRANT_MODEL) && typeof payload.accountId === 'string' ? payload.accountId : null;
+        if (this.model === GRANT_MODEL && !userId) {
+            throw new Error('Grant OAuth artifacts require accountId');
+        }
+        if (this.model === SESSION_MODEL && payload.accountId !== undefined && !userId) {
+            throw new Error('Session OAuth artifacts require accountId to be a non-empty string when present');
+        }
         const userIdHash = userId ? this.crypto.hash(userId) : null;
         const userAuthenticatedAt = userAuthenticationTime(this.model, payload, userId);
         const now = new Date();
@@ -173,6 +179,7 @@ class PostgresOAuthAdapter implements Adapter {
         const mergedFields = this.model === INTERACTION_MODEL && !payload.consumed ? mutableFields : { ...mutableFields, consumed_at: consumedAt };
 
         await this.options.knex.transaction(async (trx) => {
+            // Models carry only the relationships they need, so acquire each lock only when its hash exists.
             if (userIdHash) {
                 await lockUser(trx, userIdHash);
             }
@@ -337,6 +344,13 @@ class PostgresOAuthAdapter implements Adapter {
         }
         return payload;
     }
+}
+
+function requireGrantId(model: string, value: unknown): string {
+    if (typeof value !== 'string' || value.length === 0) {
+        throw new Error(`${model} OAuth artifacts require grantId`);
+    }
+    return value;
 }
 
 async function revokeGrant(
