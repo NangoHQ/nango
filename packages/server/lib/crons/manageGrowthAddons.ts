@@ -28,16 +28,17 @@ export function manageGrowthAddonsCron(): void {
     }
 
     cron.schedule(cronExpression, async () => {
-        const start = Date.now();
+        const startedAt = process.hrtime.bigint();
+        const date = new Date();
         let success = true;
         try {
-            await exec();
+            await exec(date);
         } catch (err) {
             success = false;
             logger.error('Failed to execute growth add-on management cron', { err });
         } finally {
-            metrics.duration(metrics.Types.CRON_MANAGE_GROWTH_ADDON, Date.now() - start, { success: String(success) });
-            logger.info('✅ done');
+            metrics.duration(metrics.Types.CRON_MANAGE_GROWTH_ADDON, Number(process.hrtime.bigint() - startedAt) / 1e6, { success: String(success) });
+            logger.info(success ? '✅ done' : '❌ failed');
         }
     });
 }
