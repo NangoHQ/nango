@@ -15,6 +15,9 @@ const REVOCATION_MODEL = 'GrantRevocation';
 const SESSION_MODEL = 'Session';
 const USER_REVOCATION_MODEL = 'UserRevocation';
 const SUPPORTED_MODELS = new Set(['AccessToken', 'AuthorizationCode', 'Client', 'Grant', 'Interaction', 'RefreshToken', 'Session']);
+// oidc-provider revokes only token/code members by grant id. In particular, an
+// Interaction must survive the old grant being revoked while switching users.
+const GRANT_MEMBER_MODELS = new Set(['AccessToken', 'AuthorizationCode', 'RefreshToken']);
 
 interface ArtifactRow {
     artifact_id_hash: Buffer;
@@ -141,7 +144,7 @@ class PostgresOAuthAdapter implements Adapter {
         }
 
         const artifactIdHash = this.crypto.hash(id);
-        const grantId = this.model === GRANT_MODEL ? id : payload.grantId;
+        const grantId = this.model === GRANT_MODEL ? id : GRANT_MEMBER_MODELS.has(this.model) ? payload.grantId : undefined;
         const grantIdHash = grantId ? this.crypto.hash(grantId) : null;
         const userId = (this.model === SESSION_MODEL || this.model === GRANT_MODEL) && typeof payload.accountId === 'string' ? payload.accountId : null;
         const userIdHash = userId ? this.crypto.hash(userId) : null;

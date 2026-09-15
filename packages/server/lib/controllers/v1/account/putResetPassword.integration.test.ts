@@ -7,7 +7,7 @@ import { hashOAuthIdentifier } from '@nangohq/oauth-server';
 import { userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
-import { dek } from '../../../env.js';
+import { dek, envs } from '../../../env.js';
 import { isError, isSuccess, runServer } from '../../../utils/tests.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
 
@@ -91,10 +91,13 @@ describe(`PUT ${resetPasswordRoute}`, () => {
         const token = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
         await userService.editUserPassword({ id: dbUser!.id, reset_password_token: token, hashed_password: dbUser!.hashed_password });
 
-        const { res, json } = await api.fetch(resetPasswordRoute, {
-            method: 'PUT',
-            body: { token, password: 'aZ1-newpass!?' }
-        });
+        const { res, json } = await withOAuthServerEnabled(
+            async () =>
+                await api.fetch(resetPasswordRoute, {
+                    method: 'PUT',
+                    body: { token, password: 'aZ1-newpass!?' }
+                })
+        );
         expect(res.status).toBe(200);
         isSuccess(json);
 
@@ -209,7 +212,33 @@ describe(`PUT ${resetPasswordRoute}`, () => {
         expect(res.status).toBe(200);
         isSuccess(json);
     });
+
+    it('should reset the password without an encryption key when OAuth is disabled', async () => {
+        const { email } = await signupVerifiedUser();
+        const token = await issueResetToken(email);
+        const getEncryptionKey = vi.spyOn(dek, 'get').mockReturnValue('');
+
+        try {
+            const { res, json } = await api.fetch(resetPasswordRoute, { method: 'PUT', body: { token, password: 'aZ1-newpass!?' } });
+
+            expect(envs.NANGO_OAUTH_SERVER_BASE_URL).toBeUndefined();
+            expect(res.status).toBe(200);
+            isSuccess(json);
+        } finally {
+            getEncryptionKey.mockRestore();
+        }
+    });
 });
+
+async function withOAuthServerEnabled<T>(callback: () => Promise<T>): Promise<T> {
+    const previousBaseUrl = envs.NANGO_OAUTH_SERVER_BASE_URL;
+    envs.NANGO_OAUTH_SERVER_BASE_URL = 'http://localhost:3003';
+    try {
+        return await callback();
+    } finally {
+        envs.NANGO_OAUTH_SERVER_BASE_URL = previousBaseUrl;
+    }
+}
 
 async function insertOAuthSessionArtifact(id: string, userId: number): Promise<void> {
     const now = new Date();

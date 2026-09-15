@@ -1,9 +1,9 @@
-import { CircleX, Clock3, ExternalLink, Loader2, ShieldCheck, TriangleAlert } from 'lucide-react';
+import { ArrowRightLeft, CircleX, Clock3, Loader2, ShieldCheck, Terminal, TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { Alert, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
+import { Alert, AlertDescription, AlertTitle, Badge, Button } from '@nangohq/design-system';
 
 import { apiFetch } from '@/utils/api';
 import { globalEnv } from '@/utils/env';
@@ -106,100 +106,107 @@ export function OAuthConsent() {
     const interaction = state.kind === 'ready' || state.kind === 'submitting' ? state.interaction : state.kind === 'error' ? state.interaction : undefined;
 
     return (
-        <main className="min-h-screen bg-bg-elevated flex items-center justify-center px-4 py-8 sm:px-6">
+        <main className="flex min-h-screen items-center justify-center bg-surface-canvas px-4 py-10 sm:px-6 sm:py-12">
             <Helmet>
                 <title>Authorize access - Nango</title>
             </Helmet>
-            <div className="w-full max-w-[560px] rounded-xl border border-border-muted bg-bg-base shadow-sm overflow-hidden">
-                <header className="flex items-center gap-3 border-b border-border-muted px-5 py-4 sm:px-7">
-                    <img src="/logo-icon-dark.svg" alt="Nango" className="h-8 w-8" />
-                    <div>
-                        <p className="text-body-small-regular text-text-muted">Nango authorization</p>
-                        <h1 className="text-title-subsection text-text-strong">Approve account access</h1>
+            <div className="w-full max-w-[520px] rounded-ds-sm bg-surface-panel px-6 py-10 shadow-container-panel ring-1 ring-inset ring-border-default sm:px-8 sm:py-10">
+                {state.kind === 'loading' && <Status icon={<Loader2 className="animate-spin" />} title="Loading authorization request…" />}
+                {state.kind === 'expired' && (
+                    <Status icon={<Clock3 />} title="This request has expired" description="Return to the application and start again." />
+                )}
+                {state.kind === 'completed' && (
+                    <Status
+                        icon={<ShieldCheck />}
+                        title="This request was already completed"
+                        description="You can close this window or return to the application."
+                    />
+                )}
+                {state.kind === 'unavailable' && (
+                    <Status icon={<TriangleAlert />} title="Authorization is unavailable" description="OAuth consent is not available right now." />
+                )}
+                {state.kind === 'error' && !interaction && (
+                    <div className="flex flex-col gap-5">
+                        <Alert variant="danger">
+                            <CircleX />
+                            <AlertTitle>Couldn&apos;t load the request</AlertTitle>
+                            <AlertDescription>No access was granted. Check your connection and try again.</AlertDescription>
+                        </Alert>
+                        <Button type="button" onClick={() => void loadInteraction()}>
+                            Try again
+                        </Button>
                     </div>
-                </header>
+                )}
 
-                <div className="px-5 py-6 sm:px-7 sm:py-7">
-                    {state.kind === 'loading' && <Status icon={<Loader2 className="animate-spin" />} title="Loading authorization request…" />}
-                    {state.kind === 'expired' && (
-                        <Status icon={<Clock3 />} title="This request has expired" description="Return to the application and start again." />
-                    )}
-                    {state.kind === 'completed' && (
-                        <Status
-                            icon={<ShieldCheck />}
-                            title="This request was already completed"
-                            description="You can close this window or return to the application."
-                        />
-                    )}
-                    {state.kind === 'unavailable' && (
-                        <Status icon={<TriangleAlert />} title="Authorization is unavailable" description="OAuth consent is not available right now." />
-                    )}
-                    {state.kind === 'error' && !interaction && (
-                        <div className="flex flex-col gap-5">
-                            <Alert variant="danger">
-                                <CircleX />
-                                <AlertTitle>Couldn&apos;t load the request</AlertTitle>
-                                <AlertDescription>No access was granted. Check your connection and try again.</AlertDescription>
-                            </Alert>
-                            <Button type="button" onClick={() => void loadInteraction()}>
-                                Try again
-                            </Button>
+                {interaction && (
+                    <div className="flex flex-col gap-10">
+                        <div className="flex items-center justify-center gap-3" aria-hidden="true">
+                            <div className="flex size-12 items-center justify-center rounded-ds-xs border-ds-hairline border-border-default bg-surface-canvas">
+                                <Terminal className="size-5 text-icon-muted" />
+                            </div>
+                            <ArrowRightLeft className="size-4 text-icon-muted" />
+                            <div className="flex size-12 items-center justify-center rounded-ds-xs border-ds-hairline border-border-default bg-surface-canvas">
+                                <img src="/logo-icon-dark.svg" alt="" className="size-7" />
+                            </div>
                         </div>
-                    )}
 
-                    {interaction && (
-                        <div className="flex flex-col gap-6">
-                            <div className="flex flex-col gap-2">
-                                <p className="text-body-large-semibold text-text-strong break-words">{interaction.client.name}</p>
-                                <p className="text-body-medium-regular text-text-secondary">
-                                    wants access to the <span className="font-medium text-text-strong">{interaction.account.name}</span> account.
+                        <div className="flex flex-col gap-8">
+                            <div className="flex flex-col gap-2 text-center">
+                                <h1 className="type-heading-md text-text-strong">Approve account access</h1>
+                                <p className="type-text-regular-md text-text-default">
+                                    <span className="font-ds-bold">{interaction.client.name}</span> wants to access your{' '}
+                                    <span className="font-ds-bold">{interaction.account.name}</span> account.
                                 </p>
                             </div>
 
-                            <Alert variant="warning">
-                                <TriangleAlert />
-                                <AlertTitle>Application identity is not verified</AlertTitle>
-                                <AlertDescription>
-                                    Client metadata is provided by {interaction.client.hostname}. Only continue if you recognize this application and callback.
-                                </AlertDescription>
-                            </Alert>
-
-                            <section aria-labelledby="requested-access" className="flex flex-col gap-3">
-                                <h2 id="requested-access" className="text-body-medium-semibold text-text-strong">
-                                    Requested access
-                                </h2>
-                                <div className="rounded-lg border border-border-muted bg-bg-elevated px-4 py-3">
-                                    <p className="text-body-medium-semibold text-text-strong break-all">{interaction.resource.hostname}</p>
-                                    <ul className="mt-2 flex flex-col gap-1" aria-label={`Capabilities for ${interaction.resource.hostname}`}>
-                                        {interaction.resource.scopes.map((scope) => (
-                                            <li key={scope} className="text-body-small-regular text-text-secondary break-all">
-                                                {scope === 'environment:*' ? 'Access every environment allowed by your current Nango role' : scope}
-                                            </li>
-                                        ))}
-                                    </ul>
+                            <section aria-labelledby="requested-access" className="rounded-ds-sm p-4 ring-1 ring-inset ring-border-default">
+                                <div className="flex items-start gap-3">
+                                    <ShieldCheck className="mt-0.5 size-4 shrink-0 text-icon-muted" aria-hidden="true" />
+                                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                                        <div className="flex items-start gap-2">
+                                            <h2 id="requested-access" className="type-text-medium-md min-w-0 flex-1 text-text-default">
+                                                Full access to your dashboard
+                                            </h2>
+                                            <Badge>read + write</Badge>
+                                        </div>
+                                        <p className="type-text-regular-sm text-text-secondary">
+                                            Read and write everything you can access: integrations, connections, logs, and team settings.
+                                        </p>
+                                    </div>
                                 </div>
-                                <p className="text-body-small-regular text-text-muted">
-                                    Access follows your live Nango permissions. New access may become available after role changes, and removed access stops
-                                    working on the next request.
-                                </p>
                             </section>
 
-                            <div className="rounded-lg border border-border-muted px-4 py-3">
-                                <p className="text-body-small-regular text-text-muted">Callback</p>
-                                <p className="text-body-medium-regular text-text-strong break-all">{interaction.callbackHostname}</p>
+                            <div className="flex flex-col gap-3">
+                                <p className="type-text-regular-sm text-text-secondary">
+                                    Access matches your live Nango role. If your role changes, so does what this token can reach.
+                                </p>
+                                <Alert variant="warning" size="compact">
+                                    <TriangleAlert />
+                                    <AlertTitle>Application identity not verified</AlertTitle>
+                                    <AlertDescription>
+                                        <span className="flex min-w-0 flex-col">
+                                            <span>
+                                                This client is registered by {interaction.client.hostname}, not Nango. Only approve if you recognize this
+                                                application and trust where it redirects:
+                                            </span>
+                                            <strong className="font-ds-bold text-status-warning-text break-all">{interaction.redirectUri}</strong>
+                                        </span>
+                                    </AlertDescription>
+                                </Alert>
                             </div>
 
                             {state.kind === 'error' && (
-                                <Alert variant="danger">
+                                <Alert variant="danger" size="compact">
                                     <CircleX />
                                     <AlertDescription>The request couldn&apos;t be completed. No new access was granted; you can try again.</AlertDescription>
                                 </Alert>
                             )}
 
-                            <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                            <div className="flex items-center justify-end gap-2">
                                 <Button
                                     type="button"
-                                    variant="secondary"
+                                    variant="outline"
+                                    size="lg"
                                     disabled={state.kind === 'submitting'}
                                     onClick={() => void decide('deny', interaction)}
                                 >
@@ -207,6 +214,7 @@ export function OAuthConsent() {
                                 </Button>
                                 <Button
                                     type="button"
+                                    size="lg"
                                     disabled={state.kind === 'submitting'}
                                     loading={state.kind === 'submitting' && state.decision === 'approve'}
                                     onClick={() => void decide('approve', interaction)}
@@ -215,18 +223,8 @@ export function OAuthConsent() {
                                 </Button>
                             </div>
                         </div>
-                    )}
-                </div>
-                <footer className="border-t border-border-muted px-5 py-3 sm:px-7">
-                    <a
-                        className="inline-flex items-center gap-1 text-body-small-regular text-text-muted hover:text-text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                        href="https://docs.nango.dev"
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        Learn about Nango authorization <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                    </a>
-                </footer>
+                    </div>
+                )}
             </div>
         </main>
     );
@@ -234,7 +232,7 @@ export function OAuthConsent() {
 
 function Status({ icon, title, description }: { icon: React.ReactNode; title: string; description?: string }) {
     return (
-        <div className="flex flex-col items-center gap-3 py-12 text-center" role="status">
+        <div className="flex min-h-[420px] flex-col items-center justify-center gap-3 text-center" role="status">
             <div className="text-text-muted" aria-hidden="true">
                 {icon}
             </div>

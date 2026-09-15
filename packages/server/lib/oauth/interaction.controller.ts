@@ -22,7 +22,7 @@ export const oauthConsentCors: RequestHandler = (req, res, next) => {
     if (origin === DASHBOARD_ORIGIN) {
         res.setHeader('Access-Control-Allow-Origin', DASHBOARD_ORIGIN);
         res.setHeader('Access-Control-Allow-Credentials', 'true');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, sentry-trace, baggage');
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
         res.setHeader('Vary', 'Origin');
     }
@@ -83,7 +83,7 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
         res.status(200).send({
             data: {
                 client: context.client,
-                callbackHostname: context.callbackHostname,
+                redirectUri: context.redirectUri,
                 account: { name: boundedText(context.account.name, 120, 'Nango account') },
                 resource: {
                     hostname: context.resource.hostname,
@@ -219,7 +219,7 @@ async function validateInteraction(interaction: Interaction): Promise<
           account: DBTeam;
           clientId: string;
           client: OAuthConsentInteraction['client'];
-          callbackHostname: string;
+          redirectUri: string;
           resource: ValidatedOAuthResource;
           authenticatedAt: number;
       }
@@ -262,7 +262,7 @@ async function validateInteraction(interaction: Interaction): Promise<
         account,
         clientId,
         client: displayClient(client, clientId),
-        callbackHostname: new URL(redirectUri).hostname,
+        redirectUri,
         resource,
         authenticatedAt: providerSession.loginTs
     };

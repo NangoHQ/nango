@@ -149,7 +149,7 @@ const publicAuthRoutes = (() => {
 
 export const router = sentryCreateBrowserRouter([
     {
-        path: '/oauth/consent/:uid',
+        path: '/oauth/consent/:uid/review',
         element: <OAuthConsent />
     },
     {
