@@ -1412,6 +1412,7 @@
               "api-integrations/hubspot",
               "api-integrations/hubspot-mcp",
               "api-integrations/hubstaff",
+              "api-integrations/huggingface",
               "api-integrations/humaans-io",
               "api-integrations/huntress",
               "integrations/all/icypeas",
