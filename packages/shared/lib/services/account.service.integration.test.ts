@@ -727,7 +727,7 @@ describe('Account service', () => {
         });
 
         it('should return null for an unknown environment', async () => {
-            const result = (await accountService.getPersistAuthContextByEnvironmentId(Number.MAX_SAFE_INTEGER)).unwrap();
+            const result = (await accountService.getPersistAuthContextByEnvironmentId(-1)).unwrap();
             expect(result).toBeNull();
         });
     });
