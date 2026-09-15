@@ -15859,9 +15859,6 @@ neon-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    default_scopes:
-        - read
-        - write
     proxy:
         base_url: https://mcp.neon.tech
         headers:
