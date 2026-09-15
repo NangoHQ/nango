@@ -40,51 +40,18 @@ type EnvironmentKeyScope = {
     accountId: number;
 };
 
-type EnvironmentKeyListSearch = EnvironmentKeyScope & {
-    keyId?: never;
-    keyUuid?: never;
-    displayName?: string | undefined;
-};
-
-type EnvironmentKeyByIdSearch = EnvironmentKeyScope & {
-    keyId: number;
-    keyUuid?: never;
-    displayName?: never;
-};
-
-type EnvironmentKeyByUuidSearch = EnvironmentKeyScope & {
-    keyId?: never;
-    keyUuid: string;
-    displayName?: never;
-};
-
 type AccountKeyScope = {
     type: 'account';
     accountId: number;
 };
 
-type AccountKeyListSearch = AccountKeyScope & {
-    keyId?: never;
-    keyUuid?: never;
-};
-
-type AccountKeyByIdSearch = AccountKeyScope & {
-    keyId: number;
-    keyUuid?: never;
-};
-
-type AccountKeyByUuidSearch = AccountKeyScope & {
-    keyId?: never;
-    keyUuid: string;
-};
-
 export type CustomerKeySearch =
-    | EnvironmentKeyListSearch
-    | AccountKeyListSearch
-    | EnvironmentKeyByIdSearch
-    | EnvironmentKeyByUuidSearch
-    | AccountKeyByIdSearch
-    | AccountKeyByUuidSearch;
+    | (EnvironmentKeyScope & { keyId?: never; keyUuid?: never; displayName?: string | undefined })
+    | (EnvironmentKeyScope & { keyId: number; keyUuid?: never; displayName?: never })
+    | (EnvironmentKeyScope & { keyId?: never; keyUuid: string; displayName?: never })
+    | (AccountKeyScope & { keyId?: never; keyUuid?: never })
+    | (AccountKeyScope & { keyId: number; keyUuid?: never; displayName?: never })
+    | (AccountKeyScope & { keyId?: never; keyUuid: string; displayName?: never });
 
 type SafeCustomerKey = Omit<
     DBCustomerKey,
