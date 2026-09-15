@@ -8,7 +8,8 @@ import { pbkdf2, userService } from '@nangohq/shared';
 import { PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { deleteUserSessions } from '../../../../clients/auth.client.js';
-import { dek, envs } from '../../../../env.js';
+import { dek } from '../../../../env.js';
+import { isOAuthServerEnabled } from '../../../../oauth/config.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { hasRecentMfa } from '../../account/mfa/elevation.js';
 import { isStepUpRefused, isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from '../../account/mfa/stepUp.js';
@@ -67,7 +68,7 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
 
         await userService.update({ id: user.id, hashed_password: hashedPassword, salt }, trx);
         await deleteUserSessions(user.id, { trx });
-        if (envs.NANGO_OAUTH_SERVER_BASE_URL) {
+        if (isOAuthServerEnabled()) {
             await revokeOAuthUserInTransaction({ trx, encryptionKey: dek.get(), userId: String(user.id) });
         }
         return 'changed' as const;
