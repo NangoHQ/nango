@@ -153,10 +153,11 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                             onChange={field.onChange}
                                                             offLabel="No override"
                                                             onLabel="End-user provided"
-                                                            offTooltip="Use the OAuth credentials configured in the integration settings"
-                                                            onTooltip="End users will provide their own OAuth client ID and secret"
                                                         />
-                                                        <FormDescription>Let end users provide their own OAuth client ID and secret.</FormDescription>
+                                                        <FormDescription>
+                                                            Keep the OAuth credentials from the integration settings, or have each end user provide their own
+                                                            client ID and secret.
+                                                        </FormDescription>
                                                     </FormItem>
                                                 )}
                                             />
