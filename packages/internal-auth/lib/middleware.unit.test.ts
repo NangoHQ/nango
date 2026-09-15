@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, INTERNAL_SERVICE_AUDIENCE_PERSIST } from './constants.js';
 import {
+    hasAction,
     internalServiceAuthMiddleware,
     requireAction,
     requireConnectionBoundAuth,
@@ -12,6 +13,7 @@ import {
 } from './middleware.js';
 import { createInternalServiceToken } from './token.js';
 
+import type { InternalServiceAuth } from './constants.js';
 import type { InternalAuthEnvs } from './credential.js';
 
 const envs: InternalAuthEnvs = {
@@ -524,5 +526,33 @@ describe('capability scope policy', () => {
         } finally {
             await close();
         }
+    });
+});
+
+describe('hasAction', () => {
+    it('is true only for a signed task token that lists the action', () => {
+        const task: InternalServiceAuth = {
+            kind: 'hmac',
+            subject: 'nango-internal',
+            audience: INTERNAL_SERVICE_AUDIENCE_PERSIST,
+            op: 'task',
+            taskId: 'task-1',
+            actions: ['persist:log']
+        };
+        expect(hasAction(task, 'persist:log')).toBe(true);
+        expect(hasAction(task, 'persist:records')).toBe(false);
+        expect(
+            hasAction(
+                {
+                    kind: 'hmac',
+                    subject: 'nango-internal',
+                    audience: INTERNAL_SERVICE_AUDIENCE_PERSIST,
+                    op: 'node',
+                    nodeId: '1',
+                    actions: ['persist:log']
+                },
+                'persist:log'
+            )
+        ).toBe(false);
     });
 });
