@@ -130,12 +130,11 @@ export const EnvironmentDropdown: React.FC = () => {
                             {canCreateEnvironment &&
                                 isMaxEnvironmentsReached &&
                                 (isLegacyPlan ? (
-                                    <p className="text-body-small-regular text-text-secondary">Environment limit reached. Contact Nango to add more.</p>
+                                    <p className="text-body-small-regular text-text-secondary">Max number of environments reached. Contact Nango to add more</p>
                                 ) : (
                                     <DropdownMenuItem asChild className="-mx-1 block px-1 py-0 text-body-small-regular text-text-secondary">
                                         <Link to="/team/billing#plans">
-                                            <span className="block">Environment limit reached.</span>
-                                            <span className="block whitespace-nowrap text-text-link">Upgrade to add more</span>
+                                            Max number of environments reached. <span className="text-text-link underline">Upgrade</span> to add more
                                         </Link>
                                     </DropdownMenuItem>
                                 ))}
