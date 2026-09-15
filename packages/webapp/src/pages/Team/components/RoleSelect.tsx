@@ -1,4 +1,6 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { useNavigate } from 'react-router-dom';
+
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/Select';
 
 import type { Role } from '@nangohq/types';
 
@@ -18,8 +20,20 @@ export const RoleSelect: React.FC<{
     hasRBAC?: boolean;
     triggerClassName?: string;
 }> = ({ value, onChange, hasRBAC = true, triggerClassName = 'w-40' }) => {
+    const navigate = useNavigate();
+
     return (
-        <Select value={value} onValueChange={(v) => onChange(v as Role)}>
+        <Select
+            value={value}
+            onValueChange={(nextValue) => {
+                if (nextValue === 'upgrade-rbac') {
+                    void navigate('/team/billing#plans');
+                    return;
+                }
+
+                onChange(nextValue as Role);
+            }}
+        >
             <SelectTrigger className={triggerClassName}>
                 <SelectValue placeholder="Select a role">{roles.find((r) => r.value === value)?.label}</SelectValue>
             </SelectTrigger>
@@ -35,6 +49,16 @@ export const RoleSelect: React.FC<{
                         </SelectItem>
                     );
                 })}
+                {!hasRBAC && (
+                    <>
+                        <SelectSeparator />
+                        <SelectItem value="upgrade-rbac" className="h-fit p-2 pr-6">
+                            <span className="text-text-secondary text-body-small-regular whitespace-normal">
+                                Add the <span className="text-text-link">Growth add-on</span> to use Support and Contributor roles.
+                            </span>
+                        </SelectItem>
+                    </>
+                )}
             </SelectContent>
         </Select>
     );
