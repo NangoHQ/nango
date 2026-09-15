@@ -11,9 +11,17 @@ import { oauthServer, oauthServerConfig } from './server.js';
 
 import type { DBTeam, DBUser, OAuthConsentErrorCode, OAuthConsentInteraction, OAuthConsentResource } from '@nangohq/types';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
-import type { Client, Interaction } from 'oidc-provider';
+import type { AdapterPayload, Client, Interaction } from 'oidc-provider';
 
-const routeParamsSchema = z.object({ uid: z.string().min(1).max(128) }).strict();
+const routeParamsSchema = z
+    .object({
+        uid: z
+            .string()
+            .min(1)
+            .max(128)
+            .regex(/^[A-Za-z0-9_-]+$/)
+    })
+    .strict();
 const DASHBOARD_ORIGIN = new URL(basePublicUrl).origin;
 type ValidatedOAuthResource = OAuthConsentResource & { resource: string };
 
@@ -41,23 +49,10 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
         if (!interaction) return;
 
         if (interaction.prompt.name === 'login') {
-            if (!req.user) {
-                res.status(401).send({ error: { code: 'login_required', message: 'Sign in to continue' } });
-                return;
-            }
-            const authenticatedAt = dashboardAuthenticationTime(req.user);
-            if (!authenticatedAt) {
-                res.status(401).send({ error: { code: 'login_required', message: 'Sign in to continue' } });
-                return;
-            }
-
-            const identity = await revalidateDashboardIdentity(req.user);
-            if ('error' in identity) {
-                sendError(res, 403, identity.error);
-                return;
-            }
+            const dashboardLogin = await validateDashboardLogin(req, res);
+            if (!dashboardLogin) return;
             if (interaction.result?.login) {
-                if (interaction.result.login.accountId !== String(identity.user.id)) {
+                if (interaction.result.login.accountId !== String(dashboardLogin.user.id)) {
                     sendError(res, 409, 'interaction_completed');
                     return;
                 }
@@ -65,13 +60,9 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
                 return;
             }
 
-            const resumeUrl = await requireOAuthServer().interactionResult(
-                req,
-                res,
-                { login: { accountId: String(identity.user.id), amr: ['dashboard_session'], ts: authenticatedAt } },
-                { mergeWithLastSubmission: false }
-            );
-            res.status(202).send({ data: { resumeUrl } });
+            // Reading an interaction must not advance the OAuth flow. The dashboard follows this with
+            // the origin-checked POST below, which prevents a cross-site navigation from submitting a login.
+            res.status(204).send();
             return;
         }
 
@@ -101,6 +92,45 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
     }
 };
 
+export const completeOAuthLogin: RequestHandler = async (req, res, next) => {
+    try {
+        const uid = parseUid(req, res);
+        if (!uid || !requireExpectedOrigin(req, res)) return;
+        const emptyBody = requireEmptyBody(req);
+        if (emptyBody) {
+            res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(emptyBody.error) } });
+            return;
+        }
+        const interaction = await readProviderInteraction(req, res, uid, { allowSubmittedLogin: true });
+        if (!interaction) return;
+        if (interaction.prompt.name !== 'login') {
+            sendError(res, 404, 'interaction_invalid');
+            return;
+        }
+
+        const dashboardLogin = await validateDashboardLogin(req, res);
+        if (!dashboardLogin) return;
+        if (interaction.result?.login) {
+            if (interaction.result.login.accountId !== String(dashboardLogin.user.id)) {
+                sendError(res, 409, 'interaction_completed');
+                return;
+            }
+            res.status(200).send({ data: { resumeUrl: interaction.returnTo } });
+            return;
+        }
+
+        const resumeUrl = await requireOAuthServer().interactionResult(
+            req,
+            res,
+            { login: { accountId: String(dashboardLogin.user.id), amr: ['dashboard_session'], ts: dashboardLogin.authenticatedAt } },
+            { mergeWithLastSubmission: false }
+        );
+        res.status(200).send({ data: { resumeUrl } });
+    } catch (err) {
+        handleInteractionError(err, res, next);
+    }
+};
+
 function dashboardAuthenticationTime(user: Express.User): number | null {
     const authenticatedAt = user.authenticated_at;
     return typeof authenticatedAt === 'number' && Number.isFinite(authenticatedAt) && authenticatedAt > 0 && authenticatedAt <= Date.now() / 1000
@@ -118,6 +148,24 @@ async function revalidateDashboardIdentity(
     return { user, account };
 }
 
+async function validateDashboardLogin(req: Request, res: Response): Promise<{ user: DBUser; authenticatedAt: number } | null> {
+    if (!req.user) {
+        sendError(res, 401, 'login_required');
+        return null;
+    }
+    const authenticatedAt = dashboardAuthenticationTime(req.user);
+    if (!authenticatedAt) {
+        sendError(res, 401, 'login_required');
+        return null;
+    }
+    const identity = await revalidateDashboardIdentity(req.user);
+    if ('error' in identity) {
+        sendError(res, 403, identity.error);
+        return null;
+    }
+    return { user: identity.user, authenticatedAt };
+}
+
 export const approveOAuthConsent: RequestHandler = async (req, res, next) => {
     await decideConsent('approved', req, res, next);
 };
@@ -129,6 +177,7 @@ export const denyOAuthConsent: RequestHandler = async (req, res, next) => {
 async function decideConsent(decision: 'approved' | 'denied', req: Request, res: Response, next: NextFunction): Promise<void> {
     let uid: string | undefined;
     let providerGrantId: string | undefined;
+    let previousGrant: AdapterPayload | undefined;
     let interactionClaimed = false;
     let resultPersisted = false;
     try {
@@ -181,8 +230,13 @@ async function decideConsent(decision: 'approved' | 'denied', req: Request, res:
             jti: randomBytes(32).toString('base64url'),
             iat: context.authenticatedAt
         };
-        const grant = interaction.grantId ? await server.Grant.find(interaction.grantId) : new server.Grant(newGrantProperties);
-        if (!grant) throw new Error('Existing OAuth grant could not be loaded');
+        if (interaction.grantId) {
+            const persistedGrant = await server.Grant.adapter.find(interaction.grantId);
+            if (persistedGrant) previousGrant = persistedGrant;
+        }
+        if (interaction.grantId && !previousGrant) throw new Error('Existing OAuth grant could not be loaded');
+        // Grant methods mutate nested scope objects, so keep an untouched snapshot for compensation.
+        const grant = previousGrant ? new server.Grant(structuredClone(previousGrant)) : new server.Grant(newGrantProperties);
         const reservedGrantId = grant.jti;
         if (!reservedGrantId) throw new Error('OAuth provider grant identifier could not be reserved');
         grant.addOIDCScope(context.resource.scopes);
@@ -197,11 +251,15 @@ async function decideConsent(decision: 'approved' | 'denied', req: Request, res:
     } catch (err) {
         if (providerGrantId) {
             try {
-                await revokeOAuthGrant({
-                    knex: db.knex,
-                    encryptionKey: requireOAuthConfig().config.encryptionKey,
-                    grantId: providerGrantId
-                });
+                if (previousGrant) {
+                    await requireOAuthServer().Grant.adapter.upsert(providerGrantId, previousGrant);
+                } else {
+                    await revokeOAuthGrant({
+                        knex: db.knex,
+                        encryptionKey: requireOAuthConfig().config.encryptionKey,
+                        grantId: providerGrantId
+                    });
+                }
             } catch (err) {
                 if (uid && interactionClaimed && !resultPersisted) {
                     await releaseOAuthInteraction({

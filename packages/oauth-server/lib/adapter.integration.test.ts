@@ -265,13 +265,29 @@ describe('PostgreSQL OAuth provider adapter', () => {
         await session.upsert('original-session', staleSession, 600);
         await grant.upsert('original-grant', staleGrant, 600);
 
-        await db.knex.transaction(async (trx) => {
-            await revokeOAuthUserInTransaction({ trx, encryptionKey, userId });
-        });
+        const revocation = await db.knex.transaction();
+        const staleWriter = await db.knex.transaction();
+        try {
+            // Keep the revocation transaction open after it takes the per-user lock. A session
+            // save that began from the old login now overlaps it and must wait for that lock.
+            await revokeOAuthUserInTransaction({ trx: revocation, encryptionKey, userId });
+            const { rows } = await staleWriter.raw<{ rows: { pid: number }[] }>('SELECT pg_backend_pid() AS pid');
+            const backend = rows[0];
+            if (!backend) throw new Error('Stale writer transaction has no PostgreSQL backend');
+
+            const staleSessionWrite = adapter('Session', staleWriter).upsert('rotated-stale-session', staleSession, 600);
+            await waitForDatabaseLock(backend.pid);
+            await revocation.commit();
+
+            await expect(staleSessionWrite).rejects.toThrow(/revoked OAuth grant or session/);
+            await staleWriter.commit();
+        } finally {
+            if (!revocation.isCompleted()) await revocation.rollback();
+            if (!staleWriter.isCompleted()) await staleWriter.rollback();
+        }
 
         await expect(session.find('original-session')).resolves.toBeUndefined();
         await expect(grant.find('original-grant')).resolves.toBeUndefined();
-        await expect(session.upsert('rotated-stale-session', staleSession, 600)).rejects.toThrow(/revoked OAuth grant or session/);
         await expect(grant.upsert('late-stale-grant', staleGrant, 600)).rejects.toThrow(/revoked OAuth grant or session/);
 
         const freshAuthentication = Date.now() / 1000 + 1;
@@ -360,5 +376,5 @@ async function waitForDatabaseLock(pid: number): Promise<void> {
         if (activity?.wait_event_type === 'Lock') return;
         await new Promise((resolve) => setTimeout(resolve, 10));
     }
-    throw new Error('Cleanup query did not wait for the concurrent session renewal');
+    throw new Error('Database query did not wait for the expected concurrent lock');
 }

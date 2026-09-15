@@ -1,11 +1,12 @@
 import { CircleX } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
 import { useToast } from '@/hooks/useToast';
+import { getOAuthConsentDestination, withOAuthConsentDestination } from '@/utils/oauthConsent';
 import { useEmailByUuid, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { APIError } from '../../utils/api';
@@ -15,6 +16,9 @@ export function VerifyEmail() {
     const navigate = useNavigate();
     const { toast } = useToast();
     const { uuid } = useParams();
+    const [searchParams] = useSearchParams();
+    const returnTo = getOAuthConsentDestination(searchParams.get('next'));
+    const signinUrl = withOAuthConsentDestination('/signin', returnTo);
 
     const { data, error } = useEmailByUuid(uuid);
     const { mutateAsync: resendVerificationEmailByUuid, isPending: isResendingVerificationEmailByUuid } = useResendVerificationEmailByUuid();
@@ -22,9 +26,9 @@ export function VerifyEmail() {
     useEffect(() => {
         if (data?.verified) {
             toast({ title: 'Email already verified. Routing to the login page', variant: 'success' });
-            navigate('/signin');
+            navigate(signinUrl);
         }
-    }, [data?.verified, navigate, toast]);
+    }, [data?.verified, navigate, signinUrl, toast]);
 
     useEffect(() => {
         if (error instanceof APIError && error.json && typeof error.json === 'object' && 'error' in error.json) {
@@ -41,7 +45,7 @@ export function VerifyEmail() {
     const handleResendEmail = async () => {
         setServerErrorMessage('');
         try {
-            const res = await resendVerificationEmailByUuid({ uuid: uuid });
+            const res = await resendVerificationEmailByUuid({ uuid, returnTo });
             if (res.success) {
                 toast({ title: 'Verification email sent again!', variant: 'success' });
             }
@@ -69,7 +73,7 @@ export function VerifyEmail() {
                 <span className="text-body-medium-regular text-text-secondary text-center">
                     Check {data?.email || 'your email'} to verify your account and get started. If you verified your email from a different device,{' '}
                     <Button asChild variant="link-accent">
-                        <Link to="/signin">sign in here</Link>
+                        <Link to={signinUrl}>sign in here</Link>
                     </Button>
                     .
                 </span>

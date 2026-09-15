@@ -8,7 +8,6 @@ import { PBKDF2_ITERATIONS, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/u
 
 import { deleteUserSessions } from '../../../clients/auth.client.js';
 import { dek } from '../../../env.js';
-import { isOAuthServerEnabled } from '../../../oauth/config.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
 import { isStepUpRefused, isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from './mfa/stepUp.js';
@@ -74,8 +73,9 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
         user.reset_password_token = null;
         await userService.editUserPassword(user, trx);
         await deleteUserSessions(user.id, { trx });
-        if (isOAuthServerEnabled()) {
-            await revokeOAuthUserInTransaction({ trx, encryptionKey: dek.get(), userId: String(user.id) });
+        const encryptionKey = dek.get();
+        if (encryptionKey) {
+            await revokeOAuthUserInTransaction({ trx, encryptionKey, userId: String(user.id) });
         }
         return 'reset' as const;
     });

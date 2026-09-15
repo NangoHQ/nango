@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/useToast';
 import { Password, passwordSchema } from '@/pages/Account/components/Password';
 import { APIError } from '@/utils/api';
 import { globalEnv } from '@/utils/env';
+import { withOAuthConsentDestination } from '@/utils/oauthConsent';
 
 import type { ApiInvitation } from '@nangohq/types';
 
@@ -50,11 +51,11 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string; 
         setServerErrorMessage('');
         setShowLoginForInvite(false);
         try {
-            const res = await signupMutation(token ? { ...data, token } : data);
+            const res = await signupMutation({ ...data, token, returnTo });
             if (res.status === 200) {
                 const { uuid, verified } = res.json.data;
                 if (!verified) {
-                    navigate(`/verify-email/${uuid}`);
+                    navigate(withOAuthConsentDestination(`/verify-email/${uuid}`, returnTo));
                 } else {
                     navigate('/');
                     if (invitation) {
@@ -85,7 +86,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string; 
         const email = form.getValues('email');
 
         try {
-            await resendVerificationEmailMutation({ email });
+            await resendVerificationEmailMutation({ email, returnTo });
             toast({
                 title: 'Verification email sent.',
                 variant: 'success'

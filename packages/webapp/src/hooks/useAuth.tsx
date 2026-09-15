@@ -68,11 +68,11 @@ export function useSigninAPI() {
 }
 
 export function useResendVerificationEmail() {
-    return useMutation<ResendVerificationEmailByEmail['Success'], APIError, { email: string }>({
-        mutationFn: async ({ email }) => {
+    return useMutation<ResendVerificationEmailByEmail['Success'], APIError, ResendVerificationEmailByEmail['Body']>({
+        mutationFn: async ({ email, returnTo }) => {
             const res = await apiFetch('/api/v1/account/resend-verification-email/by-email', {
                 method: 'POST',
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ email, returnTo })
             });
 
             if (res.status === 200) {
@@ -86,11 +86,11 @@ export function useResendVerificationEmail() {
 }
 
 export function useResendVerificationEmailByUuid() {
-    return useMutation<ResendVerificationEmailByUuid['Success'], APIError, { uuid: string }>({
-        mutationFn: async ({ uuid }) => {
+    return useMutation<ResendVerificationEmailByUuid['Success'], APIError, ResendVerificationEmailByUuid['Body']>({
+        mutationFn: async ({ uuid, returnTo }) => {
             const res = await apiFetch('/api/v1/account/resend-verification-email/by-uuid', {
                 method: 'POST',
-                body: JSON.stringify({ uuid })
+                body: JSON.stringify({ uuid, returnTo })
             });
 
             if (res.status === 200) {
@@ -197,12 +197,12 @@ export function useSignupAPI() {
               json: PostSignup['Errors'];
           },
         APIError,
-        { name: string; email: string; password: string; token?: string }
+        PostSignup['Body']
     >({
-        mutationFn: async ({ name, email, password, token }) => {
+        mutationFn: async ({ name, email, password, token, returnTo }) => {
             const res = await apiFetch('/api/v1/account/signup', {
                 method: 'POST',
-                body: JSON.stringify({ name, email, password, token })
+                body: JSON.stringify({ name, email, password, token, returnTo })
             });
 
             if (res.status === 200) {

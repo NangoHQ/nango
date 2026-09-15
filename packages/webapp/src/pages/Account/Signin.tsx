@@ -108,7 +108,7 @@ export const Signin: React.FC = () => {
         const email = form.getValues('email');
 
         try {
-            await resendVerificationEmailMutation({ email });
+            await resendVerificationEmailMutation({ email, returnTo: consentDestination });
             toast({
                 title: 'Verification email sent.',
                 variant: 'success'
