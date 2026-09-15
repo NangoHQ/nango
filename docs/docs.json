@@ -1188,6 +1188,7 @@
               "integrations/all/coda",
               "integrations/all/codeclimate",
               "integrations/all/codegen",
+              "api-integrations/cohere",
               "integrations/all/commercetools",
               "integrations/all/companycam",
               "api-integrations/conductorone",
