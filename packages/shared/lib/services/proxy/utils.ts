@@ -60,7 +60,9 @@ export class ProxyError extends Error {
     }
 }
 
-const methodDataAllowed = ['POST', 'PUT', 'PATCH', 'DELETE'];
+// PROPFIND/REPORT (WebDAV/CalDAV, e.g. Apple Calendar) are body-bearing like POST/PUT/PATCH/DELETE --
+// without this, the XML request body would be silently dropped for those methods.
+const methodDataAllowed = ['POST', 'PUT', 'PATCH', 'DELETE', 'PROPFIND', 'REPORT'];
 const providedHeaders: Lowercase<string>[] = ['user-agent'];
 
 /**
