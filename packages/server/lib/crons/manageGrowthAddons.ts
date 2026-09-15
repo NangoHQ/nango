@@ -25,7 +25,7 @@ const growthAddonOperations = {
 } as const satisfies Record<GrowthAddonOperation, { hasGrowthFeatures: boolean; schedulingColumn: GrowthAddonSchedulingColumn }>;
 
 export function manageGrowthAddonsCron(): void {
-    // set env var CRON_REFRESH_CONNECTIONS_EVERY_MIN to 0 to disable
+    // set env var CRON_MANAGE_GROWTH_ADDONS_EVERY_MIN to 0 to disable
     if (!flagHasPlan || cronMinutes <= 0) {
         return;
     }
