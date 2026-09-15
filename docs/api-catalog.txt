@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1006
+Provider count: 1007
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -69,6 +69,7 @@ URL patterns:
 | `apollo-oauth` | Apollo (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/apollo-oauth.md) |  |  | marketing |
 | `apple-app-store` | Apple App Store | JWT | [docs](https://nango.dev/docs/api-integrations/apple-app-store.md) | [connect](https://nango.dev/docs/api-integrations/apple-app-store/connect.md) |  | e-commerce |
 | `apple-business-manager` | Apple Business Manager | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/apple-business-manager.md) | [connect](https://nango.dev/docs/api-integrations/apple-business-manager/connect.md) |  | productivity |
+| `apple-calendar` | Apple Calendar | BASIC | [docs](https://nango.dev/docs/api-integrations/apple-calendar.md) | [connect](https://nango.dev/docs/api-integrations/apple-calendar/connect.md) |  | productivity |
 | `appstle-subscriptions` | Appstle Subscriptions | API_KEY | [docs](https://nango.dev/docs/integrations/all/appstle-subscriptions.md) | [connect](https://nango.dev/docs/integrations/all/appstle-subscriptions/connect.md) |  | productivity |
 | `asana` | Asana | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/asana.md) |  | [setup](https://nango.dev/docs/api-integrations/asana/how-to-register-your-own-asana-api-oauth-app.md) | productivity, ticketing |
 | `asana-mcp` | Asana (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/asana-mcp.md) |  | [setup](https://nango.dev/docs/api-integrations/asana-mcp/how-to-register-your-own-asana-mcp-oauth-app.md) | productivity, ticketing, mcp |
