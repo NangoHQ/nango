@@ -15,14 +15,20 @@ const REVOCATION_MODEL = 'GrantRevocation';
 const SESSION_MODEL = 'Session';
 const USER_REVOCATION_MODEL = 'UserRevocation';
 const SUPPORTED_MODELS = new Set(['AccessToken', 'AuthorizationCode', 'Client', 'Grant', 'Interaction', 'RefreshToken', 'Session']);
-// oidc-provider revokes only token/code members by grant id. In particular, an
-// Interaction must survive the old grant being revoked while switching users.
+// These are the OAuth items that belong to a grant and must be revoked with it.
+// Interactions are excluded: an old OAuth cookie may belong to a different user
+// than the current Nango dashboard login. When oidc-provider replaces that old
+// user, it revokes the old grant. The new login interaction must remain so
+// authorization can continue.
 const GRANT_MEMBER_MODELS = new Set(['AccessToken', 'AuthorizationCode', 'RefreshToken']);
 
 interface ArtifactRow {
+    // Finds one OAuth item without storing its raw ID, which may be a token or authorization code.
     artifact_id_hash: Buffer;
     payload_encrypted: Buffer;
+    // Links a grant to its tokens and codes so revoking the grant invalidates all of them.
     grant_id_hash: Buffer | null;
+    // Links sessions and grants to a Nango user so a password change or recovery can revoke their OAuth access.
     user_id_hash: Buffer | null;
     user_authenticated_at: Date | null;
     expires_at: Date;
@@ -146,6 +152,7 @@ class PostgresOAuthAdapter implements Adapter {
         const artifactIdHash = this.crypto.hash(id);
         const grantId = this.model === GRANT_MODEL ? id : GRANT_MEMBER_MODELS.has(this.model) ? payload.grantId : undefined;
         const grantIdHash = grantId ? this.crypto.hash(grantId) : null;
+        // accountId is oidc-provider's name for the OAuth subject; its value here is the Nango user ID.
         const userId = (this.model === SESSION_MODEL || this.model === GRANT_MODEL) && typeof payload.accountId === 'string' ? payload.accountId : null;
         const userIdHash = userId ? this.crypto.hash(userId) : null;
         const userAuthenticatedAt = userAuthenticationTime(this.model, payload, userId);

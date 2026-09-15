@@ -142,7 +142,7 @@ describe('PostgreSQL OAuth provider adapter', () => {
         expect(tombstone).toBeDefined();
     });
 
-    it('revokes provider artifacts without retaining product metadata', async () => {
+    it('revokes a grant and its provider artifacts', async () => {
         const grantId = 'grant-to-revoke';
         await adapter('Grant').upsert(
             grantId,
@@ -162,6 +162,10 @@ describe('PostgreSQL OAuth provider adapter', () => {
     });
 
     it('preserves an in-progress interaction when its previous grant is revoked', async () => {
+        // 1. A browser has an old OAuth grant for one Nango user.
+        // 2. The current dashboard login belongs to a different Nango user.
+        // 3. oidc-provider revokes the old grant before continuing with the current user.
+        // 4. The new login interaction must survive so authorization can continue.
         const grantId = 'grant-before-account-switch';
         const interactionId = 'account-switch-interaction';
         await adapter('Grant').upsert(grantId, { ...artifactPayload('Grant', grantId), accountId: 'original-user' }, 600);
@@ -183,6 +187,10 @@ describe('PostgreSQL OAuth provider adapter', () => {
     });
 
     it('allows only one consent decision to claim an interaction', async () => {
+        // 1. Two consent requests race to answer the same interaction.
+        // 2. Only one request may claim it.
+        // 3. Saving oidc-provider's result must not make it claimable again.
+        // 4. Releasing the interaction after a failed request allows one retry.
         const interactionId = 'concurrent-consent';
         const interaction = adapter('Interaction');
         const now = Math.floor(Date.now() / 1000);
@@ -210,6 +218,9 @@ describe('PostgreSQL OAuth provider adapter', () => {
     });
 
     it('revokes a user session and grants while rejecting stale in-flight writes', async () => {
+        // 1. A password change revokes the user's existing OAuth session and grants.
+        // 2. Writes from an authentication that started before the change must be rejected.
+        // 3. Sessions and grants from a new authentication after the change are allowed.
         const session = adapter('Session');
         const grant = adapter('Grant');
         const userId = 'user-42';
@@ -311,6 +322,7 @@ function artifactPayload(kind: string, grantId: string): AdapterPayload {
         clientId: 'https://client.example.com/metadata.json',
         iat: now,
         exp: now + 600,
+        // oidc-provider records a session's authentication time as loginTs; grants use iat.
         ...(kind === 'Session' ? { loginTs: now } : {})
     };
 }
