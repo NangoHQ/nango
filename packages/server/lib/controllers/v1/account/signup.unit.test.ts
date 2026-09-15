@@ -12,6 +12,7 @@ import type { Request, Response } from 'express';
 
 const {
     mockAcceptInvitation,
+    mockCreateAccount,
     mockGetInvitation,
     mockGetPlan,
     mockGetAccountById,
@@ -23,6 +24,7 @@ const {
 } = vi.hoisted(() => {
     return {
         mockAcceptInvitation: vi.fn(),
+        mockCreateAccount: vi.fn(),
         mockGetInvitation: vi.fn(),
         mockGetPlan: vi.fn(),
         mockGetAccountById: vi.fn(),
@@ -41,6 +43,7 @@ vi.mock('@nangohq/database', () => ({
 vi.mock('@nangohq/shared', () => ({
     acceptInvitation: mockAcceptInvitation,
     accountService: {
+        createAccount: mockCreateAccount,
         getAccountById: mockGetAccountById
     },
     getInvitation: mockGetInvitation,
@@ -77,6 +80,7 @@ describe('signup', () => {
         vi.clearAllMocks();
         mockAcceptInvitation.mockResolvedValue(undefined);
         mockPbkdf2.mockResolvedValue(Buffer.from('hashed-password'));
+        mockCreateAccount.mockResolvedValue({ id: 7 });
         mockGetAccountById.mockResolvedValue({ id: 7 });
         mockGetUserByEmail.mockResolvedValue(null);
         mockCreateUser.mockResolvedValue({ uuid: crypto.randomUUID(), id: 11, account_id: 7, role: nonDefaultRole });
@@ -176,6 +180,34 @@ describe('signup', () => {
         expect(mockPbkdf2).not.toHaveBeenCalled();
         expect(mockCreateUser).not.toHaveBeenCalled();
         expect(login).not.toHaveBeenCalled();
+    });
+
+    it('keeps a consent destination in the verification email', async () => {
+        const returnTo = '/oauth/consent/interaction-id/review';
+        const verificationToken = crypto.randomUUID();
+        mockCreateUser.mockResolvedValue({
+            uuid: crypto.randomUUID(),
+            id: 11,
+            account_id: 7,
+            role: nonDefaultRole,
+            email_verification_token: verificationToken
+        });
+        const req = {
+            body: { email: 'new@example.com', name: 'New User', password: 'Password123!', returnTo },
+            query: {},
+            route: { path: '/api/v1/account/signup' },
+            originalUrl: '/api/v1/account/signup',
+            header: vi.fn(),
+            login: vi.fn()
+        } as unknown as Request;
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+
+        await signup(req, res, vi.fn());
+
+        expect(mockSendVerificationEmail).toHaveBeenCalledWith('new@example.com', 'New User', verificationToken, returnTo);
+        expect(status).toHaveBeenCalledWith(200);
     });
 
     it('allows enterprise admin signup with its synthetic invitation', async () => {

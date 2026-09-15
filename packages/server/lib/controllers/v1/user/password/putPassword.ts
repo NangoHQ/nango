@@ -9,7 +9,6 @@ import { PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@n
 
 import { deleteUserSessions } from '../../../../clients/auth.client.js';
 import { dek } from '../../../../env.js';
-import { isOAuthServerEnabled } from '../../../../oauth/config.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { hasRecentMfa } from '../../account/mfa/elevation.js';
 import { isStepUpRefused, isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from '../../account/mfa/stepUp.js';
@@ -68,8 +67,9 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
 
         await userService.update({ id: user.id, hashed_password: hashedPassword, salt }, trx);
         await deleteUserSessions(user.id, { trx });
-        if (isOAuthServerEnabled()) {
-            await revokeOAuthUserInTransaction({ trx, encryptionKey: dek.get(), userId: String(user.id) });
+        const encryptionKey = dek.get();
+        if (encryptionKey) {
+            await revokeOAuthUserInTransaction({ trx, encryptionKey, userId: String(user.id) });
         }
         return 'changed' as const;
     });

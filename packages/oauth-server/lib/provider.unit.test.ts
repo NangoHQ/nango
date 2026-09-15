@@ -161,6 +161,10 @@ describe('OAuth provider', () => {
         });
 
         expect(switched.visited).toContain(`POST ${origin}${OAUTH_SESSION_END_CONFIRM_PATH}`);
+        const tokens = await exchangeCode(origin, clientId, switched.code, switched.verifier);
+        const accessToken = artifacts.get(`AccessToken:${stringValue(tokens['access_token'])}`);
+        expect(accessToken?.grantId).toEqual(expect.any(String));
+        expect(artifacts.get(`Grant:${String(accessToken?.grantId)}`)?.accountId).toBe(SWITCHED_ACCOUNT_ID);
     });
 
     it('does not expose dynamic client registration', async () => {

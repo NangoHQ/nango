@@ -8,10 +8,11 @@ import { Alert, AlertDescription, AlertTitle, Badge, Button } from '@nangohq/des
 import { apiFetch } from '@/utils/api';
 import { globalEnv } from '@/utils/env';
 
-import type { GetOAuthConsentInteraction, OAuthConsentInteraction, PostOAuthConsentDecision } from '@nangohq/types';
+import type { GetOAuthConsentInteraction, OAuthConsentInteraction, PostOAuthConsentDecision, PostOAuthConsentLogin } from '@nangohq/types';
 
 type ConsentResponse = Extract<GetOAuthConsentInteraction['Reply'], { status: 200 }>['body'];
 type LoginResumeResponse = Extract<GetOAuthConsentInteraction['Reply'], { status: 202 }>['body'];
+type LoginResponse = Extract<PostOAuthConsentLogin['Reply'], { status: 200 }>['body'];
 type DecisionResponse = Extract<PostOAuthConsentDecision['Reply'], { status: 200 }>['body'];
 
 type PageState =
@@ -39,11 +40,34 @@ export function OAuthConsent() {
 
         try {
             const response = await apiFetch(new URL(`/oauth/consent/${encodeURIComponent(uid)}`, issuer));
-            const json: unknown = await response.json();
             if (sequence !== requestSequence.current) return;
 
             if (response.status === 202) {
+                const json = (await response.json()) as LoginResumeResponse;
                 window.location.assign((json as LoginResumeResponse).data.resumeUrl);
+                return;
+            }
+            if (response.status === 204) {
+                const loginResponse = await apiFetch(new URL(`/oauth/consent/${encodeURIComponent(uid)}/login`, issuer), { method: 'POST' });
+                if (sequence !== requestSequence.current) return;
+                if (loginResponse.status === 401) {
+                    void navigate(`/signin?next=${encodeURIComponent(location.pathname)}`, { replace: true });
+                    return;
+                }
+                if (loginResponse.status === 409) {
+                    setState({ kind: 'completed' });
+                    return;
+                }
+                if (loginResponse.status === 410) {
+                    setState({ kind: 'expired' });
+                    return;
+                }
+                if (!loginResponse.ok) {
+                    setState({ kind: loginResponse.status === 403 ? 'unavailable' : 'error' });
+                    return;
+                }
+                const loginJson = (await loginResponse.json()) as LoginResponse;
+                window.location.assign(loginJson.data.resumeUrl);
                 return;
             }
             if (response.status === 401) {
@@ -66,6 +90,7 @@ export function OAuthConsent() {
                 setState({ kind: 'error' });
                 return;
             }
+            const json = (await response.json()) as ConsentResponse;
             setState({ kind: 'ready', interaction: (json as ConsentResponse).data });
         } catch {
             if (sequence === requestSequence.current) setState({ kind: 'error' });
@@ -154,7 +179,7 @@ export function OAuthConsent() {
                             <div className="flex flex-col gap-2 text-center">
                                 <h1 className="type-heading-md text-text-strong">Approve account access</h1>
                                 <p className="type-text-regular-md text-text-default">
-                                    <span className="font-ds-bold">{interaction.client.name}</span> wants to access your{' '}
+                                    <span className="font-ds-bold break-words">{interaction.client.name}</span> wants to access your{' '}
                                     <span className="font-ds-bold">{interaction.account.name}</span> account.
                                 </p>
                             </div>

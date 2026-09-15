@@ -10,7 +10,11 @@ import type { ResendVerificationEmailByUuid } from '@nangohq/types';
 
 const validation = z
     .object({
-        uuid: z.string().uuid()
+        uuid: z.string().uuid(),
+        returnTo: z
+            .string()
+            .regex(/^\/oauth\/consent\/[A-Za-z0-9_-]+\/review$/)
+            .optional()
     })
     .strict();
 
@@ -30,7 +34,7 @@ export const resendVerificationEmailByUuid = asyncWrapper<ResendVerificationEmai
         return;
     }
 
-    const { uuid } = val.data;
+    const { uuid, returnTo } = val.data;
 
     const user = await userService.getUserByUuid(uuid);
 
@@ -44,7 +48,7 @@ export const resendVerificationEmailByUuid = asyncWrapper<ResendVerificationEmai
         return;
     }
 
-    await sendVerificationEmail(user.email, user.name, user.email_verification_token);
+    await sendVerificationEmail(user.email, user.name, user.email_verification_token, returnTo);
 
     res.status(200).send({ success: true });
 });

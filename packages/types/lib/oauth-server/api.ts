@@ -32,9 +32,26 @@ export interface GetOAuthConsentInteraction {
     Reply:
         | { status: 200; body: { data: OAuthConsentInteraction } }
         | { status: 202; body: { data: { resumeUrl: string } } }
+        | { status: 204; body: never }
         | { status: 401; body: ApiError<'login_required'> }
         | { status: 403; body: ApiError<'user_suspended' | 'account_unavailable'> }
-        | { status: 404 | 409 | 410; body: ApiError<'interaction_invalid' | 'interaction_completed' | 'interaction_expired'> };
+        | { status: 404; body: ApiError<'interaction_invalid'> }
+        | { status: 409; body: ApiError<'interaction_completed'> }
+        | { status: 410; body: ApiError<'interaction_expired'> };
+}
+
+export interface PostOAuthConsentLogin {
+    Audit: { kind: 'no-audit'; reason: 'OAuth protocol state' };
+    Params: { uid: string };
+    Body: never;
+    Reply:
+        | { status: 200; body: { data: { resumeUrl: string } } }
+        | { status: 400; body: ApiError<'invalid_body', ValidationError[]> }
+        | { status: 401; body: ApiError<'login_required'> }
+        | { status: 403; body: ApiError<'invalid_origin' | 'user_suspended' | 'account_unavailable'> }
+        | { status: 404; body: ApiError<'interaction_invalid'> }
+        | { status: 409; body: ApiError<'interaction_completed'> }
+        | { status: 410; body: ApiError<'interaction_expired'> };
 }
 
 export interface PostOAuthConsentDecision {
@@ -44,5 +61,8 @@ export interface PostOAuthConsentDecision {
     Reply:
         | { status: 200; body: { data: { resumeUrl: string } } }
         | { status: 400; body: ApiError<'invalid_body', ValidationError[]> }
-        | { status: 403 | 404 | 409 | 410; body: ApiError<OAuthConsentErrorCode> };
+        | { status: 403; body: ApiError<'invalid_origin' | 'interaction_invalid' | 'user_suspended' | 'account_unavailable'> }
+        | { status: 404; body: ApiError<'interaction_invalid'> }
+        | { status: 409; body: ApiError<'interaction_completed'> }
+        | { status: 410; body: ApiError<'interaction_expired'> };
 }

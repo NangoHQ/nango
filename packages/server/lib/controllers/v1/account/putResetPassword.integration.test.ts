@@ -91,13 +91,18 @@ describe(`PUT ${resetPasswordRoute}`, () => {
         const token = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
         await userService.editUserPassword({ id: dbUser!.id, reset_password_token: token, hashed_password: dbUser!.hashed_password });
 
-        const { res, json } = await withOAuthServerEnabled(
-            async () =>
-                await api.fetch(resetPasswordRoute, {
+        const previousBaseUrl = envs.NANGO_OAUTH_SERVER_BASE_URL;
+        envs.NANGO_OAUTH_SERVER_BASE_URL = undefined;
+        const { res, json } = await (async () => {
+            try {
+                return await api.fetch(resetPasswordRoute, {
                     method: 'PUT',
                     body: { token, password: 'aZ1-newpass!?' }
-                })
-        );
+                });
+            } finally {
+                envs.NANGO_OAUTH_SERVER_BASE_URL = previousBaseUrl;
+            }
+        })();
         expect(res.status).toBe(200);
         isSuccess(json);
 
@@ -216,6 +221,8 @@ describe(`PUT ${resetPasswordRoute}`, () => {
     it('should reset the password without an encryption key when OAuth is disabled', async () => {
         const { email } = await signupVerifiedUser();
         const token = await issueResetToken(email);
+        const previousBaseUrl = envs.NANGO_OAUTH_SERVER_BASE_URL;
+        envs.NANGO_OAUTH_SERVER_BASE_URL = undefined;
         const getEncryptionKey = vi.spyOn(dek, 'get').mockReturnValue('');
 
         try {
@@ -226,19 +233,10 @@ describe(`PUT ${resetPasswordRoute}`, () => {
             isSuccess(json);
         } finally {
             getEncryptionKey.mockRestore();
+            envs.NANGO_OAUTH_SERVER_BASE_URL = previousBaseUrl;
         }
     });
 });
-
-async function withOAuthServerEnabled<T>(callback: () => Promise<T>): Promise<T> {
-    const previousBaseUrl = envs.NANGO_OAUTH_SERVER_BASE_URL;
-    envs.NANGO_OAUTH_SERVER_BASE_URL = 'http://localhost:3003';
-    try {
-        return await callback();
-    } finally {
-        envs.NANGO_OAUTH_SERVER_BASE_URL = previousBaseUrl;
-    }
-}
 
 async function insertOAuthSessionArtifact(id: string, userId: number): Promise<void> {
     const now = new Date();
