@@ -12,7 +12,7 @@ const route: WebhookHandler<ZoomWebhookPayload> = async (nango, headers, body, r
 
     const dedupeClaim = await claimZoomWebhookDedupe(nango, headers['x-zm-request-id']);
     if (dedupeClaim === null) {
-        return Ok({ content: { status: 'success' }, statusCode: 200 });
+        return Ok({ content: null, statusCode: 204 });
     }
 
     let response;

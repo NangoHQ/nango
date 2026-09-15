@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
 
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { InMemoryKVStore } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
@@ -10,6 +11,13 @@ import { InternalNango } from './internal-nango.js';
 import * as ZoomCcWebhookRouting from './zoom-cc-webhook-routing.js';
 
 import type { ZoomWebhookPayload } from './types.js';
+import type * as NangoKVStore from '@nangohq/kvstore';
+
+const kvStoreRef = vi.hoisted(() => ({ current: null as InMemoryKVStore | null }));
+vi.mock('@nangohq/kvstore', async (importOriginal) => {
+    const actual = await importOriginal<typeof NangoKVStore>();
+    return { ...actual, getKVStore: () => kvStoreRef.current };
+});
 
 const CONNECTION_ID = 'my-connection-id';
 const SECRET = 'a-secret-token-with-plenty-of-entropy';
@@ -55,6 +63,10 @@ function getBody(overrides?: Partial<ZoomWebhookPayload>): ZoomWebhookPayload {
 }
 
 describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
+    beforeEach(() => {
+        kvStoreRef.current = new InMemoryKVStore();
+    });
+
     it('routes a webhook by payload.account_id after validating its signature', async () => {
         const { nango, execute } = getNangoMock();
         const body = getBody();
@@ -129,6 +141,9 @@ describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
 
         expect(first.isOk()).toBe(true);
         expect(retry.isOk()).toBe(true);
+        if (retry.isOk()) {
+            expect(retry.value).toEqual({ content: null, statusCode: 204 });
+        }
         expect(execute).toHaveBeenCalledOnce();
     });
 
