@@ -1296,6 +1296,7 @@
               "api-integrations/finta",
               "integrations/all/firefish",
               "integrations/all/fireflies",
+              "api-integrations/fireworks-ai",
               "api-integrations/firstbase",
               "integrations/all/fiserv",
               "integrations/all/fiserv-api-key",
