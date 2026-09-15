@@ -6633,6 +6633,30 @@ deel-sandbox:
         base_url: https://api-sandbox.demo.deel.com
     docs: https://nango.dev/docs/integrations/all/deel-sandbox
 
+deepseek:
+    display_name: DeepSeek
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.deepseek.com
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /user/balance
+    docs: https://nango.dev/docs/api-integrations/deepseek
+    docs_connect: https://nango.dev/docs/api-integrations/deepseek/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your DeepSeek API key
+            doc_section: '#step-1-create-an-api-key'
+
 dentally:
     display_name: Dentally
     categories:
