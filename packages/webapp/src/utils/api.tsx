@@ -67,6 +67,27 @@ export async function swrFetcher<TBody>(url: string, req?: RequestInit): Promise
     return await res.json();
 }
 
+const UNAUTHENTICATED_ENDPOINTS = [
+    '/api/v1/basic',
+    '/api/v1/account/signin',
+    '/api/v1/account/signup',
+    '/api/v1/account/logout',
+    '/api/v1/account/mfa/login/verify',
+    '/api/v1/account/managed/verification',
+    '/api/v1/account/managed/signup',
+    '/api/v1/account/forgot-password',
+    '/api/v1/account/reset-password',
+    '/api/v1/account/resend-verification-email',
+    '/api/v1/account/email'
+];
+
+// `/api/v1/account/onboarding/*` is authenticated, so matching on the `/account/` prefix would stop
+// a real session expiry from signing the user out.
+export function isUnauthenticatedEndpoint(url: string): boolean {
+    const { pathname } = new URL(url, window.location.origin);
+    return UNAUTHENTICATED_ENDPOINTS.some((endpoint) => pathname === endpoint || pathname.startsWith(`${endpoint}/`));
+}
+
 export function requestErrorToast() {
     toast.error('Request error...');
 }

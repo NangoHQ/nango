@@ -1,8 +1,10 @@
-import { QueryClient } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 
+import { APIError, isUnauthenticatedEndpoint } from '../utils/api';
 import { PROD_ENVIRONMENT_NAME } from '../utils/environments';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
+import { isPublicAuthPath } from '../utils/routes';
 import { resetPlayground } from './playground';
 
 interface Env {
@@ -47,7 +49,27 @@ export const useStore = create<State>()((set, get) => ({
     setDebugMode: (value) => set({ debugMode: value })
 }));
 
+let signingOut = false;
+
+async function handleQueryError(error: unknown) {
+    if (signingOut || !(error instanceof APIError) || error.res.status !== 401) {
+        return;
+    }
+    if (isUnauthenticatedEndpoint(error.res.url) || isPublicAuthPath(window.location.pathname)) {
+        return;
+    }
+
+    // Every query mounted on the page fails at once; without this they each start their own signout.
+    signingOut = true;
+
+    // Imported here because utils/user reads the queryClient this module exports.
+    const { signout } = await import('../utils/user');
+    await signout({ expired: true });
+}
+
 export const queryClient = new QueryClient({
+    queryCache: new QueryCache({ onError: (error) => void handleQueryError(error) }),
+    mutationCache: new MutationCache({ onError: (error) => void handleQueryError(error) }),
     defaultOptions: {
         queries: {
             refetchInterval: 0,
