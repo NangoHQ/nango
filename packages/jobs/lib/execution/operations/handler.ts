@@ -1,6 +1,7 @@
 import { logger } from '../../logger.js';
 import { handleActionError, handleActionSuccess } from '../action.js';
 import { handleFunctionError, handleFunctionSuccess } from '../function.js';
+import { recordFunctionExecution } from '../metrics.js';
 import { handleOnEventError, handleOnEventSuccess } from '../onEvent.js';
 import { handleSyncError, handleSyncSuccess } from '../sync.js';
 import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
@@ -28,6 +29,14 @@ export async function handle(payload: SuccessPayload | ErrorPayload): Promise<vo
 }
 
 async function handleSuccess({ taskId, nangoProps, output, telemetryBag, functionRuntime, checkpoints }: SuccessPayload): Promise<void> {
+    recordFunctionExecution({
+        accountId: nangoProps.team.id,
+        type: nangoProps.scriptType,
+        success: true,
+        durationMs: telemetryBag.durationMs,
+        runtime: functionRuntime
+    });
+
     switch (nangoProps.scriptType) {
         case 'action':
             await handleActionSuccess({ taskId, nangoProps, output, telemetryBag, functionRuntime, checkpoints });
@@ -65,6 +74,14 @@ async function handleError({ taskId, nangoProps, error, telemetryBag, functionRu
         await handleSyncSuccess({ taskId, nangoProps, telemetryBag, functionRuntime, checkpoints, interrupted: true });
         return;
     }
+
+    recordFunctionExecution({
+        accountId: nangoProps.team.id,
+        type: nangoProps.scriptType,
+        success: false,
+        durationMs: telemetryBag.durationMs,
+        runtime: functionRuntime
+    });
 
     const formattedError = toNangoError({
         err: error,
