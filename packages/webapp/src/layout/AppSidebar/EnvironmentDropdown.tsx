@@ -1,4 +1,4 @@
-import { ChevronsUpDown, Lock } from 'lucide-react';
+import { ChevronsUpDown } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -32,6 +32,7 @@ export const EnvironmentDropdown: React.FC = () => {
     const navigate = useNavigate();
 
     const isMaxEnvironmentsReached = envs && plan && envs.length >= plan.environments_max;
+    const isLegacyPlan = plan?.name.includes('legacy');
 
     const onSelect = (selected: string) => {
         if (selected === env) {
@@ -109,37 +110,35 @@ export const EnvironmentDropdown: React.FC = () => {
                                 </PermissionGate>
                             ))}
                         </div>
-                        <div className="border-t-[0.5px] border-border-muted p-2">
+                        <div className="flex flex-col gap-2 border-t-[0.5px] border-border-muted p-2">
                             <PermissionGate condition={canCreateEnvironment} tooltipSide="right">
                                 {(allowed) => (
-                                    <div className="flex flex-col gap-2">
-                                        {allowed && isMaxEnvironmentsReached && (
-                                            <div className="flex flex-col gap-1">
-                                                <p className="text-body-small-regular text-text-secondary">
-                                                    Maximum number of environments reached.
-                                                    {plan?.name.includes('legacy') && ' Contact Nango to add more.'}
-                                                </p>
-                                                {!plan?.name.includes('legacy') && (
-                                                    <DropdownMenuItem asChild>
-                                                        <Link to="/team/billing#plans">Upgrade to add more</Link>
-                                                    </DropdownMenuItem>
-                                                )}
-                                            </div>
-                                        )}
+                                    <div className="flex flex-col">
                                         <Button
-                                            disabled={!!isMaxEnvironmentsReached || !allowed}
+                                            disabled={!allowed || !!isMaxEnvironmentsReached}
                                             variant="primary"
                                             onClick={() => {
                                                 // Managed control because Dialogs within DropdownMenus behave weirdly
                                                 setEnvironmentDialogOpen(true);
                                             }}
                                         >
-                                            {!!isMaxEnvironmentsReached && <Lock />}
                                             Create environment
                                         </Button>
                                     </div>
                                 )}
                             </PermissionGate>
+                            {canCreateEnvironment &&
+                                isMaxEnvironmentsReached &&
+                                (isLegacyPlan ? (
+                                    <p className="text-body-small-regular text-text-secondary">Environment limit reached. Contact Nango to add more.</p>
+                                ) : (
+                                    <DropdownMenuItem asChild className="-mx-1 block px-1 py-0 text-body-small-regular text-text-secondary">
+                                        <Link to="/team/billing#plans">
+                                            <span className="block">Environment limit reached.</span>
+                                            <span className="block whitespace-nowrap text-text-link">Upgrade to add more</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                ))}
                         </div>
                     </DropdownMenuContent>
                 </DropdownMenu>
