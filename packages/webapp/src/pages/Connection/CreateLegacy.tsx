@@ -9,6 +9,7 @@ import { Button, FieldDescription } from '@nangohq/design-system';
 import Nango, { AuthError } from '@nangohq/frontend';
 
 import { SecretInput } from '@/components/patterns/SecretInput';
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { ScopesInput } from '../../components/patterns/ScopesInput';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
@@ -28,6 +29,7 @@ const AUTHORIZATION_PARAMS_DESCRIPTION =
 export const ConnectionCreateLegacy: React.FC = () => {
     const { mutate } = useSWRConfig();
     const env = useStore((state) => state.env);
+    const darkMode = useThemeStore(darkModeSelector);
 
     const { data: integrationsData } = useListIntegrations(env);
     const integrations = integrationsData?.data;
@@ -1109,7 +1111,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </div>
                                 <div>
                                     <div className="mt-6">
-                                        <Prism className="transparent-code" language="typescript" colorScheme="dark">
+                                        <Prism className="transparent-code" language="typescript" colorScheme={darkMode ? 'dark' : 'light'}>
                                             {snippet()}
                                         </Prism>
                                     </div>
