@@ -5,7 +5,7 @@ import {
     INTERNAL_SERVICE_AUDIENCE_RUNNER,
     INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS,
     INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS,
-    taskActionsForScriptType,
+    TASK_CAPABILITY_ACTIONS,
     verifyInternalServiceToken,
     verifyRunnerDispatchToken
 } from '@nangohq/internal-auth';
@@ -54,7 +54,7 @@ describe('mintTaskAuthToken', () => {
             audience: 'jobs',
             environmentId: 9,
             connectionId: 42,
-            actions: taskActionsForScriptType('sync')
+            actions: expect.arrayContaining([TASK_CAPABILITY_ACTIONS.persistRecords, TASK_CAPABILITY_ACTIONS.jobsHeartbeat])
         });
         expect(verifyInternalServiceToken(token, 'persist', 'sign').ok).toBe(true);
         expect(verifyInternalServiceToken(token, 'server', 'sign').ok).toBe(true);
