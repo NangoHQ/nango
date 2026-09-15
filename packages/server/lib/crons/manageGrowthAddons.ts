@@ -5,12 +5,14 @@ import { getLocking } from '@nangohq/kvstore';
 import { getGrowthAddonFlags, getPlanDefinition, PLANS_WITH_GROWTH_ADD_ON, plansList } from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics } from '@nangohq/utils';
 
+import { envs } from '../env.js';
+
 import type { Lock } from '@nangohq/kvstore';
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
-const logger = getLogger('cron.growthFeatures');
+const logger = getLogger('cron.manageGrowthAddons');
 
-const cronMinutes = 60;
+const cronMinutes = envs.CRON_MANAGE_GROWTH_ADDONS_EVERY_MIN;
 const cronExpression = `*/${cronMinutes} * * * *`;
 const lockTtlMs = cronMinutes * 60 * 1000;
 
@@ -23,7 +25,8 @@ const growthAddonOperations = {
 } as const satisfies Record<GrowthAddonOperation, { hasGrowthFeatures: boolean; schedulingColumn: GrowthAddonSchedulingColumn }>;
 
 export function manageGrowthAddonsCron(): void {
-    if (!flagHasPlan) {
+    // set env var CRON_REFRESH_CONNECTIONS_EVERY_MIN to 0 to disable
+    if (!flagHasPlan || cronMinutes <= 0) {
         return;
     }
 
