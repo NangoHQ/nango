@@ -9531,6 +9531,30 @@ granola-mcp:
         base_url: https://mcp.granola.ai
     docs: https://nango.dev/docs/api-integrations/granola-mcp
 
+groq:
+    display_name: Groq
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.groq.com/openai
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v1/models
+    docs: https://nango.dev/docs/api-integrations/groq
+    docs_connect: https://nango.dev/docs/api-integrations/groq/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Groq API key
+            doc_section: '#step-1-create-an-api-key'
+
 guru:
     display_name: Guru
     categories:
