@@ -50,8 +50,8 @@ export type CustomerKeySearch =
     | (EnvironmentKeyScope & { keyId: number; keyUuid?: never; displayName?: never })
     | (EnvironmentKeyScope & { keyId?: never; keyUuid: string; displayName?: never })
     | (AccountKeyScope & { keyId?: never; keyUuid?: never })
-    | (AccountKeyScope & { keyId: number; keyUuid?: never; displayName?: never })
-    | (AccountKeyScope & { keyId?: never; keyUuid: string; displayName?: never });
+    | (AccountKeyScope & { keyId: number; keyUuid?: never })
+    | (AccountKeyScope & { keyId?: never; keyUuid: string });
 
 type SafeCustomerKey = Omit<
     DBCustomerKey,
