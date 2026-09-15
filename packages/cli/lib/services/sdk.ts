@@ -57,7 +57,7 @@ export class NangoActionCLI extends NangoActionBase<never, ZodCheckpoint> {
             this.stubbedCheckpoint = cliProps.stubbedCheckpoint;
         }
 
-        this.nango = new Nango({ isSync: false, dryRun: true, ...props }, getAxiosSettings(props));
+        this.nango = new Nango({ isSync: false, dryRun: true, ...props, secretKey: props.secretKey ?? '' }, getAxiosSettings(props));
     }
 
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -199,7 +199,7 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
 
         this.dryRunService = cliProps.dryRunService;
 
-        this.nango = new Nango({ isSync: true, dryRun: true, ...props }, getAxiosSettings(props));
+        this.nango = new Nango({ isSync: true, dryRun: true, ...props, secretKey: props.secretKey ?? '' }, getAxiosSettings(props));
     }
 
     // Can't double extends
