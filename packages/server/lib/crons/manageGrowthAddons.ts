@@ -2,7 +2,7 @@ import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
-import { getGrowthAddonFlags, getPlanDefinition, PLANS_WITH_GROWTH_ADD_ON } from '@nangohq/shared';
+import { getGrowthAddonFlags, getPlanDefinition, PLANS_WITH_GROWTH_ADD_ON, plansList } from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics } from '@nangohq/utils';
 
 import type { Lock } from '@nangohq/kvstore';
@@ -102,7 +102,7 @@ async function disableGrowthAddon(date: Date) {
 async function updateGrowthAddonState(date: Date, operation: GrowthAddonOperation): Promise<number[]> {
     const { hasGrowthFeatures, schedulingColumn } = growthAddonOperations[operation];
     const accountIds = await Promise.all(
-        getPlansWithAddonSupport().map(async (plan) => {
+        getPlansToFilterBy(operation).map(async (plan) => {
             const addonFlags = getGrowthAddonFlags(plan, hasGrowthFeatures);
 
             const updated = await db.knex
@@ -124,7 +124,11 @@ async function updateGrowthAddonState(date: Date, operation: GrowthAddonOperatio
     return accountIds.flat();
 }
 
-function getPlansWithAddonSupport(): PlanDefinition[] {
+function getPlansToFilterBy(operation: GrowthAddonOperation): PlanDefinition[] {
+    if (operation === 'disable') {
+        return plansList;
+    }
+
     return PLANS_WITH_GROWTH_ADD_ON.map((planCode) => {
         const definition = getPlanDefinition(planCode);
         if (!definition) {
