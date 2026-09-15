@@ -57,7 +57,11 @@ export async function exec(date = new Date()): Promise<void> {
         await enableGrowthAddon(date);
         await disableGrowthAddon(date);
     } finally {
-        await locking.release(lock);
+        try {
+            await locking.release(lock);
+        } catch (err) {
+            logger.error('Error releasing growth add-on cron lock', { lock: lock.key, err });
+        }
     }
 }
 
