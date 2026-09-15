@@ -228,10 +228,9 @@ export async function finalizeManagedAuthentication({
         } else if (invitation) {
             // Existing user with an invitation: let them explicitly accept or decline on the invite page
             destination = `/signup/${invitation.token}`;
-        } else if (isNewUser) {
-            // New user without an invitation: redirect to account discovery onboarding
-            const next = state?.returnTo ? `?next=${encodeURIComponent(state.returnTo)}` : '';
-            destination = `/onboarding/account-discovery${next}`;
+        } else if (isNewUser && !state?.returnTo) {
+            // Without a requested destination, new users start onboarding.
+            destination = '/onboarding/account-discovery';
         }
     } catch (err) {
         report(err);

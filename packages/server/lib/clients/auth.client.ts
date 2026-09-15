@@ -113,35 +113,44 @@ export function setupAuth(app: express.Router) {
                 const user = await userService.getUserById(0);
 
                 if (!isBasicAuthEnabled) {
-                    return done(null, user);
+                    return void done(null, user);
                 }
 
                 if (username !== process.env['NANGO_DASHBOARD_USERNAME']) {
-                    return done(null, false);
+                    return void done(null, false);
                 }
 
                 if (password !== process.env['NANGO_DASHBOARD_PASSWORD']) {
-                    return done(null, false);
+                    return void done(null, false);
                 }
 
                 if (!user) {
-                    return done(null, false);
+                    return void done(null, false);
                 }
 
-                return done(null, user);
+                return void done(null, user);
             })
         );
     }
 
-    passport.serializeUser(function (user: any, cb) {
+    passport.serializeUser(function (user: Express.User, cb) {
         process.nextTick(function () {
-            cb(null, { id: user.id, email: user.email, name: user.name, account_id: user.account_id } as Express.User);
+            cb(null, {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                account_id: user.account_id,
+                authenticated_at:
+                    typeof user.authenticated_at === 'number' && Number.isFinite(user.authenticated_at) && user.authenticated_at > 0
+                        ? user.authenticated_at
+                        : Date.now() / 1000
+            } as Express.User);
         });
     });
 
     passport.deserializeUser(function (user: Express.User, cb) {
         process.nextTick(function () {
-            return cb(null, user);
+            return void cb(null, user);
         });
     });
 }

@@ -54,6 +54,7 @@ describe('OAuth consent interaction controller', () => {
 
     it('honors prompt=login even when an OAuth session already exists', async () => {
         const uid = 'interaction-id';
+        const authenticatedAt = Date.now() / 1000 - 60;
         interactionDetailsMock.mockResolvedValue({
             uid,
             exp: Math.floor(Date.now() / 1000) + 600,
@@ -62,7 +63,7 @@ describe('OAuth consent interaction controller', () => {
             params: {},
             returnTo: 'https://issuer.example.com/oauth/authorize/resume'
         } satisfies Partial<Interaction>);
-        const req = { params: { uid }, user: { id: 7, account_id: 42 } } as unknown as Request;
+        const req = { params: { uid }, user: { id: 7, account_id: 42, authenticated_at: authenticatedAt } } as unknown as Request;
         const status = vi.fn().mockReturnThis();
         const res = {
             status,
@@ -72,15 +73,36 @@ describe('OAuth consent interaction controller', () => {
 
         await getOAuthConsentInteraction(req, res, next);
 
-        const submitted = interactionResultMock.mock.calls[0]?.[2] as { login: { accountId: string; amr: string[]; ts: number } };
         expect(interactionResultMock).toHaveBeenCalledWith(
             req,
             res,
-            { login: { accountId: '7', amr: ['dashboard_session'], ts: submitted.login.ts } },
+            { login: { accountId: '7', amr: ['dashboard_session'], ts: authenticatedAt } },
             { mergeWithLastSubmission: false }
         );
-        expect(typeof submitted.login.ts).toBe('number');
         expect(status).toHaveBeenCalledWith(202);
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it('requires a fresh login when the dashboard session has no authentication time', async () => {
+        const uid = 'interaction-id';
+        interactionDetailsMock.mockResolvedValue({
+            uid,
+            exp: Math.floor(Date.now() / 1000) + 600,
+            prompt: { name: 'login', reasons: ['login_prompt'], details: {} },
+            params: {},
+            returnTo: 'https://issuer.example.com/oauth/authorize/resume'
+        } satisfies Partial<Interaction>);
+        const req = { params: { uid }, user: { id: 7, account_id: 42 } } as unknown as Request;
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        await getOAuthConsentInteraction(req, res, next);
+
+        expect(status).toHaveBeenCalledWith(401);
+        expect(send).toHaveBeenCalledWith({ error: { code: 'login_required', message: 'Sign in to continue' } });
+        expect(interactionResultMock).not.toHaveBeenCalled();
         expect(next).not.toHaveBeenCalled();
     });
 });

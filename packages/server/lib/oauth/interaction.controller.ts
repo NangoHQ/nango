@@ -45,6 +45,11 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
                 res.status(401).send({ error: { code: 'login_required', message: 'Sign in to continue' } });
                 return;
             }
+            const authenticatedAt = dashboardAuthenticationTime(req.user);
+            if (!authenticatedAt) {
+                res.status(401).send({ error: { code: 'login_required', message: 'Sign in to continue' } });
+                return;
+            }
 
             const identity = await revalidateDashboardIdentity(req.user);
             if ('error' in identity) {
@@ -63,7 +68,7 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
             const resumeUrl = await requireOAuthServer().interactionResult(
                 req,
                 res,
-                { login: { accountId: String(identity.user.id), amr: ['dashboard_session'], ts: Date.now() / 1000 } },
+                { login: { accountId: String(identity.user.id), amr: ['dashboard_session'], ts: authenticatedAt } },
                 { mergeWithLastSubmission: false }
             );
             res.status(202).send({ data: { resumeUrl } });
@@ -95,6 +100,13 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
         handleInteractionError(err, res, next);
     }
 };
+
+function dashboardAuthenticationTime(user: Express.User): number | null {
+    const authenticatedAt = user.authenticated_at;
+    return typeof authenticatedAt === 'number' && Number.isFinite(authenticatedAt) && authenticatedAt > 0 && authenticatedAt <= Date.now() / 1000
+        ? authenticatedAt
+        : null;
+}
 
 async function revalidateDashboardIdentity(
     sessionUser: Express.User
