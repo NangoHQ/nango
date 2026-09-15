@@ -65,7 +65,9 @@ describe('handlePlanChanged', () => {
     });
 
     it('restarts the trial and resets the flags when pay-as-you-go downgrades to free', async () => {
-        const { account } = await seedAccountEnvAndUser({ plan: { name: 'pay-as-you-go', auto_idle: false, connections_max: null } });
+        const { account } = await seedAccountEnvAndUser({
+            plan: { name: 'pay-as-you-go', auto_idle: false, connections_max: null, data_transfer_max: null }
+        });
 
         const res = await handlePlanChanged(db.knex, account, {
             newPlanCode: 'free',
@@ -79,7 +81,8 @@ describe('handlePlanChanged', () => {
         expect(updated.trial_end_at).not.toBeNull();
         expect(updated.trial_expired).toBe(false);
         // pg hands back the bigint column as a string
-        expect(Number(updated.connections_max)).toBe(10);
+        expect(updated.connections_max).toBe('10');
+        expect(updated.data_transfer_max).toBe('10000000000');
     });
 
     it('keeps the growth feature set through a plan change while the add-on is active', async () => {

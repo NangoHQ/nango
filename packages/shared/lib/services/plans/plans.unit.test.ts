@@ -25,7 +25,7 @@ describe('mergeFlags', () => {
         });
     });
 
-    it('should cap only connections and function runtime on the free plan', () => {
+    it('should cap only connections, function runtime and data transfer on the free plan', () => {
         expect(getPlanDefinition('free')?.flags).toMatchObject({
             connections_max: 10,
             function_duration_seconds_max: 36_000,
@@ -34,7 +34,8 @@ describe('mergeFlags', () => {
             function_executions_max: null,
             function_compute_gbms_max: null,
             webhook_forwards_max: null,
-            function_logs_max: null
+            function_logs_max: null,
+            data_transfer_max: 10_000_000_000
         });
     });
 
@@ -333,6 +334,7 @@ function makePlan({
         function_duration_seconds_max: null,
         webhook_forwards_max: null,
         function_logs_max: null,
+        data_transfer_max: null,
         sync_function_runtime: 'runner',
         sync_lambda_checkpoint_required: true,
         action_function_runtime: 'runner',

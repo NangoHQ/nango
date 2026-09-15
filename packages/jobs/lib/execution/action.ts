@@ -110,7 +110,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
 
         // capping
         const cappingStatus = await tracer.trace('action.prepare.cappingExecutions', async () =>
-            capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'function_duration_seconds')
+            capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'function_duration_seconds', 'data_transfer')
         );
         if (cappingStatus.isCapped) {
             const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
