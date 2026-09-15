@@ -1,7 +1,7 @@
 import './tracer.js';
 
 import { monitorProviders } from '@nangohq/shared';
-import { stringifyError } from '@nangohq/utils';
+import { metrics, stringifyError } from '@nangohq/utils';
 
 import { envs } from './env.js';
 import { logger } from './logger.js';
@@ -30,7 +30,7 @@ try {
         providersMonitorCleanup();
 
         srv.close(() => {
-            process.exit();
+            void metrics.flush().finally(() => process.exit());
         });
     };
 
