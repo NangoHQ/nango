@@ -60,7 +60,8 @@ export const patchPublicIntegration = asyncWrapperWithEnvironment<PatchPublicInt
         credentials: body.credentials,
         forwardWebhooks: body.forward_webhooks,
         integrationConfig: body.integration_config,
-        custom: body.custom
+        custom: body.custom,
+        environment
     });
     if (result.isErr()) {
         sendUpdateIntegrationError(res, result.error);
@@ -79,7 +80,7 @@ function sendUpdateIntegrationError(res: Response, error: UpdateIntegrationsServ
             res.status(404).send({ error: { code: 'not_found', message: error.message } });
             return;
         case 'incompatible_credentials':
-            res.status(400).send({ error: { code: 'invalid_body', message: 'incompatible credentials auth type and provider auth' } });
+            res.status(400).send({ error: { code: 'invalid_body', message: error.message } });
             return;
         case 'integration_exists':
             res.status(400).send({ error: { code: 'invalid_body', message: 'uniqueKey is already used by another integration' } });

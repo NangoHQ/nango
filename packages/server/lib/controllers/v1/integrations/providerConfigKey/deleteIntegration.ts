@@ -1,6 +1,7 @@
 import { configService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { cleanupMcpClientRegistration, mcpRegistrationFromCustom } from '../../../../services/mcpClientRegistration.js';
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { validationParams } from './getIntegration.js';
@@ -39,6 +40,10 @@ export const deleteIntegration = asyncWrapperWithEnvironment<DeleteIntegration>(
         environmentId: environment.id,
         orchestrator
     });
+
+    if (deleted) {
+        await cleanupMcpClientRegistration(mcpRegistrationFromCustom(integration.custom));
+    }
 
     res.status(200).send({
         data: { success: deleted }
