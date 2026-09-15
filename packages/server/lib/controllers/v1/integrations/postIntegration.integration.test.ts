@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import { getActionsByProviderConfigKey, getSyncConfigsByParams, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -336,5 +336,57 @@ describe(`POST ${endpoint}`, () => {
                 forward_webhooks: true
             }
         });
+    });
+
+    it('should auto-deploy catalog actions when the integration is created', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: env.name },
+            token: apiKey.secret,
+            body: { provider: 'bitdefender', useSharedCredentials: false, integrationId: 'bitdefender-actions' }
+        });
+
+        isSuccess(res.json);
+        const actions = await getActionsByProviderConfigKey(env.id, 'bitdefender-actions');
+        expect(actions).toHaveLength(1);
+        expect(actions[0]).toMatchObject({
+            sync_name: 'get-company-details',
+            type: 'action',
+            source: 'catalog',
+            enabled: true
+        });
+    });
+
+    it('should not auto-deploy syncs', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: env.name },
+            token: apiKey.secret,
+            body: { provider: 'google', useSharedCredentials: false, integrationId: 'google-no-actions' }
+        });
+
+        isSuccess(res.json);
+        const actions = await getActionsByProviderConfigKey(env.id, 'google-no-actions');
+        const syncs = await getSyncConfigsByParams(env.id, 'google-no-actions', false);
+        expect(actions).toEqual([]);
+        expect(syncs).toEqual([]);
+    });
+
+    it('should still create the integration when catalog deploy is blocked by an expired trial', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser({
+            plan: { auto_idle: true, trial_end_at: new Date(Date.now() - 60_000) }
+        });
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: env.name },
+            token: apiKey.secret,
+            body: { provider: 'bitdefender', useSharedCredentials: false, integrationId: 'bitdefender-idle' }
+        });
+
+        isSuccess(res.json);
+        const actions = await getActionsByProviderConfigKey(env.id, 'bitdefender-idle');
+        expect(actions).toEqual([]);
     });
 });

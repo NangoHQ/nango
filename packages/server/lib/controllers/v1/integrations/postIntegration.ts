@@ -3,6 +3,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToApi } from '../../../formatters/integration.js';
 import { resolveIntegrationConfig } from '../../../services/integrationConfig.js';
+import { autoDeployCatalogActions } from '../../../services/integrationTemplate.service.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { buildIntegrationConfig } from './buildIntegrationConfig.js';
 import { postIntegrationBodySchema } from './validation.js';
@@ -33,7 +34,7 @@ export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(asyn
         return;
     }
 
-    const { environment, account } = res.locals;
+    const { environment, account, plan, user } = res.locals;
 
     if ('integrationId' in body && body.integrationId) {
         const exists = await configService.getIdByProviderConfigKey(environment.id, body.integrationId);
@@ -121,6 +122,8 @@ export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(asyn
         }
         integration = createdIntegration;
     }
+
+    await autoDeployCatalogActions({ environment, account, plan, user, integration });
 
     res.status(200).send({
         data: integrationToApi(integration)
