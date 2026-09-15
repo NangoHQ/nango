@@ -65,7 +65,9 @@ describe('handlePlanChanged', () => {
     });
 
     it('restarts the trial and resets the flags when pay-as-you-go downgrades to free', async () => {
-        const { account } = await seedAccountEnvAndUser({ plan: { name: 'pay-as-you-go', auto_idle: false, connections_max: null } });
+        const { account } = await seedAccountEnvAndUser({
+            plan: { name: 'pay-as-you-go', auto_idle: false, connections_max: null, data_transfer_max: null }
+        });
 
         const res = await handlePlanChanged(db.knex, account, {
             newPlanCode: 'free',
