@@ -78,12 +78,14 @@ class PersistAuthContextCache {
     // TTL is a startup config; the enabled flag is read per-call so it can be toggled at runtime.
     private cache = new TTLFixedSizeMap<string, PersistAuthContext>(10_000, envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS);
 
+    constructor(private readonly cacheName = 'persist_internal_secret') {}
+
     get(hash: string): PersistAuthContext | undefined {
         if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
             return undefined;
         }
         const cached = this.cache.get(hash);
-        metrics.increment(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'persist_internal_secret', result: cached ? 'hit' : 'miss' });
+        metrics.increment(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: this.cacheName, result: cached ? 'hit' : 'miss' });
         return cached;
     }
 
@@ -97,6 +99,7 @@ class PersistAuthContextCache {
 }
 
 const persistAuthContextCache = new PersistAuthContextCache();
+const persistAuthContextByEnvCache = new PersistAuthContextCache('persist_environment');
 
 interface AccountContext {
     account: DBTeam;
@@ -896,6 +899,18 @@ class AccountService {
         }
     }
 
+    /**
+     * Lean persist context by environment id for capability-token callers. No secret material is
+     * hashed or loaded; the six columns match getPersistAuthContext.
+     */
+    async getPersistAuthContextByEnvironmentId(environmentId: number): Promise<Result<PersistAuthContext | null>> {
+        try {
+            return Ok(await this.resolvePersistAuthContextByEnvironmentId(environmentId));
+        } catch (err) {
+            return Err(err instanceof Error ? err : new Error('failed_to_resolve_persist_auth_context', { cause: err }));
+        }
+    }
+
     private async resolvePersistAuthContext(secretKey: string): Promise<PersistAuthContext | null> {
         if (!isCloud) {
             // Mirror getAccountContextByApiKey: env-var keys resolve before any hashing or DB lookup
@@ -961,6 +976,52 @@ class AccountService {
                     : null
         };
         persistAuthContextCache.set(hash, context);
+        return context;
+    }
+
+    private async resolvePersistAuthContextByEnvironmentId(environmentId: number): Promise<PersistAuthContext | null> {
+        const cacheKey = `env:${environmentId}`;
+        const cached = persistAuthContextByEnvCache.get(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        const row = await db.readOnly
+            .select<{
+                environment_id: number;
+                environment_name: string;
+                account_id: number;
+                plan_id: number | null;
+                plan_name: DBPlan['name'] | null;
+                records_store: DBPlan['records_store'] | null;
+            }>(
+                '_nango_environments.id as environment_id',
+                '_nango_environments.name as environment_name',
+                '_nango_accounts.id as account_id',
+                'plans.id as plan_id',
+                'plans.name as plan_name',
+                'plans.records_store as records_store'
+            )
+            .from<DBEnvironment>('_nango_environments')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
+            .where('_nango_environments.id', environmentId)
+            .where('_nango_environments.deleted', false)
+            .first();
+
+        if (!row) {
+            return null;
+        }
+
+        const context: PersistAuthContext = {
+            account: { id: row.account_id },
+            environment: { id: row.environment_id, name: row.environment_name },
+            plan:
+                row.plan_id !== null && row.plan_name !== null && row.records_store !== null
+                    ? { id: row.plan_id, name: row.plan_name, records_store: row.records_store }
+                    : null
+        };
+        persistAuthContextByEnvCache.set(cacheKey, context);
         return context;
     }
 

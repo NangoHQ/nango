@@ -24,6 +24,9 @@
             "path": "../fleet"
         },
         {
+            "path": "../internal-auth"
+        },
+        {
             "path": "../keystore"
         },
         {

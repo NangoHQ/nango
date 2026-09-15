@@ -1,6 +1,7 @@
 import express from 'express';
 import qs from 'qs';
 
+import { requireConnectionBoundAuth, requireEnvironmentBoundAuth, requireTaskBoundAuth } from '@nangohq/internal-auth';
 import { createRoute } from '@nangohq/utils';
 
 import { authMiddleware } from './middleware/auth.middleware.js';
@@ -51,8 +52,8 @@ server.set('query parser', (str: string) => {
     return qs.parse(str, { arrayLimit: 100 });
 });
 
-server.use('/environment/:environmentId/*splat', authMiddleware);
-server.use('/environment/:environmentId/connection/:nangoConnectionId/*splat', connectionOwnershipMiddleware);
+server.use('/environment/:environmentId/*splat', authMiddleware, requireEnvironmentBoundAuth());
+server.use('/environment/:environmentId/connection/:nangoConnectionId/*splat', requireConnectionBoundAuth(), connectionOwnershipMiddleware);
 server.use('/environment/:environmentId/log', express.json({ limit: maxSizeJsonLog }));
 server.use(recordsPath, express.json({ limit: maxSizeJsonRecords }));
 server.use(getCursorRoute.path, express.json());
@@ -77,8 +78,8 @@ createRoute(server, getCheckpointHandler);
 createRoute(server, putCheckpointHandler);
 createRoute(server, deleteCheckpointHandler);
 createRoute(server, postRunnerTelemetryHandler);
-createRoute(server, putTaskAbortHandler);
-createRoute(server, getTaskAbortHandler);
+createRoute(server, putTaskAbortHandler, { middleware: [requireTaskBoundAuth()] });
+createRoute(server, getTaskAbortHandler, { middleware: [requireTaskBoundAuth()] });
 createRoute(server, putSyncConflictHandler);
 createRoute(server, deleteSyncConflictHandler);
 createRoute(server, postRunnerLockTryAcquireHandler);

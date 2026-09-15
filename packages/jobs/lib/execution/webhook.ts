@@ -15,7 +15,6 @@ import {
     getSync,
     getSyncConfigRaw,
     NangoError,
-    secretService,
     SyncJobsType,
     SyncStatus,
     updateSyncJobStatus
@@ -139,11 +138,6 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment);
-        if (defaultSecret.isErr()) {
-            return Err(defaultSecret.error);
-        }
-
         const nangoProps: NangoProps = {
             scriptType: 'webhook',
             host: getApiUrl(),
@@ -157,7 +151,6 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             providerConfigKey: task.connection.provider_config_key,
             provider: providerConfig.provider,
             activityLogId: logCtx.id,
-            secretKey: defaultSecret.value.secret,
             nangoConnectionId: task.connection.id,
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,

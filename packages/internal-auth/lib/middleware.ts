@@ -32,6 +32,18 @@ export function isNodeBoundAuth(auth: InternalServiceAuth | undefined, nodeId: s
     return Boolean(isSignedAuth(auth) && auth?.op === 'node' && nodeId && auth.nodeId === nodeId);
 }
 
+export function isEnvironmentBoundAuth(auth: InternalServiceAuth | undefined, environmentId: number | undefined): boolean {
+    return Boolean(isSignedAuth(auth) && auth?.op === 'task' && environmentId !== undefined && auth.environmentId === environmentId);
+}
+
+export function isConnectionBoundAuth(auth: InternalServiceAuth | undefined, connectionId: number | undefined): boolean {
+    return Boolean(isSignedAuth(auth) && auth?.op === 'task' && connectionId !== undefined && auth.connectionId === connectionId);
+}
+
+export function hasAction(auth: InternalServiceAuth | undefined, action: string): boolean {
+    return Boolean(isSignedAuth(auth) && auth?.op === 'task' && auth?.actions?.includes(action));
+}
+
 function isSignedAuth(auth: InternalServiceAuth | undefined): boolean {
     return auth?.kind === 'hmac' || auth?.kind === 'eddsa';
 }
@@ -77,14 +89,22 @@ function routeParam(req: Request, name: string): string | undefined {
     return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
-/** When REQUIRED, the matched route's `:taskId` must equal the signed task JWT. Register on that route. */
-export function requireTaskBoundAuth(envs: InternalAuthEnvs): (req: Request, res: Response, next: NextFunction) => void {
+/**
+ * Register on a `:taskId` route so Express has populated `req.params.taskId`.
+ * With `envs` (jobs): when REQUIRED, every caller must present a matching task JWT.
+ * Without `envs` (persist): signed task JWTs must match; unsigned/secret-key callers pass through.
+ */
+export function requireTaskBoundAuth(envs?: InternalAuthEnvs): (req: Request, res: Response, next: NextFunction) => void {
     return (req, res, next) => {
-        if (!envs.NANGO_INTERNAL_AUTH_REQUIRED) {
+        if (envs && !envs.NANGO_INTERNAL_AUTH_REQUIRED) {
             next();
             return;
         }
         const auth = getInternalServiceAuth(res);
+        if (!envs && isUnsignedAuth(auth)) {
+            next();
+            return;
+        }
         const taskId = routeParam(req, 'taskId');
         if (isTaskBoundAuth(auth, taskId)) {
             next();
@@ -104,6 +124,68 @@ export function requireFleetAuth(envs: InternalAuthEnvs): (req: Request, res: Re
         const auth = getInternalServiceAuth(res);
         const nodeId = routeParam(req, 'nodeId');
         if (isNodeBoundAuth(auth, nodeId)) {
+            next();
+            return;
+        }
+        unauthorized(res, 'unauthorized', 'Unauthorized');
+    };
+}
+
+function isUnsignedAuth(auth: InternalServiceAuth | undefined): boolean {
+    return !auth || !isSignedAuth(auth);
+}
+
+/**
+ * When a signed task JWT is on locals, `:environmentId` must match. Unsigned callers (no JWT, or
+ * static/secret-key credentials) pass through so persist can keep its fallback path.
+ */
+export function requireEnvironmentBoundAuth(): (req: Request, res: Response, next: NextFunction) => void {
+    return (req, res, next) => {
+        const auth = getInternalServiceAuth(res);
+        if (isUnsignedAuth(auth)) {
+            next();
+            return;
+        }
+        const environmentId = Number(routeParam(req, 'environmentId'));
+        if (isEnvironmentBoundAuth(auth, environmentId)) {
+            next();
+            return;
+        }
+        unauthorized(res, 'unauthorized', 'Unauthorized');
+    };
+}
+
+/**
+ * When a signed task JWT is on locals, `:nangoConnectionId` must match. Unsigned callers pass
+ * through.
+ */
+export function requireConnectionBoundAuth(): (req: Request, res: Response, next: NextFunction) => void {
+    return (req, res, next) => {
+        const auth = getInternalServiceAuth(res);
+        if (isUnsignedAuth(auth)) {
+            next();
+            return;
+        }
+        const connectionId = Number(routeParam(req, 'nangoConnectionId'));
+        if (isConnectionBoundAuth(auth, connectionId)) {
+            next();
+            return;
+        }
+        unauthorized(res, 'unauthorized', 'Unauthorized');
+    };
+}
+
+/**
+ * When a signed task JWT is on locals, it must include `action`. Unsigned callers pass through.
+ */
+export function requireAction(action: string): (req: Request, res: Response, next: NextFunction) => void {
+    return (_req, res, next) => {
+        const auth = getInternalServiceAuth(res);
+        if (isUnsignedAuth(auth)) {
+            next();
+            return;
+        }
+        if (hasAction(auth, action)) {
             next();
             return;
         }
