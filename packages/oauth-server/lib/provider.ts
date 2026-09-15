@@ -16,6 +16,8 @@ export const OAUTH_AUTHORIZATION_PATH = `${OAUTH_ENDPOINT_PATH}/authorize`;
 export const OAUTH_TOKEN_PATH = `${OAUTH_ENDPOINT_PATH}/token`;
 export const OAUTH_REVOCATION_PATH = `${OAUTH_ENDPOINT_PATH}/revoke`;
 export const OAUTH_JWKS_PATH = `${OAUTH_ENDPOINT_PATH}/jwks`;
+export const OAUTH_SESSION_END_PATH = `${OAUTH_ENDPOINT_PATH}/session/end`;
+export const OAUTH_SESSION_END_CONFIRM_PATH = `${OAUTH_SESSION_END_PATH}/confirm`;
 export const OAUTH_DISCOVERY_PATH = '/.well-known/oauth-authorization-server';
 
 export interface OAuthResourceConfig {
@@ -26,18 +28,15 @@ export interface OAuthResourceConfig {
 export interface CreateOAuthProviderOptions {
     knex: Knex;
     config: OAuthServerParsedConfig;
-    resources: readonly OAuthResourceConfig[];
-    accountExists: (accountId: string) => boolean | Promise<boolean>;
+    resource: OAuthResourceConfig;
+    userExists: (userId: string) => boolean | Promise<boolean>;
+    // The consent page may be hosted separately from the OAuth endpoints.
+    interactionUrl: (uid: string) => string;
 }
 
-interface OAuthResourceRegistry {
-    supportedScopes: readonly string[];
-    get(resource: string): OAuthResourceConfig | undefined;
-}
-
-export function createOAuthProvider({ knex, config, resources, accountExists }: CreateOAuthProviderOptions): Provider {
-    const registry = createResourceRegistry(resources);
-    const allowedScopes = new Set(registry.supportedScopes);
+export function createOAuthProvider({ knex, config, resource, userExists, interactionUrl }: CreateOAuthProviderOptions): Provider {
+    validateResourceConfig(resource);
+    const allowedScopes = new Set(resource.scopes);
 
     const configuration: Configuration = {
         adapter: createOAuthAdapter({ knex, encryptionKey: config.encryptionKey }),
@@ -74,38 +73,48 @@ export function createOAuthProvider({ knex, config, resources, accountExists }: 
                 defaultResource: () => {
                     throw new errors.InvalidTarget('The resource parameter is required');
                 },
-                getResourceServerInfo: (ctx, resourceIndicator) => resourceServer(ctx, resourceIndicator, registry),
+                getResourceServerInfo: (ctx, resourceIndicator) => resourceServer(ctx, resourceIndicator, resource),
                 useGrantedResource: () => false
             },
-            revocation: { enabled: true },
+            revocation: {
+                enabled: true,
+                // oidc-provider calls this for POST /oauth/revoke after authenticating the
+                // client and finding the submitted token. In practice, the client is the MCP
+                // application asking to disconnect, and the token is the access or refresh
+                // credential Nango previously issued to that application. Public clients have
+                // no secret, so one application may revoke only its own tokens.
+                allowedPolicy: (_ctx, client, token) => token.clientId === client.clientId
+            },
             rpInitiatedLogout: { enabled: false },
             userinfo: { enabled: false }
         },
         fetch: secureCimdFetch,
         fetchResponseBodyLimits: { 'client_id metadata document': CIMD_MAX_DOCUMENT_BYTES },
         findAccount: async (_ctx, accountId) => {
-            if (!(await accountExists(accountId))) {
+            // oidc-provider calls its authenticated principal an account; Nango uses a user id.
+            if (!(await userExists(accountId))) {
                 return undefined;
             }
             return { accountId, claims: () => ({ sub: accountId }) };
         },
         formats: { bitsOfOpaqueRandomness: 256 },
         interactions: {
-            // TODO(NAN-6924): Replace the test-only interaction handler with the authenticated API used by the React consent page.
-            url: (_ctx, interaction) => `${OAUTH_ENDPOINT_PATH}/interaction/${encodeURIComponent(interaction.uid)}`
+            url: (_ctx, interaction) => interactionUrl(interaction.uid)
         },
         issueRefreshToken: (_ctx, client) => client.grantTypeAllowed('refresh_token'),
         jwks: config.jwks,
         pkce: { required: () => true },
         responseTypes: ['code'],
-        rotateRefreshToken: (ctx) => validateRefreshResource(ctx, registry),
+        revokeGrantPolicy: () => true,
+        rotateRefreshToken: (ctx) => validateRefreshResource(ctx, resource),
         routes: {
             authorization: OAUTH_AUTHORIZATION_PATH,
+            end_session: OAUTH_SESSION_END_PATH,
             jwks: OAUTH_JWKS_PATH,
             revocation: OAUTH_REVOCATION_PATH,
             token: OAUTH_TOKEN_PATH
         },
-        scopes: registry.supportedScopes,
+        scopes: resource.scopes,
         sectorIdentifierUriValidate: () => false,
         ttl: {
             AccessToken: ACCESS_TOKEN_TTL_SECONDS,
@@ -121,28 +130,6 @@ export function createOAuthProvider({ knex, config, resources, accountExists }: 
     provider.proxy = true;
     installOAuthOnlyMiddleware(provider);
     return provider;
-}
-
-function createResourceRegistry(resources: readonly OAuthResourceConfig[]): OAuthResourceRegistry {
-    if (resources.length === 0) {
-        throw new Error('At least one OAuth resource must be configured');
-    }
-
-    const byResource = new Map<string, OAuthResourceConfig>();
-    const supportedScopes = new Set<string>();
-    for (const resource of resources) {
-        validateResourceConfig(resource);
-        if (byResource.has(resource.resource)) {
-            throw new Error(`OAuth resource is configured more than once: ${resource.resource}`);
-        }
-        byResource.set(resource.resource, resource);
-        for (const scope of resource.scopes) supportedScopes.add(scope);
-    }
-
-    return {
-        supportedScopes: [...supportedScopes],
-        get: (resource) => byResource.get(resource)
-    };
 }
 
 function installOAuthOnlyMiddleware(provider: Provider): void {
@@ -181,13 +168,10 @@ function installOAuthOnlyMiddleware(provider: Provider): void {
     });
 }
 
-function validateRefreshResource(ctx: KoaContextWithOIDC, registry: OAuthResourceRegistry): true {
+function validateRefreshResource(ctx: KoaContextWithOIDC, resource: OAuthResourceConfig): true {
     const requestedResource = ctx.oidc.params?.['resource'];
-    if (typeof requestedResource !== 'string') {
+    if (requestedResource !== resource.resource) {
         throw new errors.InvalidTarget('Exactly one resource parameter is required');
-    }
-    if (!registry.get(requestedResource)) {
-        throw new errors.InvalidTarget('The requested resource is not supported');
     }
 
     const refreshToken = ctx.oidc.entities.RefreshToken;
@@ -201,16 +185,11 @@ function validateRefreshResource(ctx: KoaContextWithOIDC, registry: OAuthResourc
     return true;
 }
 
-function resourceServer(ctx: KoaContextWithOIDC, resourceIndicator: string, registry: OAuthResourceRegistry): ResourceServer {
+function resourceServer(ctx: KoaContextWithOIDC, resourceIndicator: string, resource: OAuthResourceConfig): ResourceServer {
     const requestedResource = ctx.oidc.params?.['resource'];
     const requested = Array.isArray(requestedResource) ? requestedResource : requestedResource ? [requestedResource] : [];
-    if (!requested.includes(resourceIndicator)) {
-        throw new errors.InvalidTarget('The resource parameter is required');
-    }
-
-    const resource = registry.get(resourceIndicator);
-    if (!resource) {
-        throw new errors.InvalidTarget('The requested resource is not supported');
+    if (requested.length !== 1 || requested[0] !== resource.resource || resourceIndicator !== resource.resource) {
+        throw new errors.InvalidTarget('Exactly one supported resource parameter is required');
     }
     return {
         scope: resource.scopes.join(' '),

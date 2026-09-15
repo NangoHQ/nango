@@ -51,6 +51,7 @@ export type PostSignup = ApiEndpoint<{
         password: string;
         token?: string | undefined;
         foundUs?: string | undefined;
+        returnTo?: string | undefined;
     };
     Error:
         | ApiError<'email_already_verified'>
@@ -84,7 +85,7 @@ export type ResendVerificationEmailByUuid = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/account/resend-verification-email/by-uuid';
-    Body: { uuid: string };
+    Body: { uuid: string; returnTo?: string | undefined };
     Error: ApiError<'user_not_found'> | ApiError<'email_already_verified'>;
     Success: {
         success: boolean;
@@ -95,7 +96,7 @@ export type ResendVerificationEmailByEmail = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/account/resend-verification-email/by-email';
-    Body: { email: string };
+    Body: { email: string; returnTo?: string | undefined };
     Error: ApiError<'user_not_found'> | ApiError<'email_already_verified'>;
     Success: {
         success: boolean;
@@ -119,6 +120,7 @@ export type GetEmailByExpiredToken = ApiEndpoint<{
     Method: 'GET';
     Path: '/api/v1/account/email/expired-token/:token';
     Params: { token: string };
+    Querystring: { returnTo?: string | undefined };
     Error: ApiError<'user_not_found'> | ApiError<'error_refreshing_token'>;
     Success: {
         email: string;
@@ -183,6 +185,7 @@ export type PostManagedSignup = ApiEndpoint<{
     Body: {
         provider: 'GoogleOAuth';
         token?: string | undefined;
+        returnTo?: string | undefined;
     };
     Success: {
         data: {

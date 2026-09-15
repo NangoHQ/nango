@@ -5,8 +5,8 @@ import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 import { envs } from '../../../../env.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
+import { safeReturnTo } from '../returnTo.js';
 
-import type { InviteAccountState } from './postSignup.js';
 import type { DBInvitation, DBTeam } from '@nangohq/types';
 import type { User, WorkOS } from '@workos-inc/node';
 import type { Request, Response } from 'express';
@@ -36,13 +36,30 @@ interface ManagedAuthVerificationRequiredError {
     };
 }
 
+export interface InviteAccountState {
+    token?: string;
+    returnTo?: string;
+}
+
+export function encodeManagedAuthState(state: InviteAccountState): string {
+    const value = state.token ? { token: state.token } : state.returnTo ? { returnTo: state.returnTo } : null;
+    return value ? Buffer.from(JSON.stringify(value)).toString('base64') : '';
+}
+
 export function parseManagedAuthState(state: string): InviteAccountState | null {
     try {
-        const res = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
-        if (!res || !(typeof res === 'object') || !('token' in res)) {
+        const res = JSON.parse(Buffer.from(state, 'base64').toString('utf8')) as unknown;
+        if (!res || !(typeof res === 'object')) {
             return null;
         }
-        return res as InviteAccountState;
+        const candidate = res as Record<string, unknown>;
+        if (candidate['token'] !== undefined && typeof candidate['token'] !== 'string') return null;
+        if (candidate['returnTo'] !== undefined && typeof candidate['returnTo'] !== 'string') return null;
+        if (candidate['token'] === undefined && candidate['returnTo'] === undefined) return null;
+        return {
+            ...(typeof candidate['token'] === 'string' ? { token: candidate['token'] } : {}),
+            ...(typeof candidate['returnTo'] === 'string' ? { returnTo: safeReturnTo(candidate['returnTo']) } : {})
+        };
     } catch {
         return null;
     }
@@ -203,7 +220,7 @@ export async function finalizeManagedAuthentication({
 
     clearManagedAuthEmailVerification(req);
 
-    let destination = '/';
+    let destination = state?.token ? '/' : (state?.returnTo ?? '/');
     try {
         if (invitation && isNewUser) {
             // New user with an invitation: created directly in the invited team, auto-accept and proceed
@@ -211,8 +228,8 @@ export async function finalizeManagedAuthentication({
         } else if (invitation) {
             // Existing user with an invitation: let them explicitly accept or decline on the invite page
             destination = `/signup/${invitation.token}`;
-        } else if (isNewUser) {
-            // New user without an invitation: redirect to account discovery onboarding
+        } else if (isNewUser && !state?.returnTo) {
+            // Without a requested destination, new users start onboarding.
             destination = '/onboarding/account-discovery';
         }
     } catch (err) {

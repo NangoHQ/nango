@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { createOAuthAdapter } from './adapter.js';
 import { allowCimdFetch, secureCimdFetch } from './cimd.js';
-import { createOAuthProvider } from './provider.js';
+import { createOAuthProvider, OAUTH_SESSION_END_CONFIRM_PATH } from './provider.js';
 
 import type { Knex } from 'knex';
 import type { IncomingMessage, ServerResponse } from 'node:http';
@@ -24,7 +24,8 @@ vi.mock('./cimd.js', async (importOriginal) => {
 
 const artifacts = new Map<string, AdapterPayload>();
 const TEST_ACCOUNT_ID = 'test-account';
-const existingAccounts = new Set([TEST_ACCOUNT_ID]);
+const SWITCHED_ACCOUNT_ID = 'switched-account';
+const existingAccounts = new Set([TEST_ACCOUNT_ID, SWITCHED_ACCOUNT_ID]);
 const adapter = (model: string): Adapter => ({
     upsert: (id, payload) => {
         artifacts.set(`${model}:${id}`, payload);
@@ -44,7 +45,7 @@ const adapter = (model: string): Adapter => ({
     },
     revokeByGrantId: (grantId) => {
         for (const [key, payload] of artifacts) {
-            if (payload.grantId === grantId) artifacts.delete(key);
+            if (key.startsWith(`${model}:`) && payload.grantId === grantId) artifacts.delete(key);
         }
         return Promise.resolve();
     }
@@ -56,7 +57,6 @@ describe('OAuth provider', () => {
     let provider: Provider;
     let clientId: string;
     let cimdFetches = 0;
-
     beforeAll(async () => {
         vi.mocked(createOAuthAdapter).mockReturnValue(adapter);
         vi.mocked(allowCimdFetch).mockImplementation((candidate) => Promise.resolve(candidate.startsWith('https://client.example.com/oauth/')));
@@ -87,7 +87,7 @@ describe('OAuth provider', () => {
                         grant_types: ['authorization_code', 'refresh_token'],
                         response_types: ['code'],
                         token_endpoint_auth_method: 'none',
-                        scope: 'environment:* agent-session:*'
+                        scope: 'environment:*'
                     }),
                     { status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'max-age=3600' } }
                 )
@@ -98,23 +98,18 @@ describe('OAuth provider', () => {
         clientId = 'https://client.example.com/oauth/metadata.json';
         provider = createOAuthProvider({
             knex: vi.fn() as unknown as Knex,
-            accountExists: (accountId) => existingAccounts.has(accountId),
+            userExists: (accountId) => existingAccounts.has(accountId),
             config: {
                 baseUrl: 'http://localhost',
                 cookieKeys: ['a'.repeat(32), 'b'.repeat(32)],
                 encryptionKey: Buffer.alloc(32, 's').toString('base64'),
                 jwks: { keys: [{ ...privateKey.export({ format: 'jwk' }), kid: 'test-key', use: 'sig', alg: 'RS256' }] }
             },
-            resources: [
-                {
-                    resource: 'https://mcp.example.com/mcp',
-                    scopes: ['environment:*']
-                },
-                {
-                    resource: 'https://api.example.com/agent-sessions/session-1/mcp',
-                    scopes: ['agent-session:*']
-                }
-            ]
+            resource: {
+                resource: 'https://mcp.example.com/mcp',
+                scopes: ['environment:*']
+            },
+            interactionUrl: (uid) => `/oauth/interaction/${encodeURIComponent(uid)}`
         });
         const providerCallback = provider.callback();
         server = createServer((req, res) => {
@@ -148,7 +143,6 @@ describe('OAuth provider', () => {
         expect(discovery).not.toHaveProperty('registration_endpoint');
         expect(discovery).not.toHaveProperty('userinfo_endpoint');
         expect(discovery['scopes_supported']).toContain('environment:*');
-        expect(discovery['scopes_supported']).toContain('agent-session:*');
         expect(discovery['scopes_supported']).not.toContain('openid');
     });
 
@@ -156,6 +150,21 @@ describe('OAuth provider', () => {
         expect(provider.cookieName('session')).toBe('nango_oauth_session');
         expect(provider.cookieName('interaction')).toBe('nango_oauth_interaction');
         expect(provider.cookieName('resume')).toBe('nango_oauth_resume');
+    });
+
+    it('switches users through the explicitly routed session confirmation endpoint', async () => {
+        const first = await authorize(provider, origin, clientId);
+        const switched = await authorize(provider, origin, clientId, 'https://mcp.example.com/mcp', 'environment:*', {
+            cookies: first.cookies,
+            loginHint: SWITCHED_ACCOUNT_ID,
+            prompt: 'login'
+        });
+
+        expect(switched.visited).toContain(`POST ${origin}${OAUTH_SESSION_END_CONFIRM_PATH}`);
+        const tokens = await exchangeCode(origin, clientId, switched.code, switched.verifier);
+        const accessToken = artifacts.get(`AccessToken:${stringValue(tokens['access_token'])}`);
+        expect(accessToken?.grantId).toEqual(expect.any(String));
+        expect(artifacts.get(`Grant:${String(accessToken?.grantId)}`)?.accountId).toBe(SWITCHED_ACCOUNT_ID);
     });
 
     it('does not expose dynamic client registration', async () => {
@@ -227,37 +236,6 @@ describe('OAuth provider', () => {
         }
     });
 
-    it('grants several resources in one authorization flow and issues a resource-specific token for each', async () => {
-        const managementResource = 'https://mcp.example.com/mcp';
-        const agentSessionResource = 'https://api.example.com/agent-sessions/session-1/mcp';
-        const authorization = await authorize(provider, origin, clientId, [managementResource, agentSessionResource], 'environment:* agent-session:*');
-        const managementTokens = await exchangeCode(origin, clientId, authorization.code, authorization.verifier, managementResource);
-
-        expect(managementTokens).toMatchObject({
-            token_type: 'Bearer',
-            expires_in: 3600,
-            scope: 'environment:*'
-        });
-        expect(artifacts.get(`AccessToken:${stringValue(managementTokens['access_token'])}`)).toMatchObject({
-            aud: managementResource,
-            scope: 'environment:*'
-        });
-
-        const agentSessionTokens = await postToken(origin, {
-            grant_type: 'refresh_token',
-            client_id: clientId,
-            refresh_token: stringValue(managementTokens['refresh_token']),
-            resource: agentSessionResource
-        });
-        expect(agentSessionTokens.response.status).toBe(200);
-        expect(agentSessionTokens.body).toMatchObject({ token_type: 'Bearer', expires_in: 3600, scope: 'agent-session:*' });
-        expect(artifacts.get(`AccessToken:${stringValue(agentSessionTokens.body['access_token'])}`)).toMatchObject({
-            aud: agentSessionResource,
-            scope: 'agent-session:*'
-        });
-        expect(provider.issuer).toBe('http://localhost');
-    });
-
     it('requires the exact resource at authorization and token boundaries', async () => {
         const authorization = await authorize(provider, origin, clientId);
         const missingAtToken = await postToken(origin, {
@@ -280,6 +258,16 @@ describe('OAuth provider', () => {
         const location = response.headers.get('location');
         if (!location) throw new Error('Missing authorization error redirect');
         expect(new URL(location).searchParams.get('error')).toBe('invalid_target');
+
+        const duplicateVerifier = randomBytes(32).toString('base64url');
+        const duplicateAuthorization = new URL(`${origin}/oauth/authorize`);
+        duplicateAuthorization.search = authorizationParams(clientId, duplicateVerifier, [
+            'https://mcp.example.com/mcp',
+            'https://mcp.example.com/mcp'
+        ]).toString();
+        const duplicateResponse = await fetch(duplicateAuthorization, { redirect: 'manual' });
+        expect(duplicateResponse.status).toBe(303);
+        expect(new URL(duplicateResponse.headers.get('location')!).searchParams.get('error')).toBe('invalid_target');
 
         const refreshAuthorization = await authorize(provider, origin, clientId);
         const tokens = await exchangeCode(origin, clientId, refreshAuthorization.code, refreshAuthorization.verifier);
@@ -404,7 +392,8 @@ async function finishTestInteraction(provider: Provider, req: IncomingMessage, r
     const interaction = await provider.interactionDetails(req, res);
     res.setHeader('x-test-prompt', `${interaction.prompt.name}:${interaction.prompt.reasons.join(',')}:${JSON.stringify(interaction.prompt.details)}`);
     if (interaction.prompt.name === 'login') {
-        await provider.interactionFinished(req, res, { login: { accountId: TEST_ACCOUNT_ID, amr: ['test'], remember: false } });
+        const accountId = readOptionalStringParam(interaction, 'login_hint') ?? TEST_ACCOUNT_ID;
+        await provider.interactionFinished(req, res, { login: { accountId, amr: ['test'], remember: true, ts: Date.now() / 1000 } });
         return;
     }
     if (interaction.prompt.name !== 'consent') {
@@ -412,7 +401,9 @@ async function finishTestInteraction(provider: Provider, req: IncomingMessage, r
     }
 
     const clientId = interactionParam(interaction, 'client_id');
-    const grant = interaction.grantId ? await provider.Grant.find(interaction.grantId) : new provider.Grant({ accountId: TEST_ACCOUNT_ID, clientId });
+    const accountId = interaction.session?.accountId;
+    if (!accountId) throw new Error('Test consent interaction has no account');
+    const grant = interaction.grantId ? await provider.Grant.find(interaction.grantId) : new provider.Grant({ accountId, clientId });
     if (!grant) throw new Error('Test grant disappeared');
     let addedScopes = false;
     const missingOidcScopes: unknown = interaction.prompt.details['missingOIDCScope'];
@@ -444,13 +435,18 @@ async function authorize(
     origin: string,
     clientId: string,
     resource: string | readonly string[] = 'https://mcp.example.com/mcp',
-    scope = 'environment:*'
-): Promise<{ code: string; verifier: string }> {
+    scope = 'environment:*',
+    options: { cookies?: Map<string, string>; loginHint?: string; prompt?: 'login' } = {}
+): Promise<{ code: string; verifier: string; cookies: Map<string, string>; visited: string[] }> {
     const verifier = randomBytes(32).toString('base64url');
     const authorization = new URL(`${origin}/oauth/authorize`);
     authorization.search = authorizationParams(clientId, verifier, resource, scope).toString();
+    if (options.loginHint) authorization.searchParams.set('login_hint', options.loginHint);
+    if (options.prompt) authorization.searchParams.set('prompt', options.prompt);
     let nextUrl = authorization.href;
-    const cookies = new Map<string, string>();
+    let method: 'GET' | 'POST' = 'GET';
+    let body: URLSearchParams | undefined;
+    const cookies = options.cookies ?? new Map<string, string>();
     const visited: string[] = [];
 
     for (let redirects = 0; redirects < 10; redirects++) {
@@ -458,22 +454,36 @@ async function authorize(
         if (cookies.size) {
             headers.set('cookie', [...cookies].map(([name, value]) => `${name}=${value}`).join('; '));
         }
-        const response = await fetch(nextUrl, {
+        if (body) headers.set('content-type', 'application/x-www-form-urlencoded');
+        const request: RequestInit = {
+            method,
             headers,
             redirect: 'manual'
-        });
+        };
+        if (body) request.body = body;
+        const response = await fetch(nextUrl, request);
         rememberCookies(response, cookies);
         const location = response.headers.get('location');
-        visited.push(`${response.status} ${nextUrl} -> ${location ?? '(none)'} [${response.headers.get('x-test-prompt') ?? ''}]`);
-        if (!location) throw new Error(`OAuth test flow stopped with ${response.status}: ${await response.text()}`);
+        visited.push(`${method} ${nextUrl}`);
+        if (!location) {
+            const responseBody = await response.text();
+            const form = autoSubmitForm(responseBody);
+            if (!form) throw new Error(`OAuth test flow stopped with ${response.status}: ${responseBody}\n${visited.join('\n')}`);
+            nextUrl = new URL(form.action, nextUrl).href.replace(provider.issuer, origin);
+            method = 'POST';
+            body = form.body;
+            continue;
+        }
         const resolved = new URL(location, nextUrl);
         if (resolved.origin === 'https://client.example.com') {
             expect(resolved.searchParams.get('state')).toBe('test-state');
             const code = resolved.searchParams.get('code');
             if (!code) throw new Error(`OAuth test flow failed: ${resolved.searchParams.get('error') ?? 'missing code'}`);
-            return { code, verifier };
+            return { code, verifier, cookies, visited };
         }
         nextUrl = resolved.href.replace(provider.issuer, origin);
+        method = 'GET';
+        body = undefined;
     }
     throw new Error(`OAuth test flow exceeded the redirect limit:\n${visited.join('\n')}`);
 }
@@ -536,6 +546,23 @@ function interactionParam(interaction: Interaction, name: string): string {
     const value = interaction.params[name];
     if (typeof value !== 'string') throw new Error(`Missing ${name} in test interaction`);
     return value;
+}
+
+function readOptionalStringParam(interaction: Interaction, name: string): string | undefined {
+    const value = interaction.params[name];
+    return typeof value === 'string' ? value : undefined;
+}
+
+function autoSubmitForm(html: string): { action: string; body: URLSearchParams } | null {
+    const action = html.match(/<form method="post" action="([^"]+)">/)?.[1];
+    if (!action) return null;
+    const body = new URLSearchParams();
+    for (const input of html.matchAll(/<input type="hidden" name="([^"]+)" value="([^"]*)"\/>/g)) {
+        const name = input[1];
+        const value = input[2];
+        if (name && value !== undefined) body.set(name, value);
+    }
+    return { action, body };
 }
 
 function stringValue(value: unknown): string {

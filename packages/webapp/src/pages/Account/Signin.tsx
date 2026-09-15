@@ -14,6 +14,7 @@ import { useResendVerificationEmail, useSigninAPI } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';
 import { globalEnv } from '@/utils/env';
+import { getOAuthConsentDestination } from '@/utils/oauthConsent';
 import { useSignin } from '@/utils/user';
 
 import type { ApiUser } from '@nangohq/types';
@@ -40,6 +41,8 @@ export const Signin: React.FC = () => {
     const error = searchParams.get('error');
     const next = searchParams.get('next');
     const inviteToken = next?.match(/^\/signup\/([^/]+)$/)?.[1];
+    const consentDestination = getOAuthConsentDestination(next);
+    const signupUrl = consentDestination ? `/signup?next=${encodeURIComponent(consentDestination)}` : '/signup';
 
     const [errorMessage, setServerErrorMessage] = useState(() => {
         if (error === 'sso_session_expired') {
@@ -105,7 +108,7 @@ export const Signin: React.FC = () => {
         const email = form.getValues('email');
 
         try {
-            await resendVerificationEmailMutation({ email });
+            await resendVerificationEmailMutation({ email, returnTo: consentDestination });
             toast({
                 title: 'Verification email sent.',
                 variant: 'success'
@@ -129,7 +132,7 @@ export const Signin: React.FC = () => {
                         <span className="text-body-medium-regular text-text-muted">
                             Don&apos;t have an account?{' '}
                             <Button asChild variant="link-accent">
-                                <Link to="/signup">Sign up.</Link>
+                                <Link to={signupUrl}>Sign up.</Link>
                             </Button>
                         </span>
                     ) : (
@@ -227,7 +230,12 @@ export const Signin: React.FC = () => {
                             </div>
                         )}
 
-                        <GoogleButton text="Sign in with Google" setServerErrorMessage={setServerErrorMessage} token={inviteToken} />
+                        <GoogleButton
+                            text="Sign in with Google"
+                            setServerErrorMessage={setServerErrorMessage}
+                            token={inviteToken}
+                            returnTo={next ?? undefined}
+                        />
                     </div>
                 )}
 

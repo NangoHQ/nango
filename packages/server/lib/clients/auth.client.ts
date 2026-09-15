@@ -26,6 +26,8 @@ const sessionStore = new KnexSessionStore({
     sidfieldname: 'sid'
 });
 
+let passportConfigured = false;
+
 /**
  * Delete a user's web sessions, e.g. after a password change so that other
  * devices/browsers are forced to re-authenticate. Passport stores the
@@ -58,6 +60,11 @@ export function setupAuth(app: express.Router) {
 
     app.use(passport.initialize());
     app.use(passport.session());
+
+    // The dashboard session is mounted both on the private API and on the OAuth consent API.
+    // Passport strategies and serializers are process-global, so configure them only once.
+    if (passportConfigured) return;
+    passportConfigured = true;
 
     if (flagHasAuth) {
         passport.use(
@@ -126,9 +133,18 @@ export function setupAuth(app: express.Router) {
         );
     }
 
-    passport.serializeUser(function (user: any, cb) {
+    passport.serializeUser(function (user: Express.User, cb) {
         process.nextTick(function () {
-            cb(null, { id: user.id, email: user.email, name: user.name, account_id: user.account_id } as Express.User);
+            cb(null, {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                account_id: user.account_id,
+                authenticated_at:
+                    typeof user.authenticated_at === 'number' && Number.isFinite(user.authenticated_at) && user.authenticated_at > 0
+                        ? user.authenticated_at
+                        : Date.now() / 1000
+            } as Express.User);
         });
     });
 
