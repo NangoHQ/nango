@@ -21,7 +21,6 @@ import type {
     MemberInvitedMetadata,
     MemberRoleChangedMetadata,
     MfaVerifiedMetadata,
-    OAuthGrantMetadata,
     SyncBaseMetadata,
     SyncFrequencyChangedMetadata,
     SyncTriggeredMetadata,
@@ -128,11 +127,6 @@ interface AuditEventTable {
         created: AgentSessionCreatedMetadata;
         terminated: never;
     };
-    oauth_grant: {
-        approved: OAuthGrantMetadata;
-        denied: OAuthGrantMetadata;
-        revoked: OAuthGrantMetadata;
-    };
 }
 
 export type AuditResource = keyof AuditEventTable;
@@ -158,9 +152,7 @@ export type AuditTargetType =
     | 'team'
     | 'user'
     | 'environment'
-    | 'agent_session'
-    | 'oauth_grant'
-    | 'oauth_client';
+    | 'agent_session';
 
 export interface AuditActor {
     type: AuditActorType;

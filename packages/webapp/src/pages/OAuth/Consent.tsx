@@ -4,11 +4,15 @@ import { Helmet } from 'react-helmet';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { Alert, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
-import { oauthConsentDecisionSuccessSchema, oauthConsentSuccessSchema, oauthLoginResumeSuccessSchema } from '@nangohq/oauth-server/contracts';
 
+import { apiFetch } from '@/utils/api';
 import { globalEnv } from '@/utils/env';
 
-import type { OAuthConsentInteraction } from '@nangohq/types';
+import type { GetOAuthConsentInteraction, OAuthConsentInteraction, PostOAuthConsentDecision } from '@nangohq/types';
+
+type ConsentResponse = Extract<GetOAuthConsentInteraction['Reply'], { status: 200 }>['body'];
+type LoginResumeResponse = Extract<GetOAuthConsentInteraction['Reply'], { status: 202 }>['body'];
+type DecisionResponse = Extract<PostOAuthConsentDecision['Reply'], { status: 200 }>['body'];
 
 type PageState =
     | { kind: 'loading' }
@@ -34,17 +38,12 @@ export function OAuthConsent() {
         }
 
         try {
-            const response = await fetch(new URL(`/oauth/consent/${encodeURIComponent(uid)}`, issuer), { credentials: 'include' });
+            const response = await apiFetch(new URL(`/oauth/consent/${encodeURIComponent(uid)}`, issuer));
             const json: unknown = await response.json();
             if (sequence !== requestSequence.current) return;
 
             if (response.status === 202) {
-                const resumed = oauthLoginResumeSuccessSchema.safeParse(json);
-                if (!resumed.success) {
-                    setState({ kind: 'error' });
-                    return;
-                }
-                window.location.assign(resumed.data.data.resumeUrl);
+                window.location.assign((json as LoginResumeResponse).data.resumeUrl);
                 return;
             }
             if (response.status === 401) {
@@ -63,12 +62,11 @@ export function OAuthConsent() {
                 setState({ kind: 'unavailable' });
                 return;
             }
-            const parsed = oauthConsentSuccessSchema.safeParse(json);
-            if (!response.ok || !parsed.success) {
+            if (!response.ok) {
                 setState({ kind: 'error' });
                 return;
             }
-            setState({ kind: 'ready', interaction: parsed.data.data });
+            setState({ kind: 'ready', interaction: (json as ConsentResponse).data });
         } catch {
             if (sequence === requestSequence.current) setState({ kind: 'error' });
         }
@@ -82,15 +80,10 @@ export function OAuthConsent() {
     }, [loadInteraction]);
 
     const decide = async (decision: 'approve' | 'deny', interaction: OAuthConsentInteraction) => {
-        if (!issuer || state.kind === 'submitting') return;
+        if (!uid || !issuer || state.kind === 'submitting') return;
         setState({ kind: 'submitting', interaction, decision });
         try {
-            const response = await fetch(new URL(`/oauth/consent/${encodeURIComponent(interaction.interactionId)}/${decision}`, issuer), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ csrfToken: interaction.csrfToken })
-            });
+            const response = await apiFetch(new URL(`/oauth/consent/${encodeURIComponent(uid)}/${decision}`, issuer), { method: 'POST' });
             const json: unknown = await response.json();
             if (response.status === 409) {
                 setState({ kind: 'completed' });
@@ -100,12 +93,11 @@ export function OAuthConsent() {
                 setState({ kind: 'expired' });
                 return;
             }
-            const parsed = oauthConsentDecisionSuccessSchema.safeParse(json);
-            if (!response.ok || !parsed.success) {
+            if (!response.ok) {
                 setState({ kind: response.status === 403 ? 'unavailable' : 'error', interaction });
                 return;
             }
-            window.location.assign(parsed.data.data.resumeUrl);
+            window.location.assign((json as DecisionResponse).data.resumeUrl);
         } catch {
             setState({ kind: 'error', interaction });
         }
@@ -140,11 +132,7 @@ export function OAuthConsent() {
                         />
                     )}
                     {state.kind === 'unavailable' && (
-                        <Status
-                            icon={<TriangleAlert />}
-                            title="Authorization is unavailable"
-                            description="OAuth consent is not available for this account right now."
-                        />
+                        <Status icon={<TriangleAlert />} title="Authorization is unavailable" description="OAuth consent is not available right now." />
                     )}
                     {state.kind === 'error' && !interaction && (
                         <div className="flex flex-col gap-5">
@@ -180,19 +168,15 @@ export function OAuthConsent() {
                                 <h2 id="requested-access" className="text-body-medium-semibold text-text-strong">
                                     Requested access
                                 </h2>
-                                <div className="flex flex-col gap-3">
-                                    {interaction.resources.map((resource) => (
-                                        <div key={resource.resource} className="rounded-lg border border-border-muted bg-bg-elevated px-4 py-3">
-                                            <p className="text-body-medium-semibold text-text-strong break-all">{resource.hostname}</p>
-                                            <ul className="mt-2 flex flex-col gap-1" aria-label={`Capabilities for ${resource.hostname}`}>
-                                                {resource.scopes.map((scope) => (
-                                                    <li key={scope} className="text-body-small-regular text-text-secondary break-all">
-                                                        {scope === 'environment:*' ? 'Access every environment allowed by your current Nango role' : scope}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    ))}
+                                <div className="rounded-lg border border-border-muted bg-bg-elevated px-4 py-3">
+                                    <p className="text-body-medium-semibold text-text-strong break-all">{interaction.resource.hostname}</p>
+                                    <ul className="mt-2 flex flex-col gap-1" aria-label={`Capabilities for ${interaction.resource.hostname}`}>
+                                        {interaction.resource.scopes.map((scope) => (
+                                            <li key={scope} className="text-body-small-regular text-text-secondary break-all">
+                                                {scope === 'environment:*' ? 'Access every environment allowed by your current Nango role' : scope}
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
                                 <p className="text-body-small-regular text-text-muted">
                                     Access follows your live Nango permissions. New access may become available after role changes, and removed access stops

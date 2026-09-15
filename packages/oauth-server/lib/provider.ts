@@ -10,7 +10,6 @@ import type { Configuration, KoaContextWithOIDC, ResourceServer } from 'oidc-pro
 const ACCESS_TOKEN_TTL_SECONDS = 60 * 60;
 const AUTHORIZATION_CODE_TTL_SECONDS = 60;
 const INTERACTION_TTL_SECONDS = 10 * 60;
-const pendingGrantRevocations = new WeakMap<object, OAuthGrantRevocationCompletion>();
 
 export const OAUTH_ENDPOINT_PATH = '/oauth';
 export const OAUTH_AUTHORIZATION_PATH = `${OAUTH_ENDPOINT_PATH}/authorize`;
@@ -27,29 +26,14 @@ export interface OAuthResourceConfig {
 export interface CreateOAuthProviderOptions {
     knex: Knex;
     config: OAuthServerParsedConfig;
-    resources: readonly OAuthResourceConfig[];
-    subjectExists: (subjectId: string) => boolean | Promise<boolean>;
+    resource: OAuthResourceConfig;
+    userExists: (userId: string) => boolean | Promise<boolean>;
     interactionUrl?: (uid: string) => string;
-    prepareGrantRevocation?: (grantId: string, request: OAuthGrantRevocationRequest) => Promise<OAuthGrantRevocationCompletion | undefined>;
 }
 
-export interface OAuthGrantRevocationRequest {
-    clientId: string;
-    ip?: string;
-    userAgent?: string;
-}
-
-export type OAuthGrantRevocationOutcome = 'success' | 'failure';
-export type OAuthGrantRevocationCompletion = (outcome: OAuthGrantRevocationOutcome) => Promise<void>;
-
-interface OAuthResourceRegistry {
-    supportedScopes: readonly string[];
-    get(resource: string): OAuthResourceConfig | undefined;
-}
-
-export function createOAuthProvider({ knex, config, resources, subjectExists, interactionUrl, prepareGrantRevocation }: CreateOAuthProviderOptions): Provider {
-    const registry = createResourceRegistry(resources);
-    const allowedScopes = new Set(registry.supportedScopes);
+export function createOAuthProvider({ knex, config, resource, userExists, interactionUrl }: CreateOAuthProviderOptions): Provider {
+    validateResourceConfig(resource);
+    const allowedScopes = new Set(resource.scopes);
 
     const configuration: Configuration = {
         adapter: createOAuthAdapter({ knex, encryptionKey: config.encryptionKey }),
@@ -86,26 +70,14 @@ export function createOAuthProvider({ knex, config, resources, subjectExists, in
                 defaultResource: () => {
                     throw new errors.InvalidTarget('The resource parameter is required');
                 },
-                getResourceServerInfo: (ctx, resourceIndicator) => resourceServer(ctx, resourceIndicator, registry),
+                getResourceServerInfo: (ctx, resourceIndicator) => resourceServer(ctx, resourceIndicator, resource),
                 useGrantedResource: () => false
             },
             revocation: {
                 enabled: true,
-                allowedPolicy: async (_ctx, client, token) => {
-                    if (token.clientId !== client.clientId) return false;
-                    if ('grantId' in token && typeof token.grantId === 'string' && prepareGrantRevocation) {
-                        const userAgent = _ctx.get('user-agent') || undefined;
-                        const completion = await prepareGrantRevocation(token.grantId, {
-                            clientId: client.clientId,
-                            ...(_ctx.ip ? { ip: _ctx.ip } : {}),
-                            ...(userAgent ? { userAgent } : {})
-                        });
-                        if (completion) {
-                            pendingGrantRevocations.set(_ctx, completion);
-                        }
-                    }
-                    return true;
-                }
+                // Public clients have no client secret, so explicitly limit revocation to
+                // the client identified by the token rather than accepting any CIMD client.
+                allowedPolicy: (_ctx, client, token) => token.clientId === client.clientId
             },
             rpInitiatedLogout: { enabled: false },
             userinfo: { enabled: false }
@@ -113,7 +85,8 @@ export function createOAuthProvider({ knex, config, resources, subjectExists, in
         fetch: secureCimdFetch,
         fetchResponseBodyLimits: { 'client_id metadata document': CIMD_MAX_DOCUMENT_BYTES },
         findAccount: async (_ctx, accountId) => {
-            if (!(await subjectExists(accountId))) {
+            // oidc-provider calls its authenticated principal an account; Nango uses a user id.
+            if (!(await userExists(accountId))) {
                 return undefined;
             }
             return { accountId, claims: () => ({ sub: accountId }) };
@@ -128,14 +101,14 @@ export function createOAuthProvider({ knex, config, resources, subjectExists, in
         pkce: { required: () => true },
         responseTypes: ['code'],
         revokeGrantPolicy: () => true,
-        rotateRefreshToken: (ctx) => validateRefreshResource(ctx, registry),
+        rotateRefreshToken: (ctx) => validateRefreshResource(ctx, resource),
         routes: {
             authorization: OAUTH_AUTHORIZATION_PATH,
             jwks: OAUTH_JWKS_PATH,
             revocation: OAUTH_REVOCATION_PATH,
             token: OAUTH_TOKEN_PATH
         },
-        scopes: registry.supportedScopes,
+        scopes: resource.scopes,
         sectorIdentifierUriValidate: () => false,
         ttl: {
             AccessToken: ACCESS_TOKEN_TTL_SECONDS,
@@ -153,28 +126,6 @@ export function createOAuthProvider({ knex, config, resources, subjectExists, in
     return provider;
 }
 
-function createResourceRegistry(resources: readonly OAuthResourceConfig[]): OAuthResourceRegistry {
-    if (resources.length === 0) {
-        throw new Error('At least one OAuth resource must be configured');
-    }
-
-    const byResource = new Map<string, OAuthResourceConfig>();
-    const supportedScopes = new Set<string>();
-    for (const resource of resources) {
-        validateResourceConfig(resource);
-        if (byResource.has(resource.resource)) {
-            throw new Error(`OAuth resource is configured more than once: ${resource.resource}`);
-        }
-        byResource.set(resource.resource, resource);
-        for (const scope of resource.scopes) supportedScopes.add(scope);
-    }
-
-    return {
-        supportedScopes: [...supportedScopes],
-        get: (resource) => byResource.get(resource)
-    };
-}
-
 function installOAuthOnlyMiddleware(provider: Provider): void {
     provider.use(async (ctx, next) => {
         const requestedScope = ctx.query['scope'];
@@ -187,14 +138,7 @@ function installOAuthOnlyMiddleware(provider: Provider): void {
             return;
         }
 
-        try {
-            await next();
-        } catch (err) {
-            await completeGrantRevocation(ctx, 'failure');
-            throw err;
-        }
-
-        await completeGrantRevocation(ctx, ctx.status >= 200 && ctx.status < 400 ? 'success' : 'failure');
+        await next();
 
         if (ctx.status !== 200 || !ctx.body || typeof ctx.body !== 'object' || Array.isArray(ctx.body)) {
             return;
@@ -218,20 +162,10 @@ function installOAuthOnlyMiddleware(provider: Provider): void {
     });
 }
 
-async function completeGrantRevocation(ctx: object, outcome: OAuthGrantRevocationOutcome): Promise<void> {
-    const completion = pendingGrantRevocations.get(ctx);
-    if (!completion) return;
-    pendingGrantRevocations.delete(ctx);
-    await completion(outcome);
-}
-
-function validateRefreshResource(ctx: KoaContextWithOIDC, registry: OAuthResourceRegistry): true {
+function validateRefreshResource(ctx: KoaContextWithOIDC, resource: OAuthResourceConfig): true {
     const requestedResource = ctx.oidc.params?.['resource'];
-    if (typeof requestedResource !== 'string') {
+    if (requestedResource !== resource.resource) {
         throw new errors.InvalidTarget('Exactly one resource parameter is required');
-    }
-    if (!registry.get(requestedResource)) {
-        throw new errors.InvalidTarget('The requested resource is not supported');
     }
 
     const refreshToken = ctx.oidc.entities.RefreshToken;
@@ -245,16 +179,11 @@ function validateRefreshResource(ctx: KoaContextWithOIDC, registry: OAuthResourc
     return true;
 }
 
-function resourceServer(ctx: KoaContextWithOIDC, resourceIndicator: string, registry: OAuthResourceRegistry): ResourceServer {
+function resourceServer(ctx: KoaContextWithOIDC, resourceIndicator: string, resource: OAuthResourceConfig): ResourceServer {
     const requestedResource = ctx.oidc.params?.['resource'];
     const requested = Array.isArray(requestedResource) ? requestedResource : requestedResource ? [requestedResource] : [];
-    if (!requested.includes(resourceIndicator)) {
-        throw new errors.InvalidTarget('The resource parameter is required');
-    }
-
-    const resource = registry.get(resourceIndicator);
-    if (!resource) {
-        throw new errors.InvalidTarget('The requested resource is not supported');
+    if (requested.length !== 1 || requested[0] !== resource.resource || resourceIndicator !== resource.resource) {
+        throw new errors.InvalidTarget('Exactly one supported resource parameter is required');
     }
     return {
         scope: resource.scopes.join(' '),

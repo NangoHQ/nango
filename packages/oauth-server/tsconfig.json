@@ -6,9 +6,6 @@
     },
     "references": [
         {
-            "path": "../types"
-        },
-        {
             "path": "../database"
         },
         {

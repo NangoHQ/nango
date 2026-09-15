@@ -4,7 +4,15 @@ import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import { createOAuthAdapter, deleteExpiredOAuthArtifacts, OAUTH_SERVER_ARTIFACTS_TABLE, revokeOAuthSessionsBySubjectInTransaction } from './adapter.js';
+import {
+    claimOAuthInteraction,
+    createOAuthAdapter,
+    deleteExpiredOAuthArtifacts,
+    OAUTH_SERVER_ARTIFACTS_TABLE,
+    releaseOAuthInteraction,
+    revokeOAuthGrant,
+    revokeOAuthUserInTransaction
+} from './adapter.js';
 import { createOAuthProvider } from './provider.js';
 
 import type { Knex } from 'knex';
@@ -44,14 +52,14 @@ describe('PostgreSQL OAuth provider adapter', () => {
         const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
         const options = {
             knex: db.knex,
-            subjectExists: () => true,
+            userExists: () => true,
             config: {
                 baseUrl: 'http://localhost',
                 cookieKeys: ['a'.repeat(32), 'b'.repeat(32)],
                 encryptionKey,
                 jwks: { keys: [{ ...privateKey.export({ format: 'jwk' }), kid: 'integration-key', use: 'sig', alg: 'RS256' }] }
             },
-            resources: [{ resource: 'https://mcp.example.com/mcp', scopes: ['environment:*'] }]
+            resource: { resource: 'https://mcp.example.com/mcp', scopes: ['environment:*'] }
         };
         const first = createOAuthProvider(options);
         const session = new first.Session();
@@ -134,27 +142,87 @@ describe('PostgreSQL OAuth provider adapter', () => {
         expect(tombstone).toBeDefined();
     });
 
-    it('revokes subject sessions and prevents an in-flight session from rotating after revocation', async () => {
+    it('revokes provider artifacts without retaining product metadata', async () => {
+        const grantId = 'grant-to-revoke';
+        await adapter('Grant').upsert(
+            grantId,
+            {
+                ...artifactPayload('Grant', grantId),
+                accountId: 'user-42',
+                resources: { 'https://mcp.example.com/mcp': 'environment:*' }
+            },
+            600
+        );
+        await adapter('AccessToken').upsert('grant-access-token', artifactPayload('AccessToken', grantId), 600);
+
+        await expect(revokeOAuthGrant({ knex: db.knex, encryptionKey, grantId })).resolves.toBeUndefined();
+        await expect(adapter('Grant').find(grantId)).resolves.toBeUndefined();
+        await expect(adapter('AccessToken').find('grant-access-token')).resolves.toBeUndefined();
+        await expect(revokeOAuthGrant({ knex: db.knex, encryptionKey, grantId })).resolves.toBeUndefined();
+    });
+
+    it('allows only one consent decision to claim an interaction', async () => {
+        const interactionId = 'concurrent-consent';
+        const interaction = adapter('Interaction');
+        const now = Math.floor(Date.now() / 1000);
+        const payload = {
+            kind: 'Interaction',
+            iat: now,
+            exp: now + 600,
+            params: {},
+            prompt: { name: 'consent', reasons: [], details: {} },
+            returnTo: '/oauth/authorize/concurrent-consent'
+        } satisfies AdapterPayload;
+        await interaction.upsert(interactionId, payload, 600);
+
+        const claims = await Promise.all([
+            claimOAuthInteraction({ knex: db.knex, encryptionKey, interactionId }),
+            claimOAuthInteraction({ knex: db.knex, encryptionKey, interactionId })
+        ]);
+        expect(claims.sort()).toStrictEqual([false, true]);
+
+        await interaction.upsert(interactionId, { ...payload, result: { error: 'access_denied' } }, 600);
+        await expect(claimOAuthInteraction({ knex: db.knex, encryptionKey, interactionId })).resolves.toBe(false);
+
+        await releaseOAuthInteraction({ knex: db.knex, encryptionKey, interactionId });
+        await expect(claimOAuthInteraction({ knex: db.knex, encryptionKey, interactionId })).resolves.toBe(true);
+    });
+
+    it('revokes a user session and grants while rejecting stale in-flight writes', async () => {
         const session = adapter('Session');
-        const subjectId = 'user-42';
-        const stalePayload = {
+        const grant = adapter('Grant');
+        const userId = 'user-42';
+        const staleSession = {
             ...artifactPayload('Session', 'unused'),
-            accountId: subjectId,
+            accountId: userId,
             loginTs: Date.now() / 1000 - 60,
             uid: 'session-uid'
         };
-        await session.upsert('original-session', stalePayload, 600);
+        const staleGrant = {
+            ...artifactPayload('Grant', 'original-grant'),
+            accountId: userId,
+            iat: staleSession.loginTs,
+            resources: { 'https://mcp.example.com/mcp': 'environment:*' }
+        };
+        await session.upsert('original-session', staleSession, 600);
+        await grant.upsert('original-grant', staleGrant, 600);
 
         await db.knex.transaction(async (trx) => {
-            await revokeOAuthSessionsBySubjectInTransaction({ trx, encryptionKey, subjectId, reason: 'password_changed' });
+            await revokeOAuthUserInTransaction({ trx, encryptionKey, userId });
         });
 
         await expect(session.find('original-session')).resolves.toBeUndefined();
-        await expect(session.upsert('rotated-stale-session', stalePayload, 600)).rejects.toThrow(/revoked OAuth grant or session/);
+        await expect(grant.find('original-grant')).resolves.toBeUndefined();
+        await expect(session.upsert('rotated-stale-session', staleSession, 600)).rejects.toThrow(/revoked OAuth grant or session/);
+        await expect(grant.upsert('late-stale-grant', staleGrant, 600)).rejects.toThrow(/revoked OAuth grant or session/);
 
-        const freshPayload = { ...stalePayload, loginTs: Date.now() / 1000 + 0.001, uid: 'fresh-session-uid' };
-        await expect(session.upsert('fresh-session', freshPayload, 600)).resolves.toBeUndefined();
-        await expect(session.find('fresh-session')).resolves.toMatchObject({ accountId: subjectId });
+        const freshAuthentication = Date.now() / 1000 + 1;
+        const freshSession = { ...staleSession, loginTs: freshAuthentication, uid: 'fresh-session-uid' };
+        const freshGrant = { ...staleGrant, iat: freshAuthentication };
+        await expect(session.upsert('fresh-session', freshSession, 600)).resolves.toBeUndefined();
+        await expect(grant.upsert('fresh-grant', freshGrant, 600)).resolves.toBeUndefined();
+        await expect(session.find('fresh-session')).resolves.toMatchObject({ accountId: userId });
+        await expect(grant.find('fresh-grant')).resolves.toMatchObject({ accountId: userId });
     });
 
     it('rejects expired artifacts independently and deletes them in bounded batches', async () => {

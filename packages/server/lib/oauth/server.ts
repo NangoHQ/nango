@@ -2,10 +2,7 @@ import db from '@nangohq/database';
 import { createOAuthProvider } from '@nangohq/oauth-server';
 import { basePublicUrl } from '@nangohq/utils';
 
-import { recordOAuthGrantRevocation } from '../middleware/audit/oauthGrant.middleware.js';
 import { getOAuthServerConfig } from './config.js';
-import { revokeProductGrantByProviderId } from './product-grant.service.js';
-import { oauthSubjectExists } from './subject.service.js';
 
 import type { OAuthProvider } from '@nangohq/oauth-server';
 
@@ -18,12 +15,18 @@ function createNangoOAuthServer(): OAuthProvider | null {
     return createOAuthProvider({
         knex: db.knex,
         ...oauthServerConfig,
-        subjectExists: oauthSubjectExists,
-        interactionUrl: (uid) => new URL(`/oauth/consent/${encodeURIComponent(uid)}`, basePublicUrl).href,
-        prepareGrantRevocation: async (grantId, request) => {
-            const revoked = await revokeProductGrantByProviderId(grantId, oauthServerConfig.config.encryptionKey, 'token_revocation');
-            if (!revoked) return;
-            return async (outcome) => await recordOAuthGrantRevocation(revoked, request, outcome);
-        }
+        userExists,
+        interactionUrl: (uid) => new URL(`/oauth/consent/${encodeURIComponent(uid)}`, basePublicUrl).href
     });
+}
+
+async function userExists(userId: string): Promise<boolean> {
+    const id = Number(userId);
+    if (!Number.isSafeInteger(id) || id <= 0 || userId !== String(id)) return false;
+    const user = await db
+        .knex('_nango_users as users')
+        .innerJoin('_nango_accounts as accounts', 'accounts.id', 'users.account_id')
+        .where({ 'users.id': id, 'users.suspended': false })
+        .first('users.id');
+    return user !== undefined;
 }

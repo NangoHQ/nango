@@ -84,22 +84,9 @@ describe(`PUT ${passwordRoute}`, () => {
         const { email, password } = await signupVerifiedUser();
         const user = await userService.getUserByEmail(email);
         const oauthSessionId = `oauth-session-${nanoid()}`;
+        const oauthGrantId = `oauth-grant-${nanoid()}`;
         await insertOAuthSessionArtifact(oauthSessionId, user!.id);
-        const [grant] = await db
-            .knex('oauth_product_grants')
-            .insert({
-                provider_grant_id_hash: Buffer.from(nanoid().padEnd(32, 'x')),
-                client_id_hash: Buffer.from(nanoid().padEnd(32, 'x')),
-                user_id: user!.id,
-                account_id: user!.account_id,
-                status: 'active',
-                expires_at: new Date(Date.now() + 600_000),
-                activated_at: new Date(),
-                created_at: new Date(),
-                updated_at: new Date()
-            })
-            .returning<{ id: string }[]>('id');
-        if (!grant) throw new Error('Failed to create test OAuth grant');
+        await insertOAuthGrantArtifact(oauthGrantId, user!.id);
 
         const currentSession = await signin(email, password);
         const otherSession = await signin(email, password);
@@ -127,14 +114,11 @@ describe(`PUT ${passwordRoute}`, () => {
 
         // the other session is forcibly logged out
         expect((await api.fetch(userRoute, { method: 'GET', session: otherSession })).res.status).toBe(401);
-        expect(await oauthSessionRevokedAt(oauthSessionId)).toBeInstanceOf(Date);
+        expect(await oauthArtifactRevokedAt('Session', oauthSessionId)).toBeInstanceOf(Date);
+        expect(await oauthArtifactRevokedAt('Grant', oauthGrantId)).toBeInstanceOf(Date);
 
         // the user who made the change stays authenticated via the rotated session
         expect((await api.fetch(userRoute, { method: 'GET', session: rotatedSession })).res.status).toBe(200);
-        expect(await db.knex('oauth_product_grants').where({ id: grant.id }).first('status', 'revocation_reason')).toMatchObject({
-            status: 'revoked',
-            revocation_reason: 'password_changed'
-        });
     });
 
     it('should require a second factor once the user has one enrolled', async () => {
@@ -318,8 +302,8 @@ async function insertOAuthSessionArtifact(id: string, userId: number): Promise<v
         payload_encrypted: Buffer.from('test-payload'),
         grant_id_hash: null,
         session_uid_hash: hashOAuthIdentifier(`uid-${id}`, encryptionKey),
-        subject_id_hash: hashOAuthIdentifier(String(userId), encryptionKey),
-        session_authenticated_at: new Date(now.getTime() - 60_000),
+        user_id_hash: hashOAuthIdentifier(String(userId), encryptionKey),
+        user_authenticated_at: new Date(now.getTime() - 60_000),
         expires_at: new Date(now.getTime() + 600_000),
         consumed_at: null,
         revoked_at: null,
@@ -328,10 +312,30 @@ async function insertOAuthSessionArtifact(id: string, userId: number): Promise<v
     });
 }
 
-async function oauthSessionRevokedAt(id: string): Promise<Date | null | undefined> {
+async function insertOAuthGrantArtifact(id: string, userId: number): Promise<void> {
+    const now = new Date();
+    const encryptionKey = dek.get();
+    const grantIdHash = hashOAuthIdentifier(id, encryptionKey);
+    await db.knex('oauth_server_artifacts').insert({
+        model: 'Grant',
+        artifact_id_hash: grantIdHash,
+        payload_encrypted: Buffer.from('test-payload'),
+        grant_id_hash: grantIdHash,
+        session_uid_hash: null,
+        user_id_hash: hashOAuthIdentifier(String(userId), encryptionKey),
+        user_authenticated_at: new Date(now.getTime() - 60_000),
+        expires_at: new Date(now.getTime() + 600_000),
+        consumed_at: null,
+        revoked_at: null,
+        created_at: now,
+        updated_at: now
+    });
+}
+
+async function oauthArtifactRevokedAt(model: 'Grant' | 'Session', id: string): Promise<Date | null | undefined> {
     const row = await db
         .knex('oauth_server_artifacts')
-        .where({ model: 'Session', artifact_id_hash: hashOAuthIdentifier(id, dek.get()) })
+        .where({ model, artifact_id_hash: hashOAuthIdentifier(id, dek.get()) })
         .first<{ revoked_at: Date | null }>('revoked_at');
     return row?.revoked_at;
 }

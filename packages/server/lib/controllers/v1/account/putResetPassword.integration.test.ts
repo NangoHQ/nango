@@ -85,22 +85,9 @@ describe(`PUT ${resetPasswordRoute}`, () => {
 
         const dbUser = await userService.getUserByEmail(email);
         const oauthSessionId = `oauth-session-${nanoid()}`;
+        const oauthGrantId = `oauth-grant-${nanoid()}`;
         await insertOAuthSessionArtifact(oauthSessionId, dbUser!.id);
-        const [grant] = await db
-            .knex('oauth_product_grants')
-            .insert({
-                provider_grant_id_hash: Buffer.from(nanoid().padEnd(32, 'x')),
-                client_id_hash: Buffer.from(nanoid().padEnd(32, 'x')),
-                user_id: dbUser!.id,
-                account_id: dbUser!.account_id,
-                status: 'active',
-                expires_at: new Date(Date.now() + 600_000),
-                activated_at: new Date(),
-                created_at: new Date(),
-                updated_at: new Date()
-            })
-            .returning<{ id: string }[]>('id');
-        if (!grant) throw new Error('Failed to create test OAuth grant');
+        await insertOAuthGrantArtifact(oauthGrantId, dbUser!.id);
         const token = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
         await userService.editUserPassword({ id: dbUser!.id, reset_password_token: token, hashed_password: dbUser!.hashed_password });
 
@@ -114,11 +101,8 @@ describe(`PUT ${resetPasswordRoute}`, () => {
         // every session is forcibly logged out (the reset flow is anonymous, so none is spared)
         expect((await api.fetch(userRoute, { method: 'GET', session: sessionA })).res.status).toBe(401);
         expect((await api.fetch(userRoute, { method: 'GET', session: sessionB })).res.status).toBe(401);
-        expect(await oauthSessionRevokedAt(oauthSessionId)).toBeInstanceOf(Date);
-        expect(await db.knex('oauth_product_grants').where({ id: grant.id }).first('status', 'revocation_reason')).toMatchObject({
-            status: 'revoked',
-            revocation_reason: 'password_reset'
-        });
+        expect(await oauthArtifactRevokedAt('Session', oauthSessionId)).toBeInstanceOf(Date);
+        expect(await oauthArtifactRevokedAt('Grant', oauthGrantId)).toBeInstanceOf(Date);
 
         const recoveredSession = await signin(email, 'aZ1-newpass!?');
         // password recovery must not make an existing user eligible for new-user account discovery.
@@ -236,8 +220,8 @@ async function insertOAuthSessionArtifact(id: string, userId: number): Promise<v
         payload_encrypted: Buffer.from('test-payload'),
         grant_id_hash: null,
         session_uid_hash: hashOAuthIdentifier(`uid-${id}`, encryptionKey),
-        subject_id_hash: hashOAuthIdentifier(String(userId), encryptionKey),
-        session_authenticated_at: new Date(now.getTime() - 60_000),
+        user_id_hash: hashOAuthIdentifier(String(userId), encryptionKey),
+        user_authenticated_at: new Date(now.getTime() - 60_000),
         expires_at: new Date(now.getTime() + 600_000),
         consumed_at: null,
         revoked_at: null,
@@ -246,10 +230,30 @@ async function insertOAuthSessionArtifact(id: string, userId: number): Promise<v
     });
 }
 
-async function oauthSessionRevokedAt(id: string): Promise<Date | null | undefined> {
+async function insertOAuthGrantArtifact(id: string, userId: number): Promise<void> {
+    const now = new Date();
+    const encryptionKey = dek.get();
+    const grantIdHash = hashOAuthIdentifier(id, encryptionKey);
+    await db.knex('oauth_server_artifacts').insert({
+        model: 'Grant',
+        artifact_id_hash: grantIdHash,
+        payload_encrypted: Buffer.from('test-payload'),
+        grant_id_hash: grantIdHash,
+        session_uid_hash: null,
+        user_id_hash: hashOAuthIdentifier(String(userId), encryptionKey),
+        user_authenticated_at: new Date(now.getTime() - 60_000),
+        expires_at: new Date(now.getTime() + 600_000),
+        consumed_at: null,
+        revoked_at: null,
+        created_at: now,
+        updated_at: now
+    });
+}
+
+async function oauthArtifactRevokedAt(model: 'Grant' | 'Session', id: string): Promise<Date | null | undefined> {
     const row = await db
         .knex('oauth_server_artifacts')
-        .where({ model: 'Session', artifact_id_hash: hashOAuthIdentifier(id, dek.get()) })
+        .where({ model, artifact_id_hash: hashOAuthIdentifier(id, dek.get()) })
         .first<{ revoked_at: Date | null }>('revoked_at');
     return row?.revoked_at;
 }

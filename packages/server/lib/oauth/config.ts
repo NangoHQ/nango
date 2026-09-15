@@ -7,24 +7,16 @@ import type { OAuthResourceConfig, OAuthServerParsedConfig } from '@nangohq/oaut
 
 export interface NangoOAuthServerConfig {
     config: OAuthServerParsedConfig;
-    resources: readonly OAuthResourceConfig[];
+    resource: OAuthResourceConfig;
 }
 
 export function getOAuthServerConfig(): NangoOAuthServerConfig | null {
+    if (!envs.NANGO_OAUTH_SERVER_BASE_URL) return null;
     assertOAuthServerUsesDashboardApiOrigin(envs.NANGO_OAUTH_SERVER_BASE_URL, dashboardApiUrl === '/' ? basePublicUrl : dashboardApiUrl);
-
-    const resources: OAuthResourceConfig[] = [];
-    if (envs.NANGO_MANAGEMENT_MCP_OAUTH_ENABLED) {
-        if (!envs.NANGO_MANAGEMENT_MCP_SERVER_URL) {
-            throw new Error('NANGO_MANAGEMENT_MCP_SERVER_URL is required when Management MCP OAuth is enabled');
-        }
-        const managementMcpUrl = new URL(envs.NANGO_MANAGEMENT_MCP_SERVER_URL);
-        resources.push({
-            resource: new URL('/mcp', managementMcpUrl.origin).href,
-            scopes: ['environment:*']
-        });
+    if (!envs.NANGO_MANAGEMENT_MCP_SERVER_URL) {
+        throw new Error('NANGO_MANAGEMENT_MCP_SERVER_URL is required when the OAuth server is enabled');
     }
-    if (resources.length === 0) return null;
+    const managementMcpUrl = new URL(envs.NANGO_MANAGEMENT_MCP_SERVER_URL);
 
     return {
         config: parseOAuthServerConfig({
@@ -33,7 +25,10 @@ export function getOAuthServerConfig(): NangoOAuthServerConfig | null {
             encryptionKey: dek.get(),
             jwks: envs.NANGO_OAUTH_SERVER_JWKS
         }),
-        resources
+        resource: {
+            resource: new URL('/mcp', managementMcpUrl.origin).href,
+            scopes: ['environment:*']
+        }
     };
 }
 
