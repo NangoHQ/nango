@@ -141,7 +141,7 @@ export const ConnectUISettings = () => {
                                             <SelectItem value="dark">Dark</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <FieldDescription>
+                                    <FieldDescription className="whitespace-normal">
                                         Override it per session from the{' '}
                                         <Button asChild variant="link-accent" size="xs">
                                             <a
