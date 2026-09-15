@@ -49,7 +49,7 @@ export class PersistClient {
         this.userAgent = getUserAgent('sdk');
     }
 
-    static tokenFromNangoProps(nangoProps: { taskAuthToken?: string; secretKey?: string }): string {
+    static tokenFromNangoProps(nangoProps: { taskAuthToken?: string | undefined; secretKey?: string | undefined }): string {
         const token = nangoProps.taskAuthToken ?? nangoProps.secretKey;
         if (!token) {
             throw new Error('Missing taskAuthToken or secretKey');
