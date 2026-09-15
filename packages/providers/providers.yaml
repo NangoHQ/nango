@@ -15403,6 +15403,30 @@ mip-on-premise:
             suffix: /api/security/login
             format: hostname
 
+mistral:
+    display_name: Mistral AI
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.mistral.ai
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v1/models
+    docs: https://nango.dev/docs/api-integrations/mistral
+    docs_connect: https://nango.dev/docs/api-integrations/mistral/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Mistral AI API key
+            doc_section: '#step-1-create-an-api-key'
+
 mixpanel:
     display_name: Mixpanel
     categories:
