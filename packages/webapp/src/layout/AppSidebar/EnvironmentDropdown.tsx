@@ -1,17 +1,17 @@
-import { ChevronsUpDown, Lock } from 'lucide-react';
+import { ChevronsUpDown } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { Badge, Button } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
-import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar.js';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useCurrentPlan } from '@/hooks/usePlan';
+import { isLegacyPlan } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
 import { isNonEnvPath } from '@/utils/routes';
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
@@ -33,6 +33,7 @@ export const EnvironmentDropdown: React.FC = () => {
     const navigate = useNavigate();
 
     const isMaxEnvironmentsReached = envs && plan && envs.length >= plan.environments_max;
+    const isLegacy = isLegacyPlan(plan);
 
     const onSelect = (selected: string) => {
         if (selected === env) {
@@ -110,41 +111,36 @@ export const EnvironmentDropdown: React.FC = () => {
                                 </PermissionGate>
                             ))}
                         </div>
-                        <div className="border-t-[0.5px] border-border-muted p-2 [&_button]:w-full">
+                        <div className="flex flex-col gap-2 border-t-[0.5px] border-border-muted p-2">
                             <PermissionGate condition={canCreateEnvironment} tooltipSide="right">
                                 {(allowed) => (
-                                    <ConditionalTooltip
-                                        condition={!!isMaxEnvironmentsReached}
-                                        content={
-                                            <>
-                                                Max number of environments reached.{' '}
-                                                {plan?.name.includes('legacy') ? (
-                                                    <>Contact Nango to add more</>
-                                                ) : (
-                                                    <>
-                                                        <Button asChild variant="link-accent" size="sm">
-                                                            <Link to={`/team/billing`}>Upgrade</Link>
-                                                        </Button>{' '}
-                                                        to add more
-                                                    </>
-                                                )}
-                                            </>
-                                        }
-                                    >
+                                    <div className="flex flex-col">
                                         <Button
-                                            disabled={!!isMaxEnvironmentsReached || !allowed}
+                                            disabled={!allowed || !!isMaxEnvironmentsReached}
                                             variant="primary"
                                             onClick={() => {
                                                 // Managed control because Dialogs within DropdownMenus behave weirdly
                                                 setEnvironmentDialogOpen(true);
                                             }}
                                         >
-                                            {!!isMaxEnvironmentsReached && <Lock />}
                                             Create environment
                                         </Button>
-                                    </ConditionalTooltip>
+                                    </div>
                                 )}
                             </PermissionGate>
+                            {canCreateEnvironment &&
+                                isMaxEnvironmentsReached &&
+                                (isLegacy ? (
+                                    <p className="text-body-small-regular text-text-secondary">
+                                        Max number of environments reached. Contact Nango to add more.
+                                    </p>
+                                ) : (
+                                    <DropdownMenuItem asChild className="-mx-1 block px-1 py-0 text-body-small-regular text-text-secondary">
+                                        <Link to="/team/billing#plans">
+                                            Max number of environments reached. <span className="text-text-link underline">Upgrade</span> to add more.
+                                        </Link>
+                                    </DropdownMenuItem>
+                                ))}
                         </div>
                     </DropdownMenuContent>
                 </DropdownMenu>
