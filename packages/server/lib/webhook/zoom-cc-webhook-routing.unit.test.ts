@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InMemoryKVStore } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
@@ -65,6 +65,10 @@ function getBody(overrides?: Partial<ZoomWebhookPayload>): ZoomWebhookPayload {
 describe('Zoom (Server-to-Server OAuth) webhook routing', () => {
     beforeEach(() => {
         kvStoreRef.current = new InMemoryKVStore();
+    });
+
+    afterEach(async () => {
+        await kvStoreRef.current?.destroy();
     });
 
     it('routes a webhook by payload.account_id after validating its signature', async () => {
