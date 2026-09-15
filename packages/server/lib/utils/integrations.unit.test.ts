@@ -67,6 +67,50 @@ describe('getIntegrationCredentials', () => {
     it('returns null for auth modes without integration credentials', () => {
         expect(getIntegrationCredentials(integrationFixture(), providerFixture('API_KEY'))).toBeNull();
     });
+
+    it('reads mcp oauth2 generic client branding', () => {
+        const result = getIntegrationCredentials(
+            integrationFixture({ custom: { oauth_client_name: 'Acme Inc', oauth_client_uri: 'https://acme.com' } }),
+            providerFixture('MCP_OAUTH2_GENERIC')
+        );
+
+        expect(result).toStrictEqual({
+            type: 'MCP_OAUTH2_GENERIC',
+            clientName: 'Acme Inc',
+            clientUri: 'https://acme.com',
+            clientLogoUri: null
+        });
+    });
+
+    it('echoes integration_config values for providers with an integration_config schema', () => {
+        const result = getIntegrationCredentials(
+            integrationFixture({ custom: { service: 's3', awsSecretAccessKey: 'super-secret' } }),
+            providerFixture('AWS_SIGV4', {
+                integration_config: { service: { type: 'string', title: 'AWS Service', description: '', order: 1, automated: false } }
+            })
+        );
+
+        expect(result).toStrictEqual({
+            type: 'INTEGRATION_CONFIG',
+            authMode: 'AWS_SIGV4',
+            integration_config: { service: 's3' }
+        });
+    });
+
+    it('never leaks custom fields the provider does not declare in integration_config', () => {
+        const result = getIntegrationCredentials(
+            integrationFixture({ custom: { service: 's3', webhookSecret: 'should-not-leak' } }),
+            providerFixture('AWS_SIGV4', {
+                integration_config: { service: { type: 'string', title: 'AWS Service', description: '', order: 1, automated: false } }
+            })
+        );
+
+        expect(result).toStrictEqual({
+            type: 'INTEGRATION_CONFIG',
+            authMode: 'AWS_SIGV4',
+            integration_config: { service: 's3' }
+        });
+    });
 });
 
 function integrationFixture(overrides: Partial<IntegrationConfig> = {}): IntegrationConfig {
@@ -86,10 +130,11 @@ function integrationFixture(overrides: Partial<IntegrationConfig> = {}): Integra
     };
 }
 
-function providerFixture(authMode: Provider['auth_mode']): Provider {
+function providerFixture(authMode: Provider['auth_mode'], overrides: Partial<Provider> = {}): Provider {
     return {
         display_name: 'GitHub',
         auth_mode: authMode,
-        docs: ''
-    };
+        docs: '',
+        ...overrides
+    } as Provider;
 }

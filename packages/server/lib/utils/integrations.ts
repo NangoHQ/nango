@@ -1,4 +1,4 @@
-import type { IntegrationConfig, Provider } from '@nangohq/types';
+import type { AuthModeType, IntegrationConfig, Provider } from '@nangohq/types';
 
 export type IntegrationCredentials =
     | {
@@ -17,6 +17,13 @@ export type IntegrationCredentials =
           appLink: string | null;
           privateKey: string | null;
       }
+    | {
+          type: 'MCP_OAUTH2_GENERIC';
+          clientName: string | null;
+          clientUri: string | null;
+          clientLogoUri: string | null;
+      }
+    | { type: 'INTEGRATION_CONFIG'; authMode: AuthModeType; integration_config: Record<string, string> }
     | null;
 
 export function getPreconfiguredCredentials(custom: IntegrationConfig['custom'], provider: Provider): string[] {
@@ -59,6 +66,29 @@ export function getIntegrationCredentials(integration: IntegrationConfig, provid
             appLink: integration.app_link || null,
             privateKey: usesSharedCredentials ? '' : decodePrivateKey(rawPrivateKey)
         };
+    }
+
+    if (provider.auth_mode === 'MCP_OAUTH2_GENERIC') {
+        return {
+            type: provider.auth_mode,
+            clientName: integration.custom?.['oauth_client_name'] || null,
+            clientUri: integration.custom?.['oauth_client_uri'] || null,
+            clientLogoUri: integration.custom?.['oauth_client_logo_uri'] || null
+        };
+    }
+
+    if (provider.integration_config && integration.custom) {
+        const custom = integration.custom;
+        // Only echo keys the provider's `integration_config` schema declares -- `custom` can carry other
+        // unrelated values (e.g. webhookSecret), which must never leak out through this response.
+        const integrationConfig: Record<string, string> = {};
+        for (const field of Object.keys(provider.integration_config)) {
+            const value = custom[field];
+            if (value !== undefined) {
+                integrationConfig[field] = value;
+            }
+        }
+        return { type: 'INTEGRATION_CONFIG', authMode: provider.auth_mode, integration_config: integrationConfig };
     }
 
     return null;
