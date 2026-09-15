@@ -48,6 +48,31 @@ describe('PostgreSQL OAuth provider adapter', () => {
         expect(row.payload_encrypted.toString()).not.toContain(grantId);
     });
 
+    it('rejects artifacts missing identifiers required for revocation', async () => {
+        await expect(adapter('AccessToken').upsert('access-token', { kind: 'AccessToken' }, 60)).rejects.toThrow('AccessToken OAuth artifacts require grantId');
+        await expect(adapter('RefreshToken').upsert('refresh-token', { kind: 'RefreshToken' }, 60)).rejects.toThrow(
+            'RefreshToken OAuth artifacts require grantId'
+        );
+        await expect(adapter('AuthorizationCode').upsert('authorization-code', { kind: 'AuthorizationCode' }, 60)).rejects.toThrow(
+            'AuthorizationCode OAuth artifacts require grantId'
+        );
+        await expect(adapter('Grant').upsert('grant', { kind: 'Grant' }, 60)).rejects.toThrow('Grant OAuth artifacts require accountId');
+        await expect(adapter('Session').upsert('invalid-session', { kind: 'Session', accountId: '' }, 60)).rejects.toThrow(
+            'Session OAuth artifacts require accountId to be a non-empty string when present'
+        );
+    });
+
+    it('allows OAuth artifacts that do not belong to a user or grant', async () => {
+        await expect(adapter('Session').upsert('anonymous-session', { kind: 'Session' }, 60)).resolves.toBeUndefined();
+        await expect(
+            adapter('Interaction').upsert(
+                'login-interaction',
+                { kind: 'Interaction', params: {}, prompt: { name: 'login', reasons: [], details: {} }, returnTo: '/oauth/authorize' },
+                60
+            )
+        ).resolves.toBeUndefined();
+    });
+
     it('restores sessions and grants across provider instances', async () => {
         const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
         const options = {
@@ -59,7 +84,8 @@ describe('PostgreSQL OAuth provider adapter', () => {
                 encryptionKey,
                 jwks: { keys: [{ ...privateKey.export({ format: 'jwk' }), kid: 'integration-key', use: 'sig', alg: 'RS256' }] }
             },
-            resource: { resource: 'https://mcp.example.com/mcp', scopes: ['environment:*'] }
+            resource: { resource: 'https://mcp.example.com/mcp', scopes: ['environment:*'] },
+            interactionUrl: (uid: string) => `/oauth/interaction/${encodeURIComponent(uid)}`
         };
         const first = createOAuthProvider(options);
         const session = new first.Session();
