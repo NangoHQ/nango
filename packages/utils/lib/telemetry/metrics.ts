@@ -54,6 +54,9 @@ export enum Types {
     PROXY_REDIRECT = 'nango.server.proxy.redirect',
     PROXY_BASE_URL_OVERRIDE_DENIED = 'nango.server.proxy.baseUrlOverrideDenied',
 
+    CRON_MANAGE_GROWTH_ADDON = 'nango.server.cron.manageGrowthAddon',
+    GROWTH_ADDON_CORRUPTED_STATE_COUNT = 'nango.server.growthAddon.corrupted.count',
+
     CRON_REFRESH_CONNECTIONS = 'nango.server.cron.refreshConnections',
     CRON_REFRESH_CONNECTIONS_FAILED = 'nango.server.cron.refreshConnections.failed',
     CRON_REFRESH_CONNECTIONS_SUCCESS = 'nango.server.cron.refreshConnections.success',

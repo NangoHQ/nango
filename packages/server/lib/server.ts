@@ -21,6 +21,7 @@ import { destroyAuditDb, migrateAuditDb, startAuditPartitions } from './auditDb.
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
 import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
+import { manageGrowthAddonsCron } from './crons/manageGrowthAddons.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutFunctionAsyncJobsCron } from './crons/timeoutFunctionAsyncJobs.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
@@ -101,6 +102,7 @@ refreshConnectionsCron();
 timeoutLogsOperations();
 timeoutFunctionAsyncJobsCron();
 deleteOldData();
+manageGrowthAddonsCron();
 trialCron();
 lambdaKeepWarmCron();
 tasks.start();

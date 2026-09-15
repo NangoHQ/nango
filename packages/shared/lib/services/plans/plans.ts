@@ -153,6 +153,14 @@ function isPlanUnchanged(currentPlan: DBPlan, newPlan: PlanDefinition): boolean 
     return currentPlan.name === newPlan.code;
 }
 
+export function getGrowthAddonFlags(definition: PlanDefinition, hasGrowthFeatures: boolean): Partial<PlanDefinition['flags']> {
+    const flags: Partial<PlanDefinition['flags']> = {};
+    for (const flag of Object.keys(GROWTH_FEATURE_FLAGS) as (keyof typeof GROWTH_FEATURE_FLAGS)[]) {
+        flags[flag] = hasGrowthFeatures ? GROWTH_FEATURE_FLAGS[flag] : (definition.flags[flag] as boolean);
+    }
+    return flags;
+}
+
 export async function setGrowthAddon(
     db: Knex,
     team: DBTeam,
@@ -168,16 +176,12 @@ export async function setGrowthAddon(
         return Err('Received a plan not linked to the plansList');
     }
 
-    const flags: Partial<PlanDefinition['flags']> = {};
-    for (const flag of Object.keys(GROWTH_FEATURE_FLAGS) as (keyof typeof GROWTH_FEATURE_FLAGS)[]) {
-        flags[flag] = hasGrowthFeatures ? GROWTH_FEATURE_FLAGS[flag] : (definition.flags[flag] as boolean);
-    }
-
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
         has_growth_features: hasGrowthFeatures,
+        growth_features_starts_at: null,
         growth_features_ends_at: hasGrowthFeatures ? endsAt : null,
-        ...flags
+        ...getGrowthAddonFlags(definition, hasGrowthFeatures)
     });
     if (updated.isErr()) {
         return Err(new Error('Failed to update growth add-on', { cause: updated.error }));
@@ -263,13 +267,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
 
     if (canHaveGrowthAddon(newPlanDefinition.code)) {
         // Force-update growth feature flags on top of merged plan flags, based on whether the add-on is enabled or not.
-        const growth: Partial<PlanDefinition['flags']> = {};
-        const growthFeatureFlags = Object.keys(GROWTH_FEATURE_FLAGS) as (keyof typeof GROWTH_FEATURE_FLAGS)[];
-        for (const featureFlag of growthFeatureFlags) {
-            growth[featureFlag] = hasGrowthFeatures ? GROWTH_FEATURE_FLAGS[featureFlag] : (newPlanDefinition.flags[featureFlag] as boolean);
-        }
-
-        flags = { ...flags, ...growth };
+        flags = { ...flags, ...getGrowthAddonFlags(newPlanDefinition, hasGrowthFeatures) };
     }
 
     return flags;
@@ -314,6 +312,7 @@ function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPla
             case 'updated_at':
             // Growth add-on related, skip them
             case 'has_growth_features':
+            case 'growth_features_starts_at':
             case 'growth_features_ends_at':
                 break;
             // BOOLEAN FLAGS - keep override if false

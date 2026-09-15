@@ -295,6 +295,7 @@ const ENVS_SHAPE = z.object({
     CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
+    CRON_MANAGE_GROWTH_ADDONS_EVERY_MIN: z.coerce.number().optional().default(60),
     CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES: z.coerce.number().optional().default(0),
     // Billing-events S3 export cron (hourly). Value is the minute-of-the-hour the
     // cron fires on (0–59). -1 (default) disables the cron entirely. 15 gives
