@@ -33,6 +33,13 @@ describe('persistActionForRequest', () => {
         );
     });
 
+    it('maps persist route families with a trailing slash', () => {
+        expect(persistActionForRequest({ method: 'POST', originalUrl: '/environment/1/log/', path: '/log/' })).toBe(TASK_CAPABILITY_ACTIONS.persistLog);
+        expect(persistActionForRequest({ method: 'PUT', originalUrl: '/environment/1/runner/task/t/abort/', path: '/abort/' })).toBe(
+            TASK_CAPABILITY_ACTIONS.persistAbort
+        );
+    });
+
     it('returns null for unknown paths', () => {
         expect(persistActionForRequest({ method: 'GET', originalUrl: '/health', path: '/health' })).toBeNull();
     });

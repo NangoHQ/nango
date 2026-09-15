@@ -1,7 +1,12 @@
 import { TASK_CAPABILITY_ACTIONS } from '@nangohq/internal-auth';
 
+function requestPath(req: { originalUrl: string; path: string }): string {
+    const raw = (req.originalUrl || req.path).split('?')[0] ?? '';
+    return raw.replace(/\/+$/, '') || '/';
+}
+
 export function persistActionForRequest(req: { method: string; originalUrl: string; path: string }): string | null {
-    const path = (req.originalUrl || req.path).split('?')[0] ?? '';
+    const path = requestPath(req);
     if (path.endsWith('/log')) {
         return TASK_CAPABILITY_ACTIONS.persistLog;
     }

@@ -485,4 +485,44 @@ describe('capability scope policy', () => {
             await close();
         }
     });
+
+    it('rejects a node token even when it carries an actions claim', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        const token = createInternalServiceToken(
+            {
+                op: 'node',
+                nodeId: '1',
+                audience: INTERNAL_SERVICE_AUDIENCE_PERSIST,
+                actions: ['persist:log'],
+                expiresInSecs: 120
+            },
+            'sign'
+        );
+        const { url, close } = await listen(persistScopedApp());
+        try {
+            const res = await fetch(`${url}/environment/9/log`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('lets a static credential through capability guards', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        envs.NANGO_INTERNAL_AUTH_TOKEN = 'secret';
+        const { url, close } = await listen(persistScopedApp());
+        try {
+            const res = await fetch(`${url}/environment/9/log`, {
+                method: 'POST',
+                headers: { Authorization: 'Bearer secret' }
+            });
+            expect(res.status).toBe(201);
+        } finally {
+            await close();
+        }
+    });
 });

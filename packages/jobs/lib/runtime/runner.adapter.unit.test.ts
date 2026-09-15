@@ -130,7 +130,8 @@ describe('RunnerRuntimeAdapter internal auth', () => {
             })
         );
         expect(startMutate.mock.calls[0]?.[0]).not.toHaveProperty('internalAuthToken');
-        expect(startMutate.mock.calls[0]?.[0].nangoProps).not.toHaveProperty('secretKey');
+        expect(startMutate.mock.calls[0]?.[0].nangoProps.secretKey).toBe('sk');
+        expect(startMutate.mock.calls[0]?.[0].nangoProps).not.toHaveProperty('taskAuthToken');
     });
 
     it('passes internalAuthToken on start when the signing key is set', async () => {

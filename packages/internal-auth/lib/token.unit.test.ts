@@ -141,7 +141,7 @@ describe('verifyInternalServiceToken', () => {
         expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_RUNNER, signingKey)).toEqual({ ok: false, reason: 'wrong_audience' });
     });
 
-    it('returns malformed_claims when optional scope claims have the wrong type', () => {
+    it('returns malformed_claims when a numeric scope claim is zero', () => {
         const token = createInternalServiceToken({ taskId: 'task-1', environmentId: 0, expiresInSecs: 120 }, signingKey);
         expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, signingKey)).toEqual({ ok: false, reason: 'malformed_claims' });
     });
