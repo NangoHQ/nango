@@ -15,7 +15,7 @@ import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
-import { flags, getLogger, NANGO_VERSION, once, report } from '@nangohq/utils';
+import { flags, getLogger, metrics, NANGO_VERSION, once, report } from '@nangohq/utils';
 
 import { destroyAuditDb, migrateAuditDb, startAuditPartitions } from './auditDb.js';
 import publisher from './clients/publisher.client.js';
@@ -148,6 +148,7 @@ const close = once(() => {
 
         console.info('Closed');
 
+        await metrics.flush();
         process.exit();
     });
 });

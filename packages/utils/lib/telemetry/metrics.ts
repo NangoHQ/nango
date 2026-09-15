@@ -1,3 +1,5 @@
+import { setTimeout } from 'node:timers/promises';
+
 import tracer from 'dd-trace';
 
 export enum Types {
@@ -260,6 +262,13 @@ export function duration(metricName: Types, value: number, dimensions?: Dimensio
 
 export function distribution(metricName: Types, value: number, dimensions?: Dimensions): void {
     tracer.dogstatsd.distribution(metricName, value, applyDimensionPolicy(metricName, dimensions) ?? {});
+}
+
+const FLUSH_SETTLE_MS = 100;
+
+export async function flush(): Promise<void> {
+    tracer.dogstatsd.flush();
+    await setTimeout(FLUSH_SETTLE_MS);
 }
 
 export function time<F extends (...args: unknown[]) => unknown>(metricName: Types, func: F, dimensions?: Dimensions): F {
