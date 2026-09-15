@@ -2,13 +2,11 @@ import { useForm } from '@tanstack/react-form';
 import { Info, Lock } from 'lucide-react';
 import React, { useRef } from 'react';
 
-import { Button, Field, FieldError, FieldLabel, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+import { Button, Field, FieldDescription, FieldError, FieldLabel, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
-import { DocsIconLink } from '@/components/patterns/DocsIconLink';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ColorInput } from '@/components/ui/ColorInput';
-import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Switch } from '@/components/ui/Switch';
 import { useConnectUISettings, useUpdateConnectUISettings } from '@/hooks/useConnectUISettings';
@@ -132,16 +130,7 @@ export const ConnectUISettings = () => {
                         <form.Field name="defaultTheme">
                             {(field) => (
                                 <Field>
-                                    <div className="flex items-center gap-2">
-                                        <FieldLabel htmlFor={field.name}>Default theme</FieldLabel>
-                                        <InfoTooltip icon={<Info />} side="right">
-                                            You can override the theme per session from the Frontend SDK.
-                                        </InfoTooltip>
-                                        <DocsIconLink
-                                            href="https://nango.dev/docs/reference/frontend/frontend-sdk#connect-using-nango-connect-ui"
-                                            label="Frontend SDK documentation"
-                                        />
-                                    </div>
+                                    <FieldLabel htmlFor={field.name}>Default theme</FieldLabel>
                                     <Select name={field.name} value={field.state.value} onValueChange={(value) => field.handleChange(value as Theme)}>
                                         <SelectTrigger id={field.name} className="w-full text-sm px-2.5 gap-2">
                                             <SelectValue placeholder="Default theme" />
@@ -152,6 +141,19 @@ export const ConnectUISettings = () => {
                                             <SelectItem value="dark">Dark</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    <FieldDescription>
+                                        Override it per session from the{' '}
+                                        <Button asChild variant="link-accent" size="xs">
+                                            <a
+                                                href="https://nango.dev/docs/reference/frontend/frontend-sdk#connect-using-nango-connect-ui"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                Frontend SDK
+                                            </a>
+                                        </Button>
+                                        .
+                                    </FieldDescription>
                                 </Field>
                             )}
                         </form.Field>
