@@ -59,6 +59,31 @@ describe('Persist API', () => {
             const listener = server.listen(port, () => resolve(listener));
         });
 
+        vi.spyOn(accountService, 'getPersistAuthContextByEnvironmentId').mockImplementation((environmentId) => {
+            if (environmentId === seed.env.id) {
+                return Promise.resolve(
+                    Ok({
+                        account: { id: seed.account.id },
+                        environment: { id: seed.env.id, name: seed.env.name },
+                        plan: { id: seed.plan.id, name: seed.plan.name, records_store: seed.plan.records_store }
+                    })
+                );
+            }
+            if (environmentId === otherTenantSeed.env.id) {
+                return Promise.resolve(
+                    Ok({
+                        account: { id: otherTenantSeed.account.id },
+                        environment: { id: otherTenantSeed.env.id, name: otherTenantSeed.env.name },
+                        plan: {
+                            id: otherTenantSeed.plan.id,
+                            name: otherTenantSeed.plan.name,
+                            records_store: otherTenantSeed.plan.records_store
+                        }
+                    })
+                );
+            }
+            return Promise.resolve(Ok(null));
+        });
         vi.spyOn(accountService, 'getPersistAuthContext').mockImplementation((key) => {
             if (key === mockSecretKey) {
                 return Promise.resolve(

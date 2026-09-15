@@ -130,6 +130,7 @@ describe('RunnerRuntimeAdapter internal auth', () => {
             })
         );
         expect(startMutate.mock.calls[0]?.[0]).not.toHaveProperty('internalAuthToken');
+        expect(startMutate.mock.calls[0]?.[0].nangoProps).not.toHaveProperty('secretKey');
     });
 
     it('passes internalAuthToken on start when the signing key is set', async () => {
@@ -142,8 +143,12 @@ describe('RunnerRuntimeAdapter internal auth', () => {
         expect(verifyInternalServiceToken(internalAuthToken, INTERNAL_SERVICE_AUDIENCE_JOBS, 'sign')).toMatchObject({
             op: 'task',
             taskId: 'task-1',
-            audience: INTERNAL_SERVICE_AUDIENCE_JOBS
+            audience: INTERNAL_SERVICE_AUDIENCE_JOBS,
+            environmentId: 1,
+            connectionId: 1
         });
+        expect(startMutate.mock.calls[0]?.[0].nangoProps).not.toHaveProperty('secretKey');
+        expect(startMutate.mock.calls[0]?.[0].nangoProps.taskAuthToken).toBe(internalAuthToken);
         expect(getRunnerMock).toHaveBeenCalledWith(1, expect.objectContaining({ token: expect.stringMatching(/^eyJ/) }));
         const dispatchToken = getRunnerMock.mock.calls[0]?.[1]?.token as string;
         expect(verifyRunnerDispatchToken(dispatchToken, INTERNAL_SERVICE_AUDIENCE_RUNNER, exportRunnerPublicKey('sign'))).toMatchObject({

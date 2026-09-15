@@ -3,6 +3,7 @@ import path from 'node:path';
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
+import { hasAction, INTERNAL_SERVICE_AUDIENCE_SERVER, isJwtShape, verifyInternalServiceToken } from '@nangohq/internal-auth';
 import { accountService, environmentService, errorManager, ErrorSourceEnum, getPlan, isSandboxApiKey, LogActionEnum, userService } from '@nangohq/shared';
 import {
     Err,
@@ -22,6 +23,7 @@ import { envs } from '../env.js';
 import { agentSessionTokenSchema, connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
 import * as agentSessionService from '../services/agentSession.service.js';
 import * as connectSessionService from '../services/connectSession.service.js';
+import { scriptActionForRequest } from './script-capability-actions.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AgentSession, ApiKeyContext, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
@@ -108,6 +110,43 @@ export class AccessMiddleware {
         }
     }
 
+    private async authorizeScriptCapabilityToken(req: Request, res: Response<any, Partial<RequestLocals>>, token: string): Promise<Result<void>> {
+        const auth = verifyInternalServiceToken(token, INTERNAL_SERVICE_AUDIENCE_SERVER, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+        if (!auth.ok || auth.op !== 'task' || auth.environmentId === undefined) {
+            return Err('unknown_account');
+        }
+        const action = scriptActionForRequest(req);
+        if (!action || !hasAction(auth, action)) {
+            return Err('unknown_account');
+        }
+
+        const accountContext = await accountService.getAccountContext({ environmentId: auth.environmentId });
+        if (!accountContext) {
+            return Err('unknown_account');
+        }
+        if (flagHasPlan && !accountContext.plan) {
+            return Err('plan_not_found');
+        }
+
+        this.setApiKeyLocals(res, {
+            account: accountContext.account,
+            environment: accountContext.environment,
+            secret: accountContext.secret,
+            plan: accountContext.plan,
+            principal: {
+                type: 'api_key',
+                source: 'api_secret',
+                accountId: accountContext.account.id,
+                scopes: ['environment:*'],
+                environmentIds: [accountContext.environment.id]
+            },
+            auth: { source: 'api_secret', scopes: ['environment:*'] }
+        });
+        metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, { auth_source: 'internal_script' });
+        tagTraceUser({ account: accountContext.account, environment: accountContext.environment, plan: accountContext.plan });
+        return Ok(undefined);
+    }
+
     /**
      * Resolve and apply API-key authentication without writing an error response. This lets routes
      * that support another bearer-token scheme decide which authentication challenge to return.
@@ -131,6 +170,11 @@ export class AccessMiddleware {
             }
 
             const isScript = req.get('Nango-Is-Script') === 'true';
+
+            if (isScript && isJwtShape(secret)) {
+                return await this.authorizeScriptCapabilityToken(req, res, secret);
+            }
+
             const result = await this.validateApiKey(secret, { isScript });
             if (result.isErr()) {
                 return Err(result.error);

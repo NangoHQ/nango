@@ -12,9 +12,13 @@ import { deriveRunnerEd25519PrivateKey, runnerPublicKeyFromEnv } from './ed25519
 import type { InternalServiceAuth, InternalServiceAuthKind, InternalServiceTokenOp } from './constants.js';
 
 type CreateInternalServiceTokenBase = {
-    audience?: string;
+    audience?: string | readonly string[];
     expiresInSecs?: number;
     issuedAt?: number;
+    environmentId?: number;
+    connectionId?: number;
+    syncId?: string;
+    actions?: readonly string[];
 };
 
 export type CreateInternalServiceTokenArgs = CreateInternalServiceTokenBase & ({ op?: 'task'; taskId: string } | { op: 'node'; nodeId: string });
@@ -81,9 +85,36 @@ function signaturesMatch(a: string, b: string): boolean {
     return timingSafeEqual(left, right);
 }
 
-function tokenPayload(args: CreateInternalServiceTokenArgs, iat: number, exp: number): Record<string, string | number> {
+function audienceMatches(aud: unknown, expected: string): boolean {
+    if (typeof aud === 'string') {
+        return aud === expected;
+    }
+    if (Array.isArray(aud)) {
+        return aud.every((value) => typeof value === 'string') && aud.includes(expected);
+    }
+    return false;
+}
+
+function optionalScopeClaims(args: CreateInternalServiceTokenBase): Record<string, number | string | readonly string[]> {
+    const claims: Record<string, number | string | readonly string[]> = {};
+    if (args.environmentId !== undefined) {
+        claims['environment_id'] = args.environmentId;
+    }
+    if (args.connectionId !== undefined) {
+        claims['connection_id'] = args.connectionId;
+    }
+    if (args.syncId !== undefined) {
+        claims['sync_id'] = args.syncId;
+    }
+    if (args.actions && args.actions.length > 0) {
+        claims['actions'] = args.actions;
+    }
+    return claims;
+}
+
+function tokenPayload(args: CreateInternalServiceTokenArgs, iat: number, exp: number): Record<string, string | number | readonly string[]> {
     const aud = args.audience ?? INTERNAL_SERVICE_AUDIENCE_JOBS;
-    const base = { iss: INTERNAL_SERVICE_TOKEN_ISSUER, aud, iat, exp };
+    const base = { iss: INTERNAL_SERVICE_TOKEN_ISSUER, aud, iat, exp, ...optionalScopeClaims(args) };
     if ('nodeId' in args) {
         return { ...base, op: args.op, node_id: args.nodeId };
     }
@@ -194,8 +225,49 @@ export function verifyRunnerDispatchToken(token: string, audience: string, runne
     return authFromPayload(payloadPart, audience, 'eddsa');
 }
 
+function parseOptionalNumberClaim(value: unknown): { ok: true; value?: number } | { ok: false } {
+    if (value === undefined) {
+        return { ok: true };
+    }
+    if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
+        return { ok: true, value };
+    }
+    return { ok: false };
+}
+
+function parseOptionalStringClaim(value: unknown): { ok: true; value?: string } | { ok: false } {
+    if (value === undefined) {
+        return { ok: true };
+    }
+    if (typeof value === 'string' && value.length > 0) {
+        return { ok: true, value };
+    }
+    return { ok: false };
+}
+
+function parseOptionalActionsClaim(value: unknown): { ok: true; value?: string[] } | { ok: false } {
+    if (value === undefined) {
+        return { ok: true };
+    }
+    if (Array.isArray(value) && value.every((action) => typeof action === 'string' && action.length > 0)) {
+        return { ok: true, value };
+    }
+    return { ok: false };
+}
+
 function authFromPayload(payloadPart: string, audience: string, kind: InternalServiceAuthKind): VerifyInternalServiceTokenResult {
-    let payload: { iss?: unknown; aud?: unknown; op?: unknown; task_id?: unknown; node_id?: unknown; exp?: unknown };
+    let payload: {
+        iss?: unknown;
+        aud?: unknown;
+        op?: unknown;
+        task_id?: unknown;
+        node_id?: unknown;
+        exp?: unknown;
+        environment_id?: unknown;
+        connection_id?: unknown;
+        sync_id?: unknown;
+        actions?: unknown;
+    };
     try {
         const parsed: unknown = JSON.parse(base64UrlDecode(payloadPart));
         if (!parsed || typeof parsed !== 'object') {
@@ -209,7 +281,7 @@ function authFromPayload(payloadPart: string, audience: string, kind: InternalSe
     if (payload.iss !== INTERNAL_SERVICE_TOKEN_ISSUER) {
         return { ok: false, reason: 'malformed_claims' };
     }
-    if (payload.aud !== audience) {
+    if (!audienceMatches(payload.aud, audience)) {
         return { ok: false, reason: 'wrong_audience' };
     }
     if (typeof payload.exp !== 'number') {
@@ -223,6 +295,21 @@ function authFromPayload(payloadPart: string, audience: string, kind: InternalSe
     }
     const op = payload.op as InternalServiceTokenOp;
 
+    const environmentId = parseOptionalNumberClaim(payload.environment_id);
+    const connectionId = parseOptionalNumberClaim(payload.connection_id);
+    const syncId = parseOptionalStringClaim(payload.sync_id);
+    const actions = parseOptionalActionsClaim(payload.actions);
+    if (!environmentId.ok || !connectionId.ok || !syncId.ok || !actions.ok) {
+        return { ok: false, reason: 'malformed_claims' };
+    }
+
+    const scope = {
+        ...(environmentId.value !== undefined ? { environmentId: environmentId.value } : {}),
+        ...(connectionId.value !== undefined ? { connectionId: connectionId.value } : {}),
+        ...(syncId.value !== undefined ? { syncId: syncId.value } : {}),
+        ...(actions.value !== undefined ? { actions: actions.value } : {})
+    };
+
     if (op === 'task') {
         if (typeof payload.task_id !== 'string' || payload.task_id.length === 0) {
             return { ok: false, reason: 'malformed_claims' };
@@ -233,7 +320,8 @@ function authFromPayload(payloadPart: string, audience: string, kind: InternalSe
             subject: INTERNAL_SERVICE_TOKEN_ISSUER,
             audience,
             op,
-            taskId: payload.task_id
+            taskId: payload.task_id,
+            ...scope
         };
     }
 
@@ -246,6 +334,7 @@ function authFromPayload(payloadPart: string, audience: string, kind: InternalSe
         subject: INTERNAL_SERVICE_TOKEN_ISSUER,
         audience,
         op,
-        nodeId: payload.node_id
+        nodeId: payload.node_id,
+        ...scope
     };
 }

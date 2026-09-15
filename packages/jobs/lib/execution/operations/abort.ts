@@ -77,7 +77,7 @@ export async function setAbortFlag({ taskId, environmentId }: { taskId: string; 
             return Err(new Error(`Error setting abort flag for task: ${taskId}`, { cause: defaultSecret.error }));
         }
 
-        const persistClient = new PersistClient({ secretKey: defaultSecret.value.secret });
+        const persistClient = new PersistClient({ token: defaultSecret.value.secret });
         const result = await persistClient.putTaskAbort({ environmentId, taskId });
         if (result.isErr()) {
             logger.error(`Error setting abort flag for task: ${taskId}`, result.error);

@@ -733,6 +733,25 @@ describe('Account service', () => {
         });
     });
 
+    describe('getPersistAuthContextByEnvironmentId', () => {
+        it('should return the same narrow context as the secret-key lookup', async () => {
+            const { account, env, plan } = await seedAccountEnvAndUser();
+
+            const result = (await accountService.getPersistAuthContextByEnvironmentId(env.id)).unwrap();
+
+            expect(result).toStrictEqual({
+                account: { id: account.id },
+                environment: { id: env.id, name: env.name },
+                plan: { id: plan.id, name: 'free', records_store: plan.records_store }
+            });
+        });
+
+        it('should return null for an unknown environment', async () => {
+            const result = (await accountService.getPersistAuthContextByEnvironmentId(Number.MAX_SAFE_INTEGER)).unwrap();
+            expect(result).toBeNull();
+        });
+    });
+
     it('should return environment:* scopes for env var key (env_var path)', async () => {
         const account = await createTestAccount();
         const envName = uuid();

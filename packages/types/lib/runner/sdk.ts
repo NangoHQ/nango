@@ -16,7 +16,10 @@ export type ScriptType = 'function' | 'sync' | 'action' | 'webhook' | 'on-event'
 export interface NangoProps {
     scriptType: ScriptType;
     host?: string;
-    secretKey: string;
+    /** CLI dry-run only. Runners receive `taskAuthToken` instead. */
+    secretKey?: string;
+    /** Short-lived capability JWT minted per task. Presented to persist, jobs, and script API calls. */
+    taskAuthToken?: string;
     team: Pick<DBTeam, 'id' | 'name'>;
     connectionId: string;
     environmentId: number;

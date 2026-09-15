@@ -32,6 +32,7 @@
         "@nangohq/email": "file:../email",
         "@nangohq/feature-flags": "file:../feature-flags",
         "@nangohq/fleet": "file:../fleet",
+        "@nangohq/internal-auth": "file:../internal-auth",
         "@nangohq/keystore": "file:../keystore",
         "@nangohq/kms": "file:../kms",
         "@nangohq/kvstore": "file:../kvstore",

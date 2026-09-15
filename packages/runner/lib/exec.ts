@@ -66,7 +66,7 @@ export async function exec({
     abortController?: AbortController;
     locks?: Locks;
 }): Promise<Result<RunnerOutput, ExecutionError>> {
-    const persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
+    const persistClient = new PersistClient({ token: PersistClient.tokenFromNangoProps(nangoProps) });
     const telemetryRecorder = createTelemetryRecorder({
         environmentId: nangoProps.environmentId,
         exportRunnerTelemetry: nangoProps.runnerFlags.exportRunnerTelemetry,

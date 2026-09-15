@@ -9,7 +9,7 @@ import {
     verifyRunnerDispatchToken
 } from '@nangohq/internal-auth';
 
-import { mintRunnerAuthEnv, mintRunnerDispatchToken, mintTaskAuthToken } from './internal-auth.js';
+import { mintRunnerAuthEnv, mintRunnerDispatchToken, mintTaskAuthToken, nangoPropsForRunner } from './internal-auth.js';
 
 const { mockEnvs } = vi.hoisted(() => ({
     mockEnvs: {
@@ -32,16 +32,30 @@ describe('mintTaskAuthToken', () => {
         expect(mintTaskAuthToken('task-1', {})).toBeNull();
     });
 
-    it('mints a jobs-audience token when the signing key is set', () => {
+    it('mints a multi-audience capability token when the signing key is set', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const issuedAt = Math.floor(Date.now() / 1000);
-        const token = mintTaskAuthToken('task-1', {});
+        const token = mintTaskAuthToken('task-1', {
+            environmentId: 9,
+            nangoConnectionId: 42,
+            scriptType: 'sync',
+            syncId: '11111111-1111-4111-8111-111111111111'
+        });
         expect(token).toBeTruthy();
         if (!token) {
             return;
         }
         const auth = verifyInternalServiceToken(token, 'jobs', 'sign');
-        expect(auth).toMatchObject({ kind: 'hmac', op: 'task', taskId: 'task-1', audience: 'jobs' });
+        expect(auth).toMatchObject({
+            kind: 'hmac',
+            op: 'task',
+            taskId: 'task-1',
+            audience: 'jobs',
+            environmentId: 9,
+            connectionId: 42
+        });
+        expect(verifyInternalServiceToken(token, 'persist', 'sign').ok).toBe(true);
+        expect(verifyInternalServiceToken(token, 'server', 'sign').ok).toBe(true);
         const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
         expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS);
         expect(payload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS + 5);
@@ -69,6 +83,32 @@ describe('mintTaskAuthToken', () => {
         const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
         expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + 60);
         expect(payload.exp).toBeLessThan(issuedAt + 65);
+    });
+});
+
+describe('nangoPropsForRunner', () => {
+    it('strips secretKey and attaches the capability token', () => {
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        const props = nangoPropsForRunner('task-1', {
+            scriptType: 'sync',
+            environmentId: 9,
+            nangoConnectionId: 42,
+            secretKey: 'sk-should-not-leak',
+            connectionId: 'conn',
+            environmentName: 'dev',
+            providerConfigKey: 'google',
+            provider: 'google',
+            team: { id: 1, name: 't' },
+            activityLogId: 'log',
+            debug: false,
+            startedAt: new Date(),
+            endUser: null,
+            runnerFlags: {} as never,
+            logger: { level: 'info' },
+            syncConfig: {} as never
+        });
+        expect(props).not.toHaveProperty('secretKey');
+        expect(props.taskAuthToken).toEqual(expect.stringMatching(/^eyJ/));
     });
 });
 
