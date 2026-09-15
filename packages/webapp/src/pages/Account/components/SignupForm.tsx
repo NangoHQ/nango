@@ -25,7 +25,7 @@ const signupSchema = z.object({
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
-export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }> = ({ invitation, token }) => {
+export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string; returnTo?: string }> = ({ invitation, token, returnTo }) => {
     const form = useForm<SignupFormData>({
         resolver: zodResolver(signupSchema),
         defaultValues: {
@@ -192,7 +192,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                             <div className="border-t-[0.5px] border-border-strong w-full"></div>
                         </div>
 
-                        <GoogleButton text="Sign up with Google" setServerErrorMessage={setServerErrorMessage} token={token} />
+                        <GoogleButton text="Sign up with Google" setServerErrorMessage={setServerErrorMessage} token={token} returnTo={returnTo} />
                     </div>
                 )}
 

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@nangohq/design-system';
 
@@ -8,7 +8,6 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { useOnboardingHearAboutUs, usePostOnboardingHearAboutUs } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { track } from '../../utils/analytics';
-import { getOAuthConsentDestination } from '../../utils/oauthConsent';
 
 import type { PostOnboardingHearAboutUs } from '@nangohq/types';
 
@@ -24,21 +23,19 @@ const HEAR_ABOUT_OPTIONS: { label: string; value: PostOnboardingHearAboutUs['Bod
 
 export const HearAboutUs: React.FC = () => {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const destination = getOAuthConsentDestination(searchParams.get('next')) || '/';
 
     const { data, isLoading, error } = useOnboardingHearAboutUs();
     const { mutateAsync: postHearAboutUs, isPending } = usePostOnboardingHearAboutUs();
 
     useEffect(() => {
         if (error) {
-            navigate(destination, { replace: true });
+            navigate('/', { replace: true });
             return;
         }
         if (data && !data.data.showHearAboutUs) {
-            navigate(destination, { replace: true });
+            navigate('/', { replace: true });
         }
-    }, [data, destination, error, navigate]);
+    }, [data, error, navigate]);
 
     const submit = async (source: PostOnboardingHearAboutUs['Body']['source']) => {
         track('web:signup:hear_about', { source });
@@ -46,7 +43,7 @@ export const HearAboutUs: React.FC = () => {
             await postHearAboutUs({ source });
         } finally {
             // Don't block on errors as this is not critical
-            navigate(destination, { replace: true });
+            navigate('/', { replace: true });
         }
     };
 
