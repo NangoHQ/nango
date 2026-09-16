@@ -1551,6 +1551,7 @@
               "integrations/all/miro",
               "integrations/all/miro-scim",
               "integrations/all/missive",
+              "api-integrations/mistral",
               "integrations/all/mixpanel",
               "api-integrations/modjo-ai",
               "api-integrations/modmed",
