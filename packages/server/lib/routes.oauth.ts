@@ -13,6 +13,7 @@ import { userService } from '@nangohq/shared';
 import { flagHasAuth, isBasicAuthEnabled } from '@nangohq/utils';
 
 import { setupAuth } from './clients/auth.client.js';
+import { envs } from './env.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { approveOAuthConsent, completeOAuthLogin, denyOAuthConsent, getOAuthConsentInteraction, oauthConsentCors } from './oauth/interaction.controller.js';
 import { oauthServer } from './oauth/server.js';
@@ -90,7 +91,7 @@ async function authenticateNoAuth(req: Request, res: Response, next: NextFunctio
         return;
     }
     try {
-        const userId = process.env['LOCAL_NANGO_USER_ID'] ? Number.parseInt(process.env['LOCAL_NANGO_USER_ID']) : 0;
+        const userId = envs.LOCAL_NANGO_USER_ID ?? 0;
         const user = await userService.getUserById(userId);
         if (!user) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to find user in no-auth mode' } });

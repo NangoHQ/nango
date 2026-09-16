@@ -187,7 +187,7 @@ const ENVS_SHAPE = z.object({
     WORKOS_CLIENT_ID: z.string().optional(),
     NANGO_DASHBOARD_USERNAME: z.string().optional(),
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
-    LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
+    LOCAL_NANGO_USER_ID: z.coerce.number().int().nonnegative().optional(),
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
     DEFAULT_USER_ROLE: z.enum(roles).optional().default('administrator'),
     AUTH_SHADOW_CACHE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000), // 1 minute
