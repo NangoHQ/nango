@@ -382,6 +382,7 @@ export async function scheduleGrowthAddons({
                 if (existingAddon.state === 'scheduled') {
                     await db.assertSchedulesAreInSync(migration.accountId, growthAddonActivationAt);
                 }
+                logSkip(migration.accountId, 'growth add-on already scheduled and in-sync');
                 continue;
             }
 
