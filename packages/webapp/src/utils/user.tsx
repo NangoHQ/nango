@@ -20,8 +20,16 @@ export function useSignin() {
     };
 }
 
+let signingOut = false;
+
 // Not a hook: the query client's 401 handler calls this from outside React.
 export async function signout({ expired = false }: { expired?: boolean } = {}) {
+    // The homepage's five insight charts fail together; without this each one logs out and redirects.
+    if (signingOut) {
+        return;
+    }
+    signingOut = true;
+
     storage.clearSession();
     resetPlayground(); // playground selections belong to the session's account/env
     resetAnalytics();

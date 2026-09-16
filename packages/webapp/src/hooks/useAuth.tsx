@@ -374,7 +374,7 @@ export function usePostOnboardingHearAboutUs() {
               json: PostOnboardingHearAboutUs['Success'];
           }
         | {
-              status: 401 | 403;
+              status: 403;
               json: PostOnboardingHearAboutUs['Errors'];
           },
         APIError,
@@ -393,7 +393,8 @@ export function usePostOnboardingHearAboutUs() {
                 };
             }
 
-            if (res.status === 401 || res.status === 403) {
+            // Resolving a 401 would skip MutationCache.onError, so an expired session never signs out here.
+            if (res.status === 403) {
                 return {
                     status: res.status,
                     json: (await res.json()) as PostOnboardingHearAboutUs['Errors']
