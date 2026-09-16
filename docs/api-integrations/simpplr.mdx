@@ -75,20 +75,6 @@ Official docs:
 - [Creating the client application](https://platform.simpplr.com/reference/creating-the-client-application)
 - [Generating an access token for the B2B API](https://platform.simpplr.com/reference/generating-access-token-for-b2b-api)
 
-## Common questions
-
-<AccordionGroup>
-  <Accordion title="Is this the Salesforce-hosted Simpplr or the newer platform?">
-    This integration is for Simpplr's own platform, documented at [platform.simpplr.com](https://platform.simpplr.com/reference). Older Simpplr deployments run as a managed package inside the customer's Salesforce org and authenticate through Salesforce; use Nango's `salesforce` integration for those.
-  </Accordion>
-  <Accordion title="Which scope should I request?">
-    Simpplr accepts `read`, `write` and `everything`, and issues `read` tokens when no scope is requested. `read` covers GET calls and the search endpoints that take a POST body. Leave the connection's **Scope** field empty for read-only access, and set it to `write` or `everything` only if your integration modifies Simpplr content.
-  </Accordion>
-  <Accordion title="Can I use the Simpplr User API?">
-    Not with this integration. The User API acts on behalf of a signed-in user and expects an authorization code exchange whose token request names the code `auth_code`. The B2B API covers the same resources at the tenant level, so this integration uses it.
-  </Accordion>
-</AccordionGroup>
-
 ## Pre-built syncs & actions for Simpplr
 
 Enable them in your dashboard. Extend and customize to fit your needs.
@@ -96,3 +82,15 @@ Enable them in your dashboard. Extend and customize to fit your needs.
 import PreBuiltUseCases from "/snippets/generated/simpplr/PreBuiltUseCases.mdx"
 
 <PreBuiltUseCases />
+
+## API gotchas
+
+- Simpplr runs two different products. This integration is for Simpplr's own platform, documented at [platform.simpplr.com](https://platform.simpplr.com/reference). Older tenants run as a managed package inside the customer's Salesforce org and authenticate through Salesforce; use the `salesforce` integration for those.
+- The API host is per region, and the tenant's OAuth token URL is the only place the region is stated: `platform.app.simpplr.com` (United States), `platform.eu.simpplr.com`, `platform.au.simpplr.com` and `platform.ca.simpplr.com`. A wrong **Region** points the connection at another region's tenant.
+- Simpplr's published B2B OpenAPI gives its token URL as `https://platform.{env}.simpplr.xyz/v1/identity/oauth/token`. The working domain is `.com`, so a client generated from that spec calls a host that does not resolve.
+- The token response carries only `access_token`. Simpplr documents no lifetime, so the connection falls back to Nango's default client-credentials expiry.
+- Tokens are read-only unless a scope is requested. Simpplr accepts `read` (the default), `write` and `everything`, and `read` covers GET calls plus the search endpoints that take a POST body.
+- The B2B API covers tenant-level access. Simpplr's separate User API acts for a signed-in user and expects an authorization code exchange whose token body names the code `auth_code`, which this integration does not use.
+- `GET /v1/b2b/identity/test` is the cheapest call for checking a connection.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/simpplr.mdx)</Note>

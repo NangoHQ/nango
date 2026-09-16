@@ -22909,28 +22909,20 @@ simpplr:
                 - ca
             order: 1
             doc_section: '#step-2-find-your-region'
-        oauth_scopes:
-            type: string
-            title: Scope
-            description: The access level to request. Simpplr issues read-only tokens when this is left empty.
-            enum:
-                - read
-                - write
-                - everything
-            example: read
-            optional: true
-            order: 2
-            doc_section: '#step-3-choose-the-scope'
     credentials:
         client_id:
             type: string
             title: Client ID
             description: The Client ID of your Simpplr client application.
+            pattern: '^\S+$'
+            example: 7f3a91c2****************************e85b
             doc_section: '#step-1-create-a-client-application'
         client_secret:
             type: string
             title: Client Secret
             description: The Client Secret of your Simpplr client application.
+            pattern: '^\S+$'
+            example: b41d7e60********************************************9af2
             secret: true
             doc_section: '#step-1-create-a-client-application'
 
