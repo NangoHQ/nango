@@ -1,3 +1,5 @@
+import { isAxiosError } from 'axios';
+
 import type { InternalNango as Nango } from '../../credentials-verification-script.js';
 
 export default async function execute(nango: Nango) {
@@ -14,9 +16,7 @@ export default async function execute(nango: Nango) {
         data: '<propfind xmlns="DAV:"><prop><current-user-principal/></prop></propfind>'
     });
 
-    const raw = typeof (response as { data?: unknown })?.data === 'string' ? (response as { data: string }).data : '';
-
-    if (response.status !== 207 || !raw.includes('current-user-principal')) {
+    if (isAxiosError(response) || response.status !== 207 || !response.data.includes('current-user-principal')) {
         throw new Error('Incorrect Credentials');
     }
 }
