@@ -4,8 +4,11 @@ import db from '@nangohq/database';
 import { records } from '@nangohq/records';
 import { connectionService, createPlan, environmentService, freePlan, updatePlanByTeam } from '@nangohq/shared';
 import { Clickhouse, clickhouseClient, migrate } from '@nangohq/usage';
+import { getLogger } from '@nangohq/utils';
 
 import type { ClickhouseRawUsageEvent } from '@nangohq/usage';
+
+const logger = getLogger('clickhouse.Seeder');
 
 /**
  * Seeds the local ClickHouse `usage` database with synthetic usage events so the
@@ -123,7 +126,11 @@ function parseArgs() {
 async function getDbCounts(accountId: number): Promise<{ connections: number; records: number }> {
     const connections = await connectionService.countByAccountId(accountId);
     const environments = await environmentService.getEnvironmentsByAccountId(accountId);
-    const envs = environments.isOk() ? environments.value : [];
+    if (environments.isErr()) {
+        logger.warning('Failed to retrieve environments for account.', { err: environments.error, accountId });
+        return { connections, records: 0 };
+    }
+    const envs = environments.value;
     const environmentIds = envs.map((e) => e.id);
     let recordCount = 0;
     if (environmentIds.length > 0) {
