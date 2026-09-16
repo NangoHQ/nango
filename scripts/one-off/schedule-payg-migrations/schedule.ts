@@ -69,6 +69,7 @@ export const DEFAULT_THROTTLE_MS = 2_000;
 
 const PAYG_EXTERNAL_PLAN_ID = 'pay-as-you-go';
 const GROWTH_ADDON_PRICE_ID = 'growth-add-on';
+const GROWTH_ADDON_ACTIVATION_LEAD_HOURS = 6;
 
 const SUBSCRIPTION_LOOKUP_BATCH_SIZE = 100;
 
@@ -142,6 +143,13 @@ function parseOrbDate(value: string, context: string): Date {
         throw new Error(`Orb returned an invalid ${context}: ${value}`);
     }
     return date;
+}
+
+function getGrowthAddonActivationAt(plannedAt: Date | null): Date {
+    if (!plannedAt) {
+        throw new Error('PAYG plan change date is required to schedule the growth add-on');
+    }
+    return new Date(plannedAt.getTime() - GROWTH_ADDON_ACTIVATION_LEAD_HOURS * 60 * 60 * 1000);
 }
 
 function getGrowthAddonInterval(priceIntervals: OrbPriceInterval[] | undefined, now: Date): { state: 'active' | 'scheduled'; startsAt: Date } | null {
@@ -367,7 +375,11 @@ export async function scheduleGrowthAddons({
                     continue;
                 }
 
-                if (existingAddon.state === 'scheduled' && !(await db.areSchedulesInSync(migration.accountId, existingAddon.startsAt))) {
+                const growthAddonActivationAt = getGrowthAddonActivationAt(migration.plannedAt);
+                if (existingAddon.state === 'scheduled' && existingAddon.startsAt.getTime() !== migration.plannedAt?.getTime()) {
+                    throw new Error('Orb scheduled the growth add-on for a different timestamp than the PAYG plan change');
+                }
+                if (existingAddon.state === 'scheduled' && !(await db.areSchedulesInSync(migration.accountId, growthAddonActivationAt))) {
                     throw new Error('Add-on start dates are out of sync: Orb and Nango db disagree on it');
                 }
                 continue;
@@ -393,8 +405,14 @@ export async function scheduleGrowthAddons({
             if (scheduledAddon?.state !== 'scheduled') {
                 throw new Error('Orb did not return a future growth add-on price interval after scheduling it');
             }
+            if (!migration.plannedAt || scheduledAddon.startsAt.getTime() !== migration.plannedAt.getTime()) {
+                throw new Error('Orb scheduled the growth add-on for a different date than the PAYG plan change');
+            }
 
-            await db.setGrowthFeaturesStartsAt(migration.accountId, scheduledAddon.startsAt);
+            // Scheduling the `has_growth_features` flag enabling to GROWTH_ADDON_ACTIVATION_LEAD_HOURS before the
+            // actual plan change. This will ensure the flag is already flipped by the time the plan changes, thus
+            // incurring no down time on the feature set gated by the add-on.
+            await db.setGrowthFeaturesStartsAt(migration.accountId, getGrowthAddonActivationAt(migration.plannedAt));
             summary.scheduled++;
             console.log(`SCHEDULED account ${migration.accountId}: growth add-on starting ${scheduledAddon.startsAt.toISOString()}`);
         } catch (err) {

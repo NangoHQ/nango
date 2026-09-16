@@ -1,6 +1,6 @@
 # Schedule pay-as-you-go migrations
 
-Schedules eligible Orb subscriptions to move to the pay-as-you-go plan at the end of their current term. For rows with `with_growth_addon=true`, it also schedules the Growth add-on at the end of the term and writes Orb's returned activation date to `plans.growth_features_starts_at`.
+Schedules eligible Orb subscriptions to move to the pay-as-you-go plan at the end of their current term. For rows with `with_growth_addon=true`, it also schedules the Growth add-on at the end of the term and records a local Growth activation date six hours before that transition in `plans.growth_features_starts_at`.
 
 ## Prerequisites
 
