@@ -15507,6 +15507,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `greenhouse-job-board` | Greenhouse (Job Board API) | BASIC | [docs](https://nango.dev/docs/integrations/all/greenhouse-job-board.md) | [connect](https://nango.dev/docs/integrations/all/greenhouse-job-board/connect.md) |  | ats |
 | `greenhouse-onboarding` | Greenhouse (Onboarding API) | BASIC | [docs](https://nango.dev/docs/integrations/all/greenhouse-onboarding.md) | [connect](https://nango.dev/docs/integrations/all/greenhouse-onboarding/connect.md) |  | ats |
 | `grist` | Grist | API_KEY | [docs](https://nango.dev/docs/api-integrations/grist.md) | [connect](https://nango.dev/docs/api-integrations/grist/connect.md) |  | productivity |
+| `groq` | Groq | API_KEY | [docs](https://nango.dev/docs/api-integrations/groq.md) | [connect](https://nango.dev/docs/api-integrations/groq/connect.md) |  | dev-tools, productivity |
 | `gumroad` | Gumroad | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gumroad.md) |  |  | design, e-commerce, payment |
 | `guru` | Guru | BASIC | [docs](https://nango.dev/docs/integrations/all/guru.md) | [connect](https://nango.dev/docs/integrations/all/guru/connect.md) |  | knowledge-base |
 | `guru-scim` | Guru (SCIM) | BASIC | [docs](https://nango.dev/docs/integrations/all/guru-scim.md) | [connect](https://nango.dev/docs/integrations/all/guru-scim/connect.md) |  | knowledge-base |
