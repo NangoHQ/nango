@@ -1,7 +1,6 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 
-import { APIError, isUnauthenticatedEndpoint } from '../utils/api';
 import { PROD_ENVIRONMENT_NAME } from '../utils/environments';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
 import { isPublicAuthPath } from '../utils/routes';
@@ -52,7 +51,13 @@ export const useStore = create<State>()((set, get) => ({
 let signingOut = false;
 
 async function handleQueryError(error: unknown) {
-    if (signingOut || !(error instanceof APIError) || error.res.status !== 401) {
+    if (signingOut) {
+        return;
+    }
+
+    // A static import would break this module's node-environment unit test: utils/api reads `window` as it loads.
+    const { APIError, isUnauthenticatedEndpoint } = await import('../utils/api');
+    if (!(error instanceof APIError) || error.res.status !== 401) {
         return;
     }
     if (isUnauthenticatedEndpoint(error.res.url) || isPublicAuthPath(window.location.pathname)) {
