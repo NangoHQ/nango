@@ -72,7 +72,7 @@ describe(`GET ${route}`, () => {
 
     it('should return empty list with pagination metadata when integration has no deployed functions', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        await seeders.createConfigSeed(env, 'github', 'github');
+        await seeders.createConfigSeed(env, 'github', 'adobe');
 
         const res = await api.fetch(route, {
             method: 'GET',
@@ -91,7 +91,7 @@ describe(`GET ${route}`, () => {
 
     it('should aggregate sync, action, and on-event functions', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
@@ -136,7 +136,7 @@ describe(`GET ${route}`, () => {
 
     it('should filter by type=on-event', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
@@ -175,7 +175,7 @@ describe(`GET ${route}`, () => {
 
     it('should paginate results', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         for (let i = 0; i < 25; i++) {
@@ -215,7 +215,7 @@ describe(`GET ${route}`, () => {
 
     it('should paginate on-event results deterministically when multiple scripts share the same name', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
 
         await insertOnEventScripts({
             configId: integration.id!,
@@ -254,7 +254,7 @@ describe(`GET ${route}`, () => {
 
     it('should paginate merged function listings deterministically across function tables', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
@@ -321,7 +321,7 @@ describe(`GET ${route}`, () => {
 
     it('should return total even when page is out of range', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         for (let i = 0; i < 3; i++) {
@@ -348,7 +348,7 @@ describe(`GET ${route}`, () => {
 
     it('should filter by case-insensitive search on name across all function types', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
@@ -396,7 +396,7 @@ describe(`GET ${route}`, () => {
 
     it('should match LIKE wildcards literally in search', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
@@ -422,7 +422,7 @@ describe(`GET ${route}`, () => {
 
     it('should reject empty search after trim', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        await seeders.createConfigSeed(env, 'github', 'github');
+        await seeders.createConfigSeed(env, 'github', 'adobe');
 
         const res = await api.fetch(route, {
             method: 'GET',
@@ -438,7 +438,7 @@ describe(`GET ${route}`, () => {
 
     it('should reject invalid type query', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        await seeders.createConfigSeed(env, 'github', 'github');
+        await seeders.createConfigSeed(env, 'github', 'adobe');
 
         const res = await api.fetch(route, {
             method: 'GET',

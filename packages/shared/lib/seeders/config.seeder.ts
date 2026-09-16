@@ -151,6 +151,8 @@ export function getTestConfig(data?: Partial<IntegrationConfig>): IntegrationCon
         unique_key: 'test',
         provider: 'test',
         environment_id: 1,
+        auto_enable_catalog_actions: false,
+        catalog_action_overrides: {},
         ...data
     };
 }

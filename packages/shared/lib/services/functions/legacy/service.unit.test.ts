@@ -4,16 +4,23 @@ import { getFunction, listFunctions, ListFunctionsError } from './service.js';
 
 import type { FunctionRow } from './models/functions.js';
 
-const { mockFindActiveByEnvironment, mockFindActiveByName, mockGetIdByProviderConfigKey } = vi.hoisted(() => {
+const { mockFindActiveByEnvironment, mockFindActiveByName, mockGetProviderConfig, mockListCatalogActions, mockGetCatalogAction } = vi.hoisted(() => {
     return {
         mockFindActiveByEnvironment: vi.fn(),
         mockFindActiveByName: vi.fn(),
-        mockGetIdByProviderConfigKey: vi.fn()
+        mockGetProviderConfig: vi.fn(),
+        mockListCatalogActions: vi.fn(),
+        mockGetCatalogAction: vi.fn()
     };
 });
 
 vi.mock('../../config.service.js', () => ({
-    default: { getIdByProviderConfigKey: mockGetIdByProviderConfigKey }
+    default: { getProviderConfig: mockGetProviderConfig }
+}));
+
+vi.mock('../../catalog/actions.js', () => ({
+    listCatalogActions: mockListCatalogActions,
+    getCatalogAction: mockGetCatalogAction
 }));
 
 vi.mock('./models/functions.js', () => ({
@@ -38,15 +45,23 @@ const baseRow: FunctionRow = {
     event: null
 };
 
+const integration = {
+    id: 1,
+    provider: 'github',
+    auto_enable_catalog_actions: false,
+    catalog_action_overrides: {}
+};
+
 describe('functions service', () => {
     beforeEach(() => {
         vi.resetAllMocks();
-        mockGetIdByProviderConfigKey.mockResolvedValue(1);
+        mockGetProviderConfig.mockResolvedValue(integration);
+        mockListCatalogActions.mockReturnValue([]);
+        mockGetCatalogAction.mockReturnValue(undefined);
+        mockFindActiveByEnvironment.mockResolvedValue({ rows: [baseRow], total: 1 });
     });
 
     it('returns mapped rows and total for valid functions', async () => {
-        mockFindActiveByEnvironment.mockResolvedValue({ rows: [baseRow], total: 1 });
-
         const result = await listFunctions({
             environmentId: 1,
             providerConfigKey: 'github',
@@ -82,11 +97,20 @@ describe('functions service', () => {
             ],
             total: 1
         });
-        expect(mockGetIdByProviderConfigKey).toHaveBeenCalledWith(1, 'github');
+        expect(mockGetProviderConfig).toHaveBeenCalledWith('github', 1);
+        expect(mockFindActiveByEnvironment).toHaveBeenCalledWith({
+            environmentId: 1,
+            providerConfigKey: 'github',
+            type: undefined,
+            search: undefined,
+            limit: 20,
+            offset: 0,
+            catalog: []
+        });
     });
 
     it('returns a typed error when the integration does not exist', async () => {
-        mockGetIdByProviderConfigKey.mockResolvedValue(null);
+        mockGetProviderConfig.mockResolvedValue(null);
 
         const result = await listFunctions({
             environmentId: 1,

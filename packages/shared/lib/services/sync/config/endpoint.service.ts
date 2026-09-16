@@ -1,5 +1,7 @@
 import db, { dbNamespace, schema } from '@nangohq/database';
 
+import { listCatalogActions } from '../../catalog/actions.js';
+import { isCatalogActionEnabled } from '../../catalog/membership.js';
 import configService from '../../config.service.js';
 
 import type { DBConnection, DBConnectionDecrypted, DBSyncConfig, DBSyncEndpoint, HTTP_METHOD } from '@nangohq/types';
@@ -33,13 +35,36 @@ export async function getActionOrModelByEndpoint(connection: DBConnection | DBCo
         .orderBy(`${SYNC_CONFIG_TABLE}.id`, 'desc');
 
     if (!result) {
-        return {};
+        return liveCatalogActionByEndpoint(config, method, path);
     }
     if (result['type'] == 'action') {
         return { action: result['sync_name'] };
     } else {
         return { model: result['model'] };
     }
+}
+
+function liveCatalogActionByEndpoint(
+    config: NonNullable<Awaited<ReturnType<typeof configService.getProviderConfig>>>,
+    method: HTTP_METHOD,
+    path: string
+): ActionOrModel {
+    for (const action of listCatalogActions(config.provider)) {
+        if (!action.endpoint || action.endpoint.method !== method || action.endpoint.path !== path) {
+            continue;
+        }
+        if (
+            !isCatalogActionEnabled({
+                name: action.name,
+                autoEnable: config.auto_enable_catalog_actions,
+                overrides: config.catalog_action_overrides ?? {}
+            })
+        ) {
+            continue;
+        }
+        return { action: action.name };
+    }
+    return {};
 }
 
 export async function hardDeleteEndpoints({ syncConfigId }: { syncConfigId: number }): Promise<number> {

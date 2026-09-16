@@ -24,7 +24,8 @@ const baseValidationBody = z
         provider: providerSchema,
         unique_key: providerConfigKeySchema,
         display_name: integrationDisplayNameSchema.optional(),
-        forward_webhooks: integrationForwardWebhooksSchema
+        forward_webhooks: integrationForwardWebhooksSchema,
+        auto_enable_catalog_actions: z.boolean().optional()
     })
     .strict();
 
@@ -56,6 +57,7 @@ export const postPublicIntegration = asyncWrapperWithEnvironment<PostPublicInteg
         credentialSource: 'own',
         displayName: body.display_name,
         forwardWebhooks: body.forward_webhooks,
+        autoEnableCatalogActions: body.auto_enable_catalog_actions,
         credentials: body.credentials,
         integrationConfig: body.integration_config,
         custom: body.custom
@@ -91,7 +93,8 @@ export const postPublicQuickstartIntegration = asyncWrapperWithEnvironment<PostP
         uniqueKey: body.unique_key,
         credentialSource: 'nango',
         displayName: body.display_name,
-        forwardWebhooks: body.forward_webhooks
+        forwardWebhooks: body.forward_webhooks,
+        autoEnableCatalogActions: body.auto_enable_catalog_actions
     });
     if (result.isErr()) {
         sendCreateIntegrationError(res, result.error);

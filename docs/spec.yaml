@@ -144,6 +144,11 @@ paths:
                                 forward_webhooks:
                                     type: boolean
                                     description: Whether to forward webhooks received for this integration. Defaults to true.
+                                auto_enable_catalog_actions:
+                                    type: boolean
+                                    description: >
+                                        When true, catalog actions for this provider are live on the integration without a per-action deploy.
+                                        Defaults to true on create. Omit or pass false to start with none on.
                                 credentials:
                                     $ref: '#/components/schemas/IntegrationCredentials'
                                 integration_config:
@@ -198,6 +203,11 @@ paths:
                                 forward_webhooks:
                                     type: boolean
                                     description: Whether to forward webhooks for this integration.
+                                auto_enable_catalog_actions:
+                                    type: boolean
+                                    description: >
+                                        When true, catalog actions for this provider are live on the integration without a per-action deploy.
+                                        Defaults to true on create.
             responses:
                 '200':
                     description: Successfully created an integration
@@ -3755,16 +3765,17 @@ components:
                 - source
             properties:
                 id:
-                    type: number
+                    type: [number, 'null']
+                    description: Sync-config id. Null when the function is served live from the catalog.
                 enabled:
                     type: boolean
                 last_deployed:
-                    type: string
+                    type: [string, 'null']
                     format: date-time
-                    description: ISO-8601 timestamp.
+                    description: ISO-8601 timestamp. Null when the function was never deployed.
                 source:
                     type: string
-                    enum: [catalog, standalone, repo]
+                    enum: [catalog, standalone, repo, nango-catalog]
 
         NangoSyncFunction:
             type: object

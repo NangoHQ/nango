@@ -81,6 +81,33 @@ describe('createIntegrationsTool', () => {
         }
     });
 
+    it('forwards auto_enable_catalog_actions when the caller sets it', async () => {
+        vi.spyOn(integrationService, 'create').mockResolvedValue(Ok({ integration: integrationFixture(), provider: providerFixture() }));
+
+        await createIntegrationsTool.handler(
+            {
+                provider: 'github',
+                integration_id: 'github-own',
+                credential_source: 'own',
+                auto_enable_catalog_actions: false,
+                credentials: {
+                    type: 'OAUTH2',
+                    client_id: 'client-id',
+                    client_secret: 'client-secret',
+                    scopes: 'repo'
+                }
+            },
+            context
+        );
+
+        expect(integrationService.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+                uniqueKey: 'github-own',
+                autoEnableCatalogActions: false
+            })
+        );
+    });
+
     it('dispatches Nango-provided credentials without caller credential fields', async () => {
         vi.spyOn(integrationService, 'create').mockResolvedValue(Ok({ integration: integrationFixture(), provider: providerFixture() }));
 
@@ -236,6 +263,8 @@ function integrationFixture(): Config {
         display_name: 'GitHub Own',
         forward_webhooks: false,
         shared_credentials_id: null,
+        auto_enable_catalog_actions: false,
+        catalog_action_overrides: {},
         created_at: createdAt,
         updated_at: updatedAt
     };

@@ -66,7 +66,7 @@ describe(`GET ${route}`, () => {
 
     it('should list functions for the environment derived from the key', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
@@ -97,7 +97,7 @@ describe(`GET ${route}`, () => {
 
     it('should filter by type and search', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({

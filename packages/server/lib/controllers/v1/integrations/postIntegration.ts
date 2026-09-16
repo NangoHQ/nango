@@ -69,6 +69,7 @@ export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(asyn
             provider: typeof provider;
             unique_key?: string;
             display_name?: string;
+            auto_enable_catalog_actions?: boolean;
         } = {
             providerName: body.provider,
             environment_id: environment.id,
@@ -79,6 +80,9 @@ export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(asyn
         }
         if ('displayName' in body && body.displayName) {
             createParams.display_name = body.displayName;
+        }
+        if (body.auto_enable_catalog_actions !== undefined) {
+            createParams.auto_enable_catalog_actions = body.auto_enable_catalog_actions;
         }
         const result = await sharedCredentialsService.createPreprovisionedProvider(createParams);
         if (result.isErr()) {

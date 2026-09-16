@@ -2,6 +2,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { eventTypeMapper } from '../../on-event-scripts.service.js';
 
+import type { CatalogAction } from '../../catalog/actions.js';
 import type { FunctionRow } from './models/functions.js';
 import type { DBOnEventScript, ListedNangoActionFunction, ListedNangoFunction, ListedNangoOnEventFunction, ListedNangoSyncFunction } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -17,7 +18,7 @@ export function toListedNangoFunction(row: FunctionRow): Result<ListedNangoFunct
     const availability = {
         id: row.id,
         enabled: row.enabled,
-        last_deployed: row.last_deployed.toISOString(),
+        last_deployed: row.last_deployed ? row.last_deployed.toISOString() : null,
         source: row.source
     };
 
@@ -68,4 +69,20 @@ export function toListedNangoFunction(row: FunctionRow): Result<ListedNangoFunct
     }
 
     return Err(new Error(`Unknown function type: ${String(row.type)}`));
+}
+
+export function toListedLiveCatalogAction(action: CatalogAction, enabled: boolean): ListedNangoActionFunction {
+    return {
+        name: action.name,
+        ...(action.description !== undefined && { description: action.description }),
+        ...(action.scopes.length > 0 && { scopes: action.scopes }),
+        type: 'action',
+        ...(action.input !== null && { input: action.input }),
+        returns: action.output,
+        json_schema: action.json_schema,
+        id: null,
+        enabled,
+        last_deployed: null,
+        source: 'nango-catalog'
+    };
 }

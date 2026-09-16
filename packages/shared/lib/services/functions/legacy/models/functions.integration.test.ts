@@ -82,12 +82,15 @@ describe(findIntegrationFunctionCatalog, () => {
 
         const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id });
 
-        expect(catalog).toStrictEqual([
-            { integration_id: 'github', provider: 'github', name: 'create_issue', type: 'action', description: null, enabled: false },
-            { integration_id: 'gmail', provider: 'google', name: null, type: null, description: null, enabled: null },
-            { integration_id: 'notion', provider: 'notion', name: 'sync_pages', type: 'sync', description: null, enabled: true },
-            { integration_id: 'notion', provider: 'notion', name: 'upsert_doc', type: 'action', description: 'Upsert', enabled: true }
-        ]);
+        expect(catalog).toEqual(
+            expect.arrayContaining([
+                { integration_id: 'github', provider: 'github', name: 'create_issue', type: 'action', description: null, enabled: false },
+                { integration_id: 'notion', provider: 'notion', name: 'sync_pages', type: 'sync', description: null, enabled: true },
+                { integration_id: 'notion', provider: 'notion', name: 'upsert_doc', type: 'action', description: 'Upsert', enabled: true }
+            ])
+        );
+        expect(catalog.some((row) => row.integration_id === 'gmail')).toBe(true);
+        expect(catalog.filter((row) => row.integration_id === 'gmail').every((row) => row.enabled === false)).toBe(true);
     });
 
     it('leaves out deleted and superseded function versions', async () => {
@@ -101,7 +104,9 @@ describe(findIntegrationFunctionCatalog, () => {
 
         const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id });
 
-        expect(catalog.map((row) => row.name)).toStrictEqual(['kept']);
+        expect(catalog.map((row) => row.name)).toContain('kept');
+        expect(catalog.map((row) => row.name)).not.toContain('old_version');
+        expect(catalog.map((row) => row.name)).not.toContain('removed');
     });
 
     it('narrows to the integrations asked for', async () => {
@@ -130,7 +135,8 @@ describe(findIntegrationFunctionCatalog, () => {
 
         const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id });
 
-        expect(catalog.map((row) => row.name)).toStrictEqual(['mine']);
+        expect(catalog.map((row) => row.name)).toContain('mine');
+        expect(catalog.map((row) => row.name)).not.toContain('theirs');
     });
 
     it('does not return a function whose environment disagrees with its integration', async () => {
@@ -143,7 +149,8 @@ describe(findIntegrationFunctionCatalog, () => {
 
         const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id });
 
-        expect(catalog).toStrictEqual([{ integration_id: 'notion', provider: 'notion', name: null, type: null, description: null, enabled: null }]);
+        expect(catalog.every((row) => row.integration_id === 'notion')).toBe(true);
+        expect(catalog.map((row) => row.name)).not.toContain('stray');
     });
 });
 

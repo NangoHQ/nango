@@ -80,6 +80,8 @@ function integrationFixture(overrides: Partial<IntegrationConfig> = {}): Integra
         display_name: null,
         forward_webhooks: true,
         shared_credentials_id: null,
+        auto_enable_catalog_actions: false,
+        catalog_action_overrides: {},
         created_at: new Date('2026-01-01T00:00:00.000Z'),
         updated_at: new Date('2026-01-02T00:00:00.000Z'),
         ...overrides

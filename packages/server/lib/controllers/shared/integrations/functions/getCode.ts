@@ -1,7 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { configService, getSyncAndActionConfigsBySyncNameAndConfigId, localFileService, onEventScriptService, remoteFileService } from '@nangohq/shared';
+import {
+    catalogActionTsPath,
+    configService,
+    getCatalogAction,
+    getSyncAndActionConfigsBySyncNameAndConfigId,
+    localFileService,
+    onEventScriptService,
+    remoteFileService
+} from '@nangohq/shared';
 import { report, useRemoteStorage } from '@nangohq/utils';
 
 import type { RequestLocalsWithEnvironment } from '../../../../utils/express.js';
@@ -82,6 +90,20 @@ export async function handleGetFunctionCode({
 
     const match = filtered[0];
     if (!match) {
+        if (type === undefined || type === 'action') {
+            const catalog = getCatalogAction(providerConfig.provider, name);
+            if (catalog) {
+                try {
+                    const code = await remoteFileService.getFile(catalogActionTsPath({ provider: providerConfig.provider, name }));
+                    res.status(200).send({ type: 'action', code });
+                    return;
+                } catch (err) {
+                    report(err, { providerConfigKey, scriptName: name, scriptType: 'action' });
+                    res.status(404).send({ error: { code: 'not_found', message: `Source file for '${name}' not found` } });
+                    return;
+                }
+            }
+        }
         res.status(404).send({ error: { code: 'not_found', message: `Function '${name}' not found for integration '${providerConfigKey}'` } });
         return;
     }

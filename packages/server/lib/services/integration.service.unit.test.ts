@@ -250,6 +250,7 @@ describe('integrationService', () => {
                     missing_fields: [],
                     forward_webhooks: false,
                     shared_credentials_id: null,
+                    auto_enable_catalog_actions: true,
                     oauth_client_id: 'client-id',
                     oauth_client_secret: 'client-secret',
                     oauth_scopes: 'repo'
@@ -279,7 +280,8 @@ describe('integrationService', () => {
                 expect.objectContaining({
                     unique_key: 'github-nango',
                     shared_credentials_id: sharedCredentials.id,
-                    forward_webhooks: true
+                    forward_webhooks: true,
+                    auto_enable_catalog_actions: true
                 }),
                 provider
             );
@@ -306,7 +308,8 @@ describe('integrationService', () => {
                 expect.objectContaining({
                     unique_key: 'github-app-nango',
                     shared_credentials_id: sharedCredentials.id,
-                    forward_webhooks: true
+                    forward_webhooks: true,
+                    auto_enable_catalog_actions: true
                 }),
                 provider
             );
@@ -841,6 +844,8 @@ function integrationFixture({ uniqueKey, provider, ...overrides }: { uniqueKey: 
         display_name: null,
         forward_webhooks: true,
         shared_credentials_id: null,
+        auto_enable_catalog_actions: false,
+        catalog_action_overrides: {},
         created_at: createdAt,
         updated_at: updatedAt,
         ...overrides

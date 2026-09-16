@@ -1,5 +1,5 @@
 import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq/logs';
-import { configService, connectionService, getSyncConfigRaw, pubsub } from '@nangohq/shared';
+import { configService, connectionService, pubsub, resolveRunnableAction } from '@nangohq/shared';
 import { Err, Ok, truncateJson } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -74,12 +74,13 @@ export async function executeAction({
             return { logCtx, result: Err(new ActionExecutionError({ code: 'unknown_provider', message: 'Failed to find provider' })) };
         }
 
-        const syncConfig = await getSyncConfigRaw({ environmentId: environment.id, config_id: provider.id!, name: actionName, isAction: true });
-        if (!syncConfig) {
+        const syncConfig = await resolveRunnableAction({ environmentId: environment.id, integration: provider, name: actionName });
+        if (syncConfig.kind === 'missing') {
             return { logCtx, result: Err(new ActionExecutionError({ code: 'unknown_action', message: 'Action not found' })) };
         }
 
-        if (!syncConfig.enabled) {
+        const actionConfig = syncConfig.config;
+        if (!actionConfig.enabled) {
             return { logCtx, result: Err(new ActionExecutionError({ code: 'disabled_action', message: 'The action is disabled' })) };
         }
 
@@ -95,7 +96,7 @@ export async function executeAction({
                 environment,
                 integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
                 connection: { id: connection.id, name: connection.connection_id },
-                syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
+                syncConfig: actionConfig.id ? { id: actionConfig.id, name: actionConfig.sync_name } : { name: actionConfig.sync_name },
                 meta: truncateJson({ input })
             }
         );

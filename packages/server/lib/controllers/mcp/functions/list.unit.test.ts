@@ -5,6 +5,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { InternalMcpError, PublicMcpError } from '../utils.js';
 import { listFunctionsTool } from './list.js';
+import { listFunctionsOutputSchema } from './schema.js';
 
 import type { ManagementMcpContext } from '../managementTool.js';
 import type { ListedNangoFunction } from '@nangohq/types';
@@ -42,6 +43,18 @@ describe('listFunctionsTool', () => {
                 data: [functionFixture],
                 pagination: { total: 25, page: 2, limit: 10 }
             });
+        }
+    });
+
+    it('accepts live catalog actions with a null id and nango-catalog source', async () => {
+        const live = liveCatalogFunctionFixture;
+        vi.spyOn(legacyFunctionService, 'listFunctions').mockResolvedValue(Ok({ rows: [live], total: 1 }));
+
+        const result = await listFunctionsTool.handler({ integration_id: 'github' }, context);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(listFunctionsOutputSchema.parse(result.value).data).toStrictEqual([live]);
         }
     });
 
@@ -135,4 +148,17 @@ const functionFixture: ListedNangoFunction = {
     enabled: true,
     last_deployed: '2026-01-01T00:00:00.000Z',
     source: 'repo'
+};
+
+const liveCatalogFunctionFixture: ListedNangoFunction = {
+    id: null,
+    name: 'create-issue',
+    type: 'action',
+    description: 'Create an issue',
+    scopes: ['repo'],
+    returns: ['Issue'],
+    json_schema: null,
+    enabled: true,
+    last_deployed: null,
+    source: 'nango-catalog'
 };

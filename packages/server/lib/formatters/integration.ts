@@ -24,6 +24,7 @@ export function integrationToApi(data: IntegrationConfig, options?: { includeCre
         missing_fields: data.missing_fields,
         display_name: data.display_name,
         forward_webhooks: data.forward_webhooks === undefined ? true : data.forward_webhooks,
+        auto_enable_catalog_actions: data.auto_enable_catalog_actions === undefined ? false : data.auto_enable_catalog_actions,
         shared_credentials_id: data.shared_credentials_id
     };
 }

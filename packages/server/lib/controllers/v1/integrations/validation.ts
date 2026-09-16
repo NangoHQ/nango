@@ -110,5 +110,6 @@ export const patchIntegrationBodySchema = integrationBaseBodySchema.or(integrati
 export const postIntegrationBodySchema = integrationBaseBodySchema.extend({
     provider: providerSchema,
     useSharedCredentials: z.boolean(),
-    auth: integrationAuthTypeSchema.optional()
+    auth: integrationAuthTypeSchema.optional(),
+    auto_enable_catalog_actions: z.boolean().optional()
 });
