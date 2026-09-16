@@ -7,7 +7,7 @@ import {
     fakeReq,
     fakeRes,
     getApiKeyByIdMock,
-    getApiKeyByUuidMock,
+    getApiKeyByUuidWithoutSecretsMock,
     getEnvironmentByIdMock,
     getEnvironmentByUuidMock,
     installAuditMockDefaults,
@@ -27,7 +27,7 @@ describe('apiKey audit middleware (unit)', () => {
         getEnvironmentByIdMock.mockReset().mockResolvedValue({ id: 12, name: 'prod' });
         getEnvironmentByUuidMock.mockReset().mockResolvedValue({ id: 12, uuid: '00000000-0000-4000-8000-000000000012', name: 'prod' });
         getApiKeyByIdMock.mockReset().mockResolvedValue(Ok({ uuid: 'a2f1c0de-0000-4000-8000-000000000001', display_name: 'ci-key' }));
-        getApiKeyByUuidMock.mockReset().mockResolvedValue(Ok({ id: 2551, display_name: 'ci-key' }));
+        getApiKeyByUuidWithoutSecretsMock.mockReset().mockResolvedValue(Ok({ id: 2551, display_name: 'ci-key' }));
     });
 
     afterEach(() => {
@@ -85,8 +85,10 @@ describe('apiKey audit middleware (unit)', () => {
             resource: 'api_key',
             action: 'deleted',
             accountId: 42,
-            environment: { id: '00000000-0000-4000-8000-000000000012', display: 'prod' }
+            environment: { id: '00000000-0000-4000-8000-000000000012', display: 'prod' },
+            targets: [{ type: 'api_key', id: '00000000-0000-4000-8000-000000002551', display: 'ci-key' }]
         });
+        expect(getApiKeyByUuidWithoutSecretsMock).toHaveBeenCalledWith(expect.anything(), '00000000-0000-4000-8000-000000002551', 12, 42);
         expect(accountKey?.environment).toBeNull();
     });
 
@@ -151,7 +153,7 @@ describe('apiKey audit middleware (unit)', () => {
         );
         expect(event).toMatchObject({ resource: 'api_key', action: 'deleted', accountId: 42, environment: null, targets: [] });
         expect(getEnvironmentByUuidMock).not.toHaveBeenCalled();
-        expect(getApiKeyByUuidMock).not.toHaveBeenCalled();
+        expect(getApiKeyByUuidWithoutSecretsMock).not.toHaveBeenCalled();
     });
 
     it("public api key create: another account's environment is never named", async () => {

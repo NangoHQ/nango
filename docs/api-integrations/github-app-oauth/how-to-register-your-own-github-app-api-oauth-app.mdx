@@ -100,7 +100,7 @@ This flow is recommended when your GitHub App:
 -   There are certain API methods that only work with an OAuth App that will not work with an App. Please check the Github documentation and look for a "Works with Github Apps" header under the endpoint.
 -   Nango supports initiating a connection with a GitHub App using the frontend SDK, but not directly from the [GitHub Marketplace](https://github.com/marketplace). Therefore, you should encourage users to install your GitHub App from your product, rather than from the GitHub Marketplace directly. This is a limitation we plan to fix in the future.
 -   Just like GitHub Apps, OAuth Apps can access GitHub's REST and GraphQL APIs, though the endpoints they can use are limited by the OAuth scopes granted by the user during authorization.
--   Webhook payloads are signed with the webhook secret you configured. Always verify the signature to ensure the webhook is legitimate.
+-   Webhook payloads are signed with the webhook secret you configured on your GitHub App. The secret is required. Nango verifies the signature on every payload and rejects anything that arrives unsigned.
 
 For more information, see the [GitHub Apps documentation](https://docs.github.com/en/apps) and [differences between GitHub Apps and OAuth Apps](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps).
 

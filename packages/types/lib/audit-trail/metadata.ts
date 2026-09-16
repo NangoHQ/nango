@@ -131,3 +131,7 @@ export interface MfaVerifiedMetadata {
 export interface BillingSpendAlertChangedMetadata {
     thresholdInCents?: number;
 }
+
+export interface AgentSessionCreatedMetadata {
+    expiresAt?: string;
+}

@@ -94,14 +94,13 @@ class ConfigController {
 
             if (!usesSharedCredentials && authMode === 'APP' && client_secret) {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
-                const hash = `${config.oauth_client_id}${config.oauth_client_secret}${config.app_link}`;
+                const hash = `${config.oauth_client_id}${client_secret}${config.app_link}`;
                 webhook_secret = crypto.createHash('sha256').update(hash).digest('hex');
             }
 
-            if (!usesSharedCredentials && authMode === 'CUSTOM' && custom) {
-                const { private_key } = custom;
+            if (!usesSharedCredentials && authMode === 'CUSTOM' && custom?.['private_key'] && custom['app_id']) {
                 custom['private_key'] = Buffer.from(custom['private_key'] as string, 'base64').toString('ascii');
-                const hash = `${custom['app_id']}${private_key}${config.app_link}`;
+                const hash = `${custom['app_id']}${custom['private_key']}${config.app_link}`;
                 webhook_secret = crypto.createHash('sha256').update(hash).digest('hex');
             }
 

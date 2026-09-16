@@ -281,15 +281,28 @@ describe('orbAmountToCents', () => {
         expect(orbAmountToCents('100')).toBe(10000);
     });
 
-    it('drops sub-cent precision rather than rounding up', () => {
+    it('rounds sub-cent precision half-up', () => {
+        // Orb's costs endpoint answers in full float precision. This is a real value from it.
+        expect(orbAmountToCents('0.01999999999999999872')).toBe(2);
         expect(orbAmountToCents('19.9900000000')).toBe(1999);
-        expect(orbAmountToCents('19.999')).toBe(1999);
+        expect(orbAmountToCents('19.994')).toBe(1999);
+        expect(orbAmountToCents('19.995')).toBe(2000);
         expect(orbAmountToCents('19.9')).toBe(1990);
         expect(orbAmountToCents('19.')).toBe(1900);
     });
 
+    it('carries the rounding into the whole part', () => {
+        expect(orbAmountToCents('0.999')).toBe(100);
+        expect(orbAmountToCents('1.999')).toBe(200);
+    });
+
     it('handles negative amounts', () => {
         expect(orbAmountToCents('-5.00')).toBe(-500);
+    });
+
+    it('returns null when there is no amount at all, rather than throwing', () => {
+        expect(orbAmountToCents(undefined)).toBeNull();
+        expect(orbAmountToCents(null)).toBeNull();
     });
 
     it('returns null for anything that is not a plain decimal', () => {
@@ -369,7 +382,14 @@ const COMPUTE_HOURS_PROD = 'ZrAoynYimCwtmFSP';
 const DATA_TRANSFER_PROD = 'RNskBsYUvTYLsjV2';
 const CONNECTIONS_PROD = '8aAyMTG6HafmZpqJ';
 
-function usagePrice(metricId: string | null, subtotal: string, name = 'Some price', priceId = 'price_1', total = subtotal) {
+interface PriceCostFixture {
+    price_id: string;
+    subtotal: string;
+    total?: string;
+    price: { price_type: string; currency: string | null; name: string; billable_metric: { id: string } | null };
+}
+
+function usagePrice(metricId: string | null, subtotal: string, name = 'Some price', priceId = 'price_1', total = subtotal): PriceCostFixture {
     return {
         price_id: priceId,
         subtotal,
@@ -378,8 +398,8 @@ function usagePrice(metricId: string | null, subtotal: string, name = 'Some pric
     };
 }
 
-function bucket(perPriceCosts: ReturnType<typeof usagePrice>[], timeframeEnd = '2026-09-01T00:00:00+00:00') {
-    return { timeframe_end: timeframeEnd, per_price_costs: perPriceCosts };
+function bucket(perPriceCosts: PriceCostFixture[], timeframeEnd = '2026-09-01T00:00:00+00:00', timeframeStart = '2026-08-01T00:00:00+00:00') {
+    return { timeframe_start: timeframeStart, timeframe_end: timeframeEnd, per_price_costs: perPriceCosts };
 }
 
 describe('fromOrbPeriodCosts', () => {
@@ -402,6 +422,88 @@ describe('fromOrbPeriodCosts', () => {
         const costs = { data: [bucket([usagePrice(CONNECTIONS_PROD, '0.29', 'Connections', 'price_1', '16.86')])] };
 
         expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ connections: 29 });
+    });
+
+    it('charges a discounted metric what was billed, not what the usage earned', () => {
+        const costs = { data: [bucket([usagePrice(COMPUTE_HOURS_PROD, '4894.88', 'Function compute time (h)', 'price_1', '4483.63')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ function_duration_seconds: 448_363 });
+    });
+
+    it('charges nothing for a metric whose usage is fully waived', () => {
+        const costs = { data: [bucket([usagePrice(COMPUTE_HOURS_PROD, '1133.53', 'Function compute time (h)', 'price_1', '0.00')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ function_duration_seconds: 0 });
+    });
+
+    it('discounts a fixed price too, so the base fee reads what was billed', () => {
+        const costs = {
+            data: [
+                bucket([
+                    usagePrice(RECORDS_PROD, '23.17'),
+                    {
+                        price_id: 'price_fixed',
+                        subtotal: '500.00',
+                        total: '250.00',
+                        price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null }
+                    }
+                ])
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.fixedInCents).toBe(25_000);
+    });
+
+    it('rejects a total it cannot parse rather than billing the pre-adjustment subtotal', () => {
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '23.17', 'Sync records', 'price_1', 'not-a-number')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
+    });
+
+    it('scopes an unreadable total to its own metric, the same as an unreadable subtotal', () => {
+        const costs = {
+            data: [bucket([usagePrice(RECORDS_PROD, '1.00'), usagePrice(COMPUTE_HOURS_PROD, '23.17', 'Function compute time (h)', 'price_2', 'not-a-number')])]
+        };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ records: 100 });
+        expect(result?.malformedMetrics).toEqual(['function_duration_seconds']);
+    });
+
+    it('flags a fixed price whose total is unreadable instead of adding the subtotal to fixed charges', () => {
+        const costs = {
+            data: [
+                bucket([
+                    usagePrice(RECORDS_PROD, '23.17'),
+                    {
+                        price_id: 'price_fixed',
+                        subtotal: '500.00',
+                        total: 'not-a-number',
+                        price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null }
+                    }
+                ])
+            ]
+        };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.fixedInCents).toBe(0);
+        expect(result?.flagged).toEqual([{ priceId: 'price_fixed', priceName: 'Base fee', metric: null, amountInCents: null }]);
+    });
+
+    it('reads the subtotal when the payload carries no total', () => {
+        const costs = {
+            data: [
+                bucket([
+                    {
+                        price_id: 'price_1',
+                        subtotal: '23.17',
+                        price: { price_type: 'usage_price', currency: 'USD', name: 'Sync records', billable_metric: { id: RECORDS_PROD } }
+                    }
+                ])
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 2317 });
     });
 
     it('maps a price to its metric and converts the amount to cents', () => {
@@ -532,6 +634,78 @@ describe('fromOrbPeriodCosts', () => {
         };
 
         expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 9900 });
+    });
+
+    it('adds up the consecutive segments a mid-period plan change splits the period into', () => {
+        const costs = {
+            data: [
+                bucket([usagePrice(RECORDS_PROD, '40.00', 'Sync records', 'price_old')], '2026-08-31T21:07:31+00:00', '2026-08-01T00:00:00+00:00'),
+                bucket(
+                    [usagePrice(COMPUTE_HOURS_PROD, '4.00', 'Function compute time (h)', 'price_new')],
+                    '2026-09-01T00:00:00+00:00',
+                    '2026-08-31T21:07:31+00:00'
+                )
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 4000, function_duration_seconds: 400 });
+    });
+
+    it('adds a metric priced on both sides of a mid-period plan change', () => {
+        const costs = {
+            data: [
+                bucket([usagePrice(RECORDS_PROD, '40.00', 'Sync records', 'price_old')], '2026-08-31T21:07:31+00:00', '2026-08-01T00:00:00+00:00'),
+                bucket([usagePrice(RECORDS_PROD, '5.00', 'Records', 'price_new')], '2026-09-01T00:00:00+00:00', '2026-08-31T21:07:31+00:00')
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 4500 });
+    });
+
+    it('reads a fixed price whose series started later than the usage prices', () => {
+        const costs = {
+            data: [
+                bucket([usagePrice(CONNECTIONS_PROD, '12.00', 'Connections', 'price_usage')], '2026-10-01T00:00:00+00:00', '2026-09-03T00:00:00+00:00'),
+                bucket(
+                    [
+                        {
+                            price_id: 'price_addon',
+                            subtotal: '360.00',
+                            total: '360.00',
+                            price: { price_type: 'fixed_price', currency: 'USD', name: 'Growth Add-on', billable_metric: null }
+                        }
+                    ],
+                    '2026-10-01T00:00:00+00:00',
+                    '2026-09-07T00:00:00+00:00'
+                )
+            ]
+        };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ connections: 1200 });
+        expect(result?.fixedInCents).toBe(36_000);
+    });
+
+    it('keeps only the last bucket of each series, since a series accumulates', () => {
+        const costs = {
+            data: [
+                bucket([usagePrice(CONNECTIONS_PROD, '3.00', 'Connections', 'price_a')], '2026-08-15T00:00:00+00:00', '2026-08-01T00:00:00+00:00'),
+                bucket([usagePrice(CONNECTIONS_PROD, '9.00', 'Connections', 'price_a')], '2026-09-01T00:00:00+00:00', '2026-08-01T00:00:00+00:00')
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ connections: 900 });
+    });
+
+    it('skips a series whose end cannot be read rather than losing the rest', () => {
+        const costs = {
+            data: [
+                bucket([usagePrice(RECORDS_PROD, '7.00', 'Sync records', 'price_ok')], '2026-09-01T00:00:00+00:00', '2026-08-01T00:00:00+00:00'),
+                bucket([usagePrice(CONNECTIONS_PROD, '3.00', 'Connections', 'price_bad')], 'not-a-date', '2026-08-20T00:00:00+00:00')
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 700 });
     });
 
     it('returns null for a period that has already closed', () => {

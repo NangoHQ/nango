@@ -40,6 +40,9 @@ import { getPublicConnections } from './controllers/connection/getConnections.js
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import { deletePublicEnvironmentApiKey } from './controllers/environment/deleteApiKey.js';
 import { deletePublicEnvironment } from './controllers/environment/deleteEnvironment.js';
+import { getPublicEnvironmentApiKey } from './controllers/environment/getApiKey.js';
+import { getPublicEnvironmentApiKeys } from './controllers/environment/getApiKeys.js';
+import { getPublicEnvironments } from './controllers/environment/getEnvironments.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { postPublicEnvironmentApiKey } from './controllers/environment/postApiKey.js';
 import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
@@ -89,6 +92,8 @@ import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
 import {
+    auditAgentSessionCreated,
+    auditAgentSessionTerminated,
     auditConnectionCreated,
     auditFunctionDeployedCli,
     auditFunctionDeployedFromTemplate,
@@ -256,15 +261,18 @@ publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, withEnviron
 publicAPI.route('/providers/:provider/templates').get(apiAuth, withEnvironmentTarget, getPublicProviderTemplates);
 
 publicAPI.use('/environments', jsonContentTypeMiddleware);
+publicAPI.route('/environments').get(apiAuth, withScope('account:environments:list'), getPublicEnvironments);
 publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, withScope('account:environments:create'), postPublicEnvironment);
 publicAPI
     .route('/environments/:environmentUuid')
     .delete(apiAuth, auditPublicEnvironmentDeleted, withScope('account:environments:delete'), deletePublicEnvironment);
 publicAPI
     .route('/environments/:environmentUuid/api-keys')
+    .get(apiAuth, withScope('account:environments:api_keys:list'), getPublicEnvironmentApiKeys)
     .post(apiAuth, auditPublicApiKeyCreated, withScope('account:environments:api_keys:create'), postPublicEnvironmentApiKey);
 publicAPI
     .route('/environments/:environmentUuid/api-keys/:keyUuid')
+    .get(apiAuth, withScope('account:environments:api_keys:read'), getPublicEnvironmentApiKey)
     .delete(apiAuth, auditPublicApiKeyDeleted, withScope('account:environments:api_keys:delete'), deletePublicEnvironmentApiKey);
 
 // @deprecated rollbacked for one customer, to delete asap
@@ -459,8 +467,8 @@ publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTe
 
 // Agent sessions
 publicAPI.use('/sessions', jsonContentTypeMiddleware);
-publicAPI.route('/sessions').post(apiAuth, withScope('environment:agent_sessions:write'), postAgentSessions);
-publicAPI.route('/sessions/:sessionId').delete(apiAuth, withScope('environment:agent_sessions:write'), deleteAgentSession);
+publicAPI.route('/sessions').post(apiAuth, auditAgentSessionCreated, withScope('environment:agent_sessions:write'), postAgentSessions);
+publicAPI.route('/sessions/:sessionId').delete(apiAuth, auditAgentSessionTerminated, withScope('environment:agent_sessions:write'), deleteAgentSession);
 publicAPI.use('/session/:sessionId/mcp', jsonContentTypeMiddleware);
 publicAPI.route('/session/:sessionId/mcp').post(agentSessionAuth, postAgentSessionMcp);
 publicAPI.route('/session/:sessionId/mcp').get(agentSessionAuth, getAgentSessionMcp);

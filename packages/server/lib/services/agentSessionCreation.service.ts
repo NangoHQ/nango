@@ -17,7 +17,9 @@ import type {
     AgentSessionMetaToolsSummary,
     AgentSessionPinnedTools,
     AgentSessionResolvedConnections,
+    AgentSessionResolvedConnectionSummary,
     AgentSessionTenantConnections,
+    AgentSessionToolNames,
     AgentSessionToolsetPolicy,
     AgentSessionToolsetSummary,
     DBEnvironment,
@@ -126,8 +128,8 @@ export async function createAgentSession(params: CreateAgentSessionParams): Prom
             actor: { kind: 'session', id: created.value.session.id },
             meta: {
                 requested: requestedConfig(params),
-                resolvedConnections: created.value.session.resolvedConnections,
-                toolset: created.value.session.compiledToolset,
+                resolvedConnections: resolvedConnectionsSummary(created.value.session.resolvedConnections),
+                toolset: toolsetToolNames(created.value.session.compiledToolset),
                 metaTools: created.value.session.metaTools,
                 expiresAt: created.value.session.expiresAt.toISOString()
             }
@@ -166,6 +168,28 @@ export function toolsetSummary(
                 connected: Object.hasOwn(resolvedConnections, integrationId),
                 tools_pinned: integration.pinned.length,
                 tools_searchable: integration.searchable.length
+            }
+        ])
+    );
+}
+
+export function resolvedConnectionsSummary(connections: AgentSessionResolvedConnections): Record<string, AgentSessionResolvedConnectionSummary> {
+    return Object.fromEntries(
+        Object.entries(connections).map(([integrationId, connection]) => [
+            integrationId,
+            { integrationId: connection.integrationId, provider: connection.provider, connectionId: connection.connectionId }
+        ])
+    );
+}
+
+export function toolsetToolNames(toolset: AgentSessionCompiledToolset): Record<string, AgentSessionToolNames> {
+    return Object.fromEntries(
+        Object.entries(toolset).map(([integrationId, integration]) => [
+            integrationId,
+            {
+                provider: integration.provider,
+                pinned: integration.pinned.map((tool) => tool.name),
+                searchable: integration.searchable.map((tool) => tool.name)
             }
         ])
     );

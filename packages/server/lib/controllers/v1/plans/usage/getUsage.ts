@@ -69,7 +69,7 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
         data_transfer: {
             label: getMetricLabel('data_transfer'),
             usage: usage.value.data_transfer.current,
-            limit: null
+            limit: plan.data_transfer_max
         }
     };
 

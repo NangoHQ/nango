@@ -62,6 +62,23 @@ describe('parse', () => {
         expect(res.NANGO_MANAGEMENT_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
     });
 
+    it('defaults Management MCP OAuth to disabled', () => {
+        expect(parseEnvs(ENVS, {}).NANGO_MANAGEMENT_MCP_OAUTH_ENABLED).toBe(false);
+    });
+
+    it('parses shared OAuth server settings when OAuth is enabled', () => {
+        const res = parseEnvs(ENVS, {
+            NANGO_MANAGEMENT_MCP_OAUTH_ENABLED: 'true',
+            NANGO_OAUTH_SERVER_BASE_URL: 'https://api.example.com',
+            NANGO_OAUTH_SERVER_COOKIE_KEYS: '["first","second"]',
+            NANGO_OAUTH_SERVER_JWKS: '{"keys":[]}'
+        });
+        expect(res).toMatchObject({
+            NANGO_MANAGEMENT_MCP_OAUTH_ENABLED: true,
+            NANGO_OAUTH_SERVER_BASE_URL: 'https://api.example.com'
+        });
+    });
+
     it('should accept `/` as NANGO_DASHBOARD_API_URL', () => {
         const res = parseEnvs(ENVS, { NANGO_DASHBOARD_API_URL: '/' });
         expect(res.NANGO_DASHBOARD_API_URL).toBe('/');

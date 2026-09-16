@@ -20,17 +20,17 @@ import type Orb from 'orb-billing';
  * Orb money as an integer number of cents, read off the decimal string rather than via
  * `Number(x) * 100` — that is lossy, giving 1998.9999999999998 for '19.99' instead of 1999.
  */
-export function orbAmountToCents(amount: string): number | null {
-    const match = /^(-?)(\d+)(?:\.(\d*))?$/.exec(amount.trim());
+export function orbAmountToCents(amount: string | null | undefined): number | null {
+    const match = typeof amount === 'string' ? /^(-?)(\d+)(?:\.(\d*))?$/.exec(amount.trim()) : null;
     if (!match) {
         return null;
     }
 
     // Groups 2 and 3 are guaranteed by the pattern, but `noUncheckedIndexedAccess` can't see that.
     const whole = match[2] ?? '0';
-    // Some invoices carry more than two decimals; the extra digits are dropped, not rounded.
-    const fraction = match[3] ?? '';
-    const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0').slice(0, 2));
+    const fraction = (match[3] ?? '').padEnd(3, '0');
+    const roundsUp = Number(fraction[2]) >= 5;
+    const cents = Number(whole) * 100 + Number(fraction.slice(0, 2)) + (roundsUp ? 1 : 0);
     return match[1] === '-' ? -cents : cents;
 }
 
@@ -86,25 +86,60 @@ const orbBillableMetricToUsageMetric: Record<string, UsageMetric> = {
 };
 
 interface OrbCostBucket {
+    timeframe_start: string;
     timeframe_end: string;
     per_price_costs: {
         price_id: string;
         subtotal: string;
+        total?: string | null;
         price: { price_type: string; name: string; currency?: string | null; billable_metric?: { id: string } | null };
     }[];
 }
 
-export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, opts: { explicitTimeframe?: boolean } = {}): BillingPeriodCosts | null {
-    // Cumulative buckets accumulate over the period, so the one ending last spans all of it.
-    const period = costs.data.reduce<OrbCostBucket | null>(
-        (latest, bucket) => (latest && Date.parse(latest.timeframe_end) >= Date.parse(bucket.timeframe_end) ? latest : bucket),
-        null
-    );
-    // Orb returns its last period after a subscription ends. Accept it only when the request includes dates.
-    const periodEnd = period ? Date.parse(period.timeframe_end) : NaN;
-    if (!period || Number.isNaN(periodEnd) || (!opts.explicitTimeframe && periodEnd <= now.getTime())) {
+/**
+ * A plan minimum spreads itself over every price, pushing `total` above `subtotal`.
+ * A discount pulls it below. Either way, the lower number is what the customer is billed.
+ */
+function chargeInCents(priceCost: { subtotal: string; total?: string | null }): number | null {
+    const subtotal = orbAmountToCents(priceCost.subtotal);
+    // No `total` at all means there is no adjustment, so `subtotal` is the whole charge. A `total`
+    // we cannot parse hides a real adjustment, so falling back would overstate what is owed.
+    if (priceCost.total === undefined || priceCost.total === null) {
+        return subtotal;
+    }
+
+    const total = orbAmountToCents(priceCost.total);
+    if (subtotal === null || total === null) {
         return null;
     }
+    return Math.min(subtotal, total);
+}
+
+export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, opts: { explicitTimeframe?: boolean } = {}): BillingPeriodCosts | null {
+    // Orb returns a bucket series per price-interval start date, each accumulating only within its
+    // own non-overlapping span. So the period's cost is the last bucket of every series, added up.
+    const lastPerSeries = new Map<string, OrbCostBucket>();
+    let periodEnd = NaN;
+    for (const bucket of costs.data) {
+        const end = Date.parse(bucket.timeframe_end);
+        if (Number.isNaN(end)) {
+            report(new Error('orb_unparseable_cost_bucket_date'), { field: 'timeframe_end', value: bucket.timeframe_end });
+            continue;
+        }
+        if (Number.isNaN(periodEnd) || end > periodEnd) {
+            periodEnd = end;
+        }
+        const seen = lastPerSeries.get(bucket.timeframe_start);
+        if (!seen || Date.parse(seen.timeframe_end) < end) {
+            lastPerSeries.set(bucket.timeframe_start, bucket);
+        }
+    }
+    // Orb returns its last period after a subscription ends. Accept it only when the request includes dates.
+    if (Number.isNaN(periodEnd) || (!opts.explicitTimeframe && periodEnd <= now.getTime())) {
+        return null;
+    }
+
+    const perPriceCosts = [...lastPerSeries.values()].flatMap((bucket) => bucket.per_price_costs);
 
     const metrics: Partial<Record<UsageMetric, number>> = {};
     const malformedMetrics: UsageMetric[] = [];
@@ -114,10 +149,9 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date, 
     let fullyAttributed = true;
     let currency: string | null = null;
 
-    for (const priceCost of period.per_price_costs) {
+    for (const priceCost of perPriceCosts) {
         const { price } = priceCost;
-        // Orb spreads minimum charges and discounts across price totals. Read usage charges from `subtotal`.
-        const amountInCents = orbAmountToCents(priceCost.subtotal);
+        const amountInCents = chargeInCents(priceCost);
         const priceCurrency = normalizeIsoCurrency(price.currency);
 
         if (price.price_type === 'fixed_price') {

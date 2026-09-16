@@ -73,7 +73,10 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
 
                 if (copiedResponse) {
                     const { copiedFromId, copiedToId } = copiedResponse;
-                    const connections = await connectionService.getConnectionsByEnvironmentAndConfigId(devEnvironment.id, copiedFromId);
+                    const connections = await connectionService.getConnectionsByEnvironmentAndConfigId(db.knex, {
+                        environmentId: devEnvironment.id,
+                        configId: copiedFromId
+                    });
                     if (connections.length > 0) {
                         await connectionService.copyConnections(connections, environment.id, copiedToId);
                     }
