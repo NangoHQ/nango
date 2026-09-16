@@ -7,13 +7,17 @@ interface GrowthAddonPlan {
 export class PlansDatabase {
     private readonly database = new KnexDatabase();
 
-    async areSchedulesInSync(accountId: string, startsAt: Date): Promise<boolean> {
+    async assertSchedulesAreInSync(accountId: string, startsAt: Date): Promise<void> {
         const plan = await this.database.knex<GrowthAddonPlan>('plans').where('account_id', accountId).select('growth_features_starts_at').first();
         if (!plan) {
             throw new Error(`Expected one plans row for account ${accountId}, found none`);
         }
 
-        return plan.growth_features_starts_at?.getTime() === startsAt.getTime();
+        if (plan.growth_features_starts_at?.getTime() !== startsAt.getTime()) {
+            throw new Error(
+                `Expected start timestamps for growth add-on to match; accountId:${accountId}, expected:${startsAt.getTime()}, actual: ${plan.growth_features_starts_at?.getTime()}`
+            );
+        }
     }
 
     async setGrowthFeaturesStartsAt(accountId: string, startsAt: Date): Promise<void> {

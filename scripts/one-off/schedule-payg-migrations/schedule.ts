@@ -379,8 +379,8 @@ export async function scheduleGrowthAddons({
                 if (existingAddon.state === 'scheduled' && existingAddon.startsAt.getTime() !== migration.plannedAt?.getTime()) {
                     throw new Error('Orb scheduled the growth add-on for a different timestamp than the PAYG plan change');
                 }
-                if (existingAddon.state === 'scheduled' && !(await db.areSchedulesInSync(migration.accountId, growthAddonActivationAt))) {
-                    throw new Error('Add-on start dates are out of sync: Orb and Nango db disagree on it');
+                if (existingAddon.state === 'scheduled') {
+                    await db.assertSchedulesAreInSync(migration.accountId, growthAddonActivationAt);
                 }
                 continue;
             }
