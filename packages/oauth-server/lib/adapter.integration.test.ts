@@ -73,6 +73,70 @@ describe('PostgreSQL OAuth provider adapter', () => {
         ).resolves.toBeUndefined();
     });
 
+    it('does not resurrect an artifact destroyed after it was loaded', async () => {
+        const session = adapter('Session');
+        const sessionId = 'destroyed-session';
+        await session.upsert(sessionId, { ...artifactPayload('Session', 'unused'), accountId: 'user-42', uid: 'destroyed-session-uid' }, 600);
+        const stalePayload = await session.find(sessionId);
+        if (!stalePayload) throw new Error('OAuth session was not persisted');
+
+        await session.destroy(sessionId);
+
+        await expect(session.find(sessionId)).resolves.toBeUndefined();
+        await expect(session.upsert(sessionId, stalePayload, 600)).rejects.toThrow(/revoked OAuth grant or session/);
+        const tombstone = await db.knex(OAUTH_SERVER_ARTIFACTS_TABLE).where({ model: 'Session' }).first<{ revoked_at: Date | null }>('revoked_at');
+        expect(tombstone?.revoked_at).toBeInstanceOf(Date);
+    });
+
+    it('serializes overlapping session destruction and stale persistence', async () => {
+        const sessionId = 'concurrently-destroyed-session';
+        const session = adapter('Session');
+        await session.upsert(sessionId, { ...artifactPayload('Session', 'unused'), accountId: 'user-42', uid: 'concurrently-destroyed-session-uid' }, 600);
+        const stalePayload = await session.find(sessionId);
+        if (!stalePayload) throw new Error('OAuth session was not persisted');
+        const row = await db.knex(OAUTH_SERVER_ARTIFACTS_TABLE).where({ model: 'Session' }).first<{ id: string }>('id');
+        if (!row) throw new Error('OAuth session row was not persisted');
+
+        const blocker = await db.knex.transaction();
+        const destroyer = await db.knex.transaction();
+        const staleWriter = await db.knex.transaction();
+        try {
+            await blocker(OAUTH_SERVER_ARTIFACTS_TABLE).where({ id: row.id }).forUpdate().first('id');
+            const destroyerPid = await transactionPid(destroyer);
+            const destroying = adapter('Session', destroyer).destroy(sessionId);
+            await waitForDatabaseLock(destroyerPid);
+
+            const staleWriterPid = await transactionPid(staleWriter);
+            const staleWrite = adapter('Session', staleWriter).upsert(sessionId, stalePayload, 600);
+            await waitForDatabaseLock(staleWriterPid);
+
+            await blocker.commit();
+            await destroying;
+            await destroyer.commit();
+            await expect(staleWrite).rejects.toThrow(/revoked OAuth grant or session/);
+            await staleWriter.commit();
+        } finally {
+            if (!blocker.isCompleted()) await blocker.rollback();
+            if (!destroyer.isCompleted()) await destroyer.rollback();
+            if (!staleWriter.isCompleted()) await staleWriter.rollback();
+        }
+
+        await expect(session.find(sessionId)).resolves.toBeUndefined();
+    });
+
+    it.each(['Interaction', 'RefreshToken'])('keeps destroyed %s artifacts from being reinserted', async (model) => {
+        const artifact = adapter(model);
+        const artifactId = `destroyed-${model}`;
+        await artifact.upsert(artifactId, artifactPayload(model, 'destroyed-artifact-grant'), 600);
+        const stalePayload = await artifact.find(artifactId);
+        if (!stalePayload) throw new Error(`${model} OAuth artifact was not persisted`);
+
+        await artifact.destroy(artifactId);
+
+        await expect(artifact.find(artifactId)).resolves.toBeUndefined();
+        await expect(artifact.upsert(artifactId, stalePayload, 600)).rejects.toThrow(/revoked OAuth grant or session/);
+    });
+
     it('restores sessions and grants across provider instances', async () => {
         const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
         const options = {
@@ -90,6 +154,8 @@ describe('PostgreSQL OAuth provider adapter', () => {
         const first = createOAuthProvider(options);
         const session = new first.Session();
         session.loginAccount({ accountId: 'account-uuid', amr: ['test'] });
+        const originalSessionId = await session.save(60);
+        session.resetIdentifier();
         const sessionId = await session.save(60);
         const grant = new first.Grant({ accountId: 'account-uuid', clientId: 'https://client.example.com/metadata.json' });
         grant.addOIDCScope('environment:*');
@@ -101,6 +167,7 @@ describe('PostgreSQL OAuth provider adapter', () => {
         const restoredByUid = await second.Session.findByUid(session.uid);
         const restoredGrant = await second.Grant.find(grantId);
 
+        await expect(second.Session.find(originalSessionId)).resolves.toBeUndefined();
         expect(restoredSession?.accountId).toBe('account-uuid');
         expect(restoredByUid?.jti).toBe(sessionId);
         expect(restoredGrant?.getResourceScope('https://mcp.example.com/mcp')).toBe('environment:*');
@@ -302,9 +369,12 @@ describe('PostgreSQL OAuth provider adapter', () => {
     it('rejects expired artifacts independently and deletes them in bounded batches', async () => {
         await adapter('AuthorizationCode').upsert('expired-code', artifactPayload('AuthorizationCode', 'grant-expired'), -10);
         await adapter('RefreshToken').upsert('expired-refresh', artifactPayload('RefreshToken', 'grant-expired'), -10);
+        await adapter('Session').upsert('expired-destroyed-session', artifactPayload('Session', 'unused'), -10);
+        await adapter('Session').destroy('expired-destroyed-session');
         await adapter('AccessToken').upsert('active-token', artifactPayload('AccessToken', 'grant-active'), 600);
 
         await expect(adapter('AuthorizationCode').find('expired-code')).resolves.toBeUndefined();
+        await expect(deleteExpiredOAuthArtifacts(db.knex, 1)).resolves.toBe(1);
         await expect(deleteExpiredOAuthArtifacts(db.knex, 1)).resolves.toBe(1);
         await expect(deleteExpiredOAuthArtifacts(db.knex, 1)).resolves.toBe(1);
         await expect(deleteExpiredOAuthArtifacts(db.knex, 1)).resolves.toBe(0);
@@ -377,4 +447,11 @@ async function waitForDatabaseLock(pid: number): Promise<void> {
         await new Promise((resolve) => setTimeout(resolve, 10));
     }
     throw new Error('Database query did not wait for the expected concurrent lock');
+}
+
+async function transactionPid(transaction: Knex.Transaction): Promise<number> {
+    const { rows } = await transaction.raw<{ rows: { pid: number }[] }>('SELECT pg_backend_pid() AS pid');
+    const backend = rows[0];
+    if (!backend) throw new Error('Transaction has no PostgreSQL backend');
+    return backend.pid;
 }

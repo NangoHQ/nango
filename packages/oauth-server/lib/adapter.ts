@@ -179,7 +179,9 @@ class PostgresOAuthAdapter implements Adapter {
         const mergedFields = this.model === INTERACTION_MODEL && !payload.consumed ? mutableFields : { ...mutableFields, consumed_at: consumedAt };
 
         await this.options.knex.transaction(async (trx) => {
-            // Models carry only the relationships they need, so acquire each lock only when its hash exists.
+            // Serialize an artifact's save with its destruction. Relationship locks then serialize
+            // the same save with grant and user revocation.
+            await lockArtifact(trx, this.model, artifactIdHash);
             if (userIdHash) {
                 await lockUser(trx, userIdHash);
             }
@@ -210,6 +212,14 @@ class PostgresOAuthAdapter implements Adapter {
                                 WHERE model = :userRevocationModel
                                     AND artifact_id_hash = :userIdHash
                                     AND revoked_at >= :userAuthenticatedAt
+                                    AND expires_at > :updatedAt
+                            )
+                            AND NOT EXISTS (
+                                SELECT 1
+                                FROM :table:
+                                WHERE model = :model
+                                    AND artifact_id_hash = :artifactIdHash
+                                    AND revoked_at IS NOT NULL
                                     AND expires_at > :updatedAt
                             )`,
                         {
@@ -306,10 +316,14 @@ class PostgresOAuthAdapter implements Adapter {
         if (this.model === CLIENT_MODEL) {
             return;
         }
-        await this.options
-            .knex(OAUTH_SERVER_ARTIFACTS_TABLE)
-            .where({ model: this.model, artifact_id_hash: this.crypto.hash(id) })
-            .delete();
+        const artifactIdHash = this.crypto.hash(id);
+        await this.options.knex.transaction(async (trx) => {
+            await lockArtifact(trx, this.model, artifactIdHash);
+            const now = new Date();
+            await trx(OAUTH_SERVER_ARTIFACTS_TABLE)
+                .where({ model: this.model, artifact_id_hash: artifactIdHash, revoked_at: null })
+                .update({ revoked_at: now, updated_at: now });
+        });
     }
 
     async revokeByGrantId(grantId: string): Promise<void> {
@@ -405,6 +419,10 @@ function userAuthenticationTime(model: string, payload: AdapterPayload, userId: 
 
 async function lockGrant(trx: Knex.Transaction, grantIdHash: Buffer): Promise<void> {
     await trx.raw('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [grantIdHash.toString('base64url')]);
+}
+
+async function lockArtifact(trx: Knex.Transaction, model: string, artifactIdHash: Buffer): Promise<void> {
+    await trx.raw('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', [`oauth-artifact:${model}:${artifactIdHash.toString('base64url')}`]);
 }
 
 async function lockUser(trx: Knex.Transaction, userIdHash: Buffer): Promise<void> {
