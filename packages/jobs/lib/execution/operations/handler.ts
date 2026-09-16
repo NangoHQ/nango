@@ -28,7 +28,15 @@ export async function handle(payload: SuccessPayload | ErrorPayload): Promise<vo
     }
 }
 
-async function handleSuccess({ taskId, nangoProps, output, telemetryBag, functionRuntime, checkpoints }: SuccessPayload): Promise<void> {
+async function handleSuccess({
+    taskId,
+    nangoProps,
+    output,
+    telemetryBag,
+    functionRuntime,
+    checkpoints,
+    interrupted = false
+}: SuccessPayload & { interrupted?: boolean }): Promise<void> {
     recordFunctionExecution({
         accountId: nangoProps.team.id,
         type: nangoProps.scriptType,
@@ -45,7 +53,7 @@ async function handleSuccess({ taskId, nangoProps, output, telemetryBag, functio
             await handleFunctionSuccess({ taskId, nangoProps, output, telemetryBag, functionRuntime, checkpoints });
             break;
         case 'sync':
-            await handleSyncSuccess({ taskId, nangoProps, telemetryBag, functionRuntime, checkpoints });
+            await handleSyncSuccess({ taskId, nangoProps, telemetryBag, functionRuntime, checkpoints, interrupted });
             break;
         case 'webhook':
             await handleWebhookSuccess({ taskId, nangoProps, telemetryBag, functionRuntime, checkpoints });
@@ -71,15 +79,7 @@ async function handleError({ taskId, nangoProps, error, telemetryBag, functionRu
 
     // if sync was interrupted gracefully, we consider it a success
     if (nangoProps.scriptType === 'sync' && error.type === 'execution_interrupted') {
-        recordFunctionExecution({
-            accountId: nangoProps.team.id,
-            type: nangoProps.scriptType,
-            success: true,
-            durationMs: telemetryBag.durationMs,
-            runtime: functionRuntime
-        });
-
-        await handleSyncSuccess({ taskId, nangoProps, telemetryBag, functionRuntime, checkpoints, interrupted: true });
+        await handleSuccess({ taskId, nangoProps, output: null, telemetryBag, functionRuntime, checkpoints, interrupted: true });
         return;
     }
 
