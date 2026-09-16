@@ -44,6 +44,36 @@ export function hasAction(auth: InternalServiceAuth | undefined, action: string)
     return Boolean(isSignedAuth(auth) && auth?.op === 'task' && auth?.actions?.includes(action));
 }
 
+export type TaskBoundNangoProps = {
+    environmentId: number;
+    nangoConnectionId: number;
+    syncId?: string | undefined;
+};
+
+/**
+ * When a signed task JWT is present, the ingested nangoProps identifiers must match its claims.
+ * Unsigned callers (REQUIRED=false, or no JWT) pass through. Missing environment/connection
+ * claims on a signed token fail closed so a task-bound token cannot be retargeted at another tenant.
+ */
+export function nangoPropsBoundToTaskAuth(auth: InternalServiceAuth | undefined, props: TaskBoundNangoProps): boolean {
+    if (isUnsignedAuth(auth)) {
+        return true;
+    }
+    if (!auth || auth.op !== 'task') {
+        return false;
+    }
+    if (auth.environmentId === undefined || auth.connectionId === undefined) {
+        return false;
+    }
+    if (auth.environmentId !== props.environmentId || auth.connectionId !== props.nangoConnectionId) {
+        return false;
+    }
+    if (auth.syncId !== props.syncId) {
+        return false;
+    }
+    return true;
+}
+
 function isSignedAuth(auth: InternalServiceAuth | undefined): boolean {
     return auth?.kind === 'hmac' || auth?.kind === 'eddsa';
 }
