@@ -1,0 +1,98 @@
+---
+title: 'Simpplr'
+sidebarTitle: 'Simpplr'
+description: 'Integrate your application with the Simpplr B2B API'
+---
+
+## Quickstart
+
+Connect to Simpplr with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration" id="create-integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Simpplr_.
+    </Step>
+    <Step title="Authorize Simpplr" id="authorize-simpplr">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then pick your tenant's region and enter the Client ID and Client Secret of a Simpplr client application. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Simpplr API" id="call-simpplr-api">
+    Let's make your first request to the Simpplr B2B API (the connection test endpoint). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/b2b/identity/test" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/b2b/identity/test',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    Every B2B endpoint lives under `/v1/b2b/`, for example `/v1/b2b/identity/users` to list users and `/v1/b2b/content/sites/contents` to list content.
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app" id="implement-nango">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## Simpplr integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my Simpplr account?](/api-integrations/simpplr/connect)
+Connect your Simpplr account using the Connect UI
+
+Official docs:
+- [Simpplr B2B API reference](https://platform.simpplr.com/reference)
+- [Creating the client application](https://platform.simpplr.com/reference/creating-the-client-application)
+- [Generating an access token for the B2B API](https://platform.simpplr.com/reference/generating-access-token-for-b2b-api)
+
+## Common questions
+
+<AccordionGroup>
+  <Accordion title="Is this the Salesforce-hosted Simpplr or the newer platform?">
+    This integration is for Simpplr's own platform, documented at [platform.simpplr.com](https://platform.simpplr.com/reference). Older Simpplr deployments run as a managed package inside the customer's Salesforce org and authenticate through Salesforce; use Nango's `salesforce` integration for those.
+  </Accordion>
+  <Accordion title="Which scope should I request?">
+    Simpplr accepts `read`, `write` and `everything`, and defaults to `read`. `read` covers GET calls and the search endpoints that take a POST body. Nango's client-credentials grant reads the scope from `connection_config.oauth_scopes`, so leave it unset for read-only access.
+  </Accordion>
+  <Accordion title="Can I use the Simpplr User API?">
+    Not with this integration. The User API acts on behalf of a signed-in user and expects an authorization code exchange whose token request names the code `auth_code`. The B2B API covers the same resources at the tenant level, so this integration uses it.
+  </Accordion>
+</AccordionGroup>
+
+## Pre-built syncs & actions for Simpplr
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/simpplr/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
