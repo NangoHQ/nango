@@ -6,10 +6,20 @@ on:
             - master
         paths:
             - packages/providers/providers.yaml
+            - packages/shared/flows.zero.json
             - docs/integrations/all/*.mdx
             - docs/api-integrations/*.mdx
     workflow_dispatch:
         inputs:
+            target:
+                type: choice
+                description: 'Which sync to run'
+                required: true
+                default: 'both'
+                options:
+                    - both
+                    - apis
+                    - integrations
             environment:
                 type: choice
                 description: 'Docs environment to sync to, defaults to prod-docs'
@@ -35,7 +45,39 @@ concurrency:
     group: sanity-sync
 
 jobs:
-    sanity-sync-job:
+    changes:
+        runs-on: ubuntu-latest
+        if: github.event_name == 'push'
+        outputs:
+            apis: ${{ steps.filter.outputs.apis }}
+            integrations: ${{ steps.filter.outputs.integrations }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Detect changed paths
+              uses: dorny/paths-filter@v3
+              id: filter
+              with:
+                  filters: |
+                      apis:
+                          - 'packages/providers/providers.yaml'
+                          - 'docs/integrations/all/*.mdx'
+                          - 'docs/api-integrations/*.mdx'
+                      integrations:
+                          - 'packages/shared/flows.zero.json'
+
+    sync-apis:
+        needs: [changes]
+        if: |
+            always() &&
+            (
+                github.event_name == 'schedule' ||
+                (github.event_name == 'workflow_dispatch' && (inputs.target == 'both' || inputs.target == 'apis')) ||
+                (github.event_name == 'push' && needs.changes.outputs.apis == 'true')
+            )
         runs-on: ubuntu-latest
         environment: ${{ inputs.environment || 'prod-docs' }}
         steps:
@@ -53,4 +95,34 @@ jobs:
                   SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
                   SANITY_DATASET: ${{ vars.SANITY_DATASET }}
                   FORCE_UPDATE: ${{ github.event_name == 'schedule' || inputs.force_update }}
+                  DRYRUN: ${{ inputs.dry_run }}
+
+    sync-integrations:
+        needs: [changes]
+        if: |
+            always() &&
+            (
+                github.event_name == 'schedule' ||
+                (github.event_name == 'workflow_dispatch' && (inputs.target == 'both' || inputs.target == 'integrations')) ||
+                (github.event_name == 'push' && needs.changes.outputs.integrations == 'true')
+            )
+        runs-on: ubuntu-latest
+        # Being tested in development right now — push/schedule always go to dev-docs.
+        # Only an explicit manual dispatch can target prod-docs for this sync.
+        # TODO: switch to prod-docs once testing is done.
+        environment: ${{ github.event_name == 'workflow_dispatch' && (inputs.environment || 'prod-docs') || 'dev-docs' }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - uses: ./.github/actions/setup-node
+
+            - name: Install dependencies
+              run: npm ci
+
+            - run: npx tsx scripts/sanity-templates-sync.ts
+              env:
+                  SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+                  SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
+                  SANITY_DATASET: ${{ vars.SANITY_DATASET }}
                   DRYRUN: ${{ inputs.dry_run }}
