@@ -105,11 +105,11 @@ describe('OrchestratorClient recurring', () => {
         vi.unstubAllGlobals();
     });
 
-    it('fails when duplicate schedule', async () => {
+    it('returns the schedule ID for successful creation or an existing schedule', async () => {
         const fetchMock = vi.fn().mockImplementation(
             () =>
-                new Response(JSON.stringify({ error: { code: 'duplicate_schedule_name', message: 'schedule already exists' } }), {
-                    status: 409,
+                new Response(JSON.stringify({ scheduleId: 'existing-schedule' }), {
+                    status: 200,
                     headers: { 'content-type': 'application/json' }
                 })
         );
@@ -127,11 +127,7 @@ describe('OrchestratorClient recurring', () => {
             args: { type: 'function', instanceId: 1 }
         });
 
-        expect(res.isErr()).toBe(true);
-        if (res.isErr()) {
-            expect(res.error.name).toBe('duplicate_schedule_name');
-            expect(res.error.payload).toEqual({});
-        }
+        expect(res.unwrap()).toEqual({ scheduleId: 'existing-schedule' });
         expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 });

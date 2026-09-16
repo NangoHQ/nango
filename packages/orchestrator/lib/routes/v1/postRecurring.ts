@@ -1,6 +1,5 @@
 import * as z from 'zod';
 
-import { isDuplicateScheduleNameError } from '@nangohq/scheduler';
 import { validateRequest } from '@nangohq/utils';
 
 import { scheduleFunctionArgsSchema, syncArgsSchema } from '../../clients/validate.js';
@@ -14,33 +13,28 @@ const path = '/v1/recurring';
 const method = 'POST';
 const recurringArgsSchema = z.discriminatedUnion('type', [syncArgsSchema, scheduleFunctionArgsSchema]);
 
+export const MAX_RECURRING_BATCH_SIZE = 1000;
+
+export type RecurringEntry = {
+    name: string;
+    state: 'STARTED' | 'PAUSED';
+    startsAt: Date;
+    frequencyMs: number;
+    group: { key: string; maxConcurrency: number };
+    retry: { max: number };
+    timeoutSettingsInSecs: { createdToStarted: number; startedToCompleted: number; heartbeat: number };
+    args: z.input<typeof recurringArgsSchema>;
+};
+
 export type PostRecurring = Endpoint<{
     Method: typeof method;
     Path: typeof path;
-    Body: {
-        name: string;
-        state: 'STARTED' | 'PAUSED';
-        startsAt: Date;
-        frequencyMs: number;
-        group: {
-            key: string;
-            maxConcurrency: number;
-        };
-        retry: {
-            max: number;
-        };
-        timeoutSettingsInSecs: {
-            createdToStarted: number;
-            startedToCompleted: number;
-            heartbeat: number;
-        };
-        args: z.input<typeof recurringArgsSchema>;
-    };
-    Error: ApiError<'recurring_failed' | 'duplicate_schedule_name'>;
-    Success: { scheduleId: string };
+    Body: RecurringEntry | RecurringEntry[];
+    Error: ApiError<'recurring_failed'>;
+    Success: { scheduleId: string } | { scheduleIds: string[] };
 }>;
 
-const bodySchemaBase = z
+export const recurringSchema = z
     .object({
         name: z.string().min(1),
         state: z.enum(['STARTED', 'PAUSED']),
@@ -69,37 +63,48 @@ const bodySchema = z.preprocess((d) => {
         return { ...rest, group: { key: groupKey, maxConcurrency: 0 } };
     }
     return d;
-}, bodySchemaBase);
+}, recurringSchema);
 
 const validate = validateRequest<PostRecurring>({
-    parseBody: (data: any) => bodySchema.parse(data)
+    parseBody: (data: unknown) =>
+        z
+            .union([
+                bodySchema,
+                z
+                    .array(bodySchema)
+                    .min(1)
+                    .max(MAX_RECURRING_BATCH_SIZE)
+                    .refine((entries) => new Set(entries.map((entry) => entry.name)).size === entries.length, 'Duplicate schedule names within batch')
+            ])
+            .parse(data)
 });
 
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostRecurring>) => {
-        const schedule = await scheduler.recurring({
-            name: res.locals.parsedBody.name,
-            state: res.locals.parsedBody.state,
-            payload: res.locals.parsedBody.args as JsonObject, // Validation has applied Zod defaults, so we can safely cast to JsonObject
-            startsAt: res.locals.parsedBody.startsAt,
-            frequencyMs: res.locals.parsedBody.frequencyMs,
-            groupKey: res.locals.parsedBody.group.key,
-            retryMax: res.locals.parsedBody.retry.max,
-            createdToStartedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.createdToStarted,
-            startedToCompletedTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.startedToCompleted,
-            heartbeatTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.heartbeat,
-            lastScheduledTaskId: null,
-            lastScheduledTaskState: null
-        });
-        if (schedule.isErr()) {
-            if (isDuplicateScheduleNameError(schedule.error)) {
-                res.status(409).json({ error: { code: 'duplicate_schedule_name', message: schedule.error.message } });
-                return;
-            }
-            res.status(500).json({ error: { code: 'recurring_failed', message: schedule.error.message } });
+        const body = res.locals.parsedBody;
+        const entries = Array.isArray(body) ? body : [body];
+        const schedules = await scheduler.recurring(
+            entries.map((entry) => ({
+                name: entry.name,
+                state: entry.state,
+                payload: entry.args as JsonObject,
+                startsAt: entry.startsAt,
+                frequencyMs: entry.frequencyMs,
+                groupKey: entry.group.key,
+                retryMax: entry.retry.max,
+                createdToStartedTimeoutSecs: entry.timeoutSettingsInSecs.createdToStarted,
+                startedToCompletedTimeoutSecs: entry.timeoutSettingsInSecs.startedToCompleted,
+                heartbeatTimeoutSecs: entry.timeoutSettingsInSecs.heartbeat,
+                lastScheduledTaskId: null,
+                lastScheduledTaskState: null
+            }))
+        );
+        if (schedules.isErr()) {
+            res.status(500).json({ error: { code: 'recurring_failed', message: schedules.error.message } });
             return;
         }
-        res.status(200).json({ scheduleId: schedule.value.id });
+        const scheduleIds = schedules.value.map((schedule) => schedule.id);
+        res.status(200).json(Array.isArray(body) ? { scheduleIds } : { scheduleId: scheduleIds[0]! });
         return;
     };
 };
