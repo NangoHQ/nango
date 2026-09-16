@@ -60,6 +60,10 @@ An authorization-code connection has no Zoom account id stored anywhere by defau
 Connections created before this became the default have no `connection_config.accountId` and won't receive webhooks. Reconnect them (have the end user go through OAuth again) to trigger this step and start routing correctly — there's no API to backfill `connection_config` on an existing connection the way there is for metadata.
 </Note>
 
+<Warning>
+This step needs the `user:read:user` scope (or the legacy `user:read` scope on older apps) on your Zoom app. Without it, `GET /v2/users/me` fails silently, `connection_config.accountId` never gets set, and the connection won't receive webhooks — with no error surfaced anywhere. Add the scope when [registering your app](/api-integrations/zoom/how-to-register-your-own-zoom-api-oauth-app).
+</Warning>
+
 ## Handle the webhook
 
 Once routed, you have two options:
