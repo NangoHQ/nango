@@ -1,0 +1,81 @@
+---
+title: 'Fireworks AI'
+sidebarTitle: 'Fireworks AI'
+description: 'Integrate your application with the Fireworks AI API'
+---
+
+Fireworks AI serves open models and custom fine-tunes on a fast inference stack behind an OpenAI-compatible API.
+
+## 🚀 Quickstart
+
+Connect to Fireworks AI with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Fireworks AI_.
+    </Step>
+    <Step id="authorize-fireworks-ai" title="Connect Fireworks AI">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Fireworks AI API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-fireworks-ai-api" title="Call the Fireworks AI API">
+    Let's make your first request to the Fireworks AI API. The endpoint below lists the models the connected API key can access. Replace the placeholders with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/models" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/models',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Fireworks AI integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/fireworks-ai/connect)
+Learn how to create a Fireworks AI API key and use it to connect your account.
+
+Official docs: [Fireworks AI API reference](https://docs.fireworks.ai/api-reference/introduction)
+
+## 🧩 Pre-built syncs & actions for Fireworks AI
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/fireworks-ai/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
