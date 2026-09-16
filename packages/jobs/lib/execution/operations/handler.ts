@@ -71,6 +71,14 @@ async function handleError({ taskId, nangoProps, error, telemetryBag, functionRu
 
     // if sync was interrupted gracefully, we consider it a success
     if (nangoProps.scriptType === 'sync' && error.type === 'execution_interrupted') {
+        recordFunctionExecution({
+            accountId: nangoProps.team.id,
+            type: nangoProps.scriptType,
+            success: true,
+            durationMs: telemetryBag.durationMs,
+            runtime: functionRuntime
+        });
+
         await handleSyncSuccess({ taskId, nangoProps, telemetryBag, functionRuntime, checkpoints, interrupted: true });
         return;
     }
