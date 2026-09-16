@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { userService } from '@nangohq/shared';
-import { getLogger, zodErrorToHTTP } from '@nangohq/utils';
+import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -16,19 +16,10 @@ const validation = z
     })
     .strict();
 
-const queryValidation = z
-    .object({
-        returnTo: z
-            .string()
-            .regex(/^\/oauth\/consent\/[A-Za-z0-9_-]+\/review$/)
-            .optional()
-    })
-    .strict();
-
 export const getEmailByExpiredToken = asyncWrapper<GetEmailByExpiredToken>(async (req, res) => {
-    const query = queryValidation.safeParse(req.query);
-    if (!query.success) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(query.error) } });
+    const emptyQuery = requireEmptyQuery(req);
+    if (emptyQuery) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
         return;
     }
 
@@ -53,7 +44,7 @@ export const getEmailByExpiredToken = asyncWrapper<GetEmailByExpiredToken>(async
         return;
     }
 
-    await sendVerificationEmail(user.email, user.name, user.email_verification_token, query.data.returnTo);
+    await sendVerificationEmail(user.email, user.name, user.email_verification_token);
 
     if (!user) {
         res.status(404).send({ error: { code: 'user_not_found' } });

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { Spinner } from '@/components/ui/Spinner';
-import { getOAuthConsentDestination, withOAuthConsentDestination } from '@/utils/oauthConsent';
 import { useToast } from '../../hooks/useToast';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { apiFetch } from '../../utils/api';
@@ -18,8 +17,6 @@ export function VerifyEmailByExpiredToken() {
     const { toast } = useToast();
 
     const { token } = useParams();
-    const [searchParams] = useSearchParams();
-    const returnTo = getOAuthConsentDestination(searchParams.get('next'));
 
     useEffect(() => {
         if (!token) {
@@ -29,10 +26,7 @@ export function VerifyEmailByExpiredToken() {
 
     useEffect(() => {
         const getEmail = async () => {
-            const path = returnTo
-                ? `/api/v1/account/email/expired-token/${token}?returnTo=${encodeURIComponent(returnTo)}`
-                : `/api/v1/account/email/expired-token/${token}`;
-            const res = await apiFetch(path);
+            const res = await apiFetch(`/api/v1/account/email/expired-token/${token}`);
 
             if (res?.status === 200) {
                 const response: GetEmailByExpiredToken['Success'] = (await res.json()) as GetEmailByExpiredToken['Success'];
@@ -42,7 +36,7 @@ export function VerifyEmailByExpiredToken() {
 
                 if (verified) {
                     toast({ variant: 'success', title: 'Email already verified. Routing to the login page' });
-                    navigate(withOAuthConsentDestination('/signin', returnTo));
+                    navigate('/signin');
                 }
                 setEmail(email);
             } else {
@@ -55,7 +49,7 @@ export function VerifyEmailByExpiredToken() {
         if (!loaded) {
             getEmail();
         }
-    }, [token, loaded, setLoaded, navigate, returnTo, toast]);
+    }, [token, loaded, setLoaded, navigate, toast]);
 
     const resendEmail = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -64,8 +58,7 @@ export function VerifyEmailByExpiredToken() {
         const res = await apiFetch('/api/v1/account/resend-verification-email/by-uuid', {
             method: 'POST',
             body: JSON.stringify({
-                uuid,
-                returnTo
+                uuid
             })
         });
 

@@ -15,18 +15,15 @@ export function buildInvitePrefillUrl(email: string): string {
     return `${basePublicUrl}/team-settings?invite_email=${encodeURIComponent(email)}`;
 }
 
-export async function sendVerificationEmail(email: string, name: string, token: string, returnTo?: string) {
+export async function sendVerificationEmail(email: string, name: string, token: string) {
     const emailClient = EmailClient.getInstance();
-    const verificationUrl = new URL(`/signup/verification/${token}`, basePublicUrl);
-    if (returnTo) verificationUrl.searchParams.set('next', returnTo);
-    const encodedVerificationUrl = he.encode(verificationUrl.href);
     await emailClient.send(
         email,
         `Verify your email address`,
         `
 <p>Hi ${he.encode(name)},</p>
 
-<p>Please verify your account on Nango by clicking <a href="${encodedVerificationUrl}">${encodedVerificationUrl}</a></p>
+<p>Please verify your account on Nango by clicking <a href="${basePublicUrl}/signup/verification/${token}">${basePublicUrl}/signup/verification/${token}</a></p>
 
 <p>Questions or issues? We are happy to help on the <a href="https://nango.dev/slack">Slack community</a>!</p>
 

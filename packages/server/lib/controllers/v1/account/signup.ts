@@ -27,11 +27,7 @@ const validation = z
         password: passwordSchema,
         name: z.string(),
         token: z.string().uuid().optional(),
-        foundUs: z.string().optional(),
-        returnTo: z
-            .string()
-            .regex(/^\/oauth\/consent\/[A-Za-z0-9_-]+\/review$/)
-            .optional()
+        foundUs: z.string().optional()
     })
     .strict();
 
@@ -50,7 +46,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         return;
     }
 
-    const { email, password, name, token, foundUs, returnTo }: PostSignup['Body'] = val.data;
+    const { email, password, name, token, foundUs }: PostSignup['Body'] = val.data;
 
     const existingUser = await userService.getUserByEmail(email);
     if (existingUser) {
@@ -142,7 +138,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
             return;
         }
 
-        await sendVerificationEmail(email, name, user.email_verification_token, returnTo);
+        await sendVerificationEmail(email, name, user.email_verification_token);
 
         // We don't login because we want to enforce email validation
         res.status(200).send({ data: { uuid: user.uuid, verified: false } });

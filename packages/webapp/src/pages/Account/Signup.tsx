@@ -1,17 +1,12 @@
 import { Helmet } from 'react-helmet';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import { Button } from '@nangohq/design-system';
 
-import { getOAuthConsentDestination } from '@/utils/oauthConsent';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { SignupForm } from './components/SignupForm';
 
 export const Signup: React.FC = () => {
-    const [searchParams] = useSearchParams();
-    const returnTo = getOAuthConsentDestination(searchParams.get('next'));
-    const signinUrl = returnTo ? `/signin?next=${encodeURIComponent(returnTo)}` : '/signin';
-
     return (
         <DefaultLayout className="gap-5">
             <Helmet>
@@ -23,12 +18,12 @@ export const Signup: React.FC = () => {
                 <span className="text-body-medium-regular text-text-muted">
                     Already have an account?{' '}
                     <Button asChild variant="link-accent">
-                        <Link to={signinUrl}>Log in.</Link>
+                        <Link to="/signin">Log in.</Link>
                     </Button>
                 </span>
             </div>
 
-            <SignupForm returnTo={returnTo} />
+            <SignupForm />
         </DefaultLayout>
     );
 };

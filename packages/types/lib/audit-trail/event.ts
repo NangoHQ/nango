@@ -142,17 +142,7 @@ export type AuditMetadataFor<R extends AuditResource, A> = A extends keyof Audit
 
 export type AuditScope = 'account' | 'environment';
 
-export type AuditTargetType =
-    | 'connection'
-    | 'sync'
-    | 'function'
-    | 'integration'
-    | 'api_key'
-    | 'member'
-    | 'team'
-    | 'user'
-    | 'environment'
-    | 'agent_session';
+export type AuditTargetType = 'connection' | 'sync' | 'function' | 'integration' | 'api_key' | 'member' | 'team' | 'user' | 'environment' | 'agent_session';
 
 export interface AuditActor {
     type: AuditActorType;

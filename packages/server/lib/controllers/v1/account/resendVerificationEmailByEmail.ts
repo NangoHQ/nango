@@ -10,11 +10,7 @@ import type { ResendVerificationEmailByEmail } from '@nangohq/types';
 
 const validation = z
     .object({
-        email: z.string().email(),
-        returnTo: z
-            .string()
-            .regex(/^\/oauth\/consent\/[A-Za-z0-9_-]+\/review$/)
-            .optional()
+        email: z.string().email()
     })
     .strict();
 
@@ -34,7 +30,7 @@ export const resendVerificationEmailByEmail = asyncWrapper<ResendVerificationEma
         return;
     }
 
-    const { email, returnTo } = val.data;
+    const { email } = val.data;
 
     const user = await userService.getUserByEmail(email);
 
@@ -48,7 +44,7 @@ export const resendVerificationEmailByEmail = asyncWrapper<ResendVerificationEma
         return;
     }
 
-    await sendVerificationEmail(user.email, user.name, user.email_verification_token, returnTo);
+    await sendVerificationEmail(user.email, user.name, user.email_verification_token);
 
     res.status(200).send({ success: true });
 });

@@ -68,11 +68,11 @@ export function useSigninAPI() {
 }
 
 export function useResendVerificationEmail() {
-    return useMutation<ResendVerificationEmailByEmail['Success'], APIError, ResendVerificationEmailByEmail['Body']>({
-        mutationFn: async ({ email, returnTo }) => {
+    return useMutation<ResendVerificationEmailByEmail['Success'], APIError, { email: string }>({
+        mutationFn: async ({ email }) => {
             const res = await apiFetch('/api/v1/account/resend-verification-email/by-email', {
                 method: 'POST',
-                body: JSON.stringify({ email, returnTo })
+                body: JSON.stringify({ email })
             });
 
             if (res.status === 200) {
@@ -86,11 +86,11 @@ export function useResendVerificationEmail() {
 }
 
 export function useResendVerificationEmailByUuid() {
-    return useMutation<ResendVerificationEmailByUuid['Success'], APIError, ResendVerificationEmailByUuid['Body']>({
-        mutationFn: async ({ uuid, returnTo }) => {
+    return useMutation<ResendVerificationEmailByUuid['Success'], APIError, { uuid: string }>({
+        mutationFn: async ({ uuid }) => {
             const res = await apiFetch('/api/v1/account/resend-verification-email/by-uuid', {
                 method: 'POST',
-                body: JSON.stringify({ uuid, returnTo })
+                body: JSON.stringify({ uuid })
             });
 
             if (res.status === 200) {
@@ -197,12 +197,12 @@ export function useSignupAPI() {
               json: PostSignup['Errors'];
           },
         APIError,
-        PostSignup['Body']
+        { name: string; email: string; password: string; token?: string }
     >({
-        mutationFn: async ({ name, email, password, token, returnTo }) => {
+        mutationFn: async ({ name, email, password, token }) => {
             const res = await apiFetch('/api/v1/account/signup', {
                 method: 'POST',
-                body: JSON.stringify({ name, email, password, token, returnTo })
+                body: JSON.stringify({ name, email, password, token })
             });
 
             if (res.status === 200) {

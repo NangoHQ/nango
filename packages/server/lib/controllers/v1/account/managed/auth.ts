@@ -5,7 +5,7 @@ import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 import { envs } from '../../../../env.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
-import { safeReturnTo } from '../returnTo.js';
+import { isOAuthConsentReturnTo, safeReturnTo } from '../returnTo.js';
 
 import type { DBInvitation, DBTeam } from '@nangohq/types';
 import type { User, WorkOS } from '@workos-inc/node';
@@ -148,6 +148,18 @@ export async function finalizeManagedAuthentication({
     let isNewTeam = true;
     let isNewUser = false;
     let user = await userService.getUserByEmail(authorizedUser.email);
+    // Google identifies the user at this point. An OAuth consent request may only continue for an
+    // existing Nango user, so stop before the normal managed-auth flow creates an account.
+    if (!user && isOAuthConsentReturnTo(state?.returnTo)) {
+        clearManagedAuthEmailVerification(req);
+        req.audit = { ...req.audit, managedSignup: false };
+
+        const signinUrl = new URL('/signin', basePublicUrl);
+        signinUrl.searchParams.set('error', 'oauth_signup_not_allowed');
+        signinUrl.searchParams.set('next', state.returnTo);
+        respondWithSuccess(res, signinUrl.href, responseMode);
+        return;
+    }
     if (!user) {
         isNewUser = true;
         let account: DBTeam;

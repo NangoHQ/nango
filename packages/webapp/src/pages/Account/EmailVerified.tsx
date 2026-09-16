@@ -1,12 +1,11 @@
 import { CircleX } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';
-import { getOAuthConsentDestination, withOAuthConsentDestination } from '@/utils/oauthConsent';
 import { track } from '../../utils/analytics';
 import { apiFetch } from '../../utils/api';
 
@@ -16,8 +15,6 @@ export const EmailVerified: React.FC = () => {
     const [errorMessage, setErrorMessage] = useState('');
     const [isConfirming, setIsConfirming] = useState(false);
     const { token } = useParams<{ token: string }>();
-    const [searchParams] = useSearchParams();
-    const returnTo = getOAuthConsentDestination(searchParams.get('next'));
     const navigate = useNavigate();
     const { toast } = useToast();
 
@@ -42,7 +39,7 @@ export const EmailVerified: React.FC = () => {
 
                 if (errorResponse.error.code === 'token_expired') {
                     toast({ title: errorResponse.error.message, variant: 'error' });
-                    navigate(withOAuthConsentDestination(`/verify-email/expired/${token}`, returnTo));
+                    navigate(`/verify-email/expired/${token}`);
                     return;
                 }
 
@@ -59,8 +56,7 @@ export const EmailVerified: React.FC = () => {
             track('web:account_signup', { user_id: confirmation.user.id, accountId: confirmation.user.accountId });
             toast({ title: 'Email verified successfully!', variant: 'success' });
 
-            const destination = returnTo ?? '/onboarding/account-discovery';
-            navigate(`/signin?next=${encodeURIComponent(destination)}`, {
+            navigate(`/signin?next=${encodeURIComponent('/onboarding/account-discovery')}`, {
                 replace: true,
                 state: { email: confirmation.user.email }
             });

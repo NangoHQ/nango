@@ -14,7 +14,6 @@ import { useToast } from '@/hooks/useToast';
 import { Password, passwordSchema } from '@/pages/Account/components/Password';
 import { APIError } from '@/utils/api';
 import { globalEnv } from '@/utils/env';
-import { withOAuthConsentDestination } from '@/utils/oauthConsent';
 
 import type { ApiInvitation } from '@nangohq/types';
 
@@ -26,7 +25,7 @@ const signupSchema = z.object({
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
-export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string; returnTo?: string }> = ({ invitation, token, returnTo }) => {
+export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }> = ({ invitation, token }) => {
     const form = useForm<SignupFormData>({
         resolver: zodResolver(signupSchema),
         defaultValues: {
@@ -51,11 +50,11 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string; 
         setServerErrorMessage('');
         setShowLoginForInvite(false);
         try {
-            const res = await signupMutation({ ...data, token, returnTo });
+            const res = await signupMutation(token ? { ...data, token } : data);
             if (res.status === 200) {
                 const { uuid, verified } = res.json.data;
                 if (!verified) {
-                    navigate(withOAuthConsentDestination(`/verify-email/${uuid}`, returnTo));
+                    navigate(`/verify-email/${uuid}`);
                 } else {
                     navigate('/');
                     if (invitation) {
@@ -86,7 +85,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string; 
         const email = form.getValues('email');
 
         try {
-            await resendVerificationEmailMutation({ email, returnTo });
+            await resendVerificationEmailMutation({ email });
             toast({
                 title: 'Verification email sent.',
                 variant: 'success'
@@ -193,7 +192,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string; 
                             <div className="border-t-[0.5px] border-border-strong w-full"></div>
                         </div>
 
-                        <GoogleButton text="Sign up with Google" setServerErrorMessage={setServerErrorMessage} token={token} returnTo={returnTo} />
+                        <GoogleButton text="Sign up with Google" setServerErrorMessage={setServerErrorMessage} token={token} />
                     </div>
                 )}
 
