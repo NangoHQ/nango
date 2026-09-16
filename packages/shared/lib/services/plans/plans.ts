@@ -307,8 +307,8 @@ export async function handlePlanChanged(
             team,
             eventProperties: {
                 source: 'webhook',
-                previousPlan: currentPlan.name + currentPlan.has_growth_features ? ' + growth add-on' : '',
-                newPlan: newPlanCode + updated.value.has_growth_features ? ' + growth add-on' : '',
+                previousPlan: currentPlan.name + (currentPlan.has_growth_features ? ' + growth add-on' : ''),
+                newPlan: newPlanCode + (updated.value.has_growth_features ? ' + growth add-on' : ''),
                 orbCustomerId: currentPlan.orb_customer_id
             }
         });

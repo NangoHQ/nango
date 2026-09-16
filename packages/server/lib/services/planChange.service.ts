@@ -280,8 +280,8 @@ export function trackPlanChange(context: PlanChangeContext, change: PlanChanges)
         team,
         eventProperties: {
             source: 'self-served',
-            previousPlan: currentPlan.name + currentPlan.has_growth_features ? ' + growth add-on' : '',
-            newPlan: requested.newPlanCode + requested.withGrowthFeatures ? ' + growth add-on' : '',
+            previousPlan: currentPlan.name + (currentPlan.has_growth_features ? ' + growth add-on' : ''),
+            newPlan: requested.newPlanCode + (requested.withGrowthFeatures ? ' + growth add-on' : ''),
             orbCustomerId: currentPlan.orb_customer_id
         }
     });
