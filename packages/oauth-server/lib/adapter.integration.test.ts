@@ -8,6 +8,7 @@ import {
     claimOAuthInteraction,
     createOAuthAdapter,
     deleteExpiredOAuthArtifacts,
+    OAUTH_GRANT_TTL_SECONDS,
     OAUTH_SERVER_ARTIFACTS_TABLE,
     releaseOAuthInteraction,
     revokeOAuthGrant,
@@ -73,19 +74,28 @@ describe('PostgreSQL OAuth provider adapter', () => {
         ).resolves.toBeUndefined();
     });
 
-    it('does not resurrect an artifact destroyed after it was loaded', async () => {
+    it('does not resurrect an artifact after its original expiry', async () => {
         const session = adapter('Session');
         const sessionId = 'destroyed-session';
         await session.upsert(sessionId, { ...artifactPayload('Session', 'unused'), accountId: 'user-42', uid: 'destroyed-session-uid' }, 600);
         const stalePayload = await session.find(sessionId);
         if (!stalePayload) throw new Error('OAuth session was not persisted');
+        await db
+            .knex(OAUTH_SERVER_ARTIFACTS_TABLE)
+            .where({ model: 'Session' })
+            .update({ expires_at: new Date(Date.now() - 1_000) });
 
         await session.destroy(sessionId);
 
+        await expect(deleteExpiredOAuthArtifacts(db.knex, 1)).resolves.toBe(0);
         await expect(session.find(sessionId)).resolves.toBeUndefined();
         await expect(session.upsert(sessionId, stalePayload, 600)).rejects.toThrow(/revoked OAuth grant or session/);
-        const tombstone = await db.knex(OAUTH_SERVER_ARTIFACTS_TABLE).where({ model: 'Session' }).first<{ revoked_at: Date | null }>('revoked_at');
+        const tombstone = await db
+            .knex(OAUTH_SERVER_ARTIFACTS_TABLE)
+            .where({ model: 'Session' })
+            .first<{ expires_at: Date; revoked_at: Date | null }>('expires_at', 'revoked_at');
         expect(tombstone?.revoked_at).toBeInstanceOf(Date);
+        expect(tombstone?.expires_at.getTime()).toBeGreaterThan(Date.now() + (OAUTH_GRANT_TTL_SECONDS - 60) * 1000);
     });
 
     it('serializes overlapping session destruction and stale persistence', async () => {
@@ -376,9 +386,10 @@ describe('PostgreSQL OAuth provider adapter', () => {
         await expect(adapter('AuthorizationCode').find('expired-code')).resolves.toBeUndefined();
         await expect(deleteExpiredOAuthArtifacts(db.knex, 1)).resolves.toBe(1);
         await expect(deleteExpiredOAuthArtifacts(db.knex, 1)).resolves.toBe(1);
-        await expect(deleteExpiredOAuthArtifacts(db.knex, 1)).resolves.toBe(1);
         await expect(deleteExpiredOAuthArtifacts(db.knex, 1)).resolves.toBe(0);
         await expect(adapter('AccessToken').find('active-token')).resolves.toBeDefined();
+        const destroyedSession = await db.knex(OAUTH_SERVER_ARTIFACTS_TABLE).where({ model: 'Session' }).first<{ revoked_at: Date | null }>('revoked_at');
+        expect(destroyedSession?.revoked_at).toBeInstanceOf(Date);
     });
 
     it('does not delete an artifact renewed while cleanup waits for its row', async () => {

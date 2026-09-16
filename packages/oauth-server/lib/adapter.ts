@@ -220,7 +220,6 @@ class PostgresOAuthAdapter implements Adapter {
                                 WHERE model = :model
                                     AND artifact_id_hash = :artifactIdHash
                                     AND revoked_at IS NOT NULL
-                                    AND expires_at > :updatedAt
                             )`,
                         {
                             table: OAUTH_SERVER_ARTIFACTS_TABLE,
@@ -320,9 +319,16 @@ class PostgresOAuthAdapter implements Adapter {
         await this.options.knex.transaction(async (trx) => {
             await lockArtifact(trx, this.model, artifactIdHash);
             const now = new Date();
+            const tombstoneExpiresAt = new Date(now.getTime() + OAUTH_GRANT_TTL_SECONDS * 1000);
             await trx(OAUTH_SERVER_ARTIFACTS_TABLE)
-                .where({ model: this.model, artifact_id_hash: artifactIdHash, revoked_at: null })
-                .update({ revoked_at: now, updated_at: now });
+                .where({ model: this.model, artifact_id_hash: artifactIdHash })
+                // Keep the destroyed ID longer than any request that could still hold its
+                // payload. While revoked, expires_at is the tombstone's cleanup time.
+                .update({
+                    revoked_at: now,
+                    expires_at: trx.raw('GREATEST(??, ?)', ['expires_at', tombstoneExpiresAt]),
+                    updated_at: now
+                });
         });
     }
 
