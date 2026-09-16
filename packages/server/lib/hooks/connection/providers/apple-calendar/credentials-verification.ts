@@ -16,7 +16,7 @@ export default async function execute(nango: Nango) {
         data: '<propfind xmlns="DAV:"><prop><current-user-principal/></prop></propfind>'
     });
 
-    if (isAxiosError(response) || response.status !== 207 || !response.data.includes('current-user-principal')) {
+    if (isAxiosError(response) || response.status !== 207 || typeof response.data !== 'string' || !response.data.includes('current-user-principal')) {
         throw new Error('Incorrect Credentials');
     }
 }
