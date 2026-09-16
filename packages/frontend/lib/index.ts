@@ -362,8 +362,6 @@ export default class Nango {
             return { params: credentials } as unknown as ConnectionConfig;
         }
 
-        // Must run before the OAuth2 client credentials check: TWO_STEP providers can
-        // name their credentials client_id/client_secret (e.g. netsapiens, ukg-pro-wfm-ropc)
         if ('type' in credentials && credentials.type === 'TWO_STEP') {
             const twoStepCredentials: Record<string, any> = { ...credentials };
 
