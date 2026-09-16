@@ -2,6 +2,57 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.71.8] - 2026-09-16
+
+### Added
+
+- *(logs)* Stamp the session actor on action runs (NAN-6949) (#7443) by @agusayerza
+- *(logs)* Add an agent session filter to the logs page (NAN-6606) (#7446) by @agusayerza
+- *(integrations)* Add support for highq (#7487) by @hassan254-prog
+- *(integrations)* Add support for pandadoc eu and mcp (#7500) by @hassan254-prog
+- *(integrations)* Add support for infor (#7513) by @hassan254-prog
+- *(integrations)* Add support for microsoft-dataverse (#7505) by @hassan254-prog
+- *(integrations)* Add support for scavio (#7165) by @scavio-ai
+- Add OAuth authorization server package (#7463) by @marcindobry
+- *(mcp)* Support static server URL and configurable scopes for MCP_OAUTH2_GENERIC (#7465) by @hassan254-prog
+- *(shared)* Add support for GCP and Azure buckets (#7519) by @rossmcewan
+- *(agent-sessions)* Reap expired sessions and their tokens (NAN-6599) (#7511) by @agusayerza
+- *(integrations)* Add SalesCaptain (#7149) by @yogii-sc
+- *(audit)* Audit agent session creation and termination (NAN-6751) (#7508) by @agusayerza
+- *(agent-sessions)* Log a tool search operation (NAN-6605) (#7509) by @agusayerza
+- *(functions)* Support deployment of function with schedule trigger (#7512) by @TBonnin
+- *(jobs)* Emit function execution health metric at the source (NAN-6988) (#7527) by @pfreixes
+- Add one-off Orb pay-as-you-go migration scheduler (#7494) by @ErickRDev
+- *(plans)* Growth add-on management cron (#7530) by @ErickRDev
+- *(integrations)* Add Neon MCP support (#7545) by @arctic-char
+- *(usage)* Cap free-plan data transfer (#7413) by @ErickRDev
+- *(functions)* Upsert schedules if needed when deploying functions (#7525) by @TBonnin
+- *(webhooks)* Add support for zoom webhooks (#7484) by @hassan254-prog
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/bb789a55bfcf744b3c83aa9132e4ffa562106aa3 by arctic-char by @github-actions[bot]
+- *(agent)* Trim the agent session operation payloads (NAN-6950) (#7510) by @agusayerza
+- *(google)* Document webhook auth as required (NAN-7030) (#7524) by @agusayerza
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/e4563fe2082cd44fc82df0857d3179bcaa3c2f32 by murphy-con by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/64a671aa2b83f449b3f29e94822bb62761902b51 by murphy-con by @github-actions[bot]
+- *(skills)* Document migration mismatch and local feature flags (#7496) by @macko911
+- *(functions)* Rename DeployedNangoFunction to ListedNangoFunction (#7531) by @kaposke
+
+### Fixed
+
+- *(runner)* Log when reporting a task result fails (#7523) by @pfreixes
+- *(syncs)* Keep the variant badge beside the sync name (#7423) by @macko911
+- *(webhooks)* Enforce signature validation on GitHub App webhooks (NAN-6934) (#7462) by @agusayerza
+- *(billing)* Show the cent Orb rounds up on per-metric charges (#7495) by @macko911
+- *(billing)* Stop dropping charges when prices change mid-month (#7470) by @macko911
+- *(utils)* Flush buffered metrics before services exit (#7538) by @pfreixes
+- *(plans)* Normalize pg bigint limits as number (#7448) by @ErickRDev
+- *(integrations)* Switch lovable mcp client registration (#7546) by @hassan254-prog
+- *(jobs)* Record interrupted sync segments in the health metric (#7549) by @pfreixes
+- Fix ms dataverse sidebartitle (#7551) by @hassan254-prog
+- *(deploy)* Reject nango.yaml deploys and remove dead legacy compile code (#7480) by @hassan254-prog
+
 ## [v0.71.7] - 2026-09-11
 
 ### Added
@@ -7615,7 +7666,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Add separate command to migrate database (#663) by @sstone1
+- Add separate command to migrate database (#663)
 
 ### Changed
 
@@ -8006,6 +8057,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.71.8]: https://github.com/NangoHQ/nango/compare/v0.71.7..v0.71.8
 [v0.71.7]: https://github.com/NangoHQ/nango/compare/v0.71.6..v0.71.7
 [v0.71.6]: https://github.com/NangoHQ/nango/compare/v0.71.5..v0.71.6
 [v0.71.5]: https://github.com/NangoHQ/nango/compare/v0.71.4..v0.71.5
