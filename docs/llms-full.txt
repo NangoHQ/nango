@@ -15690,6 +15690,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `namely-pat` | Namely (PAT) | API_KEY | [docs](https://nango.dev/docs/integrations/all/namely-pat.md) | [connect](https://nango.dev/docs/integrations/all/namely-pat/connect.md) |  | hr |
 | `nationbuilder` | NationBuilder | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/nationbuilder.md) |  |  | crm |
 | `neon` | Neon | API_KEY | [docs](https://nango.dev/docs/api-integrations/neon.md) | [connect](https://nango.dev/docs/api-integrations/neon/connect.md) |  | dev-tools |
+| `neon-mcp` | Neon (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/neon-mcp.md) |  |  | dev-tools, mcp |
 | `nerdio` | Nerdio | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/nerdio.md) | [connect](https://nango.dev/docs/api-integrations/nerdio/connect.md) |  | other |
 | `netsapiens` | NetSapiens | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/netsapiens.md) | [connect](https://nango.dev/docs/api-integrations/netsapiens/connect.md) |  | communication |
 | `netsuite` | NetSuite (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/netsuite.md) |  |  | accounting, erp |

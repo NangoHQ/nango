@@ -1,6 +1,26 @@
 import type { MeteredBytes } from './byte-metering-transport.js';
 import type { DataTransferCallsite, UsageDataTransferEvent } from '@nangohq/types';
 
+const billableSources = new Set([
+    'server.get_/records',
+    'server.get_/proxy',
+    'server.post_/proxy',
+    'server.patch_/proxy',
+    'server.put_/proxy',
+    'server.delete_/proxy',
+    'server.unknown_/proxy',
+    'server.proxy',
+    'server.webhook_forward',
+    'runner.proxy',
+    'runner.uncontrolled_fetch',
+    'runner.persist_customer_logs',
+    'runner.persist_records'
+]);
+
+export function isBillableDataTransfer(pkg: 'runner' | 'server' | 'shared', callsite: DataTransferCallsite): boolean {
+    return billableSources.has(`${pkg}.${callsite}`);
+}
+
 export function makeDataTransferEvent({
     pkg,
     callsite,

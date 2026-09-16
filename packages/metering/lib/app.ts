@@ -6,7 +6,7 @@ import { auditClickhouseClient, ClickhouseAuditStore, migrate as migrateAudit } 
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { DefaultTransport } from '@nangohq/pubsub';
 import { Clickhouse, getUsageTracker, migrate as migrateUsage } from '@nangohq/usage';
-import { once, report } from '@nangohq/utils';
+import { metrics, once, report } from '@nangohq/utils';
 
 import { billingEventsS3DLQMonitorCron } from './crons/billingEventsS3DLQMonitor.js';
 import { billingEventsS3ExportCron } from './crons/billingEventsS3Export.js';
@@ -115,6 +115,7 @@ try {
         }
         await destroyFeatureFlags();
         cron.getTasks().forEach((task) => task.stop());
+        await metrics.flush();
         process.exit();
     });
 
