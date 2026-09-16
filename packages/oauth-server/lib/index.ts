@@ -2,6 +2,7 @@ export {
     claimOAuthInteraction,
     deleteExpiredOAuthArtifacts,
     hashOAuthIdentifier,
+    oauthArtifactExists,
     releaseOAuthInteraction,
     revokeOAuthGrant,
     revokeOAuthUserInTransaction

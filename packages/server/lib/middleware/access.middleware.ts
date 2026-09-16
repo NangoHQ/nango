@@ -108,6 +108,36 @@ export class AccessMiddleware {
         }
     }
 
+    /**
+     * Resolve and apply API-key authentication without writing an error response. This lets routes
+     * that support another bearer-token scheme decide which authentication challenge to return.
+     */
+    async authenticateSecretKey(req: Request, res: Response<unknown, Partial<RequestLocals>>): Promise<Result<void>> {
+        const authorizationHeader = req.get('authorization');
+        if (!authorizationHeader) {
+            return Err('missing_auth_header');
+        }
+
+        const secret = authorizationHeader.split('Bearer ').pop();
+        if (!secret) {
+            return Err('malformed_auth_header');
+        }
+
+        const isScript = req.get('Nango-Is-Script') === 'true';
+        const result = await this.validateApiKey(secret, { isScript });
+        if (result.isErr()) {
+            return Err(result.error);
+        }
+
+        this.setApiKeyLocals(res, result.value);
+        const authSource = result.value.auth.source;
+        metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
+            auth_source: isScript && authSource === 'api_secret' ? 'internal_script' : authSource
+        });
+        tagTraceUser({ account: result.value.account, environment: result.value.environment, plan: result.value.plan });
+        return Ok(undefined);
+    }
+
     async secretKeyAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('secretKeyAuth', {
@@ -116,34 +146,11 @@ export class AccessMiddleware {
 
         const start = Date.now();
         try {
-            const authorizationHeader = req.get('authorization');
-
-            if (!authorizationHeader) {
-                errorManager.errRes(res, 'missing_auth_header');
-                return;
-            }
-
-            const secret = authorizationHeader.split('Bearer ').pop();
-
-            if (!secret) {
-                errorManager.errRes(res, 'malformed_auth_header');
-                return;
-            }
-
-            const isScript = req.get('Nango-Is-Script') === 'true';
-
-            const result = await this.validateApiKey(secret, { isScript });
+            const result = await this.authenticateSecretKey(req, res);
             if (result.isErr()) {
                 errorManager.errRes(res, result.error.message);
                 return;
             }
-
-            this.setApiKeyLocals(res, result.value);
-            const authSource = result.value.auth.source;
-            metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
-                auth_source: isScript && authSource === 'api_secret' ? 'internal_script' : authSource
-            });
-            tagTraceUser({ account: result.value.account, environment: result.value.environment, plan: result.value.plan });
             next();
         } catch (err) {
             logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
