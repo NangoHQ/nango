@@ -1042,8 +1042,14 @@ export class ConnectionService {
         return result;
     }
 
-    public async getConnectionsByEnvironmentAndConfigId(environment_id: number, config_id: number): Promise<DBConnection[]> {
-        const result = await db.knex.from<DBConnection>(`_nango_connections`).select('*').where({ environment_id, config_id, deleted: false });
+    public async getConnectionsByEnvironmentAndConfigId(
+        trx: Knex,
+        { environmentId, configId }: { environmentId: number; configId: number }
+    ): Promise<DBConnection[]> {
+        const result = await trx
+            .from<DBConnection>(`_nango_connections`)
+            .select('*')
+            .where({ environment_id: environmentId, config_id: configId, deleted: false });
 
         if (!result || result.length == 0 || !result[0]) {
             return [];

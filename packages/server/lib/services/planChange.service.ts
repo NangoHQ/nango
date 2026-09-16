@@ -19,6 +19,7 @@ export interface PlanChangeContext {
     team: DBTeam;
     currentPlan: DBPlan;
     currentPlanDefinition: PlanDefinition;
+    requestedPlanDefinition: PlanDefinition;
     subscriptionId: string;
     requested: {
         /** Orb external plan id. */
@@ -66,7 +67,8 @@ export function getPlanChangeContext(
     withGrowthFeatures: boolean
 ): Result<PlanChangeContext, PlanChangeError> {
     const definition = currentPlan ? getPlanDefinition(currentPlan.name) : null;
-    if (!currentPlan || !definition) {
+    const requestedDefinition = getPlanDefinition(newPlanCode as DBPlan['name']);
+    if (!currentPlan || !definition || !requestedDefinition) {
         return Err(new PlanChangeError('invalid_plan'));
     }
     if (!currentPlan.orb_subscription_id) {
@@ -80,6 +82,7 @@ export function getPlanChangeContext(
         team,
         currentPlan: currentPlan,
         currentPlanDefinition: definition,
+        requestedPlanDefinition: requestedDefinition,
         subscriptionId: currentPlan.orb_subscription_id,
         requested: {
             newPlanCode: newPlanCode,
@@ -93,7 +96,7 @@ function isAddonDisablingScheduled(subscription: BillingSubscription): boolean {
 }
 
 export function resolvePlanChange(context: PlanChangeContext, subscription: BillingSubscription): Result<PlanChanges, PlanChangeError> {
-    const { currentPlan, currentPlanDefinition, subscriptionId, requested } = context;
+    const { currentPlan, currentPlanDefinition, requestedPlanDefinition, subscriptionId, requested } = context;
 
     // Our record is a mirror of Orb's, so if it drifts, fail loudly rather than attempting the change
     if (
@@ -113,13 +116,17 @@ export function resolvePlanChange(context: PlanChangeContext, subscription: Bill
 
     // The Growth add-on is only available for a subset of the available plans; reject any request to
     // add it to a plan outside of that set.
-    if (requested.withGrowthFeatures && !canHaveGrowthAddon(requested.newPlanCode as DBPlan['name'])) {
+    if (requested.withGrowthFeatures && !canHaveGrowthAddon(requestedPlanDefinition.code)) {
         return Err(new PlanChangeError('growth_features_unavailable'));
     }
 
     // Resolve the plan change direction: to upgrade, downgrade or do nothing.
     let planChange: PlanChange | null = null;
     if (requested.newPlanCode !== currentPlanDefinition.code) {
+        // Staying on a retired plan is not a transition, so the lockout only applies to a real move
+        if (requestedPlanDefinition.retired) {
+            return Err(new PlanChangeError('transition_not_allowed'));
+        }
         if (currentPlanDefinition.nextPlan?.includes(requested.newPlanCode)) {
             planChange = 'upgrade';
         } else if (currentPlanDefinition.prevPlan?.includes(requested.newPlanCode)) {

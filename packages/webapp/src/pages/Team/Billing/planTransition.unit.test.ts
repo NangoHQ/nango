@@ -5,14 +5,19 @@ import { planTransition } from './planTransition.js';
 import type { ApiPlan, PlanDefinition } from '@nangohq/types';
 
 const NOW = new Date('2026-09-03T10:00:00Z');
-const IN_SCOPE = ['starter-v2', 'growth-v2'] as const;
 
 const plans = [
     { code: 'free', title: 'Free' },
     { code: 'pay-as-you-go', title: 'Pay-as-you-go' },
     { code: 'starter-v2', title: 'Starter' },
-    { code: 'growth-v2', title: 'Growth' },
-    { code: 'startup-deal', title: 'Startup deal' }
+    { code: 'growth-v2', title: 'Growth', keepsGrowthAddOnOnMigration: true },
+    { code: 'startup-deal', title: 'Startup deal' },
+    { code: 'starter', title: 'Starter (v1)' },
+    { code: 'growth', title: 'Growth (v1)', keepsGrowthAddOnOnMigration: true },
+    { code: 'starter-legacy', title: 'Starter (legacy)' },
+    { code: 'scale-legacy', title: 'Scale (legacy)' },
+    { code: 'growth-legacy', title: 'Growth (legacy)', keepsGrowthAddOnOnMigration: true },
+    { code: 'enterprise', title: 'Enterprise' }
 ] as PlanDefinition[];
 
 function planOf(name: ApiPlan['name'], overrides: Partial<ApiPlan> = {}): ApiPlan {
@@ -28,32 +33,38 @@ function transitionOf(plan: ApiPlan) {
 }
 
 describe('planTransition', () => {
-    it('announces the migration for both retired v2 plans', () => {
-        for (const name of IN_SCOPE) {
-            expect(transitionOf(scheduled(name))).toEqual({
-                at: 'October 1, 2026',
-                toPlanTitle: 'Pay-as-you-go',
-                fromCode: name,
-                fromTitle: name === 'growth-v2' ? 'Growth' : 'Starter',
-                keepsGrowthAddOn: name === 'growth-v2'
-            });
-        }
+    it.each([
+        ['starter-v2', 'Starter'],
+        ['growth-v2', 'Growth'],
+        ['starter-legacy', 'Starter (legacy)'],
+        ['scale-legacy', 'Scale (legacy)'],
+        ['growth-legacy', 'Growth (legacy)'],
+        ['growth', 'Growth (v1)'],
+        ['starter', 'Starter (v1)']
+    ] as const)('announces the migration for a scheduled %s account', (name, fromTitle) => {
+        expect(transitionOf(scheduled(name))).toMatchObject({
+            at: 'October 1, 2026',
+            toPlanTitle: 'Pay-as-you-go',
+            fromCode: name,
+            fromTitle
+        });
     });
 
-    it('carries the add-on across for Growth only, since Pay-as-you-go matches Starter otherwise', () => {
-        expect(transitionOf(scheduled('growth-v2'))?.keepsGrowthAddOn).toBe(true);
-        expect(transitionOf(scheduled('starter-v2'))?.keepsGrowthAddOn).toBe(false);
+    it.each(['enterprise', 'startup-deal'] as const)('stays silent for a scheduled %s account', (name) => {
+        expect(transitionOf(scheduled(name))).toBeNull();
+    });
+
+    it.each(['growth-v2', 'growth', 'growth-legacy'] as const)('carries the Growth add-on across for %s', (name) => {
+        expect(transitionOf(scheduled(name))?.keepsGrowthAddOn).toBe(true);
+    });
+
+    it.each(['starter-v2', 'starter-legacy', 'scale-legacy'] as const)('carries no add-on for %s', (name) => {
+        expect(transitionOf(scheduled(name))?.keepsGrowthAddOn).toBe(false);
     });
 
     it('stays silent for an account with nothing scheduled', () => {
-        for (const name of IN_SCOPE) {
+        for (const name of ['starter-v2', 'growth-v2', 'starter-legacy'] as const) {
             expect(transitionOf(planOf(name))).toBeNull();
-        }
-    });
-
-    it('stays silent for plans out of scope, whatever is scheduled', () => {
-        for (const name of ['free', 'startup-deal', 'growth', 'starter', 'growth-legacy', 'enterprise'] as const) {
-            expect(transitionOf(scheduled(name))).toBeNull();
         }
     });
 

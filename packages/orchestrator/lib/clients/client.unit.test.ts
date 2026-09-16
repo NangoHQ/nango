@@ -99,6 +99,39 @@ describe('OrchestratorClient immediate', () => {
     });
 });
 
+describe('OrchestratorClient recurring', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+    });
+
+    it('returns the schedule ID for successful creation or an existing schedule', async () => {
+        const fetchMock = vi.fn().mockImplementation(
+            () =>
+                new Response(JSON.stringify({ scheduleId: 'existing-schedule' }), {
+                    status: 200,
+                    headers: { 'content-type': 'application/json' }
+                })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.recurring({
+            name: 'schedule-1',
+            state: 'STARTED',
+            startsAt: new Date(),
+            frequencyMs: 300_000,
+            group: { key: 'function:environment:1', maxConcurrency: 0 },
+            retry: { max: 0 },
+            timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+            args: { type: 'function', instanceId: 1 }
+        });
+
+        expect(res.unwrap()).toEqual({ scheduleId: 'existing-schedule' });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+});
+
 function buildWebhookProps(name: string): ExecuteWebhookProps {
     return {
         name,

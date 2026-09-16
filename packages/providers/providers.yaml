@@ -11480,6 +11480,35 @@ highlevel-white-label:
     docs: https://nango.dev/docs/api-integrations/highlevel-white-label
     setup_guide_url: https://nango.dev/docs/api-integrations/highlevel-white-label/how-to-register-your-own-highlevel-white-label-api-oauth-app
 
+highq:
+    display_name: HighQ
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/authorize.action
+    token_url: https://${connectionConfig.hostname}/api/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            auth-type: OAUTH2
+    docs: https://nango.dev/docs/api-integrations/highq
+    docs_connect: https://nango.dev/docs/api-integrations/highq/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/highq/how-to-register-your-own-highq-api-oauth-app
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your HighQ Collaborate hostname, including your instance path.
+            prefix: https://
+            example: acme.highq.com/main
+            doc_section: '#step-1-find-your-hostname'
+
 holded:
     display_name: Holded
     categories:
@@ -11696,6 +11725,129 @@ incident-io:
             example: 'inc_************************************f2c5e6a7b3d4**********'
             pattern: 'inc_[a-f0-9]{64}$'
             doc_section: '#step-1-generating-your-api-key'
+
+infor:
+    display_name: Infor (ION API)
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.ssoUrl}/${connectionConfig.tenant}/as/authorization.oauth2
+    token_url: https://${connectionConfig.ssoUrl}/${connectionConfig.tenant}/as/token.oauth2
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.ionApiUrl}/${connectionConfig.tenant}
+    docs: https://nango.dev/docs/api-integrations/infor
+    docs_connect: https://nango.dev/docs/api-integrations/infor/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/infor/how-to-register-your-own-infor-api-oauth-app
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: Your Infor OS tenant identifier.
+            example: ACME_PRD
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 1
+        ssoUrl:
+            type: string
+            title: Authorization Server URL
+            description: The authorization server hostname for your tenant.
+            example: mingle-sso.inforcloudsuite.com
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 2
+        ionApiUrl:
+            type: string
+            title: ION API Gateway URL
+            description: The ION API gateway hostname for your tenant.
+            example: mingle-ionapi.inforcloudsuite.com
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 3
+
+infor-cc:
+    display_name: Infor (ION API, Resource Owner Grant)
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.ssoUrl}/${connectionConfig.tenant}/as/token.oauth2
+    token_params:
+        grant_type: password
+        username: ${credentials.saak}
+        password: ${credentials.sask}
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.ionApiUrl}/${connectionConfig.tenant}
+    docs: https://nango.dev/docs/api-integrations/infor-cc
+    docs_connect: https://nango.dev/docs/api-integrations/infor-cc/connect
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: Your Infor OS tenant identifier.
+            example: ACME_PRD
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 1
+        ssoUrl:
+            type: string
+            title: Authorization Server URL
+            description: The authorization server hostname for your tenant.
+            example: mingle-sso.inforcloudsuite.com
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 2
+        ionApiUrl:
+            type: string
+            title: ION API Gateway URL
+            description: The ION API gateway hostname for your tenant.
+            example: mingle-ionapi.inforcloudsuite.com
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 3
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Authorized App's Client ID.
+            doc_section: '#step-1-finding-your-credentials'
+            order: 1
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Authorized App's Client Secret.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+            order: 2
+        saak:
+            type: string
+            title: Service Account Access Key
+            description: Your Service Account's Access Key.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+            order: 3
+        sask:
+            type: string
+            title: Service Account Secret Key
+            description: Your Service Account's Secret Key.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+            order: 4
 
 ingenious-build:
     display_name: INGENIOUS.BUILD
@@ -11996,6 +12148,56 @@ immybot:
             description: The client secret value from the Microsoft Entra app registration.
             secret: true
             doc_section: '#step-2-create-a-client-secret'
+
+inteliquent:
+    display_name: Inteliquent
+    categories:
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.inteliquent.com
+        body:
+            privateKey: ${credentials.username}
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /Services/2.0.0/tnDetail
+            data:
+                tnSearchList:
+                    tnSearchItem:
+                        - tnMask: xxxxxxxxxx
+                pageSort:
+                    size: 1
+    docs: https://nango.dev/docs/api-integrations/inteliquent
+    docs_connect: https://nango.dev/docs/api-integrations/inteliquent/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API subdomain
+            description: The Inteliquent Services API subdomain for your environment.
+            enum:
+                - services
+                - services-sandbox
+            doc_section: '#step-2-find-your-api-subdomain'
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Inteliquent API Key (not your portal username).
+            pattern: '^[A-Za-z0-9]+$'
+            example: E3A7RgBW********************
+            doc_section: '#step-1-generate-an-api-key-and-api-secret'
+        password:
+            type: string
+            title: API Secret
+            description: Your Inteliquent API Secret (not your portal password).
+            pattern: '^[A-Za-z0-9]+$'
+            example: zZZLA0HX********************
+            secret: true
+            doc_section: '#step-1-generate-an-api-key-and-api-secret'
 
 intercom:
     display_name: Intercom
@@ -13657,11 +13859,20 @@ lovable-mcp:
         - dev-tools
         - mcp
     auth_mode: MCP_OAUTH2
-    client_registration: cimd
+    client_registration: dynamic
     authorization_url: https://lovable.dev/oauth/authorize
     token_url: https://lovable.dev/oauth/token
+    registration_url: https://lovable.dev/oauth/register
+    default_scopes:
+        - offline
     authorization_params:
         response_type: code
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
     token_params:
         grant_type: authorization_code
     refresh_params:
@@ -14783,6 +14994,33 @@ microsoft-dynamics-365-finance-and-operations-cc:
             doc_section: '#step-2-finding-your-environment-url'
             order: 2
 
+microsoft-dataverse:
+    display_name: Microsoft Dataverse (Dynamics 365 CRM)
+    alias: microsoft-dynamics-365-finance-and-operations
+    categories:
+        - crm
+    docs: https://nango.dev/docs/api-integrations/microsoft-dataverse
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-dataverse/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-dataverse/how-to-register-your-own-microsoft-dataverse-api-oauth-app
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization's Microsoft Entra ID tenant.
+            format: uuid
+            example: 00000000-0000-0000-0000-000000000000
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+        environmentUrl:
+            type: string
+            title: Environment URL
+            description: The domain of your Dataverse environment.
+            example: contoso.api.crm.dynamics.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-2-finding-your-environment-url'
+            order: 2
+
 microsoft-ads:
     display_name: Microsoft Ads
     alias: microsoft
@@ -15606,6 +15844,35 @@ neon:
             pattern: '^(napi_)?[a-z0-9]{64}$'
             example: napi_1a2b3c4d5e6f****************************************************
             doc_section: '#step-1-creating-an-api-key'
+
+neon-mcp:
+    display_name: Neon (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.neon.tech/api/authorize
+    token_url: https://mcp.neon.tech/api/token
+    registration_url: https://mcp.neon.tech/api/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.neon.tech/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.neon.tech
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/neon-mcp
 
 nerdio:
     display_name: Nerdio
@@ -17157,8 +17424,8 @@ pandadoc:
     categories:
         - legal
     auth_mode: OAUTH2
-    authorization_url: https://app.pandadoc.com/oauth2/authorize
-    token_url: https://api.pandadoc.com/oauth2/access_token
+    authorization_url: https://app.${connectionConfig.region}/oauth2/authorize || https://app.pandadoc.com/oauth2/authorize
+    token_url: https://api.${connectionConfig.region}/oauth2/access_token || https://api.pandadoc.com/oauth2/access_token
     authorization_params:
         response_type: code
     token_params:
@@ -17166,8 +17433,18 @@ pandadoc:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api.pandadoc.com
-    docs: https://nango.dev/docs/integrations/all/pandadoc
+        base_url: https://api.${connectionConfig.region} || https://api.pandadoc.com
+    docs: https://nango.dev/docs/api-integrations/pandadoc
+    docs_connect: https://nango.dev/docs/api-integrations/pandadoc/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/pandadoc/how-to-register-your-own-pandadoc-api-oauth-app
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: Your Pandadoc account's data region.
+            enum:
+                - pandadoc.com
+                - pandadoc.eu
 
 pandadoc-api-key:
     display_name: Pandadoc (API Key)
@@ -17194,6 +17471,50 @@ pandadoc-api-key:
             doc_section: '#step-1-generating-your-api-key'
             example: 3039ba033eb1410caa0a2227158d63c9d6502cd8
             pattern: '^[a-fA-F0-9]+$'
+
+pandadoc-mcp:
+    display_name: Pandadoc (MCP)
+    categories:
+        - legal
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.pandadoc.com/authorize
+    token_url: https://mcp.pandadoc.com/token
+    registration_url: https://mcp.pandadoc.com/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.pandadoc.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/pandadoc-mcp
+
+pandadoc-mcp-eu:
+    display_name: Pandadoc (MCP EU)
+    categories:
+        - legal
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.pandadoc.eu/authorize
+    token_url: https://mcp.pandadoc.eu/token
+    registration_url: https://mcp.pandadoc.eu/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.pandadoc.eu
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/pandadoc-mcp-eu
 
 paddle:
     display_name: Paddle
@@ -18157,7 +18478,7 @@ pipelinecrm:
             title: API Key
             description: Authenticates API requests as a specific Pipeline CRM user.
             example: Ksh3************ol5g
-            pattern: '^[A-Za-z0-9]{20}$'
+            pattern: '^[A-Za-z0-9-]{20}$'
             doc_section: '#step-2-finding-your-api-key'
 
 pivotaltracker:
@@ -20587,6 +20908,45 @@ sap-ariba:
             doc_section: '#step-3-find-your-anid'
             order: 3
 
+salescaptain:
+    display_name: SalesCaptain
+    categories:
+        - crm
+        - communication
+        - support
+
+    auth_mode: API_KEY
+
+    proxy:
+        base_url: https://api.salescaptain.com
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/get-companies
+
+        retry:
+            after:
+                - 'retry-after'
+
+    docs: https://nango.dev/docs/api-integrations/salescaptain
+    docs_connect: https://nango.dev/docs/api-integrations/salescaptain/connect
+
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: API key for SalesCaptain API authentication.
+            secret: true
+            pattern: '^[a-fA-F0-9]{32}$'
+            example: 64f67b98****************4521acac
+
 salesforce:
     display_name: Salesforce
     categories:
@@ -21251,6 +21611,31 @@ sap-odata-basic:
             example: eu10.cfapps.eu10.hana.ondemand.com
             doc_section: '#step-2-finding-your-api-server'
             order: 1
+
+scavio:
+    display_name: Scavio
+    categories:
+        - dev-tools
+        - e-commerce
+        - social
+    auth_mode: API_KEY
+    proxy:
+        retry:
+            after:
+                - 'retry-after'
+        base_url: https://api.scavio.dev
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/scavio
+    docs_connect: https://nango.dev/docs/api-integrations/scavio/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Scavio account
+            example: sk_0123456789ab************************************************cdef
+            pattern: '^sk_[0-9a-f]{64}$'
+            doc_section: '#step-1-finding-your-api-key'
 
 schwab:
     display_name: Schwab
@@ -23444,7 +23829,7 @@ supabase:
             title: Secret Key
             description: The secret key from your Supabase project.
             example: sb_secret_*******************************hm
-            pattern: '^sb_secret_[A-Za-z0-9_]+$'
+            pattern: '^sb_secret_[A-Za-z0-9_-]+$'
             doc_section: '#step-2-finding-your-secret-key'
 
 supabase-mcp:

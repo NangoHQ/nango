@@ -11,6 +11,30 @@ import type { Knex } from 'knex';
 
 export const TRIAL_DURATION = ms('15days');
 
+const BIGINT_COLUMNS = ['connections_max', 'data_transfer_max'] as const;
+type BigintColumn = (typeof BIGINT_COLUMNS)[number];
+
+type PgPlan = Omit<DBPlan, BigintColumn> & Record<BigintColumn, string | number | null>;
+
+const normalizeSafeInteger = (value: string | number | null, field: BigintColumn): number | null => {
+    if (value === null) {
+        return null;
+    }
+    const normalized = Number(value);
+    if (!Number.isSafeInteger(normalized)) {
+        throw new Error(`Invalid ${field} value returned from Postgres: ${value}`);
+    }
+    return normalized;
+};
+
+function normalizePlan(plan: PgPlan): DBPlan {
+    const normalized = { ...plan } as DBPlan;
+    for (const field of BIGINT_COLUMNS) {
+        normalized[field] = normalizeSafeInteger(plan[field], field);
+    }
+    return normalized;
+}
+
 function getTrialStartFields(
     plan: Pick<DBPlan, 'trial_start_at' | 'trial_extension_count'>
 ): Pick<DBPlan, 'trial_start_at' | 'trial_end_at' | 'trial_end_notified_at' | 'trial_extension_count' | 'trial_expired'> {
@@ -35,7 +59,7 @@ export async function getPlan(
         return Err(new Error('getPlan_missing_opts'));
     }
     try {
-        const query = db.from<DBPlan>('plans').select<DBPlan>('*');
+        const query = db.from<PgPlan>('plans').select('*');
         if (opts.accountId) {
             query.where('account_id', opts.accountId);
         }
@@ -48,7 +72,7 @@ export async function getPlan(
                 .where('_nango_environments.id', opts.environmentId);
         }
         const res = await query.first();
-        return res ? Ok(res) : Err(new Error('unknown_plan_for_condition'));
+        return res ? Ok(normalizePlan(res)) : Err(new Error('unknown_plan_for_condition'));
     } catch (err) {
         return Err(new Error('failed_to_get_plan', { cause: err }));
     }
@@ -73,7 +97,7 @@ export async function createPlan(
 ): Promise<Result<DBPlan>> {
     try {
         const res = await db
-            .from<DBPlan>('plans')
+            .from<PgPlan>('plans')
             .insert({
                 ...rest,
                 created_at: new Date(),
@@ -83,7 +107,17 @@ export async function createPlan(
             .onConflict('account_id')
             .ignore()
             .returning('*');
-        return Ok(res[0]!);
+
+        const createdPlan = res[0];
+        if (createdPlan) {
+            return Ok(normalizePlan(createdPlan));
+        }
+
+        const existingPlan = await getPlan(db, { accountId: account_id });
+        if (existingPlan.isOk()) {
+            return existingPlan;
+        }
+        return Err(new Error('failed_to_create_plan', { cause: existingPlan.error }));
     } catch (err) {
         return Err(new Error('failed_to_create_plan', { cause: err }));
     }
@@ -128,29 +162,42 @@ export async function getTrialsApproachingExpiration(db: Knex, { daysLeft }: { d
     dateThreshold.setDate(dateThreshold.getDate() + daysLeft);
     try {
         const res = await db
-            .from<DBPlan>('plans')
-            .select<DBPlan[]>('plans.*')
+            .from<PgPlan>('plans')
+            .select('plans.*')
             .join('_nango_accounts', '_nango_accounts.id', 'plans.account_id')
             .where('trial_end_at', '<=', dateThreshold.toISOString())
             .whereNull('trial_end_notified_at')
             .where('plans.auto_idle', true);
-        return Ok(res);
+        return Ok(res.map((plan) => normalizePlan(plan)));
     } catch (err) {
         return Err(new Error('failed_to_get_trials', { cause: err }));
     }
 }
 
-export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
-    return await db
-        .from('plans')
-        .select<DBPlan[]>('*')
-        .where('plans.trial_end_at', '<=', db.raw('NOW()'))
-        .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'))
-        .where('plans.auto_idle', true);
+export async function getExpiredTrials(db: Knex): Promise<Result<DBPlan[]>> {
+    try {
+        const plans = await db
+            .from<PgPlan>('plans')
+            .select('*')
+            .where('plans.trial_end_at', '<=', db.raw('NOW()'))
+            .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'))
+            .where('plans.auto_idle', true);
+        return Ok(plans.map((plan) => normalizePlan(plan)));
+    } catch (err) {
+        return Err(new Error('failed_to_get_expired_trials', { cause: err }));
+    }
 }
 
 function isPlanUnchanged(currentPlan: DBPlan, newPlan: PlanDefinition): boolean {
     return currentPlan.name === newPlan.code;
+}
+
+export function getGrowthAddonFlags(definition: PlanDefinition, hasGrowthFeatures: boolean): Partial<PlanDefinition['flags']> {
+    const flags: Partial<PlanDefinition['flags']> = {};
+    for (const flag of Object.keys(GROWTH_FEATURE_FLAGS) as (keyof typeof GROWTH_FEATURE_FLAGS)[]) {
+        flags[flag] = hasGrowthFeatures ? GROWTH_FEATURE_FLAGS[flag] : (definition.flags[flag] as boolean);
+    }
+    return flags;
 }
 
 export async function setGrowthAddon(
@@ -168,16 +215,12 @@ export async function setGrowthAddon(
         return Err('Received a plan not linked to the plansList');
     }
 
-    const flags: Partial<PlanDefinition['flags']> = {};
-    for (const flag of Object.keys(GROWTH_FEATURE_FLAGS) as (keyof typeof GROWTH_FEATURE_FLAGS)[]) {
-        flags[flag] = hasGrowthFeatures ? GROWTH_FEATURE_FLAGS[flag] : (definition.flags[flag] as boolean);
-    }
-
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
         has_growth_features: hasGrowthFeatures,
+        growth_features_starts_at: null,
         growth_features_ends_at: hasGrowthFeatures ? endsAt : null,
-        ...flags
+        ...getGrowthAddonFlags(definition, hasGrowthFeatures)
     });
     if (updated.isErr()) {
         return Err(new Error('Failed to update growth add-on', { cause: updated.error }));
@@ -263,13 +306,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
 
     if (canHaveGrowthAddon(newPlanDefinition.code)) {
         // Force-update growth feature flags on top of merged plan flags, based on whether the add-on is enabled or not.
-        const growth: Partial<PlanDefinition['flags']> = {};
-        const growthFeatureFlags = Object.keys(GROWTH_FEATURE_FLAGS) as (keyof typeof GROWTH_FEATURE_FLAGS)[];
-        for (const featureFlag of growthFeatureFlags) {
-            growth[featureFlag] = hasGrowthFeatures ? GROWTH_FEATURE_FLAGS[featureFlag] : (newPlanDefinition.flags[featureFlag] as boolean);
-        }
-
-        flags = { ...flags, ...growth };
+        flags = { ...flags, ...getGrowthAddonFlags(newPlanDefinition, hasGrowthFeatures) };
     }
 
     return flags;
@@ -314,6 +351,7 @@ function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPla
             case 'updated_at':
             // Growth add-on related, skip them
             case 'has_growth_features':
+            case 'growth_features_starts_at':
             case 'growth_features_ends_at':
                 break;
             // BOOLEAN FLAGS - keep override if false
@@ -352,7 +390,8 @@ function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPla
             case 'function_executions_max':
             case 'function_compute_gbms_max':
             case 'function_duration_seconds_max':
-            case 'function_logs_max': {
+            case 'function_logs_max':
+            case 'data_transfer_max': {
                 const currentValue = currentPlan[key];
                 const newValue = newPlanDefinition.flags[key] || 0;
                 if (currentValue === null || currentValue > newValue) {

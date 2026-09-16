@@ -53,7 +53,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -79,7 +78,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -107,7 +105,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -138,7 +135,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -170,7 +166,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',

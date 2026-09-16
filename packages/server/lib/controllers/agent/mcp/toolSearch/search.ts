@@ -15,8 +15,8 @@ export const toolSearchTool = defineAgentSessionMcpTool({
     outputSchema: toolSearchOutputSchema,
     annotations: { readOnlyHint: true },
     isEnabled: (metaTools) => metaTools.nangoToolSearch,
-    async handler({ args, session, callable }) {
-        return Ok(await searchSessionTools({ session, query: args.query, slugOf: slugLookup(callable) }));
+    async handler({ args, account, environment, session, callable }) {
+        return Ok(await searchSessionTools({ account, environment, session, query: args.query, slugOf: slugLookup(callable) }));
     }
 });
 
