@@ -10,6 +10,8 @@ To authenticate with Simpplr, you will need:
 2. **Client Secret** - The Client Secret issued with that Client ID.
 3. **Region** - The region your Simpplr tenant is hosted in.
 
+Optionally, you can also set a **Scope** to request write access. Simpplr issues read-only tokens by default.
+
 The client application is created inside Simpplr by an app manager. It is not your Simpplr login, and it is separate from any Salesforce connected app used by older Simpplr deployments.
 
 ### Prerequisites
@@ -45,7 +47,19 @@ Read the region from the host in your tenant's OAuth token URL:
 
 Nango sends both the token request and all API calls to the host for the region you pick, so a wrong value points the connection at another region's tenant and authentication fails.
 
-#### Step 3: Enter credentials in the Connect UI
+#### Step 3: Choose the scope
+
+Simpplr accepts three access levels and issues `read` tokens when no scope is requested:
+
+| Scope | Access |
+|-------|--------|
+| `read` | GET calls, and the search endpoints that take a POST body. This is Simpplr's default. |
+| `write` | POST, PUT and DELETE calls. |
+| `everything` | Both read and write. |
+
+Leave the **Scope** field empty for read-only access. Pick `write` or `everything` only if your integration modifies Simpplr content.
+
+#### Step 4: Enter credentials in the Connect UI
 
 Once you have your **Client ID**, **Client Secret**, and **Region**:
 
@@ -53,10 +67,7 @@ Once you have your **Client ID**, **Client Secret**, and **Region**:
 2. Select your **Region** from Step 2.
 3. Enter your **Client ID** in the **Client ID** field.
 4. Enter your **Client Secret** in the **Client Secret** field.
-5. Submit the form, and you should be successfully authenticated.
+5. Optionally select a **Scope** from Step 3. Leave it empty for read-only access.
+6. Submit the form, and you should be successfully authenticated.
 
 You are now connected to Simpplr.
-
-### Scopes
-
-Simpplr issues read-only tokens by default. To request write access, set `oauth_scopes` on the connection to `write` or `everything`; Simpplr's client-credentials grant accepts `read`, `write` and `everything`.

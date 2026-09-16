@@ -82,7 +82,7 @@ Official docs:
     This integration is for Simpplr's own platform, documented at [platform.simpplr.com](https://platform.simpplr.com/reference). Older Simpplr deployments run as a managed package inside the customer's Salesforce org and authenticate through Salesforce; use Nango's `salesforce` integration for those.
   </Accordion>
   <Accordion title="Which scope should I request?">
-    Simpplr accepts `read`, `write` and `everything`, and defaults to `read`. `read` covers GET calls and the search endpoints that take a POST body. Nango's client-credentials grant reads the scope from `connection_config.oauth_scopes`, so leave it unset for read-only access.
+    Simpplr accepts `read`, `write` and `everything`, and issues `read` tokens when no scope is requested. `read` covers GET calls and the search endpoints that take a POST body. Leave the connection's **Scope** field empty for read-only access, and set it to `write` or `everything` only if your integration modifies Simpplr content.
   </Accordion>
   <Accordion title="Can I use the Simpplr User API?">
     Not with this integration. The User API acts on behalf of a signed-in user and expects an authorization code exchange whose token request names the code `auth_code`. The B2B API covers the same resources at the tenant level, so this integration uses it.
