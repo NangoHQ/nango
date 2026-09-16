@@ -39,8 +39,14 @@ const flowsPath = 'packages/shared/flows.zero.json';
 
 const flows = JSON.parse(await fs.readFile(flowsPath, 'utf8')) as FlowsZeroJson;
 
-const existingApiSlugs = new Set((await sanity.fetch<{ slug: string }[]>(`*[_type == "api" && !(_id in path("drafts.**"))]{ slug }`)).map((doc) => doc.slug));
-console.log(`Found ${existingApiSlugs.size} existing Sanity api docs`);
+// Map providerConfigKey -> its actual api doc _id. Not always `provider-${slug}`: that's only the
+// ID sanity-api-sync.ts assigns to *new* docs — a pre-existing doc for a slug keeps whatever _id
+// it already had. Referencing the assumed `provider-${slug}` id instead of the real one produced
+// a dangling reference (and failed the whole transaction, since Sanity mutations are atomic).
+const apiIdBySlug = new Map(
+    (await sanity.fetch<{ _id: string; slug: string }[]>(`*[_type == "api" && !(_id in path("drafts.**"))]{ _id, slug }`)).map((doc) => [doc.slug, doc._id])
+);
+console.log(`Found ${apiIdBySlug.size} existing Sanity api docs`);
 
 interface TemplateEntry {
     providerConfigKey: string;
@@ -48,6 +54,7 @@ interface TemplateEntry {
     name: string;
     description: string | undefined;
     sourceFolder: string;
+    apiRef: string;
 }
 
 const entriesByProvider = new Map<string, FlowsZeroJson>();
@@ -63,7 +70,8 @@ const skippedProviderRefs = new Set<string>();
 
 const templates: TemplateEntry[] = [];
 for (const [providerConfigKey, blocks] of entriesByProvider) {
-    if (!existingApiSlugs.has(providerConfigKey)) {
+    const apiRef = apiIdBySlug.get(providerConfigKey);
+    if (!apiRef) {
         console.warn(`Skipping ${providerConfigKey}: no matching Sanity api doc (no docs page yet?) — leaving its existing templates untouched`);
         skippedProviderRefs.add(`provider-${providerConfigKey}`);
         continue;
@@ -83,7 +91,7 @@ for (const [providerConfigKey, blocks] of entriesByProvider) {
                 console.warn(`  duplicate ${item.type} "${item.name}" — keeping the one from the non-symlinked entry`);
                 continue;
             }
-            seen.set(key, { providerConfigKey, type: item.type, name: item.name, description: item.description, sourceFolder });
+            seen.set(key, { providerConfigKey, type: item.type, name: item.name, description: item.description, sourceFolder, apiRef });
         }
     }
 
@@ -102,7 +110,7 @@ function buildDocument(template: TemplateEntry): SanityTemplateDoc {
     return {
         _type: 'apiTemplate' as const,
         _id: docId,
-        api: { _type: 'reference' as const, _ref: `provider-${template.providerConfigKey}` },
+        api: { _type: 'reference' as const, _ref: template.apiRef },
         name: template.name,
         description: template.description,
         type: template.type,
