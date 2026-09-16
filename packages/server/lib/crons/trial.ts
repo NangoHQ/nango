@@ -95,14 +95,11 @@ export async function exec(): Promise<void> {
         const plansToPause = await getExpiredTrials(db.knex);
         for (const plan of plansToPause) {
             logger.info('Trial over for account', plan.account_id);
-
             const environments = await environmentService.getEnvironmentsByAccountId(plan.account_id);
             if (environments.isErr()) {
                 logger.warning('Failed to retrieve environments for account.', { err: environments.error, accountId: plan.account_id });
-                continue;
             }
-            const envs = environments.value;
-
+            const envs = environments.isOk() ? environments.value : [];
             for (const env of envs) {
                 const syncs = await getSyncsByEnvironmentId(env.id);
                 logger.info('  pausing syncs in env', { count: syncs.length, environmentName: env.name });
