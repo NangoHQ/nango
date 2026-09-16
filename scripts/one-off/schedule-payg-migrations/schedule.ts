@@ -316,6 +316,7 @@ export async function scheduleMigrations({
             if (!scheduledSubscription.current_billing_period_end_date) {
                 throw new Error(`Orb did not return the scheduled ${planExternalId} plan change date`);
             }
+            const plannedAt = parseOrbDate(scheduledSubscription.current_billing_period_end_date, 'plan change start date');
 
             summary.scheduled++;
             console.log(`SCHEDULED account ${row.accountId}: ${currentPlan} -> ${planExternalId} at end of term`);
@@ -324,7 +325,7 @@ export async function scheduleMigrations({
                 subscriptionId: subscription.id,
                 priceIntervals: subscription.price_intervals,
                 plannedPlan: planExternalId,
-                plannedAt: parseOrbDate(scheduledSubscription.current_billing_period_end_date, 'plan change start date')
+                plannedAt
             });
         } catch (err) {
             summary.failed++;
