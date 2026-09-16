@@ -48,13 +48,7 @@ export const useStore = create<State>()((set, get) => ({
     setDebugMode: (value) => set({ debugMode: value })
 }));
 
-let signingOut = false;
-
 async function handleQueryError(error: unknown) {
-    if (signingOut) {
-        return;
-    }
-
     // A static import would break this module's node-environment unit test: utils/api reads `window` as it loads.
     const { APIError, isUnauthenticatedEndpoint } = await import('../utils/api');
     if (!(error instanceof APIError) || error.res.status !== 401) {
@@ -63,8 +57,6 @@ async function handleQueryError(error: unknown) {
     if (isUnauthenticatedEndpoint(error.res.url) || isPublicAuthPath(window.location.pathname)) {
         return;
     }
-
-    signingOut = true;
 
     // A static import would be circular: utils/user reads the queryClient declared below.
     const { signout } = await import('../utils/user');
