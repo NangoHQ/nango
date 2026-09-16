@@ -41,6 +41,9 @@ on:
     schedule:
         - cron: '0 0 1 * *'
 
+permissions:
+    contents: read
+
 concurrency:
     group: sanity-sync
 

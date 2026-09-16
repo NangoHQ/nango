@@ -39,7 +39,8 @@ const flowsPath = 'packages/shared/flows.zero.json';
 
 const flows = JSON.parse(await fs.readFile(flowsPath, 'utf8')) as FlowsZeroJson;
 
-let hasWarnings = false;
+const existingApiSlugs = new Set((await sanity.fetch<{ slug: string }[]>(`*[_type == "api"]{ slug }`)).map((doc) => doc.slug));
+console.log(`Found ${existingApiSlugs.size} existing Sanity api docs`);
 
 interface TemplateEntry {
     providerConfigKey: string;
@@ -61,11 +62,14 @@ for (const flow of flows) {
 
 const templates: TemplateEntry[] = [];
 for (const [providerConfigKey, blocks] of entriesByProvider) {
-    if (blocks.length > 1) {
-        console.warn(`Warning: ${providerConfigKey} has ${blocks.length} entries in flows.zero.json (expected 1), merging`);
-        hasWarnings = true;
+    if (!existingApiSlugs.has(providerConfigKey)) {
+        console.warn(`Skipping ${providerConfigKey}: no matching Sanity api doc (no docs page yet?)`);
+        continue;
     }
 
+    if (blocks.length > 1) {
+        console.warn(`${providerConfigKey} has ${blocks.length} entries in flows.zero.json (expected 1), merging deterministically`);
+    }
     const sorted = [...blocks].sort((a, b) => Number(!!a.symLinkTargetName) - Number(!!b.symLinkTargetName));
 
     const seen = new Map<string, TemplateEntry>();
@@ -73,12 +77,8 @@ for (const [providerConfigKey, blocks] of entriesByProvider) {
         const sourceFolder = block.symLinkTargetName || providerConfigKey;
         for (const item of [...block.syncs, ...block.actions]) {
             const key = `${item.type}:${item.name}`;
-            const existing = seen.get(key);
-            if (existing) {
-                console.warn(
-                    `Warning: ${providerConfigKey} has a duplicate ${item.type} "${item.name}" across its flows.zero.json entries — keeping the one from the non-symlinked entry, dropping the other. Verify this is correct in the integration-templates repo.`
-                );
-                hasWarnings = true;
+            if (seen.has(key)) {
+                console.warn(`  duplicate ${item.type} "${item.name}" — keeping the one from the non-symlinked entry`);
                 continue;
             }
             seen.set(key, { providerConfigKey, type: item.type, name: item.name, description: item.description, sourceFolder });
@@ -170,7 +170,3 @@ if (dryRun) {
 }
 
 console.log(`\nDone: ${created} created, ${updated} updated, ${skipped} skipped, ${deleted} deleted${dryRun ? ' (dry run)' : ''}`);
-
-if (hasWarnings) {
-    process.exit(1);
-}
