@@ -4,7 +4,21 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 
 import { seedAccountEnvAndUser } from '../../seeders/global.seeder.js';
-import { createPlan, getPlan, handlePlanChanged, setGrowthAddon } from './plans.js';
+import { createPlan, getPlan, handlePlanChanged, setGrowthAddon, updatePlanByTeam } from './plans.js';
+
+describe('updatePlanByTeam', () => {
+    beforeAll(async () => {
+        await multipleMigrations();
+    });
+
+    it('returns the updated plan', async () => {
+        const { account, plan } = await seedAccountEnvAndUser();
+
+        const updated = (await updatePlanByTeam(db.knex, { account_id: account.id, name: 'growth-v2' })).unwrap();
+
+        expect(updated).toMatchObject({ id: plan.id, account_id: account.id, name: 'growth-v2' });
+    });
+});
 
 describe('handlePlanChanged', () => {
     beforeAll(async () => {

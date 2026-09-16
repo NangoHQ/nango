@@ -138,13 +138,15 @@ export async function updatePlan(db: Knex, { id, ...data }: Pick<DBPlan, 'id'> &
 export async function updatePlanByTeam(
     db: Knex,
     { account_id, ...data }: Pick<DBPlan, 'account_id'> & Partial<Omit<DBPlan, 'id' | 'account_id'>>
-): Promise<Result<boolean>> {
+): Promise<Result<DBPlan>> {
     try {
-        await db
-            .from<DBPlan>('plans')
+        const res = await db
+            .from<PgPlan>('plans')
             .where('account_id', account_id)
-            .update({ ...data, updated_at: db.fn.now() });
-        return Ok(true);
+            .update({ ...data, updated_at: db.fn.now() })
+            .returning('*');
+        const updatedPlan = res[0];
+        return updatedPlan ? Ok(normalizePlan(updatedPlan)) : Err(new Error('unknown_plan_for_account'));
     } catch (err) {
         return Err(new Error('failed_to_update_plan', { cause: err }));
     }
@@ -248,23 +250,24 @@ export async function handlePlanChanged(
         return Err('Received a plan not linked to the plansList');
     }
 
-    const currentPlan = await getPlan(db, { accountId: team.id });
-    if (currentPlan.isErr()) {
-        return Err(new Error('Failed to get current plan', { cause: currentPlan.error }));
+    const getPlanRes = await getPlan(db, { accountId: team.id });
+    if (getPlanRes.isErr()) {
+        return Err(new Error('Failed to get current plan', { cause: getPlanRes.error }));
     }
+    const currentPlan = getPlanRes.value;
 
-    if (isPlanUnchanged(currentPlan.value, newPlan)) {
+    if (isPlanUnchanged(currentPlan, newPlan)) {
         return Ok(false);
     }
 
     // Merge current plan flags with new plan defaults
-    const mergedFlags = mergeFlags({ currentPlan: currentPlan.value, newPlanDefinition: newPlan });
+    const mergedFlags = mergeFlags({ currentPlan: currentPlan, newPlanDefinition: newPlan });
 
     // Only update subscription date from free to paid (undefined = no update)
-    const isCurrentFree = currentPlan.value.name === freePlan.code;
+    const isCurrentFree = currentPlan.name === freePlan.code;
     const isNewPaid = newPlan.code !== freePlan.code;
 
-    const isDowngrade = isPotentialDowngrade({ from: currentPlan.value.name, to: newPlan.code });
+    const isDowngrade = isPotentialDowngrade({ from: currentPlan.name, to: newPlan.code });
 
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
@@ -274,7 +277,7 @@ export async function handlePlanChanged(
         orb_future_plan_at: null,
         ...(orbCustomerId ? { orb_customer_id: orbCustomerId } : {}),
         ...(isCurrentFree && isNewPaid ? { orb_subscribed_at: new Date() } : {}),
-        ...(currentPlan.value.auto_idle && mergedFlags.auto_idle === false
+        ...(currentPlan.auto_idle && mergedFlags.auto_idle === false
             ? {
                   trial_start_at: null,
                   trial_end_at: null,
@@ -283,7 +286,7 @@ export async function handlePlanChanged(
                   trial_expired: null
               }
             : {}),
-        ...(isDowngrade && !isNewPaid ? getTrialStartFields(currentPlan.value) : {}),
+        ...(isDowngrade && !isNewPaid ? getTrialStartFields(currentPlan) : {}),
         ...mergedFlags
     });
 
@@ -294,8 +297,22 @@ export async function handlePlanChanged(
     productTracking.track({
         name: 'account:billing:plan_changed',
         team,
-        eventProperties: { previousPlan: currentPlan.value.name, newPlan: newPlanCode, isDowngrade, orbCustomerId: currentPlan.value.orb_customer_id }
+        eventProperties: { previousPlan: currentPlan.name, newPlan: newPlanCode, isDowngrade, orbCustomerId: currentPlan.orb_customer_id }
     });
+
+    if (!isDowngrade) {
+        // Skipping scheduled downgrades as they're already captured when the downgrade was scheduled.
+        productTracking.track({
+            name: 'account:billing:plan_changed:v2',
+            team,
+            eventProperties: {
+                source: 'webhook',
+                previousPlan: currentPlan.name + currentPlan.has_growth_features ? ' + growth add-on' : '',
+                newPlan: newPlanCode + updated.value.has_growth_features ? ' + growth add-on' : '',
+                orbCustomerId: currentPlan.orb_customer_id
+            }
+        });
+    }
 
     return Ok(true);
 }
