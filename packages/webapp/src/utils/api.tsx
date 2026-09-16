@@ -67,6 +67,7 @@ export async function swrFetcher<TBody>(url: string, req?: RequestInit): Promise
     return await res.json();
 }
 
+// `/api/v1/account/onboarding/*` is authenticated, so an `/account/` prefix would miss real expiries.
 const UNAUTHENTICATED_ENDPOINTS = [
     '/api/v1/basic',
     '/api/v1/account/signin',
@@ -81,8 +82,6 @@ const UNAUTHENTICATED_ENDPOINTS = [
     '/api/v1/account/email'
 ];
 
-// `/api/v1/account/onboarding/*` is authenticated, so matching on the `/account/` prefix would stop
-// a real session expiry from signing the user out.
 export function isUnauthenticatedEndpoint(url: string): boolean {
     const { pathname } = new URL(url, window.location.origin);
     return UNAUTHENTICATED_ENDPOINTS.some((endpoint) => pathname === endpoint || pathname.startsWith(`${endpoint}/`));
