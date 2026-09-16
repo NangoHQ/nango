@@ -5551,6 +5551,30 @@ codegen:
             example: 'sk-897bd628-de64-4018-8e3b-c6f717ca3e1d'
             doc_section: '#step-1-finding-your-api-key'
 
+cohere:
+    display_name: Cohere
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.cohere.com
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v1/models
+    docs: https://nango.dev/docs/api-integrations/cohere
+    docs_connect: https://nango.dev/docs/api-integrations/cohere/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Cohere API key
+            doc_section: '#step-1-create-an-api-key'
+
 commercetools:
     display_name: Commercetools
     categories:
