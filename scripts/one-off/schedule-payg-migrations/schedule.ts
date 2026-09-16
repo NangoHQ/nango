@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import Orb from 'orb-billing';
 
 import { parseMigrationCsv } from './csv.js';
+import { PlansDatabase } from './database.js';
 
 import type { MigrationRow } from './csv.js';
 
@@ -11,7 +12,16 @@ interface OrbSubscription {
     id: string;
     customer: { external_customer_id: string | null };
     plan: { external_plan_id: string | null } | null;
+    current_billing_period_end_date?: string | null;
     pending_subscription_change?: { id: string } | null;
+    price_intervals?: OrbPriceInterval[];
+}
+
+interface OrbPriceInterval {
+    id?: string;
+    start_date: string;
+    end_date: string | null;
+    price: { external_price_id: string | null } | null;
 }
 
 interface OrbSubscriptionScheduleItem {
@@ -25,7 +35,11 @@ export interface OrbSubscriptionsClient {
     schedulePlanChange(
         subscriptionId: string,
         params: { change_option: 'end_of_subscription_term'; auto_collection: true; external_plan_id: string }
-    ): Promise<unknown>;
+    ): Promise<{ current_billing_period_end_date: string | null }>;
+    priceIntervals(
+        subscriptionId: string,
+        params: { add: [{ external_price_id: string; start_date: 'end_of_term' }] }
+    ): Promise<{ price_intervals: OrbPriceInterval[] }>;
 }
 
 export interface ScheduleClient {
@@ -39,9 +53,22 @@ export interface Summary {
     failed: number;
 }
 
+export interface PlannedMigration extends MigrationRow {
+    subscriptionId: string;
+    priceIntervals: OrbPriceInterval[] | undefined;
+    plannedPlan: string;
+    plannedAt: Date | null;
+}
+
+export interface ScheduleMigrationsResult {
+    summary: Summary;
+    migrations: PlannedMigration[];
+}
+
 export const DEFAULT_THROTTLE_MS = 2_000;
 
 const PAYG_EXTERNAL_PLAN_ID = 'pay-as-you-go';
+const GROWTH_ADDON_PRICE_ID = 'growth-add-on';
 
 const SUBSCRIPTION_LOOKUP_BATCH_SIZE = 100;
 
@@ -109,6 +136,42 @@ async function getFutureScheduledPlanChange(subscriptionId: string, client: Sche
     return null;
 }
 
+function parseOrbDate(value: string, context: string): Date {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        throw new Error(`Orb returned an invalid ${context}: ${value}`);
+    }
+    return date;
+}
+
+function getGrowthAddonInterval(priceIntervals: OrbPriceInterval[] | undefined, now: Date): { state: 'active' | 'scheduled'; startsAt: Date } | null {
+    let scheduledStartsAt: Date | null = null;
+    let activeStartsAt: Date | null = null;
+
+    for (const interval of priceIntervals ?? []) {
+        if (interval.price?.external_price_id !== GROWTH_ADDON_PRICE_ID) {
+            continue;
+        }
+        const startsAt = parseOrbDate(interval.start_date, `growth add-on start date for price interval ${interval.id || '(unknown)'}`);
+        if (startsAt > now) {
+            if (scheduledStartsAt) {
+                throw new Error('Orb returned multiple future growth add-on price intervals');
+            }
+            scheduledStartsAt = startsAt;
+            continue;
+        }
+        const endsAt = interval.end_date ? parseOrbDate(interval.end_date, `growth add-on end date for price interval ${interval.id || '(unknown)'}`) : null;
+        if (!endsAt || endsAt > now) {
+            activeStartsAt = startsAt;
+        }
+    }
+
+    if (scheduledStartsAt) {
+        return { state: 'scheduled', startsAt: scheduledStartsAt };
+    }
+    return activeStartsAt ? { state: 'active', startsAt: activeStartsAt } : null;
+}
+
 async function getActiveSubscriptionsByAccountId(
     client: ScheduleClient,
     accountIds: string[]
@@ -154,15 +217,18 @@ export async function scheduleMigrations({
     rows: MigrationRow[];
     execute: boolean;
     throttleMs?: number;
-}): Promise<Summary> {
+}): Promise<ScheduleMigrationsResult> {
     const planExternalId = PAYG_EXTERNAL_PLAN_ID;
     const summary: Summary = { dryRun: 0, scheduled: 0, skipped: 0, failed: 0 };
+    const migrations: PlannedMigration[] = [];
     let hasAttemptedSchedule = false;
 
     const { subscriptions: subscriptionsByAccountId, errors: lookupErrors } = await getActiveSubscriptionsByAccountId(
         client,
         rows.map((row) => row.accountId)
     );
+
+    console.log('\n--- Phase 2/3: Schedule plan changes ---');
 
     for (const row of rows) {
         try {
@@ -211,7 +277,15 @@ export async function scheduleMigrations({
                     row.accountId,
                     `Orb has a future plan change to ${futureChange.plan?.external_plan_id || '(unknown plan)'} starting ${futureChange.start_date}`
                 );
-                // sleep half the time we'd sleep when scheduling so we don't get rate limited on fetchSchedule calls.
+                if (futureChange.plan?.external_plan_id === planExternalId) {
+                    migrations.push({
+                        ...row,
+                        subscriptionId: subscription.id,
+                        priceIntervals: subscription.price_intervals,
+                        plannedPlan: planExternalId,
+                        plannedAt: parseOrbDate(futureChange.start_date, 'plan change start date')
+                    });
+                }
                 await sleep(throttleMs / 2);
                 continue;
             }
@@ -219,6 +293,13 @@ export async function scheduleMigrations({
             if (!execute) {
                 summary.dryRun++;
                 console.log(`DRY RUN account ${row.accountId}: would schedule ${currentPlan} -> ${planExternalId} at end of term`);
+                migrations.push({
+                    ...row,
+                    subscriptionId: subscription.id,
+                    priceIntervals: subscription.price_intervals,
+                    plannedPlan: planExternalId,
+                    plannedAt: null
+                });
                 continue;
             }
 
@@ -226,13 +307,25 @@ export async function scheduleMigrations({
                 await sleep(throttleMs);
             }
             hasAttemptedSchedule = true;
-            await client.subscriptions.schedulePlanChange(subscription.id, {
+
+            const scheduledSubscription = await client.subscriptions.schedulePlanChange(subscription.id, {
                 change_option: 'end_of_subscription_term',
                 auto_collection: true,
                 external_plan_id: planExternalId
             });
+            if (!scheduledSubscription.current_billing_period_end_date) {
+                throw new Error(`Orb did not return the scheduled ${planExternalId} plan change date`);
+            }
+
             summary.scheduled++;
             console.log(`SCHEDULED account ${row.accountId}: ${currentPlan} -> ${planExternalId} at end of term`);
+            migrations.push({
+                ...row,
+                subscriptionId: subscription.id,
+                priceIntervals: subscription.price_intervals,
+                plannedPlan: planExternalId,
+                plannedAt: parseOrbDate(scheduledSubscription.current_billing_period_end_date, 'plan change start date')
+            });
         } catch (err) {
             summary.failed++;
             const message = err instanceof Error ? err.message : String(err);
@@ -240,17 +333,92 @@ export async function scheduleMigrations({
         }
     }
 
-    console.log(`Summary: dry-run=${summary.dryRun}, scheduled=${summary.scheduled}, skipped=${summary.skipped}, failed=${summary.failed}`);
+    console.log(`Plan summary: dry-run=${summary.dryRun}, scheduled=${summary.scheduled}, skipped=${summary.skipped}, failed=${summary.failed}`);
+    return { summary, migrations };
+}
+
+export async function scheduleGrowthAddons({
+    client,
+    db,
+    migrations,
+    execute,
+    throttleMs = DEFAULT_THROTTLE_MS
+}: {
+    client: ScheduleClient;
+    db: PlansDatabase;
+    migrations: PlannedMigration[];
+    execute: boolean;
+    throttleMs?: number;
+}): Promise<Summary> {
+    const growthMigrations = migrations.filter((m) => m.withGrowthAddon);
+
+    const summary: Summary = { dryRun: 0, scheduled: 0, skipped: 0, failed: 0 };
+    let hasAttemptedSchedule = false;
+
+    for (const migration of growthMigrations) {
+        try {
+            const existingAddon = getGrowthAddonInterval(migration.priceIntervals, new Date());
+            if (existingAddon) {
+                summary.skipped++;
+
+                if (existingAddon.state === 'active') {
+                    logSkip(migration.accountId, 'growth add-on already active');
+                    continue;
+                }
+
+                if (existingAddon.state === 'scheduled' && !(await db.areSchedulesInSync(migration.accountId, existingAddon.startsAt))) {
+                    throw new Error('Add-on start dates are out of sync: Orb and Nango db disagree on it');
+                }
+                continue;
+            }
+
+            if (!execute) {
+                summary.dryRun++;
+                console.log(`DRY RUN account ${migration.accountId}: would schedule growth add-on at end of term`);
+                continue;
+            }
+
+            if (hasAttemptedSchedule) {
+                await sleep(throttleMs);
+            }
+            hasAttemptedSchedule = true;
+
+            const updatedSubscription = await client.subscriptions.priceIntervals(migration.subscriptionId, {
+                add: [{ external_price_id: GROWTH_ADDON_PRICE_ID, start_date: 'end_of_term' }]
+            });
+
+            // Sanity check that the schedule is set
+            const scheduledAddon = getGrowthAddonInterval(updatedSubscription.price_intervals, new Date());
+            if (scheduledAddon?.state !== 'scheduled') {
+                throw new Error('Orb did not return a future growth add-on price interval after scheduling it');
+            }
+
+            await db.setGrowthFeaturesStartsAt(migration.accountId, scheduledAddon.startsAt);
+            summary.scheduled++;
+            console.log(`SCHEDULED account ${migration.accountId}: growth add-on starting ${scheduledAddon.startsAt.toISOString()}`);
+        } catch (err) {
+            summary.failed++;
+            const message = err instanceof Error ? err.message : String(err);
+            console.log(`FAILED account ${migration.accountId}: ${message}`);
+        }
+    }
+
+    console.log(`Growth add-on summary: dry-run=${summary.dryRun}, scheduled=${summary.scheduled}, skipped=${summary.skipped}, failed=${summary.failed}`);
     return summary;
 }
 
 async function main(): Promise<void> {
     const { inputPath, execute, throttleMs } = parseArgs(process.argv.slice(2));
+
     const apiKey = process.env['ORB_API_KEY'];
     if (!apiKey) {
         throw new Error('ORB_API_KEY is not set');
     }
+    if (!process.env['NANGO_DATABASE_URL']) {
+        throw new Error('NANGO_DATABASE_URL is not set');
+    }
 
+    console.log('\n--- Phase 1/3: Load CSV and active subscriptions ---');
     const rows = parseMigrationCsv(await readFile(inputPath, 'utf8'));
     console.log(`Loaded ${rows.length} CSV row(s).`);
     if (!execute) {
@@ -258,9 +426,23 @@ async function main(): Promise<void> {
     }
 
     const client = new Orb({ apiKey });
-    const summary = await scheduleMigrations({ client, rows, execute, throttleMs });
-    if (summary.failed > 0) {
-        process.exitCode = 1;
+    const db = new PlansDatabase();
+
+    try {
+        const { summary: planSummary, migrations } = await scheduleMigrations({ client, rows, execute, throttleMs });
+        console.log('\n--- Phase 3/3: Schedule growth add-ons ---');
+        const growthAddonSummary = await scheduleGrowthAddons({
+            client,
+            db,
+            migrations,
+            execute,
+            throttleMs
+        });
+        if (planSummary.failed > 0 || growthAddonSummary.failed > 0) {
+            process.exitCode = 1;
+        }
+    } finally {
+        await db.destroy();
     }
 }
 

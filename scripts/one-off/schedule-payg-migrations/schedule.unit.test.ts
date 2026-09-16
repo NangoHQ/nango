@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { parseMigrationCsv } from './csv.js';
-import { DEFAULT_THROTTLE_MS, parseArgs, scheduleMigrations } from './schedule.js';
+import { DEFAULT_THROTTLE_MS, parseArgs, scheduleGrowthAddons, scheduleMigrations } from './schedule.js';
 
 function listResult<T>(items: T[]) {
     return (async function* () {
@@ -34,9 +34,12 @@ describe('pay-as-you-go migration arguments', () => {
 });
 
 describe('pay-as-you-go migration CSV', () => {
-    it('validates the required shape while ignoring the growth add-on value afterward', () => {
+    it('validates and retains the growth add-on value', () => {
         expect(parseMigrationCsv('account_id,current_plan,with_growth_addon\n123,"growth, legacy",true\n')).toEqual([
-            { accountId: '123', currentPlan: 'growth, legacy' }
+            { accountId: '123', currentPlan: 'growth, legacy', withGrowthAddon: true }
+        ]);
+        expect(parseMigrationCsv('account_id,current_plan,with_growth_addon\n123,growth,false\n')).toEqual([
+            { accountId: '123', currentPlan: 'growth', withGrowthAddon: false }
         ]);
     });
 
@@ -47,12 +50,12 @@ describe('pay-as-you-go migration CSV', () => {
 });
 
 describe('pay-as-you-go migration scheduling', () => {
-    const rows = [{ accountId: '123', currentPlan: 'growth-legacy' }];
+    const rows = [{ accountId: '123', currentPlan: 'growth-legacy', withGrowthAddon: false }];
 
     it('reports eligible accounts in dry-run mode without calling Orb to schedule them', async () => {
         const schedulePlanChange = vi.fn();
         vi.spyOn(console, 'log').mockImplementation(() => undefined);
-        const summary = await scheduleMigrations({
+        const { summary, migrations } = await scheduleMigrations({
             client: {
                 subscriptions: {
                     list: vi
@@ -69,6 +72,17 @@ describe('pay-as-you-go migration scheduling', () => {
         });
 
         expect(summary).toEqual({ dryRun: 1, scheduled: 0, skipped: 0, failed: 0 });
+        expect(migrations).toEqual([
+            {
+                accountId: '123',
+                currentPlan: 'growth-legacy',
+                withGrowthAddon: false,
+                subscriptionId: 'sub_123',
+                priceIntervals: undefined,
+                plannedPlan: 'pay-as-you-go',
+                plannedAt: null
+            }
+        ]);
         expect(schedulePlanChange).not.toHaveBeenCalled();
     });
 
@@ -90,7 +104,7 @@ describe('pay-as-you-go migration scheduling', () => {
         const client = { subscriptions: { list, fetchSchedule: vi.fn().mockReturnValue(listResult([])), schedulePlanChange: vi.fn() } };
 
         await scheduleMigrations({ client, rows, execute: false });
-        const summary = await scheduleMigrations({ client, rows, execute: false });
+        const { summary } = await scheduleMigrations({ client, rows, execute: false });
 
         expect(summary).toEqual({ dryRun: 0, scheduled: 0, skipped: 1, failed: 0 });
         expect(client.subscriptions.schedulePlanChange).not.toHaveBeenCalled();
@@ -98,9 +112,9 @@ describe('pay-as-you-go migration scheduling', () => {
     });
 
     it('sends the end-of-term change payload when execution is enabled', async () => {
-        const schedulePlanChange = vi.fn().mockResolvedValue({});
+        const schedulePlanChange = vi.fn().mockResolvedValue({ current_billing_period_end_date: '2026-10-01T00:00:00Z' });
         vi.spyOn(console, 'log').mockImplementation(() => undefined);
-        const summary = await scheduleMigrations({
+        const { summary, migrations } = await scheduleMigrations({
             client: {
                 subscriptions: {
                     list: vi
@@ -123,6 +137,7 @@ describe('pay-as-you-go migration scheduling', () => {
             auto_collection: true,
             external_plan_id: 'pay-as-you-go'
         });
+        expect(migrations[0]).toMatchObject({ plannedPlan: 'pay-as-you-go', plannedAt: new Date('2026-10-01T00:00:00Z') });
     });
 
     it('looks up multiple accounts in one Orb request', async () => {
@@ -133,11 +148,11 @@ describe('pay-as-you-go migration scheduling', () => {
             ])
         );
 
-        const summary = await scheduleMigrations({
+        const { summary } = await scheduleMigrations({
             client: { subscriptions: { list, fetchSchedule: vi.fn().mockReturnValue(listResult([])), schedulePlanChange: vi.fn() } },
             rows: [
-                { accountId: '123', currentPlan: 'growth-legacy' },
-                { accountId: '456', currentPlan: 'starter-legacy' }
+                { accountId: '123', currentPlan: 'growth-legacy', withGrowthAddon: false },
+                { accountId: '456', currentPlan: 'starter-legacy', withGrowthAddon: false }
             ],
             execute: false
         });
@@ -147,7 +162,7 @@ describe('pay-as-you-go migration scheduling', () => {
     });
 
     it('waits between each Orb schedule request', async () => {
-        const schedulePlanChange = vi.fn().mockResolvedValue({});
+        const schedulePlanChange = vi.fn().mockResolvedValue({ current_billing_period_end_date: '2026-10-01T00:00:00Z' });
         vi.useFakeTimers();
         const scheduling = scheduleMigrations({
             client: {
@@ -163,8 +178,8 @@ describe('pay-as-you-go migration scheduling', () => {
                 }
             },
             rows: [
-                { accountId: '123', currentPlan: 'growth-legacy' },
-                { accountId: '456', currentPlan: 'starter-legacy' }
+                { accountId: '123', currentPlan: 'growth-legacy', withGrowthAddon: false },
+                { accountId: '456', currentPlan: 'starter-legacy', withGrowthAddon: false }
             ],
             execute: true,
             throttleMs: 250
@@ -186,7 +201,7 @@ describe('pay-as-you-go migration scheduling', () => {
         );
         const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-        const summary = await scheduleMigrations({
+        const { summary } = await scheduleMigrations({
             client: {
                 subscriptions: {
                     list: vi
@@ -196,7 +211,7 @@ describe('pay-as-you-go migration scheduling', () => {
                     schedulePlanChange
                 }
             },
-            rows: [{ accountId: '68', currentPlan: 'growth-v2' }],
+            rows: [{ accountId: '68', currentPlan: 'growth-v2', withGrowthAddon: false }],
             execute: true,
             throttleMs: 0
         });
@@ -205,5 +220,98 @@ describe('pay-as-you-go migration scheduling', () => {
         expect(fetchSchedule).toHaveBeenCalledWith('sub_68');
         expect(schedulePlanChange).not.toHaveBeenCalled();
         expect(log).toHaveBeenCalledWith(expect.stringContaining('future plan change to free'));
+    });
+
+    it('schedules and records a growth add-on when PAYG is scheduled', async () => {
+        const schedulePlanChange = vi.fn().mockResolvedValue({ current_billing_period_end_date: '2026-10-01T00:00:00Z' });
+        const priceIntervals = vi.fn().mockResolvedValue({
+            price_intervals: [
+                {
+                    id: 'pi_growth',
+                    start_date: '2026-10-01T00:00:00Z',
+                    end_date: null,
+                    price: { external_price_id: 'growth-add-on' }
+                }
+            ]
+        });
+        const setGrowthFeaturesStartsAt = vi.fn().mockResolvedValue(undefined);
+        const areSchedulesInSync = vi.fn();
+        vi.spyOn(console, 'log').mockImplementation(() => undefined);
+        const subscription = {
+            id: 'sub_123',
+            customer: { external_customer_id: '123' },
+            plan: { external_plan_id: 'growth-legacy' },
+            price_intervals: []
+        };
+        const client = {
+            subscriptions: {
+                list: vi.fn().mockReturnValue(listResult([subscription])),
+                fetchSchedule: vi.fn().mockReturnValue(listResult([])),
+                schedulePlanChange,
+                priceIntervals
+            }
+        };
+
+        const { summary: planSummary, migrations } = await scheduleMigrations({
+            client,
+            rows: [{ accountId: '123', currentPlan: 'growth-legacy', withGrowthAddon: true }],
+            execute: true,
+            throttleMs: 0
+        });
+        const growthSummary = await scheduleGrowthAddons({
+            client,
+            db: { areSchedulesInSync, setGrowthFeaturesStartsAt },
+            migrations,
+            execute: true,
+            throttleMs: 0
+        });
+
+        expect(planSummary).toEqual({ dryRun: 0, scheduled: 1, skipped: 0, failed: 0 });
+        expect(growthSummary).toEqual({ dryRun: 0, scheduled: 1, skipped: 0, failed: 0 });
+        expect(priceIntervals).toHaveBeenCalledWith('sub_123', {
+            add: [{ external_price_id: 'growth-add-on', start_date: 'end_of_term' }]
+        });
+        expect(setGrowthFeaturesStartsAt).toHaveBeenCalledWith('123', new Date('2026-10-01T00:00:00Z'));
+    });
+
+    it('does not duplicate a scheduled growth add-on when its database date matches', async () => {
+        const priceIntervals = vi.fn();
+        const setGrowthFeaturesStartsAt = vi.fn().mockResolvedValue(undefined);
+        const areSchedulesInSync = vi.fn().mockResolvedValue(true);
+        vi.spyOn(console, 'log').mockImplementation(() => undefined);
+
+        const growthSummary = await scheduleGrowthAddons({
+            client: {
+                subscriptions: {
+                    priceIntervals
+                }
+            },
+            db: { areSchedulesInSync, setGrowthFeaturesStartsAt },
+            migrations: [
+                {
+                    accountId: '123',
+                    currentPlan: 'growth-legacy',
+                    withGrowthAddon: true,
+                    subscriptionId: 'sub_123',
+                    priceIntervals: [
+                        {
+                            id: 'pi_growth',
+                            start_date: '2999-10-01T00:00:00Z',
+                            end_date: null,
+                            price: { external_price_id: 'growth-add-on' }
+                        }
+                    ],
+                    plannedPlan: 'pay-as-you-go',
+                    plannedAt: new Date('2999-10-01T00:00:00Z')
+                }
+            ],
+            execute: true,
+            throttleMs: 0
+        });
+
+        expect(growthSummary).toEqual({ dryRun: 0, scheduled: 0, skipped: 1, failed: 0 });
+        expect(priceIntervals).not.toHaveBeenCalled();
+        expect(areSchedulesInSync).toHaveBeenCalledWith('123', new Date('2999-10-01T00:00:00Z'));
+        expect(setGrowthFeaturesStartsAt).not.toHaveBeenCalled();
     });
 });
