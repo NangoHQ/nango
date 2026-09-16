@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.71.9] - 2026-09-16
+
+### Added
+
+- *(agent-sessions)* Give MCP tool failures an agent-facing message and code (NAN-6604) (#7473) by @agusayerza
+- *(integrations)* Add support for pleo-api-key (#7534) by @hassan254-prog
+
+### Changed
+
+- *(shared)* Coalesce customer key lookups (#7466) by @ErickRDev
+
+### Fixed
+
+- *(shared)* Propagate environment lookup failures (#7472) by @ErickRDev
+- *(frontend)* Route TWO_STEP credentials before OAuth2 client creden… (#7556) by @vdeez1
+
 ## [v0.71.8] - 2026-09-16
 
 ### Added
@@ -8057,6 +8073,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.71.9]: https://github.com/NangoHQ/nango/compare/v0.71.8..v0.71.9
 [v0.71.8]: https://github.com/NangoHQ/nango/compare/v0.71.7..v0.71.8
 [v0.71.7]: https://github.com/NangoHQ/nango/compare/v0.71.6..v0.71.7
 [v0.71.6]: https://github.com/NangoHQ/nango/compare/v0.71.5..v0.71.6
