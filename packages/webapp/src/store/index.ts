@@ -59,10 +59,9 @@ async function handleQueryError(error: unknown) {
         return;
     }
 
-    // Every query mounted on the page fails at once; without this they each start their own signout.
     signingOut = true;
 
-    // Imported here because utils/user reads the queryClient this module exports.
+    // A static import would be circular: utils/user reads the queryClient declared below.
     const { signout } = await import('../utils/user');
     await signout({ expired: true });
 }
