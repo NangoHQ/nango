@@ -39,7 +39,7 @@ const flowsPath = 'packages/shared/flows.zero.json';
 
 const flows = JSON.parse(await fs.readFile(flowsPath, 'utf8')) as FlowsZeroJson;
 
-const existingApiSlugs = new Set((await sanity.fetch<{ slug: string }[]>(`*[_type == "api"]{ slug }`)).map((doc) => doc.slug));
+const existingApiSlugs = new Set((await sanity.fetch<{ slug: string }[]>(`*[_type == "api" && !(_id in path("drafts.**"))]{ slug }`)).map((doc) => doc.slug));
 console.log(`Found ${existingApiSlugs.size} existing Sanity api docs`);
 
 interface TemplateEntry {
@@ -59,11 +59,13 @@ for (const flow of flows) {
         entriesByProvider.set(flow.providerConfigKey, [flow]);
     }
 }
+const skippedProviderRefs = new Set<string>();
 
 const templates: TemplateEntry[] = [];
 for (const [providerConfigKey, blocks] of entriesByProvider) {
     if (!existingApiSlugs.has(providerConfigKey)) {
-        console.warn(`Skipping ${providerConfigKey}: no matching Sanity api doc (no docs page yet?)`);
+        console.warn(`Skipping ${providerConfigKey}: no matching Sanity api doc (no docs page yet?) — leaving its existing templates untouched`);
+        skippedProviderRefs.add(`provider-${providerConfigKey}`);
         continue;
     }
 
@@ -147,7 +149,7 @@ const toUpsert = documents.filter((doc) => {
     return true;
 });
 
-const toDelete = existingTemplates.filter((doc) => !seenIds.has(doc._id));
+const toDelete = existingTemplates.filter((doc) => !seenIds.has(doc._id) && !skippedProviderRefs.has(doc.api?._ref ?? ''));
 deleted = toDelete.length;
 
 if (dryRun) {
