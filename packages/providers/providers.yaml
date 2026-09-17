@@ -22805,6 +22805,7 @@ stripe-app-sandbox:
             type: string
             title: App Domain
             description: The unique identifier Stripe assigns to your app instance.
+            optional: true
     connection_config:
         appDomain:
             type: string
