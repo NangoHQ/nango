@@ -819,6 +819,7 @@ URL patterns:
 | `shortcut` | Shortcut | API_KEY | [docs](https://nango.dev/docs/integrations/all/shortcut.md) |  |  | dev-tools, productivity |
 | `signnow` | SignNow | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/signnow.md) |  |  | legal |
 | `signnow-sandbox` | SignNow (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/signnow-sandbox.md) |  |  | legal |
+| `simpplr` | Simpplr | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/simpplr.md) | [connect](https://nango.dev/docs/api-integrations/simpplr/connect.md) |  | knowledge-base, productivity |
 | `simpro` | Simpro | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/simpro.md) | [connect](https://nango.dev/docs/api-integrations/simpro/connect.md) | [setup](https://nango.dev/docs/api-integrations/simpro/how-to-register-your-own-simpro-api-oauth-app.md) | productivity, invoicing |
 | `skio` | Skio | API_KEY | [docs](https://nango.dev/docs/integrations/all/skio.md) | [connect](https://nango.dev/docs/integrations/all/skio/connect.md) |  | e-commerce |
 | `slab` | Slab | API_KEY | [docs](https://nango.dev/docs/api-integrations/slab.md) | [connect](https://nango.dev/docs/api-integrations/slab/connect.md) |  | productivity, knowledge-base |
