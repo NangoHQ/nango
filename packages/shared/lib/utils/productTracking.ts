@@ -1,8 +1,10 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
+
 import { PostHog } from 'posthog-node';
 
 import { baseUrl, NANGO_VERSION, report } from '@nangohq/utils';
 
-import type { CliTelemetryEvent, DBTeam, DBUser } from '@nangohq/types';
+import type { CliTelemetryEvent, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
 export type ProductTrackingTypes =
     | CliTelemetryEvent
@@ -18,6 +20,101 @@ export type ProductTrackingTypes =
     | 'server:resource_capped:script_deploy_is_disabled'
     | 'server:resource_capped:action_triggered'
     | 'server:resource_capped:active_records';
+
+export interface TrackingContext {
+    team: Pick<DBTeam, 'id' | 'name'>;
+    /**
+     * Some events are account-wide and have no environment to resolve, so this stays optional.
+     */
+    environment?: Pick<DBEnvironment, 'id' | 'name' | 'is_production'> | null | undefined;
+    plan?: Pick<DBPlan, 'name'> | null | undefined;
+    user?: Pick<DBUser, 'id' | 'email' | 'name'> | null | undefined;
+}
+
+/**
+ * A context where nothing is guaranteed: the request may not be authenticated, and an event may be
+ * emitted with no context at all.
+ */
+export type TrackingContextInput = Partial<Omit<TrackingContext, 'team'>> & { team?: Pick<DBTeam, 'id' | 'name'> | null | undefined };
+
+/**
+ * Resolved lazily, at emit time: a request enters this context before auth runs, so the account
+ * and environment it reads are only set later in the request.
+ */
+type TrackingContextResolver = () => TrackingContextInput;
+
+const contextStorage = new AsyncLocalStorage<TrackingContextResolver>();
+
+/**
+ * Run `fn` with a tracking context that every posthog event emitted inside it inherits.
+ *
+ * A context field an event passes itself wins over the ambient one. The properties resolved from the
+ * context always win over an event's own property bags, so an event cannot claim another account.
+ */
+export function withProductTrackingContext<T>(resolver: TrackingContextResolver, fn: () => T): T {
+    return contextStorage.run(resolver, fn);
+}
+
+function resolveContext(explicit: TrackingContextInput): TrackingContext | null {
+    let ambient: TrackingContextInput | undefined;
+    try {
+        ambient = contextStorage.getStore()?.();
+    } catch (err) {
+        report(err);
+    }
+
+    const team = explicit.team ?? ambient?.team;
+    if (!team) {
+        return null;
+    }
+
+    return {
+        team,
+        environment: explicit.environment ?? ambient?.environment,
+        plan: explicit.plan ?? ambient?.plan,
+        user: explicit.user ?? ambient?.user
+    };
+}
+
+function commonProperties(): Record<string, unknown> {
+    return {
+        host: baseUrl,
+        'nango-server-version': NANGO_VERSION || 'unknown'
+    };
+}
+
+function accountProperties({ team, plan }: Pick<TrackingContext, 'team' | 'plan'>): Record<string, unknown> {
+    return {
+        'account-id': team.id,
+        'team-id': team.id,
+        'team-name': team.name,
+        ...(plan ? { plan: plan.name } : {})
+    };
+}
+
+function contextEventProperties({ team, environment, plan }: TrackingContext): Record<string, unknown> {
+    return {
+        ...accountProperties({ team, plan }),
+        ...(environment
+            ? {
+                  'environment-id': environment.id,
+                  'environment-name': environment.name,
+                  'is-prod': environment.is_production
+              }
+            : {})
+    };
+}
+
+function contextUserProperties({ team, plan, user }: TrackingContext): Record<string, unknown> {
+    return {
+        ...accountProperties({ team, plan }),
+        ...(user ? { id: user.id, email: user.email, name: user.name } : {})
+    };
+}
+
+function distinctIdFor({ team, user }: { team: Pick<DBTeam, 'id'>; user?: Pick<DBUser, 'id'> | null | undefined }): string {
+    return user ? `team-${team.id}-user-${user.id}` : `team-${team.id}`;
+}
 
 class ProductTracking {
     client: PostHog | undefined;
@@ -41,41 +138,35 @@ class ProductTracking {
     public track({
         name,
         team,
+        environment,
+        plan,
         user,
         eventProperties,
         userProperties
     }: {
         name: ProductTrackingTypes;
-        team: Pick<DBTeam, 'id' | 'name'>;
-        user?: Pick<DBUser, 'id' | 'email' | 'name'> | undefined;
         eventProperties?: Record<string | number, any>;
         userProperties?: Record<string | number, any>;
-    }) {
+    } & TrackingContextInput) {
         try {
             if (this.client == null) {
                 return;
             }
 
-            eventProperties = eventProperties || {};
-            userProperties = userProperties || {};
-
-            eventProperties['host'] = baseUrl;
-            eventProperties['nango-server-version'] = NANGO_VERSION || 'unknown';
-
-            eventProperties['team-id'] = team.id;
-            eventProperties['team-name'] = team.name;
-            userProperties['team-id'] = team.id;
-            userProperties['team-name'] = team.name;
-            let distinctId = `team-${team.id}`;
-            if (user) {
-                userProperties['email'] = user.email;
-                userProperties['name'] = user.name;
-                userProperties['id'] = user.id;
-                distinctId += `-user-${user.id}`;
+            const context = resolveContext({ team, environment, plan, user });
+            if (!context) {
+                report(new Error(`Product tracking event "${name}" has no account to attach to`));
+                return;
             }
 
-            eventProperties['$set'] = userProperties;
-            this.client.capture({ event: name, distinctId, properties: eventProperties });
+            const properties = {
+                ...eventProperties,
+                ...commonProperties(),
+                ...contextEventProperties(context),
+                $set: { ...userProperties, ...contextUserProperties(context) }
+            };
+
+            this.client.capture({ event: name, distinctId: distinctIdFor(context), properties });
         } catch (err) {
             report(err);
         }
@@ -99,12 +190,15 @@ class ProductTracking {
                 return;
             }
 
-            eventProperties = eventProperties || {};
-            eventProperties['host'] = baseUrl;
-            eventProperties['nango-server-version'] = NANGO_VERSION || 'unknown';
-            eventProperties['device-id'] = distinctId;
+            const context = resolveContext({});
+            const properties = {
+                ...eventProperties,
+                ...commonProperties(),
+                ...(context ? contextEventProperties(context) : {}),
+                'device-id': distinctId
+            };
 
-            this.client.capture({ event: name, distinctId, properties: eventProperties });
+            this.client.capture({ event: name, distinctId, properties });
         } catch (err) {
             report(err);
         }
@@ -121,12 +215,7 @@ class ProductTracking {
                 return;
             }
 
-            let alias = `team-${team.id}`;
-            if (user) {
-                alias += `-user-${user.id}`;
-            }
-
-            this.client.alias({ distinctId: deviceId, alias });
+            this.client.alias({ distinctId: deviceId, alias: distinctIdFor({ team, user }) });
         } catch (err) {
             report(err);
         }
