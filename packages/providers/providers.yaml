@@ -15955,7 +15955,7 @@ netsapiens:
     categories:
         - communication
     auth_mode: TWO_STEP
-    body_format: form
+    body_format: json
     token_url: https://${connectionConfig.server}/ns-api/v2/tokens
     token_params:
         grant_type: password
@@ -15969,7 +15969,7 @@ netsapiens:
         client_secret: ${credentials.client_secret}
         refresh_token: ${refresh_token}
     token_headers:
-        content-type: application/x-www-form-urlencoded
+        content-type: application/json
         accept: application/json
     token_response:
         token: access_token
@@ -18734,6 +18734,40 @@ pleo:
             enum:
                 - external
                 - external.staging
+
+pleo-api-key:
+    display_name: Pleo (API Key)
+    categories:
+        - payment
+        - invoicing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiSubdomain}.pleo.io
+        verification:
+            method: GET
+            endpoints:
+                - /v2/employees?limit=1
+        headers:
+            authorization: Basic ${base64(${apiKey}:)}
+    docs: https://nango.dev/docs/api-integrations/pleo-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/pleo-api-key/connect
+    connection_config:
+        apiSubdomain:
+            type: string
+            title: API Subdomain
+            description: The API subdomain for your Pleo environment.
+            enum:
+                - external
+                - external.staging
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Pleo Standalone API Key.
+            example: pls_********************************_620d75
+            pattern: '^pls_[a-f0-9]+_[a-f0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
 
 podium:
     display_name: Podium

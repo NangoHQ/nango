@@ -362,6 +362,12 @@ export default class Nango {
             return { params: credentials } as unknown as ConnectionConfig;
         }
 
+        if ('type' in credentials && credentials.type === 'TWO_STEP') {
+            const twoStepCredentials: Record<string, any> = { ...credentials };
+
+            return { params: twoStepCredentials } as unknown as ConnectionConfig;
+        }
+
         if ('client_id' in credentials && ('client_secret' in credentials || 'client_private_key' in credentials)) {
             const oauth2CCCredentials: OAuth2ClientCredentials = {
                 client_id: credentials.client_id,
@@ -399,12 +405,6 @@ export default class Nango {
             };
 
             return { params: BillCredentials } as unknown as ConnectionConfig;
-        }
-
-        if ('type' in credentials && credentials.type === 'TWO_STEP') {
-            const twoStepCredentials: Record<string, any> = { ...credentials };
-
-            return { params: twoStepCredentials } as unknown as ConnectionConfig;
         }
 
         return { params };
