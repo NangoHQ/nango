@@ -335,6 +335,29 @@ describe('OAuth consent interaction controller', () => {
         expect(next).not.toHaveBeenCalled();
     });
 
+    it.each([
+        ['another user', { accountId: '8', clientId: 'https://client.example.com/metadata.json' }],
+        ['another client', { accountId: '7', clientId: 'https://other-client.example.com/metadata.json' }]
+    ])('invalidates an interaction whose existing grant belongs to %s', async (_description, identity) => {
+        const uid = 'interaction-id';
+        grantAdapterFindMock.mockResolvedValue({ kind: 'Grant', jti: 'existing-grant', ...identity });
+        interactionDetailsMock.mockResolvedValue(consentInteraction(uid));
+        const req = consentRequest(uid);
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        await approveOAuthConsent(req, res, next);
+
+        expect(status).toHaveBeenCalledWith(404);
+        expect(send).toHaveBeenCalledWith({ error: { code: 'interaction_invalid', message: 'This authorization request is invalid' } });
+        expect(grantSaveMock).not.toHaveBeenCalled();
+        expect(interactionResultMock).not.toHaveBeenCalled();
+        expect(releaseOAuthInteractionMock).not.toHaveBeenCalled();
+        expect(next).not.toHaveBeenCalled();
+    });
+
     it('does not compensate a grant after the consent result was persisted', async () => {
         const uid = 'interaction-id';
         const previousGrant = {

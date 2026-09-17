@@ -243,9 +243,12 @@ async function decideConsent(decision: 'approved' | 'denied', req: Request, res:
             const persistedGrant = await server.Grant.adapter.find(interaction.grantId);
             if (persistedGrant) previousGrant = persistedGrant;
         }
-        if (interaction.grantId && !previousGrant) {
-            // The grant was revoked while this consent page was open. Keep the interaction
-            // claimed so it cannot be retried against stale state; the client must start again.
+        if (
+            interaction.grantId &&
+            (!previousGrant || previousGrant.accountId !== newGrantProperties.accountId || previousGrant.clientId !== newGrantProperties.clientId)
+        ) {
+            // The grant disappeared or no longer belongs to this user and client while consent
+            // was open. Keep the interaction claimed so stale state cannot be retried.
             sendError(res, 404, 'interaction_invalid');
             return;
         }
