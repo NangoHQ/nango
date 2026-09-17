@@ -52,6 +52,20 @@ describe('integrationToPublicApi preconfigured_credentials', () => {
 
         expect(result.preconfigured_credentials).toBeUndefined();
     });
+
+    it('never returns mcpRegistrationClientUri/mcpRegistrationAccessToken for an MCP_OAUTH2 integration', () => {
+        const mcpProvider = getProvider('asana-mcp')!;
+        const result = integrationToPublicApi({
+            integration: {
+                ...makeIntegration({ mcpRegistrationClientUri: 'https://provider.example/register/123', mcpRegistrationAccessToken: 'reg-secret' }),
+                provider: 'asana-mcp'
+            },
+            provider: mcpProvider
+        });
+
+        expect(JSON.stringify(result)).not.toContain('reg-secret');
+        expect(JSON.stringify(result)).not.toContain('mcpRegistration');
+    });
 });
 
 describe('integrationToApi', () => {
@@ -88,6 +102,22 @@ describe('integrationCredentialsToPublicApi', () => {
             app_id: 'app-id',
             app_link: 'https://example.com/app',
             private_key: 'private-key'
+        });
+    });
+
+    it('formats MCP_OAUTH2 credentials without ever surfacing registration bookkeeping fields', () => {
+        const result = integrationCredentialsToPublicApi({
+            type: 'MCP_OAUTH2',
+            clientId: 'dcr-client-id',
+            clientSecret: 'dcr-secret',
+            scopes: 'read,write'
+        });
+
+        expect(result).toStrictEqual({
+            type: 'MCP_OAUTH2',
+            client_id: 'dcr-client-id',
+            client_secret: 'dcr-secret',
+            scopes: 'read,write'
         });
     });
 });
