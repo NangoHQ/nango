@@ -22,13 +22,21 @@ export function useSignin() {
 
 let signingOut = false;
 
+interface SignoutOptions {
+    expired?: boolean;
+    /** Where the user was when the session died. PrivateRoute has already redirected to /signin by the time this runs. */
+    from?: { pathname: string; search: string; hash: string };
+}
+
 // Not a hook: the query client's 401 handler calls this from outside React.
-export async function signout({ expired = false }: { expired?: boolean } = {}) {
+export async function signout({ expired = false, from }: SignoutOptions = {}) {
     // The homepage's five insight charts fail together; without this each one logs out and redirects.
     if (signingOut) {
         return;
     }
     signingOut = true;
+
+    const target = expired ? signinPathWithNext(from ?? window.location, { expired: true }) : '/signin';
 
     storage.clearSession();
     resetPlayground(); // playground selections belong to the session's account/env
@@ -44,7 +52,7 @@ export async function signout({ expired = false }: { expired?: boolean } = {}) {
     queryClient.clear();
 
     // force a full reload to ensure all state is cleared
-    window.location.href = expired ? signinPathWithNext(window.location, { expired: true }) : '/signin';
+    window.location.href = target;
 }
 
 export function useSignout() {

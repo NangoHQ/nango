@@ -10,6 +10,7 @@ import { TooltipProvider } from '@nangohq/design-system';
 import { ErrorBoundary } from '@/components/patterns/ErrorBoundary';
 import { queryClient } from '@/store';
 import { fetcher } from '@/utils/api';
+import { isPublicAuthPath } from '@/utils/routes';
 import { SentryErrorBoundary } from '@/utils/sentry';
 import { signout } from '@/utils/user';
 
@@ -30,9 +31,17 @@ const SWRProvider = ({ children }: { children: ReactNode }) => {
                 revalidateOnReconnect: true,
                 fetcher,
                 onError: (error) => {
-                    if (error.status === 401) {
-                        return signout({ expired: true });
+                    if (error.status !== 401) {
+                        return;
                     }
+
+                    // Same capture-before-await as the query client's handler: PrivateRoute redirects on this 401 too.
+                    const { pathname, search, hash } = window.location;
+                    if (isPublicAuthPath(pathname)) {
+                        return;
+                    }
+
+                    return signout({ expired: true, from: { pathname, search, hash } });
                 }
             }}
         >
