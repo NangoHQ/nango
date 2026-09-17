@@ -198,8 +198,6 @@ class OAuthController {
                 return;
             }
 
-            mergeIntegrationConfigIntoConnectionConfig(provider, config.custom, connectionConfig);
-
             if (isConnectSession) {
                 // Session token always win
                 const defaults = connectSession.integrationsConfigDefaults?.[config.unique_key];
@@ -224,6 +222,8 @@ class OAuthController {
                     Object.assign(connectionConfig, defaults.connectionConfig);
                 }
             }
+
+            mergeIntegrationConfigIntoConnectionConfig(provider, config.custom, connectionConfig);
 
             const session: OAuthSession = {
                 providerConfigKey: providerConfigKey,

@@ -23,9 +23,7 @@ export function integrationToApi(data: IntegrationConfig, options?: { includeCre
                 ? null
                 : data.shared_credentials_id
                   ? pickSafeCustomFields(data.custom)
-                  : hideCredentials
-                    ? null
-                    : maskSecretConfigFields(data.custom, provider),
+                  : maskSecretConfigFields(data.custom, provider),
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString(),
         missing_fields: data.missing_fields,
