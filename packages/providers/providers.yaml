@@ -632,6 +632,26 @@ adp-workforce-now-next-gen:
     docs: https://nango.dev/docs/integrations/all/adp-workforce-now-next-gen
     docs_connect: https://nango.dev/docs/integrations/all/adp-workforce-now-next-gen/connect
 
+adroll:
+    display_name: AdRoll
+    auth_mode: OAUTH2
+    categories:
+        - marketing
+    authorization_url: https://services.adroll.com/auth/authorize
+    token_url: https://services.adroll.com/auth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - all
+    proxy:
+        base_url: https://services.adroll.com
+    docs: https://nango.dev/docs/api-integrations/adroll
+    setup_guide_url: https://nango.dev/docs/api-integrations/adroll/how-to-register-your-own-adroll-api-oauth-app
+
 adyen:
     display_name: Adyen
     categories:
