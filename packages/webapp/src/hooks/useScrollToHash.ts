@@ -70,7 +70,6 @@ export function useScrollToHash(containerRef: React.RefObject<HTMLElement>) {
         container.addEventListener('scroll', onScroll, { passive: true, signal });
         container.addEventListener('wheel', stop, { passive: true, signal });
         container.addEventListener('touchstart', stop, { passive: true, signal });
-        window.addEventListener('keydown', stop, { signal });
         frame = requestAnimationFrame(tick);
 
         return stop;
