@@ -270,8 +270,8 @@ export async function finalizeManagedAuthentication({
             destination = `/signup/${invitation.token}`;
         } else if (requestedDestination !== '/') {
             destination = requestedDestination;
-        } else if (isNewUser) {
-            // New user without an invitation: redirect to account discovery onboarding
+        } else if (user.account_discovery_pending) {
+            // Not isNewUser. A destination defers onboarding, and only reaching onboarding clears the flag.
             destination = '/onboarding/account-discovery';
         }
     } catch (err) {

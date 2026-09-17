@@ -298,6 +298,26 @@ describe(`POST ${route}`, () => {
         expect(callbackRes.headers.get('location')).toBe(`http://localhost:3003/signup/${invitation!.token}`);
     });
 
+    it('should still send a new user to onboarding on the login after a destination deferred it', async () => {
+        const email = `${nanoid()}@example.com`;
+
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: { email, firstName: 'Managed', lastName: 'User' },
+            organizationId: undefined
+        });
+
+        const first = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${encodeState({ returnTo: '/team/billing' })}`, {
+            redirect: 'manual'
+        });
+        expect(first.headers.get('location')).toBe('http://localhost:3003/team/billing');
+
+        const created = await userService.getUserByEmail(email);
+        expect(created?.account_discovery_pending).toBe(true);
+
+        const second = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { redirect: 'manual' });
+        expect(second.headers.get('location')).toBe('http://localhost:3003/onboarding/account-discovery');
+    });
+
     it('should sanitize a destination that escapes the dashboard origin', async () => {
         const { user } = await seeders.seedAccountEnvAndUser();
 
