@@ -5,11 +5,13 @@ import { allowCimdFetch, allowPublicCimdClient, CIMD_CACHE_MAX_SECONDS, CIMD_CAC
 
 import type { OAuthServerParsedConfig } from './config.js';
 import type { Knex } from 'knex';
-import type { Configuration, KoaContextWithOIDC, ResourceServer } from 'oidc-provider';
+import type { Client, Configuration, KoaContextWithOIDC, ResourceServer } from 'oidc-provider';
 
 const ACCESS_TOKEN_TTL_SECONDS = 60 * 60;
 const AUTHORIZATION_CODE_TTL_SECONDS = 60;
 const INTERACTION_TTL_SECONDS = 10 * 60;
+const CLAUDE_CODE_CLIENT_ID = 'https://claude.ai/oauth/claude-code-client-metadata';
+const CLAUDE_CODE_LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1']);
 
 export const OAUTH_ENDPOINT_PATH = '/oauth';
 export const OAUTH_AUTHORIZATION_PATH = `${OAUTH_ENDPOINT_PATH}/authorize`;
@@ -43,10 +45,7 @@ export function createOAuthProvider({ knex, config, resource, userExists, intera
         adapter: createOAuthAdapter({ knex, encryptionKey: config.encryptionKey }),
         claims: {},
         clientAuthMethods: ['none'],
-        // CIMD clients are public PKCE applications. Treat clients that omit
-        // application_type as native so command-line apps can use a temporary
-        // port on an otherwise exactly matched loopback callback URI.
-        clientDefaults: { application_type: 'native' },
+        clientDefaults: { application_type: 'web' },
         clients: [],
         cookies: {
             keys: config.cookieKeys,
@@ -65,7 +64,7 @@ export function createOAuthProvider({ knex, config, resource, userExists, intera
                 ack: 'draft-02',
                 // oidc-provider 9.12 keeps a bounded, per-provider LRU with a logical capacity of 100 and coalesces concurrent fetches.
                 allowFetch: async (_ctx, clientId) => await allowCimdFetch(clientId),
-                allowClient: (_ctx, client) => allowPublicCimdClient(client, allowedScopes),
+                allowClient: (_ctx, client) => allowCimdClient(client, allowedScopes),
                 cacheDuration: { min: CIMD_CACHE_MIN_SECONDS, max: CIMD_CACHE_MAX_SECONDS }
             },
             devInteractions: { enabled: false },
@@ -136,6 +135,52 @@ export function createOAuthProvider({ knex, config, resource, userExists, intera
     provider.proxy = true;
     installOAuthOnlyMiddleware(provider);
     return provider;
+}
+
+function allowCimdClient(client: Client, allowedScopes: ReadonlySet<string>): boolean {
+    if (!allowPublicCimdClient(client, allowedScopes)) return false;
+
+    if (client.clientId === CLAUDE_CODE_CLIENT_ID && client.applicationType !== 'native') {
+        // Claude Code's metadata omits application_type and registers portless loopback callbacks,
+        // but the CLI selects an ephemeral callback port. Keep the standards-compliant `web`
+        // default for every other client and remove this carve-out when Anthropic fixes:
+        // https://github.com/anthropics/claude-code/issues/37747
+        allowClaudeCodeLoopbackPort(client);
+    }
+    return true;
+}
+
+function allowClaudeCodeLoopbackPort(client: Client): void {
+    const standardRedirectUriAllowed = client.redirectUriAllowed.bind(client);
+    client.redirectUriAllowed = (redirectUri) =>
+        standardRedirectUriAllowed(redirectUri) ||
+        (client.redirectUris ?? []).some((registeredRedirectUri) => sameClaudeCodeLoopbackRedirectExceptPort(redirectUri, registeredRedirectUri));
+}
+
+function sameClaudeCodeLoopbackRedirectExceptPort(requestedValue: string, registeredValue: string): boolean {
+    let requested: URL;
+    let registered: URL;
+    try {
+        requested = new URL(requestedValue);
+        registered = new URL(registeredValue);
+    } catch {
+        return false;
+    }
+
+    return (
+        requested.protocol === 'http:' &&
+        registered.protocol === 'http:' &&
+        CLAUDE_CODE_LOOPBACK_HOSTS.has(requested.hostname) &&
+        requested.hostname === registered.hostname &&
+        requested.port !== '' &&
+        registered.port === '' &&
+        requested.username === '' &&
+        requested.password === '' &&
+        requested.pathname === registered.pathname &&
+        requested.search === registered.search &&
+        requested.hash === '' &&
+        registered.hash === ''
+    );
 }
 
 function requireDashboardAuthentication(): interactionPolicy.DefaultPolicy {

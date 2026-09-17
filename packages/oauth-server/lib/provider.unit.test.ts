@@ -25,6 +25,7 @@ vi.mock('./cimd.js', async (importOriginal) => {
 const artifacts = new Map<string, AdapterPayload>();
 const TEST_ACCOUNT_ID = 'test-account';
 const SWITCHED_ACCOUNT_ID = 'switched-account';
+const CLAUDE_CODE_CLIENT_ID = 'https://claude.ai/oauth/claude-code-client-metadata';
 const existingAccounts = new Set([TEST_ACCOUNT_ID, SWITCHED_ACCOUNT_ID]);
 const adapter = (model: string): Adapter => ({
     upsert: (id, payload) => {
@@ -59,7 +60,9 @@ describe('OAuth provider', () => {
     let cimdFetches = 0;
     beforeAll(async () => {
         vi.mocked(createOAuthAdapter).mockReturnValue(adapter);
-        vi.mocked(allowCimdFetch).mockImplementation((candidate) => Promise.resolve(candidate.startsWith('https://client.example.com/oauth/')));
+        vi.mocked(allowCimdFetch).mockImplementation((candidate) =>
+            Promise.resolve(candidate.startsWith('https://client.example.com/oauth/') || candidate === CLAUDE_CODE_CLIENT_ID)
+        );
         vi.mocked(secureCimdFetch).mockImplementation((input, init) => {
             cimdFetches++;
             const fetchedClientId = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
@@ -78,13 +81,13 @@ describe('OAuth provider', () => {
             if (fetchedClientId.endsWith('/oversized.json')) {
                 return Promise.resolve(new Response('x'.repeat(5 * 1024 + 1), { status: 200, headers: { 'content-type': 'application/json' } }));
             }
-            if (fetchedClientId.endsWith('/native.json') || fetchedClientId.endsWith('/web-loopback.json')) {
+            if (fetchedClientId === CLAUDE_CODE_CLIENT_ID || fetchedClientId.endsWith('/native.json') || fetchedClientId.endsWith('/unspecified.json')) {
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
                             client_id: fetchedClientId,
                             client_name: 'Native MCP Client',
-                            ...(fetchedClientId.endsWith('/web-loopback.json') ? { application_type: 'web' } : {}),
+                            ...(fetchedClientId.endsWith('/native.json') ? { application_type: 'native' } : {}),
                             redirect_uris: ['http://localhost/callback'],
                             grant_types: ['authorization_code', 'refresh_token'],
                             response_types: ['code'],
@@ -216,11 +219,11 @@ describe('OAuth provider', () => {
         expect(wrongPathResponse.status).toBe(400);
         expect(await wrongPathResponse.text()).toContain('invalid_redirect_uri');
 
-        const explicitWebClient = 'https://client.example.com/oauth/web-loopback.json';
+        const unspecifiedClient = 'https://client.example.com/oauth/unspecified.json';
         const webClientVerifier = randomBytes(32).toString('base64url');
         const webClientAuthorization = new URL(`${origin}/oauth/authorize`);
         webClientAuthorization.search = authorizationParams(
-            explicitWebClient,
+            unspecifiedClient,
             webClientVerifier,
             'https://mcp.example.com/mcp',
             'environment:*',
@@ -230,6 +233,35 @@ describe('OAuth provider', () => {
 
         expect(webClientResponse.status).toBe(400);
         expect(await webClientResponse.text()).toContain('invalid_redirect_uri');
+    });
+
+    it('allows only Claude Code to vary its port when application_type is omitted', async () => {
+        const redirectUri = 'http://localhost:3118/callback';
+        const authorization = await authorize(provider, origin, CLAUDE_CODE_CLIENT_ID, 'https://mcp.example.com/mcp', 'environment:*', { redirectUri });
+        const tokens = await exchangeCode(
+            origin,
+            CLAUDE_CODE_CLIENT_ID,
+            authorization.code,
+            authorization.verifier,
+            'https://mcp.example.com/mcp',
+            redirectUri
+        );
+
+        expect(tokens).toMatchObject({ token_type: 'Bearer', scope: 'environment:*' });
+
+        const wrongPathVerifier = randomBytes(32).toString('base64url');
+        const wrongPathAuthorization = new URL(`${origin}/oauth/authorize`);
+        wrongPathAuthorization.search = authorizationParams(
+            CLAUDE_CODE_CLIENT_ID,
+            wrongPathVerifier,
+            'https://mcp.example.com/mcp',
+            'environment:*',
+            'http://localhost:3118/not-the-registered-path'
+        ).toString();
+        const wrongPathResponse = await fetch(wrongPathAuthorization, { redirect: 'manual' });
+
+        expect(wrongPathResponse.status).toBe(400);
+        expect(await wrongPathResponse.text()).toContain('invalid_redirect_uri');
     });
 
     it('does not expose dynamic client registration', async () => {
@@ -333,7 +365,9 @@ describe('OAuth provider', () => {
         ]).toString();
         const duplicateResponse = await fetch(duplicateAuthorization, { redirect: 'manual' });
         expect(duplicateResponse.status).toBe(303);
-        expect(new URL(duplicateResponse.headers.get('location')!).searchParams.get('error')).toBe('invalid_target');
+        const duplicateLocation = duplicateResponse.headers.get('location');
+        if (!duplicateLocation) throw new Error('Missing duplicate resource error redirect');
+        expect(new URL(duplicateLocation).searchParams.get('error')).toBe('invalid_target');
 
         const refreshAuthorization = await authorize(provider, origin, clientId);
         const tokens = await exchangeCode(origin, clientId, refreshAuthorization.code, refreshAuthorization.verifier);

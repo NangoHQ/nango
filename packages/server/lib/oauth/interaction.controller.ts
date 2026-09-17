@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import db from '@nangohq/database';
 import { claimOAuthInteraction, releaseOAuthInteraction, revokeOAuthGrant } from '@nangohq/oauth-server';
-import { basePublicUrl, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
+import { basePublicUrl, getLogger, requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 import { oauthServer, oauthServerConfig } from './server.js';
 
@@ -23,6 +23,7 @@ const routeParamsSchema = z
     })
     .strict();
 const DASHBOARD_ORIGIN = new URL(basePublicUrl).origin;
+const logger = getLogger('Server.OAuthInteraction');
 type ValidatedOAuthResource = OAuthConsentResource & { resource: string };
 
 export const oauthConsentCors: RequestHandler = (req, res, next) => {
@@ -242,7 +243,12 @@ async function decideConsent(decision: 'approved' | 'denied', req: Request, res:
             const persistedGrant = await server.Grant.adapter.find(interaction.grantId);
             if (persistedGrant) previousGrant = persistedGrant;
         }
-        if (interaction.grantId && !previousGrant) throw new Error('Existing OAuth grant could not be loaded');
+        if (interaction.grantId && !previousGrant) {
+            // The grant was revoked while this consent page was open. Keep the interaction
+            // claimed so it cannot be retried against stale state; the client must start again.
+            sendError(res, 404, 'interaction_invalid');
+            return;
+        }
         // Grant methods mutate nested scope objects, so keep an untouched snapshot for compensation.
         const grant = previousGrant ? new server.Grant(structuredClone(previousGrant)) : new server.Grant(newGrantProperties);
         const reservedGrantId = grant.jti;
@@ -257,6 +263,7 @@ async function decideConsent(decision: 'approved' | 'denied', req: Request, res:
         resultPersisted = true;
         res.status(200).send({ data: { resumeUrl } });
     } catch (err) {
+        let grantCompensated = true;
         if (providerGrantId && !resultPersisted) {
             try {
                 if (previousGrant) {
@@ -268,17 +275,30 @@ async function decideConsent(decision: 'approved' | 'denied', req: Request, res:
                         grantId: providerGrantId
                     });
                 }
-            } catch {
-                // Compensation is best-effort. Preserve the original protocol error so it keeps
-                // its intended HTTP response, then release the interaction for a safe retry below.
+            } catch (err) {
+                grantCompensated = false;
+                logger.error('Failed to compensate OAuth grant after consent submission failed', {
+                    error: err,
+                    interactionId: uid,
+                    operation: previousGrant ? 'restore_existing_grant' : 'revoke_new_grant'
+                });
             }
         }
-        if (uid && interactionClaimed && !resultPersisted) {
-            await releaseOAuthInteraction({
-                knex: db.knex,
-                encryptionKey: requireOAuthConfig().config.encryptionKey,
-                interactionId: uid
-            });
+        if (uid && interactionClaimed && !resultPersisted && grantCompensated) {
+            try {
+                await releaseOAuthInteraction({
+                    knex: db.knex,
+                    encryptionKey: requireOAuthConfig().config.encryptionKey,
+                    interactionId: uid
+                });
+            } catch (err) {
+                // The interaction remains claimed, which fails closed. Still return the original
+                // protocol error so a cleanup outage does not turn a useful 410 into a generic 500.
+                logger.error('Failed to release OAuth interaction after consent submission failed', {
+                    error: err,
+                    interactionId: uid
+                });
+            }
         }
         handleInteractionError(err, res, next);
     }

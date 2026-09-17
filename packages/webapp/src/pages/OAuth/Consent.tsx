@@ -19,7 +19,7 @@ type PageState =
     | { kind: 'loading' }
     | { kind: 'ready'; interaction: OAuthConsentInteraction }
     | { kind: 'submitting'; interaction: OAuthConsentInteraction; decision: 'approve' | 'deny' }
-    | { kind: 'expired' | 'completed' | 'unavailable' }
+    | { kind: 'expired' | 'completed' | 'invalid' | 'unavailable' }
     | { kind: 'error'; interaction?: OAuthConsentInteraction };
 
 export function OAuthConsent() {
@@ -82,6 +82,10 @@ export function OAuthConsent() {
                 setState({ kind: 'expired' });
                 return;
             }
+            if (response.status === 404) {
+                setState({ kind: 'invalid' });
+                return;
+            }
             if (response.status === 403) {
                 setState({ kind: 'unavailable' });
                 return;
@@ -109,7 +113,6 @@ export function OAuthConsent() {
         setState({ kind: 'submitting', interaction, decision });
         try {
             const response = await apiFetch(new URL(`/oauth/consent/${encodeURIComponent(uid)}/${decision}`, issuer), { method: 'POST' });
-            const json: unknown = await response.json();
             if (response.status === 409) {
                 setState({ kind: 'completed' });
                 return;
@@ -122,11 +125,16 @@ export function OAuthConsent() {
                 void navigate(`/signin?next=${encodeURIComponent(location.pathname)}`, { replace: true });
                 return;
             }
+            if (response.status === 404) {
+                setState({ kind: 'invalid' });
+                return;
+            }
             if (!response.ok) {
                 setState({ kind: response.status === 403 ? 'unavailable' : 'error', interaction });
                 return;
             }
-            window.location.assign((json as DecisionResponse).data.resumeUrl);
+            const json = (await response.json()) as DecisionResponse;
+            window.location.assign(json.data.resumeUrl);
         } catch {
             setState({ kind: 'error', interaction });
         }
@@ -150,6 +158,9 @@ export function OAuthConsent() {
                             title="This request was already completed"
                             description="You can close this window or return to the application."
                         />
+                    )}
+                    {state.kind === 'invalid' && (
+                        <Status icon={<TriangleAlert />} title="This request is no longer valid" description="Return to the application and start again." />
                     )}
                     {state.kind === 'unavailable' && (
                         <Status icon={<TriangleAlert />} title="Authorization is unavailable" description="OAuth consent is not available right now." />

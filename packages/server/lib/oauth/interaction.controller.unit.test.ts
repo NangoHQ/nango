@@ -5,6 +5,7 @@ import { basePublicUrl } from '@nangohq/utils';
 
 import { approveOAuthConsent, completeOAuthLogin, getOAuthConsentInteraction, oauthConsentCors } from './interaction.controller.js';
 
+import type * as NangoUtils from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
 import type { Interaction } from 'oidc-provider';
 
@@ -17,6 +18,7 @@ const {
     interactionDetailsMock,
     interactionResultMock,
     knexMock,
+    loggerErrorMock,
     releaseOAuthInteractionMock,
     revokeOAuthGrantMock,
     sessionFindMock
@@ -29,12 +31,17 @@ const {
     interactionDetailsMock: vi.fn(),
     interactionResultMock: vi.fn(),
     knexMock: vi.fn(),
+    loggerErrorMock: vi.fn(),
     releaseOAuthInteractionMock: vi.fn(),
     revokeOAuthGrantMock: vi.fn(),
     sessionFindMock: vi.fn()
 }));
 
 vi.mock('@nangohq/database', () => ({ default: { knex: knexMock } }));
+vi.mock('@nangohq/utils', async (importOriginal) => {
+    const actual = await importOriginal<typeof NangoUtils>();
+    return { ...actual, getLogger: () => ({ error: loggerErrorMock }) };
+});
 vi.mock('@nangohq/oauth-server', () => ({
     claimOAuthInteraction: claimOAuthInteractionMock,
     releaseOAuthInteraction: releaseOAuthInteractionMock,
@@ -90,13 +97,13 @@ describe('OAuth consent interaction controller', () => {
         });
     });
 
-    it('prevents browsers from caching interaction responses', () => {
+    it('prevents browsers from caching interaction responses', async () => {
         const req = { method: 'GET', get: vi.fn(() => undefined) } as unknown as Request;
         const setHeader = vi.fn();
         const res = { setHeader } as unknown as Response;
         const next = vi.fn() as NextFunction;
 
-        oauthConsentCors(req, res, next);
+        await oauthConsentCors(req, res, next);
 
         expect(setHeader).toHaveBeenCalledWith('Cache-Control', 'no-store');
         expect(next).toHaveBeenCalledOnce();
@@ -308,6 +315,26 @@ describe('OAuth consent interaction controller', () => {
         expect(next).toHaveBeenCalledWith(submissionError);
     });
 
+    it('invalidates an interaction whose existing grant was revoked while consent was open', async () => {
+        const uid = 'interaction-id';
+        grantAdapterFindMock.mockResolvedValue(undefined);
+        interactionDetailsMock.mockResolvedValue(consentInteraction(uid));
+        const req = consentRequest(uid);
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        await approveOAuthConsent(req, res, next);
+
+        expect(status).toHaveBeenCalledWith(404);
+        expect(send).toHaveBeenCalledWith({ error: { code: 'interaction_invalid', message: 'This authorization request is invalid' } });
+        expect(grantSaveMock).not.toHaveBeenCalled();
+        expect(interactionResultMock).not.toHaveBeenCalled();
+        expect(releaseOAuthInteractionMock).not.toHaveBeenCalled();
+        expect(next).not.toHaveBeenCalled();
+    });
+
     it('does not compensate a grant after the consent result was persisted', async () => {
         const uid = 'interaction-id';
         const previousGrant = {
@@ -355,7 +382,46 @@ describe('OAuth consent interaction controller', () => {
         grantSaveMock.mockResolvedValue('existing-grant');
         const interactionError = new errors.SessionNotFound('authorization request has expired');
         interactionResultMock.mockRejectedValue(interactionError);
-        grantAdapterUpsertMock.mockRejectedValue(new Error('failed to restore the grant'));
+        const compensationError = new Error('failed to restore the grant');
+        grantAdapterUpsertMock.mockRejectedValue(compensationError);
+        interactionDetailsMock.mockResolvedValue(consentInteraction(uid));
+        const req = consentRequest(uid);
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        await approveOAuthConsent(req, res, next);
+
+        expect(grantAdapterUpsertMock).toHaveBeenCalledWith('existing-grant', previousGrant);
+        expect(releaseOAuthInteractionMock).not.toHaveBeenCalled();
+        expect(loggerErrorMock).toHaveBeenCalledWith('Failed to compensate OAuth grant after consent submission failed', {
+            error: compensationError,
+            interactionId: uid,
+            operation: 'restore_existing_grant'
+        });
+        expect(status).toHaveBeenCalledWith(410);
+        expect(send).toHaveBeenCalledWith({ error: { code: 'interaction_expired', message: 'This authorization request has expired' } });
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it('preserves the original interaction error when releasing the claim fails', async () => {
+        const uid = 'interaction-id';
+        const previousGrant = {
+            kind: 'Grant',
+            jti: 'existing-grant',
+            accountId: '7',
+            clientId: 'https://client.example.com/metadata.json',
+            iat: Math.floor(Date.now() / 1000) - 60,
+            exp: Math.floor(Date.now() / 1000) + 600,
+            resources: { 'https://mcp.example.com/mcp': 'environment:read' }
+        };
+        grantAdapterFindMock.mockResolvedValue(previousGrant);
+        grantSaveMock.mockResolvedValue('existing-grant');
+        const interactionError = new errors.SessionNotFound('authorization request has expired');
+        interactionResultMock.mockRejectedValue(interactionError);
+        const releaseError = new Error('failed to release the interaction');
+        releaseOAuthInteractionMock.mockRejectedValue(releaseError);
         interactionDetailsMock.mockResolvedValue(consentInteraction(uid));
         const req = consentRequest(uid);
         const status = vi.fn().mockReturnThis();
@@ -367,6 +433,10 @@ describe('OAuth consent interaction controller', () => {
 
         expect(grantAdapterUpsertMock).toHaveBeenCalledWith('existing-grant', previousGrant);
         expect(releaseOAuthInteractionMock).toHaveBeenCalledWith(expect.objectContaining({ interactionId: uid }));
+        expect(loggerErrorMock).toHaveBeenCalledWith(
+            'Failed to release OAuth interaction after consent submission failed',
+            expect.objectContaining({ error: releaseError, interactionId: uid })
+        );
         expect(status).toHaveBeenCalledWith(410);
         expect(send).toHaveBeenCalledWith({ error: { code: 'interaction_expired', message: 'This authorization request has expired' } });
         expect(next).not.toHaveBeenCalled();
