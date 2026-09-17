@@ -17,6 +17,12 @@ export type IntegrationCredentials =
           appLink: string | null;
           privateKey: string | null;
       }
+    | {
+          type: 'MCP_OAUTH2';
+          clientId: string | null;
+          clientSecret: string | null;
+          scopes: string | null;
+      }
     | null;
 
 export function getPreconfiguredCredentials(custom: IntegrationConfig['custom'], provider: Provider): string[] {
@@ -58,6 +64,15 @@ export function getIntegrationCredentials(integration: IntegrationConfig, provid
             appId: usesSharedCredentials ? '' : integration.custom?.['app_id'] || null,
             appLink: integration.app_link || null,
             privateKey: usesSharedCredentials ? '' : decodePrivateKey(rawPrivateKey)
+        };
+    }
+
+    if (provider.auth_mode === 'MCP_OAUTH2') {
+        return {
+            type: provider.auth_mode,
+            clientId: usesSharedCredentials ? '' : integration.oauth_client_id,
+            clientSecret: usesSharedCredentials ? '' : integration.oauth_client_secret,
+            scopes: integration.oauth_scopes || null
         };
     }
 

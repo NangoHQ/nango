@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { getProvider } from '@nangohq/shared';
 
-import { integrationCredentialsToPublicApi, integrationToPublicApi } from './integration.js';
+import { integrationCredentialsToPublicApi, integrationToApi, integrationToPublicApi } from './integration.js';
 
 import type { IntegrationConfig } from '@nangohq/types';
 
@@ -52,6 +52,36 @@ describe('integrationToPublicApi preconfigured_credentials', () => {
 
         expect(result.preconfigured_credentials).toBeUndefined();
     });
+
+    it('never returns mcpRegistrationClientUri/mcpRegistrationAccessToken for an MCP_OAUTH2 integration', () => {
+        const mcpProvider = getProvider('asana-mcp')!;
+        const result = integrationToPublicApi({
+            integration: {
+                ...makeIntegration({ mcpRegistrationClientUri: 'https://provider.example/register/123', mcpRegistrationAccessToken: 'reg-secret' }),
+                provider: 'asana-mcp'
+            },
+            provider: mcpProvider
+        });
+
+        expect(JSON.stringify(result)).not.toContain('reg-secret');
+        expect(JSON.stringify(result)).not.toContain('mcpRegistration');
+    });
+});
+
+describe('integrationToApi', () => {
+    it('never returns mcpRegistrationClientUri/mcpRegistrationAccessToken, even to a caller with credentials access', () => {
+        const result = integrationToApi(
+            makeIntegration({ clientId: 'abc', mcpRegistrationClientUri: 'https://provider.example/register/123', mcpRegistrationAccessToken: 'reg-secret' })
+        );
+
+        expect(result.custom).toStrictEqual({ clientId: 'abc' });
+    });
+
+    it('strips the mcp registration fields even when nothing else is in custom', () => {
+        const result = integrationToApi(makeIntegration({ mcpRegistrationClientUri: 'https://provider.example/register/123' }));
+
+        expect(result.custom).toStrictEqual({});
+    });
 });
 
 describe('integrationCredentialsToPublicApi', () => {
@@ -72,6 +102,22 @@ describe('integrationCredentialsToPublicApi', () => {
             app_id: 'app-id',
             app_link: 'https://example.com/app',
             private_key: 'private-key'
+        });
+    });
+
+    it('formats MCP_OAUTH2 credentials without ever surfacing registration bookkeeping fields', () => {
+        const result = integrationCredentialsToPublicApi({
+            type: 'MCP_OAUTH2',
+            clientId: 'dcr-client-id',
+            clientSecret: 'dcr-secret',
+            scopes: 'read,write'
+        });
+
+        expect(result).toStrictEqual({
+            type: 'MCP_OAUTH2',
+            client_id: 'dcr-client-id',
+            client_secret: 'dcr-secret',
+            scopes: 'read,write'
         });
     });
 });
