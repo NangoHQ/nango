@@ -389,11 +389,8 @@ function displayClient(client: Client, clientId: string): OAuthConsentInteractio
 }
 
 function boundedText(value: string | null | undefined, max: number, fallback: string): string {
-    const normalized = value
-        ?.split('')
-        .filter((character) => character.charCodeAt(0) > 0x1f && character.charCodeAt(0) !== 0x7f)
-        .join('')
-        .trim();
+    // Untrusted names must not contain invisible characters that can change how nearby text appears.
+    const normalized = value?.replace(/[\p{Cc}\p{Cf}]/gu, '').trim();
     return (normalized || fallback).slice(0, max);
 }
 

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { basePublicUrl } from '@nangohq/utils';
 
-import { approveOAuthConsent, completeOAuthLogin, getOAuthConsentInteraction, oauthConsentCors } from './interaction.controller.js';
+import { approveOAuthConsent, completeOAuthLogin, denyOAuthConsent, getOAuthConsentInteraction, oauthConsentCors } from './interaction.controller.js';
 
 import type * as NangoUtils from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
@@ -88,7 +88,10 @@ describe('OAuth consent interaction controller', () => {
         sessionFindMock.mockResolvedValue({ accountId: '7', loginTs: Date.now() / 1000 - 60 });
         clientFindMock.mockResolvedValue({ clientName: 'Test client', redirectUriAllowed: () => true });
         knexMock.mockImplementation((table: string) => {
-            const row = table === '_nango_users' ? { id: 7, account_id: 42, email: 'user@example.com', suspended: false } : { id: 42, uuid: 'account-uuid' };
+            const row =
+                table === '_nango_users'
+                    ? { id: 7, account_id: 42, email: 'user@example.com', suspended: false }
+                    : { id: 42, uuid: 'account-uuid', name: 'Test account' };
             const query = {
                 where: vi.fn(() => query),
                 first: vi.fn(() => Promise.resolve(row))
@@ -107,6 +110,66 @@ describe('OAuth consent interaction controller', () => {
 
         expect(setHeader).toHaveBeenCalledWith('Cache-Control', 'no-store');
         expect(next).toHaveBeenCalledOnce();
+    });
+
+    it('allows dashboard CORS preflights', async () => {
+        const origin = new URL(basePublicUrl).origin;
+        const req = { method: 'OPTIONS', get: vi.fn(() => origin) } as unknown as Request;
+        const setHeader = vi.fn();
+        const sendStatus = vi.fn();
+        const res = { setHeader, sendStatus } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        await oauthConsentCors(req, res, next);
+
+        expect(setHeader).toHaveBeenCalledWith('Access-Control-Allow-Origin', origin);
+        expect(setHeader).toHaveBeenCalledWith('Access-Control-Allow-Credentials', 'true');
+        expect(setHeader).toHaveBeenCalledWith('Access-Control-Allow-Headers', 'Content-Type, sentry-trace, baggage');
+        expect(setHeader).toHaveBeenCalledWith('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        expect(setHeader).toHaveBeenCalledWith('Vary', 'Origin');
+        expect(sendStatus).toHaveBeenCalledWith(204);
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it('rejects CORS preflights from other origins', async () => {
+        const req = { method: 'OPTIONS', get: vi.fn(() => 'https://attacker.example.com') } as unknown as Request;
+        const setHeader = vi.fn();
+        const sendStatus = vi.fn();
+        const res = { setHeader, sendStatus } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        await oauthConsentCors(req, res, next);
+
+        expect(setHeader).not.toHaveBeenCalledWith('Access-Control-Allow-Origin', expect.anything());
+        expect(sendStatus).toHaveBeenCalledWith(403);
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it('returns sanitized consent details for a valid interaction', async () => {
+        const uid = 'interaction-id';
+        clientFindMock.mockResolvedValue({ clientName: 'Test\u202E client\u202C\u200B', redirectUriAllowed: () => true });
+        interactionDetailsMock.mockResolvedValue(consentInteraction(uid));
+        const req = {
+            params: { uid },
+            user: { id: 7, account_id: 42, authenticated_at: Date.now() / 1000 - 60 }
+        } as unknown as Request;
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        await getOAuthConsentInteraction(req, res, next);
+
+        expect(status).toHaveBeenCalledWith(200);
+        expect(send).toHaveBeenCalledWith({
+            data: {
+                client: { name: 'Test client', hostname: 'client.example.com' },
+                redirectUri: 'https://client.example.com/callback',
+                account: { name: 'Test account' },
+                resource: { hostname: 'mcp.example.com', scopes: ['environment:*'] }
+            }
+        });
+        expect(next).not.toHaveBeenCalled();
     });
 
     it('reads a login prompt without submitting it', async () => {
@@ -265,6 +328,75 @@ describe('OAuth consent interaction controller', () => {
         expect(send).toHaveBeenCalledWith({ error: { code: 'login_required', message: 'Sign in to continue' } });
         expect(clientFindMock).not.toHaveBeenCalled();
         expect(next).not.toHaveBeenCalled();
+    });
+
+    it('approves consent and returns the provider resume URL', async () => {
+        const uid = 'interaction-id';
+        grantAdapterFindMock.mockResolvedValue({
+            kind: 'Grant',
+            jti: 'existing-grant',
+            accountId: '7',
+            clientId: 'https://client.example.com/metadata.json'
+        });
+        grantSaveMock.mockResolvedValue('existing-grant');
+        interactionDetailsMock.mockResolvedValue(consentInteraction(uid));
+        const req = consentRequest(uid);
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        await approveOAuthConsent(req, res, next);
+
+        expect(interactionResultMock).toHaveBeenCalledWith(req, res, { consent: { grantId: 'existing-grant' } });
+        expect(status).toHaveBeenCalledWith(200);
+        expect(send).toHaveBeenCalledWith({ data: { resumeUrl: 'https://issuer.example.com/oauth/authorize/resume' } });
+        expect(releaseOAuthInteractionMock).not.toHaveBeenCalled();
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it('denies consent and returns the provider resume URL without modifying a grant', async () => {
+        const uid = 'interaction-id';
+        interactionDetailsMock.mockResolvedValue(consentInteraction(uid));
+        const req = consentRequest(uid);
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        await denyOAuthConsent(req, res, next);
+
+        expect(interactionResultMock).toHaveBeenCalledWith(
+            req,
+            res,
+            { error: 'access_denied', error_description: 'The authorization request was denied' },
+            { mergeWithLastSubmission: false }
+        );
+        expect(status).toHaveBeenCalledWith(200);
+        expect(send).toHaveBeenCalledWith({ data: { resumeUrl: 'https://issuer.example.com/oauth/authorize/resume' } });
+        expect(grantAdapterFindMock).not.toHaveBeenCalled();
+        expect(grantSaveMock).not.toHaveBeenCalled();
+        expect(releaseOAuthInteractionMock).not.toHaveBeenCalled();
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it('releases a denied interaction when the provider cannot persist the result', async () => {
+        const uid = 'interaction-id';
+        const submissionError = new Error('failed to save the denial result');
+        interactionResultMock.mockRejectedValue(submissionError);
+        interactionDetailsMock.mockResolvedValue(consentInteraction(uid));
+        const req = consentRequest(uid);
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        await denyOAuthConsent(req, res, next);
+
+        expect(grantAdapterFindMock).not.toHaveBeenCalled();
+        expect(grantSaveMock).not.toHaveBeenCalled();
+        expect(releaseOAuthInteractionMock).toHaveBeenCalledWith(expect.objectContaining({ interactionId: uid }));
+        expect(next).toHaveBeenCalledWith(submissionError);
     });
 
     it('restores an existing grant if consent submission fails after saving it', async () => {
