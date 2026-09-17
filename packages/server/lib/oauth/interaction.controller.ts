@@ -257,7 +257,7 @@ async function decideConsent(decision: 'approved' | 'denied', req: Request, res:
         resultPersisted = true;
         res.status(200).send({ data: { resumeUrl } });
     } catch (err) {
-        if (providerGrantId) {
+        if (providerGrantId && !resultPersisted) {
             try {
                 if (previousGrant) {
                     await requireOAuthServer().Grant.adapter.upsert(providerGrantId, previousGrant);
@@ -268,16 +268,9 @@ async function decideConsent(decision: 'approved' | 'denied', req: Request, res:
                         grantId: providerGrantId
                     });
                 }
-            } catch (err) {
-                if (uid && interactionClaimed && !resultPersisted) {
-                    await releaseOAuthInteraction({
-                        knex: db.knex,
-                        encryptionKey: requireOAuthConfig().config.encryptionKey,
-                        interactionId: uid
-                    });
-                }
-                next(err);
-                return;
+            } catch {
+                // Compensation is best-effort. Preserve the original protocol error so it keeps
+                // its intended HTTP response, then release the interaction for a safe retry below.
             }
         }
         if (uid && interactionClaimed && !resultPersisted) {

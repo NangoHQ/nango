@@ -1,3 +1,4 @@
+import { errors } from 'oidc-provider';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { basePublicUrl } from '@nangohq/utils';
@@ -306,4 +307,94 @@ describe('OAuth consent interaction controller', () => {
         expect(releaseOAuthInteractionMock).toHaveBeenCalledWith(expect.objectContaining({ interactionId: uid }));
         expect(next).toHaveBeenCalledWith(submissionError);
     });
+
+    it('does not compensate a grant after the consent result was persisted', async () => {
+        const uid = 'interaction-id';
+        const previousGrant = {
+            kind: 'Grant',
+            jti: 'existing-grant',
+            accountId: '7',
+            clientId: 'https://client.example.com/metadata.json',
+            iat: Math.floor(Date.now() / 1000) - 60,
+            exp: Math.floor(Date.now() / 1000) + 600,
+            resources: { 'https://mcp.example.com/mcp': 'environment:read' }
+        };
+        grantAdapterFindMock.mockResolvedValue(previousGrant);
+        grantSaveMock.mockResolvedValue('existing-grant');
+        interactionDetailsMock.mockResolvedValue(consentInteraction(uid));
+        const responseError = new Error('failed to send the response');
+        const req = consentRequest(uid);
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn(() => {
+            throw responseError;
+        });
+        const res = { status, send } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        await approveOAuthConsent(req, res, next);
+
+        expect(interactionResultMock).toHaveBeenCalledWith(req, res, { consent: { grantId: 'existing-grant' } });
+        expect(grantAdapterUpsertMock).not.toHaveBeenCalled();
+        expect(revokeOAuthGrantMock).not.toHaveBeenCalled();
+        expect(releaseOAuthInteractionMock).not.toHaveBeenCalled();
+        expect(next).toHaveBeenCalledWith(responseError);
+    });
+
+    it('preserves a typed interaction error when grant compensation fails', async () => {
+        const uid = 'interaction-id';
+        const previousGrant = {
+            kind: 'Grant',
+            jti: 'existing-grant',
+            accountId: '7',
+            clientId: 'https://client.example.com/metadata.json',
+            iat: Math.floor(Date.now() / 1000) - 60,
+            exp: Math.floor(Date.now() / 1000) + 600,
+            resources: { 'https://mcp.example.com/mcp': 'environment:read' }
+        };
+        grantAdapterFindMock.mockResolvedValue(previousGrant);
+        grantSaveMock.mockResolvedValue('existing-grant');
+        const interactionError = new errors.SessionNotFound('authorization request has expired');
+        interactionResultMock.mockRejectedValue(interactionError);
+        grantAdapterUpsertMock.mockRejectedValue(new Error('failed to restore the grant'));
+        interactionDetailsMock.mockResolvedValue(consentInteraction(uid));
+        const req = consentRequest(uid);
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+        const next = vi.fn() as NextFunction;
+
+        await approveOAuthConsent(req, res, next);
+
+        expect(grantAdapterUpsertMock).toHaveBeenCalledWith('existing-grant', previousGrant);
+        expect(releaseOAuthInteractionMock).toHaveBeenCalledWith(expect.objectContaining({ interactionId: uid }));
+        expect(status).toHaveBeenCalledWith(410);
+        expect(send).toHaveBeenCalledWith({ error: { code: 'interaction_expired', message: 'This authorization request has expired' } });
+        expect(next).not.toHaveBeenCalled();
+    });
 });
+
+function consentInteraction(uid: string): Partial<Interaction> {
+    return {
+        uid,
+        exp: Math.floor(Date.now() / 1000) + 600,
+        prompt: { name: 'consent', reasons: ['consent_prompt'], details: {} },
+        session: { accountId: '7', uid: 'session-uid', cookie: 'session-cookie' },
+        params: {
+            client_id: 'https://client.example.com/metadata.json',
+            redirect_uri: 'https://client.example.com/callback',
+            resource: 'https://mcp.example.com/mcp',
+            scope: 'environment:*'
+        },
+        grantId: 'existing-grant',
+        returnTo: 'https://issuer.example.com/oauth/authorize/resume'
+    } satisfies Partial<Interaction>;
+}
+
+function consentRequest(uid: string): Request {
+    const origin = new URL(basePublicUrl).origin;
+    return {
+        params: { uid },
+        user: { id: 7, account_id: 42, authenticated_at: Date.now() / 1000 - 60 },
+        get: vi.fn((name: string) => (name === 'origin' ? origin : undefined))
+    } as unknown as Request;
+}
