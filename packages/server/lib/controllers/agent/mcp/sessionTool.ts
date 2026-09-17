@@ -17,6 +17,8 @@ export interface AgentSessionCallableTool {
     integrationId: string;
     name: string;
     description: string;
+    /** A searchable tool answers to its name too, so being callable does not make a tool pinned. */
+    pinned: boolean;
 }
 
 /**

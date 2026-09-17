@@ -67,7 +67,7 @@ function context({
 }
 
 async function execute(toolName: string, args: Partial<Parameters<typeof executeSessionTool>[0]> = {}) {
-    return await executeSessionTool({ integrationId: 'notion', toolName, context: context(), ...args });
+    return await executeSessionTool({ event: 'nango_execute', integrationId: 'notion', toolName, pinned: true, context: context(), ...args });
 }
 
 function errorOf(result: Result<unknown>): Error {

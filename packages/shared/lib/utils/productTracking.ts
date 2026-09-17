@@ -11,7 +11,13 @@ export type ProductTrackingTypes =
     | 'account:billing:plan_changed'
     | 'account:billing:plan_changed:v2'
     | 'account:billing:downgraded'
-    | 'account:billing:upgraded';
+    | 'account:billing:upgraded'
+    | 'agents:session_create'
+    | 'agents:session_end'
+    | 'agents:tool_run_succeed'
+    | 'agents:tool_run_fail'
+    | 'agents:proxy_request_succeed'
+    | 'agents:proxy_request_fail';
 
 /**
  * Only ids: no email, no names, and no account name either, which defaults to "<person>'s Team" for
