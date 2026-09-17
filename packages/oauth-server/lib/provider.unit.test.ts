@@ -78,6 +78,23 @@ describe('OAuth provider', () => {
             if (fetchedClientId.endsWith('/oversized.json')) {
                 return Promise.resolve(new Response('x'.repeat(5 * 1024 + 1), { status: 200, headers: { 'content-type': 'application/json' } }));
             }
+            if (fetchedClientId.endsWith('/native.json') || fetchedClientId.endsWith('/web-loopback.json')) {
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            client_id: fetchedClientId,
+                            client_name: 'Native MCP Client',
+                            ...(fetchedClientId.endsWith('/web-loopback.json') ? { application_type: 'web' } : {}),
+                            redirect_uris: ['http://localhost/callback'],
+                            grant_types: ['authorization_code', 'refresh_token'],
+                            response_types: ['code'],
+                            token_endpoint_auth_method: 'none',
+                            scope: 'environment:*'
+                        }),
+                        { status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'max-age=3600' } }
+                    )
+                );
+            }
             return Promise.resolve(
                 new Response(
                     JSON.stringify({
@@ -156,8 +173,7 @@ describe('OAuth provider', () => {
         const first = await authorize(provider, origin, clientId);
         const switched = await authorize(provider, origin, clientId, 'https://mcp.example.com/mcp', 'environment:*', {
             cookies: first.cookies,
-            loginHint: SWITCHED_ACCOUNT_ID,
-            prompt: 'login'
+            loginHint: SWITCHED_ACCOUNT_ID
         });
 
         expect(switched.visited).toContain(`POST ${origin}${OAUTH_SESSION_END_CONFIRM_PATH}`);
@@ -165,6 +181,55 @@ describe('OAuth provider', () => {
         const accessToken = artifacts.get(`AccessToken:${stringValue(tokens['access_token'])}`);
         expect(accessToken?.grantId).toEqual(expect.any(String));
         expect(artifacts.get(`Grant:${String(accessToken?.grantId)}`)?.accountId).toBe(SWITCHED_ACCOUNT_ID);
+    });
+
+    it('requires dashboard authentication for every authorization while reusing consent', async () => {
+        const authorizationClient = 'https://client.example.com/oauth/dashboard-session.json';
+        const first = await authorize(provider, origin, authorizationClient);
+        const second = await authorize(provider, origin, authorizationClient, 'https://mcp.example.com/mcp', 'environment:*', {
+            cookies: first.cookies
+        });
+
+        expect(first.prompts.map((prompt) => prompt.name)).toEqual(['login', 'consent']);
+        expect(second.prompts).toEqual([{ name: 'login', reasons: ['dashboard_session'] }]);
+    });
+
+    it('allows a public native client to choose its loopback callback port', async () => {
+        const nativeClient = 'https://client.example.com/oauth/native.json';
+        const redirectUri = 'http://localhost:3118/callback';
+        const authorization = await authorize(provider, origin, nativeClient, 'https://mcp.example.com/mcp', 'environment:*', { redirectUri });
+        const tokens = await exchangeCode(origin, nativeClient, authorization.code, authorization.verifier, 'https://mcp.example.com/mcp', redirectUri);
+
+        expect(tokens).toMatchObject({ token_type: 'Bearer', scope: 'environment:*' });
+
+        const wrongPathVerifier = randomBytes(32).toString('base64url');
+        const wrongPathAuthorization = new URL(`${origin}/oauth/authorize`);
+        wrongPathAuthorization.search = authorizationParams(
+            nativeClient,
+            wrongPathVerifier,
+            'https://mcp.example.com/mcp',
+            'environment:*',
+            'http://localhost:3118/not-the-registered-path'
+        ).toString();
+        const wrongPathResponse = await fetch(wrongPathAuthorization, { redirect: 'manual' });
+
+        expect(wrongPathResponse.status).toBe(400);
+        expect(await wrongPathResponse.text()).toContain('invalid_redirect_uri');
+
+        const explicitWebClient = 'https://client.example.com/oauth/web-loopback.json';
+        const webClientVerifier = randomBytes(32).toString('base64url');
+        const webClientAuthorization = new URL(`${origin}/oauth/authorize`);
+        webClientAuthorization.search = authorizationParams(
+            explicitWebClient,
+            webClientVerifier,
+            'https://mcp.example.com/mcp',
+            'environment:*',
+            redirectUri
+        ).toString();
+        const webClientResponse = await fetch(webClientAuthorization, { redirect: 'manual' });
+
+        expect(webClientResponse.status).toBe(400);
+        expect(await webClientResponse.text()).toContain('invalid_redirect_uri');
     });
 
     it('does not expose dynamic client registration', async () => {
@@ -183,6 +248,7 @@ describe('OAuth provider', () => {
     });
 
     it('completes authorization code and rotating refresh token grants with a cached CIMD client', async () => {
+        const before = cimdFetches;
         const first = await authorize(provider, origin, clientId);
         const tokens = await exchangeCode(origin, clientId, first.code, first.verifier);
 
@@ -213,7 +279,7 @@ describe('OAuth provider', () => {
         });
         expect(replay.response.status).toBe(400);
         expect(replay.body['error']).toBe('invalid_grant');
-        expect(cimdFetches).toBe(1);
+        expect(cimdFetches).toBe(before);
     });
 
     it('rejects token exchange when the referenced account no longer exists', async () => {
@@ -436,18 +502,18 @@ async function authorize(
     clientId: string,
     resource: string | readonly string[] = 'https://mcp.example.com/mcp',
     scope = 'environment:*',
-    options: { cookies?: Map<string, string>; loginHint?: string; prompt?: 'login' } = {}
-): Promise<{ code: string; verifier: string; cookies: Map<string, string>; visited: string[] }> {
+    options: { cookies?: Map<string, string>; loginHint?: string; redirectUri?: string } = {}
+): Promise<{ code: string; verifier: string; cookies: Map<string, string>; visited: string[]; prompts: Array<{ name: string; reasons: string[] }> }> {
     const verifier = randomBytes(32).toString('base64url');
     const authorization = new URL(`${origin}/oauth/authorize`);
-    authorization.search = authorizationParams(clientId, verifier, resource, scope).toString();
+    authorization.search = authorizationParams(clientId, verifier, resource, scope, options.redirectUri).toString();
     if (options.loginHint) authorization.searchParams.set('login_hint', options.loginHint);
-    if (options.prompt) authorization.searchParams.set('prompt', options.prompt);
     let nextUrl = authorization.href;
     let method: 'GET' | 'POST' = 'GET';
     let body: URLSearchParams | undefined;
     const cookies = options.cookies ?? new Map<string, string>();
     const visited: string[] = [];
+    const prompts: Array<{ name: string; reasons: string[] }> = [];
 
     for (let redirects = 0; redirects < 10; redirects++) {
         const headers = new Headers();
@@ -463,6 +529,8 @@ async function authorize(
         if (body) request.body = body;
         const response = await fetch(nextUrl, request);
         rememberCookies(response, cookies);
+        const prompt = response.headers.get('x-test-prompt');
+        if (prompt) prompts.push(parseTestPrompt(prompt));
         const location = response.headers.get('location');
         visited.push(`${method} ${nextUrl}`);
         if (!location) {
@@ -475,11 +543,12 @@ async function authorize(
             continue;
         }
         const resolved = new URL(location, nextUrl);
-        if (resolved.origin === 'https://client.example.com') {
+        const redirectUri = new URL(options.redirectUri ?? 'https://client.example.com/callback');
+        if (resolved.origin === redirectUri.origin && resolved.pathname === redirectUri.pathname) {
             expect(resolved.searchParams.get('state')).toBe('test-state');
             const code = resolved.searchParams.get('code');
             if (!code) throw new Error(`OAuth test flow failed: ${resolved.searchParams.get('error') ?? 'missing code'}`);
-            return { code, verifier, cookies, visited };
+            return { code, verifier, cookies, visited, prompts };
         }
         nextUrl = resolved.href.replace(provider.issuer, origin);
         method = 'GET';
@@ -488,10 +557,22 @@ async function authorize(
     throw new Error(`OAuth test flow exceeded the redirect limit:\n${visited.join('\n')}`);
 }
 
-function authorizationParams(clientId: string, verifier: string, resource: string | readonly string[], scope = 'environment:*'): URLSearchParams {
+function parseTestPrompt(value: string): { name: string; reasons: string[] } {
+    const [name, reasons] = value.split(':', 2);
+    if (!name || reasons === undefined) throw new Error(`Invalid test interaction prompt: ${value}`);
+    return { name, reasons: reasons ? reasons.split(',') : [] };
+}
+
+function authorizationParams(
+    clientId: string,
+    verifier: string,
+    resource: string | readonly string[],
+    scope = 'environment:*',
+    redirectUri = 'https://client.example.com/callback'
+): URLSearchParams {
     const params = new URLSearchParams({
         client_id: clientId,
-        redirect_uri: 'https://client.example.com/callback',
+        redirect_uri: redirectUri,
         response_type: 'code',
         scope,
         state: 'test-state',
@@ -509,13 +590,14 @@ async function exchangeCode(
     clientId: string,
     code: string,
     verifier: string,
-    resource = 'https://mcp.example.com/mcp'
+    resource = 'https://mcp.example.com/mcp',
+    redirectUri = 'https://client.example.com/callback'
 ): Promise<Record<string, unknown>> {
     const result = await postToken(origin, {
         grant_type: 'authorization_code',
         client_id: clientId,
         code,
-        redirect_uri: 'https://client.example.com/callback',
+        redirect_uri: redirectUri,
         code_verifier: verifier,
         resource
     });

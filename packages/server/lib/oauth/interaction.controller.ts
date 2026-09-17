@@ -26,6 +26,10 @@ const DASHBOARD_ORIGIN = new URL(basePublicUrl).origin;
 type ValidatedOAuthResource = OAuthConsentResource & { resource: string };
 
 export const oauthConsentCors: RequestHandler = (req, res, next) => {
+    // OAuth interactions are short-lived and can change after every request. In
+    // particular, Firefox may otherwise reuse a cached GET while login is being
+    // resumed and show stale interaction state.
+    res.setHeader('Cache-Control', 'no-store');
     const origin = req.get('origin');
     if (origin === DASHBOARD_ORIGIN) {
         res.setHeader('Access-Control-Allow-Origin', DASHBOARD_ORIGIN);
@@ -70,6 +74,8 @@ export const getOAuthConsentInteraction: RequestHandler = async (req, res, next)
             sendError(res, 404, 'interaction_invalid');
             return;
         }
+        const dashboardLogin = await validateDashboardLogin(req, res);
+        if (!dashboardLogin || !requireMatchingDashboardUser(interaction, dashboardLogin.user, res)) return;
 
         const context = await validateInteraction(interaction);
         if ('error' in context) {
@@ -194,6 +200,8 @@ async function decideConsent(decision: 'approved' | 'denied', req: Request, res:
             sendError(res, 403, 'interaction_invalid');
             return;
         }
+        const dashboardLogin = await validateDashboardLogin(req, res);
+        if (!dashboardLogin || !requireMatchingDashboardUser(interaction, dashboardLogin.user, res)) return;
 
         const context = await validateInteraction(interaction);
         if ('error' in context) {
@@ -281,6 +289,14 @@ async function decideConsent(decision: 'approved' | 'denied', req: Request, res:
         }
         handleInteractionError(err, res, next);
     }
+}
+
+function requireMatchingDashboardUser(interaction: Interaction, dashboardUser: DBUser, res: Response): boolean {
+    if (interaction.session?.accountId !== String(dashboardUser.id)) {
+        sendError(res, 403, 'interaction_invalid');
+        return false;
+    }
+    return true;
 }
 
 async function validateInteraction(interaction: Interaction): Promise<

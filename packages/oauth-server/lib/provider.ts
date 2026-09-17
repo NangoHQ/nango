@@ -1,4 +1,4 @@
-import Provider, { errors } from 'oidc-provider';
+import Provider, { errors, interactionPolicy } from 'oidc-provider';
 
 import { createOAuthAdapter, OAUTH_GRANT_TTL_SECONDS } from './adapter.js';
 import { allowCimdFetch, allowPublicCimdClient, CIMD_CACHE_MAX_SECONDS, CIMD_CACHE_MIN_SECONDS, CIMD_MAX_DOCUMENT_BYTES, secureCimdFetch } from './cimd.js';
@@ -37,11 +37,16 @@ export interface CreateOAuthProviderOptions {
 export function createOAuthProvider({ knex, config, resource, userExists, interactionUrl }: CreateOAuthProviderOptions): Provider {
     validateResourceConfig(resource);
     const allowedScopes = new Set(resource.scopes);
+    const authorizationPolicy = requireDashboardAuthentication();
 
     const configuration: Configuration = {
         adapter: createOAuthAdapter({ knex, encryptionKey: config.encryptionKey }),
         claims: {},
         clientAuthMethods: ['none'],
+        // CIMD clients are public PKCE applications. Treat clients that omit
+        // application_type as native so command-line apps can use a temporary
+        // port on an otherwise exactly matched loopback callback URI.
+        clientDefaults: { application_type: 'native' },
         clients: [],
         cookies: {
             keys: config.cookieKeys,
@@ -99,6 +104,7 @@ export function createOAuthProvider({ knex, config, resource, userExists, intera
         },
         formats: { bitsOfOpaqueRandomness: 256 },
         interactions: {
+            policy: authorizationPolicy,
             url: (_ctx, interaction) => interactionUrl(interaction.uid)
         },
         issueRefreshToken: (_ctx, client) => client.grantTypeAllowed('refresh_token'),
@@ -130,6 +136,29 @@ export function createOAuthProvider({ knex, config, resource, userExists, intera
     provider.proxy = true;
     installOAuthOnlyMiddleware(provider);
     return provider;
+}
+
+function requireDashboardAuthentication(): interactionPolicy.DefaultPolicy {
+    const policy = interactionPolicy.base();
+    const loginPrompt = policy.get('login');
+    const consentPrompt = policy.get('consent');
+    if (!loginPrompt || !consentPrompt) {
+        throw new Error('OAuth interaction policy is unavailable');
+    }
+
+    loginPrompt.checks.add(
+        new interactionPolicy.Check('dashboard_session', 'A current Nango dashboard session is required', (ctx) => {
+            // Every authorization request must return to Nango so the interaction
+            // controller can verify the current dashboard session. A completed login
+            // result means that check already happened for this authorization request.
+            return ctx.oidc.result?.login ? interactionPolicy.Check.NO_NEED_TO_PROMPT : interactionPolicy.Check.REQUEST_PROMPT;
+        })
+    );
+    // oidc-provider normally asks native clients to consent on every authorization.
+    // Nango can safely reuse an unchanged grant because the login prompt above still
+    // revalidates the current dashboard user before any authorization code is issued.
+    consentPrompt.checks.remove('native_client_prompt');
+    return policy;
 }
 
 function installOAuthOnlyMiddleware(provider: Provider): void {

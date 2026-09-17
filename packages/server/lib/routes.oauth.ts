@@ -45,8 +45,8 @@ oauthConsentAPI.options('/:uid', requireIssuerHost, oauthConsentCors);
 oauthConsentAPI.options('/:uid/:decision', requireIssuerHost, oauthConsentCors);
 oauthConsentAPI.get('/:uid', oauthConsentCors, ...interactionHandlers(getOAuthConsentInteraction, oauthDashboardAuth));
 oauthConsentAPI.post('/:uid/login', oauthConsentCors, express.json({ limit: '4kb' }), ...interactionHandlers(completeOAuthLogin, oauthDashboardAuth));
-oauthConsentAPI.post('/:uid/approve', oauthConsentCors, express.json({ limit: '4kb' }), ...interactionHandlers(approveOAuthConsent));
-oauthConsentAPI.post('/:uid/deny', oauthConsentCors, express.json({ limit: '4kb' }), ...interactionHandlers(denyOAuthConsent));
+oauthConsentAPI.post('/:uid/approve', oauthConsentCors, express.json({ limit: '4kb' }), ...interactionHandlers(approveOAuthConsent, oauthDashboardAuth));
+oauthConsentAPI.post('/:uid/deny', oauthConsentCors, express.json({ limit: '4kb' }), ...interactionHandlers(denyOAuthConsent, oauthDashboardAuth));
 oauthServerAPI.use('/oauth/consent', oauthConsentAPI);
 
 oauthServerAPI.get(OAUTH_DISCOVERY_PATH, ...providerHandlers);
