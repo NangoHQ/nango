@@ -43,22 +43,43 @@ export async function getActionOrModelByEndpoint(connection: DBConnection | DBCo
     }
 }
 
-function liveCatalogActionByEndpoint(
+async function liveCatalogActionByEndpoint(
     config: NonNullable<Awaited<ReturnType<typeof configService.getProviderConfig>>>,
     method: HTTP_METHOD,
     path: string
-): ActionOrModel {
-    for (const action of listCatalogActions(config.provider)) {
+): Promise<ActionOrModel> {
+    const candidates = listCatalogActions(config.provider).filter((action) => {
         if (!action.endpoint || action.endpoint.method !== method || action.endpoint.path !== path) {
-            continue;
+            return false;
         }
-        if (
-            !isCatalogActionEnabled({
-                name: action.name,
-                autoEnable: config.auto_enable_catalog_actions,
-                overrides: config.catalog_action_overrides ?? {}
-            })
-        ) {
+        return isCatalogActionEnabled({
+            name: action.name,
+            autoEnable: config.auto_enable_catalog_actions,
+            overrides: config.catalog_action_overrides ?? {}
+        });
+    });
+    if (candidates.length === 0 || config.id === undefined) {
+        return {};
+    }
+
+    const occupiedRows = await db.knex
+        .from('_nango_sync_configs')
+        .where({
+            environment_id: config.environment_id,
+            nango_config_id: config.id,
+            active: true,
+            deleted: false,
+            type: 'action'
+        })
+        .whereIn(
+            'sync_name',
+            candidates.map((action) => action.name)
+        )
+        .select<{ sync_name: string }[]>('sync_name');
+    const occupied = new Set(occupiedRows.map((row) => row.sync_name));
+
+    for (const action of candidates) {
+        if (occupied.has(action.name)) {
             continue;
         }
         return { action: action.name };

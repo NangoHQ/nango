@@ -235,11 +235,12 @@ export interface ActionInputSchemaRow {
 }
 
 /**
- * Returns the input model name and the deployed schema definitions for named actions, across
- * as many integrations as the caller asks for in one query.
+ * Returns the input model name and schema definitions for named actions, across as many
+ * integrations as the caller asks for in one query.
  *
- * Only actions that are still active and enabled come back, so a stale name resolves to nothing
- * rather than to a schema that cannot be run.
+ * An active deployed action occupies the name even when it is disabled: the live catalog is
+ * not used as a fallback, and a disabled deployed row contributes no schema. Catalog schemas
+ * are returned only for unoccupied names that are currently enabled.
  */
 export async function findActionInputSchemas({
     environmentId,
@@ -252,7 +253,7 @@ export async function findActionInputSchemas({
         return [];
     }
 
-    const deployed = await db.knex
+    const activeRows = await db.knex
         .from({ sc: '_nango_sync_configs' })
         .join({ nc: '_nango_configs' }, 'sc.nango_config_id', 'nc.id')
         .where('nc.environment_id', environmentId)
@@ -260,16 +261,34 @@ export async function findActionInputSchemas({
         .andWhere('sc.environment_id', environmentId)
         .andWhere('sc.deleted', false)
         .andWhere('sc.active', true)
-        .andWhere('sc.enabled', true)
         .andWhere('sc.type', 'action')
         .whereIn(
             ['nc.unique_key', 'sc.sync_name'],
             actions.map((action) => [action.integrationId, action.name])
         )
-        .select<ActionInputSchemaRow[]>('nc.unique_key AS integration_id', 'sc.sync_name AS name', 'sc.input', 'sc.models_json_schema');
+        .select<(ActionInputSchemaRow & { enabled: boolean })[]>(
+            'nc.unique_key AS integration_id',
+            'sc.sync_name AS name',
+            'sc.input',
+            'sc.models_json_schema',
+            'sc.enabled'
+        );
 
-    const found = new Set(deployed.map((row) => `${row.integration_id}:${row.name}`));
-    const missing = actions.filter((action) => !found.has(`${action.integrationId}:${action.name}`));
+    const occupied = new Set(activeRows.map((row) => `${row.integration_id}:${row.name}`));
+    const deployed: ActionInputSchemaRow[] = [];
+    for (const row of activeRows) {
+        if (!row.enabled) {
+            continue;
+        }
+        deployed.push({
+            integration_id: row.integration_id,
+            name: row.name,
+            input: row.input,
+            models_json_schema: row.models_json_schema
+        });
+    }
+
+    const missing = actions.filter((action) => !occupied.has(`${action.integrationId}:${action.name}`));
     if (missing.length === 0) {
         return deployed;
     }

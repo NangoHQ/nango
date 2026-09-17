@@ -34,7 +34,7 @@ export const FunctionSwitch: React.FC<{
 
     const toggleSync = () => {
         if (flow.source === 'nango-catalog') {
-            toast({ title: 'Catalog actions cannot be disabled from the dashboard yet', variant: 'error' });
+            toast({ title: 'Catalog actions cannot be toggled from the dashboard yet', variant: 'error' });
             return;
         }
 

@@ -5,6 +5,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 import { createAccount } from '../../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../../../../seeders/environment.seeder.js';
+import { getCatalogAction } from '../../../catalog/actions.js';
 import { findActionInputSchemas, findIntegrationFunctionCatalog } from './functions.js';
 
 import type { DBSyncConfig, IntegrationConfig, NangoConfigMetadata } from '@nangohq/types';
@@ -89,8 +90,12 @@ describe(findIntegrationFunctionCatalog, () => {
                 { integration_id: 'notion', provider: 'notion', name: 'upsert_doc', type: 'action', description: 'Upsert', enabled: true }
             ])
         );
-        expect(catalog.some((row) => row.integration_id === 'gmail')).toBe(true);
-        expect(catalog.filter((row) => row.integration_id === 'gmail').every((row) => row.enabled === false)).toBe(true);
+        expect(catalog.filter((row) => row.integration_id === 'gmail')).toEqual([
+            { integration_id: 'gmail', provider: 'google', name: null, type: null, description: null, enabled: null }
+        ]);
+        expect(catalog).toEqual(
+            expect.arrayContaining([expect.objectContaining({ integration_id: 'github', name: 'create-issue', type: 'action', enabled: false })])
+        );
     });
 
     it('leaves out deleted and superseded function versions', async () => {
@@ -120,7 +125,9 @@ describe(findIntegrationFunctionCatalog, () => {
 
         const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id, providerConfigKeys: ['notion'] });
 
-        expect(catalog.map((row) => row.integration_id)).toStrictEqual(['notion']);
+        expect(catalog.every((row) => row.integration_id === 'notion')).toBe(true);
+        expect(catalog.map((row) => row.name)).toContain('upsert_doc');
+        expect(catalog.some((row) => row.integration_id === 'github')).toBe(false);
     });
 
     it('does not leak another environment', async () => {
@@ -230,6 +237,38 @@ describe(findActionInputSchemas, () => {
         });
 
         expect(rows.map((row) => row.name)).toStrictEqual(['kept']);
+    });
+
+    it('does not fall back to the catalog when an active deployed action occupies the name', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github', { auto_enable_catalog_actions: true });
+
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create-issue', type: 'action', enabled: false });
+
+        const rows = await findActionInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'github', name: 'create-issue' }]
+        });
+
+        expect(rows).toStrictEqual([]);
+    });
+
+    it('returns the catalog schema when the name is unoccupied and auto_enable_catalog_actions is on', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        await createConfigSeed(environment, 'github', 'github', { auto_enable_catalog_actions: true });
+
+        const catalog = getCatalogAction('github', 'create-issue');
+        const rows = await findActionInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'github', name: 'create-issue' }]
+        });
+
+        expect(rows).toHaveLength(1);
+        expect(rows[0]?.name).toBe('create-issue');
+        expect(rows[0]?.input).toBe(catalog?.input ?? null);
+        expect(rows[0]?.models_json_schema).toEqual(catalog?.json_schema);
     });
 
     it('does not leak another environment', async () => {

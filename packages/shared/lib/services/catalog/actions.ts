@@ -111,8 +111,11 @@ export function isCatalogActionEnabled({ name, autoEnable, overrides }: { name: 
 }
 
 /**
- * Flips the catalog overrides map when flipping `auto_enable_catalog_actions` on an existing integration.
- * Preserves manually toggled overrides.
+ * Overlay rewrite when PATCHing `auto_enable_catalog_actions` on an existing integration.
+ *
+ * Names that were still following the old flag (no overlay key, not deployed) are written as
+ * `!newFlag` so their effective on/off does not change. Names that already had an overlay key
+ * are omitted so they follow the new flag. Deployed names are omitted because occupancy owns them.
  */
 export function complementCatalogOverrides({
     catalogNames,

@@ -46,7 +46,7 @@ export async function handleDeleteIntegrationFunction({
     }
     if (fn.id == null) {
         res.status(400).send({
-            error: { code: 'invalid_request', message: 'Live catalog actions cannot be deleted; disable them instead' }
+            error: { code: 'invalid_request', message: 'Live catalog actions cannot be deleted' }
         });
         return;
     }

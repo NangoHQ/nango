@@ -28,6 +28,10 @@ function toFunctionKey(fn: { type: string; name: string; event?: string }) {
     return `${fn.type}:${fn.name}:${fn.type === 'on-event' ? fn.event : ''}`;
 }
 
+function deployedOnly<T extends { source: string }>(fns: T[]): T[] {
+    return fns.filter((fn) => fn.source !== 'nango-catalog');
+}
+
 describe(`GET ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
@@ -72,26 +76,25 @@ describe(`GET ${route}`, () => {
 
     it('should return empty list with pagination metadata when integration has no deployed functions', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        await seeders.createConfigSeed(env, 'github', 'adobe');
+        await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch(route, {
             method: 'GET',
-            query: { env: 'dev' },
+            query: { env: 'dev', limit: 100 },
             params: { providerConfigKey: 'github' },
             token: apiKey.secret
         });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            data: [],
-            pagination: { total: 0, page: 0, limit: 20 }
-        });
+        expect(deployedOnly(res.json.data)).toEqual([]);
+        expect(res.json.pagination.total).toBe(res.json.data.length);
+        expect(res.json.data.every((fn) => fn.source === 'nango-catalog')).toBe(true);
     });
 
     it('should aggregate sync, action, and on-event functions', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
@@ -115,15 +118,15 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, {
             method: 'GET',
-            query: { env: 'dev' },
+            query: { env: 'dev', limit: 100 },
             params: { providerConfigKey: 'github' },
             token: apiKey.secret
         });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json.pagination).toStrictEqual({ total: 3, page: 0, limit: 20 });
-        expect(res.json.data.map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
+        expect(res.json.pagination).toStrictEqual({ total: res.json.data.length, page: 0, limit: 100 });
+        expect(deployedOnly(res.json.data).map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
             { name: 'my-action', type: 'action' },
             { name: 'my-on-event', type: 'on-event' },
             { name: 'my-sync', type: 'sync' }
@@ -136,7 +139,7 @@ describe(`GET ${route}`, () => {
 
     it('should filter by type=on-event', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
@@ -175,7 +178,7 @@ describe(`GET ${route}`, () => {
 
     it('should paginate results', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         for (let i = 0; i < 25; i++) {
@@ -215,7 +218,7 @@ describe(`GET ${route}`, () => {
 
     it('should paginate on-event results deterministically when multiple scripts share the same name', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
 
         await insertOnEventScripts({
             configId: integration.id!,
@@ -254,7 +257,7 @@ describe(`GET ${route}`, () => {
 
     it('should paginate merged function listings deterministically across function tables', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
@@ -293,6 +296,16 @@ describe(`GET ${route}`, () => {
             ]
         });
 
+        const all = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev', page: 0, limit: 100 },
+            params: { providerConfigKey: 'github' },
+            token: apiKey.secret
+        });
+        isSuccess(all.json);
+        expect(all.json.pagination.total).toBe(all.json.data.length);
+        const expected = all.json.data.map(toFunctionKey);
+
         const page0 = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev', page: 0, limit: 3 },
@@ -300,7 +313,7 @@ describe(`GET ${route}`, () => {
             token: apiKey.secret
         });
         isSuccess(page0.json);
-        expect(page0.json.pagination).toStrictEqual({ total: 6, page: 0, limit: 3 });
+        expect(page0.json.pagination).toStrictEqual({ total: expected.length, page: 0, limit: 3 });
 
         const page1 = await api.fetch(route, {
             method: 'GET',
@@ -309,19 +322,27 @@ describe(`GET ${route}`, () => {
             token: apiKey.secret
         });
         isSuccess(page1.json);
-        expect(page1.json.pagination).toStrictEqual({ total: 6, page: 1, limit: 3 });
+        expect(page1.json.pagination).toStrictEqual({ total: expected.length, page: 1, limit: 3 });
 
         const page0Keys = page0.json.data.map(toFunctionKey);
         const page1Keys = page1.json.data.map(toFunctionKey);
 
-        expect(page0Keys).toStrictEqual(['action:action-a:', 'action:action-b:', 'on-event:shared-script:post-connection-creation']);
-        expect(page1Keys).toStrictEqual(['on-event:shared-script:pre-connection-deletion', 'sync:sync-a:', 'sync:sync-b:']);
+        expect(page0Keys).toStrictEqual(expected.slice(0, 3));
+        expect(page1Keys).toStrictEqual(expected.slice(3, 6));
         expect(page0Keys.some((key) => page1Keys.includes(key))).toBe(false);
+        expect(deployedOnly(all.json.data).map(toFunctionKey).sort()).toStrictEqual([
+            'action:action-a:',
+            'action:action-b:',
+            'on-event:shared-script:post-connection-creation',
+            'on-event:shared-script:pre-connection-deletion',
+            'sync:sync-a:',
+            'sync:sync-b:'
+        ]);
     });
 
     it('should return total even when page is out of range', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         for (let i = 0; i < 3; i++) {
@@ -348,7 +369,7 @@ describe(`GET ${route}`, () => {
 
     it('should filter by case-insensitive search on name across all function types', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
@@ -382,21 +403,24 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, {
             method: 'GET',
-            query: { env: 'dev', search: 'ISSUE' },
+            query: { env: 'dev', search: 'ISSUE', limit: 100 },
             params: { providerConfigKey: 'github' },
             token: apiKey.secret
         });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json.pagination.total).toBe(3);
-        const keys = res.json.data.map((f) => `${f.type}:${f.name}`).sort();
-        expect(keys).toStrictEqual(['action:create-issue', 'on-event:issue-listener', 'sync:fetch-issues']);
+        expect(res.json.pagination.total).toBe(res.json.data.length);
+        expect(
+            deployedOnly(res.json.data)
+                .map((f) => `${f.type}:${f.name}`)
+                .sort()
+        ).toStrictEqual(['action:create-issue', 'on-event:issue-listener', 'sync:fetch-issues']);
     });
 
     it('should match LIKE wildcards literally in search', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
@@ -422,7 +446,7 @@ describe(`GET ${route}`, () => {
 
     it('should reject empty search after trim', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        await seeders.createConfigSeed(env, 'github', 'adobe');
+        await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch(route, {
             method: 'GET',
@@ -438,7 +462,7 @@ describe(`GET ${route}`, () => {
 
     it('should reject invalid type query', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        await seeders.createConfigSeed(env, 'github', 'adobe');
+        await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch(route, {
             method: 'GET',

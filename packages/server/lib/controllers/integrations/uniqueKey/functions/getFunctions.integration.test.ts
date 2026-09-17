@@ -14,6 +14,10 @@ async function seedWithScopes(scopes: string[]) {
     return seed;
 }
 
+function deployedOnly<T extends { source: string }>(fns: T[]): T[] {
+    return fns.filter((fn) => fn.source !== 'nango-catalog');
+}
+
 describe(`GET ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
@@ -66,7 +70,7 @@ describe(`GET ${route}`, () => {
 
     it('should list functions for the environment derived from the key', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
@@ -84,12 +88,12 @@ describe(`GET ${route}`, () => {
             type: 'action'
         });
 
-        const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { uniqueKey: 'github' }, query: {} });
+        const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { uniqueKey: 'github' }, query: { limit: 100 } });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json.pagination).toStrictEqual({ total: 2, page: 0, limit: 20 });
-        expect(res.json.data.map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
+        expect(res.json.pagination).toStrictEqual({ total: res.json.data.length, page: 0, limit: 100 });
+        expect(deployedOnly(res.json.data).map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
             { name: 'my-action', type: 'action' },
             { name: 'my-sync', type: 'sync' }
         ]);
@@ -97,7 +101,7 @@ describe(`GET ${route}`, () => {
 
     it('should filter by type and search', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        const integration = await seeders.createConfigSeed(env, 'github', 'adobe');
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await seeders.createSyncSeeds({
