@@ -1,7 +1,8 @@
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { mfaService, seeders, userService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { inviteEmail, mfaService, seeders, userService } from '@nangohq/shared';
 import { nanoid, normalizeEmail } from '@nangohq/utils';
 
 import type { runServer as runServerType } from '../../../../utils/tests.js';
@@ -267,6 +268,34 @@ describe(`POST ${route}`, () => {
 
         expect(callbackRes.status).toBe(302);
         expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/team/billing');
+    });
+
+    it('should send an invited user to the invite page rather than the destination', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const inviter = await seeders.seedAccountEnvAndUser();
+
+        const invitation = await inviteEmail({
+            email: user.email,
+            name: 'Managed User',
+            accountId: inviter.account.id,
+            invitedByUserId: inviter.user.id,
+            role: 'development_full_access',
+            trx: db.knex
+        });
+        expect(invitation).toBeTruthy();
+
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: { email: user.email, firstName: 'Managed', lastName: 'User' },
+            organizationId: undefined
+        });
+
+        const state = encodeState({ token: invitation!.token, returnTo: '/team/billing' });
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${state}`, {
+            redirect: 'manual'
+        });
+
+        expect(callbackRes.status).toBe(302);
+        expect(callbackRes.headers.get('location')).toBe(`http://localhost:3003/signup/${invitation!.token}`);
     });
 
     it('should sanitize a destination that escapes the dashboard origin', async () => {
