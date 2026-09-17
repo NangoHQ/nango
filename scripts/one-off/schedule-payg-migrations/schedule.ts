@@ -397,6 +397,11 @@ export async function scheduleGrowthAddons({
             }
             hasAttemptedSchedule = true;
 
+            // Scheduling the `has_growth_features` flag enabling to GROWTH_ADDON_ACTIVATION_LEAD_HOURS before the
+            // actual plan change. This will ensure the flag is already flipped by the time the plan changes, thus
+            // incurring no down time on the feature set gated by the add-on.
+            await db.setGrowthFeaturesStartsAt(migration.accountId, getGrowthAddonActivationAt(migration.plannedAt));
+
             const updatedSubscription = await client.subscriptions.priceIntervals(migration.subscriptionId, {
                 add: [{ external_price_id: GROWTH_ADDON_PRICE_ID, start_date: 'end_of_term' }]
             });
@@ -410,10 +415,6 @@ export async function scheduleGrowthAddons({
                 throw new Error('Orb scheduled the growth add-on for a different date than the PAYG plan change');
             }
 
-            // Scheduling the `has_growth_features` flag enabling to GROWTH_ADDON_ACTIVATION_LEAD_HOURS before the
-            // actual plan change. This will ensure the flag is already flipped by the time the plan changes, thus
-            // incurring no down time on the feature set gated by the add-on.
-            await db.setGrowthFeaturesStartsAt(migration.accountId, getGrowthAddonActivationAt(migration.plannedAt));
             summary.scheduled++;
             console.log(`SCHEDULED account ${migration.accountId}: growth add-on starting ${scheduledAddon.startsAt.toISOString()}`);
         } catch (err) {
