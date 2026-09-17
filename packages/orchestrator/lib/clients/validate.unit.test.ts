@@ -5,7 +5,7 @@ import { validateTask } from './validate.js';
 import type { Task } from '@nangohq/scheduler';
 
 describe('validateTask', () => {
-    it('deserializes a dequeued scheduled function task', () => {
+    it.each([undefined, 'custom'])('deserializes a scheduled function with variant %s and no activity log', (variant) => {
         const result = validateTask({
             id: '4a14038c-3a57-4a4d-bb9e-c8a5e85474ae',
             name: 'scheduled-function-task',
@@ -28,18 +28,26 @@ describe('validateTask', () => {
             scheduleId: 'c1952e1f-b385-4db0-b4ef-a7ad52a034c9',
             payload: {
                 type: 'function',
-                instanceId: 123
+                functionConfigId: 123,
+                functionName: 'my-function',
+                connection: { id: 1, connection_id: 'C', provider_config_key: 'P', environment_id: 2 },
+                trigger: { kind: 'schedule', input: null, connection: { connectionId: 'C', integrationId: 'P' } },
+                variant,
+                async: true
             }
         } as Task);
 
         const task = result.unwrap();
-        expect(task.isScheduleFunction()).toBe(true);
-        if (task.isScheduleFunction()) {
+        expect(task.isFunction()).toBe(true);
+        if (task.isFunction()) {
             expect(task).toMatchObject({
-                instanceId: 123,
+                functionConfigId: 123,
+                async: true,
                 attempt: 1,
                 attemptMax: 1
             });
+            expect(task.variant).toBe(variant);
+            expect(task.activityLogId).toBeUndefined();
         }
     });
 
@@ -68,6 +76,7 @@ describe('validateTask', () => {
                 type: 'function',
                 functionName: 'my-function',
                 activityLogId: 'activity-log-id',
+                functionConfigId: 123,
                 trigger: {
                     kind: 'http',
                     input: { value: 42 },
@@ -123,6 +132,7 @@ describe('validateTask', () => {
                 type: 'function',
                 functionName: 'my-function',
                 activityLogId: 'activity-log-id',
+                functionConfigId: 123,
                 trigger: {
                     kind: 'http',
                     request: { method, path: '/webhooks/github', headers: {}, query: {} },
