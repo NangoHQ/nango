@@ -36,9 +36,9 @@ export function encodeManagedAuthState(state: ManagedAuthState): string {
         return '';
     }
 
-    // Returning '' here instead would lose the invitation token too.
-    const withoutDestination = encodeState({ token: state.token });
-    return withoutDestination.length <= MAX_MANAGED_AUTH_STATE_LENGTH ? withoutDestination : '';
+    // Keep the token: losing it breaks invite acceptance, while a lost returnTo only costs a deep link.
+    const withoutReturnTo = encodeState({ token: state.token });
+    return withoutReturnTo.length <= MAX_MANAGED_AUTH_STATE_LENGTH ? withoutReturnTo : '';
 }
 
 interface FinalizeManagedAuthParams {
