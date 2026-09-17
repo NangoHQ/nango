@@ -18722,7 +18722,7 @@ pleo-api-key:
         verification:
             method: GET
             endpoints:
-                - /v1/installations/me
+                - /v2/employees?limit=1
         headers:
             authorization: Basic ${base64(${apiKey}:)}
     docs: https://nango.dev/docs/api-integrations/pleo-api-key
