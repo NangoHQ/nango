@@ -1,11 +1,10 @@
 import db from '@nangohq/database';
-import { oauthArtifactExists } from '@nangohq/oauth-server';
 import { accountService, getPlan, userService } from '@nangohq/shared';
 import { flagHasPlan, tagTraceUser } from '@nangohq/utils';
 
 import authMiddleware from '../../middleware/access.middleware.js';
 import { oauthServer, oauthServerConfig } from '../../oauth/server.js';
-import { getAuthorizedManagementMcpEnvironments } from './environments/list.js';
+import { getManagementMcpEnvironments } from './environments/list.js';
 
 import type { RequestLocals } from '../../utils/express.js';
 import type { Request, RequestHandler, Response } from 'express';
@@ -70,17 +69,9 @@ async function authenticateOAuthToken(token: string, res: Response<unknown, Part
         return { kind: 'not_oauth' };
     }
 
-    let accessToken;
-    try {
-        accessToken = await oauthServer.AccessToken.find(token);
-    } catch (err) {
-        if (await isKnownAccessToken(token)) {
-            return { kind: 'invalid_token' };
-        }
-        throw err;
-    }
+    const accessToken = await oauthServer.AccessToken.find(token);
     if (!accessToken) {
-        return (await isKnownAccessToken(token)) ? { kind: 'invalid_token' } : { kind: 'not_oauth' };
+        return { kind: 'not_oauth' };
     }
 
     const resource = oauthServerConfig.resource.resource;
@@ -137,27 +128,14 @@ async function authenticateOAuthToken(token: string, res: Response<unknown, Part
         plan = planResult.value;
     }
 
-    const environments = await getAuthorizedManagementMcpEnvironments({ user, account, plan });
+    const environments = await getManagementMcpEnvironments({ account });
     res.locals.authType = 'mcpOAuth';
     res.locals.user = user;
     res.locals.account = account;
     res.locals.plan = plan;
-    res.locals.mcpOAuthScopes = [MANAGEMENT_MCP_OAUTH_SCOPE];
     res.locals.mcpOAuthEnvironments = environments;
     tagTraceUser({ account, plan });
     return { kind: 'authenticated' };
-}
-
-async function isKnownAccessToken(token: string): Promise<boolean> {
-    if (!oauthServerConfig) {
-        return false;
-    }
-    return await oauthArtifactExists({
-        knex: db.knex,
-        encryptionKey: oauthServerConfig.config.encryptionKey,
-        model: 'AccessToken',
-        artifactId: token
-    });
 }
 
 function hasExactAudience(value: unknown, resource: string): boolean {
@@ -174,10 +152,11 @@ function parsePositiveInteger(value: unknown): number | null {
 
 function readBearerToken(req: Request): string | null {
     const authorization = req.get('authorization');
-    if (!authorization?.startsWith('Bearer ')) {
+    const match = authorization?.match(/^Bearer\s+(.+)$/i);
+    if (!match) {
         return null;
     }
-    const token = authorization.slice('Bearer '.length).trim();
+    const token = match[1]?.trim();
     return token || null;
 }
 

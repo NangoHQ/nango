@@ -159,6 +159,7 @@ describe('createManagementMcpServer', () => {
                     additionalProperties: false
                 }
             });
+            expect(providerTool?.inputSchema.properties).not.toHaveProperty('environment');
 
             const result = await client.callTool({ name: 'providers_get', arguments: { provider: 'github', include_templates: true } });
 
@@ -1015,14 +1016,17 @@ describe('createManagementMcpServer', () => {
         };
         const server = createManagementMcpServer(
             {
-                account: fakeAccount(),
-                environment: fakeEnvironment(),
-                plan: null,
-                grantedScopes: ['environment:mcp'],
-                audit: {
-                    kind: 'request',
-                    actor: { type: 'api_key', id: '7', display: 'Management key' },
-                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                type: 'apiKey',
+                context: {
+                    account: fakeAccount(),
+                    environment: fakeEnvironment(),
+                    plan: null,
+                    grantedScopes: ['environment:mcp'],
+                    audit: {
+                        kind: 'request',
+                        actor: { type: 'api_key', id: '7', display: 'Management key' },
+                        context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                    }
                 }
             },
             requestBody
@@ -1063,14 +1067,17 @@ describe('createManagementMcpServer', () => {
         };
         const server = createManagementMcpServer(
             {
-                account: fakeAccount(),
-                environment: fakeEnvironment(),
-                plan: null,
-                grantedScopes: ['environment:mcp'],
-                audit: {
-                    kind: 'request',
-                    actor: { type: 'api_key', id: '7', display: 'Management key' },
-                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                type: 'apiKey',
+                context: {
+                    account: fakeAccount(),
+                    environment: fakeEnvironment(),
+                    plan: null,
+                    grantedScopes: ['environment:mcp'],
+                    audit: {
+                        kind: 'request',
+                        actor: { type: 'api_key', id: '7', display: 'Management key' },
+                        context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                    }
                 }
             },
             requestBody
@@ -1098,14 +1105,17 @@ describe('createManagementMcpServer', () => {
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const server = createManagementMcpServer(
             {
-                account: fakeAccount(),
-                environment: fakeEnvironment(),
-                plan: null,
-                grantedScopes: ['environment:syncs:execute'],
-                audit: {
-                    kind: 'request',
-                    actor: { type: 'api_key', id: '7', display: 'Management key' },
-                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                type: 'apiKey',
+                context: {
+                    account: fakeAccount(),
+                    environment: fakeEnvironment(),
+                    plan: null,
+                    grantedScopes: ['environment:syncs:execute'],
+                    audit: {
+                        kind: 'request',
+                        actor: { type: 'api_key', id: '7', display: 'Management key' },
+                        context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                    }
                 }
             },
             {
@@ -1132,14 +1142,17 @@ describe('createManagementMcpServer', () => {
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const server = createManagementMcpServer(
             {
-                account: fakeAccount(),
-                environment: fakeEnvironment(),
-                plan: null,
-                grantedScopes: ['environment:mcp'],
-                audit: {
-                    kind: 'request',
-                    actor: { type: 'api_key', id: '7', display: 'Management key' },
-                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                type: 'apiKey',
+                context: {
+                    account: fakeAccount(),
+                    environment: fakeEnvironment(),
+                    plan: null,
+                    grantedScopes: ['environment:mcp'],
+                    audit: {
+                        kind: 'request',
+                        actor: { type: 'api_key', id: '7', display: 'Management key' },
+                        context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                    }
                 }
             },
             {
@@ -1329,7 +1342,10 @@ async function expectDisabledTool(client: Client, name: string, args: Record<str
 
 async function createTestClient(grantedScopes: string[]): Promise<{ client: Client; server: McpServer }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    const server = createManagementMcpServer({ account: fakeAccount(), environment: fakeEnvironment(), plan: null, grantedScopes });
+    const server = createManagementMcpServer({
+        type: 'apiKey',
+        context: { account: fakeAccount(), environment: fakeEnvironment(), plan: null, grantedScopes }
+    });
     const client = new Client({ name: 'test-client', version: '1.0.0' });
 
     await server.connect(serverTransport);

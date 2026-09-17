@@ -10,7 +10,6 @@ import {
     deleteExpiredOAuthArtifacts,
     OAUTH_GRANT_TTL_SECONDS,
     OAUTH_SERVER_ARTIFACTS_TABLE,
-    oauthArtifactExists,
     releaseOAuthInteraction,
     revokeOAuthGrant,
     revokeOAuthUserInTransaction
@@ -48,20 +47,6 @@ describe('PostgreSQL OAuth provider adapter', () => {
         expect(row.grant_id_hash.toString()).not.toContain(grantId);
         expect(row.payload_encrypted.toString()).not.toContain(id);
         expect(row.payload_encrypted.toString()).not.toContain(grantId);
-    });
-
-    it('identifies known access tokens after they expire or are revoked', async () => {
-        const accessToken = adapter('AccessToken');
-        await accessToken.upsert('active-token', artifactPayload('AccessToken', 'active-grant'), 60);
-        await accessToken.upsert('expired-token', artifactPayload('AccessToken', 'expired-grant'), -1);
-        await accessToken.upsert('revoked-token', artifactPayload('AccessToken', 'revoked-grant'), 60);
-        await accessToken.revokeByGrantId('revoked-grant');
-
-        const exists = (artifactId: string) => oauthArtifactExists({ knex: db.knex, encryptionKey, model: 'AccessToken', artifactId });
-        await expect(exists('active-token')).resolves.toBe(true);
-        await expect(exists('expired-token')).resolves.toBe(true);
-        await expect(exists('revoked-token')).resolves.toBe(true);
-        await expect(exists('unknown-token')).resolves.toBe(false);
     });
 
     it('rejects artifacts missing identifiers required for revocation', async () => {

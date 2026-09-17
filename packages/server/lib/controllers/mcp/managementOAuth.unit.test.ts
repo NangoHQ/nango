@@ -14,7 +14,6 @@ const {
     environmentAccessMock,
     getPlanMock,
     grantFindMock,
-    oauthArtifactExistsMock,
     tagTraceUserMock,
     userGetMock
 } = vi.hoisted(() => ({
@@ -25,13 +24,11 @@ const {
     environmentAccessMock: vi.fn(),
     getPlanMock: vi.fn(),
     grantFindMock: vi.fn(),
-    oauthArtifactExistsMock: vi.fn(),
     tagTraceUserMock: vi.fn(),
     userGetMock: vi.fn()
 }));
 
 vi.mock('@nangohq/database', () => ({ default: { knex: vi.fn() } }));
-vi.mock('@nangohq/oauth-server', () => ({ oauthArtifactExists: oauthArtifactExistsMock }));
 vi.mock('@nangohq/shared', () => ({
     accountService: { getAccountById: accountGetMock },
     getPlan: getPlanMock,
@@ -47,7 +44,7 @@ vi.mock('../../middleware/access.middleware.js', () => ({
         secretKeyAuth: vi.fn()
     }
 }));
-vi.mock('./environments/list.js', () => ({ getAuthorizedManagementMcpEnvironments: environmentAccessMock }));
+vi.mock('./environments/list.js', () => ({ getManagementMcpEnvironments: environmentAccessMock }));
 vi.mock('../../oauth/server.js', () => ({
     oauthServerConfig: {
         config: { baseUrl: 'https://login.nango.dev', encryptionKey: 'test-encryption-key' },
@@ -86,7 +83,6 @@ describe('Management MCP OAuth authentication', () => {
         accountGetMock.mockResolvedValue(account);
         getPlanMock.mockResolvedValue({ isErr: () => false, value: plan });
         environmentAccessMock.mockResolvedValue(environments);
-        oauthArtifactExistsMock.mockResolvedValue(false);
         apiKeyAuthenticateMock.mockResolvedValue({ isOk: () => false });
     });
 
@@ -114,19 +110,30 @@ describe('Management MCP OAuth authentication', () => {
 
         expect(next).toHaveBeenCalledOnce();
         expect(apiKeyAuthenticateMock).not.toHaveBeenCalled();
-        expect(environmentAccessMock).toHaveBeenCalledWith({ user, account, plan });
+        expect(environmentAccessMock).toHaveBeenCalledWith({ account });
         expect(res.locals).toMatchObject({
             authType: 'mcpOAuth',
             user,
             account,
             plan,
-            mcpOAuthScopes: ['environment:*'],
             mcpOAuthEnvironments: environments
         });
         expect(tagTraceUserMock).toHaveBeenCalledWith({ account, plan });
     });
 
-    it('falls back to API-key authentication only for an unknown OAuth token', async () => {
+    it.each(['bearer', 'BEARER'])('accepts the %s authorization scheme case-insensitively', async (scheme) => {
+        const req = request('oauth-access-token', scheme);
+        const { res } = response();
+        const next = vi.fn() as NextFunction;
+
+        await managementMcpAuth(req, res, next);
+
+        expect(accessTokenFindMock).toHaveBeenCalledWith('oauth-access-token');
+        expect(apiKeyAuthenticateMock).not.toHaveBeenCalled();
+        expect(next).toHaveBeenCalledOnce();
+    });
+
+    it('falls back to API-key authentication when no active OAuth token is found', async () => {
         accessTokenFindMock.mockResolvedValue(undefined);
         apiKeyAuthenticateMock.mockResolvedValue({ isOk: () => true });
         const req = request('api-key');
@@ -135,25 +142,23 @@ describe('Management MCP OAuth authentication', () => {
 
         await managementMcpAuth(req, res, next);
 
-        expect(oauthArtifactExistsMock).toHaveBeenCalledWith(expect.objectContaining({ model: 'AccessToken', artifactId: 'api-key' }));
         expect(apiKeyAuthenticateMock).toHaveBeenCalledOnce();
         expect(next).toHaveBeenCalledOnce();
     });
 
-    it('does not fall through to API-key authentication for an expired or revoked OAuth token', async () => {
+    it('returns a generic challenge when a token matches neither an active OAuth token nor an API key', async () => {
         accessTokenFindMock.mockResolvedValue(undefined);
-        oauthArtifactExistsMock.mockResolvedValue(true);
-        const req = request('known-oauth-token');
+        const req = request('inactive-or-unknown-token');
         const { res, status, json, headers } = response();
         const next = vi.fn() as NextFunction;
 
         await managementMcpAuth(req, res, next);
 
-        expect(apiKeyAuthenticateMock).not.toHaveBeenCalled();
+        expect(apiKeyAuthenticateMock).toHaveBeenCalledOnce();
         expect(next).not.toHaveBeenCalled();
         expect(status).toHaveBeenCalledWith(401);
-        expect(json).toHaveBeenCalledWith({ error: 'invalid_token' });
-        expect(headers.get('WWW-Authenticate')).toContain('error="invalid_token"');
+        expect(json).toHaveBeenCalledWith({ error: 'unauthorized' });
+        expect(headers.get('WWW-Authenticate')).not.toContain('error="invalid_token"');
     });
 
     it('returns insufficient_scope without API-key fallback', async () => {
@@ -192,9 +197,9 @@ describe('Management MCP OAuth authentication', () => {
     });
 });
 
-function request(token?: string): Request {
+function request(token?: string, scheme = 'Bearer'): Request {
     return {
-        get: vi.fn((name: string) => (name.toLowerCase() === 'authorization' && token ? `Bearer ${token}` : undefined))
+        get: vi.fn((name: string) => (name.toLowerCase() === 'authorization' && token ? `${scheme} ${token}` : undefined))
     } as unknown as Request;
 }
 

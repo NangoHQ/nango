@@ -1,7 +1,5 @@
 import express from 'express';
 
-import { baseUrl } from '@nangohq/utils';
-
 import { getManagementMcp, postManagementMcp } from './controllers/mcp/management.js';
 import { getManagementOAuthProtectedResourceMetadata, managementMcpAuth } from './controllers/mcp/managementOAuth.js';
 import { envs } from './env.js';
@@ -39,11 +37,6 @@ export const managementMcpAPI: RequestHandler = (req, res, next) => {
         next();
         return;
     }
-    if (isSharedApiHost() && !isManagementMcpPath(req.path)) {
-        next();
-        return;
-    }
-
     void managementMcpRouter(req, res, next);
 };
 
@@ -53,17 +46,6 @@ function withEnvironmentTargetUnlessOAuth(req: Request, res: Parameters<RequestH
         return;
     }
     withEnvironmentTarget(req, res, next);
-}
-
-function isManagementMcpPath(path: string): boolean {
-    return path === '/mcp' || path === '/.well-known/oauth-protected-resource' || path === '/.well-known/oauth-protected-resource/mcp';
-}
-
-function isSharedApiHost(): boolean {
-    if (!envs.NANGO_MANAGEMENT_MCP_SERVER_URL) {
-        return false;
-    }
-    return new URL(envs.NANGO_MANAGEMENT_MCP_SERVER_URL).hostname.toLowerCase() === new URL(baseUrl).hostname.toLowerCase();
 }
 
 function isManagementMcpHost(host: string): boolean {

@@ -1,23 +1,10 @@
-import * as z from 'zod/v4';
-
-import { authorizeIn } from '@nangohq/authz';
 import { environmentService } from '@nangohq/shared';
 
-import { buildPrincipal } from '../../../authz/principal.js';
+import { listEnvironmentsInputSchema, listEnvironmentsOutputSchema } from './schema.js';
 
-import type { DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 export type ManagementMcpEnvironment = Pick<DBEnvironment, 'id' | 'name' | 'is_production'>;
-
-export const listEnvironmentsInputSchema = z.object({}).strict();
-export const listEnvironmentsOutputSchema = z.object({
-    environments: z.array(
-        z.object({
-            name: z.string(),
-            is_production: z.boolean()
-        })
-    )
-});
 
 export const listEnvironmentsTool = {
     name: 'environments_list',
@@ -32,26 +19,8 @@ export const listEnvironmentsTool = {
     }
 } as const;
 
-export async function getAuthorizedManagementMcpEnvironments({
-    user,
-    account,
-    plan
-}: {
-    user: DBUser;
-    account: DBTeam;
-    plan: DBPlan | null;
-}): Promise<ManagementMcpEnvironment[]> {
-    const principal = buildPrincipal({ user, account, plan });
-    if (!principal) {
-        return [];
-    }
-
-    const environments = await environmentService.getEnvironmentsByAccountId(account.id);
-    return environments.filter((environment) =>
-        authorizeIn(principal, 'environment:settings:read', {
-            id: environment.id,
-            account_id: account.id,
-            is_production: environment.is_production
-        })
-    );
+export async function getManagementMcpEnvironments({ account }: { account: DBTeam }): Promise<DBEnvironment[]> {
+    const environmentSummaries = await environmentService.getEnvironmentsByAccountId(account.id);
+    const environments = await Promise.all(environmentSummaries.map((environment) => environmentService.getByEnvironmentName(account.id, environment.name)));
+    return environments.filter((environment): environment is DBEnvironment => environment !== null);
 }

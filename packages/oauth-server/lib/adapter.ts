@@ -45,25 +45,6 @@ export function hashOAuthIdentifier(value: string, encryptionKey: string): Buffe
     return createArtifactCrypto(encryptionKey).hash(value);
 }
 
-/**
- * Identifies an OAuth artifact even after it has expired or been revoked. Resource servers use
- * this to keep known OAuth credentials from falling through to another bearer-token scheme.
- */
-export async function oauthArtifactExists({
-    knex,
-    encryptionKey,
-    model,
-    artifactId
-}: OAuthAdapterOptions & { model: string; artifactId: string }): Promise<boolean> {
-    if (!SUPPORTED_MODELS.has(model)) {
-        throw new Error(`Unsupported OAuth provider model: ${model}`);
-    }
-    const row = await knex(OAUTH_SERVER_ARTIFACTS_TABLE)
-        .where({ model, artifact_id_hash: hashOAuthIdentifier(artifactId, encryptionKey) })
-        .first<Pick<ArtifactRow, 'artifact_id_hash'>>('artifact_id_hash');
-    return row !== undefined;
-}
-
 export async function claimOAuthInteraction({ knex, encryptionKey, interactionId }: OAuthAdapterOptions & { interactionId: string }): Promise<boolean> {
     const now = new Date();
     const claimed = await knex(OAUTH_SERVER_ARTIFACTS_TABLE)

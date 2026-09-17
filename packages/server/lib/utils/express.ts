@@ -41,8 +41,7 @@ export interface RequestLocals {
     lang?: string;
     secret?: DBAPISecret;
     apiKeyPrincipal?: ApiKeyPrincipal;
-    mcpOAuthScopes?: string[];
-    mcpOAuthEnvironments?: Pick<DBEnvironment, 'id' | 'name' | 'is_production'>[];
+    mcpOAuthEnvironments?: DBEnvironment[];
     principal?: Principal | null;
     apiKeyId?: number;
     apiKeyUuid?: string;

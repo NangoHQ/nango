@@ -1,8 +1,8 @@
 import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 
+import { principalFor } from '../../authz/principal.js';
 import { resolveAuditAttribution } from '../../middleware/audit/index.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { createManagementMcpOAuthServer } from './managementOAuthServer.js';
 import { createManagementMcpServer } from './managementServer.js';
 
 import type { RequestLocals } from '../../utils/express.js';
@@ -10,20 +10,30 @@ import type { GetManagementMcp, PostManagementMcp } from '@nangohq/types';
 
 export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res) => {
     const { account, plan } = res.locals;
-    const server =
+    const authentication =
         res.locals.authType === 'mcpOAuth'
-            ? createManagementMcpOAuthServer({ account, environments: res.locals.mcpOAuthEnvironments ?? [] })
-            : createManagementMcpServer(
-                  {
+            ? ({
+                  type: 'oauth',
+                  context: {
+                      account,
+                      plan,
+                      principal: requirePrincipal(res.locals),
+                      environments: res.locals.mcpOAuthEnvironments ?? [],
+                      audit: resolveAuditAttribution(req, res.locals)
+                  }
+              } as const)
+            : ({
+                  type: 'apiKey',
+                  context: {
                       account,
                       environment: requireApiKeyEnvironment(res.locals),
                       plan,
                       grantedScopes: res.locals['apiKeyPrincipal']?.scopes,
                       customerApiKeyId: getCustomerApiKeyId(res.locals),
                       audit: resolveAuditAttribution(req, res.locals)
-                  },
-                  req.body
-              );
+                  }
+              } as const);
+    const server = createManagementMcpServer(authentication, req.body);
     const transport: NodeStreamableHTTPServerTransport = new NodeStreamableHTTPServerTransport();
 
     res.on('close', () => {
@@ -58,4 +68,12 @@ function requireApiKeyEnvironment(locals: RequestLocals) {
         throw new Error('Management MCP API-key authentication requires an environment');
     }
     return locals.environment;
+}
+
+function requirePrincipal(locals: RequestLocals) {
+    const principal = principalFor(locals);
+    if (!principal) {
+        throw new Error('Management MCP OAuth authentication requires a principal');
+    }
+    return principal;
 }
