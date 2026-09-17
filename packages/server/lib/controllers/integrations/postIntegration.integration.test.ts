@@ -287,6 +287,8 @@ describe(`POST ${endpoint}`, () => {
         });
 
         it('builds a CIMD client_id when the Nango instance is reachable at a public HTTPS URL', async () => {
+            const realProvider = shared.getProvider('amplitude-mcp')!;
+            vi.spyOn(shared, 'getProvider').mockReturnValue({ ...realProvider, client_registration: 'cimd' } as typeof realProvider);
             vi.stubEnv('NANGO_SERVER_URL', 'https://mock.nango.dev');
 
             try {
@@ -294,7 +296,7 @@ describe(`POST ${endpoint}`, () => {
                 const res = await api.fetch(endpoint, {
                     method: 'POST',
                     token: apiKey.secret,
-                    body: { provider: 'lovable-mcp', unique_key: 'lovable-mcp' }
+                    body: { provider: 'amplitude-mcp', unique_key: 'amplitude-mcp-cimd' }
                 });
 
                 isSuccess(res.json);
@@ -302,20 +304,23 @@ describe(`POST ${endpoint}`, () => {
                 const resGet = await api.fetch(getEndpoint, {
                     method: 'GET',
                     token: apiKey.secret,
-                    params: { uniqueKey: 'lovable-mcp' },
+                    params: { uniqueKey: 'amplitude-mcp-cimd' },
                     query: { include: ['credentials'] }
                 });
 
                 isSuccess(resGet.json);
                 const credentials = resGet.json.data.credentials as { type: string; client_id: string };
                 expect(credentials.type).toBe('MCP_OAUTH2');
-                expect(credentials.client_id).toBe(`https://mock.nango.dev/oauth/client-metadata/${env.uuid}/lovable-mcp`);
+                expect(credentials.client_id).toBe(`https://mock.nango.dev/oauth/client-metadata/${env.uuid}/amplitude-mcp-cimd`);
             } finally {
                 vi.unstubAllEnvs();
+                vi.restoreAllMocks();
             }
         });
 
         it('rejects creating a CIMD integration when the Nango instance has no public HTTPS URL configured', async () => {
+            const realProvider = shared.getProvider('amplitude-mcp')!;
+            vi.spyOn(shared, 'getProvider').mockReturnValue({ ...realProvider, client_registration: 'cimd' } as typeof realProvider);
             vi.stubEnv('NANGO_SERVER_URL', '');
 
             try {
@@ -323,13 +328,14 @@ describe(`POST ${endpoint}`, () => {
                 const res = await api.fetch(endpoint, {
                     method: 'POST',
                     token: apiKey.secret,
-                    body: { provider: 'lovable-mcp', unique_key: 'lovable-mcp' }
+                    body: { provider: 'amplitude-mcp', unique_key: 'amplitude-mcp-cimd-no-url' }
                 });
 
                 isError(res.json);
                 expect(res.json.error.code).toBe('invalid_body');
             } finally {
                 vi.unstubAllEnvs();
+                vi.restoreAllMocks();
             }
         });
     });
