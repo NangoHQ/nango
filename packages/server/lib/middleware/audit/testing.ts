@@ -17,9 +17,7 @@ export const getAccountByIdMock: Mock = vi.fn();
 export const getPlanSafeMock: Mock = vi.fn();
 export const getEnvironmentByIdMock: Mock = vi.fn();
 export const getEnvironmentByUuidMock: Mock = vi.fn();
-export const getApiKeyByIdMock: Mock = vi.fn();
-export const getAccountApiKeyByIdMock: Mock = vi.fn();
-export const getApiKeyByUuidWithoutSecretsMock: Mock = vi.fn();
+export const customerKeySearchMock: Mock = vi.fn();
 export const getIntegrationSummaryMock: Mock = vi.fn();
 export const getConnectionByIdMock: Mock = vi.fn();
 export const getUserByIdMock: Mock = vi.fn();
@@ -36,12 +34,7 @@ export async function sharedModuleMock(importOriginal: () => Promise<typeof Nang
         getInvitation: getInvitationMock,
         getPlanSafe: getPlanSafeMock,
         environmentService: { ...actual.environmentService, getByIdWithoutSecrets: getEnvironmentByIdMock, getByUuidWithoutSecrets: getEnvironmentByUuidMock },
-        customerKeyService: {
-            ...actual.customerKeyService,
-            getApiKeyById: getApiKeyByIdMock,
-            getAccountApiKeyById: getAccountApiKeyByIdMock,
-            getApiKeyByUuidWithoutSecrets: getApiKeyByUuidWithoutSecretsMock
-        },
+        customerKeyService: { ...actual.customerKeyService, search: customerKeySearchMock },
         configService: { ...actual.configService, getIntegrationSummary: getIntegrationSummaryMock },
         accountService: { ...actual.accountService, getAccountById: getAccountByIdMock },
         connectionService: { ...actual.connectionService, getConnectionById: getConnectionByIdMock },

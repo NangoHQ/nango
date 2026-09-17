@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isNonEnvPath } from './routes.js';
+import { isNonEnvPath, MAX_NEXT_LENGTH, signinPathWithNext } from './routes.js';
 
 describe('isNonEnvPath', () => {
     describe('direct non-env paths', () => {
@@ -49,5 +49,29 @@ describe('isNonEnvPath', () => {
             expect(isNonEnvPath('/dev/integrations')).toBe(false);
             expect(isNonEnvPath('/team-settings-prod/integrations')).toBe(false);
         });
+    });
+});
+
+describe('signinPathWithNext', () => {
+    const location = (pathname: string, search = '', hash = '') => ({ pathname, search, hash });
+
+    it('encodes the destination into the next param', () => {
+        expect(signinPathWithNext(location('/team/billing'))).toBe('/signin?next=%2Fteam%2Fbilling');
+    });
+
+    it('keeps the search string and hash', () => {
+        expect(signinPathWithNext(location('/dev/logs', '?states=failed&period=24h', '#top'))).toBe(
+            '/signin?next=%2Fdev%2Flogs%3Fstates%3Dfailed%26period%3D24h%23top'
+        );
+    });
+
+    it('omits next for the root path, which carries no destination', () => {
+        expect(signinPathWithNext(location('/'))).toBe('/signin');
+    });
+
+    it('omits next past the length the server accepts', () => {
+        const search = `?filters=${'a'.repeat(MAX_NEXT_LENGTH)}`;
+        expect(signinPathWithNext(location('/dev/logs', search))).toBe('/signin');
+        expect(signinPathWithNext(location('/dev/logs', `?filters=${'a'.repeat(MAX_NEXT_LENGTH - '/dev/logs?filters='.length)}`))).toContain('next=');
     });
 });
