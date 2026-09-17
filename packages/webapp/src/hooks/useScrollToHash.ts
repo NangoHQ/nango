@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-/** The scroll container's own top padding, so the section doesn't sit flush against its edge. */
+/** Breathing room between the top of the scrollport and the section, matching the page's own gutter. */
 const TOP_OFFSET = 24;
 const MAX_DURATION_MS = 2500;
-const STABLE_FOR_MS = 400;
 
 /** `containerRef` must be the ref `DashboardLayout` forwards — the page itself never scrolls. */
 export function useScrollToHash(containerRef: React.RefObject<HTMLElement>) {
@@ -18,7 +17,6 @@ export function useScrollToHash(containerRef: React.RefObject<HTMLElement>) {
         }
 
         let frame = 0;
-        let stableSince: number | null = null;
         let writtenTop = container.scrollTop;
         let cancelled = false;
         const startedAt = performance.now();
@@ -44,21 +42,17 @@ export function useScrollToHash(containerRef: React.RefObject<HTMLElement>) {
             }
 
             const target = container.querySelector(`#${CSS.escape(id)}`);
-            if (!target) {
-                stableSince = null;
-            } else {
+            if (target) {
                 const delta = target.getBoundingClientRect().top - (container.getBoundingClientRect().top + TOP_OFFSET);
                 if (Math.abs(delta) > 1) {
                     container.scrollTop += delta;
                     writtenTop = container.scrollTop;
-                    stableSince = null;
-                } else {
-                    stableSince ??= now;
                 }
             }
 
-            const settled = stableSince !== null && now - stableSince >= STABLE_FOR_MS;
-            if (settled || now - startedAt >= MAX_DURATION_MS) {
+            // Watch for the whole budget rather than stopping once the offset holds still: the
+            // queries resolve in bursts, so an early quiet stretch is not the last one.
+            if (now - startedAt >= MAX_DURATION_MS) {
                 stop();
                 return;
             }
