@@ -6,6 +6,4 @@ exports.up = async function (knex) {
     `);
 };
 
-exports.down = async function () {
-    // Keep membership columns; dropping them would lose per-integration catalog overrides.
-};
+exports.down = async function () {};
