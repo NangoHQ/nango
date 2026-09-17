@@ -2,7 +2,6 @@ import ms from 'ms';
 
 import { Err, flagHasPlan, Ok } from '@nangohq/utils';
 
-import { productTracking } from '../../utils/productTracking.js';
 import { canHaveGrowthAddon, freePlan, GROWTH_FEATURE_FLAGS, isPotentialDowngrade, plansList } from './definitions.js';
 
 import type { DBEnvironment, DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
@@ -290,12 +289,6 @@ export async function handlePlanChanged(
     if (updated.isErr()) {
         return Err(new Error('Failed to updated plan', { cause: updated.error }));
     }
-
-    productTracking.track({
-        name: 'account:billing:plan_changed',
-        team,
-        eventProperties: { previousPlan: currentPlan.value.name, newPlan: newPlanCode, isDowngrade, orbCustomerId: currentPlan.value.orb_customer_id }
-    });
 
     return Ok(true);
 }

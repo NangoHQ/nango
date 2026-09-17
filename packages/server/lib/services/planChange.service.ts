@@ -1,6 +1,6 @@
 import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { canHaveGrowthAddon, getPlanDefinition, handlePlanChanged, productTracking, setGrowthAddon } from '@nangohq/shared';
+import { canHaveGrowthAddon, getPlanDefinition, handlePlanChanged, setGrowthAddon } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { clearSpendAlertOnPlanChange } from './spendAlertNotification.service.js';
@@ -270,26 +270,6 @@ export async function downgradePlan(context: PlanChangeContext): Promise<Result<
     }
 
     return Ok(undefined);
-}
-
-export function trackPlanChange(context: PlanChangeContext, change: PlanChanges): void {
-    const { team, currentPlan, requested } = context;
-
-    if (change.plan !== 'downgrade' && change.addon !== 'disable') {
-        return;
-    }
-
-    productTracking.track({
-        name: 'account:billing:downgraded',
-        team,
-        eventProperties: {
-            previousPlan: currentPlan.name,
-            newPlan: requested.newPlanCode,
-            previousGrowthFeatures: currentPlan.has_growth_features,
-            newGrowthFeatures: requested.withGrowthFeatures,
-            orbCustomerId: currentPlan.orb_customer_id
-        }
-    });
 }
 
 export async function enableGrowthAddon(context: PlanChangeContext): Promise<Result<void, PlanChangeError>> {

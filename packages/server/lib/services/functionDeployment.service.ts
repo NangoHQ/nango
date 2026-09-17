@@ -22,7 +22,6 @@ import type {
     DBPlan,
     DBSyncConfig,
     DBTeam,
-    DBUser,
     FunctionDeploymentCodeBody,
     FunctionDeploymentCreateSuccess,
     FunctionDeploymentResultSuccess,
@@ -78,7 +77,6 @@ export interface DeployTemplateParams {
     account: DBTeam;
     environment: DBEnvironment;
     plan: DBPlan | null;
-    user?: Pick<DBUser, 'id' | 'email' | 'name'> | undefined;
     body: FunctionDeploymentTemplateBody;
 }
 
@@ -207,14 +205,12 @@ export async function deployTemplate({
     account,
     environment,
     plan,
-    user,
     body
 }: DeployTemplateParams): Promise<Result<FunctionDeploymentCreateSuccess, DeployTemplateServiceError>> {
     const outcome = await deployIntegrationTemplate({
         environment,
         account,
         plan,
-        user,
         providerConfigKey: body.integration_id,
         name: body.template,
         type: body.function_type
