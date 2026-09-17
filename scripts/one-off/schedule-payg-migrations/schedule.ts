@@ -375,14 +375,16 @@ export async function scheduleGrowthAddons({
                     continue;
                 }
 
-                const growthAddonActivationAt = getGrowthAddonActivationAt(migration.plannedAt);
-                if (existingAddon.state === 'scheduled' && existingAddon.startsAt.getTime() !== migration.plannedAt?.getTime()) {
-                    throw new Error('Orb scheduled the growth add-on for a different timestamp than the PAYG plan change');
-                }
-                if (existingAddon.state === 'scheduled') {
+                if (existingAddon.state === 'scheduled' && migration.plannedAt) {
+                    const growthAddonActivationAt = getGrowthAddonActivationAt(migration.plannedAt);
+                    if (existingAddon.startsAt.getTime() !== migration.plannedAt.getTime()) {
+                        throw new Error('Orb scheduled the growth add-on for a different timestamp than the PAYG plan change');
+                    }
                     await db.assertSchedulesAreInSync(migration.accountId, growthAddonActivationAt);
+                    logSkip(migration.accountId, 'growth add-on already scheduled and in-sync');
+                } else {
+                    logSkip(migration.accountId, 'growth add-on already scheduled');
                 }
-                logSkip(migration.accountId, 'growth add-on already scheduled and in-sync');
                 continue;
             }
 
