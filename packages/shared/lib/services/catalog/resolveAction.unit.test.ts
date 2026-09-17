@@ -17,7 +17,9 @@ vi.mock('../sync/config/config.service.js', () => ({
 
 vi.mock('./actions.js', () => ({
     getCatalogAction: mockGetCatalogAction,
-    catalogActionJsPath: ({ provider, name }: { provider: string; name: string }) => `templates-zero/${provider}/build/${provider}_actions_${name}.cjs`
+    catalogActionJsPath: ({ provider, name }: { provider: string; name: string }) => `templates-zero/${provider}/build/${provider}_actions_${name}.cjs`,
+    isCatalogActionEnabled: ({ name, autoEnable, overrides }: { name: string; autoEnable: boolean; overrides: Record<string, boolean> }) =>
+        Object.hasOwn(overrides, name) ? overrides[name] === true : autoEnable
 }));
 
 const config: IntegrationConfig = {

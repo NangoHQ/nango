@@ -15,7 +15,9 @@ const { mockListCatalogActions, mockGetCatalogAction } = vi.hoisted(() => {
 
 vi.mock('../../catalog/actions.js', () => ({
     listCatalogActions: mockListCatalogActions,
-    getCatalogAction: mockGetCatalogAction
+    getCatalogAction: mockGetCatalogAction,
+    isCatalogActionEnabled: ({ name, autoEnable, overrides }: { name: string; autoEnable: boolean; overrides: Record<string, boolean> }) =>
+        Object.hasOwn(overrides, name) ? overrides[name] === true : autoEnable
 }));
 
 function catalogAction(name: string) {

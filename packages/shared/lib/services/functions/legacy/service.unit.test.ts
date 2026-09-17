@@ -20,7 +20,9 @@ vi.mock('../../config.service.js', () => ({
 
 vi.mock('../../catalog/actions.js', () => ({
     listCatalogActions: mockListCatalogActions,
-    getCatalogAction: mockGetCatalogAction
+    getCatalogAction: mockGetCatalogAction,
+    isCatalogActionEnabled: ({ name, autoEnable, overrides }: { name: string; autoEnable: boolean; overrides: Record<string, boolean> }) =>
+        Object.hasOwn(overrides, name) ? overrides[name] === true : autoEnable
 }));
 
 vi.mock('./models/functions.js', () => ({
