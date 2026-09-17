@@ -10,7 +10,6 @@ import {
     enableGrowthAddon,
     getPlanChangeContext,
     resolvePlanChange,
-    trackPlanChange,
     upgradePlan
 } from '../../../../services/planChange.service.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -174,8 +173,6 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
             return;
         }
     }
-
-    trackPlanChange(context, changes);
 
     res.status(200).send({ data: paymentIntent ? { paymentIntent } : { success: true } });
 });
