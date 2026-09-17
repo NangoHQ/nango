@@ -55,20 +55,41 @@ export async function registerClientId({
 }
 
 /**
- * Best-effort deregistration of a dynamically-registered MCP client (RFC 7592 client configuration
- * endpoint), used to clean up a registration left over from a create that failed after registering.
- * Not every DCR-compliant server implements this endpoint, so failures are reported, not thrown —
- * callers should never let cleanup failures mask the original error that triggered the cleanup.
+ * Best-effort deregistration of a dynamically-registered MCP client (RFC 7592). Failures are
+ * reported, not thrown, so cleanup never masks the original error that triggered it.
+ *
+ * `registrationClientUri` comes from the provider, not Nango, so we require HTTPS + same-origin
+ * as `registrationUrl` before sending the bearer token, and disable redirects.
  */
 export async function deregisterClientId({
+    registrationUrl,
     registrationClientUri,
     registrationAccessToken
 }: {
+    registrationUrl: string;
     registrationClientUri: string;
     registrationAccessToken?: string | undefined;
 }): Promise<void> {
+    let clientUri: URL;
+    let trustedOrigin: URL;
     try {
-        await axios.delete(registrationClientUri, registrationAccessToken ? { headers: { Authorization: `Bearer ${registrationAccessToken}` } } : {});
+        clientUri = new URL(registrationClientUri);
+        trustedOrigin = new URL(registrationUrl);
+    } catch {
+        report(new Error('Failed to deregister MCP client (invalid registration URL)'));
+        return;
+    }
+
+    if (clientUri.protocol !== 'https:' || clientUri.origin !== trustedOrigin.origin) {
+        report(new Error('Failed to deregister MCP client (registration_client_uri is not a trusted HTTPS origin)'));
+        return;
+    }
+
+    try {
+        await axios.delete(registrationClientUri, {
+            maxRedirects: 0,
+            ...(registrationAccessToken ? { headers: { Authorization: `Bearer ${registrationAccessToken}` } } : {})
+        });
     } catch (err) {
         const detail = isAxiosError(err) ? (err.response ? `status ${err.response.status}` : (err.code ?? 'network error')) : 'unknown error';
         report(new Error(`Failed to deregister MCP client (${detail})`));

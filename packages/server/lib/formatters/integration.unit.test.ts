@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { getProvider } from '@nangohq/shared';
 
-import { integrationCredentialsToPublicApi, integrationToPublicApi } from './integration.js';
+import { integrationCredentialsToPublicApi, integrationToApi, integrationToPublicApi } from './integration.js';
 
 import type { IntegrationConfig } from '@nangohq/types';
 
@@ -51,6 +51,22 @@ describe('integrationToPublicApi preconfigured_credentials', () => {
         const result = integrationToPublicApi({ integration: makeIntegration({ username: 'bob' }), provider });
 
         expect(result.preconfigured_credentials).toBeUndefined();
+    });
+});
+
+describe('integrationToApi', () => {
+    it('never returns mcpRegistrationClientUri/mcpRegistrationAccessToken, even to a caller with credentials access', () => {
+        const result = integrationToApi(
+            makeIntegration({ clientId: 'abc', mcpRegistrationClientUri: 'https://provider.example/register/123', mcpRegistrationAccessToken: 'reg-secret' })
+        );
+
+        expect(result.custom).toStrictEqual({ clientId: 'abc' });
+    });
+
+    it('strips the mcp registration fields even when nothing else is in custom', () => {
+        const result = integrationToApi(makeIntegration({ mcpRegistrationClientUri: 'https://provider.example/register/123' }));
+
+        expect(result.custom).toStrictEqual({});
     });
 });
 

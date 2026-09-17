@@ -620,7 +620,7 @@ describe('integrationService', () => {
                 vi.spyOn(shared.mcpClient, 'registerClientId').mockResolvedValue({
                     client_id: 'dcr-client-id',
                     client_secret: 'dcr-secret',
-                    registration_client_uri: 'https://provider.example.com/register/dcr-client-id',
+                    registration_client_uri: 'https://mcp.example.com/register/dcr-client-id',
                     registration_access_token: 'dcr-management-token'
                 });
                 vi.spyOn(shared.configService, 'createProviderConfig').mockResolvedValue(null);
@@ -640,7 +640,8 @@ describe('integrationService', () => {
                     expect(result.error).toMatchObject({ code: 'create_failed' });
                 }
                 expect(deregisterSpy).toHaveBeenCalledWith({
-                    registrationClientUri: 'https://provider.example.com/register/dcr-client-id',
+                    registrationUrl: 'https://mcp.example.com/register',
+                    registrationClientUri: 'https://mcp.example.com/register/dcr-client-id',
                     registrationAccessToken: 'dcr-management-token'
                 });
             });
@@ -1202,6 +1203,7 @@ describe('integrationService', () => {
                 id: 7,
                 custom: { mcpRegistrationClientUri: 'https://mcp.example.com/register/abc', mcpRegistrationAccessToken: 'reg-token' }
             });
+            vi.spyOn(shared, 'getProvider').mockReturnValue(mcpProviderFixture('dynamic'));
             vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
             vi.spyOn(shared.configService, 'deleteProviderConfig').mockResolvedValue(true);
             const deregisterSpy = vi.spyOn(shared.mcpClient, 'deregisterClientId').mockResolvedValue(undefined);
@@ -1210,6 +1212,7 @@ describe('integrationService', () => {
 
             expect(result.isOk()).toBe(true);
             expect(deregisterSpy).toHaveBeenCalledWith({
+                registrationUrl: 'https://mcp.example.com/register',
                 registrationClientUri: 'https://mcp.example.com/register/abc',
                 registrationAccessToken: 'reg-token'
             });

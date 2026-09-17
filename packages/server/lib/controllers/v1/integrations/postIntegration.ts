@@ -119,11 +119,11 @@ export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(asyn
         try {
             createdIntegration = await configService.createProviderConfig(config, provider);
         } catch (err) {
-            await cleanupMcpClientRegistration(mcpRegistration);
+            await cleanupMcpClientRegistration(mcpRegistration, provider);
             throw err;
         }
         if (!createdIntegration) {
-            await cleanupMcpClientRegistration(mcpRegistration);
+            await cleanupMcpClientRegistration(mcpRegistration, provider);
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to create integration' } });
             return;
         }

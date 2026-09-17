@@ -4,6 +4,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { resolveIntegrationConfig } from '../../../../services/integrationConfig.js';
 import { resolveCimdUrl } from '../../../../services/mcpClientRegistration.js';
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
+import { normalizeMcpOAuth2Scopes } from '../buildIntegrationConfig.js';
 import { patchIntegrationBodySchema } from '../validation.js';
 import { validationParams } from './getIntegration.js';
 
@@ -156,7 +157,7 @@ export const patchIntegration = asyncWrapperWithEnvironment<PatchIntegration>(as
                 integration.oauth_client_secret = body.clientSecret;
             }
             if (body.scopes !== undefined) {
-                integration.oauth_scopes = body.scopes || '';
+                integration.oauth_scopes = normalizeMcpOAuth2Scopes(body.scopes) ?? '';
             }
         } else if (body.authType === 'MCP_OAUTH2_GENERIC') {
             const { clientName, clientUri, clientLogoUri } = body;

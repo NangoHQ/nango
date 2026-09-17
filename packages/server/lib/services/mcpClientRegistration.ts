@@ -78,18 +78,20 @@ export function resolveCimdUrl(environmentUuid: string, uniqueKey: string): Resu
     return Ok(cimdUrl);
 }
 
-export async function cleanupMcpClientRegistration(registration: McpClientRegistration | null | undefined): Promise<void> {
-    if (!registration?.registrationClientUri) {
+export async function cleanupMcpClientRegistration(registration: McpClientRegistration | null | undefined, provider: Provider | null): Promise<void> {
+    const registrationUrl = provider && 'registration_url' in provider ? provider.registration_url : undefined;
+    if (!registration?.registrationClientUri || !registrationUrl) {
         return;
     }
     await mcpClient.deregisterClientId({
+        registrationUrl,
         registrationClientUri: registration.registrationClientUri,
         registrationAccessToken: registration.registrationAccessToken
     });
 }
 
-const REGISTRATION_CLIENT_URI_KEY = 'mcpRegistrationClientUri';
-const REGISTRATION_ACCESS_TOKEN_KEY = 'mcpRegistrationAccessToken';
+export const REGISTRATION_CLIENT_URI_KEY = 'mcpRegistrationClientUri';
+export const REGISTRATION_ACCESS_TOKEN_KEY = 'mcpRegistrationAccessToken';
 
 export function mcpRegistrationCustomFields(registration: McpClientRegistration | null | undefined): Record<string, string> | undefined {
     if (!registration?.registrationClientUri) {

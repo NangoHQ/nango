@@ -2,6 +2,7 @@ import db from '@nangohq/database';
 import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider, getProviders, sharedCredentialsService } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
+import { normalizeMcpOAuth2Scopes } from '../controllers/v1/integrations/buildIntegrationConfig.js';
 import { getIntegrationCredentials } from '../utils/integrations.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { resolveIntegrationConfig } from './integrationConfig.js';
@@ -258,8 +259,9 @@ export class IntegrationService {
 
     async create(params: CreateIntegrationParams): Promise<Result<CreatedIntegration, CreateIntegrationServiceError>> {
         let mcpRegistration: McpClientRegistration | null = null;
+        let provider: Provider | null = null;
         try {
-            const provider = getProvider(params.provider);
+            provider = getProvider(params.provider);
             if (!provider) {
                 return Err(new IntegrationServiceError({ code: 'invalid_provider', message: 'Provider does not exist' }));
             }
@@ -398,7 +400,7 @@ export class IntegrationService {
 
             const created = await configService.createProviderConfig(integration, provider);
             if (!created) {
-                await cleanupMcpClientRegistration(mcpRegistration);
+                await cleanupMcpClientRegistration(mcpRegistration, provider);
                 this.logger.error('Integration creation failed', {
                     failureCode: 'create_failed',
                     errorKind: 'empty_result'
@@ -408,7 +410,7 @@ export class IntegrationService {
 
             return Ok({ integration: created, provider });
         } catch (err) {
-            await cleanupMcpClientRegistration(mcpRegistration);
+            await cleanupMcpClientRegistration(mcpRegistration, provider);
             this.logCreateFailure('create_failed', err);
             return Err(
                 new IntegrationServiceError({
@@ -594,7 +596,7 @@ export class IntegrationService {
                 return Err(new IntegrationServiceError({ code: 'delete_failed', message: 'Failed to delete integration' }));
             }
 
-            await cleanupMcpClientRegistration(mcpRegistrationFromCustom(integration.custom));
+            await cleanupMcpClientRegistration(mcpRegistrationFromCustom(integration.custom), getProvider(integration.provider));
 
             return Ok({ integrationId: integration.unique_key });
         } catch (err) {
@@ -692,13 +694,7 @@ function applyCredentials(integration: DBCreateIntegration, credentials: CreateI
                 integration.oauth_client_secret = credentials.client_secret;
             }
             if (credentials.scopes !== undefined) {
-                integration.oauth_scopes = credentials.scopes
-                    ? credentials.scopes
-                          .trim()
-                          .split(/[,\s]+/)
-                          .filter(Boolean)
-                          .join(',')
-                    : credentials.scopes;
+                integration.oauth_scopes = normalizeMcpOAuth2Scopes(credentials.scopes);
             }
             break;
         }

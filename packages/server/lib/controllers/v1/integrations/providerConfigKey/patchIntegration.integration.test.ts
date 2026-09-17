@@ -271,6 +271,23 @@ describe(`PATCH ${endpoint}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({ data: { success: true } });
     });
 
+    it('normalizes MCP_OAUTH2 scopes on update the same way create does', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'amplitude-mcp', 'amplitude-mcp');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'amplitude-mcp' },
+            body: { authType: 'MCP_OAUTH2', scopes: 'read write,admin access' }
+        });
+        isSuccess(res.json);
+
+        const stored = await configService.getProviderConfig('amplitude-mcp', env.id);
+        expect(stored?.oauth_scopes).toBe('read,write,admin,access');
+    });
+
     it('allows client credential updates for MCP integrations with static client registration', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         // asana-mcp uses client_registration: static, users bring their own credentials

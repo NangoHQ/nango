@@ -9,6 +9,22 @@ async function getUniqueKey(key: string, environmentId: number): Promise<string>
 }
 
 /**
+ * MCP_OAUTH2 scopes may arrive space- and/or comma-separated (DCR/CIMD servers vary). Normalize to a
+ * single comma-separated format so stored scopes are consistent regardless of how they were entered,
+ * and so the token request (which splits on commas) sees each scope as its own entry.
+ */
+export function normalizeMcpOAuth2Scopes(scopes: string | undefined): string | null {
+    if (!scopes) {
+        return scopes ?? null;
+    }
+    return scopes
+        .trim()
+        .split(/[,\s]+/)
+        .filter(Boolean)
+        .join(',');
+}
+
+/**
  * Builds a DBCreateIntegration object from the POST integration body.
  * Handles unique_key generation, credential mapping, and all field transformations.
  *
@@ -71,13 +87,7 @@ export async function buildIntegrationConfig(body: PostIntegration['Body'], envi
         } else if (auth.authType === 'MCP_OAUTH2') {
             config.oauth_client_id = auth.clientId ?? null;
             config.oauth_client_secret = auth.clientSecret ?? null;
-            config.oauth_scopes = auth.scopes
-                ? auth.scopes
-                      .trim()
-                      .split(/[,\s]+/)
-                      .filter(Boolean)
-                      .join(',')
-                : (auth.scopes ?? null);
+            config.oauth_scopes = normalizeMcpOAuth2Scopes(auth.scopes);
         } else if (auth.authType === 'MCP_OAUTH2_GENERIC') {
             const { clientName, clientUri, clientLogoUri } = auth;
             config.custom = {
