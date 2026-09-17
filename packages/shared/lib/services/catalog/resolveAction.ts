@@ -1,6 +1,5 @@
 import { getSyncConfigRaw } from '../sync/config/config.service.js';
-import { catalogActionJsPath, getCatalogAction } from './actions.js';
-import { isCatalogActionEnabled } from './membership.js';
+import { catalogActionJsPath, getCatalogAction, isCatalogActionEnabled } from './actions.js';
 
 import type { CatalogAction } from './actions.js';
 import type { DBSyncConfig, IntegrationConfig } from '@nangohq/types';

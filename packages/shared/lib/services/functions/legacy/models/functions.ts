@@ -1,7 +1,6 @@
 import db from '@nangohq/database';
 
-import { getCatalogAction, listCatalogActions } from '../../../catalog/actions.js';
-import { isCatalogActionEnabled } from '../../../catalog/membership.js';
+import { getCatalogAction, isCatalogActionEnabled, listCatalogActions } from '../../../catalog/actions.js';
 
 import type { CatalogAction } from '../../../catalog/actions.js';
 import type { FunctionListSource, FunctionSource, FunctionType, NangoConfigMetadata } from '@nangohq/types';

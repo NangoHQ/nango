@@ -1,7 +1,6 @@
 import db, { dbNamespace, schema } from '@nangohq/database';
 
-import { listCatalogActions } from '../../catalog/actions.js';
-import { isCatalogActionEnabled } from '../../catalog/membership.js';
+import { isCatalogActionEnabled, listCatalogActions } from '../../catalog/actions.js';
 import configService from '../../config.service.js';
 
 import type { DBConnection, DBConnectionDecrypted, DBSyncConfig, DBSyncEndpoint, HTTP_METHOD } from '@nangohq/types';

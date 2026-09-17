@@ -1,7 +1,6 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import { getCatalogAction, listCatalogActions } from '../../catalog/actions.js';
-import { isCatalogActionEnabled } from '../../catalog/membership.js';
+import { getCatalogAction, isCatalogActionEnabled, listCatalogActions } from '../../catalog/actions.js';
 import configService from '../../config.service.js';
 import { toListedLiveCatalogAction, toListedNangoFunction } from './mappers.js';
 import * as functionsModel from './models/functions.js';
