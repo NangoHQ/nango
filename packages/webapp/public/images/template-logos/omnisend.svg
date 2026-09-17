@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 64" role="img" aria-label="Omnisend">
+  <rect width="256" height="64" rx="12" fill="#171717"/>
+  <circle cx="34" cy="32" r="16" fill="#8b5cf6"/>
+  <path d="M27 32a7 7 0 1 0 14 0 7 7 0 0 0-14 0Z" fill="#fff"/>
+  <text x="62" y="42" fill="#fff" font-family="Arial, sans-serif" font-size="30" font-weight="700">Omnisend</text>
+</svg>
