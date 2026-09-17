@@ -199,6 +199,16 @@ export async function applyPendingPlanChange({
     if (planChange) {
         logger.info(`Plan updated for account ${team.id} to ${resApply.value.planExternalId}`);
         await clearSpendAlertOnPlanChange({ accountId: team.id, subscriptionId: resApply.value.id });
+        productTracking.track({
+            name: 'account:billing:plan_changed',
+            team,
+            eventProperties: {
+                previousPlan: planChange.previousPlan.name,
+                newPlan: planChange.updatedPlan.name,
+                isDowngrade: planChange.isDowngrade,
+                orbCustomerId: planChange.previousPlan.orb_customer_id
+            }
+        });
     }
 
     return Ok(undefined);
