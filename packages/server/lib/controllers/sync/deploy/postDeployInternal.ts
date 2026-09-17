@@ -73,7 +73,10 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
 
                 if (copiedResponse) {
                     const { copiedFromId, copiedToId } = copiedResponse;
-                    const connections = await connectionService.getConnectionsByEnvironmentAndConfigId(devEnvironment.id, copiedFromId);
+                    const connections = await connectionService.getConnectionsByEnvironmentAndConfigId(db.knex, {
+                        environmentId: devEnvironment.id,
+                        configId: copiedFromId
+                    });
                     if (connections.length > 0) {
                         await connectionService.copyConnections(connections, environment.id, copiedToId);
                     }
@@ -90,7 +93,6 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
         environment,
         account,
         flows: cleanIncomingFlow(body.flowConfigs),
-        nangoYamlBody: body.nangoYamlBody,
         onEventScriptsByProvider: body.onEventScriptsByProvider,
         debug: body.debug,
         aggregatedJsonSchema: body.jsonSchema,

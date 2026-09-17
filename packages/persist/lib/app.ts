@@ -5,7 +5,7 @@ import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } 
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs } from '@nangohq/logs';
 import { records } from '@nangohq/records';
-import { getLogger, once, report } from '@nangohq/utils';
+import { getLogger, metrics, once, report } from '@nangohq/utils';
 
 import { autoDeletingDaemon } from './daemons/autodeleting.daemon.js';
 import { autoPruningDaemon } from './daemons/autopruning.daemon.js';
@@ -74,6 +74,7 @@ const close = once(() => {
 
         console.info('Closed');
 
+        await metrics.flush();
         process.exit();
     });
 });

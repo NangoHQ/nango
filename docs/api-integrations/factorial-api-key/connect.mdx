@@ -8,6 +8,7 @@ sidebarTitle: 'Factorial (API Key)'
 To authenticate with Factorial using an API key, you need:
 
 1. **API Key** - A single token that grants full admin access to your company's Factorial account and never expires.
+2. **Environment** - Whether to connect to Factorial's Production or Demo (Sandbox) environment.
 
 This guide will walk you through generating an API key from the Factorial platform.
 
@@ -31,13 +32,18 @@ API keys are not scoped to a user — they grant total access to the entire comp
 3. Enter a name for the key, then click **Get My API key**.
 4. Copy the key that's shown — it is displayed only once. If you lose it, you'll need to generate a new one.
 
-#### Step 2: Enter credentials in the Connect UI
+#### Step 2: Choosing your environment
+
+In the **Environment** dropdown, select `api.factorialhr.com` for your live Factorial account, or `api.eu2.demo.factorial.dev` if you're testing against Factorial's demo/sandbox environment.
+
+#### Step 3: Enter credentials in the Connect UI
 
 Once you have your **API Key**:
 
 1. Open the form where you need to authenticate with Factorial.
 2. Enter the **API Key** in the field provided.
-3. Submit the form, and you should be successfully authenticated.
+3. Select the **Environment** you chose in step 2.
+4. Submit the form, and you should be successfully authenticated.
 
 <img src="/api-integrations/factorial-api-key/form.png" style={{maxWidth: "450px" }}/>
 

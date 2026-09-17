@@ -91,6 +91,9 @@ export class AccessMiddleware {
         if (context.auth.apiKeyId !== undefined) {
             res.locals['apiKeyId'] = context.auth.apiKeyId;
         }
+        if (context.auth.apiKeyUuid !== undefined) {
+            res.locals['apiKeyUuid'] = context.auth.apiKeyUuid;
+        }
         if (context.auth.apiKeyDisplayName !== undefined) {
             res.locals['apiKeyDisplayName'] = context.auth.apiKeyDisplayName;
         }
@@ -145,7 +148,7 @@ export class AccessMiddleware {
         } catch (err) {
             logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
             span.setTag('error', err);
-            errorManager.errRes(res, 'malformed_auth_header');
+            res.status(500).send({ error: { code: 'server_error' } });
             return;
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start, { accountId: res.locals['account']?.id || 'unknown' });

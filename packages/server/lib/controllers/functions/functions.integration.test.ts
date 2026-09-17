@@ -605,6 +605,56 @@ describe('functions public API', () => {
         expect(getRes.json).not.toHaveProperty('execution_timeout_at');
     });
 
+    it('restricts deploy sandbox tokens to deployment APIs', async () => {
+        const seed = await seedAccount(['environment:deploy']);
+        const apiKey = await createApiKeyWithScopes(seed, ['environment:deploy']);
+        const deployment = await createDeploymentSeed({ environmentId: seed.env.id, startedAt: new Date() });
+        const sandboxToken = (
+            await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+                parentApiKeyId: apiKey.id,
+                environmentId: seed.env.id,
+                purpose: 'deploy',
+                deploymentId: deployment.id,
+                expiresAt: new Date(Date.now() + 60_000)
+            })
+        ).unwrap();
+        const headers = { authorization: `Bearer ${sandboxToken}` };
+
+        const proxyRes = await fetch(`${api.url}/proxy/api.github.com/user`, { headers });
+        expect(proxyRes.status).toBe(403);
+        expect(await proxyRes.json()).toStrictEqual({
+            error: { code: 'forbidden', message: 'Insufficient scope. Required: environment:proxy' }
+        });
+
+        const connectionRes = await fetch(`${api.url}/connection/connection-id`, { headers });
+        expect(connectionRes.status).toBe(403);
+        expect(await connectionRes.json()).toStrictEqual({
+            error: {
+                code: 'forbidden',
+                message: 'Insufficient scope. Required one of: environment:connections:read or environment:connections:read_credentials'
+            }
+        });
+
+        const integrationRes = await fetch(`${api.url}/integrations/integration-id`, { headers });
+        expect(integrationRes.status).toBe(403);
+        expect(await integrationRes.json()).toStrictEqual({
+            error: {
+                code: 'forbidden',
+                message: 'Insufficient scope. Required one of: environment:integrations:read or environment:integrations:read_credentials'
+            }
+        });
+
+        for (const endpoint of ['/sync/deploy/confirmation', '/sync/deploy']) {
+            const deployRes = await fetch(`${api.url}${endpoint}`, {
+                method: 'POST',
+                headers: { ...headers, 'content-type': 'application/json' },
+                body: '{}'
+            });
+            expect(deployRes.status).toBe(400);
+            expect(await deployRes.json()).toMatchObject({ error: { code: 'invalid_body' } });
+        }
+    });
+
     it('accepts POST /functions/deployments/:id/result with a sandbox token', async () => {
         const seed = await seedAccount(['environment:deploy']);
         const apiKey = await createApiKeyWithScopes(seed, ['environment:deploy']);

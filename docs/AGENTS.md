@@ -13,7 +13,7 @@ Run `mintlify broken-links` from `docs/` before pushing any change that:
 - changes a heading (anchors are derived from heading text)
 - updates internal `/...` links
 
-The scan must end with `success no broken links found`.
+The scan must end with `success no broken links found`
 
 ## Preview docs from the docs directory
 

@@ -10,6 +10,8 @@ import type { ClickhouseRawUsageEvent } from '@nangohq/usage';
 const database = `billing_events_s3_export_test`;
 const targetDay = '2026-05-06'; // events seeded here are what the export SQL should pick up
 const otherDay = '2026-05-07'; // events seeded here must be excluded by WHERE day = ...
+const EXPORT_SOURCE_PROPERTY_PATTERN = /'([^']+)',\s+toFloat64\(SUMIf\(egressed_bytes, source = '([^']+)'\)\)/g;
+const BILLABLE_VIEW_SOURCE_TUPLE_PATTERN = /\(\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/g;
 
 // ---------- fixture builders (declared first so per-metric fixture constants can reference them at module-load time) ----------
 
@@ -106,8 +108,9 @@ const functionExecutionsFixtures: ClickhouseRawUsageEvent[] = genN({
     day: targetDay,
     type: 'usage.function_executions',
     accountId: 1,
-    // Each event: durationMs=100, customLogs=5, memoryGb=2 → compute_gbms = duration_ms × memoryGb = 200.
-    attributes: { telemetryBag: { durationMs: 100, customLogs: 5, proxyCalls: 1, memoryGb: 2 } }
+    // Each event: durationMs=1200, customLogs=5, memoryGb=2 → compute_gbms = duration_ms × memoryGb = 2400.
+    // Four events produce 8 started seconds, not ceil(4800 / 1000) = 5.
+    attributes: { telemetryBag: { durationMs: 1200, customLogs: 5, proxyCalls: 1, memoryGb: 2 } }
 });
 
 const webhookForwardsFixtures: ClickhouseRawUsageEvent[] = genN({ n: 8, day: targetDay, type: 'usage.webhook_forward', accountId: 1 });
@@ -195,14 +198,18 @@ function data_transfer_gen({
 //   (server, proxy)   egress=500   → included
 //   (server, webhook_forward) egress=250 → included
 //   (runner, uncontrolled_fetch) egress=0, ingress=7777 → included pair but egress-only, contributes 0
+//   (runner, persist_customer_logs) egress=125 → included
+//   (runner, persist_records) egress=75 → included
 //   (server, unlisted)  egress=9999 → excluded (not a billable pair)
 //   (runner, proxy) on otherDay egress=100000 → excluded by WHERE day
-// → count (total egress) = 1000+500+250+0 = 1750.
+// → count (total egress) = 1000+500+250+0+125+75 = 1950.
 const dataTransferFixtures: ClickhouseRawUsageEvent[] = [
     data_transfer_gen({ day: targetDay, package: 'runner', callsite: 'proxy', egressedBytes: 1000 }),
     data_transfer_gen({ day: targetDay, package: 'server', callsite: 'proxy', egressedBytes: 500 }),
     data_transfer_gen({ day: targetDay, package: 'server', callsite: 'webhook_forward', egressedBytes: 250 }),
     data_transfer_gen({ day: targetDay, package: 'runner', callsite: 'uncontrolled_fetch', egressedBytes: 0, ingressedBytes: 7777 }),
+    data_transfer_gen({ day: targetDay, package: 'runner', callsite: 'persist_customer_logs', egressedBytes: 125 }),
+    data_transfer_gen({ day: targetDay, package: 'runner', callsite: 'persist_records', egressedBytes: 75 }),
     data_transfer_gen({ day: targetDay, package: 'server', callsite: 'unlisted', egressedBytes: 9999 }),
     data_transfer_gen({ day: otherDay, package: 'runner', callsite: 'proxy', egressedBytes: 100000 })
 ];
@@ -236,19 +243,19 @@ describe('billingEventsS3Export', () => {
     // not (account, env, day). Account 999 has 3 events. 100 events on otherDay are excluded.
     describe('proxy', () => {
         it('emits one row per (account, day) with summed counts', async () => {
-            const rows = await runQuery('proxy', 'proxy_test');
+            const rows = await runQuery('proxy');
 
             expect(rows).toHaveLength(2);
             expect(rows).toContainEqual({
-                idempotency_key: `proxy_test:1:${targetDay}`,
-                event_name: 'proxy_test',
+                idempotency_key: `proxy:1:${targetDay}`,
+                event_name: 'proxy',
                 external_customer_id: '1',
                 timestamp: `${targetDay}T23:59:59.999Z`,
                 properties: { count: 14 }
             });
             expect(rows).toContainEqual({
-                idempotency_key: `proxy_test:999:${targetDay}`,
-                event_name: 'proxy_test',
+                idempotency_key: `proxy:999:${targetDay}`,
+                event_name: 'proxy',
                 external_customer_id: '999',
                 timestamp: `${targetDay}T23:59:59.999Z`,
                 properties: { count: 3 }
@@ -257,23 +264,24 @@ describe('billingEventsS3Export', () => {
     });
 
     // Counter with extra telemetry properties. Account 1 has 4 events, each with
-    // duration_ms=100, custom_logs=5, memoryGb=2 → count=4, durationMs=400,
-    // customLogs=20, compute=4*100*2=800.
+    // duration_ms=1200, custom_logs=5, memoryGb=2 → count=4, durationMs=4800,
+    // durationSeconds=8, customLogs=20, compute=4*1200*2=9600.
     describe('function_executions', () => {
         it('carries count + telemetry properties', async () => {
-            const rows = await runQuery('function_executions', 'function_executions_test');
+            const rows = await runQuery('function_executions');
 
             expect(rows).toHaveLength(1);
             expect(rows[0]!).toEqual({
-                idempotency_key: `function_executions_test:1:${targetDay}`,
-                event_name: 'function_executions_test',
+                idempotency_key: `function_executions:1:${targetDay}`,
+                event_name: 'function_executions',
                 external_customer_id: '1',
                 timestamp: `${targetDay}T23:59:59.999Z`,
                 properties: {
                     count: 4,
-                    'telemetry.durationMs': 400,
+                    'telemetry.durationMs': 4800,
+                    'telemetry.durationSeconds': 8,
                     'telemetry.customLogs': 20,
-                    'telemetry.compute': 800
+                    'telemetry.compute': 9600
                 }
             });
         });
@@ -282,7 +290,7 @@ describe('billingEventsS3Export', () => {
     // Counter. Account 1 has 8 events.
     describe('webhook_forwards', () => {
         it('emits summed counts', async () => {
-            const rows = await runQuery('webhook_forwards', 'webhook_forwards_test');
+            const rows = await runQuery('webhook_forwards');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({ count: 8 });
         });
@@ -291,7 +299,7 @@ describe('billingEventsS3Export', () => {
     // Counter. Account 1 has 2 events.
     describe('billable_actions', () => {
         it('emits summed counts', async () => {
-            const rows = await runQuery('billable_actions', 'billable_actions_test');
+            const rows = await runQuery('billable_actions');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({ count: 2 });
         });
@@ -300,7 +308,7 @@ describe('billingEventsS3Export', () => {
     // Counter. Account 1 has 3 events.
     describe('monthly_active_records', () => {
         it('emits summed counts', async () => {
-            const rows = await runQuery('monthly_active_records', 'monthly_active_records_test');
+            const rows = await runQuery('monthly_active_records');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({ count: 3 });
         });
@@ -312,7 +320,7 @@ describe('billingEventsS3Export', () => {
     // → AVG(300, 200) = 250. Matches Orb's average(count) semantic.
     describe('records', () => {
         it('emits sum-across-slices-per-batch then average-across-batches', async () => {
-            const rows = await runQuery('records', 'records_test');
+            const rows = await runQuery('records');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({ count: 250 });
         });
@@ -324,7 +332,7 @@ describe('billingEventsS3Export', () => {
     // → AVG(30, 20) = 25.
     describe('billable_connections_v2', () => {
         it('emits sum-across-slices-per-batch then average-across-batches', async () => {
-            const rows = await runQuery('billable_connections_v2', 'billable_connections_v2_test');
+            const rows = await runQuery('billable_connections_v2');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({ count: 25 });
         });
@@ -336,16 +344,18 @@ describe('billingEventsS3Export', () => {
     // so contributes 0; otherDay row is excluded by WHERE day.
     describe('data_transfer', () => {
         it('sums egressed_bytes over billable pairs with per-pair breakdown', async () => {
-            const rows = await runQuery('data_transfer', 'data_transfer_test');
+            const rows = await runQuery('data_transfer');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({
-                count: 1750,
+                count: 1950,
                 'server.get_/records': 0,
                 'runner.proxy': 1000,
                 'server.get_/proxy': 0,
                 'server.proxy': 500,
                 'server.post_/proxy': 0,
                 'runner.uncontrolled_fetch': 0,
+                'runner.persist_customer_logs': 125,
+                'runner.persist_records': 75,
                 'server.patch_/proxy': 0,
                 'server.put_/proxy': 0,
                 'server.delete_/proxy': 0,
@@ -353,11 +363,29 @@ describe('billingEventsS3Export', () => {
                 'server.webhook_forward': 250
             });
         });
+
+        it('keeps per-source export properties in sync with the billable view', async () => {
+            const viewSources = await getBillableDataTransferViewSources();
+            const metric = METRICS.find((metric) => metric.eventName === 'data_transfer');
+            if (!metric) throw new Error('data_transfer metric missing');
+
+            const exportSourceProperties = [...metric.select(targetDay, database).matchAll(EXPORT_SOURCE_PROPERTY_PATTERN)].map(([, property, source]) => {
+                if (!property || !source) throw new Error('invalid data-transfer source property');
+                return { property, source };
+            });
+
+            expect(exportSourceProperties).not.toEqual([]);
+            expect(exportSourceProperties.every(({ property, source }) => property === source)).toBe(true);
+            const compareSources = (left: string, right: string) => left.localeCompare(right);
+            const sortedExportSources = [...new Set(exportSourceProperties.map(({ source }) => source))].sort(compareSources);
+            const sortedBillableViewSources = [...new Set(viewSources)].sort(compareSources);
+            expect(sortedExportSources).toEqual(sortedBillableViewSources);
+        });
     });
 
     // Cross-cutting checks that exercise behaviour shared by every metric.
-    it('threads event_name suffix into idempotency_key and event_name', async () => {
-        const rows = await runQuery('proxy', 'proxy');
+    it('derives idempotency_key and event_name from the metric spec', async () => {
+        const rows = await runQuery('proxy');
         expect(rows.find((r: { external_customer_id: string }) => r.external_customer_id === '1')).toMatchObject({
             idempotency_key: `proxy:1:${targetDay}`,
             event_name: 'proxy'
@@ -365,9 +393,9 @@ describe('billingEventsS3Export', () => {
     });
 
     it('excludes rows for other days via WHERE day = ...', async () => {
-        const metric = METRICS.find((m) => m.canonicalEventName === 'proxy');
+        const metric = METRICS.find((m) => m.eventName === 'proxy');
         if (!metric) throw new Error('proxy metric missing');
-        const sql = metricRowsSql({ metric, day: '2030-01-01', eventName: 'proxy', database });
+        const sql = metricRowsSql({ metric, day: '2030-01-01', database });
         const c = clickhouseClient();
         if (!c) throw new Error('client not configured');
         try {
@@ -401,16 +429,40 @@ interface OrbRow {
     properties: Record<string, number>;
 }
 
-async function runQuery(canonicalEventName: string, eventName: string): Promise<OrbRow[]> {
-    const metric: MetricSpec | undefined = METRICS.find((m) => m.canonicalEventName === canonicalEventName);
-    if (!metric) throw new Error(`metric ${canonicalEventName} not in METRICS`);
+async function runQuery(eventName: string): Promise<OrbRow[]> {
+    const metric: MetricSpec | undefined = METRICS.find((m) => m.eventName === eventName);
+    if (!metric) throw new Error(`metric ${eventName} not in METRICS`);
 
-    const sql = metricRowsSql({ metric, day: targetDay, eventName, database });
+    const sql = metricRowsSql({ metric, day: targetDay, database });
     const c = clickhouseClient();
     if (!c) throw new Error('CLICKHOUSE_URL not set');
     try {
         const result = await c.query({ query: sql, format: 'JSONEachRow' });
         return await result.json();
+    } finally {
+        await c.close();
+    }
+}
+
+async function getBillableDataTransferViewSources(): Promise<string[]> {
+    const c = clickhouseClient();
+    if (!c) throw new Error('CLICKHOUSE_URL not set');
+    try {
+        const result = await c.query({
+            query: `
+                SELECT create_table_query
+                FROM system.tables
+                WHERE database = {database:String}
+                  AND name = 'daily_billable_data_transfer'
+            `,
+            query_params: { database },
+            format: 'JSONEachRow'
+        });
+        const rows = await result.json<{ create_table_query: string }>();
+        const viewDefinition = rows[0]?.create_table_query;
+        if (!viewDefinition) throw new Error('daily_billable_data_transfer view missing');
+
+        return [...viewDefinition.matchAll(BILLABLE_VIEW_SOURCE_TUPLE_PATTERN)].map(([, pkg, callsite]) => `${pkg}.${callsite}`);
     } finally {
         await c.close();
     }

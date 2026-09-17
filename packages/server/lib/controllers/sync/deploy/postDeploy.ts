@@ -71,7 +71,6 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
             environment,
             account,
             flows: cleanIncomingFlow(body.flowConfigs),
-            nangoYamlBody: body.nangoYamlBody,
             onEventScriptsByProvider: body.onEventScriptsByProvider,
             debug: body.debug,
             aggregatedJsonSchema: body.jsonSchema,

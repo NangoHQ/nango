@@ -1,6 +1,6 @@
 import { getLogger } from '@nangohq/utils';
 
-import { audit } from '../../audit.js';
+import { auditEventDropped, recordAuditEvent } from '../../audit.js';
 import { canRecordAuditTrail } from '../../utils/auditTrail.js';
 
 import type { AuditEvent } from '@nangohq/audit';
@@ -25,12 +25,14 @@ export function recordManagementMcpAudit({
     policy: AuditPolicy;
     outcome: AuditOutcome;
     target?: AuditTarget | AuditTarget[] | undefined;
-    metadata?: Record<string, unknown> | undefined;
+    // Already checked against the tool's declared action, so this only carries it to the event.
+    metadata?: object | undefined;
 }): void {
     const event = {
         occurredAt: new Date().toISOString(),
         accountId: account.id,
-        environment: policy.scope === 'account' ? null : { id: environment.id, display: environment.name },
+        scope: policy.scope,
+        environment: policy.scope === 'account' ? null : { id: environment.uuid, display: environment.name },
         actor: auditContext.actor,
         resource: policy.resource,
         action: policy.action,
@@ -40,20 +42,18 @@ export function recordManagementMcpAudit({
         ...(metadata ? { metadata } : {})
     } as AuditEvent;
 
-    void emit(account.uuid, plan, event);
+    void emit(plan, event);
 }
 
-async function emit(accountUuid: string, plan: DBPlan | null, event: AuditEvent): Promise<void> {
+async function emit(plan: DBPlan | null, event: AuditEvent): Promise<void> {
     try {
-        if (!(await canRecordAuditTrail(accountUuid, plan))) {
+        if (!(await canRecordAuditTrail(plan))) {
             return;
         }
 
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error('Failed to record Management MCP audit event', result.error);
-        }
+        await recordAuditEvent(event);
     } catch (err) {
         logger.error('Failed to emit Management MCP audit event', err);
+        auditEventDropped(event.resource, 'build_failed');
     }
 }

@@ -118,7 +118,7 @@ export type UsageFunctionExecutionsEvent = UsageEventBase<
     {
         value: number;
         properties: {
-            type: 'sync' | 'action' | 'webhook' | 'on-event';
+            type: 'function' | 'sync' | 'action' | 'webhook' | 'on-event';
             success: boolean;
             functionName: string;
             runtime: FunctionRuntime | undefined;
@@ -162,6 +162,8 @@ export type DataTransferCallsite =
     | 'webhook_forward'
     | 'proxy'
     | 'uncontrolled_fetch'
+    | 'persist_customer_logs'
+    | 'persist_system_logs'
     | 'persist_logs'
     | 'persist_records'
     | 'get_/records'

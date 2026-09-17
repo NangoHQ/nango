@@ -1,10 +1,28 @@
 import crypto from 'node:crypto';
+import path from 'node:path';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import * as utils from './utils.js';
 
 import type { Provider } from '@nangohq/types';
+
+describe('local integration file paths', () => {
+    it('resolves legacy scripts to their flat local filename', () => {
+        const fileName = utils.resolveLocalFileName({ syncName: 'fetch-issues', providerConfigKey: 'github', scriptType: 'action' });
+
+        expect(fileName).toBe('fetch-issues-github.js');
+        expect(utils.resolveLocalFilePath({ fileName, providerConfigKey: 'github', scriptType: 'action' })).toBe(utils.resolveLocalFilePath({ fileName }));
+    });
+
+    it('resolves functions under their integration functions directory', () => {
+        const fileName = utils.resolveLocalFileName({ syncName: 'fetch-issues', providerConfigKey: 'github', scriptType: 'function' });
+        const filePath = utils.resolveLocalFilePath({ fileName, providerConfigKey: 'github', scriptType: 'function' });
+
+        expect(fileName).toBe('fetch-issues.js');
+        expect(filePath.endsWith(path.join('github', 'functions', 'fetch-issues.js'))).toBe(true);
+    });
+});
 
 describe('Proxy service Construct Header Tests', () => {
     it('Should correctly return true if the url is valid', () => {

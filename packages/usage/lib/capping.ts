@@ -59,7 +59,7 @@ export class Capping {
         });
 
         if (messages.length > 0) {
-            status.message = messages.join(' ') + ' Please upgrade your plan to remove the limits.';
+            status.message = `${messages.join(' ')} Please upgrade your plan to remove the limits.`;
         }
 
         // Emit a datadog metric if the account is capped on any metric
@@ -92,13 +92,14 @@ export class Capping {
                 return plan.function_executions_max;
             case 'function_compute_gbms':
                 return plan.function_compute_gbms_max;
+            case 'function_duration_seconds':
+                return plan.function_duration_seconds_max;
             case 'webhook_forwards':
                 return plan.webhook_forwards_max;
             case 'function_logs':
                 return plan.function_logs_max;
             case 'data_transfer':
-                // Data transfer is not capped (yet?)
-                return null;
+                return plan.data_transfer_max;
         }
     }
 
@@ -114,12 +115,14 @@ export class Capping {
                 return 'You have reached the maximum number of function executions for your plan.';
             case 'function_compute_gbms':
                 return 'You have reached the maximum compute time of your functions for your plan.';
+            case 'function_duration_seconds':
+                return 'You have reached the maximum function runtime for your plan.';
             case 'webhook_forwards':
                 return 'You have reached the maximum number of webhook forwards for your plan.';
             case 'function_logs':
                 return 'You have reached the maximum number of function logs for your plan.';
             case 'data_transfer':
-                return 'You have reached the maximum data transfer for your plan.';
+                return 'You have reached the data transfer limits for your plan.';
         }
     }
 }

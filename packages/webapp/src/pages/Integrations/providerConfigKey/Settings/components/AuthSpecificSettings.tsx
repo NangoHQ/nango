@@ -17,7 +17,7 @@ function AuthModeSettings({ data, environment }: { data: GetIntegration['Success
             return <OAuthSettings data={data} environment={environment} />;
 
         case 'OAUTH2_CC':
-            return <OAuth2CCSettings data={data} environment={environment} />;
+            return <OAuth2CCSettings data={data} />;
 
         case 'APP':
             return <AppAuthSettings data={data} environment={environment} />;
@@ -46,7 +46,7 @@ export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['d
     return (
         <>
             <AuthModeSettings data={data} environment={environment} />
-            {hasCustomIntegrationConfig && <CustomIntegrationSettings data={data} environment={environment} />}
+            {hasCustomIntegrationConfig && <CustomIntegrationSettings data={data} />}
         </>
     );
 };

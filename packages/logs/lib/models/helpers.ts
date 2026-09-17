@@ -5,7 +5,7 @@ import { nanoid } from '@nangohq/utils';
 import { defaultOperationExpiration } from '../env.js';
 
 import type { estypes } from '@elastic/elasticsearch';
-import type { ConcatOperationList, MessageRow, OperationRow, OperationRowInsert } from '@nangohq/types';
+import type { ConcatOperationList, MessageRow, OperationRow, OperationRowInsert, SearchOperationsType } from '@nangohq/types';
 import type { SetRequired } from 'type-fest';
 
 export const operationIdRegex = z.string().regex(/^[a-zA-Z0-9_]{20,25}$/);
@@ -105,6 +105,9 @@ export function parseCursor(str: string): unknown[] {
 export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'action:run': 'Action',
     'admin:impersonation': 'Admin logged into another account',
+    'agent_session:create': 'Agent session created',
+    'agent_session:terminate': 'Agent session terminated',
+    'agent_session:tool_search': 'Agent session tool search',
     'auth:create_connection': 'Connection created',
     'auth:post_connection': 'post connection execution',
     'auth:refresh_token': 'Token refreshed',
@@ -126,8 +129,19 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'webhook:sync': 'Sync completion webhooks',
     'webhook:connection_create': 'Connection creation webhooks',
     'webhook:connection_refresh': 'Token refresh webhooks',
+    'webhook:connection_delete': 'Connection deletion webhooks',
     'events:post_connection_creation': 'Event-based executions',
     'events:pre_connection_deletion': 'Event-based executions',
     'events:validate_connection': 'Event-based executions',
     'function:invoke': 'Function invoked'
 };
+
+/**
+ * Every value the logs type filter accepts: "all", each operation type and each type:action couple.
+ * Derived from operationTypeToMessage, which the compiler keeps exhaustive, so the filter can't drift
+ * behind a newly added operation type.
+ */
+export const searchOperationsTypes = [
+    'all',
+    ...new Set(Object.keys(operationTypeToMessage).flatMap((couple) => [couple.split(':')[0]!, couple]))
+] as SearchOperationsType[];

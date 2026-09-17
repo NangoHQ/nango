@@ -97,7 +97,7 @@ describe('validateFunctionInput', () => {
     it('accepts omitted input when the function has no input schema', () => {
         const result = validateFunctionInput({ ...version, input_schema_ref: null }, undefined);
 
-        expect(result.unwrap()).toBeUndefined();
+        expect(result.unwrap()).toBeNull();
     });
 
     it.each([{}, null, false])('rejects provided input when the function has no input schema: %j', (input) => {
@@ -126,6 +126,18 @@ describe('validateFunctionInput', () => {
         if (result.isOk()) return;
         expect(result.error.message).toBe('invalid_function_input');
         expect(result.error.validationErrors).toContainEqual({ code: 'type', message: 'must be object', path: [] });
+    });
+
+    it('normalizes omitted input to null', () => {
+        const permissiveVersion: DBFunctionConfigVersion = {
+            ...version,
+            id: 6,
+            json_schema: { definitions: { Input: {} } }
+        };
+
+        const result = validateFunctionInput(permissiveVersion, undefined);
+
+        expect(result.unwrap()).toBeNull();
     });
 
     it('validates falsy input values', () => {

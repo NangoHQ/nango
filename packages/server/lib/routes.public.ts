@@ -4,10 +4,13 @@ import cors from 'cors';
 import express from 'express';
 import multer from 'multer';
 
-import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
+import { connectUrl, flagEnforceCLIVersion, metrics } from '@nangohq/utils';
 
 import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 import { postPublicTriggerAction } from './controllers/action/postTriggerAction.js';
+import { deleteAgentSession } from './controllers/agent/deleteSession.js';
+import { getAgentSessionMcp, postAgentSessionMcp } from './controllers/agent/mcp/sessionMcp.js';
+import { postAgentSessions } from './controllers/agent/postSessions.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicAwsSigV4Authorization } from './controllers/auth/postAwsSigV4.js';
@@ -35,10 +38,13 @@ import { postPublicMetadata } from './controllers/connection/connectionId/metada
 import { patchPublicConnection } from './controllers/connection/connectionId/patchConnection.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
-import { deletePublicApiKey } from './controllers/environment/deleteApiKey.js';
+import { deletePublicEnvironmentApiKey } from './controllers/environment/deleteApiKey.js';
 import { deletePublicEnvironment } from './controllers/environment/deleteEnvironment.js';
+import { getPublicEnvironmentApiKey } from './controllers/environment/getApiKey.js';
+import { getPublicEnvironmentApiKeys } from './controllers/environment/getApiKeys.js';
+import { getPublicEnvironments } from './controllers/environment/getEnvironments.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
-import { postPublicApiKey } from './controllers/environment/postApiKey.js';
+import { postPublicEnvironmentApiKey } from './controllers/environment/postApiKey.js';
 import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
 import { postPublicRotateWebhookSigningKey } from './controllers/environment/postPublicRotateWebhookSigningKey.js';
 import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
@@ -50,6 +56,7 @@ import { postFunctionDeploymentResult } from './controllers/functions/deployment
 import { getFunctionDryrun } from './controllers/functions/dryrun/getDryrun.js';
 import { postFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDryrunResult.js';
+import { getFunctionInvocation } from './controllers/functions/getInvocation.js';
 import { postFunctionInvocation } from './controllers/functions/postInvocation.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
@@ -85,15 +92,15 @@ import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
 import {
+    auditAgentSessionCreated,
+    auditAgentSessionTerminated,
     auditConnectionCreated,
-    auditFunctionDeployed,
     auditFunctionDeployedCli,
+    auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
     auditPublicApiKeyCreated,
     auditPublicApiKeyDeleted,
     auditPublicConnectionDeleted,
-    auditPublicConnectionMetadataSet,
-    auditPublicConnectionMetadataUpdated,
     auditPublicConnectionUpdated,
     auditPublicEnvironmentCreated,
     auditPublicEnvironmentDeleted,
@@ -108,7 +115,7 @@ import {
     auditSyncStarted,
     auditSyncVariantCreated,
     auditSyncVariantDeleted
-} from './middleware/audit.middleware.js';
+} from './middleware/audit/index.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
@@ -117,10 +124,12 @@ import { withAnyScope, withEnvironmentTarget, withScope } from './middleware/sco
 import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
+import type { RequestLocals } from './utils/express.js';
 import type { Request, RequestHandler } from 'express';
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const agentSessionAuth: RequestHandler[] = [authMiddleware.agentSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const connectSessionOrApiAuth: RequestHandler[] = [
     authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware),
@@ -143,6 +152,21 @@ const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
 
     next();
 };
+
+function trackDeprecatedPublicEndpoint(endpoint: string, isInternal?: (req: Request) => boolean): RequestHandler {
+    return (req, res, next) => {
+        const { account, environment } = res.locals as RequestLocals;
+        if (environment) {
+            metrics.increment(metrics.Types.DEPRECATED_PUBLIC_ENDPOINT_USED, 1, {
+                accountId: account.id,
+                environmentId: environment.id,
+                endpoint,
+                ...(isInternal && { internal: isInternal(req) ? 'true' : 'false' })
+            });
+        }
+        next();
+    };
+}
 const functionDryrunResultAuth: RequestHandler[] = [...apiAuth, withEnvironmentTarget, sandboxTokenOnly];
 const functionDeployAuth: RequestHandler[] = [...apiAuth, withScope('environment:deploy')];
 const functionDeploymentResultAuth: RequestHandler[] = [...apiAuth, withEnvironmentTarget, sandboxTokenOnly];
@@ -170,7 +194,16 @@ publicAPI.use(
     })
 );
 publicAPI.use(bodyParser.raw({ type: 'text/xml', limit: bodyLimit }));
-publicAPI.use(express.urlencoded({ extended: true, limit: bodyLimit }));
+publicAPI.use(
+    express.urlencoded({
+        extended: true,
+        limit: bodyLimit,
+        // Slack signs the raw form body, so webhook routing needs it as sent.
+        verify: (req: Request, _, buf) => {
+            req.rawBody = buf.toString();
+        }
+    })
+);
 
 type ExtendedMulterLimits = multer.Options['limits'] & {
     fieldNestingDepth?: number;
@@ -228,10 +261,19 @@ publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, withEnviron
 publicAPI.route('/providers/:provider/templates').get(apiAuth, withEnvironmentTarget, getPublicProviderTemplates);
 
 publicAPI.use('/environments', jsonContentTypeMiddleware);
+publicAPI.route('/environments').get(apiAuth, withScope('account:environments:list'), getPublicEnvironments);
 publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, withScope('account:environments:create'), postPublicEnvironment);
 publicAPI
-    .route('/environments/:environmentId')
+    .route('/environments/:environmentUuid')
     .delete(apiAuth, auditPublicEnvironmentDeleted, withScope('account:environments:delete'), deletePublicEnvironment);
+publicAPI
+    .route('/environments/:environmentUuid/api-keys')
+    .get(apiAuth, withScope('account:environments:api_keys:list'), getPublicEnvironmentApiKeys)
+    .post(apiAuth, auditPublicApiKeyCreated, withScope('account:environments:api_keys:create'), postPublicEnvironmentApiKey);
+publicAPI
+    .route('/environments/:environmentUuid/api-keys/:keyUuid')
+    .get(apiAuth, withScope('account:environments:api_keys:read'), getPublicEnvironmentApiKey)
+    .delete(apiAuth, auditPublicApiKeyDeleted, withScope('account:environments:api_keys:delete'), deletePublicEnvironmentApiKey);
 
 // @deprecated rollbacked for one customer, to delete asap
 publicAPI
@@ -239,6 +281,7 @@ publicAPI
     .get(
         apiAuth,
         withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'),
+        trackDeprecatedPublicEndpoint('GET /config/:providerConfigKey'),
         configController.getProviderConfig.bind(configController)
     );
 
@@ -269,20 +312,38 @@ publicAPI
 // @deprecated connections
 publicAPI.use('/connection', jsonContentTypeMiddleware);
 // @deprecated
+publicAPI.route('/connection/:connectionId').get(
+    apiAuth,
+    withAnyScope('environment:connections:read', 'environment:connections:read_credentials'),
+    trackDeprecatedPublicEndpoint('GET /connection/:connectionId', (req) => req.get('Nango-Is-Sync') === 'true'),
+    getPublicConnection
+);
+// @deprecated
+publicAPI
+    .route('/connection')
+    .get(
+        apiAuth,
+        withAnyScope('environment:connections:list', 'environment:connections:list_credentials'),
+        trackDeprecatedPublicEndpoint('GET /connection'),
+        getPublicConnections
+    );
+// @deprecated
 publicAPI
     .route('/connection/:connectionId')
-    .get(apiAuth, withAnyScope('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
-// @deprecated
-publicAPI.route('/connection').get(apiAuth, withAnyScope('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
-// @deprecated
-publicAPI.route('/connection/:connectionId').delete(apiAuth, auditPublicConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
+    .delete(
+        apiAuth,
+        auditPublicConnectionDeleted,
+        withScope('environment:connections:delete'),
+        trackDeprecatedPublicEndpoint('DELETE /connection/:connectionId'),
+        deletePublicConnection
+    );
 // @deprecated
 publicAPI
     .route('/connection/:connectionId/metadata')
     .post(
         apiAuth,
-        auditPublicConnectionMetadataSet,
         withScope('environment:connections:update'),
+        trackDeprecatedPublicEndpoint('POST /connection/:connectionId/metadata'),
         connectionController.setMetadataLegacy.bind(connectionController)
     );
 // @deprecated
@@ -290,25 +351,35 @@ publicAPI
     .route('/connection/:connectionId/metadata')
     .patch(
         apiAuth,
-        auditPublicConnectionMetadataUpdated,
         withScope('environment:connections:update'),
+        trackDeprecatedPublicEndpoint('PATCH /connection/:connectionId/metadata'),
         connectionController.updateMetadataLegacy.bind(connectionController)
     );
 // @deprecated
-publicAPI.route('/connection/metadata').post(apiAuth, auditPublicConnectionMetadataSet, withScope('environment:connections:update'), postPublicMetadata);
+publicAPI
+    .route('/connection/metadata')
+    .post(apiAuth, withScope('environment:connections:update'), trackDeprecatedPublicEndpoint('POST /connection/metadata'), postPublicMetadata);
 // @deprecated
-publicAPI.route('/connection/metadata').patch(apiAuth, auditPublicConnectionMetadataUpdated, withScope('environment:connections:update'), patchPublicMetadata);
+publicAPI
+    .route('/connection/metadata')
+    .patch(apiAuth, withScope('environment:connections:update'), trackDeprecatedPublicEndpoint('PATCH /connection/metadata'), patchPublicMetadata);
 // @deprecated
 publicAPI
     .route('/connection')
-    .post(apiAuth, auditConnectionCreated, withScope('environment:connections:create'), connectionController.createConnection.bind(connectionController));
+    .post(
+        apiAuth,
+        auditConnectionCreated,
+        withScope('environment:connections:create'),
+        trackDeprecatedPublicEndpoint('POST /connection'),
+        connectionController.createConnection.bind(connectionController)
+    );
 
 // Connections
 publicAPI.use('/connections', jsonContentTypeMiddleware);
 publicAPI.route('/connections').post(apiAuth, auditConnectionCreated, withScope('environment:connections:create'), postPublicConnection);
 publicAPI.route('/connections').get(apiAuth, withAnyScope('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
-publicAPI.route('/connections/metadata').post(apiAuth, auditPublicConnectionMetadataSet, withScope('environment:connections:update'), postPublicMetadata);
-publicAPI.route('/connections/metadata').patch(apiAuth, auditPublicConnectionMetadataUpdated, withScope('environment:connections:update'), patchPublicMetadata);
+publicAPI.route('/connections/metadata').post(apiAuth, withScope('environment:connections:update'), postPublicMetadata);
+publicAPI.route('/connections/metadata').patch(apiAuth, withScope('environment:connections:update'), patchPublicMetadata);
 publicAPI
     .route('/connections/:connectionId')
     .get(apiAuth, withAnyScope('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
@@ -322,10 +393,6 @@ publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
 publicAPI.route('/environment-variables').get(apiAuth, withScope('environment:variables:read'), getPublicEnvironmentVariables);
 
 publicAPI.use('/environment', jsonContentTypeMiddleware);
-publicAPI
-    .route('/environment/api-keys')
-    .post(apiAuth, auditPublicApiKeyCreated, withScope('account:environments:api_keys:create'), postPublicApiKey)
-    .delete(apiAuth, auditPublicApiKeyDeleted, withScope('account:environments:api_keys:delete'), deletePublicApiKey);
 publicAPI
     .route('/environment/webhook-signing-key/rotate')
     .post(apiAuth, auditPublicWebhookSigningKeyRotated, withScope('environment:webhook_signing_key:rotate'), postPublicRotateWebhookSigningKey);
@@ -375,7 +442,7 @@ publicAPI.route('/functions/compile').post(functionCompileAuth, postFunctionComp
 publicAPI.route('/functions/dryruns').post(functionDryrunAuth, postFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id').get(functionDryrunAuth, getFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id/result').post(functionDryrunResultAuth, postFunctionDryrunResult);
-publicAPI.route('/functions/deployments').post(apiAuth, auditFunctionDeployed, withScope('environment:deploy'), postFunctionDeployment);
+publicAPI.route('/functions/deployments').post(apiAuth, auditFunctionDeployedFromTemplate, withScope('environment:deploy'), postFunctionDeployment);
 publicAPI.route('/functions/deployments/:id').get(functionDeployAuth, getFunctionDeployment);
 publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResultAuth, postFunctionDeploymentResult);
 
@@ -383,6 +450,7 @@ publicAPI.route('/functions/deployments/bundle/preview').post(apiAuth, withScope
 publicAPI.route('/functions/deployments/bundle').post(apiAuth, auditFunctionDeploymentBundle, withScope('environment:deploy'), postFunctionDeploymentBundle);
 
 publicAPI.route('/functions/invocations').post(apiAuth, withScope('environment:functions:invocations'), postFunctionInvocation);
+publicAPI.route('/functions/invocations/:id').get(apiAuth, withScope('environment:functions:invocations'), getFunctionInvocation);
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);
@@ -396,6 +464,14 @@ publicAPI.route('/connect/sessions/reconnect').post(apiAuth, withScope('environm
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
+
+// Agent sessions
+publicAPI.use('/sessions', jsonContentTypeMiddleware);
+publicAPI.route('/sessions').post(apiAuth, auditAgentSessionCreated, withScope('environment:agent_sessions:write'), postAgentSessions);
+publicAPI.route('/sessions/:sessionId').delete(apiAuth, auditAgentSessionTerminated, withScope('environment:agent_sessions:write'), deleteAgentSession);
+publicAPI.use('/session/:sessionId/mcp', jsonContentTypeMiddleware);
+publicAPI.route('/session/:sessionId/mcp').post(agentSessionAuth, postAgentSessionMcp);
+publicAPI.route('/session/:sessionId/mcp').get(agentSessionAuth, getAgentSessionMcp);
 
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution
 publicAPI.use('/v1', jsonContentTypeMiddleware);

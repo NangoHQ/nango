@@ -2,9 +2,11 @@ import { z } from 'zod';
 
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
 
-const integrationIdSchema = providerConfigKeySchema.refine((value) => value !== '.' && value !== '..', {
+export const functionIntegrationIdSchema = providerConfigKeySchema.refine((value) => value !== '.' && value !== '..', {
     message: 'Integration id cannot be "." or ".."'
 });
+
+export const runnableFunctionTypeSchema = z.enum(['action', 'sync']);
 
 export const functionCompileBodySchema = z
     .object({
@@ -14,8 +16,8 @@ export const functionCompileBodySchema = z
 
 export const functionDryrunBodySchema = z
     .object({
-        integration_id: integrationIdSchema,
-        function_type: z.enum(['action', 'sync']),
+        integration_id: functionIntegrationIdSchema,
+        function_type: runnableFunctionTypeSchema,
         code: z.string().min(1),
         connection_id: connectionIdSchema,
         input: z.unknown().optional(),
@@ -62,9 +64,9 @@ export const functionDeploymentBodySchema = z.discriminatedUnion('type', [
     z
         .object({
             type: z.literal('function'),
-            integration_id: integrationIdSchema,
+            integration_id: functionIntegrationIdSchema,
             function_name: syncNameSchema,
-            function_type: z.enum(['action', 'sync']),
+            function_type: runnableFunctionTypeSchema,
             code: z.string().min(1),
             version: z.string().optional(),
             allow_destructive: z.boolean().default(false)
@@ -73,10 +75,10 @@ export const functionDeploymentBodySchema = z.discriminatedUnion('type', [
     z
         .object({
             type: z.literal('template'),
-            integration_id: integrationIdSchema,
+            integration_id: functionIntegrationIdSchema,
             template: syncNameSchema,
             // Optional: inferred from the template name unless a sync and an action share it.
-            function_type: z.enum(['action', 'sync']).optional()
+            function_type: runnableFunctionTypeSchema.optional()
         })
         .strict()
 ]);

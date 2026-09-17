@@ -1,6 +1,6 @@
 ---
 title: 'Create an environment API key'
-openapi: 'POST /environment/api-keys'
+openapi: 'POST /environments/{environmentUuid}/api-keys'
 ---
 
 <Info>
@@ -9,13 +9,14 @@ openapi: 'POST /environment/api-keys'
 
 Creates an Environment API key. Keys created by this endpoint always have full environment access (`environment:*`). This endpoint does not accept custom scopes. Create keys with custom scopes under **Environment Settings > API Keys**.
 
-`environment_id` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create).
+`environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create).
 
 <ResponseExample>
 ```json Example Response
 {
   "data": {
     "id": 456,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
     "display_name": "provisioned-ci",
     "scopes": ["environment:*"],
     "secret": "<YOUR-ENVIRONMENT-API-KEY>",

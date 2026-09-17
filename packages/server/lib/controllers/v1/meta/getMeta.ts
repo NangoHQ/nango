@@ -2,7 +2,7 @@ import { environmentService } from '@nangohq/shared';
 import { baseUrl, NANGO_VERSION, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { canAccessAuditTrail } from '../../../utils/auditTrail.js';
+import { canViewAuditTrail } from '../../../utils/auditTrail.js';
 
 import type { GetMeta } from '@nangohq/types';
 
@@ -13,19 +13,23 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
         return;
     }
 
-    const { user: sessionUser, account, plan } = res.locals;
+    const { user: sessionUser, plan } = res.locals;
 
     const environments = await environmentService.getEnvironmentsByAccountId(sessionUser.account_id);
+    if (environments.isErr()) {
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to retrieve environments' } });
+        return;
+    }
     res.status(200).send({
         data: {
-            environments: environments.map((env) => {
-                return { name: env.name, is_production: env.is_production };
+            environments: environments.value.map((env) => {
+                return { id: env.id, account_id: sessionUser.account_id, name: env.name, is_production: env.is_production };
             }),
             version: NANGO_VERSION,
             baseUrl,
             debugMode: req.session.debugMode === true,
             gettingStartedClosed: sessionUser.getting_started_closed,
-            auditTrail: await canAccessAuditTrail(account.uuid, plan)
+            auditTrail: await canViewAuditTrail(req, plan)
         }
     });
 });

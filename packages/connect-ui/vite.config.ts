@@ -7,21 +7,49 @@ import svgr from 'vite-plugin-svgr';
 
 import type { Plugin, UserConfig } from 'vite';
 
-// Vite drops extra attributes when rewriting the entry script tag; re-attach the retry hook (see index.html).
-function basePathRetry(): Plugin {
-    const entryTag = '<script type="module" crossorigin';
+// The CDN's enforced `script-src 'self'` (set in nango-infra) blocks an inline script, and it serves
+// the root, where the recovery could never fire — so only base-path-capable builds get it.
+const withBasePathRecovery = process.env['CONNECT_UI_BASE_PATH_RECOVERY'] === 'true';
+
+const ENTRY_TAG = '<script type="module" crossorigin';
+
+// The content-type check separates a slashless base URL from a slashless depth-1 route
+// ("…/connect/integrations"), which already resolves correctly: an SPA fallback answers 200 for both.
+const RECOVERY_SCRIPT = `<script>
+            window.addEventListener(
+                'error',
+                function (event) {
+                    var el = event.target;
+                    if (!el || el.tagName !== 'SCRIPT' || !el.src || location.pathname.endsWith('/')) {
+                        return;
+                    }
+                    var withSlash = location.pathname + '/';
+                    fetch(new URL(el.getAttribute('src'), location.origin + withSlash), { method: 'HEAD' })
+                        .then(function (res) {
+                            if (res.ok && (res.headers.get('content-type') || '').indexOf('javascript') !== -1) {
+                                location.replace(withSlash + location.search + location.hash);
+                            }
+                        })
+                        .catch(function () {});
+                },
+                true
+            );
+        </script>`;
+
+function injectBasePathRecovery(): Plugin {
     return {
-        name: 'connect-ui:base-path-retry',
+        name: 'connect-ui:base-path-recovery',
         apply: 'build',
         transformIndexHtml: {
             order: 'post',
             handler: (html) => {
-                if (!html.includes(entryTag)) {
+                if (!html.includes(ENTRY_TAG)) {
                     throw new Error(
-                        `[connect-ui] base-path-retry: entry script tag "${entryTag}" not found in built index.html — Vite changed its output shape, update the marker`
+                        `[connect-ui] base-path-recovery: entry script tag "${ENTRY_TAG}" not found in built index.html — Vite changed its output shape, update the marker`
                     );
                 }
-                return html.replace(entryTag, `${entryTag} onerror="__nangoBasePathRetry()"`);
+                // Before the entry tag, so the listener is registered when that script fails.
+                return html.replace(ENTRY_TAG, `${RECOVERY_SCRIPT}\n      ${ENTRY_TAG}`);
             }
         }
     };
@@ -30,9 +58,9 @@ function basePathRetry(): Plugin {
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
     // Relative base so the prebuilt bundle can be served under any path. Requires a trailing slash
-    // on the document URL (retried via index.html) and depth-1 routes. Dev stays at root.
+    // on the document URL and depth-1 routes. Dev stays at root.
     base: command === 'build' ? './' : '/',
-    plugins: [react(), svgr(), tailwindcss(), basePathRetry()] as UserConfig['plugins'],
+    plugins: [react(), svgr(), tailwindcss(), ...(withBasePathRecovery ? [injectBasePathRecovery()] : [])] as UserConfig['plugins'],
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src')

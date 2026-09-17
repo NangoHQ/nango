@@ -5,7 +5,7 @@ import db from '@nangohq/database';
 import { seeders, updatePlan } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
+import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../../utils/tests.js';
 
 import type { BillingCustomer } from '@nangohq/types';
 
@@ -52,22 +52,24 @@ describe(`GET ${route}`, () => {
         });
 
         it('should enforce env query param', async () => {
-            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const { user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
             const res = await api.fetch(route, {
                 method: 'GET',
-                token: apiKey.secret,
+                session,
                 // @ts-expect-error missing env on purpose
                 query: {}
             });
 
-            shouldRequireQueryEnv(res);
+            shouldRequireSessionEnv(res);
         });
 
         it('should reject extra params in query', async () => {
-            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const { user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
             const res = await api.fetch(route, {
                 method: 'GET',
-                token: apiKey.secret,
+                session,
                 // @ts-expect-error extra query param on purpose
                 query: { env: 'dev', extra: 'param' }
             });
@@ -80,10 +82,11 @@ describe(`GET ${route}`, () => {
 
     describe('Accounts with no Orb customer', () => {
         it('should report nothing overdue without calling Orb', async () => {
-            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            const { plan, user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: null });
 
-            const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, token: apiKey.secret });
+            const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, session });
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
@@ -94,11 +97,12 @@ describe(`GET ${route}`, () => {
 
     describe('Success Cases', () => {
         it('should report an overdue invoice with the portal URL', async () => {
-            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            const { plan, user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
             getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: true }));
 
-            const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, token: apiKey.secret });
+            const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, session });
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
@@ -106,10 +110,11 @@ describe(`GET ${route}`, () => {
         });
 
         it('should not fetch the customer when nothing is overdue', async () => {
-            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            const { plan, user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
 
-            const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, token: apiKey.secret });
+            const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, session });
 
             isSuccess(res.json);
             expect(res.json.data).toStrictEqual({ hasOverdue: false, portalUrl: null });
@@ -117,11 +122,12 @@ describe(`GET ${route}`, () => {
         });
 
         it('should still report overdue on a free plan, since a downgraded account can owe', async () => {
-            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            const { plan, user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
             await updatePlan(db.knex, { id: plan.id, name: 'free', orb_customer_id: 'orb_cust_123' });
             getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: true }));
 
-            const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, token: apiKey.secret });
+            const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, session });
 
             isSuccess(res.json);
             expect(res.json.data.hasOverdue).toBe(true);
@@ -130,11 +136,12 @@ describe(`GET ${route}`, () => {
 
     describe('Error Handling', () => {
         it('should return 500 if billing.getOverdueInvoices fails', async () => {
-            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            const { plan, user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
             getOverdueInvoicesSpy.mockResolvedValue(Err(new Error('Orb API error')));
 
-            const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, token: apiKey.secret });
+            const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, session });
 
             isError(res.json);
             expect(res.res.status).toBe(500);
@@ -142,12 +149,13 @@ describe(`GET ${route}`, () => {
         });
 
         it('should keep the warning when the customer fetch fails, dropping only the portal URL', async () => {
-            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            const { plan, user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
             getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: true }));
             getCustomerSpy.mockResolvedValue(Err(new Error('Orb API error')));
 
-            const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, token: apiKey.secret });
+            const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, session });
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);

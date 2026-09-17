@@ -13,6 +13,8 @@ The Management MCP server lets MCP-compatible clients manage Nango through tools
 
 ## Connect
 
+For step-by-step installation instructions for specific coding agents, like Claude Code, Cursor, Codex, VS Code, Pi, and OpenCode, see the [coding agent setup guide](/getting-started/coding-agent-setup#management-mcp-server-beta).
+
 The server uses the Streamable HTTP transport at:
 
 ```text
@@ -28,12 +30,33 @@ Configure your MCP client to send a Nango API key as a Bearer token:
 Manage API keys in **Environment Settings > API Keys** in the Nango UI. The API key determines which Nango environment the client can access. To limit what the MCP client can do, you can [scope down the API key](/reference/backend/http-api/api-keys#scopes) to only the tools it needs. The required scope for each tool is listed below.
 
 <Note>
-    The `environment:mcp` scope is not required for Management MCP tools. That scope is used by the separate [action-function MCP server](/guides/functions/tool-calling#mcp-server), which exposes enabled action functions as tools.
+    The `environment:mcp` scope is not required for Management MCP tools.
 </Note>
 
 Keep the API key server-side and only configure it in MCP clients you trust. Do not expose it in client-side code, logs, or URLs.
 
 ## Tools
+
+### Documentation
+
+Use the Documentation tools to search the Nango documentation and read complete pages from Mintlify's virtual documentation filesystem. Start with `docs_search` for broad or conceptual queries, then use `docs_query_filesystem` to read a relevant `.mdx` path or perform an exact text search.
+
+These tools require a valid Management MCP API key but no additional environment operation scope. If Mintlify rate-limits a request, the tool error points to the public Nango documentation MCP at `https://nango.dev/docs/mcp` so you can connect to it directly.
+
+| Tool                    | Description                                                               | Required API key scope |
+| ----------------------- | ------------------------------------------------------------------------- | ---------------------- |
+| `docs_search`           | Search the Nango documentation and return contextual snippets and links. | None                   |
+| `docs_query_filesystem` | Read and query Mintlify's virtual Nango documentation filesystem.         | None                   |
+
+### Providers
+
+Use the Provider tools to inspect the public provider catalog. Set `include_templates` to `true` to include the provider's available function templates in the result.
+
+These tools require a valid Management MCP API key but no additional environment operation scope.
+
+| Tool            | Description                                                        | Required API key scope |
+| --------------- | ------------------------------------------------------------------ | ---------------------- |
+| `providers_get` | Get one provider and optionally include its function templates.    | None                   |
 
 ### Connect sessions
 
@@ -64,6 +87,27 @@ Use the Connections tools to inspect connections in the authenticated Nango envi
 | `connections_list` | List and filter connections.                                                                                                            | `environment:connections:list` or `environment:connections:list_credentials` |
 | `connections_get`  | Get a connection and its current credential state. Credential access and refresh flags require `read_credentials` and may rotate credential material. | `environment:connections:read` or `environment:connections:read_credentials` |
 
+### Actions
+
+Use the Actions tool to trigger an action function synchronously for a connection. Provide the integration ID, connection ID, and action name. The JSON input is optional. The tool returns the action's JSON result in the `data` field.
+
+<Warning>
+    Expect the MCP request to time out within 90 seconds. This does not cancel the action function, which may continue running for up to 15 minutes. After a timeout, the tool cannot return the result or an action ID, and retrying starts another execution. When the action supports it, use input parameters that limit the amount of data processed to keep execution within the MCP timeout.
+</Warning>
+
+| Tool              | Description                                                    | Required API key scope          |
+| ----------------- | -------------------------------------------------------------- | ------------------------------- |
+| `actions_trigger` | Trigger an action function synchronously for a connection.     | `environment:actions:execute`   |
+
+### Syncs
+
+Use the Sync tools to set sync state or trigger syncs for an integration in the authenticated Nango environment. You can optionally limit either operation to one connection and select named sync variants. Triggering can run a full reset and clear existing synced records.
+
+| Tool              | Description                                                                    | Required API key scope      |
+| ----------------- | ------------------------------------------------------------------------------ | --------------------------- |
+| `syncs_set_state` | Set one or more syncs to `started` or `paused`.                                  | `environment:syncs:execute` |
+| `syncs_trigger`   | Trigger one or more syncs, optionally with a full reset and/or cache clear.    | `environment:syncs:execute` |
+
 ### Proxy requests
 
 Use the Proxy tool to make authenticated HTTP requests to a provider API through an existing connection. The tool supports `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`, along with query parameters, headers, request bodies, base URL overrides, and up to 5 retries. It returns the provider response status, headers, and body.
@@ -76,11 +120,14 @@ The tool accepts JSON and UTF-8 text responses up to 5 MB (5,000,000 bytes). Uns
 
 ### Functions
 
-Use the Functions tools to inspect functions deployed to an integration in the authenticated Nango environment.
+Use the Functions tools to inspect and deploy functions in the authenticated Nango environment. `deploy_function` and `deploy_template` start distinct deployment paths. Use `get_deployment_status` to check whether a deployment has finished.
 
-| Tool             | Description                                                                    | Required API key scope        |
-| ---------------- | ------------------------------------------------------------------------------ | ----------------------------- |
-| `functions_list` | List and filter deployed syncs, actions, and on-event scripts by integration. | `environment:functions:list` |
+| Tool                    | Description                                                                    | Required API key scope        |
+| ----------------------- | ------------------------------------------------------------------------------ | ----------------------------- |
+| `functions_list`        | List and filter deployed syncs, actions, and on-event scripts by integration. | `environment:functions:list` |
+| `deploy_function`       | Start a code function deployment.                                              | `environment:deploy`          |
+| `deploy_template`       | Deploy a function template.                                                    | `environment:deploy`          |
+| `get_deployment_status` | Retrieve a deployment's current status and result.                             | `environment:deploy`          |
 
 ### Logs
 

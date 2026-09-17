@@ -1,7 +1,7 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTriggerDefinition } from '../function/config.js';
-import type { DeployedNangoFunction, FunctionType, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
+import type { FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
@@ -235,6 +235,20 @@ export type PostFunctionDeploymentResult = ApiEndpoint<{
 
 export type FunctionInvocationType = 'wait' | 'no_wait';
 
+export type FunctionInvocationErrorCode =
+    | 'function_failed'
+    | 'server_error'
+    | 'connection_not_found'
+    | 'function_not_found'
+    | 'function_disabled'
+    | 'validation_error'
+    | 'invalid_invocation';
+
+// Function output can be any json value or `{ id, statusUrl }`.
+// ApiEndpoint definition is not flexible enough to support any json value.
+// TODO: fix ApiEndpoint definition to support any json value
+type FunctionInvocationSuccess = any;
+
 export type PostFunctionInvocation = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
@@ -247,8 +261,17 @@ export type PostFunctionInvocation = ApiEndpoint<{
         invocation_type: FunctionInvocationType;
         options?: Record<string, unknown> | undefined;
     };
-    Error: ApiError<'not_implemented' | 'connection_not_found' | 'unknown_function' | 'function_disabled' | 'validation_error' | 'invalid_invocation'>;
-    Success: Record<string, unknown>;
+    Error: ApiError<FunctionInvocationErrorCode>;
+    Success: FunctionInvocationSuccess;
+}>;
+
+export type GetFunctionInvocation = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/functions/invocations/:id';
+    Params: { id: string };
+    Error: ApiError<'invalid_uri_params' | 'not_found' | 'function_failed' | 'server_error'>;
+    Success: FunctionInvocationSuccess;
 }>;
 
 // Shared between the private and public function-management endpoints. The two surfaces differ only in auth,
@@ -261,12 +284,12 @@ export interface FunctionListFilters {
 }
 
 export interface FunctionListSuccess {
-    data: DeployedNangoFunction[];
+    data: ListedNangoFunction[];
     pagination: { total: number; page: number; limit: number };
 }
 
-export interface DeployedFunctionSuccess {
-    data: DeployedNangoFunction;
+export interface ListedFunctionSuccess {
+    data: ListedNangoFunction;
 }
 
 export interface FunctionDeletionSuccess {
@@ -292,7 +315,7 @@ export type GetIntegrationFunction = ApiEndpoint<{
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
     Querystring: { env: string; type?: FunctionType };
     Params: { providerConfigKey: string; functionName: string };
-    Success: DeployedFunctionSuccess;
+    Success: ListedFunctionSuccess;
 }>;
 
 export type DeleteIntegrationFunction = ApiEndpoint<{
@@ -330,7 +353,7 @@ export type GetPublicIntegrationFunction = ApiEndpoint<{
     Path: '/integrations/:uniqueKey/functions/:name';
     Querystring: { type?: FunctionType };
     Params: { uniqueKey: string; name: string };
-    Success: DeployedFunctionSuccess;
+    Success: ListedFunctionSuccess;
 }>;
 
 export type DeletePublicIntegrationFunction = ApiEndpoint<{

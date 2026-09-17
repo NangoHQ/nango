@@ -15,6 +15,7 @@
     },
     "dependencies": {
         "@nangohq/feature-flags": "file:../feature-flags",
+        "@nangohq/internal-auth": "file:../internal-auth",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/scheduler": "file:../scheduler",
         "@nangohq/utils": "file:../utils",

@@ -1,0 +1,49 @@
+---
+title: 'Set up MEDITECH Greenfield with Nango'
+sidebarTitle: 'MEDITECH Greenfield Setup'
+description: 'Register an OAuth client with MEDITECH Greenfield and connect it to Nango'
+---
+
+This guide shows you how to obtain an OAuth client (Client ID & Client Secret) from MEDITECH to use with Nango. MEDITECH doesn't offer a self-serve OAuth app console — a member of the Greenfield support team provisions your client manually, over a scheduled call.
+
+<Steps>
+    <Step title="Submit the Greenfield Workspace registration form">
+    Fill out the [Greenfield Workspace registration form](https://gf-ifiller.meditech.com/iFiller/iFiller.jsp?fref=ab6de264-240a-4754-8ede-2b72dafb8272). You'll get immediate access to Greenfield's documentation resources.
+    </Step>
+    <Step title="Sign the Greenfield EULA">
+    A member of the Greenfield support team emails you a welcome packet with instructions for executing the Greenfield End-User License Agreement (EULA). Complete this before you can access the workspace.
+    </Step>
+    <Step title="Set up your Google ID">
+    Greenfield Workspace access requires a Google account: it's the identity provider for the [Greenfield Portal](https://greenfield.meditech.com) and its documentation, and it links your test patients and OAuth flows in the sandbox. If your work email differs from your Google ID, provide MEDITECH both — the email is also needed for Jira Service Desk access.
+
+    <Note>If you have trouble signing in with your registered Google ID or can't access the portal, email [greenfieldinfo@meditech.com](mailto:greenfieldinfo@meditech.com). This address is for access issues only.</Note>
+    </Step>
+    <Step title="Request your OAuth client">
+    Provide the Greenfield support team with your redirect/callback URI: `https://api.nango.dev/oauth/callback`. They'll schedule a brief call to hand you your **Client ID** and **Client Secret** — this isn't issued automatically through the portal.
+    </Step>
+</Steps>
+
+Store both values securely. You'll enter them once when configuring the MEDITECH Greenfield integration in Nango, not per connection.
+
+<Note>
+If you'd rather let each end user bring their own MEDITECH OAuth client instead of using the one configured on the integration, create the Connect Session with empty `oauth_client_id_override` and `oauth_client_secret_override` values. Connect UI then shows Client ID and Client Secret as fields the end user fills in themselves. See [Create a connect session](/reference/backend/backend-sdk/node#create-a-connect-session) for the exact syntax.
+</Note>
+
+## Going to production
+
+The Greenfield Workspace only gives you sandbox access with synthetic test patients — it isn't a path to a live healthcare organization's data. Each MEDITECH customer sets their own policies for connecting third-party applications to their system, so there's no single MEDITECH-wide production onboarding process. To go live, contact the specific healthcare organization you want to integrate with; they in turn work with MEDITECH to register your client, since MEDITECH registers every application on the customer's behalf — vendors never self-register.
+
+As part of that request, MEDITECH asks for the following (per MEDITECH's Client Authentication requirements):
+
+- **Client Name and Description** — a short, user-facing name (≤50 characters) and a 1-2 sentence functional description of what your app does. These are shown to end users in Expanse's consent dialogs.
+- **Client type: Confidential**. Nango's backend holds the Client Secret and performs the token exchange on behalf of your app, so it's a confidential client — not a public client (browser/mobile apps with no secret storage) and not a Backend Services client (non-interactive system-to-system access with Private Key JWT, which doesn't apply here since end users authenticate interactively).
+- **Authorization model: Authorization Code with OpenID Connect (OIDC)** — the interactive, user-facing model, since a provider or patient signs in through MEDITECH's login. Don't request the Backend Services (Private Key JWT) or legacy Client Credentials (client secret) models — MEDITECH restricts those to non-interactive and internal/legacy use, not vendor integrations.
+- **Redirect URI**: `https://api.nango.dev/oauth/callback`, registered exactly (no wildcards). Production requires an HTTPS redirect URI — `localhost` and other non-HTTPS URIs are only permitted in the Greenfield sandbox and on-site TEST environments.
+- **Requested scopes** — the SMART on FHIR scopes your workflow needs (e.g. `patient/*.read`), following least privilege.
+
+
+End users authenticate with the credentials their healthcare organization already uses to sign into MEDITECH Expanse (via that organization's own identity provider — ADFS, Azure AD/Entra ID, Okta, etc.). MEDITECH doesn't manage those accounts or enforce MFA itself; that's entirely up to the organization's identity provider.
+
+For more details, see MEDITECH's [Greenfield Workspace resources](https://ehr.meditech.com/ehr-solutions/greenfield-workspace-resources).
+
+Once you have your Client ID and Client Secret, see the [connect guide](/api-integrations/greenfield-meditech/connect) for how to find the matching Authorization Host and FHIR API host and finish connecting in Nango.

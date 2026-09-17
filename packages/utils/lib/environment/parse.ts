@@ -206,6 +206,10 @@ const ENVS_SHAPE = z.object({
     // `/` keeps requests on whichever host served the dashboard (same-origin).
     NANGO_DASHBOARD_API_URL: z.url().or(z.literal('/')).optional(),
     NANGO_MANAGEMENT_MCP_SERVER_URL: z.url().optional(),
+    NANGO_MANAGEMENT_MCP_OAUTH_ENABLED: z.stringbool().optional().default(false),
+    NANGO_OAUTH_SERVER_BASE_URL: z.url().optional(),
+    NANGO_OAUTH_SERVER_COOKIE_KEYS: z.string().optional(),
+    NANGO_OAUTH_SERVER_JWKS: z.string().optional(),
     NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional().default(200),
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
@@ -250,6 +254,18 @@ const ENVS_SHAPE = z.object({
                 return z.NEVER;
             }
         }),
+    NANGO_PROXY_MAX_RETRY_WAIT_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(10 * 60 * 1000), // 10 minutes
+    NANGO_WEBHOOK_MAX_RETRY_WAIT_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(10 * 60 * 1000), // 10 minutes
     // Outbound URL policy (JSON), consumed by @nangohq/egress for proxy/webhook/uncontrolledFetch paths.
     NANGO_OUTBOUND_URL_POLICY: outboundUrlPolicySchema('NANGO_OUTBOUND_URL_POLICY'),
     // Outbound URL policy overlay for OAuth/token flows. Applied on top of NANGO_OUTBOUND_URL_POLICY,
@@ -279,6 +295,7 @@ const ENVS_SHAPE = z.object({
     CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
+    CRON_MANAGE_GROWTH_ADDONS_EVERY_MIN: z.coerce.number().optional().default(60),
     CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES: z.coerce.number().optional().default(0),
     // Billing-events S3 export cron (hourly). Value is the minute-of-the-hour the
     // cron fires on (0–59). -1 (default) disables the cron entirely. 15 gives
@@ -378,6 +395,10 @@ const ENVS_SHAPE = z.object({
             },
             {
                 groupKeyPattern: 'action*',
+                maxConcurrency: 200
+            },
+            {
+                groupKeyPattern: 'function*',
                 maxConcurrency: 200
             },
             {
@@ -503,22 +524,8 @@ const ENVS_SHAPE = z.object({
     ORB_API_KEY: z.string().optional(),
     ORB_WEBHOOKS_SECRET: z.string().optional(),
     ORB_MAX_RETRIES: z.coerce.number().optional().default(3),
-    ORB_RETRY_MAX_ATTEMPTS: z.coerce.number().optional().default(3),
-    ORB_RETRY_INITIAL_DELAY_MS: z.coerce.number().optional().default(10_000),
-    BILLING_INGEST_BATCH_SIZE: z.coerce.number().optional().default(500),
-    BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(5_000),
-    BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(100_000),
-    BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
     BILLING_EVENTS_S3_BUCKET: z.string().optional(),
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
-    // Temporary. ISO 8601 timestamp at which the S3-fed pipeline becomes
-    // authoritative for billing. Before this instant, S3 events ship as
-    // "<name>_s3" shadow and HTTP events ship canonical (unsuffixed). At
-    // and after this instant, the two swap roles — HTTP events pick up
-    // the "_http" suffix and S3 events become canonical. Unset (or set
-    // to a future date) to defer or roll back the cutover. Remove once
-    // the HTTP emission path is retired.
-    BILLING_EVENTS_CUTOVER_AT: z.string().datetime().optional(),
     BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
     // DLQ bucket Orb writes to when it can't ingest a billing event. Watched by the
     // metering DLQ monitor cron (CRON_BILLING_EVENTS_S3_DLQ_MONITOR_MINUTE).
@@ -545,11 +552,19 @@ const ENVS_SHAPE = z.object({
     AWS_REGION: z.string().optional(),
     AWS_BUCKET_NAME: z.string().optional(),
     AWS_ACCESS_KEY_ID: z.string().optional(),
+    AWS_SECRET_ACCESS_KEY: z.string().optional(),
 
     AWS_INTEGRATIONS_ACCESS_KEY_ID: z.string().optional(),
     AWS_INTEGRATIONS_SECRET_ACCESS_KEY: z.string().optional(),
     AWS_INTEGRATIONS_REGION: z.string().optional(),
     AWS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
+
+    GCS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
+
+    AZURE_INTEGRATIONS_ACCOUNT_NAME: z.string().optional(),
+    AZURE_INTEGRATIONS_CONTAINER_NAME: z.string().optional(),
+    AZURE_INTEGRATIONS_ACCOUNT_KEY: z.string().optional(),
+    OBJECT_STORE_DELETE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(16),
 
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
@@ -652,6 +667,7 @@ const ENVS_SHAPE = z.object({
     // KMS-wrapped alternative to NANGO_ENCRYPTION_KEY (mutually exclusive, enforced at DEK load).
     NANGO_ENCRYPTION_KEY_WRAPPED: z.string().optional(),
     NANGO_KMS_KEY_ARN: z.string().optional(),
+    NANGO_GCP_KMS_KEY_NAME: z.string().optional(), // GCP-KMS alternative wrapping-key identifier
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
     NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),
@@ -733,6 +749,16 @@ const ENVS_SHAPE = z.object({
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
 
+    // Internal service auth (orchestrator / jobs). All optional so a default image is a no-op.
+    NANGO_INTERNAL_AUTH_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_SIGNING_KEY: z.string().optional(),
+    NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY: z.string().optional(),
+    NANGO_INTERNAL_AUTH_REQUIRED: z
+        .stringbool({ truthy: ['true'], falsy: ['false'] })
+        .optional()
+        .default(false),
+
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
 
@@ -742,6 +768,17 @@ const ENVS_SHAPE = z.object({
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
+    // The following are only considered in local, self-hosted and BYOC deployments that configure
+    // Postgres storage for the audit trail. The URL can point to the main database.
+    NANGO_AUDIT_POSTGRES_DATABASE_URL: z.url().optional(),
+    NANGO_AUDIT_POSTGRES_POOL_MAX: z.coerce.number().optional().default(5),
+    NANGO_AUDIT_POSTGRES_SSL: z.stringbool().optional().default(false),
+    NANGO_AUDIT_POSTGRES_RETENTION_DAYS: z.coerce.number().int().positive().optional().default(365),
+    NANGO_AUDIT_POSTGRES_PARTITION_INTERVAL_MS: z.coerce
+        .number()
+        .positive()
+        .max(6 * 3600 * 1000) // capped so tomorrow's partition is always created before midnight reaches it
+        .default(1 * 3600 * 1000),
     // .int() because these go straight into SQS request fields, which reject a fractional value outright.
     // One poll loop on purpose. Long polling returns as soon as a single message is available, so a batch
     // only grows while an insert is in flight — extra loops would be parked in ReceiveMessage and take those
@@ -902,6 +939,9 @@ const ENVS_SHAPE = z.object({
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
     NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),
+    NANGO_TASK_DISPATCH_RATE_LIMIT_THROTTLE_MAX_MS: z.coerce.number().min(0).optional().default(60_000),
+    NANGO_TASK_DISPATCH_DEFER_JITTER_RATIO: z.coerce.number().min(0).max(1).optional().default(0.2),
+    NANGO_TASK_DISPATCH_TASK_CAP_DEFER_MS: z.coerce.number().min(0).optional().default(15_000),
 
     // Sandboxes
     SANDBOX_PROVIDER: z.enum(['e2b', 'docker', 'agentcore']).optional(),

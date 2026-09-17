@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import { AuditClient } from './audit.js';
+import { AuditClient } from './client.js';
 
 import type { AuditReader, AuditWriter } from './store.js';
 import type { ApiAuditTrailEvent } from '@nangohq/types';
@@ -12,6 +12,7 @@ const event = (n: number): ApiAuditTrailEvent => ({
     version: '2026-07-16',
     occurredAt: `2026-01-0${n}T00:00:00.000Z`,
     accountId: 42,
+    scope: 'environment',
     environment: null,
     actor: { type: 'user', id: '5' },
     resource: 'connection',
@@ -25,6 +26,7 @@ function readerServing(pages: ApiAuditTrailEvent[][]): { reader: AuditReader; li
     const limits: number[] = [];
     let call = 0;
     const reader: AuditReader = {
+        count: () => Promise.reject(new Error('exportCsv must not count')),
         list: ({ limit }) => {
             limits.push(limit);
             const events = pages[call] ?? [];
@@ -97,7 +99,10 @@ describe('AuditClient.exportCsv', () => {
     });
 
     it('propagates a read failure instead of returning a partial document', async () => {
-        const reader: AuditReader = { list: vi.fn().mockResolvedValue(Err('failed_to_list_audit_trail_events')) };
+        const reader: AuditReader = {
+            count: vi.fn().mockResolvedValue(Ok({ value: 0, relation: 'eq' })),
+            list: vi.fn().mockResolvedValue(Err('failed_to_list_audit_trail_events'))
+        };
         const result = await clientFor(reader).exportCsv({ accountId: 42, maxRows: 10, pageSize: 5 });
 
         expect(result.isErr()).toBe(true);

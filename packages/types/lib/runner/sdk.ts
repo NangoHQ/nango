@@ -11,7 +11,7 @@ export interface SdkLogger {
 
 export type ConflictResolutionMode = 'IN_MEMORY' | 'DISTRIBUTED';
 
-export type ScriptType = 'sync' | 'action' | 'webhook' | 'on-event';
+export type ScriptType = 'function' | 'sync' | 'action' | 'webhook' | 'on-event';
 
 export interface NangoProps {
     scriptType: ScriptType;

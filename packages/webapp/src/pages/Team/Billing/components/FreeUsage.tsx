@@ -7,7 +7,7 @@ import { useStore } from '@/store';
 import { useSelectedMonth } from '../useSelectedMonth';
 import { toggleExpandedMetric } from './expandedMetrics';
 import { MonthSelector } from './MonthSelector';
-import { USAGE_METRIC_LABELS, USAGE_METRICS } from './usageMetrics';
+import { USAGE_METRIC_LABELS } from './usageMetrics';
 import { UsageTable } from './UsageTable';
 
 import type { UsageMetric } from '@nangohq/types';
@@ -18,9 +18,9 @@ import type { UsageMetric } from '@nangohq/types';
  * month stepper in the table header drives the whole table (every row's used/% and the drill-in
  * charts): the live gauge for the current month, that month's usage for past months.
  */
-export const FreeUsage: React.FC = () => {
+export const FreeUsage: React.FC<{ metrics: readonly UsageMetric[] }> = ({ metrics }) => {
     const env = useStore((state) => state.env);
-    const { selectedMonth } = useSelectedMonth();
+    const { selectedMonth, isCurrentMonth } = useSelectedMonth();
 
     const timeframe = useMemo(() => {
         const start = new Date(Date.UTC(selectedMonth.getUTCFullYear(), selectedMonth.getUTCMonth(), 1));
@@ -31,9 +31,6 @@ export const FreeUsage: React.FC = () => {
     // The caps gauge (plans/usage) is live current-period. For a past month, show that month's usage
     // from the billing series instead — counters: the month total; connections/records: the point-in-time
     // value. The cap is constant, so used / limit / % stay meaningful across months.
-    const now = new Date();
-    const isCurrentMonth = selectedMonth.getUTCFullYear() === now.getUTCFullYear() && selectedMonth.getUTCMonth() === now.getUTCMonth();
-
     const { data: caps, isLoading: capsLoading, error: capsError } = useApiGetUsage(env);
     // avgPerDay: connections/records come back as the concurrent daily count (not the billing
     // running-average), so their cap line is meaningful. No-op for the counter metrics.
@@ -50,7 +47,7 @@ export const FreeUsage: React.FC = () => {
         return <CriticalErrorAlert message="Error loading usage" />;
     }
 
-    const rows = USAGE_METRICS.map((metric) => {
+    const rows = metrics.map((metric) => {
         const cap = caps?.data[metric];
         const used = isCurrentMonth ? (cap?.usage ?? 0) : (usage?.data.usage[metric]?.total ?? 0);
         return {
@@ -75,7 +72,7 @@ export const FreeUsage: React.FC = () => {
                 env={env}
                 timeframe={timeframe}
                 chartMode="cumulative"
-                showLimits
+                variant="caps"
                 isRowOpen={(metric) => expanded.includes(metric)}
                 onRowOpenChange={(metric, open) => setRowOpen(metric, open)}
             />

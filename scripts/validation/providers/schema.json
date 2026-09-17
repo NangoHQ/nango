@@ -498,6 +498,9 @@
                 "registration_url": {
                     "type": "string"
                 },
+                "mcp_server_url": {
+                    "type": "string"
+                },
                 "registration_params": {
                     "type": "object",
                     "additionalProperties": {

@@ -58,12 +58,17 @@ export interface OperationAdmin {
 }
 export interface OperationWebhook {
     type: 'webhook';
-    action: 'incoming' | 'forward' | 'sync' | 'connection_create' | 'connection_refresh';
+    action: 'incoming' | 'forward' | 'sync' | 'connection_create' | 'connection_refresh' | 'connection_delete';
 }
 
 export interface OperationDeploy {
     type: 'deploy';
     action: 'prebuilt' | 'custom';
+}
+
+export interface OperationAgentSession {
+    type: 'agent_session';
+    action: 'create' | 'terminate' | 'tool_search';
 }
 
 export type OperationList =
@@ -75,7 +80,8 @@ export type OperationList =
     | OperationOnEvents
     | OperationDeploy
     | OperationAuth
-    | OperationAdmin;
+    | OperationAdmin
+    | OperationAgentSession;
 /**
  * Who triggered an operation
  */

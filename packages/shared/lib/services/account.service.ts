@@ -162,14 +162,17 @@ class AccountService {
             return null;
         }
 
-        // Find eligible accounts with an active user from the same domain and an active administrator,
-        // excluding the user's current team. Prefer paid accounts, then accounts with more active members,
+        // Find eligible accounts with an active user from the same domain and an active administrator
+        // whose own email is on that domain, excluding the user's current team. Rank by how many active
+        // users share the domain first, since a single user from the domain is a weak signal on its own
+        // (contractors, ex-employees). Then prefer paid accounts, then accounts with more active members,
         // and finally the lowest account ID for a stable tie-breaker.
         const account = await db.knex
             .with('candidate_account', (qb) => {
                 qb.from<DBTeam>('_nango_accounts as account')
                     .innerJoin<DBUser>('_nango_users as same_domain_user', 'same_domain_user.account_id', 'account.id')
-                    .distinct('account.id', 'account.name')
+                    .select('account.id', 'account.name')
+                    .count('* as domain_members')
                     .where('account.id', '!=', currentAccountId)
                     .where('same_domain_user.suspended', false)
                     .whereRaw("LOWER(SPLIT_PART(same_domain_user.email, '@', 2)) = ?", [emailDomain])
@@ -178,12 +181,15 @@ class AccountService {
                             .from<DBUser>('_nango_users as administrator')
                             .whereRaw('administrator.account_id = account.id')
                             .where('administrator.suspended', false)
-                            .where('administrator.role', 'administrator');
-                    });
+                            .where('administrator.role', 'administrator')
+                            .whereRaw("LOWER(SPLIT_PART(administrator.email, '@', 2)) = ?", [emailDomain]);
+                    })
+                    .groupBy('account.id', 'account.name');
             })
             .from('candidate_account')
             .leftJoin<DBPlan>('plans', 'plans.account_id', 'candidate_account.id')
             .select<Pick<DBTeam, 'id' | 'name'>>('candidate_account.id', 'candidate_account.name')
+            .orderBy('candidate_account.domain_members', 'desc')
             .orderByRaw("CASE WHEN plans.name IS NOT NULL AND plans.name NOT IN ('free', 'free-uncapped') THEN 1 ELSE 0 END DESC")
             .orderByRaw(`(SELECT COUNT(*) FROM _nango_users AS member WHERE member.account_id = candidate_account.id AND member.suspended = false) DESC`)
             .orderBy('candidate_account.id', 'asc')
@@ -567,6 +573,7 @@ class AccountService {
                     pending_secret: DBAPISecret | null;
                     auth_scopes: string[] | null;
                     auth_api_key_id: number;
+                    auth_api_key_uuid: string;
                     sandbox_signing_secret: string | null;
                     sandbox_signing_secret_iv: string | null;
                     sandbox_signing_secret_tag: string | null;
@@ -576,6 +583,7 @@ class AccountService {
                     WITH matched_customer_key AS (
                         SELECT
                             ck.id,
+                            ck.uuid,
                             ckr.entity_id AS environment_id,
                             ck.scopes,
                             ck.sandbox_signing_secret,
@@ -597,6 +605,7 @@ class AccountService {
                         row_to_json(pending_secret.*) AS pending_secret,
                         matched_customer_key.scopes AS auth_scopes,
                         matched_customer_key.id AS auth_api_key_id,
+                        matched_customer_key.uuid AS auth_api_key_uuid,
                         matched_customer_key.sandbox_signing_secret,
                         matched_customer_key.sandbox_signing_secret_iv,
                         matched_customer_key.sandbox_signing_secret_tag
@@ -644,19 +653,22 @@ class AccountService {
 
             const defaultSecret = getEncryptionManager().decryptAPISecret(row.default_secret);
             const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;
+            const scopes = buildSandboxApiKeyScopes({ purpose: verified.purpose, parentScopes: row.auth_scopes });
             const auth =
                 verified.purpose === 'dryrun'
                     ? {
                           source: 'sandbox_token' as const,
-                          scopes: buildSandboxApiKeyScopes(row.auth_scopes),
+                          scopes,
                           apiKeyId: row.auth_api_key_id,
+                          apiKeyUuid: row.auth_api_key_uuid,
                           purpose: verified.purpose,
                           dryrunId: verified.dryrun_id
                       }
                     : {
                           source: 'sandbox_token' as const,
-                          scopes: buildSandboxApiKeyScopes(row.auth_scopes),
+                          scopes,
                           apiKeyId: row.auth_api_key_id,
+                          apiKeyUuid: row.auth_api_key_uuid,
                           purpose: verified.purpose,
                           deploymentId: verified.deployment_id
                       };
@@ -728,12 +740,13 @@ class AccountService {
                 environment_ids: number[];
                 auth_scopes: string[] | null;
                 auth_api_key_id: number;
+                auth_api_key_uuid: string;
                 auth_display_name: string;
             }[];
         }>(
             `
                 WITH matched_customer_key AS (
-                    SELECT ck.id, ck.account_id, ck.scopes, ck.display_name
+                    SELECT ck.id, ck.uuid, ck.account_id, ck.scopes, ck.display_name
                     FROM customer_keys ck
                     WHERE ck.hashed = ?
                       AND ck.key_type = 'api'
@@ -775,6 +788,7 @@ class AccountService {
                     matched_with_environments.environment_ids,
                     matched_with_environments.scopes AS auth_scopes,
                     matched_with_environments.id AS auth_api_key_id,
+                    matched_with_environments.uuid AS auth_api_key_uuid,
                     matched_with_environments.display_name AS auth_display_name
                 FROM matched_with_environments
                 JOIN _nango_accounts ON _nango_accounts.id = matched_with_environments.account_id
@@ -828,6 +842,7 @@ class AccountService {
             source: 'customer_key',
             scopes: row.auth_scopes ?? [],
             apiKeyId: row.auth_api_key_id,
+            apiKeyUuid: row.auth_api_key_uuid,
             apiKeyDisplayName: row.auth_display_name
         };
 

@@ -27,6 +27,7 @@ export async function update(
                 | 'on_sync_completion_always'
                 | 'on_sync_error'
                 | 'on_async_action_completion'
+                | 'on_connection_deletion'
             >
         >;
     }

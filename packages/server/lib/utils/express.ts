@@ -1,3 +1,4 @@
+import type { Principal } from '@nangohq/authz';
 import type { AgentSession, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser, InternalEndUser } from '@nangohq/types';
 
 // Types are historically loose so we need to fix them at some point
@@ -40,7 +41,9 @@ export interface RequestLocals {
     lang?: string;
     secret?: DBAPISecret;
     apiKeyPrincipal?: ApiKeyPrincipal;
+    principal?: Principal | null;
     apiKeyId?: number;
+    apiKeyUuid?: string;
     apiKeyDisplayName?: string;
     apiKeyAuthSource?: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
     sandboxTokenPurpose?: 'dryrun' | 'deploy';

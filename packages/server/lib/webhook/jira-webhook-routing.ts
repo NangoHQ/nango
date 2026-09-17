@@ -1,7 +1,7 @@
-import { createHmac, timingSafeEqual } from 'crypto';
-
 import { NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
+
+import { validateHmacSignature } from './signature.js';
 
 import type { InternalNango } from './internal-nango.js';
 import type { WebhookHandler } from './types.js';
@@ -12,19 +12,6 @@ function getOrigin(url: string): string | undefined {
     } catch {
         return undefined;
     }
-}
-
-function validate(secret: string, headerSignature: string, rawBody: string): boolean {
-    const calculatedSignature = `sha256=${createHmac('sha256', secret).update(rawBody).digest('hex')}`;
-
-    const calculatedBuffer = Buffer.from(calculatedSignature);
-    const headerBuffer = Buffer.from(headerSignature);
-
-    if (calculatedBuffer.length !== headerBuffer.length) {
-        return false;
-    }
-
-    return timingSafeEqual(calculatedBuffer, headerBuffer);
 }
 
 function extractBaseUrl(body: Record<string, any> | null | undefined): string | undefined {
@@ -56,7 +43,7 @@ async function routeEvent(nango: InternalNango, event: Record<string, any>): Pro
         return [];
     }
     const response = await nango.executeScriptForWebhooks({
-        body: event,
+        payload: event,
         webhookType: 'webhookEvent',
         connectionIdentifierValue: baseUrl,
         propName: 'baseUrl'
@@ -71,9 +58,11 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
         if (!signature) {
             return Err(new NangoError('webhook_missing_signature'));
         }
-        if (!validate(secret, signature, rawBody)) {
+        if (!validateHmacSignature({ secret, rawBody, signature, prefix: 'sha256=' })) {
             return Err(new NangoError('webhook_invalid_signature'));
         }
+    } else {
+        nango.markUnverified({ reason: 'jira_missing_webhook_secret' });
     }
 
     const connectionIds = await routeEvent(nango, body);

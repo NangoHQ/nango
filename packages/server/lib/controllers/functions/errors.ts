@@ -1,4 +1,5 @@
-import { stringifyError } from '@nangohq/utils';
+import { errorManager, NangoError } from '@nangohq/shared';
+import { report, stringifyError } from '@nangohq/utils';
 
 import type { FunctionErrorCode } from '@nangohq/types';
 import type { Response } from 'express';
@@ -44,6 +45,22 @@ export function sendStepError({ res, error, status }: { res: Response; error: un
             ...(normalized.payload !== undefined ? { payload: normalized.payload } : {})
         }
     });
+}
+
+export function sendFunctionFailure({ res, cause, message, errorToReport }: { res: Response; cause: unknown; message: string; errorToReport: unknown }): void {
+    const isUserFunctionFailure = cause instanceof NangoError && cause.type === 'function_execution_failure';
+    const isInternalFailure = !(cause instanceof NangoError) || cause.type === 'function_failure';
+
+    if (cause instanceof NangoError && !isUserFunctionFailure && !isInternalFailure) {
+        errorManager.errResFromNangoErr(res, cause);
+        return;
+    }
+
+    if (isInternalFailure) {
+        report(errorToReport);
+    }
+
+    res.status(500).send({ error: { code: 'function_failed', message } });
 }
 
 function normalizeError(error: unknown): {

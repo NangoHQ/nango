@@ -61,6 +61,37 @@ describe(`POST ${endpoint}`, () => {
         expect(res.res.status).toBe(400);
     });
 
+    it('should reject a deploy carrying a nango.yaml body with a migration guide link', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                debug: false,
+                flowConfigs: [],
+                nangoYamlBody: 'integrations:\n  google:\n    syncs: {}',
+                reconcile: false,
+                deployMode: 'all'
+            }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_body',
+                errors: [
+                    {
+                        code: 'custom',
+                        message:
+                            'The `nango.yaml` configuration file is no longer supported. See the migration guide to Zero YAML: https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml',
+                        path: ['nangoYamlBody']
+                    }
+                ]
+            }
+        });
+    });
+
     it('should reject models_json_schema missing definitions for declared models', async () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {

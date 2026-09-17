@@ -1,20 +1,24 @@
 import { randomUUID } from 'node:crypto';
 
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
+import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 
 import {
     createAgentSession,
     createAgentSessionToken,
+    endAgentSession,
+    expireAgentSessions,
     getAgentSession,
     getAgentSessionByToken,
     listExpiredAgentSessions,
     terminateAgentSession
 } from './agentSession.service.js';
 
+import type { LogContextOrigin } from '@nangohq/logs';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, DBEnvironment, DBTeam } from '@nangohq/types';
 
 const table = 'agent_sessions';
@@ -28,6 +32,10 @@ describe('agentSession service', () => {
         await keystore.migrate(db.knex);
     });
 
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     beforeEach(async () => {
         await db.knex(table).delete();
         const seed = await seeders.seedAccountEnvAndUser();
@@ -38,12 +46,15 @@ describe('agentSession service', () => {
     it('creates and retrieves an immutable session snapshot', async () => {
         const expiresAt = new Date(Date.now() + 60_000);
         const resolvedConnections = {
-            github: { connectionId: 'github-connection', tags: { endUser: 'customer-1' } },
-            slack: null
+            github: { integrationId: 'github', provider: 'github', connectionId: 'github-connection', internalConnectionId: 1, configId: 10 }
         } satisfies AgentSessionResolvedConnections;
         const compiledToolset = {
-            github: { pinned: ['create_issue'], searchable: ['get_issue'] },
-            slack: { pinned: [], searchable: ['send_message'] }
+            github: {
+                provider: 'github',
+                pinned: [{ name: 'create_issue', description: 'Create an issue' }],
+                searchable: [{ name: 'get_issue', description: 'Get an issue' }]
+            },
+            slack: { provider: 'slack', pinned: [], searchable: [{ name: 'send_message', description: 'Send a message' }] }
         } satisfies AgentSessionCompiledToolset;
 
         const created = (
@@ -52,7 +63,7 @@ describe('agentSession service', () => {
                 environmentId: environment.id,
                 resolvedConnections,
                 compiledToolset,
-                metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
+                metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
                 expiresAt
             })
         ).unwrap();
@@ -62,7 +73,7 @@ describe('agentSession service', () => {
             environmentId: environment.id,
             resolvedConnections,
             compiledToolset,
-            metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
             expiresAt,
             endedAt: null,
             endedReason: null
@@ -114,7 +125,7 @@ describe('agentSession service', () => {
             environmentId: other.env.id,
             resolvedConnections: {},
             compiledToolset: {},
-            metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
             expiresAt: new Date(Date.now() + 60_000)
         });
 
@@ -132,7 +143,7 @@ describe('agentSession service', () => {
             environmentId: environment.id,
             resolvedConnections: {},
             compiledToolset: {},
-            metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
             expiresAt: new Date(Date.now() + 60_000)
         });
 
@@ -146,26 +157,76 @@ describe('agentSession service', () => {
         const session = await createSession({ account, environment });
 
         const terminated = (
-            await terminateAgentSession(db.knex, {
+            await endAgentSession(db.knex, {
                 id: session.id,
                 accountId: account.id,
                 environmentId: environment.id,
                 reason: 'terminated'
             })
         ).unwrap();
-        expect(terminated.endedAt).toBeInstanceOf(Date);
-        expect(terminated.endedReason).toBe('terminated');
+        expect(terminated.alreadyEnded).toBe(false);
+        expect(terminated.session.endedAt).toBeInstanceOf(Date);
+        expect(terminated.session.endedReason).toBe('terminated');
 
         const retried = (
-            await terminateAgentSession(db.knex, {
+            await endAgentSession(db.knex, {
                 id: session.id,
                 accountId: account.id,
                 environmentId: environment.id,
                 reason: 'expired'
             })
         ).unwrap();
-        expect(retried.endedAt).toStrictEqual(terminated.endedAt);
-        expect(retried.endedReason).toBe('terminated');
+        expect(retried.alreadyEnded).toBe(true);
+        expect(retried.session.endedAt).toStrictEqual(terminated.session.endedAt);
+        expect(retried.session.endedReason).toBe('terminated');
+    });
+
+    it('records the terminated operation without a payload', async () => {
+        const session = await createSession({ account, environment });
+        const create = vi
+            .spyOn(logContextGetter, 'create')
+            .mockResolvedValue({ enrichOperation: vi.fn(), info: vi.fn(), success: vi.fn() } as unknown as LogContextOrigin);
+
+        (await terminateAgentSession({ account, environment, sessionId: session.id })).unwrap();
+
+        expect(create).toHaveBeenCalledWith({ operation: { type: 'agent_session', action: 'terminate' } }, { account, environment });
+    });
+
+    it('revokes the session token when the session is terminated', async () => {
+        const session = await createSession({ account, environment });
+        const { token } = (await createAgentSessionToken(db.knex, session)).unwrap();
+
+        (
+            await endAgentSession(db.knex, {
+                id: session.id,
+                accountId: account.id,
+                environmentId: environment.id,
+                reason: 'terminated'
+            })
+        ).unwrap();
+
+        const resolved = await getAgentSessionByToken(db.knex, token);
+        expect(resolved.isErr()).toBe(true);
+    });
+
+    it('revokes a token left behind by a session that was ended elsewhere', async () => {
+        const session = await createSession({ account, environment });
+        const { token } = (await createAgentSessionToken(db.knex, session)).unwrap();
+        await db.knex(table).where({ id: session.id }).update({ ended_at: db.knex.fn.now(), ended_reason: 'expired' });
+
+        const terminated = (
+            await endAgentSession(db.knex, {
+                id: session.id,
+                accountId: account.id,
+                environmentId: environment.id,
+                reason: 'terminated'
+            })
+        ).unwrap();
+        expect(terminated.alreadyEnded).toBe(true);
+        expect(terminated.session.endedReason).toBe('expired');
+
+        const resolved = await getAgentSessionByToken(db.knex, token);
+        expect(resolved.isErr()).toBe(true);
     });
 
     it('mints a token that resolves back to the session', async () => {
@@ -238,7 +299,7 @@ describe('agentSession service', () => {
         const expiredRecent = await createSession({ account, environment, expiresAt: new Date(Date.now() - 60 * 60 * 1000) });
         const active = await createSession({ account, environment, expiresAt: new Date(Date.now() + 60 * 60 * 1000) });
         (
-            await terminateAgentSession(db.knex, {
+            await endAgentSession(db.knex, {
                 id: expiredEnded.id,
                 accountId: account.id,
                 environmentId: environment.id,
@@ -254,7 +315,35 @@ describe('agentSession service', () => {
         expect(expired.map(({ id }) => id)).not.toContain(expiredEnded.id);
         expect(expired.map(({ id }) => id)).not.toContain(active.id);
     });
+
+    it('ends expired sessions and revokes their tokens', async () => {
+        const expired = await createSession({ account, environment, expiresAt: new Date(Date.now() + 300) });
+        const active = await createSession({ account, environment, expiresAt: new Date(Date.now() + 60_000) });
+        (await createAgentSessionToken(db.knex, expired)).unwrap();
+        (await createAgentSessionToken(db.knex, active)).unwrap();
+
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        expect(await expireAgentSessions(db.knex, { limit: 10 })).toBe(1);
+
+        const ended = (await getAgentSession(db.knex, { id: expired.id, accountId: account.id, environmentId: environment.id })).unwrap();
+        expect(ended.endedAt).not.toBeNull();
+        expect(ended.endedReason).toBe('expired');
+
+        expect(await keysFor(expired.id)).toBe(0);
+        expect(await keysFor(active.id)).toBe(1);
+
+        const stillActive = (await getAgentSession(db.knex, { id: active.id, accountId: account.id, environmentId: environment.id })).unwrap();
+        expect(stillActive.endedAt).toBeNull();
+
+        expect(await expireAgentSessions(db.knex, { limit: 10 })).toBe(0);
+    });
 });
+
+async function keysFor(sessionId: string): Promise<number> {
+    const keys = await db.knex.from(keystore.PRIVATE_KEYS_TABLE).where({ entity_type: 'agent_session', entity_uuid: sessionId });
+    return keys.length;
+}
 
 async function createSession({
     account,
@@ -271,7 +360,7 @@ async function createSession({
             environmentId: environment.id,
             resolvedConnections: {},
             compiledToolset: {},
-            metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
             expiresAt
         })
     ).unwrap();

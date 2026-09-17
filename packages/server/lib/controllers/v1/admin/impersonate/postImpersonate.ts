@@ -67,7 +67,7 @@ async function challengeAdmin({
         return false;
     }
 
-    const verified = await mfaService.verifyTotp(adminUser.id, code);
+    const verified = await mfaService.verifyTotp(adminUser.id, code, { context: 'impersonation' });
     if (verified.isErr()) {
         throw verified.error;
     }

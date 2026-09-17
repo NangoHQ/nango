@@ -180,7 +180,7 @@ describe('deploy', () => {
         const previewRequest = fetchMock.mock.calls[0]?.[1] as RequestInit;
         const previewBody = JSON.parse(previewRequest.body as string) as { reconciliationScope: unknown; functions: FunctionConfig[] };
         expect(previewBody.reconciliationScope).toEqual({ kind: 'integration', integrationId: 'slack' });
-        expect(previewBody.functions).toEqual([expect.objectContaining({ integrationId: 'slack', name: 'other' })]);
+        expect(previewBody.functions).toEqual([expect.objectContaining({ integrationId: 'slack', name: 'other', trigger: { kind: 'http' } })]);
     });
 
     it('deletes the functions of an integration when its last function was removed', async () => {
@@ -422,7 +422,7 @@ function functionConfig({ integrationId, name }: { integrationId: string; name: 
         integrationId,
         filePath: `./${integrationId}/functions/${name}.ts`,
         description: 'Function',
-        trigger: { kind: 'none' },
+        trigger: { kind: 'http' },
         requires: { connection: true, outbound: true, invoke: false },
         capabilities: { usesRecords: false, usesOutbound: true, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
         limits: { concurrency: { perConnection: 'max' } },

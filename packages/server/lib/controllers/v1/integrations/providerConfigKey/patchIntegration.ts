@@ -165,6 +165,9 @@ export const patchIntegration = asyncWrapperWithEnvironment<PatchIntegration>(as
                     ...(clientLogoUri && { oauth_client_logo_uri: clientLogoUri })
                 };
             }
+            if (body.scopes !== undefined) {
+                integration.oauth_scopes = body.scopes || '';
+            }
         } else if (body.authType === 'INSTALL_PLUGIN') {
             const { username, password, appLink } = body;
             integration = {

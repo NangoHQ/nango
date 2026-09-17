@@ -545,7 +545,7 @@ export class Clickhouse {
     }
 
     // Month-to-date COUNTER totals scoped to the calendar month containing
-    // `now`. Returns all five COUNTER billing metrics in one call. `records` /
+    // `now`. Returns all COUNTER billing metrics in one call. `records` /
     // `connections` are not included; capping reads those from Postgres.
     //
     // One revalidate amortises the cache refresh across every billing metric
@@ -558,9 +558,13 @@ export class Clickhouse {
 
         const results = await Promise.all(
             COUNTER_METRICS.map((metric) =>
-                this.getDailyCounter({ accountId, metric, dimension: 'none', timeframe, ...maxExecOpt } as GetDailyCounterQuery).then(
-                    (r) => [metric, r] as const
-                )
+                this.getDailyCounter({
+                    accountId,
+                    metric,
+                    dimension: 'none',
+                    timeframe,
+                    ...maxExecOpt
+                } as GetDailyCounterQuery).then((r) => [metric, r] as const)
             )
         );
 

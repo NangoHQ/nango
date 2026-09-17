@@ -52,7 +52,7 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<PutTask>) =>
         telemetryBag,
         functionRuntime,
         checkpoints: checkpoints || null,
-        ...(error ? { error } : { output: output || null })
+        ...(error ? { error } : { output: output ?? null })
     });
     res.status(204).send();
     return;

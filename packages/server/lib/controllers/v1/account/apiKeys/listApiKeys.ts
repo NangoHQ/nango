@@ -13,7 +13,7 @@ export const listAccountApiKeys = asyncWrapper<ListAccountApiKeys>(async (req, r
         return;
     }
 
-    const result = await customerKeyService.getAccountApiKeys(db.knex, res.locals.account.id);
+    const result = await customerKeyService.search(db.knex, { type: 'account', accountId: res.locals.account.id }, { withSecrets: true });
     if (result.isErr()) {
         report(result.error);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to retrieve account API keys' } });
@@ -23,6 +23,7 @@ export const listAccountApiKeys = asyncWrapper<ListAccountApiKeys>(async (req, r
     res.status(200).send({
         data: result.value.map((key) => ({
             id: key.id,
+            uuid: key.uuid,
             display_name: key.display_name,
             scopes: (key.scopes ?? []) as AccountApiKeyScope[],
             secret: key.secret,

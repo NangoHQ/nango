@@ -27,17 +27,11 @@ const isDevToolsEnabledByHostname =
     window.location.hostname.endsWith('.app-development.nango.dev') ||
     window.location.hostname === 'app-staging.nango.dev';
 
-/**
- * Returns true when the dev tool panel should be available — either on a dev
- * hostname or when the signed-in account is the Nango admin team.
- *
- * Defaults to false until the team query resolves, so there is no flash on
- * first paint for non-admin accounts.
- */
 export function useIsDevToolsEnabled(): boolean {
     const env = useStore((s) => s.env);
+    const debugMode = useStore((s) => s.debugMode);
     const { data } = useTeam(env);
-    return isDevToolsEnabledByHostname || (data?.data.isAdminTeam ?? false);
+    return isDevToolsEnabledByHostname || debugMode || (data?.data.isAdminTeam ?? false);
 }
 
 // Toggle with: Ctrl+Shift+D
@@ -128,7 +122,7 @@ export const DevToolPanel: React.FC = () => {
                                     className="flex w-full cursor-pointer items-center gap-2.5 rounded px-2 py-1.5 text-sm text-text-default hover:bg-surface-panel-inset"
                                 >
                                     <CreditCard className="size-4 shrink-0 text-text-muted" />
-                                    <span className="flex-1 text-left">Plan Override</span>
+                                    <span className="flex-1 text-left">Billing Overrides</span>
                                     <ChevronRight className="size-4 shrink-0 text-text-muted" />
                                 </button>
                             </li>

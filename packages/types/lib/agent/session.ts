@@ -1,12 +1,10 @@
-import type { JsonObject } from 'type-fest';
-
-export type AgentSessionResolvedConnections = JsonObject;
-export type AgentSessionCompiledToolset = JsonObject;
+import type { AgentSessionResolvedConnections } from './connections.js';
+import type { AgentSessionCompiledToolset } from './toolset.js';
 
 export interface AgentSessionMetaTools {
-    readonly nangoProxy: boolean;
-    readonly nangoSearch: boolean;
+    readonly nangoToolSearch: boolean;
     readonly nangoExecute: boolean;
+    readonly nangoProxy: boolean;
 }
 
 export type AgentSessionEndedReason = 'terminated' | 'expired';

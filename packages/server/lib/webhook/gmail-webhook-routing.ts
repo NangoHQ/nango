@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { environmentService, getGlobalWebhookReceiveUrl, NangoError } from '@nangohq/shared';
 import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
@@ -16,15 +17,19 @@ interface DecodedDataObject {
     historyId: string;
 }
 
-export async function validate(integration: IntegrationConfig, headers: Record<string, any>): Promise<boolean> {
+export async function validate(
+    integration: IntegrationConfig,
+    headers: Record<string, any>,
+    { allowUnauthorized }: { allowUnauthorized: boolean }
+): Promise<boolean> {
     try {
         const authHeader: string | undefined = headers['authorization'];
 
         if (!authHeader) {
-            return true;
+            return allowUnauthorized;
         }
 
-        if (!authHeader?.startsWith('Bearer ')) {
+        if (!authHeader.startsWith('Bearer ')) {
             return false;
         }
 
@@ -66,10 +71,13 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
         }
 
         const environment = await environmentService.getById(integration.environment_id);
-        const webhookUrl = `${getGlobalWebhookReceiveUrl()}/${environment?.uuid}/${integration.provider}`;
+        const webhookBase = `${getGlobalWebhookReceiveUrl()}/${environment?.uuid}`;
+        const encodedWebhookUrl = `${webhookBase}/${encodeURIComponent(integration.unique_key)}`;
+        const rawWebhookUrl = `${webhookBase}/${integration.unique_key}`;
 
-        if (payload.aud !== webhookUrl) {
-            logger.warning(`Invalid audience. Expected ${webhookUrl}, got ${payload.aud}`);
+        if (payload.aud !== encodedWebhookUrl && payload.aud !== rawWebhookUrl) {
+            const expected = encodedWebhookUrl === rawWebhookUrl ? encodedWebhookUrl : `${encodedWebhookUrl} or ${rawWebhookUrl}`;
+            logger.warning(`Invalid audience. Expected ${expected}, got ${payload.aud}`);
             return false;
         }
 
@@ -87,21 +95,33 @@ export async function validate(integration: IntegrationConfig, headers: Record<s
 
 const route: WebhookHandler = async (nango, headers, body) => {
     const authHeader = headers['authorization'];
+    const allowUnauthorized = await getFlags().allowUnauthorizedGmailWebhook(nango.team.uuid);
 
-    if (authHeader) {
-        const valid = await validate(nango.integration, headers);
+    // Counted before validation on purpose. With the flag off an unsigned push is rejected below,
+    // and those are exactly the accounts still to be migrated, so they have to show up here.
+    if (!authHeader) {
+        nango.markUnverified({
+            reason: 'gmail_missing_authorization',
+            remediation: 'Recreate the Pub/Sub push subscription with an OIDC token'
+        });
+    }
 
-        if (!valid) {
-            logger.error('webhook signature invalid');
-            return Err(new NangoError('webhook_invalid_signature'));
-        }
+    const valid = await validate(nango.integration, headers, { allowUnauthorized });
+
+    if (!valid) {
+        logger.error('webhook signature invalid');
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
     let decodedBody: DecodedDataObject | null = null;
 
-    const encodedBody = typeof body.message.data === 'string' ? Buffer.from(body.message.data, 'base64').toString('utf8') : body;
+    if (typeof body?.message?.data !== 'string') {
+        logger.error('Webhook body is missing message.data', { configId: nango.integration.id });
+        return Err(new NangoError('webhook_invalid_body'));
+    }
+
     try {
-        decodedBody = JSON.parse(encodedBody);
+        decodedBody = JSON.parse(Buffer.from(body.message.data, 'base64').toString('utf8'));
     } catch (err) {
         logger.error('Failed to parse webhook body:', err);
         return Err(new NangoError('webhook_invalid_body'));
@@ -115,7 +135,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
     };
 
     let response = await nango.executeScriptForWebhooks({
-        body: editedBodyWithCatchAll,
+        payload: editedBodyWithCatchAll,
         webhookType: 'type',
         connectionIdentifier: 'emailAddressHash',
         propName: 'emailAddressHash'
@@ -123,7 +143,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
 
     if (response.connectionIds.length === 0) {
         response = await nango.executeScriptForWebhooks({
-            body: editedBodyWithCatchAll,
+            payload: editedBodyWithCatchAll,
             webhookType: 'type',
             connectionIdentifier: 'emailAddress',
             propName: 'metadata.emailAddress'
@@ -131,7 +151,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
 
         if (response.connectionIds.length === 0) {
             response = await nango.executeScriptForWebhooks({
-                body: editedBodyWithCatchAll,
+                payload: editedBodyWithCatchAll,
                 webhookType: 'type',
                 connectionIdentifier: 'emailAddress',
                 propName: 'metadata.email'

@@ -2,6 +2,7 @@ import { createTRPCProxyClient, httpBatchLink } from '@trpc/client';
 import superjson from 'superjson';
 import { Agent, fetch } from 'undici';
 
+import { getInternalAuthBearerHeaderIfPresent } from '@nangohq/internal-auth';
 import { getInternalTlsOptions } from '@nangohq/utils';
 
 import type { AppRouter } from './server.js';
@@ -15,6 +16,10 @@ interface RunnerHttpOpts {
     connectTimeoutMs: number;
     responseTimeoutMs: number;
 }
+
+export type RunnerClientAuth = {
+    token?: string | null | undefined;
+};
 
 // A new client is built for every task, so the agent has to outlive it or no connection is ever
 // reused and every call pays a fresh handshake.
@@ -36,13 +41,14 @@ function getAgent(httpOpts: RunnerHttpOpts): Agent {
     return agent;
 }
 
-export function getRunnerClient(url: string, httpOpts: RunnerHttpOpts): ProxyAppRouter {
+export function getRunnerClient(url: string, httpOpts: RunnerHttpOpts, auth?: RunnerClientAuth): ProxyAppRouter {
     const dispatcher = getAgent(httpOpts);
     return createTRPCProxyClient<AppRouter>({
         transformer: superjson,
         links: [
             httpBatchLink({
                 url,
+                headers: getInternalAuthBearerHeaderIfPresent(auth?.token),
                 // @ts-expect-error type discrepancy between undici and node and trpc
                 fetch(url: string, options?: RequestInit) {
                     return fetch(url, {

@@ -184,6 +184,22 @@ describe('Scope enforcement on public API routes', () => {
         });
     });
 
+    // ── Agent Sessions ──────────────────────────────────────────────
+
+    describe('POST /sessions', () => {
+        it('should allow with agent_sessions:write scope', async () => {
+            const token = await createKeyWithScopes(['environment:agent_sessions:write']);
+            const res = await api.fetch('/sessions', { method: 'POST', token, body: {} } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without agent_sessions:write scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/sessions', { method: 'POST', token, body: {} } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
     // ── Deploy ───────────────────────────────────────────────────────
 
     describe('POST /sync/deploy', () => {

@@ -1,10 +1,12 @@
 import * as z from 'zod';
 
+import { errorManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { providerTemplatesToApi } from '../../../../formatters/provider.js';
 import { providerNameSchema } from '../../../../helpers/validation.js';
+import providerService from '../../../../services/provider.service.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { handleGetProviderTemplates } from '../../../v1/providers/providerConfigKey/templates/helpers.js';
 
 import type { GetPublicProviderTemplates } from '@nangohq/types';
 
@@ -27,7 +29,12 @@ export const getPublicProviderTemplates = asyncWrapper<GetPublicProviderTemplate
         return;
     }
 
-    const { provider } = valParams.data;
+    const result = providerService.listTemplates({ providerName: valParams.data.provider });
+    if (result.isErr()) {
+        errorManager.report(result.error.cause instanceof Error ? result.error.cause : result.error);
+        res.status(500).send({ error: { code: 'server_error', message: result.error.message } });
+        return;
+    }
 
-    handleGetProviderTemplates({ res, providerConfigKey: provider });
+    res.status(200).send({ data: providerTemplatesToApi(result.value) });
 });

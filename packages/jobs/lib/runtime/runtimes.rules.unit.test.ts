@@ -81,4 +81,13 @@ describe('getFleetId', () => {
         });
         expect(res.unwrap()).toBe(mockEnvs.RUNNER_LAMBDA_FLEET_ID);
     });
+
+    it('uses the plan function runtime', async () => {
+        const plan = seeders.getTestPlan({ function_runtime: 'runner' });
+        const res = await getFleetId({
+            nangoProps: nango('function'),
+            routingContext: routing(plan, [])
+        });
+        expect(res.unwrap()).toBe(mockEnvs.RUNNER_FLEET_ID);
+    });
 });

@@ -19,6 +19,8 @@ import type {
 } from './account/api.js';
 import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
+import type { DeleteAgentSession, PostAgentSessions } from './agent/api.js';
+import type { GetAgentSessionMcp, PostAgentSessionMcp } from './agent/mcp.api.js';
 import type { EndpointMethod } from './api.js';
 import type { GetAuditTrail, GetAuditTrailExport } from './audit-trail/api.js';
 import type {
@@ -67,6 +69,9 @@ import type {
     DeletePublicEnvironment,
     GetEnvironment,
     GetEnvironments,
+    GetPublicApiKey,
+    GetPublicApiKeys,
+    GetPublicEnvironments,
     ListApiKeys,
     PatchApiKey,
     PatchEnvironment,
@@ -84,6 +89,7 @@ import type {
     DeletePublicIntegrationFunction,
     GetFunctionDeployment,
     GetFunctionDryrun,
+    GetFunctionInvocation,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
@@ -122,13 +128,18 @@ import type { GetMeta } from './meta/api.js';
 import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from './mfa/api.js';
 import type { GetPlainHmac } from './plain/api.js';
 import type {
+    DeleteSpendAlert,
+    GetBillingPeriodCosts,
     GetBillingUsage,
     GetBillingUsageTopDimensionValues,
     GetOverdueInvoices,
+    GetProjectedCosts,
+    GetSpendAlert,
     GetUpcomingInvoice,
     PostPlanChange,
     PostPlanExtendTrial,
-    PutBillingInvoicingDetails
+    PutBillingInvoicingDetails,
+    PutSpendAlert
 } from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { AllPublicProxy } from './proxy/http.api.js';
@@ -140,7 +151,14 @@ import type {
     PatchSharedCredentialsProvider,
     PostSharedCredentialsProvider
 } from './sharedCredentials/api.js';
-import type { GetPublicSyncStatus, PostPublicSyncPause, PostPublicSyncStart, PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
+import type {
+    GetConnectionSyncs,
+    GetPublicSyncStatus,
+    PostPublicSyncPause,
+    PostPublicSyncStart,
+    PostPublicTrigger,
+    PutPublicSyncConnectionFrequency
+} from './sync/api.js';
 import type { DeleteTeamUser, GetTeam, PatchTeamUser, PutTeam } from './team/api.js';
 import type { GetUser, PatchUser, PutUserPassword } from './user/api.js';
 import type { PostPublicWebhook } from './webhooks/http.api.js';
@@ -162,6 +180,10 @@ export type PublicApiEndpoints =
     | GetPublicIntegration
     | DeletePublicIntegration
     | PostConnectSessions
+    | PostAgentSessions
+    | DeleteAgentSession
+    | PostAgentSessionMcp
+    | GetAgentSessionMcp
     | PostPublicConnectSessionsReconnect
     | GetPublicConnections
     | GetPublicConnection
@@ -202,6 +224,7 @@ export type PublicApiEndpoints =
     | GetFunctionDeployment
     | PostFunctionDeploymentResult
     | PostFunctionInvocation
+    | GetFunctionInvocation
     | PostFunctionDeploymentBundle
     | PostFunctionDeploymentBundlePreview
     | GetPublicFunctionCode
@@ -213,6 +236,9 @@ export type PublicApiEndpoints =
     | AllPublicProxy
     | PostPublicEnvironment
     | DeletePublicEnvironment
+    | GetPublicEnvironments
+    | GetPublicApiKey
+    | GetPublicApiKeys
     | PostPublicApiKey
     | DeletePublicApiKey;
 
@@ -235,6 +261,11 @@ export type PrivateApiEndpoints =
     | GetBillingUsage
     | GetBillingUsageTopDimensionValues
     | GetUpcomingInvoice
+    | GetBillingPeriodCosts
+    | GetProjectedCosts
+    | GetSpendAlert
+    | PutSpendAlert
+    | DeleteSpendAlert
     | GetUser
     | PatchUser
     | PutUserPassword
@@ -268,6 +299,7 @@ export type PrivateApiEndpoints =
     | PostConnectionMetadata
     | GetConnectionRecordModels
     | GetConnectionRecords
+    | GetConnectionSyncs
     | GetInvite
     | GetMeta
     | GetEmailByExpiredToken

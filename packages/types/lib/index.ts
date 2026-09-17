@@ -3,6 +3,7 @@ export type * from './api.js';
 export type * from './api.endpoints.js';
 export type * from './audit-trail/api.js';
 export type * from './audit-trail/event.js';
+export type * from './audit-trail/metadata.js';
 
 export type * from './gettingStarted/db.js';
 export type * from './gettingStarted/dto.js';
@@ -13,7 +14,12 @@ export type * from './logs/messages.js';
 export type * from './keystore/index.js';
 
 export type * from './action/api.js';
+export type * from './agent/api.js';
+export type * from './agent/connections.js';
+export type * from './agent/mcp.api.js';
 export type * from './agent/session.js';
+export type * from './agent/toolSearch.js';
+export type * from './agent/toolset.js';
 export type * from './admin/http.api.js';
 export type * from './account/api.js';
 export type * from './account/context.js';
@@ -79,8 +85,16 @@ export type * from './dbConfig/db.js';
 export type * from './nangoYaml/index.js';
 
 export type * from './environment/db.js';
-export { ACCOUNT_API_KEY_SCOPES, API_KEY_SCOPES } from './api-keys/scopes.js';
-export type { AccountApiKeyScope, ApiKeyScope, CustomerKeyScope } from './api-keys/scopes.js';
+export type {
+    ACCOUNT_API_KEY_SCOPES,
+    AccountApiKeyScope,
+    API_KEY_SCOPES,
+    ApiKeyScope,
+    ConcreteAccountApiKeyScope,
+    ConcreteApiKeyScope,
+    CustomerKeyScope,
+    WildcardsFor
+} from './api-keys/scopes.js';
 export type * from './api-keys/auth.js';
 export type * from './environment/api/index.js';
 export type * from './environment/api/webhook.js';
@@ -112,10 +126,10 @@ export type * from './mfa/credential.js';
 export type * from './mfa/db.js';
 export type * from './function/config.js';
 export type * from './function/db.js';
+export type * from './function/trigger.js';
 export type * from './functions/api.js';
 export type * from './functions/domain.js';
 
 export type * from './lambda/index.js';
-export type * from './authz/types.js';
 
 export type * from './pubsub/events.js';

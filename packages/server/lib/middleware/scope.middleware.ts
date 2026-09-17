@@ -53,7 +53,9 @@ export function withEnvironmentTarget(_req: Request, res: Response<unknown, Part
 
 export function withScope(requiredScope: CustomerKeyScope) {
     return function (_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
-        if (hasAuthorizedScope({ locals: res.locals, requiredScope })) {
+        const allowed = hasAuthorizedScope({ locals: res.locals, requiredScope });
+
+        if (allowed) {
             next();
             return;
         }
@@ -64,11 +66,11 @@ export function withScope(requiredScope: CustomerKeyScope) {
 
 export function withAnyScope(...requiredScopes: CustomerKeyScope[]) {
     return function (_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
-        for (const scope of requiredScopes) {
-            if (hasAuthorizedScope({ locals: res.locals, requiredScope: scope })) {
-                next();
-                return;
-            }
+        const allowed = requiredScopes.some((requiredScope) => hasAuthorizedScope({ locals: res.locals, requiredScope }));
+
+        if (allowed) {
+            next();
+            return;
         }
 
         res.status(403).json({ error: { code: 'forbidden', message: `Insufficient scope. Required one of: ${requiredScopes.join(' or ')}` } });

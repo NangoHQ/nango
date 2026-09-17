@@ -41,6 +41,7 @@ describe('Account API keys endpoints', () => {
             scopes: ['account:*']
         });
         expect(typeof createdKey.id).toBe('number');
+        expect(createdKey.uuid).toBeUUID();
         expect(typeof createdKey.secret).toBe('string');
         expect(typeof createdKey.created_at).toBe('string');
 
@@ -50,6 +51,7 @@ describe('Account API keys endpoints', () => {
         const listedKey = list.json.data.find((key) => key.id === createdKey.id);
         expect(listedKey).toEqual({
             id: createdKey.id,
+            uuid: createdKey.uuid,
             display_name: 'Billing automation',
             scopes: ['account:*'],
             secret: createdKey.secret,

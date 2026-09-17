@@ -5,7 +5,7 @@ import { operationIdRegex } from '@nangohq/logs';
 import type { Feature } from '@nangohq/types';
 
 export const nangoPropsSchema = z.looseObject({
-    scriptType: z.enum(['action', 'webhook', 'sync', 'on-event']),
+    scriptType: z.enum(['function', 'action', 'webhook', 'sync', 'on-event']),
     connectionId: z.string().min(1),
     nangoConnectionId: z.number(),
     environmentId: z.number(),

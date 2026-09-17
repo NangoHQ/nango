@@ -1,5 +1,7 @@
-import { Err, getLogger, Ok, retry, routeFetch } from '@nangohq/utils';
+import { internalRouteFetch } from '@nangohq/internal-auth';
+import { Err, getLogger, Ok, retry } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
 import { route as postImmediateBatchRoute } from '../routes/v1/postImmediateBatch.js';
@@ -20,11 +22,15 @@ import type {
     ClientError,
     ExecuteActionProps,
     ExecuteAsyncReturn,
+    ExecuteFunctionBatchProps,
+    ExecuteFunctionProps,
+    ExecuteFunctionReturn,
     ExecuteOnEventProps,
     ExecuteProps,
     ExecuteReturn,
     ExecuteSyncProps,
     ExecuteWebhookProps,
+    GetOutputReturn,
     ImmediateProps,
     OrchestratorTask,
     RecurringProps,
@@ -53,10 +59,11 @@ export class OrchestratorClient {
     ): (props: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }) => Promise<E['Reply']> {
         return (props) => {
             const fetch = async () => {
-                return await routeFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs })(props);
+                return await internalRouteFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs, token: envs.NANGO_INTERNAL_AUTH_TOKEN })(props);
             };
             const retryConfig: RetryConfig<E['Reply']> = config?.retryConfig || {
                 maxAttempts: 3,
+                maxWaitMs: Infinity,
                 delayMs: 50,
                 retryIf: (res) => 'error' in res
             };
@@ -67,7 +74,7 @@ export class OrchestratorClient {
     public async immediate(props: ImmediateProps): Promise<Result<PostImmediate['Success'], ClientError>> {
         const res = await this.routeFetch(
             postImmediateRoute,
-            props.rateLimitKey ? { retryConfig: { maxAttempts: 1, delayMs: 0, retryIf: () => false } } : undefined
+            props.rateLimitKey ? { retryConfig: { maxAttempts: 1, maxWaitMs: Infinity, delayMs: 0, retryIf: () => false } } : undefined
         )({ body: props });
         if ('error' in res) {
             const rateLimit = getErrorForCode(res.error.payload, 'rate_limit_exceeded');
@@ -94,33 +101,32 @@ export class OrchestratorClient {
         }
     }
 
-    public async recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }, ClientError>> {
-        const res = await this.routeFetch(postRecurringRoute)({
-            body: {
-                name: props.name,
-                state: props.state,
-                startsAt: props.startsAt,
-                frequencyMs: props.frequencyMs,
-                group: props.group,
-                retry: props.retry,
-                timeoutSettingsInSecs: props.timeoutSettingsInSecs,
-                args: props.args
-            }
-        });
+    public async recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }, ClientError>>;
+    public async recurring(props: RecurringProps[]): Promise<Result<{ scheduleIds: string[] }, ClientError>>;
+    public async recurring(props: RecurringProps | RecurringProps[]): Promise<Result<{ scheduleId: string } | { scheduleIds: string[] }, ClientError>> {
+        const res = await this.routeFetch(postRecurringRoute)({ body: props });
         if ('error' in res) {
-            const startsAt = props.startsAt.toISOString();
             return Err({
                 name: res.error.code,
-                message: res.error.message || `Error creating recurring schedule`,
-                payload: { ...props, startsAt, response: res.error.payload as any }
+                message: res.error.message || 'Error creating recurring schedules',
+                payload: { response: res.error.payload as any }
             });
-        } else {
-            return Ok(res);
         }
+        return Ok(res);
     }
 
     public async pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
         return this.setSyncState({ scheduleName, state: 'PAUSED' });
+    }
+
+    public async deleteSchedules({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn> {
+        for (let offset = 0; offset < scheduleNames.length; offset += 1000) {
+            const result = await this.setSyncStates({ scheduleNames: scheduleNames.slice(offset, offset + 1000), state: 'DELETED' });
+            if (result.isErr()) {
+                return result;
+            }
+        }
+        return Ok(undefined);
     }
 
     public async unpauseSync({ scheduleName, preserveIfPaused }: { scheduleName: string; preserveIfPaused?: boolean | undefined }): Promise<VoidReturn> {
@@ -132,7 +138,7 @@ export class OrchestratorClient {
     }
 
     public async deleteSyncs({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn> {
-        return this.setSyncStates({ scheduleNames, state: 'DELETED' });
+        return this.deleteSchedules({ scheduleNames });
     }
 
     private async setSyncStates({ scheduleNames, state }: { scheduleNames: string[]; state: 'STARTED' | 'PAUSED' | 'DELETED' }): Promise<VoidReturn> {
@@ -193,6 +199,7 @@ export class OrchestratorClient {
             // A schedule that already has an active task or is being mutated is a terminal answer, not a transient failure
             retryConfig: {
                 maxAttempts: 3,
+                maxWaitMs: Infinity,
                 delayMs: 50,
                 retryIf: (res) =>
                     'error' in res &&
@@ -249,6 +256,7 @@ export class OrchestratorClient {
         const getOutput = await this.routeFetch(getOutputRoute, {
             retryConfig: {
                 maxAttempts: 1000,
+                maxWaitMs: Infinity,
                 delayMs: 100,
                 retryIf: (res) => 'error' in res && Date.now() < retryUntil
             }
@@ -328,6 +336,56 @@ export class OrchestratorClient {
         return this.immediate(schedulingProps);
     }
 
+    public async executeFunction(props: ExecuteFunctionProps): Promise<ExecuteFunctionReturn> {
+        const schedulingProps = this.buildFunctionSchedulingProps(props);
+
+        if (props.args.async) {
+            const res = await this.immediate(schedulingProps);
+            if (res.isErr()) {
+                return Err(res.error);
+            }
+            return Ok({ kind: 'scheduled', taskId: res.value.taskId, retryKey: res.value.retryKey });
+        }
+
+        const res = await this.immediateAndWait(schedulingProps);
+        if (res.isErr()) {
+            return Err(res.error);
+        }
+        return Ok({ kind: 'completed', output: res.value });
+    }
+
+    private buildFunctionSchedulingProps(props: ExecuteFunctionProps): ImmediateProps {
+        const { args, ...rest } = props;
+        return {
+            ...rest,
+            retry: { count: props.retry?.count || 0, max: props.retry?.max || 0 },
+            timeoutSettingsInSecs: args.async
+                ? {
+                      createdToStarted: 24 * 60 * 60, // async function invocations must start within 24h after being created
+                      startedToCompleted: 15 * 60, // async function invocations have 15 minutes to complete
+                      heartbeat: 2 * 60
+                  }
+                : {
+                      createdToStarted: 30,
+                      startedToCompleted: 2 * 60, // synchronous invocations have 2 minutes to complete
+                      heartbeat: 60
+                  },
+            args: {
+                ...args,
+                type: 'function' as const
+            }
+        };
+    }
+
+    public async executeFunctionBatch(propsList: ExecuteFunctionBatchProps[]): Promise<Result<ExecuteBatchEntryResult[], ClientError>> {
+        return this.executeImmediateBatch(
+            propsList.map((props) => ({
+                ...this.buildFunctionSchedulingProps(props),
+                rateLimitKey: String(props.args.connection.environment_id)
+            }))
+        );
+    }
+
     private buildWebhookSchedulingProps(props: ExecuteWebhookProps) {
         const { args, ...rest } = props;
         return {
@@ -361,22 +419,26 @@ export class OrchestratorClient {
      *
      * Returns per-entry results in input order.
      */
-    public async executeWebhookBatch(propsList: ExecuteWebhookProps[]): Promise<Result<ExecuteWebhookBatchEntryResult[], ClientError>> {
-        if (propsList.length === 0) {
-            return Ok([]);
-        }
+    public async executeWebhookBatch(propsList: ExecuteWebhookProps[]): Promise<Result<ExecuteBatchEntryResult[], ClientError>> {
         const entries = propsList.map((props) => {
             const schedulingProps = this.buildWebhookSchedulingProps(props);
             return {
                 ...schedulingProps,
-                ownerKey: schedulingProps.ownerKey ?? '',
                 rateLimitKey: String(props.args.connection.environment_id)
             };
         });
 
+        return this.executeImmediateBatch(entries);
+    }
+
+    private async executeImmediateBatch(propsList: ImmediateProps[]): Promise<Result<ExecuteBatchEntryResult[], ClientError>> {
+        if (propsList.length === 0) {
+            return Ok([]);
+        }
+
         const res = await this.routeFetch(postImmediateBatchRoute, {
-            retryConfig: { maxAttempts: 1, delayMs: 0, retryIf: () => false }
-        })({ body: { tasks: entries } });
+            retryConfig: { maxAttempts: 1, maxWaitMs: Infinity, delayMs: 0, retryIf: () => false }
+        })({ body: { tasks: propsList } });
 
         if ('error' in res) {
             return Err({
@@ -387,7 +449,7 @@ export class OrchestratorClient {
         }
 
         return Ok(
-            res.results.map<ExecuteWebhookBatchEntryResult>((entry) => {
+            res.results.map<ExecuteBatchEntryResult>((entry) => {
                 if ('error' in entry) {
                     return Err({
                         name: entry.error.code,
@@ -423,7 +485,7 @@ export class OrchestratorClient {
         return Ok(undefined);
     }
 
-    public async getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<ExecuteReturn> {
+    public async getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<GetOutputReturn> {
         const res = await this.routeFetch(getRetryOutputRoute)({
             query: { ownerKey },
             params: { retryKey }
@@ -435,8 +497,11 @@ export class OrchestratorClient {
                 payload: { retryKey, ownerKey, response: res.error.payload as any }
             });
         }
-        if (res.state === 'no_tasks' || res.state === 'in_progress') {
-            return Ok(null);
+        if (res.state === 'no_tasks') {
+            return Ok({ state: 'not_found' });
+        }
+        if (res.state === 'in_progress') {
+            return Ok({ state: 'in_progress' });
         }
         if (res.state !== 'SUCCEEDED') {
             return Err({
@@ -445,7 +510,7 @@ export class OrchestratorClient {
                 payload: res.output
             });
         }
-        return Ok(res.output);
+        return Ok({ state: 'done', output: res.output });
     }
 
     public async searchTasks({
@@ -680,4 +745,4 @@ export function isDuplicateTaskNameClientError(err: unknown): boolean {
     return error.name === 'duplicate_task_name';
 }
 
-export type ExecuteWebhookBatchEntryResult = Result<{ taskId: string; retryKey: string }, ClientError>;
+export type ExecuteBatchEntryResult = Result<{ taskId: string; retryKey: string }, ClientError>;

@@ -9,6 +9,7 @@ import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { setAbortFlag } from '../execution/operations/abort.js';
+import { mintTaskAuthToken } from '../internal-auth.js';
 import { getLambdaTenantId, getRoutingId } from '../utils/lambda.js';
 
 import type { RuntimeAdapter } from './adapter.js';
@@ -140,11 +141,14 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
     }
 
     private async preparePayload(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<string>> {
+        const internalAuthToken = mintTaskAuthToken(params.taskId, params.nangoProps);
+        const authFields = internalAuthToken ? { internalAuthToken } : {};
         const payload = {
             taskId: params.taskId,
             nangoProps: params.nangoProps,
             code: params.code,
-            codeParams: params.codeParams
+            codeParams: params.codeParams,
+            ...authFields
         };
         const payloadString = JSON.stringify(payload);
         const payloadSize = Buffer.byteLength(payloadString, 'utf8');
@@ -158,7 +162,8 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
                     taskId: params.taskId,
                     nangoProps: params.nangoProps,
                     codeRef: codeRef,
-                    codeParamsRef: codeParamsRef
+                    codeParamsRef: codeParamsRef,
+                    ...authFields
                 })
             );
         } else {

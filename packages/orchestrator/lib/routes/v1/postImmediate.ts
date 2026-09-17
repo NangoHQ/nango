@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { isDuplicateTaskNameError } from '@nangohq/scheduler';
 import { metrics, validateRequest } from '@nangohq/utils';
 
-import { actionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
+import { actionArgsSchema, functionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
 
 import type { TaskType } from '../../types.js';
 import type { SlidingWindowRateLimiter } from '@nangohq/kvstore';
@@ -42,7 +42,7 @@ export const immediateTaskSchema = z
             startedToCompleted: z.number().int().positive(),
             heartbeat: z.number().int().positive()
         }),
-        args: z.discriminatedUnion('type', [syncArgsSchema, actionArgsSchema, webhookArgsSchema, onEventArgsSchema, syncAbortArgsSchema])
+        args: z.discriminatedUnion('type', [syncArgsSchema, actionArgsSchema, webhookArgsSchema, onEventArgsSchema, syncAbortArgsSchema, functionArgsSchema])
     })
     .strict();
 
@@ -93,7 +93,7 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
         if (rateLimitKey) {
             const rateLimit = await rateLimiter.consume(rateLimitKey, 1);
             if (rateLimit.rejected > 0) {
-                metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, 1, { reason: 'rate_limit' });
+                metrics.increment(metrics.Types.ORCH_TASKS_REJECTED, 1, { reason: 'rate_limit' });
                 res.setHeader('Retry-After', Math.max(1, Math.ceil(rateLimit.retryAfterMs / 1000)));
                 res.status(429).json({
                     error: {

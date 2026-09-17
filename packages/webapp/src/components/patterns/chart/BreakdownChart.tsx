@@ -5,6 +5,7 @@ import { formatQuantity } from '@/utils/utils';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../ui/Chart';
 import { niceCapAxis } from './chartFormat';
 import { REST_SERIES_KEY } from './usageChartColors';
+import { countPlottedDays } from './useChartData';
 
 import type { ChartConfig } from '../../ui/Chart';
 import type { ChartSeries } from './types';
@@ -35,6 +36,8 @@ interface BreakdownChartProps {
     interactions: ChartInteractions;
     /** Draw a horizontal cap reference line at this value (the metric's plan limit). */
     capLine?: number;
+    /** Axis ticks and tooltip values. Omitted, ticks stay on `formatQuantity` and tooltips on `toLocaleString`. */
+    formatValue?: (value: number) => string;
 }
 
 /**
@@ -49,13 +52,17 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
     series,
     todayDateKey,
     interactions,
-    capLine
+    capLine,
+    formatValue
 }) => {
     const { hoveredKey, dimByHover, isSeriesHidden, hoverSeries, unhoverSeries, toggleIsolate } = interactions;
     // Clicking a band isolates that series (shows only it; click again shows all) — a
     // client-only view change, never a query change. Filtering lives on the Filter control.
     const bandClick = (s: ChartSeries) => () => toggleIsolate(s.key);
     const ChartComponent = isCumulative ? AreaChart : BarChart;
+
+    // An area spanning a single day has no width and paints nothing — the 1st of a month renders blank.
+    const areaDot = useMemo(() => (countPlottedDays(chartData) === 1 ? { r: 3 } : false), [chartData]);
 
     // Stacking follows declaration order (first series = bottom), so pin the neutral
     // "Rest" bucket to the bottom; the sized series stack above it. The legend/tooltip keep their own order.
@@ -77,7 +84,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
                             strokeOpacity={dimByHover(s.key) ? 0.3 : 1}
                             strokeWidth={1}
                             type="basis"
-                            dot={false}
+                            dot={areaDot}
                             // The active dot sits on top of the band; mirror the band's handlers so
                             // hovering it doesn't drop the highlight / single-series tooltip.
                             activeDot={{ onMouseEnter: () => hoverSeries(s.key), onMouseLeave: () => unhoverSeries(), onClick: bandClick(s) }}
@@ -116,7 +123,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
                     stroke="var(--color-total)"
                     type="basis"
                     strokeWidth={2}
-                    dot={false}
+                    dot={areaDot}
                     isAnimationActive={false}
                 />
             ];
@@ -189,9 +196,17 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
                 return (b.value ?? 0) - (a.value ?? 0);
             });
             const shown = hoveredKey ? sorted?.filter((p) => p.dataKey === hoveredKey) : sorted;
-            return <ChartTooltipContent active={props.active} label={props.label} payload={shown} labelFormatter={(value) => formatTooltipDate(value)} />;
+            return (
+                <ChartTooltipContent
+                    active={props.active}
+                    label={props.label}
+                    payload={shown}
+                    labelFormatter={(value) => formatTooltipDate(value)}
+                    valueFormatter={formatValue}
+                />
+            );
         },
-        [hoveredKey]
+        [hoveredKey, formatValue]
     );
 
     return (
@@ -213,7 +228,10 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
                 <YAxis
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(value) => formatQuantity(value)}
+                    tickFormatter={(value: number) => (formatValue ? formatValue(value) : formatQuantity(value))}
+                    // A unit suffix pushes a tick past recharts' default 60px, and its Text wraps the
+                    // suffix onto a second line rather than overflowing.
+                    width={formatValue ? 76 : undefined}
                     padding={{ top: 20 }}
                     // Round ticks + headroom above the cap line (nice tick values, cap not pinned to the top).
                     domain={capAxis ? [0, capAxis.max] : undefined}

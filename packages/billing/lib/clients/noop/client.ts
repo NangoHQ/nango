@@ -3,21 +3,23 @@ import { Ok } from '@nangohq/utils';
 import type {
     BillingClient,
     BillingCustomer,
-    BillingEvent,
     BillingInvoicingDetails,
     BillingOverdueInvoices,
+    BillingPeriodCosts,
     BillingPlan,
+    BillingSpendAlert,
     BillingSubscription,
     BillingUpcomingInvoice,
     BillingUsageMetrics,
     DBTeam,
-    GetBillingUsageOpts
+    GetBillingUsageOpts,
+    PlanChangeRequest
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 /**
  * Stub billing client for local dev / self-hosted setups with no Orb configured.
- * Selected in index.ts when `ORB_API_KEY` is unset. Every call returns a benign
+ * Selected in index.ts when `ORB_API_KEY` is unset. Calls return a benign
  * success so flows that touch billing (e.g. the billing-usage dashboard, which
  * still reads its actual numbers from ClickHouse) don't fail on the missing Orb
  * dependency. Deployed environments always set `ORB_API_KEY` and use OrbClient.
@@ -40,10 +42,6 @@ function stubCustomer(
 }
 
 export class NoopBillingClient implements BillingClient {
-    ingest(_events: BillingEvent[]): Promise<Result<void>> {
-        return Promise.resolve(Ok(undefined));
-    }
-
     linkStripeToCustomer(_teamId: number, _customerId: string): Promise<Result<void>> {
         return Promise.resolve(Ok(undefined));
     }
@@ -60,8 +58,16 @@ export class NoopBillingClient implements BillingClient {
         return Promise.resolve(Ok(stubCustomer(accountId, invoicingDetails)));
     }
 
-    getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
-        return Promise.resolve(Ok({ id: `local-sub-${accountId}`, planExternalId: 'free' }));
+    getSubscription(accountId: number): Promise<Result<BillingSubscription>> {
+        return Promise.resolve(
+            Ok({
+                id: `local-sub-${accountId}`,
+                planExternalId: 'free',
+                hasGrowthFeatures: false,
+                growthFeaturesEndsAt: null,
+                growthFeaturesPriceIntervalId: null
+            })
+        );
     }
 
     getOverdueInvoices(_accountId: number): Promise<Result<BillingOverdueInvoices>> {
@@ -72,24 +78,55 @@ export class NoopBillingClient implements BillingClient {
         return Promise.resolve(Ok(null));
     }
 
+    getPeriodCosts(_subscriptionId: string, _timeframe?: { start: Date; end: Date }): Promise<Result<BillingPeriodCosts | null>> {
+        return Promise.resolve(Ok(null));
+    }
+
+    getSpendAlert(_subscriptionId: string): Promise<Result<BillingSpendAlert | null>> {
+        return Promise.resolve(Ok(null));
+    }
+
+    setSpendAlert(subscriptionId: string, opts: { thresholdInCents: number }): Promise<Result<BillingSpendAlert>> {
+        return Promise.resolve(Ok({ id: `local-alert-${subscriptionId}`, thresholdInCents: opts.thresholdInCents, currency: 'USD' }));
+    }
+
+    removeSpendAlert(_subscriptionId: string): Promise<Result<void>> {
+        return Promise.resolve(Ok(undefined));
+    }
+
     createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {
-        return Promise.resolve(Ok({ id: `local-sub-${team.id}`, planExternalId }));
+        return Promise.resolve(
+            Ok({ id: `local-sub-${team.id}`, planExternalId, hasGrowthFeatures: false, growthFeaturesEndsAt: null, growthFeaturesPriceIntervalId: null })
+        );
     }
 
     getUsage(_subscriptionId: string, _opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
         return Promise.resolve(Ok({}));
     }
 
-    upgrade(_opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
+    upgrade(_opts: PlanChangeRequest): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
         return Promise.resolve(Ok({ pendingChangeId: 'local-pending-change', amountInCents: null }));
     }
 
-    downgrade(_opts: { subscriptionId: string; planExternalId: string }): Promise<Result<void>> {
+    downgrade(_opts: PlanChangeRequest): Promise<Result<void>> {
         return Promise.resolve(Ok(undefined));
     }
 
-    applyPendingChanges(_opts: { pendingChangeId: string; paymentExternalId: string; amountCollected: string }): Promise<Result<BillingSubscription>> {
-        return Promise.resolve(Ok({ id: 'local-sub', planExternalId: 'free' }));
+    applyPendingChanges(_opts: {
+        pendingChangeId: string;
+        payment?: { externalId: string; amountCollected: string } | undefined;
+    }): Promise<Result<BillingSubscription>> {
+        return Promise.resolve(
+            Ok({ id: 'local-sub', planExternalId: 'free', hasGrowthFeatures: false, growthFeaturesEndsAt: null, growthFeaturesPriceIntervalId: null })
+        );
+    }
+
+    startGrowthAddon(_opts: { subscriptionId: string }): Promise<Result<{ priceIntervalId: string | null }>> {
+        return Promise.resolve(Ok({ priceIntervalId: 'local-price-interval' }));
+    }
+
+    endGrowthAddon(_opts: { subscriptionId: string; priceIntervalId: string }): Promise<Result<{ growthFeaturesEndsAt: Date | null }>> {
+        return Promise.resolve(Ok({ growthFeaturesEndsAt: null }));
     }
 
     cancelPendingChanges(_opts: { pendingChangeId: string }): Promise<Result<void>> {

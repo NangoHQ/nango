@@ -3,9 +3,9 @@ import * as z from 'zod';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
+import { deployIntegrationTemplate } from '../../../../services/integrationTemplate.service.js';
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { flowConfig } from '../../../sync/deploy/validation.js';
-import { deployIntegrationTemplate } from './helpers.js';
 
 import type { PostPreBuiltDeploy } from '@nangohq/types';
 

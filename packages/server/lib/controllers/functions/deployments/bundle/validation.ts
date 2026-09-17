@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
 
-import type { FunctionDeploymentBundleBody, FunctionReconciliationScope } from '@nangohq/types';
+import type { FunctionDeploymentBundleBody, FunctionReconciliationScope, FunctionTriggerDefinition } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 const schemaReference = z.string().regex(/^#\/definitions\/[a-zA-Z0-9_-]+$/);
@@ -33,7 +33,7 @@ const trigger = z.discriminatedUnion('kind', [
             events: z.array(z.enum(['post-connection-creation', 'pre-connection-deletion', 'validate-connection']))
         })
         .strict()
-]);
+]) satisfies z.ZodType<FunctionTriggerDefinition>;
 const requires = z.union([
     z
         .object({

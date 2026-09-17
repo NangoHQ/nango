@@ -11,7 +11,7 @@ export interface MetadataBody {
 type MetadataError = ApiError<'invalid_body'> | ApiError<'unknown_connection'>;
 
 export type SetMetadata = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'metadata_updated', 'environment'>;
+    Audit: { kind: 'no-audit'; reason: 'data-plane operation' };
     Method: 'POST';
     Body: MetadataBody;
     Path: '/connection/metadata';
@@ -20,7 +20,7 @@ export type SetMetadata = ApiEndpoint<{
 }>;
 
 export type UpdateMetadata = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'metadata_updated', 'environment'>;
+    Audit: { kind: 'no-audit'; reason: 'data-plane operation' };
     Method: 'PATCH';
     Path: '/connection/metadata';
     Body: MetadataBody;

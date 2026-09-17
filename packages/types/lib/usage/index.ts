@@ -3,6 +3,7 @@ export type UsageMetric =
     | 'connections'
     | 'function_executions'
     | 'function_compute_gbms'
+    | 'function_duration_seconds'
     | 'records'
     | 'webhook_forwards'
     | 'function_logs'

@@ -53,7 +53,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -79,7 +78,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -107,7 +105,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -138,7 +135,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -170,7 +166,6 @@ describe('OrchestratorClient', async () => {
                     type: 'sync',
                     syncId: 'sync-a',
                     syncName: nanoid(),
-                    syncJobId: 5678,
                     connection: {
                         id: 123,
                         connection_id: 'C',
@@ -446,6 +441,55 @@ describe('OrchestratorClient', async () => {
             }
         });
     });
+    describe('executeFunctionBatch', () => {
+        it('should schedule a batch of asynchronous functions in a single call', async () => {
+            const groupKey = nanoid();
+            const batchSize = 5;
+            const propsList = Array.from({ length: batchSize }, () => ({
+                name: nanoid(),
+                group: { key: groupKey, maxConcurrency: 0 },
+                retry: { count: 0, max: 0 },
+                ownerKey: 'environment:1',
+                args: {
+                    functionName: 'native-function',
+                    connection: { id: 1, connection_id: 'C', provider_config_key: 'P', environment_id: 1 },
+                    activityLogId: 'a',
+                    trigger: {
+                        kind: 'http' as const,
+                        input: { issue: 123 },
+                        request: {
+                            method: 'POST' as const,
+                            path: '/webhook',
+                            headers: {},
+                            query: {},
+                            body: { issue: 123 }
+                        },
+                        subscriptions: ['issues'],
+                        connection: { connectionId: 'C', integrationId: 'P' }
+                    },
+                    async: true as const
+                }
+            }));
+
+            const res = await client.executeFunctionBatch(propsList);
+            expect(res.isOk()).toBe(true);
+            if (res.isOk()) {
+                expect(res.value).toHaveLength(batchSize);
+                for (const entry of res.value) {
+                    expect(entry.isOk()).toBe(true);
+                }
+            }
+
+            const tasks = (await client.dequeue({ groupKeyPattern: groupKey, limit: batchSize, longPolling: false })).unwrap();
+            expect(tasks).toHaveLength(batchSize);
+            for (const task of tasks) {
+                expect(task.isFunction()).toBe(true);
+                if (task.isFunction()) {
+                    expect(task.trigger).toMatchObject({ kind: 'http', subscriptions: ['issues'] });
+                }
+            }
+        });
+    });
     describe('succeed', () => {
         it('should support big output', async () => {
             const groupKey = nanoid();
@@ -501,16 +545,16 @@ describe('OrchestratorClient', async () => {
         });
     });
     describe('getRetryOutput', () => {
-        it('should return null if retryKey does not exist', async () => {
+        it('should return not_found if retryKey does not exist', async () => {
             const res = (
                 await client.getOutput({
                     retryKey: '00000000-0000-0000-0000-000000000000',
                     ownerKey: 'does-not-exist'
                 })
             ).unwrap();
-            expect(res).toBe(null);
+            expect(res).toEqual({ state: 'not_found' });
         });
-        it('should return null if owner key does not match', async () => {
+        it('should return not_found if owner key does not match', async () => {
             const groupKey = nanoid();
             const ownerKey = nanoid();
             const expectedOutput = { count: 9 };
@@ -533,10 +577,21 @@ describe('OrchestratorClient', async () => {
                 }
 
                 const output = (await client.getOutput({ retryKey, ownerKey: 'another-owner' })).unwrap();
-                expect(output).toEqual(null);
+                expect(output).toEqual({ state: 'not_found' });
             } finally {
                 processor.stop();
             }
+        });
+        it('should return in_progress if the task has not terminated', async () => {
+            const groupKey = nanoid();
+            const ownerKey = nanoid();
+
+            const task = await immediateAction(client, { groupKey, ownerKey });
+            const retryKey = task.unwrap().retryKey;
+            expect(retryKey).not.toBeNull();
+
+            const output = (await client.getOutput({ retryKey, ownerKey })).unwrap();
+            expect(output).toEqual({ state: 'in_progress' });
         });
         it('should return the output of successful task (no retry)', async () => {
             const groupKey = nanoid();
@@ -561,7 +616,34 @@ describe('OrchestratorClient', async () => {
                 }
 
                 const output = (await client.getOutput({ retryKey, ownerKey })).unwrap();
-                expect(output).toEqual(expectedOutput);
+                expect(output).toEqual({ state: 'done', output: expectedOutput });
+            } finally {
+                processor.stop();
+            }
+        });
+        it('should return a null output as a completed task', async () => {
+            const groupKey = nanoid();
+            const ownerKey = nanoid();
+            let processed = false;
+
+            const processor = new MockProcessor({
+                groupKey,
+                process: async (task) => {
+                    await scheduler.succeed({ taskId: task.id, output: null });
+                    processed = true;
+                }
+            });
+            try {
+                const task = await immediateAction(client, { groupKey, ownerKey });
+                const retryKey = task.unwrap().retryKey;
+                expect(retryKey).not.toBeNull();
+
+                while (!processed) {
+                    await new Promise((resolve) => setTimeout(resolve, 10));
+                }
+
+                const output = (await client.getOutput({ retryKey, ownerKey })).unwrap();
+                expect(output).toEqual({ state: 'done', output: null });
             } finally {
                 processor.stop();
             }
@@ -594,7 +676,7 @@ describe('OrchestratorClient', async () => {
                 }
 
                 const output = (await client.getOutput({ retryKey, ownerKey })).unwrap();
-                expect(output).toEqual(expectedOutput);
+                expect(output).toEqual({ state: 'done', output: expectedOutput });
             } finally {
                 processor.stop();
             }

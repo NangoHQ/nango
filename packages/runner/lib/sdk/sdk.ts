@@ -175,6 +175,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 }
             }).unwrap(),
             outboundPolicy: runnerOutboundPolicy,
+            maxWaitMs: envs.NANGO_PROXY_MAX_RETRY_WAIT_MS,
             logger: async (log) => {
                 // We only sample successful HTTP logs because they are the most common and the most noisy.
                 if (HTTP_LOG_SAMPLE_PCT && this.scriptType === 'sync' && log.type === 'http' && log.level === 'info') {
@@ -337,7 +338,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         }
         this.telemetryRecorder?.record({
             type: 'data_transfer',
-            callsite: 'persist_logs',
+            callsite: log.source === 'user' ? 'persist_customer_logs' : 'persist_system_logs',
             bytesSent: Buffer.byteLength(data, 'utf8'),
             bytesReceived: 0,
             integrationId: this.providerConfigKey,
