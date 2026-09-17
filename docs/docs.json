@@ -1483,6 +1483,7 @@
               "api-integrations/linear-mcp",
               "api-integrations/linkedin",
               "integrations/all/linkhut",
+              "api-integrations/linkly",
               "integrations/all/listmonk",
               "api-integrations/listrak",
               "api-integrations/liveswitch",

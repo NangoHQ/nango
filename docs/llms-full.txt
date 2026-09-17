@@ -15607,6 +15607,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `linear-mcp` | Linear (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linear-mcp.md) |  |  | popular, productivity, ticketing, mcp |
 | `linkedin` | LinkedIn | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linkedin.md) |  | [setup](https://nango.dev/docs/api-integrations/linkedin/how-to-register-your-own-linkedin-api-oauth-app.md) | ats, social |
 | `linkhut` | LinkHut | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/linkhut.md) |  |  | social |
+| `linkly` | Linkly | API_KEY | [docs](https://nango.dev/docs/api-integrations/linkly.md) | [connect](https://nango.dev/docs/api-integrations/linkly/connect.md) |  | marketing |
 | `listmonk` | Listmonk | BASIC | [docs](https://nango.dev/docs/integrations/all/listmonk.md) |  |  | marketing |
 | `listrak` | Listrak | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/listrak.md) | [connect](https://nango.dev/docs/api-integrations/listrak/connect.md) |  | marketing |
 | `liveswitch` | LiveSwitch | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/liveswitch.md) |  | [setup](https://nango.dev/docs/api-integrations/liveswitch/how-to-register-your-own-liveswitch-api-oauth-app.md) | communication |
