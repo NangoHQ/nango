@@ -1,7 +1,6 @@
 import { ArrowUpRight, ExternalLink } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet';
-import { useLocation } from 'react-router-dom';
 
 import { AlertButton, Button } from '@nangohq/design-system';
 
@@ -11,6 +10,7 @@ import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { usePlanOverrideStore } from '@/features/planOverride';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetBillingUsage, useApiGetOverdueInvoices, useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
+import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { billedUsageMetrics, getAggregateUsageState } from '@/utils/usage';
@@ -87,23 +87,15 @@ export const TeamBilling: React.FC = () => {
         track('web:usage:viewed', {});
     }, []);
 
-    // The 3 sections used to be separate tabs reachable via #usage/#plans/#payment-and-invoices
-    // (still linked from other pages). Now that they're stacked on one page, scroll to the matching
-    // section instead of switching tabs.
-    const location = useLocation();
-    useEffect(() => {
-        const hash = location.hash.slice(1);
-        if (!hash) {
-            return;
-        }
-        document.getElementById(hash)?.scrollIntoView({ block: 'start' });
-    }, [location.hash]);
+    // Six pages deep-link to #plans or #usage, so the section ids below are part of the public URL.
+    const scrollRef = useRef<HTMLDivElement>(null);
+    useScrollToHash(scrollRef);
 
     // Full-width page shell keeps chrome consistent with the other dashboard pages, but `centered`
     // caps the content: the usage charts have a fixed height, so unbounded width stretches them to an
     // unreadable aspect ratio on wide screens.
     return (
-        <DashboardLayout fullWidth centered title="Billing & usage" titleActions={<BillingHeaderAction />}>
+        <DashboardLayout ref={scrollRef} fullWidth centered title="Billing & usage" titleActions={<BillingHeaderAction />}>
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>
