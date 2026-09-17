@@ -470,7 +470,7 @@ async function at(
     ).unwrap();
 }
 
-async function recurring({ scheduler, state = 'PAUSED' }: { scheduler: Scheduler; state?: ScheduleState }): Promise<Schedule> {
+async function recurring({ scheduler, state = 'PAUSED' }: { scheduler: Scheduler; state?: Exclude<ScheduleState, 'DELETED'> }): Promise<Schedule> {
     const recurringProps = {
         name: nanoid(),
         state,

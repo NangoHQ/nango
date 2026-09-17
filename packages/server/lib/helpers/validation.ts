@@ -113,7 +113,17 @@ export const connectionCredential = z.union([
 ]);
 
 export const privateKeySchema = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsWith('-----END RSA PRIVATE KEY-----');
-export const publicKeySchema = z.string().startsWith('-----BEGIN PUBLIC KEY----').endsWith('-----END PUBLIC KEY-----');
+// Some providers (e.g. Gong's "Show public key" UI) hand out the bare base64 DER body with no
+// PEM wrapper - accept that form too, alongside the full PEM, rather than requiring callers to
+// wrap it themselves.
+export const publicKeySchema = z.union([
+    z.string().startsWith('-----BEGIN PUBLIC KEY----').endsWith('-----END PUBLIC KEY-----'),
+    z
+        .string()
+        .regex(/^[A-Za-z0-9+/]+={0,2}$/)
+        .min(100)
+        .max(2000)
+]);
 export const integrationCredentialsSchema = z.discriminatedUnion(
     'type',
     [

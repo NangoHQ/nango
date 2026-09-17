@@ -98,12 +98,16 @@
       "destination": "/api-integrations/snowflake"
     },
     {
-      "source": "/integrations/all/typeform",
-      "destination": "/api-integrations/typeform"
+      "source": "/integrations/all/pandadoc",
+      "destination": "/api-integrations/pandadoc"
     },
     {
-      "source": "/integrations/all/elevio",
-      "destination": "/api-integrations/elevio"
+      "source": "/integrations/all/fathom",
+      "destination": "/api-integrations/fathom"
+    },
+    {
+      "source": "/integrations/all/fathom/connect",
+      "destination": "/api-integrations/fathom/connect"
     },
     {
       "source": "/integrations/all/google-gemini",
@@ -124,6 +128,22 @@
     {
       "source": "/integrations/all/bigcommerce",
       "destination": "/api-integrations/bigcommerce"
+    },
+    {
+      "source": "/integrations/all/gong",
+      "destination": "/api-integrations/gong"
+    },
+    {
+      "source": "/integrations/all/gong-oauth",
+      "destination": "/api-integrations/gong-oauth"
+    },
+    {
+      "source": "/integrations/all/gong/connect",
+      "destination": "/api-integrations/gong/connect"
+    },
+    {
+      "source": "/integrations/all/gong/webhooks",
+      "destination": "/api-integrations/gong/webhooks"
     },
     {
       "source": "/introduction",
@@ -821,8 +841,11 @@
                       {
                         "group": "Environments",
                         "pages": [
+                          "reference/backend/http-api/environments/list",
                           "reference/backend/http-api/environments/create",
                           "reference/backend/http-api/environments/delete",
+                          "reference/backend/http-api/environments/list-api-keys",
+                          "reference/backend/http-api/environments/get-api-key",
                           "reference/backend/http-api/environments/create-api-key",
                           "reference/backend/http-api/environments/delete-api-key"
                         ]
@@ -967,7 +990,7 @@
             ]
           },
           {
-            "group": "900+ APIs & Integrations",
+            "group": "1,000+ APIs & Integrations",
             "pages": [
               "api-integrations/1password-events",
               "integrations/all/1password-scim",
@@ -1006,12 +1029,14 @@
               "integrations/all/aircall",
               "integrations/all/aircall-basic",
               "api-integrations/airtable",
+              "api-integrations/airtable-mcp",
               "integrations/all/airtable-pat",
               "integrations/all/algolia",
               "api-integrations/altrata",
               "api-integrations/amazon",
               "api-integrations/amazon-selling-partner",
               "api-integrations/amazon-selling-partner-beta",
+              "api-integrations/amplemarket",
               "api-integrations/amplitude",
               "api-integrations/amplitude-mcp",
               "api-integrations/amplitude-mcp-eu",
@@ -1064,6 +1089,7 @@
               "api-integrations/back-market",
               "api-integrations/bamboohr",
               "integrations/all/bamboohr-basic",
+              "api-integrations/bandwidth",
               "integrations/all/basecamp",
               "api-integrations/baserow",
               "api-integrations/basin",
@@ -1083,6 +1109,7 @@
               "integrations/all/blackbaud-basic",
               "integrations/all/blandai",
               "api-integrations/bliro",
+              "api-integrations/bol-com",
               "integrations/all/boldsign",
               "integrations/all/booking-com",
               "api-integrations/boondmanager",
@@ -1255,7 +1282,7 @@
               "integrations/all/fairing",
               "integrations/all/falai",
               "api-integrations/fanvue",
-              "integrations/all/fathom",
+              "api-integrations/fathom",
               "api-integrations/fathom-oauth",
               "api-integrations/fellow",
               "api-integrations/fern",
@@ -1309,8 +1336,8 @@
               "api-integrations/glean",
               "api-integrations/glean-oauth",
               "api-integrations/glyphic",
-              "integrations/all/gong",
-              "integrations/all/gong-oauth",
+              "api-integrations/gong",
+              "api-integrations/gong-oauth",
               "api-integrations/google",
               "api-integrations/google-ads",
               "api-integrations/google-analytics",
@@ -1378,6 +1405,7 @@
               "integrations/all/hibob-service-user",
               "api-integrations/highlevel",
               "api-integrations/highlevel-white-label",
+              "api-integrations/highq",
               "integrations/all/holded",
               "api-integrations/holded-v2",
               "integrations/all/hover",
@@ -1390,11 +1418,15 @@
               "api-integrations/ids-fulfillment",
               "api-integrations/immybot",
               "integrations/all/incident-io",
+              "api-integrations/infor",
+              "api-integrations/infor-cc",
               "api-integrations/ingenious-build",
               "api-integrations/ingenious-build-pat",
               "integrations/all/insightly",
               "api-integrations/instagram",
               "integrations/all/instantly",
+              "api-integrations/immybot",
+              "api-integrations/inteliquent",
               "api-integrations/intercom",
               "integrations/all/intuit",
               "integrations/all/ironclad",
@@ -1451,8 +1483,10 @@
               "api-integrations/linear-mcp",
               "api-integrations/linkedin",
               "integrations/all/linkhut",
+              "api-integrations/linkly",
               "integrations/all/listmonk",
               "api-integrations/listrak",
+              "api-integrations/liveswitch",
               "api-integrations/livetennisapi",
               "api-integrations/lob",
               "api-integrations/lokalise",
@@ -1489,6 +1523,7 @@
               "integrations/all/microsoft-admin",
               "integrations/all/microsoft-ads",
               "integrations/all/microsoft-business-central",
+              "api-integrations/microsoft-dataverse",
               "api-integrations/microsoft-dynamics-365-finance-and-operations",
               "api-integrations/microsoft-dynamics-365-finance-and-operations-cc",
               "integrations/all/microsoft-entra-id",
@@ -1523,6 +1558,7 @@
               "api-integrations/mollie",
               "integrations/all/momentum-io",
               "api-integrations/monday",
+              "api-integrations/moneybird",
               "integrations/all/mural",
               "api-integrations/myob",
               "api-integrations/n8n",
@@ -1531,6 +1567,7 @@
               "integrations/all/namely-pat",
               "integrations/all/nationbuilder",
               "api-integrations/neon",
+              "api-integrations/neon-mcp",
               "api-integrations/nerdio",
               "api-integrations/netsapiens",
               "integrations/all/netsuite",
@@ -1577,13 +1614,16 @@
               "integrations/all/ory",
               "integrations/all/osu",
               "integrations/all/oura",
+              "api-integrations/outline",
               "api-integrations/outlook",
               "integrations/all/outreach",
               "api-integrations/paddle",
               "integrations/all/pagerduty",
               "api-integrations/paligo",
-              "integrations/all/pandadoc",
+              "api-integrations/pandadoc",
               "integrations/all/pandadoc-api-key",
+              "api-integrations/pandadoc-mcp",
+              "api-integrations/pandadoc-mcp-eu",
               "integrations/all/passportal",
               "api-integrations/pave",
               "integrations/all/pax8",
@@ -1622,6 +1662,7 @@
               "api-integrations/planning-center-online",
               "api-integrations/planning-center-online-pat",
               "api-integrations/pleo",
+              "api-integrations/pleo-api-key",
               "integrations/all/podium",
               "api-integrations/podscribe",
               "api-integrations/posthog",
@@ -1701,6 +1742,8 @@
               "integrations/all/sage-intacct-oauth",
               "api-integrations/sage-member",
               "integrations/all/sage-people",
+              "api-integrations/sap-ariba",
+              "api-integrations/salescaptain",
               "api-integrations/salesforce",
               "api-integrations/salesforce-cc",
               "integrations/all/salesforce-cdp",
@@ -1717,8 +1760,7 @@
               "api-integrations/sap-concur-password",
               "integrations/all/sap-fieldglass",
               "api-integrations/sap-odata-basic",
-              "api-integrations/sap-odata-oauth2-cc",
-              "api-integrations/sap-success-factors",
+              "api-integrations/scavio",
               "api-integrations/schwab",
               "integrations/all/scrapedo",
               "api-integrations/scrollstash-mcp",

@@ -50,6 +50,14 @@ export function buildFlags(client: FeatureFlagsClient) {
         /** Whether the Gmail webhook can be unverified. */
         allowUnauthorizedGmailWebhook(accountUuid: string) {
             return client.isEnabled('allow-unauthorized-gmail-webhook', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether GitHub App webhooks without an `x-hub-signature-256` header can be processed for
+         * this account. Escape hatch for apps set up without the derived webhook secret.
+         * Default `false`.
+         */
+        allowUnauthorizedGithubAppWebhook(accountUuid: string) {
+            return client.isEnabled('allow-unauthorized-github-app-webhook', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }

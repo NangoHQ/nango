@@ -1,60 +1,44 @@
-import crypto from 'node:crypto';
-
 import { NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import { validateSvixSignature } from './signature.js';
+
 import type { FolkWebhookPayload, WebhookHandler } from './types.js';
-import type { IntegrationConfig } from '@nangohq/types';
-
-/**
- * Verify Folk webhook signature using Svix's HMAC-SHA256 scheme.
- * Signed content: `{webhook-id}.{webhook-timestamp}.{rawBody}`
- * The secret is a base64-encoded key prefixed with `whsec_`.
- * The `webhook-signature` header contains space-separated `v1,<base64>` signatures.
- */
-function validate(integration: IntegrationConfig, headers: Record<string, string>, rawBody: string): boolean {
-    const secret = integration.custom?.['webhookSecret'];
-    if (!secret) {
-        // Folk webhooks are registered at the connection level, so checking against an integration secret only works if there is only a single connection for this integration.
-        // In practice, the platform does not currently support validating Folk webhooks so we will allow requests through here until we add connection level webhook validation.
-        return true;
-    }
-
-    const msgId = headers['webhook-id'];
-    const msgTimestamp = headers['webhook-timestamp'];
-    const msgSignature = headers['webhook-signature'];
-
-    if (!msgId || !msgTimestamp || !msgSignature) {
-        return false;
-    }
-
-    const secretBytes = Buffer.from(secret.replace(/^whsec_/, ''), 'base64');
-    const toSign = `${msgId}.${msgTimestamp}.${rawBody}`;
-    const computed = crypto.createHmac('sha256', secretBytes).update(toSign).digest('base64');
-
-    return msgSignature
-        .split(' ')
-        .map((sig) => sig.replace(/^v1,/, ''))
-        .some((sig) => {
-            try {
-                const sigBuf = Buffer.from(sig, 'base64');
-                const computedBuf = Buffer.from(computed, 'base64');
-                return sigBuf.length === computedBuf.length && crypto.timingSafeEqual(sigBuf, computedBuf);
-            } catch {
-                return false;
-            }
-        });
-}
 
 const route: WebhookHandler<FolkWebhookPayload> = async (nango, headers, body, rawBody, query) => {
-    if (!validate(nango.integration, headers, rawBody)) {
-        return Err(new NangoError('webhook_invalid_signature'));
-    }
-
     const connectionIdentifierValue = query?.['nangoConnectionId'];
 
     if (!connectionIdentifierValue) {
         return Err(new NangoError('webhook_missing_connection_id'));
+    }
+
+    const connection = await nango.getConnectionForWebhook(connectionIdentifierValue);
+
+    // Folk registers webhooks per connection, so the secret belongs on the connection. The
+    // integration level secret stays supported for integrations that only have one connection.
+    const connectionSecret = connection?.metadata?.['webhookSecret'];
+
+    if (connectionSecret != null && typeof connectionSecret !== 'string') {
+        return Err(new NangoError('webhook_invalid_secret', { reason: 'Invalid webhook secret' }));
+    }
+
+    const secret = connectionSecret || nango.integration.custom?.['webhookSecret'];
+
+    // Verified before the unknown-connection response, otherwise an unresolvable connection id
+    // returns a 200 that forwards the unverified body to the environment's webhook URLs.
+    if (secret) {
+        if (validateSvixSignature({ secret, headers, rawBody }) !== 'valid') {
+            return Err(new NangoError('webhook_invalid_signature'));
+        }
+    } else {
+        nango.markUnverified({
+            reason: 'folk_missing_webhook_secret',
+            remediation: 'Set webhookSecret in the connection metadata'
+        });
+    }
+
+    if (!connection) {
+        return Ok({ content: null, statusCode: 204 });
     }
 
     const response = await nango.executeScriptForWebhooks({

@@ -19,6 +19,32 @@ vi.mock('crypto', async () => {
     };
 });
 
+describe('Hubspot client secret', () => {
+    it('fails closed when the integration has no client secret', async () => {
+        // The secret is concatenated into the hash, so a null one hashes the string "null",
+        // which anyone can compute.
+        const integration = getTestConfig({ provider: 'hubspot' });
+        integration.oauth_client_secret = null as unknown as string;
+
+        const nango = new InternalNango({
+            team: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: seeders.getTestPlan(),
+            integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
+            logContextGetter
+        });
+        const execute = vi.fn();
+        nango.executeScriptForWebhooks = execute;
+
+        const body = { subscriptionType: 'contact.creation', portalId: 1, objectId: 2, occurredAt: 1 };
+        const result = await HubspotWebhookRouting.default(nango, { 'x-hubspot-signature': 'anything' }, body as never, JSON.stringify(body));
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+});
+
 describe('Webhook route unit tests', () => {
     it('Should order the body accordingly based on the contact.creation', async () => {
         const integration = getTestConfig({ provider: 'hubspot', oauth_client_secret: 'abcdef' });

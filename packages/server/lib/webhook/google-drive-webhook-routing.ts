@@ -6,7 +6,7 @@ import type { WebhookHandler } from './types.js';
 
 // https://developers.google.com/workspace/drive/api/guides/push
 const route: WebhookHandler = async (nango, headers) => {
-    const tokenResult = validateGoogleChannelToken(nango.integration, headers);
+    const tokenResult = validateGoogleChannelToken(nango, headers);
     if (tokenResult.isErr()) {
         return Err(tokenResult.error);
     }

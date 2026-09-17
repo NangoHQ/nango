@@ -2,9 +2,12 @@ import jwt from 'jsonwebtoken';
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import db from '@nangohq/database';
+import { hashOAuthIdentifier } from '@nangohq/oauth-server';
 import { userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
+import { dek, envs } from '../../../env.js';
 import { isError, isSuccess, runServer } from '../../../utils/tests.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
 
@@ -81,19 +84,33 @@ describe(`PUT ${resetPasswordRoute}`, () => {
         expect((await api.fetch(userRoute, { method: 'GET', session: sessionB })).res.status).toBe(200);
 
         const dbUser = await userService.getUserByEmail(email);
+        const oauthSessionId = `oauth-session-${nanoid()}`;
+        const oauthGrantId = `oauth-grant-${nanoid()}`;
+        await insertOAuthSessionArtifact(oauthSessionId, dbUser!.id);
+        await insertOAuthGrantArtifact(oauthGrantId, dbUser!.id);
         const token = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
         await userService.editUserPassword({ id: dbUser!.id, reset_password_token: token, hashed_password: dbUser!.hashed_password });
 
-        const { res, json } = await api.fetch(resetPasswordRoute, {
-            method: 'PUT',
-            body: { token, password: 'aZ1-newpass!?' }
-        });
+        const previousBaseUrl = envs.NANGO_OAUTH_SERVER_BASE_URL;
+        envs.NANGO_OAUTH_SERVER_BASE_URL = undefined;
+        const { res, json } = await (async () => {
+            try {
+                return await api.fetch(resetPasswordRoute, {
+                    method: 'PUT',
+                    body: { token, password: 'aZ1-newpass!?' }
+                });
+            } finally {
+                envs.NANGO_OAUTH_SERVER_BASE_URL = previousBaseUrl;
+            }
+        })();
         expect(res.status).toBe(200);
         isSuccess(json);
 
         // every session is forcibly logged out (the reset flow is anonymous, so none is spared)
         expect((await api.fetch(userRoute, { method: 'GET', session: sessionA })).res.status).toBe(401);
         expect((await api.fetch(userRoute, { method: 'GET', session: sessionB })).res.status).toBe(401);
+        expect(await oauthArtifactRevokedAt('Session', oauthSessionId)).toBeInstanceOf(Date);
+        expect(await oauthArtifactRevokedAt('Grant', oauthGrantId)).toBeInstanceOf(Date);
 
         const recoveredSession = await signin(email, 'aZ1-newpass!?');
         // password recovery must not make an existing user eligible for new-user account discovery.
@@ -200,4 +217,70 @@ describe(`PUT ${resetPasswordRoute}`, () => {
         expect(res.status).toBe(200);
         isSuccess(json);
     });
+
+    it('should reset the password without an encryption key when OAuth is disabled', async () => {
+        const { email } = await signupVerifiedUser();
+        const token = await issueResetToken(email);
+        const previousBaseUrl = envs.NANGO_OAUTH_SERVER_BASE_URL;
+        envs.NANGO_OAUTH_SERVER_BASE_URL = undefined;
+        const getEncryptionKey = vi.spyOn(dek, 'get').mockReturnValue('');
+
+        try {
+            const { res, json } = await api.fetch(resetPasswordRoute, { method: 'PUT', body: { token, password: 'aZ1-newpass!?' } });
+
+            expect(envs.NANGO_OAUTH_SERVER_BASE_URL).toBeUndefined();
+            expect(res.status).toBe(200);
+            isSuccess(json);
+        } finally {
+            getEncryptionKey.mockRestore();
+            envs.NANGO_OAUTH_SERVER_BASE_URL = previousBaseUrl;
+        }
+    });
 });
+
+async function insertOAuthSessionArtifact(id: string, userId: number): Promise<void> {
+    const now = new Date();
+    const encryptionKey = dek.get();
+    await db.knex('oauth_server_artifacts').insert({
+        model: 'Session',
+        artifact_id_hash: hashOAuthIdentifier(id, encryptionKey),
+        payload_encrypted: Buffer.from('test-payload'),
+        grant_id_hash: null,
+        session_uid_hash: hashOAuthIdentifier(`uid-${id}`, encryptionKey),
+        user_id_hash: hashOAuthIdentifier(String(userId), encryptionKey),
+        user_authenticated_at: new Date(now.getTime() - 60_000),
+        expires_at: new Date(now.getTime() + 600_000),
+        consumed_at: null,
+        revoked_at: null,
+        created_at: now,
+        updated_at: now
+    });
+}
+
+async function insertOAuthGrantArtifact(id: string, userId: number): Promise<void> {
+    const now = new Date();
+    const encryptionKey = dek.get();
+    const grantIdHash = hashOAuthIdentifier(id, encryptionKey);
+    await db.knex('oauth_server_artifacts').insert({
+        model: 'Grant',
+        artifact_id_hash: grantIdHash,
+        payload_encrypted: Buffer.from('test-payload'),
+        grant_id_hash: grantIdHash,
+        session_uid_hash: null,
+        user_id_hash: hashOAuthIdentifier(String(userId), encryptionKey),
+        user_authenticated_at: new Date(now.getTime() - 60_000),
+        expires_at: new Date(now.getTime() + 600_000),
+        consumed_at: null,
+        revoked_at: null,
+        created_at: now,
+        updated_at: now
+    });
+}
+
+async function oauthArtifactRevokedAt(model: 'Grant' | 'Session', id: string): Promise<Date | null | undefined> {
+    const row = await db
+        .knex('oauth_server_artifacts')
+        .where({ model, artifact_id_hash: hashOAuthIdentifier(id, dek.get()) })
+        .first<{ revoked_at: Date | null }>('revoked_at');
+    return row?.revoked_at;
+}

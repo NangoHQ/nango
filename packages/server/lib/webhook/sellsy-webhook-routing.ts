@@ -3,17 +3,20 @@ import crypto from 'node:crypto';
 import { NangoError } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
+import { safeCompare } from './signature.js';
+
 import type { SellsyWebhookPayload, WebhookHandler } from './types.js';
 
 const logger = getLogger('Webhook.Sellsy');
 
+// Sellsy hashes the concatenation rather than using HMAC, so this cannot reuse validateHmacSignature.
 // https://help.sellsy.com/fr/articles/5876622-webhooks#h_d3e68dd04e
 function validate(secret: string, headerSignature: string, rawBody: string): boolean {
     const signature = crypto
         .createHash('sha1')
         .update(secret + rawBody)
         .digest('hex');
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(headerSignature));
+    return safeCompare(signature, headerSignature, 'hex');
 }
 
 const route: WebhookHandler<SellsyWebhookPayload> = async (nango, headers, body, rawBody) => {
@@ -30,7 +33,7 @@ const route: WebhookHandler<SellsyWebhookPayload> = async (nango, headers, body,
             return Err(new NangoError('webhook_invalid_signature'));
         }
     } else {
-        logger.info('no webhook secret configured, skipping signature validation', { configId: nango.integration.id });
+        nango.markUnverified({ reason: 'sellsy_missing_webhook_secret' });
     }
 
     let webhookTypeValue: string;

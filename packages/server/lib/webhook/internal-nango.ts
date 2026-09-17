@@ -3,8 +3,10 @@ import get from 'lodash-es/get.js';
 import { connectionService } from '@nangohq/shared';
 
 import { dispatchWebhookExecutions } from './dispatch.js';
+import { countUnverifiedWebhook } from './missing-secret.js';
 
 import type { DispatchContext } from './dispatch.js';
+import type { UnverifiedWebhook } from './missing-secret.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { ConnectionInternal, DBConnectionDecrypted, DBEnvironment, DBIntegrationDecrypted, DBPlan, DBTeam, HttpRequest, Metadata } from '@nangohq/types';
 
@@ -15,6 +17,9 @@ export class InternalNango {
     readonly integration: DBIntegrationDecrypted;
     readonly request: HttpRequest;
     readonly logContextGetter: LogContextGetter;
+
+    /** Set by a routing script when it let an unverified webhook through. */
+    unverified?: UnverifiedWebhook | undefined;
 
     constructor(opts: {
         team: DBTeam;
@@ -30,6 +35,20 @@ export class InternalNango {
         this.integration = opts.integration;
         this.request = opts.request;
         this.logContextGetter = opts.logContextGetter;
+    }
+
+    /**
+     * Record that this webhook was accepted without verifying it. The warning is attached to the
+     * operations the dispatch and the forward already create rather than logged here.
+     */
+    markUnverified(unverified: UnverifiedWebhook): void {
+        this.unverified = unverified;
+        countUnverifiedWebhook({
+            accountId: this.team.id,
+            environmentId: this.environment.id,
+            provider: this.integration.provider,
+            reason: unverified.reason
+        });
     }
 
     async getConnectionForWebhook(connectionId: string): Promise<{ connectionId: string; metadata: Metadata | null } | null> {
@@ -124,7 +143,8 @@ export class InternalNango {
             environment: this.environment,
             integration: this.integration,
             request: this.request,
-            logContextGetter: this.logContextGetter
+            logContextGetter: this.logContextGetter,
+            ...(this.unverified ? { unverified: this.unverified } : {})
         };
     }
 }

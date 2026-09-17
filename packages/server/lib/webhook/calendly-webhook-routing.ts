@@ -1,9 +1,11 @@
-import crypto from 'node:crypto';
-
 import { NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import { isFreshTimestamp, validateHmacSignature } from './signature.js';
+
 import type { WebhookHandler } from './types.js';
+
+const SIGNATURE_TOLERANCE_SECONDS = 3 * 60;
 
 function parseCalendlySignature(signatureHeader: string): { timestamp: string; signature: string } | null {
     const parts = signatureHeader.split(',');
@@ -26,27 +28,6 @@ function parseCalendlySignature(signatureHeader: string): { timestamp: string; s
     return { timestamp, signature };
 }
 
-function validateCalendlySignature(webhookSecret: string, timestamp: string, headerSignature: string, rawBody: any): boolean {
-    const data = timestamp + '.' + rawBody;
-    const expectedSignature = crypto.createHmac('sha256', webhookSecret).update(data, 'utf8').digest('hex');
-
-    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
-    const headerBuffer = Buffer.from(headerSignature, 'hex');
-
-    if (expectedBuffer.length !== headerBuffer.length) {
-        return false;
-    }
-
-    return crypto.timingSafeEqual(expectedBuffer, headerBuffer);
-}
-
-function validateTimestamp(timestamp: string, toleranceMs: number = 180000): boolean {
-    // 3 minutes tolerance by default
-    const timestampMilliseconds = Number(timestamp) * 1000;
-    const now = Date.now();
-    return timestampMilliseconds >= now - toleranceMs && timestampMilliseconds <= now + toleranceMs;
-}
-
 const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     // https://developer.calendly.com/api-docs/4c305798a61d3-webhook-signatures
     const signatureHeader = headers['calendly-webhook-signature'];
@@ -65,13 +46,15 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
 
         const { timestamp, signature } = parsedSignature;
 
-        if (!validateTimestamp(timestamp)) {
+        if (!isFreshTimestamp(timestamp, SIGNATURE_TOLERANCE_SECONDS)) {
             return Err(new NangoError('webhook_invalid_signature'));
         }
 
-        if (!validateCalendlySignature(webhookSecret, timestamp, signature, rawBody)) {
+        if (!validateHmacSignature({ secret: webhookSecret, rawBody, payload: `${timestamp}.${rawBody}`, signature })) {
             return Err(new NangoError('webhook_invalid_signature'));
         }
+    } else {
+        nango.markUnverified({ reason: 'calendly_missing_webhook_secret' });
     }
 
     const response = await nango.executeScriptForWebhooks({

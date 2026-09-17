@@ -195,13 +195,14 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async getPeriodCosts(subscriptionId: string): Promise<Result<BillingPeriodCosts | null>> {
+    async getPeriodCosts(subscriptionId: string, timeframe?: { start: Date; end: Date }): Promise<Result<BillingPeriodCosts | null>> {
         try {
-            // No timeframe: Orb defaults to the current billing period. Cumulative so the last bucket
-            // carries the period-to-date figure rather than a single day's.
             const costs = await this.orbSDK.subscriptions.fetchCosts(
                 subscriptionId,
-                { view_mode: 'cumulative' },
+                {
+                    view_mode: 'cumulative',
+                    ...(timeframe ? { timeframe_start: timeframe.start.toISOString(), timeframe_end: timeframe.end.toISOString() } : {})
+                },
                 {
                     headers: {
                         'Orb-Cache-Control': 'cache',
@@ -210,7 +211,7 @@ export class OrbClient implements BillingClient {
                 }
             );
 
-            const result = fromOrbPeriodCosts(costs, new Date());
+            const result = fromOrbPeriodCosts(costs, new Date(), { explicitTimeframe: timeframe !== undefined });
             if (result && result.flagged.length > 0) {
                 // A price we couldn't cleanly turn into a metric's charge: nothing else would signal
                 // that a figure is missing, or that another metric's $0 can no longer be trusted.

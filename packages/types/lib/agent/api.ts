@@ -1,4 +1,5 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
 import type { Tags } from '../db.js';
 import type { AgentSessionUnknownPinnedConnectionsPayload } from './connections.js';
 import type { AgentSessionEndedReason } from './session.js';
@@ -42,6 +43,7 @@ export interface AgentSessionToolsetSummary {
 export interface AgentSessionMetaToolsSummary {
     nango_tool_search: boolean;
     nango_execute: boolean;
+    nango_proxy: boolean;
 }
 
 export interface AgentSessionUnknownMetaToolsPayload {
@@ -102,7 +104,7 @@ export type AgentSessionCreationErrorPayload =
 export type PostAgentSessionsCreationError = ApiError<AgentSessionCreationErrorCode, undefined, AgentSessionCreationErrorPayload>;
 
 export type PostAgentSessions = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'agent_session', 'created', 'environment'>;
     Method: 'POST';
     Path: '/sessions';
     Body: PostAgentSessionsBody;
@@ -126,7 +128,7 @@ export interface ApiTerminatedAgentSession {
 }
 
 export type DeleteAgentSession = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'agent_session', 'terminated', 'environment'>;
     Method: 'DELETE';
     Path: '/sessions/:sessionId';
     Params: { sessionId: string };

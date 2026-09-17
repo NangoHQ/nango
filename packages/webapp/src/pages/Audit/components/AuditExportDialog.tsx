@@ -1,4 +1,4 @@
-import { Share } from 'lucide-react';
+import { Info, Share } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 import {
@@ -105,19 +105,19 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ query, sel
                     <DialogDescription>Downloads the events matching these filters as a CSV file.</DialogDescription>
                 </DialogHeader>
                 <DialogBody>
-                    <dl className="grid grid-cols-[80px_1fr] gap-x-4 gap-y-2.5 text-body-small-regular">
-                        <dt className="uppercase text-text-muted">{windowField.label}</dt>
+                    <dl className="grid grid-cols-[80px_1fr] items-center gap-x-4 gap-y-2 text-body-small-regular">
+                        <dt className="type-label-sm uppercase text-text-muted">{windowField.label}</dt>
                         <dd className="font-code text-text-primary">
                             {windowField.value}
                             {windowField.zone && <span className="text-text-muted"> {windowField.zone}</span>}
                         </dd>
-                        <dt className="uppercase text-text-muted">Resource</dt>
+                        <dt className="type-label-sm uppercase text-text-muted">Resource</dt>
                         <dd className="font-code text-text-primary">{resourceSelectionLabel(selection.resources)}</dd>
-                        <dt className="uppercase text-text-muted">Action</dt>
+                        <dt className="type-label-sm uppercase text-text-muted">Action</dt>
                         <dd className="font-code text-text-primary">{actionSelectionLabel(selection.actions)}</dd>
                         {total && (
                             <>
-                                <dt className="uppercase text-text-muted">Events</dt>
+                                <dt className="type-label-sm uppercase text-text-muted">Events</dt>
                                 <dd className="font-code text-text-primary">
                                     {exportedCount?.toLocaleString()}
                                     {truncates && <span className="text-text-muted"> (max)</span>}
@@ -126,8 +126,9 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ query, sel
                         )}
                     </dl>
                     {truncates === true && (
-                        <div className="mt-5">
+                        <div className="mt-4">
                             <Alert variant="info" size="compact">
+                                <Info />
                                 <AlertDescription>
                                     Your filters match more than the {AUDIT_EXPORT_MAX_ROWS.toLocaleString()} events a single export can hold. Narrow the date
                                     range or filters to export older events.
@@ -136,9 +137,9 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ query, sel
                         </div>
                     )}
                     {truncates === undefined && (
-                        <p className="mt-5 text-body-small-regular text-text-secondary">An export stops at {AUDIT_EXPORT_MAX_ROWS.toLocaleString()} events.</p>
+                        <p className="mt-4 text-body-small-regular text-text-secondary">An export stops at {AUDIT_EXPORT_MAX_ROWS.toLocaleString()} events.</p>
                     )}
-                    <p className="mt-3 text-body-small-regular text-text-secondary">
+                    <p className="mt-4 text-body-small-regular text-text-secondary">
                         Need a larger or scheduled export?{' '}
                         <Button variant="link-accent" size="sm" onClick={onContact}>
                             Contact us

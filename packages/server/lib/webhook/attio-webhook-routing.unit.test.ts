@@ -57,7 +57,8 @@ function makeNango() {
         team: { id: 1, uuid: 'account-uuid' },
         environment: { id: 2 },
         integration: { id: 3, custom: {} },
-        executeScriptForWebhooks: vi.fn().mockResolvedValue({ connectionIds: ['conn-1'] })
+        executeScriptForWebhooks: vi.fn().mockResolvedValue({ connectionIds: ['conn-1'] }),
+        markUnverified: vi.fn()
     };
 }
 
@@ -101,6 +102,7 @@ describe('Attio webhook routing', () => {
             canOverride: false,
             ttlMs: 7000
         });
+        expect(nango.markUnverified).toHaveBeenCalledWith({ reason: 'attio_missing_webhook_secret' });
         expect(nango.executeScriptForWebhooks).toHaveBeenCalledTimes(3);
         expect(nango.executeScriptForWebhooks).toHaveBeenCalledWith(expect.objectContaining({ delaySeconds: 7 }));
         expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.dedupe.suppressed', 1, { provider: 'attio', enforced: 'true' });

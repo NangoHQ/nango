@@ -45,7 +45,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
         const logCtx = logContextGetter.get({ id: String(task.activityLogId), accountId: account.id });
 
         // capping
-        const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'function_duration_seconds');
+        const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'function_duration_seconds', 'data_transfer');
         if (cappingStatus.isCapped) {
             const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
             void logCtx.error(message, { cappingStatus });

@@ -235,6 +235,7 @@ export interface MCPOAuth2GenericAuthBody {
     clientName?: string | undefined;
     clientUri?: string | undefined;
     clientLogoUri?: string | undefined;
+    scopes?: string | undefined;
 }
 
 export interface InstallPluginAuthBody {

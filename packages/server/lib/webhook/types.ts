@@ -361,6 +361,11 @@ interface CRMMatches {
     error: string | null;
 }
 
+export interface GongWebhookPayload {
+    callData: Record<string, any>;
+    isTest: boolean;
+}
+
 export interface FolkWebhookPayload {
     id: string;
     type: string;
@@ -409,5 +414,16 @@ export interface GranolaWebhookPayload {
     occurred_at: string;
     data?: {
         changed_fields: string[];
+    };
+}
+
+export interface ZoomWebhookPayload {
+    event: string;
+    event_ts: number;
+    payload: {
+        account_id?: string;
+        // Only present on the `endpoint.url_validation` handshake.
+        plainToken?: string;
+        object?: Record<string, any>;
     };
 }

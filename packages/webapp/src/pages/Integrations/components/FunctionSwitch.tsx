@@ -10,10 +10,10 @@ import { useCurrentPlan } from '../../../hooks/usePlan.js';
 import { useToast } from '../../../hooks/useToast.js';
 import { APIError } from '../../../utils/api.js';
 
-import type { ApiError, ApiIntegration, DeployedNangoActionFunction, DeployedNangoSyncFunction } from '@nangohq/types';
+import type { ApiError, ApiIntegration, ListedNangoActionFunction, ListedNangoSyncFunction } from '@nangohq/types';
 
 export const FunctionSwitch: React.FC<{
-    flow: DeployedNangoSyncFunction | DeployedNangoActionFunction;
+    flow: ListedNangoSyncFunction | ListedNangoActionFunction;
     integration: ApiIntegration;
 }> = ({ flow, integration }) => {
     const { toast } = useToast();

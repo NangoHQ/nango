@@ -24,6 +24,8 @@ export interface AgentSessionResolvedConnection {
 
 export type AgentSessionResolvedConnections = Record<string, AgentSessionResolvedConnection>;
 
+export type AgentSessionResolvedConnectionSummary = Omit<AgentSessionResolvedConnection, 'internalConnectionId' | 'configId'>;
+
 export type AgentSessionConnectionResolutionErrorCode = 'ambiguous_connections' | 'pinned_connection_not_matched' | 'unknown_pinned_connection';
 
 export interface AgentSessionConnectionCandidateReport {

@@ -1,20 +1,24 @@
 import { randomUUID } from 'node:crypto';
 
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
+import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 
 import {
     createAgentSession,
     createAgentSessionToken,
     endAgentSession,
+    expireAgentSessions,
     getAgentSession,
     getAgentSessionByToken,
-    listExpiredAgentSessions
+    listExpiredAgentSessions,
+    terminateAgentSession
 } from './agentSession.service.js';
 
+import type { LogContextOrigin } from '@nangohq/logs';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, DBEnvironment, DBTeam } from '@nangohq/types';
 
 const table = 'agent_sessions';
@@ -26,6 +30,10 @@ describe('agentSession service', () => {
     beforeAll(async () => {
         await multipleMigrations();
         await keystore.migrate(db.knex);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     beforeEach(async () => {
@@ -55,7 +63,7 @@ describe('agentSession service', () => {
                 environmentId: environment.id,
                 resolvedConnections,
                 compiledToolset,
-                metaTools: { nangoToolSearch: true, nangoExecute: true },
+                metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
                 expiresAt
             })
         ).unwrap();
@@ -65,7 +73,7 @@ describe('agentSession service', () => {
             environmentId: environment.id,
             resolvedConnections,
             compiledToolset,
-            metaTools: { nangoToolSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
             expiresAt,
             endedAt: null,
             endedReason: null
@@ -117,7 +125,7 @@ describe('agentSession service', () => {
             environmentId: other.env.id,
             resolvedConnections: {},
             compiledToolset: {},
-            metaTools: { nangoToolSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
             expiresAt: new Date(Date.now() + 60_000)
         });
 
@@ -135,7 +143,7 @@ describe('agentSession service', () => {
             environmentId: environment.id,
             resolvedConnections: {},
             compiledToolset: {},
-            metaTools: { nangoToolSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
             expiresAt: new Date(Date.now() + 60_000)
         });
 
@@ -171,6 +179,17 @@ describe('agentSession service', () => {
         expect(retried.alreadyEnded).toBe(true);
         expect(retried.session.endedAt).toStrictEqual(terminated.session.endedAt);
         expect(retried.session.endedReason).toBe('terminated');
+    });
+
+    it('records the terminated operation without a payload', async () => {
+        const session = await createSession({ account, environment });
+        const create = vi
+            .spyOn(logContextGetter, 'create')
+            .mockResolvedValue({ enrichOperation: vi.fn(), info: vi.fn(), success: vi.fn() } as unknown as LogContextOrigin);
+
+        (await terminateAgentSession({ account, environment, sessionId: session.id })).unwrap();
+
+        expect(create).toHaveBeenCalledWith({ operation: { type: 'agent_session', action: 'terminate' } }, { account, environment });
     });
 
     it('revokes the session token when the session is terminated', async () => {
@@ -296,7 +315,35 @@ describe('agentSession service', () => {
         expect(expired.map(({ id }) => id)).not.toContain(expiredEnded.id);
         expect(expired.map(({ id }) => id)).not.toContain(active.id);
     });
+
+    it('ends expired sessions and revokes their tokens', async () => {
+        const expired = await createSession({ account, environment, expiresAt: new Date(Date.now() + 300) });
+        const active = await createSession({ account, environment, expiresAt: new Date(Date.now() + 60_000) });
+        (await createAgentSessionToken(db.knex, expired)).unwrap();
+        (await createAgentSessionToken(db.knex, active)).unwrap();
+
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        expect(await expireAgentSessions(db.knex, { limit: 10 })).toBe(1);
+
+        const ended = (await getAgentSession(db.knex, { id: expired.id, accountId: account.id, environmentId: environment.id })).unwrap();
+        expect(ended.endedAt).not.toBeNull();
+        expect(ended.endedReason).toBe('expired');
+
+        expect(await keysFor(expired.id)).toBe(0);
+        expect(await keysFor(active.id)).toBe(1);
+
+        const stillActive = (await getAgentSession(db.knex, { id: active.id, accountId: account.id, environmentId: environment.id })).unwrap();
+        expect(stillActive.endedAt).toBeNull();
+
+        expect(await expireAgentSessions(db.knex, { limit: 10 })).toBe(0);
+    });
 });
+
+async function keysFor(sessionId: string): Promise<number> {
+    const keys = await db.knex.from(keystore.PRIVATE_KEYS_TABLE).where({ entity_type: 'agent_session', entity_uuid: sessionId });
+    return keys.length;
+}
 
 async function createSession({
     account,
@@ -313,7 +360,7 @@ async function createSession({
             environmentId: environment.id,
             resolvedConnections: {},
             compiledToolset: {},
-            metaTools: { nangoToolSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
             expiresAt
         })
     ).unwrap();

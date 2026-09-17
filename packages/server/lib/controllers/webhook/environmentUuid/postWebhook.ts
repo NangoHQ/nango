@@ -109,6 +109,10 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 return;
             }
 
+            if (typeof response.content === 'string') {
+                res.type('text/plain');
+            }
+
             res.status(response.statusCode).send(response.content);
         } catch (err) {
             span.setTag('nango.error', err);

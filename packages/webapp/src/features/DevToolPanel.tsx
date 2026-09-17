@@ -27,17 +27,11 @@ const isDevToolsEnabledByHostname =
     window.location.hostname.endsWith('.app-development.nango.dev') ||
     window.location.hostname === 'app-staging.nango.dev';
 
-/**
- * Returns true when the dev tool panel should be available — either on a dev
- * hostname or when the signed-in account is the Nango admin team.
- *
- * Defaults to false until the team query resolves, so there is no flash on
- * first paint for non-admin accounts.
- */
 export function useIsDevToolsEnabled(): boolean {
     const env = useStore((s) => s.env);
+    const debugMode = useStore((s) => s.debugMode);
     const { data } = useTeam(env);
-    return isDevToolsEnabledByHostname || (data?.data.isAdminTeam ?? false);
+    return isDevToolsEnabledByHostname || debugMode || (data?.data.isAdminTeam ?? false);
 }
 
 // Toggle with: Ctrl+Shift+D

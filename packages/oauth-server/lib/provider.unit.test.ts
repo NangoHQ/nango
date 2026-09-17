@@ -1,0 +1,687 @@
+import { createHash, generateKeyPairSync, randomBytes } from 'node:crypto';
+import { createServer } from 'node:http';
+
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+
+import { createOAuthAdapter } from './adapter.js';
+import { allowCimdFetch, secureCimdFetch } from './cimd.js';
+import { createOAuthProvider, OAUTH_SESSION_END_CONFIRM_PATH } from './provider.js';
+
+import type { Knex } from 'knex';
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import type { AddressInfo } from 'node:net';
+import type Provider from 'oidc-provider';
+import type { Adapter, AdapterPayload, Interaction } from 'oidc-provider';
+
+vi.mock('./adapter.js', () => ({ createOAuthAdapter: vi.fn(), OAUTH_GRANT_TTL_SECONDS: 30 * 24 * 60 * 60 }));
+vi.mock('./cimd.js', async (importOriginal) => {
+    const actual = await importOriginal();
+    if (!actual || typeof actual !== 'object') {
+        throw new Error('Invalid CIMD module mock');
+    }
+    return { ...actual, allowCimdFetch: vi.fn(), secureCimdFetch: vi.fn() };
+});
+
+const artifacts = new Map<string, AdapterPayload>();
+const TEST_ACCOUNT_ID = 'test-account';
+const SWITCHED_ACCOUNT_ID = 'switched-account';
+const CLAUDE_CODE_CLIENT_ID = 'https://claude.ai/oauth/claude-code-client-metadata';
+const existingAccounts = new Set([TEST_ACCOUNT_ID, SWITCHED_ACCOUNT_ID]);
+const adapter = (model: string): Adapter => ({
+    upsert: (id, payload) => {
+        artifacts.set(`${model}:${id}`, payload);
+        return Promise.resolve();
+    },
+    find: (id) => Promise.resolve(artifacts.get(`${model}:${id}`)),
+    findByUid: (uid) => Promise.resolve([...artifacts].find(([key, payload]) => key.startsWith(`${model}:`) && payload.uid === uid)?.[1]),
+    findByUserCode: (userCode) => Promise.resolve([...artifacts].find(([key, payload]) => key.startsWith(`${model}:`) && payload.userCode === userCode)?.[1]),
+    consume: (id) => {
+        const value = artifacts.get(`${model}:${id}`);
+        if (value) value.consumed = Math.floor(Date.now() / 1000);
+        return Promise.resolve();
+    },
+    destroy: (id) => {
+        artifacts.delete(`${model}:${id}`);
+        return Promise.resolve();
+    },
+    revokeByGrantId: (grantId) => {
+        for (const [key, payload] of artifacts) {
+            if (key.startsWith(`${model}:`) && payload.grantId === grantId) artifacts.delete(key);
+        }
+        return Promise.resolve();
+    }
+});
+
+describe('OAuth provider', () => {
+    let origin: string;
+    let server: ReturnType<typeof createServer>;
+    let provider: Provider;
+    let clientId: string;
+    let cimdFetches = 0;
+    beforeAll(async () => {
+        vi.mocked(createOAuthAdapter).mockReturnValue(adapter);
+        vi.mocked(allowCimdFetch).mockImplementation((candidate) =>
+            Promise.resolve(candidate.startsWith('https://client.example.com/oauth/') || candidate === CLAUDE_CODE_CLIENT_ID)
+        );
+        vi.mocked(secureCimdFetch).mockImplementation((input, init) => {
+            cimdFetches++;
+            const fetchedClientId = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+            expect(init?.redirect).toBe('manual');
+            if (fetchedClientId.endsWith('/redirect.json')) {
+                return Promise.resolve(new Response(null, { status: 302, headers: { location: 'http://127.0.0.1/private' } }));
+            }
+            if (fetchedClientId.endsWith('/mismatch.json')) {
+                return Promise.resolve(
+                    new Response(JSON.stringify({ client_id: 'https://attacker.example.com/metadata.json' }), {
+                        status: 200,
+                        headers: { 'content-type': 'application/json' }
+                    })
+                );
+            }
+            if (fetchedClientId.endsWith('/oversized.json')) {
+                return Promise.resolve(new Response('x'.repeat(5 * 1024 + 1), { status: 200, headers: { 'content-type': 'application/json' } }));
+            }
+            if (fetchedClientId === CLAUDE_CODE_CLIENT_ID || fetchedClientId.endsWith('/native.json') || fetchedClientId.endsWith('/unspecified.json')) {
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            client_id: fetchedClientId,
+                            client_name: 'Native MCP Client',
+                            ...(fetchedClientId.endsWith('/native.json') ? { application_type: 'native' } : {}),
+                            redirect_uris: ['http://localhost/callback'],
+                            grant_types: ['authorization_code', 'refresh_token'],
+                            response_types: ['code'],
+                            token_endpoint_auth_method: 'none',
+                            scope: 'environment:*'
+                        }),
+                        { status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'max-age=3600' } }
+                    )
+                );
+            }
+            return Promise.resolve(
+                new Response(
+                    JSON.stringify({
+                        client_id: fetchedClientId,
+                        client_name: 'Test MCP Client',
+                        redirect_uris: ['https://client.example.com/callback'],
+                        grant_types: ['authorization_code', 'refresh_token'],
+                        response_types: ['code'],
+                        token_endpoint_auth_method: 'none',
+                        scope: 'environment:*'
+                    }),
+                    { status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'max-age=3600' } }
+                )
+            );
+        });
+
+        const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+        clientId = 'https://client.example.com/oauth/metadata.json';
+        provider = createOAuthProvider({
+            knex: vi.fn() as unknown as Knex,
+            userExists: (accountId) => existingAccounts.has(accountId),
+            config: {
+                baseUrl: 'http://localhost',
+                cookieKeys: ['a'.repeat(32), 'b'.repeat(32)],
+                encryptionKey: Buffer.alloc(32, 's').toString('base64'),
+                jwks: { keys: [{ ...privateKey.export({ format: 'jwk' }), kid: 'test-key', use: 'sig', alg: 'RS256' }] }
+            },
+            resource: {
+                resource: 'https://mcp.example.com/mcp',
+                scopes: ['environment:*']
+            },
+            interactionUrl: (uid) => `/oauth/interaction/${encodeURIComponent(uid)}`
+        });
+        const providerCallback = provider.callback();
+        server = createServer((req, res) => {
+            void handleProviderRequest(provider, providerCallback, req, res);
+        });
+        await new Promise<void>((resolve) => server.listen(0, resolve));
+        const address = server.address() as AddressInfo;
+        origin = `http://127.0.0.1:${address.port}`;
+    });
+
+    afterAll(async () => {
+        await new Promise<void>((resolve, reject) => server.close((err) => (err ? reject(err) : resolve())));
+    });
+
+    it('advertises the CIMD-only authorization code server', async () => {
+        const response = await fetch(`${origin}/.well-known/oauth-authorization-server`);
+        const discovery = (await response.json()) as Record<string, unknown>;
+
+        expect(response.status).toBe(200);
+        expect(discovery).toMatchObject({
+            issuer: 'http://localhost',
+            authorization_endpoint: 'http://localhost/oauth/authorize',
+            token_endpoint: 'http://localhost/oauth/token',
+            revocation_endpoint: 'http://localhost/oauth/revoke',
+            jwks_uri: 'http://localhost/oauth/jwks',
+            client_id_metadata_document_supported: true,
+            grant_types_supported: ['authorization_code', 'refresh_token'],
+            response_types_supported: ['code'],
+            code_challenge_methods_supported: ['S256']
+        });
+        expect(discovery).not.toHaveProperty('registration_endpoint');
+        expect(discovery).not.toHaveProperty('userinfo_endpoint');
+        expect(discovery['scopes_supported']).toContain('environment:*');
+        expect(discovery['scopes_supported']).not.toContain('openid');
+    });
+
+    it('uses OAuth-specific cookie names that cannot shadow the Nango dashboard session', () => {
+        expect(provider.cookieName('session')).toBe('nango_oauth_session');
+        expect(provider.cookieName('interaction')).toBe('nango_oauth_interaction');
+        expect(provider.cookieName('resume')).toBe('nango_oauth_resume');
+    });
+
+    it('switches users through the explicitly routed session confirmation endpoint', async () => {
+        const first = await authorize(provider, origin, clientId);
+        const switched = await authorize(provider, origin, clientId, 'https://mcp.example.com/mcp', 'environment:*', {
+            cookies: first.cookies,
+            loginHint: SWITCHED_ACCOUNT_ID
+        });
+
+        expect(switched.visited).toContain(`POST ${origin}${OAUTH_SESSION_END_CONFIRM_PATH}`);
+        const tokens = await exchangeCode(origin, clientId, switched.code, switched.verifier);
+        const accessToken = artifacts.get(`AccessToken:${stringValue(tokens['access_token'])}`);
+        expect(accessToken?.grantId).toEqual(expect.any(String));
+        expect(artifacts.get(`Grant:${String(accessToken?.grantId)}`)?.accountId).toBe(SWITCHED_ACCOUNT_ID);
+    });
+
+    it('requires dashboard authentication for every authorization while reusing consent', async () => {
+        const authorizationClient = 'https://client.example.com/oauth/dashboard-session.json';
+        const first = await authorize(provider, origin, authorizationClient);
+        const second = await authorize(provider, origin, authorizationClient, 'https://mcp.example.com/mcp', 'environment:*', {
+            cookies: first.cookies
+        });
+
+        expect(first.prompts.map((prompt) => prompt.name)).toEqual(['login', 'consent']);
+        expect(second.prompts).toEqual([{ name: 'login', reasons: ['dashboard_session'] }]);
+    });
+
+    it('allows a public native client to choose its loopback callback port', async () => {
+        const nativeClient = 'https://client.example.com/oauth/native.json';
+        const redirectUri = 'http://localhost:3118/callback';
+        const authorization = await authorize(provider, origin, nativeClient, 'https://mcp.example.com/mcp', 'environment:*', { redirectUri });
+        const tokens = await exchangeCode(origin, nativeClient, authorization.code, authorization.verifier, 'https://mcp.example.com/mcp', redirectUri);
+
+        expect(tokens).toMatchObject({ token_type: 'Bearer', scope: 'environment:*' });
+
+        const wrongPathVerifier = randomBytes(32).toString('base64url');
+        const wrongPathAuthorization = new URL(`${origin}/oauth/authorize`);
+        wrongPathAuthorization.search = authorizationParams(
+            nativeClient,
+            wrongPathVerifier,
+            'https://mcp.example.com/mcp',
+            'environment:*',
+            'http://localhost:3118/not-the-registered-path'
+        ).toString();
+        const wrongPathResponse = await fetch(wrongPathAuthorization, { redirect: 'manual' });
+
+        expect(wrongPathResponse.status).toBe(400);
+        expect(await wrongPathResponse.text()).toContain('invalid_redirect_uri');
+
+        const unspecifiedClient = 'https://client.example.com/oauth/unspecified.json';
+        const webClientVerifier = randomBytes(32).toString('base64url');
+        const webClientAuthorization = new URL(`${origin}/oauth/authorize`);
+        webClientAuthorization.search = authorizationParams(
+            unspecifiedClient,
+            webClientVerifier,
+            'https://mcp.example.com/mcp',
+            'environment:*',
+            redirectUri
+        ).toString();
+        const webClientResponse = await fetch(webClientAuthorization, { redirect: 'manual' });
+
+        expect(webClientResponse.status).toBe(400);
+        expect(await webClientResponse.text()).toContain('invalid_redirect_uri');
+    });
+
+    it('allows only Claude Code to vary its port when application_type is omitted', async () => {
+        const redirectUri = 'http://localhost:3118/callback';
+        const authorization = await authorize(provider, origin, CLAUDE_CODE_CLIENT_ID, 'https://mcp.example.com/mcp', 'environment:*', { redirectUri });
+        const tokens = await exchangeCode(
+            origin,
+            CLAUDE_CODE_CLIENT_ID,
+            authorization.code,
+            authorization.verifier,
+            'https://mcp.example.com/mcp',
+            redirectUri
+        );
+
+        expect(tokens).toMatchObject({ token_type: 'Bearer', scope: 'environment:*' });
+
+        const wrongPathVerifier = randomBytes(32).toString('base64url');
+        const wrongPathAuthorization = new URL(`${origin}/oauth/authorize`);
+        wrongPathAuthorization.search = authorizationParams(
+            CLAUDE_CODE_CLIENT_ID,
+            wrongPathVerifier,
+            'https://mcp.example.com/mcp',
+            'environment:*',
+            'http://localhost:3118/not-the-registered-path'
+        ).toString();
+        const wrongPathResponse = await fetch(wrongPathAuthorization, { redirect: 'manual' });
+
+        expect(wrongPathResponse.status).toBe(400);
+        expect(await wrongPathResponse.text()).toContain('invalid_redirect_uri');
+    });
+
+    it('does not expose dynamic client registration', async () => {
+        const response = await fetch(`${origin}/oauth/register`, { method: 'POST' });
+        expect(response.status).toBe(404);
+    });
+
+    it('rejects OpenID Connect scopes', async () => {
+        const response = await fetch(`${origin}/oauth/authorize?scope=openid%20environment%3A*`);
+
+        expect(response.status).toBe(400);
+        expect(await response.json()).toStrictEqual({
+            error: 'invalid_scope',
+            error_description: 'OpenID Connect scopes are not supported'
+        });
+    });
+
+    it('completes authorization code and rotating refresh token grants with a cached CIMD client', async () => {
+        const before = cimdFetches;
+        const first = await authorize(provider, origin, clientId);
+        const tokens = await exchangeCode(origin, clientId, first.code, first.verifier);
+
+        expect(tokens).toMatchObject({
+            token_type: 'Bearer',
+            expires_in: 3600,
+            scope: 'environment:*'
+        });
+        expect(typeof tokens['access_token']).toBe('string');
+        expect(typeof tokens['refresh_token']).toBe('string');
+
+        const refreshed = await postToken(origin, {
+            grant_type: 'refresh_token',
+            client_id: clientId,
+            refresh_token: stringValue(tokens['refresh_token']),
+            resource: 'https://mcp.example.com/mcp'
+        });
+        expect(refreshed.response.status).toBe(200);
+        expect(typeof refreshed.body['access_token']).toBe('string');
+        expect(typeof refreshed.body['refresh_token']).toBe('string');
+        expect(refreshed.body['refresh_token']).not.toBe(tokens['refresh_token']);
+
+        const replay = await postToken(origin, {
+            grant_type: 'refresh_token',
+            client_id: clientId,
+            refresh_token: stringValue(tokens['refresh_token']),
+            resource: 'https://mcp.example.com/mcp'
+        });
+        expect(replay.response.status).toBe(400);
+        expect(replay.body['error']).toBe('invalid_grant');
+        expect(cimdFetches).toBe(before);
+    });
+
+    it('rejects token exchange when the referenced account no longer exists', async () => {
+        const authorization = await authorize(provider, origin, clientId);
+        existingAccounts.delete(TEST_ACCOUNT_ID);
+        try {
+            const result = await postToken(origin, {
+                grant_type: 'authorization_code',
+                client_id: clientId,
+                code: authorization.code,
+                redirect_uri: 'https://client.example.com/callback',
+                code_verifier: authorization.verifier,
+                resource: 'https://mcp.example.com/mcp'
+            });
+
+            expect(result.response.status).toBe(400);
+            expect(result.body['error']).toBe('invalid_grant');
+        } finally {
+            existingAccounts.add(TEST_ACCOUNT_ID);
+        }
+    });
+
+    it('requires the exact resource at authorization and token boundaries', async () => {
+        const authorization = await authorize(provider, origin, clientId);
+        const missingAtToken = await postToken(origin, {
+            grant_type: 'authorization_code',
+            client_id: clientId,
+            code: authorization.code,
+            redirect_uri: 'https://client.example.com/callback',
+            code_verifier: authorization.verifier
+        });
+
+        expect(missingAtToken.response.status).toBe(400);
+        expect(missingAtToken.body['error']).toBe('invalid_target');
+
+        const verifier = randomBytes(32).toString('base64url');
+        const invalidAuthorization = new URL(`${origin}/oauth/authorize`);
+        invalidAuthorization.search = authorizationParams(clientId, verifier, 'https://mcp.example.com/not-mcp').toString();
+        const response = await fetch(invalidAuthorization, { redirect: 'manual' });
+
+        expect(response.status).toBe(303);
+        const location = response.headers.get('location');
+        if (!location) throw new Error('Missing authorization error redirect');
+        expect(new URL(location).searchParams.get('error')).toBe('invalid_target');
+
+        const duplicateVerifier = randomBytes(32).toString('base64url');
+        const duplicateAuthorization = new URL(`${origin}/oauth/authorize`);
+        duplicateAuthorization.search = authorizationParams(clientId, duplicateVerifier, [
+            'https://mcp.example.com/mcp',
+            'https://mcp.example.com/mcp'
+        ]).toString();
+        const duplicateResponse = await fetch(duplicateAuthorization, { redirect: 'manual' });
+        expect(duplicateResponse.status).toBe(303);
+        const duplicateLocation = duplicateResponse.headers.get('location');
+        if (!duplicateLocation) throw new Error('Missing duplicate resource error redirect');
+        expect(new URL(duplicateLocation).searchParams.get('error')).toBe('invalid_target');
+
+        const refreshAuthorization = await authorize(provider, origin, clientId);
+        const tokens = await exchangeCode(origin, clientId, refreshAuthorization.code, refreshAuthorization.verifier);
+        const missingAtRefresh = await postToken(origin, {
+            grant_type: 'refresh_token',
+            client_id: clientId,
+            refresh_token: stringValue(tokens['refresh_token'])
+        });
+        expect(missingAtRefresh.response.status).toBe(400);
+        expect(missingAtRefresh.body['error']).toBe('invalid_target');
+
+        const retryAfterMissing = await postToken(origin, {
+            grant_type: 'refresh_token',
+            client_id: clientId,
+            refresh_token: stringValue(tokens['refresh_token']),
+            resource: 'https://mcp.example.com/mcp'
+        });
+        expect(retryAfterMissing.response.status).toBe(200);
+
+        const wrongResourceAuthorization = await authorize(provider, origin, clientId);
+        const wrongResourceTokens = await exchangeCode(origin, clientId, wrongResourceAuthorization.code, wrongResourceAuthorization.verifier);
+        const notGrantedAtRefresh = await postToken(origin, {
+            grant_type: 'refresh_token',
+            client_id: clientId,
+            refresh_token: stringValue(wrongResourceTokens['refresh_token']),
+            resource: 'https://api.example.com/agent-sessions/session-1/mcp'
+        });
+        expect(notGrantedAtRefresh.response.status).toBe(400);
+        expect(notGrantedAtRefresh.body['error']).toBe('invalid_target');
+
+        const retryAfterNotGranted = await postToken(origin, {
+            grant_type: 'refresh_token',
+            client_id: clientId,
+            refresh_token: stringValue(wrongResourceTokens['refresh_token']),
+            resource: 'https://mcp.example.com/mcp'
+        });
+        expect(retryAfterNotGranted.response.status).toBe(200);
+    });
+
+    it('revokes a refresh-token grant', async () => {
+        const authorization = await authorize(provider, origin, clientId);
+        const tokens = await exchangeCode(origin, clientId, authorization.code, authorization.verifier);
+        const refreshToken = stringValue(tokens['refresh_token']);
+        const revocation = await fetch(`${origin}/oauth/revoke`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ client_id: clientId, token: refreshToken, token_type_hint: 'refresh_token' })
+        });
+
+        expect(revocation.status).toBe(200);
+        const refreshed = await postToken(origin, {
+            grant_type: 'refresh_token',
+            client_id: clientId,
+            refresh_token: refreshToken,
+            resource: 'https://mcp.example.com/mcp'
+        });
+        expect(refreshed.response.status).toBe(400);
+        expect(refreshed.body['error']).toBe('invalid_grant');
+    });
+
+    it('does not follow redirects or cache invalid and oversized CIMD responses', async () => {
+        const before = cimdFetches;
+
+        await expect(provider.Client.find('https://client.example.com/oauth/redirect.json')).rejects.toThrow();
+        await expect(provider.Client.find('https://client.example.com/oauth/mismatch.json')).rejects.toThrow();
+        await expect(provider.Client.find('https://client.example.com/oauth/mismatch.json')).rejects.toThrow();
+        await expect(provider.Client.find('https://client.example.com/oauth/oversized.json')).rejects.toThrow();
+
+        expect(cimdFetches).toBe(before + 4);
+    });
+
+    it('coalesces concurrent CIMD fetches for one client ID', async () => {
+        const before = cimdFetches;
+        const candidate = 'https://client.example.com/oauth/concurrent.json';
+
+        await Promise.all(Array.from({ length: 10 }, async () => await provider.Client.find(candidate)));
+
+        expect(cimdFetches).toBe(before + 1);
+    });
+
+    it('bounds the valid CIMD document cache', async () => {
+        const before = cimdFetches;
+        // oidc-provider's max-size 100 LRU uses recent and stale generations. Two full
+        // generations must pass before a frequently used entry is guaranteed evicted.
+        for (let index = 0; index < 200; index++) {
+            const candidate = `https://client.example.com/oauth/client-${index}.json`;
+            const verifier = randomBytes(32).toString('base64url');
+            const authorization = new URL(`${origin}/oauth/authorize`);
+            authorization.search = authorizationParams(candidate, verifier, 'https://mcp.example.com/mcp').toString();
+            const response = await fetch(authorization, { redirect: 'manual' });
+            expect(response.status).toBe(303);
+        }
+        expect(cimdFetches).toBe(before + 200);
+
+        const verifier = randomBytes(32).toString('base64url');
+        const authorization = new URL(`${origin}/oauth/authorize`);
+        authorization.search = authorizationParams(clientId, verifier, 'https://mcp.example.com/mcp').toString();
+        await fetch(authorization, { redirect: 'manual' });
+        expect(cimdFetches).toBe(before + 201);
+    });
+});
+
+async function handleProviderRequest(
+    provider: Provider,
+    providerCallback: ReturnType<Provider['callback']>,
+    req: IncomingMessage,
+    res: ServerResponse
+): Promise<void> {
+    try {
+        if (req.url?.startsWith('/oauth/interaction/')) {
+            await finishTestInteraction(provider, req, res);
+            return;
+        }
+        await providerCallback(req, res);
+    } catch (err) {
+        res.statusCode = 500;
+        res.end(err instanceof Error ? err.message : 'Unknown test error');
+    }
+}
+
+async function finishTestInteraction(provider: Provider, req: IncomingMessage, res: ServerResponse): Promise<void> {
+    const interaction = await provider.interactionDetails(req, res);
+    res.setHeader('x-test-prompt', `${interaction.prompt.name}:${interaction.prompt.reasons.join(',')}:${JSON.stringify(interaction.prompt.details)}`);
+    if (interaction.prompt.name === 'login') {
+        const accountId = readOptionalStringParam(interaction, 'login_hint') ?? TEST_ACCOUNT_ID;
+        await provider.interactionFinished(req, res, { login: { accountId, amr: ['test'], remember: true, ts: Date.now() / 1000 } });
+        return;
+    }
+    if (interaction.prompt.name !== 'consent') {
+        throw new Error(`Unexpected test interaction prompt: ${interaction.prompt.name}`);
+    }
+
+    const clientId = interactionParam(interaction, 'client_id');
+    const accountId = interaction.session?.accountId;
+    if (!accountId) throw new Error('Test consent interaction has no account');
+    const grant = interaction.grantId ? await provider.Grant.find(interaction.grantId) : new provider.Grant({ accountId, clientId });
+    if (!grant) throw new Error('Test grant disappeared');
+    let addedScopes = false;
+    const missingOidcScopes: unknown = interaction.prompt.details['missingOIDCScope'];
+    if (isStringArray(missingOidcScopes)) {
+        grant.addOIDCScope(missingOidcScopes.join(' '));
+        addedScopes = true;
+    }
+    const missingResourceScopes: unknown = interaction.prompt.details['missingResourceScopes'];
+    if (missingResourceScopes && typeof missingResourceScopes === 'object' && !Array.isArray(missingResourceScopes)) {
+        for (const [resource, scopes] of Object.entries(missingResourceScopes)) {
+            if (!isStringArray(scopes)) throw new Error(`Invalid test resource scopes for ${resource}`);
+            grant.addResourceScope(resource, scopes.join(' '));
+            addedScopes = true;
+        }
+    }
+    if (!addedScopes) {
+        throw new Error(`Test interaction did not request scopes: ${JSON.stringify(interaction.prompt.details)}`);
+    }
+    const grantId = await grant.save();
+    await provider.interactionFinished(req, res, { consent: { grantId } });
+}
+
+function isStringArray(value: unknown): value is string[] {
+    return Array.isArray(value) && value.every((entry): entry is string => typeof entry === 'string');
+}
+
+async function authorize(
+    provider: Provider,
+    origin: string,
+    clientId: string,
+    resource: string | readonly string[] = 'https://mcp.example.com/mcp',
+    scope = 'environment:*',
+    options: { cookies?: Map<string, string>; loginHint?: string; redirectUri?: string } = {}
+): Promise<{ code: string; verifier: string; cookies: Map<string, string>; visited: string[]; prompts: Array<{ name: string; reasons: string[] }> }> {
+    const verifier = randomBytes(32).toString('base64url');
+    const authorization = new URL(`${origin}/oauth/authorize`);
+    authorization.search = authorizationParams(clientId, verifier, resource, scope, options.redirectUri).toString();
+    if (options.loginHint) authorization.searchParams.set('login_hint', options.loginHint);
+    let nextUrl = authorization.href;
+    let method: 'GET' | 'POST' = 'GET';
+    let body: URLSearchParams | undefined;
+    const cookies = options.cookies ?? new Map<string, string>();
+    const visited: string[] = [];
+    const prompts: Array<{ name: string; reasons: string[] }> = [];
+
+    for (let redirects = 0; redirects < 10; redirects++) {
+        const headers = new Headers();
+        if (cookies.size) {
+            headers.set('cookie', [...cookies].map(([name, value]) => `${name}=${value}`).join('; '));
+        }
+        if (body) headers.set('content-type', 'application/x-www-form-urlencoded');
+        const request: RequestInit = {
+            method,
+            headers,
+            redirect: 'manual'
+        };
+        if (body) request.body = body;
+        const response = await fetch(nextUrl, request);
+        rememberCookies(response, cookies);
+        const prompt = response.headers.get('x-test-prompt');
+        if (prompt) prompts.push(parseTestPrompt(prompt));
+        const location = response.headers.get('location');
+        visited.push(`${method} ${nextUrl}`);
+        if (!location) {
+            const responseBody = await response.text();
+            const form = autoSubmitForm(responseBody);
+            if (!form) throw new Error(`OAuth test flow stopped with ${response.status}: ${responseBody}\n${visited.join('\n')}`);
+            nextUrl = new URL(form.action, nextUrl).href.replace(provider.issuer, origin);
+            method = 'POST';
+            body = form.body;
+            continue;
+        }
+        const resolved = new URL(location, nextUrl);
+        const redirectUri = new URL(options.redirectUri ?? 'https://client.example.com/callback');
+        if (resolved.origin === redirectUri.origin && resolved.pathname === redirectUri.pathname) {
+            expect(resolved.searchParams.get('state')).toBe('test-state');
+            const code = resolved.searchParams.get('code');
+            if (!code) throw new Error(`OAuth test flow failed: ${resolved.searchParams.get('error') ?? 'missing code'}`);
+            return { code, verifier, cookies, visited, prompts };
+        }
+        nextUrl = resolved.href.replace(provider.issuer, origin);
+        method = 'GET';
+        body = undefined;
+    }
+    throw new Error(`OAuth test flow exceeded the redirect limit:\n${visited.join('\n')}`);
+}
+
+function parseTestPrompt(value: string): { name: string; reasons: string[] } {
+    const [name, reasons] = value.split(':', 2);
+    if (!name || reasons === undefined) throw new Error(`Invalid test interaction prompt: ${value}`);
+    return { name, reasons: reasons ? reasons.split(',') : [] };
+}
+
+function authorizationParams(
+    clientId: string,
+    verifier: string,
+    resource: string | readonly string[],
+    scope = 'environment:*',
+    redirectUri = 'https://client.example.com/callback'
+): URLSearchParams {
+    const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope,
+        state: 'test-state',
+        code_challenge: createHash('sha256').update(verifier).digest('base64url'),
+        code_challenge_method: 'S256'
+    });
+    for (const value of typeof resource === 'string' ? [resource] : resource) {
+        params.append('resource', value);
+    }
+    return params;
+}
+
+async function exchangeCode(
+    origin: string,
+    clientId: string,
+    code: string,
+    verifier: string,
+    resource = 'https://mcp.example.com/mcp',
+    redirectUri = 'https://client.example.com/callback'
+): Promise<Record<string, unknown>> {
+    const result = await postToken(origin, {
+        grant_type: 'authorization_code',
+        client_id: clientId,
+        code,
+        redirect_uri: redirectUri,
+        code_verifier: verifier,
+        resource
+    });
+    expect(result.response.status).toBe(200);
+    return result.body;
+}
+
+async function postToken(origin: string, input: Record<string, string>): Promise<{ response: Response; body: Record<string, unknown> }> {
+    const response = await fetch(`${origin}/oauth/token`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(input)
+    });
+    return { response, body: (await response.json()) as Record<string, unknown> };
+}
+
+function rememberCookies(response: Response, cookies: Map<string, string>): void {
+    for (const cookie of response.headers.getSetCookie()) {
+        const [pair] = cookie.split(';');
+        if (!pair) continue;
+        const separator = pair.indexOf('=');
+        if (separator < 1) continue;
+        cookies.set(pair.slice(0, separator), pair.slice(separator + 1));
+    }
+}
+
+function interactionParam(interaction: Interaction, name: string): string {
+    const value = interaction.params[name];
+    if (typeof value !== 'string') throw new Error(`Missing ${name} in test interaction`);
+    return value;
+}
+
+function readOptionalStringParam(interaction: Interaction, name: string): string | undefined {
+    const value = interaction.params[name];
+    return typeof value === 'string' ? value : undefined;
+}
+
+function autoSubmitForm(html: string): { action: string; body: URLSearchParams } | null {
+    const action = html.match(/<form method="post" action="([^"]+)">/)?.[1];
+    if (!action) return null;
+    const body = new URLSearchParams();
+    for (const input of html.matchAll(/<input type="hidden" name="([^"]+)" value="([^"]*)"\/>/g)) {
+        const name = input[1];
+        const value = input[2];
+        if (name && value !== undefined) body.set(name, value);
+    }
+    return { action, body };
+}
+
+function stringValue(value: unknown): string {
+    if (typeof value !== 'string') throw new Error('Expected a string token');
+    return value;
+}

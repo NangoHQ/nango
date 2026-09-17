@@ -10,7 +10,6 @@ import type {
     AgentSessionEndedReason,
     AgentSessionMetaTools,
     AgentSessionResolvedConnections,
-    AuditActor,
     DBEnvironment,
     DBTeam
 } from '@nangohq/types';
@@ -55,7 +54,6 @@ export interface TerminateAgentSessionParams {
     account: DBTeam;
     environment: DBEnvironment;
     sessionId: string;
-    endedBy: AuditActor;
 }
 
 type AgentSessionErrorCode = 'not_found' | 'creation_failed' | 'termination_failed' | 'token_creation_failed';
@@ -136,7 +134,7 @@ export async function getAgentSession(
  * not get a second terminated operation.
  */
 export async function terminateAgentSession(params: TerminateAgentSessionParams): Promise<Result<EndedAgentSession, AgentSessionTerminationError>> {
-    const { account, environment, sessionId, endedBy } = params;
+    const { account, environment, sessionId } = params;
 
     const ended = await endAgentSession(db.knex, {
         id: sessionId,
@@ -155,10 +153,7 @@ export async function terminateAgentSession(params: TerminateAgentSessionParams)
 
     const { session, alreadyEnded } = ended.value;
     if (!alreadyEnded) {
-        const logCtx = await logContextGetter.create(
-            { operation: { type: 'agent_session', action: 'terminate' } },
-            { account, environment, meta: { endedBy, endedAt: session.endedAt.toISOString() } }
-        );
+        const logCtx = await logContextGetter.create({ operation: { type: 'agent_session', action: 'terminate' } }, { account, environment });
 
         await logCtx.enrichOperation({ actor: { kind: 'session', id: session.id } });
         void logCtx.info('Agent session terminated');
@@ -274,6 +269,28 @@ export async function listExpiredAgentSessions(db: Knex, { limit }: { limit: num
         environmentId: session.environment_id,
         expiresAt: session.expires_at
     }));
+}
+
+export async function expireAgentSessions(db: Knex, { limit }: { limit: number }): Promise<number> {
+    const sessions = await listExpiredAgentSessions(db, { limit });
+
+    let expired = 0;
+    for (const session of sessions) {
+        const ended = await endAgentSession(db, {
+            id: session.id,
+            accountId: session.accountId,
+            environmentId: session.environmentId,
+            reason: 'expired'
+        });
+        if (ended.isErr()) {
+            report(ended.error);
+            continue;
+        }
+
+        expired++;
+    }
+
+    return expired;
 }
 
 function jsonb(db: Knex, value: object): Knex.Raw {

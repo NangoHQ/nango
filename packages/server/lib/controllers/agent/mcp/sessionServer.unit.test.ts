@@ -15,7 +15,7 @@ vi.mock('../../../services/action.service.js', () => ({ executeAction }));
 function session({
     compiledToolset = {},
     resolvedConnections = {},
-    metaTools = { nangoToolSearch: true, nangoExecute: true }
+    metaTools = { nangoToolSearch: true, nangoExecute: true, nangoProxy: false }
 }: {
     compiledToolset?: AgentSessionCompiledToolset;
     resolvedConnections?: AgentSession['resolvedConnections'];
@@ -50,6 +50,7 @@ describe('createAgentSessionMcpServer', () => {
         const server = createAgentSessionMcpServer({
             account: seeders.getTestTeam(),
             environment: seeders.getTestEnvironment(),
+            plan: null,
             session: session()
         });
         const client = new Client({ name: 'test-client', version: '1.0.0' });
@@ -78,6 +79,7 @@ describe('createAgentSessionMcpServer', () => {
             {
                 account: seeders.getTestTeam(),
                 environment: seeders.getTestEnvironment(),
+                plan: null,
                 session: session({
                     compiledToolset: { notion: { provider: 'notion', pinned: [tool('read_doc')], searchable: [] } },
                     resolvedConnections: {
@@ -111,10 +113,13 @@ describe('createAgentSessionMcpServer', () => {
 describe('listSessionTools', () => {
     it('lists the meta tools the session was created with', () => {
         expect(listSessionTools(session()).map((tool) => tool.name)).toStrictEqual(['nango_tool_search', 'nango_execute']);
-        expect(listSessionTools(session({ metaTools: { nangoToolSearch: false, nangoExecute: true } })).map((tool) => tool.name)).toStrictEqual([
-            'nango_execute'
-        ]);
-        expect(listSessionTools(session({ metaTools: { nangoToolSearch: false, nangoExecute: false } }))).toStrictEqual([]);
+        expect(
+            listSessionTools(session({ metaTools: { nangoToolSearch: false, nangoExecute: true, nangoProxy: false } })).map((tool) => tool.name)
+        ).toStrictEqual(['nango_execute']);
+        expect(
+            listSessionTools(session({ metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: true } })).map((tool) => tool.name)
+        ).toStrictEqual(['nango_tool_search', 'nango_execute', 'nango_proxy']);
+        expect(listSessionTools(session({ metaTools: { nangoToolSearch: false, nangoExecute: false, nangoProxy: false } }))).toStrictEqual([]);
     });
 
     it('lists pinned tools and leaves searchable tools out', () => {

@@ -42,9 +42,9 @@ export const TeamBilling: React.FC = () => {
     // Plan titles come from `/api/v1/plans`; with no titles the strip can only show raw Orb codes,
     // so a failed load hides the section rather than leaking them or holding a skeleton forever.
     const { isError: didPlanListFail } = useApiGetPlans(env);
-    const showSummary = !didPlanListFail && (isPlanPending || showsSummaryStrip(environmentData?.plan));
 
     const transition = usePlanTransition();
+    const showSummary = !didPlanListFail && (isPlanPending || showsSummaryStrip(environmentData?.plan, transition !== null));
 
     // A failed refetch keeps the previous plan cached, so the error is checked rather than trusting stale data.
     const showSpendAlerts = canManageBilling && !didPlanFail && hasMonthlySpend(environmentData?.plan) && !!environmentData?.plan?.orb_subscription_id;

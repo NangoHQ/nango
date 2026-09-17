@@ -5,6 +5,7 @@ import { errorToObject, report } from '@nangohq/utils';
 import { envs } from '../env.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { computeIdempotencyKey } from './dispatch.js';
+import { warnUnverifiedWebhook } from './missing-secret.js';
 
 import type { DirectDispatchSource, DispatchContext, PreparedDispatchExecution, WebhookConnection } from './dispatch.js';
 import type { LogContextGetter } from '@nangohq/logs';
@@ -39,6 +40,10 @@ export async function prepareLegacyDispatchExecution({
                 syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
             }
         );
+
+        if (context.unverified) {
+            warnUnverifiedWebhook(logCtx, context.integration, context.unverified);
+        }
     } catch (err) {
         await handleLegacyPreparationFailure({ context, execution, error: err });
         return null;

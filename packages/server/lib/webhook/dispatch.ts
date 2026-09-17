@@ -12,6 +12,7 @@ import { prepareLegacyDispatchExecution } from './dispatchLegacy.js';
 
 import type { DispatchQueuePublisher, PreparedDispatchMessage } from './dispatch-queue/publisher.js';
 import type { MatchedFunctionExecution } from './dispatchFunction.js';
+import type { UnverifiedWebhook } from './missing-secret.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type {
     ConnectionInternal,
@@ -36,6 +37,8 @@ export interface DispatchContext {
     integration: DBIntegrationDecrypted;
     request: HttpRequest;
     logContextGetter: LogContextGetter;
+    /** Present when the routing script accepted the webhook without verifying it. */
+    unverified?: UnverifiedWebhook | undefined;
 }
 
 export type DirectDispatchSource = 'webhook' | 'oversized';

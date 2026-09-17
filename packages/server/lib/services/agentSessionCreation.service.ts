@@ -17,7 +17,9 @@ import type {
     AgentSessionMetaToolsSummary,
     AgentSessionPinnedTools,
     AgentSessionResolvedConnections,
+    AgentSessionResolvedConnectionSummary,
     AgentSessionTenantConnections,
+    AgentSessionToolNames,
     AgentSessionToolsetPolicy,
     AgentSessionToolsetSummary,
     DBEnvironment,
@@ -38,9 +40,14 @@ const EXPIRES_IN_UNITS_IN_MS: Record<string, number> = {
     d: 24 * 60 * 60 * 1000
 };
 
-const META_TOOLS = ['nango_tool_search', 'nango_execute'] as const;
+const META_TOOLS = {
+    nangoToolSearch: { name: 'nango_tool_search', enabledByDefault: true },
+    nangoExecute: { name: 'nango_execute', enabledByDefault: true },
+    // Off by default: it reaches any endpoint of a connected integration, not only the toolset's tools.
+    nangoProxy: { name: 'nango_proxy', enabledByDefault: false }
+} as const satisfies Record<keyof AgentSessionMetaTools, { name: keyof AgentSessionMetaToolsSummary; enabledByDefault: boolean }>;
 
-const DEFAULT_META_TOOLS: AgentSessionMetaTools = { nangoToolSearch: true, nangoExecute: true };
+const META_TOOL_NAMES = Object.values(META_TOOLS).map((metaTool) => metaTool.name);
 
 export const agentSessionExpiresInSchema = z
     .string()
@@ -121,8 +128,8 @@ export async function createAgentSession(params: CreateAgentSessionParams): Prom
             actor: { kind: 'session', id: created.value.session.id },
             meta: {
                 requested: requestedConfig(params),
-                resolvedConnections: created.value.session.resolvedConnections,
-                toolset: created.value.session.compiledToolset,
+                resolvedConnections: resolvedConnectionsSummary(created.value.session.resolvedConnections),
+                toolset: toolsetToolNames(created.value.session.compiledToolset),
                 metaTools: created.value.session.metaTools,
                 expiresAt: created.value.session.expiresAt.toISOString()
             }
@@ -166,6 +173,28 @@ export function toolsetSummary(
     );
 }
 
+export function resolvedConnectionsSummary(connections: AgentSessionResolvedConnections): Record<string, AgentSessionResolvedConnectionSummary> {
+    return Object.fromEntries(
+        Object.entries(connections).map(([integrationId, connection]) => [
+            integrationId,
+            { integrationId: connection.integrationId, provider: connection.provider, connectionId: connection.connectionId }
+        ])
+    );
+}
+
+export function toolsetToolNames(toolset: AgentSessionCompiledToolset): Record<string, AgentSessionToolNames> {
+    return Object.fromEntries(
+        Object.entries(toolset).map(([integrationId, integration]) => [
+            integrationId,
+            {
+                provider: integration.provider,
+                pinned: integration.pinned.map((tool) => tool.name),
+                searchable: integration.searchable.map((tool) => tool.name)
+            }
+        ])
+    );
+}
+
 async function runCreation(params: CreateAgentSessionParams, logCtx: LogContextOrigin): Promise<Result<CreatedAgentSession, AgentSessionCreationError>> {
     const { account, environment } = params;
 
@@ -174,7 +203,7 @@ async function runCreation(params: CreateAgentSessionParams, logCtx: LogContextO
         return Err(
             new AgentSessionCreationError({
                 code: 'unknown_meta_tool',
-                message: `${metaTools.unknown.length} ${metaTools.unknown.length === 1 ? 'key is' : 'keys are'} not a meta tool Nango ships. Supported meta tools are ${META_TOOLS.join(', ')}.`,
+                message: `${metaTools.unknown.length} ${metaTools.unknown.length === 1 ? 'key is' : 'keys are'} not a meta tool Nango ships. Supported meta tools are ${META_TOOL_NAMES.join(', ')}.`,
                 payload: { meta_tools: metaTools.unknown }
             })
         );
@@ -233,23 +262,28 @@ async function runCreation(params: CreateAgentSessionParams, logCtx: LogContextO
         token: token.value.token,
         mcpUrl: `${baseUrl}/session/${session.value.id}/mcp`,
         toolset: toolsetSummary(session.value.compiledToolset, session.value.resolvedConnections),
-        metaTools: {
-            nango_tool_search: session.value.metaTools.nangoToolSearch,
-            nango_execute: session.value.metaTools.nangoExecute
-        }
+        metaTools: metaToolsSummary(session.value.metaTools)
     });
 }
 
-function parseMetaTools(requested: Record<string, boolean> | undefined): { applied: AgentSessionMetaTools; unknown: string[] } {
-    const unknown = Object.keys(requested ?? {}).filter((key) => !META_TOOLS.includes(key as (typeof META_TOOLS)[number]));
+export function parseMetaTools(requested: Record<string, boolean> | undefined): { applied: AgentSessionMetaTools; unknown: string[] } {
+    const unknown = Object.keys(requested ?? {}).filter((key) => !META_TOOL_NAMES.includes(key as keyof AgentSessionMetaToolsSummary));
 
-    return {
-        applied: {
-            nangoToolSearch: requested?.['nango_tool_search'] ?? DEFAULT_META_TOOLS.nangoToolSearch,
-            nangoExecute: requested?.['nango_execute'] ?? DEFAULT_META_TOOLS.nangoExecute
-        },
-        unknown
-    };
+    const applied = {} as Record<keyof AgentSessionMetaTools, boolean>;
+    for (const [field, metaTool] of Object.entries(META_TOOLS) as [keyof AgentSessionMetaTools, (typeof META_TOOLS)[keyof AgentSessionMetaTools]][]) {
+        applied[field] = requested?.[metaTool.name] ?? metaTool.enabledByDefault;
+    }
+
+    return { applied, unknown };
+}
+
+export function metaToolsSummary(metaTools: AgentSessionMetaTools): AgentSessionMetaToolsSummary {
+    const summary = {} as AgentSessionMetaToolsSummary;
+    for (const [field, metaTool] of Object.entries(META_TOOLS) as [keyof AgentSessionMetaTools, (typeof META_TOOLS)[keyof AgentSessionMetaTools]][]) {
+        summary[metaTool.name] = metaTools[field];
+    }
+
+    return summary;
 }
 
 function rejected(error: { code: AgentSessionCreationErrorCode; message: string; payload: Record<string, unknown> }): AgentSessionCreationError {

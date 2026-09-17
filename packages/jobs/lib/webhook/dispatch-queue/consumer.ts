@@ -179,7 +179,7 @@ export class DispatchQueueConsumer {
         });
 
         const receivedAt = Date.now();
-        return void (await tracer.scope().activate(span, async () => {
+        return await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -254,7 +254,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        }));
+        });
     }
 
     private async processLegacyGroups(groupedEntries: ParsedLegacyEntry[][], receivedAt: number): Promise<Result<void, ClientError>> {

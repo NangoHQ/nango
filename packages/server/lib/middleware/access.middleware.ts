@@ -148,7 +148,7 @@ export class AccessMiddleware {
         } catch (err) {
             logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
             span.setTag('error', err);
-            errorManager.errRes(res, 'malformed_auth_header');
+            res.status(500).send({ error: { code: 'server_error' } });
             return;
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start, { accountId: res.locals['account']?.id || 'unknown' });
@@ -205,7 +205,7 @@ export class AccessMiddleware {
     async noAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         res.locals['authType'] = 'none';
         if (!req.isAuthenticated()) {
-            const user = await userService.getUserById(process.env['LOCAL_NANGO_USER_ID'] ? parseInt(process.env['LOCAL_NANGO_USER_ID']) : 0);
+            const user = await userService.getUserById(envs.LOCAL_NANGO_USER_ID ?? 0);
             if (!user) {
                 res.status(500).send({ error: { code: 'server_error', message: 'failed to find user in no-auth mode' } });
                 return;

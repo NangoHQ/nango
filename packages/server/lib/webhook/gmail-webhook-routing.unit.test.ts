@@ -12,6 +12,12 @@ import { InternalNango } from './internal-nango.js';
 
 import type { IntegrationConfig } from '@nangohq/types';
 
+const flagMocks = vi.hoisted(() => ({ allowUnauthorizedGmailWebhook: vi.fn() }));
+
+vi.mock('@nangohq/feature-flags', () => ({
+    getFlags: () => ({ allowUnauthorizedGmailWebhook: flagMocks.allowUnauthorizedGmailWebhook })
+}));
+
 vi.mock('./cache.js', () => ({
     getGoogleJWKS: vi.fn()
 }));
@@ -71,7 +77,55 @@ describe('gmailWebhookRouting', () => {
     beforeEach(() => {
         vi.restoreAllMocks();
         getGoogleJWKSMock.mockReset();
+        flagMocks.allowUnauthorizedGmailWebhook.mockReset();
+        flagMocks.allowUnauthorizedGmailWebhook.mockResolvedValue(false);
         vi.spyOn(environmentService, 'getById').mockResolvedValue(environment);
+    });
+
+    it('counts a missing authorization header even when the flag rejects the request', async () => {
+        // These are the accounts still to be migrated. With the flag off the push is rejected, so
+        // counting only what we process would hide exactly the ones we are looking for.
+        const integration = getTestConfig({ provider: 'google-mail', unique_key: 'google-mail' });
+        const { nango, execute } = getNangoMock(integration);
+        const markUnverified = vi.spyOn(nango, 'markUnverified').mockImplementation(() => undefined);
+
+        const result = await GmailWebhookRouting.default(nango, {}, gmailBody() as any, '');
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+        expect(markUnverified).toHaveBeenCalledWith({
+            reason: 'gmail_missing_authorization',
+            remediation: 'Recreate the Pub/Sub push subscription with an OIDC token'
+        });
+    });
+
+    it('counts and processes a missing authorization header when the account is opted out', async () => {
+        flagMocks.allowUnauthorizedGmailWebhook.mockResolvedValue(true);
+        const integration = getTestConfig({ provider: 'google-mail', unique_key: 'google-mail' });
+        const { nango, execute } = getNangoMock(integration);
+        const markUnverified = vi.spyOn(nango, 'markUnverified').mockImplementation(() => undefined);
+
+        const result = await GmailWebhookRouting.default(nango, {}, gmailBody() as any, '');
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalled();
+        expect(markUnverified).toHaveBeenCalledWith({
+            reason: 'gmail_missing_authorization',
+            remediation: 'Recreate the Pub/Sub push subscription with an OIDC token'
+        });
+    });
+
+    it('does not count a signed webhook', async () => {
+        const integration = getTestConfig({ provider: 'google-mail', unique_key: 'google-mail' });
+        const { token, jwk } = createSignedJwt({ integration });
+        getGoogleJWKSMock.mockResolvedValue([jwk as Record<string, string>]);
+
+        const { nango } = getNangoMock(integration);
+        const markUnverified = vi.spyOn(nango, 'markUnverified').mockImplementation(() => undefined);
+
+        await GmailWebhookRouting.default(nango, { authorization: `Bearer ${token}` }, gmailBody() as any, '');
+
+        expect(markUnverified).not.toHaveBeenCalled();
     });
 
     it('routes by connection_config.emailAddressHash first', async () => {

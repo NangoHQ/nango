@@ -6,14 +6,14 @@ import { createAgentSessionMcpServer } from './sessionServer.js';
 import type { GetAgentSessionMcp, PostAgentSessionMcp } from '@nangohq/types';
 
 export const postAgentSessionMcp = asyncWrapperWithEnvironment<PostAgentSessionMcp>(async (req, res) => {
-    const { account, environment, agentSession: session } = res.locals;
+    const { account, environment, plan, agentSession: session } = res.locals;
 
     if (req.params.sessionId !== session.id) {
         res.status(404).send({ error: { code: 'session_not_found', message: `Agent session '${req.params.sessionId}' not found` } });
         return;
     }
 
-    const server = createAgentSessionMcpServer({ account, environment, session }, req.body);
+    const server = createAgentSessionMcpServer({ account, environment, plan, session }, req.body);
     const transport = new NodeStreamableHTTPServerTransport();
 
     res.on('close', () => {
