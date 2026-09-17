@@ -194,9 +194,9 @@ export async function applyPendingPlanChange({
         return Err(new Error('failed_to_sync_applied_plan_change', { cause: resChanged.error }));
     }
 
-    const planChanged = resChanged.value;
+    const planChange = resChanged.value;
 
-    if (planChanged) {
+    if (planChange) {
         logger.info(`Plan updated for account ${team.id} to ${resApply.value.planExternalId}`);
         await clearSpendAlertOnPlanChange({ accountId: team.id, subscriptionId: resApply.value.id });
     }
@@ -279,7 +279,7 @@ export function trackPlanChange(context: PlanChangeContext, change: PlanChanges)
         name: 'account:billing:plan_changed:v2',
         team,
         eventProperties: {
-            source: 'self-served',
+            type: 'self-serve',
             previousPlan: currentPlan.name + (currentPlan.has_growth_features ? ' + growth add-on' : ''),
             newPlan: requested.newPlanCode + (requested.withGrowthFeatures ? ' + growth add-on' : ''),
             orbCustomerId: currentPlan.orb_customer_id

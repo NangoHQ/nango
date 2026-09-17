@@ -2,7 +2,6 @@ import ms from 'ms';
 
 import { Err, flagHasPlan, Ok } from '@nangohq/utils';
 
-import { productTracking } from '../../utils/productTracking.js';
 import { canHaveGrowthAddon, freePlan, GROWTH_FEATURE_FLAGS, isPotentialDowngrade, plansList } from './definitions.js';
 
 import type { DBEnvironment, DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
@@ -15,6 +14,12 @@ const BIGINT_COLUMNS = ['connections_max', 'data_transfer_max'] as const;
 type BigintColumn = (typeof BIGINT_COLUMNS)[number];
 
 type PgPlan = Omit<DBPlan, BigintColumn> & Record<BigintColumn, string | number | null>;
+
+export type AppliedPlanChange = {
+    previousPlan: DBPlan;
+    updatedPlan: DBPlan;
+    isDowngrade: boolean;
+};
 
 const normalizeSafeInteger = (value: string | number | null, field: BigintColumn): number | null => {
     if (value === null) {
@@ -231,7 +236,7 @@ export async function setGrowthAddon(
     return Ok(undefined);
 }
 
-/** Resolves to whether the plan actually changed, so callers can react only when it did. */
+/** Returns the persisted before/after state when the plan changed, or null when it was already current. */
 export async function handlePlanChanged(
     db: Knex,
     team: DBTeam,
@@ -244,7 +249,7 @@ export async function handlePlanChanged(
         orbCustomerId?: string | undefined;
         orbSubscriptionId: string;
     }
-): Promise<Result<boolean>> {
+): Promise<Result<AppliedPlanChange | null>> {
     const newPlan = plansList.find((p) => p.code === newPlanCode);
     if (!newPlan) {
         return Err('Received a plan not linked to the plansList');
@@ -257,7 +262,7 @@ export async function handlePlanChanged(
     const currentPlan = getPlanRes.value;
 
     if (isPlanUnchanged(currentPlan, newPlan)) {
-        return Ok(false);
+        return Ok(null);
     }
 
     // Merge current plan flags with new plan defaults
@@ -294,27 +299,7 @@ export async function handlePlanChanged(
         return Err(new Error('Failed to updated plan', { cause: updated.error }));
     }
 
-    productTracking.track({
-        name: 'account:billing:plan_changed',
-        team,
-        eventProperties: { previousPlan: currentPlan.name, newPlan: newPlanCode, isDowngrade, orbCustomerId: currentPlan.orb_customer_id }
-    });
-
-    if (!isDowngrade) {
-        // Skipping scheduled downgrades as they're already captured when the downgrade was scheduled.
-        productTracking.track({
-            name: 'account:billing:plan_changed:v2',
-            team,
-            eventProperties: {
-                source: 'webhook',
-                previousPlan: currentPlan.name + (currentPlan.has_growth_features ? ' + growth add-on' : ''),
-                newPlan: newPlanCode + (updated.value.has_growth_features ? ' + growth add-on' : ''),
-                orbCustomerId: currentPlan.orb_customer_id
-            }
-        });
-    }
-
-    return Ok(true);
+    return Ok({ previousPlan: currentPlan, updatedPlan: updated.value, isDowngrade });
 }
 
 export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPlan; newPlanDefinition: PlanDefinition }): PlanDefinition['flags'] {
