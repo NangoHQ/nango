@@ -2266,7 +2266,7 @@ If you are missing a catalog MCP server you can [request it](/integrations/contr
        --header 'Authorization: Bearer <NANGO-API-KEY>'
      ```
 
-     For `dynamic` and `cimd` providers, `client_secret` and `scopes` can come back empty (`""`) or `null` — the MCP server's registration response doesn't always issue a client secret (a public-client registration is common for DCR), and nothing sets `scopes` outside the `static` flow. That's expected, not a sign the registration failed.
+     For `dynamic` and `cimd` providers, `client_secret` and `scopes` can come back empty (`""`) or `null` right after creation — the MCP server's registration response doesn't always issue a client secret (a public-client registration is common for DCR), and scopes are only set when you explicitly configure them. That's expected, not a sign the registration failed. Scopes can be set or changed via the update endpoint in any mode, including `dynamic` and `cimd` — only `client_id`/`client_secret` are restricted to `static` providers.
 
      [List all integrations](/reference/backend/http-api/integration/list) works the same as for any other provider:
 
