@@ -165,6 +165,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             activityLogId: logCtx.id,
             secretKey: defaultSecret.value.secret,
             nangoConnectionId: task.connection.id,
+            variant: task.variant,
             attributes: syncConfig.attributes,
             syncConfig,
             debug: false,

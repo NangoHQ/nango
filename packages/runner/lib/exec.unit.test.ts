@@ -46,12 +46,13 @@ describe('Exec', () => {
             scriptType: 'function' as const,
             syncId: undefined,
             syncJobId: undefined,
+            variant: 'canary',
             syncConfig: { sync_name: 'my-function' } as DBSyncConfig
         };
         const code = `
         exports.default = {
             type: 'function',
-            exec: async (_nango, trigger) => ({ kind: trigger.kind, value: trigger.input.value })
+            exec: async (nango, trigger) => ({ kind: trigger.kind, value: trigger.input.value, variant: nango.getVariant() })
         }
         `;
         const trigger = {
@@ -62,7 +63,7 @@ describe('Exec', () => {
 
         const res = await exec({ nangoProps, code, codeParams: trigger });
 
-        expect(res.unwrap().output).toEqual({ kind: 'invoke', value: 42 });
+        expect(res.unwrap().output).toEqual({ kind: 'invoke', value: 42, variant: 'canary' });
     });
 
     it('execute code', async () => {
