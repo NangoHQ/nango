@@ -94,6 +94,9 @@ class RemoteFileService {
     }): Promise<string | null> {
         const sourceKey = `${this.publicZeroYamlRoute}/${sourcePath}`;
         try {
+            if (isTest) {
+                return '_LOCAL_FILE_';
+            }
             if (isCloud) {
                 await this.getStore().copy(sourceKey, destinationPath);
 
