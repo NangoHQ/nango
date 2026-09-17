@@ -7,12 +7,39 @@ import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../ut
 import { loginOrStartPendingMfa } from '../mfa/login.js';
 import { MAX_RETURN_TO_LENGTH, safeReturnTo } from '../returnTo.js';
 
-import type { ManagedAuthState } from './postSignup.js';
 import type { DBInvitation, DBTeam } from '@nangohq/types';
 import type { User, WorkOS } from '@workos-inc/node';
 import type { Request, Response } from 'express';
 
+export interface ManagedAuthState {
+    token?: string;
+    returnTo?: string;
+}
+
 const MAX_MANAGED_AUTH_STATE_LENGTH = (MAX_RETURN_TO_LENGTH + 256) * 2;
+
+function encodeState(state: ManagedAuthState): string {
+    return Buffer.from(JSON.stringify(state)).toString('base64');
+}
+
+export function encodeManagedAuthState(state: ManagedAuthState): string {
+    if (!state.token && !state.returnTo) {
+        return '';
+    }
+
+    const encoded = encodeState(state);
+    if (encoded.length <= MAX_MANAGED_AUTH_STATE_LENGTH) {
+        return encoded;
+    }
+
+    if (!state.token) {
+        return '';
+    }
+
+    // Returning '' here instead would lose the invitation token too.
+    const withoutDestination = encodeState({ token: state.token });
+    return withoutDestination.length <= MAX_MANAGED_AUTH_STATE_LENGTH ? withoutDestination : '';
+}
 
 interface FinalizeManagedAuthParams {
     req: Request;
