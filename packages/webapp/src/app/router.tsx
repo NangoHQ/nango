@@ -88,6 +88,7 @@ const ConnectionIndexRedirect = () => {
     return <Navigate to={{ pathname: targetTab, search: location.search }} replace />;
 };
 
+// A route added here also needs its prefix in PUBLIC_AUTH_PATH_PREFIXES, or a 401 on it signs the user out.
 const publicAuthRoutes = (() => {
     if (!globalEnv.features.auth && !globalEnv.features.managedAuth) {
         return [];
