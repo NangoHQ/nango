@@ -194,11 +194,21 @@ export async function applyPendingPlanChange({
         return Err(new Error('failed_to_sync_applied_plan_change', { cause: resChanged.error }));
     }
 
-    const planChanged = resChanged.value;
+    const planChange = resChanged.value;
 
-    if (planChanged) {
+    if (planChange) {
         logger.info(`Plan updated for account ${team.id} to ${resApply.value.planExternalId}`);
         await clearSpendAlertOnPlanChange({ accountId: team.id, subscriptionId: resApply.value.id });
+        productTracking.track({
+            name: 'account:billing:plan_changed',
+            team,
+            eventProperties: {
+                previousPlan: planChange.previousPlan.name,
+                newPlan: planChange.updatedPlan.name,
+                isDowngrade: planChange.isDowngrade,
+                orbCustomerId: planChange.previousPlan.orb_customer_id
+            }
+        });
     }
 
     return Ok(undefined);
@@ -274,6 +284,17 @@ export async function downgradePlan(context: PlanChangeContext): Promise<Result<
 
 export function trackPlanChange(context: PlanChangeContext, change: PlanChanges): void {
     const { team, currentPlan, requested } = context;
+
+    productTracking.track({
+        name: 'account:billing:plan_changed:v2',
+        team,
+        eventProperties: {
+            type: 'self-serve',
+            previousPlan: currentPlan.name + (currentPlan.has_growth_features ? ' + growth add-on' : ''),
+            newPlan: requested.newPlanCode + (requested.withGrowthFeatures ? ' + growth add-on' : ''),
+            orbCustomerId: currentPlan.orb_customer_id
+        }
+    });
 
     if (change.plan !== 'downgrade' && change.addon !== 'disable') {
         return;
