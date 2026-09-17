@@ -87,7 +87,6 @@ export const TeamBilling: React.FC = () => {
         track('web:usage:viewed', {});
     }, []);
 
-    // Six pages deep-link to #plans or #usage, so the section ids below are part of the public URL.
     const scrollRef = useRef<HTMLDivElement>(null);
     useScrollToHash(scrollRef);
 
