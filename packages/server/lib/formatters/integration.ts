@@ -18,12 +18,7 @@ export function integrationToApi(data: IntegrationConfig, options?: { includeCre
         oauth_scopes: data.oauth_scopes,
         environment_id: data.environment_id,
         app_link: hideCredentials ? null : data.app_link,
-        custom:
-            options?.includeCredentials === false
-                ? null
-                : data.shared_credentials_id
-                  ? pickSafeCustomFields(data.custom)
-                  : maskSecretConfigFields(data.custom, provider),
+        custom: hideCredentials ? null : maskSecretConfigFields(data.custom, provider),
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString(),
         missing_fields: data.missing_fields,
@@ -53,13 +48,6 @@ function maskSecretConfigFields(custom: IntegrationConfig['custom'], provider: P
     }
 
     return masked ?? custom;
-}
-
-function pickSafeCustomFields(custom: IntegrationConfig['custom']): IntegrationConfig['custom'] {
-    if (!custom?.['webhookSecret']) {
-        return null;
-    }
-    return { webhookSecret: custom['webhookSecret'] };
 }
 
 export function integrationToPublicApi({

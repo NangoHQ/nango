@@ -99,7 +99,7 @@ describe('integrationToApi', () => {
         expect(result.custom).toBeNull();
     });
 
-    it('keeps webhookSecret visible for shared credentials, since it is independent of the OAuth app', () => {
+    it('hides webhookSecret too for shared credentials, since it may be shared across every tenant on that pool', () => {
         const integration: IntegrationConfig = {
             ...makeIntegration({ clientId: 'abc', webhookSecret: 'whsec_123' }),
             shared_credentials_id: 42
@@ -107,7 +107,7 @@ describe('integrationToApi', () => {
 
         const result = integrationToApi(integration);
 
-        expect(result.custom).toStrictEqual({ webhookSecret: 'whsec_123' });
+        expect(result.custom).toBeNull();
     });
 
     it('hides free-form custom for shared credentials even without an integration_config schema to mask against', () => {
@@ -148,17 +148,6 @@ describe('integrationToApi', () => {
 
         expect(result.oauth_client_id).toBe('');
         expect(result.oauth_client_secret).toBe('');
-        expect(result.custom).toBeNull();
-    });
-
-    it('hides webhookSecret too when a caller lacks canReadProdConnectionCredentials on a shared-credentials integration', () => {
-        const integration: IntegrationConfig = {
-            ...makeIntegration({ clientId: 'abc', webhookSecret: 'whsec_123' }),
-            shared_credentials_id: 42
-        };
-
-        const result = integrationToApi(integration, { includeCredentials: false });
-
         expect(result.custom).toBeNull();
     });
 });
