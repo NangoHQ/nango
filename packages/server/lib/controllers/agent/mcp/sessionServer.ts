@@ -6,7 +6,7 @@ import { proxyTool } from './proxy/proxy.js';
 import { callAgentSessionTool, MAX_TOOL_NAME_LENGTH } from './sessionTool.js';
 import { toolSearchTool } from './toolSearch/search.js';
 
-import type { AgentSessionMcpContext, AgentSessionMcpTool } from './sessionTool.js';
+import type { AgentSessionCallableTool, AgentSessionMcpContext, AgentSessionMcpTool } from './sessionTool.js';
 import type { RegisteredTool, RequestId, Tool } from '@modelcontextprotocol/server';
 import type { AgentSession } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -109,7 +109,14 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
                 // Use the untouched JSON-RPC body so no-input Nango actions still receive undefined;
                 // an explicit {} remains {} and is validated as provided input.
                 const input = originalToolArgumentsByRequestId.has(requestId) ? originalToolArgumentsByRequestId.get(requestId) : args;
-                return await executeSessionTool({ integrationId: tool.integrationId, toolName: tool.name, input, context });
+                return await executeSessionTool({
+                    event: 'execute_pinned_tool',
+                    integrationId: tool.integrationId,
+                    toolName: tool.name,
+                    pinned: tool.pinned,
+                    input,
+                    context
+                });
             }
         });
     }
@@ -189,7 +196,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 interface SessionTools {
     listed: SessionTool[];
     /** Every integration tool, searchable ones included, so being listed and being callable stay separate. */
-    callable: Map<string, { integrationId: string; name: string; description: string }>;
+    callable: Map<string, AgentSessionCallableTool>;
 }
 
 /** Names are claimed in one pass so no tool can take a name an earlier one answers to, and the stable order keeps an offset cursor valid. */
@@ -212,7 +219,7 @@ export function buildSessionTools(session: AgentSession): SessionTools {
     for (const [integrationId, integration] of integrations) {
         for (const tool of integration.pinned) {
             const name = claimToolName(qualifiedToolName(integrationId, tool.name), taken);
-            callable.set(name, { integrationId, name: tool.name, description: tool.description });
+            callable.set(name, { integrationId, name: tool.name, description: tool.description, pinned: true });
             listed.push({
                 name,
                 description: tool.description,
@@ -225,7 +232,7 @@ export function buildSessionTools(session: AgentSession): SessionTools {
     for (const [integrationId, integration] of integrations) {
         for (const tool of integration.searchable) {
             const name = claimToolName(qualifiedToolName(integrationId, tool.name), taken);
-            callable.set(name, { integrationId, name: tool.name, description: tool.description });
+            callable.set(name, { integrationId, name: tool.name, description: tool.description, pinned: false });
         }
     }
 

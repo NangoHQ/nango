@@ -8,6 +8,7 @@ import proxyService from './proxy.service.js';
 
 import type { ProxyQueryParams, ProxyRequestOutput } from './mcpProxySchema.js';
 import type { ProxyServiceError, ProxyServiceResponse } from './proxy.service.js';
+import type { LogContext } from '@nangohq/logs';
 import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, OperationActor } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -32,11 +33,26 @@ export interface McpProxyRequest {
     actor?: OperationActor | undefined;
 }
 
+export interface McpProxyExecution {
+    /** Created once the request is attributable, so callers can correlate the call with its operation. */
+    logCtx: LogContext | undefined;
+    /** The provider's status, whether it answered with a success, with an error, or not at all. */
+    status: number | undefined;
+    /**
+     * `upstream_error` when the provider answered with a 4xx or 5xx. The tool still returns that as a
+     * result, so a caller reading only `result` cannot tell the provider call failed.
+     */
+    outcome: ProxyServiceResponse['outcome'] | undefined;
+    /** Set when the request never reached the provider, or Nango refused to make it. */
+    failure: ProxyServiceError | undefined;
+    result: Result<ProxyRequestOutput>;
+}
+
 /**
  * The single path every MCP proxy caller goes through, so credential handling, the outbound URL
  * policy, plan capping and the response size limit are enforced once rather than per tool.
  */
-export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<Result<ProxyRequestOutput>> {
+export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<McpProxyExecution> {
     const { account, environment, integrationId, connectionId } = params;
 
     const body = serializeJsonBody(params.body);
@@ -60,7 +76,8 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<R
     });
 
     if (execution.result.isErr()) {
-        return Err(proxyServiceErrorToMcp(execution.result.error));
+        const failure = execution.result.error;
+        return { logCtx: execution.logCtx, status: failure.status, outcome: undefined, failure, result: Err(proxyServiceErrorToMcp(failure)) };
     }
 
     const response = execution.result.value;
@@ -78,13 +95,19 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<R
             count: 1
         });
         completeProxyResponse(response);
-        return Ok(output);
+        return { logCtx: execution.logCtx, status: response.status, outcome: response.outcome, failure: undefined, result: Ok(output) };
     } catch (err) {
         const error = err instanceof Error ? err : new Error('Failed to format the provider response');
         void execution.logCtx?.error('Failed to format provider response for MCP', { error });
         completeProxyResponse(response, error);
         if (err instanceof ProxyResponseFormatError) {
-            return Err(new PublicMcpError(err.message));
+            return {
+                logCtx: execution.logCtx,
+                status: response.status,
+                outcome: response.outcome,
+                failure: undefined,
+                result: Err(new PublicMcpError(err.message))
+            };
         }
         throw err;
     }
