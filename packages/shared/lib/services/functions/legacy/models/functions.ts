@@ -339,6 +339,7 @@ function activeSyncConfigBase({ environmentId, providerConfigKey }: { environmen
         .where('nc.environment_id', environmentId)
         .andWhere('nc.unique_key', providerConfigKey)
         .andWhere('nc.deleted', false)
+        .andWhere('sc.environment_id', environmentId)
         .andWhere('sc.deleted', false)
         .andWhere('sc.active', true);
 }

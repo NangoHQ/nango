@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
+import { listCatalogActions } from '@nangohq/shared/lib/services/catalog/actions.js';
 
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
 
@@ -30,6 +31,31 @@ function toFunctionKey(fn: { type: string; name: string; event?: string }) {
 
 function deployedOnly<T extends { source: string }>(fns: T[]): T[] {
     return fns.filter((fn) => fn.source !== 'nango-catalog');
+}
+
+function unoccupiedGithubCatalogCount(occupiedActionNames: Iterable<string> = []): number {
+    const occupied = new Set(occupiedActionNames);
+    return listCatalogActions('github').filter((action) => !occupied.has(action.name)).length;
+}
+
+function expectedMergedGithubKeys({
+    occupiedActionNames,
+    onEventKeys,
+    syncKeys
+}: {
+    occupiedActionNames: string[];
+    onEventKeys: string[];
+    syncKeys: string[];
+}): string[] {
+    const occupied = new Set(occupiedActionNames);
+    const actionNames = [
+        ...listCatalogActions('github')
+            .filter((action) => !occupied.has(action.name))
+            .map((action) => action.name),
+        ...occupiedActionNames
+    ].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+    const actionKeys = actionNames.map((name) => `action:${name}:`);
+    return [...actionKeys, ...onEventKeys, ...syncKeys];
 }
 
 describe(`GET ${route}`, () => {
@@ -88,7 +114,9 @@ describe(`GET ${route}`, () => {
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         expect(deployedOnly(res.json.data)).toEqual([]);
-        expect(res.json.pagination.total).toBe(res.json.data.length);
+        expect(res.json.pagination.total).toBe(unoccupiedGithubCatalogCount());
+        expect(res.json.data).toHaveLength(unoccupiedGithubCatalogCount());
+        expect(res.json.data.some((fn) => fn.name === 'create-issue' && fn.source === 'nango-catalog')).toBe(true);
         expect(res.json.data.every((fn) => fn.source === 'nango-catalog')).toBe(true);
     });
 
@@ -125,7 +153,7 @@ describe(`GET ${route}`, () => {
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json.pagination).toStrictEqual({ total: res.json.data.length, page: 0, limit: 100 });
+        expect(res.json.pagination).toStrictEqual({ total: unoccupiedGithubCatalogCount(['my-action']) + 3, page: 0, limit: 100 });
         expect(deployedOnly(res.json.data).map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
             { name: 'my-action', type: 'action' },
             { name: 'my-on-event', type: 'on-event' },
@@ -296,6 +324,12 @@ describe(`GET ${route}`, () => {
             ]
         });
 
+        const expected = expectedMergedGithubKeys({
+            occupiedActionNames: ['action-a', 'action-b'],
+            onEventKeys: ['on-event:shared-script:post-connection-creation', 'on-event:shared-script:pre-connection-deletion'],
+            syncKeys: ['sync:sync-a:', 'sync:sync-b:']
+        });
+
         const all = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev', page: 0, limit: 100 },
@@ -303,8 +337,8 @@ describe(`GET ${route}`, () => {
             token: apiKey.secret
         });
         isSuccess(all.json);
-        expect(all.json.pagination.total).toBe(all.json.data.length);
-        const expected = all.json.data.map(toFunctionKey);
+        expect(all.json.pagination.total).toBe(expected.length);
+        expect(all.json.data.map(toFunctionKey)).toStrictEqual(expected);
 
         const page0 = await api.fetch(route, {
             method: 'GET',
@@ -410,7 +444,11 @@ describe(`GET ${route}`, () => {
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json.pagination.total).toBe(res.json.data.length);
+        const occupied = new Set(['create-issue']);
+        const catalogIssueHits = listCatalogActions('github').filter(
+            (action) => !occupied.has(action.name) && (action.name.toLowerCase().includes('issue') || action.description.toLowerCase().includes('issue'))
+        ).length;
+        expect(res.json.pagination.total).toBe(catalogIssueHits + 3);
         expect(
             deployedOnly(res.json.data)
                 .map((f) => `${f.type}:${f.name}`)

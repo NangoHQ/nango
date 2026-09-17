@@ -25,6 +25,7 @@ export interface CatalogAction {
 
 const actionsByProvider = new Map<string, CatalogAction[]>();
 const actionByProviderAndName = new Map<string, Map<string, CatalogAction>>();
+const templatesZeroFolderByProvider = new Map<string, string>();
 
 function resolveJsonSchema({
     itemSchema,
@@ -58,8 +59,11 @@ function loadProvider(provider: string): CatalogAction[] {
     if (!integration) {
         actionsByProvider.set(provider, []);
         actionByProviderAndName.set(provider, new Map());
+        templatesZeroFolderByProvider.set(provider, provider);
         return [];
     }
+
+    templatesZeroFolderByProvider.set(provider, integration.symLinkTargetName ?? provider);
 
     const actions: CatalogAction[] = integration.actions.map((item) => ({
         name: item.name,
@@ -89,12 +93,19 @@ export function getCatalogAction(provider: string, name: string): CatalogAction 
     return actionByProviderAndName.get(provider)?.get(name);
 }
 
+function templatesZeroFolder(provider: string): string {
+    loadProvider(provider);
+    return templatesZeroFolderByProvider.get(provider) ?? provider;
+}
+
 export function catalogActionJsPath({ provider, name }: { provider: string; name: string }): string {
-    return `${TEMPLATES_ZERO_PREFIX}/${provider}/build/${provider}_actions_${name}.cjs`;
+    const folder = templatesZeroFolder(provider);
+    return `${TEMPLATES_ZERO_PREFIX}/${folder}/build/${folder}_actions_${name}.cjs`;
 }
 
 export function catalogActionTsPath({ provider, name }: { provider: string; name: string }): string {
-    return `${TEMPLATES_ZERO_PREFIX}/${provider}/actions/${name}.ts`;
+    const folder = templatesZeroFolder(provider);
+    return `${TEMPLATES_ZERO_PREFIX}/${folder}/actions/${name}.ts`;
 }
 
 export function isTemplatesZeroPath(fileLocation: string): boolean {
@@ -111,22 +122,23 @@ export function isCatalogActionEnabled({ name, autoEnable, overrides }: { name: 
 }
 
 /**
- * Overlay rewrite when PATCHing `auto_enable_catalog_actions` on an existing integration.
+ * Overlay rewrite when flipping `auto_enable_catalog_actions` on an existing integration.
  *
- * Names that were still following the old flag (no overlay key, not deployed) are written as
- * `!newFlag` so their effective on/off does not change. Names that already had an overlay key
- * are omitted so they follow the new flag. Deployed names are omitted because occupancy owns them.
+ * Names that were still following `auto_enable_catalog_actions` (no overlay key, not deployed)
+ * are written as `!autoEnable` so their effective on/off does not change. Names that already
+ * had an overlay key are omitted so they follow the new `auto_enable_catalog_actions` value.
+ * Deployed names are omitted because occupancy owns them.
  */
-export function complementCatalogOverrides({
+export function catalogOverridesForAutoEnableFlip({
     catalogNames,
     deployedNames,
     previousOverrides,
-    newFlag
+    autoEnable
 }: {
     catalogNames: Iterable<string>;
     deployedNames: ReadonlySet<string>;
     previousOverrides: CatalogActionOverrides;
-    newFlag: boolean;
+    autoEnable: boolean;
 }): CatalogActionOverrides {
     const previousKeys = new Set(Object.keys(previousOverrides));
     const next: CatalogActionOverrides = {};
@@ -134,7 +146,7 @@ export function complementCatalogOverrides({
         if (deployedNames.has(name) || previousKeys.has(name)) {
             continue;
         }
-        next[name] = !newFlag;
+        next[name] = !autoEnable;
     }
     return next;
 }

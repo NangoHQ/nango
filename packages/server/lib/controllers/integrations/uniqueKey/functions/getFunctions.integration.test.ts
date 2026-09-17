@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
+import { listCatalogActions } from '@nangohq/shared/lib/services/catalog/actions.js';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
@@ -16,6 +17,11 @@ async function seedWithScopes(scopes: string[]) {
 
 function deployedOnly<T extends { source: string }>(fns: T[]): T[] {
     return fns.filter((fn) => fn.source !== 'nango-catalog');
+}
+
+function unoccupiedGithubCatalogCount(occupiedActionNames: Iterable<string> = []): number {
+    const occupied = new Set(occupiedActionNames);
+    return listCatalogActions('github').filter((action) => !occupied.has(action.name)).length;
 }
 
 describe(`GET ${route}`, () => {
@@ -92,7 +98,7 @@ describe(`GET ${route}`, () => {
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json.pagination).toStrictEqual({ total: res.json.data.length, page: 0, limit: 100 });
+        expect(res.json.pagination).toStrictEqual({ total: unoccupiedGithubCatalogCount(['my-action']) + 2, page: 0, limit: 100 });
         expect(deployedOnly(res.json.data).map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
             { name: 'my-action', type: 'action' },
             { name: 'my-sync', type: 'sync' }

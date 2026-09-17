@@ -190,6 +190,18 @@ describe('listFunctions with catalog actions', () => {
         expect(page.rows).toEqual([{ name: 'create-issue', source: 'repo', enabled: true, id: expect.any(Number) }]);
     });
 
+    it('does not occupy a catalog name with a deployed action from another environment', async () => {
+        const { environment, integration } = await seedIntegration();
+        const other = await createEnvironmentSeed(environment.account_id);
+        mockListCatalogActions.mockReturnValue([catalogAction('create-issue')]);
+        await insertSyncConfig({ environmentId: other.id, integration, name: 'create-issue', type: 'action' });
+
+        const page = await listPage({ environment, offset: 0, limit: 20 });
+
+        expect(page.total).toBe(1);
+        expect(page.rows).toEqual([{ name: 'create-issue', source: 'nango-catalog', enabled: false, id: null }]);
+    });
+
     it('unions live catalog actions when auto_enable_catalog_actions is on', async () => {
         const { environment, integration } = await seedIntegration({ autoEnableCatalogActions: true });
         mockListCatalogActions.mockReturnValue([catalogAction('create-issue')]);

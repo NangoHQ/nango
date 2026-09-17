@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
     catalogActionJsPath,
     catalogActionTsPath,
-    complementCatalogOverrides,
+    catalogOverridesForAutoEnableFlip,
     getCatalogAction,
     isCatalogActionEnabled,
     isTemplatesZeroPath,
@@ -31,6 +31,14 @@ describe('catalog actions reader', () => {
         expect(isTemplatesZeroPath('templates-zero/github/build/github_actions_create-issue.cjs')).toBe(true);
         expect(isTemplatesZeroPath('account/1/environment/1/config/2/create-issue-v1.js')).toBe(false);
     });
+
+    it('resolves aliased providers to the canonical templates-zero folder', () => {
+        expect(listCatalogActions('airtable-pat').some((action) => action.name === 'batch-create-records')).toBe(true);
+        expect(catalogActionJsPath({ provider: 'airtable-pat', name: 'batch-create-records' })).toBe(
+            'templates-zero/airtable/build/airtable_actions_batch-create-records.cjs'
+        );
+        expect(catalogActionTsPath({ provider: 'airtable-pat', name: 'batch-create-records' })).toBe('templates-zero/airtable/actions/batch-create-records.ts');
+    });
 });
 
 describe('isCatalogActionEnabled', () => {
@@ -51,38 +59,38 @@ describe('isCatalogActionEnabled', () => {
     });
 });
 
-describe('complementCatalogOverrides', () => {
+describe('catalogOverridesForAutoEnableFlip', () => {
     const catalog = ['list', 'create', 'update', 'delete', 'search'];
 
-    it('writes every current catalog name at false when PATCHing true on an empty overlay', () => {
+    it('writes every current catalog name at false when turning auto-enable on with an empty overlay', () => {
         expect(
-            complementCatalogOverrides({
+            catalogOverridesForAutoEnableFlip({
                 catalogNames: catalog,
                 deployedNames: new Set(),
                 previousOverrides: {},
-                newFlag: true
+                autoEnable: true
             })
         ).toEqual({ list: false, create: false, update: false, delete: false, search: false });
     });
 
-    it('keeps previously overridden names off the map so they follow the new flag', () => {
+    it('omits previously overridden names so they follow the new auto-enable value', () => {
         expect(
-            complementCatalogOverrides({
+            catalogOverridesForAutoEnableFlip({
                 catalogNames: catalog,
                 deployedNames: new Set(),
                 previousOverrides: { delete: false, search: false },
-                newFlag: false
+                autoEnable: false
             })
         ).toEqual({ list: true, create: true, update: true });
     });
 
     it('does not write keys for deployed names', () => {
         expect(
-            complementCatalogOverrides({
+            catalogOverridesForAutoEnableFlip({
                 catalogNames: catalog,
                 deployedNames: new Set(['list']),
                 previousOverrides: {},
-                newFlag: true
+                autoEnable: true
             })
         ).toEqual({ create: false, update: false, delete: false, search: false });
     });

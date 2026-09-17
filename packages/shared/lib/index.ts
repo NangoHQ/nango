@@ -74,7 +74,7 @@ export {
     catalogActionTsPath,
     isTemplatesZeroPath,
     isCatalogActionEnabled,
-    complementCatalogOverrides
+    catalogOverridesForAutoEnableFlip
 } from './services/catalog/actions.js';
 export type { CatalogAction, CatalogActionOverrides } from './services/catalog/actions.js';
 export { resolveRunnableAction } from './services/catalog/resolveAction.js';
