@@ -259,6 +259,7 @@ describe('trackAgentSessionToolSearch', () => {
         expect(event).toBe('agents:tool_search_complete');
         expect(properties).toMatchObject({
             agent_session_id: 'session-1',
+            meta_tool: 'nango_tool_search',
             query: 'email a customer',
             match_count: 2,
             related_count: 1,

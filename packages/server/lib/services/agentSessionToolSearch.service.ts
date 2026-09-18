@@ -134,14 +134,20 @@ export async function searchSessionTools({
         void logCtx.info(`Tool search for '${query}' returned ${matches.length} ${matches.length === 1 ? 'match' : 'matches'}`);
         await logCtx.success();
 
-        trackAgentSessionToolSearch({ session, query, matches: searchHits(ranked.best), related: searchHits(ranked.related) });
+        trackAgentSessionToolSearch({
+            session,
+            query,
+            matches: searchHits(ranked.best),
+            related: searchHits(ranked.related),
+            logOperationId: logCtx.id
+        });
 
         return { guidance: guidanceFor({ query, matches, related }), matches, related };
     } catch (err) {
         void logCtx.error('Failed to search the session tools', { error: err });
         await logCtx.failed();
 
-        trackAgentSessionToolSearch({ session, query, matches: [], related: [], errorCode: 'search_failed' });
+        trackAgentSessionToolSearch({ session, query, matches: [], related: [], logOperationId: logCtx.id, errorCode: 'search_failed' });
 
         throw err;
     }

@@ -102,9 +102,10 @@ export function trackAgentSessionProxyRequest({ session, integrationId, provider
  */
 export function trackAgentSessionToolSearch({ session, query, matches, related, ...outcome }: ToolSearchParams): void {
     productTracking.track({
-        name: 'agents:tool_search_submit',
+        name: 'agents:tool_search_complete',
         eventProperties: {
             agent_session_id: session.id,
+            meta_tool: 'nango_tool_search',
             query,
             match_count: matches.length,
             related_count: related.length,
