@@ -1212,9 +1212,8 @@ autumn:
         apiKey:
             type: string
             title: Secret API Key
-            description: Your Autumn secret API key, from the Autumn dashboard's Developer settings.
-            secret: true
-            example: am_sk_live_51On1GfAemfaBCd0eHq
+            description: Your Autumn secret API key.
+            example: am_sk_live_51On1**********eHq
             pattern: '^am_sk_(live|test)_[A-Za-z0-9]+$'
             doc_section: '#step-1-generating-your-autumn-api-key'
 
