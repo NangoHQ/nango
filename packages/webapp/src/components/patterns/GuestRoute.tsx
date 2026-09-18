@@ -8,7 +8,7 @@ export const GuestRoute: React.FC = () => {
     const [searchParams] = useSearchParams();
 
     // Blocking until the session is known would blank the login page for every signed-out visitor.
-    // A failed refetch leaves the stale user in place; trusting it here bounces against PrivateRoute forever.
+    // A failed refetch keeps the stale user in the cache. Redirecting on it loops: PrivateRoute sends them right back.
     if (loading || error || !user) {
         return <Outlet />;
     }

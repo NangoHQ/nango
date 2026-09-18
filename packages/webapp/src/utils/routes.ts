@@ -30,7 +30,7 @@ export const safeNextPath = (next: string | null | undefined): string => {
 
     try {
         const url = new URL(next, NEXT_BASE_ORIGIN);
-        // `/..//evil.example` keeps the base origin but normalises to `//evil.example`, which the browser reads as another host.
+        // `/..//evil.example` passes the origin check but normalises to `//evil.example`. The browser reads that as another host.
         if (url.origin === NEXT_BASE_ORIGIN && !url.pathname.startsWith('//')) {
             return url.pathname + url.search + url.hash;
         }

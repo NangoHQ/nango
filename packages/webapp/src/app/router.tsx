@@ -90,7 +90,7 @@ const ConnectionIndexRedirect = () => {
     return <Navigate to={{ pathname: targetTab, search: location.search }} replace />;
 };
 
-const publicAuthRoutes = (() => {
+const authRoutes = (() => {
     if (!globalEnv.features.auth && !globalEnv.features.managedAuth) {
         return [];
     }
@@ -105,7 +105,7 @@ const publicAuthRoutes = (() => {
             element: <MFALogin />
         }
     ];
-    const alwaysPublic: RouteObject[] = [];
+    const openWhenSignedIn: RouteObject[] = [];
 
     if (globalEnv.features.managedAuth) {
         guestOnly.push({
@@ -120,8 +120,8 @@ const publicAuthRoutes = (() => {
             element: <Signup />
         });
 
-        // These stay reachable while signed in: the link can be for a different account.
-        alwaysPublic.push(
+        // An invite or reset link can be for a different account than the one signed in.
+        openWhenSignedIn.push(
             {
                 path: '/signup/:token',
                 element: <InviteSignup />
@@ -149,7 +149,7 @@ const publicAuthRoutes = (() => {
         );
     }
 
-    return [{ element: <GuestRoute />, children: guestOnly }, ...alwaysPublic];
+    return [{ element: <GuestRoute />, children: guestOnly }, ...openWhenSignedIn];
 })();
 
 export const router = sentryCreateBrowserRouter([
@@ -395,7 +395,7 @@ export const router = sentryCreateBrowserRouter([
         path: '/hn-demo',
         element: <Navigate to={'/signup'} />
     },
-    ...publicAuthRoutes,
+    ...authRoutes,
     {
         path: '*',
         element: <NotFound />
