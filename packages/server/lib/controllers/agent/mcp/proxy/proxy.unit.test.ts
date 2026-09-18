@@ -248,6 +248,7 @@ describe('proxyTool analytics', () => {
 
     afterEach(() => {
         productTracking.client = realClient;
+        vi.restoreAllMocks();
     });
 
     // The account comes from the tracking context middleware, which is what a request enters.
@@ -289,19 +290,17 @@ describe('proxyTool analytics', () => {
         expect(onlyEvent().properties).toMatchObject({ success: false, 'http-status': 429, 'error-code': 'upstream_error' });
     });
 
-    it('records a request that never reached the provider with its provider error code', async () => {
+    // A failure before the provider answered carries Nango's status, so reporting it would read as the provider's.
+    it('records a request that never reached the provider without a status', async () => {
         vi.spyOn(proxyService, 'request').mockResolvedValue({
-            result: Err(new ProxyServiceError({ code: 'proxy_request_failed', message: 'nope', status: 502, providerCode: 'bad_gateway' }))
+            result: Err(new ProxyServiceError({ code: 'proxy_request_failed', message: 'nope', status: 400, providerCode: 'bad_gateway' }))
         });
 
         await callProxyInRequest({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
 
-        expect(onlyEvent().properties).toMatchObject({
-            success: false,
-            'http-status': 502,
-            'error-code': 'proxy_request_failed',
-            'provider-error-code': 'bad_gateway'
-        });
+        const { properties } = onlyEvent();
+        expect(properties).not.toHaveProperty('http-status');
+        expect(properties).toMatchObject({ success: false, 'error-code': 'proxy_request_failed', 'provider-error-code': 'bad_gateway' });
     });
 
     it('records a request the session rejected before it was made', async () => {

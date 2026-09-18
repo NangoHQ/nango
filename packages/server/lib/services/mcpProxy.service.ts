@@ -36,7 +36,7 @@ export interface McpProxyRequest {
 export interface McpProxyExecution {
     /** Created once the request is attributable, so callers can correlate the call with its operation. */
     logCtx: LogContext | undefined;
-    /** The provider's status, whether it answered with a success, with an error, or not at all. */
+    /** The provider's own status, set only when the provider answered. A failure's status is Nango's, not theirs. */
     status: number | undefined;
     /**
      * `upstream_error` when the provider answered with a 4xx or 5xx. The tool still returns that as a
@@ -77,7 +77,7 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<M
 
     if (execution.result.isErr()) {
         const failure = execution.result.error;
-        return { logCtx: execution.logCtx, status: failure.status, outcome: undefined, failure, result: Err(proxyServiceErrorToMcp(failure)) };
+        return { logCtx: execution.logCtx, status: undefined, outcome: undefined, failure, result: Err(proxyServiceErrorToMcp(failure)) };
     }
 
     const response = execution.result.value;
