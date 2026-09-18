@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { metrics } from '@nangohq/utils';
+
 import { getManagementOAuthProtectedResourceMetadata, managementMcpAuth } from './managementOAuth.js';
 
 import type { RequestLocals } from '../../utils/express.js';
@@ -14,6 +16,7 @@ const {
     environmentAccessMock,
     getPlanMock,
     grantFindMock,
+    metricsIncrementMock,
     tagTraceUserMock,
     userGetMock
 } = vi.hoisted(() => ({
@@ -24,6 +27,7 @@ const {
     environmentAccessMock: vi.fn(),
     getPlanMock: vi.fn(),
     grantFindMock: vi.fn(),
+    metricsIncrementMock: vi.fn(),
     tagTraceUserMock: vi.fn(),
     userGetMock: vi.fn()
 }));
@@ -36,7 +40,7 @@ vi.mock('@nangohq/shared', () => ({
 }));
 vi.mock('@nangohq/utils', async (importOriginal) => {
     const actual = await importOriginal<typeof Utils>();
-    return { ...actual, flagHasPlan: true, tagTraceUser: tagTraceUserMock };
+    return { ...actual, flagHasPlan: true, metrics: { ...actual.metrics, increment: metricsIncrementMock }, tagTraceUser: tagTraceUserMock };
 });
 vi.mock('../../middleware/access.middleware.js', () => ({
     default: {
@@ -161,6 +165,10 @@ describe('Management MCP OAuth authentication', () => {
         expect(headers.get('WWW-Authenticate')).toBe(
             'Bearer resource_metadata="https://mcp.nango.dev/.well-known/oauth-protected-resource/mcp", scope="environment:*"'
         );
+        expect(metricsIncrementMock).toHaveBeenCalledWith(metrics.Types.MCP_AUTH_FAILURE, 1, {
+            mcp_type: 'management',
+            reason: 'unauthorized'
+        });
     });
 
     it('returns insufficient_scope without API-key fallback', async () => {
@@ -173,6 +181,10 @@ describe('Management MCP OAuth authentication', () => {
         expect(apiKeyAuthenticateMock).not.toHaveBeenCalled();
         expect(status).toHaveBeenCalledWith(403);
         expect(headers.get('WWW-Authenticate')).toContain('error="insufficient_scope"');
+        expect(metricsIncrementMock).toHaveBeenCalledWith(metrics.Types.MCP_AUTH_FAILURE, 1, {
+            mcp_type: 'management',
+            reason: 'insufficient_scope'
+        });
     });
 
     it('rejects a token whose audience is not exactly the Management MCP resource', async () => {
@@ -184,6 +196,23 @@ describe('Management MCP OAuth authentication', () => {
 
         expect(apiKeyAuthenticateMock).not.toHaveBeenCalled();
         expect(status).toHaveBeenCalledWith(401);
+        expect(metricsIncrementMock).toHaveBeenCalledWith(metrics.Types.MCP_AUTH_FAILURE, 1, {
+            mcp_type: 'management',
+            reason: 'invalid_token'
+        });
+    });
+
+    it('propagates plan lookup failures instead of challenging a valid token', async () => {
+        const planError = new Error('Failed to load plan');
+        getPlanMock.mockResolvedValue({ isErr: () => true, error: planError });
+        const { res, status } = response();
+        const next = vi.fn() as NextFunction;
+
+        await managementMcpAuth(request('oauth-access-token'), res, next);
+
+        expect(next).toHaveBeenCalledWith(planError);
+        expect(status).not.toHaveBeenCalled();
+        expect(metricsIncrementMock).not.toHaveBeenCalled();
     });
 
     it('challenges requests without an accepted credential', async () => {

@@ -28,7 +28,6 @@ const managementToolNames = [
     'syncs_set_state',
     'syncs_trigger',
     'actions_trigger',
-    'proxy_request',
     'functions_list',
     'deploy_template',
     'get_deployment_status',
@@ -168,6 +167,33 @@ describe('createManagementMcpServer with OAuth', () => {
         }
     });
 
+    it('returns an MCP error when loading the selected environment fails', async () => {
+        const metricSpy = vi.spyOn(metrics, 'increment');
+        const requestBody = {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'tools/call',
+            params: { name: 'providers_get', arguments: { environment: 'dev', provider: 'github' } }
+        };
+        const { client, server, loadEnvironment } = await createTestClient({ loadEnvironmentError: new Error('Database unavailable'), requestBody });
+
+        try {
+            const result = await client.callTool({ name: 'providers_get', arguments: { environment: 'dev', provider: 'github' } });
+
+            expect(result).toMatchObject({ isError: true, content: [{ type: 'text', text: 'Internal error' }] });
+            expect(loadEnvironment).toHaveBeenCalledOnce();
+            expect(metricSpy).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {
+                accountId: 1,
+                mcp_type: 'management',
+                tool: 'providers_get',
+                outcome: 'error'
+            });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
     it('does not allow a tool to select an environment outside the current user grants', async () => {
         const handlerSpy = vi.spyOn(getProvidersTool, 'handler');
         const metricSpy = vi.spyOn(metrics, 'increment');
@@ -266,15 +292,18 @@ describe('createManagementMcpServer with OAuth', () => {
 async function createTestClient({
     principal: userPrincipal = principal(['environment:*'], ['env:*']),
     audit: auditAttribution,
+    loadEnvironmentError,
     requestBody
-}: { principal?: Principal; audit?: AuditAttribution; requestBody?: unknown } = {}): Promise<{
+}: { principal?: Principal; audit?: AuditAttribution; loadEnvironmentError?: Error; requestBody?: unknown } = {}): Promise<{
     client: Client;
     server: McpServer;
     loadEnvironment: ReturnType<typeof vi.fn>;
 }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     const environments = [fakeEnvironment({ id: 1, name: 'dev', isProduction: false }), fakeEnvironment({ id: 2, name: 'prod', isProduction: true })];
-    const loadEnvironment = vi.fn((name: string) => Promise.resolve(environments.find((environment) => environment.name === name) ?? null));
+    const loadEnvironment = loadEnvironmentError
+        ? vi.fn((_name: string) => Promise.reject(loadEnvironmentError))
+        : vi.fn((name: string) => Promise.resolve(environments.find((environment) => environment.name === name) ?? null));
     const server = await createManagementMcpServer(
         {
             type: 'oauth',

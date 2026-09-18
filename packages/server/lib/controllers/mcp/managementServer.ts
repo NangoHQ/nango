@@ -88,7 +88,7 @@ const environmentsListToolConfig = {
     annotations: listEnvironmentsTool.annotations
 };
 
-const oauthUnsupportedToolNames = new Set([deployFunctionTool.name]);
+const oauthUnsupportedToolNames = new Set([deployFunctionTool.name, proxyRequestTool.name]);
 
 export type ManagementMcpServerAuthentication = { type: 'apiKey'; context: ManagementMcpContext } | { type: 'oauth'; context: ManagementMcpOAuthContext };
 
@@ -153,17 +153,22 @@ async function createOAuthManagementMcpServer(oauthContext: ManagementMcpOAuthCo
         await auditOAuthCallsBeforeDispatch({ callArguments, resolveOAuthToolCall, tool: toolDefinition });
 
         server.registerTool(toolDefinition.name, oauthConfig, async (args: unknown) => {
-            const resolved = await resolveOAuthToolCall(args);
-            if (!resolved.ok) {
-                recordEarlyOAuthToolError(oauthContext.account.id, toolDefinition.name);
-                return mcpToolError(resolved.message);
-            }
-            if (!hasRequiredScopes({ grantedScopes: resolved.context.grantedScopes, requiredScopes: toolDefinition.requiredScopes })) {
-                recordEarlyOAuthToolError(oauthContext.account.id, toolDefinition.name);
-                return mcpToolError('Insufficient permissions for this tool in the selected environment');
-            }
+            try {
+                const resolved = await resolveOAuthToolCall(args);
+                if (!resolved.ok) {
+                    recordEarlyOAuthToolError(oauthContext.account.id, toolDefinition.name);
+                    return mcpToolError(resolved.message);
+                }
+                if (!hasRequiredScopes({ grantedScopes: resolved.context.grantedScopes, requiredScopes: toolDefinition.requiredScopes })) {
+                    recordEarlyOAuthToolError(oauthContext.account.id, toolDefinition.name);
+                    return mcpToolError('Insufficient permissions for this tool in the selected environment');
+                }
 
-            return await invokeManagementMcpTool(toolDefinition, resolved.toolArguments, resolved.context);
+                return await invokeManagementMcpTool(toolDefinition, resolved.toolArguments, resolved.context);
+            } catch (err) {
+                recordEarlyOAuthToolError(oauthContext.account.id, toolDefinition.name);
+                return handleMcpToolError(err, toolDefinition.name);
+            }
         });
     }
 
@@ -248,7 +253,13 @@ async function auditOAuthCallsBeforeDispatch({
     tool: ManagementMcpTool;
 }): Promise<void> {
     for (const args of callArguments) {
-        const resolved = await resolveOAuthToolCall(args);
+        let resolved: ResolvedOAuthToolCall;
+        try {
+            resolved = await resolveOAuthToolCall(args);
+        } catch {
+            // The registered handler reports resolver failures through the normal MCP error path.
+            continue;
+        }
         if (!resolved.ok) {
             continue;
         }
