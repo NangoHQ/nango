@@ -22,9 +22,7 @@ vi.mock('../../config.service.js', () => ({
 
 vi.mock('../../catalog/actions.js', () => ({
     listCatalogActions: mockListCatalogActions,
-    getCatalogAction: mockGetCatalogAction,
-    isCatalogActionEnabled: ({ name, autoEnable, overrides }: { name: string; autoEnable: boolean; overrides: Record<string, boolean> }) =>
-        Object.hasOwn(overrides, name) ? overrides[name] === true : autoEnable
+    getCatalogAction: mockGetCatalogAction
 }));
 
 vi.mock('./models/functions.js', () => ({
@@ -51,9 +49,7 @@ const baseRow: FunctionRow = {
 
 const integration = {
     id: 1,
-    provider: 'github',
-    auto_enable_catalog_actions: false,
-    catalog_action_overrides: {}
+    provider: 'github'
 };
 
 const originalHasLiveCatalogActions = flags.hasLiveCatalogActions;

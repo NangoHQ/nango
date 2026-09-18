@@ -12,8 +12,7 @@ const createIntegrationBaseArguments = {
     provider: providerSchema,
     integration_id: providerConfigKeySchema,
     display_name: integrationDisplayNameSchema,
-    forward_webhooks: integrationForwardWebhooksSchema,
-    auto_enable_catalog_actions: z.boolean().optional()
+    forward_webhooks: integrationForwardWebhooksSchema
 };
 
 // The MCP SDK only advertises top-level Zod object schemas; a discriminated union is emitted as an empty object schema.

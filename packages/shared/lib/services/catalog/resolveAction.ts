@@ -1,7 +1,7 @@
 import { flags } from '@nangohq/utils';
 
 import { getSyncConfigRaw } from '../sync/config/config.service.js';
-import { catalogActionJsPath, getCatalogAction, isCatalogActionEnabled } from './actions.js';
+import { catalogActionJsPath, getCatalogAction } from './actions.js';
 
 import type { CatalogAction } from './actions.js';
 import type { DBSyncConfig, IntegrationConfig } from '@nangohq/types';
@@ -17,7 +17,7 @@ export async function resolveRunnableAction({
     name
 }: {
     environmentId: number;
-    integration: Pick<IntegrationConfig, 'id' | 'provider' | 'auto_enable_catalog_actions' | 'catalog_action_overrides'>;
+    integration: Pick<IntegrationConfig, 'id' | 'provider'>;
     name: string;
 }): Promise<ResolveRunnableActionResult> {
     const configId = integration.id;
@@ -39,27 +39,19 @@ export async function resolveRunnableAction({
         return { kind: 'missing' };
     }
 
-    const enabled = isCatalogActionEnabled({
-        name,
-        autoEnable: integration.auto_enable_catalog_actions,
-        overrides: integration.catalog_action_overrides ?? {}
-    });
-
-    return { kind: 'catalog', config: toSyntheticSyncConfig({ environmentId, configId, provider: integration.provider, catalog, enabled }), catalog };
+    return { kind: 'catalog', config: toSyntheticSyncConfig({ environmentId, configId, provider: integration.provider, catalog }), catalog };
 }
 
 function toSyntheticSyncConfig({
     environmentId,
     configId,
     provider,
-    catalog,
-    enabled
+    catalog
 }: {
     environmentId: number;
     configId: number;
     provider: string;
     catalog: CatalogAction;
-    enabled: boolean;
 }): DBSyncConfig {
     const now = new Date();
     return {
@@ -82,7 +74,7 @@ function toSyntheticSyncConfig({
         input: catalog.input,
         sync_type: null,
         webhook_subscriptions: null,
-        enabled,
+        enabled: true,
         models_json_schema: catalog.json_schema,
         sdk_version: catalog.sdk_version,
         features: catalog.features,

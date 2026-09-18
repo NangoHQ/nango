@@ -19,9 +19,7 @@ vi.mock('../sync/config/config.service.js', () => ({
 
 vi.mock('./actions.js', () => ({
     getCatalogAction: mockGetCatalogAction,
-    catalogActionJsPath: ({ provider, name }: { provider: string; name: string }) => `templates-zero/${provider}/build/${provider}_actions_${name}.cjs`,
-    isCatalogActionEnabled: ({ name, autoEnable, overrides }: { name: string; autoEnable: boolean; overrides: Record<string, boolean> }) =>
-        Object.hasOwn(overrides, name) ? overrides[name] === true : autoEnable
+    catalogActionJsPath: ({ provider, name }: { provider: string; name: string }) => `templates-zero/${provider}/build/${provider}_actions_${name}.cjs`
 }));
 
 const config: IntegrationConfig = {
@@ -35,8 +33,6 @@ const config: IntegrationConfig = {
     display_name: 'GitHub',
     forward_webhooks: true,
     shared_credentials_id: null,
-    auto_enable_catalog_actions: true,
-    catalog_action_overrides: {},
     created_at: new Date(),
     updated_at: new Date(),
     deleted: false
@@ -91,34 +87,6 @@ describe('resolveRunnableAction', () => {
         expect(result.config.file_location).toBe('templates-zero/github/build/github_actions_create-issue.cjs');
         expect(result.config.sync_name).toBe('create-issue');
         expect(result.catalog.name).toBe('create-issue');
-    });
-
-    it('returns a disabled catalog config when the catalog action is off', async () => {
-        mockGetSyncConfigRaw.mockResolvedValue(null);
-        mockGetCatalogAction.mockReturnValue({
-            name: 'create-issue',
-            description: '',
-            scopes: [],
-            input: null,
-            output: [],
-            endpoint: null,
-            json_schema: null,
-            sdk_version: '0.0.0-zero',
-            features: [],
-            version: '1.0.0'
-        });
-
-        const result = await resolveRunnableAction({
-            environmentId: 1,
-            integration: { ...config, auto_enable_catalog_actions: false },
-            name: 'create-issue'
-        });
-
-        expect(result.kind).toBe('catalog');
-        if (result.kind !== 'catalog') {
-            return;
-        }
-        expect(result.config.enabled).toBe(false);
     });
 
     it('returns missing when the name is not in the catalog', async () => {

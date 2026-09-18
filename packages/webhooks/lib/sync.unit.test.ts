@@ -46,9 +46,7 @@ const providerConfig: IntegrationConfig = {
     created_at: new Date(),
     updated_at: new Date(),
     forward_webhooks: true,
-    shared_credentials_id: null,
-    auto_enable_catalog_actions: false,
-    catalog_action_overrides: {}
+    shared_credentials_id: null
 };
 
 const syncConfig: DBSyncConfig = {

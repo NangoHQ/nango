@@ -71,7 +71,7 @@ export function toListedNangoFunction(row: FunctionRow): Result<ListedNangoFunct
     return Err(new Error(`Unknown function type: ${String(row.type)}`));
 }
 
-export function toListedLiveCatalogAction(action: CatalogAction, enabled: boolean): ListedNangoActionFunction {
+export function toListedLiveCatalogAction(action: CatalogAction): ListedNangoActionFunction {
     return {
         name: action.name,
         ...(action.description !== undefined && { description: action.description }),
@@ -81,7 +81,7 @@ export function toListedLiveCatalogAction(action: CatalogAction, enabled: boolea
         returns: action.output,
         json_schema: action.json_schema,
         id: null,
-        enabled,
+        enabled: true,
         last_deployed: null,
         source: 'nango-catalog'
     };

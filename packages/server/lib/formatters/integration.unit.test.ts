@@ -18,8 +18,6 @@ function makeIntegration(custom: IntegrationConfig['custom']): IntegrationConfig
         display_name: null,
         forward_webhooks: true,
         shared_credentials_id: null,
-        auto_enable_catalog_actions: false,
-        catalog_action_overrides: {},
         created_at: new Date('2025-01-01'),
         updated_at: new Date('2025-01-01')
     };

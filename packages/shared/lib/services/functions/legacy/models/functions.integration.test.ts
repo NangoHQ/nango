@@ -94,7 +94,7 @@ describe(findIntegrationFunctionCatalog, () => {
             { integration_id: 'gmail', provider: 'google', name: null, type: null, description: null, enabled: null }
         ]);
         expect(catalog).toEqual(
-            expect.arrayContaining([expect.objectContaining({ integration_id: 'github', name: 'create-issue', type: 'action', enabled: false })])
+            expect.arrayContaining([expect.objectContaining({ integration_id: 'github', name: 'create-issue', type: 'action', enabled: true })])
         );
     });
 
@@ -242,7 +242,7 @@ describe(findActionInputSchemas, () => {
     it('does not fall back to the catalog when an active deployed action occupies the name', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
-        const github = await createConfigSeed(environment, 'github', 'github', { auto_enable_catalog_actions: true });
+        const github = await createConfigSeed(environment, 'github', 'github');
 
         await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create-issue', type: 'action', enabled: false });
 
@@ -254,10 +254,10 @@ describe(findActionInputSchemas, () => {
         expect(rows).toStrictEqual([]);
     });
 
-    it('returns the catalog schema when the name is unoccupied and auto_enable_catalog_actions is on', async () => {
+    it('returns the catalog schema when the name is unoccupied', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
-        await createConfigSeed(environment, 'github', 'github', { auto_enable_catalog_actions: true });
+        await createConfigSeed(environment, 'github', 'github');
 
         const catalog = getCatalogAction('github', 'create-issue');
         const rows = await findActionInputSchemas({

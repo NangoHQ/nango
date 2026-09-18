@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { flags } from '@nangohq/utils';
 
-import { getCatalogAction, isCatalogActionEnabled, listCatalogActions } from '../../../catalog/actions.js';
+import { getCatalogAction, listCatalogActions } from '../../../catalog/actions.js';
 
 import type { CatalogAction } from '../../../catalog/actions.js';
 import type { FunctionListSource, FunctionSource, FunctionType, NangoConfigMetadata } from '@nangohq/types';
@@ -164,9 +164,7 @@ export async function findIntegrationFunctionCatalog({
             'sc.sync_name AS name',
             'sc.type',
             db.knex.raw("sc.metadata->>'description' AS description"),
-            'sc.enabled',
-            'nc.auto_enable_catalog_actions',
-            'nc.catalog_action_overrides'
+            'sc.enabled'
         )
         .orderBy([
             { column: 'nc.unique_key', order: 'asc' },
@@ -180,10 +178,7 @@ export async function findIntegrationFunctionCatalog({
     return mergeLiveCatalogIntoFunctionCatalog(await query);
 }
 
-interface CatalogQueryRow extends IntegrationFunctionCatalogRow {
-    auto_enable_catalog_actions: boolean;
-    catalog_action_overrides: Record<string, boolean> | null;
-}
+type CatalogQueryRow = IntegrationFunctionCatalogRow;
 
 function mergeLiveCatalogIntoFunctionCatalog(rows: CatalogQueryRow[]): IntegrationFunctionCatalogRow[] {
     if (!flags.hasLiveCatalogActions) {
@@ -214,11 +209,7 @@ function mergeLiveCatalogIntoFunctionCatalog(rows: CatalogQueryRow[]): Integrati
                 name: action.name,
                 type: 'action' as const,
                 description: action.description,
-                enabled: isCatalogActionEnabled({
-                    name: action.name,
-                    autoEnable: sample.auto_enable_catalog_actions,
-                    overrides: sample.catalog_action_overrides ?? {}
-                })
+                enabled: true
             }));
 
         const functions = [...deployed, ...live];
@@ -329,9 +320,7 @@ export async function findActionInputSchemas({
         .where('environment_id', environmentId)
         .andWhere('deleted', false)
         .whereIn('unique_key', integrationIds)
-        .select<
-            { unique_key: string; provider: string; auto_enable_catalog_actions: boolean; catalog_action_overrides: Record<string, boolean> | null }[]
-        >('unique_key', 'provider', 'auto_enable_catalog_actions', 'catalog_action_overrides');
+        .select<{ unique_key: string; provider: string }[]>('unique_key', 'provider');
 
     const configByKey = new Map(configs.map((config) => [config.unique_key, config]));
     const live: ActionInputSchemaRow[] = [];
@@ -341,14 +330,7 @@ export async function findActionInputSchemas({
             continue;
         }
         const catalog = getCatalogAction(config.provider, action.name);
-        if (
-            !catalog ||
-            !isCatalogActionEnabled({
-                name: action.name,
-                autoEnable: config.auto_enable_catalog_actions,
-                overrides: config.catalog_action_overrides ?? {}
-            })
-        ) {
+        if (!catalog) {
             continue;
         }
         live.push({
@@ -477,13 +459,7 @@ function buildCatalogBranch({
         db.knex.raw('NULL::text AS runs'),
         db.knex.raw('NULL::boolean AS auto_start'),
         db.knex.raw('NULL::boolean AS track_deletes'),
-        db.knex.raw(`
-            CASE
-                WHEN jsonb_exists(nc.catalog_action_overrides, c.name)
-                THEN (nc.catalog_action_overrides ->> c.name)::boolean
-                ELSE nc.auto_enable_catalog_actions
-            END AS enabled
-        `),
+        db.knex.raw('true AS enabled'),
         db.knex.raw('NULL::timestamptz AS last_deployed'),
         db.knex.raw(`'nango-catalog'::text AS source`),
         db.knex.raw('NULL::text AS event')

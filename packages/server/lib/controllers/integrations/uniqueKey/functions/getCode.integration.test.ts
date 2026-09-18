@@ -132,12 +132,9 @@ describe(`GET ${endpoint}`, () => {
         }
     });
 
-    it('returns disabled live catalog function code', async () => {
+    it('returns live catalog function code', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        await seeders.createConfigSeed(env, 'aircall', 'aircall', {
-            auto_enable_catalog_actions: true,
-            catalog_action_overrides: { 'create-contact': false }
-        });
+        await seeders.createConfigSeed(env, 'aircall', 'aircall');
 
         const original = flags.hasLiveCatalogActions;
         flags.hasLiveCatalogActions = true;

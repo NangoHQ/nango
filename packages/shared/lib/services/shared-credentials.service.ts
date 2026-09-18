@@ -42,8 +42,7 @@ class SharedCredentialsService {
         provider,
         display_name,
         unique_key,
-        shared_credentials_name,
-        auto_enable_catalog_actions = false
+        shared_credentials_name
     }: {
         providerName: string;
         environment_id: number;
@@ -51,7 +50,6 @@ class SharedCredentialsService {
         display_name?: string;
         unique_key?: string;
         shared_credentials_name?: string;
-        auto_enable_catalog_actions?: boolean;
     }): Promise<Result<IntegrationConfig>> {
         try {
             const config = await db.knex.transaction(async (trx) => {
@@ -78,8 +76,6 @@ class SharedCredentialsService {
                         unique_key: exists?.count === '0' ? resolvedUniqueKey : `${resolvedUniqueKey}-${nanoid(4).toLocaleLowerCase()}`,
                         provider: providerName,
                         forward_webhooks: true,
-                        auto_enable_catalog_actions,
-                        catalog_action_overrides: {},
                         display_name: display_name ?? null,
                         shared_credentials_id: sharedCredentials.id
                     },

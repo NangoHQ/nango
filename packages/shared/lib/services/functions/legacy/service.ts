@@ -1,6 +1,6 @@
 import { Err, flags, Ok } from '@nangohq/utils';
 
-import { getCatalogAction, isCatalogActionEnabled, listCatalogActions } from '../../catalog/actions.js';
+import { getCatalogAction, listCatalogActions } from '../../catalog/actions.js';
 import configService from '../../config.service.js';
 import { toListedLiveCatalogAction, toListedNangoFunction } from './mappers.js';
 import * as functionsModel from './models/functions.js';
@@ -145,16 +145,7 @@ export async function getFunction({
             return Ok(undefined);
         }
 
-        return Ok(
-            toListedLiveCatalogAction(
-                action,
-                isCatalogActionEnabled({
-                    name,
-                    autoEnable: integration.auto_enable_catalog_actions,
-                    overrides: integration.catalog_action_overrides ?? {}
-                })
-            )
-        );
+        return Ok(toListedLiveCatalogAction(action));
     } catch (err) {
         return Err(new Error('failed_to_get_function', { cause: err }));
     }

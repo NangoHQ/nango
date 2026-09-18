@@ -1,7 +1,7 @@
 import db, { dbNamespace, schema } from '@nangohq/database';
 import { flags } from '@nangohq/utils';
 
-import { isCatalogActionEnabled, listCatalogActions } from '../../catalog/actions.js';
+import { listCatalogActions } from '../../catalog/actions.js';
 import configService from '../../config.service.js';
 
 import type { DBConnection, DBConnectionDecrypted, DBSyncConfig, DBSyncEndpoint, HTTP_METHOD } from '@nangohq/types';
@@ -53,16 +53,7 @@ async function liveCatalogActionByEndpoint(
         return {};
     }
 
-    const candidates = listCatalogActions(config.provider).filter((action) => {
-        if (!action.endpoint || action.endpoint.method !== method || action.endpoint.path !== path) {
-            return false;
-        }
-        return isCatalogActionEnabled({
-            name: action.name,
-            autoEnable: config.auto_enable_catalog_actions,
-            overrides: config.catalog_action_overrides ?? {}
-        });
-    });
+    const candidates = listCatalogActions(config.provider).filter((action) => action.endpoint?.method === method && action.endpoint.path === path);
     if (candidates.length === 0 || config.id === undefined) {
         return {};
     }

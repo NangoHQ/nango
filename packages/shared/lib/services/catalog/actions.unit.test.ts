@@ -1,14 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-    catalogActionJsPath,
-    catalogActionTsPath,
-    catalogOverridesForAutoEnableFlip,
-    getCatalogAction,
-    isCatalogActionEnabled,
-    isTemplatesZeroPath,
-    listCatalogActions
-} from './actions.js';
+import { catalogActionJsPath, catalogActionTsPath, getCatalogAction, isTemplatesZeroPath, listCatalogActions } from './actions.js';
 
 describe('catalog actions reader', () => {
     it('returns github create-issue from flows.zero.json', () => {
@@ -38,60 +30,5 @@ describe('catalog actions reader', () => {
             'templates-zero/airtable/build/airtable_actions_batch-create-records.cjs'
         );
         expect(catalogActionTsPath({ provider: 'airtable-pat', name: 'batch-create-records' })).toBe('templates-zero/airtable/actions/batch-create-records.ts');
-    });
-});
-
-describe('isCatalogActionEnabled', () => {
-    it('uses the flag when the name is absent from the overlay', () => {
-        expect(isCatalogActionEnabled({ name: 'create', autoEnable: true, overrides: {} })).toBe(true);
-        expect(isCatalogActionEnabled({ name: 'create', autoEnable: false, overrides: {} })).toBe(false);
-        expect(isCatalogActionEnabled({ name: 'create', autoEnable: true, overrides: { delete: false } })).toBe(true);
-    });
-
-    it('overlay value wins over the flag', () => {
-        expect(isCatalogActionEnabled({ name: 'create', autoEnable: true, overrides: { create: false } })).toBe(false);
-        expect(isCatalogActionEnabled({ name: 'create', autoEnable: false, overrides: { create: true } })).toBe(true);
-    });
-
-    it('a redundant overlay equal to the flag still resolves to that value', () => {
-        expect(isCatalogActionEnabled({ name: 'create', autoEnable: true, overrides: { create: true } })).toBe(true);
-        expect(isCatalogActionEnabled({ name: 'create', autoEnable: false, overrides: { create: false } })).toBe(false);
-    });
-});
-
-describe('catalogOverridesForAutoEnableFlip', () => {
-    const catalog = ['list', 'create', 'update', 'delete', 'search'];
-
-    it('writes every current catalog name at false when turning auto-enable on with an empty overlay', () => {
-        expect(
-            catalogOverridesForAutoEnableFlip({
-                catalogNames: catalog,
-                deployedNames: new Set(),
-                previousOverrides: {},
-                autoEnable: true
-            })
-        ).toEqual({ list: false, create: false, update: false, delete: false, search: false });
-    });
-
-    it('omits previously overridden names so they follow the new auto-enable value', () => {
-        expect(
-            catalogOverridesForAutoEnableFlip({
-                catalogNames: catalog,
-                deployedNames: new Set(),
-                previousOverrides: { delete: false, search: false },
-                autoEnable: false
-            })
-        ).toEqual({ list: true, create: true, update: true });
-    });
-
-    it('does not write keys for deployed names', () => {
-        expect(
-            catalogOverridesForAutoEnableFlip({
-                catalogNames: catalog,
-                deployedNames: new Set(['list']),
-                previousOverrides: {},
-                autoEnable: true
-            })
-        ).toEqual({ create: false, update: false, delete: false, search: false });
     });
 });

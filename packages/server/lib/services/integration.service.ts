@@ -100,7 +100,6 @@ export interface CreateIntegrationParams {
     credentialSource: 'nango' | 'own';
     displayName?: string | undefined;
     forwardWebhooks?: boolean | undefined;
-    autoEnableCatalogActions?: boolean | undefined;
     credentials?: CreateIntegrationCredentials | undefined;
     integrationConfig?: Record<string, string> | undefined;
     custom?: Record<string, string> | undefined;
@@ -281,7 +280,6 @@ export class IntegrationService {
                 custom: null,
                 missing_fields: [],
                 forward_webhooks: params.forwardWebhooks ?? true,
-                auto_enable_catalog_actions: params.autoEnableCatalogActions ?? false,
                 shared_credentials_id: null
             };
 

@@ -18,15 +18,9 @@ export interface IntegrationConfig extends TimestampsAndDeleted {
     display_name: string | null;
     forward_webhooks: boolean;
     shared_credentials_id: number | null;
-    auto_enable_catalog_actions: boolean;
-    /** Absolute per-name enable/disable for live catalog actions */
-    catalog_action_overrides: Record<string, boolean>;
 }
 
 export type DBIntegrationDecrypted = IntegrationConfig; // TODO: tag this
 export type DBIntegrationCrypted = Tagged<IntegrationConfig, 'IntegrationCrypted'>;
 
-export type DBCreateIntegration = SetOptional<
-    NullablePartial<Omit<IntegrationConfig, 'created_at' | 'updated_at'>>,
-    'missing_fields' | 'auto_enable_catalog_actions' | 'catalog_action_overrides'
->;
+export type DBCreateIntegration = SetOptional<NullablePartial<Omit<IntegrationConfig, 'created_at' | 'updated_at'>>, 'missing_fields'>;

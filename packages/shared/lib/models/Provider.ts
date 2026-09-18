@@ -17,8 +17,6 @@ export interface Config extends TimestampsAndDeleted {
     display_name: string | null;
     forward_webhooks: boolean;
     shared_credentials_id: number | null;
-    auto_enable_catalog_actions: boolean;
-    catalog_action_overrides: Record<string, boolean>;
 }
 
 export interface IntegrationWithCreds extends Integration {

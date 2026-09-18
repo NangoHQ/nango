@@ -26,7 +26,6 @@ export async function buildIntegrationConfig(body: PostIntegration['Body'], envi
         unique_key,
         provider: body.provider,
         forward_webhooks: body.forward_webhooks ?? true,
-        auto_enable_catalog_actions: body.auto_enable_catalog_actions ?? false,
         shared_credentials_id: null,
         display_name: 'displayName' in body && body.displayName ? body.displayName : null,
         oauth_client_id: null,

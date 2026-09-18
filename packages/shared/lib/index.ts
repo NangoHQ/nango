@@ -67,16 +67,8 @@ export * from './services/checkpoints/checkpoints.js';
 export * from './services/shared-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
-export {
-    listCatalogActions,
-    getCatalogAction,
-    catalogActionJsPath,
-    catalogActionTsPath,
-    isTemplatesZeroPath,
-    isCatalogActionEnabled,
-    catalogOverridesForAutoEnableFlip
-} from './services/catalog/actions.js';
-export type { CatalogAction, CatalogActionOverrides } from './services/catalog/actions.js';
+export { listCatalogActions, getCatalogAction, catalogActionJsPath, catalogActionTsPath, isTemplatesZeroPath } from './services/catalog/actions.js';
+export type { CatalogAction } from './services/catalog/actions.js';
 export { resolveRunnableAction } from './services/catalog/resolveAction.js';
 export type { ResolveRunnableActionResult } from './services/catalog/resolveAction.js';
 

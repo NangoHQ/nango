@@ -35,7 +35,6 @@ export const createIntegrationsTool = defineManagementMcpTool<typeof createInteg
             credentialSource: args.credential_source,
             displayName: args.display_name,
             forwardWebhooks: args.forward_webhooks,
-            ...(args.auto_enable_catalog_actions !== undefined ? { autoEnableCatalogActions: args.auto_enable_catalog_actions } : {}),
             ...('credentials' in args ? { credentials: args.credentials } : {}),
             ...('integration_config' in args ? { integrationConfig: args.integration_config } : {})
         });

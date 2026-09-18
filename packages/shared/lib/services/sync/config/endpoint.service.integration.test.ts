@@ -55,7 +55,7 @@ describe(getActionOrModelByEndpoint, () => {
     it('resolves an enabled live catalog action by endpoint', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
-        await createConfigSeed(environment, 'aircall', 'aircall', { auto_enable_catalog_actions: true });
+        await createConfigSeed(environment, 'aircall', 'aircall');
         const connection = await createConnectionSeed({ env: environment, provider: 'aircall' });
 
         await expect(getActionOrModelByEndpoint(connection, 'POST', '/actions/create-contact')).resolves.toEqual({ action: 'create-contact' });
@@ -64,7 +64,7 @@ describe(getActionOrModelByEndpoint, () => {
     it('does not fall back to the catalog when an active deployed action occupies the name', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
-        const integration = await createConfigSeed(environment, 'aircall', 'aircall', { auto_enable_catalog_actions: true });
+        const integration = await createConfigSeed(environment, 'aircall', 'aircall');
         const connection = await createConnectionSeed({ env: environment, provider: 'aircall' });
 
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'create-contact', enabled: false });
@@ -78,7 +78,7 @@ describe(getActionOrModelByEndpoint, () => {
         try {
             const account = await createAccount();
             const environment = await createEnvironmentSeed(account.id);
-            await createConfigSeed(environment, 'aircall', 'aircall', { auto_enable_catalog_actions: true });
+            await createConfigSeed(environment, 'aircall', 'aircall');
             const connection = await createConnectionSeed({ env: environment, provider: 'aircall' });
 
             await expect(getActionOrModelByEndpoint(connection, 'POST', '/actions/create-contact')).resolves.toEqual({});

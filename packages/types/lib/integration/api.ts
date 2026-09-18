@@ -61,7 +61,6 @@ export type PostPublicIntegration = ApiEndpoint<{
         display_name?: string | undefined;
         credentials?: ApiPublicIntegrationCredentials | undefined;
         forward_webhooks?: boolean | undefined;
-        auto_enable_catalog_actions?: boolean | undefined;
         // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
         // Validated server-side against the provider schema and persisted to the `custom` column.
         integration_config?: Record<string, string> | undefined;
@@ -82,7 +81,6 @@ export type PostPublicQuickstartIntegration = ApiEndpoint<{
         unique_key: string;
         display_name?: string | undefined;
         forward_webhooks?: boolean | undefined;
-        auto_enable_catalog_actions?: boolean | undefined;
     };
     Success: {
         data: ApiPublicIntegration;
@@ -164,7 +162,7 @@ export type GetFunctionCode = ApiEndpoint<{
     Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
 }>;
 
-export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag' | 'catalog_action_overrides'>;
+export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
 export type ApiIntegrationList = ApiIntegration & {
     meta: {
         authMode: AuthModeType;
@@ -262,7 +260,6 @@ export type PostIntegration = ApiEndpoint<{
         webhookSecret?: string | undefined;
         displayName?: string | undefined;
         forward_webhooks?: boolean | undefined;
-        auto_enable_catalog_actions?: boolean | undefined;
         auth?: IntegrationAuthBody | undefined;
         // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
         // Validated server-side against the provider schema and merged into `custom`.

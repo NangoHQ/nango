@@ -202,8 +202,6 @@ function integrationFixture(): Config {
         display_name: 'GitHub Renamed',
         forward_webhooks: false,
         shared_credentials_id: null,
-        auto_enable_catalog_actions: false,
-        catalog_action_overrides: {},
         created_at: new Date('2026-01-01T00:00:00.000Z'),
         updated_at: new Date('2026-01-02T00:00:00.000Z')
     };
