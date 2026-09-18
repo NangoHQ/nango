@@ -41,7 +41,7 @@ export const TeamBilling: React.FC = () => {
     const { data: environmentData, isPending: isPlanPending, isError: didPlanFail } = useCurrentPlan(env);
     // Plan titles come from `/api/v1/plans`; with no titles the strip can only show raw Orb codes,
     // so a failed load hides the section rather than leaking them or holding a skeleton forever.
-    const { isError: didPlanListFail } = useApiGetPlans(env);
+    const { isPending: arePlansPending, isError: didPlanListFail } = useApiGetPlans(env);
 
     const transition = usePlanTransition();
     const showSummary = !didPlanListFail && (isPlanPending || showsSummaryStrip(environmentData?.plan, transition !== null));
@@ -51,7 +51,7 @@ export const TeamBilling: React.FC = () => {
 
     // The cap warning belongs with the plan, not the usage table, so it sits above the divider.
     // Free is the only capped plan, and the sidebar alert already runs this query app-wide.
-    const { data: caps } = useApiGetUsage(env);
+    const { data: caps, isPending: areCapsPending } = useApiGetUsage(env);
     const billedMetrics = billedUsageMetrics(environmentData?.plan);
 
     // The dev override fabricates the overdue response, so it has to be handed a real portal URL for
@@ -62,7 +62,7 @@ export const TeamBilling: React.FC = () => {
 
     // Owned here rather than by <Usage/> so a usage outage can't hide a payment warning, and so it
     // sits above the cap warning: money owed outranks a limit being approached.
-    const { data: overdue } = useApiGetOverdueInvoices(env, environmentData?.plan, billingUsage?.data.customer.portalUrl);
+    const { data: overdue, isPending: isOverduePending } = useApiGetOverdueInvoices(env, environmentData?.plan, billingUsage?.data.customer.portalUrl);
     const overdueBanner = overdue?.data.hasOverdue && (
         <OverdueInvoiceAlert size="wide" canManageBilling={canManageBilling}>
             {overdue.data.portalUrl && (
@@ -87,8 +87,10 @@ export const TeamBilling: React.FC = () => {
         track('web:usage:viewed', {});
     }, []);
 
+    // Everything above the sections — the banner stack, the summary strip, and which shape `Usage`
+    // takes — is decided by these four, so once they settle the page stops changing height.
     const scrollRef = useRef<HTMLDivElement>(null);
-    useScrollToHash(scrollRef);
+    useScrollToHash(scrollRef, !isPlanPending && !arePlansPending && !areCapsPending && !isOverduePending);
 
     // Full-width page shell keeps chrome consistent with the other dashboard pages, but `centered`
     // caps the content: the usage charts have a fixed height, so unbounded width stretches them to an
@@ -107,25 +109,25 @@ export const TeamBilling: React.FC = () => {
                 </div>
                 {showSummary && (
                     <>
-                        <div id="summary">
+                        <div id="summary" className="scroll-mt-6">
                             <Summary />
                         </div>
                         <Separator />
                     </>
                 )}
-                <div id="usage">
+                <div id="usage" className="scroll-mt-6">
                     <Usage />
                 </div>
                 {showSpendAlerts && (
                     <>
                         <Separator />
-                        <div id="spend-alerts">
+                        <div id="spend-alerts" className="scroll-mt-6">
                             <SpendAlerts />
                         </div>
                     </>
                 )}
                 <Separator />
-                <div id="plans" className="flex flex-col gap-4">
+                <div id="plans" className="scroll-mt-6 flex flex-col gap-4">
                     <div className="flex items-center justify-between gap-4">
                         <span className="text-text-strong text-body-medium-medium">Plans</span>
                         <Button asChild variant="link-accent">
@@ -144,7 +146,7 @@ export const TeamBilling: React.FC = () => {
                 {canManageBilling && (
                     <>
                         <Separator />
-                        <div id="payment-and-invoices">
+                        <div id="payment-and-invoices" className="scroll-mt-6">
                             <Payment />
                         </div>
                     </>
