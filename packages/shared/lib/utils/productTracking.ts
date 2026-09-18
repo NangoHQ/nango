@@ -15,7 +15,8 @@ export type ProductTrackingTypes =
     | 'session_terminated'
     | 'nango_execute'
     | 'execute_pinned_tool'
-    | 'nango_proxy';
+    | 'nango_proxy'
+    | 'nango_tool_search';
 
 export interface TrackingContext {
     team: Pick<DBTeam, 'id' | 'name'>;

@@ -5,7 +5,14 @@ import type { AgentSession, HTTP_METHOD } from '@nangohq/types';
 /** The two ways a session runs one of its own tools. A pinned tool is called by its own name, not through nango_execute. */
 export type AgentSessionToolCallEvent = 'nango_execute' | 'execute_pinned_tool';
 
-type AgentSessionEvent = AgentSessionToolCallEvent | 'session_created' | 'session_terminated' | 'nango_proxy';
+type AgentSessionEvent = AgentSessionToolCallEvent | 'session_created' | 'session_terminated' | 'nango_proxy' | 'nango_tool_search';
+
+/** One ranked tool, as the search returned it. Confidence runs from 0, nothing matched, to 1. */
+export interface AgentSessionToolSearchHit {
+    tool: string;
+    integration: string;
+    confidence: number;
+}
 
 interface Outcome {
     logOperationId?: string | undefined;
@@ -22,6 +29,13 @@ interface ToolCallParams extends Outcome {
     pinned?: boolean | undefined;
     /** Names the underlying failure when the action ran and failed, rather than being rejected before it ran. */
     underlyingErrorCode?: string | undefined;
+}
+
+interface ToolSearchParams extends Outcome {
+    session: AgentSession;
+    query: string;
+    matches: AgentSessionToolSearchHit[];
+    related: AgentSessionToolSearchHit[];
 }
 
 interface ProxyRequestParams extends Outcome {
@@ -72,6 +86,21 @@ export function trackAgentSessionProxyRequest({ session, integrationId, provider
         ...(provider ? { provider } : {}),
         ...(status === undefined ? {} : { 'http-status': status }),
         ...(providerErrorCode ? { 'provider-error-code': providerErrorCode } : {})
+    });
+}
+
+/**
+ * Carries the query as the agent sent it, which is what search quality is measured against. The
+ * results ride along so a query can be read next to what it returned.
+ */
+export function trackAgentSessionToolSearch({ session, query, matches, related, ...outcome }: ToolSearchParams): void {
+    trackSessionEvent('nango_tool_search', session, {
+        query,
+        'match-count': matches.length,
+        'related-count': related.length,
+        matches,
+        related,
+        ...outcomeProperties(outcome)
     });
 }
 
