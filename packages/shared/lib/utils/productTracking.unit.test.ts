@@ -29,10 +29,10 @@ afterEach(() => {
 
 describe('track', () => {
     it('stamps account, environment and plan on the event', () => {
-        productTracking.track({ name: 'deploy:success', team, environment, plan, user, eventProperties: { source: 'repo' } });
+        productTracking.track({ name: 'account:billing:downgraded', team, environment, plan, user, eventProperties: { source: 'repo' } });
 
         expect(capture).toHaveBeenCalledWith({
-            event: 'deploy:success',
+            event: 'account:billing:downgraded',
             distinctId: 'team-42-user-3',
             properties: expect.objectContaining({
                 source: 'repo',
@@ -59,7 +59,7 @@ describe('track', () => {
     });
 
     it('sets account and user properties on the person', () => {
-        productTracking.track({ name: 'account:trial:started', team, environment, plan, user });
+        productTracking.track({ name: 'account:billing:downgraded', team, environment, plan, user });
 
         expect(lastCapture().properties['$set']).toEqual({
             'account-id': 42,
@@ -73,7 +73,7 @@ describe('track', () => {
     });
 
     it('drops an event that has no account anywhere', () => {
-        productTracking.track({ name: 'deploy:success' });
+        productTracking.track({ name: 'account:billing:downgraded' });
 
         expect(capture).not.toHaveBeenCalled();
     });
@@ -84,7 +84,7 @@ describe('withProductTrackingContext', () => {
         withProductTrackingContext(
             () => ({ team, environment, plan, user }),
             () => {
-                productTracking.track({ name: 'deploy:success' });
+                productTracking.track({ name: 'account:billing:downgraded' });
             }
         );
 
@@ -100,7 +100,7 @@ describe('withProductTrackingContext', () => {
             () => ({ team, environment: locals.environment }),
             () => {
                 locals.environment = environment;
-                productTracking.track({ name: 'deploy:success' });
+                productTracking.track({ name: 'account:billing:downgraded' });
             }
         );
 
@@ -113,7 +113,7 @@ describe('withProductTrackingContext', () => {
         withProductTrackingContext(
             () => ({ team, environment }),
             () => {
-                productTracking.track({ name: 'deploy:success', environment: other });
+                productTracking.track({ name: 'account:billing:downgraded', environment: other });
             }
         );
 
