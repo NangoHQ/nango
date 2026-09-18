@@ -259,7 +259,7 @@
     },
     {
       "source": "/guides/platform/free-self-hosting/configuration",
-      "destination": "/guides/platform/self-hosting"
+      "destination": "/guides/platform/free-self-hosting"
     },
     {
       "source": "/implementation-guides/platform/functions/customer-configuration",
@@ -813,6 +813,14 @@
                   "guides/platform/webhooks-from-nango",
                   "guides/platform/webhook-forwarding",
                   "guides/platform/common-issues",
+                  {
+                    "group": "Self-Hosting",
+                    "pages": [
+                      "guides/platform/self-hosting/self-hosting",
+                      "guides/platform/self-hosting/byoc",
+                      "guides/platform/self-hosting/self-managed"
+                    ]
+                  },
                   {
                     "group": "Migrations",
                     "pages": [
