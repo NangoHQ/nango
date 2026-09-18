@@ -110,10 +110,7 @@ jobs:
                 (github.event_name == 'push' && needs.changes.outputs.integrations == 'true')
             )
         runs-on: ubuntu-latest
-        # Being tested in development right now — push/schedule always go to dev-docs.
-        # Only an explicit manual dispatch can target prod-docs for this sync.
-        # TODO: switch to prod-docs once testing is done.
-        environment: ${{ github.event_name == 'workflow_dispatch' && (inputs.environment || 'prod-docs') || 'dev-docs' }}
+        environment: ${{ inputs.environment || 'prod-docs' }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
