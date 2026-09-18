@@ -205,7 +205,7 @@ export async function deployBundle({
                 // If the after trigger is a schedule and there is no before store, create a new instance
                 if (artifact.trigger.kind === 'schedule' && !before) {
                     const functionConfig = upserted.value.find((f) => f.integration.unique_key === artifact.integrationId && f.config.name === artifact.name);
-                    if (functionConfig) {
+                    if (functionConfig?.config.enabled) {
                         upsertCandidate = {
                             functionConfigId: functionConfig.config.id,
                             integrationId: functionConfig.integration.id,
@@ -214,7 +214,7 @@ export async function deployBundle({
                     }
                 }
                 // If the after trigger is a schedule and there is a before state with a non-schedule trigger, create a new instance
-                else if (artifact.trigger.kind === 'schedule' && before && before?.currentVersion.trigger.kind !== 'schedule') {
+                else if (artifact.trigger.kind === 'schedule' && before?.config.enabled && before.currentVersion.trigger.kind !== 'schedule') {
                     upsertCandidate = {
                         functionConfigId: before.config.id,
                         integrationId: before.integration.id,
@@ -251,10 +251,11 @@ export async function deployBundle({
                 throw instances.error;
             }
 
-            const deletedInstances = await functionInstanceService.softDelete(trx, {
-                environmentId: environmentId,
-                functionConfigIds: instancesToDelete.map((i) => i.functionConfigId)
-            });
+            const deletedInstances = await functionInstanceService.softDelete(
+                trx,
+                { functionConfigIds: instancesToDelete.map((i) => i.functionConfigId) },
+                { environmentId }
+            );
             if (deletedInstances.isErr()) {
                 throw deletedInstances.error;
             }
@@ -293,10 +294,13 @@ export async function deployBundle({
                 if (!config) {
                     throw new Error(`Deployed function '${integrationId}/${artifact.name}' not found`);
                 }
+                if (!config.config.enabled) {
+                    continue;
+                }
                 const connections = await getConnections(db.knex, config.integration.id);
                 let afterId = 0;
                 while (true) {
-                    const instances = await functionInstanceService.search(db.knex, { functionConfigIds: [config.config.id], afterId, limit: 1000 });
+                    const instances = await functionInstanceService.search(db.knex, { functionConfigIds: [config.config.id] }, { afterId, limit: 1000 });
                     if (instances.isErr()) {
                         throw instances.error;
                     }
@@ -304,7 +308,7 @@ export async function deployBundle({
                         break;
                     }
                     const frequencyFallback = artifact.trigger.frequency;
-                    const autoStart = config.config.enabled && (artifact.trigger.autoStart ?? true);
+                    const autoStart = artifact.trigger.autoStart ?? true;
                     const scheduled = await orchestrator.scheduleFunctions(
                         instances.value.flatMap((instance) => {
                             const connection = connections.get(instance.nango_connection_id);

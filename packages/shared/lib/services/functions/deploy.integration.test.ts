@@ -262,6 +262,17 @@ describe('deployBundle instances', () => {
         (await ctx.deploy([{ ...scheduled, trigger: { kind: 'schedule', frequency: 'every 5 minutes', autoStart: false } }])).unwrap();
         expect(ctx.orchestrator.scheduleFunctions.mock.calls[0]?.[0][0]?.autoStart).toBe(false);
     });
+
+    it('does not create instances or schedules when a disabled function becomes scheduled', async () => {
+        const ctx = await setup();
+        (await ctx.deploy([githubArtifact])).unwrap();
+        await db.knex.from(CONFIGS_TABLE).where({ environment_id: ctx.environment.id, name: githubArtifact.name }).update({ enabled: false });
+
+        (await ctx.deploy([scheduled])).unwrap();
+
+        expect(await ctx.instances()).toEqual([]);
+        expect(ctx.orchestrator.scheduleFunctions).not.toHaveBeenCalled();
+    });
 });
 
 describe(prepareDeploymentBundle, () => {
