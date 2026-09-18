@@ -29,7 +29,7 @@ export type PutTask = Endpoint<{
         functionRuntime: FunctionRuntime;
         checkpoints?: CheckpointRange | undefined;
     };
-    Error: ApiError<'put_task_failed'>;
+    Error: ApiError<'put_task_failed' | 'unauthorized'>;
     Success: never;
 }>;
 

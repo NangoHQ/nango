@@ -33,7 +33,7 @@ describe('PersistClient.deleteOutdatedRecords', () => {
         );
         vi.stubGlobal('fetch', fetchMock);
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isOk()).toBe(true);
@@ -48,7 +48,7 @@ describe('PersistClient.deleteOutdatedRecords', () => {
         const fetchMock = vi.fn().mockResolvedValue(ndjsonResponse([{ status: 'done', deletedKeys: ['x'] }]));
         vi.stubGlobal('fetch', fetchMock);
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         await call(client);
 
         const [, options] = fetchMock.mock.calls[0] as [string, RequestInit];
@@ -59,7 +59,7 @@ describe('PersistClient.deleteOutdatedRecords', () => {
     it('rejects a done line whose deletedKeys is not an array of strings', async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ndjsonResponse([{ status: 'done', deletedKeys: [1, 2, 3] }])));
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isErr()).toBe(true);
@@ -69,7 +69,7 @@ describe('PersistClient.deleteOutdatedRecords', () => {
     it('succeeds with no progress lines at all (single-batch delete)', async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ndjsonResponse([{ status: 'done', deletedKeys: ['x'] }])));
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isOk()).toBe(true);
@@ -87,7 +87,7 @@ describe('PersistClient.deleteOutdatedRecords', () => {
             )
         );
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isErr()).toBe(true);
@@ -97,7 +97,7 @@ describe('PersistClient.deleteOutdatedRecords', () => {
     it('returns an Err for a non-ok HTTP status without treating the body as NDJSON', async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: { message: 'unauthorized' } }), { status: 401 })));
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isErr()).toBe(true);
@@ -107,7 +107,7 @@ describe('PersistClient.deleteOutdatedRecords', () => {
     it('returns an Err when the response body is empty', async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 200 })));
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isErr()).toBe(true);
@@ -125,7 +125,7 @@ describe('PersistClient.deleteOutdatedRecords', () => {
             )
         );
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isErr()).toBe(true);
@@ -153,7 +153,7 @@ describe('PersistClient.deleteHardAllRecords', () => {
         );
         vi.stubGlobal('fetch', fetchMock);
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isOk()).toBe(true);
@@ -168,7 +168,7 @@ describe('PersistClient.deleteHardAllRecords', () => {
         const fetchMock = vi.fn().mockResolvedValue(ndjsonResponse([{ status: 'done', deletedCount: 0, hasMore: false }]));
         vi.stubGlobal('fetch', fetchMock);
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         await call(client);
 
         const [, options] = fetchMock.mock.calls[0] as [string, RequestInit];
@@ -179,7 +179,7 @@ describe('PersistClient.deleteHardAllRecords', () => {
     it('rejects a done line with a malformed shape', async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ndjsonResponse([{ status: 'done', deletedCount: 'not-a-number', hasMore: false }])));
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isErr()).toBe(true);
@@ -189,7 +189,7 @@ describe('PersistClient.deleteHardAllRecords', () => {
     it('succeeds with no progress lines at all (single-batch delete)', async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ndjsonResponse([{ status: 'done', deletedCount: 42, hasMore: false }])));
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isOk()).toBe(true);
@@ -207,7 +207,7 @@ describe('PersistClient.deleteHardAllRecords', () => {
             )
         );
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isErr()).toBe(true);
@@ -217,7 +217,7 @@ describe('PersistClient.deleteHardAllRecords', () => {
     it('returns an Err for a non-ok HTTP status without treating the body as NDJSON', async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: { message: 'unauthorized' } }), { status: 401 })));
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isErr()).toBe(true);
@@ -227,7 +227,7 @@ describe('PersistClient.deleteHardAllRecords', () => {
     it('returns an Err when the response body is empty', async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 200 })));
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isErr()).toBe(true);
@@ -245,7 +245,7 @@ describe('PersistClient.deleteHardAllRecords', () => {
             )
         );
 
-        const client = new PersistClient({ secretKey: 'secret' });
+        const client = new PersistClient({ token: 'secret' });
         const res = await call(client);
 
         expect(res.isErr()).toBe(true);

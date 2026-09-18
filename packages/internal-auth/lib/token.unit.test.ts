@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_RUNNER, INTERNAL_SERVICE_TOKEN_ISSUER } from './constants.js';
+import {
+    INTERNAL_SERVICE_AUDIENCE_JOBS,
+    INTERNAL_SERVICE_AUDIENCE_PERSIST,
+    INTERNAL_SERVICE_AUDIENCE_RUNNER,
+    INTERNAL_SERVICE_AUDIENCE_SERVER,
+    INTERNAL_SERVICE_TASK_CAPABILITY_AUDIENCES,
+    INTERNAL_SERVICE_TOKEN_ISSUER,
+    TASK_CAPABILITY_ACTIONS
+} from './constants.js';
 import { createInternalServiceToken, isJwtShape, verifyInternalServiceToken } from './token.js';
 
 const signingKey = 'test-signing-key';
@@ -102,6 +110,39 @@ describe('verifyInternalServiceToken', () => {
 
     it('returns malformed_claims when required claims are missing', () => {
         const token = createInternalServiceToken({ op: 'node', nodeId: '', expiresInSecs: 120 }, signingKey);
+        expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, signingKey)).toEqual({ ok: false, reason: 'malformed_claims' });
+    });
+
+    it('accepts a capability token for each audience in the list', () => {
+        const token = createInternalServiceToken(
+            {
+                taskId: 'task-1',
+                audience: INTERNAL_SERVICE_TASK_CAPABILITY_AUDIENCES,
+                environmentId: 9,
+                connectionId: 42,
+                syncId: '11111111-1111-4111-8111-111111111111',
+                actions: [TASK_CAPABILITY_ACTIONS.persistRecords, TASK_CAPABILITY_ACTIONS.apiProxy],
+                expiresInSecs: 120
+            },
+            signingKey
+        );
+        for (const audience of [INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_PERSIST, INTERNAL_SERVICE_AUDIENCE_SERVER]) {
+            expect(verifyInternalServiceToken(token!, audience, signingKey)).toMatchObject({
+                ok: true,
+                op: 'task',
+                taskId: 'task-1',
+                audience,
+                environmentId: 9,
+                connectionId: 42,
+                syncId: '11111111-1111-4111-8111-111111111111',
+                actions: [TASK_CAPABILITY_ACTIONS.persistRecords, TASK_CAPABILITY_ACTIONS.apiProxy]
+            });
+        }
+        expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_RUNNER, signingKey)).toEqual({ ok: false, reason: 'wrong_audience' });
+    });
+
+    it('returns malformed_claims when a numeric scope claim is zero', () => {
+        const token = createInternalServiceToken({ taskId: 'task-1', environmentId: 0, expiresInSecs: 120 }, signingKey);
         expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, signingKey)).toEqual({ ok: false, reason: 'malformed_claims' });
     });
 });

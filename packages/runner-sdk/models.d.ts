@@ -211,7 +211,8 @@ export declare class ActionError<T = Record<string, unknown>> extends Error {
 export interface NangoProps {
     scriptType: 'sync' | 'action' | 'webhook' | 'on-event';
     host?: string;
-    secretKey: string;
+    secretKey?: string | undefined;
+    taskAuthToken?: string | undefined;
     team?: Pick<DBTeam, 'id' | 'name'>;
     connectionId: string;
     environmentId: number;

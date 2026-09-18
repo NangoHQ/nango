@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { getInternalServiceAuth, nangoPropsBoundToTaskAuth } from '@nangohq/internal-auth';
 import { validateRequest } from '@nangohq/utils';
 
 import { handle } from '../../execution/operations/handler.js';
@@ -44,6 +45,16 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<PutTask>) =>
     const { nangoProps, error, output, telemetryBag, functionRuntime, checkpoints } = res.locals.parsedBody;
     if (!nangoProps) {
         res.status(400).json({ error: { code: 'put_task_failed', message: 'missing nangoProps' } });
+        return;
+    }
+    if (
+        !nangoPropsBoundToTaskAuth(getInternalServiceAuth(res), {
+            environmentId: nangoProps.environmentId,
+            nangoConnectionId: nangoProps.nangoConnectionId,
+            syncId: nangoProps.syncId
+        })
+    ) {
+        res.status(401).json({ error: { code: 'unauthorized', message: 'Unauthorized' } });
         return;
     }
     await handle({
