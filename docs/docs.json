@@ -1023,6 +1023,7 @@
               "integrations/all/adp-run",
               "integrations/all/adp-workforce-now",
               "integrations/all/adp-workforce-now-next-gen",
+              "api-integrations/adroll",
               "integrations/all/adyen",
               "api-integrations/adyntel",
               "integrations/all/affinity",
