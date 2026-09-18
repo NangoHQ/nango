@@ -11,6 +11,7 @@ import { usePlanOverrideStore } from '@/features/planOverride';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetBillingUsage, useApiGetOverdueInvoices, useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useScrollToHash } from '@/hooks/useScrollToHash';
+import { useStripePaymentMethods } from '@/hooks/useStripe';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { billedUsageMetrics, getAggregateUsageState } from '@/utils/usage';
@@ -54,11 +55,13 @@ export const TeamBilling: React.FC = () => {
     const { data: caps, isPending: areCapsPending } = useApiGetUsage(env);
     const billedMetrics = billedUsageMetrics(environmentData?.plan);
 
-    // The dev override fabricates the overdue response, so it has to be handed a real portal URL for
-    // the previewed "View invoices" link to open anything. Fetched only while the override is on, and
-    // on the same key as <Payment/>'s unfiltered call, so it never costs a production request.
+    // Shares <Payment/>'s unfiltered key, so enabling it alongside that section adds no request.
+    // The dev override needs a real portal URL or its previewed "View invoices" link opens nothing.
     const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
-    const { data: billingUsage } = useApiGetBillingUsage(env, undefined, { enabled: overdueOverride });
+    const { data: billingUsage, isPending: isBillingUsagePending } = useApiGetBillingUsage(env, undefined, {
+        enabled: canManageBilling || overdueOverride
+    });
+    const { isPending: arePaymentMethodsPending } = useStripePaymentMethods(env);
 
     // Owned here rather than by <Usage/> so a usage outage can't hide a payment warning, and so it
     // sits above the cap warning: money owed outranks a limit being approached.
@@ -88,9 +91,15 @@ export const TeamBilling: React.FC = () => {
     }, []);
 
     const scrollRef = useRef<HTMLDivElement>(null);
-    // These four decide the banners, the summary strip and which form `Usage` takes. Once they
-    // settle, the page has its final height.
-    useScrollToHash(scrollRef, !isPlanPending && !arePlansPending && !areCapsPending && !isOverduePending);
+    // The first four decide the banners, the summary strip and which form `Usage` takes. `Payment`
+    // sits below every anchor, so its height decides whether a scroll can reach one.
+    const pageHeightSettled =
+        !isPlanPending &&
+        !arePlansPending &&
+        !areCapsPending &&
+        !isOverduePending &&
+        (!canManageBilling || (!isBillingUsagePending && !arePaymentMethodsPending));
+    useScrollToHash(scrollRef, pageHeightSettled);
 
     // Full-width page shell keeps chrome consistent with the other dashboard pages, but `centered`
     // caps the content: the usage charts have a fixed height, so unbounded width stretches them to an
