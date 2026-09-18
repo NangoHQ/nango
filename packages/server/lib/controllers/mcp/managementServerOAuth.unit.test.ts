@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flags, metrics, Ok } from '@nangohq/utils';
 
 import { audit, auditBackend } from '../../audit.js';
+import { createIntegrationsTool } from './integrations/create.js';
 import { listIntegrationsTool } from './integrations/list.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { getProvidersTool } from './providers/get.js';
@@ -12,6 +13,9 @@ import { getProvidersTool } from './providers/get.js';
 import type { McpServer } from '@modelcontextprotocol/server';
 import type { Principal, ScopeSelector, WhereSelector } from '@nangohq/authz';
 import type { AuditAttribution, DBEnvironment, DBTeam } from '@nangohq/types';
+import type { Mock } from 'vitest';
+
+type LoadEnvironment = (name: string) => Promise<DBEnvironment | null>;
 
 const managementToolNames = [
     'docs_search',
@@ -181,13 +185,50 @@ describe('createManagementMcpServer with OAuth', () => {
             const result = await client.callTool({ name: 'providers_get', arguments: { environment: 'dev', provider: 'github' } });
 
             expect(result).toMatchObject({ isError: true, content: [{ type: 'text', text: 'Internal error' }] });
-            expect(loadEnvironment).toHaveBeenCalledOnce();
+            expect(loadEnvironment).toHaveBeenCalledTimes(2);
             expect(metricSpy).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {
                 accountId: 1,
                 mcp_type: 'management',
                 tool: 'providers_get',
                 outcome: 'error'
             });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('retries a transient environment load failure before invoking the tool', async () => {
+        const response = {
+            name: 'github',
+            display_name: 'GitHub',
+            auth_mode: 'OAUTH2' as const,
+            docs: 'https://nango.dev/docs/api-integrations/github',
+            logo_url: 'https://api.nango.dev/images/template-logos/github.svg',
+            templates: []
+        };
+        const handlerSpy = vi.spyOn(getProvidersTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const loadEnvironment = vi
+            .fn<LoadEnvironment>()
+            .mockRejectedValueOnce(new Error('Transient database failure'))
+            .mockResolvedValueOnce(fakeEnvironment({ id: 1, name: 'dev', isProduction: false }));
+        const requestBody = {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'tools/call',
+            params: { name: 'providers_get', arguments: { environment: 'dev', provider: 'github' } }
+        };
+        const { client, server } = await createTestClient({ loadEnvironment: loadEnvironment, requestBody });
+
+        try {
+            const result = await client.callTool({ name: 'providers_get', arguments: { environment: 'dev', provider: 'github' } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(loadEnvironment).toHaveBeenCalledTimes(2);
+            expect(handlerSpy).toHaveBeenCalledOnce();
         } finally {
             await client.close();
             await server.close();
@@ -287,23 +328,85 @@ describe('createManagementMcpServer with OAuth', () => {
             await server.close();
         }
     });
+
+    it('audits a mutation targeting a known environment outside the current user grants', async () => {
+        flags.hasAuditTrail = true;
+        auditBackend.configured = true;
+        const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+        const handlerSpy = vi.spyOn(createIntegrationsTool, 'handler');
+        const args = {
+            environment: 'prod',
+            provider: 'github',
+            integration_id: 'github',
+            display_name: 'denied-secret-marker',
+            forward_webhooks: true,
+            credential_source: 'nango'
+        };
+        const { client, server, loadEnvironment } = await createTestClient({
+            principal: principal(['environment:*'], ['env:non-production']),
+            audit: {
+                kind: 'request',
+                actor: { type: 'user', id: '1', display: 'user@nango.dev' },
+                context: { ip: '127.0.0.1', userAgent: 'test-client' }
+            },
+            requestBody: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'integrations_create', arguments: args }
+            }
+        });
+
+        try {
+            const result = await client.callTool({ name: 'integrations_create', arguments: args });
+
+            expect(result).toMatchObject({ isError: true, content: [{ type: 'text', text: 'Environment not found or inaccessible' }] });
+            await vi.waitFor(() => expect(auditSpy).toHaveBeenCalledOnce());
+            const event = auditSpy.mock.calls[0]?.[0];
+            expect(event).toMatchObject({
+                accountId: 1,
+                environment: { id: 'prod-environment', display: 'prod' },
+                actor: { type: 'user', id: '1', display: 'user@nango.dev' },
+                resource: 'integration',
+                action: 'created',
+                targets: [],
+                context: { interface: 'mcp', ip: '127.0.0.1', userAgent: 'test-client' },
+                outcome: 'denied'
+            });
+            expect(JSON.stringify(event)).not.toContain('denied-secret-marker');
+            expect(loadEnvironment).not.toHaveBeenCalled();
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
 });
 
 async function createTestClient({
     principal: userPrincipal = principal(['environment:*'], ['env:*']),
     audit: auditAttribution,
+    loadEnvironment: loadEnvironmentOverride,
     loadEnvironmentError,
     requestBody
-}: { principal?: Principal; audit?: AuditAttribution; loadEnvironmentError?: Error; requestBody?: unknown } = {}): Promise<{
+}: {
+    principal?: Principal;
+    audit?: AuditAttribution;
+    loadEnvironment?: Mock<LoadEnvironment>;
+    loadEnvironmentError?: Error;
+    requestBody?: unknown;
+} = {}): Promise<{
     client: Client;
     server: McpServer;
-    loadEnvironment: ReturnType<typeof vi.fn>;
+    loadEnvironment: Mock<LoadEnvironment>;
 }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     const environments = [fakeEnvironment({ id: 1, name: 'dev', isProduction: false }), fakeEnvironment({ id: 2, name: 'prod', isProduction: true })];
-    const loadEnvironment = loadEnvironmentError
-        ? vi.fn((_name: string) => Promise.reject(loadEnvironmentError))
-        : vi.fn((name: string) => Promise.resolve(environments.find((environment) => environment.name === name) ?? null));
+    const loadEnvironment =
+        loadEnvironmentOverride ??
+        (loadEnvironmentError
+            ? vi.fn((_name: string) => Promise.reject(loadEnvironmentError))
+            : vi.fn((name: string) => Promise.resolve(environments.find((environment) => environment.name === name) ?? null)));
     const server = await createManagementMcpServer(
         {
             type: 'oauth',

@@ -82,21 +82,21 @@ async function authenticateOAuthToken(token: string, res: Response<unknown, Part
         return { kind: 'invalid_token' };
     }
 
-    let providerGrant;
+    const providerGrant = await oauthServer.Grant.find(accessToken.grantId);
+    if (!providerGrant) {
+        return { kind: 'invalid_token' };
+    }
+
     let client;
     try {
-        [providerGrant, client] = await Promise.all([
-            oauthServer.Grant.find(accessToken.grantId),
-            // Re-resolve the CIMD client instead of trusting the client identifier carried by the token.
-            oauthServer.Client.find(accessToken.clientId)
-        ]);
+        // Re-resolve the CIMD client instead of trusting the client identifier carried by the token.
+        client = await oauthServer.Client.find(accessToken.clientId);
     } catch {
         return { kind: 'invalid_token' };
     }
 
     const grantResourceScopes = providerGrant?.getResourceScope(resource)?.split(' ').filter(Boolean) ?? [];
     if (
-        !providerGrant ||
         !client ||
         providerGrant.clientId !== accessToken.clientId ||
         client.clientId !== accessToken.clientId ||

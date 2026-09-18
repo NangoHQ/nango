@@ -29,7 +29,7 @@ import { triggerSyncsTool } from './syncs/trigger.js';
 import { handleMcpToolError, jsonStructuredContent, mcpToolError, toJsonSchema202012 } from './utils.js';
 
 import type { ManagementMcpEnvironment } from './environments/list.js';
-import type { ManagementMcpContext, ManagementMcpRequiredScopes, ManagementMcpTool } from './managementTool.js';
+import type { ManagementMcpAuditContext, ManagementMcpContext, ManagementMcpRequiredScopes, ManagementMcpTool } from './managementTool.js';
 import type { Principal } from '@nangohq/authz';
 import type { ApiKeyScope, AuditAttribution, AuditPolicy, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 
@@ -101,7 +101,13 @@ interface ManagementMcpOAuthContext {
     audit?: AuditAttribution | undefined;
 }
 
-type ResolvedOAuthToolCall = { ok: true; toolArguments: Record<string, unknown>; context: ManagementMcpContext } | { ok: false; message: string };
+type ResolvedOAuthToolCall =
+    | { ok: true; toolArguments: Record<string, unknown>; context: ManagementMcpContext }
+    | {
+          ok: false;
+          message: string;
+          deniedContext?: { environment: ManagementMcpEnvironment; toolArguments: Record<string, unknown> } | undefined;
+      };
 type OAuthToolCallResolver = (args: unknown) => Promise<ResolvedOAuthToolCall>;
 
 export async function createManagementMcpServer(authentication: ManagementMcpServerAuthentication, requestBody?: unknown): Promise<McpServer> {
@@ -150,7 +156,7 @@ async function createOAuthManagementMcpServer(oauthContext: ManagementMcpOAuthCo
         }
 
         const callArguments = toolCallArgumentsByName.get(toolDefinition.name) ?? [];
-        await auditOAuthCallsBeforeDispatch({ callArguments, resolveOAuthToolCall, tool: toolDefinition });
+        await auditOAuthCallsBeforeDispatch({ callArguments, oauthContext, resolveOAuthToolCall, tool: toolDefinition });
 
         server.registerTool(toolDefinition.name, oauthConfig, async (args: unknown) => {
             try {
@@ -210,23 +216,35 @@ function createOAuthToolCallResolver(oauthContext: ManagementMcpOAuthContext): O
             return { ok: false, message: 'An environment name is required' };
         }
 
+        const toolArguments = withoutEnvironmentArgument(args);
         const environmentSummary = oauthContext.environments.find((candidate) => candidate.name === args['environment']);
-        if (!environmentSummary || !authorizeIn(oauthContext.principal, 'environment:settings:read', environmentSummary)) {
+        if (!environmentSummary) {
+            // An environment-scoped audit event requires a stable environment UUID, so unknown names are only reported through tool metrics.
             return { ok: false, message: 'Environment not found or inaccessible' };
+        }
+        if (!authorizeIn(oauthContext.principal, 'environment:settings:read', environmentSummary)) {
+            return { ok: false, message: 'Environment not found or inaccessible', deniedContext: { environment: environmentSummary, toolArguments } };
         }
 
         let environmentPromise = environmentsByName.get(environmentSummary.name);
         if (!environmentPromise) {
-            environmentPromise = oauthContext.loadEnvironment(environmentSummary.name);
-            environmentsByName.set(environmentSummary.name, environmentPromise);
+            const loadPromise = oauthContext.loadEnvironment(environmentSummary.name);
+            environmentsByName.set(environmentSummary.name, loadPromise);
+            void loadPromise.catch(() => {
+                if (environmentsByName.get(environmentSummary.name) === loadPromise) {
+                    environmentsByName.delete(environmentSummary.name);
+                }
+            });
+            environmentPromise = loadPromise;
         }
         const environment = await environmentPromise;
-        if (!environment || !authorizeIn(oauthContext.principal, 'environment:settings:read', environment)) {
+        if (!environment) {
             return { ok: false, message: 'Environment not found or inaccessible' };
         }
+        if (!authorizeIn(oauthContext.principal, 'environment:settings:read', environment)) {
+            return { ok: false, message: 'Environment not found or inaccessible', deniedContext: { environment, toolArguments } };
+        }
 
-        const toolArguments = { ...args };
-        delete toolArguments['environment'];
         const grantedScopes = PUBLIC_ENVIRONMENT_SCOPES.filter((scope) => authorizeIn(oauthContext.principal, scope, environment));
 
         return {
@@ -245,10 +263,12 @@ function createOAuthToolCallResolver(oauthContext: ManagementMcpOAuthContext): O
 
 async function auditOAuthCallsBeforeDispatch({
     callArguments,
+    oauthContext,
     resolveOAuthToolCall,
     tool
 }: {
     callArguments: readonly unknown[];
+    oauthContext: ManagementMcpOAuthContext;
     resolveOAuthToolCall: OAuthToolCallResolver;
     tool: ManagementMcpTool;
 }): Promise<void> {
@@ -261,6 +281,17 @@ async function auditOAuthCallsBeforeDispatch({
             continue;
         }
         if (!resolved.ok) {
+            if (resolved.deniedContext) {
+                const { environment, toolArguments } = resolved.deniedContext;
+                const deniedContext: ManagementMcpAuditContext = {
+                    account: oauthContext.account,
+                    environment,
+                    plan: oauthContext.plan,
+                    grantedScopes: PUBLIC_ENVIRONMENT_SCOPES.filter((scope) => authorizeIn(oauthContext.principal, scope, environment)),
+                    audit: oauthContext.audit
+                };
+                auditDeniedCallsForTool({ callArguments: [toolArguments], context: deniedContext, tool });
+            }
             continue;
         }
 
@@ -311,7 +342,7 @@ function auditDeniedCallsForTool({
     tool
 }: {
     callArguments: readonly unknown[];
-    context: ManagementMcpContext;
+    context: ManagementMcpAuditContext;
     tool: ManagementMcpTool;
 }): void {
     if (!context.audit || tool.audit.kind === 'no-audit') {
@@ -343,6 +374,12 @@ function auditDeniedCallsForTool({
             outcome: 'denied'
         });
     }
+}
+
+function withoutEnvironmentArgument(args: Record<string, unknown>): Record<string, unknown> {
+    const toolArguments = { ...args };
+    delete toolArguments['environment'];
+    return toolArguments;
 }
 
 /**

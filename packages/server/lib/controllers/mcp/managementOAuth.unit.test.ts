@@ -73,15 +73,20 @@ const validAccessToken = {
     scopes: new Set(['environment:*'])
 };
 
+function validGrant(overrides: Record<string, unknown> = {}) {
+    return {
+        accountId: '7',
+        clientId: 'https://client.example.com/metadata.json',
+        getResourceScope: vi.fn(() => 'environment:*'),
+        ...overrides
+    };
+}
+
 describe('Management MCP OAuth authentication', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         accessTokenFindMock.mockResolvedValue(validAccessToken);
-        grantFindMock.mockResolvedValue({
-            accountId: '7',
-            clientId: 'https://client.example.com/metadata.json',
-            getResourceScope: vi.fn(() => 'environment:*')
-        });
+        grantFindMock.mockResolvedValue(validGrant());
         clientFindMock.mockResolvedValue({ clientId: 'https://client.example.com/metadata.json' });
         userGetMock.mockResolvedValue(user);
         accountGetMock.mockResolvedValue(account);
@@ -202,6 +207,75 @@ describe('Management MCP OAuth authentication', () => {
         });
     });
 
+    it.each(['grantId', 'clientId', 'accountId'] as const)('rejects a token missing %s', async (field) => {
+        accessTokenFindMock.mockResolvedValue({ ...validAccessToken, [field]: undefined });
+
+        await expectInvalidOAuthTokenChallenge();
+
+        expect(grantFindMock).not.toHaveBeenCalled();
+        expect(clientFindMock).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        {
+            name: 'missing grant',
+            arrange: () => grantFindMock.mockResolvedValue(undefined)
+        },
+        {
+            name: 'missing client',
+            arrange: () => clientFindMock.mockResolvedValue(undefined)
+        },
+        {
+            name: 'grant client mismatch',
+            arrange: () => grantFindMock.mockResolvedValue(validGrant({ clientId: 'https://other.example.com/metadata.json' }))
+        },
+        {
+            name: 'resolved client mismatch',
+            arrange: () => clientFindMock.mockResolvedValue({ clientId: 'https://other.example.com/metadata.json' })
+        },
+        {
+            name: 'grant account mismatch',
+            arrange: () => grantFindMock.mockResolvedValue(validGrant({ accountId: '8' }))
+        },
+        {
+            name: 'missing granted scope',
+            arrange: () => grantFindMock.mockResolvedValue(validGrant({ getResourceScope: vi.fn(() => 'environment:settings:read') }))
+        }
+    ])('rejects persisted authorization with $name', async ({ arrange }) => {
+        arrange();
+
+        await expectInvalidOAuthTokenChallenge();
+    });
+
+    it.each([
+        { name: 'unknown user', arrange: () => userGetMock.mockResolvedValue(null) },
+        { name: 'unknown account', arrange: () => accountGetMock.mockResolvedValue(null) }
+    ])('rejects a token for an $name', async ({ arrange }) => {
+        arrange();
+
+        await expectInvalidOAuthTokenChallenge();
+    });
+
+    it('propagates grant storage failures instead of challenging a valid token', async () => {
+        const grantError = new Error('Failed to decrypt grant');
+        grantFindMock.mockRejectedValue(grantError);
+        const { res, status } = response();
+        const next = vi.fn() as NextFunction;
+
+        await managementMcpAuth(request('oauth-access-token'), res, next);
+
+        expect(next).toHaveBeenCalledWith(grantError);
+        expect(status).not.toHaveBeenCalled();
+        expect(clientFindMock).not.toHaveBeenCalled();
+        expect(metricsIncrementMock).not.toHaveBeenCalled();
+    });
+
+    it('rejects a token when its CIMD client can no longer be resolved', async () => {
+        clientFindMock.mockRejectedValue(new Error('Client metadata unavailable'));
+
+        await expectInvalidOAuthTokenChallenge();
+    });
+
     it('propagates plan lookup failures instead of challenging a valid token', async () => {
         const planError = new Error('Failed to load plan');
         getPlanMock.mockResolvedValue({ isErr: () => true, error: planError });
@@ -232,6 +306,22 @@ function request(token?: string, scheme = 'Bearer'): Request {
     return {
         get: vi.fn((name: string) => (name.toLowerCase() === 'authorization' && token ? `${scheme} ${token}` : undefined))
     } as unknown as Request;
+}
+
+async function expectInvalidOAuthTokenChallenge(): Promise<void> {
+    const { res, status, headers } = response();
+    const next = vi.fn() as NextFunction;
+
+    await managementMcpAuth(request('oauth-access-token'), res, next);
+
+    expect(apiKeyAuthenticateMock).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
+    expect(status).toHaveBeenCalledWith(401);
+    expect(headers.get('WWW-Authenticate')).toContain('error="invalid_token"');
+    expect(metricsIncrementMock).toHaveBeenCalledWith(metrics.Types.MCP_AUTH_FAILURE, 1, {
+        mcp_type: 'management',
+        reason: 'invalid_token'
+    });
 }
 
 function response(): {
