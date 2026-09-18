@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 export function useScrollToHash(containerRef: React.RefObject<HTMLElement>, ready: boolean) {
     const { hash } = useLocation();
     const scrolledTo = useRef<string | null>(null);
+    const arrivedWith = useRef(hash);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -12,8 +13,9 @@ export function useScrollToHash(containerRef: React.RefObject<HTMLElement>, read
             return;
         }
 
-        // Nothing scrolls the page before this runs, so a non-zero position is the reader's own.
-        if (container.scrollTop > 0) {
+        // Only the hash we arrived with waits, so a non-zero position here is the reader scrolling
+        // during that wait. A hash they click later is a request to move, whatever they scrolled to.
+        if (hash === arrivedWith.current && container.scrollTop > 0) {
             scrolledTo.current = hash;
             return;
         }
