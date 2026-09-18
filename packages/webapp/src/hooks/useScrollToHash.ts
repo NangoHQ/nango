@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 const TOP_OFFSET = 24;
 const GIVE_UP_AFTER_MS = 2500;
 
-/** `containerRef` must be the ref `DashboardLayout` forwards — the page itself never scrolls. */
+/** Holds the `location.hash` section at the top of `containerRef`, which must be the ref `DashboardLayout` forwards — the page itself never scrolls. */
 export function useScrollToHash(containerRef: React.RefObject<HTMLElement>) {
     const { hash } = useLocation();
 
