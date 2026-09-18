@@ -56,12 +56,12 @@ jobs:
             integrations: ${{ steps.filter.outputs.integrations }}
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
               with:
                   fetch-depth: 0
 
             - name: Detect changed paths
-              uses: dorny/paths-filter@v3
+              uses: dorny/paths-filter@15192bc058cc28a13dbf6cde61f19e18988b7af6 # v3
               id: filter
               with:
                   filters: |
@@ -85,7 +85,7 @@ jobs:
         environment: ${{ inputs.environment || 'prod-docs' }}
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
             - uses: ./.github/actions/setup-node
 
@@ -113,7 +113,7 @@ jobs:
         environment: ${{ inputs.environment || 'prod-docs' }}
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
             - uses: ./.github/actions/setup-node
 

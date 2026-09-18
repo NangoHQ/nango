@@ -66,14 +66,14 @@ for (const flow of flows) {
         entriesByProvider.set(flow.providerConfigKey, [flow]);
     }
 }
-const skippedProviderRefs = new Set<string>();
+const skippedProviderKeys = new Set<string>();
 
 const templates: TemplateEntry[] = [];
 for (const [providerConfigKey, blocks] of entriesByProvider) {
     const apiRef = apiIdBySlug.get(providerConfigKey);
     if (!apiRef) {
         console.warn(`Skipping ${providerConfigKey}: no matching Sanity api doc (no docs page yet?) — leaving its existing templates untouched`);
-        skippedProviderRefs.add(`provider-${providerConfigKey}`);
+        skippedProviderKeys.add(providerConfigKey);
         continue;
     }
 
@@ -157,7 +157,11 @@ const toUpsert = documents.filter((doc) => {
     return true;
 });
 
-const toDelete = existingTemplates.filter((doc) => !seenIds.has(doc._id) && !skippedProviderRefs.has(doc.api?._ref ?? ''));
+const templateTypes: ScriptTypeLiteral[] = ['action', 'sync'];
+const belongsToSkippedProvider = (id: string): boolean =>
+    [...skippedProviderKeys].some((key) => templateTypes.some((type) => id.startsWith(`template-${key}-${type}-`)));
+
+const toDelete = existingTemplates.filter((doc) => !seenIds.has(doc._id) && !belongsToSkippedProvider(doc._id));
 deleted = toDelete.length;
 
 if (dryRun) {
