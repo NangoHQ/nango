@@ -109,25 +109,25 @@ export const TeamBilling: React.FC = () => {
                 </div>
                 {showSummary && (
                     <>
-                        <div id="summary" className="scroll-mt-6">
+                        <div id="summary">
                             <Summary />
                         </div>
                         <Separator />
                     </>
                 )}
-                <div id="usage" className="scroll-mt-6">
+                <div id="usage">
                     <Usage />
                 </div>
                 {showSpendAlerts && (
                     <>
                         <Separator />
-                        <div id="spend-alerts" className="scroll-mt-6">
+                        <div id="spend-alerts">
                             <SpendAlerts />
                         </div>
                     </>
                 )}
                 <Separator />
-                <div id="plans" className="scroll-mt-6 flex flex-col gap-4">
+                <div id="plans" className="flex flex-col gap-4">
                     <div className="flex items-center justify-between gap-4">
                         <span className="text-text-strong text-body-medium-medium">Plans</span>
                         <Button asChild variant="link-accent">
@@ -146,7 +146,7 @@ export const TeamBilling: React.FC = () => {
                 {canManageBilling && (
                     <>
                         <Separator />
-                        <div id="payment-and-invoices" className="scroll-mt-6">
+                        <div id="payment-and-invoices">
                             <Payment />
                         </div>
                     </>
