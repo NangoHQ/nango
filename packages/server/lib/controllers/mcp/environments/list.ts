@@ -21,6 +21,12 @@ export const listEnvironmentsTool = {
 
 export async function getManagementMcpEnvironments({ account }: { account: DBTeam }): Promise<DBEnvironment[]> {
     const environmentSummaries = await environmentService.getEnvironmentsByAccountId(account.id);
-    const environments = await Promise.all(environmentSummaries.map((environment) => environmentService.getByEnvironmentName(account.id, environment.name)));
+    if (environmentSummaries.isErr()) {
+        throw environmentSummaries.error;
+    }
+
+    const environments = await Promise.all(
+        environmentSummaries.value.map((environment) => environmentService.getByEnvironmentName(account.id, environment.name))
+    );
     return environments.filter((environment): environment is DBEnvironment => environment !== null);
 }

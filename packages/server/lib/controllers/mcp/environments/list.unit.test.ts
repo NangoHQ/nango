@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { Err, Ok } from '@nangohq/utils';
+
 import { getManagementMcpEnvironments, listEnvironmentsTool } from './list.js';
 
 import type { DBTeam } from '@nangohq/types';
@@ -21,7 +23,7 @@ const environments = [
 
 describe('environments_list', () => {
     beforeEach(() => {
-        getEnvironmentsMock.mockResolvedValue(environments);
+        getEnvironmentsMock.mockResolvedValue(Ok(environments));
         getEnvironmentByNameMock.mockImplementation((_accountId: number, name: string) =>
             Promise.resolve(environments.find((environment) => environment.name === name) ?? null)
         );
@@ -44,8 +46,16 @@ describe('environments_list', () => {
     });
 
     it('may return no environments', async () => {
-        getEnvironmentsMock.mockResolvedValue([]);
+        getEnvironmentsMock.mockResolvedValue(Ok([]));
 
         await expect(getManagementMcpEnvironments({ account })).resolves.toStrictEqual([]);
+    });
+
+    it('propagates environment lookup failures', async () => {
+        const error = new Error('failed to retrieve environments');
+        getEnvironmentsMock.mockResolvedValue(Err(error));
+
+        await expect(getManagementMcpEnvironments({ account })).rejects.toBe(error);
+        expect(getEnvironmentByNameMock).not.toHaveBeenCalled();
     });
 });
