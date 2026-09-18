@@ -91,6 +91,12 @@ export type CreateIntegrationCredentials =
           app_id: string;
           app_link: string;
           private_key: string;
+      }
+    | {
+          type: 'MCP_OAUTH2_GENERIC';
+          client_name?: string | undefined;
+          client_uri?: string | undefined;
+          client_logo_uri?: string | undefined;
       };
 
 export interface CreateIntegrationParams {
@@ -307,20 +313,6 @@ export class IntegrationService {
             } else {
                 applyCredentials(integration, params.credentials);
 
-                if (params.integrationConfig && Object.keys(params.integrationConfig).length > 0) {
-                    const resolvedConfig = resolveIntegrationConfig(provider, params.integrationConfig);
-                    if (resolvedConfig.isErr()) {
-                        return Err(
-                            new IntegrationServiceError({
-                                code: 'invalid_integration_config',
-                                message: resolvedConfig.error.message,
-                                cause: resolvedConfig.error
-                            })
-                        );
-                    }
-                    integration.custom = { ...integration.custom, ...resolvedConfig.value };
-                }
-
                 if (params.custom && Object.keys(params.custom).length > 0) {
                     if (provider.integration_config) {
                         return Err(
@@ -331,6 +323,20 @@ export class IntegrationService {
                         );
                     }
                     integration.custom = { ...integration.custom, ...params.custom };
+                }
+
+                if (provider.integration_config) {
+                    const resolvedConfig = resolveIntegrationConfig(provider, params.integrationConfig ?? {});
+                    if (resolvedConfig.isErr()) {
+                        return Err(
+                            new IntegrationServiceError({
+                                code: 'invalid_integration_config',
+                                message: resolvedConfig.error.message,
+                                cause: resolvedConfig.error
+                            })
+                        );
+                    }
+                    integration.custom = { ...integration.custom, ...resolvedConfig.value };
                 }
             }
 
@@ -586,6 +592,16 @@ function applyCredentials(integration: DBCreateIntegration, credentials: CreateI
                 ...integration.custom,
                 app_id: credentials.app_id,
                 private_key: Buffer.from(credentials.private_key).toString('base64')
+            };
+            break;
+        }
+
+        case 'MCP_OAUTH2_GENERIC': {
+            integration.custom = {
+                ...integration.custom,
+                ...(credentials.client_name && { oauth_client_name: credentials.client_name }),
+                ...(credentials.client_uri && { oauth_client_uri: credentials.client_uri }),
+                ...(credentials.client_logo_uri && { oauth_client_logo_uri: credentials.client_logo_uri })
             };
             break;
         }
