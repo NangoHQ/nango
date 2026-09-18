@@ -25,8 +25,8 @@ Connect to Apple Calendar with Nango and see data flow in 2 minutes.
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>" \
-              -H "Depth: 0" \
-              -H "Content-Type: application/xml; charset=utf-8" \
+              -H "Nango-Proxy-Depth: 0" \
+              -H "Nango-Proxy-Content-Type: application/xml; charset=utf-8" \
               --data '<propfind xmlns="DAV:"><prop><current-user-principal/></prop></propfind>'
             ```
 
