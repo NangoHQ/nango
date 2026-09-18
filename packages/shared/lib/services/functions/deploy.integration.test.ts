@@ -145,6 +145,12 @@ describe('deployBundle instances', () => {
             rows.map((instance) => ({
                 environmentId: ctx.environment.id,
                 instance,
+                connection: {
+                    id: instance.nango_connection_id,
+                    connection_id: [ctx.connection, second].find((connection) => connection.id === instance.nango_connection_id)!.connection_id,
+                    provider_config_key: 'github',
+                    environment_id: ctx.environment.id
+                },
                 frequencyFallback: 'every 5 minutes',
                 autoStart: true
             }))
