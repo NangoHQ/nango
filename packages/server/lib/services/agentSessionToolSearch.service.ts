@@ -391,6 +391,7 @@ function toolNames(matches: AgentSessionToolMatch[]): string {
 function searchHits(candidates: ScoredCandidate[]): AgentSessionToolSearchHit[] {
     return candidates.map((candidate) => ({
         tool: candidate.action,
+        slug: candidate.slug,
         integration: candidate.integration,
         confidence: Math.round((1 - candidate.score) * 100) / 100
     }));

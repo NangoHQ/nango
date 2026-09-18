@@ -10,6 +10,8 @@ type AgentSessionEvent = AgentSessionToolCallEvent | 'session_created' | 'sessio
 /** One ranked tool, as the search returned it. Confidence runs from 0, nothing matched, to 1. */
 export interface AgentSessionToolSearchHit {
     tool: string;
+    /** The name the agent was given for it, which collisions make impossible to derive afterwards. */
+    slug: string;
     integration: string;
     confidence: number;
 }

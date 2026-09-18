@@ -222,10 +222,10 @@ describe('trackAgentSessionProxyRequest', () => {
 
 describe('trackAgentSessionToolSearch', () => {
     const matches = [
-        { tool: 'send_email', integration: 'gmail', confidence: 0.82 },
-        { tool: 'create_draft', integration: 'gmail', confidence: 0.61 }
+        { tool: 'send_email', slug: 'gmail__send_email', integration: 'gmail', confidence: 0.82 },
+        { tool: 'create_draft', slug: 'gmail__create_draft', integration: 'gmail', confidence: 0.61 }
     ];
-    const related = [{ tool: 'create_ticket', integration: 'zendesk', confidence: 0.28 }];
+    const related = [{ tool: 'create_ticket', slug: 'zendesk__create_ticket', integration: 'zendesk', confidence: 0.28 }];
 
     it('carries the query as sent, with both result tiers and their confidence', () => {
         inRequest(() => trackAgentSessionToolSearch({ session, query: 'email a customer', matches, related, logOperationId: 'op-3' }));
