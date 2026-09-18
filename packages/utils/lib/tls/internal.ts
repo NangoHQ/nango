@@ -43,7 +43,11 @@ function resolveAsset(env: EnvRecord, name: string): string | undefined {
         try {
             content = readFileSync(file, 'utf8').trim();
         } catch (err) {
-            throw new Error(`Unable to read ${fileVar} at '${file}'`, { cause: err });
+            const isPermissionError = err instanceof Error && 'code' in err && (err as NodeJS.ErrnoException).code === 'EACCES';
+            const hint = isPermissionError
+                ? ` (permission denied — if running as USER node, mount the secret with defaultMode 0440 and securityContext.fsGroup: 1000 so the file is group-readable)`
+                : '';
+            throw new Error(`Unable to read ${fileVar} at '${file}'${hint}`, { cause: err });
         }
         if (!containsPem(content)) {
             throw new Error(`${fileVar} at '${file}' does not contain a PEM block`);
