@@ -153,6 +153,7 @@ export class Orchestrator {
     async invokeFunction({
         environment,
         connection,
+        functionConfigId,
         functionName,
         trigger,
         async,
@@ -163,6 +164,7 @@ export class Orchestrator {
         environment: DBEnvironment;
         connection: ConnectionJobs;
         functionName: string;
+        functionConfigId: number;
         trigger: FunctionTrigger;
         async: boolean;
         retryMax: number;
@@ -174,6 +176,7 @@ export class Orchestrator {
             const executionId = `${groupKey}:at:${new Date().toISOString()}:${uuid()}`;
             const args = {
                 functionName,
+                functionConfigId,
                 connection: {
                     id: connection.id,
                     connection_id: connection.connection_id,
@@ -946,13 +949,14 @@ export class Orchestrator {
         functions: {
             environmentId: number;
             instance: DBFunctionInstance;
+            connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
             frequencyFallback: string;
             autoStart: boolean;
         }[]
     ): Promise<Result<void>> {
         try {
             const schedules: RecurringProps[] = [];
-            for (const { instance, environmentId, frequencyFallback, autoStart } of functions) {
+            for (const { instance, connection, environmentId, frequencyFallback, autoStart } of functions) {
                 const frequencyMs = this.getFrequencyMs(instance.frequency || frequencyFallback);
                 if (frequencyMs.isErr()) {
                     return Err(frequencyMs.error);
@@ -974,7 +978,16 @@ export class Orchestrator {
                     startsAt: new Date(),
                     args: {
                         type: 'function',
-                        instanceId: instance.id
+                        functionConfigId: instance.function_config_id,
+                        functionName: instance.name,
+                        connection,
+                        variant: instance.variant,
+                        trigger: {
+                            kind: 'schedule',
+                            input: null,
+                            connection: { connectionId: connection.connection_id, integrationId: connection.provider_config_key }
+                        },
+                        async: true
                     }
                 });
             }
