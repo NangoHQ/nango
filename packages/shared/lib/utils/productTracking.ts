@@ -6,7 +6,7 @@ import { baseUrl, NANGO_VERSION, report } from '@nangohq/utils';
 
 import type { CliTelemetryEvent, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
-export type ProductTrackingTypes = CliTelemetryEvent;
+export type ProductTrackingTypes = CliTelemetryEvent | 'account:billing:plan_changed' | 'account:billing:downgraded' | 'account:billing:upgraded';
 
 export interface TrackingContext {
     team: Pick<DBTeam, 'id' | 'name'>;

@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { getPlan, seeders, updatePlan } from '@nangohq/shared';
+import { getPlan, productTracking, seeders, updatePlan } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected, shouldRequireSessionEnv } from '../../../../utils/tests.js';
@@ -38,6 +38,7 @@ let startGrowthAddonSpy: any;
 let endGrowthAddonSpy: any;
 let cancelPendingChangesSpy: any;
 let applyPendingChangesSpy: any;
+let productTrackingSpy: any;
 
 describe(`POST ${route}`, () => {
     beforeAll(async () => {
@@ -51,6 +52,7 @@ describe(`POST ${route}`, () => {
         endGrowthAddonSpy = vi.spyOn(billing, 'endGrowthAddon');
         cancelPendingChangesSpy = vi.spyOn(billing.client, 'cancelPendingChanges');
         applyPendingChangesSpy = vi.spyOn(billing.client, 'applyPendingChanges');
+        productTrackingSpy = vi.spyOn(productTracking, 'track');
     });
 
     afterAll(() => {
@@ -69,6 +71,9 @@ describe(`POST ${route}`, () => {
         applyPendingChangesSpy.mockResolvedValue(
             Ok({ id: 'sub_123', planExternalId: 'pay-as-you-go', hasGrowthFeatures: false, growthFeaturesEndsAt: null, growthFeaturesPriceIntervalId: null })
         );
+        productTrackingSpy.mockImplementation(() => {
+            // no-op
+        });
         mockPaymentIntentsCreate.mockResolvedValue({ id: 'pi_123', status: 'requires_payment_method' });
     });
 
@@ -715,6 +720,18 @@ describe(`POST ${route}`, () => {
             const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
             expect(updated.growth_features_ends_at).toEqual(new Date('2026-10-01T00:00:00Z'));
             expect(updated.has_growth_features).toBe(true);
+
+            expect(productTrackingSpy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    name: 'account:billing:downgraded',
+                    eventProperties: expect.objectContaining({
+                        previousPlan: 'pay-as-you-go',
+                        newPlan: 'pay-as-you-go',
+                        previousGrowthFeatures: true,
+                        newGrowthFeatures: false
+                    })
+                })
+            );
         });
 
         it('should end the add-on and then schedule the plan change when both move', async () => {
