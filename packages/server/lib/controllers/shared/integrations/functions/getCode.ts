@@ -4,11 +4,11 @@ import path from 'node:path';
 import {
     catalogActionTsPath,
     configService,
-    getCatalogAction,
     getSyncAndActionConfigsBySyncNameAndConfigId,
     localFileService,
     onEventScriptService,
-    remoteFileService
+    remoteFileService,
+    resolveRunnableAction
 } from '@nangohq/shared';
 import { report, useRemoteStorage } from '@nangohq/utils';
 
@@ -91,8 +91,8 @@ export async function handleGetFunctionCode({
     const match = filtered[0];
     if (!match) {
         if (type === undefined || type === 'action') {
-            const catalog = getCatalogAction(providerConfig.provider, name);
-            if (catalog) {
+            const resolved = await resolveRunnableAction({ environmentId: environment.id, integration: providerConfig, name });
+            if (resolved.kind === 'catalog') {
                 try {
                     const code = await remoteFileService.getFile(catalogActionTsPath({ provider: providerConfig.provider, name }));
                     res.status(200).send({ type: 'action', code });

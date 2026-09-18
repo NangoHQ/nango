@@ -5,7 +5,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 import { createAccount } from '../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../../../seeders/environment.seeder.js';
-import { getFunction, listFunctions } from './service.js';
+import { getFunction, listActions, listFunctions } from './service.js';
 
 import type { DBEnvironment, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
 
@@ -228,6 +228,36 @@ describe('listFunctions with catalog actions', () => {
             { name: 'create-issue', source: 'nango-catalog', enabled: false, id: null },
             { name: 'users', source: 'repo', enabled: true, id: expect.any(Number) }
         ]);
+    });
+
+    it('lists actions for connection tools using the merged deployed and catalog view', async () => {
+        const { environment, integration } = await seedIntegration({ autoEnableCatalogActions: true });
+        mockListCatalogActions.mockReturnValue([catalogAction('create-issue'), catalogAction('delete-issue')]);
+        await insertSyncConfig({ environmentId: environment.id, integration, name: 'delete-issue', type: 'action' });
+
+        const result = await listActions({ environmentId: environment.id, providerConfigKey: 'github' });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isErr()) {
+            return;
+        }
+        expect(result.value.map((action) => ({ name: action.name, source: action.source, enabled: action.enabled }))).toEqual([
+            { name: 'create-issue', source: 'nango-catalog', enabled: true },
+            { name: 'delete-issue', source: 'repo', enabled: true }
+        ]);
+    });
+
+    it('applies the requested action list limit', async () => {
+        const { environment } = await seedIntegration({ autoEnableCatalogActions: true });
+        mockListCatalogActions.mockReturnValue([catalogAction('create-issue'), catalogAction('delete-issue')]);
+
+        const result = await listActions({ environmentId: environment.id, providerConfigKey: 'github', limit: 1 });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isErr()) {
+            return;
+        }
+        expect(result.value.map((action) => action.name)).toEqual(['create-issue']);
     });
 });
 

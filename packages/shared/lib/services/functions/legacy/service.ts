@@ -6,7 +6,7 @@ import { toListedLiveCatalogAction, toListedNangoFunction } from './mappers.js';
 import * as functionsModel from './models/functions.js';
 
 import type { FunctionRow } from './models/functions.js';
-import type { FunctionType, ListedNangoFunction } from '@nangohq/types';
+import type { FunctionType, ListedNangoActionFunction, ListedNangoFunction } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export type ListFunctionsErrorCode = 'integration_not_found' | 'list_failed';
@@ -63,6 +63,43 @@ export async function listFunctions({
             catalog
         });
         return mapListingPage(page);
+    } catch (err) {
+        return Err(new ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions', cause: err }));
+    }
+}
+
+/**
+ * Lists all action functions for a single integration without pagination.
+ * The result includes disabled actions so callers can decide how to expose them.
+ */
+export async function listActions({
+    environmentId,
+    providerConfigKey,
+    limit = 200
+}: {
+    environmentId: number;
+    providerConfigKey: string;
+    limit?: number;
+}): Promise<Result<ListedNangoActionFunction[], ListFunctionsError>> {
+    try {
+        const integration = await configService.getProviderConfig(providerConfigKey, environmentId);
+        if (!integration) {
+            return Err(
+                new ListFunctionsError({
+                    code: 'integration_not_found',
+                    message: 'Integration does not exist'
+                })
+            );
+        }
+
+        const catalog = flags.hasLiveCatalogActions ? listCatalogActions(integration.provider) : [];
+        const rows = await functionsModel.findActiveActions({ environmentId, providerConfigKey, limit, catalog });
+        const mapped = mapListingRows(rows);
+        if (mapped.isErr()) {
+            return Err(mapped.error);
+        }
+
+        return Ok(mapped.value.filter((row): row is ListedNangoActionFunction => row.type === 'action'));
     } catch (err) {
         return Err(new ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions', cause: err }));
     }

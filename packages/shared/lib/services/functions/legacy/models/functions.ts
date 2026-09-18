@@ -72,6 +72,31 @@ export async function findActiveByEnvironment({
     return { rows: pageRows, total };
 }
 
+export async function findActiveActions({
+    environmentId,
+    providerConfigKey,
+    limit,
+    catalog = []
+}: {
+    environmentId: number;
+    providerConfigKey: string;
+    limit: number;
+    catalog?: CatalogAction[];
+}): Promise<FunctionRow[]> {
+    const listing = buildListingSubquery({ environmentId, providerConfigKey, type: 'action', search: undefined, catalog });
+
+    return db.knex
+        .from(listing)
+        .select<FunctionRow[]>('*')
+        .orderBy([
+            { column: 'type', order: 'asc' },
+            { column: 'name', order: 'asc' },
+            { column: 'event', order: 'asc' },
+            { column: 'id', order: 'asc' }
+        ])
+        .limit(limit);
+}
+
 /**
  * Returns a slim list of active sync/action function availability for an integration,
  * intended for cross-referencing the template catalog with what is already listed.
