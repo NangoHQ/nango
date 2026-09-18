@@ -26,10 +26,10 @@ export const signinPathWithNext = (location: { pathname: string; search: string;
     return params.length > 0 ? `/signin?${params.join('&')}` : '/signin';
 };
 
-const PUBLIC_AUTH_PATH_PREFIXES = ['/signin', '/signup', '/forgot-password', '/reset-password', '/verify-email'];
+const AUTH_PATH_PREFIXES = ['/signin', '/signup', '/forgot-password', '/reset-password', '/verify-email'];
 
-export const isPublicAuthPath = (pathname: string): boolean => {
-    return PUBLIC_AUTH_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+export const isAuthPath = (pathname: string): boolean => {
+    return AUTH_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 };
 
 export const isNonEnvPath = (pathname: string): boolean => {

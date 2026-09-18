@@ -10,7 +10,7 @@ import { TooltipProvider } from '@nangohq/design-system';
 import { ErrorBoundary } from '@/components/patterns/ErrorBoundary';
 import { queryClient } from '@/store';
 import { fetcher } from '@/utils/api';
-import { isPublicAuthPath } from '@/utils/routes';
+import { isAuthPath } from '@/utils/routes';
 import { SentryErrorBoundary } from '@/utils/sentry';
 import { signout } from '@/utils/user';
 
@@ -37,7 +37,7 @@ const SWRProvider = ({ children }: { children: ReactNode }) => {
 
                     // Same capture-before-await as the query client's handler: PrivateRoute redirects on this 401 too.
                     const { pathname, search, hash } = window.location;
-                    if (isPublicAuthPath(pathname)) {
+                    if (isAuthPath(pathname)) {
                         return;
                     }
 

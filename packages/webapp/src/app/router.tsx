@@ -88,8 +88,8 @@ const ConnectionIndexRedirect = () => {
     return <Navigate to={{ pathname: targetTab, search: location.search }} replace />;
 };
 
-// A route added here also needs its prefix in PUBLIC_AUTH_PATH_PREFIXES, or a 401 on it signs the user out.
-const publicAuthRoutes = (() => {
+// A route added here also needs its prefix in AUTH_PATH_PREFIXES, or a 401 on it signs the user out.
+const authRoutes = (() => {
     if (!globalEnv.features.auth && !globalEnv.features.managedAuth) {
         return [];
     }
@@ -391,7 +391,7 @@ export const router = sentryCreateBrowserRouter([
         path: '/hn-demo',
         element: <Navigate to={'/signup'} />
     },
-    ...publicAuthRoutes,
+    ...authRoutes,
     {
         path: '*',
         element: <NotFound />

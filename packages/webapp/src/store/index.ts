@@ -3,7 +3,7 @@ import { create } from 'zustand';
 
 import { PROD_ENVIRONMENT_NAME } from '../utils/environments';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
-import { isPublicAuthPath } from '../utils/routes';
+import { isAuthPath } from '../utils/routes';
 import { resetPlayground } from './playground';
 
 interface Env {
@@ -51,7 +51,7 @@ export const useStore = create<State>()((set, get) => ({
 // Reads the location before awaiting anything: PrivateRoute redirects to /signin on the same 401.
 function handleQueryError(error: unknown) {
     const { pathname, search, hash } = window.location;
-    if (isPublicAuthPath(pathname)) {
+    if (isAuthPath(pathname)) {
         return;
     }
 
