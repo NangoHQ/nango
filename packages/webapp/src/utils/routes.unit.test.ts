@@ -91,6 +91,7 @@ describe('safeNextPath', () => {
     it('rejects destinations on another origin', () => {
         expect(safeNextPath('https://evil.example/steal')).toBe('/');
         expect(safeNextPath('//evil.example/steal')).toBe('/');
+        expect(safeNextPath('/..//evil.example/steal')).toBe('/');
         expect(safeNextPath('javascript:alert(1)')).toBe('/');
     });
 
