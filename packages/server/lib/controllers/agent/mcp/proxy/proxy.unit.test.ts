@@ -2,8 +2,7 @@ import { Readable } from 'node:stream';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { NangoError } from '@nangohq/shared';
-import { productTracking, withProductTrackingContext } from '@nangohq/shared';
+import { NangoError, productTracking, withProductTrackingContext } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import proxyService, { ProxyServiceError } from '../../../../services/proxy.service.js';
@@ -296,7 +295,10 @@ describe('proxyTool analytics', () => {
 
     // The account comes from the tracking context middleware, which is what a request enters.
     async function callProxyInRequest(args: Record<string, unknown>) {
-        return await withProductTrackingContext(() => ({ team: { id: 42, name: 'Acme' } as DBTeam }), async () => await callProxy(args));
+        return await withProductTrackingContext(
+            () => ({ team: { id: 42, name: 'Acme' } as DBTeam }),
+            async () => await callProxy(args)
+        );
     }
 
     function onlyEvent() {

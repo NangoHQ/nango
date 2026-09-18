@@ -143,10 +143,16 @@ describe('trackAgentSessionToolCall', () => {
         expect(properties).toMatchObject({ 'tool-name': 'made_up', success: false, 'error-code': 'unknown_tool' });
     });
 
-    it('separates a pinned tool from a searchable one called by its own name', () => {
-        inRequest(() => trackAgentSessionToolCall({ event: 'execute_pinned_tool', session, integrationId: 'notion', toolName: 'read_doc', pinned: false }));
+    it.each([true, false])('separates a pinned tool from a searchable one called by its own name (pinned: %s)', (pinned) => {
+        inRequest(() => trackAgentSessionToolCall({ event: 'execute_pinned_tool', session, integrationId: 'notion', toolName: 'read_doc', pinned }));
 
-        expect(onlyEvent().properties).toMatchObject({ pinned: false });
+        expect(onlyEvent().properties).toMatchObject({ pinned });
+    });
+
+    it('leaves pinned out when the call site cannot say', () => {
+        inRequest(() => trackAgentSessionToolCall({ event: 'nango_execute', session, toolName: 'made_up', errorCode: 'unknown_tool' }));
+
+        expect(onlyEvent().properties).not.toHaveProperty('pinned');
     });
 
     it('sends no tool input', () => {
