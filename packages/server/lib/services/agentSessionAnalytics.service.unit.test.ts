@@ -228,7 +228,7 @@ describe('trackAgentSessionToolSearch', () => {
     const related = [{ tool: 'create_ticket', integration: 'zendesk', confidence: 0.28 }];
 
     it('carries the query as sent, with both result tiers and their confidence', () => {
-        inRequest(() => trackAgentSessionToolSearch({ session, query: 'email a customer', matches, related }));
+        inRequest(() => trackAgentSessionToolSearch({ session, query: 'email a customer', matches, related, logOperationId: 'op-3' }));
 
         const { event, properties } = onlyEvent();
         expect(event).toBe('nango_tool_search');
@@ -239,6 +239,7 @@ describe('trackAgentSessionToolSearch', () => {
             'related-count': 1,
             matches,
             related,
+            'log-operation-id': 'op-3',
             success: true
         });
     });
