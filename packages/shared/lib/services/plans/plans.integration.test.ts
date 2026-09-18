@@ -4,7 +4,21 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 
 import { seedAccountEnvAndUser } from '../../seeders/global.seeder.js';
-import { createPlan, getPlan, handlePlanChanged, setGrowthAddon } from './plans.js';
+import { createPlan, getPlan, handlePlanChanged, setGrowthAddon, updatePlanByTeam } from './plans.js';
+
+describe('updatePlanByTeam', () => {
+    beforeAll(async () => {
+        await multipleMigrations();
+    });
+
+    it('returns the updated plan', async () => {
+        const { account, plan } = await seedAccountEnvAndUser();
+
+        const updated = (await updatePlanByTeam(db.knex, { account_id: account.id, name: 'growth-v2' })).unwrap();
+
+        expect(updated).toMatchObject({ id: plan.id, account_id: account.id, name: 'growth-v2' });
+    });
+});
 
 describe('handlePlanChanged', () => {
     beforeAll(async () => {
@@ -19,7 +33,7 @@ describe('handlePlanChanged', () => {
             orbSubscriptionId: 'orb_sub_1'
         });
 
-        expect(res.unwrap()).toBe(false);
+        expect(res.unwrap()).toBeNull();
     });
 
     it('returns the existing plan when one already exists for the account', async () => {
@@ -38,7 +52,11 @@ describe('handlePlanChanged', () => {
             orbSubscriptionId: 'orb_sub_2'
         });
 
-        expect(res.unwrap()).toBe(true);
+        expect(res.unwrap()).toMatchObject({
+            previousPlan: { name: 'free' },
+            updatedPlan: { name: 'growth-v2', orb_subscription_id: 'orb_sub_2' },
+            isDowngrade: false
+        });
         const updated = await getPlan(db.knex, { accountId: account.id });
         expect(updated.unwrap().name).toBe('growth-v2');
         expect(updated.unwrap().orb_subscription_id).toBe('orb_sub_2');
@@ -54,7 +72,7 @@ describe('handlePlanChanged', () => {
             orbSubscriptionId: 'orb_sub_payg'
         });
 
-        expect(res.unwrap()).toBe(true);
+        expect(res.unwrap()).toMatchObject({ isDowngrade: false });
         const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
         expect(updated.name).toBe('pay-as-you-go');
         expect(updated.orb_subscription_id).toBe('orb_sub_payg');
@@ -82,7 +100,7 @@ describe('handlePlanChanged', () => {
             orbSubscriptionId: 'orb_sub_free'
         });
 
-        expect(res.unwrap()).toBe(true);
+        expect(res.unwrap()).toMatchObject({ isDowngrade: true });
         const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
         expect(updated.name).toBe('free');
         expect(updated.auto_idle).toBe(true);
@@ -98,7 +116,10 @@ describe('handlePlanChanged', () => {
         });
 
         const res = await handlePlanChanged(db.knex, account, { newPlanCode: 'growth-v2', orbSubscriptionId: 'orb_sub_addon' });
-        expect(res.unwrap()).toBe(true);
+        expect(res.unwrap()).toMatchObject({
+            previousPlan: { name: 'pay-as-you-go', has_growth_features: true },
+            updatedPlan: { name: 'growth-v2', has_growth_features: true }
+        });
 
         const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
         expect(updated.name).toBe('growth-v2');
@@ -112,7 +133,7 @@ describe('handlePlanChanged', () => {
         });
 
         const res = await handlePlanChanged(db.knex, account, { newPlanCode: 'pay-as-you-go', orbSubscriptionId: 'orb_sub_addon' });
-        expect(res.unwrap()).toBe(false);
+        expect(res.unwrap()).toBeNull();
 
         const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
         expect(updated.has_growth_features).toBe(true);
