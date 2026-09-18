@@ -2,6 +2,9 @@ import type { OnEventType } from '../scripts/on-events/api.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
 import type { JSONSchema7 } from 'json-schema';
 
+/** `nango-catalog` is list/API only — never a DB `FunctionSource`. */
+export type FunctionListSource = FunctionSource | 'nango-catalog';
+
 export type FunctionType = 'action' | 'sync' | 'on-event';
 
 interface NangoFunctionBase {
@@ -36,11 +39,12 @@ export interface NangoOnEventFunction extends NangoFunctionBase {
 export type NangoFunction = NangoSyncFunction | NangoActionFunction | NangoOnEventFunction;
 
 export interface FunctionAvailability {
-    id: number;
+    /** Sync-config id. `null` when the function is served live from the catalog (no deployed row). */
+    id: number | null;
     enabled: boolean;
-    /** ISO-8601 timestamp. */
-    last_deployed: string;
-    source: FunctionSource;
+    /** ISO-8601 timestamp. `null` when the function was never deployed. */
+    last_deployed: string | null;
+    source: FunctionListSource;
 }
 
 export type ListedNangoSyncFunction = NangoSyncFunction & FunctionAvailability;

@@ -5,6 +5,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { logContextGetter } from '@nangohq/logs';
 import { getGlobalWebhookReceiveUrl, ProxyRequest, remoteFileService, seeders, syncManager } from '@nangohq/shared';
+import { listCatalogActions } from '@nangohq/shared/lib/services/catalog/actions.js';
 import { Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
@@ -459,16 +460,26 @@ describe('POST /mcp management server', () => {
                 method: 'tools/call',
                 params: {
                     name: 'functions_list',
-                    arguments: { integration_id: 'github', type: 'action', search: 'issue', page: 0, limit: 1 }
+                    arguments: { integration_id: 'github', type: 'action', search: 'issue', page: 0, limit: 100 }
                 }
             }
         });
 
         expect(res.status).toBe(200);
         expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
-        expect(res.json.result.structuredContent.pagination).toStrictEqual({ total: 1, page: 0, limit: 1 });
-        expect(res.json.result.structuredContent.data).toHaveLength(1);
-        expect(res.json.result.structuredContent.data[0]).toMatchObject({ name: 'create-issue', type: 'action' });
+        const payload = res.json.result.structuredContent;
+        const occupied = new Set(['create-issue']);
+        const catalogIssueHits = listCatalogActions('github').filter(
+            (action) => !occupied.has(action.name) && (action.name.toLowerCase().includes('issue') || action.description.toLowerCase().includes('issue'))
+        ).length;
+        expect(payload.pagination).toStrictEqual({ total: catalogIssueHits + 1, page: 0, limit: 100 });
+        expect(payload.data.every((fn: { type: string }) => fn.type === 'action')).toBe(true);
+        expect(payload.data.some((fn: { name: string }) => fn.name === 'sync-issues')).toBe(false);
+        expect(payload.data.some((fn: { name: string }) => fn.name === 'create-user')).toBe(false);
+        expect(payload.data.some((fn: { name: string; source: string }) => fn.name === 'list-issues' && fn.source === 'nango-catalog')).toBe(true);
+        expect(payload.data.filter((fn: { source: string }) => fn.source !== 'nango-catalog')).toEqual([
+            expect.objectContaining({ name: 'create-issue', type: 'action' })
+        ]);
     });
 
     it('returns public errors for invalid function arguments and missing integrations', async () => {

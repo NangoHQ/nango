@@ -203,7 +203,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                             <TableBody>
                                 {functions.map((fn) => (
                                     <TableRow
-                                        key={`${fn.type}:${fn.id}`}
+                                        key={`${fn.type}:${fn.name}`}
                                         className="cursor-pointer hover:bg-surface-panel-inset"
                                         onClick={() => onFunctionClick(fn)}
                                     >

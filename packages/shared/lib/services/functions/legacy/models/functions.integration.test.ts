@@ -5,6 +5,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 import { createAccount } from '../../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../../../../seeders/environment.seeder.js';
+import { getCatalogAction } from '../../../catalog/actions.js';
 import { findActionInputSchemas, findIntegrationFunctionCatalog } from './functions.js';
 
 import type { DBSyncConfig, IntegrationConfig, NangoConfigMetadata } from '@nangohq/types';
@@ -82,12 +83,19 @@ describe(findIntegrationFunctionCatalog, () => {
 
         const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id });
 
-        expect(catalog).toStrictEqual([
-            { integration_id: 'github', provider: 'github', name: 'create_issue', type: 'action', description: null, enabled: false },
-            { integration_id: 'gmail', provider: 'google', name: null, type: null, description: null, enabled: null },
-            { integration_id: 'notion', provider: 'notion', name: 'sync_pages', type: 'sync', description: null, enabled: true },
-            { integration_id: 'notion', provider: 'notion', name: 'upsert_doc', type: 'action', description: 'Upsert', enabled: true }
+        expect(catalog).toEqual(
+            expect.arrayContaining([
+                { integration_id: 'github', provider: 'github', name: 'create_issue', type: 'action', description: null, enabled: false },
+                { integration_id: 'notion', provider: 'notion', name: 'sync_pages', type: 'sync', description: null, enabled: true },
+                { integration_id: 'notion', provider: 'notion', name: 'upsert_doc', type: 'action', description: 'Upsert', enabled: true }
+            ])
+        );
+        expect(catalog.filter((row) => row.integration_id === 'gmail')).toEqual([
+            { integration_id: 'gmail', provider: 'google', name: null, type: null, description: null, enabled: null }
         ]);
+        expect(catalog).toEqual(
+            expect.arrayContaining([expect.objectContaining({ integration_id: 'github', name: 'create-issue', type: 'action', enabled: true })])
+        );
     });
 
     it('leaves out deleted and superseded function versions', async () => {
@@ -101,7 +109,9 @@ describe(findIntegrationFunctionCatalog, () => {
 
         const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id });
 
-        expect(catalog.map((row) => row.name)).toStrictEqual(['kept']);
+        expect(catalog.map((row) => row.name)).toContain('kept');
+        expect(catalog.map((row) => row.name)).not.toContain('old_version');
+        expect(catalog.map((row) => row.name)).not.toContain('removed');
     });
 
     it('narrows to the integrations asked for', async () => {
@@ -115,7 +125,9 @@ describe(findIntegrationFunctionCatalog, () => {
 
         const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id, providerConfigKeys: ['notion'] });
 
-        expect(catalog.map((row) => row.integration_id)).toStrictEqual(['notion']);
+        expect(catalog.every((row) => row.integration_id === 'notion')).toBe(true);
+        expect(catalog.map((row) => row.name)).toContain('upsert_doc');
+        expect(catalog.some((row) => row.integration_id === 'github')).toBe(false);
     });
 
     it('does not leak another environment', async () => {
@@ -130,7 +142,8 @@ describe(findIntegrationFunctionCatalog, () => {
 
         const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id });
 
-        expect(catalog.map((row) => row.name)).toStrictEqual(['mine']);
+        expect(catalog.map((row) => row.name)).toContain('mine');
+        expect(catalog.map((row) => row.name)).not.toContain('theirs');
     });
 
     it('does not return a function whose environment disagrees with its integration', async () => {
@@ -143,7 +156,8 @@ describe(findIntegrationFunctionCatalog, () => {
 
         const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id });
 
-        expect(catalog).toStrictEqual([{ integration_id: 'notion', provider: 'notion', name: null, type: null, description: null, enabled: null }]);
+        expect(catalog.every((row) => row.integration_id === 'notion')).toBe(true);
+        expect(catalog.map((row) => row.name)).not.toContain('stray');
     });
 });
 
@@ -223,6 +237,38 @@ describe(findActionInputSchemas, () => {
         });
 
         expect(rows.map((row) => row.name)).toStrictEqual(['kept']);
+    });
+
+    it('does not fall back to the catalog when an active deployed action occupies the name', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create-issue', type: 'action', enabled: false });
+
+        const rows = await findActionInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'github', name: 'create-issue' }]
+        });
+
+        expect(rows).toStrictEqual([]);
+    });
+
+    it('returns the catalog schema when the name is unoccupied', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        await createConfigSeed(environment, 'github', 'github');
+
+        const catalog = getCatalogAction('github', 'create-issue');
+        const rows = await findActionInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'github', name: 'create-issue' }]
+        });
+
+        expect(rows).toHaveLength(1);
+        expect(rows[0]?.name).toBe('create-issue');
+        expect(rows[0]?.input).toBe(catalog?.input ?? null);
+        expect(rows[0]?.models_json_schema).toEqual(catalog?.json_schema);
     });
 
     it('does not leak another environment', async () => {
