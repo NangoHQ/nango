@@ -2,7 +2,7 @@ import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
-import { getGrowthAddonFlags, getPlanDefinition, PLANS_WITH_GROWTH_ADD_ON, plansList } from '@nangohq/shared';
+import { getGrowthAddonFlags, getPlanDefinition, plansList } from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -15,6 +15,12 @@ const logger = getLogger('cron.manageGrowthAddons');
 const cronMinutes = envs.CRON_MANAGE_GROWTH_ADDONS_EVERY_MIN;
 const cronExpression = `*/${cronMinutes} * * * *`;
 const lockTtlMs = cronMinutes * 60 * 1000;
+
+// growth-v2 already includes these features in its base plan, but the plan is included in the list
+// to enable growth-v2 -> payg + add-on transitions without downtime in terms of available features:
+// the add-on transition is scheduled a few hours before the plan change takes effect, so that by the
+// time the plan lands in payg, it already has the add-on enabled and thus no downtime is achieved.
+const PLANS_ALLOWED_TO_HAVE_GROWTH_FEATURES: PlanDefinition['code'][] = ['pay-as-you-go', 'growth-v2'];
 
 type GrowthAddonSchedulingColumn = keyof Pick<DBPlan, 'growth_features_starts_at' | 'growth_features_ends_at'>;
 type GrowthAddonOperation = 'enable' | 'disable';
@@ -74,7 +80,7 @@ async function reportCorruptedPlans() {
         .from<Pick<DBPlan, 'id' | 'account_id' | 'name'>>('plans')
         .select('id', 'account_id', 'name')
         .where('has_growth_features', true)
-        .whereNotIn('name', PLANS_WITH_GROWTH_ADD_ON);
+        .whereNotIn('name', PLANS_ALLOWED_TO_HAVE_GROWTH_FEATURES);
 
     if (corrupted.length > 0) {
         for (const plan of corrupted) {
@@ -133,7 +139,7 @@ function getPlansToFilterBy(operation: GrowthAddonOperation): PlanDefinition[] {
         return plansList;
     }
 
-    return PLANS_WITH_GROWTH_ADD_ON.map((planCode) => {
+    return PLANS_ALLOWED_TO_HAVE_GROWTH_FEATURES.map((planCode) => {
         const definition = getPlanDefinition(planCode);
         if (!definition) {
             throw new Error(`Missing plan definition for ${planCode}`);

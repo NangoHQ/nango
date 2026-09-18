@@ -124,11 +124,46 @@ describe('OrchestratorClient recurring', () => {
             group: { key: 'function:environment:1', maxConcurrency: 0 },
             retry: { max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
-            args: { type: 'function', instanceId: 1 }
+            args: {
+                type: 'function',
+                functionName: 'my-function',
+                functionConfigId: 123,
+                connection: {
+                    id: 123,
+                    connection_id: 'connection-1',
+                    provider_config_key: 'provider-config-key-1',
+                    environment_id: 456
+                },
+                trigger: { kind: 'schedule', input: null, connection: { connectionId: 'connection-1', integrationId: 'provider-config-key-1' } },
+                async: true
+            }
         });
 
         expect(res.unwrap()).toEqual({ scheduleId: 'existing-schedule' });
         expect(fetchMock).toHaveBeenCalledTimes(1);
+
+        const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
+        expect(url).toBe('http://orchestrator.test/v1/recurring');
+        expect(JSON.parse(init.body).args).toEqual({
+            type: 'function',
+            functionName: 'my-function',
+            functionConfigId: 123,
+            connection: {
+                id: 123,
+                connection_id: 'connection-1',
+                provider_config_key: 'provider-config-key-1',
+                environment_id: 456
+            },
+            trigger: {
+                kind: 'schedule',
+                input: null,
+                connection: {
+                    connectionId: 'connection-1',
+                    integrationId: 'provider-config-key-1'
+                }
+            },
+            async: true
+        });
     });
 });
 
@@ -158,6 +193,7 @@ function buildFunctionProps(async: boolean): ExecuteFunctionProps {
         retry: { count: 0, max: 2 },
         args: {
             functionName: 'my-function',
+            functionConfigId: 123,
             connection: {
                 id: 123,
                 connection_id: 'connection-1',

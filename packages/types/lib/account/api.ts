@@ -183,6 +183,7 @@ export type PostManagedSignup = ApiEndpoint<{
     Body: {
         provider: 'GoogleOAuth';
         token?: string | undefined;
+        returnTo?: string | undefined;
     };
     Success: {
         data: {

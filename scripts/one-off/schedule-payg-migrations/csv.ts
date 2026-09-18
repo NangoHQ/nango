@@ -1,6 +1,7 @@
 export interface MigrationRow {
     accountId: string;
     currentPlan: string;
+    withGrowthAddon: boolean;
 }
 
 /** Minimal CSV reader supporting quoted fields and escaped quotes. */
@@ -96,7 +97,7 @@ export function parseMigrationCsv(contents: string): MigrationRow[] {
         }
 
         accountIds.add(accountId);
-        rows.push({ accountId, currentPlan });
+        rows.push({ accountId, currentPlan, withGrowthAddon: withGrowthAddon === 'true' });
     }
 
     return rows;

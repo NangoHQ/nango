@@ -15,9 +15,6 @@ import type { OrchestratorTask } from '@nangohq/nango-orchestrator';
 import type { Result } from '@nangohq/utils';
 
 export async function handler(task: OrchestratorTask): Promise<Result<void>> {
-    if (task.isScheduleFunction()) {
-        return Err(new Error('not implemented'));
-    }
     if (task.isSync()) {
         const span = tracer.startSpan('jobs.handler.sync');
         return await tracer.scope().activate(span, async () => {
@@ -60,6 +57,7 @@ export async function handler(task: OrchestratorTask): Promise<Result<void>> {
                 tags: {
                     'task.id': task.id,
                     'function.name': task.functionName,
+                    'function.config_id': task.functionConfigId,
                     'connection.id': task.connection.connection_id,
                     'environment.id': task.connection.environment_id
                 }

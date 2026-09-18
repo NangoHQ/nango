@@ -1,0 +1,87 @@
+---
+title: 'Pleo (API Key)'
+sidebarTitle: 'Pleo (API Key)'
+description: 'Integrate your application with the Pleo API using a Standalone API Key'
+---
+
+## 🚀 Quickstart
+
+Connect to Pleo with Nango and see data flow in 2 minutes.
+
+<Note>
+Standalone API Keys aren't self-service — Pleo has to enable access for your organization first. See the [connect guide](/api-integrations/pleo-api-key/connect) for details.
+</Note>
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Pleo (API Key)_.
+    </Step>
+    <Step id="authorize-pleo" title="Authorize Pleo">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your **API Subdomain** and **API Key**. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-the-api" title="Call the Pleo API">
+    Let's make your first request to the Pleo API (confirm the connected installation). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/installations/me" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/installations/me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Pleo integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/pleo-api-key/connect)  
+Request access, generate a Standalone API Key, and connect it to Nango
+
+Official docs: [Standalone API Keys Overview](https://developers.pleo.io/docs/api-keys), [Pleo API reference](https://developers.pleo.io/reference/api-introduction)
+
+<Note>
+For OAuth2-based, multi-customer integrations, use the [Pleo](/api-integrations/pleo) integration instead — Standalone API Keys are scoped to a single company and aren't recommended for production integrations serving multiple customers.
+</Note>
+
+## 🧩 Pre-built syncs & actions for Pleo
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/pleo-api-key/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
