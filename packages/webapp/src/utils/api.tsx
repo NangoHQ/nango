@@ -67,6 +67,26 @@ export async function swrFetcher<TBody>(url: string, req?: RequestInit): Promise
     return await res.json();
 }
 
+// `/api/v1/account/onboarding/*` is authenticated, so an `/account/` prefix would miss real expiries.
+const UNAUTHENTICATED_ENDPOINTS = [
+    '/api/v1/basic',
+    '/api/v1/account/signin',
+    '/api/v1/account/signup',
+    '/api/v1/account/logout',
+    '/api/v1/account/mfa/login/verify',
+    '/api/v1/account/managed/verification',
+    '/api/v1/account/managed/signup',
+    '/api/v1/account/forgot-password',
+    '/api/v1/account/reset-password',
+    '/api/v1/account/resend-verification-email',
+    '/api/v1/account/email'
+];
+
+export function isUnauthenticatedEndpoint(url: string): boolean {
+    const { pathname } = new URL(url, window.location.origin);
+    return UNAUTHENTICATED_ENDPOINTS.some((endpoint) => pathname === endpoint || pathname.startsWith(`${endpoint}/`));
+}
+
 export function requestErrorToast() {
     toast.error('Request error...');
 }

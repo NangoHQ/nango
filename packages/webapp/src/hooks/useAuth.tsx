@@ -171,21 +171,6 @@ export function useMFALoginVerification() {
     });
 }
 
-export function useLogoutAPI() {
-    return useMutation<undefined, APIError>({
-        mutationFn: async () => {
-            const res = await apiFetch('/api/v1/account/logout', { method: 'POST' });
-
-            if (res.status === 200) {
-                return undefined;
-            }
-
-            const json = (await res.json()) as Record<string, unknown>;
-            throw new APIError({ res, json });
-        }
-    });
-}
-
 export function useSignupAPI() {
     return useMutation<
         | {
@@ -374,7 +359,7 @@ export function usePostOnboardingHearAboutUs() {
               json: PostOnboardingHearAboutUs['Success'];
           }
         | {
-              status: 401 | 403;
+              status: 403;
               json: PostOnboardingHearAboutUs['Errors'];
           },
         APIError,
@@ -393,7 +378,8 @@ export function usePostOnboardingHearAboutUs() {
                 };
             }
 
-            if (res.status === 401 || res.status === 403) {
+            // Resolving a 401 would skip MutationCache.onError, so an expired session never signs out here.
+            if (res.status === 403) {
                 return {
                     status: res.status,
                     json: (await res.json()) as PostOnboardingHearAboutUs['Errors']
