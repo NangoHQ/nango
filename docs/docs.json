@@ -714,6 +714,14 @@
       "destination": "/api-integrations/jobber"
     },
     {
+      "source": "/integrations/all/stripe-app-sandbox",
+      "destination": "/api-integrations/stripe-app-sandbox"
+    },
+    {
+      "source": "/integrations/all/stripe-app-sandbox/connect",
+      "destination": "/api-integrations/stripe-app-sandbox/connect"
+    },
+    {
       "source": "/guides/functions/tool-calling",
       "destination": "/guides/agent-sessions"
     }
@@ -1071,6 +1079,7 @@
               "integrations/all/autodesk",
               "api-integrations/autosana",
               "integrations/all/autotask",
+              "api-integrations/autumn",
               "integrations/all/auvik",
               "api-integrations/availity",
               "integrations/all/avalara",
@@ -1839,7 +1848,7 @@
               "api-integrations/stripe",
               "api-integrations/stripe-api-key",
               "integrations/all/stripe-app",
-              "integrations/all/stripe-app-sandbox",
+              "api-integrations/stripe-app-sandbox",
               "integrations/all/stripe-express",
               "api-integrations/supabase",
               "api-integrations/supabase-mcp",

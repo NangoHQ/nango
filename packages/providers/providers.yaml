@@ -1193,6 +1193,30 @@ autotask:
             description: The secret for your API-only user account
             doc_section: '#step-4-generate-api-secret'
 
+autumn:
+    display_name: Autumn
+    categories:
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.useautumn.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/organization
+    docs: https://nango.dev/docs/api-integrations/autumn
+    docs_connect: https://nango.dev/docs/api-integrations/autumn/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Secret API Key
+            description: Your Autumn secret API key.
+            example: am_sk_live_51On1**********eHq
+            pattern: '^am_sk_(live|test)_[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-autumn-api-key'
+
 algolia:
     display_name: Algolia
     categories:
@@ -23836,13 +23860,20 @@ stripe-app-sandbox:
         base_url: https://api.stripe.com
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/integrations/all/stripe-app-sandbox
-    docs_connect: https://nango.dev/docs/integrations/all/stripe-app-sandbox/connect
+    docs: https://nango.dev/docs/api-integrations/stripe-app-sandbox
+    setup_guide_url: https://nango.dev/docs/api-integrations/stripe-app-sandbox/how-to-register-your-own-stripe-app-sandbox-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/stripe-app-sandbox/connect
+    integration_config:
+        appDomain:
+            type: string
+            title: App Domain
+            description: The unique identifier Stripe assigns to your app instance.
+            optional: true
     connection_config:
         appDomain:
             type: string
             title: App Domain
-            description: The unique identifier Stripe assigns to your app instance
+            description: The unique identifier Stripe assigns to your app instance.
             doc_section: '#step-1-finding-your-app-domain'
 
 stripe-api-key:
