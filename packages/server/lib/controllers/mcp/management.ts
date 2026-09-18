@@ -1,5 +1,7 @@
 import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 
+import { environmentService } from '@nangohq/shared';
+
 import { principalFor } from '../../authz/principal.js';
 import { resolveAuditAttribution } from '../../middleware/audit/index.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
@@ -19,6 +21,7 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
                       plan,
                       principal: requirePrincipal(res.locals),
                       environments: res.locals.mcpOAuthEnvironments ?? [],
+                      loadEnvironment: (name: string) => environmentService.getByEnvironmentName(account.id, name),
                       audit: resolveAuditAttribution(req, res.locals)
                   }
               } as const)
@@ -33,7 +36,7 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
                       audit: resolveAuditAttribution(req, res.locals)
                   }
               } as const);
-    const server = createManagementMcpServer(authentication, req.body);
+    const server = await createManagementMcpServer(authentication, req.body);
     const transport: NodeStreamableHTTPServerTransport = new NodeStreamableHTTPServerTransport();
 
     res.on('close', () => {

@@ -158,7 +158,9 @@ describe('Management MCP OAuth authentication', () => {
         expect(next).not.toHaveBeenCalled();
         expect(status).toHaveBeenCalledWith(401);
         expect(json).toHaveBeenCalledWith({ error: 'unauthorized' });
-        expect(headers.get('WWW-Authenticate')).not.toContain('error="invalid_token"');
+        expect(headers.get('WWW-Authenticate')).toBe(
+            'Bearer resource_metadata="https://mcp.nango.dev/.well-known/oauth-protected-resource/mcp", scope="environment:*"'
+        );
     });
 
     it('returns insufficient_scope without API-key fallback', async () => {

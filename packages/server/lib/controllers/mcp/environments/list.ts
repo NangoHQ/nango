@@ -2,9 +2,10 @@ import { environmentService } from '@nangohq/shared';
 
 import { listEnvironmentsInputSchema, listEnvironmentsOutputSchema } from './schema.js';
 
+import type { ListEnvironmentsOutput } from './schema.js';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
-export type ManagementMcpEnvironment = Pick<DBEnvironment, 'id' | 'name' | 'is_production'>;
+export type ManagementMcpEnvironment = Pick<DBEnvironment, 'id' | 'uuid' | 'name' | 'account_id' | 'is_production'>;
 
 export const listEnvironmentsTool = {
     name: 'environments_list',
@@ -12,21 +13,18 @@ export const listEnvironmentsTool = {
     inputSchema: listEnvironmentsInputSchema,
     outputSchema: listEnvironmentsOutputSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    handler(environments: readonly ManagementMcpEnvironment[]) {
+    handler(environments: readonly ManagementMcpEnvironment[]): ListEnvironmentsOutput {
         return {
             environments: environments.map(({ name, is_production }) => ({ name, is_production }))
         };
     }
 } as const;
 
-export async function getManagementMcpEnvironments({ account }: { account: DBTeam }): Promise<DBEnvironment[]> {
+export async function getManagementMcpEnvironments({ account }: { account: DBTeam }): Promise<ManagementMcpEnvironment[]> {
     const environmentSummaries = await environmentService.getEnvironmentsByAccountId(account.id);
     if (environmentSummaries.isErr()) {
         throw environmentSummaries.error;
     }
 
-    const environments = await Promise.all(
-        environmentSummaries.value.map((environment) => environmentService.getByEnvironmentName(account.id, environment.name))
-    );
-    return environments.filter((environment): environment is DBEnvironment => environment !== null);
+    return environmentSummaries.value.map((environment) => ({ ...environment, account_id: account.id }));
 }

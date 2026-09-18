@@ -1014,7 +1014,7 @@ describe('createManagementMcpServer', () => {
                 arguments: { credentials: { client_secret: 'credential-secret-value' } }
             }
         };
-        const server = createManagementMcpServer(
+        const server = await createManagementMcpServer(
             {
                 type: 'apiKey',
                 context: {
@@ -1065,7 +1065,7 @@ describe('createManagementMcpServer', () => {
                 arguments: { integration_id: 42, connection_id: 'connection-secret', syncs: [{ name: 'issues' }], state }
             }
         };
-        const server = createManagementMcpServer(
+        const server = await createManagementMcpServer(
             {
                 type: 'apiKey',
                 context: {
@@ -1103,7 +1103,7 @@ describe('createManagementMcpServer', () => {
         flags.hasAuditTrail = true;
         auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
-        const server = createManagementMcpServer(
+        const server = await createManagementMcpServer(
             {
                 type: 'apiKey',
                 context: {
@@ -1140,7 +1140,7 @@ describe('createManagementMcpServer', () => {
         flags.hasAuditTrail = true;
         auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
-        const server = createManagementMcpServer(
+        const server = await createManagementMcpServer(
             {
                 type: 'apiKey',
                 context: {
@@ -1342,7 +1342,7 @@ async function expectDisabledTool(client: Client, name: string, args: Record<str
 
 async function createTestClient(grantedScopes: string[]): Promise<{ client: Client; server: McpServer }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    const server = createManagementMcpServer({
+    const server = await createManagementMcpServer({
         type: 'apiKey',
         context: { account: fakeAccount(), environment: fakeEnvironment(), plan: null, grantedScopes }
     });

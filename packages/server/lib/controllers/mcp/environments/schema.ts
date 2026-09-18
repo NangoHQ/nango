@@ -10,3 +10,5 @@ export const listEnvironmentsOutputSchema = z.object({
         })
     )
 });
+
+export type ListEnvironmentsOutput = z.infer<typeof listEnvironmentsOutputSchema>;

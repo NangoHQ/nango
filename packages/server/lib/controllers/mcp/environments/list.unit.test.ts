@@ -6,27 +6,22 @@ import { getManagementMcpEnvironments, listEnvironmentsTool } from './list.js';
 
 import type { DBTeam } from '@nangohq/types';
 
-const { getEnvironmentsMock, getEnvironmentByNameMock } = vi.hoisted(() => ({
-    getEnvironmentsMock: vi.fn(),
-    getEnvironmentByNameMock: vi.fn()
-}));
+const { getEnvironmentsMock } = vi.hoisted(() => ({ getEnvironmentsMock: vi.fn() }));
 
 vi.mock('@nangohq/shared', () => ({
-    environmentService: { getEnvironmentsByAccountId: getEnvironmentsMock, getByEnvironmentName: getEnvironmentByNameMock }
+    environmentService: { getEnvironmentsByAccountId: getEnvironmentsMock }
 }));
 
 const account = { id: 42 } as DBTeam;
-const environments = [
+const environmentSummaries = [
     { id: 1, uuid: 'dev', name: 'dev', is_production: false },
     { id: 2, uuid: 'prod', name: 'prod', is_production: true }
 ];
+const environments = environmentSummaries.map((environment) => ({ ...environment, account_id: account.id }));
 
 describe('environments_list', () => {
     beforeEach(() => {
-        getEnvironmentsMock.mockResolvedValue(Ok(environments));
-        getEnvironmentByNameMock.mockImplementation((_accountId: number, name: string) =>
-            Promise.resolve(environments.find((environment) => environment.name === name) ?? null)
-        );
+        getEnvironmentsMock.mockResolvedValue(Ok(environmentSummaries));
         vi.clearAllMocks();
     });
 
@@ -39,9 +34,6 @@ describe('environments_list', () => {
         const result = await getManagementMcpEnvironments({ account });
 
         expect(getEnvironmentsMock).toHaveBeenCalledWith(account.id);
-        expect(getEnvironmentByNameMock).toHaveBeenCalledTimes(2);
-        expect(getEnvironmentByNameMock).toHaveBeenCalledWith(account.id, 'dev');
-        expect(getEnvironmentByNameMock).toHaveBeenCalledWith(account.id, 'prod');
         expect(result).toStrictEqual(environments);
     });
 
@@ -56,6 +48,5 @@ describe('environments_list', () => {
         getEnvironmentsMock.mockResolvedValue(Err(error));
 
         await expect(getManagementMcpEnvironments({ account })).rejects.toBe(error);
-        expect(getEnvironmentByNameMock).not.toHaveBeenCalled();
     });
 });

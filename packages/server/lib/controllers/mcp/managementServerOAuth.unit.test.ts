@@ -2,7 +2,7 @@ import { Client } from '@modelcontextprotocol/client';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { flags, Ok } from '@nangohq/utils';
+import { flags, metrics, Ok } from '@nangohq/utils';
 
 import { audit, auditBackend } from '../../audit.js';
 import { listIntegrationsTool } from './integrations/list.js';
@@ -30,7 +30,6 @@ const managementToolNames = [
     'actions_trigger',
     'proxy_request',
     'functions_list',
-    'deploy_function',
     'deploy_template',
     'get_deployment_status',
     'logs_list_operations',
@@ -44,8 +43,8 @@ describe('createManagementMcpServer with OAuth', () => {
         vi.restoreAllMocks();
     });
 
-    it('exposes environments_list and every environment-bound management tool', async () => {
-        const { client, server } = await createTestClient();
+    it('exposes environments_list and every OAuth-supported environment-bound management tool', async () => {
+        const { client, server, loadEnvironment } = await createTestClient();
 
         try {
             const result = await client.listTools();
@@ -73,6 +72,7 @@ describe('createManagementMcpServer with OAuth', () => {
                 });
                 expect(tool.inputSchema.required).toContain('environment');
             }
+            expect(loadEnvironment).not.toHaveBeenCalled();
         } finally {
             await client.close();
             await server.close();
@@ -80,7 +80,7 @@ describe('createManagementMcpServer with OAuth', () => {
     });
 
     it('returns only environments visible through live RBAC without exposing environment credentials', async () => {
-        const { client, server } = await createTestClient({
+        const { client, server, loadEnvironment } = await createTestClient({
             principal: principal(['environment:settings:read'], ['env:non-production'])
         });
 
@@ -94,6 +94,7 @@ describe('createManagementMcpServer with OAuth', () => {
                 content: [{ type: 'text', text: JSON.stringify(expected, null, 2) }],
                 structuredContent: expected
             });
+            expect(loadEnvironment).not.toHaveBeenCalled();
         } finally {
             await client.close();
             await server.close();
@@ -124,7 +125,7 @@ describe('createManagementMcpServer with OAuth', () => {
             templates: []
         };
         const handlerSpy = vi.spyOn(getProvidersTool, 'handler').mockResolvedValueOnce(Ok(response));
-        const { client, server } = await createTestClient();
+        const { client, server, loadEnvironment } = await createTestClient();
 
         try {
             const result = await client.callTool({
@@ -144,6 +145,8 @@ describe('createManagementMcpServer with OAuth', () => {
             expect(call[1].environment).toMatchObject({ id: 1, name: 'dev', uuid: 'dev-environment' });
             expect(call[1].plan).toBeNull();
             expect(call[1].grantedScopes).toContain('environment:integrations:read_credentials');
+            expect(loadEnvironment).toHaveBeenCalledOnce();
+            expect(loadEnvironment).toHaveBeenCalledWith('dev');
         } finally {
             await client.close();
             await server.close();
@@ -167,7 +170,8 @@ describe('createManagementMcpServer with OAuth', () => {
 
     it('does not allow a tool to select an environment outside the current user grants', async () => {
         const handlerSpy = vi.spyOn(getProvidersTool, 'handler');
-        const { client, server } = await createTestClient({
+        const metricSpy = vi.spyOn(metrics, 'increment');
+        const { client, server, loadEnvironment } = await createTestClient({
             principal: principal(['environment:*'], ['env:non-production'])
         });
 
@@ -176,6 +180,13 @@ describe('createManagementMcpServer with OAuth', () => {
 
             expect(result).toMatchObject({ isError: true, content: [{ type: 'text', text: 'Environment not found or inaccessible' }] });
             expect(handlerSpy).not.toHaveBeenCalled();
+            expect(loadEnvironment).not.toHaveBeenCalled();
+            expect(metricSpy).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {
+                accountId: 1,
+                mcp_type: 'management',
+                tool: 'providers_get',
+                outcome: 'error'
+            });
         } finally {
             await client.close();
             await server.close();
@@ -184,6 +195,7 @@ describe('createManagementMcpServer with OAuth', () => {
 
     it('enforces each existing tool scope in the selected environment', async () => {
         const handlerSpy = vi.spyOn(listIntegrationsTool, 'handler').mockResolvedValueOnce(Ok({ data: [] }));
+        const metricSpy = vi.spyOn(metrics, 'increment');
         const { client, server } = await createTestClient({
             principal: principal(['environment:settings:read'], ['env:*'])
         });
@@ -196,6 +208,12 @@ describe('createManagementMcpServer with OAuth', () => {
                 content: [{ type: 'text', text: 'Insufficient permissions for this tool in the selected environment' }]
             });
             expect(handlerSpy).not.toHaveBeenCalled();
+            expect(metricSpy).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {
+                accountId: 1,
+                mcp_type: 'management',
+                tool: 'integrations_list',
+                outcome: 'error'
+            });
         } finally {
             await client.close();
             await server.close();
@@ -252,16 +270,20 @@ async function createTestClient({
 }: { principal?: Principal; audit?: AuditAttribution; requestBody?: unknown } = {}): Promise<{
     client: Client;
     server: McpServer;
+    loadEnvironment: ReturnType<typeof vi.fn>;
 }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    const server = createManagementMcpServer(
+    const environments = [fakeEnvironment({ id: 1, name: 'dev', isProduction: false }), fakeEnvironment({ id: 2, name: 'prod', isProduction: true })];
+    const loadEnvironment = vi.fn((name: string) => Promise.resolve(environments.find((environment) => environment.name === name) ?? null));
+    const server = await createManagementMcpServer(
         {
             type: 'oauth',
             context: {
                 account: fakeAccount(),
                 plan: null,
                 principal: userPrincipal,
-                environments: [fakeEnvironment({ id: 1, name: 'dev', isProduction: false }), fakeEnvironment({ id: 2, name: 'prod', isProduction: true })],
+                environments: environments.map(({ id, uuid, name, account_id, is_production }) => ({ id, uuid, name, account_id, is_production })),
+                loadEnvironment,
                 audit: auditAttribution
             }
         },
@@ -272,7 +294,7 @@ async function createTestClient({
     await server.connect(serverTransport);
     await client.connect(clientTransport);
 
-    return { client, server };
+    return { client, server, loadEnvironment };
 }
 
 function principal(can: ScopeSelector[], where: WhereSelector[]): Principal {

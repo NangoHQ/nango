@@ -28,6 +28,7 @@ import { setSyncsStateTool } from './syncs/setState.js';
 import { triggerSyncsTool } from './syncs/trigger.js';
 import { handleMcpToolError, jsonStructuredContent, mcpToolError, toJsonSchema202012 } from './utils.js';
 
+import type { ManagementMcpEnvironment } from './environments/list.js';
 import type { ManagementMcpContext, ManagementMcpRequiredScopes, ManagementMcpTool } from './managementTool.js';
 import type { Principal } from '@nangohq/authz';
 import type { ApiKeyScope, AuditAttribution, AuditPolicy, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
@@ -87,19 +88,25 @@ const environmentsListToolConfig = {
     annotations: listEnvironmentsTool.annotations
 };
 
+const oauthUnsupportedToolNames = new Set([deployFunctionTool.name]);
+
 export type ManagementMcpServerAuthentication = { type: 'apiKey'; context: ManagementMcpContext } | { type: 'oauth'; context: ManagementMcpOAuthContext };
 
 interface ManagementMcpOAuthContext {
     account: DBTeam;
     plan: DBPlan | null;
     principal: Principal;
-    environments: readonly DBEnvironment[];
+    environments: readonly ManagementMcpEnvironment[];
+    loadEnvironment: (name: string) => Promise<DBEnvironment | null>;
     audit?: AuditAttribution | undefined;
 }
 
-export function createManagementMcpServer(authentication: ManagementMcpServerAuthentication, requestBody?: unknown): McpServer {
+type ResolvedOAuthToolCall = { ok: true; toolArguments: Record<string, unknown>; context: ManagementMcpContext } | { ok: false; message: string };
+type OAuthToolCallResolver = (args: unknown) => Promise<ResolvedOAuthToolCall>;
+
+export async function createManagementMcpServer(authentication: ManagementMcpServerAuthentication, requestBody?: unknown): Promise<McpServer> {
     if (authentication.type === 'oauth') {
-        return createOAuthManagementMcpServer(authentication.context, requestBody);
+        return await createOAuthManagementMcpServer(authentication.context, requestBody);
     }
     return createApiKeyManagementMcpServer(authentication.context, requestBody);
 }
@@ -131,21 +138,28 @@ function createApiKeyManagementMcpServer(context: ManagementMcpContext, requestB
     return server;
 }
 
-function createOAuthManagementMcpServer(oauthContext: ManagementMcpOAuthContext, requestBody: unknown): McpServer {
+async function createOAuthManagementMcpServer(oauthContext: ManagementMcpOAuthContext, requestBody: unknown): Promise<McpServer> {
     const server = createBaseManagementMcpServer();
     registerEnvironmentsListTool(server, oauthContext);
     const toolCallArgumentsByName = parseToolCallArguments(requestBody);
+    const resolveOAuthToolCall = createOAuthToolCallResolver(oauthContext);
 
     for (const { toolDefinition, oauthConfig } of managementMcpToolRegistrations) {
+        if (oauthUnsupportedToolNames.has(toolDefinition.name)) {
+            continue;
+        }
+
         const callArguments = toolCallArgumentsByName.get(toolDefinition.name) ?? [];
-        auditOAuthCallsBeforeDispatch({ callArguments, oauthContext, tool: toolDefinition });
+        await auditOAuthCallsBeforeDispatch({ callArguments, resolveOAuthToolCall, tool: toolDefinition });
 
         server.registerTool(toolDefinition.name, oauthConfig, async (args: unknown) => {
-            const resolved = resolveOAuthToolCall(args, oauthContext);
+            const resolved = await resolveOAuthToolCall(args);
             if (!resolved.ok) {
+                recordEarlyOAuthToolError(oauthContext.account.id, toolDefinition.name);
                 return mcpToolError(resolved.message);
             }
             if (!hasRequiredScopes({ grantedScopes: resolved.context.grantedScopes, requiredScopes: toolDefinition.requiredScopes })) {
+                recordEarlyOAuthToolError(oauthContext.account.id, toolDefinition.name);
                 return mcpToolError('Insufficient permissions for this tool in the selected environment');
             }
 
@@ -183,47 +197,58 @@ async function invokeManagementMcpTool(tool: ManagementMcpTool, args: unknown, c
     }
 }
 
-function resolveOAuthToolCall(
-    args: unknown,
-    oauthContext: ManagementMcpOAuthContext
-): { ok: true; toolArguments: Record<string, unknown>; context: ManagementMcpContext } | { ok: false; message: string } {
-    if (!isRecord(args) || typeof args['environment'] !== 'string') {
-        return { ok: false, message: 'An environment name is required' };
-    }
+function createOAuthToolCallResolver(oauthContext: ManagementMcpOAuthContext): OAuthToolCallResolver {
+    const environmentsByName = new Map<string, Promise<DBEnvironment | null>>();
 
-    const environment = oauthContext.environments.find((candidate) => candidate.name === args['environment']);
-    if (!environment || !authorizeIn(oauthContext.principal, 'environment:settings:read', environment)) {
-        return { ok: false, message: 'Environment not found or inaccessible' };
-    }
-
-    const toolArguments = { ...args };
-    delete toolArguments['environment'];
-    const grantedScopes = PUBLIC_ENVIRONMENT_SCOPES.filter((scope) => authorizeIn(oauthContext.principal, scope, environment));
-
-    return {
-        ok: true,
-        toolArguments,
-        context: {
-            account: oauthContext.account,
-            environment,
-            plan: oauthContext.plan,
-            grantedScopes,
-            audit: oauthContext.audit
+    return async (args: unknown): Promise<ResolvedOAuthToolCall> => {
+        if (!isRecord(args) || typeof args['environment'] !== 'string') {
+            return { ok: false, message: 'An environment name is required' };
         }
+
+        const environmentSummary = oauthContext.environments.find((candidate) => candidate.name === args['environment']);
+        if (!environmentSummary || !authorizeIn(oauthContext.principal, 'environment:settings:read', environmentSummary)) {
+            return { ok: false, message: 'Environment not found or inaccessible' };
+        }
+
+        let environmentPromise = environmentsByName.get(environmentSummary.name);
+        if (!environmentPromise) {
+            environmentPromise = oauthContext.loadEnvironment(environmentSummary.name);
+            environmentsByName.set(environmentSummary.name, environmentPromise);
+        }
+        const environment = await environmentPromise;
+        if (!environment || !authorizeIn(oauthContext.principal, 'environment:settings:read', environment)) {
+            return { ok: false, message: 'Environment not found or inaccessible' };
+        }
+
+        const toolArguments = { ...args };
+        delete toolArguments['environment'];
+        const grantedScopes = PUBLIC_ENVIRONMENT_SCOPES.filter((scope) => authorizeIn(oauthContext.principal, scope, environment));
+
+        return {
+            ok: true,
+            toolArguments,
+            context: {
+                account: oauthContext.account,
+                environment,
+                plan: oauthContext.plan,
+                grantedScopes,
+                audit: oauthContext.audit
+            }
+        };
     };
 }
 
-function auditOAuthCallsBeforeDispatch({
+async function auditOAuthCallsBeforeDispatch({
     callArguments,
-    oauthContext,
+    resolveOAuthToolCall,
     tool
 }: {
     callArguments: readonly unknown[];
-    oauthContext: ManagementMcpOAuthContext;
+    resolveOAuthToolCall: OAuthToolCallResolver;
     tool: ManagementMcpTool;
-}): void {
+}): Promise<void> {
     for (const args of callArguments) {
-        const resolved = resolveOAuthToolCall(args, oauthContext);
+        const resolved = await resolveOAuthToolCall(args);
         if (!resolved.ok) {
             continue;
         }
@@ -234,6 +259,15 @@ function auditOAuthCallsBeforeDispatch({
         }
         auditInvalidDynamicCallsForTool({ callArguments: [resolved.toolArguments], context: resolved.context, tool });
     }
+}
+
+function recordEarlyOAuthToolError(accountId: number, tool: string): void {
+    metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
+        accountId,
+        mcp_type: 'management',
+        tool,
+        outcome: 'error'
+    });
 }
 
 function registerEnvironmentsListTool(server: McpServer, context: ManagementMcpOAuthContext): void {
