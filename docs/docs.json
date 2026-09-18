@@ -1398,6 +1398,7 @@
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
               "api-integrations/hex",
+              "api-integrations/hex-mcp",
               "api-integrations/heygen",
               "api-integrations/heymarket",
               "integrations/all/heyreach",
