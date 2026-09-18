@@ -6,6 +6,15 @@ import type { AgentSession, HTTP_METHOD } from '@nangohq/types';
 /** Nango's own tools, as opposed to the integration tools an account deploys. */
 export type AgentSessionMetaTool = 'nango_execute' | 'nango_proxy' | 'nango_tool_search' | 'nango_create_connection';
 
+/** One ranked tool, as the search returned it. Confidence runs from 0, nothing matched, to 1. */
+export interface AgentSessionToolSearchHit {
+    tool: string;
+    /** The name the agent was given for it, which collisions make impossible to derive afterwards. */
+    slug: string;
+    integration: string;
+    confidence: number;
+}
+
 interface Outcome {
     logOperationId?: string | undefined;
     errorCode?: string | undefined;
@@ -23,6 +32,13 @@ interface ToolCallParams extends Outcome {
     pinned?: boolean | undefined;
     /** Names the underlying failure when the action ran and failed, rather than being rejected before it ran. */
     underlyingErrorCode?: string | undefined;
+}
+
+interface ToolSearchParams extends Outcome {
+    session: AgentSession;
+    query: string;
+    matches: AgentSessionToolSearchHit[];
+    related: AgentSessionToolSearchHit[];
 }
 
 interface ProxyRequestParams extends Outcome {
@@ -76,6 +92,25 @@ export function trackAgentSessionProxyRequest({ session, integrationId, provider
         ...(provider ? { provider } : {}),
         ...(status === undefined ? {} : { http_status: status }),
         ...(providerErrorCode ? { provider_error_code: providerErrorCode } : {})
+    });
+}
+
+/**
+ * Carries the query as the agent sent it, which is what search quality is measured against. The
+ * results ride along so a query can be read next to what it returned, which is the exception the
+ * taxonomy grants this event: everywhere else a property is a primitive.
+ */
+export function trackAgentSessionToolSearch({ session, query, matches, related, ...outcome }: ToolSearchParams): void {
+    productTracking.track({
+        name: 'agents:tool_search_submit',
+        eventProperties: {
+            agent_session_id: session.id,
+            query,
+            match_count: matches.length,
+            related_count: related.length,
+            ...outcomeProperties(outcome)
+        },
+        structuredProperties: { matches, related }
     });
 }
 
