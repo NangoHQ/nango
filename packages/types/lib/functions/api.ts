@@ -322,8 +322,7 @@ export type DeleteIntegrationFunction = ApiEndpoint<{
     Audit: AuditPolicy<'function', 'deleted', 'environment'>;
     Method: 'DELETE';
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
-    /** TODO: support deleting on-event functions */
-    Querystring: { env: string; type: RunnableFunctionType };
+    Querystring: { env: string; type: FunctionType };
     Params: { providerConfigKey: string; functionName: string };
     Error: ApiError<'function_managed_by_deploy'>;
     Success: FunctionDeletionSuccess;
@@ -360,8 +359,7 @@ export type DeletePublicIntegrationFunction = ApiEndpoint<{
     Audit: AuditPolicy<'function', 'deleted', 'environment'>;
     Method: 'DELETE';
     Path: '/integrations/:uniqueKey/functions/:name';
-    /** TODO: support deleting on-event functions */
-    Querystring: { type: RunnableFunctionType };
+    Querystring: { type: FunctionType };
     Params: { uniqueKey: string; name: string };
     Error: ApiError<'function_managed_by_deploy'>;
     Success: FunctionDeletionSuccess;
