@@ -116,7 +116,7 @@ export const connectionCreated = async (
     if (options.initiateSync === true && !isHosted) {
         await syncManager.createSyncForConnection({ connectionId: connection.id, syncVariant: 'base', logContextGetter, orchestrator });
 
-        const result = await functionLifecycle.ensureForConnection({ connection, orchestrator });
+        const result = await functionLifecycle.ensureForConnection(db.knex, { connection, orchestrator });
         if (result.isErr()) {
             report(new Error('connection_scheduled_functions_initialization_failed', { cause: result.error }), { id: connection.id });
         }

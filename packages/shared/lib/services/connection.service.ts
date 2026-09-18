@@ -43,6 +43,7 @@ import {
     MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
     REFRESH_MARGIN_MS
 } from './connections/utils.js';
+import * as functionLifecycle from './functions/connection.js';
 import {
     assertSafeOAuthUrl,
     findOutboundUrlError,
@@ -1526,15 +1527,34 @@ export class ConnectionService {
     }): Promise<number> {
         await preDeletionHook();
 
-        const del = await db.knex
-            .from(`_nango_connections`)
-            .where({
-                connection_id: connection.connection_id,
-                provider_config_key: providerConfigKey,
-                environment_id: environmentId,
-                deleted: false
-            })
-            .update({ deleted: true, deleted_at: new Date() });
+        // Delete any schedules associated with the connection before deleting the connection itself
+        // We accept that schedules might be successfully deleted but the connection deletion fails.
+        // This is more acceptable than the other way around, where the connection is deleted but orphan schedules remain.
+        const schedulesDeletion = await functionLifecycle.deleteSchedulesForConnection(db.knex, { connection, orchestrator });
+        if (schedulesDeletion.isErr()) {
+            throw schedulesDeletion.error;
+        }
+
+        const del = await db.knex.transaction(async (trx) => {
+            const deleted = await trx
+                .from(`_nango_connections`)
+                .where({
+                    connection_id: connection.connection_id,
+                    provider_config_key: providerConfigKey,
+                    environment_id: environmentId,
+                    deleted: false
+                })
+                .update({ deleted: true, deleted_at: new Date() });
+
+            if (deleted > 0) {
+                const functionsDeletion = await functionLifecycle.softDeleteInstancesForConnection(trx, { connection });
+                if (functionsDeletion.isErr()) {
+                    throw functionsDeletion.error;
+                }
+            }
+
+            return deleted;
+        });
 
         // TODO: move the following side effects to a post deletion hook
         // so we can remove the orchestrator dependencies
