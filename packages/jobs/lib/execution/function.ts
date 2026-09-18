@@ -154,7 +154,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             environmentName: environment.name,
             providerConfigKey: task.connection.provider_config_key,
             provider: providerConfig.provider,
-            activityLogId: task.activityLogId,
+            activityLogId: task.activityLogId ?? '',
             nangoConnectionId: task.connection.id,
             attributes: syncConfig.attributes,
             syncConfig,
