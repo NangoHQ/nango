@@ -6,7 +6,8 @@ import {
     trackAgentSessionCreated,
     trackAgentSessionProxyRequest,
     trackAgentSessionTerminated,
-    trackAgentSessionToolCall
+    trackAgentSessionToolCall,
+    trackAgentSessionToolSearch
 } from './agentSessionAnalytics.service.js';
 
 import type { AgentSession, DBEnvironment, DBTeam } from '@nangohq/types';
@@ -216,5 +217,35 @@ describe('trackAgentSessionProxyRequest', () => {
         expect(properties).not.toHaveProperty('http-status');
         expect(properties).not.toHaveProperty('provider');
         expect(properties).toMatchObject({ success: false, 'error-code': 'no_connection' });
+    });
+});
+
+describe('trackAgentSessionToolSearch', () => {
+    const matches = [
+        { tool: 'send_email', integration: 'gmail', confidence: 0.82 },
+        { tool: 'create_draft', integration: 'gmail', confidence: 0.61 }
+    ];
+    const related = [{ tool: 'create_ticket', integration: 'zendesk', confidence: 0.28 }];
+
+    it('carries the query as sent, with both result tiers and their confidence', () => {
+        inRequest(() => trackAgentSessionToolSearch({ session, query: 'email a customer', matches, related }));
+
+        const { event, properties } = onlyEvent();
+        expect(event).toBe('nango_tool_search');
+        expect(properties).toMatchObject({
+            'session-id': 'session-1',
+            query: 'email a customer',
+            'match-count': 2,
+            'related-count': 1,
+            matches,
+            related,
+            success: true
+        });
+    });
+
+    it('reports a search that failed', () => {
+        inRequest(() => trackAgentSessionToolSearch({ session, query: 'email a customer', matches: [], related: [], errorCode: 'search_failed' }));
+
+        expect(onlyEvent().properties).toMatchObject({ 'match-count': 0, 'related-count': 0, success: false, 'error-code': 'search_failed' });
     });
 });

@@ -114,6 +114,16 @@ describe('rankSessionTools', () => {
         expect(related).toStrictEqual([]);
     });
 
+    it('carries the score each result was ranked on, so a search can be measured afterwards', () => {
+        const { best, related } = rank({ compiledToolset: mailbox, query: 'send a message to a recipient' });
+
+        expect(best[0]?.score).toBeGreaterThanOrEqual(0);
+        expect(best[0]?.score).toBeLessThanOrEqual(1);
+        for (const weaker of related) {
+            expect(best[0]!.score).toBeLessThan(weaker.score);
+        }
+    });
+
     it('demotes a weak match to related rather than dropping it', () => {
         const { best, related } = rank({ compiledToolset: mailbox, query: 'archive an old label from the mailbox' });
 
