@@ -334,4 +334,23 @@ describe(`PATCH ${endpoint}`, () => {
         const stored = await configService.getProviderConfig('github-app-shared', env.id);
         expect(stored?.oauth_client_id).toBe('test');
     });
+
+    it('rejects integrationConfig updates on an integration using Nango-provided (shared) credentials', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createPreprovisionedProviderConfigSeed(env, 'stripe-app-sandbox-shared', 'stripe-app-sandbox', 'stripe-app-sandbox-shared-patch-test');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'stripe-app-sandbox-shared' },
+            body: { integrationConfig: { appDomain: 'acct_123' } }
+        });
+
+        isError(res.json);
+        expect(res.json.error.code).toBe('invalid_body');
+
+        const stored = await configService.getProviderConfig('stripe-app-sandbox-shared', env.id);
+        expect(stored?.custom).toBeFalsy();
+    });
 });
