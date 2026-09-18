@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1009
+Provider count: 1011
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -90,6 +90,7 @@ URL patterns:
 | `autodesk` | Autodesk | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/autodesk.md) |  |  | design |
 | `autosana` | Autosana | API_KEY | [docs](https://nango.dev/docs/api-integrations/autosana.md) | [connect](https://nango.dev/docs/api-integrations/autosana/connect.md) |  | dev-tools |
 | `autotask` | AutoTask | API_KEY | [docs](https://nango.dev/docs/integrations/all/autotask.md) | [connect](https://nango.dev/docs/integrations/all/autotask/connect.md) |  | support, ticketing |
+| `autumn` | Autumn | API_KEY | [docs](https://nango.dev/docs/api-integrations/autumn.md) | [connect](https://nango.dev/docs/api-integrations/autumn/connect.md) |  | payment |
 | `auvik` | Auvik | BASIC | [docs](https://nango.dev/docs/integrations/all/auvik.md) | [connect](https://nango.dev/docs/integrations/all/auvik/connect.md) |  | support |
 | `availity` | Availity | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/availity.md) | [connect](https://nango.dev/docs/api-integrations/availity/connect.md) |  | other |
 | `avalara` | Avalara | BASIC | [docs](https://nango.dev/docs/integrations/all/avalara.md) | [connect](https://nango.dev/docs/integrations/all/avalara/connect.md) |  | legal |
@@ -501,6 +502,7 @@ URL patterns:
 | `linear-mcp` | Linear (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linear-mcp.md) |  |  | popular, productivity, ticketing, mcp |
 | `linkedin` | LinkedIn | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linkedin.md) |  | [setup](https://nango.dev/docs/api-integrations/linkedin/how-to-register-your-own-linkedin-api-oauth-app.md) | ats, social |
 | `linkhut` | LinkHut | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/linkhut.md) |  |  | social |
+| `linkly` | Linkly | API_KEY | [docs](https://nango.dev/docs/api-integrations/linkly.md) | [connect](https://nango.dev/docs/api-integrations/linkly/connect.md) |  | marketing |
 | `listmonk` | Listmonk | BASIC | [docs](https://nango.dev/docs/integrations/all/listmonk.md) |  |  | marketing |
 | `listrak` | Listrak | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/listrak.md) | [connect](https://nango.dev/docs/api-integrations/listrak/connect.md) |  | marketing |
 | `liveswitch` | LiveSwitch | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/liveswitch.md) |  | [setup](https://nango.dev/docs/api-integrations/liveswitch/how-to-register-your-own-liveswitch-api-oauth-app.md) | communication |
@@ -857,7 +859,7 @@ URL patterns:
 | `stripe` | Stripe Connect | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/stripe.md) |  | [setup](https://nango.dev/docs/api-integrations/stripe/how-to-register-your-own-stripe-api-oauth-app.md) | payment |
 | `stripe-api-key` | Stripe (API Key) | BASIC | [docs](https://nango.dev/docs/api-integrations/stripe-api-key.md) | [connect](https://nango.dev/docs/api-integrations/stripe-api-key/connect.md) |  | payment |
 | `stripe-app` | Stripe App | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/stripe-app.md) |  |  | payment, popular |
-| `stripe-app-sandbox` | Stripe App (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/stripe-app-sandbox.md) | [connect](https://nango.dev/docs/integrations/all/stripe-app-sandbox/connect.md) |  | payment |
+| `stripe-app-sandbox` | Stripe App (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/stripe-app-sandbox.md) | [connect](https://nango.dev/docs/api-integrations/stripe-app-sandbox/connect.md) | [setup](https://nango.dev/docs/api-integrations/stripe-app-sandbox/how-to-register-your-own-stripe-app-sandbox-api-oauth-app.md) | payment |
 | `stripe-express` | Stripe Express | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/stripe-express.md) |  |  | payment |
 | `supabase` | Supabase | API_KEY | [docs](https://nango.dev/docs/api-integrations/supabase.md) | [connect](https://nango.dev/docs/api-integrations/supabase/connect.md) |  | dev-tools, storage |
 | `supabase-mcp` | Supabase (MCP) | API_KEY | [docs](https://nango.dev/docs/api-integrations/supabase-mcp.md) | [connect](https://nango.dev/docs/api-integrations/supabase-mcp/connect.md) |  | dev-tools, mcp |

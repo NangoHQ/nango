@@ -19,6 +19,13 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007, ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: 0 });
     });
 
+    it('parses the local Nango user id as a non-negative integer', () => {
+        expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '0' }).LOCAL_NANGO_USER_ID).toBe(0);
+        expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '1e2' }).LOCAL_NANGO_USER_ID).toBe(100);
+        expect(() => parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '1.5' })).toThrowError(/LOCAL_NANGO_USER_ID/);
+        expect(() => parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '-1' })).toThrowError(/LOCAL_NANGO_USER_ID/);
+    });
+
     it('should parse the throttled immediate limit', () => {
         expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '123' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(123);
         // 0 disables throttling
@@ -62,19 +69,13 @@ describe('parse', () => {
         expect(res.NANGO_MANAGEMENT_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
     });
 
-    it('defaults Management MCP OAuth to disabled', () => {
-        expect(parseEnvs(ENVS, {}).NANGO_MANAGEMENT_MCP_OAUTH_ENABLED).toBe(false);
-    });
-
-    it('parses shared OAuth server settings when OAuth is enabled', () => {
+    it('parses OAuth server settings', () => {
         const res = parseEnvs(ENVS, {
-            NANGO_MANAGEMENT_MCP_OAUTH_ENABLED: 'true',
             NANGO_OAUTH_SERVER_BASE_URL: 'https://api.example.com',
             NANGO_OAUTH_SERVER_COOKIE_KEYS: '["first","second"]',
             NANGO_OAUTH_SERVER_JWKS: '{"keys":[]}'
         });
         expect(res).toMatchObject({
-            NANGO_MANAGEMENT_MCP_OAUTH_ENABLED: true,
             NANGO_OAUTH_SERVER_BASE_URL: 'https://api.example.com'
         });
     });

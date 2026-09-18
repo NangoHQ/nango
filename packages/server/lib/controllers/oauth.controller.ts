@@ -58,6 +58,7 @@ import { authHtml } from '../utils/html.js';
 import {
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
+    mergeIntegrationConfigIntoConnectionConfig,
     missesInterpolationParam,
     missesInterpolationParamInObject
 } from '../utils/utils.js';
@@ -235,6 +236,8 @@ class OAuthController {
                     Object.assign(connectionConfig, defaults.connectionConfig);
                 }
             }
+
+            mergeIntegrationConfigIntoConnectionConfig(provider, config.custom, connectionConfig);
 
             const session: OAuthSession = {
                 providerConfigKey: providerConfigKey,

@@ -13,8 +13,9 @@ import type { Orchestrator } from '../../clients/orchestrator.js';
 import type { CurrentFunctionConfig } from './models/functions.js';
 import type { FunctionInstanceUpsert } from './models/instances.js';
 import type { DeploymentBundleReconciliation } from './reconcile.js';
-import type { FunctionDeploymentArtifact, FunctionReconciliationScope } from '@nangohq/types';
+import type { DBConnection, FunctionDeploymentArtifact, FunctionReconciliationScope } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { Knex } from 'knex';
 
 export type DeploymentBundleError = Error & { code: 'functions_deployment_error' };
 export type DeploymentBundlePreparationError = DeploymentBundleError | (Error & { code: 'integration_not_found'; integrationIds: string[] });
@@ -91,6 +92,33 @@ export async function deployBundle({
     reconciliation: DeploymentBundleReconciliation;
     orchestrator: Pick<Orchestrator, 'scheduleFunctions' | 'deleteFunctionSchedules'>;
 }): Promise<Result<void, DeploymentBundleError>> {
+    type ConnectionsMap = Map<number, Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>>;
+    const connectionsByIntegration = new Map<number, ConnectionsMap>();
+
+    async function getConnections(trx: Knex, integrationConfigId: number): Promise<ConnectionsMap> {
+        const cached = connectionsByIntegration.get(integrationConfigId);
+        if (cached) {
+            return cached;
+        }
+        const connections = await connectionService.getConnectionsByEnvironmentAndConfigId(trx, { environmentId, configId: integrationConfigId });
+        if (connections.isErr()) {
+            throw connections.error;
+        }
+        const byId = new Map(
+            connections.value.map((connection) => [
+                connection.id,
+                {
+                    id: connection.id,
+                    connection_id: connection.connection_id,
+                    provider_config_key: connection.provider_config_key,
+                    environment_id: connection.environment_id
+                }
+            ])
+        );
+        connectionsByIntegration.set(integrationConfigId, byId);
+        return byId;
+    }
+
     try {
         // Upload the files first and upsert/delete the configs in a single transaction
         // to make sure every config points to a valid file location.
@@ -195,11 +223,8 @@ export async function deployBundle({
                 }
 
                 if (upsertCandidate) {
-                    const connections = await connectionService.getConnectionsByEnvironmentAndConfigId(trx, {
-                        environmentId,
-                        configId: upsertCandidate.integrationId
-                    });
-                    for (const connection of connections) {
+                    const connections = await getConnections(trx, upsertCandidate.integrationId);
+                    for (const connection of connections.values()) {
                         instancesToUpsert.push({
                             function_config_id: upsertCandidate.functionConfigId,
                             nango_connection_id: connection.id,
@@ -268,6 +293,7 @@ export async function deployBundle({
                 if (!config) {
                     throw new Error(`Deployed function '${integrationId}/${artifact.name}' not found`);
                 }
+                const connections = await getConnections(db.knex, config.integration.id);
                 let afterId = 0;
                 while (true) {
                     const instances = await functionInstanceService.search(db.knex, { functionConfigIds: [config.config.id], afterId, limit: 1000 });
@@ -280,7 +306,10 @@ export async function deployBundle({
                     const frequencyFallback = artifact.trigger.frequency;
                     const autoStart = config.config.enabled && (artifact.trigger.autoStart ?? true);
                     const scheduled = await orchestrator.scheduleFunctions(
-                        instances.value.map((instance) => ({ environmentId, instance, frequencyFallback, autoStart }))
+                        instances.value.flatMap((instance) => {
+                            const connection = connections.get(instance.nango_connection_id);
+                            return connection ? [{ environmentId, instance, connection, frequencyFallback, autoStart }] : [];
+                        })
                     );
                     if (scheduled.isErr()) {
                         throw scheduled.error;

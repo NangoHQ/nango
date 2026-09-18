@@ -4,17 +4,15 @@ import { baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { getWorkOSClient } from '../../../../clients/workos.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { encodeManagedAuthState } from './auth.js';
 
 import type { PostManagedSignup } from '@nangohq/types';
-
-export interface InviteAccountState {
-    token: string;
-}
 
 const validation = z
     .object({
         provider: z.enum(['GoogleOAuth']),
-        token: z.string().uuid().optional()
+        token: z.string().uuid().optional(),
+        returnTo: z.string().max(1024).optional()
     })
     .strict();
 
@@ -41,7 +39,7 @@ export const postManagedSignup = asyncWrapper<PostManagedSignup>((req, res) => {
         clientId: process.env['WORKOS_CLIENT_ID'] || '',
         provider: body.provider,
         redirectUri: `${baseUrl}/api/v1/login/callback`,
-        state: body.token ? Buffer.from(JSON.stringify({ token: body.token } satisfies InviteAccountState)).toString('base64') : ''
+        state: encodeManagedAuthState(body.token ? { token: body.token } : body.returnTo ? { returnTo: body.returnTo } : {})
     });
 
     res.send({ data: { url: oAuthUrl } });

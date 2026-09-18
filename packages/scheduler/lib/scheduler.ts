@@ -1,3 +1,5 @@
+import { isDeepStrictEqual } from 'node:util';
+
 import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok, stringifyError } from '@nangohq/utils';
@@ -357,8 +359,8 @@ export class Scheduler {
     }
 
     /**
-     * Create missing recurring schedules, restore deleted schedules, and reconcile frequency by name.
-     * Existing live schedules only receive frequency changes.
+     * Create missing recurring schedules and restore deleted schedules.
+     * Existing live schedules only receive frequency and payload changes.
      * Use explicit state transitions to pause or resume an existing schedule.
      * @param props - Properties for one schedule or a batch of schedules
      * @returns The resulting schedule or schedules
@@ -389,7 +391,7 @@ export class Scheduler {
                     throw created.error;
                 }
 
-                const updates: { id: string; frequencyMs: number }[] = [];
+                const updates: { id: string; frequencyMs?: number; payload?: ScheduleProps['payload'] }[] = [];
                 const byName = new Map(created.value.map((schedule) => [schedule.name, schedule]));
                 for (const requested of entries) {
                     const schedule = byName.get(requested.name);
@@ -397,10 +399,14 @@ export class Scheduler {
                         throw new Error(`Schedule '${requested.name}' missing after creation`);
                     }
 
-                    if (schedule.frequencyMs !== requested.frequencyMs) {
+                    const frequencyChanged = schedule.frequencyMs !== requested.frequencyMs;
+                    const payloadChanged = !isDeepStrictEqual(schedule.payload, requested.payload);
+
+                    if (frequencyChanged || payloadChanged) {
                         updates.push({
                             id: schedule.id,
-                            frequencyMs: requested.frequencyMs
+                            ...(frequencyChanged && { frequencyMs: requested.frequencyMs }),
+                            ...(payloadChanged && { payload: requested.payload })
                         });
                     }
                 }

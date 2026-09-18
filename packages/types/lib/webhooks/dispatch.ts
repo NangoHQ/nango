@@ -37,6 +37,7 @@ export interface LegacyDispatchMessage extends DispatchMessageBase {
 
 export interface FunctionDispatchMessage extends DispatchMessageBase {
     kind: 'function';
+    functionConfigId: number;
     /** Deterministic key used to deduplicate queue redeliveries. */
     idempotencyKey: string;
     functionName: string;

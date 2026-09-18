@@ -83,6 +83,7 @@ type SearchFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> 
 
 interface FunctionSearchFilter {
     integrationKey: string;
+    id?: number | undefined;
     name?: string | undefined;
     enabled?: boolean | undefined;
     trigger?: { kind: 'http'; hasSubscriptions: boolean } | undefined;
@@ -120,6 +121,9 @@ export async function search(
         }
         if (filter?.name !== undefined) {
             query.where('config.name', filter.name);
+        }
+        if (filter?.id !== undefined) {
+            query.where('config.id', filter.id);
         }
         if (filter?.enabled !== undefined) {
             query.where('config.enabled', filter.enabled);

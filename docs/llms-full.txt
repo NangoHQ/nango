@@ -8849,15 +8849,16 @@ If you encounter any issues during migration, our support team is ready to help.
 Source: https://nango.dev/docs/contributing.md
 Description: Learn which external contributions Nango reviews
 
-Thanks for your interest in contributing to Nango. We keep our review capacity focused on two types of external contributions:
+Thanks for your interest in contributing to Nango. We only accept external contributions of two types:
 
 - **Security fixes.** Please don't open a public issue or pull request. Report the vulnerability privately as described in our [security policy](https://nango.dev/security).
 - **New API support.** Please follow the [new API contribution guide](/integrations/contribute-or-request-api) and we'll take it from there.
 
-For everything else, including bug fixes, new features, and improvements to existing features and APIs, we don't review external pull requests. We'd still love to hear from you:
+We don't accept or review external pull requests for anything else, including bug fixes, new features, and improvements to existing features and APIs. We'd still love to hear from you:
 
 - Found something broken? [Report it](https://github.com/NangoHQ/nango/issues) and we'll take a look.
-- Questions, ideas, or feedback? Join us in the [community Slack](https://nango.dev/slack).
+- Have a Slack Connect channel with us? Reach out there directly.
+- Otherwise, questions, ideas, or feedback are welcome in the [community Slack](https://nango.dev/slack).
 
 ## Frontend SDK
 
@@ -15196,6 +15197,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `autodesk` | Autodesk | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/autodesk.md) |  |  | design |
 | `autosana` | Autosana | API_KEY | [docs](https://nango.dev/docs/api-integrations/autosana.md) | [connect](https://nango.dev/docs/api-integrations/autosana/connect.md) |  | dev-tools |
 | `autotask` | AutoTask | API_KEY | [docs](https://nango.dev/docs/integrations/all/autotask.md) | [connect](https://nango.dev/docs/integrations/all/autotask/connect.md) |  | support, ticketing |
+| `autumn` | Autumn | API_KEY | [docs](https://nango.dev/docs/api-integrations/autumn.md) | [connect](https://nango.dev/docs/api-integrations/autumn/connect.md) |  | payment |
 | `auvik` | Auvik | BASIC | [docs](https://nango.dev/docs/integrations/all/auvik.md) | [connect](https://nango.dev/docs/integrations/all/auvik/connect.md) |  | support |
 | `availity` | Availity | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/availity.md) | [connect](https://nango.dev/docs/api-integrations/availity/connect.md) |  | other |
 | `avalara` | Avalara | BASIC | [docs](https://nango.dev/docs/integrations/all/avalara.md) | [connect](https://nango.dev/docs/integrations/all/avalara/connect.md) |  | legal |
@@ -15607,6 +15609,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `linear-mcp` | Linear (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linear-mcp.md) |  |  | popular, productivity, ticketing, mcp |
 | `linkedin` | LinkedIn | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linkedin.md) |  | [setup](https://nango.dev/docs/api-integrations/linkedin/how-to-register-your-own-linkedin-api-oauth-app.md) | ats, social |
 | `linkhut` | LinkHut | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/linkhut.md) |  |  | social |
+| `linkly` | Linkly | API_KEY | [docs](https://nango.dev/docs/api-integrations/linkly.md) | [connect](https://nango.dev/docs/api-integrations/linkly/connect.md) |  | marketing |
 | `listmonk` | Listmonk | BASIC | [docs](https://nango.dev/docs/integrations/all/listmonk.md) |  |  | marketing |
 | `listrak` | Listrak | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/listrak.md) | [connect](https://nango.dev/docs/api-integrations/listrak/connect.md) |  | marketing |
 | `liveswitch` | LiveSwitch | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/liveswitch.md) |  | [setup](https://nango.dev/docs/api-integrations/liveswitch/how-to-register-your-own-liveswitch-api-oauth-app.md) | communication |
@@ -15963,7 +15966,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `stripe` | Stripe Connect | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/stripe.md) |  | [setup](https://nango.dev/docs/api-integrations/stripe/how-to-register-your-own-stripe-api-oauth-app.md) | payment |
 | `stripe-api-key` | Stripe (API Key) | BASIC | [docs](https://nango.dev/docs/api-integrations/stripe-api-key.md) | [connect](https://nango.dev/docs/api-integrations/stripe-api-key/connect.md) |  | payment |
 | `stripe-app` | Stripe App | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/stripe-app.md) |  |  | payment, popular |
-| `stripe-app-sandbox` | Stripe App (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/stripe-app-sandbox.md) | [connect](https://nango.dev/docs/integrations/all/stripe-app-sandbox/connect.md) |  | payment |
+| `stripe-app-sandbox` | Stripe App (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/stripe-app-sandbox.md) | [connect](https://nango.dev/docs/api-integrations/stripe-app-sandbox/connect.md) | [setup](https://nango.dev/docs/api-integrations/stripe-app-sandbox/how-to-register-your-own-stripe-app-sandbox-api-oauth-app.md) | payment |
 | `stripe-express` | Stripe Express | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/stripe-express.md) |  |  | payment |
 | `supabase` | Supabase | API_KEY | [docs](https://nango.dev/docs/api-integrations/supabase.md) | [connect](https://nango.dev/docs/api-integrations/supabase/connect.md) |  | dev-tools, storage |
 | `supabase-mcp` | Supabase (MCP) | API_KEY | [docs](https://nango.dev/docs/api-integrations/supabase-mcp.md) | [connect](https://nango.dev/docs/api-integrations/supabase-mcp/connect.md) |  | dev-tools, mcp |

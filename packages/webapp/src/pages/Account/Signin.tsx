@@ -40,10 +40,14 @@ export const Signin: React.FC = () => {
     const error = searchParams.get('error');
     const next = searchParams.get('next');
     const inviteToken = next?.match(/^\/signup\/([^/]+)$/)?.[1];
+    const consentDestination = next && /^\/oauth\/consent\/[A-Za-z0-9_-]+\/review$/.test(next) ? next : undefined;
 
     const [errorMessage, setServerErrorMessage] = useState(() => {
         if (error === 'sso_session_expired') {
             return 'Your SSO session has expired or is invalid. Please try again.';
+        }
+        if (error === 'oauth_signup_not_allowed') {
+            return 'This Google account does not have a Nango account. Sign up separately, then restart the authorization request.';
         }
         return '';
     });
@@ -125,16 +129,17 @@ export const Signin: React.FC = () => {
             <div className="flex flex-col items-center gap-5 w-full">
                 <div className="flex flex-col gap-3 items-center">
                     <h2 className="text-title-group text-text-strong">Log in to Nango</h2>
-                    {hasLocalAuth ? (
-                        <span className="text-body-medium-regular text-text-muted">
-                            Don&apos;t have an account?{' '}
-                            <Button asChild variant="link-accent">
-                                <Link to="/signup">Sign up.</Link>
-                            </Button>
-                        </span>
-                    ) : (
-                        <span className="text-body-medium-regular text-text-muted">Continue with Google to access your Nango workspace.</span>
-                    )}
+                    {!consentDestination &&
+                        (hasLocalAuth ? (
+                            <span className="text-body-medium-regular text-text-muted">
+                                Don&apos;t have an account?{' '}
+                                <Button asChild variant="link-accent">
+                                    <Link to="/signup">Sign up.</Link>
+                                </Button>
+                            </span>
+                        ) : (
+                            <span className="text-body-medium-regular text-text-muted">Continue with Google to access your Nango workspace.</span>
+                        ))}
                 </div>
 
                 {errorMessage && !showResendEmail && (
@@ -227,7 +232,12 @@ export const Signin: React.FC = () => {
                             </div>
                         )}
 
-                        <GoogleButton text="Sign in with Google" setServerErrorMessage={setServerErrorMessage} token={inviteToken} />
+                        <GoogleButton
+                            text="Sign in with Google"
+                            setServerErrorMessage={setServerErrorMessage}
+                            token={inviteToken}
+                            returnTo={next ?? undefined}
+                        />
                     </div>
                 )}
 

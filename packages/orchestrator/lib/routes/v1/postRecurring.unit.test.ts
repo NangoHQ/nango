@@ -18,6 +18,15 @@ const rateLimiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'recurring
 const port = await getPort();
 let api: Server;
 
+const functionArgs = {
+    type: 'function',
+    functionConfigId: 123,
+    functionName: 'fetchIssues',
+    connection: { id: 456, connection_id: 'customer-connection', provider_config_key: 'github', environment_id: 789 },
+    trigger: { kind: 'schedule', input: null, connection: { connectionId: 'customer-connection', integrationId: 'github' } },
+    async: true
+};
+
 async function post(body: unknown): Promise<Response> {
     return await fetch(`http://localhost:${port}/v1/recurring`, {
         method: 'POST',
@@ -94,10 +103,7 @@ describe('POST /v1/recurring', () => {
             group: { key: 'function:environment:789:connection:456:function:fetchIssues', maxConcurrency: 1 },
             retry: { max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 86_400, startedToCompleted: 900, heartbeat: 120 },
-            args: {
-                type: 'function',
-                instanceId: 123
-            }
+            args: functionArgs
         };
         const response = await post(body);
 
@@ -123,15 +129,15 @@ describe('POST /v1/recurring', () => {
 
     it('creates a batch of recurring schedules and returns their IDs', async () => {
         const scheduleIds = [scheduleId, '01994dc2-b6a7-7e46-964d-5f520e57a083'];
-        const body = [123, 124].map((instanceId) => ({
-            name: `environment:789:function:${instanceId}`,
+        const body = ['schedule-a', 'schedule-b'].map((name) => ({
+            name,
             state: 'STARTED' as const,
             startsAt: '2026-09-15T10:00:00.000Z',
             frequencyMs: 300_000,
             group: { key: 'function:environment:789', maxConcurrency: 0 },
             retry: { max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 86_400, startedToCompleted: 900, heartbeat: 120 },
-            args: { type: 'function', instanceId }
+            args: functionArgs
         }));
         recurring.mockResolvedValueOnce(Ok(scheduleIds.map((id) => ({ id }))));
 
@@ -167,7 +173,7 @@ describe('POST /v1/recurring', () => {
             group: { key: 'function:environment:789', maxConcurrency: 0 },
             retry: { max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 3600, startedToCompleted: 86_400, heartbeat: 300 },
-            args: { type: 'function', instanceId: 123 }
+            args: functionArgs
         };
         recurring.mockResolvedValueOnce(Err(new Error('database unavailable')) as never);
 
@@ -179,25 +185,18 @@ describe('POST /v1/recurring', () => {
         });
     });
 
-    it('rejects unexpected recurring function fields', async () => {
+    it('rejects unknown function argument fields', async () => {
         const body = {
             name: 'environment:789:function:123',
             state: 'STARTED' as const,
             startsAt: new Date().toISOString(),
             frequencyMs: 300_000,
-            group: { key: 'function:environment:789:connection:456:function:fetchIssues', maxConcurrency: 1 },
+            group: { key: 'function:environment:789', maxConcurrency: 0 },
             retry: { max: 0 },
             timeoutSettingsInSecs: { createdToStarted: 86_400, startedToCompleted: 900, heartbeat: 120 },
-            args: {
-                type: 'function',
-                instanceId: 123,
-                trigger: {
-                    kind: 'schedule',
-                    input: null,
-                    connection: { connectionId: 'customer-connection', integrationId: 'github' }
-                }
-            }
+            args: { ...functionArgs, unexpectedId: 123 }
         };
+
         const response = await post(body);
 
         expect(response.status).toBe(400);
