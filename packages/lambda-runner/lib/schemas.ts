@@ -25,6 +25,7 @@ export const nangoPropsSchema = z.object({
     lastSyncDate: z.coerce.date().optional(),
     syncId: z.string().uuid().optional(),
     syncVariant: z.string().optional(),
+    variant: z.string().optional(),
     nangoConnectionId: z.number(),
     syncJobId: z.number().max(Number.MAX_SAFE_INTEGER).optional(),
     track_deletes: z.boolean().optional(),
