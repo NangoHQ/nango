@@ -60,6 +60,9 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Platform: Receive webhooks from Nango](https://nango.dev/docs/guides/platform/webhooks-from-nango.md): Reference for the webhooks Nango sends to your app — setup, types, payloads, signature verification, and retries.
 - [Platform: External webhook forwarding](https://nango.dev/docs/guides/platform/webhook-forwarding.md): Forward external API webhooks through Nango to your app, with connection attribution.
 - [Platform: Common issues](https://nango.dev/docs/guides/platform/common-issues.md): Troubleshooting guide for frequent errors and how to fix them.
+- [Platform: Self-Hosting: Self-host Nango](https://nango.dev/docs/guides/platform/self-hosting/self-hosting.md): Run Nango outside our cloud: BYOC or Self-Managed.
+- [Platform: Self-Hosting: BYOC](https://nango.dev/docs/guides/platform/self-hosting/byoc.md): Nango-managed, in your cloud.
+- [Platform: Self-Hosting: Self-Managed](https://nango.dev/docs/guides/platform/self-hosting/self-managed.md): You deploy, you operate.
 - [Platform: Migrations: Migrate to checkpoints](https://nango.dev/docs/guides/platform/migrations/migrate-to-checkpoints.md): Guide to migrate your sync functions from nango.lastSyncDate to the new checkpointing system.
 - [Platform: Migrations: Migrate from end user](https://nango.dev/docs/guides/platform/migrations/migrate-from-end-user.md): Guide to migrate away from using end users in connections and connect sessions
 - [Platform: Migrations: Migrate from public key](https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key.md): Guide to migrate from using the public key (and HMAC) to a Connect session.
