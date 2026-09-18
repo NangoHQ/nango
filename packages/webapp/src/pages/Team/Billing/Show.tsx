@@ -55,9 +55,9 @@ export const TeamBilling: React.FC = () => {
     const { data: caps, isPending: areCapsPending } = useApiGetUsage(env);
     const billedMetrics = billedUsageMetrics(environmentData?.plan);
 
+    const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
     // Shares <Payment/>'s unfiltered key, so enabling it alongside that section adds no request.
     // The dev override needs a real portal URL or its previewed "View invoices" link opens nothing.
-    const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
     const { data: billingUsage, isPending: isBillingUsagePending } = useApiGetBillingUsage(env, undefined, {
         enabled: canManageBilling || overdueOverride
     });
@@ -91,8 +91,8 @@ export const TeamBilling: React.FC = () => {
     }, []);
 
     const scrollRef = useRef<HTMLDivElement>(null);
-    // The first four decide the banners, the summary strip and which form `Usage` takes. `Payment`
-    // sits below every anchor, so its height decides whether a scroll can reach one.
+    // The banners and summary strip sit above the anchors, `Payment` below all of them, so every
+    // one of these moves the height. `Payment` renders only for billing managers, so only they wait.
     const pageHeightSettled =
         !isPlanPending &&
         !arePlansPending &&
