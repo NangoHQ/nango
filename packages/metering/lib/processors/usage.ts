@@ -116,6 +116,7 @@ export class UsageProcessor {
                 case 'usage.function_executions': {
                     const { accountId, type, telemetryBag, frequencyMs, success, runtime = 'runner' } = event.payload.properties;
                     const compute = telemetryBag ? telemetryBag.durationMs * telemetryBag.memoryGb : 0;
+                    const durationMs = telemetryBag?.durationMs || 0;
                     const durationSeconds = Math.max(0, Math.ceil((telemetryBag?.durationMs ?? 0) / 1000));
                     const customLogs = telemetryBag?.customLogs ?? 0;
 
@@ -148,8 +149,6 @@ export class UsageProcessor {
                     // Clickhouse
                     const added = this.clickhouse.add([event]);
 
-                    //Datadog
-                    const durationMs = telemetryBag?.durationMs || 0;
                     // Bucket frequency into:
                     // - ultra (<5 mins)
                     // - fast (>=5 mins, <1h)
@@ -167,13 +166,23 @@ export class UsageProcessor {
                             frequencyBucket = 'slow';
                         }
                     }
-                    metrics.duration(metrics.Types.FUNCTION_EXECUTIONS, durationMs, {
-                        type,
-                        success: String(success),
-                        accountId,
-                        frequencyBucket,
-                        functionRuntime: runtime
-                    });
+
+                    // NOTE: track both the raw milliseconds and round-to-next-second measurements.
+                    // The latter is a billable metric, but the former still has value operationally as
+                    // it depicts the true elapsed time aggregate.
+                    const fnExecutionMetrics: readonly [metrics.Types, number][] = [
+                        [metrics.Types.FUNCTION_EXECUTIONS, durationMs],
+                        [metrics.Types.FUNCTION_EXECUTIONS_SECONDS, durationSeconds]
+                    ];
+                    for (const [metric, duration] of fnExecutionMetrics) {
+                        metrics.duration(metric, duration, {
+                            type,
+                            success: String(success),
+                            accountId,
+                            frequencyBucket,
+                            functionRuntime: runtime
+                        });
+                    }
                     return added;
                 }
                 case 'usage.proxy': {
@@ -202,7 +211,7 @@ export class UsageProcessor {
                     if (isBillableDataTransfer(pkg, callsite)) {
                         const incrDataTransfer = await this.usageTracker.incr({ accountId, metric: 'data_transfer', delta: egressedBytes });
                         this.logIncrError('data_transfer', accountId, incrDataTransfer);
-                        // TODO: track metric on DataDog.
+                        metrics.increment(metrics.Types.BILLED_DATA_TRANSFER, egressedBytes, { accountId });
                     }
                     return this.clickhouse.add([event]);
                 }
