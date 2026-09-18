@@ -53,6 +53,7 @@ export const DecisionFailed = story({ kind: 'error', interaction });
 export const Loading = story({ kind: 'loading' });
 export const Expired = story({ kind: 'expired' });
 export const Completed = story({ kind: 'completed' });
+export const Invalid = story({ kind: 'invalid' });
 export const Unavailable = story({ kind: 'unavailable' });
 export const LoadFailed = story({ kind: 'error' });
 
