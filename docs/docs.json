@@ -805,8 +805,8 @@
                     "group": "Self-Hosting",
                     "pages": [
                       "guides/platform/self-hosting/self-hosting",
-                      "guides/platform/self-hosting/self-hosting-byoc",
-                      "guides/platform/self-hosting/self-hosting-self-managed"
+                      "guides/platform/self-hosting/byoc",
+                      "guides/platform/self-hosting/self-managed"
                     ]
                   },
                   {
