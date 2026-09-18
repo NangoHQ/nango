@@ -9,6 +9,7 @@ export type ProductTrackingTypes =
     | 'account:trial:extend'
     | 'account:trial:started'
     | 'account:billing:plan_changed'
+    | 'account:billing:plan_changed:v2'
     | 'account:billing:downgraded'
     | 'account:billing:upgraded'
     | 'deploy:success'
