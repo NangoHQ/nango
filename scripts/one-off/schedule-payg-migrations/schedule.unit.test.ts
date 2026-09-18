@@ -29,16 +29,38 @@ describe('pay-as-you-go migration arguments', () => {
 
 describe('pay-as-you-go migration CSV', () => {
     it('validates and retains the growth add-on value', () => {
-        expect(parseMigrationCsv('account_id,current_plan,with_growth_addon\n123,"growth, legacy",true\n')).toEqual([
-            { accountId: '123', currentPlan: 'growth, legacy', withGrowthAddon: true }
+        expect(
+            parseMigrationCsv(
+                'account_id,current_plan,with_growth_addon,migration_date,override_scheduled_plan_change\n123,"growth, legacy",true,2026-10-15,true\n'
+            )
+        ).toEqual([
+            {
+                accountId: '123',
+                currentPlan: 'growth, legacy',
+                withGrowthAddon: true,
+                migrationDate: '2026-10-15',
+                overrideScheduledPlanChange: true
+            }
         ]);
-        expect(parseMigrationCsv('account_id,current_plan,with_growth_addon\n123,growth,false\n')).toEqual([
-            { accountId: '123', currentPlan: 'growth', withGrowthAddon: false }
-        ]);
+        expect(parseMigrationCsv('account_id,current_plan,with_growth_addon,migration_date,override_scheduled_plan_change\n123,growth,false,,false\n')).toEqual(
+            [{ accountId: '123', currentPlan: 'growth', withGrowthAddon: false, migrationDate: null, overrideScheduledPlanChange: false }]
+        );
     });
 
     it('rejects duplicate IDs and invalid add-on booleans', () => {
-        expect(() => parseMigrationCsv('account_id,current_plan,with_growth_addon\n123,growth,false\n123,starter,true\n')).toThrow('duplicates account_id');
-        expect(() => parseMigrationCsv('account_id,current_plan,with_growth_addon\n123,growth,yes\n')).toThrow('invalid with_growth_addon');
+        expect(() =>
+            parseMigrationCsv(
+                'account_id,current_plan,with_growth_addon,migration_date,override_scheduled_plan_change\n123,growth,false,,false\n123,starter,true,,false\n'
+            )
+        ).toThrow('duplicates account_id');
+        expect(() =>
+            parseMigrationCsv('account_id,current_plan,with_growth_addon,migration_date,override_scheduled_plan_change\n123,growth,yes,,false\n')
+        ).toThrow('invalid with_growth_addon');
+        expect(() =>
+            parseMigrationCsv('account_id,current_plan,with_growth_addon,migration_date,override_scheduled_plan_change\n123,growth,false,2026-02-29,false\n')
+        ).toThrow('invalid migration_date');
+        expect(() =>
+            parseMigrationCsv('account_id,current_plan,with_growth_addon,migration_date,override_scheduled_plan_change\n123,growth,false,,yes\n')
+        ).toThrow('invalid override_scheduled_plan_change');
     });
 });

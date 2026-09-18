@@ -32,13 +32,19 @@ interface OrbSubscriptionScheduleItem {
 export interface OrbSubscriptionsClient {
     list(params: { external_customer_id: string[]; status: 'active'; limit: 100 }): AsyncIterable<OrbSubscription>;
     fetchSchedule(subscriptionId: string): AsyncIterable<OrbSubscriptionScheduleItem>;
+    unschedulePendingPlanChanges(subscriptionId: string): Promise<unknown>;
     schedulePlanChange(
         subscriptionId: string,
-        params: { change_option: 'end_of_subscription_term'; auto_collection: true; external_plan_id: string }
+        params: {
+            change_option: 'end_of_subscription_term' | 'requested_date';
+            change_date?: string;
+            auto_collection: true;
+            external_plan_id: string;
+        }
     ): Promise<{ current_billing_period_end_date: string | null }>;
     priceIntervals(
         subscriptionId: string,
-        params: { add: [{ external_price_id: string; start_date: 'end_of_term' }] }
+        params: { add: [{ external_price_id: string; start_date: string }] }
     ): Promise<{ price_intervals: OrbPriceInterval[] }>;
 }
 
@@ -72,6 +78,10 @@ const GROWTH_ADDON_PRICE_ID = 'growth-add-on';
 const GROWTH_ADDON_ACTIVATION_LEAD_HOURS = 6;
 
 const SUBSCRIPTION_LOOKUP_BATCH_SIZE = 100;
+
+function migrationScheduleDescription(migrationDate: string | null): string {
+    return migrationDate ? `on ${migrationDate}` : 'at end of term';
+}
 
 function usage(): string {
     return 'Usage: npx tsx scripts/one-off/schedule-payg-migrations/schedule.ts <input.csv> [--execute] [--throttle-ms=<milliseconds>]';
@@ -272,35 +282,61 @@ export async function scheduleMigrations({
                 logSkip(row.accountId, `already on ${planExternalId}`);
                 continue;
             }
-            if (subscription.pending_subscription_change) {
+            if (subscription.pending_subscription_change && !row.overrideScheduledPlanChange) {
                 summary.skipped++;
                 logSkip(row.accountId, `pending Orb plan change ${subscription.pending_subscription_change.id} already exists`);
                 continue;
             }
 
-            const futureChange = await getFutureScheduledPlanChange(subscription.id, client, new Date());
-            if (futureChange) {
-                summary.skipped++;
-                logSkip(
-                    row.accountId,
-                    `Orb has a future plan change to ${futureChange.plan?.external_plan_id || '(unknown plan)'} starting ${futureChange.start_date}`
-                );
-                if (futureChange.plan?.external_plan_id === planExternalId) {
+            let shouldOverrideScheduledPlanChange: boolean;
+            if (subscription.pending_subscription_change) {
+                shouldOverrideScheduledPlanChange = true;
+            } else {
+                const futureChange = await getFutureScheduledPlanChange(subscription.id, client, new Date());
+                if (futureChange && !row.overrideScheduledPlanChange) {
+                    summary.skipped++;
+                    logSkip(
+                        row.accountId,
+                        `Orb has a future plan change to ${futureChange.plan?.external_plan_id || '(unknown plan)'} starting ${futureChange.start_date}`
+                    );
+                    if (futureChange.plan?.external_plan_id === planExternalId) {
+                        migrations.push({
+                            ...row,
+                            subscriptionId: subscription.id,
+                            priceIntervals: subscription.price_intervals,
+                            plannedPlan: planExternalId,
+                            plannedAt: parseOrbDate(futureChange.start_date, 'plan change start date')
+                        });
+                    }
+                    await sleep(throttleMs / 2);
+                    continue;
+                }
+                shouldOverrideScheduledPlanChange = Boolean(futureChange);
+            }
+
+            if (shouldOverrideScheduledPlanChange) {
+                if (!execute) {
+                    summary.dryRun++;
+                    console.log(
+                        `DRY RUN account ${row.accountId}: would override the existing plan change and schedule ${currentPlan} -> ${planExternalId} ${migrationScheduleDescription(row.migrationDate)}`
+                    );
                     migrations.push({
                         ...row,
                         subscriptionId: subscription.id,
                         priceIntervals: subscription.price_intervals,
                         plannedPlan: planExternalId,
-                        plannedAt: parseOrbDate(futureChange.start_date, 'plan change start date')
+                        plannedAt: null
                     });
+                    continue;
                 }
-                await sleep(throttleMs / 2);
-                continue;
+                await client.subscriptions.unschedulePendingPlanChanges(subscription.id);
             }
 
             if (!execute) {
                 summary.dryRun++;
-                console.log(`DRY RUN account ${row.accountId}: would schedule ${currentPlan} -> ${planExternalId} at end of term`);
+                console.log(
+                    `DRY RUN account ${row.accountId}: would schedule ${currentPlan} -> ${planExternalId} ${migrationScheduleDescription(row.migrationDate)}`
+                );
                 migrations.push({
                     ...row,
                     subscriptionId: subscription.id,
@@ -317,17 +353,28 @@ export async function scheduleMigrations({
             hasAttemptedSchedule = true;
 
             const scheduledSubscription = await client.subscriptions.schedulePlanChange(subscription.id, {
-                change_option: 'end_of_subscription_term',
+                change_option: row.migrationDate ? 'requested_date' : 'end_of_subscription_term',
+                ...(row.migrationDate ? { change_date: row.migrationDate } : {}),
                 auto_collection: true,
                 external_plan_id: planExternalId
             });
-            if (!scheduledSubscription.current_billing_period_end_date) {
+
+            let scheduledPlanChange: OrbSubscriptionScheduleItem | null = null;
+            if (row.migrationDate) {
+                scheduledPlanChange = await getFutureScheduledPlanChange(subscription.id, client, new Date());
+                if (!scheduledPlanChange) {
+                    throw new Error(`Orb did not return the scheduled ${planExternalId} plan change`);
+                }
+            }
+
+            const plannedAtValue = scheduledPlanChange?.start_date ?? scheduledSubscription.current_billing_period_end_date;
+            if (!plannedAtValue) {
                 throw new Error(`Orb did not return the scheduled ${planExternalId} plan change date`);
             }
-            const plannedAt = parseOrbDate(scheduledSubscription.current_billing_period_end_date, 'plan change start date');
+            const plannedAt = parseOrbDate(plannedAtValue, 'plan change start date');
 
             summary.scheduled++;
-            console.log(`SCHEDULED account ${row.accountId}: ${currentPlan} -> ${planExternalId} at end of term`);
+            console.log(`SCHEDULED account ${row.accountId}: ${currentPlan} -> ${planExternalId} ${migrationScheduleDescription(row.migrationDate)}`);
             migrations.push({
                 ...row,
                 subscriptionId: subscription.id,
@@ -390,7 +437,7 @@ export async function scheduleGrowthAddons({
 
             if (!execute) {
                 summary.dryRun++;
-                console.log(`DRY RUN account ${migration.accountId}: would schedule growth add-on at end of term`);
+                console.log(`DRY RUN account ${migration.accountId}: would schedule growth add-on ${migrationScheduleDescription(migration.migrationDate)}`);
                 continue;
             }
 
@@ -405,7 +452,7 @@ export async function scheduleGrowthAddons({
             await db.setGrowthFeaturesStartsAt(migration.accountId, getGrowthAddonActivationAt(migration.plannedAt));
 
             const updatedSubscription = await client.subscriptions.priceIntervals(migration.subscriptionId, {
-                add: [{ external_price_id: GROWTH_ADDON_PRICE_ID, start_date: 'end_of_term' }]
+                add: [{ external_price_id: GROWTH_ADDON_PRICE_ID, start_date: migration.migrationDate ?? 'end_of_term' }]
             });
 
             // Sanity check that the schedule is set
