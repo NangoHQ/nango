@@ -1193,6 +1193,31 @@ autotask:
             description: The secret for your API-only user account
             doc_section: '#step-4-generate-api-secret'
 
+autumn:
+    display_name: Autumn
+    categories:
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.useautumn.com/v1
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /organization
+    docs: https://nango.dev/docs/api-integrations/autumn
+    docs_connect: https://nango.dev/docs/api-integrations/autumn/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Secret API Key
+            description: Your Autumn secret API key, from the Autumn dashboard's Developer settings.
+            secret: true
+            example: am_sk_live_51On1GfAemfaBCd0eHq
+            pattern: '^am_sk_(live|test)_[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-autumn-api-key'
+
 algolia:
     display_name: Algolia
     categories:
