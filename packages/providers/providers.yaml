@@ -1199,13 +1199,13 @@ autumn:
         - payment
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.useautumn.com/v1
+        base_url: https://api.useautumn.com
         headers:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
             endpoints:
-                - /organization
+                - /v1/organization
     docs: https://nango.dev/docs/api-integrations/autumn
     docs_connect: https://nango.dev/docs/api-integrations/autumn/connect
     credentials:
