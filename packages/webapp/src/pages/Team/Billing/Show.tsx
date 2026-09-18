@@ -87,9 +87,9 @@ export const TeamBilling: React.FC = () => {
         track('web:usage:viewed', {});
     }, []);
 
-    // Everything above the sections — the banner stack, the summary strip, and which shape `Usage`
-    // takes — is decided by these four, so once they settle the page stops changing height.
     const scrollRef = useRef<HTMLDivElement>(null);
+    // These four decide the banners, the summary strip and which form `Usage` takes. Once they
+    // settle, the page has its final height.
     useScrollToHash(scrollRef, !isPlanPending && !arePlansPending && !areCapsPending && !isOverduePending);
 
     // Full-width page shell keeps chrome consistent with the other dashboard pages, but `centered`
