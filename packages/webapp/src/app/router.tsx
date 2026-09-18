@@ -1,5 +1,6 @@
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
+import { GuestRoute } from '@/components/patterns/GuestRoute';
 import { PrivateRoute } from '@/components/patterns/PrivateRoute';
 import { EmailVerified } from '@/pages/Account/EmailVerified';
 import ForgotPassword from '@/pages/Account/ForgotPassword';
@@ -47,6 +48,7 @@ import { globalEnv } from '@/utils/env';
 import { sentryCreateBrowserRouter } from '@/utils/sentry';
 
 import type { BreadcrumbHandle } from '@/hooks/useBreadcrumbs';
+import type { RouteObject } from 'react-router-dom';
 
 const GettingStartedRoute = () => {
     const showGettingStarted = useStore((state) => state.showGettingStarted);
@@ -93,7 +95,7 @@ const publicAuthRoutes = (() => {
         return [];
     }
 
-    const routes = [
+    const guestOnly: RouteObject[] = [
         {
             path: '/signin',
             element: <Signin />
@@ -103,16 +105,23 @@ const publicAuthRoutes = (() => {
             element: <MFALogin />
         }
     ];
+    const alwaysPublic: RouteObject[] = [];
 
     if (globalEnv.features.managedAuth) {
-        routes.push({
+        guestOnly.push({
             path: '/signin/verify',
             element: <ManagedEmailVerification />
         });
     }
 
     if (globalEnv.features.auth) {
-        routes.push(
+        guestOnly.push({
+            path: '/signup',
+            element: <Signup />
+        });
+
+        // These stay reachable while signed in: the link can be for a different account than the current session.
+        alwaysPublic.push(
             {
                 path: '/signup/:token',
                 element: <InviteSignup />
@@ -136,15 +145,11 @@ const publicAuthRoutes = (() => {
             {
                 path: '/signup/verification/:token',
                 element: <EmailVerified />
-            },
-            {
-                path: '/signup',
-                element: <Signup />
             }
         );
     }
 
-    return routes;
+    return [{ element: <GuestRoute />, children: guestOnly }, ...alwaysPublic];
 })();
 
 export const router = sentryCreateBrowserRouter([
