@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
+import { flags } from '@nangohq/utils';
 
 import { createAccount } from '../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../seeders/config.seeder.js';
@@ -69,5 +70,20 @@ describe(getActionOrModelByEndpoint, () => {
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'create-contact', enabled: false });
 
         await expect(getActionOrModelByEndpoint(connection, 'POST', '/actions/create-contact')).resolves.toEqual({});
+    });
+
+    it('does not fall back to the catalog when FLAG_LIVE_CATALOG_ACTIONS_ENABLED is off', async () => {
+        const original = flags.hasLiveCatalogActions;
+        flags.hasLiveCatalogActions = false;
+        try {
+            const account = await createAccount();
+            const environment = await createEnvironmentSeed(account.id);
+            await createConfigSeed(environment, 'aircall', 'aircall', { auto_enable_catalog_actions: true });
+            const connection = await createConnectionSeed({ env: environment, provider: 'aircall' });
+
+            await expect(getActionOrModelByEndpoint(connection, 'POST', '/actions/create-contact')).resolves.toEqual({});
+        } finally {
+            flags.hasLiveCatalogActions = original;
+        }
     });
 });

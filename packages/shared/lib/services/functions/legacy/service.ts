@@ -1,4 +1,4 @@
-import { Err, Ok } from '@nangohq/utils';
+import { Err, flags, Ok } from '@nangohq/utils';
 
 import { getCatalogAction, isCatalogActionEnabled, listCatalogActions } from '../../catalog/actions.js';
 import configService from '../../config.service.js';
@@ -51,7 +51,7 @@ export async function listFunctions({
             );
         }
 
-        const catalog = type !== undefined && type !== 'action' ? [] : listCatalogActions(integration.provider);
+        const catalog = flags.hasLiveCatalogActions && (type === undefined || type === 'action') ? listCatalogActions(integration.provider) : [];
 
         const page = await functionsModel.findActiveByEnvironment({
             environmentId,
@@ -94,7 +94,7 @@ export async function getFunction({
             return Ok(fn.value);
         }
 
-        if (type !== undefined && type !== 'action') {
+        if (!flags.hasLiveCatalogActions || (type !== undefined && type !== 'action')) {
             return Ok(undefined);
         }
 

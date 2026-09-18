@@ -1,4 +1,5 @@
 import db, { dbNamespace, schema } from '@nangohq/database';
+import { flags } from '@nangohq/utils';
 
 import { isCatalogActionEnabled, listCatalogActions } from '../../catalog/actions.js';
 import configService from '../../config.service.js';
@@ -48,6 +49,10 @@ async function liveCatalogActionByEndpoint(
     method: HTTP_METHOD,
     path: string
 ): Promise<ActionOrModel> {
+    if (!flags.hasLiveCatalogActions) {
+        return {};
+    }
+
     const candidates = listCatalogActions(config.provider).filter((action) => {
         if (!action.endpoint || action.endpoint.method !== method || action.endpoint.path !== path) {
             return false;

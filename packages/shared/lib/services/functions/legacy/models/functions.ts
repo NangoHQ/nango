@@ -1,4 +1,5 @@
 import db from '@nangohq/database';
+import { flags } from '@nangohq/utils';
 
 import { getCatalogAction, isCatalogActionEnabled, listCatalogActions } from '../../../catalog/actions.js';
 
@@ -160,6 +161,10 @@ interface CatalogQueryRow extends IntegrationFunctionCatalogRow {
 }
 
 function mergeLiveCatalogIntoFunctionCatalog(rows: CatalogQueryRow[]): IntegrationFunctionCatalogRow[] {
+    if (!flags.hasLiveCatalogActions) {
+        return rows.map(toCatalogRow);
+    }
+
     const byIntegration = new Map<string, CatalogQueryRow[]>();
     for (const row of rows) {
         const group = byIntegration.get(row.integration_id) ?? [];
@@ -289,7 +294,7 @@ export async function findActionInputSchemas({
     }
 
     const missing = actions.filter((action) => !occupied.has(`${action.integrationId}:${action.name}`));
-    if (missing.length === 0) {
+    if (!flags.hasLiveCatalogActions || missing.length === 0) {
         return deployed;
     }
 

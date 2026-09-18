@@ -1,3 +1,5 @@
+import { flags } from '@nangohq/utils';
+
 import { getSyncConfigRaw } from '../sync/config/config.service.js';
 import { catalogActionJsPath, getCatalogAction, isCatalogActionEnabled } from './actions.js';
 
@@ -26,6 +28,10 @@ export async function resolveRunnableAction({
     const deployed = await getSyncConfigRaw({ environmentId, config_id: configId, name, isAction: true });
     if (deployed) {
         return { kind: 'deployed', config: deployed };
+    }
+
+    if (!flags.hasLiveCatalogActions) {
+        return { kind: 'missing' };
     }
 
     const catalog = getCatalogAction(integration.provider, name);

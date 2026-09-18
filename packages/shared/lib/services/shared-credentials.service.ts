@@ -43,7 +43,7 @@ class SharedCredentialsService {
         display_name,
         unique_key,
         shared_credentials_name,
-        auto_enable_catalog_actions = true
+        auto_enable_catalog_actions = false
     }: {
         providerName: string;
         environment_id: number;

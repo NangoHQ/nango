@@ -1,4 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { flags } from '@nangohq/utils';
 
 import { resolveRunnableAction } from './resolveAction.js';
 
@@ -40,7 +42,19 @@ const config: IntegrationConfig = {
     deleted: false
 };
 
+const originalHasLiveCatalogActions = flags.hasLiveCatalogActions;
+
 describe('resolveRunnableAction', () => {
+    beforeEach(() => {
+        flags.hasLiveCatalogActions = true;
+        mockGetSyncConfigRaw.mockReset();
+        mockGetCatalogAction.mockReset();
+    });
+
+    afterEach(() => {
+        flags.hasLiveCatalogActions = originalHasLiveCatalogActions;
+    });
+
     it('returns the deployed row when one exists', async () => {
         const deployed = { id: 44, sync_name: 'create-issue', enabled: true } as DBSyncConfig;
         mockGetSyncConfigRaw.mockResolvedValue(deployed);
@@ -114,5 +128,27 @@ describe('resolveRunnableAction', () => {
         const result = await resolveRunnableAction({ environmentId: 1, integration: config, name: 'not-a-catalog-action' });
 
         expect(result).toEqual({ kind: 'missing' });
+    });
+
+    it('does not fall back to the catalog when FLAG_LIVE_CATALOG_ACTIONS_ENABLED is off', async () => {
+        flags.hasLiveCatalogActions = false;
+        mockGetSyncConfigRaw.mockResolvedValue(null);
+        mockGetCatalogAction.mockReturnValue({
+            name: 'create-issue',
+            description: '',
+            scopes: [],
+            input: null,
+            output: [],
+            endpoint: null,
+            json_schema: null,
+            sdk_version: '0.0.0-zero',
+            features: [],
+            version: '1.0.0'
+        });
+
+        const result = await resolveRunnableAction({ environmentId: 1, integration: config, name: 'create-issue' });
+
+        expect(result).toEqual({ kind: 'missing' });
+        expect(mockGetCatalogAction).not.toHaveBeenCalled();
     });
 });

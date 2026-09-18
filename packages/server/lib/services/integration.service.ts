@@ -281,7 +281,7 @@ export class IntegrationService {
                 custom: null,
                 missing_fields: [],
                 forward_webhooks: params.forwardWebhooks ?? true,
-                auto_enable_catalog_actions: params.autoEnableCatalogActions ?? true,
+                auto_enable_catalog_actions: params.autoEnableCatalogActions ?? false,
                 shared_credentials_id: null
             };
 

@@ -18,9 +18,8 @@ export interface IntegrationConfig extends TimestampsAndDeleted {
     display_name: string | null;
     forward_webhooks: boolean;
     shared_credentials_id: number | null;
-    /** Default for catalog action names absent from `catalog_action_overrides`. New creates set this true in application code. */
     auto_enable_catalog_actions: boolean;
-    /** Absolute per-name enable/disable for live catalog actions. Exception-only; values are booleans. */
+    /** Absolute per-name enable/disable for live catalog actions */
     catalog_action_overrides: Record<string, boolean>;
 }
 
