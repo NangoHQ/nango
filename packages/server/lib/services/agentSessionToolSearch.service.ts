@@ -4,6 +4,9 @@ import { logContextGetter } from '@nangohq/logs';
 import { legacyFunctionService } from '@nangohq/shared';
 import { filterJsonSchemaForModels } from '@nangohq/utils';
 
+import { trackAgentSessionToolSearch } from './agentSessionAnalytics.service.js';
+
+import type { AgentSessionToolSearchHit } from './agentSessionAnalytics.service.js';
 import type { ActionInputSchemaRow } from '@nangohq/shared';
 import type {
     AgentSession,
@@ -94,6 +97,9 @@ interface SearchCandidate {
     listed: boolean;
 }
 
+/** A candidate with the score it was ranked on, so how well a search did outlives the ranking. */
+type ScoredCandidate = SearchCandidate & { score: number };
+
 /**
  * The name nango_execute takes for a tool. It cannot be derived from the integration and action,
  * since sanitising and clipping can collide and the loser gets numbered.
@@ -128,29 +134,34 @@ export async function searchSessionTools({
         void logCtx.info(`Tool search for '${query}' returned ${matches.length} ${matches.length === 1 ? 'match' : 'matches'}`);
         await logCtx.success();
 
+        trackAgentSessionToolSearch({ session, query, matches: searchHits(ranked.best), related: searchHits(ranked.related) });
+
         return { guidance: guidanceFor({ query, matches, related }), matches, related };
     } catch (err) {
         void logCtx.error('Failed to search the session tools', { error: err });
         await logCtx.failed();
+
+        trackAgentSessionToolSearch({ session, query, matches: [], related: [], errorCode: 'search_failed' });
+
         throw err;
     }
 }
 
 export function rankSessionTools({ session, query, slugOf }: { session: AgentSession; query: string; slugOf: ToolSlugLookup }): {
-    best: SearchCandidate[];
-    related: SearchCandidate[];
+    best: ScoredCandidate[];
+    related: ScoredCandidate[];
 } {
     const candidates = buildSearchCandidateList({ session, slugOf });
     const scored = scoreCandidates({ candidates, query });
 
-    const best: SearchCandidate[] = [];
-    const related: SearchCandidate[] = [];
+    const best: ScoredCandidate[] = [];
+    const related: ScoredCandidate[] = [];
 
     for (const { candidate, score } of scored) {
         if (score <= BEST_MATCH_SCORE && best.length < MAX_BEST_MATCHES) {
-            best.push(candidate);
+            best.push({ ...candidate, score });
         } else if (related.length < MAX_RELATED_MATCHES) {
-            related.push(candidate);
+            related.push({ ...candidate, score });
         }
     }
 
@@ -368,4 +379,13 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
 
 function toolNames(matches: AgentSessionToolMatch[]): string {
     return matches.map((match) => `'${match.tool}'`).join(', ');
+}
+
+/** Scores run from 0, everything matched, to 1, nothing matched, and the event reports the other way round. */
+function searchHits(candidates: ScoredCandidate[]): AgentSessionToolSearchHit[] {
+    return candidates.map((candidate) => ({
+        tool: candidate.action,
+        integration: candidate.integration,
+        confidence: Math.round((1 - candidate.score) * 100) / 100
+    }));
 }
