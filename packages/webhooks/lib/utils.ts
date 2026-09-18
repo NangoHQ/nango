@@ -184,6 +184,10 @@ export const shouldSend = ({
         return false;
     }
 
+    if (type === 'auth_override' && !webhookSettings.on_auth_override) {
+        return false;
+    }
+
     if (type === 'sync' && !success && !webhookSettings.on_sync_error) {
         return false;
     }

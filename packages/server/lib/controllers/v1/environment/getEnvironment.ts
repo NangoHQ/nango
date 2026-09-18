@@ -91,6 +91,7 @@ export const getEnvironment = asyncWrapperWithEnvironment<GetEnvironment>(async 
                     on_async_action_completion: false,
                     on_sync_error: false,
                     on_connection_deletion: false,
+                    on_auth_override: false,
                     primary_url: null,
                     secondary_url: null
                 }

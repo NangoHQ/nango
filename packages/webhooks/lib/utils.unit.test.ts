@@ -122,6 +122,7 @@ describe('resolveWebhookSettings', () => {
         on_sync_error: true,
         on_async_action_completion: true,
         on_connection_deletion: true,
+        on_auth_override: true,
         created_at: new Date(),
         updated_at: new Date()
     };
@@ -165,6 +166,7 @@ describe('shouldSend', () => {
         on_sync_error: false,
         on_async_action_completion: false,
         on_connection_deletion: false,
+        on_auth_override: false,
         created_at: new Date(),
         updated_at: new Date()
     };
@@ -183,6 +185,24 @@ describe('shouldSend', () => {
                 webhookSettings: { ...baseSettings, primary_url: null, secondary_url: null, on_connection_deletion: true },
                 success: true,
                 type: 'auth_deletion'
+            })
+        ).toBe(false);
+    });
+
+    it('sends auth_override webhooks when on_auth_override is enabled', () => {
+        expect(shouldSend({ webhookSettings: { ...baseSettings, on_auth_override: true }, success: true, type: 'auth_override' })).toBe(true);
+    });
+
+    it('does not send auth_override webhooks when on_auth_override is disabled', () => {
+        expect(shouldSend({ webhookSettings: { ...baseSettings, on_auth_override: false }, success: true, type: 'auth_override' })).toBe(false);
+    });
+
+    it('does not send auth_override webhooks when no webhook URL is configured', () => {
+        expect(
+            shouldSend({
+                webhookSettings: { ...baseSettings, primary_url: null, secondary_url: null, on_auth_override: true },
+                success: true,
+                type: 'auth_override'
             })
         ).toBe(false);
     });
