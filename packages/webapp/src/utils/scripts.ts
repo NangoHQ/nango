@@ -1,9 +1,9 @@
-import type { DeployedNangoActionFunction, DeployedNangoFunction, DeployedNangoSyncFunction, FunctionType } from '@nangohq/types';
+import type { FunctionType, ListedNangoActionFunction, ListedNangoFunction, ListedNangoSyncFunction } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 type PullSource = { catalog: true } | { env: string };
 
-export function isSyncOrAction(fn: DeployedNangoFunction): fn is DeployedNangoSyncFunction | DeployedNangoActionFunction {
+export function isSyncOrAction(fn: ListedNangoFunction): fn is ListedNangoSyncFunction | ListedNangoActionFunction {
     return fn.type === 'sync' || fn.type === 'action';
 }
 

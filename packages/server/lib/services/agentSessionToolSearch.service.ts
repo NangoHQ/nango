@@ -1,10 +1,19 @@
 import Fuse from 'fuse.js';
 
+import { logContextGetter } from '@nangohq/logs';
 import { legacyFunctionService } from '@nangohq/shared';
 import { filterJsonSchemaForModels } from '@nangohq/utils';
 
 import type { ActionInputSchemaRow } from '@nangohq/shared';
-import type { AgentSession, AgentSessionToolConnectionState, AgentSessionToolInput, AgentSessionToolMatch, AgentSessionToolSearchResult } from '@nangohq/types';
+import type {
+    AgentSession,
+    AgentSessionToolConnectionState,
+    AgentSessionToolInput,
+    AgentSessionToolMatch,
+    AgentSessionToolSearchResult,
+    DBEnvironment,
+    DBTeam
+} from '@nangohq/types';
 
 const DEFINITIONS_POINTER = '#/definitions/';
 
@@ -92,22 +101,39 @@ interface SearchCandidate {
 export type ToolSlugLookup = (tool: { integration: string; action: string }) => string | undefined;
 
 export async function searchSessionTools({
+    account,
+    environment,
     session,
     query,
     slugOf
 }: {
+    account: DBTeam;
+    environment: DBEnvironment;
     session: AgentSession;
     query: string;
     slugOf: ToolSlugLookup;
 }): Promise<AgentSessionToolSearchResult> {
-    const ranked = rankSessionTools({ session, query, slugOf });
-    const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
+    const logCtx = await logContextGetter.create({ operation: { type: 'agent_session', action: 'tool_search' } }, { account, environment, meta: { query } });
+    await logCtx.enrichOperation({ actor: { kind: 'session', id: session.id } });
 
-    // It's possible a tool was removed after the session compiled, so we set input as unavailable.
-    const matches = ranked.best.map((candidate) => toMatch(candidate, inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' }));
-    const related = ranked.related.map((candidate) => toMatch(candidate, undefined));
+    try {
+        const ranked = rankSessionTools({ session, query, slugOf });
+        const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
 
-    return { guidance: guidanceFor({ query, matches, related }), matches, related };
+        // It's possible a tool was removed after the session compiled, so we set input as unavailable.
+        const matches = ranked.best.map((candidate) => toMatch(candidate, inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' }));
+        const related = ranked.related.map((candidate) => toMatch(candidate, undefined));
+
+        await logCtx.enrichOperation({ meta: searchOperationMeta({ query, matches, related }) });
+        void logCtx.info(`Tool search for '${query}' returned ${matches.length} ${matches.length === 1 ? 'match' : 'matches'}`);
+        await logCtx.success();
+
+        return { guidance: guidanceFor({ query, matches, related }), matches, related };
+    } catch (err) {
+        void logCtx.error('Failed to search the session tools', { error: err });
+        await logCtx.failed();
+        throw err;
+    }
 }
 
 export function rankSessionTools({ session, query, slugOf }: { session: AgentSession; query: string; slugOf: ToolSlugLookup }): {
@@ -266,6 +292,15 @@ export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
     }
 
     return { kind: 'schema', schema: { ...filtered.value, $ref: `${DEFINITIONS_POINTER}${row.input}` } };
+}
+
+/** Only what identifies a tool, since a full match carries a description and an input schema. */
+export function searchOperationMeta({ query, matches, related }: { query: string; matches: AgentSessionToolMatch[]; related: AgentSessionToolMatch[] }): {
+    query: string;
+    matches: string[];
+    related: string[];
+} {
+    return { query, matches: matches.map((match) => match.tool), related: related.map((match) => match.tool) };
 }
 
 function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | undefined): AgentSessionToolMatch {

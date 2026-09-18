@@ -92,12 +92,18 @@ export async function exec(): Promise<void> {
 
         // Disable all scripts
         const orchestrator = getOrchestrator();
-        const plansToPause = await getExpiredTrials(db.knex);
-        for (const plan of plansToPause) {
+        const expiredTrials = await getExpiredTrials(db.knex);
+        if (expiredTrials.isErr()) {
+            logger.error('Failed to get expired trials', expiredTrials.error);
+            return;
+        }
+        for (const plan of expiredTrials.value) {
             logger.info('Trial over for account', plan.account_id);
-
-            const envs = await environmentService.getEnvironmentsByAccountId(plan.account_id);
-
+            const environments = await environmentService.getEnvironmentsByAccountId(plan.account_id);
+            if (environments.isErr()) {
+                logger.warning('Failed to retrieve environments for account.', { err: environments.error, accountId: plan.account_id });
+            }
+            const envs = environments.isOk() ? environments.value : [];
             for (const env of envs) {
                 const syncs = await getSyncsByEnvironmentId(env.id);
                 logger.info('  pausing syncs in env', { count: syncs.length, environmentName: env.name });

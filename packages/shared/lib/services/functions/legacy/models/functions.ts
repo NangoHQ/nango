@@ -21,7 +21,7 @@ export interface FunctionRow {
     event: string | null;
 }
 
-export interface DeployedFunctionMetaRow {
+export interface FunctionAvailabilityRow {
     id: number;
     name: string;
     type: 'sync' | 'action';
@@ -67,21 +67,21 @@ export async function findActiveByEnvironment({
 }
 
 /**
- * Returns a slim list of active deployed sync/action functions for an integration,
- * intended for cross-referencing the template catalog with what is already deployed.
+ * Returns a slim list of active sync/action function availability for an integration,
+ * intended for cross-referencing the template catalog with what is already listed.
  *
  * Unpaginated and excludes on-event scripts — the templates catalog contains only
- * syncs and actions, so callers building a `(name, type) -> deployed` lookup only
+ * syncs and actions, so callers building a `(name, type) -> availability` lookup only
  * need those two types.
  */
-export async function findActiveDeployedMeta({
+export async function findActiveFunctionAvailability({
     environmentId,
     providerConfigKey
 }: {
     environmentId: number;
     providerConfigKey: string;
-}): Promise<DeployedFunctionMetaRow[]> {
-    return activeSyncConfigBase({ environmentId, providerConfigKey }).select<DeployedFunctionMetaRow[]>(
+}): Promise<FunctionAvailabilityRow[]> {
+    return activeSyncConfigBase({ environmentId, providerConfigKey }).select<FunctionAvailabilityRow[]>(
         'sc.id',
         'sc.sync_name AS name',
         'sc.type',

@@ -35,7 +35,7 @@ export interface NangoOnEventFunction extends NangoFunctionBase {
 
 export type NangoFunction = NangoSyncFunction | NangoActionFunction | NangoOnEventFunction;
 
-export interface DeployedMeta {
+export interface FunctionAvailability {
     id: number;
     enabled: boolean;
     /** ISO-8601 timestamp. */
@@ -43,9 +43,9 @@ export interface DeployedMeta {
     source: FunctionSource;
 }
 
-export type DeployedNangoSyncFunction = NangoSyncFunction & DeployedMeta;
-export type DeployedNangoActionFunction = NangoActionFunction & DeployedMeta;
-export type DeployedNangoOnEventFunction = NangoOnEventFunction & DeployedMeta;
-export type DeployedNangoFunction = DeployedNangoSyncFunction | DeployedNangoActionFunction | DeployedNangoOnEventFunction;
+export type ListedNangoSyncFunction = NangoSyncFunction & FunctionAvailability;
+export type ListedNangoActionFunction = NangoActionFunction & FunctionAvailability;
+export type ListedNangoOnEventFunction = NangoOnEventFunction & FunctionAvailability;
+export type ListedNangoFunction = ListedNangoSyncFunction | ListedNangoActionFunction | ListedNangoOnEventFunction;
 
-export type NangoFunctionTemplate = (NangoSyncFunction | NangoActionFunction) & { deployed?: DeployedMeta };
+export type NangoFunctionTemplate = (NangoSyncFunction | NangoActionFunction) & { deployed?: FunctionAvailability };

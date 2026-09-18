@@ -1042,14 +1042,19 @@ export class ConnectionService {
         return result;
     }
 
-    public async getConnectionsByEnvironmentAndConfigId(environment_id: number, config_id: number): Promise<DBConnection[]> {
-        const result = await db.knex.from<DBConnection>(`_nango_connections`).select('*').where({ environment_id, config_id, deleted: false });
-
-        if (!result || result.length == 0 || !result[0]) {
-            return [];
+    public async getConnectionsByEnvironmentAndConfigId(
+        trx: Knex,
+        { environmentId, configId }: { environmentId: number; configId: number }
+    ): Promise<Result<DBConnection[]>> {
+        try {
+            const connections = await trx
+                .from<DBConnection>('_nango_connections')
+                .select('*')
+                .where({ environment_id: environmentId, config_id: configId, deleted: false });
+            return Ok(connections);
+        } catch (err) {
+            return Err(new Error('Failed to get connections by environment and config ID', { cause: err }));
         }
-
-        return result;
     }
 
     public async copyConnections(connections: DBConnection[], environment_id: number, config_id: number) {

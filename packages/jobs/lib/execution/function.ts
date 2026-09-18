@@ -44,6 +44,7 @@ import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
 export async function startFunction(task: TaskFunction): Promise<Result<void>> {
+    let logCtx: LogContext | undefined;
     let account: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let providerConfig: Config | null | undefined;
@@ -72,7 +73,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
         const functions = await tracer.trace('function.prepare.functionConfig', async () =>
             functionConfigService.search(db.knex, {
                 environmentId: task.connection.environment_id,
-                filter: { integrationKey: task.connection.provider_config_key, name: task.functionName }
+                filter: { integrationKey: task.connection.provider_config_key, id: task.functionConfigId, name: task.functionName }
             })
         );
         if (functions.isErr()) {
@@ -95,7 +96,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
         }
 
         const now = new Date();
-        const logCtx = getLogCtx({
+        logCtx = await getLogCtx({
             team: account,
             activityLogId: task.activityLogId,
             environmentId: task.connection.environment_id,
@@ -105,12 +106,13 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             provider: providerConfig.provider,
             nangoConnectionId: task.connection.id,
             connectionId: task.connection.connection_id,
-            startedAt: now
+            startedAt: now,
+            meta: { trigger: task.trigger.kind, variant: task.variant ?? 'base', taskId: task.id }
         });
 
         // capping
         const cappingStatus = await tracer.trace('function.prepare.cappingExecutions', async () =>
-            capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'function_duration_seconds')
+            capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'function_duration_seconds', 'data_transfer')
         );
         if (cappingStatus.isCapped) {
             const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
@@ -189,6 +191,12 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
         return Ok(undefined);
     } catch (err) {
         const error = new NangoError('function_failure', { error: err instanceof Error ? err.message : err });
+        // Only finalize the operation we created by the execution.
+        // When an activityLogId is provided (ex: triggered via API), the caller owns the operation and finalizes it.
+        if (!task.activityLogId) {
+            void logCtx?.error(error.message, { error });
+            void logCtx?.failed();
+        }
         onFailure({
             connection: {
                 id: task.connection.id,
@@ -199,7 +207,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             functionName: task.functionName,
             provider: providerConfig?.provider || 'unknown',
             providerConfigKey: task.connection.provider_config_key,
-            activityLogId: task.activityLogId,
+            activityLogId: logCtx?.id ?? task.activityLogId,
             runTime: 0,
             error,
             syncConfig,
@@ -226,7 +234,7 @@ export async function handleFunctionSuccess({
     functionRuntime: FunctionRuntime;
     checkpoints: CheckpointRange;
 }): Promise<void> {
-    const logCtx = getLogCtx(nangoProps);
+    const logCtx = await getLogCtx(nangoProps);
     const { environment, account } = (await accountService.getAccountContext({ environmentId: nangoProps.environmentId })) || {
         environment: undefined,
         account: undefined
@@ -371,7 +379,7 @@ export async function handleFunctionError({
         return;
     }
 
-    const logCtx = getLogCtx(nangoProps);
+    const logCtx = await getLogCtx(nangoProps);
     void logCtx.error(`Function '${nangoProps.syncConfig.sync_name}' failed${formatAttempts(task)}`, {
         error,
         function: nangoProps.syncConfig.sync_name,
@@ -426,7 +434,7 @@ function onFailure({
     functionName: string;
     provider: string;
     providerConfigKey: string;
-    activityLogId: string;
+    activityLogId?: string | undefined;
     syncConfig: DBSyncConfig | null;
     runTime: number;
     error: NangoError;
@@ -435,27 +443,29 @@ function onFailure({
     functionRuntime?: FunctionRuntime | undefined;
 }): void {
     if (team && environment) {
-        try {
-            void slackService.reportFailure({
-                account: team,
-                environment,
-                connection,
-                name: functionName,
-                type: 'function',
-                originalActivityLogId: activityLogId,
-                provider
-            });
-        } catch {
-            errorManager.report('slack notification service reported a failure', {
-                environmentId: connection.environment_id,
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.FUNCTION,
-                metadata: {
-                    functionName: functionName,
-                    connectionDetails: connection,
-                    debug: false
-                }
-            });
+        if (activityLogId) {
+            try {
+                void slackService.reportFailure({
+                    account: team,
+                    environment,
+                    connection,
+                    name: functionName,
+                    type: 'function',
+                    originalActivityLogId: activityLogId,
+                    provider
+                });
+            } catch {
+                errorManager.report('slack notification service reported a failure', {
+                    environmentId: connection.environment_id,
+                    source: ErrorSourceEnum.PLATFORM,
+                    operation: LogActionEnum.FUNCTION,
+                    metadata: {
+                        functionName: functionName,
+                        connectionDetails: connection,
+                        debug: false
+                    }
+                });
+            }
         }
 
         void bigQueryClient.insert({
@@ -512,39 +522,28 @@ function formatAttempts(task: OrchestratorTask | Result<OrchestratorTask>): stri
     return t.attemptMax > 1 ? ` (attempt ${t.attempt}/${t.attemptMax})` : '';
 }
 
-function getLogCtx(
+async function getLogCtx(
     opts: Pick<
         NangoProps,
-        | 'team'
-        | 'activityLogId'
-        | 'environmentId'
-        | 'environmentName'
-        | 'syncConfig'
-        | 'providerConfigKey'
-        | 'provider'
-        | 'nangoConnectionId'
-        | 'connectionId'
-        | 'startedAt'
-    >
-): LogContext {
-    const logCtx = logContextGetter.get({ id: opts.activityLogId, accountId: opts.team.id });
-    // Origin log context is created in server.
+        'team' | 'environmentId' | 'environmentName' | 'syncConfig' | 'providerConfigKey' | 'provider' | 'nangoConnectionId' | 'connectionId' | 'startedAt'
+    > & { activityLogId?: string | undefined; meta?: Record<string, string> }
+): Promise<LogContext> {
+    const context = {
+        account: opts.team,
+        environment: { id: opts.environmentId, name: opts.environmentName },
+        integration: { id: opts.syncConfig.nango_config_id, name: opts.providerConfigKey, provider: opts.provider },
+        connection: { id: opts.nangoConnectionId, name: opts.connectionId },
+        syncConfig: { id: opts.syncConfig.id, name: opts.syncConfig.sync_name },
+        ...(opts.meta && { meta: opts.meta })
+    };
+    const logCtx = opts.activityLogId
+        ? logContextGetter.get({ id: opts.activityLogId, accountId: opts.team.id })
+        : await logContextGetter.create(
+              { operation: { type: 'function', action: 'invoke' }, expiresAt: new Date(opts.startedAt.getTime() + 24 * 60 * 60 * 1000).toISOString() },
+              context
+          );
     // Attaching a span here so it is correctly ended when the logCtx operation ends and shows up in exported traces.
-    logCtx.attachSpan(
-        new OtlpSpan(
-            getFormattedOperation(
-                { operation: { type: 'function', action: 'invoke' } },
-                {
-                    account: opts.team,
-                    environment: { id: opts.environmentId, name: opts.environmentName },
-                    integration: { id: opts.syncConfig.nango_config_id, name: opts.providerConfigKey, provider: opts.provider },
-                    connection: { id: opts.nangoConnectionId, name: opts.connectionId },
-                    syncConfig: { id: opts.syncConfig.id, name: opts.syncConfig.sync_name }
-                }
-            ),
-            opts.startedAt
-        )
-    );
+    logCtx.attachSpan(new OtlpSpan(getFormattedOperation({ operation: { type: 'function', action: 'invoke' } }, context), opts.startedAt));
     return logCtx;
 }
 

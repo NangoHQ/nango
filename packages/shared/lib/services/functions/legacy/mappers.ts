@@ -3,16 +3,10 @@ import { Err, Ok } from '@nangohq/utils';
 import { eventTypeMapper } from '../../on-event-scripts.service.js';
 
 import type { FunctionRow } from './models/functions.js';
-import type {
-    DBOnEventScript,
-    DeployedNangoActionFunction,
-    DeployedNangoFunction,
-    DeployedNangoOnEventFunction,
-    DeployedNangoSyncFunction
-} from '@nangohq/types';
+import type { DBOnEventScript, ListedNangoActionFunction, ListedNangoFunction, ListedNangoOnEventFunction, ListedNangoSyncFunction } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-export function toDeployedNangoFunction(row: FunctionRow): Result<DeployedNangoFunction> {
+export function toListedNangoFunction(row: FunctionRow): Result<ListedNangoFunction> {
     const description = row.metadata?.description;
     const scopes = row.metadata?.scopes;
     const base = {
@@ -20,7 +14,7 @@ export function toDeployedNangoFunction(row: FunctionRow): Result<DeployedNangoF
         ...(description !== undefined && { description }),
         ...(scopes !== undefined && { scopes })
     };
-    const deployedMeta = {
+    const availability = {
         id: row.id,
         enabled: row.enabled,
         last_deployed: row.last_deployed.toISOString(),
@@ -29,7 +23,7 @@ export function toDeployedNangoFunction(row: FunctionRow): Result<DeployedNangoF
 
     switch (row.type) {
         case 'sync': {
-            const out: DeployedNangoSyncFunction = {
+            const out: ListedNangoSyncFunction = {
                 ...base,
                 type: 'sync',
                 ...(row.input !== null && { input: row.input }),
@@ -38,7 +32,7 @@ export function toDeployedNangoFunction(row: FunctionRow): Result<DeployedNangoF
                 runs: row.runs,
                 auto_start: row.auto_start ?? false,
                 track_deletes: row.track_deletes ?? false,
-                ...deployedMeta
+                ...availability
             };
             return Ok(out);
         }
@@ -52,22 +46,22 @@ export function toDeployedNangoFunction(row: FunctionRow): Result<DeployedNangoF
                 return Err(new Error(`Unknown on-event type: ${row.event}`));
             }
 
-            const out: DeployedNangoOnEventFunction = {
+            const out: ListedNangoOnEventFunction = {
                 ...base,
                 type: 'on-event',
                 event: apiEvent,
-                ...deployedMeta
+                ...availability
             };
             return Ok(out);
         }
         case 'action': {
-            const out: DeployedNangoActionFunction = {
+            const out: ListedNangoActionFunction = {
                 ...base,
                 type: 'action',
                 ...(row.input !== null && { input: row.input }),
                 returns: row.returns ?? [],
                 json_schema: row.json_schema,
-                ...deployedMeta
+                ...availability
             };
             return Ok(out);
         }

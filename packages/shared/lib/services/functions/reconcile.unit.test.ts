@@ -99,7 +99,7 @@ describe(reconcile, () => {
         expect(result.isOk()).toBe(true);
         if (result.isErr()) return;
         expect(result.value.created.map(({ name }) => name)).toStrictEqual([createdArtifact.name]);
-        expect(result.value.updated.map(({ name }) => name)).toStrictEqual([updatedArtifact.name]);
+        expect(result.value.updated.map(({ after: { name } }) => name)).toStrictEqual([updatedArtifact.name]);
         expect(result.value.unchanged.map(({ name }) => name)).toStrictEqual([artifact.name]);
         expect(result.value.deleted.map(({ config }) => config.name)).toStrictEqual([deletedArtifact.name]);
     });

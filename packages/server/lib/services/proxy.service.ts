@@ -165,7 +165,7 @@ export class ProxyService {
                 return await this.fail(logCtx, requestOverrideError, params.integrationId);
             }
 
-            const cappingStatus = await capping.getStatus(params.plan, 'proxy');
+            const cappingStatus = await capping.getStatus(params.plan, 'proxy', 'data_transfer');
             if (cappingStatus.isCapped) {
                 return await this.fail(
                     logCtx,

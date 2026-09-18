@@ -1,6 +1,5 @@
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
-import { InternalMcpError, PublicMcpError } from '../controllers/mcp/utils.js';
 import { egressTelemetryRecorder } from '../utils/egressTelemetry.js';
 import { proxyResponseToMcp } from './mcpProxyFormatter.js';
 import { ProxyResponseFormatError, readProxyResponseBody } from './mcpProxyResponse.js';
@@ -12,6 +11,8 @@ import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, OperationActor } from 
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Server.MCP.Proxy');
+
+export type McpProxyError = ProxyServiceError | ProxyResponseFormatError;
 
 export interface McpProxyRequest {
     account: DBTeam;
@@ -36,7 +37,7 @@ export interface McpProxyRequest {
  * The single path every MCP proxy caller goes through, so credential handling, the outbound URL
  * policy, plan capping and the response size limit are enforced once rather than per tool.
  */
-export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<Result<ProxyRequestOutput>> {
+export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<Result<ProxyRequestOutput, McpProxyError>> {
     const { account, environment, integrationId, connectionId } = params;
 
     const body = serializeJsonBody(params.body);
@@ -60,7 +61,7 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<R
     });
 
     if (execution.result.isErr()) {
-        return Err(proxyServiceErrorToMcp(execution.result.error));
+        return Err(execution.result.error);
     }
 
     const response = execution.result.value;
@@ -84,7 +85,7 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<R
         void execution.logCtx?.error('Failed to format provider response for MCP', { error });
         completeProxyResponse(response, error);
         if (err instanceof ProxyResponseFormatError) {
-            return Err(new PublicMcpError(err.message));
+            return Err(err);
         }
         throw err;
     }
@@ -128,26 +129,4 @@ function appendQueryParams(path: string, queryParams: ProxyQueryParams | undefin
         }
     }
     return `${path}${separator}${searchParams.toString()}`;
-}
-
-function proxyServiceErrorToMcp(error: ProxyServiceError): Error {
-    const code = error.code;
-    switch (code) {
-        case 'base_url_override_disabled':
-        case 'base_url_override_not_allowed':
-        case 'plan_limit':
-        case 'unknown_integration':
-        case 'connection_not_found':
-        case 'connection_refresh_backoff':
-        case 'credentials_refresh_failed':
-        case 'proxy_request_failed':
-            return new PublicMcpError(error.message);
-        case 'internal_error':
-            return error;
-        default: {
-            const exhaustiveCheck: never = code;
-            logger.error('Unexpected ProxyService error code while proxying request', { code: exhaustiveCheck });
-            return new InternalMcpError();
-        }
-    }
 }

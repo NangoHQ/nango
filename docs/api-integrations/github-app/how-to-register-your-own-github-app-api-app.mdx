@@ -26,31 +26,45 @@ This guide shows you how to register your own GitHub App to obtain your OAuth cr
         2. Optionally, under **Description**, type a description of your app. Users will see this when installing your app.
         3. Under **Homepage URL**, type the full URL to your app's website. If you don't have a dedicated URL, you can use your GitHub repository URL or organization URL.
     </Step>
-    <Step title="Configure callback URL (optional)">
+    <Step id="configure-callback-url" title="Configure callback URL">
         If your app needs to act on behalf of a user (generate a user access token):
 
         1. Under **Callback URL**, enter `https://api.nango.dev/oauth/callback`.
         2. You can add up to 10 callback URLs by clicking **Add callback URL**.
 
-        Note: If your app doesn't need to act on behalf of a user, this field can be left blank.
+        This field is required if you plan to select **Request user authorization (OAuth) during installation** in the next step, because that flow completes through the callback URL. It can be left blank otherwise.
     </Step>
-    <Step title="Configure user authorization settings (optional)">
+    <Step id="configure-user-authorization" title="Configure user authorization settings">
         1. By default, **Expire user authorization tokens** is selected. GitHub recommends keeping this option enabled.
         2. If you want users to authorize your app when they install it, select **Request user authorization (OAuth) during installation**.
         3. If you want to use device flow to generate a user access token, select **Enable Device Flow**.
-    </Step>
-    <Step title="Configure setup URL">
-        1. Under **Setup URL**, enter the URL displayed on your Nango integration page.
-        2. If you selected **Request user authorization (OAuth) during installation** in the previous step, you won't be able to enter a URL here.
-        3. Do NOT select **Redirect on update** under **Post installation**.
 
-        <Note>The Setup URL (displayed on your Nango integration page) needs to be added to your GitHub App configuration. This is not to be confused with the Callback URL that can stay empty.</Note>
+        <Note>
+        Item 2 decides which Nango integration you set up, and the next step depends on it. Leave it unselected for **GitHub (App)**. Select it for [**GitHub (App OAuth)**](/api-integrations/github-app-oauth/how-to-register-your-own-github-app-api-oauth-app), which authorizes the user and installs the app in one flow.
+        </Note>
     </Step>
-    <Step title="Configure webhook settings">
-        1. Keep **Active** selected to receive webhook events (recommended).
-        2. Under **Webhook URL**, enter the webhook URL from your Nango integration configuration.
-        3. Under **Webhook secret**, enter the webhook secret from your Nango integration configuration. This secret is used to verify webhook payloads from GitHub, so keep it secure and never expose it publicly.
-        4. Under **SSL verification**, keep **Enable SSL verification** selected (recommended).
+    <Step id="configure-setup-url" title="Configure setup URL">
+        What you do here depends on the previous step.
+
+        If you left **Request user authorization (OAuth) during installation** unselected, under **Setup URL** enter `https://api.nango.dev/app-auth/connect`. If you use a custom callback URL, take that URL and replace `oauth/callback` with `app-auth/connect`. Nango also shows the exact value on the integration page once you create it.
+
+        If you selected **Request user authorization (OAuth) during installation**, GitHub disables the **Setup URL** field. There is nothing to enter, the connection completes through the callback URL and the installation webhook instead. Keep going with this guide, the remaining steps apply to both flows.
+
+        In both cases, select **Redirect on update** under **Post installation**.
+
+        <Warning>
+        When the setup URL field is available, it is what completes the connection. GitHub sends the installation ID there after an install, and without it the app installs on GitHub but no connection appears in Nango.
+        </Warning>
+
+        <Note>The Setup URL is not to be confused with the Callback URL from the earlier step.</Note>
+    </Step>
+    <Step id="defer-webhook-settings" title="Configure webhook settings">
+        Leave webhooks off for now. The webhook URL and secret both come from your Nango integration, and that integration needs the App ID and private key you generate later in this guide.
+
+        1. Clear the **Active** checkbox. GitHub requires a webhook URL while **Active** is selected.
+        2. Under **SSL verification**, keep **Enable SSL verification** selected (recommended).
+
+        You turn webhooks on in the last step, once Nango can show you both values.
     </Step>
     <Step title="Set app permissions">
         1. Under **Permissions**, choose the permissions your app needs. For each permission, select the dropdown menu and click **Read-only**, **Read & write**, or **No access**.
@@ -65,16 +79,6 @@ This guide shows you how to register your own GitHub App to obtain your OAuth cr
         Note: The permissions you select will determine what webhook events are available.
 
         <Note>GitHub Apps use installation tokens that are scoped to specific repositories. The permissions and access are determined by the installation scope.</Note>
-    </Step>
-    <Step title="Subscribe to webhook events">
-        If you kept **Active** selected for webhooks:
-
-        1. Under **Subscribe to events**, select the webhook events you want your app to receive.
-        2. Common webhook events include:
-           - **Push**: When commits are pushed to a repository
-           - **Pull request**: When pull requests are opened, closed, or modified
-           - **Issues**: When issues are opened, closed, or modified
-           - **Repository**: When repositories are created, deleted, or modified
     </Step>
     <Step title="Set installation options">
         Under **Where can this GitHub App be installed?**, select:
@@ -102,6 +106,26 @@ This guide shows you how to register your own GitHub App to obtain your OAuth cr
         3. You'll need both of these when configuring your integration in Nango.
 
         <Note>When setting up a GitHub App, the App ID is made of numbers (e.g. 401953) and the App Public Link is the URL to your Github App public page (e.g. https://github.com/apps/nango-github-app).</Note>
+    </Step>
+    <Step id="create-nango-integration" title="Set up the integration in Nango">
+        Create the integration in Nango and fill in the **App ID**, **App Private Key** and **App Public Link** you just collected. Use **GitHub (App)** if you left user authorization during installation unselected, and **GitHub (App OAuth)** if you selected it.
+
+        GitHub (App OAuth) also needs the client ID and client secret. See [GitHub App OAuth setup](/api-integrations/github-app-oauth/how-to-register-your-own-github-app-api-oauth-app) for those.
+
+        Saving these lets Nango derive the webhook secret, which it cannot do before the integration exists.
+    </Step>
+    <Step id="enable-webhooks" title="Enable webhooks on your GitHub App">
+        On your Nango integration page, copy the value under **Webhook URL** and the value under **Webhook Secret**. Then go back to your GitHub App settings:
+
+        1. Select the **Active** checkbox under **Webhooks**.
+        2. Under **Webhook URL**, paste the webhook URL from Nango.
+        3. Under **Webhook secret**, paste the webhook secret from Nango. This is required. GitHub only signs payloads when the secret is set, and Nango verifies every payload it receives. Keep it secure and never expose it publicly.
+        4. Under **Subscribe to events**, select the events you want your app to receive, such as **Push**, **Pull request**, **Issues** or **Repository**.
+        5. Save the changes.
+
+        <Warning>
+        Nango rejects a webhook that arrives with no `x-hub-signature-256` header, and it is not forwarded to your app. An app set up without the webhook secret looks correctly configured on GitHub but delivers nothing.
+        </Warning>
     </Step>
     <Step title="Next">
         Follow the [_Quickstart_](/getting-started/quickstart).
