@@ -23,7 +23,6 @@ export const signinPathWithNext = (location: { pathname: string; search: string;
 // Reserved TLD (RFC 2606), so a `next` pointing at another origin fails the comparison below.
 const NEXT_BASE_ORIGIN = 'https://internal.invalid';
 
-// Keep in step with the server's `safeReturnTo`; the two resolve the same value on either side of a login.
 export const safeNextPath = (next: string | null | undefined): string => {
     if (!next || next.length > MAX_NEXT_LENGTH) {
         return '/';

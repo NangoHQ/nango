@@ -7,7 +7,7 @@ export const GuestRoute: React.FC = () => {
     const { user, loading } = useUser();
     const [searchParams] = useSearchParams();
 
-    // Rendering the form while the session is still unknown; blocking on it would blank the page for every signed-out visitor.
+    // Blocking until the session is known would blank the login page for every signed-out visitor.
     if (loading || !user) {
         return <Outlet />;
     }

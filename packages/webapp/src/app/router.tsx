@@ -120,7 +120,7 @@ const publicAuthRoutes = (() => {
             element: <Signup />
         });
 
-        // These stay reachable while signed in: the link can be for a different account than the current session.
+        // These stay reachable while signed in: the link can be for a different account.
         alwaysPublic.push(
             {
                 path: '/signup/:token',
