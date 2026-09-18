@@ -62,6 +62,7 @@ const messageSchema: z.ZodType<DispatchMessage> = z.discriminatedUnion('kind', [
         kind: z.literal('function'),
         idempotencyKey: z.string().min(1),
         functionName: z.string().min(1),
+        functionConfigId: z.number().int().positive(),
         trigger: functionTriggerSchema,
         maxConcurrency: z.number().int().min(0)
     })
@@ -299,6 +300,7 @@ export class DispatchQueueConsumer {
                 ownerKey: `environment:${message.connection.environment_id}`,
                 args: {
                     functionName: message.functionName,
+                    functionConfigId: message.functionConfigId,
                     connection: message.connection,
                     activityLogId: message.activityLogId,
                     trigger: message.trigger,
