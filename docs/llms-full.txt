@@ -15525,6 +15525,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `helpscout-docs` | Help Scout Docs | BASIC | [docs](https://nango.dev/docs/integrations/all/helpscout-docs.md) | [connect](https://nango.dev/docs/integrations/all/helpscout-docs/connect.md) |  | knowledge-base, support |
 | `helpscout-mailbox` | Help Scout Mailbox | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/helpscout-mailbox.md) |  |  | support |
 | `hex` | Hex | API_KEY | [docs](https://nango.dev/docs/api-integrations/hex.md) | [connect](https://nango.dev/docs/api-integrations/hex/connect.md) |  | analytics |
+| `hex-mcp` | Hex (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hex-mcp.md) |  |  | analytics, mcp |
 | `heygen` | HeyGen | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/heygen.md) |  | [setup](https://nango.dev/docs/api-integrations/heygen/how-to-register-your-own-heygen-oauth-app.md) | video |
 | `heymarket` | Heymarket | JWT | [docs](https://nango.dev/docs/api-integrations/heymarket.md) | [connect](https://nango.dev/docs/api-integrations/heymarket/connect.md) |  | communication, marketing |
 | `heyreach` | HeyReach | API_KEY | [docs](https://nango.dev/docs/integrations/all/heyreach.md) | [connect](https://nango.dev/docs/integrations/all/heyreach/connect.md) |  | social, marketing |

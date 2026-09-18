@@ -11325,6 +11325,28 @@ hex:
             example: app
             doc_section: '#step-2-finding-your-subdomain'
 
+hex-mcp:
+    display_name: Hex (MCP)
+    categories:
+        - analytics
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://auth.app.hex.tech/oauth2/authorize
+    token_url: https://auth.app.hex.tech/oauth2/token
+    registration_url: https://auth.app.hex.tech/oauth2/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.hex.tech
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/hex-mcp
+
 heyreach:
     display_name: HeyReach
     categories:
