@@ -9562,14 +9562,14 @@ groq:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.groq.com/openai
+        base_url: https://api.groq.com
         headers:
             authorization: Bearer ${apiKey}
             content-type: application/json
         verification:
             method: GET
             endpoints:
-                - /v1/models
+                - /openai/v1/models
     docs: https://nango.dev/docs/api-integrations/groq
     docs_connect: https://nango.dev/docs/api-integrations/groq/connect
     credentials:
@@ -9577,6 +9577,8 @@ groq:
             type: string
             title: API Key
             description: Your Groq API key
+            example: 'gsk_****************************************************'
+            pattern: '^gsk_[a-zA-Z0-9]{52}$'
             doc_section: '#step-1-create-an-api-key'
 
 guru:
