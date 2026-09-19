@@ -8549,6 +8549,8 @@ fireworks-ai:
             type: string
             title: API Key
             description: Your Fireworks AI API key
+            example: 'fw_************************'
+            pattern: '^fw_[a-zA-Z0-9]+$'
             doc_section: '#step-1-create-an-api-key'
 
 freeagent:
