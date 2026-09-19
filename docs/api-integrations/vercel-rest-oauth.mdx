@@ -1,0 +1,30 @@
+---
+title: 'Vercel (REST OAuth)'
+sidebarTitle: 'Vercel (REST OAuth)'
+description: 'Authorize Vercel REST API access using an integration installation'
+---
+
+This provider uses Vercel integration OAuth, separately from the API-token and MCP providers.
+
+## Setup
+
+Register a connectable-account integration in the [Vercel integration console](https://vercel.com/docs/integrations/create-integration).
+Set its redirect URL to the callback shown in your Nango integration settings, and enter its client ID and client secret in Nango.
+Configure permissions in Vercel for the REST endpoints your application uses.
+
+Set `integrationSlug` in connection configuration to the registered Vercel integration slug.
+Applications can prefill it through `integrations_config_defaults` when creating a Connect session.
+Nango handles state and the form-encoded authorization-code exchange.
+
+The token response supplies `installation_id` and, for team installations, `team_id`.
+These non-secret values are saved in connection configuration. Include the team ID as
+`teamId` on REST API requests when present. Use Nango Proxy for requests to `https://api.vercel.com`.
+The integration access token is long-lived; this provider does not advertise refresh-token support.
+
+## Verification
+
+Complete consent, select the intended projects, and verify a permitted REST read for that installation.
+Check both personal and team installations, cancelled consent, reconnect, and revoked access.
+Schema validation alone does not verify the live OAuth handshake.
+
+See [Vercel integration OAuth documentation](https://vercel.com/docs/integrations/create-integration/vercel-api-integrations).

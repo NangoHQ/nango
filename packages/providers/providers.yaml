@@ -26282,6 +26282,31 @@ vercel:
             example: 'vcp_6ppUxFRd****r1sc53a'
             doc_section: '#step-1-finding-your-token'
 
+vercel-rest-oauth:
+    display_name: Vercel (REST OAuth)
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://vercel.com/integrations/${connectionConfig.integrationSlug}/new
+    token_url: https://api.vercel.com/v2/oauth/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    disable_pkce: true
+    token_response_metadata:
+        - installation_id
+        - team_id
+    proxy:
+        base_url: https://api.vercel.com
+    connection_config:
+        integrationSlug:
+            type: string
+            title: Integration slug
+            description: The registered Vercel integration slug, prefilled by the application.
+            pattern: '^[a-z0-9][a-z0-9-]{0,99}$'
+    docs: https://nango.dev/docs/api-integrations/vercel-rest-oauth
+
 vercel-mcp:
     display_name: Vercel (MCP)
     categories:
