@@ -5,7 +5,7 @@ const additionalSchemas = process.env['NANGO_DB_ADDITIONAL_SCHEMAS']
     ? process.env['NANGO_DB_ADDITIONAL_SCHEMAS'].split(',').map((schema: string) => schema.trim())
     : [];
 
-export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
+export function getDbConfig({ timeoutMs, pool }: { timeoutMs: number; pool?: Partial<Knex.PoolConfig> | undefined }): Knex.Config {
     const host = process.env['NANGO_DB_HOST'] || (process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'nango-db' : 'localhost');
     const url =
         process.env['NANGO_DATABASE_URL'] ||
@@ -23,7 +23,8 @@ export function getDbConfig({ timeoutMs }: { timeoutMs: number }): Knex.Config {
             min: parseInt(process.env['NANGO_DB_POOL_MIN'] || '0'),
             max: parseInt(process.env['NANGO_DB_POOL_MAX'] || '30'),
             acquireTimeoutMillis: timeoutMs || 30000,
-            createTimeoutMillis: 10000
+            createTimeoutMillis: 10000,
+            ...pool
         },
         // SearchPath needs the current db and public because extension can only be installed once per DB
         searchPath: [defaultSchema, 'public', ...additionalSchemas]
