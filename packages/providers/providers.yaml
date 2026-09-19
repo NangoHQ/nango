@@ -5597,6 +5597,8 @@ cohere:
             type: string
             title: API Key
             description: Your Cohere API key
+            example: '****************************************'
+            pattern: '^[a-zA-Z0-9]{40}$'
             doc_section: '#step-1-create-an-api-key'
 
 commercetools:
