@@ -6679,6 +6679,8 @@ deepseek:
             type: string
             title: API Key
             description: Your DeepSeek API key
+            example: 'sk-********************************'
+            pattern: '^sk-[a-z0-9]{32}$'
             doc_section: '#step-1-create-an-api-key'
 
 dentally:
