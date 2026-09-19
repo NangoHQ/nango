@@ -15425,6 +15425,8 @@ mistral:
             type: string
             title: API Key
             description: Your Mistral AI API key
+            example: '********************************'
+            pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-create-an-api-key'
 
 mixpanel:
