@@ -1,0 +1,91 @@
+---
+title: 'NeuralVerge'
+sidebarTitle: 'NeuralVerge'
+description: 'Integrate your application with the NeuralVerge API for company and person data enrichment'
+---
+
+## Quickstart
+
+Connect to NeuralVerge with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _NeuralVerge_.
+    </Step>
+    <Step id="authorize-neuralverge" title="Authorize NeuralVerge">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your NeuralVerge API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-the-api" title="Call the NeuralVerge API">
+    Let's find the person behind an email address. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/functions/v1/run-email-enrichment" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"email": "jane.doe@example.com"}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/functions/v1/run-email-enrichment',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: { email: 'jane.doe@example.com' }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## NeuralVerge integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my NeuralVerge account?](/api-integrations/neuralverge/connect)  
+Learn how to generate your NeuralVerge API key and link your account
+
+Official docs: [NeuralVerge API docs](https://docs.neuralverge.ai)
+
+## API gotchas
+
+- Every endpoint lives under `/functions/v1/`. All calls are `POST` with a JSON body, except `GET /functions/v1/get-session-status?session_id=...`.
+- The API key is sent in the `x-api-key` header. The REST API does not accept `Authorization: Bearer`.
+- Usage is billed in points (1 point = $0.001). Each response returns `total_points` with the points charged. Verifying a new connection makes one email validation call, which costs 1 point.
+- `run-research` is asynchronous: it returns a `session_id`. Poll `get-session-status` every 2-5 seconds until `status` is `complete` or `failed`.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/neuralverge.mdx)</Note>
+
+## Pre-built syncs & actions for NeuralVerge
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/neuralverge/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

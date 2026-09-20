@@ -16164,6 +16164,35 @@ netsuite-client-credentials:
             description: The RSA private key (PEM format) used to sign the JWT assertion.
             example: "-----BEGIN RSA PRIVATE KEY-----\nMIIEow...\n-----END RSA PRIVATE KEY-----"
 
+neuralverge:
+    display_name: NeuralVerge
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.neuralverge.ai
+        headers:
+            x-api-key: ${apiKey}
+            content-type: application/json
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /functions/v1/run-email-validation
+            data:
+                email: test@example.com
+    docs: https://nango.dev/docs/api-integrations/neuralverge
+    docs_connect: https://nango.dev/docs/api-integrations/neuralverge/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your NeuralVerge API key
+            example: sk_********************************
+            pattern: '^sk_\S+$'
+            doc_section: '#step-1-generate-your-api-key'
+
 next-cloud-ocs:
     display_name: Next Cloud OCS
     categories:
