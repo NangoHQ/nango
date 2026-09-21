@@ -17,7 +17,7 @@ import type { AuditAttribution, DBEnvironment, DBTeam } from '@nangohq/types';
 import type * as Utils from '@nangohq/utils';
 import type { Mock } from 'vitest';
 
-type LoadEnvironment = (name: string) => Promise<DBEnvironment | null>;
+type LoadEnvironment = (id: number, accountId?: number | null) => Promise<DBEnvironment | null>;
 
 // Audit entitlement modes are covered separately; keep this suite on the deployment opt-in path regardless of the shell environment.
 vi.mock('@nangohq/utils', async (importOriginal) => {
@@ -166,6 +166,7 @@ describe('createManagementMcpServer with OAuth', () => {
             templates: []
         };
         const handlerSpy = vi.spyOn(getProvidersTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const hydrateEnvironmentSpy = vi.spyOn(environmentService, 'getByEnvironmentName');
         const request = {
             jsonrpc: '2.0',
             id: 1,
@@ -186,11 +187,21 @@ describe('createManagementMcpServer with OAuth', () => {
             if (!call) throw new Error('Expected providers_get handler call');
             expect(call[0]).toStrictEqual({ provider: 'github', include_templates: true });
             expect(call[1].account.id).toBe(1);
-            expect(call[1].environment).toMatchObject({ id: 1, name: 'dev', uuid: 'dev-environment' });
+            expect(call[1].environment).toMatchObject({
+                id: 1,
+                uuid: 'dev-environment',
+                name: 'dev',
+                account_id: 1,
+                is_production: false,
+                secret_key: '',
+                pending_secret_key: null
+            });
+            expect(JSON.stringify(call[1].environment)).not.toContain('dev-secret');
             expect(call[1].plan).toBeNull();
             expect(call[1].grantedScopes).toContain('environment:integrations:read_credentials');
             expect(loadEnvironment).toHaveBeenCalledOnce();
-            expect(loadEnvironment).toHaveBeenCalledWith('dev');
+            expect(loadEnvironment).toHaveBeenCalledWith(1, 1);
+            expect(hydrateEnvironmentSpy).not.toHaveBeenCalled();
         } finally {
             await client.close();
             await server.close();
@@ -227,6 +238,7 @@ describe('createManagementMcpServer with OAuth', () => {
 
             expect(result).toMatchObject({ isError: true, content: [{ type: 'text', text: 'Internal error' }] });
             expect(loadEnvironment).toHaveBeenCalledOnce();
+            expect(loadEnvironment).toHaveBeenCalledWith(1, 1);
             expect(metricSpy).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {
                 accountId: 1,
                 mcp_type: 'management',
@@ -252,7 +264,7 @@ describe('createManagementMcpServer with OAuth', () => {
         const loadEnvironment = vi
             .fn<LoadEnvironment>()
             .mockRejectedValueOnce(new Error('Transient database failure'))
-            .mockResolvedValueOnce(fakeEnvironment({ id: 1, name: 'dev', isProduction: false }));
+            .mockResolvedValueOnce({ ...fakeEnvironment({ id: 1, name: 'dev', isProduction: false }), secret_key: '', pending_secret_key: null });
         const { client, server } = await createTestClient({ loadEnvironment });
 
         try {
@@ -265,6 +277,8 @@ describe('createManagementMcpServer with OAuth', () => {
                 structuredContent: response
             });
             expect(loadEnvironment).toHaveBeenCalledTimes(2);
+            expect(loadEnvironment).toHaveBeenNthCalledWith(1, 1, 1);
+            expect(loadEnvironment).toHaveBeenNthCalledWith(2, 1, 1);
             expect(handlerSpy).toHaveBeenCalledOnce();
         } finally {
             await client.close();
@@ -477,9 +491,12 @@ async function createTestClient({
     const loadEnvironment =
         loadEnvironmentOverride ??
         (loadEnvironmentError
-            ? vi.fn((_name: string) => Promise.reject(loadEnvironmentError))
-            : vi.fn((name: string) => Promise.resolve(environments.find((environment) => environment.name === name) ?? null)));
-    vi.spyOn(environmentService, 'getByEnvironmentName').mockImplementation((_accountId, name) => loadEnvironment(name));
+            ? vi.fn((_id: number, _accountId?: number | null) => Promise.reject(loadEnvironmentError))
+            : vi.fn((id: number, accountId?: number | null) => {
+                  const environment = accountId === 1 ? environments.find((candidate) => candidate.id === id) : undefined;
+                  return Promise.resolve(environment ? { ...environment, secret_key: '', pending_secret_key: null } : null);
+              }));
+    vi.spyOn(environmentService, 'getByIdWithoutSecrets').mockImplementation(loadEnvironment);
     const server = await createManagementMcpServer(
         {
             type: 'oauth',

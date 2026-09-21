@@ -87,5 +87,5 @@ async function loadManagementMcpEnvironments(accountId: number): Promise<Managem
         throw environments.error;
     }
 
-    return environments.value.map((environment) => ({ ...environment, account_id: accountId }));
+    return environments.value.map(({ id, uuid, name, is_production }) => ({ id, uuid, name, account_id: accountId, is_production }));
 }

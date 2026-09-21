@@ -234,7 +234,7 @@ async function resolveOAuthToolCall(args: unknown, oauthContext: ManagementMcpOA
         return { ok: false, message: 'Environment not found or inaccessible', deniedContext: { environment: environmentSummary, toolArguments } };
     }
 
-    const environment = await environmentService.getByEnvironmentName(oauthContext.account.id, environmentSummary.name);
+    const environment = await environmentService.getByIdWithoutSecrets(environmentSummary.id, oauthContext.account.id);
     if (!environment) {
         return { ok: false, message: 'Environment not found or inaccessible' };
     }
