@@ -9,7 +9,7 @@ Nango offers two ways to run outside of Nango Cloud, both on the Enterprise plan
 - **[BYOC](/guides/platform/self-hosting-byoc)** — Nango deploys and operates your instance inside your own AWS account or GCP project. Recommended for most Enterprise self-hosting customers.
 - **[Self-Managed](/guides/platform/self-hosting-self-managed)** — you deploy and operate Nango yourself, on your own infrastructure, using our Helm chart.
 
-Both run the same Nango codebase you get on Cloud, with all paid Cloud features included, and both are SOC 2 compliant.
+Both run the same Nango codebase you get on Cloud, with all paid Cloud features included.
 
 ## Choose your path
 
@@ -44,7 +44,7 @@ Nango consists of several core services, each handling specific responsibilities
 - **Persist (Node service)**: Stores synced records and logs.
 - **Postgres**: Stores data for the control plane, API credentials, scheduled tasks, and synced records.
 - **Object Storage (e.g. S3)**: Stores compiled integration code for execution by the Runner.
-- **ElasticSearch**: Stores execution data.
+- **ElasticSearch**: Stores customer-facing observability.
 - **Redis**: Caches system data, including socket information, token refresh locks, and rate limits.
 
 This architecture, and everything below it on this page, is identical whether you run BYOC or Self-Managed — it's the same Nango either way. What differs between the two paths is *who* deploys and operates it, and that's covered on their own pages.
@@ -52,10 +52,6 @@ This architecture, and everything below it on this page, is identical whether yo
 ## Cloud vs. self-hosted architecture
 
 The Nango architecture is largely the same for both Cloud and Enterprise self-hosting (BYOC or Self-Managed). This ensures self-hosted instances benefit from continuous dogfooding and load testing.
-
-The primary differences are:
-- In the Cloud version, the Runner service runs as isolated instances per customer.
-- The Postgres database is segmented by use case (control plane, task scheduling, synced records).
 
 ## Features
 
@@ -83,7 +79,7 @@ Bottlenecks mostly depend on:
 
 - **Postgres**: Stores data for the control plane, API credentials, scheduled tasks, and synced records.
 - **Object Storage (e.g. S3)**: Stores compiled integration code for execution by the Runner.
-- **ElasticSearch**: Stores execution data.
+- **ElasticSearch**: Stores customer-facing observability.
 - **Redis**: Caches system data, including socket information, token refresh locks, and rate limits.
 
 All four of these run inside your own environment on both paths — see [What leaves your account](/guides/platform/self-hosting-byoc#what-leaves-your-account) (BYOC) or [Self-Managed](/guides/platform/self-hosting-self-managed#what-leaves-your-account) for exactly what does and doesn't.
@@ -94,8 +90,8 @@ Yes, Nango is flexible with data store setups. However, we recommend a separate 
 
 ## Internet access requirements
 
-- **Server:** Required for proxy requests, credential management, and incoming/outgoing webhooks (inbound & outbound traffic).
-- **Runner:** Required for reading/writing data from external APIs during sync and action executions (outbound traffic only).
+- **Server:** Required for proxy requests, credential management, and incoming/outgoing webhooks.
+- **Runner:** Required for reading/writing data from external APIs during sync and action executions.
 
 ## Exporting metrics & logs
 
@@ -128,7 +124,7 @@ For more details, see the [pricing page](https://nango.dev/pricing) or [schedule
 | Customize auth branding | No | Yes |
 | RBAC | No | Yes |
 | MFA | No | Yes |
-| SAML SSO | No | Nango Cloud only |
+| SAML SSO | No | Nango Cloud and BYOC |
 
 ### Run and update Nango
 
