@@ -125,6 +125,11 @@ describe('listSessionTools', () => {
         ).toStrictEqual(['nango_tool_search', 'nango_execute', 'nango_proxy']);
         expect(
             listSessionTools(
+                session({ metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: true, tags: {} } } })
+            ).map((tool) => tool.name)
+        ).toStrictEqual(['nango_tool_search', 'nango_execute', 'nango_create_connection']);
+        expect(
+            listSessionTools(
                 session({ metaTools: { nangoToolSearch: false, nangoExecute: false, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } } })
             )
         ).toStrictEqual([]);

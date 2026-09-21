@@ -3,13 +3,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Err, Ok } from '@nangohq/utils';
 
 import { ActionExecutionError } from '../../../../services/action.service.js';
+import * as agentSessionConnectionsService from '../../../../services/agentSessionConnections.service.js';
 import { InternalMcpError, PublicMcpError } from '../../../mcp/utils.js';
 import { buildSessionTools } from '../sessionServer.js';
 import { executeInputSchema } from './schema.js';
 
 import type * as actionService from '../../../../services/action.service.js';
 import type { AgentSessionMcpContext } from '../sessionTool.js';
-import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, DBEnvironment, DBTeam } from '@nangohq/types';
+import type {
+    AgentSession,
+    AgentSessionCompiledToolset,
+    AgentSessionCreateConnectionConfig,
+    AgentSessionResolvedConnections,
+    DBEnvironment,
+    DBTeam
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const executeAction = vi.fn();
@@ -34,10 +42,12 @@ const CONNECTIONS: AgentSessionResolvedConnections = {
 
 function context({
     compiledToolset = TOOLSET,
-    resolvedConnections = CONNECTIONS
+    resolvedConnections = CONNECTIONS,
+    createConnection
 }: {
     compiledToolset?: AgentSessionCompiledToolset;
     resolvedConnections?: AgentSessionResolvedConnections;
+    createConnection?: AgentSessionCreateConnectionConfig;
 } = {}): AgentSessionMcpContext {
     const session: AgentSession = {
         id: 'session-1',
@@ -45,7 +55,7 @@ function context({
         accountId: 1,
         resolvedConnections,
         compiledToolset,
-        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } },
+        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: createConnection ?? { enabled: false, tags: {} } },
         expiresAt: new Date(),
         endedAt: null,
         endedReason: null,
@@ -172,6 +182,18 @@ describe('executeSessionTool', () => {
         );
         expect(codeOf(result)).toBe('integration_not_connected');
         expect(integrationOf(result)).toBe('notion');
+        expect(executeAction).not.toHaveBeenCalled();
+    });
+
+    it('points a session that can connect at nango_create_connection', async () => {
+        vi.spyOn(agentSessionConnectionsService, 'findConnectionCreatedForSession').mockResolvedValue(null);
+
+        const result = await execute('read_doc', { context: context({ resolvedConnections: {}, createConnection: { enabled: true, tags: {} } }) });
+
+        expect(errorOf(result).message).toBe(
+            "Integration 'notion' has no connection in this session, so none of its tools can run. Call nango_create_connection with integration 'notion' to get a link the user can follow, then try again once they tell you they are done."
+        );
+        expect(codeOf(result)).toBe('integration_not_connected');
         expect(executeAction).not.toHaveBeenCalled();
     });
 

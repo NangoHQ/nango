@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { connectionTagsSchema } from '@nangohq/shared';
+import { connectionTagsSchema, TAG_MAX_COUNT } from '@nangohq/shared';
 import { baseUrl, Err, Ok, report } from '@nangohq/utils';
 
 import * as agentSessionService from './agentSession.service.js';
@@ -55,13 +55,37 @@ const CREATE_CONNECTION_META_TOOL = { name: 'nango_create_connection', enabledBy
 
 const META_TOOL_NAMES: string[] = [...Object.values(BOOLEAN_META_TOOLS).map((metaTool) => metaTool.name), CREATE_CONNECTION_META_TOOL.name];
 
-export const agentSessionMetaToolSchema = z.union([
+/** One slot is spent on the tag binding the connection back to the session, so the caller gets the rest. */
+const MAX_CONFIGURED_TAGS = TAG_MAX_COUNT - 1;
+
+const metaToolSchema = z.union([
     z.boolean(),
     z.strictObject({
         enabled: z.boolean(),
-        tags: connectionTagsSchema.optional()
+        tags: connectionTagsSchema
+            .refine((tags) => Object.keys(tags).length <= MAX_CONFIGURED_TAGS, {
+                message: `Cannot configure more than ${MAX_CONFIGURED_TAGS} tags, one of the ${TAG_MAX_COUNT} is reserved for the agent session`
+            })
+            .optional()
     })
 ]);
+
+/**
+ * Only nango_create_connection creates anything to put tags on, so tags elsewhere would be accepted
+ * and then dropped. The key is only in reach here, at the record, not inside the value schema.
+ */
+export const agentSessionMetaToolsSchema = z.record(z.string(), metaToolSchema).check((payload) => {
+    for (const [name, value] of Object.entries(payload.value)) {
+        if (typeof value === 'object' && value.tags && name !== CREATE_CONNECTION_META_TOOL.name) {
+            payload.issues.push({
+                code: 'custom',
+                message: `Only ${CREATE_CONNECTION_META_TOOL.name} takes tags`,
+                path: [name, 'tags'],
+                input: value
+            });
+        }
+    }
+});
 
 export const agentSessionExpiresInSchema = z
     .string()

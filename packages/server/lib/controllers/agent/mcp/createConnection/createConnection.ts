@@ -9,11 +9,9 @@ import { resolveSessionConnection } from '../sessionConnection.js';
 import { defineAgentSessionMcpTool } from '../sessionTool.js';
 import { createConnectionInputSchema, createConnectionOutputSchema } from './schema.js';
 
+import type { CreateConnectionOutput } from './schema.js';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
-import type * as z from 'zod/v4';
-
-type CreateConnectionOutput = z.output<typeof createConnectionOutputSchema>;
 
 export const createConnectionTool = defineAgentSessionMcpTool({
     name: 'nango_create_connection',

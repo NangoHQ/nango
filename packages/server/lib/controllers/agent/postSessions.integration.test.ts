@@ -136,7 +136,12 @@ describe(`POST ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.res.status).toBe(201);
         expect(res.json.data.mcp_url).toBe(`${baseUrl}/session/${res.json.data.session_id}/mcp`);
-        expect(res.json.data.meta_tools).toStrictEqual({ nango_tool_search: true, nango_execute: true, nango_proxy: false });
+        expect(res.json.data.meta_tools).toStrictEqual({
+            nango_tool_search: true,
+            nango_execute: true,
+            nango_proxy: false,
+            nango_create_connection: { enabled: false, tags: {} }
+        });
 
         // The sync on notion is not a tool, and reddit has no connection so the default toolset leaves it out.
         expect(res.json.data.toolset).toStrictEqual({
@@ -186,7 +191,12 @@ describe(`POST ${endpoint}`, () => {
             notion: { connected: true, tools_pinned: 1, tools_searchable: 1 },
             slack: { connected: true, tools_pinned: 0, tools_searchable: 1 }
         });
-        expect(res.json.data.meta_tools).toStrictEqual({ nango_tool_search: true, nango_execute: false, nango_proxy: true });
+        expect(res.json.data.meta_tools).toStrictEqual({
+            nango_tool_search: true,
+            nango_execute: false,
+            nango_proxy: true,
+            nango_create_connection: { enabled: false, tags: {} }
+        });
     });
 
     it('honours expires_in', async () => {

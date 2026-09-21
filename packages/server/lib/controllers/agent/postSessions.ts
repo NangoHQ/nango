@@ -15,7 +15,7 @@ const bodySchema = z.strictObject({
     }),
     toolset: agentSessionToolsetService.agentSessionToolsetSchema.optional(),
     pinned_tools: agentSessionToolsetService.agentSessionPinnedToolsSchema.optional(),
-    meta_tools: z.record(z.string(), agentSessionCreationService.agentSessionMetaToolSchema).optional(),
+    meta_tools: agentSessionCreationService.agentSessionMetaToolsSchema.optional(),
     expires_in: agentSessionCreationService.agentSessionExpiresInSchema.optional()
 });
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    agentSessionMetaToolsSchema,
     expiresInToMs,
     metaToolsSummary,
     parseMetaTools,
@@ -103,6 +104,10 @@ describe('parseMetaTools', () => {
         });
     });
 
+    it('defaults the tags when the object form leaves them out', () => {
+        expect(parseMetaTools({ nango_create_connection: { enabled: true } }).applied.nangoCreateConnection).toStrictEqual({ enabled: true, tags: {} });
+    });
+
     it('reads the enabled flag of a meta tool that only takes a boolean', () => {
         expect(parseMetaTools({ nango_proxy: { enabled: true } }).applied.nangoProxy).toBe(true);
     });
@@ -112,6 +117,30 @@ describe('parseMetaTools', () => {
 
         expect(parsed.unknown).toStrictEqual(['nango_teleport', 'proxy']);
         expect(parsed.applied.nangoProxy).toBe(true);
+    });
+});
+
+describe('agentSessionMetaToolsSchema', () => {
+    it('accepts a boolean and the object form for nango_create_connection', () => {
+        expect(agentSessionMetaToolsSchema.safeParse({ nango_proxy: true, nango_create_connection: { enabled: true, tags: { enduser: '74' } } }).success).toBe(
+            true
+        );
+    });
+
+    it('refuses tags on a meta tool that creates nothing to put them on', () => {
+        const parsed = agentSessionMetaToolsSchema.safeParse({ nango_tool_search: { enabled: true, tags: { team: 'x' } } });
+
+        expect(parsed.success).toBe(false);
+        expect(parsed.error?.issues[0]?.message).toBe('Only nango_create_connection takes tags');
+        expect(parsed.error?.issues[0]?.path).toStrictEqual(['nango_tool_search', 'tags']);
+    });
+
+    it('leaves room for the reserved session tag', () => {
+        const nine = Object.fromEntries(Array.from({ length: 9 }, (_, i) => [`tag${i}`, 'v']));
+        const ten = Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`tag${i}`, 'v']));
+
+        expect(agentSessionMetaToolsSchema.safeParse({ nango_create_connection: { enabled: true, tags: nine } }).success).toBe(true);
+        expect(agentSessionMetaToolsSchema.safeParse({ nango_create_connection: { enabled: true, tags: ten } }).success).toBe(false);
     });
 });
 
