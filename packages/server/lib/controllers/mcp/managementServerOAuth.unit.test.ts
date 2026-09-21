@@ -14,9 +14,16 @@ import { getProvidersTool } from './providers/get.js';
 import type { McpServer } from '@modelcontextprotocol/server';
 import type { Principal, ScopeSelector, WhereSelector } from '@nangohq/authz';
 import type { AuditAttribution, DBEnvironment, DBTeam } from '@nangohq/types';
+import type * as Utils from '@nangohq/utils';
 import type { Mock } from 'vitest';
 
 type LoadEnvironment = (name: string) => Promise<DBEnvironment | null>;
+
+// Audit entitlement modes are covered separately; keep this suite on the deployment opt-in path regardless of the shell environment.
+vi.mock('@nangohq/utils', async (importOriginal) => {
+    const actual = await importOriginal<typeof Utils>();
+    return { ...actual, flagHasPlan: false };
+});
 
 const managementToolNames = [
     'docs_search',

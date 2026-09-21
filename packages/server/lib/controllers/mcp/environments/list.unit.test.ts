@@ -40,6 +40,26 @@ describe('environments_list', () => {
         }
     });
 
+    it.each([
+        {
+            name: 'the required scope is missing',
+            principal: principal(['environment:connections:read'], ['env:*'])
+        },
+        {
+            name: 'the principal belongs to another account',
+            principal: principal(['environment:settings:read'], ['env:*'], 7)
+        }
+    ])('filters all environments when $name', async ({ principal: userPrincipal }) => {
+        vi.spyOn(environmentService, 'getEnvironmentsByAccountId').mockResolvedValue(Ok(environmentSummaries));
+
+        const result = await listEnvironmentsTool.handler({ account, principal: userPrincipal });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toStrictEqual({ environments: [] });
+        }
+    });
+
     it('may return no environments', async () => {
         vi.spyOn(environmentService, 'getEnvironmentsByAccountId').mockResolvedValue(Ok([]));
 
@@ -70,10 +90,10 @@ describe('environments_list', () => {
     });
 });
 
-function principal(can: Principal['grants'][number]['can'], where: Principal['grants'][number]['where']): Principal {
+function principal(can: Principal['grants'][number]['can'], where: Principal['grants'][number]['where'], accountId = 42): Principal {
     return {
         subject: { type: 'user', id: '7', display: 'user@nango.dev' },
-        accountId: 42,
+        accountId,
         grants: [{ can, where }]
     };
 }
