@@ -17151,8 +17151,8 @@ omnisend:
         apiKey:
             type: string
             title: API Key
-            description: Your Omnisend API key with the scopes required by your selected functions.
-            example: 1a2b****************************9z
+            description: Your Omnisend API key.
+            example: API Key
             pattern: '^[A-Za-z0-9_-]+$'
             doc_section: '#step-2-create-an-omnisend-api-key'
 
