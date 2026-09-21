@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { getManagementMcp, postManagementMcp } from './controllers/mcp/management.js';
-import { getManagementOAuthProtectedResourceMetadata, managementMcpAuth } from './controllers/mcp/managementOAuth.js';
+import { getManagementOAuthProtectedResourceMetadata, managementMcpAuth } from './controllers/mcp/managementAuth.js';
 import { envs } from './env.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';

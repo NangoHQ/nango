@@ -1,34 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { metrics } from '@nangohq/utils';
-
-import { getManagementOAuthProtectedResourceMetadata, managementMcpAuth } from './managementOAuth.js';
+import { getManagementOAuthProtectedResourceMetadata, managementMcpAuth } from './managementAuth.js';
 
 import type { RequestLocals } from '../../utils/express.js';
 import type * as Utils from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
 
-const {
-    accessTokenFindMock,
-    accountGetMock,
-    apiKeyAuthenticateMock,
-    clientFindMock,
-    getPlanMock,
-    grantFindMock,
-    metricsIncrementMock,
-    tagTraceUserMock,
-    userGetMock
-} = vi.hoisted(() => ({
-    accessTokenFindMock: vi.fn(),
-    accountGetMock: vi.fn(),
-    apiKeyAuthenticateMock: vi.fn(),
-    clientFindMock: vi.fn(),
-    getPlanMock: vi.fn(),
-    grantFindMock: vi.fn(),
-    metricsIncrementMock: vi.fn(),
-    tagTraceUserMock: vi.fn(),
-    userGetMock: vi.fn()
-}));
+const { accessTokenFindMock, accountGetMock, apiKeyAuthenticateMock, clientFindMock, getPlanMock, grantFindMock, tagTraceUserMock, userGetMock } = vi.hoisted(
+    () => ({
+        accessTokenFindMock: vi.fn(),
+        accountGetMock: vi.fn(),
+        apiKeyAuthenticateMock: vi.fn(),
+        clientFindMock: vi.fn(),
+        getPlanMock: vi.fn(),
+        grantFindMock: vi.fn(),
+        tagTraceUserMock: vi.fn(),
+        userGetMock: vi.fn()
+    })
+);
 
 vi.mock('@nangohq/database', () => ({ default: { knex: vi.fn() } }));
 vi.mock('@nangohq/shared', () => ({
@@ -38,7 +27,7 @@ vi.mock('@nangohq/shared', () => ({
 }));
 vi.mock('@nangohq/utils', async (importOriginal) => {
     const actual = await importOriginal<typeof Utils>();
-    return { ...actual, flagHasPlan: true, metrics: { ...actual.metrics, increment: metricsIncrementMock }, tagTraceUser: tagTraceUserMock };
+    return { ...actual, flagHasPlan: true, tagTraceUser: tagTraceUserMock };
 });
 vi.mock('../../middleware/access.middleware.js', () => ({
     default: {
@@ -163,10 +152,6 @@ describe('Management MCP OAuth authentication', () => {
         expect(headers.get('WWW-Authenticate')).toBe(
             'Bearer resource_metadata="https://mcp.nango.dev/.well-known/oauth-protected-resource/mcp", scope="environment:*"'
         );
-        expect(metricsIncrementMock).toHaveBeenCalledWith(metrics.Types.MCP_AUTH_FAILURE, 1, {
-            mcp_type: 'management',
-            reason: 'unauthorized'
-        });
     });
 
     it('returns insufficient_scope without API-key fallback', async () => {
@@ -179,10 +164,6 @@ describe('Management MCP OAuth authentication', () => {
         expect(apiKeyAuthenticateMock).not.toHaveBeenCalled();
         expect(status).toHaveBeenCalledWith(403);
         expect(headers.get('WWW-Authenticate')).toContain('error="insufficient_scope"');
-        expect(metricsIncrementMock).toHaveBeenCalledWith(metrics.Types.MCP_AUTH_FAILURE, 1, {
-            mcp_type: 'management',
-            reason: 'insufficient_scope'
-        });
     });
 
     it('rejects a token whose audience is not exactly the Management MCP resource', async () => {
@@ -194,10 +175,6 @@ describe('Management MCP OAuth authentication', () => {
 
         expect(apiKeyAuthenticateMock).not.toHaveBeenCalled();
         expect(status).toHaveBeenCalledWith(401);
-        expect(metricsIncrementMock).toHaveBeenCalledWith(metrics.Types.MCP_AUTH_FAILURE, 1, {
-            mcp_type: 'management',
-            reason: 'invalid_token'
-        });
     });
 
     it.each(['grantId', 'clientId', 'accountId'] as const)('rejects a token missing %s', async (field) => {
@@ -260,7 +237,6 @@ describe('Management MCP OAuth authentication', () => {
         expect(next).toHaveBeenCalledWith(grantError);
         expect(status).not.toHaveBeenCalled();
         expect(clientFindMock).not.toHaveBeenCalled();
-        expect(metricsIncrementMock).not.toHaveBeenCalled();
     });
 
     it('rejects a token when its CIMD client can no longer be resolved', async () => {
@@ -279,7 +255,6 @@ describe('Management MCP OAuth authentication', () => {
 
         expect(next).toHaveBeenCalledWith(planError);
         expect(status).not.toHaveBeenCalled();
-        expect(metricsIncrementMock).not.toHaveBeenCalled();
     });
 
     it('challenges requests without an accepted credential', async () => {
@@ -311,10 +286,6 @@ async function expectInvalidOAuthTokenChallenge(): Promise<void> {
     expect(next).not.toHaveBeenCalled();
     expect(status).toHaveBeenCalledWith(401);
     expect(headers.get('WWW-Authenticate')).toContain('error="invalid_token"');
-    expect(metricsIncrementMock).toHaveBeenCalledWith(metrics.Types.MCP_AUTH_FAILURE, 1, {
-        mcp_type: 'management',
-        reason: 'invalid_token'
-    });
 }
 
 function response(): {

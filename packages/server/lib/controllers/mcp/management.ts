@@ -5,10 +5,10 @@ import { environmentService } from '@nangohq/shared';
 import { principalFor } from '../../authz/principal.js';
 import { resolveAuditAttribution } from '../../middleware/audit/index.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { createManagementMcpEnvironmentLoader } from './environments/loader.js';
 import { createManagementMcpServer } from './managementServer.js';
 
 import type { RequestLocals } from '../../utils/express.js';
+import type { ManagementMcpEnvironment } from './managementTool.js';
 import type { GetManagementMcp, PostManagementMcp } from '@nangohq/types';
 
 export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res) => {
@@ -21,8 +21,7 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
                       account,
                       plan,
                       principal: requirePrincipal(res.locals),
-                      loadEnvironments: createManagementMcpEnvironmentLoader(account.id),
-                      loadEnvironment: (name: string) => environmentService.getByEnvironmentName(account.id, name),
+                      environments: await loadManagementMcpEnvironments(account.id),
                       audit: resolveAuditAttribution(req, res.locals)
                   }
               } as const)
@@ -80,4 +79,13 @@ function requirePrincipal(locals: RequestLocals) {
         throw new Error('Management MCP OAuth authentication requires a principal');
     }
     return principal;
+}
+
+async function loadManagementMcpEnvironments(accountId: number): Promise<ManagementMcpEnvironment[]> {
+    const environments = await environmentService.getEnvironmentsByAccountId(accountId);
+    if (environments.isErr()) {
+        throw environments.error;
+    }
+
+    return environments.value.map((environment) => ({ ...environment, account_id: accountId }));
 }

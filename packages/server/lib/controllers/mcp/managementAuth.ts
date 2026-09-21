@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { accountService, getPlan, userService } from '@nangohq/shared';
-import { flagHasPlan, metrics, tagTraceUser } from '@nangohq/utils';
+import { flagHasPlan, tagTraceUser } from '@nangohq/utils';
 
 import authMiddleware from '../../middleware/access.middleware.js';
 import { oauthServer, oauthServerConfig } from '../../oauth/server.js';
@@ -161,10 +161,6 @@ function sendBearerChallenge(res: Response, error?: 'invalid_token' | 'insuffici
     if (!oauthServerConfig) {
         throw new Error('Management MCP OAuth challenge requested while OAuth is disabled');
     }
-    metrics.increment(metrics.Types.MCP_AUTH_FAILURE, 1, {
-        mcp_type: 'management',
-        reason: error ?? 'unauthorized'
-    });
     const metadataUrl = new URL('/.well-known/oauth-protected-resource/mcp', oauthServerConfig.resource.resource).href;
     const attributes = [`resource_metadata="${metadataUrl}"`, `scope="${MANAGEMENT_MCP_OAUTH_SCOPE}"`];
     if (error) {

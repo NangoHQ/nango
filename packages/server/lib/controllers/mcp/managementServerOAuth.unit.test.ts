@@ -11,7 +11,6 @@ import { listIntegrationsTool } from './integrations/list.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { getProvidersTool } from './providers/get.js';
 
-import type { ManagementMcpEnvironmentLoader } from './environments/loader.js';
 import type { McpServer } from '@modelcontextprotocol/server';
 import type { Principal, ScopeSelector, WhereSelector } from '@nangohq/authz';
 import type { AuditAttribution, DBEnvironment, DBTeam } from '@nangohq/types';
@@ -49,7 +48,7 @@ describe('createManagementMcpServer with OAuth', () => {
     });
 
     it('exposes environments_list and every OAuth-supported environment-bound management tool', async () => {
-        const { client, server, loadEnvironment, loadEnvironments } = await createTestClient();
+        const { client, server, loadEnvironment } = await createTestClient();
 
         try {
             const result = await client.listTools();
@@ -77,7 +76,6 @@ describe('createManagementMcpServer with OAuth', () => {
                 });
                 expect(tool.inputSchema.required).toContain('environment');
             }
-            expect(loadEnvironments).not.toHaveBeenCalled();
             expect(loadEnvironment).not.toHaveBeenCalled();
         } finally {
             await client.close();
@@ -92,7 +90,7 @@ describe('createManagementMcpServer with OAuth', () => {
                 { id: 2, uuid: 'prod-environment', name: 'prod', is_production: true }
             ])
         );
-        const { client, server, loadEnvironment, loadEnvironments } = await createTestClient({
+        const { client, server, loadEnvironment } = await createTestClient({
             principal: principal(['environment:settings:read'], ['env:non-production'])
         });
 
@@ -108,7 +106,6 @@ describe('createManagementMcpServer with OAuth', () => {
             });
             expect(getEnvironmentsSpy).toHaveBeenCalledOnce();
             expect(getEnvironmentsSpy).toHaveBeenCalledWith(1);
-            expect(loadEnvironments).not.toHaveBeenCalled();
             expect(loadEnvironment).not.toHaveBeenCalled();
         } finally {
             await client.close();
@@ -455,21 +452,18 @@ async function createTestClient({
     principal: userPrincipal = principal(['environment:*'], ['env:*']),
     audit: auditAttribution,
     loadEnvironment: loadEnvironmentOverride,
-    loadEnvironments: loadEnvironmentsOverride,
     loadEnvironmentError,
     requestBody
 }: {
     principal?: Principal;
     audit?: AuditAttribution;
     loadEnvironment?: Mock<LoadEnvironment>;
-    loadEnvironments?: Mock<ManagementMcpEnvironmentLoader>;
     loadEnvironmentError?: Error;
     requestBody?: unknown;
 } = {}): Promise<{
     client: Client;
     server: McpServer;
     loadEnvironment: Mock<LoadEnvironment>;
-    loadEnvironments: Mock<ManagementMcpEnvironmentLoader>;
 }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     const environments = [fakeEnvironment({ id: 1, name: 'dev', isProduction: false }), fakeEnvironment({ id: 2, name: 'prod', isProduction: true })];
@@ -478,9 +472,7 @@ async function createTestClient({
         (loadEnvironmentError
             ? vi.fn((_name: string) => Promise.reject(loadEnvironmentError))
             : vi.fn((name: string) => Promise.resolve(environments.find((environment) => environment.name === name) ?? null)));
-    const loadEnvironments =
-        loadEnvironmentsOverride ??
-        vi.fn(() => Promise.resolve(environments.map(({ id, uuid, name, account_id, is_production }) => ({ id, uuid, name, account_id, is_production }))));
+    vi.spyOn(environmentService, 'getByEnvironmentName').mockImplementation((_accountId, name) => loadEnvironment(name));
     const server = await createManagementMcpServer(
         {
             type: 'oauth',
@@ -488,8 +480,7 @@ async function createTestClient({
                 account: fakeAccount(),
                 plan: null,
                 principal: userPrincipal,
-                loadEnvironments,
-                loadEnvironment,
+                environments: environments.map(({ id, uuid, name, account_id, is_production }) => ({ id, uuid, name, account_id, is_production })),
                 audit: auditAttribution
             }
         },
@@ -500,7 +491,7 @@ async function createTestClient({
     await server.connect(serverTransport);
     await client.connect(clientTransport);
 
-    return { client, server, loadEnvironment, loadEnvironments };
+    return { client, server, loadEnvironment };
 }
 
 function principal(can: ScopeSelector[], where: WhereSelector[]): Principal {
