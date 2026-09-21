@@ -4,6 +4,86 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="BYOC self-hosting" description="September 21, 2026">
+  Bring Your Own Cloud (BYOC) is now the recommended way to self-host Nango. Self-hosting usually means operating the platform yourself in exchange for keeping data in your own infrastructure. BYOC removes that trade-off. 
+  
+  Nango deploys and operates a dedicated instance inside your own cloud account, so your end users' credentials, synced records, and logs never leave it. Nango handles deployments, upgrades, scaling, incident response, and support, and you get every feature of Nango Cloud.
+
+  The new [BYOC guide](/guides/platform/self-hosting/byoc) covers this in full detail. BYOC supports AWS, GCP, and Azure. 
+  
+  If you prefer to run Nango yourself, see the [Self-Managed guide](/guides/platform/self-hosting/self-managed). Both require an [Enterprise plan](https://nango.dev/pricing). See the [self-hosting overview](/guides/platform/self-hosting/self-hosting#choose-your-path) for a comparison.
+</Update>
+---
+
+<Update label="Smaller improvements" description="September 17, 2026">
+  - **MCP integrations:** For integrations that use the generic MCP OAuth provider, you can set the OAuth scopes Nango requests, in the integration settings or when creating the integration. Previously, scopes came only from the MCP server's metadata. See [MCP auth](/guides/auth/mcp-auth).
+  - **CLI source maps:** Pass `--sourcemap false` to `nango compile`, `nango dryrun`, or `nango deploy` to leave source maps out of compiled function bundles.
+  - **Functions:** `nango.getVariant()` returns the variant of the current sync or action run.
+  - **New webhooks:** Nango can receive and forward webhooks from [Zoom](/api-integrations/zoom/webhooks), [Gong](/api-integrations/gong/webhooks), [Granola](/api-integrations/granola/webhooks), and [Outlook](/api-integrations/outlook/webhooks).
+</Update>
+---
+
+<Update label="nango.yaml sunset" description="September 16, 2026">
+  Nango no longer accepts deployments that use a `nango.yaml` configuration file. The deprecation was announced in July 2025, when TypeScript-based function configuration replaced it.
+
+  **Am I impacted?** Only if you still deploy custom functions from a `nango.yaml`. Those deployments now fail with an error that links to the migration guide. Functions that are already deployed keep running.
+
+  **What to do:** Upgrade the Nango CLI, run `nango migrate-to-zero-yaml`, and redeploy. The [migration guide](/guides/platform/migrations/migrate-to-zero-yaml) explains each change.
+</Update>
+---
+
+<Update label="Agent sessions updates" description="September 16, 2026">
+  Improvements to [agent sessions](/guides/agent-sessions) since the public beta launch:
+
+  - **Proxy tool:** A new `nango_proxy` meta tool lets the agent call any endpoint of a connected integration when no tool in the session fits. Nango authenticates the request, so the agent never sees credentials. It is off by default; turn it on per session. See [meta tools](/guides/agent-sessions#meta-tools).
+  - **Terminate a session:** A new `DELETE /sessions/{session_id}` API to end a session before it expires and revoke its token. See [terminating a session](/guides/agent-sessions#terminating-a-session).
+  - **Logs filter:** The Logs page has an Agent session filter that shows the operations a session ran. Each operation also shows which session drove it.
+  - **Clearer tool errors:** Failed tool calls return a message that says what failed and what the agent should do next.
+</Update>
+---
+
+<Update label="1,000+ supported APIs" description="September 14, 2026">
+  Nango now supports more than 1,000 APIs. Each comes with pre-built authorization, the proxy, and logs, and many include pre-built tools, triggers, and syncs.
+
+  Browse the [full list](/integrations/overview). If an API you need is missing, you can [request it or contribute it](/integrations/contribute-or-request-api).
+</Update>
+---
+
+<Update label="Webhook verification" description="September 14, 2026">
+  Nango now verifies more of the webhooks it receives from external APIs before forwarding them to your app.
+
+  - **Gmail:** Nango already verified the OIDC token that Google attaches when authentication is enabled on your Pub/Sub subscription. Pushes without one are now rejected by default and not forwarded, so enabling authentication is a required step in the [Gmail webhook guide](/api-integrations/google-mail/webhooks). If you need time to enable it, contact us and we can temporarily allow unsigned pushes for your account.
+  - **Google Drive and Calendar:** You can now save a webhook secret on the integration. Once set, Nango checks each notification's `X-Goog-Channel-Token` header against it and rejects mismatches. Without a secret, notifications are forwarded unverified, so set the secret before creating channels and pass it as the channel `token`. See the [Drive](/api-integrations/google-drive/webhooks) and [Calendar](/api-integrations/google-calendar/webhooks) guides.
+  - **GitHub App:** Webhooks without an `x-hub-signature-256` header are now rejected by default. GitHub only signs payloads when a webhook secret is set on your app, so it must match the secret shown on your Nango integration page. See the [GitHub App setup guide](/api-integrations/github-app/how-to-register-your-own-github-app-api-app).
+  - **Other providers:** Slack, PagerDuty, and Checkr webhooks with an invalid signature are now rejected instead of processed. Where a provider supports signature verification but no secret is configured on the integration, Nango still forwards the webhook and writes a warning to your logs.
+
+  **Am I impacted?** If your Gmail Pub/Sub subscription has no authentication, or your GitHub App has no webhook secret, those webhooks are no longer forwarded until you fix the setup. Drive and Calendar channels created without a `token` keep working until you save a webhook secret; recreate them with a `token` once you do. For other providers, check your logs for unverified-webhook warnings and set the signing secret on the integration.
+</Update>
+---
+
+<Update label="Billing page improvements" description="September 9, 2026">
+  We updated the billing page to make your spend easier to analyze:
+  - **Spend summary:** The top of the page shows what you will be billed for the current period, your plan, and when the period renews. Free accounts see when their limits reset.
+  - **Charges per metric:** The usage table shows what each metric costs, for the current period and past months, so you can see what drives your bill. Expand a metric to [see usage charts](/updates/changelog#usage-breakdowns).
+  - **Spend alerts:** Set a threshold on your current-period spend. When it is crossed, your billing contacts and account admins get an email with a link to the billing page. Available on paid plans.
+  - **Billing emails:** Add more than one billing email address.
+
+  ![New billing page](/images/changelog/new-billing-page.png)
+
+</Update>
+---
+
+<Update label="Environment read APIs" description="September 9, 2026">
+  The [account-level API](/updates/changelog#account-level-apis) launched with endpoints to create and delete environments and their API keys. It now has read endpoints too:
+
+  - [List environments](/reference/backend/http-api/environments/list), with an optional exact `name` filter. Scope: `account:environments:list`.
+  - [List environment API keys](/reference/backend/http-api/environments/list-api-keys), with an optional `display_name` filter. Scope: `account:environments:api_keys:list`.
+  - [Get an environment API key](/reference/backend/http-api/environments/get-api-key), including its secret. Scope: `account:environments:api_keys:read`.
+
+  All three take an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the matching scope.
+</Update>
+---
+
 <Update label="Audit trail" description="September 3, 2026">
   Nango now records an audit trail of the control-plane activity in your account: connection changes, integration settings, teammate roles, sign-ins, and more.
 
