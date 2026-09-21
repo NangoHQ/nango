@@ -10,7 +10,7 @@ import { baseUrl } from '@nangohq/utils';
 import { getAgentSessionByToken } from '../../services/agentSession.service.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
-import type { DBEnvironment, DBSyncConfig, DBTeam, IntegrationConfig } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam, IntegrationConfig, PostAgentSessions } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -312,7 +312,11 @@ describe(`POST ${endpoint}`, () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             token,
-            body: { tenant: { connections: { any: [{ tags: { tenant: 'acme' } }] } }, meta_tools: { nango_teleport: true } }
+            // A key the type does not allow, which is the point: the server still has to reject it.
+            body: {
+                tenant: { connections: { any: [{ tags: { tenant: 'acme' } }] } },
+                meta_tools: { nango_teleport: true } as PostAgentSessions['Body']['meta_tools']
+            }
         });
 
         isError(res.json);

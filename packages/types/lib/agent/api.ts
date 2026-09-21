@@ -21,11 +21,19 @@ export type AgentSessionIntegrationPolicyInput =
           deny?: AgentSessionToolListInput | undefined;
       };
 
-/**
- * A bare boolean turns a meta tool on or off. `nango_create_connection` also accepts an object, so
- * the tags it stamps on the connections it creates are configured where the tool itself is.
- */
+/** A bare boolean turns a meta tool on or off, and the object form says the same thing the long way. */
 export type AgentSessionMetaToolInput = boolean | { enabled: boolean; tags?: Tags | undefined };
+
+/**
+ * Only nango_create_connection takes tags, because it is the only one that creates a connection to
+ * put them on. Tags anywhere else are rejected rather than accepted and dropped.
+ */
+export interface AgentSessionMetaToolsInput {
+    nango_tool_search?: boolean | { enabled: boolean } | undefined;
+    nango_execute?: boolean | { enabled: boolean } | undefined;
+    nango_proxy?: boolean | { enabled: boolean } | undefined;
+    nango_create_connection?: boolean | { enabled: boolean; tags?: Tags | undefined } | undefined;
+}
 
 export interface PostAgentSessionsBody {
     tenant: {
@@ -36,7 +44,7 @@ export interface PostAgentSessionsBody {
     };
     toolset?: '*' | Record<string, AgentSessionIntegrationPolicyInput> | undefined;
     pinned_tools?: Record<string, string[]> | undefined;
-    meta_tools?: Record<string, AgentSessionMetaToolInput> | undefined;
+    meta_tools?: AgentSessionMetaToolsInput | undefined;
     expires_in?: string | undefined;
 }
 
