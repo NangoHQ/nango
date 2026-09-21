@@ -34,14 +34,38 @@ export interface FunctionAvailabilityRow {
     source: FunctionSource;
 }
 
+const listingOrderBy = [
+    { column: 'type', order: 'asc' as const },
+    { column: 'name', order: 'asc' as const },
+    { column: 'event', order: 'asc' as const },
+    { column: 'id', order: 'asc' as const }
+];
+
+type ListingPageRow = FunctionRow & { total: string | number };
+
+function catalogActions(provider: string | undefined, type: FunctionType | undefined): CatalogAction[] {
+    if (!provider || !flags.hasLiveCatalogActions || (type !== undefined && type !== 'action')) {
+        return [];
+    }
+    return listCatalogActions(provider);
+}
+
+async function providerForConfig(environmentId: number, providerConfigKey: string): Promise<string | undefined> {
+    const row = await db.knex
+        .from('_nango_configs')
+        .where({ environment_id: environmentId, unique_key: providerConfigKey, deleted: false })
+        .select<{ provider: string }>('provider')
+        .first();
+    return row?.provider;
+}
+
 export async function findActiveByEnvironment({
     environmentId,
     providerConfigKey,
     type,
     search,
     limit,
-    offset,
-    catalog = []
+    offset
 }: {
     environmentId: number;
     providerConfigKey: string;
@@ -49,52 +73,42 @@ export async function findActiveByEnvironment({
     search: string | undefined;
     limit: number;
     offset: number;
-    catalog?: CatalogAction[];
 }): Promise<{ rows: FunctionRow[]; total: number }> {
+    const catalog = catalogActions(await providerForConfig(environmentId, providerConfigKey), type);
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search, catalog });
+    const pageRows = await db.knex
+        .from(listing)
+        .select<ListingPageRow[]>('*', db.knex.raw('COUNT(*) OVER() AS total'))
+        .orderBy(listingOrderBy)
+        .limit(limit)
+        .offset(offset);
 
-    const [pageRows, countRow] = await Promise.all([
-        db.knex
-            .from(listing)
-            .select<FunctionRow[]>('*')
-            .orderBy([
-                { column: 'type', order: 'asc' },
-                { column: 'name', order: 'asc' },
-                { column: 'event', order: 'asc' },
-                { column: 'id', order: 'asc' }
-            ])
-            .limit(limit)
-            .offset(offset),
-        db.knex.from(listing).count<{ total: string }[]>('* as total').first()
-    ]);
+    let total = pageRows.length > 0 ? Number(pageRows[0]!.total) : 0;
+    // COUNT(*) OVER() is computed before LIMIT, but an empty page has no row to read it from.
+    if (pageRows.length === 0 && offset > 0) {
+        const countRow = await db.knex.from(listing).count<{ total: string }[]>('* as total').first();
+        total = countRow ? Number(countRow.total) : 0;
+    }
 
-    const total = countRow ? Number(countRow.total) : 0;
-    return { rows: pageRows, total };
+    const rows = pageRows.map(({ total: _total, ...row }) => row);
+    hydrateCatalogJsonSchemas(rows, catalog);
+    return { rows, total };
 }
 
 export async function findActiveActions({
     environmentId,
     providerConfigKey,
-    limit,
-    catalog = []
+    limit
 }: {
     environmentId: number;
     providerConfigKey: string;
     limit: number;
-    catalog?: CatalogAction[];
 }): Promise<FunctionRow[]> {
+    const catalog = catalogActions(await providerForConfig(environmentId, providerConfigKey), 'action');
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type: 'action', search: undefined, catalog });
-
-    return db.knex
-        .from(listing)
-        .select<FunctionRow[]>('*')
-        .orderBy([
-            { column: 'type', order: 'asc' },
-            { column: 'name', order: 'asc' },
-            { column: 'event', order: 'asc' },
-            { column: 'id', order: 'asc' }
-        ])
-        .limit(limit);
+    const rows = await db.knex.from(listing).select<FunctionRow[]>('*').orderBy(listingOrderBy).limit(limit);
+    hydrateCatalogJsonSchemas(rows, catalog);
+    return rows;
 }
 
 /**
@@ -122,7 +136,7 @@ export async function findActiveFunctionAvailability({
     );
 }
 
-export interface IntegrationFunctionCatalogRow {
+export interface IntegrationFunctionRow {
     integration_id: string;
     provider: string;
     name: string | null;
@@ -132,21 +146,21 @@ export interface IntegrationFunctionCatalogRow {
 }
 
 /**
- * Returns every integration in the environment alongside its active sync and action
- * functions, one row per function and a single row with null function columns for an
- * integration that has none.
+ * Returns every integration in the environment alongside its available sync and action
+ * functions (deployed rows plus catalog actions), one row per function and a single
+ * row with null function columns for an integration that has none.
  *
  * Built for compiling an agent session toolset, which has to tell "this integration does
  * not exist" apart from "it exists and has no tools", and has to see syncs so that naming
  * one is rejected as the wrong function type rather than as an unknown tool.
  */
-export async function findIntegrationFunctionCatalog({
+export async function findIntegrationFunctions({
     environmentId,
     providerConfigKeys
 }: {
     environmentId: number;
     providerConfigKeys?: string[] | undefined;
-}): Promise<IntegrationFunctionCatalogRow[]> {
+}): Promise<IntegrationFunctionRow[]> {
     const query = db.knex
         .from({ nc: '_nango_configs' })
         .leftJoin({ sc: '_nango_sync_configs' }, function () {
@@ -158,7 +172,7 @@ export async function findIntegrationFunctionCatalog({
         })
         .where('nc.environment_id', environmentId)
         .andWhere('nc.deleted', false)
-        .select<CatalogQueryRow[]>(
+        .select<DeployedFunctionRow[]>(
             'nc.unique_key AS integration_id',
             'nc.provider',
             'sc.sync_name AS name',
@@ -175,24 +189,24 @@ export async function findIntegrationFunctionCatalog({
         query.whereIn('nc.unique_key', providerConfigKeys);
     }
 
-    return mergeLiveCatalogIntoFunctionCatalog(await query);
+    return appendCatalogActions(await query);
 }
 
-type CatalogQueryRow = IntegrationFunctionCatalogRow;
+type DeployedFunctionRow = IntegrationFunctionRow;
 
-function mergeLiveCatalogIntoFunctionCatalog(rows: CatalogQueryRow[]): IntegrationFunctionCatalogRow[] {
+function appendCatalogActions(deployedRows: DeployedFunctionRow[]): IntegrationFunctionRow[] {
     if (!flags.hasLiveCatalogActions) {
-        return rows.map(toCatalogRow);
+        return deployedRows.map(toFunctionRow);
     }
 
-    const byIntegration = new Map<string, CatalogQueryRow[]>();
-    for (const row of rows) {
+    const byIntegration = new Map<string, DeployedFunctionRow[]>();
+    for (const row of deployedRows) {
         const group = byIntegration.get(row.integration_id) ?? [];
         group.push(row);
         byIntegration.set(row.integration_id, group);
     }
 
-    const merged: IntegrationFunctionCatalogRow[] = [];
+    const merged: IntegrationFunctionRow[] = [];
     for (const group of byIntegration.values()) {
         const sample = group[0];
         if (!sample) {
@@ -200,8 +214,8 @@ function mergeLiveCatalogIntoFunctionCatalog(rows: CatalogQueryRow[]): Integrati
         }
 
         const deployedActionNames = new Set(group.filter((row) => row.type === 'action' && row.name).map((row) => row.name as string));
-        const deployed = group.filter((row) => row.name !== null).map(toCatalogRow);
-        const live = listCatalogActions(sample.provider)
+        const deployed = group.filter((row) => row.name !== null).map(toFunctionRow);
+        const catalog = listCatalogActions(sample.provider)
             .filter((action) => !deployedActionNames.has(action.name))
             .map((action) => ({
                 integration_id: sample.integration_id,
@@ -212,7 +226,7 @@ function mergeLiveCatalogIntoFunctionCatalog(rows: CatalogQueryRow[]): Integrati
                 enabled: true
             }));
 
-        const functions = [...deployed, ...live];
+        const functions = [...deployed, ...catalog];
         if (functions.length === 0) {
             merged.push({
                 integration_id: sample.integration_id,
@@ -237,7 +251,7 @@ function mergeLiveCatalogIntoFunctionCatalog(rows: CatalogQueryRow[]): Integrati
     return merged;
 }
 
-function toCatalogRow(row: CatalogQueryRow): IntegrationFunctionCatalogRow {
+function toFunctionRow(row: DeployedFunctionRow): IntegrationFunctionRow {
     return {
         integration_id: row.integration_id,
         provider: row.provider,
@@ -259,9 +273,9 @@ export interface ActionInputSchemaRow {
  * Returns the input model name and schema definitions for named actions, across as many
  * integrations as the caller asks for in one query.
  *
- * An active deployed action occupies the name even when it is disabled: the live catalog is
+ * An active deployed action occupies the name even when it is disabled: the catalog is
  * not used as a fallback, and a disabled deployed row contributes no schema. Catalog schemas
- * are returned only for unoccupied names that are currently enabled.
+ * are returned only for unoccupied names.
  */
 export async function findActionInputSchemas({
     environmentId,
@@ -323,7 +337,7 @@ export async function findActionInputSchemas({
         .select<{ unique_key: string; provider: string }[]>('unique_key', 'provider');
 
     const configByKey = new Map(configs.map((config) => [config.unique_key, config]));
-    const live: ActionInputSchemaRow[] = [];
+    const catalogRows: ActionInputSchemaRow[] = [];
     for (const action of missing) {
         const config = configByKey.get(action.integrationId);
         if (!config) {
@@ -333,7 +347,7 @@ export async function findActionInputSchemas({
         if (!catalog) {
             continue;
         }
-        live.push({
+        catalogRows.push({
             integration_id: action.integrationId,
             name: action.name,
             input: catalog.input,
@@ -341,7 +355,7 @@ export async function findActionInputSchemas({
         });
     }
 
-    return [...deployed, ...live];
+    return [...deployed, ...catalogRows];
 }
 
 function activeSyncConfigBase({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Knex.QueryBuilder {
@@ -367,20 +381,13 @@ export async function findActiveByName({
     name: string;
     type: FunctionType | undefined;
 }): Promise<FunctionRow | undefined> {
-    const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search: undefined });
+    const catalog = catalogActions(await providerForConfig(environmentId, providerConfigKey), type);
+    const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search: undefined, catalog });
 
-    const row = await db.knex
-        .from(listing)
-        .select<FunctionRow[]>('*')
-        .where('name', name)
-        .orderBy([
-            { column: 'type', order: 'asc' },
-            { column: 'name', order: 'asc' },
-            { column: 'event', order: 'asc' },
-            { column: 'id', order: 'asc' }
-        ])
-        .first();
-
+    const row = await db.knex.from(listing).select<FunctionRow[]>('*').where('name', name).orderBy(listingOrderBy).first();
+    if (row) {
+        hydrateCatalogJsonSchemas([row], catalog);
+    }
     return row;
 }
 
@@ -411,6 +418,37 @@ function buildListingSubquery({
     return db.knex.raw(`(${union}) AS listing`, branches);
 }
 
+/**
+ * Strip away the extra fields from the catalog action object that are not needed for the listing.
+ * Mainly json_schema which can be large.
+ */
+function toCatalogListingBind(catalog: CatalogAction[]): Pick<CatalogAction, 'name' | 'description' | 'scopes' | 'input' | 'output'>[] {
+    return catalog.map((action) => ({
+        name: action.name,
+        description: action.description,
+        scopes: action.scopes,
+        input: action.input,
+        output: action.output
+    }));
+}
+
+/**
+ * Used to re-hydrate the json_schema field into the FunctionRow object.
+ */
+function hydrateCatalogJsonSchemas(rows: FunctionRow[], catalog: CatalogAction[]): void {
+    if (catalog.length === 0) {
+        return;
+    }
+
+    const schemaByName = new Map(catalog.map((action) => [action.name, action.json_schema]));
+    for (const row of rows) {
+        if (row.source !== 'nango-catalog') {
+            continue;
+        }
+        row.json_schema = schemaByName.get(row.name) ?? null;
+    }
+}
+
 function buildCatalogBranch({
     environmentId,
     providerConfigKey,
@@ -422,10 +460,9 @@ function buildCatalogBranch({
     catalog: CatalogAction[];
     search: string | undefined;
 }): Knex.QueryBuilder {
-    const catalogRows = db.knex.raw(
-        `jsonb_to_recordset(?::jsonb) AS c(name text, description text, scopes jsonb, input text, output text[], json_schema json)`,
-        [JSON.stringify(catalog)]
-    );
+    const catalogRows = db.knex.raw(`jsonb_to_recordset(?::jsonb) AS c(name text, description text, scopes jsonb, input text, output text[])`, [
+        JSON.stringify(toCatalogListingBind(catalog))
+    ]);
 
     const query = db.knex
         .from({ nc: '_nango_configs' })
@@ -438,10 +475,7 @@ function buildCatalogBranch({
         );
 
     if (search) {
-        const pattern = `%${escapeLikePattern(search)}%`;
-        query.andWhere(function () {
-            this.whereRaw('c.name ILIKE ?', [pattern]).orWhereRaw('c.description ILIKE ?', [pattern]);
-        });
+        query.andWhereRaw('c.name ILIKE ?', [`%${escapeLikePattern(search)}%`]);
     }
 
     return query.select(
@@ -455,7 +489,7 @@ function buildCatalogBranch({
         `),
         'c.input',
         db.knex.raw('c.output AS returns'),
-        'c.json_schema',
+        db.knex.raw('NULL::json AS json_schema'),
         db.knex.raw('NULL::text AS runs'),
         db.knex.raw('NULL::boolean AS auto_start'),
         db.knex.raw('NULL::boolean AS track_deletes'),

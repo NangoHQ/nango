@@ -8,7 +8,7 @@ import type { JSONSchema7 } from 'json-schema';
 export const TEMPLATES_ZERO_PREFIX = 'templates-zero';
 
 const nodeRequire = createRequire(import.meta.url);
-const flowsJson = nodeRequire('../../../flows.zero.json') as FlowsZeroJson;
+let flowsJson: FlowsZeroJson | undefined;
 
 export interface CatalogAction {
     name: string;
@@ -26,6 +26,11 @@ export interface CatalogAction {
 const actionsByProvider = new Map<string, CatalogAction[]>();
 const actionByProviderAndName = new Map<string, Map<string, CatalogAction>>();
 const templatesZeroFolderByProvider = new Map<string, string>();
+
+function getFlowsJson(): FlowsZeroJson {
+    flowsJson ??= nodeRequire('../../../flows.zero.json') as FlowsZeroJson;
+    return flowsJson;
+}
 
 function resolveJsonSchema({
     itemSchema,
@@ -55,7 +60,7 @@ function loadProvider(provider: string): CatalogAction[] {
         return cached;
     }
 
-    const integration = flowsJson.find((entry) => entry.providerConfigKey === provider);
+    const integration = getFlowsJson().find((entry) => entry.providerConfigKey === provider);
     if (!integration) {
         actionsByProvider.set(provider, []);
         actionByProviderAndName.set(provider, new Map());

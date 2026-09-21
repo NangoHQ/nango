@@ -5,7 +5,6 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { logContextGetter } from '@nangohq/logs';
 import { getGlobalWebhookReceiveUrl, ProxyRequest, remoteFileService, seeders, syncManager } from '@nangohq/shared';
-import { listCatalogActions } from '@nangohq/shared/lib/services/catalog/actions.js';
 import { Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
@@ -452,34 +451,39 @@ describe('POST /mcp management server', () => {
             type: 'action'
         });
 
-        const res = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'tools/call',
-                params: {
-                    name: 'functions_list',
-                    arguments: { integration_id: 'github', type: 'action', search: 'issue', page: 0, limit: 100 }
+        const listFunctions = async (arguments_: Record<string, unknown>) => {
+            const res = await mcpPost({
+                token: secret,
+                body: {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'tools/call',
+                    params: { name: 'functions_list', arguments: arguments_ }
                 }
-            }
-        });
+            });
+            expect(res.status).toBe(200);
+            expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
+            return res.json.result.structuredContent as {
+                data: { name: string; type: string; source: string }[];
+                pagination: { total: number; page: number; limit: number };
+            };
+        };
 
-        expect(res.status).toBe(200);
-        expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
-        const payload = res.json.result.structuredContent;
-        const occupied = new Set(['create-issue']);
-        const catalogIssueHits = listCatalogActions('github').filter(
-            (action) => !occupied.has(action.name) && (action.name.toLowerCase().includes('issue') || action.description.toLowerCase().includes('issue'))
-        ).length;
-        expect(payload.pagination).toStrictEqual({ total: catalogIssueHits + 1, page: 0, limit: 100 });
-        expect(payload.data.every((fn: { type: string }) => fn.type === 'action')).toBe(true);
-        expect(payload.data.some((fn: { name: string }) => fn.name === 'sync-issues')).toBe(false);
-        expect(payload.data.some((fn: { name: string }) => fn.name === 'create-user')).toBe(false);
-        expect(payload.data.some((fn: { name: string; source: string }) => fn.name === 'list-issues' && fn.source === 'nango-catalog')).toBe(true);
-        expect(payload.data.filter((fn: { source: string }) => fn.source !== 'nango-catalog')).toEqual([
-            expect.objectContaining({ name: 'create-issue', type: 'action' })
-        ]);
+        const allActions = await listFunctions({ integration_id: 'github', type: 'action', page: 0, limit: 100 });
+        expect(allActions.data.every((fn) => fn.type === 'action')).toBe(true);
+        expect(allActions.data.some((fn) => fn.name === 'sync-issues')).toBe(false);
+        expect(allActions.data.some((fn) => fn.name === 'create-user' && fn.source !== 'nango-catalog')).toBe(true);
+        expect(allActions.data.some((fn) => fn.name === 'create-issue' && fn.source !== 'nango-catalog')).toBe(true);
+        expect(allActions.data.some((fn) => fn.name === 'list-issues' && fn.source === 'nango-catalog')).toBe(true);
+        expect(new Set(allActions.data.map((fn) => fn.name)).size).toBe(allActions.data.length);
+
+        const searched = await listFunctions({ integration_id: 'github', type: 'action', search: 'issue', page: 0, limit: 100 });
+        const expected = allActions.data.filter((fn) => fn.name.toLowerCase().includes('issue'));
+        expect(searched.data.map((fn) => fn.name)).toEqual(expected.map((fn) => fn.name));
+        expect(searched.pagination).toStrictEqual({ total: expected.length, page: 0, limit: 100 });
+        expect(searched.data.some((fn) => fn.name === 'create-user')).toBe(false);
+        expect(searched.data.some((fn) => fn.name === 'create-issue' && fn.source !== 'nango-catalog')).toBe(true);
+        expect(searched.data.some((fn) => fn.name === 'list-issues' && fn.source === 'nango-catalog')).toBe(true);
     });
 
     it('returns public errors for invalid function arguments and missing integrations', async () => {

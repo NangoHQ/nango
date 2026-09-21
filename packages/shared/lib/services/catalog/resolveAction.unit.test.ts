@@ -58,10 +58,11 @@ describe('resolveRunnableAction', () => {
         const result = await resolveRunnableAction({ environmentId: 1, integration: config, name: 'create-issue' });
 
         expect(result).toEqual({ kind: 'deployed', config: deployed });
+        expect(mockGetSyncConfigRaw).toHaveBeenCalledWith({ environmentId: 1, config_id: 9, name: 'create-issue', isAction: true });
         expect(mockGetCatalogAction).not.toHaveBeenCalled();
     });
 
-    it('returns a synthetic config when the catalog action is on and not deployed', async () => {
+    it('returns a synthetic config when the name is in the catalog and not deployed', async () => {
         mockGetSyncConfigRaw.mockResolvedValue(null);
         mockGetCatalogAction.mockReturnValue({
             name: 'create-issue',
