@@ -1888,6 +1888,32 @@ apple-business-manager:
             description: The EC private key (PEM format) used to sign the client assertion JWT.
             doc_section: '#step-1-create-an-api-account-and-generate-a-private-key'
 
+apple-calendar:
+    display_name: Apple Calendar
+    categories:
+        - productivity
+    auth_mode: BASIC
+    credentials_verification_script: appleCalendarCredentialsVerification
+    proxy:
+        base_url: https://caldav.icloud.com
+    docs: https://nango.dev/docs/api-integrations/apple-calendar
+    docs_connect: https://nango.dev/docs/api-integrations/apple-calendar/connect
+    credentials:
+        username:
+            type: string
+            title: Apple ID
+            description: Your Apple ID email address.
+            format: email
+            example: you@icloud.com
+            doc_section: '#step-1-find-your-apple-id'
+        password:
+            type: string
+            title: App-Specific Password
+            description: An app-specific password for your Apple ID.
+            example: abcd-****-****-mnop
+            pattern: '^[a-z]{4}-[a-z]{4}-[a-z]{4}-[a-z]{4}$'
+            doc_section: '#step-2-generate-an-app-specific-password'
+
 appstle-subscriptions:
     display_name: Appstle Subscriptions
     categories:

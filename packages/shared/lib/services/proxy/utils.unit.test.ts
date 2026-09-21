@@ -1787,6 +1787,25 @@ describe('buildProxyURL', () => {
 });
 
 describe('getAxiosConfiguration', () => {
+    it.each(['PROPFIND', 'REPORT'] as const)('forwards the request body for WebDAV/CalDAV method %s (e.g. Apple Calendar)', (method) => {
+        const config = getDefaultProxy({
+            method,
+            data: '<propfind xmlns="DAV:"><prop><current-user-principal/></prop></propfind>',
+            provider: {
+                auth_mode: 'BASIC',
+                proxy: { base_url: 'https://caldav.icloud.com' }
+            }
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'BASIC', username: 'user@icloud.com', password: 'app-specific-pw' } })
+        });
+
+        expect(axiosConfig.method).toBe(method);
+        expect(axiosConfig.data).toBe('<propfind xmlns="DAV:"><prop><current-user-principal/></prop></propfind>');
+    });
+
     it('should set beforeRedirect by default (headers are forwarded on redirect by default)', () => {
         const config = getDefaultProxy({
             provider: {
