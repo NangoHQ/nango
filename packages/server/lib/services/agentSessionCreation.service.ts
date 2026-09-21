@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
+import { connectionTagsSchema } from '@nangohq/shared';
 import { baseUrl, Err, Ok, report } from '@nangohq/utils';
 
 import * as agentSessionService from './agentSession.service.js';
@@ -12,7 +13,9 @@ import type { LogContextOrigin } from '@nangohq/logs';
 import type {
     AgentSession,
     AgentSessionCompiledToolset,
+    AgentSessionCreateConnectionConfig,
     AgentSessionCreationErrorCode,
+    AgentSessionMetaToolInput,
     AgentSessionMetaTools,
     AgentSessionMetaToolsSummary,
     AgentSessionPinnedTools,
@@ -40,14 +43,25 @@ const EXPIRES_IN_UNITS_IN_MS: Record<string, number> = {
     d: 24 * 60 * 60 * 1000
 };
 
-const META_TOOLS = {
+const BOOLEAN_META_TOOLS = {
     nangoToolSearch: { name: 'nango_tool_search', enabledByDefault: true },
     nangoExecute: { name: 'nango_execute', enabledByDefault: true },
     // Off by default: it reaches any endpoint of a connected integration, not only the toolset's tools.
     nangoProxy: { name: 'nango_proxy', enabledByDefault: false }
-} as const satisfies Record<keyof AgentSessionMetaTools, { name: keyof AgentSessionMetaToolsSummary; enabledByDefault: boolean }>;
+} as const satisfies Record<string, { name: keyof AgentSessionMetaToolsSummary; enabledByDefault: boolean }>;
 
-const META_TOOL_NAMES = Object.values(META_TOOLS).map((metaTool) => metaTool.name);
+// Off by default: it puts a connect link in front of the end user, in the agent's own words.
+const CREATE_CONNECTION_META_TOOL = { name: 'nango_create_connection', enabledByDefault: false } as const;
+
+const META_TOOL_NAMES: string[] = [...Object.values(BOOLEAN_META_TOOLS).map((metaTool) => metaTool.name), CREATE_CONNECTION_META_TOOL.name];
+
+export const agentSessionMetaToolSchema = z.union([
+    z.boolean(),
+    z.strictObject({
+        enabled: z.boolean(),
+        tags: connectionTagsSchema.optional()
+    })
+]);
 
 export const agentSessionExpiresInSchema = z
     .string()
@@ -93,7 +107,7 @@ export interface CreateAgentSessionParams {
     connections: AgentSessionTenantConnections;
     toolset: AgentSessionToolsetPolicy | undefined;
     pinnedTools: AgentSessionPinnedTools | undefined;
-    metaTools: Record<string, boolean> | undefined;
+    metaTools: Record<string, AgentSessionMetaToolInput> | undefined;
     expiresInMs: number | undefined;
 }
 
@@ -266,24 +280,43 @@ async function runCreation(params: CreateAgentSessionParams, logCtx: LogContextO
     });
 }
 
-export function parseMetaTools(requested: Record<string, boolean> | undefined): { applied: AgentSessionMetaTools; unknown: string[] } {
-    const unknown = Object.keys(requested ?? {}).filter((key) => !META_TOOL_NAMES.includes(key as keyof AgentSessionMetaToolsSummary));
+export function parseMetaTools(requested: Record<string, AgentSessionMetaToolInput> | undefined): { applied: AgentSessionMetaTools; unknown: string[] } {
+    const unknown = Object.keys(requested ?? {}).filter((key) => !META_TOOL_NAMES.includes(key));
 
-    const applied = {} as Record<keyof AgentSessionMetaTools, boolean>;
-    for (const [field, metaTool] of Object.entries(META_TOOLS) as [keyof AgentSessionMetaTools, (typeof META_TOOLS)[keyof AgentSessionMetaTools]][]) {
-        applied[field] = requested?.[metaTool.name] ?? metaTool.enabledByDefault;
+    const booleans = {} as Record<keyof typeof BOOLEAN_META_TOOLS, boolean>;
+    for (const [field, metaTool] of Object.entries(BOOLEAN_META_TOOLS) as [keyof typeof BOOLEAN_META_TOOLS, { name: string; enabledByDefault: boolean }][]) {
+        const value = requested?.[metaTool.name];
+        booleans[field] = typeof value === 'boolean' ? value : (value?.enabled ?? metaTool.enabledByDefault);
     }
 
-    return { applied, unknown };
+    return { applied: { ...booleans, nangoCreateConnection: parseCreateConnection(requested?.[CREATE_CONNECTION_META_TOOL.name]) }, unknown };
 }
 
 export function metaToolsSummary(metaTools: AgentSessionMetaTools): AgentSessionMetaToolsSummary {
     const summary = {} as AgentSessionMetaToolsSummary;
-    for (const [field, metaTool] of Object.entries(META_TOOLS) as [keyof AgentSessionMetaTools, (typeof META_TOOLS)[keyof AgentSessionMetaTools]][]) {
-        summary[metaTool.name] = metaTools[field];
+    for (const [field, metaTool] of Object.entries(BOOLEAN_META_TOOLS) as [keyof typeof BOOLEAN_META_TOOLS, { name: keyof AgentSessionMetaToolsSummary }][]) {
+        (summary[metaTool.name] as boolean) = metaTools[field];
     }
 
+    summary.nango_create_connection = metaTools.nangoCreateConnection;
+
     return summary;
+}
+
+/**
+ * Old sessions were stored before this tool existed, so a row with no entry reads as the default
+ * rather than as an undefined the tool would then have to guard against.
+ */
+export function parseCreateConnection(requested: AgentSessionMetaToolInput | undefined): AgentSessionCreateConnectionConfig {
+    if (requested === undefined) {
+        return { enabled: CREATE_CONNECTION_META_TOOL.enabledByDefault, tags: {} };
+    }
+
+    if (typeof requested === 'boolean') {
+        return { enabled: requested, tags: {} };
+    }
+
+    return { enabled: requested.enabled, tags: requested.tags ?? {} };
 }
 
 function rejected(error: { code: AgentSessionCreationErrorCode; message: string; payload: Record<string, unknown> }): AgentSessionCreationError {

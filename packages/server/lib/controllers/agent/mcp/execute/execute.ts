@@ -4,6 +4,8 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { executeAction } from '../../../../services/action.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
+import { connectRecovery } from '../connectRecovery.js';
+import { resolveSessionConnection } from '../sessionConnection.js';
 import { defineAgentSessionMcpTool } from '../sessionTool.js';
 import { actionExecutionErrorToMcp } from './errors.js';
 import { executeInputSchema } from './schema.js';
@@ -89,11 +91,11 @@ export async function executeSessionTool({
         );
     }
 
-    const connection = Object.hasOwn(session.resolvedConnections, integrationId) ? session.resolvedConnections[integrationId] : undefined;
+    const connection = await resolveSessionConnection({ session, integrationId });
     if (!connection) {
         return Err(
             new PublicMcpError(
-                `Integration '${integrationId}' has no connection in this session, so none of its tools can run. Tell the user they need to connect it.`,
+                `Integration '${integrationId}' has no connection in this session, so none of its tools can run. ${connectRecovery(integrationId, session)}`,
                 { code: 'integration_not_connected', integrationId }
             )
         );

@@ -7,8 +7,10 @@ import type { Knex } from '@nangohq/database';
 import type {
     AgentSession,
     AgentSessionCompiledToolset,
+    AgentSessionCreateConnectionConfig,
     AgentSessionEndedReason,
     AgentSessionMetaTools,
+    AgentSessionResolvedConnection,
     AgentSessionResolvedConnections,
     DBEnvironment,
     DBTeam
@@ -17,6 +19,8 @@ import type { Result } from '@nangohq/utils';
 
 const AGENT_SESSIONS_TABLE = 'agent_sessions';
 const ENVIRONMENTS_TABLE = '_nango_environments';
+
+export const DEFAULT_CREATE_CONNECTION_CONFIG: AgentSessionCreateConnectionConfig = { enabled: false, tags: {} };
 
 export interface DBAgentSession {
     readonly id: string;
@@ -331,6 +335,52 @@ function tokenNotFoundError(token: string): AgentSessionError {
     });
 }
 
+/**
+ * Binds a connection the agent created to the integration slot it was created for. The slot has to
+ * still be empty: what a session may reach is fixed when it is created, and filling a gap it was
+ * created with is not the same as swapping the connection an integration already resolved.
+ */
+export async function fillResolvedConnection(
+    db: Knex,
+    { id, integrationId, connection }: { id: string; integrationId: string; connection: AgentSessionResolvedConnection }
+): Promise<Result<AgentSession, AgentSessionError>> {
+    try {
+        const [session] = await db<DBAgentSession>(AGENT_SESSIONS_TABLE)
+            .where({ id })
+            .whereRaw('resolved_connections -> ? IS NULL', [integrationId])
+            .update({
+                resolved_connections: db.raw('resolved_connections || ?::jsonb', [JSON.stringify({ [integrationId]: connection })]),
+                updated_at: new Date()
+            })
+            .returning('*');
+
+        // Lost the race against a concurrent fill, so the row now holds a connection either way.
+        if (!session) {
+            return await getAgentSessionById(db, id);
+        }
+
+        return Ok(toAgentSession(session));
+    } catch (err) {
+        return Err(
+            new AgentSessionError({
+                code: 'creation_failed',
+                message: 'Failed to attach the connection to the agent session',
+                payload: { sessionId: id, integrationId },
+                cause: err
+            })
+        );
+    }
+}
+
+async function getAgentSessionById(db: Knex, id: string): Promise<Result<AgentSession, AgentSessionError>> {
+    const session = await db<DBAgentSession>(AGENT_SESSIONS_TABLE).where({ id }).first();
+    if (!session) {
+        return Err(new AgentSessionError({ code: 'not_found', message: 'Agent session not found', payload: { sessionId: id } }));
+    }
+
+    return Ok(toAgentSession(session));
+}
+
 function creationFailedError(params: CreateAgentSessionParams, cause?: unknown): AgentSessionError {
     return new AgentSessionError({
         code: 'creation_failed',
@@ -347,7 +397,7 @@ function toAgentSession(session: DBAgentSession): AgentSession {
         accountId: session.account_id,
         resolvedConnections: session.resolved_connections,
         compiledToolset: session.compiled_toolset,
-        metaTools: session.meta_tools,
+        metaTools: { ...session.meta_tools, nangoCreateConnection: session.meta_tools.nangoCreateConnection ?? DEFAULT_CREATE_CONNECTION_CONFIG },
         expiresAt: session.expires_at,
         endedAt: session.ended_at,
         endedReason: session.ended_reason,

@@ -22,6 +22,13 @@ import type { Result } from '@nangohq/utils';
 export const MAX_SELECTORS = 10;
 export const CANDIDATE_SAMPLE_SIZE = 10;
 
+/**
+ * Stamped on every connection the agent creates through nango_create_connection, and the only thing
+ * tying that connection back to the session that asked for it. Tag keys are lowercased on the way
+ * in, so this is written the way it is stored.
+ */
+export const AGENT_SESSION_TAG_KEY = 'nango/agent_session';
+
 const selectorSchema = z.strictObject({
     tags: connectionTagsSchema.refine((tags) => Object.keys(tags).length > 0, {
         message: 'A connection selector must carry at least one tag'
@@ -121,6 +128,36 @@ export async function resolveTenantConnections({
     }
 
     return pickConnectionPerIntegration({ matches, verifiedPins, unknownPins, notMatchedPins });
+}
+
+/**
+ * The connection the agent created for this integration, if the end user has since gone through the
+ * connect flow. Matching on the session tag rather than the tenant selectors, because the whole
+ * reason the slot was empty is that no selector matched anything.
+ */
+export async function findConnectionCreatedForSession({
+    environmentId,
+    sessionId,
+    integrationId
+}: {
+    environmentId: number;
+    sessionId: string;
+    integrationId: string;
+}): Promise<AgentSessionResolvedConnection | null> {
+    const matches = await connectionService.groupConnectionMatchesByIntegration({
+        environmentId,
+        tagSelectors: [{ [AGENT_SESSION_TAG_KEY]: sessionId }],
+        pinnedConnections: [],
+        candidateSampleSize: 1
+    });
+
+    const match = matches.find((candidate) => candidate.integration_id === integrationId);
+    const [candidate] = match?.candidates ?? [];
+    if (!match || !candidate) {
+        return null;
+    }
+
+    return toResolvedConnection(match.integration_id, match.provider, candidate);
 }
 
 export function pickConnectionPerIntegration({

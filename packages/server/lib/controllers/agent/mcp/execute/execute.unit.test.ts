@@ -45,7 +45,7 @@ function context({
         accountId: 1,
         resolvedConnections,
         compiledToolset,
-        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
+        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } },
         expiresAt: new Date(),
         endedAt: null,
         endedReason: null,
@@ -168,7 +168,7 @@ describe('executeSessionTool', () => {
 
         expect(errorOf(result)).toBeInstanceOf(PublicMcpError);
         expect(errorOf(result).message).toBe(
-            "Integration 'notion' has no connection in this session, so none of its tools can run. Tell the user they need to connect it."
+            "Integration 'notion' has no connection in this session, so none of its tools can run. Nothing you can do from here will connect it. Tell the user they need to connect it, and carry on with the tools you do have."
         );
         expect(codeOf(result)).toBe('integration_not_connected');
         expect(integrationOf(result)).toBe('notion');
@@ -308,7 +308,13 @@ describe('nango_execute', () => {
     });
 
     it('does not point at tool search when the session turned it off', async () => {
-        const withoutSearch = { ...context(), session: { ...context().session, metaTools: { nangoToolSearch: false, nangoExecute: true, nangoProxy: false } } };
+        const withoutSearch = {
+            ...context(),
+            session: {
+                ...context().session,
+                metaTools: { nangoToolSearch: false, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } }
+            }
+        };
 
         const result = await executeTool.handler({ tool: 'notion__delete_doc' }, withoutSearch);
 

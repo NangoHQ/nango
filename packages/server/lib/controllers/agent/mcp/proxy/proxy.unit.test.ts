@@ -40,7 +40,7 @@ function context(): AgentSessionMcpContext {
         accountId: 1,
         resolvedConnections: CONNECTIONS,
         compiledToolset: TOOLSET,
-        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: true },
+        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: true, nangoCreateConnection: { enabled: false, tags: {} } },
         expiresAt: new Date(),
         endedAt: null,
         endedReason: null,
@@ -152,7 +152,7 @@ describe('proxyTool', () => {
         const result = await callProxy({ integration: 'slack', method: 'GET', path: '/api/auth.test' });
 
         expect(errorOf(result).message).toBe(
-            "Integration 'slack' has no connection in this session, so no request to it can be authenticated. Tell the user they need to connect it."
+            "Integration 'slack' has no connection in this session, so no request to it can be authenticated. Nothing you can do from here will connect it. Tell the user they need to connect it, and carry on with the tools you do have."
         );
         expect(codeOf(result)).toBe('integration_not_connected');
         expect(request).not.toHaveBeenCalled();
@@ -269,7 +269,11 @@ describe('proxyTool', () => {
     });
 
     it('is enabled only when the session turned the meta tool on', () => {
-        expect(proxyTool.isEnabled({ nangoToolSearch: true, nangoExecute: true, nangoProxy: true })).toBe(true);
-        expect(proxyTool.isEnabled({ nangoToolSearch: true, nangoExecute: true, nangoProxy: false })).toBe(false);
+        expect(proxyTool.isEnabled({ nangoToolSearch: true, nangoExecute: true, nangoProxy: true, nangoCreateConnection: { enabled: false, tags: {} } })).toBe(
+            true
+        );
+        expect(proxyTool.isEnabled({ nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } })).toBe(
+            false
+        );
     });
 });

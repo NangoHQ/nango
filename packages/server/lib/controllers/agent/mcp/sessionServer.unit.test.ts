@@ -15,7 +15,7 @@ vi.mock('../../../services/action.service.js', () => ({ executeAction }));
 function session({
     compiledToolset = {},
     resolvedConnections = {},
-    metaTools = { nangoToolSearch: true, nangoExecute: true, nangoProxy: false }
+    metaTools = { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } }
 }: {
     compiledToolset?: AgentSessionCompiledToolset;
     resolvedConnections?: AgentSession['resolvedConnections'];
@@ -114,12 +114,20 @@ describe('listSessionTools', () => {
     it('lists the meta tools the session was created with', () => {
         expect(listSessionTools(session()).map((tool) => tool.name)).toStrictEqual(['nango_tool_search', 'nango_execute']);
         expect(
-            listSessionTools(session({ metaTools: { nangoToolSearch: false, nangoExecute: true, nangoProxy: false } })).map((tool) => tool.name)
+            listSessionTools(
+                session({ metaTools: { nangoToolSearch: false, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } } })
+            ).map((tool) => tool.name)
         ).toStrictEqual(['nango_execute']);
         expect(
-            listSessionTools(session({ metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: true } })).map((tool) => tool.name)
+            listSessionTools(
+                session({ metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: true, nangoCreateConnection: { enabled: false, tags: {} } } })
+            ).map((tool) => tool.name)
         ).toStrictEqual(['nango_tool_search', 'nango_execute', 'nango_proxy']);
-        expect(listSessionTools(session({ metaTools: { nangoToolSearch: false, nangoExecute: false, nangoProxy: false } }))).toStrictEqual([]);
+        expect(
+            listSessionTools(
+                session({ metaTools: { nangoToolSearch: false, nangoExecute: false, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } } })
+            )
+        ).toStrictEqual([]);
     });
 
     it('lists pinned tools and leaves searchable tools out', () => {

@@ -80,16 +80,31 @@ describe('toolsetToolNames', () => {
 describe('parseMetaTools', () => {
     it('applies the defaults when nothing is requested', () => {
         expect(parseMetaTools(undefined)).toStrictEqual({
-            applied: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
+            applied: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } },
             unknown: []
         });
     });
 
     it('overrides only the meta tools the caller named', () => {
         expect(parseMetaTools({ nango_execute: false, nango_proxy: true })).toStrictEqual({
-            applied: { nangoToolSearch: true, nangoExecute: false, nangoProxy: true },
+            applied: { nangoToolSearch: true, nangoExecute: false, nangoProxy: true, nangoCreateConnection: { enabled: false, tags: {} } },
             unknown: []
         });
+    });
+
+    it('turns nango_create_connection on from a bare boolean', () => {
+        expect(parseMetaTools({ nango_create_connection: true }).applied.nangoCreateConnection).toStrictEqual({ enabled: true, tags: {} });
+    });
+
+    it('keeps the tags nango_create_connection was configured with', () => {
+        expect(parseMetaTools({ nango_create_connection: { enabled: true, tags: { enduser: '74' } } }).applied.nangoCreateConnection).toStrictEqual({
+            enabled: true,
+            tags: { enduser: '74' }
+        });
+    });
+
+    it('reads the enabled flag of a meta tool that only takes a boolean', () => {
+        expect(parseMetaTools({ nango_proxy: { enabled: true } }).applied.nangoProxy).toBe(true);
     });
 
     it('collects the keys that are not meta tools Nango ships', () => {
@@ -102,10 +117,13 @@ describe('parseMetaTools', () => {
 
 describe('metaToolsSummary', () => {
     it('reports every meta tool under its request name', () => {
-        expect(metaToolsSummary({ nangoToolSearch: true, nangoExecute: false, nangoProxy: true })).toStrictEqual({
+        expect(
+            metaToolsSummary({ nangoToolSearch: true, nangoExecute: false, nangoProxy: true, nangoCreateConnection: { enabled: false, tags: {} } })
+        ).toStrictEqual({
             nango_tool_search: true,
             nango_execute: false,
-            nango_proxy: true
+            nango_proxy: true,
+            nango_create_connection: { enabled: false, tags: {} }
         });
     });
 });
