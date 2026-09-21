@@ -438,10 +438,7 @@ function buildCatalogBranch({
         );
 
     if (search) {
-        const pattern = `%${escapeLikePattern(search)}%`;
-        query.andWhere(function () {
-            this.whereRaw('c.name ILIKE ?', [pattern]).orWhereRaw('c.description ILIKE ?', [pattern]);
-        });
+        query.andWhereRaw('c.name ILIKE ?', [`%${escapeLikePattern(search)}%`]);
     }
 
     return query.select(

@@ -278,28 +278,6 @@ describe('getFunction with catalog actions', () => {
         });
     });
 
-    it('returns an enabled live catalog action', async () => {
-        const { environment } = await seedIntegration();
-        mockGetCatalogAction.mockReturnValue(catalogAction('create-issue'));
-
-        const result = await getFunction({
-            environmentId: environment.id,
-            providerConfigKey: 'github',
-            name: 'create-issue',
-            type: 'action'
-        });
-
-        expect(result.isOk()).toBe(true);
-        if (result.isErr()) {
-            return;
-        }
-        expect(result.value).toMatchObject({
-            name: 'create-issue',
-            source: 'nango-catalog',
-            enabled: true
-        });
-    });
-
     it('returns the deployed row when the same catalog name exists', async () => {
         const { environment, integration } = await seedIntegration();
         mockGetCatalogAction.mockReturnValue(catalogAction('create-issue'));

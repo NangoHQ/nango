@@ -446,7 +446,7 @@ describe(`GET ${route}`, () => {
         isSuccess(res.json);
         const occupied = new Set(['create-issue']);
         const catalogIssueHits = listCatalogActions('github').filter(
-            (action) => !occupied.has(action.name) && (action.name.toLowerCase().includes('issue') || action.description.toLowerCase().includes('issue'))
+            (action) => !occupied.has(action.name) && action.name.toLowerCase().includes('issue')
         ).length;
         expect(res.json.pagination.total).toBe(catalogIssueHits + 3);
         expect(

@@ -31,7 +31,7 @@ describe('createConnectionToolsMcpServer', () => {
         vi.restoreAllMocks();
     });
 
-    it('does not advertise or execute a disabled action called directly by name', async () => {
+    it('does not advertise a disabled action and reports direct calls as unavailable', async () => {
         vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(Ok([actionFixture({ enabled: false })]));
         const disabledActionError = Object.assign(new Error('The action is disabled'), {
             code: 'disabled_action',

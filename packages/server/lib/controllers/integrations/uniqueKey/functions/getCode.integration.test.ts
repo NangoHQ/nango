@@ -149,6 +149,7 @@ describe(`GET ${endpoint}`, () => {
 
             expect(res.res.status).toBe(200);
             expect(res.json).toEqual({ type: 'action', code: 'catalog source' });
+            expect(getFileSpy).toHaveBeenCalledWith('templates-zero/aircall/actions/create-contact.ts');
         } finally {
             getFileSpy.mockRestore();
             flags.hasLiveCatalogActions = original;

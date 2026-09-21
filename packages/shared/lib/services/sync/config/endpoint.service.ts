@@ -59,7 +59,7 @@ async function liveCatalogActionByEndpoint(
     }
 
     const occupiedRows = await db.knex
-        .from('_nango_sync_configs')
+        .from(SYNC_CONFIG_TABLE)
         .where({
             environment_id: config.environment_id,
             nango_config_id: config.id,

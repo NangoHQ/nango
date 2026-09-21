@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { connectionService, isTemplatesZeroPath, localFileService, remoteFileService } from '@nangohq/shared';
+import { connectionService, localFileService, remoteFileService } from '@nangohq/shared';
 import { Err, integrationFilesAreRemote, isCloud, Ok, stringifyError } from '@nangohq/utils';
 
 import { getRuntimeAdapter } from '../../runtime/runtimes.js';
@@ -38,9 +38,8 @@ export async function startScript({
         async (span) => {
             try {
                 const integrationData = { fileLocation: nangoProps.syncConfig.file_location };
-                const useCatalogFile = isTemplatesZeroPath(integrationData.fileLocation);
                 const script: string | null =
-                    useCatalogFile || isCloud || integrationFilesAreRemote
+                    isCloud || integrationFilesAreRemote
                         ? await tracer.trace('runScript.getFile', async () => remoteFileService.getFile(integrationData.fileLocation))
                         : localFileService.getIntegrationFile({
                               syncConfig: nangoProps.syncConfig,
