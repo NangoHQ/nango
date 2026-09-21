@@ -4,7 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { executeAction } from '../../../../services/action.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
-import { connectRecovery } from '../connectRecovery.js';
+import { notConnectedGuidance } from '../notConnectedGuidance.js';
 import { resolveSessionConnection } from '../sessionConnection.js';
 import { defineAgentSessionMcpTool } from '../sessionTool.js';
 import { actionExecutionErrorToMcp } from './errors.js';
@@ -95,7 +95,7 @@ export async function executeSessionTool({
     if (!connection) {
         return Err(
             new PublicMcpError(
-                `Integration '${integrationId}' has no connection in this session, so none of its tools can run. ${connectRecovery(integrationId, session)}`,
+                `Integration '${integrationId}' has no connection in this session, so none of its tools can run. ${notConnectedGuidance(integrationId, session)}`,
                 { code: 'integration_not_connected', integrationId }
             )
         );

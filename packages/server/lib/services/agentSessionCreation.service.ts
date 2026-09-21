@@ -50,7 +50,6 @@ const BOOLEAN_META_TOOLS = {
     nangoProxy: { name: 'nango_proxy', enabledByDefault: false }
 } as const satisfies Record<string, { name: keyof AgentSessionMetaToolsSummary; enabledByDefault: boolean }>;
 
-// Off by default: it puts a connect link in front of the end user, in the agent's own words.
 const CREATE_CONNECTION_META_TOOL = { name: 'nango_create_connection', enabledByDefault: false } as const;
 
 const META_TOOL_NAMES: string[] = [...Object.values(BOOLEAN_META_TOOLS).map((metaTool) => metaTool.name), CREATE_CONNECTION_META_TOOL.name];
@@ -64,7 +63,7 @@ const metaToolSchema = z.union([
         enabled: z.boolean(),
         tags: connectionTagsSchema
             .refine((tags) => Object.keys(tags).length <= MAX_CONFIGURED_TAGS, {
-                message: `Cannot configure more than ${MAX_CONFIGURED_TAGS} tags, one of the ${TAG_MAX_COUNT} is reserved for the agent session`
+                message: `Cannot configure more than ${MAX_CONFIGURED_TAGS} tags`
             })
             .optional()
     })

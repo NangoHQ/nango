@@ -132,16 +132,9 @@ export async function resolveTenantConnections({
 }
 
 /**
- * The connection the agent created for this integration, if the end user has since gone through the
- * connect flow. Matching on the session tag rather than the tenant selectors, because the whole
- * reason the slot was empty is that no selector matched anything.
- *
- * Reads the primary. The agent can ask for this the moment the connection is written, and on a
- * replica that reads as not connected, which would send it off to issue a second connect link.
- *
- * Several matches means the user went through the flow more than once for this session. Candidates
- * come back newest first, and the newest is the attempt that most likely worked, so it wins rather
- * than the session refusing to resolve and stranding itself.
+ * The connection the agent created for this integration, matched on the session tag. Reads the
+ * primary because it can be called within replication lag of the connection being written, and
+ * takes the newest if the user went through the flow more than once.
  */
 export async function findConnectionCreatedForSession({
     environmentId,

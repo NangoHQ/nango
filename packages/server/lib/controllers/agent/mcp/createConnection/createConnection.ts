@@ -39,12 +39,10 @@ export const createConnectionTool = defineAgentSessionMcpTool({
             );
         }
 
-        // Connecting is only ever about filling a gap. An integration that already resolved a
-        // connection keeps it, so the agent cannot swap out who the session acts as.
         const existing = await resolveSessionConnection({ session, integrationId });
         if (existing) {
             return Err(
-                new PublicMcpError(`Integration '${integrationId}' is already connected in this session, so there is nothing to connect. Just use its tools.`, {
+                new PublicMcpError(`Integration '${integrationId}' is already connected in this session. You can already call its tools`, {
                     code: 'already_connected',
                     integrationId
                 })
@@ -63,8 +61,6 @@ export const createConnectionTool = defineAgentSessionMcpTool({
                 plan,
                 isPreview: false,
                 endUser: null,
-                // The reserved tag is what lets the session find the connection once the user is
-                // done. The configured ones go on top so it also fits the customer's tenant model.
                 tags: { ...session.metaTools.nangoCreateConnection.tags, [AGENT_SESSION_TAG_KEY]: session.id },
                 allowedIntegrations: [integrationId],
                 integrationsConfigDefaults: undefined,
