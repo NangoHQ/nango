@@ -1,10 +1,19 @@
 import db from '@nangohq/database';
-import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider, getProviders, sharedCredentialsService } from '@nangohq/shared';
+import {
+    configService,
+    connectionService,
+    environmentService,
+    getGlobalWebhookReceiveUrl,
+    getProvider,
+    getProviders,
+    sharedCredentialsService
+} from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { getIntegrationCredentials } from '../utils/integrations.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { resolveIntegrationConfig } from './integrationConfig.js';
+import { autoDeployCatalogActions } from './integrationTemplate.service.js';
 
 import type { IntegrationCredentials } from '../utils/integrations.js';
 import type { DBCreateIntegration, IntegrationConfig, Provider } from '@nangohq/types';
@@ -341,6 +350,11 @@ export class IntegrationService {
                     errorKind: 'empty_result'
                 });
                 return Err(new IntegrationServiceError({ code: 'create_failed', message: 'Failed to create integration' }));
+            }
+
+            const environment = await environmentService.getById(params.environmentId);
+            if (environment) {
+                await autoDeployCatalogActions({ environment, integration: created });
             }
 
             return Ok({ integration: created, provider });
