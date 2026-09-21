@@ -1399,6 +1399,7 @@
               "integrations/all/greenhouse-job-board",
               "integrations/all/greenhouse-onboarding",
               "api-integrations/grist",
+              "api-integrations/gtd-brain-mcp",
               "integrations/all/gumroad",
               "integrations/all/guru",
               "integrations/all/guru-scim",

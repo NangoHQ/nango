@@ -11036,6 +11036,29 @@ grist:
             order: 1
             doc_section: '#step-1-selecting-your-environment'
 
+gtd-brain-mcp:
+    display_name: GTD Brain (MCP)
+    categories:
+        - productivity
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.gtdbrain.com/oauth/authorize
+    token_url: https://mcp.gtdbrain.com/oauth/token
+    registration_url: https://mcp.gtdbrain.com/oauth/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.gtdbrain.com/api/gtdbrain/v1/mcp
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.gtdbrain.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/gtd-brain-mcp
+
 gumroad:
     display_name: Gumroad
     categories:
