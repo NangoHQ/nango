@@ -261,6 +261,41 @@ class MFAService {
         }
     }
 
+    /**
+     * Checks a recovery code without spending it. Only for callers that are about to invalidate every
+     * code anyway, such as disabling the factor, where burning one first buys nothing.
+     *
+     * See {@link verifyTotp} for the options.
+     */
+    public async verifyRecoveryCode(userId: number, code: string, { trx: parentTrx, context = 'unknown' }: MFAVerifyOptions = {}): Promise<Result<boolean>> {
+        try {
+            const codeHash = this.hashRecoveryCode(code);
+            const verified = await this.inTransaction(parentTrx, async (trx) => {
+                const factor = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).whereNotNull('enabled_at').forUpdate().first();
+                if (!factor) {
+                    recordMFAVerifyFailure({ context, method: 'recovery_code', reason: 'not_enrolled' });
+                    return false;
+                }
+
+                const match = await trx<DBMFARecoveryCode>(RECOVERY_CODES_TABLE)
+                    .where({ user_id: userId, code_hash: codeHash })
+                    .whereNull('consumed_at')
+                    .first();
+
+                if (!match) {
+                    recordMFAVerifyFailure({ context, method: 'recovery_code', reason: 'unknown_recovery_code' });
+                    return false;
+                }
+
+                recordMFAVerifySuccess({ context, method: 'recovery_code' });
+                return true;
+            });
+            return Ok(verified);
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
     public async regenerateRecoveryCodes(userId: number): Promise<Result<string[]>> {
         try {
             const recoveryCodes = await db.knex.transaction(async (trx) => {

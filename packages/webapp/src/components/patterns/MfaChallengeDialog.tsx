@@ -15,6 +15,7 @@ import {
 
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
 
+import type { ButtonProps } from '@nangohq/design-system';
 import type { MFACredential } from '@nangohq/types';
 
 interface MfaChallengeDialogProps {
@@ -22,6 +23,7 @@ interface MfaChallengeDialogProps {
     /** What the factor unlocks, as an infinitive: 'change your password'. Completes the prompt. */
     purpose: string;
     confirmText: string;
+    confirmVariant?: ButtonProps['variant'];
     /** Message from the last rejected attempt. Clear it when starting a new one. */
     error: string | null;
     verifying: boolean;
@@ -33,7 +35,16 @@ interface MfaChallengeDialogProps {
  * Second factor for an action the user already started: the caller sends the request, and on
  * `mfa_code_required` opens this to collect the factor and send the same request again with it.
  */
-export const MfaChallengeDialog: React.FC<MfaChallengeDialogProps> = ({ open, purpose, confirmText, error, verifying, onCancel, onConfirm }) => {
+export const MfaChallengeDialog: React.FC<MfaChallengeDialogProps> = ({
+    open,
+    purpose,
+    confirmText,
+    confirmVariant,
+    error,
+    verifying,
+    onCancel,
+    onConfirm
+}) => {
     const [value, setValue] = useState('');
     const [useRecoveryCode, setUseRecoveryCode] = useState(false);
 
@@ -124,7 +135,7 @@ export const MfaChallengeDialog: React.FC<MfaChallengeDialogProps> = ({ open, pu
                     <Button variant="outline" size="sm" onClick={onCancel} disabled={verifying}>
                         Cancel
                     </Button>
-                    <Button size="sm" onClick={confirm} loading={verifying} disabled={!isValid}>
+                    <Button variant={confirmVariant} size="sm" onClick={confirm} loading={verifying} disabled={!isValid}>
                         {confirmText}
                     </Button>
                 </DialogFooter>
