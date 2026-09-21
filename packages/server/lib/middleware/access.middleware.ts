@@ -205,7 +205,7 @@ export class AccessMiddleware {
     async noAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         res.locals['authType'] = 'none';
         if (!req.isAuthenticated()) {
-            const user = await userService.getUserById(process.env['LOCAL_NANGO_USER_ID'] ? parseInt(process.env['LOCAL_NANGO_USER_ID']) : 0);
+            const user = await userService.getUserById(envs.LOCAL_NANGO_USER_ID ?? 0);
             if (!user) {
                 res.status(500).send({ error: { code: 'server_error', message: 'failed to find user in no-auth mode' } });
                 return;

@@ -187,7 +187,7 @@ const ENVS_SHAPE = z.object({
     WORKOS_CLIENT_ID: z.string().optional(),
     NANGO_DASHBOARD_USERNAME: z.string().optional(),
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
-    LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
+    LOCAL_NANGO_USER_ID: z.coerce.number().int().nonnegative().optional(),
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
     DEFAULT_USER_ROLE: z.enum(roles).optional().default('administrator'),
     AUTH_SHADOW_CACHE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000), // 1 minute
@@ -206,7 +206,6 @@ const ENVS_SHAPE = z.object({
     // `/` keeps requests on whichever host served the dashboard (same-origin).
     NANGO_DASHBOARD_API_URL: z.url().or(z.literal('/')).optional(),
     NANGO_MANAGEMENT_MCP_SERVER_URL: z.url().optional(),
-    NANGO_MANAGEMENT_MCP_OAUTH_ENABLED: z.stringbool().optional().default(false),
     NANGO_OAUTH_SERVER_BASE_URL: z.url().optional(),
     NANGO_OAUTH_SERVER_COOKIE_KEYS: z.string().optional(),
     NANGO_OAUTH_SERVER_JWKS: z.string().optional(),
@@ -295,6 +294,7 @@ const ENVS_SHAPE = z.object({
     CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
+    CRON_MANAGE_GROWTH_ADDONS_EVERY_MIN: z.coerce.number().optional().default(60),
     CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES: z.coerce.number().optional().default(0),
     // Billing-events S3 export cron (hourly). Value is the minute-of-the-hour the
     // cron fires on (0–59). -1 (default) disables the cron entirely. 15 gives
@@ -551,11 +551,19 @@ const ENVS_SHAPE = z.object({
     AWS_REGION: z.string().optional(),
     AWS_BUCKET_NAME: z.string().optional(),
     AWS_ACCESS_KEY_ID: z.string().optional(),
+    AWS_SECRET_ACCESS_KEY: z.string().optional(),
 
     AWS_INTEGRATIONS_ACCESS_KEY_ID: z.string().optional(),
     AWS_INTEGRATIONS_SECRET_ACCESS_KEY: z.string().optional(),
     AWS_INTEGRATIONS_REGION: z.string().optional(),
     AWS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
+
+    GCS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
+
+    AZURE_INTEGRATIONS_ACCOUNT_NAME: z.string().optional(),
+    AZURE_INTEGRATIONS_CONTAINER_NAME: z.string().optional(),
+    AZURE_INTEGRATIONS_ACCOUNT_KEY: z.string().optional(),
+    OBJECT_STORE_DELETE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(16),
 
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),

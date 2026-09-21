@@ -1,5 +1,4 @@
 import db, { dbNamespace } from '@nangohq/database';
-import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { env, filterJsonSchemaForModels, metrics } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -74,7 +73,6 @@ export async function deploy({
     flows,
     aggregatedJsonSchema,
     onEventScriptsByProvider,
-    nangoYamlBody,
     logContextGetter,
     orchestrator,
     debug,
@@ -87,7 +85,6 @@ export async function deploy({
     /** @deprecated */
     aggregatedJsonSchema?: JSONSchema7 | undefined;
     onEventScriptsByProvider?: OnEventScriptsByProvider[] | undefined;
-    nangoYamlBody: string;
     logContextGetter: LogContextGetter;
     orchestrator: Orchestrator;
     debug?: boolean;
@@ -95,14 +92,6 @@ export async function deploy({
     source: FunctionSource;
 }): Promise<ServiceResponse<SyncConfigResult | null>> {
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'custom' } }, { account, environment });
-
-    if (nangoYamlBody) {
-        await remoteFileService.upload({
-            content: nangoYamlBody,
-            destinationPath: `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`,
-            destinationLocalFileName: nangoConfigFile
-        });
-    }
 
     const deployResults: SyncDeploymentResult[] = [];
     const flowsWithoutScript: FlowWithoutScript[] = [];

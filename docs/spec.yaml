@@ -391,7 +391,7 @@ paths:
                                     data:
                                         type: array
                                         items:
-                                            $ref: '#/components/schemas/DeployedNangoFunction'
+                                            $ref: '#/components/schemas/ListedNangoFunction'
                                     pagination:
                                         type: object
                                         required:
@@ -449,7 +449,7 @@ paths:
                                     - data
                                 properties:
                                     data:
-                                        $ref: '#/components/schemas/DeployedNangoFunction'
+                                        $ref: '#/components/schemas/ListedNangoFunction'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -3745,9 +3745,9 @@ components:
             type: string
             enum: [action, sync]
 
-        DeployedMeta:
+        FunctionAvailability:
             type: object
-            description: Deployment metadata attached to a deployed function.
+            description: Availability metadata attached to a listed function.
             required:
                 - id
                 - enabled
@@ -3860,18 +3860,18 @@ components:
                 - $ref: '#/components/schemas/NangoSyncFunction'
                 - $ref: '#/components/schemas/NangoActionFunction'
 
-        DeployedNangoFunction:
-            description: A deployed function (sync, action, or on-event) merged with its deployment metadata.
+        ListedNangoFunction:
+            description: A listed function (sync, action, or on-event) merged with its availability metadata.
             oneOf:
                 - allOf:
                       - $ref: '#/components/schemas/NangoSyncFunction'
-                      - $ref: '#/components/schemas/DeployedMeta'
+                      - $ref: '#/components/schemas/FunctionAvailability'
                 - allOf:
                       - $ref: '#/components/schemas/NangoActionFunction'
-                      - $ref: '#/components/schemas/DeployedMeta'
+                      - $ref: '#/components/schemas/FunctionAvailability'
                 - allOf:
                       - $ref: '#/components/schemas/NangoOnEventFunction'
-                      - $ref: '#/components/schemas/DeployedMeta'
+                      - $ref: '#/components/schemas/FunctionAvailability'
 
         FunctionCompileRequest:
             type: object

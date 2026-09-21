@@ -24,6 +24,12 @@ export interface AgentSessionCompiledIntegration {
 
 export type AgentSessionCompiledToolset = Record<string, AgentSessionCompiledIntegration>;
 
+export interface AgentSessionToolNames {
+    readonly provider: string;
+    readonly pinned: string[];
+    readonly searchable: string[];
+}
+
 export type AgentSessionToolsetCompilationErrorCode = 'unknown_integration' | 'unknown_tool' | 'unsupported_function_type' | 'tool_not_in_toolset';
 
 export interface AgentSessionUnknownIntegrationsPayload {

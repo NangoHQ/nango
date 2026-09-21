@@ -22,7 +22,7 @@ import { isSyncOrAction } from '@/utils/scripts';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 
 import type { ComboboxOption } from '@/components/ui/Combobox';
-import type { ApiIntegration, DeployedNangoFunction, FunctionType } from '@nangohq/types';
+import type { ApiIntegration, FunctionType, ListedNangoFunction } from '@nangohq/types';
 
 const TYPE_FILTER_VALUES = ['sync', 'action', 'on-event'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
@@ -82,13 +82,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     }, [env, integration.unique_key, navigate]);
 
     const onFunctionClick = useCallback(
-        (fn: DeployedNangoFunction) => {
+        (fn: ListedNangoFunction) => {
             navigate(`/${env}/integrations/${integration.unique_key}/functions/${encodeURIComponent(fn.name)}?type=${fn.type}`);
         },
         [env, integration.unique_key, navigate]
     );
 
-    const functions: DeployedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
+    const functions: ListedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
     const total = data?.pages[0]?.pagination.total ?? 0;
 
     if (error) {

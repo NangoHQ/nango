@@ -66,6 +66,68 @@ describe(`POST ${route}`, () => {
         expect(workosMocks.authenticateWithCode).not.toHaveBeenCalled();
     });
 
+    it('should not create a managed user while resuming OAuth consent', async () => {
+        const email = `${nanoid()}@example.com`;
+        const returnTo = '/oauth/consent/interaction-id/review';
+        const state = Buffer.from(JSON.stringify({ returnTo })).toString('base64');
+
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: { email, firstName: 'Managed', lastName: 'User' },
+            organizationId: undefined
+        });
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${encodeURIComponent(state)}`, {
+            redirect: 'manual'
+        });
+
+        expect(callbackRes.status).toBe(302);
+        expect(callbackRes.headers.get('location')).toBe(
+            'http://localhost:3003/signin?error=oauth_signup_not_allowed&next=%2Foauth%2Fconsent%2Finteraction-id%2Freview'
+        );
+        expect(await userService.getUserByEmail(email)).toBeNull();
+    });
+
+    it('should let an existing managed user resume OAuth consent', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const returnTo = '/oauth/consent/interaction-id/review';
+        const state = Buffer.from(JSON.stringify({ returnTo })).toString('base64');
+
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: { email: user.email, firstName: 'Managed', lastName: 'User' },
+            organizationId: undefined
+        });
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${encodeURIComponent(state)}`, {
+            redirect: 'manual'
+        });
+
+        expect(callbackRes.status).toBe(302);
+        expect(callbackRes.headers.get('location')).toBe(`http://localhost:3003${returnTo}`);
+
+        const sessionCookie = callbackRes.headers.getSetCookie()[0]?.split(';')[0];
+        if (!sessionCookie) throw new Error('Managed callback did not set a session cookie');
+        const userRes = await api.fetch('/api/v1/user', { method: 'GET', session: sessionCookie });
+        expect(userRes.res.status).toBe(200);
+        expect(userRes.json).toMatchObject({ data: { id: user.id, email: user.email } });
+    });
+
+    it('should send a new managed user to account discovery when an unsafe destination is discarded', async () => {
+        const email = `${nanoid()}@example.com`;
+        const state = Buffer.from(JSON.stringify({ returnTo: 'https://attacker.example.com/collect' })).toString('base64');
+
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: { email, firstName: 'Managed', lastName: 'User' },
+            organizationId: undefined
+        });
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${encodeURIComponent(state)}`, {
+            redirect: 'manual'
+        });
+
+        expect(callbackRes.status).toBe(302);
+        expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/onboarding/account-discovery');
+    });
+
     it('should complete the pending WorkOS email verification flow and create the local user', async () => {
         const email = `MixedCase-${nanoid()}@Example.com`;
         const verificationCode = '123456';

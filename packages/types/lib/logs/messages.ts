@@ -68,7 +68,7 @@ export interface OperationDeploy {
 
 export interface OperationAgentSession {
     type: 'agent_session';
-    action: 'create' | 'terminate';
+    action: 'create' | 'terminate' | 'tool_search';
 }
 
 export type OperationList =

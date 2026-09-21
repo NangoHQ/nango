@@ -29,7 +29,8 @@ const actionsByResource = {
         'spend_alert_changed',
         'spend_alert_removed'
     ],
-    audit_trail: ['exported', 'queried']
+    audit_trail: ['exported', 'queried'],
+    agent_session: ['created', 'terminated']
 } as const satisfies { [R in AuditResource]: readonly AuditActionOf<R>[] };
 
 type ListedEvent = { [R in AuditResource]: `${R}.${(typeof actionsByResource)[R][number]}` }[AuditResource];
@@ -48,7 +49,8 @@ const resourceLabels: Record<AuditResource, string> = {
     app_auth: 'Authentication',
     mfa: 'MFA',
     billing: 'Billing',
-    audit_trail: 'Audit trail'
+    audit_trail: 'Audit trail',
+    agent_session: 'Agent session'
 };
 
 export const ALL = 'all';

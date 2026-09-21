@@ -27,6 +27,8 @@ import type {
 import type { AxiosResponse } from 'axios';
 import type * as z from 'zod';
 
+export const BASE_VARIANT = 'base';
+
 const MEMOIZED_CONNECTION_TTL = 60000;
 const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
 
@@ -67,6 +69,7 @@ export abstract class NangoActionBase<
     public providerConfigKey: string;
     public provider?: string;
     public integrationConfig?: NangoProps['integrationConfig'];
+    private readonly functionVariant: string;
 
     public ActionError = ActionError;
 
@@ -89,6 +92,7 @@ export abstract class NangoActionBase<
         this.activityLogId = config.activityLogId;
         this.scriptType = config.scriptType;
         this.isCLI = config.isCLI;
+        this.functionVariant = config.variant ?? config.syncVariant ?? BASE_VARIANT;
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -220,6 +224,10 @@ export abstract class NangoActionBase<
     public async getToken(): Promise<string | OAuth1Token | ApiPublicAllAuthCredentials> {
         this.throwIfAbortedOrKilled();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
+    }
+
+    public getVariant(): string {
+        return this.functionVariant;
     }
 
     /**

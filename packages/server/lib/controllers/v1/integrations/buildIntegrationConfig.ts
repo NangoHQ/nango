@@ -80,6 +80,7 @@ export async function buildIntegrationConfig(body: PostIntegration['Body'], envi
                 ...(clientUri && { oauth_client_uri: clientUri }),
                 ...(clientLogoUri && { oauth_client_logo_uri: clientLogoUri })
             };
+            config.oauth_scopes = auth.scopes ?? null;
         } else if (auth.authType === 'INSTALL_PLUGIN') {
             config.app_link = auth.appLink ?? null;
             config.custom = {

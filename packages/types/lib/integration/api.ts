@@ -21,6 +21,9 @@ export interface ApiPublicIntegrationInclude {
     // Names of `credentials` fields already set at the integration level (via `integration_config`), so the
     // Connect UI can skip asking end users for them. Presence only — never the underlying value.
     preconfigured_credentials?: string[] | undefined;
+    // Names of `connection_config` fields already set at the integration level (via `integration_config`), so the
+    // Connect UI can skip asking end users for them. Presence only — never the underlying value.
+    preconfigured_connection_config?: string[] | undefined;
     credentials?:
         | {
               type: AuthModes['OAuth2'] | AuthModes['OAuth1'] | AuthModes['TBA'];
@@ -229,6 +232,7 @@ export interface MCPOAuth2GenericAuthBody {
     clientName?: string | undefined;
     clientUri?: string | undefined;
     clientLogoUri?: string | undefined;
+    scopes?: string | undefined;
 }
 
 export interface InstallPluginAuthBody {

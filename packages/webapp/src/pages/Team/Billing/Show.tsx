@@ -1,7 +1,6 @@
 import { ArrowUpRight, ExternalLink } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet';
-import { useLocation } from 'react-router-dom';
 
 import { AlertButton, Button } from '@nangohq/design-system';
 
@@ -11,6 +10,8 @@ import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { usePlanOverrideStore } from '@/features/planOverride';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetBillingUsage, useApiGetOverdueInvoices, useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
+import { useScrollToHash } from '@/hooks/useScrollToHash';
+import { useStripePaymentMethods } from '@/hooks/useStripe';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { billedUsageMetrics, getAggregateUsageState } from '@/utils/usage';
@@ -41,7 +42,7 @@ export const TeamBilling: React.FC = () => {
     const { data: environmentData, isPending: isPlanPending, isError: didPlanFail } = useCurrentPlan(env);
     // Plan titles come from `/api/v1/plans`; with no titles the strip can only show raw Orb codes,
     // so a failed load hides the section rather than leaking them or holding a skeleton forever.
-    const { isError: didPlanListFail } = useApiGetPlans(env);
+    const { isPending: arePlansPending, isError: didPlanListFail } = useApiGetPlans(env);
 
     const transition = usePlanTransition();
     const showSummary = !didPlanListFail && (isPlanPending || showsSummaryStrip(environmentData?.plan, transition !== null));
@@ -51,18 +52,20 @@ export const TeamBilling: React.FC = () => {
 
     // The cap warning belongs with the plan, not the usage table, so it sits above the divider.
     // Free is the only capped plan, and the sidebar alert already runs this query app-wide.
-    const { data: caps } = useApiGetUsage(env);
+    const { data: caps, isPending: areCapsPending } = useApiGetUsage(env);
     const billedMetrics = billedUsageMetrics(environmentData?.plan);
 
-    // The dev override fabricates the overdue response, so it has to be handed a real portal URL for
-    // the previewed "View invoices" link to open anything. Fetched only while the override is on, and
-    // on the same key as <Payment/>'s unfiltered call, so it never costs a production request.
     const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
-    const { data: billingUsage } = useApiGetBillingUsage(env, undefined, { enabled: overdueOverride });
+    // Shares <Payment/>'s unfiltered key, so enabling it alongside that section adds no request.
+    // The dev override needs a real portal URL or its previewed "View invoices" link opens nothing.
+    const { data: billingUsage, isPending: isBillingUsagePending } = useApiGetBillingUsage(env, undefined, {
+        enabled: canManageBilling || overdueOverride
+    });
+    const { isPending: arePaymentMethodsPending } = useStripePaymentMethods(env);
 
     // Owned here rather than by <Usage/> so a usage outage can't hide a payment warning, and so it
     // sits above the cap warning: money owed outranks a limit being approached.
-    const { data: overdue } = useApiGetOverdueInvoices(env, environmentData?.plan, billingUsage?.data.customer.portalUrl);
+    const { data: overdue, isPending: isOverduePending } = useApiGetOverdueInvoices(env, environmentData?.plan, billingUsage?.data.customer.portalUrl);
     const overdueBanner = overdue?.data.hasOverdue && (
         <OverdueInvoiceAlert size="wide" canManageBilling={canManageBilling}>
             {overdue.data.portalUrl && (
@@ -87,23 +90,22 @@ export const TeamBilling: React.FC = () => {
         track('web:usage:viewed', {});
     }, []);
 
-    // The 3 sections used to be separate tabs reachable via #usage/#plans/#payment-and-invoices
-    // (still linked from other pages). Now that they're stacked on one page, scroll to the matching
-    // section instead of switching tabs.
-    const location = useLocation();
-    useEffect(() => {
-        const hash = location.hash.slice(1);
-        if (!hash) {
-            return;
-        }
-        document.getElementById(hash)?.scrollIntoView({ block: 'start' });
-    }, [location.hash]);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    // The banners and summary strip sit above the anchors, `Payment` below all of them, so every
+    // one of these moves the height. `Payment` renders only for billing managers, so only they wait.
+    const pageHeightSettled =
+        !isPlanPending &&
+        !arePlansPending &&
+        !areCapsPending &&
+        !isOverduePending &&
+        (!canManageBilling || (!isBillingUsagePending && !arePaymentMethodsPending));
+    useScrollToHash(scrollRef, pageHeightSettled);
 
     // Full-width page shell keeps chrome consistent with the other dashboard pages, but `centered`
     // caps the content: the usage charts have a fixed height, so unbounded width stretches them to an
     // unreadable aspect ratio on wide screens.
     return (
-        <DashboardLayout fullWidth centered title="Billing & usage" titleActions={<BillingHeaderAction />}>
+        <DashboardLayout ref={scrollRef} fullWidth centered title="Billing & usage" titleActions={<BillingHeaderAction />}>
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>
