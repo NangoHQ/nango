@@ -49,13 +49,15 @@ description: "Important developer & product updates, including deprecations & br
 </Update>
 ---
 
-<Update label="Google webhook verification" description="September 14, 2026">
-  Incoming webhooks from Gmail, Google Drive, and Google Calendar can now be verified before Nango forwards them to your app.
+<Update label="Webhook verification" description="September 14, 2026">
+  Nango now verifies more of the webhooks it receives from external APIs before forwarding them to your app.
 
   - **Gmail:** Nango already verified the OIDC token that Google attaches when authentication is enabled on your Pub/Sub subscription. Pushes without one are now rejected by default and not forwarded, so enabling authentication is a required step in the [Gmail webhook guide](/api-integrations/google-mail/webhooks). If you need time to enable it, contact us and we can temporarily allow unsigned pushes for your account.
   - **Google Drive and Calendar:** You can now save a webhook secret on the integration. Once set, Nango checks each notification's `X-Goog-Channel-Token` header against it and rejects mismatches. Without a secret, notifications are forwarded unverified, so set the secret before creating channels and pass it as the channel `token`. See the [Drive](/api-integrations/google-drive/webhooks) and [Calendar](/api-integrations/google-calendar/webhooks) guides.
+  - **GitHub App:** Webhooks without an `x-hub-signature-256` header are now rejected by default. GitHub only signs payloads when a webhook secret is set on your app, so it must match the secret shown on your Nango integration page. See the [GitHub App setup guide](/api-integrations/github-app/how-to-register-your-own-github-app-api-app).
+  - **Other providers:** Slack, PagerDuty, and Checkr webhooks with an invalid signature are now rejected instead of processed. Where a provider supports signature verification but no secret is configured on the integration, Nango still forwards the webhook and writes a warning to your logs.
 
-  **Am I impacted?** If your Gmail Pub/Sub subscription has no authentication, its notifications are no longer forwarded until you enable it. Drive and Calendar channels created without a `token` keep working until you save a webhook secret; recreate them with a `token` once you do.
+  **Am I impacted?** If your Gmail Pub/Sub subscription has no authentication, or your GitHub App has no webhook secret, those webhooks are no longer forwarded until you fix the setup. Drive and Calendar channels created without a `token` keep working until you save a webhook secret; recreate them with a `token` once you do. For other providers, check your logs for unverified-webhook warnings and set the signing secret on the integration.
 </Update>
 ---
 
