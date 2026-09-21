@@ -1,0 +1,88 @@
+---
+title: 'Tracify Analytics'
+sidebarTitle: 'Tracify'
+description: 'Integrate your application with the Tracify Analytics API'
+---
+
+## Quickstart
+
+Connect to Tracify Analytics with Nango and query your KPI data.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Tracify_.
+    </Step>
+    <Step title="Connect your Tracify account">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Tracify Analytics API token, Site ID, and Preset ID. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Tracify Analytics API">
+    Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/analytics/api/v1/kpis/overview/?csids=<SITE-ID>&preset_id=<PRESET-ID>&start_date=2025-01-01&end_date=2025-01-31&granularity=day&requested_metrics=customer_revenue" \\
+              -H "Authorization: Bearer ***" \\
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \\
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: *** });
+
+        const res = await nango.get({
+            endpoint: '/analytics/api/v1/kpis/overview/?csids=<SITE-ID>&preset_id=<PRESET-ID>&start_date=2025-01-01&end_date=2025-01-31&granularity=day&requested_metrics=customer_revenue',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## Tracify Analytics integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my Tracify Analytics account?](/api-integrations/tracify/connect)
+Connect your Tracify Analytics account using the Connect UI
+
+Official docs:
+- [Tracify Analytics API documentation](https://tracify.dev/analytics-api/)
+- [Tracify API OpenAPI specification](https://tracify-api.tracify.ai/analytics/api/v1/openapi.json)
+
+## API gotchas
+
+- Tracify Analytics authenticates requests with the `tracify-token` header. Nango sends the configured API token as that header.
+- The published KPI templates require both a `siteId` and a `presetId`. Nango stores these as connection configuration and sends the site ID as the API's `csids` query parameter.
+- `presetId` is not required by every Tracify Analytics endpoint. For example, export-status queries use the site ID and task ID but do not use a preset ID.
+- Data from the last 24 hours is preliminary and may change after processing. Re-request recent periods when finalized data is required.
+- This provider is scoped to Tracify Analytics. Its pre-built templates call only read-only retrieval endpoints.
+
+## Pre-built syncs & actions for Tracify Analytics
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltTooling from "/snippets/generated/tracify/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/tracify/PreBuiltUseCases.mdx"
+
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+---
