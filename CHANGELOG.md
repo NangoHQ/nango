@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.71.10] - 2026-09-21
+
+### Added
+
+- *(auth)* Return to the requested page after login (#7520) by @macko911
+- *(integrations)* Add Linkly (API key) (#7516) by @chrism2671
+- Extend one-off PAYG migration script (#7553) by @ErickRDev
+- *(oauth)* Add dashboard login and consent flow (NAN-6924) (#7481) by @marcindobry
+- *(tracking)* Track plan_change:v2 (#7558) by @ErickRDev
+- Scheduled functions can execute (#7563) by @TBonnin
+- *(integrations)* Add Autumn (API key) (#7576) by @brf153
+- *(providers)* Move stripe-app-sandbox appDomain to integration_config (#7227) by @hassan254-prog
+- *(integrations)* Add support for hex mcp (#7578) by @hassan254-prog
+- *(function)* Implement getVariant() (#7569) by @TBonnin
+- *(integrations)* Add support for apple calendar (#7535) by @hassan254-prog
+
+### Changed
+
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/f78affc941f935241a71eb6911209cbb92f3ec20 by Hassan_Wari by @github-actions[bot]
+- *(providers)* Update the Pleo logo to their new brand (#7565) by @macko911
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/261c9cb19d13c9bf1d664e66c3870e98477fd9ab by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/47dd7fd51835f9e9fcf7038573b67f5563d27856 by Victor Lang'at by @github-actions[bot]
+- Clarify external contribution guidelines (#7577) by @hassan254-prog
+- *(records)* Share one helper for composite model names (#7415) by @macko911
+- Make BYOC the main self-hosting path (#7453) by @rguldener
+
+### Fixed
+
+- *(integrations)* Send netsapiens token request as JSON (#7559) by @vdeez1
+- *(providers)* Fix pleo api key verification endpoint (#7564) by @hassan254-prog
+- *(cron)* Allow growth cron to pre-enable growth flag (#7555) by @ErickRDev
+- *(persist)* Restore per-tick limit on auto-deleting records (#7571) by @kaposke
+- *(connect-ui)* Stop the theme flashing before the dialog loads (#7497) by @macko911
+- *(webapp)* Land billing deep links on the right section (#7567) by @macko911
+
 ## [v0.71.9] - 2026-09-16
 
 ### Added
@@ -8073,6 +8109,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.71.10]: https://github.com/NangoHQ/nango/compare/v0.71.9..v0.71.10
 [v0.71.9]: https://github.com/NangoHQ/nango/compare/v0.71.8..v0.71.9
 [v0.71.8]: https://github.com/NangoHQ/nango/compare/v0.71.7..v0.71.8
 [v0.71.7]: https://github.com/NangoHQ/nango/compare/v0.71.6..v0.71.7
