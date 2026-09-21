@@ -109,7 +109,7 @@ describe(`GET ${endpoint}`, () => {
         expect(res.json.error.code).toBe('not_found');
     });
 
-    it('does not return live catalog function code when the feature is disabled', async () => {
+    it('does not return catalog function code when the feature is disabled', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aircall', 'aircall');
 
@@ -132,7 +132,7 @@ describe(`GET ${endpoint}`, () => {
         }
     });
 
-    it('returns live catalog function code', async () => {
+    it('returns catalog function code', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aircall', 'aircall');
 

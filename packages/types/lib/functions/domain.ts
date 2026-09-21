@@ -39,7 +39,7 @@ export interface NangoOnEventFunction extends NangoFunctionBase {
 export type NangoFunction = NangoSyncFunction | NangoActionFunction | NangoOnEventFunction;
 
 export interface FunctionAvailability {
-    /** Sync-config id. `null` when the function is served live from the catalog (no deployed row). */
+    /** Sync-config id. `null` when the function is served from the catalog (no deployed row). */
     id: number | null;
     enabled: boolean;
     /** ISO-8601 timestamp. `null` when the function was never deployed. */

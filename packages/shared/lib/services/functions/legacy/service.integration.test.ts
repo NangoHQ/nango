@@ -1,6 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
+import { flags } from '@nangohq/utils';
 
 import { createAccount } from '../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../seeders/config.seeder.js';
@@ -198,7 +199,7 @@ describe('listFunctions with catalog actions', () => {
         expect(page.rows).toEqual([{ name: 'create-issue', source: 'nango-catalog', enabled: true, id: null }]);
     });
 
-    it('unions live catalog actions', async () => {
+    it('unions catalog actions', async () => {
         const { environment, integration } = await seedIntegration();
         mockListCatalogActions.mockReturnValue([catalogAction('create-issue')]);
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'users', type: 'sync' });
@@ -284,9 +285,9 @@ describe('getFunction with catalog actions', () => {
         mockGetCatalogAction.mockReturnValue(undefined);
     });
 
-    it('returns a live catalog action when no deployed row exists', async () => {
+    it('returns a catalog action when no deployed row exists', async () => {
         const { environment } = await seedIntegration();
-        mockGetCatalogAction.mockReturnValue(catalogAction('create-issue'));
+        mockListCatalogActions.mockReturnValue([catalogAction('create-issue')]);
 
         const result = await getFunction({
             environmentId: environment.id,
@@ -311,7 +312,7 @@ describe('getFunction with catalog actions', () => {
 
     it('returns the deployed row when the same catalog name exists', async () => {
         const { environment, integration } = await seedIntegration();
-        mockGetCatalogAction.mockReturnValue(catalogAction('create-issue'));
+        mockListCatalogActions.mockReturnValue([catalogAction('create-issue')]);
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'create-issue', type: 'action' });
 
         const result = await getFunction({
@@ -331,5 +332,29 @@ describe('getFunction with catalog actions', () => {
             enabled: true,
             id: expect.any(Number)
         });
+    });
+
+    it('does not return a catalog action when FLAG_LIVE_CATALOG_ACTIONS_ENABLED is off', async () => {
+        const original = flags.hasLiveCatalogActions;
+        flags.hasLiveCatalogActions = false;
+        try {
+            const { environment } = await seedIntegration();
+            mockListCatalogActions.mockReturnValue([catalogAction('create-issue')]);
+
+            const result = await getFunction({
+                environmentId: environment.id,
+                providerConfigKey: 'github',
+                name: 'create-issue',
+                type: 'action'
+            });
+
+            expect(result.isOk()).toBe(true);
+            if (result.isErr()) {
+                return;
+            }
+            expect(result.value).toBeUndefined();
+        } finally {
+            flags.hasLiveCatalogActions = original;
+        }
     });
 });

@@ -101,7 +101,7 @@ describe('createConnectionToolsMcpServer', () => {
         }
     });
 
-    it('advertises and executes an enabled live catalog action', async () => {
+    it('advertises and executes a catalog action', async () => {
         vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(
             Ok([actionFixture({ enabled: true, name: 'delete-file', source: 'nango-catalog' })])
         );

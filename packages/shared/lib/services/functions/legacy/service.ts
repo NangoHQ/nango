@@ -1,8 +1,7 @@
-import { Err, flags, Ok } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
-import { getCatalogAction, listCatalogActions } from '../../catalog/actions.js';
 import configService from '../../config.service.js';
-import { toListedLiveCatalogAction, toListedNangoFunction } from './mappers.js';
+import { toListedNangoFunction } from './mappers.js';
 import * as functionsModel from './models/functions.js';
 
 import type { FunctionRow } from './models/functions.js';
@@ -22,7 +21,7 @@ export class ListFunctionsError extends Error {
 }
 
 /**
- * Lists functions for a single integration: deployed syncs/actions/on-events plus live
+ * Lists functions for a single integration: deployed syncs/actions/on-events plus
  * catalog actions.
  */
 export async function listFunctions({
@@ -41,7 +40,7 @@ export async function listFunctions({
     offset: number;
 }): Promise<Result<{ rows: ListedNangoFunction[]; total: number }, ListFunctionsError>> {
     try {
-        const integration = await configService.getProviderConfig(providerConfigKey, environmentId);
+        const integration = await configService.getIntegrationSummary(environmentId, providerConfigKey);
         if (!integration) {
             return Err(
                 new ListFunctionsError({
@@ -51,16 +50,13 @@ export async function listFunctions({
             );
         }
 
-        const catalog = flags.hasLiveCatalogActions && (type === undefined || type === 'action') ? listCatalogActions(integration.provider) : [];
-
         const page = await functionsModel.findActiveByEnvironment({
             environmentId,
             providerConfigKey,
             type,
             search,
             limit,
-            offset,
-            catalog
+            offset
         });
         return mapListingPage(page);
     } catch (err) {
@@ -82,7 +78,7 @@ export async function listActions({
     limit?: number;
 }): Promise<Result<ListedNangoActionFunction[], ListFunctionsError>> {
     try {
-        const integration = await configService.getProviderConfig(providerConfigKey, environmentId);
+        const integration = await configService.getIntegrationSummary(environmentId, providerConfigKey);
         if (!integration) {
             return Err(
                 new ListFunctionsError({
@@ -92,8 +88,7 @@ export async function listActions({
             );
         }
 
-        const catalog = flags.hasLiveCatalogActions ? listCatalogActions(integration.provider) : [];
-        const rows = await functionsModel.findActiveActions({ environmentId, providerConfigKey, limit, catalog });
+        const rows = await functionsModel.findActiveActions({ environmentId, providerConfigKey, limit });
         const mapped = mapListingRows(rows);
         if (mapped.isErr()) {
             return Err(mapped.error);
@@ -108,7 +103,7 @@ export async function listActions({
 /**
  * Fetches a single function by name within a provider config.
  * If `type` is omitted and multiple types share the same name, the first
- * match by the listing's stable order is returned. Deployed rows win over live catalog.
+ * match by the listing's stable order is returned. Deployed rows win over catalog.
  */
 export async function getFunction({
     environmentId,
@@ -123,29 +118,15 @@ export async function getFunction({
 }): Promise<Result<ListedNangoFunction | undefined>> {
     try {
         const row = await functionsModel.findActiveByName({ environmentId, providerConfigKey, name, type });
-        if (row) {
-            const fn = toListedNangoFunction(row);
-            if (fn.isErr()) {
-                return Err(new Error('failed_to_get_function', { cause: fn.error }));
-            }
-            return Ok(fn.value);
-        }
-
-        if (!flags.hasLiveCatalogActions || (type !== undefined && type !== 'action')) {
+        if (!row) {
             return Ok(undefined);
         }
 
-        const integration = await configService.getProviderConfig(providerConfigKey, environmentId);
-        if (!integration) {
-            return Ok(undefined);
+        const fn = toListedNangoFunction(row);
+        if (fn.isErr()) {
+            return Err(new Error('failed_to_get_function', { cause: fn.error }));
         }
-
-        const action = getCatalogAction(integration.provider, name);
-        if (!action) {
-            return Ok(undefined);
-        }
-
-        return Ok(toListedLiveCatalogAction(action));
+        return Ok(fn.value);
     } catch (err) {
         return Err(new Error('failed_to_get_function', { cause: err }));
     }

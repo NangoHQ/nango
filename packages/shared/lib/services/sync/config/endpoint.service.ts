@@ -35,7 +35,7 @@ export async function getActionOrModelByEndpoint(connection: DBConnection | DBCo
         .orderBy(`${SYNC_CONFIG_TABLE}.id`, 'desc');
 
     if (!result) {
-        return liveCatalogActionByEndpoint(config, method, path);
+        return catalogActionByEndpoint(config, method, path);
     }
     if (result['type'] == 'action') {
         return { action: result['sync_name'] };
@@ -44,7 +44,7 @@ export async function getActionOrModelByEndpoint(connection: DBConnection | DBCo
     }
 }
 
-async function liveCatalogActionByEndpoint(
+async function catalogActionByEndpoint(
     config: NonNullable<Awaited<ReturnType<typeof configService.getProviderConfig>>>,
     method: HTTP_METHOD,
     path: string

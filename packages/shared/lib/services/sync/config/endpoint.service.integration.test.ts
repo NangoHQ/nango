@@ -74,7 +74,7 @@ describe(getActionOrModelByEndpoint, () => {
         await multipleMigrations();
     });
 
-    it('resolves an enabled live catalog action by endpoint', async () => {
+    it('resolves a catalog action by endpoint', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
         await createConfigSeed(environment, 'aircall', 'aircall');

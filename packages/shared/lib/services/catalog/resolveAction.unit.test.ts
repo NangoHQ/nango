@@ -62,7 +62,7 @@ describe('resolveRunnableAction', () => {
         expect(mockGetCatalogAction).not.toHaveBeenCalled();
     });
 
-    it('returns a synthetic config when the catalog action is on and not deployed', async () => {
+    it('returns a synthetic config when the name is in the catalog and not deployed', async () => {
         mockGetSyncConfigRaw.mockResolvedValue(null);
         mockGetCatalogAction.mockReturnValue({
             name: 'create-issue',

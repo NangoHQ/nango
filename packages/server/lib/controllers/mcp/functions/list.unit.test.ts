@@ -46,15 +46,15 @@ describe('listFunctionsTool', () => {
         }
     });
 
-    it('accepts live catalog actions with a null id and nango-catalog source', async () => {
-        const live = liveCatalogFunctionFixture;
-        vi.spyOn(legacyFunctionService, 'listFunctions').mockResolvedValue(Ok({ rows: [live], total: 1 }));
+    it('accepts catalog actions with a null id and nango-catalog source', async () => {
+        const catalog = catalogFunctionFixture;
+        vi.spyOn(legacyFunctionService, 'listFunctions').mockResolvedValue(Ok({ rows: [catalog], total: 1 }));
 
         const result = await listFunctionsTool.handler({ integration_id: 'github' }, context);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
-            expect(listFunctionsOutputSchema.parse(result.value).data).toStrictEqual([live]);
+            expect(listFunctionsOutputSchema.parse(result.value).data).toStrictEqual([catalog]);
         }
     });
 
@@ -150,7 +150,7 @@ const functionFixture: ListedNangoFunction = {
     source: 'repo'
 };
 
-const liveCatalogFunctionFixture: ListedNangoFunction = {
+const catalogFunctionFixture: ListedNangoFunction = {
     id: null,
     name: 'create-issue',
     type: 'action',
