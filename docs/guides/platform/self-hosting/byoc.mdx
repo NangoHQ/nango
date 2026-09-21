@@ -36,7 +36,7 @@ Nango never receives a long-lived credential to your account. Instead, you creat
     | Project-scoped | IAM bindings stay on this project — no organization, folder or billing admin |
     | Can't enable APIs | `roles/serviceusage.serviceUsageAdmin` is deliberately omitted; Nango can't turn services on or off |
 
-    You review the Terraform plan before every apply, and can revoke impersonation at any time — this cuts Nango off immediately, while anything already deployed keeps running. The install runs entirely within your GCP project — no separate AWS account is provisioned.
+    You can revoke impersonation at any time — this cuts Nango off immediately, while anything already deployed keeps running. The install runs entirely within your GCP project.
   </Tab>
   <Tab title="Azure">
     **Coming soon.** BYOC on Azure isn't generally available yet — the access model will follow the same pattern as AWS and GCP: a role you create, one named Nango identity, short-lived sessions, no standing credentials. If you need it now, [talk to us](https://nango.dev/contact).
@@ -51,7 +51,7 @@ The full IAM policy, CloudFormation template or Terraform configuration, and exa
 
 **Only operational telemetry — nothing else.** Nango's team monitors your instance's health via Datadog, so we can catch and respond to issues before you have to file a ticket. That's the only data that leaves your AWS account or GCP project.
 
-No customer data, no connection credentials, and no synced records ever leave your environment, in either direction.
+Nothing else leaves your account.
 
 ## Where your data lives
 
@@ -61,7 +61,7 @@ Everything else — all of it — stays inside your account:
 | --- | --- |
 | Postgres | Control-plane data, your end users' connection credentials, scheduled tasks, synced records |
 | Object storage (S3 / GCS) | Compiled integration code for the Runner |
-| ElasticSearch / OpenSearch | Execution logs |
+| ElasticSearch / OpenSearch | [Nango Logs](/guides/platform/security#nango-logs) |
 | Redis / Valkey | Cache — socket info, token refresh locks, rate limits |
 
 Nango does not keep a separate copy of any of this anywhere. See [Encryption & credentials](#encryption-credentials) below for how it's protected at rest, and [Security](/guides/platform/security) for the full model.
@@ -70,7 +70,7 @@ Nango does not keep a separate copy of any of this anywhere. See [Encryption & c
 
 | Area | Nango | You |
 | --- | --- | --- |
-| Infrastructure provisioning (VPC, database, cache, cluster) | Provisions it, via Terraform, using the access you grant | Review the Terraform plan; own the underlying cloud bill |
+| Infrastructure provisioning (VPC, database, cache, cluster) | Provisions it, via Terraform, using the access you grant | Own the underlying cloud bill |
 | Application deployment & updates | Deploys and updates it, via GitOps (FluxCD) | — |
 | Scaling | Handles it | — |
 | Incident response / on-call | Handles it | — |

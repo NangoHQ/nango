@@ -69,8 +69,6 @@ All paid features available on Nango Cloud are also included in both BYOC and Se
 
 The default configuration supports 1M+ sync/action executions per day (assuming ~2s execution time per action/sync).
 
-Auto-scaling is not provided out-of-the-box yet, but the default configuration scales far. We can guide you on configuring auto-scaling when needed.
-
 Bottlenecks mostly depend on:
 - **Action/sync execution time**: solved by scaling the Runner service vertically, then horizontally.
 - **Cached records & size (for sync functions only)**: solved by scaling Postgres vertically.
@@ -125,6 +123,7 @@ For more details, see the [pricing page](https://nango.dev/pricing) or [schedule
 | RBAC | No | Yes |
 | MFA | No | Yes |
 | SAML SSO | No | Nango Cloud and BYOC |
+| Audit trail | No | Yes |
 
 ### Run and update Nango
 
