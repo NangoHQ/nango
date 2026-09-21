@@ -24,7 +24,7 @@ Both run the same Nango codebase you get on Cloud, with all paid Cloud features 
 | Best fit | Teams that want infrastructure ownership and data residency without operating Nango themselves | Teams with the platform capacity to run it, or infrastructure constraints BYOC doesn't fit yet |
 
 <Note>
-Both paths require an [Enterprise plan](https://www.nango.dev/pricing) subscription and are intended for large and/or regulated organizations. Pricing is a fixed annual license and maintenance fee, plus a fraction of the Cloud usage-based fees, since infrastructure runs on your side either way. Talk to us at [nango.dev/contact](https://nango.dev/contact) to get started with either — or read the [BYOC](/guides/platform/self-hosting-byoc) and [Self-Managed](/guides/platform/self-hosting-self-managed) pages for the details of each.
+Both paths require an [Enterprise plan](https://www.nango.dev/pricing) subscription and are intended for large and/or regulated organizations. Pricing is a fixed annual license and maintenance fee, plus a fraction of the Cloud usage-based fees, since infrastructure runs on your side either way. Talk to us at [nango.dev/contact](https://nango.dev/contact) to get started with either — or read the [BYOC](/guides/platform/self-hosting/byoc) and [Self-Managed](/guides/platform/self-hosting/self-managed) pages for the details of each.
 </Note>
 
 ## Architecture overview
@@ -82,7 +82,7 @@ Bottlenecks mostly depend on:
 - **ElasticSearch**: Stores customer-facing observability.
 - **Redis**: Caches system data, including socket information, token refresh locks, and rate limits.
 
-All four of these run inside your own environment on both paths — see [What leaves your account](/guides/platform/self-hosting-byoc#what-leaves-your-account) (BYOC) or [Self-Managed](/guides/platform/self-hosting-self-managed#what-leaves-your-account) for exactly what does and doesn't.
+All four of these run inside your own environment on both paths — see [What leaves your account](/guides/platform/self-hosting/byoc#what-leaves-your-account) (BYOC) or [Self-Managed](/guides/platform/self-hosting/self-managed#what-leaves-your-account) for exactly what does and doesn't.
 
 ## Using existing data stores
 
@@ -153,8 +153,8 @@ If you are interested in BYOC or Self-Managed for Enterprise self-hosting, get i
 
 ## Related guides
 
-- [BYOC](/guides/platform/self-hosting-byoc) - deployment, access model, and FAQ.
-- [Self-Managed](/guides/platform/self-hosting-self-managed) - quickstart, configuration reference, and FAQ.
+- [BYOC](/guides/platform/self-hosting/byoc) - deployment, access model, and FAQ.
+- [Self-Managed](/guides/platform/self-hosting/self-managed) - quickstart, configuration reference, and FAQ.
 - [Security](/guides/platform/security) - review data, encryption, and access controls.
 - [Environments](/guides/platform/environments) - organize dev, staging, and production setups.
 - [Changelog](/updates/changelog) - track changes that affect self-hosted upgrades.
