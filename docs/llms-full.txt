@@ -7537,7 +7537,7 @@ docker-compose pull
 docker-compose up -d
 ```
 
-The full configuration reference below (encryption, logs, Redis, hardening, and so on) also applies to a free self-hosted instance — see the [Self-Managed configuration reference](/guides/platform/self-hosting-self-managed#configuration-reference).
+The full configuration reference below (encryption, logs, Redis, hardening, and so on) also applies to a free self-hosted instance — see the [Self-Managed configuration reference](/guides/platform/self-hosting/self-managed#configuration-reference).
 
 <Tip>
 If you are interested in BYOC or Self-Managed for Enterprise self-hosting, get in touch with us in the [community](https://nango.dev/slack) or [book a call](https://nango.dev/contact).
