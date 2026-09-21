@@ -73,6 +73,19 @@ export interface CurrentFunctionConfig {
     currentVersion: DBFunctionConfigVersion;
 }
 
+export async function rows(trx: Knex, { environmentId, integrationId }: { environmentId: number; integrationId: number }): Promise<Result<DBFunctionConfig[]>> {
+    try {
+        const configs = await trx
+            .from<DBFunctionConfig>(CONFIGS_TABLE)
+            .select('*')
+            .where({ environment_id: environmentId, nango_config_id: integrationId })
+            .whereNull('deleted_at');
+        return Ok(configs);
+    } catch (err) {
+        return Err(new Error('failed_to_find_function_configs', { cause: err }));
+    }
+}
+
 type Prefixed<T, Prefix extends string> = {
     [K in keyof T as `${Prefix}${Extract<K, string>}`]: T[K];
 };

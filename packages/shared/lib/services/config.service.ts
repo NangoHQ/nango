@@ -5,6 +5,7 @@ import { gettingStartedService } from '../index.js';
 import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
+import * as functionLifecycle from './functions/lifecycle.js';
 import { getProvider } from './providers.js';
 import syncManager from './sync/manager.service.js';
 
@@ -218,8 +219,17 @@ class ConfigService {
         id: number;
         environmentId: number;
         providerConfigKey: string;
-        orchestrator: Orchestrator;
+        orchestrator: Pick<Orchestrator, 'deleteSync' | 'deleteFunctionSchedules'>;
     }): Promise<boolean> {
+        const functionsDeletion = await functionLifecycle.deleteForIntegration(db.knex, {
+            integrationConfigId: id,
+            environmentId,
+            orchestrator
+        });
+        if (functionsDeletion.isErr()) {
+            throw functionsDeletion.error;
+        }
+
         // TODO: might be useless since we are dropping the data after a while
         await syncManager.deleteSyncsByProviderConfig(environmentId, providerConfigKey, orchestrator);
 

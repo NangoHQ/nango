@@ -7,11 +7,23 @@ import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
 export type FunctionInstanceUpsert = Pick<DBFunctionInstance, 'nango_connection_id' | 'function_config_id' | 'name' | 'variant' | 'frequency'>;
-export type FunctionInstanceFilter = { functionConfigIds: number[] } | { connectionIds: number[] };
+export type FunctionInstanceFilter = { functionConfigIds: number[] } | { connectionIds: number[] } | { instanceIds: number[] };
 export type FunctionInstanceSearchOptions = { includeDeleted?: boolean; afterId?: number; limit?: number };
 
 const UPSERT_BATCH_SIZE = 1000;
 const SOFT_DELETE_BATCH_SIZE = 1000;
+
+type FilterColumn = 'function_config_id' | 'nango_connection_id' | 'id';
+
+function resolveFilter(filter: FunctionInstanceFilter): [field: FilterColumn, ids: number[]] {
+    if ('functionConfigIds' in filter) {
+        return ['function_config_id', filter.functionConfigIds];
+    } else if ('connectionIds' in filter) {
+        return ['nango_connection_id', filter.connectionIds];
+    } else {
+        return ['id', filter.instanceIds];
+    }
+}
 
 export async function upsert(db: Knex, instances: FunctionInstanceUpsert[]): Promise<Result<DBFunctionInstance[]>> {
     if (instances.length === 0) {
@@ -57,18 +69,14 @@ export async function search(
     filter: FunctionInstanceFilter,
     { includeDeleted = false, afterId, limit }: FunctionInstanceSearchOptions = {}
 ): Promise<Result<DBFunctionInstance[]>> {
-    const ids = 'functionConfigIds' in filter ? filter.functionConfigIds : filter.connectionIds;
+    const [field, ids] = resolveFilter(filter);
     if (ids.length === 0) {
         return Ok([]);
     }
 
     try {
         const query = trx.from<DBFunctionInstance>(INSTANCES_TABLE).select('*').orderBy('id');
-        if ('functionConfigIds' in filter) {
-            query.whereIn('function_config_id', filter.functionConfigIds);
-        } else {
-            query.whereIn('nango_connection_id', filter.connectionIds);
-        }
+        query.whereIn(field, ids);
         if (!includeDeleted) {
             query.whereNull('deleted_at');
         }
@@ -90,7 +98,7 @@ export async function softDelete(
     { environmentId }: { environmentId: number }
 ): Promise<Result<DBFunctionInstance[]>> {
     try {
-        const ids = 'functionConfigIds' in filter ? filter.functionConfigIds : filter.connectionIds;
+        const [field, ids] = resolveFilter(filter);
         if (ids.length === 0) {
             return Ok([]);
         }
@@ -101,22 +109,9 @@ export async function softDelete(
                 const batch = ids.slice(offset, offset + SOFT_DELETE_BATCH_SIZE);
                 const query = trx
                     .from<DBFunctionInstance>(INSTANCES_TABLE)
-                    .whereIn(
-                        'function_config_id',
-                        trx
-                            .from<DBFunctionConfig>(CONFIGS_TABLE)
-                            .select('id')
-                            .where({ environment_id: environmentId })
-                            .modify((builder) => {
-                                if ('functionConfigIds' in filter) {
-                                    builder.whereIn('id', batch);
-                                }
-                            })
-                    )
+                    .whereIn('function_config_id', trx.from<DBFunctionConfig>(CONFIGS_TABLE).select('id').where({ environment_id: environmentId }))
+                    .whereIn(field, batch)
                     .whereNull('deleted_at');
-                if ('connectionIds' in filter) {
-                    query.whereIn('nango_connection_id', batch);
-                }
                 const rows = await query.update({ deleted_at: now, updated_at: now }).returning('*');
                 for (const row of rows) {
                     deletedInstances.push(row);
