@@ -38,7 +38,7 @@ description: "Important developer & product updates, including deprecations & br
   - **Proxy tool:** A new `nango_proxy` meta tool lets the agent call any endpoint of a connected integration when no tool in the session fits. Nango authenticates the request, so the agent never sees credentials. It is off by default; turn it on per session. See [meta tools](/guides/agent-sessions#meta-tools).
   - **Terminate a session:** A new `DELETE /sessions/{session_id}` API to end a session before it expires and revoke its token. See [terminating a session](/guides/agent-sessions#terminating-a-session).
   - **Logs filter:** The Logs page has an Agent session filter that shows the operations a session ran. Each operation also shows which session drove it.
-  - **Clearer tool errors:** Failed tool calls return a message that says what failed and what the agent should do next, plus an error code in the result's `_meta`.
+  - **Clearer tool errors:** Failed tool calls return a message that says what failed and what the agent should do next.
 </Update>
 ---
 
