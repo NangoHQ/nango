@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import db from '@nangohq/database';
 import { connectionService, connectionTagsSchema } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
@@ -134,6 +135,13 @@ export async function resolveTenantConnections({
  * The connection the agent created for this integration, if the end user has since gone through the
  * connect flow. Matching on the session tag rather than the tenant selectors, because the whole
  * reason the slot was empty is that no selector matched anything.
+ *
+ * Reads the primary. The agent can ask for this the moment the connection is written, and on a
+ * replica that reads as not connected, which would send it off to issue a second connect link.
+ *
+ * Several matches means the user went through the flow more than once for this session. Candidates
+ * come back newest first, and the newest is the attempt that most likely worked, so it wins rather
+ * than the session refusing to resolve and stranding itself.
  */
 export async function findConnectionCreatedForSession({
     environmentId,
@@ -148,16 +156,17 @@ export async function findConnectionCreatedForSession({
         environmentId,
         tagSelectors: [{ [AGENT_SESSION_TAG_KEY]: sessionId }],
         pinnedConnections: [],
-        candidateSampleSize: 1
+        candidateSampleSize: 1,
+        database: db.knex
     });
 
     const match = matches.find((candidate) => candidate.integration_id === integrationId);
-    const [candidate] = match?.candidates ?? [];
-    if (!match || !candidate) {
+    const [newest] = match?.candidates ?? [];
+    if (!match || !newest) {
         return null;
     }
 
-    return toResolvedConnection(match.integration_id, match.provider, candidate);
+    return toResolvedConnection(match.integration_id, match.provider, newest);
 }
 
 export function pickConnectionPerIntegration({

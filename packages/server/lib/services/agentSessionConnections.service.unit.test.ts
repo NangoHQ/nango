@@ -1,6 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { agentSessionTenantConnectionsSchema, MAX_SELECTORS, pickConnectionPerIntegration } from './agentSessionConnections.service.js';
+import db from '@nangohq/database';
+import { connectionService } from '@nangohq/shared';
+
+import {
+    AGENT_SESSION_TAG_KEY,
+    agentSessionTenantConnectionsSchema,
+    findConnectionCreatedForSession,
+    MAX_SELECTORS,
+    pickConnectionPerIntegration
+} from './agentSessionConnections.service.js';
 
 import type { AgentSessionConnectionResolutionError } from './agentSessionConnections.service.js';
 import type { ConnectionIntegrationMatchRow, ConnectionMatch, ConnectionMatchCandidate } from '@nangohq/shared';
@@ -395,3 +404,47 @@ function pin(args: { integrationId: string; connectionId: string; internalConnec
         candidate: candidate(args)
     };
 }
+
+describe('findConnectionCreatedForSession', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function candidate(id: number, connectionId: string): ConnectionMatchCandidate {
+        return { id, connection_id: connectionId, config_id: 20, tags: { [AGENT_SESSION_TAG_KEY]: 'session-1' } };
+    }
+
+    function matchRows(candidates: ConnectionMatchCandidate[]): ConnectionIntegrationMatchRow[] {
+        return [{ integration_id: 'notion', provider: 'notion', match_count: candidates.length, candidates }];
+    }
+
+    it('reads the primary, because the connection may have just been written', async () => {
+        const group = vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue(matchRows([candidate(1, 'notion-new')]));
+
+        await findConnectionCreatedForSession({ environmentId: 1, sessionId: 'session-1', integrationId: 'notion' });
+
+        expect(group).toHaveBeenCalledWith(expect.objectContaining({ database: db.knex, tagSelectors: [{ [AGENT_SESSION_TAG_KEY]: 'session-1' }] }));
+    });
+
+    it('returns nothing when the session connected no such integration', async () => {
+        vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue([]);
+
+        await expect(findConnectionCreatedForSession({ environmentId: 1, sessionId: 'session-1', integrationId: 'notion' })).resolves.toBeNull();
+    });
+
+    it('takes the newest when the user went through the flow more than once', async () => {
+        vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue(
+            matchRows([candidate(2, 'notion-newest'), candidate(1, 'notion-older')])
+        );
+
+        const found = await findConnectionCreatedForSession({ environmentId: 1, sessionId: 'session-1', integrationId: 'notion' });
+
+        expect(found).toStrictEqual({
+            integrationId: 'notion',
+            provider: 'notion',
+            connectionId: 'notion-newest',
+            internalConnectionId: 2,
+            configId: 20
+        });
+    });
+});

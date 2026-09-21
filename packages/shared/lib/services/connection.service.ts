@@ -1412,16 +1412,22 @@ export class ConnectionService {
      * Pinned connections survive the candidate sample so a caller can check them without listing
      * every match.
      */
+    /**
+     * Reads a replica by default. Pass the primary when the caller is looking for a connection that
+     * may have been written moments ago, because replication lag reads as no match.
+     */
     public async groupConnectionMatchesByIntegration({
         environmentId,
         tagSelectors,
         pinnedConnections,
-        candidateSampleSize
+        candidateSampleSize,
+        database = db.readOnly
     }: {
         environmentId: number;
         tagSelectors: Tags[];
         pinnedConnections: { integrationId: string; connectionId: string }[];
         candidateSampleSize: number;
+        database?: Knex;
     }): Promise<ConnectionIntegrationMatchRow[]> {
         if (tagSelectors.length === 0) {
             return [];
@@ -1430,7 +1436,7 @@ export class ConnectionService {
         const containment = tagSelectors.map(() => '_nango_connections.tags @> ?::jsonb').join(' OR ');
         const containmentBindings = tagSelectors.map((tags) => JSON.stringify(tags));
 
-        return await db.readOnly
+        return await database
             .with('matched', (qb) => {
                 qb.select(
                     '_nango_connections.id',
@@ -1449,7 +1455,7 @@ export class ConnectionService {
                     .whereRaw(`(${containment})`, containmentBindings);
             })
             .with('ranked', (qb) => {
-                qb.select('matched.*', db.knex.raw('COUNT(*) OVER (PARTITION BY integration_id) as match_count'))
+                qb.select('matched.*', database.raw('COUNT(*) OVER (PARTITION BY integration_id) as match_count'))
                     .rowNumber('rn', (rn) => {
                         rn.partitionBy('integration_id').orderBy([
                             { column: 'created_at', order: 'desc' },
@@ -1461,8 +1467,8 @@ export class ConnectionService {
             .select<ConnectionIntegrationMatchRow[]>(
                 'integration_id',
                 'provider',
-                db.knex.raw('MAX(match_count)::int as match_count'),
-                db.knex.raw(
+                database.raw('MAX(match_count)::int as match_count'),
+                database.raw(
                     `JSON_AGG(JSON_BUILD_OBJECT('id', id, 'connection_id', connection_id, 'config_id', config_id, 'tags', tags) ORDER BY rn) as candidates`
                 )
             )
