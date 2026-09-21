@@ -34,6 +34,15 @@ export interface FunctionAvailabilityRow {
     source: FunctionSource;
 }
 
+const listingOrderBy = [
+    { column: 'type', order: 'asc' as const },
+    { column: 'name', order: 'asc' as const },
+    { column: 'event', order: 'asc' as const },
+    { column: 'id', order: 'asc' as const }
+];
+
+type ListingPageRow = FunctionRow & { total: string | number };
+
 export async function findActiveByEnvironment({
     environmentId,
     providerConfigKey,
@@ -52,24 +61,23 @@ export async function findActiveByEnvironment({
     catalog?: CatalogAction[];
 }): Promise<{ rows: FunctionRow[]; total: number }> {
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search, catalog });
+    const pageRows = await db.knex
+        .from(listing)
+        .select<ListingPageRow[]>('*', db.knex.raw('COUNT(*) OVER() AS total'))
+        .orderBy(listingOrderBy)
+        .limit(limit)
+        .offset(offset);
 
-    const [pageRows, countRow] = await Promise.all([
-        db.knex
-            .from(listing)
-            .select<FunctionRow[]>('*')
-            .orderBy([
-                { column: 'type', order: 'asc' },
-                { column: 'name', order: 'asc' },
-                { column: 'event', order: 'asc' },
-                { column: 'id', order: 'asc' }
-            ])
-            .limit(limit)
-            .offset(offset),
-        db.knex.from(listing).count<{ total: string }[]>('* as total').first()
-    ]);
+    let total = pageRows.length > 0 ? Number(pageRows[0]!.total) : 0;
+    // COUNT(*) OVER() is computed before LIMIT, but an empty page has no row to read it from.
+    if (pageRows.length === 0 && offset > 0) {
+        const countRow = await db.knex.from(listing).count<{ total: string }[]>('* as total').first();
+        total = countRow ? Number(countRow.total) : 0;
+    }
 
-    const total = countRow ? Number(countRow.total) : 0;
-    return { rows: pageRows, total };
+    const rows = pageRows.map(({ total: _total, ...row }) => row);
+    hydrateCatalogJsonSchemas(rows, catalog);
+    return { rows, total };
 }
 
 export async function findActiveActions({
@@ -84,17 +92,9 @@ export async function findActiveActions({
     catalog?: CatalogAction[];
 }): Promise<FunctionRow[]> {
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type: 'action', search: undefined, catalog });
-
-    return db.knex
-        .from(listing)
-        .select<FunctionRow[]>('*')
-        .orderBy([
-            { column: 'type', order: 'asc' },
-            { column: 'name', order: 'asc' },
-            { column: 'event', order: 'asc' },
-            { column: 'id', order: 'asc' }
-        ])
-        .limit(limit);
+    const rows = await db.knex.from(listing).select<FunctionRow[]>('*').orderBy(listingOrderBy).limit(limit);
+    hydrateCatalogJsonSchemas(rows, catalog);
+    return rows;
 }
 
 /**
@@ -369,17 +369,7 @@ export async function findActiveByName({
 }): Promise<FunctionRow | undefined> {
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search: undefined });
 
-    const row = await db.knex
-        .from(listing)
-        .select<FunctionRow[]>('*')
-        .where('name', name)
-        .orderBy([
-            { column: 'type', order: 'asc' },
-            { column: 'name', order: 'asc' },
-            { column: 'event', order: 'asc' },
-            { column: 'id', order: 'asc' }
-        ])
-        .first();
+    const row = await db.knex.from(listing).select<FunctionRow[]>('*').where('name', name).orderBy(listingOrderBy).first();
 
     return row;
 }
@@ -411,6 +401,37 @@ function buildListingSubquery({
     return db.knex.raw(`(${union}) AS listing`, branches);
 }
 
+/**
+ * Strip away the extra fields from the catalog action object that are not needed for the listing.
+ * Mainly json_schema which can be large.
+ */
+function toCatalogListingBind(catalog: CatalogAction[]): Pick<CatalogAction, 'name' | 'description' | 'scopes' | 'input' | 'output'>[] {
+    return catalog.map((action) => ({
+        name: action.name,
+        description: action.description,
+        scopes: action.scopes,
+        input: action.input,
+        output: action.output
+    }));
+}
+
+/**
+ * Used to re-hydrate the json_schema field into the FunctionRow object.
+ */
+function hydrateCatalogJsonSchemas(rows: FunctionRow[], catalog: CatalogAction[]): void {
+    if (catalog.length === 0) {
+        return;
+    }
+
+    const schemaByName = new Map(catalog.map((action) => [action.name, action.json_schema]));
+    for (const row of rows) {
+        if (row.source !== 'nango-catalog') {
+            continue;
+        }
+        row.json_schema = schemaByName.get(row.name) ?? null;
+    }
+}
+
 function buildCatalogBranch({
     environmentId,
     providerConfigKey,
@@ -422,10 +443,9 @@ function buildCatalogBranch({
     catalog: CatalogAction[];
     search: string | undefined;
 }): Knex.QueryBuilder {
-    const catalogRows = db.knex.raw(
-        `jsonb_to_recordset(?::jsonb) AS c(name text, description text, scopes jsonb, input text, output text[], json_schema json)`,
-        [JSON.stringify(catalog)]
-    );
+    const catalogRows = db.knex.raw(`jsonb_to_recordset(?::jsonb) AS c(name text, description text, scopes jsonb, input text, output text[])`, [
+        JSON.stringify(toCatalogListingBind(catalog))
+    ]);
 
     const query = db.knex
         .from({ nc: '_nango_configs' })
@@ -452,7 +472,7 @@ function buildCatalogBranch({
         `),
         'c.input',
         db.knex.raw('c.output AS returns'),
-        'c.json_schema',
+        db.knex.raw('NULL::json AS json_schema'),
         db.knex.raw('NULL::text AS runs'),
         db.knex.raw('NULL::boolean AS auto_start'),
         db.knex.raw('NULL::boolean AS track_deletes'),

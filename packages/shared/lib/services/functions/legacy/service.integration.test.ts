@@ -212,6 +212,37 @@ describe('listFunctions with catalog actions', () => {
         ]);
     });
 
+    it('attaches catalog json_schema after listing', async () => {
+        const { environment } = await seedIntegration();
+        const jsonSchema = { type: 'object', properties: { title: { type: 'string' } } };
+        mockListCatalogActions.mockReturnValue([{ ...catalogAction('create-issue'), json_schema: jsonSchema }]);
+
+        const result = await listFunctions({
+            environmentId: environment.id,
+            providerConfigKey: 'github',
+            type: undefined,
+            search: undefined,
+            limit: 20,
+            offset: 0
+        });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isErr()) {
+            return;
+        }
+        expect(result.value.rows[0]).toMatchObject({ name: 'create-issue', source: 'nango-catalog', json_schema: jsonSchema });
+    });
+
+    it('returns the listing total when the page is past the last row', async () => {
+        const { environment } = await seedIntegration();
+        mockListCatalogActions.mockReturnValue([catalogAction('create-issue'), catalogAction('list-issues')]);
+
+        const page = await listPage({ environment, offset: 20, limit: 10 });
+
+        expect(page.total).toBe(2);
+        expect(page.rows).toEqual([]);
+    });
+
     it('lists actions for connection tools using the merged deployed and catalog view', async () => {
         const { environment, integration } = await seedIntegration();
         mockListCatalogActions.mockReturnValue([catalogAction('create-issue'), catalogAction('delete-issue')]);
