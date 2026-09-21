@@ -2,7 +2,8 @@ import { Client } from '@modelcontextprotocol/client';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { flags, metrics, Ok } from '@nangohq/utils';
+import { environmentService } from '@nangohq/shared';
+import { Err, flags, metrics, Ok } from '@nangohq/utils';
 
 import { audit, auditBackend } from '../../audit.js';
 import { createIntegrationsTool } from './integrations/create.js';
@@ -10,6 +11,7 @@ import { listIntegrationsTool } from './integrations/list.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { getProvidersTool } from './providers/get.js';
 
+import type { ManagementMcpEnvironmentLoader } from './environments/loader.js';
 import type { McpServer } from '@modelcontextprotocol/server';
 import type { Principal, ScopeSelector, WhereSelector } from '@nangohq/authz';
 import type { AuditAttribution, DBEnvironment, DBTeam } from '@nangohq/types';
@@ -47,7 +49,7 @@ describe('createManagementMcpServer with OAuth', () => {
     });
 
     it('exposes environments_list and every OAuth-supported environment-bound management tool', async () => {
-        const { client, server, loadEnvironment } = await createTestClient();
+        const { client, server, loadEnvironment, loadEnvironments } = await createTestClient();
 
         try {
             const result = await client.listTools();
@@ -75,6 +77,7 @@ describe('createManagementMcpServer with OAuth', () => {
                 });
                 expect(tool.inputSchema.required).toContain('environment');
             }
+            expect(loadEnvironments).not.toHaveBeenCalled();
             expect(loadEnvironment).not.toHaveBeenCalled();
         } finally {
             await client.close();
@@ -83,7 +86,13 @@ describe('createManagementMcpServer with OAuth', () => {
     });
 
     it('returns only environments visible through live RBAC without exposing environment credentials', async () => {
-        const { client, server, loadEnvironment } = await createTestClient({
+        const getEnvironmentsSpy = vi.spyOn(environmentService, 'getEnvironmentsByAccountId').mockResolvedValue(
+            Ok([
+                { id: 1, uuid: 'dev-environment', name: 'dev', is_production: false },
+                { id: 2, uuid: 'prod-environment', name: 'prod', is_production: true }
+            ])
+        );
+        const { client, server, loadEnvironment, loadEnvironments } = await createTestClient({
             principal: principal(['environment:settings:read'], ['env:non-production'])
         });
 
@@ -97,7 +106,32 @@ describe('createManagementMcpServer with OAuth', () => {
                 content: [{ type: 'text', text: JSON.stringify(expected, null, 2) }],
                 structuredContent: expected
             });
+            expect(getEnvironmentsSpy).toHaveBeenCalledOnce();
+            expect(getEnvironmentsSpy).toHaveBeenCalledWith(1);
+            expect(loadEnvironments).not.toHaveBeenCalled();
             expect(loadEnvironment).not.toHaveBeenCalled();
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns and records environment lookup failures through the standard tool error path', async () => {
+        const error = new Error('failed to retrieve environments');
+        vi.spyOn(environmentService, 'getEnvironmentsByAccountId').mockResolvedValue(Err(error));
+        const metricSpy = vi.spyOn(metrics, 'increment');
+        const { client, server } = await createTestClient();
+
+        try {
+            const result = await client.callTool({ name: 'environments_list', arguments: {} });
+
+            expect(result).toMatchObject({ isError: true, content: [{ type: 'text', text: 'Internal error' }] });
+            expect(metricSpy).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {
+                accountId: 1,
+                mcp_type: 'management',
+                tool: 'environments_list',
+                outcome: 'error'
+            });
         } finally {
             await client.close();
             await server.close();
@@ -128,13 +162,16 @@ describe('createManagementMcpServer with OAuth', () => {
             templates: []
         };
         const handlerSpy = vi.spyOn(getProvidersTool, 'handler').mockResolvedValueOnce(Ok(response));
-        const { client, server, loadEnvironment } = await createTestClient();
+        const request = {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'tools/call',
+            params: { name: 'providers_get', arguments: { environment: 'dev', provider: 'github', include_templates: true } }
+        };
+        const { client, server, loadEnvironment } = await createTestClient({ requestBody: request });
 
         try {
-            const result = await client.callTool({
-                name: 'providers_get',
-                arguments: { environment: 'dev', provider: 'github', include_templates: true }
-            });
+            const result = await client.callTool(request.params);
 
             expect(result).toStrictEqual({
                 content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
@@ -185,7 +222,7 @@ describe('createManagementMcpServer with OAuth', () => {
             const result = await client.callTool({ name: 'providers_get', arguments: { environment: 'dev', provider: 'github' } });
 
             expect(result).toMatchObject({ isError: true, content: [{ type: 'text', text: 'Internal error' }] });
-            expect(loadEnvironment).toHaveBeenCalledTimes(2);
+            expect(loadEnvironment).toHaveBeenCalledOnce();
             expect(metricSpy).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {
                 accountId: 1,
                 mcp_type: 'management',
@@ -198,7 +235,7 @@ describe('createManagementMcpServer with OAuth', () => {
         }
     });
 
-    it('retries a transient environment load failure before invoking the tool', async () => {
+    it('allows a later tool call to retry a transient environment load failure', async () => {
         const response = {
             name: 'github',
             display_name: 'GitHub',
@@ -212,23 +249,54 @@ describe('createManagementMcpServer with OAuth', () => {
             .fn<LoadEnvironment>()
             .mockRejectedValueOnce(new Error('Transient database failure'))
             .mockResolvedValueOnce(fakeEnvironment({ id: 1, name: 'dev', isProduction: false }));
-        const requestBody = {
-            jsonrpc: '2.0',
-            id: 1,
-            method: 'tools/call',
-            params: { name: 'providers_get', arguments: { environment: 'dev', provider: 'github' } }
-        };
-        const { client, server } = await createTestClient({ loadEnvironment: loadEnvironment, requestBody });
+        const { client, server } = await createTestClient({ loadEnvironment });
 
         try {
-            const result = await client.callTool({ name: 'providers_get', arguments: { environment: 'dev', provider: 'github' } });
+            const firstResult = await client.callTool({ name: 'providers_get', arguments: { environment: 'dev', provider: 'github' } });
+            const secondResult = await client.callTool({ name: 'providers_get', arguments: { environment: 'dev', provider: 'github' } });
 
-            expect(result).toStrictEqual({
+            expect(firstResult).toMatchObject({ isError: true, content: [{ type: 'text', text: 'Internal error' }] });
+            expect(secondResult).toStrictEqual({
                 content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
                 structuredContent: response
             });
             expect(loadEnvironment).toHaveBeenCalledTimes(2);
             expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('audits an authorized invalid call that the MCP SDK rejects before dispatch', async () => {
+        flags.hasAuditTrail = true;
+        auditBackend.configured = true;
+        const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+        const { client, server, loadEnvironment } = await createTestClient({
+            audit: {
+                kind: 'request',
+                actor: { type: 'user', id: '1', display: 'user@nango.dev' },
+                context: { ip: '127.0.0.1', userAgent: 'test-client' }
+            },
+            requestBody: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'syncs_set_state', arguments: { environment: 'dev', integration_id: 42, state: 'paused' } }
+            }
+        });
+
+        try {
+            await vi.waitFor(() => expect(auditSpy).toHaveBeenCalledOnce());
+            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+                accountId: 1,
+                environment: { id: 'dev-environment', display: 'dev' },
+                resource: 'sync',
+                action: 'paused',
+                targets: [],
+                outcome: 'failure'
+            });
+            expect(loadEnvironment).toHaveBeenCalledOnce();
         } finally {
             await client.close();
             await server.close();
@@ -387,18 +455,21 @@ async function createTestClient({
     principal: userPrincipal = principal(['environment:*'], ['env:*']),
     audit: auditAttribution,
     loadEnvironment: loadEnvironmentOverride,
+    loadEnvironments: loadEnvironmentsOverride,
     loadEnvironmentError,
     requestBody
 }: {
     principal?: Principal;
     audit?: AuditAttribution;
     loadEnvironment?: Mock<LoadEnvironment>;
+    loadEnvironments?: Mock<ManagementMcpEnvironmentLoader>;
     loadEnvironmentError?: Error;
     requestBody?: unknown;
 } = {}): Promise<{
     client: Client;
     server: McpServer;
     loadEnvironment: Mock<LoadEnvironment>;
+    loadEnvironments: Mock<ManagementMcpEnvironmentLoader>;
 }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     const environments = [fakeEnvironment({ id: 1, name: 'dev', isProduction: false }), fakeEnvironment({ id: 2, name: 'prod', isProduction: true })];
@@ -407,6 +478,9 @@ async function createTestClient({
         (loadEnvironmentError
             ? vi.fn((_name: string) => Promise.reject(loadEnvironmentError))
             : vi.fn((name: string) => Promise.resolve(environments.find((environment) => environment.name === name) ?? null)));
+    const loadEnvironments =
+        loadEnvironmentsOverride ??
+        vi.fn(() => Promise.resolve(environments.map(({ id, uuid, name, account_id, is_production }) => ({ id, uuid, name, account_id, is_production }))));
     const server = await createManagementMcpServer(
         {
             type: 'oauth',
@@ -414,7 +488,7 @@ async function createTestClient({
                 account: fakeAccount(),
                 plan: null,
                 principal: userPrincipal,
-                environments: environments.map(({ id, uuid, name, account_id, is_production }) => ({ id, uuid, name, account_id, is_production })),
+                loadEnvironments,
                 loadEnvironment,
                 audit: auditAttribution
             }
@@ -426,7 +500,7 @@ async function createTestClient({
     await server.connect(serverTransport);
     await client.connect(clientTransport);
 
-    return { client, server, loadEnvironment };
+    return { client, server, loadEnvironment, loadEnvironments };
 }
 
 function principal(can: ScopeSelector[], where: WhereSelector[]): Principal {

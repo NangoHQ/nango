@@ -1,28 +1,22 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { environmentService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { getManagementMcpEnvironments, listEnvironmentsTool } from './list.js';
+import { listEnvironmentsTool } from './list.js';
 
+import type { Principal } from '@nangohq/authz';
 import type { DBTeam } from '@nangohq/types';
-
-const { getEnvironmentsMock } = vi.hoisted(() => ({ getEnvironmentsMock: vi.fn() }));
-
-vi.mock('@nangohq/shared', () => ({
-    environmentService: { getEnvironmentsByAccountId: getEnvironmentsMock }
-}));
 
 const account = { id: 42 } as DBTeam;
 const environmentSummaries = [
-    { id: 1, uuid: 'dev', name: 'dev', is_production: false },
-    { id: 2, uuid: 'prod', name: 'prod', is_production: true }
+    { id: 1, uuid: 'dev-environment', name: 'dev', is_production: false },
+    { id: 2, uuid: 'prod-environment', name: 'prod', is_production: true }
 ];
-const environments = environmentSummaries.map((environment) => ({ ...environment, account_id: account.id }));
 
 describe('environments_list', () => {
-    beforeEach(() => {
-        getEnvironmentsMock.mockResolvedValue(Ok(environmentSummaries));
-        vi.clearAllMocks();
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     it('accepts only an empty input object', () => {
@@ -30,23 +24,56 @@ describe('environments_list', () => {
         expect(listEnvironmentsTool.inputSchema.safeParse({ environment: 'dev' }).success).toBe(false);
     });
 
-    it('lists every environment in the authenticated account', async () => {
-        const result = await getManagementMcpEnvironments({ account });
+    it('loads environments and applies current RBAC permissions', async () => {
+        const getEnvironmentsSpy = vi.spyOn(environmentService, 'getEnvironmentsByAccountId').mockResolvedValue(Ok(environmentSummaries));
 
-        expect(getEnvironmentsMock).toHaveBeenCalledWith(account.id);
-        expect(result).toStrictEqual(environments);
+        const result = await listEnvironmentsTool.handler({
+            account,
+            principal: principal(['environment:settings:read'], ['env:non-production'])
+        });
+
+        expect(getEnvironmentsSpy).toHaveBeenCalledOnce();
+        expect(getEnvironmentsSpy).toHaveBeenCalledWith(42);
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toStrictEqual({ environments: [{ name: 'dev', is_production: false }] });
+        }
     });
 
     it('may return no environments', async () => {
-        getEnvironmentsMock.mockResolvedValue(Ok([]));
+        vi.spyOn(environmentService, 'getEnvironmentsByAccountId').mockResolvedValue(Ok([]));
 
-        await expect(getManagementMcpEnvironments({ account })).resolves.toStrictEqual([]);
+        const result = await listEnvironmentsTool.handler({
+            account,
+            principal: principal(['environment:*'], ['env:*'])
+        });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toStrictEqual({ environments: [] });
+        }
     });
 
-    it('propagates environment lookup failures', async () => {
+    it('returns environment lookup failures', async () => {
         const error = new Error('failed to retrieve environments');
-        getEnvironmentsMock.mockResolvedValue(Err(error));
+        vi.spyOn(environmentService, 'getEnvironmentsByAccountId').mockResolvedValue(Err(error));
 
-        await expect(getManagementMcpEnvironments({ account })).rejects.toBe(error);
+        const result = await listEnvironmentsTool.handler({
+            account,
+            principal: principal(['environment:*'], ['env:*'])
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBe(error);
+        }
     });
 });
+
+function principal(can: Principal['grants'][number]['can'], where: Principal['grants'][number]['where']): Principal {
+    return {
+        subject: { type: 'user', id: '7', display: 'user@nango.dev' },
+        accountId: 42,
+        grants: [{ can, where }]
+    };
+}

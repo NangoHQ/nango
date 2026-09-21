@@ -3,6 +3,7 @@ import { Err, getLogger, metrics } from '@nangohq/utils';
 import { recordManagementMcpAudit } from './audit.js';
 import { formatMcpArgumentsError, PublicMcpError } from './utils.js';
 
+import type { ManagementMcpEnvironment } from './environments/loader.js';
 import type { ToolAnnotations } from '@modelcontextprotocol/server';
 import type {
     ApiKeyScope,
@@ -24,11 +25,9 @@ import type * as z from 'zod/v4';
 
 const logger = getLogger('Server.ManagementMcpTool');
 
-export type ManagementMcpAuditEnvironment = Pick<DBEnvironment, 'id' | 'uuid' | 'name' | 'account_id' | 'is_production'>;
-
 export interface ManagementMcpAuditContext {
     account: DBTeam;
-    environment: ManagementMcpAuditEnvironment;
+    environment: ManagementMcpEnvironment;
     plan: DBPlan | null;
     grantedScopes: string[] | undefined;
     audit?: AuditAttribution | undefined;

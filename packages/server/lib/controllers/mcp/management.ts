@@ -5,6 +5,7 @@ import { environmentService } from '@nangohq/shared';
 import { principalFor } from '../../authz/principal.js';
 import { resolveAuditAttribution } from '../../middleware/audit/index.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { createManagementMcpEnvironmentLoader } from './environments/loader.js';
 import { createManagementMcpServer } from './managementServer.js';
 
 import type { RequestLocals } from '../../utils/express.js';
@@ -20,7 +21,7 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
                       account,
                       plan,
                       principal: requirePrincipal(res.locals),
-                      environments: res.locals.mcpOAuthEnvironments ?? [],
+                      loadEnvironments: createManagementMcpEnvironmentLoader(account.id),
                       loadEnvironment: (name: string) => environmentService.getByEnvironmentName(account.id, name),
                       audit: resolveAuditAttribution(req, res.locals)
                   }

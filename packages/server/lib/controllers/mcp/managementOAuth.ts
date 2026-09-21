@@ -4,7 +4,6 @@ import { flagHasPlan, metrics, tagTraceUser } from '@nangohq/utils';
 
 import authMiddleware from '../../middleware/access.middleware.js';
 import { oauthServer, oauthServerConfig } from '../../oauth/server.js';
-import { getManagementMcpEnvironments } from './environments/list.js';
 
 import type { RequestLocals } from '../../utils/express.js';
 import type { Request, RequestHandler, Response } from 'express';
@@ -128,12 +127,10 @@ async function authenticateOAuthToken(token: string, res: Response<unknown, Part
         plan = planResult.value;
     }
 
-    const environments = await getManagementMcpEnvironments({ account });
     res.locals.authType = 'mcpOAuth';
     res.locals.user = user;
     res.locals.account = account;
     res.locals.plan = plan;
-    res.locals.mcpOAuthEnvironments = environments;
     tagTraceUser({ account, plan });
     return { kind: 'authenticated' };
 }

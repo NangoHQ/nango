@@ -1,11 +1,12 @@
+import { authorizeIn } from '@nangohq/authz';
 import { environmentService } from '@nangohq/shared';
 
 import { listEnvironmentsInputSchema, listEnvironmentsOutputSchema } from './schema.js';
 
 import type { ListEnvironmentsOutput } from './schema.js';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
-
-export type ManagementMcpEnvironment = Pick<DBEnvironment, 'id' | 'uuid' | 'name' | 'account_id' | 'is_production'>;
+import type { Principal } from '@nangohq/authz';
+import type { DBTeam } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 export const listEnvironmentsTool = {
     name: 'environments_list',
@@ -13,18 +14,13 @@ export const listEnvironmentsTool = {
     inputSchema: listEnvironmentsInputSchema,
     outputSchema: listEnvironmentsOutputSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    handler(environments: readonly ManagementMcpEnvironment[]): ListEnvironmentsOutput {
-        return {
-            environments: environments.map(({ name, is_production }) => ({ name, is_production }))
-        };
+    async handler({ account, principal }: { account: DBTeam; principal: Principal }): Promise<Result<ListEnvironmentsOutput>> {
+        const environmentSummaries = await environmentService.getEnvironmentsByAccountId(account.id);
+
+        return environmentSummaries.map((environments) => ({
+            environments: environments
+                .filter((environment) => authorizeIn(principal, 'environment:settings:read', { ...environment, account_id: account.id }))
+                .map(({ name, is_production }) => ({ name, is_production }))
+        }));
     }
 } as const;
-
-export async function getManagementMcpEnvironments({ account }: { account: DBTeam }): Promise<ManagementMcpEnvironment[]> {
-    const environmentSummaries = await environmentService.getEnvironmentsByAccountId(account.id);
-    if (environmentSummaries.isErr()) {
-        throw environmentSummaries.error;
-    }
-
-    return environmentSummaries.value.map((environment) => ({ ...environment, account_id: account.id }));
-}

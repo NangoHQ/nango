@@ -13,7 +13,6 @@ const {
     accountGetMock,
     apiKeyAuthenticateMock,
     clientFindMock,
-    environmentAccessMock,
     getPlanMock,
     grantFindMock,
     metricsIncrementMock,
@@ -24,7 +23,6 @@ const {
     accountGetMock: vi.fn(),
     apiKeyAuthenticateMock: vi.fn(),
     clientFindMock: vi.fn(),
-    environmentAccessMock: vi.fn(),
     getPlanMock: vi.fn(),
     grantFindMock: vi.fn(),
     metricsIncrementMock: vi.fn(),
@@ -48,7 +46,6 @@ vi.mock('../../middleware/access.middleware.js', () => ({
         secretKeyAuth: vi.fn()
     }
 }));
-vi.mock('./environments/list.js', () => ({ getManagementMcpEnvironments: environmentAccessMock }));
 vi.mock('../../oauth/server.js', () => ({
     oauthServerConfig: {
         config: { baseUrl: 'https://login.nango.dev', encryptionKey: 'test-encryption-key' },
@@ -64,7 +61,6 @@ vi.mock('../../oauth/server.js', () => ({
 const user = { id: 7, account_id: 42, email: 'user@example.com', suspended: false };
 const account = { id: 42, uuid: 'account-uuid', name: 'Test account' };
 const plan = { id: 3, account_id: 42, has_rbac: true };
-const environments = [{ id: 9, name: 'dev', is_production: false }];
 const validAccessToken = {
     aud: 'https://mcp.nango.dev/mcp',
     accountId: '7',
@@ -91,7 +87,6 @@ describe('Management MCP OAuth authentication', () => {
         userGetMock.mockResolvedValue(user);
         accountGetMock.mockResolvedValue(account);
         getPlanMock.mockResolvedValue({ isErr: () => false, value: plan });
-        environmentAccessMock.mockResolvedValue(environments);
         apiKeyAuthenticateMock.mockResolvedValue({ isOk: () => false });
     });
 
@@ -119,13 +114,11 @@ describe('Management MCP OAuth authentication', () => {
 
         expect(next).toHaveBeenCalledOnce();
         expect(apiKeyAuthenticateMock).not.toHaveBeenCalled();
-        expect(environmentAccessMock).toHaveBeenCalledWith({ account });
         expect(res.locals).toMatchObject({
             authType: 'mcpOAuth',
             user,
             account,
-            plan,
-            mcpOAuthEnvironments: environments
+            plan
         });
         expect(tagTraceUserMock).toHaveBeenCalledWith({ account, plan });
     });
