@@ -1,7 +1,7 @@
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
-import { GuestRoute } from '@/components/patterns/GuestRoute';
 import { PrivateRoute } from '@/components/patterns/PrivateRoute';
+import { SignedOutRoute } from '@/components/patterns/SignedOutRoute';
 import { EmailVerified } from '@/pages/Account/EmailVerified';
 import ForgotPassword from '@/pages/Account/ForgotPassword';
 import { InviteSignup } from '@/pages/Account/InviteSignup';
@@ -95,7 +95,7 @@ const authRoutes = (() => {
         return [];
     }
 
-    const guestOnly: RouteObject[] = [
+    const signedOutOnlyRoutes: RouteObject[] = [
         {
             path: '/signin',
             element: <Signin />
@@ -105,23 +105,23 @@ const authRoutes = (() => {
             element: <MFALogin />
         }
     ];
-    const openWhenSignedIn: RouteObject[] = [];
+    const alwaysOpenRoutes: RouteObject[] = [];
 
     if (globalEnv.features.managedAuth) {
-        guestOnly.push({
+        signedOutOnlyRoutes.push({
             path: '/signin/verify',
             element: <ManagedEmailVerification />
         });
     }
 
     if (globalEnv.features.auth) {
-        guestOnly.push({
+        signedOutOnlyRoutes.push({
             path: '/signup',
             element: <Signup />
         });
 
         // An invite or reset link can be for a different account than the one signed in.
-        openWhenSignedIn.push(
+        alwaysOpenRoutes.push(
             {
                 path: '/signup/:token',
                 element: <InviteSignup />
@@ -149,7 +149,7 @@ const authRoutes = (() => {
         );
     }
 
-    return [{ element: <GuestRoute />, children: guestOnly }, ...openWhenSignedIn];
+    return [{ element: <SignedOutRoute />, children: signedOutOnlyRoutes }, ...alwaysOpenRoutes];
 })();
 
 export const router = sentryCreateBrowserRouter([

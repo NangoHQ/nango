@@ -3,7 +3,7 @@ import { Navigate, Outlet, useSearchParams } from 'react-router-dom';
 import { useUser } from '../../hooks/useUser';
 import { safeNextPath } from '../../utils/routes';
 
-export const GuestRoute: React.FC = () => {
+export const SignedOutRoute: React.FC = () => {
     const { user, loading, error } = useUser();
     const [searchParams] = useSearchParams();
 
