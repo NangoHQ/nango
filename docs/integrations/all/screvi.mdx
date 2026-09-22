@@ -1,0 +1,64 @@
+---
+title: Screvi
+sidebarTitle: Screvi
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/screvi/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/screvi/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ | The public API needs a Screvi account; a free trial is enough to generate a key and test. |
+| Paid test account | ✅ | Same requirement as a dev account. |
+| Partnership | ❌ | Not required. |
+| App review | ❌ | Not required. |
+| Security audit | ❌ | Not required. |
+
+
+## Setup guide
+
+### Step 1: Generating your API key
+
+1. Sign in to [Screvi](https://app.screvi.com).
+2. Open **Settings** and go to the **API** tab.
+3. Select **Create API key**, give it a name and pick its scopes (`read`, or `read` and `write` if your integration needs to save or update items).
+4. Copy the key. It starts with `sk_live_` and is shown only once.
+
+### Step 2: Connecting in Nango
+
+Paste the key into the Nango connect UI for the Screvi integration. Nango verifies it against `GET /tags` before the connection is created.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/screvi.mdx)</Note>
+
+
+## Useful links
+
+-   [Screvi public API reference](https://screvi.com/docs/api/public-api)
+-   [Generate an API key in your Screvi account](https://app.screvi.com/settings/api)
+-   [OpenAPI reference](https://api.screvi.com/api/docs)
+-   [Screvi MCP server](https://screvi.com/mcp)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/screvi.mdx)</Note>
+
+## API gotchas
+
+- Screvi authenticates with the `X-API-Key` header, not a bearer token.
+- The API is versioned in the path: the base URL is `https://api.screvi.com/api/v1`.
+- Keys are scoped. A `read` key is rejected with `403` on any write endpoint, so mint the key with `write` if your integration saves articles, creates highlights or edits tags.
+- Pagination uses `page` and `per_page` and reports `pagination.has_more`. `per_page` caps at 100 on most endpoints and at 50 on `/search`; a larger value is clamped rather than rejected.
+- `GET /search` runs semantic as well as keyword matching, so results can legitimately contain none of the query words.
+- Tags are referenced by name on write endpoints and must already exist in the account.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/screvi.mdx)</Note>
+
+<Card title="Connect to Screvi" icon="link" href="/integrations/all/screvi/connect" horizontal>
+  Guide to connect to Screvi using Nango Connect.
+</Card>
