@@ -69,6 +69,22 @@ describe('integrationToMcp', () => {
         });
     });
 
+    it('never returns mcpRegistrationClientUri/mcpRegistrationAccessToken', () => {
+        const provider = getProvider('asana-mcp');
+        if (!provider) {
+            throw new Error('Expected asana-mcp provider');
+        }
+        const integration = integrationFixture({
+            provider: 'asana-mcp',
+            custom: { mcpRegistrationClientUri: 'https://provider.example/register/123', mcpRegistrationAccessToken: 'reg-secret' }
+        });
+
+        const result = integrationToMcp({ integration, provider });
+
+        expect(JSON.stringify(result)).not.toContain('reg-secret');
+        expect(JSON.stringify(result)).not.toContain('mcpRegistration');
+    });
+
     it('formats APP credentials for the MCP transport', () => {
         const provider = getProvider('github-app');
         if (!provider) {
