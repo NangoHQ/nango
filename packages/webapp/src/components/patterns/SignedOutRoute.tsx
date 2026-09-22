@@ -1,15 +1,20 @@
 import { Navigate, Outlet, useSearchParams } from 'react-router-dom';
 
 import { useUser } from '../../hooks/useUser';
+import storage, { LocalStorageKeys } from '../../utils/local-storage';
 import { safeNextPath } from '../../utils/routes';
 
 export const SignedOutRoute: React.FC = () => {
     const { user, loading, error } = useUser();
     const [searchParams] = useSearchParams();
 
-    // Blocking until the session is known would blank the login page for every signed-out visitor.
+    if (loading) {
+        // Only picks what to paint while the query is in flight. Move this into the checks below and localStorage becomes the auth decision.
+        return storage.getItem(LocalStorageKeys.UserId) ? null : <Outlet />;
+    }
+
     // A failed refetch keeps the stale user in the cache. Redirecting on it loops: PrivateRoute sends them right back.
-    if (loading || error || !user) {
+    if (error || !user) {
         return <Outlet />;
     }
 
