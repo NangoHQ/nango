@@ -1,15 +1,20 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import * as shared from '@nangohq/shared';
+import { Ok } from '@nangohq/utils';
 
 import { startScript } from './start.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '@nangohq/types';
 
-// start.ts imports this module, which parses jobs env at load. The test never calls it.
-vi.mock('../../runtime/runtimes.js', () => ({
+const { getRuntimeAdapter } = vi.hoisted(() => ({
     getRuntimeAdapter: vi.fn()
+}));
+
+// start.ts imports this module, which parses jobs env at load.
+vi.mock('../../runtime/runtimes.js', () => ({
+    getRuntimeAdapter
 }));
 
 describe('startScript', () => {
@@ -17,9 +22,13 @@ describe('startScript', () => {
         vi.restoreAllMocks();
     });
 
-    it('reads catalog files from object storage even outside cloud execution', async () => {
+    it('loads a catalog script from object storage and invokes it', async () => {
+        const script = 'module.exports = {};';
         const localFileSpy = vi.spyOn(shared.localFileService, 'getIntegrationFile');
-        const remoteFileSpy = vi.spyOn(shared.remoteFileService, 'getFile').mockResolvedValue('');
+        const remoteFileSpy = vi.spyOn(shared.remoteFileService, 'getFile').mockResolvedValue(script);
+        const invoke = vi.fn().mockResolvedValue(Ok(true));
+        getRuntimeAdapter.mockResolvedValue(Ok({ invoke }));
+        vi.spyOn(shared.connectionService, 'trackExecution').mockResolvedValue(Ok(undefined));
 
         const result = await startScript({
             taskId: 'task-1',
@@ -28,13 +37,10 @@ describe('startScript', () => {
             logCtx: { error: vi.fn() } as unknown as LogContext
         });
 
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error.message).toContain("Error starting function 'create-issue'");
-            expect(result.error.message).toContain('Unable to find integration file');
-        }
+        expect(result.isOk()).toBe(true);
         expect(remoteFileSpy).toHaveBeenCalledWith('templates-zero/github/build/github_actions_create-issue.cjs');
         expect(localFileSpy).not.toHaveBeenCalled();
+        expect(invoke).toHaveBeenCalledWith(expect.objectContaining({ taskId: 'task-1', code: script }));
     });
 });
 

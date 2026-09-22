@@ -4,16 +4,16 @@ import { getFunction, listFunctions, ListFunctionsError } from './service.js';
 
 import type { FunctionRow } from './models/functions.js';
 
-const { mockFindActiveByEnvironment, mockFindActiveByName, mockGetIntegrationSummary } = vi.hoisted(() => {
+const { mockFindActiveByEnvironment, mockFindActiveByName, mockGetIdByProviderConfigKey } = vi.hoisted(() => {
     return {
         mockFindActiveByEnvironment: vi.fn(),
         mockFindActiveByName: vi.fn(),
-        mockGetIntegrationSummary: vi.fn()
+        mockGetIdByProviderConfigKey: vi.fn()
     };
 });
 
 vi.mock('../../config.service.js', () => ({
-    default: { getIntegrationSummary: mockGetIntegrationSummary }
+    default: { getIdByProviderConfigKey: mockGetIdByProviderConfigKey }
 }));
 
 vi.mock('./models/functions.js', () => ({
@@ -41,7 +41,7 @@ const baseRow: FunctionRow = {
 describe('functions service', () => {
     beforeEach(() => {
         vi.resetAllMocks();
-        mockGetIntegrationSummary.mockResolvedValue({ provider: 'github', display_name: null });
+        mockGetIdByProviderConfigKey.mockResolvedValue(10);
         mockFindActiveByEnvironment.mockResolvedValue({ rows: [baseRow], total: 1 });
     });
 
@@ -81,7 +81,7 @@ describe('functions service', () => {
             ],
             total: 1
         });
-        expect(mockGetIntegrationSummary).toHaveBeenCalledWith(1, 'github');
+        expect(mockGetIdByProviderConfigKey).toHaveBeenCalledWith(1, 'github');
         expect(mockFindActiveByEnvironment).toHaveBeenCalledWith({
             environmentId: 1,
             providerConfigKey: 'github',
@@ -93,7 +93,7 @@ describe('functions service', () => {
     });
 
     it('returns a typed error when the integration does not exist', async () => {
-        mockGetIntegrationSummary.mockResolvedValue(null);
+        mockGetIdByProviderConfigKey.mockResolvedValue(null);
 
         const result = await listFunctions({
             environmentId: 1,

@@ -41,8 +41,6 @@ const listingOrderBy = [
     { column: 'id', order: 'asc' as const }
 ];
 
-type ListingPageRow = FunctionRow & { total: string | number };
-
 function catalogActions(provider: string | undefined, type: FunctionType | undefined): CatalogAction[] {
     if (!provider || !flags.hasLiveCatalogActions || (type !== undefined && type !== 'action')) {
         return [];
@@ -76,23 +74,14 @@ export async function findActiveByEnvironment({
 }): Promise<{ rows: FunctionRow[]; total: number }> {
     const catalog = catalogActions(await providerForConfig(environmentId, providerConfigKey), type);
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search, catalog });
-    const pageRows = await db.knex
-        .from(listing)
-        .select<ListingPageRow[]>('*', db.knex.raw('COUNT(*) OVER() AS total'))
-        .orderBy(listingOrderBy)
-        .limit(limit)
-        .offset(offset);
+    const [pageRows, countRow] = await Promise.all([
+        db.knex.from(listing).select<FunctionRow[]>('*').orderBy(listingOrderBy).limit(limit).offset(offset),
+        db.knex.from(listing).count<{ total: string }[]>('* as total').first()
+    ]);
 
-    let total = pageRows.length > 0 ? Number(pageRows[0]!.total) : 0;
-    // COUNT(*) OVER() is computed before LIMIT, but an empty page has no row to read it from.
-    if (pageRows.length === 0 && offset > 0) {
-        const countRow = await db.knex.from(listing).count<{ total: string }[]>('* as total').first();
-        total = countRow ? Number(countRow.total) : 0;
-    }
-
-    const rows = pageRows.map(({ total: _total, ...row }) => row);
-    hydrateCatalogJsonSchemas(rows, catalog);
-    return { rows, total };
+    const total = countRow ? Number(countRow.total) : 0;
+    hydrateCatalogJsonSchemas(pageRows, catalog);
+    return { rows: pageRows, total };
 }
 
 export async function findActiveActions({

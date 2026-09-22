@@ -40,8 +40,8 @@ export async function listFunctions({
     offset: number;
 }): Promise<Result<{ rows: ListedNangoFunction[]; total: number }, ListFunctionsError>> {
     try {
-        const integration = await configService.getIntegrationSummary(environmentId, providerConfigKey);
-        if (!integration) {
+        const integrationId = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
+        if (!integrationId) {
             return Err(
                 new ListFunctionsError({
                     code: 'integration_not_found',
@@ -78,8 +78,8 @@ export async function listActions({
     limit?: number;
 }): Promise<Result<ListedNangoActionFunction[], ListFunctionsError>> {
     try {
-        const integration = await configService.getIntegrationSummary(environmentId, providerConfigKey);
-        if (!integration) {
+        const integrationId = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
+        if (!integrationId) {
             return Err(
                 new ListFunctionsError({
                     code: 'integration_not_found',
