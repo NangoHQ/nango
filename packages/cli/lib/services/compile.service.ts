@@ -118,45 +118,6 @@ export async function compileAllFiles({
     return { success: allSuccess, failedFiles };
 }
 
-export async function compileSingleFile({
-    fullPath,
-    file,
-    tsconfig,
-    parsed,
-    debug = false
-}: {
-    fullPath: string;
-    file: ListedFile;
-    tsconfig?: string;
-    parsed: NangoYamlParsed;
-    debug: boolean;
-}) {
-    const resolvedTsconfig = tsconfig ?? fs.readFileSync(path.join(getNangoRootPath(), 'tsconfig.dev.json'), 'utf8');
-
-    const cachedParser = parsed ? () => parsed : getCachedParser({ fullPath, debug });
-
-    try {
-        const compiler = tsNode.create({
-            skipProject: true, // when installed locally we don't want ts-node to pick up the package tsconfig.json file
-            compilerOptions: JSON.parse(resolvedTsconfig).compilerOptions
-        });
-
-        const result = await compile({
-            fullPath,
-            file,
-            compiler,
-            cachedParser,
-            debug
-        });
-
-        return result === true || result === null;
-    } catch (err) {
-        console.error(chalk.red(`Error compiling ${file.inputPath}:`));
-        console.error(err);
-        return false;
-    }
-}
-
 function compileImportedFile({
     fullPath,
     filePath,

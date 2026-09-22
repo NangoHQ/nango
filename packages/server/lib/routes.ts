@@ -11,6 +11,7 @@ import { securityMiddlewares } from './middleware/security.js';
 import { getReady } from './ready.js';
 import { internalApi } from './routes.internal.js';
 import { managementMcpAPI } from './routes.management-mcp.js';
+import { oauthServerAPI } from './routes.oauth.js';
 import { privateApi } from './routes.private.js';
 import { publicAPI } from './routes.public.js';
 import { dirname } from './utils/utils.js';
@@ -40,6 +41,7 @@ router.get('/providers.json', rateLimiterMiddleware, getProvidersJSON);
 
 // Import main routers
 // Order is important because public API has no prefix
+router.use(oauthServerAPI);
 router.use(managementMcpAPI);
 router.use('/api/v1', privateApi);
 router.use('/internal', internalApi);

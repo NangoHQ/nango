@@ -42,7 +42,7 @@ export type DeleteMFA = ApiEndpoint<{
     Audit: AuditPolicy<'mfa', 'disabled', 'account'>;
     Method: 'DELETE';
     Path: '/api/v1/account/mfa';
-    Body: { code: string };
+    Body: MFACredential;
     Error: ApiError<'invalid_mfa_code'> | ApiError<'mfa_not_enabled'>;
     Success: { success: true };
 }>;

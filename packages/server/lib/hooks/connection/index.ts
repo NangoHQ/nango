@@ -7,6 +7,7 @@ export { default as intercomPreConnectionDeletion } from './providers/intercom/p
 export { default as jiraPostConnection } from './providers/jira/post-connection.js';
 export { default as linearPostConnection } from './providers/linear/post-connection.js';
 export { default as jobberPostConnection } from './providers/jobber/post-connection.js';
+export { default as zoomPostConnection } from './providers/zoom/post-connection.js';
 export { default as salesforcePostConnection } from './providers/salesforce/post-connection.js';
 export { default as checkrPartnerPostConnection } from './providers/checkr-partner/post-connection.js';
 export { default as xeroPostConnection } from './providers/xero/post-connection.js';
@@ -47,3 +48,4 @@ export { default as procorePostConnection } from './providers/procore/post-conne
 export { default as sage200PostConnection } from './providers/sage-200/post-connection.js';
 export { default as vantageApparelCredentialsVerification } from './providers/vantage-apparel/credentials-verification.js';
 export { default as cdwCredentialsVerification } from './providers/cdw/credentials-verification.js';
+export { default as appleCalendarCredentialsVerification } from './providers/apple-calendar/credentials-verification.js';

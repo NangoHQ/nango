@@ -21,6 +21,9 @@ export interface ApiPublicIntegrationInclude {
     // Names of `credentials` fields already set at the integration level (via `integration_config`), so the
     // Connect UI can skip asking end users for them. Presence only — never the underlying value.
     preconfigured_credentials?: string[] | undefined;
+    // Names of `connection_config` fields already set at the integration level (via `integration_config`), so the
+    // Connect UI can skip asking end users for them. Presence only — never the underlying value.
+    preconfigured_connection_config?: string[] | undefined;
     credentials?:
         | {
               type: AuthModes['OAuth2'] | AuthModes['OAuth1'] | AuthModes['TBA'];
@@ -45,6 +48,12 @@ export interface ApiPublicIntegrationInclude {
               client_logo_uri: string | null;
           }
         | { type: 'INTEGRATION_CONFIG'; auth_mode: AuthModeType; integration_config: Record<string, string> }
+        | {
+              type: AuthModes['MCP_OAUTH2'];
+              client_id: string | null;
+              client_secret: string | null;
+              scopes: string | null;
+          }
         | null;
 }
 
@@ -236,6 +245,7 @@ export interface MCPOAuth2GenericAuthBody {
     clientName?: string | undefined;
     clientUri?: string | undefined;
     clientLogoUri?: string | undefined;
+    scopes?: string | undefined;
 }
 
 export interface InstallPluginAuthBody {
@@ -371,4 +381,10 @@ export type ApiPublicIntegrationCredentials =
           client_name?: string | undefined;
           client_uri?: string | undefined;
           client_logo_uri?: string | undefined;
+      }
+    | {
+          type: Extract<AuthModeType, 'MCP_OAUTH2'>;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
+          scopes?: string | undefined;
       };

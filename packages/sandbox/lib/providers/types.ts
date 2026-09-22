@@ -1,4 +1,4 @@
-export type SandboxProviderName = 'e2b' | 'docker' | 'agentcore';
+export type SandboxProviderName = 'docker' | 'agentcore';
 
 export type SandboxPurpose = 'compile' | 'deploy' | 'dryrun';
 

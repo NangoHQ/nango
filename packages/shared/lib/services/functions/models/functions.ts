@@ -1,12 +1,10 @@
 import { Err, Ok } from '@nangohq/utils';
 
+import { CONFIGS_TABLE, INTEGRATIONS_TABLE, VERSIONS_TABLE } from './tables.js';
+
 import type { DBFunctionConfig, DBFunctionConfigVersion, DBIntegrationDecrypted } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
-
-const CONFIGS_TABLE = 'function_configs';
-const VERSIONS_TABLE = 'function_config_versions';
-const INTEGRATIONS_TABLE = '_nango_configs';
 
 const CONFIG_COLUMNS = {
     id: true,
@@ -75,6 +73,19 @@ export interface CurrentFunctionConfig {
     currentVersion: DBFunctionConfigVersion;
 }
 
+export async function rows(trx: Knex, { environmentId, integrationId }: { environmentId: number; integrationId: number }): Promise<Result<DBFunctionConfig[]>> {
+    try {
+        const configs = await trx
+            .from<DBFunctionConfig>(CONFIGS_TABLE)
+            .select('*')
+            .where({ environment_id: environmentId, nango_config_id: integrationId })
+            .whereNull('deleted_at');
+        return Ok(configs);
+    } catch (err) {
+        return Err(new Error('failed_to_find_function_configs', { cause: err }));
+    }
+}
+
 type Prefixed<T, Prefix extends string> = {
     [K in keyof T as `${Prefix}${Extract<K, string>}`]: T[K];
 };
@@ -85,6 +96,7 @@ type SearchFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> 
 
 interface FunctionSearchFilter {
     integrationKey: string;
+    id?: number | undefined;
     name?: string | undefined;
     enabled?: boolean | undefined;
     trigger?: { kind: 'http'; hasSubscriptions: boolean } | undefined;
@@ -123,6 +135,9 @@ export async function search(
         if (filter?.name !== undefined) {
             query.where('config.name', filter.name);
         }
+        if (filter?.id !== undefined) {
+            query.where('config.id', filter.id);
+        }
         if (filter?.enabled !== undefined) {
             query.where('config.enabled', filter.enabled);
         }
@@ -156,74 +171,72 @@ export async function search(
     }
 }
 
-export async function upsert(
-    db: Knex,
-    {
-        environmentId,
-        integrationId,
-        name,
-        version
-    }: {
-        environmentId: number;
-        integrationId: string;
-        name: string;
-        version: Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'>;
-    }
-): Promise<Result<CurrentFunctionConfig>> {
+export interface FunctionConfigUpsert {
+    environmentId: number;
+    integrationId: string;
+    name: string;
+    version: Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'>;
+}
+
+export async function upsert(db: Knex, inputs: FunctionConfigUpsert[]): Promise<Result<CurrentFunctionConfig[]>> {
     try {
         const upserted = await db.transaction(async (trx) => {
-            // insert and returns new function config or return the existing one
-            const [config] = await trx
-                .with('integration', (qb) =>
-                    qb
-                        .from<DBIntegrationDecrypted>(INTEGRATIONS_TABLE)
-                        .select('id', 'provider')
-                        .where({ environment_id: environmentId, unique_key: integrationId, deleted: false })
-                )
-                .with(
-                    'upserted',
-                    trx.raw(
-                        `INSERT INTO ?? (environment_id, nango_config_id, name)
+            const results: CurrentFunctionConfig[] = [];
+            for (const { environmentId, integrationId, name, version } of inputs) {
+                // insert and returns new function config or return the existing one
+                const [config] = await trx
+                    .with('integration', (qb) =>
+                        qb
+                            .from<DBIntegrationDecrypted>(INTEGRATIONS_TABLE)
+                            .select('id', 'provider')
+                            .where({ environment_id: environmentId, unique_key: integrationId, deleted: false })
+                    )
+                    .with(
+                        'upserted',
+                        trx.raw(
+                            `INSERT INTO ?? (environment_id, nango_config_id, name)
                              SELECT ?, integration.id, ? FROM integration
                              ON CONFLICT (nango_config_id, name) WHERE deleted_at IS NULL
                              DO UPDATE SET nango_config_id = EXCLUDED.nango_config_id
                              RETURNING *`,
-                        [CONFIGS_TABLE, environmentId, name]
+                            [CONFIGS_TABLE, environmentId, name]
+                        )
                     )
-                )
-                .select<(DBFunctionConfig & { provider: string })[]>('upserted.*', 'integration.provider')
-                .from('upserted')
-                .join('integration', 'integration.id', 'upserted.nango_config_id');
+                    .select<(DBFunctionConfig & { provider: string })[]>('upserted.*', 'integration.provider')
+                    .from('upserted')
+                    .join('integration', 'integration.id', 'upserted.nango_config_id');
 
-            if (!config) {
-                throw new Error('failed_to_upsert_function_config', { cause: { integrationId } });
+                if (!config) {
+                    throw new Error('failed_to_upsert_function_config', { cause: { integrationId } });
+                }
+
+                // insert and returns new function config version or return the existing one
+                const [currentVersion] = await trx
+                    .from<DBFunctionConfigVersion>(VERSIONS_TABLE)
+                    .insert({ ...version, function_config_id: config.id })
+                    .onConflict(trx.raw('(function_config_id, version) WHERE deleted_at IS NULL'))
+                    .merge(['function_config_id'])
+                    .returning<DBFunctionConfigVersion[]>('*');
+
+                if (!currentVersion) {
+                    throw new Error('failed_to_upsert_function_config_version');
+                }
+
+                // update the function config to point to the current version if it doesn't already
+                const [updatedConfig] = await trx
+                    .from<DBFunctionConfig>(CONFIGS_TABLE)
+                    .where({ id: config.id })
+                    .whereRaw('current_version_id IS DISTINCT FROM ?', [currentVersion.id])
+                    .update({ current_version_id: currentVersion.id, updated_at: new Date() })
+                    .returning<DBFunctionConfig[]>('*');
+
+                results.push({
+                    integration: { id: config.nango_config_id, unique_key: integrationId, provider: config.provider },
+                    config: updatedConfig ?? config,
+                    currentVersion
+                });
             }
-
-            // insert and returns new function config version or return the existing one
-            const [currentVersion] = await trx
-                .from<DBFunctionConfigVersion>(VERSIONS_TABLE)
-                .insert({ ...version, function_config_id: config.id })
-                .onConflict(trx.raw('(function_config_id, version) WHERE deleted_at IS NULL'))
-                .merge(['function_config_id'])
-                .returning<DBFunctionConfigVersion[]>('*');
-
-            if (!currentVersion) {
-                throw new Error('failed_to_upsert_function_config_version');
-            }
-
-            // update the function config to point to the current version if it doesn't already
-            const [updatedConfig] = await trx
-                .from<DBFunctionConfig>(CONFIGS_TABLE)
-                .where({ id: config.id })
-                .whereRaw('current_version_id IS DISTINCT FROM ?', [currentVersion.id])
-                .update({ current_version_id: currentVersion.id, updated_at: new Date() })
-                .returning<DBFunctionConfig[]>('*');
-
-            return {
-                integration: { id: config.nango_config_id, unique_key: integrationId, provider: config.provider },
-                config: updatedConfig ?? config,
-                currentVersion
-            };
+            return results;
         });
 
         return Ok(upserted);
@@ -237,13 +250,20 @@ export async function softDelete(trx: Knex, { environmentId, ids }: { environmen
         if (ids.length === 0) {
             return Ok(0);
         }
-        const now = new Date();
+        const now = trx.fn.now();
         const deleted = await trx
             .from<DBFunctionConfig>(CONFIGS_TABLE)
             .where({ environment_id: environmentId })
             .whereIn('id', ids)
             .whereNull('deleted_at')
             .update({ deleted_at: now, updated_at: now });
+
+        await trx
+            .from(VERSIONS_TABLE)
+            .whereIn('function_config_id', trx.from(CONFIGS_TABLE).select('id').where({ environment_id: environmentId }).whereIn('id', ids))
+            .whereNull('deleted_at')
+            .update({ deleted_at: now, updated_at: now });
+
         return Ok(deleted);
     } catch (err) {
         return Err(new Error('failed_to_soft_delete_functions', { cause: err }));

@@ -145,7 +145,7 @@ paths:
                                     type: boolean
                                     description: Whether to forward webhooks received for this integration. Defaults to true.
                                 credentials:
-                                    $ref: '#/components/schemas/IntegrationCredentials'
+                                    $ref: '#/components/schemas/IntegrationCredentialsInput'
                                 integration_config:
                                     type: object
                                     additionalProperties:
@@ -280,7 +280,7 @@ paths:
                                     type: boolean
                                     description: Whether to forward webhooks received for this integration.
                                 credentials:
-                                    $ref: '#/components/schemas/IntegrationCredentials'
+                                    $ref: '#/components/schemas/IntegrationCredentialsInput'
                                 integration_config:
                                     type: object
                                     additionalProperties:
@@ -391,7 +391,7 @@ paths:
                                     data:
                                         type: array
                                         items:
-                                            $ref: '#/components/schemas/DeployedNangoFunction'
+                                            $ref: '#/components/schemas/ListedNangoFunction'
                                     pagination:
                                         type: object
                                         required:
@@ -449,7 +449,7 @@ paths:
                                     - data
                                 properties:
                                     data:
-                                        $ref: '#/components/schemas/DeployedNangoFunction'
+                                        $ref: '#/components/schemas/ListedNangoFunction'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -3745,9 +3745,9 @@ components:
             type: string
             enum: [action, sync]
 
-        DeployedMeta:
+        FunctionAvailability:
             type: object
-            description: Deployment metadata attached to a deployed function.
+            description: Availability metadata attached to a listed function.
             required:
                 - id
                 - enabled
@@ -3860,18 +3860,18 @@ components:
                 - $ref: '#/components/schemas/NangoSyncFunction'
                 - $ref: '#/components/schemas/NangoActionFunction'
 
-        DeployedNangoFunction:
-            description: A deployed function (sync, action, or on-event) merged with its deployment metadata.
+        ListedNangoFunction:
+            description: A listed function (sync, action, or on-event) merged with its availability metadata.
             oneOf:
                 - allOf:
                       - $ref: '#/components/schemas/NangoSyncFunction'
-                      - $ref: '#/components/schemas/DeployedMeta'
+                      - $ref: '#/components/schemas/FunctionAvailability'
                 - allOf:
                       - $ref: '#/components/schemas/NangoActionFunction'
-                      - $ref: '#/components/schemas/DeployedMeta'
+                      - $ref: '#/components/schemas/FunctionAvailability'
                 - allOf:
                       - $ref: '#/components/schemas/NangoOnEventFunction'
-                      - $ref: '#/components/schemas/DeployedMeta'
+                      - $ref: '#/components/schemas/FunctionAvailability'
 
         FunctionCompileRequest:
             type: object
@@ -5181,7 +5181,7 @@ components:
                               $ref: '#/components/schemas/NangoModelField'
 
         IntegrationCredentials:
-            description: Integration credentials schema for different authentication types.
+            description: Integration credentials schema for different authentication types, as returned in API responses (fields may be null).
             oneOf:
                 - type: object
                   required:
@@ -5287,6 +5287,30 @@ components:
                               - type: string
                                 maxLength: 255
                               - type: 'null'
+                - type: object
+                  required:
+                      - type
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - MCP_OAUTH2
+                      client_id:
+                          anyOf:
+                              - type: string
+                                minLength: 1
+                                maxLength: 255
+                              - type: 'null'
+                      client_secret:
+                          anyOf:
+                              - type: string
+                                minLength: 1
+                              - type: 'null'
+                      scopes:
+                          anyOf:
+                              - type: string
+                                pattern: '^(?:[0-9a-zA-Z:/_.*-]+([, ]+[0-9a-zA-Z:/_.*-]+)*)?$'
+                              - type: 'null'
 
         IntegrationCredentialsWithConfig:
             description: >
@@ -5313,3 +5337,119 @@ components:
                           additionalProperties:
                               type: string
                           description: The provider's `integration_config` values, keyed by the fields it declares.
+
+        IntegrationCredentialsInput:
+            description: Integration credentials schema accepted in create/update request bodies. For MCP_OAUTH2, static creation requires both client_id and client_secret; dynamic and CIMD providers reject those fields because Nango manages them. Optional fields may be omitted but must not be null.
+            oneOf:
+                - type: object
+                  required:
+                      - type
+                      - client_id
+                      - client_secret
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - OAUTH1
+                              - OAUTH2
+                              - TBA
+                      client_id:
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                      client_secret:
+                          type: string
+                          minLength: 1
+                      scopes:
+                          type: string
+                          pattern: '^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$'
+                      webhook_secret:
+                          type: string
+                          maxLength: 255
+                - type: object
+                  required:
+                      - type
+                      - app_id
+                      - app_link
+                      - private_key
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - APP
+                      app_id:
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                      app_link:
+                          type: string
+                          minLength: 1
+                      private_key:
+                          type: string
+                          pattern: '^-----BEGIN RSA PRIVATE KEY----.*-----END RSA PRIVATE KEY-----$'
+                - type: object
+                  required:
+                      - type
+                      - client_id
+                      - client_secret
+                      - app_id
+                      - app_link
+                      - private_key
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - CUSTOM
+                      client_id:
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                      client_secret:
+                          type: string
+                          minLength: 1
+                      app_id:
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                      app_link:
+                          type: string
+                          minLength: 1
+                      private_key:
+                          type: string
+                          pattern: '^-----BEGIN RSA PRIVATE KEY----.*-----END RSA PRIVATE KEY-----$'
+                - type: object
+                  required:
+                      - type
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - MCP_OAUTH2_GENERIC
+                      client_name:
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                      client_uri:
+                          type: string
+                          maxLength: 255
+                      client_logo_uri:
+                          type: string
+                          maxLength: 255
+                - type: object
+                  required:
+                      - type
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - MCP_OAUTH2
+                      client_id:
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                      client_secret:
+                          type: string
+                          minLength: 1
+                      scopes:
+                          type: string
+                          pattern: '^(?:[0-9a-zA-Z:/_.*-]+([, ]+[0-9a-zA-Z:/_.*-]+)*)?$'

@@ -425,7 +425,7 @@
                             "properties": {
                                 "method": {
                                     "type": "string",
-                                    "enum": ["GET", "POST"]
+                                    "enum": ["GET", "POST", "PROPFIND", "REPORT"]
                                 },
                                 "endpoints": {
                                     "type": "array",
@@ -496,6 +496,9 @@
                     }
                 },
                 "registration_url": {
+                    "type": "string"
+                },
+                "mcp_server_url": {
                     "type": "string"
                 },
                 "registration_params": {

@@ -1,6 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { agentSessionTenantConnectionsSchema, MAX_SELECTORS, pickConnectionPerIntegration } from './agentSessionConnections.service.js';
+import db from '@nangohq/database';
+import { connectionService } from '@nangohq/shared';
+
+import {
+    AGENT_SESSION_TAG_KEY,
+    agentSessionTenantConnectionsSchema,
+    findConnectionCreatedForSession,
+    MAX_SELECTORS,
+    pickConnectionPerIntegration
+} from './agentSessionConnections.service.js';
 
 import type { AgentSessionConnectionResolutionError } from './agentSessionConnections.service.js';
 import type { ConnectionIntegrationMatchRow, ConnectionMatch, ConnectionMatchCandidate } from '@nangohq/shared';
@@ -395,3 +404,40 @@ function pin(args: { integrationId: string; connectionId: string; internalConnec
         candidate: candidate(args)
     };
 }
+
+describe('findConnectionCreatedForSession', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function matchRow(candidate: ConnectionMatchCandidate, matchCount = 1): ConnectionIntegrationMatchRow {
+        return { integration_id: 'notion', provider: 'notion', match_count: matchCount, candidates: [candidate] };
+    }
+
+    const connected: ConnectionMatchCandidate = { id: 1, connection_id: 'notion-first', config_id: 20, tags: { [AGENT_SESSION_TAG_KEY]: 'session-1' } };
+
+    it('reads the primary, because the connection may have just been written', async () => {
+        const group = vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue([matchRow(connected)]);
+
+        await findConnectionCreatedForSession({ environmentId: 1, sessionId: 'session-1', integrationId: 'notion' });
+
+        expect(group).toHaveBeenCalledWith(expect.objectContaining({ database: db.knex }));
+    });
+
+    it('asks for the first completed flow, so a later one cannot move the session', async () => {
+        const group = vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue([matchRow(connected, 2)]);
+
+        const found = await findConnectionCreatedForSession({ environmentId: 1, sessionId: 'session-1', integrationId: 'notion' });
+
+        expect(group).toHaveBeenCalledWith(
+            expect.objectContaining({ candidateOrder: 'oldest_first', tagSelectors: [{ [AGENT_SESSION_TAG_KEY]: 'session-1' }] })
+        );
+        expect(found?.connectionId).toBe('notion-first');
+    });
+
+    it('returns nothing when the session connected no such integration', async () => {
+        vi.spyOn(connectionService, 'groupConnectionMatchesByIntegration').mockResolvedValue([]);
+
+        await expect(findConnectionCreatedForSession({ environmentId: 1, sessionId: 'session-1', integrationId: 'notion' })).resolves.toBeNull();
+    });
+});

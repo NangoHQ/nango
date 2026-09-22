@@ -25,7 +25,8 @@ const STORE_DEFAULTS: StorePatch = {
     isAuthLink: false,
     detectClosedAuthWindow: false,
     isPreview: false,
-    showWatermark: false
+    theme: 'light',
+    settings: null
 };
 
 /**

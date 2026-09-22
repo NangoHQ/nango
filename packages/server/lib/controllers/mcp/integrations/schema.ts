@@ -132,6 +132,14 @@ const mcpIntegrationCredentialsSchema = z.discriminatedUnion('type', [
             auth_mode: z.string(),
             integration_config: z.record(z.string(), z.string())
         })
+        .strict(),
+    z
+        .object({
+            type: z.literal('MCP_OAUTH2'),
+            client_id: z.string().nullable(),
+            client_secret: z.string().nullable(),
+            scopes: z.string().nullable()
+        })
         .strict()
 ]);
 

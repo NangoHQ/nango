@@ -2,7 +2,7 @@ import './tracer.js';
 
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { DatabaseClient, defaultDatabaseClientOptions, Scheduler } from '@nangohq/scheduler';
-import { once, report, stringifyError } from '@nangohq/utils';
+import { metrics, once, report, stringifyError } from '@nangohq/utils';
 
 import { BackpressureMonitor } from './backpressure-monitor.js';
 import { envs } from './env.js';
@@ -108,6 +108,7 @@ try {
 
             console.info('Closed');
 
+            await metrics.flush();
             process.exit();
         });
     });

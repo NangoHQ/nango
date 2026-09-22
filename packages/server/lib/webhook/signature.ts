@@ -73,6 +73,41 @@ export function validateHmacSignature({ secret, rawBody, signature, payload, alg
     return safeCompare(expected, received, digest === 'hex' ? 'hex' : 'base64');
 }
 
+export interface V0Options {
+    secret: string;
+    headers: Record<string, any>;
+    rawBody: string;
+    signatureHeader: string;
+    timestampHeader: string;
+    toleranceSeconds?: number;
+}
+
+export type V0Result = 'valid' | 'invalid' | 'missing_headers' | 'stale_timestamp';
+
+export function validateV0Signature({
+    secret,
+    headers,
+    rawBody,
+    signatureHeader,
+    timestampHeader,
+    toleranceSeconds = DEFAULT_TOLERANCE_SECONDS
+}: V0Options): V0Result {
+    const signature = headers[signatureHeader];
+    const timestamp = headers[timestampHeader];
+
+    if (!signature || !timestamp || !secret) {
+        return 'missing_headers';
+    }
+
+    if (!isFreshTimestamp(timestamp, toleranceSeconds)) {
+        return 'stale_timestamp';
+    }
+
+    const signed = `v0:${timestamp}:${rawBody}`;
+
+    return validateHmacSignature({ secret, rawBody, payload: signed, signature, prefix: 'v0=' }) ? 'valid' : 'invalid';
+}
+
 export interface SvixOptions {
     secret: string;
     headers: Record<string, any>;

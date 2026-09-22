@@ -50,7 +50,8 @@ describe('updateIntegrationsTool', () => {
             credentials: { type: 'OAUTH2', client_id: 'client-id', client_secret: 'client-secret' },
             forwardWebhooks: false,
             integrationConfig: { region: 'eu' },
-            custom: { tenant: 'acme' }
+            custom: { tenant: 'acme' },
+            environment: context.environment
         });
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -84,7 +85,7 @@ describe('updateIntegrationsTool', () => {
     it.each([
         { code: 'not_found' as const, serviceMessage: 'Integration "missing" does not exist', publicMessage: 'Integration "missing" does not exist' },
         { code: 'integration_exists' as const, serviceMessage: 'duplicate', publicMessage: 'Integration ID already exists' },
-        { code: 'incompatible_credentials' as const, serviceMessage: 'incompatible', publicMessage: 'Credentials are incompatible with the provider auth mode' }
+        { code: 'incompatible_credentials' as const, serviceMessage: 'incompatible', publicMessage: 'incompatible' }
     ])('maps $code business errors to public MCP errors', async ({ code, serviceMessage, publicMessage }) => {
         vi.spyOn(integrationService, 'update').mockResolvedValue(Err(new IntegrationServiceError({ code, message: serviceMessage })));
 
