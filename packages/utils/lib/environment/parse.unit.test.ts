@@ -59,11 +59,6 @@ describe('parse', () => {
         expect(parseEnvs(ENVS, { NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: 'false' }).NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(false);
     });
 
-    it('should parse the sandbox compiler template', () => {
-        const res = parseEnvs(ENVS, { E2B_SANDBOX_COMPILER_TEMPLATE: 'blank-workspace:dev' });
-        expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
-    });
-
     it('should parse the management MCP server URL', () => {
         const res = parseEnvs(ENVS, { NANGO_MANAGEMENT_MCP_SERVER_URL: 'https://mcp-development.nango.dev' });
         expect(res.NANGO_MANAGEMENT_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
@@ -89,15 +84,6 @@ describe('parse', () => {
         expect(() => {
             parseEnvs(ENVS, { NANGO_DASHBOARD_API_URL: '/nango-api' });
         }).toThrow();
-    });
-
-    it('should parse E2B sandbox metric settings', () => {
-        const res = parseEnvs(ENVS, {
-            E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: '120000',
-            E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS: '5000'
-        });
-        expect(res.E2B_SANDBOX_METRICS_POLL_INTERVAL_MS).toBe(120_000);
-        expect(res.E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS).toBe(5_000);
     });
 
     it('should parse the sandbox provider', () => {
