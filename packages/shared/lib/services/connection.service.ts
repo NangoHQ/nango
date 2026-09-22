@@ -1527,14 +1527,6 @@ export class ConnectionService {
     }): Promise<number> {
         await preDeletionHook();
 
-        // Delete any schedules associated with the connection before deleting the connection itself
-        // We accept that schedules might be successfully deleted but the connection deletion fails.
-        // This is more acceptable than the other way around, where the connection is deleted but orphan schedules remain.
-        const schedulesDeletion = await functionLifecycle.deleteSchedulesForConnection(db.knex, { connection, orchestrator });
-        if (schedulesDeletion.isErr()) {
-            throw schedulesDeletion.error;
-        }
-
         const del = await db.knex.transaction(async (trx) => {
             const deleted = await trx
                 .from(`_nango_connections`)
@@ -1551,6 +1543,17 @@ export class ConnectionService {
                 if (functionsDeletion.isErr()) {
                     throw functionsDeletion.error;
                 }
+
+                const instanceIds = functionsDeletion.value.map((instance) => instance.id);
+                if (instanceIds.length > 0) {
+                    const schedulesDeletion = await orchestrator.deleteFunctionSchedules({
+                        environmentId: connection.environment_id,
+                        instanceIds
+                    });
+                    if (schedulesDeletion.isErr()) {
+                        throw schedulesDeletion.error;
+                    }
+                }
             }
 
             return deleted;
@@ -1562,6 +1565,32 @@ export class ConnectionService {
         await slackService.closeOpenNotificationForConnection({ connectionId: connection.id, environmentId });
 
         return del;
+    }
+
+    public async ensureFunctionInstances({
+        connection,
+        orchestrator
+    }: {
+        connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
+        orchestrator: Pick<Orchestrator, 'scheduleFunctions'>;
+    }): Promise<Result<void>> {
+        try {
+            return await db.knex.transaction(async (trx) => {
+                const activeConnection = await trx
+                    .from('_nango_connections')
+                    .select('id')
+                    .where({ id: connection.id, deleted: false })
+                    .forUpdate() // Lock the row to prevent deletion during instance creation
+                    .first();
+                if (!activeConnection) {
+                    return Ok(undefined);
+                }
+
+                return await functionLifecycle.ensureForConnection(trx, { connection, orchestrator });
+            });
+        } catch (err) {
+            return Err(new Error('failed_to_ensure_function_instances_for_connection', { cause: err }));
+        }
     }
 
     public async updateLastFetched(id: number): Promise<void> {

@@ -73,34 +73,6 @@ export async function ensureForConnection(
     }
 }
 
-export async function deleteSchedulesForConnection(
-    db: Knex,
-    {
-        connection,
-        orchestrator
-    }: {
-        connection: Pick<FunctionConnection, 'id' | 'environment_id'>;
-        orchestrator: Pick<Orchestrator, 'deleteFunctionSchedules'>;
-    }
-): Promise<Result<void>> {
-    try {
-        const instances = await functionInstanceService.search(db, { connectionIds: [connection.id] });
-        if (instances.isErr()) {
-            return Err(instances.error);
-        }
-        if (instances.value.length === 0) {
-            return Ok(undefined);
-        }
-
-        return await orchestrator.deleteFunctionSchedules({
-            environmentId: connection.environment_id,
-            instanceIds: instances.value.map((instance) => instance.id)
-        });
-    } catch (err) {
-        return Err(new Error('failed_to_delete_function_schedules_for_connection', { cause: err }));
-    }
-}
-
 export async function softDeleteInstancesForConnection(
     trx: Knex,
     { connection }: { connection: Pick<FunctionConnection, 'id' | 'environment_id'> }

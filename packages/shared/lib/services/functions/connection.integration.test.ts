@@ -6,12 +6,15 @@ import { Ok } from '@nangohq/utils';
 import { createConfigSeed } from '../../seeders/config.seeder.js';
 import { createConnectionSeed } from '../../seeders/connection.seeder.js';
 import { seedAccountEnvAndUser } from '../../seeders/global.seeder.js';
-import { deleteSchedulesForConnection, ensureForConnection, softDeleteInstancesForConnection } from './connection.js';
+import connectionService from '../connection.service.js';
+import { ensureForConnection, softDeleteInstancesForConnection } from './connection.js';
 import { upsert as upsertFunctionConfigs } from './models/functions.js';
 import { search as searchInstances, upsert as upsertInstances } from './models/instances.js';
 
 import type { Orchestrator } from '../../clients/orchestrator.js';
+import type { SlackService } from '../notification/slack.service.js';
 import type { FunctionConfigUpsert } from './models/functions.js';
+import type { DBConnectionDecrypted } from '@nangohq/types';
 
 const functionVersion: FunctionConfigUpsert['version'] = {
     description: 'Fetch issues',
@@ -76,29 +79,65 @@ describe(ensureForConnection, () => {
     });
 });
 
-describe(deleteSchedulesForConnection, () => {
-    it('deletes schedules for every active function instance', async () => {
-        const { env, connection, config } = await seed();
-        const instance = (name: string, nango_connection_id: number, variant: string) => ({
-            function_config_id: config.id,
-            nango_connection_id,
-            name,
-            variant,
-            frequency: null
-        });
+describe('connectionService.ensureFunctionInstances', () => {
+    it('does not create instances for a deleted connection', async () => {
+        const { connection } = await seed();
+        await db.knex.from('_nango_connections').where({ id: connection.id }).update({ deleted: true, deleted_at: new Date() });
+        const scheduleFunctions = vi.fn<Orchestrator['scheduleFunctions']>().mockResolvedValue(Ok(undefined));
+
+        (await connectionService.ensureFunctionInstances({ connection, orchestrator: { scheduleFunctions } })).unwrap();
+
+        expect(scheduleFunctions).not.toHaveBeenCalled();
+        await expect(searchInstances(db.knex, { connectionIds: [connection.id] }).then((result) => result.unwrap())).resolves.toEqual([]);
+    });
+});
+
+describe('connectionService.deleteConnection', () => {
+    it('unschedules function instances', async () => {
+        const { env, integrationKey, connection, config } = await seed();
         const instances = (
-            await upsertInstances(db.knex, [instance('fetchIssues', connection.id, 'base'), instance('fetchIssues', connection.id, 'canary')])
+            await upsertInstances(db.knex, [
+                {
+                    function_config_id: config.id,
+                    nango_connection_id: connection.id,
+                    name: 'fetchIssues',
+                    variant: 'base',
+                    frequency: null
+                },
+                {
+                    function_config_id: config.id,
+                    nango_connection_id: connection.id,
+                    name: 'fetchIssues',
+                    variant: 'canary',
+                    frequency: null
+                }
+            ])
         ).unwrap();
         const deleteFunctionSchedules = vi.fn<Orchestrator['deleteFunctionSchedules']>().mockResolvedValue(Ok(undefined));
+        const orchestrator = { deleteFunctionSchedules } as unknown as Orchestrator;
+        const slackService = {
+            closeOpenNotificationForConnection: vi.fn().mockResolvedValue(undefined)
+        } as unknown as SlackService;
+        const decryptedConnection = {
+            ...connection,
+            credentials: { type: 'API_KEY', apiKey: 'test' }
+        } satisfies DBConnectionDecrypted;
 
-        (await deleteSchedulesForConnection(db.knex, { connection, orchestrator: { deleteFunctionSchedules } })).unwrap();
+        await connectionService.deleteConnection({
+            connection: decryptedConnection,
+            providerConfigKey: integrationKey,
+            environmentId: env.id,
+            orchestrator,
+            slackService,
+            preDeletionHook: () => Promise.resolve()
+        });
 
         expect(deleteFunctionSchedules).toHaveBeenCalledWith({
             environmentId: env.id,
             instanceIds: instances.map((instance) => instance.id)
         });
         const instancesAfter = (await searchInstances(db.knex, { connectionIds: [connection.id] }, { includeDeleted: true })).unwrap();
-        expect(instancesAfter.map((instance) => instance.deleted_at)).toEqual([null, null]);
+        expect(instancesAfter.map((instance) => instance.deleted_at)).toEqual([expect.any(Date), expect.any(Date)]);
     });
 });
 
