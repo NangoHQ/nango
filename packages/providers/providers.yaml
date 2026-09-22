@@ -4595,6 +4595,30 @@ canva-scim:
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
 
+carsxe:
+    display_name: CarsXE
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.carsxe.com
+        query:
+            key: ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/auth/validate
+    docs: https://nango.dev/docs/api-integrations/carsxe
+    docs_connect: https://nango.dev/docs/api-integrations/carsxe/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your CarsXE account
+            doc_section: '#step-1-finding-your-api-key'
+
 cdw:
     display_name: CDW
     categories:

@@ -1,0 +1,90 @@
+---
+title: 'CarsXE'
+sidebarTitle: 'CarsXE'
+description: 'Integrate your application with the CarsXE vehicle data API'
+---
+
+## Quickstart
+
+Connect to CarsXE with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _CarsXE_.
+    </Step>
+    <Step id="authorize-carsxe" title="Authorize CarsXE">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-the-api" title="Call the CarsXE API">
+    Let's make your first request to the CarsXE API (VIN specs). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/specs?vin=WBAFR7C57CC811956" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/specs',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            params: { vin: 'WBAFR7C57CC811956' }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+<Note>
+This integration covers CarsXE's public REST API at `https://api.carsxe.com`. CarsXE MCP (`https://mcp.carsxe.com/mcp`, `X-API-Key`) is a different surface and is not covered here.
+</Note>
+
+## CarsXE integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/carsxe/connect)
+  Find your CarsXE API key and connect it to Nango
+
+Official docs: [CarsXE authentication](https://docs.carsxe.com/docs/authentication)
+
+## API gotchas
+
+-   CarsXE authenticates every request with a `key` **query parameter**. There is no OAuth flow and no required auth header on the REST API. Nango injects `key` on proxied requests; do not add it again in your own query string.
+-   Query-string API keys can appear in proxy, CDN, and access logs. Treat the key like a password, rotate it if it leaks, and prefer Nango's proxy over copying the key into client-side code.
+-   A `401` means the key is missing or wrong. A `403` means the key is valid but the plan does not include that endpoint.
+-   Most endpoints are `GET` with query parameters. A handful of image/recognition endpoints are `POST` with a JSON body.
+-   Credential verification calls `GET /v1/auth/validate`. That checks the key without decoding a VIN.
+
+## Pre-built syncs & actions for CarsXE
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/carsxe/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
