@@ -130,11 +130,7 @@ export async function resolveTenantConnections({
     return pickConnectionPerIntegration({ matches, verifiedPins, unknownPins, notMatchedPins });
 }
 
-/**
- * The connection the agent created for this integration, matched on the session tag. Takes the first
- * flow the user completed. A later one must not move the session onto a different connection, so
- * reauthorizing cannot change who the session acts as.
- */
+/** The connection the agent created for this integration, matched on the session tag. */
 export async function findConnectionCreatedForSession({
     environmentId,
     sessionId,

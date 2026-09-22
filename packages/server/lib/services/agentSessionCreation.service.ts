@@ -45,11 +45,6 @@ const EXPIRES_IN_UNITS_IN_MS: Record<string, number> = {
 /** One slot is spent on the tag binding the connection back to the session, so the caller gets the rest. */
 const MAX_CONFIGURED_TAGS = TAG_MAX_COUNT - 1;
 
-/**
- * A bare boolean is widened to the object form before validation rather than unioned with it. A
- * union reports itself as one invalid_union issue and buries the real reason, and zodErrorToHTTP
- * only maps the top level, so the caller would be told nothing more than "Invalid input".
- */
 const asMetaToolConfig = (value: unknown) => (typeof value === 'boolean' ? { enabled: value } : value);
 
 const metaToolSchema = z.preprocess(asMetaToolConfig, z.strictObject({ enabled: z.boolean() }));
@@ -76,11 +71,6 @@ const META_TOOLS = {
 
 const META_TOOL_NAMES: string[] = Object.values(META_TOOLS).map((metaTool) => metaTool.name);
 
-/**
- * Loose, so a key that is not a meta tool reaches parseMetaTools and is reported as unknown_meta_tool.
- * The keys are spelled out rather than built from META_TOOLS, because only a literal shape infers
- * into a type that keeps tags on the one tool that takes them.
- */
 export const agentSessionMetaToolsSchema = z.looseObject({
     nango_tool_search: META_TOOLS.nangoToolSearch.schema.optional(),
     nango_execute: META_TOOLS.nangoExecute.schema.optional(),

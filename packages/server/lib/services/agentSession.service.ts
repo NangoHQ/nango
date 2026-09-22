@@ -337,8 +337,7 @@ function tokenNotFoundError(token: string): AgentSessionError {
 
 /**
  * Binds a connection the agent created to the integration slot it was created for. The slot has to
- * still be empty: what a session may reach is fixed when it is created, and filling a gap it was
- * created with is not the same as swapping the connection an integration already resolved.
+ * still be empty.
  */
 export async function fillResolvedConnection(
     db: Knex,
