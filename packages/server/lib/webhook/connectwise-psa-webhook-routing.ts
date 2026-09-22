@@ -32,26 +32,28 @@ function configuredOrigin(value: unknown): string | null {
 }
 
 function isCloudKeyUrl(url: URL): boolean {
-    return (
-        url.port === '' && TRUSTED_CONNECTWISE_SUBDOMAINS.has(url.hostname.replace(/\.myconnectwise\.net$/, '')) && url.hostname.endsWith('.myconnectwise.net')
-    );
+    const suffix = '.myconnectwise.net';
+    return url.host.endsWith(suffix) && TRUSTED_CONNECTWISE_SUBDOMAINS.has(url.host.slice(0, -suffix.length));
 }
 
 /** Fetch only after checking the origin against trusted configuration. */
-async function fetchSigningKey(keyUrl: string): Promise<Result<string>> {
+async function fetchSigningKey(url: URL): Promise<Result<string>> {
     try {
-        const allowed = validateOutboundUrlSync(keyUrl, DEFAULT_OUTBOUND_URL_POLICY);
-        if (!allowed.ok) return Err(allowed.error);
+        let options;
+        if (!isCloudKeyUrl(url)) {
+            const allowed = validateOutboundUrlSync(url.href, DEFAULT_OUTBOUND_URL_POLICY);
+            if (!allowed.ok) return Err(allowed.error);
 
-        const response = await axiosInstance.get<SigningKeyResponse>(keyUrl, {
-            ...getSafeHttpAgents(DEFAULT_OUTBOUND_URL_POLICY),
-            // Enforce DNS/IP checks at socket lookup, including DNS rebinding. A proxy
-            // or redirect must not turn an approved origin into an unchecked target.
-            proxy: false,
-            maxRedirects: 0,
-            timeout: 10000,
-            maxContentLength: 64 * 1024
-        });
+            // Custom origins need socket-level DNS checks; proxies and redirects must not bypass them.
+            options = {
+                ...getSafeHttpAgents(DEFAULT_OUTBOUND_URL_POLICY),
+                proxy: false as const,
+                maxRedirects: 0,
+                timeout: 10000,
+                maxContentLength: 64 * 1024
+            };
+        }
+        const response = await axiosInstance.get<SigningKeyResponse>(url.href, options);
         if (typeof response.data?.signing_key !== 'string' || !response.data.signing_key) {
             return Err('webhook_invalid_signing_key');
         }
@@ -92,8 +94,6 @@ const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, header
         return Err(new NangoError('webhook_missing_signature'));
     }
 
-    // Verify webhook signature using payload metadata key_url
-    // The payload selects a connection; it cannot grant trust to a signing-key origin.
     const keyUrl = body.Metadata?.key_url;
 
     if (typeof keyUrl !== 'string') {
@@ -129,13 +129,9 @@ const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, header
         }
     }
 
-    const signingKey = await fetchSigningKey(keyUrl);
+    const signingKey = await fetchSigningKey(url);
 
-    if (signingKey.isErr()) {
-        return Err(new NangoError('webhook_invalid_signature'));
-    }
-
-    if (!validateSignature(signingKey.value, signature, rawBody)) {
+    if (signingKey.isErr() || !validateSignature(signingKey.value, signature, rawBody)) {
         return Err(new NangoError('webhook_invalid_signature'));
     }
 

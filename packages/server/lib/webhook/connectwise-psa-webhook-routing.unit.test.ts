@@ -45,10 +45,11 @@ function send(nango: InternalNango, keyUrl = customKeyUrl, overrides: Partial<Co
 afterEach(() => vi.restoreAllMocks());
 
 describe('ConnectWise PSA webhook signing-key origins', () => {
-    it('keeps cloud routing without requiring custom metadata', async () => {
-        const { nango, find, execute } = setup([]);
+    it('keeps cloud routing and HTTP settings without requiring custom metadata', async () => {
+        const { nango, find, get, execute } = setup([]);
         expect((await send(nango, cloudKeyUrl)).isOk()).toBe(true);
         expect(find).not.toHaveBeenCalled();
+        expect(get).toHaveBeenCalledWith(cloudKeyUrl, undefined);
         expect(execute).toHaveBeenCalledWith(expect.objectContaining({ connectionIdentifier: 'ProductInstanceId', propName: 'metadata.productInstanceId' }));
     });
 

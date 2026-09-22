@@ -50,9 +50,9 @@ For a self-hosted instance, also set `metadata.connectwiseWebhookKeyOrigin` to t
 }
 ```
 
-Set this value from your trusted backend setup, never by copying an unverified webhook's `Metadata.key_url`. Use an origin only: no path, query, fragment, or credentials. A non-default HTTPS port must match exactly. Existing ConnectWise cloud hosts require no additional metadata.
+Set this value from trusted backend configuration, not an incoming webhook. Use an HTTPS origin with no path, query, fragment, or credentials. The host and port must match exactly. Cloud connections need no new setting.
 
-For a custom origin, Nango first finds connections with the matching Product Instance ID, then accepts the signing-key URL only for connections that explicitly trust that origin. It still verifies the signature before dispatching or forwarding. Redirects and private, loopback, and link-local network targets are blocked, including during DNS lookup. The signing-key endpoint must be publicly reachable over HTTPS.
+Custom-origin events reach only connections with a matching Product Instance ID and configured origin, after signature verification. Their key requests block redirects and private network addresses, including during DNS lookup, and require a publicly reachable HTTPS endpoint.
 
 ## Handle the webhook
 
