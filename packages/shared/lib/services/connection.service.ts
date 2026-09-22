@@ -40,6 +40,7 @@ import {
     DEFAULT_INFINITE_EXPIRES_AT_MS,
     DEFAULT_OAUTHCC_EXPIRES_AT_MS,
     getExpiresAtFromCredentials,
+    jwtExpiresAt,
     MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
     REFRESH_MARGIN_MS
 } from './connections/utils.js';
@@ -1686,10 +1687,7 @@ export class ConnectionService {
                     const multiplier = template && 'expires_in_unit' in template && template.expires_in_unit === 'milliseconds' ? 1 : 1000;
                     expiresAt = new Date(Date.now() + expiresIn * multiplier);
                 } else if (typeof token === 'string') {
-                    const decoded = jwtClient.decode(token);
-                    if (decoded && typeof decoded['exp'] === 'number') {
-                        expiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
-                    }
+                    expiresAt = jwtExpiresAt(token, REFRESH_MARGIN_MS);
                 }
 
                 if (!expiresAt) {
@@ -1747,22 +1745,16 @@ export class ConnectionService {
                 }
 
                 if (!expiration && typeof token === 'string') {
-                    const decoded = jwtClient.decode(token);
-                    if (decoded && typeof decoded['exp'] === 'number') {
-                        const tokenExpiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
-                        if (!expiresAt || tokenExpiresAt < expiresAt) {
-                            expiresAt = tokenExpiresAt;
-                        }
+                    const tokenExpiresAt = jwtExpiresAt(token, REFRESH_MARGIN_MS);
+                    if (tokenExpiresAt && (!expiresAt || tokenExpiresAt < expiresAt)) {
+                        expiresAt = tokenExpiresAt;
                     }
                 }
 
                 if (refreshToken) {
-                    const decoded = jwtClient.decode(refreshToken);
-                    if (decoded && typeof decoded['exp'] === 'number') {
-                        const refreshTokenExpiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
-                        if (!expiresAt || refreshTokenExpiresAt < expiresAt) {
-                            expiresAt = refreshTokenExpiresAt;
-                        }
+                    const refreshTokenExpiresAt = jwtExpiresAt(refreshToken, REFRESH_MARGIN_MS);
+                    if (refreshTokenExpiresAt && (!expiresAt || refreshTokenExpiresAt < expiresAt)) {
+                        expiresAt = refreshTokenExpiresAt;
                     }
                 }
 
