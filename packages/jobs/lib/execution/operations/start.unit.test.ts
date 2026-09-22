@@ -17,9 +17,9 @@ describe('startScript', () => {
         vi.restoreAllMocks();
     });
 
-    it('does not use remote storage for catalog files outside cloud execution', async () => {
-        const localFileSpy = vi.spyOn(shared.localFileService, 'getIntegrationFile').mockReturnValue(null);
-        const remoteFileSpy = vi.spyOn(shared.remoteFileService, 'getFile').mockRejectedValue(new Error('remote storage should not be used'));
+    it('reads catalog files from object storage even outside cloud execution', async () => {
+        const localFileSpy = vi.spyOn(shared.localFileService, 'getIntegrationFile');
+        const remoteFileSpy = vi.spyOn(shared.remoteFileService, 'getFile').mockResolvedValue('');
 
         const result = await startScript({
             taskId: 'task-1',
@@ -33,8 +33,8 @@ describe('startScript', () => {
             expect(result.error.message).toContain("Error starting function 'create-issue'");
             expect(result.error.message).toContain('Unable to find integration file');
         }
-        expect(localFileSpy).toHaveBeenCalled();
-        expect(remoteFileSpy).not.toHaveBeenCalled();
+        expect(remoteFileSpy).toHaveBeenCalledWith('templates-zero/github/build/github_actions_create-issue.cjs');
+        expect(localFileSpy).not.toHaveBeenCalled();
     });
 });
 

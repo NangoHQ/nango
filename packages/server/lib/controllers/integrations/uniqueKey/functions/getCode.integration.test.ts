@@ -247,4 +247,44 @@ describe(`GET ${endpoint}`, () => {
             ])
         });
     });
+
+    it('returns 409 when a deployed sync shares a name with a catalog action', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const config = await seeders.createConfigSeed(env, 'aircall', 'aircall');
+        await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'create-contact', type: 'sync' });
+
+        const original = flags.hasLiveCatalogActions;
+        flags.hasLiveCatalogActions = true;
+        try {
+            const res = await api.fetch(endpoint, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { uniqueKey: 'aircall', name: 'create-contact' },
+                query: {}
+            });
+
+            expect(res.res.status).toBe(409);
+            isError(res.json);
+            expect(res.json.error.code).toBe('ambiguous_function');
+            expect(res.json.error.payload).toStrictEqual({
+                matches: expect.arrayContaining([
+                    { type: 'sync', name: 'create-contact' },
+                    { type: 'action', name: 'create-contact' }
+                ])
+            });
+
+            const syncOnly = await api.fetch(endpoint, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { uniqueKey: 'aircall', name: 'create-contact' },
+                query: { type: 'sync' }
+            });
+            expect(syncOnly.res.status).toBe(404);
+            isError(syncOnly.json);
+            expect(syncOnly.json.error.code).toBe('not_found');
+            expect(syncOnly.json.error.message).toContain('Source file');
+        } finally {
+            flags.hasLiveCatalogActions = original;
+        }
+    });
 });

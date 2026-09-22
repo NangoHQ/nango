@@ -140,7 +140,7 @@ export const FunctionSwitch: React.FC<{
                         name="script"
                         checked={flow.enabled}
                         className="cursor-pointer"
-                        disabled={loading || !allowed}
+                        disabled={loading || !allowed || flow.source === 'nango-catalog'}
                         onClick={(e) => {
                             e.preventDefault();
                             toggleSync();

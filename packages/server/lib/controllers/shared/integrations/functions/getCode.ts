@@ -78,13 +78,7 @@ export async function handleGetFunctionCode({
     const filtered = type ? matches.filter((m) => m.type === type) : matches;
 
     if (filtered.length > 1) {
-        res.status(409).send({
-            error: {
-                code: 'ambiguous_function',
-                message: `Multiple functions named '${name}' found for integration '${providerConfigKey}'. Specify a type to disambiguate.`,
-                payload: { matches: filtered.map((m) => ({ type: m.type, name: m.name })) }
-            }
-        });
+        sendAmbiguous(res, providerConfigKey, name, filtered);
         return;
     }
 
@@ -108,6 +102,14 @@ export async function handleGetFunctionCode({
         return;
     }
 
+    if (!type && match.type !== 'action') {
+        const resolved = await resolveRunnableAction({ environmentId: environment.id, integration: providerConfig, name });
+        if (resolved.kind === 'catalog') {
+            sendAmbiguous(res, providerConfigKey, name, [match, { type: 'action', name, fileLocation: resolved.config.file_location }]);
+            return;
+        }
+    }
+
     const code = await getFunctionTsCode({ match, providerConfigKey });
     if (code === null) {
         res.status(404).send({ error: { code: 'not_found', message: `Source file for '${name}' not found` } });
@@ -115,4 +117,19 @@ export async function handleGetFunctionCode({
     }
 
     res.status(200).send({ type: match.type, code });
+}
+
+function sendAmbiguous(
+    res: Response<GetFunctionCode['Reply'], RequestLocalsWithEnvironment>,
+    providerConfigKey: string,
+    name: string,
+    matches: FunctionMatch[]
+): void {
+    res.status(409).send({
+        error: {
+            code: 'ambiguous_function',
+            message: `Multiple functions named '${name}' found for integration '${providerConfigKey}'. Specify a type to disambiguate.`,
+            payload: { matches: matches.map((m) => ({ type: m.type, name: m.name })) }
+        }
+    });
 }
