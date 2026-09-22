@@ -45,11 +45,10 @@ function send(nango: InternalNango, keyUrl = customKeyUrl, overrides: Partial<Co
 afterEach(() => vi.restoreAllMocks());
 
 describe('ConnectWise PSA webhook signing-key origins', () => {
-    it('keeps cloud routing and HTTP settings without requiring custom metadata', async () => {
-        const { nango, find, get, execute } = setup([]);
+    it('keeps cloud routing without requiring custom metadata', async () => {
+        const { nango, find, execute } = setup([]);
         expect((await send(nango, cloudKeyUrl)).isOk()).toBe(true);
         expect(find).not.toHaveBeenCalled();
-        expect(get).toHaveBeenCalledWith(cloudKeyUrl, undefined);
         expect(execute).toHaveBeenCalledWith(expect.objectContaining({ connectionIdentifier: 'ProductInstanceId', propName: 'metadata.productInstanceId' }));
     });
 
@@ -134,11 +133,11 @@ describe('ConnectWise PSA webhook signing-key origins', () => {
         }
     );
 
-    it('uses a DNS-validating agent and blocks redirects and proxy overrides', async () => {
+    it.each([cloudKeyUrl, customKeyUrl])('hardens signing-key requests for %s', async (keyUrl) => {
         const { nango, get } = setup();
-        expect((await send(nango)).isOk()).toBe(true);
+        expect((await send(nango, keyUrl)).isOk()).toBe(true);
         expect(get).toHaveBeenCalledWith(
-            customKeyUrl,
+            keyUrl,
             expect.objectContaining({
                 ...getSafeHttpAgents(DEFAULT_OUTBOUND_URL_POLICY),
                 proxy: false,
@@ -149,9 +148,9 @@ describe('ConnectWise PSA webhook signing-key origins', () => {
         );
         const dnsLookup = vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '127.0.0.1', family: 4 }] as never);
         const lookup = getSafeHttpAgents(DEFAULT_OUTBOUND_URL_POLICY).httpsAgent.options.lookup as LookupFunction;
-        const error = await new Promise((resolve) => lookup('rebound.example.com', {}, (err) => resolve(err)));
-        expect(dnsLookup).toHaveBeenCalledWith('rebound.example.com', { all: true, verbatim: true });
-        expect(error).toMatchObject({ name: 'OutboundUrlError', code: 'denied_dns', hostname: 'rebound.example.com' });
+        const error = await new Promise((resolve) => lookup(new URL(keyUrl).hostname, {}, (err) => resolve(err)));
+        expect(dnsLookup).toHaveBeenCalledWith(new URL(keyUrl).hostname, { all: true, verbatim: true });
+        expect(error).toMatchObject({ name: 'OutboundUrlError', code: 'denied_dns', hostname: new URL(keyUrl).hostname });
     });
 
     it.each([cloudKeyUrl, customKeyUrl])('rejects a tampered body for %s', async (url) => {

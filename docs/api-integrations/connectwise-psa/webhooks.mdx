@@ -52,7 +52,7 @@ For a self-hosted instance, also set `metadata.connectwiseWebhookKeyOrigin` to t
 
 Set this value from trusted backend configuration, not an incoming webhook. Use an HTTPS origin with no path, query, fragment, or credentials. The host and port must match exactly. Cloud connections need no new setting.
 
-Custom-origin events reach only connections with a matching Product Instance ID and configured origin, after signature verification. Their key requests block redirects and private network addresses, including during DNS lookup, and require a publicly reachable HTTPS endpoint.
+Custom-origin events reach only connections with a matching Product Instance ID and configured origin, after signature verification. All signing-key requests, including cloud requests, block redirects and private network addresses and validate DNS results at connection time. They use a direct HTTPS connection, a 10-second timeout, and a 64 KiB response limit. Deployments that require an outbound proxy or a redirecting key endpoint need a compatible direct endpoint before using this handler.
 
 ## Handle the webhook
 

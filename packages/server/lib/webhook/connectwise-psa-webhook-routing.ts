@@ -39,21 +39,17 @@ function isCloudKeyUrl(url: URL): boolean {
 /** Fetch only after checking the origin against trusted configuration. */
 async function fetchSigningKey(url: URL): Promise<Result<string>> {
     try {
-        let options;
-        if (!isCloudKeyUrl(url)) {
-            const allowed = validateOutboundUrlSync(url.href, DEFAULT_OUTBOUND_URL_POLICY);
-            if (!allowed.ok) return Err(allowed.error);
+        const allowed = validateOutboundUrlSync(url.href, DEFAULT_OUTBOUND_URL_POLICY);
+        if (!allowed.ok) return Err(allowed.error);
 
-            // Custom origins need socket-level DNS checks; proxies and redirects must not bypass them.
-            options = {
-                ...getSafeHttpAgents(DEFAULT_OUTBOUND_URL_POLICY),
-                proxy: false as const,
-                maxRedirects: 0,
-                timeout: 10000,
-                maxContentLength: 64 * 1024
-            };
-        }
-        const response = await axiosInstance.get<SigningKeyResponse>(url.href, options);
+        // Every key request needs socket-level DNS checks; proxies and redirects must not bypass them.
+        const response = await axiosInstance.get<SigningKeyResponse>(url.href, {
+            ...getSafeHttpAgents(DEFAULT_OUTBOUND_URL_POLICY),
+            proxy: false,
+            maxRedirects: 0,
+            timeout: 10000,
+            maxContentLength: 64 * 1024
+        });
         if (typeof response.data?.signing_key !== 'string' || !response.data.signing_key) {
             return Err('webhook_invalid_signing_key');
         }
