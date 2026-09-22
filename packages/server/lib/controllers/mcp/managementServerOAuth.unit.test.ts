@@ -58,11 +58,17 @@ describe('createManagementMcpServer with OAuth', () => {
         const { client, server, loadEnvironment } = await createTestClient();
 
         try {
+            expect(client.getInstructions()).toBe(
+                'Before using an environment-bound tool, always ask the user which Nango environment to use. Call environments_list first when you need to present the available choices. Use only the environment the user selects; do not query every environment unless the user explicitly asks you to.'
+            );
+
             const result = await client.listTools();
 
             expect(result.tools.map((tool) => tool.name)).toStrictEqual(['environments_list', ...managementToolNames]);
             expect(result.tools[0]).toMatchObject({
                 name: 'environments_list',
+                description:
+                    'List the Nango environments currently available to your user. Call this first, then ask the user to choose an environment before using environment-bound tools. Do not automatically query every returned environment.',
                 annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
                 inputSchema: {
                     type: 'object',

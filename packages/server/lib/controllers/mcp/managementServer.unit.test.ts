@@ -40,6 +40,7 @@ describe('createManagementMcpServer', () => {
 
         try {
             expect(client.getServerCapabilities()?.tools?.listChanged).toBe(false);
+            expect(client.getInstructions()).toBeUndefined();
         } finally {
             await client.close();
             await server.close();
