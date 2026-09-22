@@ -1591,6 +1591,7 @@
               "integrations/all/netsuite",
               "api-integrations/netsuite-client-credentials",
               "api-integrations/netsuite-tba",
+              "api-integrations/neuralverge",
               "integrations/all/next-cloud-ocs",
               "api-integrations/nexthink",
               "api-integrations/ninety-io",
