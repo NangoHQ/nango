@@ -48,3 +48,4 @@ export { default as procorePostConnection } from './providers/procore/post-conne
 export { default as sage200PostConnection } from './providers/sage-200/post-connection.js';
 export { default as vantageApparelCredentialsVerification } from './providers/vantage-apparel/credentials-verification.js';
 export { default as cdwCredentialsVerification } from './providers/cdw/credentials-verification.js';
+export { default as appleCalendarCredentialsVerification } from './providers/apple-calendar/credentials-verification.js';

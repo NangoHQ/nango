@@ -114,6 +114,7 @@ function parseCommaSeparatedEnvList(raw: string | undefined): string[] {
 
 export const networkError = [
     'ECONNRESET',
+    'EPIPE',
     'ETIMEDOUT',
     'ECONNABORTED',
     'ECONNREFUSED',
