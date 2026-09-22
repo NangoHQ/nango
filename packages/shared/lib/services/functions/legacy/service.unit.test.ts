@@ -41,12 +41,11 @@ const baseRow: FunctionRow = {
 describe('functions service', () => {
     beforeEach(() => {
         vi.resetAllMocks();
-        mockGetIdByProviderConfigKey.mockResolvedValue(1);
+        mockGetIdByProviderConfigKey.mockResolvedValue(10);
+        mockFindActiveByEnvironment.mockResolvedValue({ rows: [baseRow], total: 1 });
     });
 
     it('returns mapped rows and total for valid functions', async () => {
-        mockFindActiveByEnvironment.mockResolvedValue({ rows: [baseRow], total: 1 });
-
         const result = await listFunctions({
             environmentId: 1,
             providerConfigKey: 'github',
@@ -83,6 +82,14 @@ describe('functions service', () => {
             total: 1
         });
         expect(mockGetIdByProviderConfigKey).toHaveBeenCalledWith(1, 'github');
+        expect(mockFindActiveByEnvironment).toHaveBeenCalledWith({
+            environmentId: 1,
+            providerConfigKey: 'github',
+            type: undefined,
+            search: undefined,
+            limit: 20,
+            offset: 0
+        });
     });
 
     it('returns a typed error when the integration does not exist', async () => {
@@ -170,5 +177,29 @@ describe('functions service', () => {
         if (result.isErr()) {
             expect(result.error.message).toBe('failed_to_get_function');
         }
+    });
+
+    it('maps a catalog action returned by the model', async () => {
+        mockFindActiveByName.mockResolvedValue({
+            ...baseRow,
+            id: null,
+            name: 'create-issue',
+            type: 'action',
+            last_deployed: null,
+            source: 'live-catalog'
+        });
+
+        const result = await getFunction({
+            environmentId: 1,
+            providerConfigKey: 'github',
+            name: 'create-issue',
+            type: 'action'
+        });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isErr()) {
+            return;
+        }
+        expect(result.value).toMatchObject({ name: 'create-issue', source: 'live-catalog', id: null });
     });
 });

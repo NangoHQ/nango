@@ -33,6 +33,11 @@ export const FunctionSwitch: React.FC<{
     const loading = isEnablePending || isDeployPending || isDisablePending;
 
     const toggleSync = () => {
+        if (flow.source === 'live-catalog') {
+            toast({ title: 'Catalog actions cannot be toggled from the dashboard yet', variant: 'error' });
+            return;
+        }
+
         if (flow.type === 'action') {
             if (flow.enabled) {
                 void onDisable();
@@ -135,7 +140,7 @@ export const FunctionSwitch: React.FC<{
                         name="script"
                         checked={flow.enabled}
                         className="cursor-pointer"
-                        disabled={loading || !allowed}
+                        disabled={loading || !allowed || flow.source === 'live-catalog'}
                         onClick={(e) => {
                             e.preventDefault();
                             toggleSync();
