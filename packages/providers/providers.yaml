@@ -11221,6 +11221,7 @@ halo-psa:
         - support
         - ticketing
     auth_mode: OAUTH2_CC
+    webhook_routing_script: haloPsaWebhookRouting
     token_url: https://${connectionConfig.hostname}/auth/token
     token_request_auth_method: basic
     scope_separator: ' '

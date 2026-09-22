@@ -61,6 +61,17 @@ Connect to Halo PSA with Nango and see data flow in 2 minutes.
     </Step>
 </Steps>
 
+**Webhooks**
+
+In Halo, open **Configuration > Integrations > Webhooks** and create a standard
+POST webhook using the webhook URL from your Nango integration's **Settings** tab.
+Choose **Basic Authentication**: set the username to the Nango connection ID and
+the password to a random secret stored as `webhookSecret` in that connection's
+metadata. Use a different secret for each connection; do not use an API key.
+Select the Halo events you need. Nango forwards the payload unchanged and routes
+it only to the authenticated connection. Sync functions should subscribe with
+`webhookSubscriptions: ['*']` and handle the Halo events in `onWebhook`.
+
 ## Halo PSA Integration Guides
 
 Nango-maintained guides for common use cases.
