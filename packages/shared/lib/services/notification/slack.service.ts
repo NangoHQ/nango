@@ -699,6 +699,7 @@ export class SlackService {
                 logger: () => {},
                 proxyConfig: proxyConfig.value,
                 outboundPolicy: getServerOutboundUrlPolicy(),
+                maxWaitMs: Infinity,
                 getConnection: () => slackConnection,
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,
@@ -773,6 +774,7 @@ export class SlackService {
                 logger: () => {},
                 proxyConfig: proxyConfig.value,
                 outboundPolicy: getServerOutboundUrlPolicy(),
+                maxWaitMs: Infinity,
                 getConnection: () => slackConnection,
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,

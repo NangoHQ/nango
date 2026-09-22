@@ -78,12 +78,18 @@ RUN true \
 RUN true \
   && npm prune --omit=dev --omit=optional
 
-RUN npm install -g npm@11.10.1
-
 # ------------------
 # Final runtime image
 # ------------------
 FROM public.ecr.aws/lambda/nodejs:22-arm64
+
+# npm/npx/corepack ship with the Lambda Node image and are unused at runtime
+RUN rm -rf \
+      /var/lang/lib/node_modules/npm \
+      /var/lang/lib/node_modules/corepack \
+      /var/lang/bin/npm \
+      /var/lang/bin/npx \
+      /var/lang/bin/corepack
 
 # Do not use root to run the app
 # BUT it does not work with secret mount (could not find a solution yet)

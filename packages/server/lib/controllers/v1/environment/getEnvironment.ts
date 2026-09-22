@@ -11,7 +11,7 @@ import {
 } from '@nangohq/shared';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { canReadProdSecret } from '../../../authz/resolve.js';
+import { principalCan } from '../../../authz/principal.js';
 import { envs } from '../../../env.js';
 import { environmentToApi } from '../../../formatters/environment.js';
 import { planToApi } from '../../../formatters/plan.js';
@@ -64,7 +64,7 @@ export const getEnvironment = asyncWrapperWithEnvironment<GetEnvironment>(async 
     const webhookSettings = await externalWebhookService.get(environment.id);
 
     let webhookSigningKey: string | null = null;
-    if (canReadProdSecret(res.locals)) {
+    if (principalCan(res.locals, 'environment:settings:read_secret')) {
         const signingKeyResult = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
         if (signingKeyResult.isOk()) {
             webhookSigningKey = signingKeyResult.value;

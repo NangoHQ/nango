@@ -12,14 +12,14 @@ import {
     getServerOutboundUrlPolicy,
     makeDataTransferEvent,
     NangoError,
-    productTracking,
     ProxyRequest,
     pubsub,
     syncManager
 } from '@nangohq/shared';
-import { Err, getLogger, isHosted, Ok, report } from '@nangohq/utils';
+import { Err, isHosted, Ok, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
+import { envs } from '../env.js';
 import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
@@ -36,7 +36,6 @@ import type {
     DBConnection,
     DBConnectionDecrypted,
     DBEnvironment,
-    DBPlan,
     DBTeam,
     InstallPluginCredentials,
     IntegrationConfig,
@@ -51,42 +50,7 @@ import type {
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
-const logger = getLogger('hooks');
 const orchestrator = getOrchestrator();
-
-export const connectionCreationStartCapCheck = async ({
-    team,
-    plan,
-    creationType
-}: {
-    team: DBTeam;
-    plan: DBPlan;
-    creationType: 'create' | 'import';
-}): Promise<{ capped: boolean }> => {
-    if (plan.connections_max === null) {
-        return { capped: false };
-    }
-
-    const connectionCount = await connectionService.countByAccountId(team.id);
-
-    if (connectionCount >= plan.connections_max) {
-        logger.info(
-            `You reached the maximum number of connections on your plan. Attempts to create new connections will be blocked. Upgrade your account, or delete some connections to add new ones.`,
-            {
-                connectionCount,
-                limit: plan.connections_max
-            }
-        );
-        if (creationType === 'create') {
-            productTracking.track({ name: 'server:resource_capped:connection_creation', team });
-        } else {
-            productTracking.track({ name: 'server:resource_capped:connection_imported', team });
-        }
-        return { capped: true };
-    }
-
-    return { capped: false };
-};
 
 export async function testConnectionCredentials({
     config,
@@ -151,6 +115,11 @@ export const connectionCreated = async (
 
     if (options.initiateSync === true && !isHosted) {
         await syncManager.createSyncForConnection({ connectionId: connection.id, syncVariant: 'base', logContextGetter, orchestrator });
+
+        const result = await connectionService.ensureFunctionInstances({ connection, orchestrator });
+        if (result.isErr()) {
+            report(new Error('connection_scheduled_functions_initialization_failed', { cause: result.error }), { id: connection.id });
+        }
     }
 
     const webhookSettings = await externalWebhookService.get(environment.id);
@@ -525,6 +494,7 @@ export async function credentialsTest({
                 },
                 proxyConfig,
                 outboundPolicy: getServerOutboundUrlPolicy(),
+                maxWaitMs: envs.NANGO_PROXY_MAX_RETRY_WAIT_MS,
                 getConnection: () => {
                     return connection;
                 },

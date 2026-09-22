@@ -191,7 +191,7 @@ describe('handleResponse', () => {
         expect(sentData!.toString()).toBe(nonJsonPayload);
     });
 
-    it('should forward provider response headers on the buffered path when the flag is on', async () => {
+    it('should forward provider response headers on the buffered path', async () => {
         const mockRes = createMockResponse();
         const mockResponseStream = createMockResponseStream('{"ok":true}', {
             contentType: 'application/json',
@@ -205,7 +205,7 @@ describe('handleResponse', () => {
             }
         });
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
         await mockRes.waitForSend();
 
         expect(mockRes.res.setHeader).toHaveBeenCalledWith('content-type', 'application/json');
@@ -214,29 +214,6 @@ describe('handleResponse', () => {
         expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-ratelimit-limit', '100');
         expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-ratelimit-remaining', '42');
         expect(mockRes.res.setHeader).toHaveBeenCalledWith('link', '<https://api.example.com/page/2>; rel="next"');
-    });
-
-    it('should only forward allowlisted headers on the buffered path when the flag is off', async () => {
-        const mockRes = createMockResponse();
-        const mockResponseStream = createMockResponseStream('{"ok":true}', {
-            contentType: 'application/json',
-            status: 200,
-            headers: {
-                'mcp-session-id': 'session-abc123',
-                'x-request-id': 'req-xyz',
-                'x-ratelimit-limit': '100',
-                link: '<https://api.example.com/page/2>; rel="next"'
-            }
-        });
-
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: false });
-        await mockRes.waitForSend();
-
-        expect(mockRes.res.setHeader).toHaveBeenCalledWith('content-type', 'application/json');
-        expect(mockRes.res.setHeader).toHaveBeenCalledWith('mcp-session-id', 'session-abc123');
-        expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-request-id', 'req-xyz');
-        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('x-ratelimit-limit', expect.anything());
-        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('link', expect.anything());
     });
 
     it('should not forward hop-by-hop, content-length and CORS headers on the buffered path', async () => {
@@ -253,7 +230,7 @@ describe('handleResponse', () => {
             }
         });
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
         await mockRes.waitForSend();
 
         expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('connection', expect.anything());
@@ -263,7 +240,7 @@ describe('handleResponse', () => {
         expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-request-id', 'req-xyz');
     });
 
-    it('should filter hop-by-hop and CORS headers on the streamed path when the flag is on', () => {
+    it('should filter hop-by-hop and CORS headers on the streamed path', () => {
         const mockRes = createMockResponse();
         const mockResponseStream = createMockResponseStream('raw binary content', {
             contentType: 'application/pdf',
@@ -276,7 +253,7 @@ describe('handleResponse', () => {
             }
         });
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
 
         const [, headersArg] = vi.mocked(mockRes.res.writeHead).mock.calls[0]!;
         expect(headersArg).toHaveProperty('content-length', '18');
@@ -297,7 +274,7 @@ describe('handleResponse', () => {
             wasCompressed: true
         });
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
 
         const [, headersArg] = vi.mocked(mockRes.res.writeHead).mock.calls[0]!;
         expect(headersArg).not.toHaveProperty('content-length');
@@ -313,7 +290,7 @@ describe('handleResponse', () => {
             }
         });
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
 
         const [, headersArg] = vi.mocked(mockRes.res.writeHead).mock.calls[0]!;
         expect(headersArg).toHaveProperty('content-length', '18');

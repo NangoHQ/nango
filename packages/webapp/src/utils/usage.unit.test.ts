@@ -95,7 +95,7 @@ describe('getAggregateUsageState', () => {
 });
 
 describe('billedUsageMetrics', () => {
-    const on = (name: string) => billedUsageMetrics({ name } as ApiPlan, true);
+    const on = (name: string) => billedUsageMetrics({ name } as ApiPlan);
 
     // Deliberately restates the source map: a wrong value there has to fail against something.
     const BILLED_ON: Record<ApiPlan['name'], 's26' | 'legacy'> = {
@@ -120,25 +120,28 @@ describe('billedUsageMetrics', () => {
         }
     });
 
-    it('leaves the view untouched while the flag is off', () => {
-        expect(billedUsageMetrics({ name: 'free' } as ApiPlan, false)).toEqual(LEGACY_USAGE_METRICS);
+    it('falls back to the legacy set before the plan has loaded', () => {
+        expect(billedUsageMetrics(undefined)).toEqual(LEGACY_USAGE_METRICS);
     });
 
-    it('falls back to the legacy set before the plan has loaded', () => {
-        expect(billedUsageMetrics(undefined, true)).toEqual(LEGACY_USAGE_METRICS);
+    it.each(['starter-v2', 'growth-v2', 'starter-legacy', 'growth', 'scale-legacy'] as const)('shows the new metrics to a scheduled %s account', (name) => {
+        expect(billedUsageMetrics({ name } as ApiPlan, true)).toEqual(S26_USAGE_METRICS);
+    });
+
+    it('leaves an unscheduled account on its own metrics', () => {
+        expect(billedUsageMetrics({ name: 'growth-v2' } as ApiPlan, false)).toEqual(LEGACY_USAGE_METRICS);
     });
 });
 
 describe('isOnS26Pricing', () => {
     it('agrees with the metrics a plan is billed on', () => {
-        expect(isOnS26Pricing({ name: 'pay-as-you-go' } as ApiPlan, true)).toBe(true);
-        expect(isOnS26Pricing({ name: 'free' } as ApiPlan, true)).toBe(true);
-        expect(isOnS26Pricing({ name: 'growth-v2' } as ApiPlan, true)).toBe(false);
+        expect(isOnS26Pricing({ name: 'pay-as-you-go' } as ApiPlan)).toBe(true);
+        expect(isOnS26Pricing({ name: 'free' } as ApiPlan)).toBe(true);
+        expect(isOnS26Pricing({ name: 'growth-v2' } as ApiPlan)).toBe(false);
     });
 
-    it('is false while the flag is off, and before the plan has loaded', () => {
-        expect(isOnS26Pricing({ name: 'pay-as-you-go' } as ApiPlan, false)).toBe(false);
-        expect(isOnS26Pricing(undefined, true)).toBe(false);
+    it('is false before the plan has loaded', () => {
+        expect(isOnS26Pricing(undefined)).toBe(false);
     });
 });
 

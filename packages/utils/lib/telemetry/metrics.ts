@@ -1,3 +1,5 @@
+import { setTimeout } from 'node:timers/promises';
+
 import tracer from 'dd-trace';
 
 export enum Types {
@@ -6,8 +8,6 @@ export enum Types {
     ACTION_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.action.incoming.payloadSizeBytes',
 
     AUTH_SECRET_KEY_HASH_CACHE = 'nango.auth.secretKeyHashCache',
-    AUTHZ_KEY_DERIVATION_COMPARISON = 'nango.authz.keyDerivationComparison',
-    AUTHZ_ROLE_COMPARISON = 'nango.authz.roleComparison',
     AUTH_SHADOW_CACHE = 'nango.auth.shadowCache',
     AUTH_CONTEXT_CACHE = 'nango.auth.contextCache',
     AUTH_GET_ENV_BY_AGENT_SESSION = 'nango.auth.getEnvByAgentSession',
@@ -54,6 +54,9 @@ export enum Types {
     PROXY_REDIRECT = 'nango.server.proxy.redirect',
     PROXY_BASE_URL_OVERRIDE_DENIED = 'nango.server.proxy.baseUrlOverrideDenied',
 
+    CRON_MANAGE_GROWTH_ADDON = 'nango.server.cron.manageGrowthAddon',
+    GROWTH_ADDON_CORRUPTED_STATE_COUNT = 'nango.server.growthAddon.corrupted.count',
+
     CRON_REFRESH_CONNECTIONS = 'nango.server.cron.refreshConnections',
     CRON_REFRESH_CONNECTIONS_FAILED = 'nango.server.cron.refreshConnections.failed',
     CRON_REFRESH_CONNECTIONS_SUCCESS = 'nango.server.cron.refreshConnections.success',
@@ -68,10 +71,12 @@ export enum Types {
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
 
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
+    FUNCTION_DURATION_MS = 'nango.jobs.function.duration_ms',
 
     WEBHOOK_INCOMING_RECEIVED = 'nango.webhook.incoming.received',
     WEBHOOK_INCOMING_RATE_LIMITED = 'nango.webhook.incoming.rateLimited',
     WEBHOOK_INCOMING_SKIPPED = 'nango.webhook.incoming.skipped',
+    WEBHOOK_INCOMING_UNVERIFIED = 'nango.webhook.incoming.unverified',
     WEBHOOK_INCOMING_FORWARDED_SUCCESS = 'nango.webhook.incoming.forwarded.success',
     WEBHOOK_INCOMING_FORWARDED_FAILED = 'nango.webhook.incoming.forwarded.failed',
     WEBHOOK_OUTGOING_SUCCESS = 'nango.webhook.outgoing.success',
@@ -82,17 +87,20 @@ export enum Types {
     WEBHOOK_REQUEST_SIZE_IN_BYTES = 'nango.webhook.request.sizeInBytes',
     WEBHOOK_RESPONSE_SIZE_IN_BYTES = 'nango.webhook.response.sizeInBytes',
     WEBHOOK_DIRECT_TRIGGER_SUCCESS = 'nango.webhook.direct_trigger.success',
+    WEBHOOK_DEDUPE_DISPATCHED = 'nango.webhook.dedupe.dispatched',
+    WEBHOOK_DEDUPE_SUPPRESSED = 'nango.webhook.dedupe.suppressed',
 
     WEBHOOK_DISPATCH_PUBLISH_SUCCESS = 'nango.webhook.dispatch_queue.publish.success',
     WEBHOOK_DISPATCH_PUBLISH_FAILURE = 'nango.webhook.dispatch_queue.publish.failure',
     WEBHOOK_DISPATCH_BYPASS_OVERSIZE = 'nango.webhook.dispatch_queue.bypass_oversize',
     WEBHOOK_DISPATCH_LARGE_FANOUT = 'nango.webhook.dispatch_queue.large_fanout',
-    // Consume outcome, tagged result=success|failure.
+    // Consume outcome, tagged result=success|failure|rate_limited|throttle_deferred|task_cap.
     WEBHOOK_DISPATCH_CONSUME = 'nango.webhook.dispatch_queue.consume',
-    // Messages dropped without being scheduled, tagged reason=poison_pill|stale|task_cap.
+    // Messages dropped without being scheduled, tagged reason=poison_pill|stale.
     WEBHOOK_DISPATCH_DROPPED = 'nango.webhook.dispatch_queue.dropped',
     WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
     WEBHOOK_DISPATCH_BATCH_SIZE = 'nango.webhook.dispatch_queue.batch_size',
+    WEBHOOK_DISPATCH_THROTTLE_MS = 'nango.webhook.dispatch_queue.throttle_ms',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',
@@ -118,6 +126,8 @@ export enum Types {
 
     API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
     DEPRECATED_V1_ENDPOINT_USED = 'nango.server.deprecated.v1.used',
+
+    DEPRECATED_PUBLIC_ENDPOINT_USED = 'nango.server.deprecated.public.used',
 
     AUTH_SUCCESS = 'nango.server.auth.success',
     AUTH_FAILURE = 'nango.server.auth.failure',
@@ -147,9 +157,6 @@ export enum Types {
     MCP_TOOL_CALLS = 'nango.mcp.tool_calls',
     MCP_CLIENT_ID_METHOD = 'nango.mcp.client_id_method',
 
-    E2B_RUNNING_SANDBOXES = 'nango.server.e2b.sandboxes.running',
-
-    ORB_BILLING_EVENTS_INGESTED = 'nango.billing.orb.ingested',
     BILLING_USAGE_CACHE = 'nango.billing.usage.cache',
     BILLING_USAGE_ORB_MS = 'nango.billing.usage.orb.ms',
     BILLING_USAGE_ORB_ERRORS = 'nango.billing.usage.orb.errors',
@@ -256,6 +263,13 @@ export function duration(metricName: Types, value: number, dimensions?: Dimensio
 
 export function distribution(metricName: Types, value: number, dimensions?: Dimensions): void {
     tracer.dogstatsd.distribution(metricName, value, applyDimensionPolicy(metricName, dimensions) ?? {});
+}
+
+const FLUSH_SETTLE_MS = 100;
+
+export async function flush(): Promise<void> {
+    tracer.dogstatsd.flush();
+    await setTimeout(FLUSH_SETTLE_MS);
 }
 
 export function time<F extends (...args: unknown[]) => unknown>(metricName: Types, func: F, dimensions?: Dimensions): F {

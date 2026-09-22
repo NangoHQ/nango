@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 
 import chalk from 'chalk';
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import * as dotenv from 'dotenv';
 import figlet from 'figlet';
 
@@ -24,6 +24,7 @@ import { pullFromCatalog, pullFunction } from './services/pull.service.js';
 import { trackCliEvent } from './services/telemetry.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
+import { SOURCEMAP_OPTIONS } from './types.js';
 import { getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
 import { MissingArgumentError } from './utils/errors.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
@@ -142,6 +143,13 @@ NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
 # Nango's instance URL (OSS: change to http://localhost:3003 or your instance URL).
 NANGO_HOSTPORT=https://api.nango.dev # Default value
 
+# Client certificate for a self-hosted API behind mTLS.
+# A single PEM that contains both the certificate and private key is enough.
+# NANGO_CLI_TLS_CERT=/path/to/client.pem
+# NANGO_CLI_TLS_KEY=/path/to/client.key
+# NANGO_CLI_TLS_CA=/path/to/ca.pem
+# NANGO_CLI_TLS_KEY_PASSPHRASE=
+
 # How to handle CLI upgrades ("prompt", "auto" or "ignore").
 NANGO_CLI_UPGRADE_MODE=prompt # Default value
 
@@ -250,8 +258,9 @@ program
     .description(
         'Compile the integration files to JavaScript and update the .nango directory. This is useful for one off changes instead of watching for changes continuously.'
     )
+    .addOption(new Option('--sourcemap <mode>', 'Source map mode for compiled function bundles.').choices(SOURCEMAP_OPTIONS).default('inline'))
     .action(async function (this: Command) {
-        const { debug, interactive, dependencyUpdate } = this.opts<GlobalOptions>();
+        const { debug, interactive, dependencyUpdate, sourcemap } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
 
         const precheck = await verificationService.ensureZeroYaml({ fullPath, debug });
@@ -264,7 +273,7 @@ program
             return;
         }
 
-        const res = await compileAllFunctions({ fullPath, debug, interactive });
+        const res = await compileAllFunctions({ fullPath, debug, interactive, sourcemap });
         if (res.isErr()) {
             process.exitCode = NangoCliExitCode.CompileError;
         }
@@ -303,6 +312,7 @@ program
     .option('--validate, --validation', 'Optional: Enforce input, output and records validation', false)
     .option('--save, --save-responses', 'Optional: Save all dry run responses to <integration>/tests/<name>.test.json for unit tests', false)
     .option('--diagnostics', 'Optional: Display performance diagnostics including memory usage and CPU metrics', false)
+    .addOption(new Option('--sourcemap <mode>', 'Source map mode for compiled function bundles.').choices(SOURCEMAP_OPTIONS).default('inline'))
     .action(async function (this: Command) {
         const {
             autoConfirm,
@@ -317,7 +327,8 @@ program
             variant,
             metadata,
             checkpoint,
-            diagnostics
+            diagnostics,
+            sourcemap
         } = this.opts();
         const shouldValidate = validation || saveResponses;
         const fullPath = process.cwd();
@@ -417,7 +428,7 @@ program
             return;
         }
 
-        const res = await compileAllFunctions({ fullPath, debug, interactive });
+        const res = await compileAllFunctions({ fullPath, debug, interactive, sourcemap });
         if (res.isErr()) {
             process.exitCode = NangoCliExitCode.CompileError;
             return;
@@ -476,9 +487,10 @@ program
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
     .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
+    .addOption(new Option('--sourcemap <mode>', 'Source map mode for compiled function bundles.').choices(SOURCEMAP_OPTIONS).default('inline'))
     .action(async function (this: Command, environment?: string) {
         const options = this.opts<DeployOptions>();
-        const { debug, interactive, dependencyUpdate } = options;
+        const { debug, interactive, dependencyUpdate, sourcemap } = options;
         const fullPath = process.cwd();
 
         try {
@@ -503,7 +515,7 @@ program
             return;
         }
 
-        const resCompile = await compileAllFunctions({ fullPath, debug, interactive });
+        const resCompile = await compileAllFunctions({ fullPath, debug, interactive, sourcemap });
         if (resCompile.isErr()) {
             process.exitCode = NangoCliExitCode.CompileError;
             return;

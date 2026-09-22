@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
+import { maxScheduleNamesPerSearch } from '@nangohq/nango-orchestrator';
 import { Err, errorToObject, getCheckpointKey, getFrequencyMs, Ok, stringifyError } from '@nangohq/utils';
 
 import { hardDeleteCheckpoints } from '../index.js';
@@ -46,6 +47,7 @@ import type {
     DBConnection,
     DBConnectionDecrypted,
     DBEnvironment,
+    DBFunctionInstance,
     DBSyncConfig,
     FunctionTrigger
 } from '@nangohq/types';
@@ -64,12 +66,22 @@ export interface RecordsServiceInterface {
         model: string;
         mode: 'hard' | 'soft' | 'prune';
     }): Promise<Result<{ count: number; lastCursor: string | null }>>;
-    getCountsByModel({ connectionId, environmentId }: { connectionId: number; environmentId: number }): Promise<Result<Record<string, RecordCount>>>;
+    getCountsByModel({
+        connectionId,
+        environmentId,
+        models
+    }: {
+        connectionId: number;
+        environmentId: number;
+        models?: string[] | undefined;
+    }): Promise<Result<Record<string, RecordCount>>>;
 }
 
 // TODO: move to @nangohq/types (with the rest of the ochestrator public types)
 export interface OrchestratorClientInterface {
     recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }>>;
+    recurring(props: RecurringProps[]): Promise<Result<{ scheduleIds: string[] }>>;
+    deleteSchedules({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn>;
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
     executeActionAsync(props: ExecuteActionProps): Promise<ExecuteAsyncReturn>;
     executeFunction(props: ExecuteFunctionProps): Promise<ExecuteFunctionReturn>;
@@ -85,6 +97,19 @@ export interface OrchestratorClientInterface {
     searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn>;
     getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<GetOutputReturn>;
 }
+
+const FunctionScheduleId = {
+    get: ({ environmentId, id }: { environmentId: number; id: number }): string => {
+        return `environment:${environmentId}:function:${id}`;
+    },
+    parse: (id: string): Result<{ environmentId: number; id: number }> => {
+        const parts = id.split(':');
+        if (parts.length !== 4 || parts[0] !== 'environment' || isNaN(Number(parts[1])) || parts[2] !== 'function' || !parts[3] || isNaN(Number(parts[3]))) {
+            return Err(`Invalid function id: ${id}. expected format: environment:<environmentId>:function:<id>`);
+        }
+        return Ok({ environmentId: Number(parts[1]), id: Number(parts[3]) });
+    }
+};
 
 const ScheduleName = {
     get: ({ environmentId, syncId }: { environmentId: number; syncId: string }): string => {
@@ -108,23 +133,27 @@ export class Orchestrator {
 
     async searchSchedules(props: { syncId: string; environmentId: number }[]): Promise<Result<Map<string, OrchestratorSchedule>>> {
         const scheduleNames = props.map(({ syncId, environmentId }) => ScheduleName.get({ environmentId, syncId }));
-        const schedules = await this.client.searchSchedules({ scheduleNames, limit: scheduleNames.length });
-        if (schedules.isErr()) {
-            return Err(`Failed to get schedules: ${stringifyError(schedules.error)}`);
-        }
-        const scheduleMap = schedules.value.reduce((map, schedule) => {
-            const parsed = ScheduleName.parse(schedule.name);
-            if (parsed.isOk()) {
-                map.set(parsed.value.syncId, schedule);
+        const scheduleMap = new Map<string, OrchestratorSchedule>();
+        for (let i = 0; i < scheduleNames.length; i += maxScheduleNamesPerSearch) {
+            const batch = scheduleNames.slice(i, i + maxScheduleNamesPerSearch);
+            const schedules = await this.client.searchSchedules({ scheduleNames: batch, limit: batch.length });
+            if (schedules.isErr()) {
+                return Err(`Failed to get schedules: ${stringifyError(schedules.error)}`);
             }
-            return map;
-        }, new Map<string, OrchestratorSchedule>());
+            for (const schedule of schedules.value) {
+                const parsed = ScheduleName.parse(schedule.name);
+                if (parsed.isOk()) {
+                    scheduleMap.set(parsed.value.syncId, schedule);
+                }
+            }
+        }
         return Ok(scheduleMap);
     }
 
     async invokeFunction({
         environment,
         connection,
+        functionConfigId,
         functionName,
         trigger,
         async,
@@ -135,6 +164,7 @@ export class Orchestrator {
         environment: DBEnvironment;
         connection: ConnectionJobs;
         functionName: string;
+        functionConfigId: number;
         trigger: FunctionTrigger;
         async: boolean;
         retryMax: number;
@@ -146,6 +176,7 @@ export class Orchestrator {
             const executionId = `${groupKey}:at:${new Date().toISOString()}:${uuid()}`;
             const args = {
                 functionName,
+                functionConfigId,
                 connection: {
                     id: connection.id,
                     connection_id: connection.connection_id,
@@ -912,6 +943,69 @@ export class Orchestrator {
             }
             return Err(new Error('Failed to schedule sync', { cause: err }));
         }
+    }
+
+    async scheduleFunctions(
+        functions: {
+            environmentId: number;
+            instance: DBFunctionInstance;
+            connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
+            frequencyFallback: string;
+            autoStart: boolean;
+        }[]
+    ): Promise<Result<void>> {
+        try {
+            const schedules: RecurringProps[] = [];
+            for (const { instance, connection, environmentId, frequencyFallback, autoStart } of functions) {
+                const frequencyMs = this.getFrequencyMs(instance.frequency || frequencyFallback);
+                if (frequencyMs.isErr()) {
+                    return Err(frequencyMs.error);
+                }
+                schedules.push({
+                    name: FunctionScheduleId.get({ environmentId, id: instance.id }),
+                    state: autoStart ? 'STARTED' : 'PAUSED',
+                    frequencyMs: frequencyMs.value,
+                    group: {
+                        key: `function:scheduled:environment:${environmentId}`,
+                        maxConcurrency: 0
+                    },
+                    retry: { max: 0 },
+                    timeoutSettingsInSecs: {
+                        createdToStarted: 60 * 60, // 1 hour
+                        startedToCompleted: 60 * 60 * 24, // 1 day
+                        heartbeat: 5 * 60 // 5 minutes
+                    },
+                    startsAt: new Date(),
+                    args: {
+                        type: 'function',
+                        functionConfigId: instance.function_config_id,
+                        functionName: instance.name,
+                        connection,
+                        variant: instance.variant,
+                        trigger: {
+                            kind: 'schedule',
+                            input: null,
+                            connection: { connectionId: connection.connection_id, integrationId: connection.provider_config_key }
+                        },
+                        async: true
+                    }
+                });
+            }
+            for (let offset = 0; offset < schedules.length; offset += 1000) {
+                const result = await this.client.recurring(schedules.slice(offset, offset + 1000));
+                if (result.isErr()) {
+                    return Err(new Error('Failed to schedule functions', { cause: result.error }));
+                }
+            }
+        } catch (err) {
+            return Err(new Error('Failed to schedule functions', { cause: err }));
+        }
+        return Ok(undefined);
+    }
+
+    async deleteFunctionSchedules({ environmentId, instanceIds }: { environmentId: number; instanceIds: number[] }): Promise<Result<void>> {
+        const result = await this.client.deleteSchedules({ scheduleNames: instanceIds.map((id) => FunctionScheduleId.get({ environmentId, id })) });
+        return result.isErr() ? Err(new Error('Failed to delete function schedules', { cause: result.error })) : Ok(undefined);
     }
 
     private getFrequencyMs(runs: string): Result<number> {

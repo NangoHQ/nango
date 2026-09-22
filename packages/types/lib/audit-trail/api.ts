@@ -48,12 +48,28 @@ export type GetAuditTrail = ApiEndpoint<{
         // `actions` requires `resources`: the pair is matched as one `resource.action` value.
         resources?: string;
         actions?: string;
+        // Opt-in: the count is a second read, so a caller that doesn't show one shouldn't pay for it.
+        showTotal?: boolean | undefined;
     };
     Success: {
         data: ApiAuditTrailEvent[];
+        total?: AuditTrailTotal;
         pagination: { nextCursor: string | null };
     };
 }>;
+
+/**
+ * How many events the filters match, not how many the page holds. Absent unless `showTotal` was
+ * asked for, and when the count failed.
+ *
+ * The read is bounded, so `relation` says whether `value` is the answer or a floor — `gte` means the
+ * account has at least this many and the count stopped looking. Shaped after Elasticsearch's `hits.total`
+ * so a caller cannot read the number without seeing which it is.
+ */
+export interface AuditTrailTotal {
+    value: number;
+    relation: 'eq' | 'gte';
+}
 
 // A type rather than a value: this package ships `typings` only, so neither side can import a constant from
 // it. Both copies annotate themselves with this, which makes drift a compile error.

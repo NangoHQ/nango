@@ -85,6 +85,67 @@ describe('Webhooks: forward notification tests', () => {
         expect(deliverMock).not.toHaveBeenCalled();
     });
 
+    it('warns on the forward operation when the provider signature was not verified', async () => {
+        const logCtx = {
+            attachSpan: vi.fn(),
+            warn: vi.fn().mockResolvedValue(true),
+            info: vi.fn().mockResolvedValue(true),
+            error: vi.fn().mockResolvedValue(true),
+            success: vi.fn().mockResolvedValue(undefined),
+            failed: vi.fn().mockResolvedValue(undefined)
+        };
+        const createSpy = vi.spyOn(logContextGetter, 'create').mockResolvedValue(logCtx as unknown as Awaited<ReturnType<typeof logContextGetter.create>>);
+
+        await forwardWebhook({
+            connectionIds: ['conn-1'],
+            webhookUrlOverrideByConnectionId: new Map(),
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings,
+            logContextGetter,
+            integration,
+            payload: { some: 'data' },
+            webhookOriginalHeaders: {},
+            unverified: { reason: 'hubspot_missing_webhook_secret', message: 'This webhook was not verified.' }
+        });
+
+        expect(logCtx.warn).toHaveBeenCalledWith('This webhook was not verified.', {
+            provider: 'hubspot',
+            integration: 'hubspot',
+            reason: 'hubspot_missing_webhook_secret'
+        });
+        createSpy.mockRestore();
+    });
+
+    it('does not warn on the forward operation when the webhook was verified', async () => {
+        const logCtx = {
+            attachSpan: vi.fn(),
+            warn: vi.fn().mockResolvedValue(true),
+            info: vi.fn().mockResolvedValue(true),
+            error: vi.fn().mockResolvedValue(true),
+            success: vi.fn().mockResolvedValue(undefined),
+            failed: vi.fn().mockResolvedValue(undefined)
+        };
+        const createSpy = vi.spyOn(logContextGetter, 'create').mockResolvedValue(logCtx as unknown as Awaited<ReturnType<typeof logContextGetter.create>>);
+
+        await forwardWebhook({
+            connectionIds: ['conn-1'],
+            webhookUrlOverrideByConnectionId: new Map(),
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings,
+            logContextGetter,
+            integration,
+            payload: { some: 'data' },
+            webhookOriginalHeaders: {}
+        });
+
+        expect(logCtx.warn).not.toHaveBeenCalled();
+        createSpy.mockRestore();
+    });
+
     it('closes the log context when there is no URL to send to (no leaked open operation)', async () => {
         const logCtx = { attachSpan: vi.fn(), success: vi.fn().mockResolvedValue(undefined), failed: vi.fn().mockResolvedValue(undefined) };
         const createSpy = vi.spyOn(logContextGetter, 'create').mockResolvedValue(logCtx as unknown as Awaited<ReturnType<typeof logContextGetter.create>>);

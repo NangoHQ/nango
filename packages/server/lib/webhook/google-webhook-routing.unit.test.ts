@@ -20,6 +20,7 @@ describe('googleWebhookRouting', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -51,6 +52,7 @@ describe('googleWebhookRouting', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -69,6 +71,7 @@ describe('googleWebhookRouting', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -87,5 +90,84 @@ describe('googleWebhookRouting', () => {
                 propName: 'metadata.googleCalendarWatchResourceUris'
             })
         );
+    });
+
+    it('rejects a missing channel token when a webhook secret is configured', async () => {
+        const integration = getTestConfig({ provider: 'google', custom: { webhookSecret: 'channel-secret' } });
+        const mock = vi.fn();
+        const nangoMock = new InternalNango({
+            team: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: seeders.getTestPlan(),
+            integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
+            logContextGetter
+        });
+        nangoMock.executeScriptForWebhooks = mock;
+
+        const result = await GoogleWebhookRouting.default(
+            nangoMock as unknown as InternalNango,
+            { 'x-goog-resource-uri': EXAMPLE_RESOURCE_URI } as any,
+            {},
+            ''
+        );
+
+        expect(result.isErr()).toBe(true);
+        expect(mock).not.toHaveBeenCalled();
+    });
+
+    it('rejects a mismatched channel token when a webhook secret is configured', async () => {
+        const integration = getTestConfig({ provider: 'google', custom: { webhookSecret: 'channel-secret' } });
+        const mock = vi.fn();
+        const nangoMock = new InternalNango({
+            team: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: seeders.getTestPlan(),
+            integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
+            logContextGetter
+        });
+        nangoMock.executeScriptForWebhooks = mock;
+
+        const result = await GoogleWebhookRouting.default(
+            nangoMock as unknown as InternalNango,
+            {
+                'x-goog-resource-uri': EXAMPLE_RESOURCE_URI,
+                'x-goog-channel-token': 'wrong'
+            } as any,
+            {},
+            ''
+        );
+
+        expect(result.isErr()).toBe(true);
+        expect(mock).not.toHaveBeenCalled();
+    });
+
+    it('routes when the channel token matches the webhook secret', async () => {
+        const integration = getTestConfig({ provider: 'google', custom: { webhookSecret: 'channel-secret' } });
+        const mock = vi.fn().mockResolvedValueOnce({ connectionIds: ['conn-1'], connectionMetadata: {} });
+        const nangoMock = new InternalNango({
+            team: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: seeders.getTestPlan(),
+            integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
+            logContextGetter
+        });
+        nangoMock.executeScriptForWebhooks = mock;
+
+        const result = await GoogleWebhookRouting.default(
+            nangoMock as unknown as InternalNango,
+            {
+                'x-goog-resource-uri': EXAMPLE_RESOURCE_URI,
+                'x-goog-channel-token': 'channel-secret',
+                'x-goog-resource-state': 'exists'
+            } as any,
+            {},
+            ''
+        );
+
+        expect(result.isOk()).toBe(true);
+        expect(mock).toHaveBeenCalledTimes(1);
     });
 });

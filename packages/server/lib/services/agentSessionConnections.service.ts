@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import db from '@nangohq/database';
 import { connectionService, connectionTagsSchema } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
@@ -21,6 +22,12 @@ import type { Result } from '@nangohq/utils';
 
 export const MAX_SELECTORS = 10;
 export const CANDIDATE_SAMPLE_SIZE = 10;
+
+/**
+ * Stamped on every connection the agent creates through nango_create_connection, and the only thing
+ * tying that connection back to the session that asked for it.
+ */
+export const AGENT_SESSION_TAG_KEY = 'nango/agent_session';
 
 const selectorSchema = z.strictObject({
     tags: connectionTagsSchema.refine((tags) => Object.keys(tags).length > 0, {
@@ -121,6 +128,34 @@ export async function resolveTenantConnections({
     }
 
     return pickConnectionPerIntegration({ matches, verifiedPins, unknownPins, notMatchedPins });
+}
+
+/** The connection the agent created for this integration, matched on the session tag. */
+export async function findConnectionCreatedForSession({
+    environmentId,
+    sessionId,
+    integrationId
+}: {
+    environmentId: number;
+    sessionId: string;
+    integrationId: string;
+}): Promise<AgentSessionResolvedConnection | null> {
+    const matches = await connectionService.groupConnectionMatchesByIntegration({
+        environmentId,
+        tagSelectors: [{ [AGENT_SESSION_TAG_KEY]: sessionId }],
+        pinnedConnections: [],
+        candidateSampleSize: 1,
+        candidateOrder: 'oldest_first',
+        database: db.knex
+    });
+
+    const match = matches.find((candidate) => candidate.integration_id === integrationId);
+    const [first] = match?.candidates ?? [];
+    if (!match || !first) {
+        return null;
+    }
+
+    return toResolvedConnection(match.integration_id, match.provider, first);
 }
 
 export function pickConnectionPerIntegration({

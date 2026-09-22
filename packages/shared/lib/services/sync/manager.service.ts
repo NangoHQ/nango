@@ -252,7 +252,7 @@ export class SyncManagerService {
         await deleteSyncConfig(syncConfigId);
     }
 
-    public async softDeleteSync(syncId: string, environmentId: number, orchestrator: Orchestrator) {
+    public async softDeleteSync(syncId: string, environmentId: number, orchestrator: Pick<Orchestrator, 'deleteSync'>) {
         // Unschedule first so no new run can start against a sync we're about to soft-delete.
         await orchestrator.deleteSync({ syncId, environmentId });
 
@@ -265,7 +265,7 @@ export class SyncManagerService {
         });
     }
 
-    public async softDeleteSyncsByConnection(connection: Pick<DBConnection, 'id' | 'environment_id'>, orchestrator: Orchestrator) {
+    public async softDeleteSyncsByConnection(connection: Pick<DBConnection, 'id' | 'environment_id'>, orchestrator: Pick<Orchestrator, 'deleteSync'>) {
         const syncs = await getSyncsByConnectionId({ connectionId: connection.id });
 
         if (!syncs) {
@@ -277,7 +277,7 @@ export class SyncManagerService {
         }
     }
 
-    public async deleteSyncsByProviderConfig(environmentId: number, providerConfigKey: string, orchestrator: Orchestrator) {
+    public async deleteSyncsByProviderConfig(environmentId: number, providerConfigKey: string, orchestrator: Pick<Orchestrator, 'deleteSync'>) {
         const syncs = await getSyncsByProviderConfigKey({ environmentId, providerConfigKey });
 
         if (!syncs) {
@@ -590,7 +590,7 @@ export class SyncManagerService {
             throw new Error(`Schedule for sync ${sync.id} and environment ${environmentId} not found`);
         }
 
-        const countRes = await recordsService.getCountsByModel({ connectionId: sync.nango_connection_id, environmentId }); // TODO: handle sync's variant
+        const countRes = await recordsService.getCountsByModel({ connectionId: sync.nango_connection_id, environmentId });
         if (countRes.isErr()) {
             throw new Error(`Failed to get records count for sync ${sync.id} in environment ${environmentId}: ${stringifyError(countRes.error)}`);
         }
@@ -598,7 +598,8 @@ export class SyncManagerService {
         const recordCount: Record<string, number> =
             syncConfig?.models.reduce(
                 (acc, model) => {
-                    acc[model] = countRes.isOk() ? countRes.value[model]?.count || 0 : 0;
+                    const modelFullName = sync.variant === 'base' ? model : `${model}::${sync.variant}`;
+                    acc[model] = countRes.isOk() ? countRes.value[modelFullName]?.count || 0 : 0;
                     return acc;
                 },
                 {} as Record<string, number>

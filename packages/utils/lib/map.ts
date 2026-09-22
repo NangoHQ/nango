@@ -71,44 +71,64 @@ export class FixedSizeMap<K, V> {
 }
 
 /**
- * A FixedSizeMap whose entries also expire after a TTL.
+ * A FixedSizeMap whose entries also expire after a TTL, per entry or map-wide.
  *
  * Expiry uses a monotonic clock, so wall-clock jumps cannot extend or shorten
  * an entry's life. Expired entries are evicted on read.
  */
 export class TTLFixedSizeMap<K, V> {
-    private map: FixedSizeMap<K, { value: V; setAtNs: bigint }>;
-    private ttlNs: bigint;
+    private map: FixedSizeMap<K, { value: V; expiresAtNs: bigint }>;
+    private defaultTtlNs: bigint;
 
     constructor(maxSize: number, ttlMs: number) {
-        if (!Number.isFinite(ttlMs) || ttlMs < 0) {
-            throw new Error('ttlMs must be a finite, non-negative number.');
-        }
         if (!Number.isInteger(maxSize) || maxSize <= 0) {
             throw new Error('maxSize must be a positive integer.');
         }
         this.map = new FixedSizeMap(maxSize);
-        // trunc: BigInt() throws on non-integers
-        this.ttlNs = BigInt(Math.trunc(ttlMs)) * 1_000_000n;
+        this.defaultTtlNs = toTtlNs(ttlMs);
     }
 
     get(key: K): V | undefined {
-        const entry = this.map.get(key);
-        if (!entry) {
-            return undefined;
-        }
-        if (process.hrtime.bigint() - entry.setAtNs >= this.ttlNs) {
-            this.map.delete(key);
-            return undefined;
-        }
-        return entry.value;
+        const entry = this.getLive(key);
+        return entry?.value;
     }
 
-    set(key: K, value: V): void {
-        this.map.set(key, { value, setAtNs: process.hrtime.bigint() });
+    /** Time left before the entry expires, or 0 if it is absent or already expired. */
+    remainingMs(key: K): number {
+        const entry = this.getLive(key);
+        if (!entry) {
+            return 0;
+        }
+        return Number((entry.expiresAtNs - process.hrtime.bigint()) / 1_000_000n);
+    }
+
+    /** `ttlMs` overrides the map's default for this entry only. */
+    set(key: K, value: V, ttlMs?: number): void {
+        const ttlNs = ttlMs === undefined ? this.defaultTtlNs : toTtlNs(ttlMs);
+        this.map.set(key, { value, expiresAtNs: process.hrtime.bigint() + ttlNs });
     }
 
     get size(): number {
         return this.map.size;
     }
+
+    private getLive(key: K): { value: V; expiresAtNs: bigint } | undefined {
+        const entry = this.map.get(key);
+        if (!entry) {
+            return undefined;
+        }
+        if (process.hrtime.bigint() >= entry.expiresAtNs) {
+            this.map.delete(key);
+            return undefined;
+        }
+        return entry;
+    }
+}
+
+function toTtlNs(ttlMs: number): bigint {
+    if (!Number.isFinite(ttlMs) || ttlMs < 0) {
+        throw new Error('ttlMs must be a finite, non-negative number.');
+    }
+    // trunc: BigInt() throws on non-integers
+    return BigInt(Math.trunc(ttlMs)) * 1_000_000n;
 }

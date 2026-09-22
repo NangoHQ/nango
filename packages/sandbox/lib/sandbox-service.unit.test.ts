@@ -8,7 +8,7 @@ import type { SandboxProvider } from './providers/types.js';
 
 function createProvider(overrides: Partial<SandboxProvider> = {}): SandboxProvider {
     return {
-        name: 'e2b',
+        name: 'agentcore',
         create: vi.fn(),
         cleanup: vi.fn(),
         ...overrides
@@ -27,7 +27,7 @@ describe('SandboxService', () => {
     });
 
     it('wraps unexpected sandbox creation errors in a generic sandbox initialization error', async () => {
-        const cause = new Error('E2B_API_KEY is required for the E2B dryrun runtime');
+        const cause = new Error('AGENTCORE_RUNTIME_ARN is required for the AgentCore sandbox provider');
         const provider = createProvider({
             create: vi.fn().mockRejectedValue(cause)
         });

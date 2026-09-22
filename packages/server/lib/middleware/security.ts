@@ -2,6 +2,8 @@ import helmet from 'helmet';
 
 import { basePublicUrl, baseUrl, connectUrl, connectUrlAsDocumentBase, dashboardApiUrl } from '@nangohq/utils';
 
+import { envs } from '../env.js';
+
 import type { RequestHandler } from 'express';
 
 // CSP path matching: no trailing slash = exact match (URL older SDKs load), with = prefix match (assets/routes).
@@ -21,6 +23,7 @@ export function securityMiddlewares(): RequestHandler[] {
     // An absolute dashboard host may differ from the public API one (Set dedups when they match).
     const apiCspSources = dashboardApiUrl === '/' ? [hostApi] : [...new Set([hostApi, dashboardApiUrl])];
     const apiWsCspSources = dashboardApiUrl === '/' ? [hostWs] : [...new Set([hostWs, websocketOrigin(dashboardApiUrl)])];
+    const oauthCspSources = envs.NANGO_OAUTH_SERVER_BASE_URL ? [new URL(envs.NANGO_OAUTH_SERVER_BASE_URL).origin] : [];
     const reportOnly = process.env['CSP_REPORT_ONLY'];
 
     return [
@@ -50,6 +53,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     ...apiCspSources,
                     ...apiWsCspSources,
                     ...connectUrlCspSources,
+                    ...oauthCspSources,
                     'https://*.posthog.com',
                     'https://*.stripe.com',
                     'https://*.plain.com',
@@ -57,6 +61,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://raw.githubusercontent.com'
                 ],
                 fontSrc: ["'self'", 'data:', 'https://*.googleapis.com', 'https://*.gstatic.com', 'https://*.cdn-plain.com'],
+                formAction: ["'self'", ...oauthCspSources],
                 frameSrc: [
                     "'self'",
                     'https://accounts.google.com',

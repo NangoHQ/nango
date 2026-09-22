@@ -73,42 +73,67 @@ export const onEventArgsSchema = z.object({
     activityLogId: z.string(),
     ...commonSchemaArgsFields
 });
-export const functionArgsSchema = z.object({
+
+const functionBaseFields = {
     type: z.literal('function'),
-    functionName: z.string().min(1),
-    activityLogId: z.string(),
-    trigger: z.discriminatedUnion('kind', [
-        z.object({
-            kind: z.literal('invoke'),
-            input: jsonSchema,
-            connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
-        }),
-        z.object({
-            kind: z.literal('schedule'),
-            input: z.null(),
-            connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
-        }),
-        z.object({
-            kind: z.literal('http'),
-            input: jsonSchema.optional().default(null),
-            request: z.object({
-                method: z.enum(['GET', 'POST', 'PATCH', 'PUT', 'DELETE']),
-                path: z.string(),
-                headers: z.record(z.string(), z.string()),
-                query: z.record(z.string(), z.string()),
-                body: jsonSchema.optional().default(null)
-            }),
-            connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
-        }),
-        z.object({
-            kind: z.literal('event'),
-            input: z.object({ event: z.enum(['post-connection-creation', 'pre-connection-deletion', 'validate-connection']) }),
-            connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
-        })
-    ]),
-    async: z.boolean().optional().default(false),
-    ...commonSchemaArgsFields
+    functionConfigId: z.number().int().positive(),
+    functionName: z.string().min(1)
+};
+
+const functionTriggerConnectionSchema = z.object({
+    connectionId: z.string().min(1),
+    integrationId: z.string().min(1)
 });
+
+const scheduleFunctionTriggerSchema = z.object({
+    kind: z.literal('schedule'),
+    input: z.null(),
+    connection: functionTriggerConnectionSchema
+});
+
+const functionTriggerSchema = z.discriminatedUnion('kind', [
+    z.object({
+        kind: z.literal('invoke'),
+        input: jsonSchema,
+        connection: functionTriggerConnectionSchema
+    }),
+    z.object({
+        kind: z.literal('http'),
+        input: jsonSchema.optional().default(null),
+        request: z.object({
+            method: z.enum(['GET', 'POST', 'PATCH', 'PUT', 'DELETE']),
+            path: z.string(),
+            headers: z.record(z.string(), z.string()),
+            query: z.record(z.string(), z.string()),
+            body: jsonSchema.optional().default(null)
+        }),
+        subscriptions: z.array(z.string()).default([]),
+        connection: functionTriggerConnectionSchema
+    }),
+    z.object({
+        kind: z.literal('event'),
+        input: z.object({ event: z.enum(['post-connection-creation', 'pre-connection-deletion', 'validate-connection']) }),
+        connection: functionTriggerConnectionSchema
+    }),
+    scheduleFunctionTriggerSchema
+]);
+
+const functionArgsObjectSchema = z
+    .object({
+        ...functionBaseFields,
+        activityLogId: z.string().optional(),
+        variant: z.string().min(1).optional(),
+        trigger: functionTriggerSchema,
+        async: z.boolean().optional().default(false),
+        ...commonSchemaArgsFields
+    })
+    .strict();
+
+export const functionArgsSchema = functionArgsObjectSchema.transform(({ activityLogId, variant, ...args }) => ({
+    ...args,
+    ...(activityLogId !== undefined && { activityLogId }),
+    ...(variant !== undefined && { variant })
+}));
 
 const commonSchemaFields = {
     id: z.string().uuid(),
@@ -276,8 +301,10 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 attempt: func.data.retryCount + 1,
                 attemptMax: func.data.retryMax + 1,
                 functionName: func.data.payload.functionName,
+                functionConfigId: func.data.payload.functionConfigId,
+                ...(func.data.payload.variant !== undefined && { variant: func.data.payload.variant }),
                 connection: func.data.payload.connection,
-                activityLogId: func.data.payload.activityLogId,
+                ...(func.data.payload.activityLogId !== undefined && { activityLogId: func.data.payload.activityLogId }),
                 trigger: func.data.payload.trigger,
                 async: func.data.payload.async,
                 groupKey: func.data.groupKey,

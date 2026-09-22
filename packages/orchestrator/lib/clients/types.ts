@@ -1,13 +1,13 @@
 import type { PostImmediate } from '../routes/v1/postImmediate.js';
-import type { PostRecurring } from '../routes/v1/postRecurring.js';
+import type { RecurringEntry } from '../routes/v1/postRecurring.js';
 import type { PostScheduleRun } from '../routes/v1/schedules/postRun.js';
 import type { ScheduleState, TaskState } from '@nangohq/scheduler';
-import type { ConnectionJobs, FunctionTrigger } from '@nangohq/types';
+import type { ConnectionJobs, DBConnection, FunctionTrigger } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue, SetOptional } from 'type-fest';
 
 export type ImmediateProps = PostImmediate['Body'];
-export type RecurringProps = PostRecurring['Body'];
+export type RecurringProps = RecurringEntry;
 
 interface SyncArgs {
     syncId: string;
@@ -52,9 +52,11 @@ interface OnEventArgs {
 }
 
 interface FunctionArgs {
+    functionConfigId: number;
     functionName: string;
-    connection: ConnectionJobs;
-    activityLogId: string;
+    connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
+    activityLogId?: string;
+    variant?: string;
     trigger: FunctionTrigger;
     async: boolean;
 }
@@ -69,6 +71,7 @@ export type ExecuteActionProps = Omit<ExecuteProps, 'args'> & { args: ActionArgs
 export type ExecuteWebhookProps = Omit<ExecuteProps, 'args'> & { args: WebhookArgs };
 export type ExecuteOnEventProps = Omit<ExecuteProps, 'args'> & { args: OnEventArgs };
 export type ExecuteFunctionProps = Omit<ExecuteProps, 'args'> & { args: FunctionArgs };
+export type ExecuteFunctionBatchProps = Omit<ExecuteFunctionProps, 'args'> & { args: ExecuteFunctionProps['args'] & { async: true } }; // forcing async to true for batch execution
 export type ExecuteFunctionReturn = Result<{ kind: 'completed'; output: JsonValue } | { kind: 'scheduled'; taskId: string; retryKey: string }, ClientError>;
 export type ExecuteSyncProps = PostScheduleRun['Body'];
 
@@ -283,8 +286,10 @@ export function TaskFunction(props: TaskCommonFields & FunctionArgs): TaskFuncti
         retryKey: props.retryKey,
         attemptMax: props.attemptMax,
         functionName: props.functionName,
+        functionConfigId: props.functionConfigId,
+        ...(props.variant !== undefined && { variant: props.variant }),
         connection: props.connection,
-        activityLogId: props.activityLogId,
+        ...(props.activityLogId !== undefined && { activityLogId: props.activityLogId }),
         trigger: props.trigger,
         groupKey: props.groupKey,
         groupMaxConcurrency: props.groupMaxConcurrency,

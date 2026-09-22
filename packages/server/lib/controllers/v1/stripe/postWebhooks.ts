@@ -165,8 +165,8 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
             }
 
             const sub = resSub.value;
-            if (!sub || !sub.pendingChangeId) {
-                return Err("team doesn't not have a subscription or pending changes");
+            if (!sub.pendingChangeId) {
+                return Err('team has no pending subscription change');
             }
 
             const team = await accountService.getAccountById(db.knex, plan.account_id);
@@ -204,8 +204,8 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
                 return Err(resSub.error);
             }
             const sub = resSub.value;
-            if (!sub || !sub.pendingChangeId) {
-                return Err("team doesn't not have a subscription or pending changes");
+            if (!sub.pendingChangeId) {
+                return Err('team has no pending subscription change');
             }
 
             const resCancel = await billing.client.cancelPendingChanges({

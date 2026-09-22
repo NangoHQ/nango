@@ -7,16 +7,71 @@ description: 'Connect your coding agent to Nango'
 Coding agents can speed up Nango integration work in two places: wiring Nango into your product and building [Nango Functions](/guides/functions/functions-guide).
 
 <Info>
-This page is about configuring Nango with your coding agent. To expose Nango integrations to your product's agents, see [Tool calling & MCP](/guides/functions/tool-calling).
+This page is about configuring Nango with your coding agent. To expose Nango integrations to your product's agents, see [Agent Sessions](/guides/agent-sessions).
 </Info>
 
-## Management MCP server (Beta)
+## Management MCP server
 
 Give your coding agent tools to manage your Nango account and search the Nango docs.
 
-Create an API key in **Environment Settings > API Keys**, then replace `<NANGO-API-KEY>` in the relevant configuration below.
+### OAuth (recommended)
 
-Refer to the [Management MCP reference](/reference/backend/management-mcp#tools) for the full tools list and required API key scopes for each.
+OAuth authorization follows your Nango user permissions across the environments in your account. The Management MCP server uses Client ID Metadata Documents (CIMD) and doesn't support Dynamic Client Registration (DCR).
+
+Refer to the [Management MCP reference](/reference/backend/management-mcp#tools) for the full tools list and required permissions.
+
+<Tabs>
+  <Tab title="Claude Code">
+    Add the server for your user so it is available across projects:
+
+    ```bash
+    claude mcp add --transport http nango-management --scope user https://mcp.nango.dev/mcp
+    claude mcp login nango-management
+    ```
+
+    Complete the Nango authorization in the browser, then run `claude mcp list` to verify the connection.
+  </Tab>
+
+  <Tab title="Codex">
+    Add the following to `~/.codex/config.toml` for a global configuration, or `.codex/config.toml` for a project configuration:
+
+    ```toml
+    [mcp_servers.nango-management]
+    url = "https://mcp.nango.dev/mcp"
+    ```
+
+    Start the OAuth flow:
+
+    ```bash
+    codex mcp login nango-management
+    ```
+
+    Complete the Nango authorization in the browser, then use `/mcp` to verify the connection.
+  </Tab>
+
+  <Tab title="VS Code">
+    Run **MCP: Open User Configuration** from the Command Palette, then add the server:
+
+    ```json
+    {
+      "servers": {
+        "nangoManagement": {
+          "type": "http",
+          "url": "https://mcp.nango.dev/mcp"
+        }
+      }
+    }
+    ```
+
+    Select **Start** above the server configuration. VS Code opens the Nango authorization page in your browser. Complete the authorization, then check that the server is running.
+  </Tab>
+</Tabs>
+
+After connecting, ask the agent to call `environments_list`, then use one of the returned environment names for subsequent tool calls.
+
+### API key
+
+An Environment API key is useful for trusted clients when OAuth is not suitable, for example when the client does not support CIMD yet. Each key selects one environment, so these clients do not use `environments_list` or pass an `environment` argument. Create a key in **Environment Settings > API Keys**, replace `<NANGO-API-KEY>` in the relevant configuration below, and [limit its scopes](/reference/backend/management-mcp#use-an-api-key-instead) to the tools the client needs.
 
 <Tabs>
   <Tab title="Claude Code">

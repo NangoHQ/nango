@@ -1,5 +1,4 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { Server } from '@modelcontextprotocol/server';
 import tracer from 'dd-trace';
 
 import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq/logs';
@@ -8,12 +7,19 @@ import { Err, metrics, Ok, truncateJson } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { getOrchestrator } from '../../utils/utils.js';
+import { mcpToolError, safeFailureDetail } from './utils.js';
 
-import type { CallToolRequest, CallToolResult, Tool } from '@modelcontextprotocol/sdk/types.js';
+import type { CallToolRequest, CallToolResult, Tool } from '@modelcontextprotocol/server';
 import type { Config } from '@nangohq/shared';
 import type { DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam, Result } from '@nangohq/types';
 import type { Span } from 'dd-trace';
 import type { JSONSchema7 } from 'json-schema';
+
+type ConnectionToolErrorCode = 'tool_not_available' | 'tool_failed' | 'internal_error';
+
+function connectionToolError(message: string, code: ConnectionToolErrorCode, integrationId: string): CallToolResult {
+    return mcpToolError(message, { code, integrationId });
+}
 
 export async function createConnectionToolsMcpServer(
     account: DBTeam,
@@ -41,7 +47,7 @@ export async function createConnectionToolsMcpServer(
 
     const actions = await getActionsForProvider(environment, providerConfig);
 
-    server.setRequestHandler(ListToolsRequestSchema, () => {
+    server.setRequestHandler('tools/list', () => {
         return {
             tools: actions.flatMap((action) => {
                 if (!action.enabled) {
@@ -54,7 +60,7 @@ export async function createConnectionToolsMcpServer(
         };
     });
 
-    server.setRequestHandler(CallToolRequestSchema, callToolRequestHandler(actions, account, environment, connection, providerConfig));
+    server.setRequestHandler('tools/call', callToolRequestHandler(actions, account, environment, connection, providerConfig));
 
     return Ok(server);
 }
@@ -81,7 +87,7 @@ function actionToTool(action: DBSyncConfig): Tool | null {
         name: action.sync_name,
         inputSchema: {
             type: 'object',
-            properties: inputSchema?.properties as Record<string, object>,
+            properties: inputSchema?.properties as Tool['inputSchema']['properties'],
             required: inputSchema?.required,
             description: inputSchema?.description
         },
@@ -110,15 +116,30 @@ function callToolRequestHandler(
 
         if (!action) {
             span.finish();
-            throw new Error(`Action ${name} not found`);
+            return connectionToolError(
+                `Tool '${name}' is not one of this connection's tools. Call one of the tools listed for this connection.`,
+                'tool_not_available',
+                providerConfig.unique_key
+            );
         }
-
-        const input = toolArguments ?? {};
 
         span.setTag('nango.actionName', action.sync_name)
             .setTag('nango.connectionId', connection.id)
             .setTag('nango.environmentId', environment.id)
             .setTag('nango.providerConfigKey', providerConfig.unique_key);
+
+        if (!action.enabled) {
+            metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { mcp_type: 'legacy_connection_tools', outcome: 'error' });
+            span.setTag('nango.error', 'disabled_action');
+            span.finish();
+            return connectionToolError(
+                `Tool '${action.sync_name}' is not available on integration '${providerConfig.unique_key}'. Use another tool for the task, or tell the user it cannot be done.`,
+                'tool_not_available',
+                providerConfig.unique_key
+            );
+        }
+
+        const input = toolArguments ?? {};
 
         const logCtx = await logContextGetter.create(
             { operation: { type: 'action', action: 'run' }, expiresAt: defaultOperationExpiration.action() },
@@ -147,7 +168,14 @@ function callToolRequestHandler(
             });
         } catch (err) {
             metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { mcp_type: 'legacy_connection_tools', outcome: 'error' });
-            throw err;
+            span.setTag('nango.error', err);
+            span.finish();
+            await logCtx.failed();
+            return connectionToolError(
+                `Tool '${action.sync_name}' could not be run. Trying once more is reasonable, and tell the user if it keeps failing.`,
+                'internal_error',
+                providerConfig.unique_key
+            );
         }
 
         metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
@@ -156,6 +184,8 @@ function callToolRequestHandler(
         });
 
         if (actionResponse.isOk()) {
+            span.finish();
+
             if (!('data' in actionResponse.value)) {
                 // Shouldn't happen with sync actions.
                 return {
@@ -173,9 +203,14 @@ function callToolRequestHandler(
             };
         } else {
             span.setTag('nango.error', actionResponse.error);
+            span.finish();
             await logCtx.failed();
 
-            throw new Error(JSON.stringify(actionResponse.error));
+            return connectionToolError(
+                `Tool '${action.sync_name}' ran on integration '${providerConfig.unique_key}' and failed: ${safeFailureDetail(actionResponse.error)}. Read the failure before deciding whether to call it again with different input or to tell the user.`,
+                'tool_failed',
+                providerConfig.unique_key
+            );
         }
     };
 }

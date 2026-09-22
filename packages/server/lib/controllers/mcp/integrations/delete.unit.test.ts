@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, flags, Ok } from '@nangohq/utils';
 
-import { audit } from '../../../audit.js';
+import { audit, auditBackend } from '../../../audit.js';
 import integrationService, { IntegrationServiceError } from '../../../services/integration.service.js';
 import { PublicMcpError } from '../utils.js';
 import { deleteIntegrationsTool } from './delete.js';
@@ -18,6 +18,7 @@ const context = {
 describe('integrationsDeleteTool', () => {
     afterEach(() => {
         flags.hasAuditTrail = false;
+        auditBackend.configured = false;
         vi.restoreAllMocks();
     });
 
@@ -80,6 +81,7 @@ describe('integrationsDeleteTool', () => {
 
     it('audits the deleted integration', async () => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         vi.spyOn(integrationService, 'delete').mockResolvedValue(Ok({ integrationId: 'github' }));
 

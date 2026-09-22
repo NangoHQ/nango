@@ -9,6 +9,17 @@ export function isDuplicateTaskNameError(err: unknown): boolean {
     return err instanceof DuplicateTaskNameError;
 }
 
+export class DuplicateScheduleNameError extends Error {
+    constructor(scheduleName: string) {
+        super(`Schedule '${scheduleName}' already exists`);
+        this.name = 'DuplicateScheduleNameError';
+    }
+}
+
+export function isDuplicateScheduleNameError(err: unknown): boolean {
+    return err instanceof DuplicateScheduleNameError;
+}
+
 export class ScheduleTaskAlreadyRunningError extends Error {
     constructor() {
         super('A task for this schedule is already running');

@@ -1,8 +1,10 @@
-import { configService, connectionService, getGlobalClientMetadataDocumentUrl, getProvider } from '@nangohq/shared';
+import { configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { resolveIntegrationConfig } from '../../../../services/integrationConfig.js';
+import { resolveCimdUrl } from '../../../../services/mcpClientRegistration.js';
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
+import { normalizeMcpOAuth2Scopes } from '../buildIntegrationConfig.js';
 import { patchIntegrationBodySchema } from '../validation.js';
 import { validationParams } from './getIntegration.js';
 
@@ -66,10 +68,12 @@ export const patchIntegration = asyncWrapperWithEnvironment<PatchIntegration>(as
 
         // The CIMD-based client_id embeds the unique_key, keep it in sync on rename
         if (provider.auth_mode === 'MCP_OAUTH2' && (provider as ProviderMcpOAUTH2).client_registration === 'cimd') {
-            const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, integration.unique_key);
-            if (cimdUrl) {
-                integration.oauth_client_id = cimdUrl;
+            const cimdResult = resolveCimdUrl(environment.uuid, integration.unique_key);
+            if (cimdResult.isErr()) {
+                res.status(400).send({ error: { code: 'invalid_body', message: cimdResult.error.message } });
+                return;
             }
+            integration.oauth_client_id = cimdResult.value;
         }
     }
 
@@ -153,7 +157,7 @@ export const patchIntegration = asyncWrapperWithEnvironment<PatchIntegration>(as
                 integration.oauth_client_secret = body.clientSecret;
             }
             if (body.scopes !== undefined) {
-                integration.oauth_scopes = body.scopes || '';
+                integration.oauth_scopes = normalizeMcpOAuth2Scopes(body.scopes) ?? '';
             }
         } else if (body.authType === 'MCP_OAUTH2_GENERIC') {
             const { clientName, clientUri, clientLogoUri } = body;
@@ -164,6 +168,9 @@ export const patchIntegration = asyncWrapperWithEnvironment<PatchIntegration>(as
                     ...(clientUri && { oauth_client_uri: clientUri }),
                     ...(clientLogoUri && { oauth_client_logo_uri: clientLogoUri })
                 };
+            }
+            if (body.scopes !== undefined) {
+                integration.oauth_scopes = body.scopes || '';
             }
         } else if (body.authType === 'INSTALL_PLUGIN') {
             const { username, password, appLink } = body;
@@ -180,6 +187,10 @@ export const patchIntegration = asyncWrapperWithEnvironment<PatchIntegration>(as
     }
 
     if ('integrationConfig' in body && body.integrationConfig) {
+        if (integration.shared_credentials_id) {
+            res.status(400).send({ error: { code: 'invalid_body', message: 'integrationConfig is not supported with shared credentials' } });
+            return;
+        }
         const result = resolveIntegrationConfig(provider, body.integrationConfig, { patch: true, existing: integration.custom });
         if (result.isErr()) {
             res.status(400).send({ error: { code: 'invalid_body', message: result.error.message } });

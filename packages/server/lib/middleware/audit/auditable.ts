@@ -2,7 +2,7 @@ import db from '@nangohq/database';
 import { getPlanSafe } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
-import { auditEventDropped, connectSessionActor, recordAuditEvent, UNKNOWN_ACTOR } from '../../audit.js';
+import { auditEventDropped, connectSessionActor, PUBLIC_KEY_ACTOR, recordAuditEvent, UNKNOWN_ACTOR } from '../../audit.js';
 import { canRecordAuditTrail } from '../../utils/auditTrail.js';
 import { omitUndefined } from './input.js';
 
@@ -87,7 +87,7 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
         };
     }
     if (locals.authType === 'publicKey') {
-        return { type: 'public_key', id: 'unknown' };
+        return PUBLIC_KEY_ACTOR;
     }
     // An end user is optional when the session carries tags, so the session can name nobody.
     if (locals.authType === 'connectSession') {
@@ -283,7 +283,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                                 return;
                             }
                             const subject = conditional.subject(typedReq, locals);
-                            if (!subject || !(await canRecordAuditTrail(subject.account.uuid, await auditedAccountPlan(subject.account, locals)))) {
+                            if (!subject || !(await canRecordAuditTrail(await auditedAccountPlan(subject.account, locals)))) {
                                 return;
                             }
                             await emit(
@@ -304,7 +304,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                 const account = spec.account ? await spec.account(req, locals) : locals.account;
                 // Freeze account + environment before the handler runs, for the same reason as target/metadata below.
                 const environment = spec.environment ? await resolveEnvironment(spec.environment, req, locals, spec.policy.resource) : locals.environment;
-                if (account && (await canRecordAuditTrail(account.uuid, await auditedAccountPlan(account, locals)))) {
+                if (account && (await canRecordAuditTrail(await auditedAccountPlan(account, locals)))) {
                     // Capture the response body only when a spec needs it — the id of a created resource is
                     // known only after the handler responds. Wrap res.json before next() runs the handler.
                     let responseBody: unknown;

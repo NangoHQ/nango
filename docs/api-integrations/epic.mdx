@@ -1,0 +1,82 @@
+---
+title: 'Epic (FHIR)'
+sidebarTitle: 'Epic (FHIR)'
+description: 'Integrate your application with the Epic FHIR API using SMART Backend Services'
+---
+
+## 🚀 Quickstart
+
+Connect to Epic with Nango and see data flow in a few minutes. Epic uses the SMART Backend Services flow — a machine-to-machine, JWT-signed authentication, with no end-user OAuth redirect.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** → _Configure New Integration_ → _Epic (FHIR)_. Register your Client ID, Key ID, Private Key, and Scope in the **Settings** tab — see the [setup guide](/api-integrations/epic/how-to-register-your-own-epic-app). These are entered once and reused automatically by every connection.
+    </Step>
+    <Step id="connect-epic-health-system" title="Connect a health system">
+    Each connection represents one health system. Create it by supplying that health system's Interconnect Server URL — see the [connect guide](/api-integrations/epic/connect) for the exact fields.
+    </Step>
+    <Step id="call-epic-api" title="Call the Epic FHIR API">
+    Make your first request. Nango's proxy base URL stops at `/api`, so include the FHIR version your app registered for (e.g. `FHIR/R4`) in the path yourself. Replace the placeholders with your API key (from **Environment Settings**), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/FHIR/R4/Patient" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/FHIR/R4/Patient',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Epic (FHIR) integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own Epic app](/api-integrations/epic/how-to-register-your-own-epic-app)  
+Register with Epic's App Market, generate a key pair, host your JWKS file, and obtain your Client ID
+
+- [How to connect a health system to Epic](/api-integrations/epic/connect)  
+Create a connection for a health system once your app is registered and approved
+
+Official docs: [Epic on FHIR — Backend Systems](https://fhir.epic.com/Documentation?docId=oauth2)
+
+## 🧩 Pre-built syncs & actions for Epic (FHIR)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/epic/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

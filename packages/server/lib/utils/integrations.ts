@@ -17,6 +17,12 @@ export type IntegrationCredentials =
           appLink: string | null;
           privateKey: string | null;
       }
+    | {
+          type: 'MCP_OAUTH2';
+          clientId: string | null;
+          clientSecret: string | null;
+          scopes: string | null;
+      }
     | null;
 
 export function getPreconfiguredCredentials(custom: IntegrationConfig['custom'], provider: Provider): string[] {
@@ -25,6 +31,20 @@ export function getPreconfiguredCredentials(custom: IntegrationConfig['custom'],
     }
 
     return Object.keys(provider.integration_config).filter((field) => Boolean(custom[field]));
+}
+
+/**
+ * Names of `connection_config` fields that are also declared in `integration_config` (the dual-declaration
+ * fallback pattern, e.g. stripe-app-sandbox's `appDomain`) and already have a value set at the integration
+ * level, so the Connect UI can skip asking end users for them.
+ */
+export function getPreconfiguredConnectionConfig(custom: IntegrationConfig['custom'], provider: Provider): string[] {
+    const { connection_config: connectionConfig, integration_config: integrationConfig } = provider;
+    if (!custom || !connectionConfig || !integrationConfig) {
+        return [];
+    }
+
+    return Object.keys(connectionConfig).filter((field) => field in integrationConfig && Boolean(custom[field]));
 }
 
 export function getIntegrationCredentials(integration: IntegrationConfig, provider: Provider): IntegrationCredentials {
@@ -58,6 +78,15 @@ export function getIntegrationCredentials(integration: IntegrationConfig, provid
             appId: usesSharedCredentials ? '' : integration.custom?.['app_id'] || null,
             appLink: integration.app_link || null,
             privateKey: usesSharedCredentials ? '' : decodePrivateKey(rawPrivateKey)
+        };
+    }
+
+    if (provider.auth_mode === 'MCP_OAUTH2') {
+        return {
+            type: provider.auth_mode,
+            clientId: usesSharedCredentials ? '' : integration.oauth_client_id,
+            clientSecret: usesSharedCredentials ? '' : integration.oauth_client_secret,
+            scopes: integration.oauth_scopes || null
         };
     }
 

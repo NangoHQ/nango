@@ -1,13 +1,13 @@
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
+import db from '@nangohq/database';
+import { hashOAuthIdentifier } from '@nangohq/oauth-server';
 import { userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
+import { dek, envs } from '../../../../env.js';
 import { isError, isSuccess, runServer } from '../../../../utils/tests.js';
-
-import type { MockInstance } from 'vitest';
 
 const signupRoute = '/api/v1/account/signup';
 const signinRoute = '/api/v1/account/signin';
@@ -17,7 +17,6 @@ const mfaRoute = '/api/v1/account/mfa';
 const STEP_MS = 30 * 1000;
 
 let api: Awaited<ReturnType<typeof runServer>>;
-let mfaFlagSpy: MockInstance<ReturnType<typeof featureFlags.getFlags>['isMFAEnabled']>;
 
 async function signupVerifiedUser(): Promise<{ email: string; password: string }> {
     const email = `${nanoid()}@example.com`;
@@ -59,7 +58,6 @@ async function enrollMfa(session: string): Promise<{ totp: OTPAuth.TOTP; recover
 describe(`PUT ${passwordRoute}`, () => {
     beforeAll(async () => {
         api = await runServer();
-        mfaFlagSpy = vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {
@@ -84,6 +82,11 @@ describe(`PUT ${passwordRoute}`, () => {
 
     it('should rotate the current session and invalidate all others after a password change', async () => {
         const { email, password } = await signupVerifiedUser();
+        const user = await userService.getUserByEmail(email);
+        const oauthSessionId = `oauth-session-${nanoid()}`;
+        const oauthGrantId = `oauth-grant-${nanoid()}`;
+        await insertOAuthSessionArtifact(oauthSessionId, user!.id);
+        await insertOAuthGrantArtifact(oauthGrantId, user!.id);
 
         const currentSession = await signin(email, password);
         const otherSession = await signin(email, password);
@@ -92,11 +95,19 @@ describe(`PUT ${passwordRoute}`, () => {
         expect((await api.fetch(userRoute, { method: 'GET', session: currentSession })).res.status).toBe(200);
         expect((await api.fetch(userRoute, { method: 'GET', session: otherSession })).res.status).toBe(200);
 
-        const { res, json } = await api.fetch(passwordRoute, {
-            method: 'PUT',
-            session: currentSession,
-            body: { oldPassword: password, newPassword: 'aZ1-newpass!?' }
-        });
+        const previousBaseUrl = envs.NANGO_OAUTH_SERVER_BASE_URL;
+        envs.NANGO_OAUTH_SERVER_BASE_URL = undefined;
+        const { res, json } = await (async () => {
+            try {
+                return await api.fetch(passwordRoute, {
+                    method: 'PUT',
+                    session: currentSession,
+                    body: { oldPassword: password, newPassword: 'aZ1-newpass!?' }
+                });
+            } finally {
+                envs.NANGO_OAUTH_SERVER_BASE_URL = previousBaseUrl;
+            }
+        })();
         expect(res.status).toBe(200);
         isSuccess(json);
 
@@ -111,6 +122,8 @@ describe(`PUT ${passwordRoute}`, () => {
 
         // the other session is forcibly logged out
         expect((await api.fetch(userRoute, { method: 'GET', session: otherSession })).res.status).toBe(401);
+        expect(await oauthArtifactRevokedAt('Session', oauthSessionId)).toBeInstanceOf(Date);
+        expect(await oauthArtifactRevokedAt('Grant', oauthGrantId)).toBeInstanceOf(Date);
 
         // the user who made the change stays authenticated via the rotated session
         expect((await api.fetch(userRoute, { method: 'GET', session: rotatedSession })).res.status).toBe(200);
@@ -273,20 +286,87 @@ describe(`PUT ${passwordRoute}`, () => {
         expect(json).toStrictEqual({ error: { code: 'invalid_mfa_code' } });
     });
 
-    it('should skip the second factor when the feature is off for the account', async () => {
+    it('should skip the second factor when the user has no factor enrolled', async () => {
         const { email, password } = await signupVerifiedUser();
         const session = await signin(email, password);
-        await enrollMfa(session);
 
-        mfaFlagSpy.mockResolvedValue(false);
         const { res, json } = await api.fetch(passwordRoute, {
             method: 'PUT',
             session,
             body: { oldPassword: password, newPassword: 'aZ1-newpass!?' }
         });
-        mfaFlagSpy.mockResolvedValue(true);
 
         expect(res.status).toBe(200);
         isSuccess(json);
     });
+
+    it('should change the password without an encryption key when OAuth is disabled', async () => {
+        const { email, password } = await signupVerifiedUser();
+        const session = await signin(email, password);
+        const previousBaseUrl = envs.NANGO_OAUTH_SERVER_BASE_URL;
+        envs.NANGO_OAUTH_SERVER_BASE_URL = undefined;
+        const getEncryptionKey = vi.spyOn(dek, 'get').mockReturnValue('');
+
+        try {
+            const { res, json } = await api.fetch(passwordRoute, {
+                method: 'PUT',
+                session,
+                body: { oldPassword: password, newPassword: 'aZ1-newpass!?' }
+            });
+
+            expect(envs.NANGO_OAUTH_SERVER_BASE_URL).toBeUndefined();
+            expect(res.status).toBe(200);
+            isSuccess(json);
+        } finally {
+            getEncryptionKey.mockRestore();
+            envs.NANGO_OAUTH_SERVER_BASE_URL = previousBaseUrl;
+        }
+    });
 });
+
+async function insertOAuthSessionArtifact(id: string, userId: number): Promise<void> {
+    const now = new Date();
+    const encryptionKey = dek.get();
+    await db.knex('oauth_server_artifacts').insert({
+        model: 'Session',
+        artifact_id_hash: hashOAuthIdentifier(id, encryptionKey),
+        payload_encrypted: Buffer.from('test-payload'),
+        grant_id_hash: null,
+        session_uid_hash: hashOAuthIdentifier(`uid-${id}`, encryptionKey),
+        user_id_hash: hashOAuthIdentifier(String(userId), encryptionKey),
+        user_authenticated_at: new Date(now.getTime() - 60_000),
+        expires_at: new Date(now.getTime() + 600_000),
+        consumed_at: null,
+        revoked_at: null,
+        created_at: now,
+        updated_at: now
+    });
+}
+
+async function insertOAuthGrantArtifact(id: string, userId: number): Promise<void> {
+    const now = new Date();
+    const encryptionKey = dek.get();
+    const grantIdHash = hashOAuthIdentifier(id, encryptionKey);
+    await db.knex('oauth_server_artifacts').insert({
+        model: 'Grant',
+        artifact_id_hash: grantIdHash,
+        payload_encrypted: Buffer.from('test-payload'),
+        grant_id_hash: grantIdHash,
+        session_uid_hash: null,
+        user_id_hash: hashOAuthIdentifier(String(userId), encryptionKey),
+        user_authenticated_at: new Date(now.getTime() - 60_000),
+        expires_at: new Date(now.getTime() + 600_000),
+        consumed_at: null,
+        revoked_at: null,
+        created_at: now,
+        updated_at: now
+    });
+}
+
+async function oauthArtifactRevokedAt(model: 'Grant' | 'Session', id: string): Promise<Date | null | undefined> {
+    const row = await db
+        .knex('oauth_server_artifacts')
+        .where({ model, artifact_id_hash: hashOAuthIdentifier(id, dek.get()) })
+        .first<{ revoked_at: Date | null }>('revoked_at');
+    return row?.revoked_at;
+}

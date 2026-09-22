@@ -56,7 +56,8 @@ export const integrationAuthTypeMcpOAuth2GenericSchema = z
         authType: z.enum(['MCP_OAUTH2_GENERIC']),
         clientName: z.string().min(1).max(255).optional(),
         clientUri: z.url().max(255).or(z.literal('')).optional(),
-        clientLogoUri: z.url().max(255).optional()
+        clientLogoUri: z.url().max(255).optional(),
+        scopes: scopesSchema
     })
     .strict();
 

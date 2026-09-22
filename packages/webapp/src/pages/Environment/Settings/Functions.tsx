@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
 import { KeyValueInput } from '@/components/patterns/KeyValueInput';
@@ -20,11 +19,10 @@ export const Functions: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
-    const environment = environmentAndAccount?.environment;
     const { mutateAsync: postVariablesAsync, isPending } = usePostVariables(env);
 
     const { can } = usePermissions();
-    const canEditEnvironmentVars = can(permissions.canWriteProdEnvironmentVariables) || !environment?.is_production;
+    const canEditEnvironmentVars = can('environment:variables:update');
 
     const [edit, setEdit] = useState(false);
     const [vars, setVars] = useState<Record<string, string>>(() => {

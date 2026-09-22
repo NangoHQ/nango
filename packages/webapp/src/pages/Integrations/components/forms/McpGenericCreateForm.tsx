@@ -5,6 +5,7 @@ import z from 'zod';
 
 import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
+import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
@@ -12,7 +13,8 @@ import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 const formSchema = z.object({
     clientName: z.string().optional(),
     clientUri: z.string().optional(),
-    clientLogoUri: z.string().url('Must be a valid URL (e.g., https://example.com/logo.png)').optional()
+    clientLogoUri: z.string().url('Must be a valid URL (e.g., https://example.com/logo.png)').optional(),
+    scopes: z.string().optional()
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -37,7 +39,8 @@ export const McpGenericCreateForm: React.FC<{ provider: ApiProviderListItem; onS
                     authType: provider.authMode as Extract<typeof provider.authMode, 'MCP_OAUTH2_GENERIC'>,
                     clientName: formData.clientName,
                     clientUri: formData.clientUri,
-                    clientLogoUri: formData.clientLogoUri
+                    clientLogoUri: formData.clientLogoUri,
+                    scopes: formData.scopes
                 }
             });
         } finally {
@@ -94,6 +97,19 @@ export const McpGenericCreateForm: React.FC<{ provider: ApiProviderListItem; onS
                                         </InputGroup>
                                     </FormControl>
                                     <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="scopes"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Scopes</FormLabel>
+                                    <FormControl>
+                                        <ScopesInput scopesString={field.value} onChange={(scopes) => Promise.resolve(field.onChange(scopes))} />
+                                    </FormControl>
                                 </FormItem>
                             )}
                         />

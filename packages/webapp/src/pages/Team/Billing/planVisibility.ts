@@ -116,11 +116,11 @@ const PLAN_IS_RETIRED: Record<DBPlan['name'], boolean> = {
     'enterprise-cloud-hosted': false
 };
 
-export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
+export function showsSummaryStrip(plan: ApiPlan | null | undefined, hasScheduledTransition = false): boolean {
     if (!plan) {
         return false;
     }
-    return SHOWS_SUMMARY_STRIP[plan.name];
+    return SHOWS_SUMMARY_STRIP[plan.name] || hasScheduledTransition;
 }
 
 export function isLegacyPlan(plan: ApiPlan | null | undefined): boolean {
@@ -154,4 +154,14 @@ export function planAccruesCharges(plan: ApiPlan | null | undefined): boolean {
 
 export function isRetiredPlan(code: DBPlan['name']): boolean {
     return PLAN_IS_RETIRED[code];
+}
+
+export type GrowthAddonState = 'none' | 'active' | 'pending-removal' | 'pending-activation';
+
+/** Scheduled transitions retain their current flag until their date, so the dates separate them from steady states. */
+export function growthAddonState(plan: ApiPlan | null | undefined): GrowthAddonState {
+    if (!plan?.has_growth_features) {
+        return plan?.growth_features_starts_at ? 'pending-activation' : 'none';
+    }
+    return plan.growth_features_ends_at ? 'pending-removal' : 'active';
 }

@@ -105,6 +105,7 @@ import { getPlainHmac } from './controllers/v1/plain/getHmac.js';
 import { deleteSpendAlert } from './controllers/v1/plans/billing/deleteSpendAlert.js';
 import { getBillingPeriodCosts } from './controllers/v1/plans/billing/getBillingPeriodCosts.js';
 import { getOverdueInvoices } from './controllers/v1/plans/billing/getOverdueInvoices.js';
+import { getProjectedCosts } from './controllers/v1/plans/billing/getProjectedCosts.js';
 import { getSpendAlert } from './controllers/v1/plans/billing/getSpendAlert.js';
 import { getUpcomingInvoice } from './controllers/v1/plans/billing/getUpcomingInvoice.js';
 import { putInvoicingDetails } from './controllers/v1/plans/billing/putInvoicingDetails.js';
@@ -123,6 +124,7 @@ import { deleteStripePaymentMethod } from './controllers/v1/stripe/payment_metho
 import { getStripePaymentMethods } from './controllers/v1/stripe/payment_methods/getPaymentMethods.js';
 import { postStripeCollectPayment } from './controllers/v1/stripe/payment_methods/postCollectPayment.js';
 import { postStripeWebhooks } from './controllers/v1/stripe/postWebhooks.js';
+import { getConnectionSyncs } from './controllers/v1/sync/getSyncs.js';
 import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
@@ -296,6 +298,7 @@ web.route('/plans/billing/invoicing').put(webAuth, auditBillingDetailsChanged, c
 web.route('/plans/billing/overdue').get(webAuth, getOverdueInvoices);
 web.route('/plans/billing/upcoming-invoice').get(webAuth, getUpcomingInvoice);
 web.route('/plans/billing/period-costs').get(webAuth, getBillingPeriodCosts);
+web.route('/plans/billing/projected-costs').get(webAuth, getProjectedCosts);
 web.route('/plans/billing/spend-alert').get(webAuth, can('account:billing:spend_alert:read'), getSpendAlert);
 web.route('/plans/billing/spend-alert').put(webAuth, auditBillingSpendAlertChanged, can('account:billing:spend_alert:update'), putSpendAlert);
 web.route('/plans/billing/spend-alert').delete(webAuth, auditBillingSpendAlertRemoved, can('account:billing:spend_alert:update'), deleteSpendAlert);
@@ -381,7 +384,7 @@ web.route('/user/password').put(webAuth, auditAppAuthPasswordChanged, putUserPas
 web.route('/plain').get(webAuth, getPlainHmac);
 
 // Sync / Flows
-web.route('/sync').get(webAuth, can('environment:syncs:read'), syncController.getSyncsByParams.bind(syncController));
+web.route('/sync').get(webAuth, can('environment:syncs:read'), getConnectionSyncs);
 web.route('/sync/command').post(webAuth, auditSyncCommand, can('environment:syncs:execute'), syncController.syncCommand.bind(syncController));
 web.route('/flows/pre-built/deploy').post(webAuth, auditPreBuiltDeployed, can('environment:deploy'), postPreBuiltDeploy);
 web.route('/flows/pre-built/upgrade').put(webAuth, auditFunctionUpgraded, can('environment:deploy'), putUpgradePreBuilt);

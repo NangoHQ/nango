@@ -1,4 +1,24 @@
-import type { ApiProviderListItem, Provider, ProviderMcpOAUTH2 } from '@nangohq/types';
+import { basePublicUrl } from '@nangohq/utils';
+
+import { toNangoFunction } from './function.js';
+
+import type { RetrievedProvider } from '../services/provider.service.js';
+import type { ApiProvider, ApiProviderListItem, NangoSyncConfig, Provider, ProviderMcpOAUTH2, ProviderTemplatesSuccess } from '@nangohq/types';
+
+export function providerToApi({ name, provider }: RetrievedProvider): ApiProvider {
+    return {
+        ...provider,
+        name,
+        logo_url: `${basePublicUrl}/images/template-logos/${name}.svg`
+    };
+}
+
+export function providerTemplatesToApi(templates: NangoSyncConfig[]): ProviderTemplatesSuccess['data'] {
+    return templates.flatMap((template) => {
+        const fn = toNangoFunction(template);
+        return fn ? [fn] : [];
+    });
+}
 
 export function providerListItemToAPI(
     providerName: string,

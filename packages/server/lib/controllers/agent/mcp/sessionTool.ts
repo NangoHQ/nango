@@ -1,10 +1,13 @@
+import tracer from 'dd-trace';
+
 import { Err, metrics } from '@nangohq/utils';
 
-import { formatMcpArgumentsError, handleMcpToolError, jsonContent, jsonStructuredContent, PublicMcpError } from '../../mcp/utils.js';
+import { formatMcpArgumentsError, InternalMcpError, jsonContent, jsonStructuredContent, mcpToolError, PublicMcpError } from '../../mcp/utils.js';
 
-import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
-import type { AgentSession, AgentSessionMetaTools, DBEnvironment, DBTeam } from '@nangohq/types';
+import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/server';
+import type { AgentSession, AgentSessionMetaTools, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { Span } from 'dd-trace';
 import type * as z from 'zod/v4';
 
 /** The MCP limit on a tool name, which is what a session tool's slug is clipped to fit. */
@@ -25,6 +28,7 @@ export type AgentSessionCallableTools = ReadonlyMap<string, AgentSessionCallable
 export interface AgentSessionMcpContext {
     account: DBTeam;
     environment: DBEnvironment;
+    plan: DBPlan | null;
     session: AgentSession;
     callable: AgentSessionCallableTools;
 }
@@ -52,7 +56,11 @@ export function defineAgentSessionMcpTool<TInputSchema extends z.ZodType>(tool: 
         async handler(args, context) {
             const parsedArgs = tool.inputSchema.safeParse(args ?? {});
             if (!parsedArgs.success) {
-                return Err(new PublicMcpError(formatMcpArgumentsError(tool.name, parsedArgs.error)));
+                return Err(
+                    new PublicMcpError(`${formatMcpArgumentsError(tool.name, parsedArgs.error)}. Correct the arguments and call it again.`, {
+                        code: 'invalid_input'
+                    })
+                );
             }
 
             return await tool.handler({ ...context, args: parsedArgs.data });
@@ -71,30 +79,48 @@ export async function callAgentSessionTool({
     structured?: boolean;
     run: () => Promise<Result<unknown>>;
 }): Promise<CallToolResult> {
-    let result: Result<unknown>;
-    try {
-        result = await run();
-    } catch (err) {
-        metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { accountId, mcp_type: 'agent_session', tool: metric, outcome: 'error' });
-        return handleMcpToolError(err, metric);
-    }
+    return await tracer.trace<Promise<CallToolResult>>('server.mcp.agentSession.tool', async (span: Span) => {
+        span.setTag('nango.accountId', accountId).setTag('nango.toolName', metric);
 
-    metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
-        accountId,
-        mcp_type: 'agent_session',
-        tool: metric,
-        outcome: result.isOk() ? 'success' : 'error'
+        let result: Result<unknown>;
+        try {
+            result = await run();
+        } catch (err) {
+            metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { accountId, mcp_type: 'agent_session', tool: metric, outcome: 'error' });
+            return handleAgentSessionToolError(err, span);
+        }
+
+        metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
+            accountId,
+            mcp_type: 'agent_session',
+            tool: metric,
+            outcome: result.isOk() ? 'success' : 'error'
+        });
+
+        if (result.isErr()) {
+            return handleAgentSessionToolError(result.error, span);
+        }
+
+        // structuredContent has to be a JSON object, and only a tool that declared an output schema
+        // promises one. Anything else falls back to plain content rather than rendering an invalid result.
+        return structured && isJsonObject(result.value) ? jsonStructuredContent(result.value) : jsonContent(result.value ?? null);
     });
-
-    if (result.isErr()) {
-        return handleMcpToolError(result.error, metric);
-    }
-
-    // structuredContent has to be a JSON object, and only a tool that declared an output schema
-    // promises one. Anything else falls back to plain content rather than rendering an invalid result.
-    return structured && isJsonObject(result.value) ? jsonStructuredContent(result.value) : jsonContent(result.value ?? null);
 }
 
 function isJsonObject(value: unknown): value is object {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function handleAgentSessionToolError(err: unknown, span: Span): CallToolResult {
+    if (err instanceof PublicMcpError) {
+        return mcpToolError(err.message, { code: err.code, integrationId: err.integrationId });
+    }
+
+    if (!(err instanceof InternalMcpError)) {
+        span.setTag('nango.error', err);
+    }
+
+    return mcpToolError('The tool could not be run. Trying once more is reasonable, and tell the user if it keeps failing.', {
+        code: 'internal_error'
+    });
 }

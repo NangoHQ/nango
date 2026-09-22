@@ -186,7 +186,7 @@ async function emit(req: Request, res: Response): Promise<void> {
         }
         const locals = res.locals as RequestLocals;
         const { account, environment } = locals;
-        if (!account || !(await canRecordAuditTrail(account.uuid, locals.plan))) {
+        if (!account || !(await canRecordAuditTrail(locals.plan))) {
             return;
         }
         const target = syncTarget(body);

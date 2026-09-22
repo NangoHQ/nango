@@ -1,0 +1,23 @@
+---
+title: 'List environments'
+openapi: 'GET /environments'
+---
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:list` scope.
+</Info>
+
+<ResponseExample>
+```json Example Response
+{
+  "data": [
+    {
+      "id": 123,
+      "uuid": "123e4567-e89b-12d3-a456-426614174000",
+      "name": "staging",
+      "is_production": false
+    }
+  ]
+}
+```
+</ResponseExample>

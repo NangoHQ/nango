@@ -2,14 +2,20 @@ import db from '@nangohq/database';
 import { Err, Ok } from '@nangohq/utils';
 
 import configService from '../config.service.js';
+import connectionService from '../connection.service.js';
 import remoteFileService from '../file/remote.service.js';
 import * as functionConfigService from './models/functions.js';
+import * as functionInstanceService from './models/instances.js';
 import { reconcile } from './reconcile.js';
 import { functionVersionHash } from './version.js';
 
+import type { Orchestrator } from '../../clients/orchestrator.js';
+import type { CurrentFunctionConfig } from './models/functions.js';
+import type { FunctionInstanceUpsert } from './models/instances.js';
 import type { DeploymentBundleReconciliation } from './reconcile.js';
-import type { FunctionDeploymentArtifact, FunctionReconciliationScope } from '@nangohq/types';
+import type { DBConnection, FunctionDeploymentArtifact, FunctionReconciliationScope } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { Knex } from 'knex';
 
 export type DeploymentBundleError = Error & { code: 'functions_deployment_error' };
 export type DeploymentBundlePreparationError = DeploymentBundleError | (Error & { code: 'integration_not_found'; integrationIds: string[] });
@@ -77,21 +83,56 @@ export async function deployBundle({
     accountId,
     environmentId,
     environmentName,
-    reconciliation
+    reconciliation,
+    orchestrator
 }: {
     accountId: number;
     environmentId: number;
     environmentName: string;
     reconciliation: DeploymentBundleReconciliation;
+    orchestrator: Pick<Orchestrator, 'scheduleFunctions' | 'deleteFunctionSchedules'>;
 }): Promise<Result<void, DeploymentBundleError>> {
+    type ConnectionsMap = Map<number, Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>>;
+    const connectionsByIntegration = new Map<number, ConnectionsMap>();
+
+    async function getConnections(trx: Knex, integrationConfigId: number): Promise<ConnectionsMap> {
+        const cached = connectionsByIntegration.get(integrationConfigId);
+        if (cached) {
+            return cached;
+        }
+        const connections = await connectionService.getConnectionsByEnvironmentAndConfigId(trx, { environmentId, configId: integrationConfigId });
+        if (connections.isErr()) {
+            throw connections.error;
+        }
+        const byId = new Map(
+            connections.value.map((connection) => [
+                connection.id,
+                {
+                    id: connection.id,
+                    connection_id: connection.connection_id,
+                    provider_config_key: connection.provider_config_key,
+                    environment_id: connection.environment_id
+                }
+            ])
+        );
+        connectionsByIntegration.set(integrationConfigId, byId);
+        return byId;
+    }
+
     try {
         // Upload the files first and upsert/delete the configs in a single transaction
         // to make sure every config points to a valid file location.
         // We accept that there might be orphaned files if the transaction fails, favoring correctness and simpler rollback.
-        const prepared: { artifact: FunctionDeploymentArtifact; version: string; fileLocation: string }[] = [];
+        const prepared: {
+            before: CurrentFunctionConfig | undefined;
+            artifact: FunctionDeploymentArtifact;
+            version: string;
+            fileLocation: string;
+        }[] = [];
 
         // TODO: parallelize the uploads to speed up the deployment process
-        for (const artifact of [...reconciliation.created, ...reconciliation.updated]) {
+        for (const f of [...reconciliation.created, ...reconciliation.updated]) {
+            const [before, artifact] = 'before' in f ? [f.before, f.after] : [undefined, f];
             const versionHash = functionVersionHash(artifact);
             if (versionHash.isErr()) {
                 throw versionHash.error;
@@ -116,46 +157,171 @@ export async function deployBundle({
                 throw new Error('file_upload_error', { cause: { integrationId: artifact.integrationId, name: artifact.name } });
             }
 
-            prepared.push({ artifact, version, fileLocation });
+            prepared.push({ before, artifact, version, fileLocation });
         }
 
         await db.knex.transaction(async (trx) => {
-            for (const { artifact, version, fileLocation } of prepared) {
-                const upserted = await functionConfigService.upsert(trx, {
-                    environmentId,
-                    integrationId: artifact.integrationId,
-                    name: artifact.name,
-                    version: {
-                        description: artifact.description,
-                        file_location: fileLocation,
-                        version,
-                        source: 'repo',
-                        trigger: artifact.trigger,
-                        requires: artifact.requires,
-                        capabilities: artifact.capabilities,
-                        limits: artifact.limits,
-                        input_schema_ref: artifact.input_schema_ref,
-                        output_schema_ref: artifact.output_schema_ref,
-                        model_schema_refs: artifact.model_schema_refs,
-                        metadata_schema_ref: artifact.metadata_schema_ref,
-                        checkpoint_schema_ref: artifact.checkpoint_schema_ref,
-                        json_schema: artifact.json_schema
-                    }
-                });
-                if (upserted.isErr()) {
-                    throw upserted.error;
+            // Upsert function configs/versions
+            const configsToUpsert = prepared.map(({ artifact, version, fileLocation }) => ({
+                environmentId,
+                integrationId: artifact.integrationId,
+                name: artifact.name,
+                version: {
+                    description: artifact.description,
+                    file_location: fileLocation,
+                    version,
+                    source: 'repo' as const,
+                    trigger: artifact.trigger,
+                    requires: artifact.requires,
+                    capabilities: artifact.capabilities,
+                    limits: artifact.limits,
+                    input_schema_ref: artifact.input_schema_ref,
+                    output_schema_ref: artifact.output_schema_ref,
+                    model_schema_refs: artifact.model_schema_refs,
+                    metadata_schema_ref: artifact.metadata_schema_ref,
+                    checkpoint_schema_ref: artifact.checkpoint_schema_ref,
+                    json_schema: artifact.json_schema
                 }
+            }));
+            const upserted = await functionConfigService.upsert(trx, configsToUpsert);
+            if (upserted.isErr()) {
+                throw upserted.error;
             }
 
-            const deleted = await functionConfigService.softDelete(trx, {
+            // Delete function configs/versions that are no longer present in the deployment bundle
+            const deletedConfigs = await functionConfigService.softDelete(trx, {
                 environmentId,
-                ids: reconciliation.deleted.map((current) => current.config.id)
+                ids: reconciliation.deleted.map((f) => f.config.id)
             });
-            if (deleted.isErr()) {
-                throw deleted.error;
+            if (deletedConfigs.isErr()) {
+                throw deletedConfigs.error;
+            }
+
+            const instancesToUpsert: FunctionInstanceUpsert[] = [];
+            const instancesToDelete: { functionConfigId: number }[] = reconciliation.deleted.map((f) => ({ functionConfigId: f.config.id }));
+            for (const { before, artifact } of prepared) {
+                var upsertCandidate: { functionConfigId: number; integrationId: number; artifact: FunctionDeploymentArtifact } | undefined = undefined;
+
+                // If the after trigger is a schedule and there is no before store, create a new instance
+                if (artifact.trigger.kind === 'schedule' && !before) {
+                    const functionConfig = upserted.value.find((f) => f.integration.unique_key === artifact.integrationId && f.config.name === artifact.name);
+                    if (functionConfig?.config.enabled) {
+                        upsertCandidate = {
+                            functionConfigId: functionConfig.config.id,
+                            integrationId: functionConfig.integration.id,
+                            artifact
+                        };
+                    }
+                }
+                // If the after trigger is a schedule and there is a before state with a non-schedule trigger, create a new instance
+                else if (artifact.trigger.kind === 'schedule' && before?.config.enabled && before.currentVersion.trigger.kind !== 'schedule') {
+                    upsertCandidate = {
+                        functionConfigId: before.config.id,
+                        integrationId: before.integration.id,
+                        artifact
+                    };
+                }
+
+                if (upsertCandidate) {
+                    const connections = await getConnections(trx, upsertCandidate.integrationId);
+                    for (const connection of connections.values()) {
+                        instancesToUpsert.push({
+                            function_config_id: upsertCandidate.functionConfigId,
+                            nango_connection_id: connection.id,
+                            name: upsertCandidate.artifact.name,
+                            variant: 'base',
+                            frequency: null
+                        });
+                    }
+                }
+
+                // If the after trigger is not a schedule and there is a before state with a schedule, delete the existing schedule
+                if (artifact.trigger.kind !== 'schedule' && before && before?.currentVersion.trigger.kind === 'schedule') {
+                    instancesToDelete.push({ functionConfigId: before.config.id });
+                }
+
+                // Otherwise we do nothing.
+                // This includes the cases where
+                // - both before and after triggers are schedules (in which case we don't update existing instances)
+                // - both are non-schedules.
+            }
+
+            const instances = await functionInstanceService.upsert(trx, instancesToUpsert);
+            if (instances.isErr()) {
+                throw instances.error;
+            }
+
+            const deletedInstances = await functionInstanceService.softDelete(
+                trx,
+                { functionConfigIds: instancesToDelete.map((i) => i.functionConfigId) },
+                { environmentId }
+            );
+            if (deletedInstances.isErr()) {
+                throw deletedInstances.error;
+            }
+            // Unschedule before committing so failures roll back instance deletions
+            // and a deployment retry can discover the same instances again.
+            // Repeated deletions are idempotent, so it's safe to retry when deploying again after a failure.
+            // Unscheduling after committing could leave orphaned schedules if the commit succeeds but the unscheduling fails.
+            if (deletedInstances.value.length > 0) {
+                const schedulesDeletion = await orchestrator.deleteFunctionSchedules({
+                    environmentId,
+                    instanceIds: deletedInstances.value.map((instance) => instance.id)
+                });
+                if (schedulesDeletion.isErr()) {
+                    throw schedulesDeletion.error;
+                }
             }
         });
 
+        // At this point, all functions configs and instances are committed
+        // in order to be visible before we attempt to schedule them.
+        // This is important because orchestrator cannot be atomically updated with the database.
+
+        // Unchanged functions are included so redeploying repairs missing schedules.
+        const desiredSchedules = [...reconciliation.created, ...reconciliation.updated.map(({ after }) => after), ...reconciliation.unchanged].filter(
+            (artifact) => artifact.trigger.kind === 'schedule'
+        );
+
+        for (const [integrationId, artifacts] of Map.groupBy(desiredSchedules, (artifact) => artifact.integrationId)) {
+            const configs = (await functionConfigService.search(db.knex, { environmentId, filter: { integrationKey: integrationId } })).unwrap();
+            const byName = new Map(configs.map((config) => [config.config.name, config]));
+            for (const artifact of artifacts) {
+                if (artifact.trigger.kind !== 'schedule') {
+                    continue;
+                }
+                const config = byName.get(artifact.name);
+                if (!config) {
+                    throw new Error(`Deployed function '${integrationId}/${artifact.name}' not found`);
+                }
+                if (!config.config.enabled) {
+                    continue;
+                }
+                const connections = await getConnections(db.knex, config.integration.id);
+                let afterId = 0;
+                while (true) {
+                    const instances = await functionInstanceService.search(db.knex, { functionConfigIds: [config.config.id] }, { afterId, limit: 1000 });
+                    if (instances.isErr()) {
+                        throw instances.error;
+                    }
+                    if (instances.value.length === 0) {
+                        break;
+                    }
+                    const frequencyFallback = artifact.trigger.frequency;
+                    const autoStart = artifact.trigger.autoStart ?? true;
+                    const scheduled = await orchestrator.scheduleFunctions(
+                        instances.value.flatMap((instance) => {
+                            const connection = connections.get(instance.nango_connection_id);
+                            return connection ? [{ environmentId, instance, connection, frequencyFallback, autoStart }] : [];
+                        })
+                    );
+                    if (scheduled.isErr()) {
+                        throw scheduled.error;
+                    }
+                    afterId = instances.value[instances.value.length - 1]!.id;
+                }
+            }
+        }
         return Ok(undefined);
     } catch (err) {
         return Err(functionsDeploymentError(err));

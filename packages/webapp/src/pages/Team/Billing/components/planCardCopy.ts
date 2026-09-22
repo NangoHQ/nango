@@ -44,7 +44,16 @@ export interface S26PlanCard {
     priceSuffix?: string;
     tagline: string;
     features: string[];
+    addonTeaser?: string;
 }
+
+export const GROWTH_ADDON_PRICE = 450;
+
+export const GROWTH_ADDON_COPY = {
+    title: 'Growth add-on',
+    price: `$${GROWTH_ADDON_PRICE}/mo`,
+    features: 'Shared Slack channel, unlimited environments, RBAC, realtime logs export, SAML SSO, HIPAA, and 5-day integration delivery.'
+};
 
 /** In the order they are offered. */
 export const S26_PLAN_CARDS: readonly S26PlanCard[] = [
@@ -53,14 +62,15 @@ export const S26_PLAN_CARDS: readonly S26PlanCard[] = [
         price: '$0',
         priceSuffix: '/mo',
         tagline: 'Hard-capped limits, reset every month.',
-        features: ['10 connections', '10h compute time', '10GB data transfer', 'API auth with 900+ APIs', 'Pre-built tools, triggers & syncs', 'Logs']
+        features: ['10 connections', '10h compute time', '10GB data transfer', 'API auth with 1,000+ APIs', 'Pre-built tools, triggers & syncs', 'Logs']
     },
     {
         code: 'pay-as-you-go',
         price: '$50',
         priceSuffix: '/mo minimum',
         tagline: '$50 in credits per month included.',
-        features: ['$0.29 / connection / mo', '$0.72 / h of compute time', '$0.50 / GB data transfer', 'SOC 2 Type II', 'Growth add-on available for $450/mo']
+        features: ['$0.29 / connection / mo', '$0.72 / h of compute time', '$0.50 / GB data transfer', 'SOC 2 Type II'],
+        addonTeaser: `${GROWTH_ADDON_COPY.title} available for ${GROWTH_ADDON_COPY.price}`
     },
     {
         code: 'enterprise',

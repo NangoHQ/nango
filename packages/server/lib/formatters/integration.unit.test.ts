@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import { getProvider } from '@nangohq/shared';
 
-import { integrationCredentialsToPublicApi, integrationToPublicApi } from './integration.js';
+import { integrationCredentialsToPublicApi, integrationToApi, integrationToPublicApi } from './integration.js';
 
 import type { IntegrationConfig } from '@nangohq/types';
 
-function makeIntegration(custom: IntegrationConfig['custom']): IntegrationConfig {
+function makeIntegration(custom: IntegrationConfig['custom'], provider = 'sage-intacct-cc'): IntegrationConfig {
     return {
-        unique_key: 'sage-intacct-cc',
-        provider: 'sage-intacct-cc',
+        unique_key: provider,
+        provider,
         oauth_client_id: null,
         oauth_client_secret: null,
         environment_id: 1,
@@ -52,6 +52,134 @@ describe('integrationToPublicApi preconfigured_credentials', () => {
 
         expect(result.preconfigured_credentials).toBeUndefined();
     });
+
+    it('never returns mcpRegistrationClientUri/mcpRegistrationAccessToken for an MCP_OAUTH2 integration', () => {
+        const mcpProvider = getProvider('asana-mcp')!;
+        const result = integrationToPublicApi({
+            integration: {
+                ...makeIntegration({ mcpRegistrationClientUri: 'https://provider.example/register/123', mcpRegistrationAccessToken: 'reg-secret' }),
+                provider: 'asana-mcp'
+            },
+            provider: mcpProvider
+        });
+
+        expect(JSON.stringify(result)).not.toContain('reg-secret');
+        expect(JSON.stringify(result)).not.toContain('mcpRegistration');
+    });
+});
+
+describe('integrationToApi', () => {
+    it('never returns mcpRegistrationClientUri/mcpRegistrationAccessToken, even to a caller with credentials access', () => {
+        const result = integrationToApi(
+            makeIntegration({ clientId: 'abc', mcpRegistrationClientUri: 'https://provider.example/register/123', mcpRegistrationAccessToken: 'reg-secret' })
+        );
+
+        expect(result.custom).toStrictEqual({ clientId: 'abc' });
+    });
+
+    it('strips the mcp registration fields even when nothing else is in custom', () => {
+        const result = integrationToApi(makeIntegration({ mcpRegistrationClientUri: 'https://provider.example/register/123' }));
+
+        expect(result.custom).toStrictEqual({});
+    });
+});
+
+// Load the real provider definition so this test fails if `appDomain` ever stops being declared in both
+// `integration_config` and `connection_config` — that dual declaration is what the fallback relies on.
+const stripeAppSandboxProvider = getProvider('stripe-app-sandbox')!;
+
+describe('integrationToPublicApi preconfigured_connection_config', () => {
+    it('lists connection_config fields already set at the integration level', () => {
+        const result = integrationToPublicApi({
+            integration: makeIntegration({ appDomain: 'ca_123' }, 'stripe-app-sandbox'),
+            provider: stripeAppSandboxProvider
+        });
+
+        expect(result.preconfigured_connection_config).toStrictEqual(['appDomain']);
+    });
+
+    it('is absent when the integration has no custom config', () => {
+        const result = integrationToPublicApi({ integration: makeIntegration(null, 'stripe-app-sandbox'), provider: stripeAppSandboxProvider });
+
+        expect(result.preconfigured_connection_config).toBeUndefined();
+    });
+
+    it('is absent when the field is not set on the integration', () => {
+        const result = integrationToPublicApi({ integration: makeIntegration({}, 'stripe-app-sandbox'), provider: stripeAppSandboxProvider });
+
+        expect(result.preconfigured_connection_config).toBeUndefined();
+    });
+});
+
+describe('integrationToApi', () => {
+    it('hides oauth_client_id/secret/app_link and the rest of custom for shared credentials', () => {
+        const integration: IntegrationConfig = {
+            ...makeIntegration({ clientId: 'abc', clientSecret: 'shh' }),
+            oauth_client_id: 'nango-shared-client-id',
+            oauth_client_secret: 'nango-shared-secret',
+            app_link: 'https://example.com/nango-app',
+            shared_credentials_id: 42
+        };
+
+        const result = integrationToApi(integration);
+
+        expect(result.oauth_client_id).toBe('');
+        expect(result.oauth_client_secret).toBe('');
+        expect(result.app_link).toBeNull();
+        expect(result.custom).toBeNull();
+    });
+
+    it('hides webhookSecret too for shared credentials, since it may be shared across every tenant on that pool', () => {
+        const integration: IntegrationConfig = {
+            ...makeIntegration({ clientId: 'abc', webhookSecret: 'whsec_123' }),
+            shared_credentials_id: 42
+        };
+
+        const result = integrationToApi(integration);
+
+        expect(result.custom).toBeNull();
+    });
+
+    it('hides free-form custom for shared credentials even without an integration_config schema to mask against', () => {
+        const integration: IntegrationConfig = {
+            ...makeIntegration({ private_key: 'super-secret-key', password: 'hunter2' }, 'github'),
+            shared_credentials_id: 42
+        };
+
+        const result = integrationToApi(integration);
+
+        expect(result.custom).toBeNull();
+    });
+
+    it('shows everything when credentials are not shared', () => {
+        const integration: IntegrationConfig = {
+            ...makeIntegration({ clientId: 'abc' }),
+            oauth_client_id: 'my-client-id',
+            oauth_client_secret: 'my-secret',
+            shared_credentials_id: null
+        };
+
+        const result = integrationToApi(integration);
+
+        expect(result.oauth_client_id).toBe('my-client-id');
+        expect(result.oauth_client_secret).toBe('my-secret');
+        expect(result.custom).toStrictEqual({ clientId: 'abc' });
+    });
+
+    it('hides custom entirely for a caller without canReadProdConnectionCredentials, even with a webhookSecret and no shared credentials', () => {
+        const integration: IntegrationConfig = {
+            ...makeIntegration({ clientId: 'abc', webhookSecret: 'whsec_123' }),
+            oauth_client_id: 'my-client-id',
+            oauth_client_secret: 'my-secret',
+            shared_credentials_id: null
+        };
+
+        const result = integrationToApi(integration, { includeCredentials: false });
+
+        expect(result.oauth_client_id).toBe('');
+        expect(result.oauth_client_secret).toBe('');
+        expect(result.custom).toBeNull();
+    });
 });
 
 describe('integrationCredentialsToPublicApi', () => {
@@ -72,6 +200,22 @@ describe('integrationCredentialsToPublicApi', () => {
             app_id: 'app-id',
             app_link: 'https://example.com/app',
             private_key: 'private-key'
+        });
+    });
+
+    it('formats MCP_OAUTH2 credentials without ever surfacing registration bookkeeping fields', () => {
+        const result = integrationCredentialsToPublicApi({
+            type: 'MCP_OAUTH2',
+            clientId: 'dcr-client-id',
+            clientSecret: 'dcr-secret',
+            scopes: 'read,write'
+        });
+
+        expect(result).toStrictEqual({
+            type: 'MCP_OAUTH2',
+            client_id: 'dcr-client-id',
+            client_secret: 'dcr-secret',
+            scopes: 'read,write'
         });
     });
 });

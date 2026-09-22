@@ -19,6 +19,32 @@ vi.mock('crypto', async () => {
     };
 });
 
+describe('Hubspot client secret', () => {
+    it('fails closed when the integration has no client secret', async () => {
+        // The secret is concatenated into the hash, so a null one hashes the string "null",
+        // which anyone can compute.
+        const integration = getTestConfig({ provider: 'hubspot' });
+        integration.oauth_client_secret = null as unknown as string;
+
+        const nango = new InternalNango({
+            team: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: seeders.getTestPlan(),
+            integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
+            logContextGetter
+        });
+        const execute = vi.fn();
+        nango.executeScriptForWebhooks = execute;
+
+        const body = { subscriptionType: 'contact.creation', portalId: 1, objectId: 2, occurredAt: 1 };
+        const result = await HubspotWebhookRouting.default(nango, { 'x-hubspot-signature': 'anything' }, body as never, JSON.stringify(body));
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+});
+
 describe('Webhook route unit tests', () => {
     it('Should order the body accordingly based on the contact.creation', async () => {
         const integration = getTestConfig({ provider: 'hubspot', oauth_client_secret: 'abcdef' });
@@ -29,6 +55,7 @@ describe('Webhook route unit tests', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -112,7 +139,7 @@ describe('Webhook route unit tests', () => {
 
         expect(mock).toHaveBeenCalledTimes(body.length);
         expect(mock).toHaveBeenNthCalledWith(2, {
-            body: body[0],
+            payload: body[0],
             connectionIdentifier: 'portalId',
             webhookType: 'subscriptionType'
         });
@@ -127,6 +154,7 @@ describe('Webhook route unit tests', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter: logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -177,17 +205,17 @@ describe('Webhook route unit tests', () => {
 
         expect(mock).toHaveBeenCalledTimes(body.length);
         expect(mock).toHaveBeenNthCalledWith(1, {
-            body: body[2],
+            payload: body[2],
             connectionIdentifier: 'portalId',
             webhookType: 'subscriptionType'
         });
         expect(mock).toHaveBeenNthCalledWith(2, {
-            body: body[1],
+            payload: body[1],
             connectionIdentifier: 'portalId',
             webhookType: 'subscriptionType'
         });
         expect(mock).toHaveBeenNthCalledWith(3, {
-            body: body[0],
+            payload: body[0],
             connectionIdentifier: 'portalId',
             webhookType: 'subscriptionType'
         });
@@ -202,6 +230,7 @@ describe('Webhook route unit tests', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;
@@ -236,7 +265,7 @@ describe('Webhook route unit tests', () => {
 
         expect(mock).toHaveBeenCalledTimes(1);
         expect(mock).toHaveBeenCalledWith({
-            body: body[0],
+            payload: body[0],
             connectionIdentifier: 'portalId',
             webhookType: 'subscriptionType'
         });
@@ -251,6 +280,7 @@ describe('Webhook route unit tests', () => {
             environment: seeders.getTestEnvironment(),
             plan: seeders.getTestPlan(),
             integration,
+            request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
             logContextGetter
         });
         nangoMock.executeScriptForWebhooks = mock;

@@ -58,7 +58,7 @@ export const flowConfig = z
                 z.union([
                     z
                         .object({
-                            method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
+                            method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'PROPFIND', 'REPORT']),
                             path: z.string(),
                             group: z.string().min(1).max(64).optional()
                         })
@@ -69,7 +69,9 @@ export const flowConfig = z
                             POST: z.string().optional(),
                             PATCH: z.string().optional(),
                             PUT: z.string().optional(),
-                            DELETE: z.string().optional()
+                            DELETE: z.string().optional(),
+                            PROPFIND: z.string().optional(),
+                            REPORT: z.string().optional()
                         })
                         .strict()
                 ])
@@ -171,6 +173,11 @@ export const validation = commonValidation.transform((data) => ({
 export const validationWithNangoYaml = commonValidation
     .extend({
         nangoYamlBody: z.string()
+    })
+    .refine((data) => !data.nangoYamlBody, {
+        message:
+            'The `nango.yaml` configuration file is no longer supported. See the migration guide to Zero YAML: https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml',
+        path: ['nangoYamlBody']
     })
     .transform((data) => ({
         ...data,

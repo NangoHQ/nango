@@ -2,7 +2,7 @@ import db from '@nangohq/database';
 import { customerKeyService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { canReadProdSecret } from '../../../authz/resolve.js';
+import { principalCan } from '../../../authz/principal.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { ApiKeyScope, ListApiKeys } from '@nangohq/types';
@@ -14,11 +14,15 @@ export const listApiKeys = asyncWrapperWithEnvironment<ListApiKeys>(async (req, 
         return;
     }
 
-    const { environment } = res.locals;
+    const { account, environment } = res.locals;
 
-    const canReadSecret = canReadProdSecret(res.locals);
+    const canReadSecret = principalCan(res.locals, 'environment:settings:read_secret');
 
-    const keysResult = await customerKeyService.getApiKeysByEnv(db.knex, environment.id);
+    const keysResult = await customerKeyService.search(
+        db.knex,
+        { type: 'environment', environmentId: environment.id, accountId: account.id },
+        { withSecrets: true }
+    );
     if (keysResult.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to retrieve API keys' } });
         return;

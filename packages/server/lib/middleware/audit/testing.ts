@@ -17,15 +17,14 @@ export const getAccountByIdMock: Mock = vi.fn();
 export const getPlanSafeMock: Mock = vi.fn();
 export const getEnvironmentByIdMock: Mock = vi.fn();
 export const getEnvironmentByUuidMock: Mock = vi.fn();
-export const getApiKeyByIdMock: Mock = vi.fn();
-export const getAccountApiKeyByIdMock: Mock = vi.fn();
-export const getApiKeyByUuidMock: Mock = vi.fn();
+export const customerKeySearchMock: Mock = vi.fn();
 export const getIntegrationSummaryMock: Mock = vi.fn();
 export const getConnectionByIdMock: Mock = vi.fn();
 export const getUserByIdMock: Mock = vi.fn();
 
 export async function auditModuleMock(importOriginal: () => Promise<typeof AuditModule>): Promise<object> {
-    return { ...(await importOriginal()), recordAuditEvent: recordMock };
+    // A unit run wires no store, so the backend has to be reported as configured for the entitlement to pass.
+    return { ...(await importOriginal()), recordAuditEvent: recordMock, auditBackend: { configured: true } };
 }
 
 export async function sharedModuleMock(importOriginal: () => Promise<typeof NangoShared>): Promise<object> {
@@ -35,12 +34,7 @@ export async function sharedModuleMock(importOriginal: () => Promise<typeof Nang
         getInvitation: getInvitationMock,
         getPlanSafe: getPlanSafeMock,
         environmentService: { ...actual.environmentService, getByIdWithoutSecrets: getEnvironmentByIdMock, getByUuidWithoutSecrets: getEnvironmentByUuidMock },
-        customerKeyService: {
-            ...actual.customerKeyService,
-            getApiKeyById: getApiKeyByIdMock,
-            getAccountApiKeyById: getAccountApiKeyByIdMock,
-            getApiKeyByUuid: getApiKeyByUuidMock
-        },
+        customerKeyService: { ...actual.customerKeyService, search: customerKeySearchMock },
         configService: { ...actual.configService, getIntegrationSummary: getIntegrationSummaryMock },
         accountService: { ...actual.accountService, getAccountById: getAccountByIdMock },
         connectionService: { ...actual.connectionService, getConnectionById: getConnectionByIdMock },

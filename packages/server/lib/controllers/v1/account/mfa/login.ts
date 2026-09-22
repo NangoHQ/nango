@@ -1,5 +1,4 @@
 import db from '@nangohq/database';
-import { getFlags } from '@nangohq/feature-flags';
 import { accountService, mfaService, recordMFALoginRefused, recordMFAVerifyFailure, userService } from '@nangohq/shared';
 
 import { safeReturnTo } from '../returnTo.js';
@@ -75,7 +74,7 @@ async function loadEligibleUser(userId: number): Promise<DBUser | null> {
 
 export async function isMFAEnabled(user: DBUser, trx: Knex = db.knex): Promise<boolean> {
     const account = await accountService.getAccountById(trx, user.account_id);
-    return Boolean(account && (await getFlags().isMFAEnabled(account.uuid)));
+    return Boolean(account);
 }
 
 async function loginUser(req: Request, user: DBUser): Promise<void> {

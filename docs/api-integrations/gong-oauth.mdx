@@ -1,0 +1,88 @@
+---
+title: 'Gong (Oauth)'
+sidebarTitle: 'Gong (Oauth)'
+description: 'Integrate your application with the Gong API using OAuth'
+---
+
+## 🚀 Quickstart
+
+Connect to Gong with Nango using OAuth and see data flow in 2 minutes. See [Gong (Basic Auth)](/api-integrations/gong) if you want to use an API key instead.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Gong (Oauth)_.
+    </Step>
+    <Step title="Authorize Gong">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Gong and authorize the app. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Gong API">
+    Let's make your first request to the Gong API (list calls). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/calls" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/calls',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Gong (Oauth) integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own Gong OAuth app](/api-integrations/gong-oauth/how-to-register-your-own-gong-oauth-api-oauth-app)
+  Register an OAuth app with Gong and obtain credentials to connect it to Nango
+
+- [How to set up webhooks with Gong on Nango](/api-integrations/gong/webhooks)
+  Receive real-time Gong call events in your app
+
+Official docs: [Gong API documentation](https://app.gong.io/settings/api/documentation#overview)
+
+## 🧩 Pre-built syncs & actions for Gong (Oauth)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/gong-oauth/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Gong rate-limits API access to 3 requests per second and 10,000 requests per day by default. Contact [Gong support](https://help.gong.io/) if you need higher limits.
+
+---

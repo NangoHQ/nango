@@ -19,7 +19,7 @@ export function recordManagementMcpAudit({
     metadata
 }: {
     account: DBTeam;
-    environment: DBEnvironment;
+    environment: Pick<DBEnvironment, 'uuid' | 'name'>;
     plan: DBPlan | null;
     auditContext: AuditAttribution;
     policy: AuditPolicy;
@@ -42,12 +42,12 @@ export function recordManagementMcpAudit({
         ...(metadata ? { metadata } : {})
     } as AuditEvent;
 
-    void emit(account.uuid, plan, event);
+    void emit(plan, event);
 }
 
-async function emit(accountUuid: string, plan: DBPlan | null, event: AuditEvent): Promise<void> {
+async function emit(plan: DBPlan | null, event: AuditEvent): Promise<void> {
     try {
-        if (!(await canRecordAuditTrail(accountUuid, plan))) {
+        if (!(await canRecordAuditTrail(plan))) {
             return;
         }
 

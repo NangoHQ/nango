@@ -160,6 +160,7 @@ export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
 
 export interface ProviderMcpOAuth2Generic extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'MCP_OAUTH2_GENERIC';
+    mcp_server_url?: string;
 }
 
 export interface ProviderJwt extends BaseProvider {
@@ -245,6 +246,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         // jwt-specific
         header?: Record<string, string>;
         payload?: Record<string, string>;
+        singleUse?: boolean;
     };
     assertion_option?: Record<string, SimplifiedJSONSchema>;
     token_expires_in_ms?: number;

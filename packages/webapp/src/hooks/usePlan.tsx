@@ -1,8 +1,6 @@
 import { keepPreviousData, queryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
-import { permissions } from '@nangohq/authz';
-
 import { applyPlanOverride, buildOverdueOverride, buildPeriodCostsOverride, buildSpendOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
@@ -20,6 +18,7 @@ import type {
     GetOverdueInvoices,
     GetPlan,
     GetPlans,
+    GetProjectedCosts,
     GetSpendAlert,
     GetUpcomingInvoice,
     GetUsage,
@@ -52,17 +51,18 @@ export function currentPlanQueryOptions(env: string) {
 function usePlanOverride(env: string, realPlan: ApiPlan | null | undefined): ApiPlan | null | undefined {
     const overrideCode = usePlanOverrideStore((s) => s.overrideCode);
     const scheduledTargetCode = usePlanOverrideStore((s) => s.scheduledTargetCode);
+    const addonState = usePlanOverrideStore((s) => s.addonState);
     // Only fetch when an override is set, to avoid an extra /plans request on every load.
-    const { data: plansList } = useApiGetPlans(env, { enabled: Boolean(overrideCode) });
+    const { data: plansList } = useApiGetPlans(env, { enabled: Boolean(overrideCode || scheduledTargetCode) });
 
     return useMemo(() => {
-        if (!overrideCode) {
+        if (!overrideCode && !addonState && !scheduledTargetCode) {
             return realPlan;
         }
         const overridePlan = plansList?.data.find((p) => p.code === overrideCode) ?? null;
         const scheduledTarget = plansList?.data.find((p) => p.code === scheduledTargetCode) ?? null;
-        return applyPlanOverride(realPlan, { overridePlan, scheduledTarget });
-    }, [realPlan, overrideCode, scheduledTargetCode, plansList]);
+        return applyPlanOverride(realPlan, { overridePlan, scheduledTarget, addonState });
+    }, [realPlan, overrideCode, scheduledTargetCode, addonState, plansList]);
 }
 
 export function useApiGetCurrentPlan(env: string) {
@@ -155,7 +155,7 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
     // Only used to key the cache: `portalUrl` is returned to billing managers only, so a mid-session
     // permission change must not serve the other role's cached response.
     const { can } = usePermissions();
-    const canManageBilling = can(permissions.canManageBilling);
+    const canManageBilling = can('account:billing:payment_methods:create');
     return useQuery<GetOverdueInvoices['Success'], APIError>({
         // Fetched for every member, not just billing managers — the overdue warning shows to all. Not
         // gated on the plan either: a downgraded account can still owe an invoice.
@@ -232,23 +232,51 @@ export const GetBillingPeriodCostsQueryKey = ['plans', 'billing', 'period-costs'
  * Shares the invoice's stale time deliberately: both read the same Orb figures, and different
  * windows would let two views of them disagree.
  */
-export function useApiGetBillingPeriodCosts(env: string, plan?: { name: string } | null, options?: { enabled?: boolean }) {
+export function useApiGetBillingPeriodCosts(
+    env: string,
+    plan?: { name: string } | null,
+    options?: { enabled?: boolean; timeframe?: { start: string; end: string } }
+) {
     const planName = plan?.name;
+    const timeframe = options?.timeframe;
     const periodCostsOverride = usePlanOverrideStore((s) => s.periodCostsOverride);
     return useQuery<GetBillingPeriodCosts['Success'], APIError>({
         enabled: Boolean(env) && (options?.enabled ?? false),
         staleTime: UPCOMING_INVOICE_STALE_TIME,
-        queryKey: [...GetBillingPeriodCostsQueryKey, env, planName, currentBillingPeriod(), periodCostsOverride],
+        queryKey: [...GetBillingPeriodCostsQueryKey, env, planName, timeframe?.start ?? currentBillingPeriod(), timeframe?.end, periodCostsOverride],
         queryFn: async (): Promise<GetBillingPeriodCosts['Success']> => {
             if (periodCostsOverride !== null) {
                 return buildPeriodCostsOverride(periodCostsOverride);
             }
 
-            const res = await apiFetch(`/api/v1/plans/billing/period-costs?env=${env}`, {
+            const window = timeframe ? `&from=${encodeURIComponent(timeframe.start)}&to=${encodeURIComponent(timeframe.end)}` : '';
+            const res = await apiFetch(`/api/v1/plans/billing/period-costs?env=${env}${window}`, {
                 method: 'GET'
             });
 
             const json = (await res.json()) as GetBillingPeriodCosts['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
+}
+
+export const GetProjectedCostsQueryKey = ['plans', 'billing', 'projected-costs'];
+
+export function useApiGetProjectedCosts(env: string, timeframe: { start: string; end: string }, options?: { enabled?: boolean }) {
+    return useQuery<GetProjectedCosts['Success'], APIError>({
+        enabled: Boolean(env) && (options?.enabled ?? false),
+        staleTime: UPCOMING_INVOICE_STALE_TIME,
+        queryKey: [...GetProjectedCostsQueryKey, env, timeframe.start, timeframe.end],
+        queryFn: async (): Promise<GetProjectedCosts['Success']> => {
+            const res = await apiFetch(`/api/v1/plans/billing/projected-costs?env=${env}&from=${timeframe.start}&to=${timeframe.end}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetProjectedCosts['Reply'];
             if (res.status !== 200 || 'error' in json) {
                 throw new APIError({ res, json });
             }

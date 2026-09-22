@@ -159,14 +159,16 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
     // Check if referenced connectionConfig keys exist in the connection_config property
     if (connectionConfigReferences.length > 0) {
         for (const reference of connectionConfigReferences) {
-            const defined = provider.connection_config && reference.key in provider.connection_config;
+            const defined =
+                (provider.connection_config && reference.key in provider.connection_config) ||
+                (provider.integration_config && reference.key in provider.integration_config);
             const inTokenResponseMetadata = provider.token_response_metadata?.includes(reference.key);
 
             if (!defined && !inTokenResponseMetadata) {
                 console.error(
                     chalk.red('error'),
                     chalk.blue(providerKey),
-                    `"${reference.path.join('" > "')}" use "connectionConfig.${reference.key}", but it's not defined in "connection_config"`
+                    `"${reference.path.join('" > "')}" use "connectionConfig.${reference.key}", but it's not defined in "connection_config" or "integration_config"`
                 );
                 error = true;
                 continue;

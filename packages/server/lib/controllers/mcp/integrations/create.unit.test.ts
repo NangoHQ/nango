@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { basePublicUrl, Err, flags, Ok } from '@nangohq/utils';
 
-import { audit } from '../../../audit.js';
+import { audit, auditBackend } from '../../../audit.js';
 import integrationService, { IntegrationServiceError } from '../../../services/integration.service.js';
 import { PublicMcpError } from '../utils.js';
 import { createIntegrationsTool } from './create.js';
@@ -23,6 +23,7 @@ const updatedAt = new Date('2026-01-02T00:00:00.000Z');
 describe('createIntegrationsTool', () => {
     afterEach(() => {
         flags.hasAuditTrail = false;
+        auditBackend.configured = false;
         vi.restoreAllMocks();
     });
 
@@ -62,7 +63,9 @@ describe('createIntegrationsTool', () => {
                 client_secret: 'client-secret',
                 scopes: 'repo'
             },
-            integrationConfig: { region: 'us' }
+            integrationConfig: { region: 'us' },
+            environment: context.environment,
+            team: context.account
         });
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -98,7 +101,9 @@ describe('createIntegrationsTool', () => {
             uniqueKey: 'github-own',
             credentialSource: 'nango',
             displayName: undefined,
-            forwardWebhooks: undefined
+            forwardWebhooks: undefined,
+            environment: context.environment,
+            team: context.account
         });
     });
 
@@ -122,7 +127,9 @@ describe('createIntegrationsTool', () => {
             credentialSource: 'own',
             displayName: undefined,
             forwardWebhooks: undefined,
-            integrationConfig: { keyLabel: 'Workspace token' }
+            integrationConfig: { keyLabel: 'Workspace token' },
+            environment: context.environment,
+            team: context.account
         });
     });
 
@@ -172,6 +179,7 @@ describe('createIntegrationsTool', () => {
 
     it('audits creation without including credentials or integration configuration values', async () => {
         flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         vi.spyOn(integrationService, 'create').mockResolvedValue(Ok({ integration: integrationFixture(), provider: providerFixture() }));
         const auditedContext = {

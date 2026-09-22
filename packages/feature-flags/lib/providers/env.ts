@@ -8,7 +8,7 @@ const logger = getLogger('FeatureFlags.Env');
 
 /**
  * One env var per flag, named after the flag key uppercased with dashes as underscores:
- * `NANGO_FEATURE_FLAG_AUDIT_TRAIL=true` serves `true` for the `audit-trail` flag.
+ * `NANGO_FEATURE_FLAG_EXAMPLE_FLAG=true` serves `true` for the `example-flag` flag.
  */
 const FLAG_PREFIX = 'NANGO_FEATURE_FLAG_';
 

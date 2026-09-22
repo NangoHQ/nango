@@ -1,6 +1,6 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { accountService, handlePlanChanged, updatePlanByTeam } from '@nangohq/shared';
+import { accountService, handlePlanChanged, productTracking, updatePlanByTeam } from '@nangohq/shared';
 import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -91,7 +91,14 @@ type Webhooks =
     | SubscriptionCostExceededEvent;
 
 async function handleWebhook(body: Webhooks): Promise<Result<void>> {
-    logger.info('[orb-hook]', body.type);
+    logger.info('[orb-hook]', {
+        id: body.id,
+        createdAt: body.created_at,
+        type: body.type,
+        subscriptionId: body.subscription.id,
+        accountId: body.subscription.customer.external_customer_id,
+        plan: body.subscription.plan.external_plan_id
+    });
 
     switch (body.type) {
         case 'subscription.started':
@@ -107,6 +114,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
             }
 
             logger.info(`Sub started for team "${team.id}"`);
+
             const changed = await handlePlanChanged(db.knex, team, {
                 newPlanCode: body.subscription.plan.external_plan_id,
                 orbCustomerId: body.subscription.customer.id,
@@ -116,8 +124,35 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
             if (changed.isErr()) {
                 return Err(changed.error);
             }
-            if (changed.value) {
+
+            const planChange = changed.value;
+            if (planChange) {
                 await clearSpendAlertOnPlanChange({ accountId: team.id, subscriptionId: body.subscription.id });
+                productTracking.track({
+                    name: 'account:billing:plan_changed',
+                    team,
+                    eventProperties: {
+                        previousPlan: planChange.previousPlan.name,
+                        newPlan: planChange.updatedPlan.name,
+                        isDowngrade: planChange.isDowngrade,
+                        orbCustomerId: planChange.previousPlan.orb_customer_id
+                    }
+                });
+
+                if (!planChange.isDowngrade) {
+                    // Tracking all scheduled plan changes except for downgrade events; these are tracked
+                    // at the moment the customer schedules the downgrade.
+                    productTracking.track({
+                        name: 'account:billing:plan_changed:v2',
+                        team,
+                        eventProperties: {
+                            type: 'scheduled',
+                            previousPlan: planChange.previousPlan.name + (planChange.previousPlan.has_growth_features ? ' + growth add-on' : ''),
+                            newPlan: planChange.updatedPlan.name + (planChange.updatedPlan.has_growth_features ? ' + growth add-on' : ''),
+                            orbCustomerId: planChange.previousPlan.orb_customer_id
+                        }
+                    });
+                }
             }
 
             return Ok(undefined);

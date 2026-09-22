@@ -2,6 +2,7 @@ import tracer from 'dd-trace';
 
 import { getProvider, getProxyConfiguration, getServerOutboundUrlPolicy, makeDataTransferEvent, ProxyRequest, pubsub } from '@nangohq/shared';
 
+import { envs } from '../../env.js';
 import * as verificationscriptHandlers from './index.js';
 
 import type { Config } from '@nangohq/shared';
@@ -110,6 +111,7 @@ async function execute(
                     },
                     proxyConfig,
                     outboundPolicy: getServerOutboundUrlPolicy(),
+                    maxWaitMs: envs.NANGO_PROXY_MAX_RETRY_WAIT_MS,
                     getConnection: () => {
                         return connection;
                     },
