@@ -1,0 +1,320 @@
+{
+    "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
+    "schema_version": 1,
+    "app_info": {
+        "display_name": "Nango",
+        "subtitle": "Manage Nango integrations",
+        "description": "Nango helps users inspect and manage environments, integrations, connections, syncs, functions, and logs, and run connected actions through ChatGPT.",
+        "category": "DEVELOPER_TOOLS"
+    },
+    "tools": {
+        "environments_list": {
+            "annotations": {
+                "readOnlyHint": true,
+                "openWorldHint": false,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Retrieves the names and production flags of environments visible to the signed-in user without changing them.",
+                "open_world_justification": "Only reads environments within the user's bounded Nango account.",
+                "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+            }
+        },
+        "docs_search": {
+            "annotations": {
+                "readOnlyHint": true,
+                "openWorldHint": true,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Searches public Nango documentation and returns snippets and links without modifying data.",
+                "open_world_justification": "Queries Nango's public documentation service outside the user's private workspace.",
+                "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+            }
+        },
+        "docs_query_filesystem": {
+            "annotations": {
+                "readOnlyHint": true,
+                "openWorldHint": true,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Runs supported read-only commands against an isolated virtual copy of the Nango documentation.",
+                "open_world_justification": "Reads Nango's public documentation service outside the user's private workspace.",
+                "destructive_justification": "Cannot modify the documentation sandbox, the Nango server, or the user's computer."
+            }
+        },
+        "providers_get": {
+            "annotations": {
+                "readOnlyHint": true,
+                "openWorldHint": false,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Retrieves one provider definition and optional function templates without changing data.",
+                "open_world_justification": "Only reads Nango's bounded provider catalog and does not contact arbitrary external entities.",
+                "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+            }
+        },
+        "connect_session_create": {
+            "annotations": {
+                "readOnlyHint": false,
+                "openWorldHint": false,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Creates a short-lived Connect session, token, and authorization link in the selected Nango environment.",
+                "open_world_justification": "Creates a session only within the user's bounded Nango account and does not itself authorize an external provider.",
+                "destructive_justification": "Does not delete or overwrite existing connections, and the new session expires automatically."
+            }
+        },
+        "integrations_list": {
+            "annotations": {
+                "readOnlyHint": true,
+                "openWorldHint": false,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Lists integrations configured in the selected Nango environment without modifying them.",
+                "open_world_justification": "Only reads integration records from the user's bounded Nango environment.",
+                "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+            }
+        },
+        "integrations_get": {
+            "annotations": {
+                "readOnlyHint": true,
+                "openWorldHint": false,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Retrieves one configured integration and optionally its webhook URL or authorized developer-app credentials without changing it.",
+                "open_world_justification": "Only reads an integration from the user's bounded Nango environment.",
+                "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+            }
+        },
+        "integrations_create": {
+            "annotations": {
+                "readOnlyHint": false,
+                "openWorldHint": false,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Creates a new integration and stores its configuration and selected developer-app credentials in Nango.",
+                "open_world_justification": "Creates the record only within the selected Nango environment and does not contact arbitrary external entities.",
+                "destructive_justification": "Rejects an existing integration ID instead of overwriting it and does not delete other records."
+            }
+        },
+        "integrations_update": {
+            "annotations": {
+                "readOnlyHint": false,
+                "openWorldHint": false,
+                "destructiveHint": true
+            },
+            "justifications": {
+                "read_only_justification": "Updates an existing integration's identifier, credentials, webhook forwarding, or configuration in Nango.",
+                "open_world_justification": "Changes only an integration inside the selected Nango environment and does not contact arbitrary external entities.",
+                "destructive_justification": "Can overwrite developer-app credentials and integration settings or rename the integration without an automatic undo."
+            }
+        },
+        "integrations_delete": {
+            "annotations": {
+                "readOnlyHint": false,
+                "openWorldHint": false,
+                "destructiveHint": true
+            },
+            "justifications": {
+                "read_only_justification": "Deletes the selected integration from the Nango environment.",
+                "open_world_justification": "Deletes a record only within the user's bounded Nango environment.",
+                "destructive_justification": "Permanently deletes the selected integration and its managed configuration."
+            }
+        },
+        "connections_list": {
+            "annotations": {
+                "readOnlyHint": true,
+                "openWorldHint": false,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Lists and filters connection records without returning credentials or changing connection state.",
+                "open_world_justification": "Only reads connections from the selected Nango environment.",
+                "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+            }
+        },
+        "connections_get": {
+            "annotations": {
+                "readOnlyHint": false,
+                "openWorldHint": true,
+                "destructiveHint": true
+            },
+            "justifications": {
+                "read_only_justification": "May contact a provider to refresh credentials and persist the rotated credential material before returning the connection.",
+                "open_world_justification": "Can call the connected provider's external authentication endpoints while refreshing credentials.",
+                "destructive_justification": "A refresh can overwrite stored access, refresh, or application credential material."
+            }
+        },
+        "syncs_set_state": {
+            "annotations": {
+                "readOnlyHint": false,
+                "openWorldHint": false,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Changes selected sync schedules between started and paused states.",
+                "open_world_justification": "Only changes sync scheduling state inside the selected Nango environment.",
+                "destructive_justification": "The started and paused states are reversible and do not delete synced records."
+            }
+        },
+        "syncs_trigger": {
+            "annotations": {
+                "readOnlyHint": false,
+                "openWorldHint": true,
+                "destructiveHint": true
+            },
+            "justifications": {
+                "read_only_justification": "Starts one or more sync jobs and can request a full reset or removal of existing synced records.",
+                "open_world_justification": "Triggered sync jobs can call the external provider APIs configured for the selected connections.",
+                "destructive_justification": "The empty_cache option deletes existing synced records before a full sync."
+            }
+        },
+        "actions_trigger": {
+            "annotations": {
+                "readOnlyHint": false,
+                "openWorldHint": true,
+                "destructiveHint": true
+            },
+            "justifications": {
+                "read_only_justification": "Executes a customer-configured action that can create or update data and starts another execution when retried.",
+                "open_world_justification": "The action can interact with external provider APIs through the selected connection.",
+                "destructive_justification": "A customer-defined action can perform irreversible writes or sends in an external provider system."
+            }
+        },
+        "functions_list": {
+            "annotations": {
+                "readOnlyHint": true,
+                "openWorldHint": false,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Lists deployed syncs, actions, and on-event scripts without changing them.",
+                "open_world_justification": "Only reads function metadata from the selected Nango environment.",
+                "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+            }
+        },
+        "deploy_template": {
+            "annotations": {
+                "readOnlyHint": false,
+                "openWorldHint": false,
+                "destructiveHint": true
+            },
+            "justifications": {
+                "read_only_justification": "Deploys a catalog function template and starts the sync for existing connections when the template is a sync.",
+                "open_world_justification": "Deploys within the selected Nango environment and only targets connections already configured there rather than arbitrary external entities.",
+                "destructive_justification": "Can deactivate and replace an existing same-named non-catalog function configuration."
+            }
+        },
+        "get_deployment_status": {
+            "annotations": {
+                "readOnlyHint": true,
+                "openWorldHint": false,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Retrieves the stored status and result of one function deployment without changing it.",
+                "open_world_justification": "Only reads a deployment record from the selected Nango environment.",
+                "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+            }
+        },
+        "logs_list_operations": {
+            "annotations": {
+                "readOnlyHint": true,
+                "openWorldHint": false,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Lists and filters stored Nango operation logs without modifying them.",
+                "open_world_justification": "Only reads logs from the user's selected Nango environment.",
+                "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+            }
+        },
+        "logs_get_operation": {
+            "annotations": {
+                "readOnlyHint": true,
+                "openWorldHint": false,
+                "destructiveHint": false
+            },
+            "justifications": {
+                "read_only_justification": "Retrieves one stored Nango operation and its paginated log messages without changing them.",
+                "open_world_justification": "Only reads logs from the user's selected Nango environment.",
+                "destructive_justification": "Does not delete, overwrite, revoke access, or perform irreversible actions."
+            }
+        }
+    },
+    "test_cases": [
+        {
+            "description": "List accessible environments before choosing a management target.",
+            "user_prompt": "List the Nango environments I can access so I can choose one before making changes.",
+            "file_attachment_urls": null,
+            "tools_triggered": "environments_list",
+            "expected_output": "Returns the accessible environment names and production flags without querying each environment.",
+            "expected_output_url": null
+        },
+        {
+            "description": "Create an integration with Nango-provided developer-app credentials.",
+            "user_prompt": "In my dev Nango environment, create a GitHub integration with the ID github using Nango-provided credentials.",
+            "file_attachment_urls": null,
+            "tools_triggered": "integrations_create",
+            "expected_output": "Creates the integration and returns its non-secret configuration details.",
+            "expected_output_url": null
+        },
+        {
+            "description": "Create a restricted Connect authorization session for an end user.",
+            "user_prompt": "In my dev Nango environment, create a Connect authorization link for end user customer-42 that only allows the github integration.",
+            "file_attachment_urls": null,
+            "tools_triggered": "connect_session_create",
+            "expected_output": "Returns a short-lived authorization link and expiration suitable for sharing with that end user.",
+            "expected_output_url": null
+        },
+        {
+            "description": "Run a deliberately destructive full sync for one connection.",
+            "user_prompt": "In my dev Nango environment, run a full issues sync for the github connection customer-42 and clear its existing synced records first.",
+            "file_attachment_urls": null,
+            "tools_triggered": "syncs_trigger",
+            "expected_output": "Triggers the requested full sync with existing-record deletion enabled and reports whether the command was accepted.",
+            "expected_output_url": null
+        },
+        {
+            "description": "Find recent failed operations for an integration.",
+            "user_prompt": "In my dev Nango environment, show failed operations from the last 24 hours for the github integration.",
+            "file_attachment_urls": null,
+            "tools_triggered": "logs_list_operations",
+            "expected_output": "Returns the newest matching failed operations with pagination information.",
+            "expected_output_url": null
+        }
+    ],
+    "negative_test_cases": [
+        {
+            "description": "Do not invoke Nango to create a provider-side developer application.",
+            "user_prompt": "Create a new OAuth app for me in the GitHub developer settings.",
+            "file_attachment_urls": null,
+            "tools_triggered": null,
+            "expected_output": "The app should not be invoked because it cannot create developer applications in provider administration consoles.",
+            "expected_output_url": null
+        },
+        {
+            "description": "Do not use the documentation sandbox to inspect local files.",
+            "user_prompt": "Show me the files in my computer's home directory.",
+            "file_attachment_urls": null,
+            "tools_triggered": null,
+            "expected_output": "The app should not be invoked because its filesystem tool only reads the isolated Nango documentation sandbox.",
+            "expected_output_url": null
+        },
+        {
+            "description": "Do not trigger for unrelated calendar requests.",
+            "user_prompt": "Schedule a calendar meeting with my design team tomorrow afternoon.",
+            "file_attachment_urls": null,
+            "tools_triggered": null,
+            "expected_output": "The app should not be invoked because calendar scheduling is outside its supported workflows.",
+            "expected_output_url": null
+        }
+    ]
+}

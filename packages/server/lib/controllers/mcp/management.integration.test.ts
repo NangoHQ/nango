@@ -516,7 +516,7 @@ describe('POST /mcp management server', () => {
             },
             {
                 name: 'deploy_template',
-                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
             },
             {
                 name: 'get_deployment_status',
