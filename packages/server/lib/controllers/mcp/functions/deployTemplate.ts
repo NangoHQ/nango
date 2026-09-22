@@ -28,7 +28,7 @@ export const deployTemplateTool = defineManagementMcpTool<typeof deployTemplateA
         readOnlyHint: false,
         destructiveHint: true,
         idempotentHint: false,
-        openWorldHint: false
+        openWorldHint: true
     },
     async handler({ args, account, environment, plan }) {
         return (
