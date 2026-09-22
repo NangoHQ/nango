@@ -1411,22 +1411,26 @@ export class ConnectionService {
      * `tagSelectors` is an OR between the tag objects, and an AND between the tags inside each one.
      * Pinned connections survive the candidate sample so a caller can check them without listing
      * every match.
-     */
-    /**
+     *
      * Reads a replica by default. Pass the primary when the caller is looking for a connection that
      * may have been written moments ago, because replication lag reads as no match.
+     *
+     * Candidates come back newest first unless `candidateOrder` says otherwise, which matters to a
+     * caller that samples fewer candidates than there are matches.
      */
     public async groupConnectionMatchesByIntegration({
         environmentId,
         tagSelectors,
         pinnedConnections,
         candidateSampleSize,
+        candidateOrder = 'newest_first',
         database = db.readOnly
     }: {
         environmentId: number;
         tagSelectors: Tags[];
         pinnedConnections: { integrationId: string; connectionId: string }[];
         candidateSampleSize: number;
+        candidateOrder?: 'newest_first' | 'oldest_first';
         database?: Knex;
     }): Promise<ConnectionIntegrationMatchRow[]> {
         if (tagSelectors.length === 0) {
@@ -1457,9 +1461,10 @@ export class ConnectionService {
             .with('ranked', (qb) => {
                 qb.select('matched.*', database.raw('COUNT(*) OVER (PARTITION BY integration_id) as match_count'))
                     .rowNumber('rn', (rn) => {
+                        const order = candidateOrder === 'oldest_first' ? 'asc' : 'desc';
                         rn.partitionBy('integration_id').orderBy([
-                            { column: 'created_at', order: 'desc' },
-                            { column: 'id', order: 'desc' }
+                            { column: 'created_at', order },
+                            { column: 'id', order }
                         ]);
                     })
                     .from('matched');

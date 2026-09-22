@@ -25,8 +25,7 @@ export const CANDIDATE_SAMPLE_SIZE = 10;
 
 /**
  * Stamped on every connection the agent creates through nango_create_connection, and the only thing
- * tying that connection back to the session that asked for it. Tag keys are lowercased on the way
- * in, so this is written the way it is stored.
+ * tying that connection back to the session that asked for it.
  */
 export const AGENT_SESSION_TAG_KEY = 'nango/agent_session';
 
@@ -133,8 +132,11 @@ export async function resolveTenantConnections({
 
 /**
  * The connection the agent created for this integration, matched on the session tag. Reads the
- * primary because it can be called within replication lag of the connection being written, and
- * takes the newest if the user went through the flow more than once.
+ * primary because it can be called within replication lag of the connection being written.
+ *
+ * Takes the first flow the user completed. A later one must not move the session onto a different
+ * connection, so reauthorizing cannot change who the session acts as. Issuing a second link while
+ * one is still live is what should not happen in the first place (NAN-7163).
  */
 export async function findConnectionCreatedForSession({
     environmentId,
@@ -150,16 +152,17 @@ export async function findConnectionCreatedForSession({
         tagSelectors: [{ [AGENT_SESSION_TAG_KEY]: sessionId }],
         pinnedConnections: [],
         candidateSampleSize: 1,
+        candidateOrder: 'oldest_first',
         database: db.knex
     });
 
     const match = matches.find((candidate) => candidate.integration_id === integrationId);
-    const [newest] = match?.candidates ?? [];
-    if (!match || !newest) {
+    const [first] = match?.candidates ?? [];
+    if (!match || !first) {
         return null;
     }
 
-    return toResolvedConnection(match.integration_id, match.provider, newest);
+    return toResolvedConnection(match.integration_id, match.provider, first);
 }
 
 export function pickConnectionPerIntegration({

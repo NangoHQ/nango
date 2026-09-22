@@ -21,13 +21,8 @@ export type AgentSessionIntegrationPolicyInput =
           deny?: AgentSessionToolListInput | undefined;
       };
 
-/** A bare boolean turns a meta tool on or off, and the object form says the same thing the long way. */
 export type AgentSessionMetaToolInput = boolean | { enabled: boolean; tags?: Tags | undefined };
 
-/**
- * Only nango_create_connection takes tags, because it is the only one that creates a connection to
- * put them on. Tags anywhere else are rejected rather than accepted and dropped.
- */
 export interface AgentSessionMetaToolsInput {
     nango_tool_search?: boolean | { enabled: boolean } | undefined;
     nango_execute?: boolean | { enabled: boolean } | undefined;

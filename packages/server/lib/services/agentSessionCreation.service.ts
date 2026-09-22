@@ -326,10 +326,6 @@ export function metaToolsSummary(metaTools: AgentSessionMetaTools): AgentSession
     return summary;
 }
 
-/**
- * Old sessions were stored before this tool existed, so a row with no entry reads as the default
- * rather than as an undefined the tool would then have to guard against.
- */
 export function parseCreateConnection(requested: AgentSessionMetaToolInput | undefined): AgentSessionCreateConnectionConfig {
     if (requested === undefined) {
         return { enabled: CREATE_CONNECTION_META_TOOL.enabledByDefault, tags: {} };
