@@ -240,13 +240,68 @@ Coding agents can speed up Nango integration work in two places: wiring Nango in
 This page is about configuring Nango with your coding agent. To expose Nango integrations to your product's agents, see [Agent Sessions](/guides/agent-sessions).
 </Info>
 
-## Management MCP server (Beta)
+## Management MCP server
 
 Give your coding agent tools to manage your Nango account and search the Nango docs.
 
-Create an API key in **Environment Settings > API Keys**, then replace `<NANGO-API-KEY>` in the relevant configuration below.
+### OAuth (recommended)
 
-Refer to the [Management MCP reference](/reference/backend/management-mcp#tools) for the full tools list and required API key scopes for each.
+OAuth authorization follows your Nango user permissions across the environments in your account. The Management MCP server uses Client ID Metadata Documents (CIMD) and doesn't support Dynamic Client Registration (DCR).
+
+Refer to the [Management MCP reference](/reference/backend/management-mcp#tools) for the full tools list and required permissions.
+
+<Tabs>
+  <Tab title="Claude Code">
+    Add the server for your user so it is available across projects:
+
+    ```bash
+    claude mcp add --transport http nango-management --scope user https://mcp.nango.dev/mcp
+    claude mcp login nango-management
+    ```
+
+    Complete the Nango authorization in the browser, then run `claude mcp list` to verify the connection.
+  </Tab>
+
+  <Tab title="Codex">
+    Add the following to `~/.codex/config.toml` for a global configuration, or `.codex/config.toml` for a project configuration:
+
+    ```toml
+    [mcp_servers.nango-management]
+    url = "https://mcp.nango.dev/mcp"
+    ```
+
+    Start the OAuth flow:
+
+    ```bash
+    codex mcp login nango-management
+    ```
+
+    Complete the Nango authorization in the browser, then use `/mcp` to verify the connection.
+  </Tab>
+
+  <Tab title="VS Code">
+    Run **MCP: Open User Configuration** from the Command Palette, then add the server:
+
+    ```json
+    {
+      "servers": {
+        "nangoManagement": {
+          "type": "http",
+          "url": "https://mcp.nango.dev/mcp"
+        }
+      }
+    }
+    ```
+
+    Select **Start** above the server configuration. VS Code opens the Nango authorization page in your browser. Complete the authorization, then check that the server is running.
+  </Tab>
+</Tabs>
+
+After connecting, ask the agent to call `environments_list`, then use one of the returned environment names for subsequent tool calls.
+
+### API key
+
+An Environment API key is useful for trusted clients when OAuth is not suitable, for example when the client does not support CIMD yet. Each key selects one environment, so these clients do not use `environments_list` or pass an `environment` argument. Create a key in **Environment Settings > API Keys**, replace `<NANGO-API-KEY>` in the relevant configuration below, and [limit its scopes](/reference/backend/management-mcp#use-an-api-key-instead) to the tools the client needs.
 
 <Tabs>
   <Tab title="Claude Code">
@@ -6153,9 +6208,9 @@ We recommend exploring the logs in your own Nango account under **Logs**.
 
 Logs are retained for **15 days**, then permanently deleted. 
 
-## Logs MCP tools (Beta)
+## Logs MCP tools
 
-The [Management MCP server](/reference/backend/management-mcp#logs) provides Beta tools for listing and filtering log operations and retrieving their messages from an MCP-compatible client.
+The [Management MCP server](/reference/backend/management-mcp#logs) provides tools for listing and filtering log operations and retrieving their messages from an MCP-compatible client.
 
 This helps LLMs investigate and fix integration issues automatically.
 
@@ -13353,91 +13408,95 @@ Source: https://nango.dev/docs/reference/backend/backend-sdk/php.md
 
 <Note>Coming soon. Use the [REST API](/reference/backend/http-api/authentication) in the meantime.</Note>
 
-## Management MCP (Beta)
+## Management MCP
 
 Source: https://nango.dev/docs/reference/backend/management-mcp.md
-Description: Manage a Nango environment from an MCP client.
-
-<Note>
-    The Management MCP server is in Beta. We will continue to add functionality, with the goal of supporting the full public API. This means we may introduce breaking changes along the way. We would love to hear your feedback and requests!
-</Note>
+Description: Manage Nango from an MCP client.
 
 The Management MCP server lets MCP-compatible clients manage Nango through tools. It is an agent-friendly alternative to the [public API](/reference/backend/http-api/authentication).
 
-## Connect
+## Connect with OAuth
 
-For step-by-step installation instructions for specific coding agents, like Claude Code, Cursor, Codex, VS Code, Pi, and OpenCode, see the [coding agent setup guide](/getting-started/coding-agent-setup#management-mcp-server-beta).
+For step-by-step installation instructions for specific coding agents, like Claude Code, Cursor, Codex, VS Code, Pi, and OpenCode, see the [coding agent setup guide](/getting-started/coding-agent-setup#management-mcp-server).
 
-The server uses the Streamable HTTP transport at:
+OAuth is the default way to connect. Your MCP client opens Nango in a browser so you can sign in and approve access. You do not need to create or store a credential in the client.
 
-```text
-https://mcp.nango.dev/mcp
-```
+1. Add the Management MCP server to a client that supports [Client ID Metadata Documents (CIMD)](https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/):
 
-Configure your MCP client to send a Nango API key as a Bearer token:
+   ```text
+   https://mcp.nango.dev/mcp
+   ```
 
-| Header          | Value                    |
-| --------------- | ------------------------ |
-| `Authorization` | `Bearer <NANGO-API-KEY>` |
+2. Start the client's OAuth flow.
+3. Sign in to Nango in the browser and approve the authorization request.
+4. Return to the client. It stores and refreshes the OAuth credentials for you.
 
-Manage API keys in **Environment Settings > API Keys** in the Nango UI. The API key determines which Nango environment the client can access. To limit what the MCP client can do, you can [scope down the API key](/reference/backend/http-api/api-keys#scopes) to only the tools it needs. The required scope for each tool is listed below.
+The server uses the Streamable HTTP transport.
 
-<Note>
-    The `environment:mcp` scope is not required for Management MCP tools.
-</Note>
+## Select an environment
 
-Keep the API key server-side and only configure it in MCP clients you trust. Do not expose it in client-side code, logs, or URLs.
+OAuth authorizes the MCP client for your Nango account. Most tools require an `environment` argument containing the name of the environment in which to run the operation.
+
+Call `environments_list` first to get the environments you can access. The server checks your Nango user permissions in the selected environment for every tool call. All environment-scoped tools require permission to read that environment's settings, plus any permission listed below.
 
 ## Tools
+
+### Environments
+
+Use the Environments tool to list the Nango environments available to your user. It does not take an `environment` argument.
+
+| Tool                | Description                                         | Additional permission |
+| ------------------- | --------------------------------------------------- | --------------------- |
+| `environments_list` | List environments available to the signed-in user. | None                  |
 
 ### Documentation
 
 Use the Documentation tools to search the Nango documentation and read complete pages from Mintlify's virtual documentation filesystem. Start with `docs_search` for broad or conceptual queries, then use `docs_query_filesystem` to read a relevant `.mdx` path or perform an exact text search.
 
-These tools require a valid Management MCP API key but no additional environment operation scope. If Mintlify rate-limits a request, the tool error points to the public Nango documentation MCP at `https://nango.dev/docs/mcp` so you can connect to it directly.
+These tools require no additional environment operation permission. If Mintlify rate-limits a request, the tool error points to the public Nango documentation MCP at `https://nango.dev/docs/mcp` so you can connect to it directly.
 
-| Tool                    | Description                                                               | Required API key scope |
-| ----------------------- | ------------------------------------------------------------------------- | ---------------------- |
-| `docs_search`           | Search the Nango documentation and return contextual snippets and links. | None                   |
-| `docs_query_filesystem` | Read and query Mintlify's virtual Nango documentation filesystem.         | None                   |
+| Tool                    | Description                                                               | Additional permission |
+| ----------------------- | ------------------------------------------------------------------------- | --------------------- |
+| `docs_search`           | Search the Nango documentation and return contextual snippets and links. | None                  |
+| `docs_query_filesystem` | Read and query Mintlify's virtual Nango documentation filesystem.         | None                  |
 
 ### Providers
 
 Use the Provider tools to inspect the public provider catalog. Set `include_templates` to `true` to include the provider's available function templates in the result.
 
-These tools require a valid Management MCP API key but no additional environment operation scope.
+These tools require no additional environment operation permission.
 
-| Tool            | Description                                                        | Required API key scope |
-| --------------- | ------------------------------------------------------------------ | ---------------------- |
-| `providers_get` | Get one provider and optionally include its function templates.    | None                   |
+| Tool            | Description                                                     | Additional permission |
+| --------------- | --------------------------------------------------------------- | --------------------- |
+| `providers_get` | Get one provider and optionally include its function templates. | None                  |
 
 ### Connect sessions
 
 Use the Connect Session tools to start an authorization flow for an end user.
 
-| Tool                     | Description                                | Required API key scope                  |
-| ------------------------ | ------------------------------------------ | --------------------------------------- |
-| `connect_session_create` | Create a new Connect session and its link. | `environment:connect_sessions:write`    |
+| Tool                     | Description                                | Additional permission                |
+| ------------------------ | ------------------------------------------ | ------------------------------------ |
+| `connect_session_create` | Create a new Connect session and its link. | `environment:connect_sessions:write` |
 
 ### Integrations
 
 Use the Integrations tools to inspect and manage integrations in the authenticated Nango environment.
 
-| Tool                  | Description                                                                                       | Required API key scope                                                        |
-| --------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `integrations_list`   | List integrations configured in the environment.                                                  | `environment:integrations:list`                                               |
-| `integrations_get`    | Get a configured integration by ID.                                                               | `environment:integrations:read` or `environment:integrations:read_credentials` |
-| `integrations_create` | Create an integration with caller-supplied or Nango-provided developer application credentials. | `environment:integrations:create`                                             |
-| `integrations_update` | Update a configured integration by ID.                                                         | `environment:integrations:update`                                             |
-| `integrations_delete` | Delete a configured integration by ID.                                                         | `environment:integrations:delete`                                             |
+| Tool                  | Description                                                                                      | Additional permission                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `integrations_list`   | List integrations configured in the environment.                                                 | `environment:integrations:list`                                                |
+| `integrations_get`    | Get a configured integration by ID.                                                              | `environment:integrations:read` or `environment:integrations:read_credentials` |
+| `integrations_create` | Create an integration with caller-supplied or Nango-provided developer application credentials. | `environment:integrations:create`                                              |
+| `integrations_update` | Update a configured integration by ID.                                                           | `environment:integrations:update`                                              |
+| `integrations_delete` | Delete a configured integration by ID.                                                           | `environment:integrations:delete`                                              |
 
 ### Connections
 
-Use the Connections tools to inspect connections in the authenticated Nango environment. Connection list results never include credentials. Getting a connection only includes credentials when the API key has the credential-reading scope.
+Use the Connections tools to inspect connections in the authenticated Nango environment. Connection list results never include credentials. Getting a connection only includes credentials when the caller has the credential-reading permission.
 
-| Tool               | Description                                                                                                                             | Required API key scope                                                        |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `connections_list` | List and filter connections.                                                                                                            | `environment:connections:list` or `environment:connections:list_credentials` |
+| Tool               | Description                                                                                                                                         | Additional permission                                                         |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `connections_list` | List and filter connections.                                                                                                                        | `environment:connections:list` or `environment:connections:list_credentials` |
 | `connections_get`  | Get a connection and its current credential state. Credential access and refresh flags require `read_credentials` and may rotate credential material. | `environment:connections:read` or `environment:connections:read_credentials` |
 
 ### Actions
@@ -13448,50 +13507,62 @@ Use the Actions tool to trigger an action function synchronously for a connectio
     Expect the MCP request to time out within 90 seconds. This does not cancel the action function, which may continue running for up to 15 minutes. After a timeout, the tool cannot return the result or an action ID, and retrying starts another execution. When the action supports it, use input parameters that limit the amount of data processed to keep execution within the MCP timeout.
 </Warning>
 
-| Tool              | Description                                                    | Required API key scope          |
-| ----------------- | -------------------------------------------------------------- | ------------------------------- |
-| `actions_trigger` | Trigger an action function synchronously for a connection.     | `environment:actions:execute`   |
+| Tool              | Description                                                | Additional permission          |
+| ----------------- | ---------------------------------------------------------- | ------------------------------ |
+| `actions_trigger` | Trigger an action function synchronously for a connection. | `environment:actions:execute`  |
 
 ### Syncs
 
 Use the Sync tools to set sync state or trigger syncs for an integration in the authenticated Nango environment. You can optionally limit either operation to one connection and select named sync variants. Triggering can run a full reset and clear existing synced records.
 
-| Tool              | Description                                                                    | Required API key scope      |
-| ----------------- | ------------------------------------------------------------------------------ | --------------------------- |
-| `syncs_set_state` | Set one or more syncs to `started` or `paused`.                                  | `environment:syncs:execute` |
-| `syncs_trigger`   | Trigger one or more syncs, optionally with a full reset and/or cache clear.    | `environment:syncs:execute` |
-
-### Proxy requests
-
-Use the Proxy tool to make authenticated HTTP requests to a provider API through an existing connection. The tool supports `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`, along with query parameters, headers, request bodies, base URL overrides, and up to 5 retries. It returns the provider response status, headers, and body.
-
-The tool accepts JSON and UTF-8 text responses up to 5 MB (5,000,000 bytes). Unsafe JSON integers and high-precision decimals are returned as strings so their values are not rounded. Binary responses, other character encodings, and responses over 5 MB return a tool error. Use the matching [Proxy HTTP API endpoint](/reference/backend/http-api/proxy/get) for those responses.
-
-| Tool            | Description                                                       | Required API key scope |
-| --------------- | ----------------------------------------------------------------- | ---------------------- |
-| `proxy_request` | Make an authenticated request through the Nango requests proxy. | `environment:proxy`    |
+| Tool              | Description                                                                 | Additional permission        |
+| ----------------- | --------------------------------------------------------------------------- | ---------------------------- |
+| `syncs_set_state` | Set one or more syncs to `started` or `paused`.                              | `environment:syncs:execute` |
+| `syncs_trigger`   | Trigger one or more syncs, optionally with a full reset and/or cache clear. | `environment:syncs:execute` |
 
 ### Functions
 
-Use the Functions tools to inspect and deploy functions in the authenticated Nango environment. `deploy_function` and `deploy_template` start distinct deployment paths. Use `get_deployment_status` to check whether a deployment has finished.
+Use the Functions tools to inspect and deploy template functions in the authenticated Nango environment. Use `get_deployment_status` to check whether a deployment has finished.
 
-| Tool                    | Description                                                                    | Required API key scope        |
-| ----------------------- | ------------------------------------------------------------------------------ | ----------------------------- |
+| Tool                    | Description                                                                   | Additional permission        |
+| ----------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
 | `functions_list`        | List and filter deployed syncs, actions, and on-event scripts by integration. | `environment:functions:list` |
-| `deploy_function`       | Start a code function deployment.                                              | `environment:deploy`          |
-| `deploy_template`       | Deploy a function template.                                                    | `environment:deploy`          |
-| `get_deployment_status` | Retrieve a deployment's current status and result.                             | `environment:deploy`          |
+| `deploy_template`       | Deploy a function template.                                                   | `environment:deploy`         |
+| `get_deployment_status` | Retrieve a deployment's current status and result.                            | `environment:deploy`         |
 
 ### Logs
 
 Use the Logs tools to find activity in the authenticated Nango environment and inspect the messages for a specific operation.
 
-| Tool                   | Description                                | Required API key scope  |
-| ---------------------- | ------------------------------------------ | ----------------------- |
-| `logs_list_operations` | List and filter log operations.            | `environment:logs:read` |
-| `logs_get_operation`   | Get an operation and its log messages.     | `environment:logs:read` |
+| Tool                   | Description                            | Additional permission       |
+| ---------------------- | -------------------------------------- | --------------------------- |
+| `logs_list_operations` | List and filter log operations.        | `environment:logs:read`     |
+| `logs_get_operation`   | Get an operation and its log messages. | `environment:logs:read`     |
 
 See [Observability](/guides/platform/observability) for more information about Nango logs.
+
+## Use an API key instead
+
+An Environment API key is an option for non-interactive clients and clients that do not support CIMD. It authenticates the client to one Nango environment, so `environments_list` is not exposed and other tool calls do not take an `environment` argument.
+
+Create an Environment API key in **Environment Settings > API Keys**, then configure the MCP client to send it as a Bearer token:
+
+| Header          | Value                    |
+| --------------- | ------------------------ |
+| `Authorization` | `Bearer <NANGO-API-KEY>` |
+
+The permissions in the tables above are the [required API key scopes](/reference/backend/http-api/api-keys#scopes). The `environment:mcp` scope is not required.
+
+API key authentication also exposes these tools:
+
+| Tool              | Description                                                       | Required API key scope        |
+| ----------------- | ----------------------------------------------------------------- | ----------------------------- |
+| `proxy_request`   | Make an authenticated request through the Nango requests proxy.   | `environment:proxy`           |
+| `deploy_function` | Start a code function deployment.                                 | `environment:deploy`          |
+
+`proxy_request` supports `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`, along with query parameters, headers, request bodies, base URL overrides, and up to 5 retries. It returns the provider response status, headers, and JSON or UTF-8 text body up to 5 MB (5,000,000 bytes). Unsafe JSON integers and high-precision decimals are returned as strings. Binary responses, other character encodings, and larger responses return a tool error. Use the matching [Proxy HTTP API endpoint](/reference/backend/http-api/proxy/get) for those responses.
+
+Keep the API key server-side and only configure it in MCP clients you trust. Do not expose it in client-side code, logs, or URLs.
 
 ## Functions CLI
 
