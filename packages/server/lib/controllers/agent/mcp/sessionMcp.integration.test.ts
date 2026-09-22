@@ -359,7 +359,7 @@ describe('/session/:sessionId/mcp', () => {
 
         expect(res.json.result.isError).toBe(true);
         expect(res.json.result.content[0].text).toBe(
-            "Integration 'zendesk' has no connection in this session, so none of its tools can run. Nothing you can do from here will connect it. Tell the user they need to connect it, and carry on with the tools you do have."
+            "Integration 'zendesk' has no connection in this session, so none of its tools can run. Tell the user they need to connect it, and carry on with the tools you do have."
         );
         expect(res.json.result._meta).toStrictEqual({ 'nango/error_code': 'integration_not_connected', 'nango/integration_id': 'zendesk' });
     });

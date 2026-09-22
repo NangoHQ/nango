@@ -182,7 +182,7 @@ describe('executeSessionTool', () => {
 
         expect(errorOf(result)).toBeInstanceOf(PublicMcpError);
         expect(errorOf(result).message).toBe(
-            "Integration 'notion' has no connection in this session, so none of its tools can run. Nothing you can do from here will connect it. Tell the user they need to connect it, and carry on with the tools you do have."
+            "Integration 'notion' has no connection in this session, so none of its tools can run. Tell the user they need to connect it, and carry on with the tools you do have."
         );
         expect(codeOf(result)).toBe('integration_not_connected');
         expect(integrationOf(result)).toBe('notion');

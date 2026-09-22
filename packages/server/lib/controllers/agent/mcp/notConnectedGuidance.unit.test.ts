@@ -24,7 +24,7 @@ describe('notConnectedGuidance', () => {
     it('tells the agent to hand it over when it cannot connect anything', () => {
         const message = notConnectedGuidance('notion', session({ enabled: false, tags: {} }));
 
-        expect(message).toBe('Nothing you can do from here will connect it. Tell the user they need to connect it, and carry on with the tools you do have.');
+        expect(message).toBe('Tell the user they need to connect it, and carry on with the tools you do have.');
         expect(message).not.toContain('nango_create_connection');
     });
 

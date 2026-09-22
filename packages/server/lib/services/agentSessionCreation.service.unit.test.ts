@@ -87,14 +87,10 @@ describe('parseMetaTools', () => {
     });
 
     it('overrides only the meta tools the caller named', () => {
-        expect(parseMetaTools({ nango_execute: false, nango_proxy: true })).toStrictEqual({
+        expect(parseMetaTools({ nango_execute: { enabled: false }, nango_proxy: { enabled: true } })).toStrictEqual({
             applied: { nangoToolSearch: true, nangoExecute: false, nangoProxy: true, nangoCreateConnection: { enabled: false, tags: {} } },
             unknown: []
         });
-    });
-
-    it('turns nango_create_connection on from a bare boolean', () => {
-        expect(parseMetaTools({ nango_create_connection: true }).applied.nangoCreateConnection).toStrictEqual({ enabled: true, tags: {} });
     });
 
     it('keeps the tags nango_create_connection was configured with', () => {
@@ -108,12 +104,8 @@ describe('parseMetaTools', () => {
         expect(parseMetaTools({ nango_create_connection: { enabled: true } }).applied.nangoCreateConnection).toStrictEqual({ enabled: true, tags: {} });
     });
 
-    it('reads the enabled flag of a meta tool that only takes a boolean', () => {
-        expect(parseMetaTools({ nango_proxy: { enabled: true } }).applied.nangoProxy).toBe(true);
-    });
-
     it('collects the keys that are not meta tools Nango ships', () => {
-        const parsed = parseMetaTools({ nango_proxy: true, nango_teleport: true, proxy: false });
+        const parsed = parseMetaTools({ nango_proxy: { enabled: true }, nango_teleport: true, proxy: false });
 
         expect(parsed.unknown).toStrictEqual(['nango_teleport', 'proxy']);
         expect(parsed.applied.nangoProxy).toBe(true);
@@ -121,6 +113,13 @@ describe('parseMetaTools', () => {
 });
 
 describe('agentSessionMetaToolsSchema', () => {
+    it('widens a bare boolean to the object form', () => {
+        expect(agentSessionMetaToolsSchema.safeParse({ nango_proxy: true, nango_create_connection: false })).toStrictEqual({
+            success: true,
+            data: { nango_proxy: { enabled: true }, nango_create_connection: { enabled: false } }
+        });
+    });
+
     it('accepts a boolean and the object form for nango_create_connection', () => {
         expect(agentSessionMetaToolsSchema.safeParse({ nango_proxy: true, nango_create_connection: { enabled: true, tags: { enduser: '74' } } }).success).toBe(
             true
@@ -131,8 +130,8 @@ describe('agentSessionMetaToolsSchema', () => {
         const parsed = agentSessionMetaToolsSchema.safeParse({ nango_tool_search: { enabled: true, tags: { team: 'x' } } });
 
         expect(parsed.success).toBe(false);
-        expect(parsed.error?.issues[0]?.message).toBe('Only nango_create_connection takes tags');
-        expect(parsed.error?.issues[0]?.path).toStrictEqual(['nango_tool_search', 'tags']);
+        expect(parsed.error?.issues[0]?.message).toBe('Unrecognized key: "tags"');
+        expect(parsed.error?.issues[0]?.path).toStrictEqual(['nango_tool_search']);
     });
 
     it('leaves room for the reserved session tag', () => {

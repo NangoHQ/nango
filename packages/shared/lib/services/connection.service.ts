@@ -1411,12 +1411,6 @@ export class ConnectionService {
      * `tagSelectors` is an OR between the tag objects, and an AND between the tags inside each one.
      * Pinned connections survive the candidate sample so a caller can check them without listing
      * every match.
-     *
-     * Reads a replica by default. Pass the primary when the caller is looking for a connection that
-     * may have been written moments ago, because replication lag reads as no match.
-     *
-     * Candidates come back newest first unless `candidateOrder` says otherwise, which matters to a
-     * caller that samples fewer candidates than there are matches.
      */
     public async groupConnectionMatchesByIntegration({
         environmentId,

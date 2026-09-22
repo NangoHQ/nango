@@ -131,12 +131,9 @@ export async function resolveTenantConnections({
 }
 
 /**
- * The connection the agent created for this integration, matched on the session tag. Reads the
- * primary because it can be called within replication lag of the connection being written.
- *
- * Takes the first flow the user completed. A later one must not move the session onto a different
- * connection, so reauthorizing cannot change who the session acts as. Issuing a second link while
- * one is still live is what should not happen in the first place (NAN-7163).
+ * The connection the agent created for this integration, matched on the session tag. Takes the first
+ * flow the user completed. A later one must not move the session onto a different connection, so
+ * reauthorizing cannot change who the session acts as.
  */
 export async function findConnectionCreatedForSession({
     environmentId,

@@ -472,11 +472,9 @@ Lets the agent get the user to connect an integration that has none, instead of 
 }
 ```
 
-The agent cannot follow the link itself. It passes it to the user, who authorizes it the same way as any [connect link](/guides/auth/share-connect-link) you send them yourself, and the tools for that integration work for the rest of the session once they are done.
+The agent passes the link to the user, who authorizes it the same way as any [connect link](/guides/auth/share-connect-link), and the tools for that integration work for the rest of the session once the connection is created.
 
-This does not widen what the session can reach. The integration has to already be in the toolset, and one that already resolved a connection is refused rather than reconnected, so the tool only ever fills a gap the session was created with.
-
-Nango tags the new connection with `nango/agent_session` so the session can find it. Add your own tags to have it match the selectors your next session for the same tenant will use, otherwise only this session can reach it:
+Nango tags the new connection with `nango/agent_session` so the session can find it. You can configure the tool to add your own tags, allowing the next session to use the tags selectors to include the connection:
 
 ```json
 { "meta_tools": { "nango_create_connection": { "enabled": true, "tags": { "organization_id": "acme" } } } }

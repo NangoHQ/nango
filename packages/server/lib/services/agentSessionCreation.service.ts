@@ -15,7 +15,6 @@ import type {
     AgentSessionCompiledToolset,
     AgentSessionCreateConnectionConfig,
     AgentSessionCreationErrorCode,
-    AgentSessionMetaToolInput,
     AgentSessionMetaTools,
     AgentSessionMetaToolsSummary,
     AgentSessionPinnedTools,
@@ -43,22 +42,20 @@ const EXPIRES_IN_UNITS_IN_MS: Record<string, number> = {
     d: 24 * 60 * 60 * 1000
 };
 
-const BOOLEAN_META_TOOLS = {
-    nangoToolSearch: { name: 'nango_tool_search', enabledByDefault: true },
-    nangoExecute: { name: 'nango_execute', enabledByDefault: true },
-    // Off by default: it reaches any endpoint of a connected integration, not only the toolset's tools.
-    nangoProxy: { name: 'nango_proxy', enabledByDefault: false }
-} as const satisfies Record<string, { name: keyof AgentSessionMetaToolsSummary; enabledByDefault: boolean }>;
-
-const CREATE_CONNECTION_META_TOOL = { name: 'nango_create_connection', enabledByDefault: false } as const;
-
-const META_TOOL_NAMES: string[] = [...Object.values(BOOLEAN_META_TOOLS).map((metaTool) => metaTool.name), CREATE_CONNECTION_META_TOOL.name];
-
 /** One slot is spent on the tag binding the connection back to the session, so the caller gets the rest. */
 const MAX_CONFIGURED_TAGS = TAG_MAX_COUNT - 1;
 
-const metaToolSchema = z.union([
-    z.boolean(),
+/**
+ * A bare boolean is widened to the object form before validation rather than unioned with it. A
+ * union reports itself as one invalid_union issue and buries the real reason, and zodErrorToHTTP
+ * only maps the top level, so the caller would be told nothing more than "Invalid input".
+ */
+const asMetaToolConfig = (value: unknown) => (typeof value === 'boolean' ? { enabled: value } : value);
+
+const metaToolSchema = z.preprocess(asMetaToolConfig, z.strictObject({ enabled: z.boolean() }));
+
+const createConnectionMetaToolSchema = z.preprocess(
+    asMetaToolConfig,
     z.strictObject({
         enabled: z.boolean(),
         tags: connectionTagsSchema
@@ -67,24 +64,31 @@ const metaToolSchema = z.union([
             })
             .optional()
     })
-]);
+);
+
+const META_TOOLS = {
+    nangoToolSearch: { name: 'nango_tool_search', enabledByDefault: true, schema: metaToolSchema },
+    nangoExecute: { name: 'nango_execute', enabledByDefault: true, schema: metaToolSchema },
+    // Off by default: it reaches any endpoint of a connected integration, not only the toolset's tools.
+    nangoProxy: { name: 'nango_proxy', enabledByDefault: false, schema: metaToolSchema },
+    nangoCreateConnection: { name: 'nango_create_connection', enabledByDefault: false, schema: createConnectionMetaToolSchema }
+} as const satisfies Record<keyof AgentSessionMetaTools, { name: keyof AgentSessionMetaToolsSummary; enabledByDefault: boolean; schema: z.ZodType }>;
+
+const META_TOOL_NAMES: string[] = Object.values(META_TOOLS).map((metaTool) => metaTool.name);
 
 /**
- * Only nango_create_connection creates anything to put tags on, so tags elsewhere would be accepted
- * and then dropped. The key is only in reach here, at the record, not inside the value schema.
+ * Loose, so a key that is not a meta tool reaches parseMetaTools and is reported as unknown_meta_tool.
+ * The keys are spelled out rather than built from META_TOOLS, because only a literal shape infers
+ * into a type that keeps tags on the one tool that takes them.
  */
-export const agentSessionMetaToolsSchema = z.record(z.string(), metaToolSchema).check((payload) => {
-    for (const [name, value] of Object.entries(payload.value)) {
-        if (typeof value === 'object' && value.tags && name !== CREATE_CONNECTION_META_TOOL.name) {
-            payload.issues.push({
-                code: 'custom',
-                message: `Only ${CREATE_CONNECTION_META_TOOL.name} takes tags`,
-                path: [name, 'tags'],
-                input: value
-            });
-        }
-    }
-});
+export const agentSessionMetaToolsSchema = z.looseObject({
+    nango_tool_search: META_TOOLS.nangoToolSearch.schema.optional(),
+    nango_execute: META_TOOLS.nangoExecute.schema.optional(),
+    nango_proxy: META_TOOLS.nangoProxy.schema.optional(),
+    nango_create_connection: META_TOOLS.nangoCreateConnection.schema.optional()
+} satisfies Record<keyof AgentSessionMetaToolsSummary, z.ZodType>);
+
+export type AgentSessionMetaToolsRequest = z.output<typeof agentSessionMetaToolsSchema>;
 
 export const agentSessionExpiresInSchema = z
     .string()
@@ -130,7 +134,7 @@ export interface CreateAgentSessionParams {
     connections: AgentSessionTenantConnections;
     toolset: AgentSessionToolsetPolicy | undefined;
     pinnedTools: AgentSessionPinnedTools | undefined;
-    metaTools: Record<string, AgentSessionMetaToolInput> | undefined;
+    metaTools: AgentSessionMetaToolsRequest | undefined;
     expiresInMs: number | undefined;
 }
 
@@ -303,36 +307,32 @@ async function runCreation(params: CreateAgentSessionParams, logCtx: LogContextO
     });
 }
 
-export function parseMetaTools(requested: Record<string, AgentSessionMetaToolInput> | undefined): { applied: AgentSessionMetaTools; unknown: string[] } {
+export function parseMetaTools(requested: AgentSessionMetaToolsRequest | undefined): { applied: AgentSessionMetaTools; unknown: string[] } {
     const unknown = Object.keys(requested ?? {}).filter((key) => !META_TOOL_NAMES.includes(key));
 
-    const booleans = {} as Record<keyof typeof BOOLEAN_META_TOOLS, boolean>;
-    for (const [field, metaTool] of Object.entries(BOOLEAN_META_TOOLS) as [keyof typeof BOOLEAN_META_TOOLS, { name: string; enabledByDefault: boolean }][]) {
-        const value = requested?.[metaTool.name];
-        booleans[field] = typeof value === 'boolean' ? value : (value?.enabled ?? metaTool.enabledByDefault);
-    }
-
-    return { applied: { ...booleans, nangoCreateConnection: parseCreateConnection(requested?.[CREATE_CONNECTION_META_TOOL.name]) }, unknown };
+    return {
+        applied: {
+            nangoToolSearch: requested?.nango_tool_search?.enabled ?? META_TOOLS.nangoToolSearch.enabledByDefault,
+            nangoExecute: requested?.nango_execute?.enabled ?? META_TOOLS.nangoExecute.enabledByDefault,
+            nangoProxy: requested?.nango_proxy?.enabled ?? META_TOOLS.nangoProxy.enabledByDefault,
+            nangoCreateConnection: parseCreateConnection(requested?.nango_create_connection)
+        },
+        unknown
+    };
 }
 
 export function metaToolsSummary(metaTools: AgentSessionMetaTools): AgentSessionMetaToolsSummary {
-    const summary = {} as AgentSessionMetaToolsSummary;
-    for (const [field, metaTool] of Object.entries(BOOLEAN_META_TOOLS) as [keyof typeof BOOLEAN_META_TOOLS, { name: keyof AgentSessionMetaToolsSummary }][]) {
-        (summary[metaTool.name] as boolean) = metaTools[field];
-    }
-
-    summary.nango_create_connection = metaTools.nangoCreateConnection;
-
-    return summary;
+    return {
+        [META_TOOLS.nangoToolSearch.name]: metaTools.nangoToolSearch,
+        [META_TOOLS.nangoExecute.name]: metaTools.nangoExecute,
+        [META_TOOLS.nangoProxy.name]: metaTools.nangoProxy,
+        [META_TOOLS.nangoCreateConnection.name]: metaTools.nangoCreateConnection
+    };
 }
 
-export function parseCreateConnection(requested: AgentSessionMetaToolInput | undefined): AgentSessionCreateConnectionConfig {
+export function parseCreateConnection(requested: AgentSessionMetaToolsRequest['nango_create_connection']): AgentSessionCreateConnectionConfig {
     if (requested === undefined) {
-        return { enabled: CREATE_CONNECTION_META_TOOL.enabledByDefault, tags: {} };
-    }
-
-    if (typeof requested === 'boolean') {
-        return { enabled: requested, tags: {} };
+        return { enabled: META_TOOLS.nangoCreateConnection.enabledByDefault, tags: {} };
     }
 
     return { enabled: requested.enabled, tags: requested.tags ?? {} };
