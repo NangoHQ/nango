@@ -92,7 +92,7 @@ export abstract class NangoActionBase<
         this.activityLogId = config.activityLogId;
         this.scriptType = config.scriptType;
         this.isCLI = config.isCLI;
-        this.functionVariant = config.variant ?? config.syncVariant ?? BASE_VARIANT;
+        this.functionVariant = (config.scriptType === 'sync' ? config.syncVariant : config.variant) ?? BASE_VARIANT;
 
         if (config.syncId) {
             this.syncId = config.syncId;
