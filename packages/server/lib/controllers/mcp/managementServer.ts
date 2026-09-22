@@ -41,6 +41,9 @@ import type { ApiKeyScope, AuditAttribution, AuditPolicy, DBPlan, DBTeam } from 
 
 const logger = getLogger('Server.ManagementMcpServer');
 
+const oauthServerInstructions =
+    'Before using an environment-bound tool, always ask the user which Nango environment to use. Call environments_list first when you need to present the available choices. Use only the environment the user selects; do not query every environment unless the user explicitly asks you to.';
+
 const managementMcpTools: ManagementMcpTool[] = [
     searchDocsTool,
     queryDocsFilesystemTool,
@@ -145,7 +148,7 @@ function createApiKeyManagementMcpServer(context: ManagementMcpContext, requestB
 }
 
 async function createOAuthManagementMcpServer(oauthContext: ManagementMcpOAuthContext, requestBody: unknown): Promise<McpServer> {
-    const server = createBaseManagementMcpServer();
+    const server = createBaseManagementMcpServer(oauthServerInstructions);
     registerEnvironmentsListTool(server, oauthContext);
     const toolCallArgumentsByName = parseToolCallArguments(requestBody);
 
@@ -169,7 +172,7 @@ async function createOAuthManagementMcpServer(oauthContext: ManagementMcpOAuthCo
     return server;
 }
 
-function createBaseManagementMcpServer(): McpServer {
+function createBaseManagementMcpServer(instructions?: string): McpServer {
     return new McpServer(
         {
             name: 'Nango Management MCP server',
@@ -178,7 +181,8 @@ function createBaseManagementMcpServer(): McpServer {
         {
             capabilities: {
                 tools: { listChanged: false }
-            }
+            },
+            ...(instructions ? { instructions } : {})
         }
     );
 }
