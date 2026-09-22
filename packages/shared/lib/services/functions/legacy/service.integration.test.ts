@@ -129,11 +129,11 @@ describe('listFunctions with catalog actions', () => {
         expect(page2.total).toBe(6);
         expect(page3.total).toBe(6);
         expect(page1.rows).toEqual([
-            { name: 'a', source: 'nango-catalog', enabled: true, id: null },
-            { name: 'b', source: 'nango-catalog', enabled: true, id: null }
+            { name: 'a', source: 'live-catalog', enabled: true, id: null },
+            { name: 'b', source: 'live-catalog', enabled: true, id: null }
         ]);
         expect(page2.rows).toEqual([
-            { name: 'c', source: 'nango-catalog', enabled: true, id: null },
+            { name: 'c', source: 'live-catalog', enabled: true, id: null },
             { name: 'm', source: 'repo', enabled: true, id: expect.any(Number) }
         ]);
         expect(page3.rows).toEqual([
@@ -153,10 +153,10 @@ describe('listFunctions with catalog actions', () => {
 
         expect(page1.rows).toEqual([
             { name: 'create', source: 'repo', enabled: true, id: expect.any(Number) },
-            { name: 'delete', source: 'nango-catalog', enabled: true, id: null }
+            { name: 'delete', source: 'live-catalog', enabled: true, id: null }
         ]);
         expect(page2.rows).toEqual([
-            { name: 'list', source: 'nango-catalog', enabled: true, id: null },
+            { name: 'list', source: 'live-catalog', enabled: true, id: null },
             { name: 'update', source: 'repo', enabled: true, id: expect.any(Number) }
         ]);
     });
@@ -170,8 +170,8 @@ describe('listFunctions with catalog actions', () => {
         const page2 = await listPage({ environment, offset: 2, limit: 2 });
 
         expect(page1.rows).toEqual([
-            { name: 'create-issue', source: 'nango-catalog', enabled: true, id: null },
-            { name: 'list-issues', source: 'nango-catalog', enabled: true, id: null }
+            { name: 'create-issue', source: 'live-catalog', enabled: true, id: null },
+            { name: 'list-issues', source: 'live-catalog', enabled: true, id: null }
         ]);
         expect(page2.rows).toEqual([{ name: 'users', source: 'repo', enabled: true, id: expect.any(Number) }]);
     });
@@ -196,7 +196,7 @@ describe('listFunctions with catalog actions', () => {
         const page = await listPage({ environment, offset: 0, limit: 20 });
 
         expect(page.total).toBe(1);
-        expect(page.rows).toEqual([{ name: 'create-issue', source: 'nango-catalog', enabled: true, id: null }]);
+        expect(page.rows).toEqual([{ name: 'create-issue', source: 'live-catalog', enabled: true, id: null }]);
     });
 
     it('unions catalog actions', async () => {
@@ -208,7 +208,7 @@ describe('listFunctions with catalog actions', () => {
 
         expect(page.total).toBe(2);
         expect(page.rows).toEqual([
-            { name: 'create-issue', source: 'nango-catalog', enabled: true, id: null },
+            { name: 'create-issue', source: 'live-catalog', enabled: true, id: null },
             { name: 'users', source: 'repo', enabled: true, id: expect.any(Number) }
         ]);
     });
@@ -231,7 +231,7 @@ describe('listFunctions with catalog actions', () => {
         if (result.isErr()) {
             return;
         }
-        expect(result.value.rows[0]).toMatchObject({ name: 'create-issue', source: 'nango-catalog', json_schema: jsonSchema });
+        expect(result.value.rows[0]).toMatchObject({ name: 'create-issue', source: 'live-catalog', json_schema: jsonSchema });
     });
 
     it('returns the listing total when the page is past the last row', async () => {
@@ -256,7 +256,7 @@ describe('listFunctions with catalog actions', () => {
             return;
         }
         expect(result.value.map((action) => ({ name: action.name, source: action.source, enabled: action.enabled }))).toEqual([
-            { name: 'create-issue', source: 'nango-catalog', enabled: true },
+            { name: 'create-issue', source: 'live-catalog', enabled: true },
             { name: 'delete-issue', source: 'repo', enabled: true }
         ]);
     });
@@ -305,7 +305,7 @@ describe('getFunction with catalog actions', () => {
             type: 'action',
             id: null,
             last_deployed: null,
-            source: 'nango-catalog',
+            source: 'live-catalog',
             enabled: true
         });
     });

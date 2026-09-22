@@ -30,7 +30,7 @@ function toFunctionKey(fn: { type: string; name: string; event?: string }) {
 }
 
 function deployedOnly<T extends { source: string }>(fns: T[]): T[] {
-    return fns.filter((fn) => fn.source !== 'nango-catalog');
+    return fns.filter((fn) => fn.source !== 'live-catalog');
 }
 
 function unoccupiedGithubCatalogCount(occupiedActionNames: Iterable<string> = []): number {
@@ -116,8 +116,8 @@ describe(`GET ${route}`, () => {
         expect(deployedOnly(res.json.data)).toEqual([]);
         expect(res.json.pagination.total).toBe(unoccupiedGithubCatalogCount());
         expect(res.json.data).toHaveLength(unoccupiedGithubCatalogCount());
-        expect(res.json.data.some((fn) => fn.name === 'create-issue' && fn.source === 'nango-catalog')).toBe(true);
-        expect(res.json.data.every((fn) => fn.source === 'nango-catalog')).toBe(true);
+        expect(res.json.data.some((fn) => fn.name === 'create-issue' && fn.source === 'live-catalog')).toBe(true);
+        expect(res.json.data.every((fn) => fn.source === 'live-catalog')).toBe(true);
     });
 
     it('should aggregate sync, action, and on-event functions', async () => {

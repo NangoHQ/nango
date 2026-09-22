@@ -472,9 +472,9 @@ describe('POST /mcp management server', () => {
         const allActions = await listFunctions({ integration_id: 'github', type: 'action', page: 0, limit: 100 });
         expect(allActions.data.every((fn) => fn.type === 'action')).toBe(true);
         expect(allActions.data.some((fn) => fn.name === 'sync-issues')).toBe(false);
-        expect(allActions.data.some((fn) => fn.name === 'create-user' && fn.source !== 'nango-catalog')).toBe(true);
-        expect(allActions.data.some((fn) => fn.name === 'create-issue' && fn.source !== 'nango-catalog')).toBe(true);
-        expect(allActions.data.some((fn) => fn.name === 'list-issues' && fn.source === 'nango-catalog')).toBe(true);
+        expect(allActions.data.some((fn) => fn.name === 'create-user' && fn.source !== 'live-catalog')).toBe(true);
+        expect(allActions.data.some((fn) => fn.name === 'create-issue' && fn.source !== 'live-catalog')).toBe(true);
+        expect(allActions.data.some((fn) => fn.name === 'list-issues' && fn.source === 'live-catalog')).toBe(true);
         expect(new Set(allActions.data.map((fn) => fn.name)).size).toBe(allActions.data.length);
 
         const searched = await listFunctions({ integration_id: 'github', type: 'action', search: 'issue', page: 0, limit: 100 });
@@ -482,8 +482,8 @@ describe('POST /mcp management server', () => {
         expect(searched.data.map((fn) => fn.name)).toEqual(expected.map((fn) => fn.name));
         expect(searched.pagination).toStrictEqual({ total: expected.length, page: 0, limit: 100 });
         expect(searched.data.some((fn) => fn.name === 'create-user')).toBe(false);
-        expect(searched.data.some((fn) => fn.name === 'create-issue' && fn.source !== 'nango-catalog')).toBe(true);
-        expect(searched.data.some((fn) => fn.name === 'list-issues' && fn.source === 'nango-catalog')).toBe(true);
+        expect(searched.data.some((fn) => fn.name === 'create-issue' && fn.source !== 'live-catalog')).toBe(true);
+        expect(searched.data.some((fn) => fn.name === 'list-issues' && fn.source === 'live-catalog')).toBe(true);
     });
 
     it('returns public errors for invalid function arguments and missing integrations', async () => {

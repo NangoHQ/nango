@@ -16,7 +16,7 @@ async function seedWithScopes(scopes: string[]) {
 }
 
 function deployedOnly<T extends { source: string }>(fns: T[]): T[] {
-    return fns.filter((fn) => fn.source !== 'nango-catalog');
+    return fns.filter((fn) => fn.source !== 'live-catalog');
 }
 
 function unoccupiedGithubCatalogCount(occupiedActionNames: Iterable<string> = []): number {
@@ -100,7 +100,7 @@ describe(`GET ${route}`, () => {
         isSuccess(res.json);
         expect(res.json.pagination).toStrictEqual({ total: unoccupiedGithubCatalogCount(['my-action']) + 2, page: 0, limit: 100 });
         expect(res.json.data).toEqual(
-            expect.arrayContaining([expect.objectContaining({ name: 'create-issue', type: 'action', source: 'nango-catalog', id: null, last_deployed: null })])
+            expect.arrayContaining([expect.objectContaining({ name: 'create-issue', type: 'action', source: 'live-catalog', id: null, last_deployed: null })])
         );
         expect(deployedOnly(res.json.data).map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
             { name: 'my-action', type: 'action' },

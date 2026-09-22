@@ -442,7 +442,7 @@ function hydrateCatalogJsonSchemas(rows: FunctionRow[], catalog: CatalogAction[]
 
     const schemaByName = new Map(catalog.map((action) => [action.name, action.json_schema]));
     for (const row of rows) {
-        if (row.source !== 'nango-catalog') {
+        if (row.source !== 'live-catalog') {
             continue;
         }
         row.json_schema = schemaByName.get(row.name) ?? null;
@@ -495,7 +495,7 @@ function buildCatalogBranch({
         db.knex.raw('NULL::boolean AS track_deletes'),
         db.knex.raw('true AS enabled'),
         db.knex.raw('NULL::timestamptz AS last_deployed'),
-        db.knex.raw(`'nango-catalog'::text AS source`),
+        db.knex.raw(`'live-catalog'::text AS source`),
         db.knex.raw('NULL::text AS event')
     );
 }

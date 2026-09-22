@@ -186,7 +186,7 @@ describe('functions service', () => {
             name: 'create-issue',
             type: 'action',
             last_deployed: null,
-            source: 'nango-catalog'
+            source: 'live-catalog'
         });
 
         const result = await getFunction({
@@ -200,6 +200,6 @@ describe('functions service', () => {
         if (result.isErr()) {
             return;
         }
-        expect(result.value).toMatchObject({ name: 'create-issue', source: 'nango-catalog', id: null });
+        expect(result.value).toMatchObject({ name: 'create-issue', source: 'live-catalog', id: null });
     });
 });

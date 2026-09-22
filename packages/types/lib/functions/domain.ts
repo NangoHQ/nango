@@ -2,8 +2,8 @@ import type { OnEventType } from '../scripts/on-events/api.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
 import type { JSONSchema7 } from 'json-schema';
 
-/** `nango-catalog` is list/API only — never a DB `FunctionSource`. */
-export type FunctionListSource = FunctionSource | 'nango-catalog';
+/** `live-catalog` is list/API only — never a DB `FunctionSource`. */
+export type FunctionListSource = FunctionSource | 'live-catalog';
 
 export type FunctionType = 'action' | 'sync' | 'on-event';
 
