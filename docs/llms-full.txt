@@ -2610,7 +2610,7 @@ You can only use one pin per integration. A pin must be one of the connections t
 
 You can also use `pinned` without any `any` selectors, if you already know the exact connections you want to use.
 
-An integration that matches no connection does not fail creation. It appears in the toolset as `connected: false`, and its tool calls fail with an error saying it is not connected.
+An integration that matches no connection does not fail session creation. It appears in the toolset as `connected: false`, and its tool calls fail with an error saying it is not connected.
 
 What that error tells the agent to do next depends on whether [`nango_create_connection`](#nango_create_connection) is enabled. With it off, the agent is told it cannot fix this itself, to pass it to the user and carry on with the tools it has. With it on, the error names the tool so the agent can fetch a connect link and hand that over instead.
 
