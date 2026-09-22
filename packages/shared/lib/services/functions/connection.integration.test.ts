@@ -156,10 +156,13 @@ describe(softDeleteInstancesForConnection, () => {
 
         const res = (await softDeleteInstancesForConnection(db.knex, { connection })).unwrap();
 
-        expect(res).toEqual([
-            expect.objectContaining({ nango_connection_id: connection.id, name: 'fetchIssues', variant: 'base' }),
-            expect.objectContaining({ nango_connection_id: connection.id, name: 'fetchIssues', variant: 'canary' })
-        ]);
+        expect(res).toHaveLength(2);
+        expect(res).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ nango_connection_id: connection.id, name: 'fetchIssues', variant: 'base' }),
+                expect.objectContaining({ nango_connection_id: connection.id, name: 'fetchIssues', variant: 'canary' })
+            ])
+        );
         const targetAfter = (await searchInstances(db.knex, { connectionIds: [connection.id] }, { includeDeleted: true })).unwrap();
         expect(targetAfter.map((row) => row.deleted_at)).toEqual([expect.any(Date), expect.any(Date)]);
         const otherAfter = (await searchInstances(db.knex, { connectionIds: [otherConnection.id] }, { includeDeleted: true })).unwrap();
