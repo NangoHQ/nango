@@ -1470,6 +1470,18 @@ a-leads:
             example: a3f8b2e1********************d9c4
             pattern: '^[a-f0-9]{32}$'
 
+anarlog-mcp:
+    display_name: Anarlog (MCP)
+    categories:
+        - mcp
+    auth_mode: MCP_OAUTH2_GENERIC
+    mcp_server_url: https://api.anarlog.so/mcp
+    proxy:
+        base_url: https://api.anarlog.so/mcp
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/anarlog-mcp
+
 anrok:
     display_name: Anrok
     categories:
