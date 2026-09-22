@@ -7,13 +7,12 @@ export const SignedOutRoute: React.FC = () => {
     const { user, loading, error } = useUser();
     const [searchParams] = useSearchParams();
 
-    // Rendering the form here would flash it at a visitor who is about to be redirected.
+    // Avoid briefly rendering the signed-out only routes while the user is being fetched
     if (loading) {
         return null;
     }
 
-    // A failed refetch keeps the stale user in the cache. Redirecting on it loops: PrivateRoute sends them right back.
-    if (error || !user) {
+    if (!user || error) {
         return <Outlet />;
     }
 
