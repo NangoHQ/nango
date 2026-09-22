@@ -943,13 +943,9 @@ const ENVS_SHAPE = z.object({
     NANGO_TASK_DISPATCH_TASK_CAP_DEFER_MS: z.coerce.number().min(0).optional().default(15_000),
 
     // Sandboxes
-    SANDBOX_PROVIDER: z.enum(['e2b', 'docker', 'agentcore']).optional(),
+    SANDBOX_PROVIDER: z.enum(['docker', 'agentcore']).optional(),
     AGENTCORE_RUNTIME_ARN: z.string().min(1).optional(),
     AGENTCORE_RUNTIME_QUALIFIER: z.string().min(1).default('DEFAULT'),
-    E2B_API_KEY: z.string().optional(),
-    E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
-    E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
-    E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
     // Internal mTLS. The client certificate presented on service-to-service calls; enforcement happens
     // outside the app (load balancer). Each asset is inline PEM, base64 PEM, or a file path via _FILE.

@@ -73,6 +73,19 @@ export interface CurrentFunctionConfig {
     currentVersion: DBFunctionConfigVersion;
 }
 
+export async function rows(trx: Knex, { environmentId, integrationId }: { environmentId: number; integrationId: number }): Promise<Result<DBFunctionConfig[]>> {
+    try {
+        const configs = await trx
+            .from<DBFunctionConfig>(CONFIGS_TABLE)
+            .select('*')
+            .where({ environment_id: environmentId, nango_config_id: integrationId })
+            .whereNull('deleted_at');
+        return Ok(configs);
+    } catch (err) {
+        return Err(new Error('failed_to_find_function_configs', { cause: err }));
+    }
+}
+
 type Prefixed<T, Prefix extends string> = {
     [K in keyof T as `${Prefix}${Extract<K, string>}`]: T[K];
 };
@@ -83,6 +96,7 @@ type SearchFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> 
 
 interface FunctionSearchFilter {
     integrationKey: string;
+    id?: number | undefined;
     name?: string | undefined;
     enabled?: boolean | undefined;
     trigger?: { kind: 'http'; hasSubscriptions: boolean } | undefined;
@@ -120,6 +134,9 @@ export async function search(
         }
         if (filter?.name !== undefined) {
             query.where('config.name', filter.name);
+        }
+        if (filter?.id !== undefined) {
+            query.where('config.id', filter.id);
         }
         if (filter?.enabled !== undefined) {
             query.where('config.enabled', filter.enabled);

@@ -2,7 +2,7 @@ import { getProvider } from '@nangohq/shared';
 import { basePublicUrl } from '@nangohq/utils';
 
 import { REGISTRATION_ACCESS_TOKEN_KEY, REGISTRATION_CLIENT_URI_KEY } from '../services/mcpClientRegistration.js';
-import { getPreconfiguredCredentials } from '../utils/integrations.js';
+import { getPreconfiguredConnectionConfig, getPreconfiguredCredentials } from '../utils/integrations.js';
 
 import type { IntegrationCredentials } from '../utils/integrations.js';
 import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude, IntegrationConfig, Provider } from '@nangohq/types';
@@ -72,6 +72,7 @@ export function integrationToPublicApi({
     include?: ApiPublicIntegrationInclude;
 }): ApiPublicIntegration {
     const preconfiguredCredentials = getPreconfiguredCredentials(integration.custom, provider);
+    const preconfiguredConnectionConfig = getPreconfiguredConnectionConfig(integration.custom, provider);
     return {
         unique_key: integration.unique_key,
         provider: integration.provider,
@@ -81,6 +82,7 @@ export function integrationToPublicApi({
         // Only providers that declare `integration_config`, never expose the whole `custom` object.
         ...(provider.integration_config && integration.custom?.['keyLabel'] ? { credentials_label: { apiKey: integration.custom['keyLabel'] } } : {}),
         ...(preconfiguredCredentials.length > 0 ? { preconfigured_credentials: preconfiguredCredentials } : {}),
+        ...(preconfiguredConnectionConfig.length > 0 ? { preconfigured_connection_config: preconfiguredConnectionConfig } : {}),
         ...include,
         forward_webhooks: integration.forward_webhooks === undefined ? true : integration.forward_webhooks,
         created_at: integration.created_at.toISOString(),

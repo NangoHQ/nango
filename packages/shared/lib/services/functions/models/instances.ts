@@ -7,9 +7,23 @@ import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
 export type FunctionInstanceUpsert = Pick<DBFunctionInstance, 'nango_connection_id' | 'function_config_id' | 'name' | 'variant' | 'frequency'>;
+export type FunctionInstanceFilter = { functionConfigIds: number[] } | { connectionIds: number[] } | { instanceIds: number[] };
+export type FunctionInstanceSearchOptions = { includeDeleted?: boolean; afterId?: number; limit?: number };
 
 const UPSERT_BATCH_SIZE = 1000;
 const SOFT_DELETE_BATCH_SIZE = 1000;
+
+type FilterColumn = 'function_config_id' | 'nango_connection_id' | 'id';
+
+function resolveFilter(filter: FunctionInstanceFilter): [field: FilterColumn, ids: number[]] {
+    if ('functionConfigIds' in filter) {
+        return ['function_config_id', filter.functionConfigIds];
+    } else if ('connectionIds' in filter) {
+        return ['nango_connection_id', filter.connectionIds];
+    } else {
+        return ['id', filter.instanceIds];
+    }
+}
 
 export async function upsert(db: Knex, instances: FunctionInstanceUpsert[]): Promise<Result<DBFunctionInstance[]>> {
     if (instances.length === 0) {
@@ -52,19 +66,20 @@ export async function upsert(db: Knex, instances: FunctionInstanceUpsert[]): Pro
 
 export async function search(
     trx: Knex,
-    { functionConfigIds, afterId, limit }: { functionConfigIds: number[]; afterId?: number; limit?: number }
+    filter: FunctionInstanceFilter,
+    { includeDeleted = false, afterId, limit }: FunctionInstanceSearchOptions = {}
 ): Promise<Result<DBFunctionInstance[]>> {
-    if (functionConfigIds.length === 0) {
+    const [field, ids] = resolveFilter(filter);
+    if (ids.length === 0) {
         return Ok([]);
     }
 
     try {
-        const query = trx
-            .from<DBFunctionInstance>(INSTANCES_TABLE)
-            .select('*')
-            .whereIn('function_config_id', functionConfigIds)
-            .whereNull('deleted_at')
-            .orderBy('id');
+        const query = trx.from<DBFunctionInstance>(INSTANCES_TABLE).select('*').orderBy('id');
+        query.whereIn(field, ids);
+        if (!includeDeleted) {
+            query.whereNull('deleted_at');
+        }
         if (afterId !== undefined) {
             query.where('id', '>', afterId);
         }
@@ -79,26 +94,25 @@ export async function search(
 
 export async function softDelete(
     db: Knex,
-    { environmentId, functionConfigIds }: { environmentId: number; functionConfigIds: number[] }
+    filter: FunctionInstanceFilter,
+    { environmentId }: { environmentId: number }
 ): Promise<Result<DBFunctionInstance[]>> {
     try {
-        if (functionConfigIds.length === 0) {
+        const [field, ids] = resolveFilter(filter);
+        if (ids.length === 0) {
             return Ok([]);
         }
         const deleted = await db.transaction(async (trx) => {
             const now = trx.fn.now();
             const deletedInstances: DBFunctionInstance[] = [];
-            for (let offset = 0; offset < functionConfigIds.length; offset += SOFT_DELETE_BATCH_SIZE) {
-                const batch = functionConfigIds.slice(offset, offset + SOFT_DELETE_BATCH_SIZE);
-                const rows = await trx
+            for (let offset = 0; offset < ids.length; offset += SOFT_DELETE_BATCH_SIZE) {
+                const batch = ids.slice(offset, offset + SOFT_DELETE_BATCH_SIZE);
+                const query = trx
                     .from<DBFunctionInstance>(INSTANCES_TABLE)
-                    .whereIn(
-                        'function_config_id',
-                        trx.from<DBFunctionConfig>(CONFIGS_TABLE).select('id').where({ environment_id: environmentId }).whereIn('id', batch)
-                    )
-                    .whereNull('deleted_at')
-                    .update({ deleted_at: now, updated_at: now })
-                    .returning('*');
+                    .whereIn('function_config_id', trx.from<DBFunctionConfig>(CONFIGS_TABLE).select('id').where({ environment_id: environmentId }))
+                    .whereIn(field, batch)
+                    .whereNull('deleted_at');
+                const rows = await query.update({ deleted_at: now, updated_at: now }).returning('*');
                 for (const row of rows) {
                     deletedInstances.push(row);
                 }

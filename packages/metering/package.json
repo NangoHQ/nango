@@ -23,7 +23,6 @@
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/records": "file:../records",
-        "@nangohq/sandbox": "file:../sandbox",
         "@nangohq/shared": "file:../shared",
         "@nangohq/usage": "file:../usage",
         "@nangohq/utils": "file:../utils",
