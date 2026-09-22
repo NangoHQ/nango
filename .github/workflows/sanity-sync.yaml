@@ -101,9 +101,9 @@ jobs:
                   DRYRUN: ${{ inputs.dry_run }}
 
     sync-integrations:
-        needs: [changes]
+        needs: [changes, sync-apis]
         if: |
-            always() &&
+            !cancelled() && needs.sync-apis.result != 'failure' &&
             (
                 github.event_name == 'schedule' ||
                 (github.event_name == 'workflow_dispatch' && (inputs.target == 'both' || inputs.target == 'integrations')) ||
