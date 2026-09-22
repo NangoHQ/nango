@@ -418,7 +418,7 @@ addepar-basic:
             title: API Secret
             description: Your Addepar API Secret
             example: zidcISqfSGh05JsWwuY9ZdSCkXrhANHvCX0U0gkE
-            pattern: '^[A-Za-z0-9]+$'
+            pattern: '^[A-Za-z0-9]{40}$'
             doc_section: '#step-4-generating-an-api-key-and-secret'
     connection_config:
         subdomain:
@@ -12027,7 +12027,7 @@ ingenious-build:
             description: The Client Secret of your OAuth Application.
             secret: true
             example: 'Grt1********************************tL5Z'
-            pattern: '^[A-Za-z0-9]+$'
+            pattern: '^[A-Za-z0-9]{40}$'
             doc_section: '#step-2-creating-an-oauth-application'
 
 ingenious-build-pat:
@@ -12064,7 +12064,7 @@ ingenious-build-pat:
             description: The Access Token for your INGENIOUS.BUILD account
             secret: true
             example: 'rczP********************************fT42'
-            pattern: '^[A-Za-z0-9]+$'
+            pattern: '^[A-Za-z0-9]{40}$'
             doc_section: '#step-2-creating-an-access-token'
 
 insightly:
@@ -27868,7 +27868,7 @@ yotpo:
             type: string
             title: App Key
             description: Your Yotpo Store Key.
-            pattern: '^[A-Za-z0-9]+$'
+            pattern: '^[A-Za-z0-9]{40}$'
             doc_section: '#step-1-retrieving-your-app-key'
             example: rvR3359XuCuuuEgCgcHNrQ9TE8zwC5dMzWMULHZm
             order: 1
@@ -27880,7 +27880,7 @@ yotpo:
             secret: true
             example: tHrwXaIBaWETHLRwxWaNktfYeEteyTcSjiNJY4IH
             doc_section: '#step-2-generating-your-secret-key'
-            pattern: '^[A-Za-z0-9]+$'
+            pattern: '^[A-Za-z0-9]{40}$'
 
 youcanbook-me:
     display_name: YouCanBookMe
