@@ -38,7 +38,17 @@ export interface NangoOnEventFunction extends NangoFunctionBase {
 
 export type NangoFunction = NangoSyncFunction | NangoActionFunction | NangoOnEventFunction;
 
+/** A deployed sync-config row. `id` and `last_deployed` are always present. */
 export interface FunctionAvailability {
+    id: number;
+    enabled: boolean;
+    /** ISO-8601 timestamp. */
+    last_deployed: string;
+    source: FunctionSource;
+}
+
+/** A row in a function list. Catalog actions have no deployed row. */
+export interface ListedFunctionAvailability {
     /** Sync-config id. `null` when the function is served from the catalog (no deployed row). */
     id: number | null;
     enabled: boolean;
@@ -47,9 +57,9 @@ export interface FunctionAvailability {
     source: FunctionListSource;
 }
 
-export type ListedNangoSyncFunction = NangoSyncFunction & FunctionAvailability;
-export type ListedNangoActionFunction = NangoActionFunction & FunctionAvailability;
-export type ListedNangoOnEventFunction = NangoOnEventFunction & FunctionAvailability;
+export type ListedNangoSyncFunction = NangoSyncFunction & ListedFunctionAvailability;
+export type ListedNangoActionFunction = NangoActionFunction & ListedFunctionAvailability;
+export type ListedNangoOnEventFunction = NangoOnEventFunction & ListedFunctionAvailability;
 export type ListedNangoFunction = ListedNangoSyncFunction | ListedNangoActionFunction | ListedNangoOnEventFunction;
 
 export type NangoFunctionTemplate = (NangoSyncFunction | NangoActionFunction) & { deployed?: FunctionAvailability };
