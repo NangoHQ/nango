@@ -1819,6 +1819,7 @@
               "integrations/all/shortcut",
               "integrations/all/signnow",
               "integrations/all/signnow-sandbox",
+              "api-integrations/simpplr",
               "api-integrations/simpro",
               "integrations/all/skio",
               "api-integrations/slab",
