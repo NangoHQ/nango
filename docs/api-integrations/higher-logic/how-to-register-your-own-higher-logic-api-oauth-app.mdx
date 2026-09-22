@@ -1,0 +1,18 @@
+---
+title: 'Register a Higher Logic OAuth app'
+description: 'Configure an OIDC web application for the Higher Logic CREST API'
+---
+
+## Configure the client
+
+A community administrator must create the client in **Settings > Integration > OIDC Authentication**. Choose **Advanced**, then **Web Application**.
+
+1. Set an application name and description.
+2. Register the exact callback URL configured in your Nango environment. Nango Cloud defaults to `https://api.nango.dev/oauth/callback`; use your configured custom callback if you have one. A local Nango instance needs its own registered callback URL.
+3. Enable `openid`, `webapi`, and `offline_access` scopes and refresh tokens. The client must allow the `authorization_code` and `refresh_token` grants.
+4. Configure required security groups according to your community's access policy. The account that connects must satisfy those requirements.
+5. Copy the client ID and secret into your Higher Logic integration in Nango. Keep the secret private.
+
+Nango uses PKCE with S256. The provider authenticates token requests using HTTP Basic client authentication. Use credentials issued by the same community hostname entered when connecting.
+
+See [Higher Logic's OIDC administration guide](https://support.higherlogic.com/hc/en-us/articles/14582151561108-Open-ID-Connect) and [CREST authentication guide](https://api.higherlogic.com/OIDC/) for details.

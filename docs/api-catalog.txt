@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1015
+Provider count: 1016
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -426,6 +426,7 @@ URL patterns:
 | `heyreach` | HeyReach | API_KEY | [docs](https://nango.dev/docs/integrations/all/heyreach.md) | [connect](https://nango.dev/docs/integrations/all/heyreach/connect.md) |  | social, marketing |
 | `hibob-oauth` | HiBob (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hibob-oauth.md) |  | [setup](https://nango.dev/docs/api-integrations/hibob-oauth/how-to-register-your-own-hibob-oauth-app.md) | hr |
 | `hibob-service-user` | Hibob Service User | BASIC | [docs](https://nango.dev/docs/integrations/all/hibob-service-user.md) | [connect](https://nango.dev/docs/integrations/all/hibob-service-user/connect.md) |  | hr, popular |
+| `higher-logic` | Higher Logic | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/higher-logic.md) | [connect](https://nango.dev/docs/api-integrations/higher-logic/connect.md) | [setup](https://nango.dev/docs/api-integrations/higher-logic/how-to-register-your-own-higher-logic-api-oauth-app.md) | communication |
 | `highlevel` | HighLevel | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highlevel.md) |  | [setup](https://nango.dev/docs/api-integrations/highlevel/how-to-register-your-own-highlevel-api-oauth-app.md) | marketing |
 | `highlevel-white-label` | HighLevel (LeadConnector) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highlevel-white-label.md) |  | [setup](https://nango.dev/docs/api-integrations/highlevel-white-label/how-to-register-your-own-highlevel-white-label-api-oauth-app.md) | crm |
 | `highq` | HighQ | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highq.md) | [connect](https://nango.dev/docs/api-integrations/highq/connect.md) | [setup](https://nango.dev/docs/api-integrations/highq/how-to-register-your-own-highq-api-oauth-app.md) | legal |
