@@ -8,7 +8,7 @@ import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { buildIntegrationConfig } from './buildIntegrationConfig.js';
 import { postIntegrationBodySchema } from './validation.js';
 
-import type { IntegrationConfig, PostIntegration } from '@nangohq/types';
+import type { IntegrationConfig, PostIntegration, ProviderMcpOAUTH2 } from '@nangohq/types';
 
 export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -94,6 +94,14 @@ export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(asyn
 
         let mcpRegistration = null;
         if (provider.auth_mode === 'MCP_OAUTH2') {
+            const clientRegistration = (provider as ProviderMcpOAUTH2).client_registration;
+            if (clientRegistration !== 'static' && (config.oauth_client_id || config.oauth_client_secret)) {
+                res.status(400).send({
+                    error: { code: 'invalid_body', message: `Client credentials can't be set for ${clientRegistration} client registration` }
+                });
+                return;
+            }
+
             const registration = await registerMcpOAuth2Client({ provider, uniqueKey: config.unique_key, environment, team: account });
             if (registration.isErr()) {
                 res.status(400).send({ error: { code: 'invalid_body', message: registration.error.message } });

@@ -407,7 +407,7 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
-    it('ignores caller-supplied client credentials for a dynamically-registered MCP_OAUTH2 provider and stores the registered ones instead', async () => {
+    it('rejects caller-supplied client credentials for a dynamically-registered MCP_OAUTH2 provider', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const registerSpy = vi.spyOn(shared.mcpClient, 'registerClientId').mockResolvedValue({
             client_id: 'dcr-client-id',
@@ -422,24 +422,16 @@ describe(`POST ${endpoint}`, () => {
                 body: {
                     provider: 'amplitude-mcp',
                     useSharedCredentials: false,
-                    integrationId: 'amplitude-mcp-dcr-ignores-caller-creds',
+                    integrationId: 'amplitude-mcp-dcr-rejects-caller-creds',
                     auth: { authType: 'MCP_OAUTH2', clientId: 'attacker-supplied-client-id', clientSecret: 'attacker-supplied-secret' }
                 }
             });
 
-            isSuccess(res.json);
-
-            const getRes = await api.fetch('/api/v1/integrations/:providerConfigKey', {
-                method: 'GET',
-                query: { env: env.name },
-                token: apiKey.secret,
-                params: { providerConfigKey: 'amplitude-mcp-dcr-ignores-caller-creds' }
+            isError(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                error: { code: 'invalid_body', message: "Client credentials can't be set for dynamic client registration" }
             });
-            isSuccess(getRes.json);
-            expect(getRes.json.data.integration).toMatchObject({
-                oauth_client_id: 'dcr-client-id',
-                oauth_client_secret: 'dcr-secret'
-            });
+            expect(registerSpy).not.toHaveBeenCalled();
         } finally {
             registerSpy.mockRestore();
         }
