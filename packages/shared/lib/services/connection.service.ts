@@ -40,6 +40,7 @@ import {
     DEFAULT_INFINITE_EXPIRES_AT_MS,
     DEFAULT_OAUTHCC_EXPIRES_AT_MS,
     getExpiresAtFromCredentials,
+    jwtExpiresAt,
     MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
     REFRESH_MARGIN_MS
 } from './connections/utils.js';
@@ -1679,6 +1680,8 @@ export class ConnectionService {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
 
+                const token = rawCreds['access_token'] || (rawCreds['data'] && rawCreds['data']['token']) || rawCreds['jwt'];
+
                 let expiresAt: Date | undefined;
 
                 //fiserv returns expires_in in milliseconds
@@ -1688,13 +1691,17 @@ export class ConnectionService {
                     const expiresIn = Number.parseInt(rawCreds['expires_in'], 10);
                     const multiplier = template && 'expires_in_unit' in template && template.expires_in_unit === 'milliseconds' ? 1 : 1000;
                     expiresAt = new Date(Date.now() + expiresIn * multiplier);
-                } else {
+                } else if (typeof token === 'string') {
+                    expiresAt = jwtExpiresAt(token, REFRESH_MARGIN_MS);
+                }
+
+                if (!expiresAt) {
                     expiresAt = new Date(Date.now() + DEFAULT_OAUTHCC_EXPIRES_AT_MS);
                 }
 
                 const oauth2Creds: OAuth2ClientCredentials = {
                     type: 'OAUTH2_CC',
-                    token: rawCreds['access_token'] || (rawCreds['data'] && rawCreds['data']['token']) || rawCreds['jwt'],
+                    token,
                     client_id: '',
                     client_secret: '',
                     expires_at: expiresAt,
@@ -1743,22 +1750,16 @@ export class ConnectionService {
                 }
 
                 if (!expiration && typeof token === 'string') {
-                    const decoded = jwtClient.decode(token);
-                    if (decoded && typeof decoded['exp'] === 'number') {
-                        const tokenExpiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
-                        if (!expiresAt || tokenExpiresAt < expiresAt) {
-                            expiresAt = tokenExpiresAt;
-                        }
+                    const tokenExpiresAt = jwtExpiresAt(token, REFRESH_MARGIN_MS);
+                    if (tokenExpiresAt && (!expiresAt || tokenExpiresAt < expiresAt)) {
+                        expiresAt = tokenExpiresAt;
                     }
                 }
 
                 if (refreshToken) {
-                    const decoded = jwtClient.decode(refreshToken);
-                    if (decoded && typeof decoded['exp'] === 'number') {
-                        const refreshTokenExpiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
-                        if (!expiresAt || refreshTokenExpiresAt < expiresAt) {
-                            expiresAt = refreshTokenExpiresAt;
-                        }
+                    const refreshTokenExpiresAt = jwtExpiresAt(refreshToken, REFRESH_MARGIN_MS);
+                    if (refreshTokenExpiresAt && (!expiresAt || refreshTokenExpiresAt < expiresAt)) {
+                        expiresAt = refreshTokenExpiresAt;
                     }
                 }
 
