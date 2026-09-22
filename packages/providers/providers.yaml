@@ -11543,7 +11543,7 @@ higher-logic:
     scope_separator: ' '
     disable_pkce: false
     proxy:
-        base_url: https://${connectionConfig.hostname}/higherlogic/external/api/v2.0
+        base_url: https://${connectionConfig.hostname}/higherlogic/external/api
     docs: https://nango.dev/docs/api-integrations/higher-logic
     docs_connect: https://nango.dev/docs/api-integrations/higher-logic/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/higher-logic/how-to-register-your-own-higher-logic-api-oauth-app

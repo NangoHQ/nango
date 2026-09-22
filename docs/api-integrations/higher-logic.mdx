@@ -14,13 +14,13 @@ This provider uses Higher Logic's OIDC authorization code flow with PKCE to acce
 4. Make a read-only API request through Nango. Create an Environment API key in **Environment Settings > API Keys** and replace the placeholders below:
 
 ```bash
-curl 'https://api.nango.dev/proxy/Contacts/GetWhoAmI' \
+curl 'https://api.nango.dev/proxy/v2.0/Contacts/GetWhoAmI' \
   -H 'Authorization: Bearer <NANGO-API-KEY>' \
   -H 'Provider-Config-Key: <INTEGRATION-ID>' \
   -H 'Connection-Id: <CONNECTION-ID>'
 ```
 
-The proxy base URL includes `/higherlogic/external/api/v2.0`. Paths without `/higherlogic/external/` do not accept these OIDC bearer tokens. Do not add legacy `HLAuthToken`, `HLIAMKey`, or `HLPassword` headers.
+The proxy base URL is `https://<community-hostname>/higherlogic/external/api`. Include the API version in each request path, for example `/v2.0/Contacts/GetWhoAmI`. Paths without `/higherlogic/external/` do not accept these OIDC bearer tokens. Do not add legacy `HLAuthToken`, `HLIAMKey`, or `HLPassword` headers.
 
 Access is limited by the signed-in user's permissions. The `webapi` scope permits CREST API access; `offline_access` requests a refresh token when refresh tokens are enabled on the Higher Logic client.
 
