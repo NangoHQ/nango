@@ -39,6 +39,11 @@ const TYPE_BADGE_LABEL: Record<FunctionType, string> = {
     'on-event': 'on event'
 };
 
+function functionRowKey(fn: ListedNangoFunction): string {
+    const event = fn.type === 'on-event' ? fn.event : '';
+    return `${fn.type}:${fn.name}:${event}`;
+}
+
 function isTypeFilterValue(value: string): value is TypeFilterValue {
     return (TYPE_FILTER_VALUES as readonly string[]).includes(value);
 }
@@ -203,7 +208,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                             <TableBody>
                                 {functions.map((fn) => (
                                     <TableRow
-                                        key={`${fn.type}:${fn.name}`}
+                                        key={functionRowKey(fn)}
                                         className="cursor-pointer hover:bg-surface-panel-inset"
                                         onClick={() => onFunctionClick(fn)}
                                     >

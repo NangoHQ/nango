@@ -100,7 +100,7 @@ describe(`GET ${route}`, () => {
         });
     });
 
-    it('should return empty list with pagination metadata when integration has no deployed functions', async () => {
+    it('should return only live-catalog actions when integration has no deployed functions', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 

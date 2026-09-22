@@ -33,11 +33,6 @@ export const FunctionSwitch: React.FC<{
     const loading = isEnablePending || isDeployPending || isDisablePending;
 
     const toggleSync = () => {
-        if (flow.source === 'live-catalog') {
-            toast({ title: 'Catalog actions cannot be toggled from the dashboard yet', variant: 'error' });
-            return;
-        }
-
         if (flow.type === 'action') {
             if (flow.enabled) {
                 void onDisable();
