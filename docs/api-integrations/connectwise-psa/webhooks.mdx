@@ -9,7 +9,7 @@ This guide explains how Nango receives and routes ConnectWise PSA webhooks.
 ## How it works
 
 1. ConnectWise sends a signed POST request to your Nango webhook URL when a subscribed event occurs.
-2. Nango verifies the signature using the signing key referenced in the payload's `Metadata.key_url` (only trusted `*.myconnectwise.net` subdomains are accepted).
+2. Nango verifies the signature using the signing key referenced in the payload's `Metadata.key_url` (trusted ConnectWise cloud subdomains are accepted by default; self-hosted origins require connection metadata).
 3. Nango routes the webhook to the matching connection(s), then either forwards it to your app or runs a sync (`onWebhook`).
 
 ## Connection routing
@@ -40,6 +40,19 @@ curl -X PATCH "https://api.nango.dev/connections/metadata" \
 `PATCH` merges the key into existing metadata; use `POST` if you want to replace all metadata.
 
 You can also set it from a [post-connection-creation event function](/getting-started/use-cases/implement-event-handler) with `nango.updateMetadata({ productInstanceId })` once you have the Product Instance ID for the connection.
+
+For a self-hosted instance, also set `metadata.connectwiseWebhookKeyOrigin` to the exact HTTPS origin that serves its callback signing keys:
+
+```json
+{
+    "productInstanceId": "<CONNECTWISE-PRODUCT-INSTANCE-ID>",
+    "connectwiseWebhookKeyOrigin": "https://cw.example.com"
+}
+```
+
+Set this value from your trusted backend setup, never by copying an unverified webhook's `Metadata.key_url`. Use an origin only: no path, query, fragment, or credentials. A non-default HTTPS port must match exactly. Existing ConnectWise cloud hosts require no additional metadata.
+
+For a custom origin, Nango first finds connections with the matching Product Instance ID, then accepts the signing-key URL only for connections that explicitly trust that origin. It still verifies the signature before dispatching or forwarding. Redirects and private, loopback, and link-local network targets are blocked, including during DNS lookup. The signing-key endpoint must be publicly reachable over HTTPS.
 
 ## Handle the webhook
 
