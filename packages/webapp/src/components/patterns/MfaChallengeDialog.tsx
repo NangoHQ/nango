@@ -24,7 +24,7 @@ interface MfaChallengeDialogProps {
     purpose: string;
     confirmText: string;
     confirmVariant?: ButtonProps['variant'];
-    /** Message from the last rejected attempt. Clear it when starting a new one. */
+    /** Message from the last rejected attempt. Clear it when starting a new one. Hidden here once the user switches input mode. */
     error: string | null;
     verifying: boolean;
     onCancel: () => void;
@@ -32,8 +32,8 @@ interface MfaChallengeDialogProps {
 }
 
 /**
- * Second factor for an action the user already started: the caller sends the request, and on
- * `mfa_code_required` opens this to collect the factor and send the same request again with it.
+ * Second factor for a sensitive action. Callers either open it up front, before anything is sent, or
+ * send the request first and open it on `mfa_code_required` to collect the factor and retry with it.
  */
 export const MfaChallengeDialog: React.FC<MfaChallengeDialogProps> = ({
     open,
@@ -47,6 +47,9 @@ export const MfaChallengeDialog: React.FC<MfaChallengeDialogProps> = ({
 }) => {
     const [value, setValue] = useState('');
     const [useRecoveryCode, setUseRecoveryCode] = useState(false);
+    // `error` belongs to the caller and only clears on the next attempt, so switching input mode hides
+    // it here instead. Otherwise a rejection stays on screen under the now-empty field of the other mode.
+    const [errorDismissed, setErrorDismissed] = useState(false);
 
     // Controlled `open` changes (the caller closing after a success) do not fire Radix onOpenChange,
     // so reset from the prop rather than only from a user-driven close.
@@ -54,12 +57,14 @@ export const MfaChallengeDialog: React.FC<MfaChallengeDialogProps> = ({
         if (!open) {
             setValue('');
             setUseRecoveryCode(false);
+            setErrorDismissed(false);
         }
     }, [open]);
 
     useEffect(() => {
         if (error) {
             setValue('');
+            setErrorDismissed(false);
         }
     }, [error]);
 
@@ -112,7 +117,7 @@ export const MfaChallengeDialog: React.FC<MfaChallengeDialogProps> = ({
                                     </InputOTP>
                                 </>
                             )}
-                            {error && (
+                            {error && !errorDismissed && (
                                 <p role="alert" className="text-body-small-regular text-status-danger-text">
                                     {error}
                                 </p>
@@ -123,6 +128,7 @@ export const MfaChallengeDialog: React.FC<MfaChallengeDialogProps> = ({
                                 onClick={() => {
                                     setUseRecoveryCode((current) => !current);
                                     setValue('');
+                                    setErrorDismissed(true);
                                 }}
                                 disabled={verifying}
                             >
