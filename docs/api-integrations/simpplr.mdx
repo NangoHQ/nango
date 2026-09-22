@@ -88,9 +88,11 @@ import PreBuiltUseCases from "/snippets/generated/simpplr/PreBuiltUseCases.mdx"
 - Simpplr runs two different products. This integration is for Simpplr's own platform, documented at [platform.simpplr.com](https://platform.simpplr.com/reference). Older tenants run as a managed package inside the customer's Salesforce org and authenticate through Salesforce; use the `salesforce` integration for those.
 - The API host is per region, and the tenant's OAuth token URL is the only place the region is stated: `platform.app.simpplr.com` (United States), `platform.eu.simpplr.com`, `platform.au.simpplr.com` and `platform.ca.simpplr.com`. A wrong **Region** points the connection at another region's tenant.
 - Simpplr's published B2B OpenAPI gives its token URL as `https://platform.{env}.simpplr.xyz/v1/identity/oauth/token`. The working domain is `.com`, so a client generated from that spec calls a host that does not resolve.
-- The token response carries only `access_token`. Simpplr documents no lifetime, so the connection falls back to Nango's default client-credentials expiry.
-- Tokens are read-only unless a scope is requested. Simpplr accepts `read` (the default), `write` and `everything`, and `read` covers GET calls plus the search endpoints that take a POST body.
+- The access token is a JWT that lasts 24 hours, but the token response carries only `access_token` with no `expires_in`, so Nango refreshes on its default client-credentials schedule, well inside that window.
+- Tokens are read-only unless a scope is requested. Simpplr accepts `read` (the default), `write` and `everything`, and `read` covers GET calls plus the search endpoints that take a POST body. Simpplr grants whichever scope the token request asks for, so a client application is not limited to read access by how it was created.
 - The B2B API covers tenant-level access. Simpplr's separate User API acts for a signed-in user and expects an authorization code exchange whose token body names the code `auth_code`, which this integration does not use.
 - `GET /v1/b2b/identity/test` is the cheapest call for checking a connection.
+- Paging differs by endpoint. The content and sites endpoints page with `size` and `nextPageToken`, but `GET /v1/b2b/identity/users` rejects both with a 400.
+- Content `body` is HTML, not markdown or plain text.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/simpplr.mdx)</Note>
