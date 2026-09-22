@@ -1,62 +1,75 @@
 ---
-title: 'Self-host Nango'
-sidebarTitle: 'Self-hosting'
-description: 'Overview of self-hosted deployments.'
+title: 'Self-Managed'
+sidebarTitle: 'Self-Managed'
+description: 'You deploy, you operate.'
 ---
 
-Nango offers a self-hosted deployment option for Enterprise customers. This guide covers deployment, scaling, updates, and other key operational details.
+With Self-Managed, you deploy Nango yourself and are responsible for operating it — upgrades, scaling, and on-call — on your own infrastructure, any cloud or on-prem. This gives you the most flexibility over infrastructure, at the cost of running it.
 
-## Architecture overview
+See [Self-Hosting overview](/guides/platform/self-hosting) for the architecture, and [BYOC](/guides/platform/self-hosting/byoc) if you'd rather have Nango deploy and operate it inside your cloud account for you.
 
-<Frame caption="Nango's infrastructure components">
-  <img src="/images/diagrams/nango-architecture.png" />
-</Frame>
+## Quickstart
 
-## Architecture components
+<CardGroup cols={3}>
+  <Card title="Helm chart" icon="dharmachakra" href="https://github.com/NangoHQ/nango-helm-charts">
+    Deploy to your Kubernetes cluster.
+  </Card>
+  <Card title="Managed image releases" icon="tags" href="https://github.com/NangoHQ/managed-image-releases">
+    Versioned, pinned Docker images.
+  </Card>
+  <Card title="nangoctl" icon="flask" href="https://github.com/NangoHQ/nangoctl">
+    Try Nango locally in a `kind` cluster first.
+  </Card>
+</CardGroup>
 
-Nango consists of several core services, each handling specific responsibilities:
+Custom deployments (e.g., ECS instead of Kubernetes) are possible with our guidance — reach out if the Helm chart isn't the right fit for your infrastructure.
 
-- **Server (Node service)**: Powers the dashboard, API, proxy requests, and incoming/outgoing webhooks.
-- **Orchestrator (Node service)**: Manages task scheduling and state tracking.
-- **Jobs (Node service)**: Processes tasks and dispatches them to the Runner.
-- **Runner (Node service)**: Executes integration code and interacts with external APIs.
-- **Persist (Node service)**: Stores synced records and logs.
-- **Postgres**: Stores data for the control plane, API credentials, scheduled tasks, and synced records.
-- **Object Storage (e.g. S3)**: Stores compiled integration code for execution by the Runner.
-- **ElasticSearch**: Stores execution data.
-- **Redis**: Caches system data, including socket information, token refresh locks, and rate limits.
+## What leaves your account
 
-## Cloud vs. self-hosted architecture
+**Nothing.** Self-hosted instances don't send any telemetry, logs, or data back to Nango automatically. You're the only one with visibility into your instance, unless you choose to export metrics to your own monitoring tool, or share something with us directly when asking for support.
 
-The Nango architecture is largely the same for both Cloud and Enterprise self-hosting. This ensures self-hosted instances benefit from continuous dogfooding and load testing.
+## Where your data lives
 
-The primary differences are:
-- In the Cloud version, the Runner service runs as isolated instances per customer.
-- The Postgres database is segmented by use case (control plane, task scheduling, synced records).
+Everything runs on your infrastructure, configured by you:
 
-## Features
+| Store | Holds |
+| --- | --- |
+| Postgres | Control-plane data, your end users' connection credentials, scheduled tasks, synced records |
+| Object storage (e.g. S3) | Compiled integration code for the Runner |
+| ElasticSearch / OpenSearch | Execution logs |
+| Redis / Valkey | Cache — socket info, token refresh locks, rate limits |
 
-All paid features available on Nango Cloud are also included in the Enterprise self-hosted edition.
+See [Data storage](/guides/platform/self-hosting#data-storage) on the overview page for more, and [Security](/guides/platform/security) for how credentials are encrypted at rest.
 
-## Plan requirement
+## Who's responsible for what
 
-An [Enterprise plan](https://www.nango.dev/pricing) subscription is required.
+| Area | Nango | You |
+| --- | --- | --- |
+| Managed image releases | Publishes them, on a two-month cadence plus hotfixes | Pull and apply them |
+| Helm chart | Maintains it | Deploy and configure it |
+| Infrastructure provisioning | — | Provision it — VPC, database, cache, cluster, on any cloud or on-prem |
+| Application deployment & updates | — | Deploy and update it yourself |
+| Scaling | Advises on request | Handle it |
+| Incident response / on-call | — | Handle it |
+| Support | Per your contract's SLA | Reach out via your support channel |
 
-Enterprise Self-Hosted pricing contain a fixed annual license and maintenance fee, plus a fraction of the cloud usage-based fees since infrastructure is on the customer side.
+In short: budget for a platform team that can run Kubernetes in production. Nango ships the images and the chart; you run them.
 
-## Intended users
+## Encryption & credentials
 
-Inteded for large and/or regulated enterprises.
+Encryption is entirely in your hands. At minimum, set [`NANGO_ENCRYPTION_KEY`](#encryption-key) yourself; if you'd rather not manage it as a flat secret, you can wrap it with your own KMS instead.
 
-## Deployment
+The most sensitive thing Nango stores is your end users' connection credentials (OAuth tokens, API keys) for the integrations you connect — encrypted at rest once you've set a key, inside your own Postgres. See [Security](/guides/platform/security) for the full model.
 
-By default, Nango is deployed using [Helm charts](https://github.com/NangoHQ/nango-helm-charts). Custom deployments (e.g., ECS) are possible with our guidance.
+## Observability & support
+
+Everything is visible to you, and only you — the dashboard, the audit trail, your logs, your metrics. Nango has no visibility into your instance unless you choose to share something with us.
+
+Support follows your contract's SLA. Reach out through your support channel with what you're seeing (logs, dashboard state, error messages) — we can't look at your instance ourselves.
 
 ## Updates
 
-Managed image updates are published on a **two-month cadence**, with occasional **hotfixes** as needed. Notifications about new releases will be posted to your dedicated Nango Slack channel.
-
-You can also subscribe to release notifications on the [`NangoHQ/managed-image-releases`](https://github.com/NangoHQ/managed-image-releases) repository:
+You pull and apply updates yourself. Notifications about new releases are posted to your dedicated Nango Slack channel, and you can subscribe directly to the [`NangoHQ/managed-image-releases`](https://github.com/NangoHQ/managed-image-releases) repository:
 
 - **GitHub:** watch the repository, select **Custom**, and enable **Releases**.
 - **RSS/Atom:** subscribe to `https://github.com/NangoHQ/managed-image-releases/releases.atom`, which can be wired into Slack, Microsoft Teams, RSS readers, or internal automation.
@@ -81,91 +94,97 @@ For example, pull a release from Docker Hub with:
 docker pull nangohq/nango:managed-1.5.4-0.70.4-0fe07a6d83aea0becc4cea382c5cead2f555718d
 ```
 
-Customers should **pin their CLI version to the `application-version`** specified in the tag for compatibility.
+Pin your CLI version to the `application-version` specified in the tag for compatibility.
 
 ### Versions and policy
 
 You can find the latest version in [`managed-manifest.json`](https://github.com/NangoHQ/managed-image-releases/blob/main/managed-manifest.json) on `managed-image-releases` (mirrored from [`NangoHQ/nango`](https://github.com/NangoHQ/nango/blob/master/managed-manifest.json) on each release). The in-repo [`CHANGELOG.md`](https://github.com/NangoHQ/managed-image-releases/blob/main/CHANGELOG.md) tracks release history.
 
-Each managed release maps to a specific source commit, and published image tags are never changed after release. Customers are encouraged to stay reasonably current with managed image releases.
-
-See the full [changelog](/updates/changelog) for details on each release.
+Each managed release maps to a specific source commit, and published image tags are never changed after release. Stay reasonably current with managed image releases. See the full [changelog](/updates/changelog) for details on each release.
 
 ## Cloud provider support
 
-Supports all major cloud providers (AWS, GCP, Azure).
+Self-Managed supports all major cloud providers (AWS, GCP, Azure) and on-prem Kubernetes, since you're the one operating it.
 
-## Recommended configuration
+## Configuration reference
 
-- **5 Node services** (Server, Persist, Runner, Jobs, Orchestrator): 1 CPU, 2GB RAM per service
-- **Postgres database**: 2 CPU, 8GB RAM, 128GB storage
-- **Redis data store**: 128MB
-- **ElasticSearch data store**: 2 vCPU, 1GB RAM, 30GB storage
-- **Object storage (e.g. S3)**: less than 500MB of storage
+Everything below is what you configure directly to run a production instance — env vars, secrets, and the hardening options available to you.
 
-## Scaling
+### Minimum environment variables
 
-The default configuration supports 1M+ sync/action executions per day (assuming ~2s execution time per action/sync).
+| Variable | Example | Purpose |
+| --- | --- | --- |
+| `NODE_ENV` | `production` | Runtime mode |
+| `AUTH_ALLOW_SIGNUP` | `false` | Disable open signup |
+| `FLAG_AUTH_ROLES_ENABLED` | `true` | Enable role-based access |
+| `SERVER_PORT` | `8080` | Port the server listens on |
+| `DEFAULT_RATE_LIMIT_PER_MIN` | `200` | Default API rate limit |
+| `NANGO_SERVER_URL` | `https://your-api-url` | Your API URL |
+| `NANGO_PUBLIC_SERVER_URL` | `https://your-app-url` | Your app URL |
+| `NANGO_PUBLIC_CONNECT_URL` | `https://your-connect-url` | Your Connect UI URL |
+| `PERSIST_SERVICE_URL` | `http://nango-persist-svc.nango` | Internal URL of the persist service |
+| `ORCHESTRATOR_SERVICE_URL` | `http://nango-orchestrator-svc.nango` | Internal URL of the orchestrator service |
+| `RUNNER_SERVICE_URL` / `RUNNER_URL` | `http://nango-runner-svc.nango` | Internal URL of the runner service |
+| `SERVER_SERVICE_URL` | `http://nango-server-svc.nango` | Internal URL of the server service |
+| `RUNNER_NODE_ID` | `1` | Identifier for this runner node |
+| `RUNNER_TYPE` | `REMOTE` | Runner runs as its own service |
+| `NANGO_LOGS_ENABLED` | `true` | Enable the logs UI |
+| `NANGO_LOGS_PROVIDER` | `opensearch` | `opensearch` or `elasticsearch` |
+| `NANGO_LOGS_ES_URL` | `https://your-opensearch-url` | Your OpenSearch/Elasticsearch URL |
+| `NANGO_LOGS_ES_PREFIX` | `cust` | Index prefix |
+| `NANGO_LOGS_ES_INDEX_OPERATIONS` | `cust-operations` | Operations index name |
+| `NANGO_LOGS_ES_INDEX_MESSAGES` | `cust-messages` | Messages index name |
+| `NANGO_ADMIN_UUID` | `3fa85f64-5717-4562-b3fc-2c963f66afa6` | A new UUID identifying your admin account |
+| `NANGO_CLOUD` | `false` | Marks this as a self-hosted instance |
+| `NANGO_ENTERPRISE` | `true` | Enables Enterprise features |
+| `NANGO_DB_SSL` | `true` | Require SSL to Postgres |
 
-Auto-scaling is not provided out-of-the-box yet, but the default configuration scales far. We can guide you on configuring auto-scaling when needed.
+### Minimum secrets
 
-Bottlenecks mostly depend on:
-- **Action/sync execution time**: solved by scaling the Runner service vertically, then horizontally.
-- **Cached records & size (for sync functions only)**: solved by scaling Postgres vertically.
+| Secret | Example | Purpose |
+| --- | --- | --- |
+| `NANGO_ENCRYPTION_KEY_WRAPPED` | `AQICAHjK...` (KMS-wrapped, base64) | Your data-encryption key, wrapped |
+| `NANGO_KMS_KEY_ARN` | `arn:aws:kms:us-west-2:123456789012:key/abcd-1234-efgh-5678` | KMS key used to unwrap it |
+| `NANGO_INTERNAL_API_KEY` | *(generated, 32+ char random string)* | Internal service-to-service auth |
+| `NANGO_ADMIN_KEY` | *(generated, random string)* | Admin API access |
+| `NANGO_ADMIN_UUID` | `3fa85f64-5717-4562-b3fc-2c963f66afa6` | Matches the env var above |
+| `NANGO_DATABASE_URL` | `postgresql://nango:••••@db.internal:5432/nango` | Postgres connection string |
+| `NANGO_REDIS_URL` | `rediss://:••••@redis.internal:6379` | Redis / Valkey connection string |
+| `NANGO_ADMIN_INVITE_TOKEN` | *(generated, single-use token)* | Token for inviting the first admin |
+| `AWS_BUCKET_NAME` | `my-company-nango-integrations` | Object storage for integration files |
+| `MAILGUN_API_KEY` | `key-••••••••••••••••` | Transactional email |
+| `NANGO_LOGS_ES_USER` | `nango_logs` | OpenSearch/Elasticsearch username |
+| `NANGO_LOGS_ES_PWD` | `••••••••` | OpenSearch/Elasticsearch password |
 
-## Data storage
+<Tip>
+This is the *minimum* set to get a production instance running. The sections below cover what each optional subsystem (logs, encryption, audit trail, Redis, hardening) additionally needs.
+</Tip>
 
-- **Postgres**: Stores data for the control plane, API credentials, scheduled tasks, and synced records.
-- **Object Storage (e.g. S3)**: Stores compiled integration code for execution by the Runner.
-- **ElasticSearch**: Stores execution data.
-- **Redis**: Caches system data, including socket information, token refresh locks, and rate limits.
-
-## Using existing data stores
-
-Yes, Nango is flexible with data store setups. However, we recommend a separate instance for independent scaling.
-
-## Internet access requirements
-
-- **Server:** Required for proxy requests, credential management, and incoming/outgoing webhooks (inbound & outbound traffic).
-- **Runner:** Required for reading/writing data from external APIs during sync and action executions (outbound traffic only).
-
-## Exporting metrics & logs
-
-Yes, metrics and logs can be exported to any monitoring tool using our OpenTelemetry Export add-on. Additional metrics and logs can be added upon request.
-
-### Datadog `providerConfigKey` metric tag
-
-Self-hosted deployments that send DogStatsD metrics to their own Datadog instance can opt into tagging selected operational metrics with `providerConfigKey` (the unique key of a configured integration, for example `github-prod`).
-
-This is **off by default**. Leave it off unless you need per-integration granularity; `providerConfigKey` usually has much higher cardinality than account count.
-
-```sh
-NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY=true
-```
-
-Set this on the **server** and **jobs** services and restart them. When enabled, auth, proxy, credential refresh, connection lifecycle, and incoming webhook dispatch metrics include a `providerConfigKey` tag whenever that identifier is known at the call site.
-
-## Email service
-
-Nango uses emails for account verification, password reset, and sending invitations, etc...
-
-Any SMTP server can be configured to be used by Nango for these email communications.
-
-## Encryption key
+### Encryption key
 
 You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. It encrypts credentials in the control-plane database as well as data in the records cache. Without this key, credentials are stored unencrypted.
 
 The records cache always requires this key. If you run sync functions that persist records, the persist and records services fail to store or retrieve records when `NANGO_ENCRYPTION_KEY` is not set—they do not fall back to plaintext.
 
+```sh
+openssl rand -base64 32
+```
+
 <Note>
 The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation is not supported yet—changing the key after initial setup will cause decryption failures. Plan your key management accordingly.
 </Note>
 
-## Data retention configuration
+If you'd rather not manage `NANGO_ENCRYPTION_KEY` as a flat secret, wrap it with your own KMS and set `NANGO_ENCRYPTION_KEY_WRAPPED` and `NANGO_KMS_KEY_ARN` instead (see the secrets table above).
+
+<Warning>
+`NANGO_ENCRYPTION_KEY` is also required for Connect UI. It is used to generate sessions for [Connect UI](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui). Without this key, Connect UI will not work.
+</Warning>
+
+### Data retention
 
 The default retention period for deleted connections is 31 days. You can configure this via the `CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS` environment variable.
 
-## Audit trail
+### Audit trail
 
 The audit trail records control-plane activity — who created a connection, changed an integration, rotated an API key or signed in, from which IP, and whether it succeeded. Self-hosted instances keep it in Postgres, and teammates read it from **Audit trail** in the dashboard.
 
@@ -185,7 +204,7 @@ Entries are kept for a year by default, and the server removes expired ones for 
 NANGO_AUDIT_POSTGRES_RETENTION_DAYS=365
 ```
 
-## Feature flags
+### Feature flags
 
 Nango gates some behavior behind feature flags. Flags are served by the provider set in `NANGO_FLAG_PROVIDER`, which defaults to `noop`, so every flag uses its built-in default.
 
@@ -200,7 +219,7 @@ This serves `true` for the `proxy-forward-all-response-headers` flag on every ac
 
 The variables apply to the whole process, so there is no per-account targeting or gradual rollout. Set them on every service that evaluates the flag, and note that each service reads them at startup.
 
-### Two-factor authentication
+#### Two-factor authentication
 
 Two-factor authentication is behind the `mfa` flag, which only the server evaluates. Set these on the server service to enable it:
 
@@ -210,31 +229,6 @@ NANGO_FEATURE_FLAG_MFA=true
 ```
 
 Once the server restarts, users can turn it on from their profile settings by pairing an authenticator app and saving their backup codes. Nango then asks them for a code at login.
-
-## Free self-hosting
-
-A limited free self-hosting option is available for hobby projects. It is intended for lightweight deployments that need Auth and Proxy, without the managed features and support included with Enterprise self-hosting or Nango Cloud.
-
-For more details, see the [pricing page](https://nango.dev/pricing) or [schedule a call](https://nango.dev/contact) to discuss the Enterprise self-hosted version.
-
-### Feature availability
-
-| Feature | Free self-hosted | Enterprise self-hosted / Nango Cloud |
-| --- | --- | --- |
-| API Auth | Yes | Yes |
-| Proxy | Yes | Yes |
-| Observability | Auth + proxy only | Full |
-| OpenTelemetry export | No | Yes |
-| Pre-built syncs, tools & triggers | No | Yes |
-| Syncs | No | Yes |
-| Tool calls | No | Yes |
-| Webhooks | No | Yes |
-| Triggers | No | Yes |
-| MCP server | No | Yes |
-| Customize auth branding | No | Yes |
-| RBAC | No | Yes |
-| MFA | No | Yes |
-| SAML SSO | No | Nango Cloud only |
 
 ### Server URL, callback URL, and custom domains
 
@@ -453,26 +447,6 @@ NANGO_DASHBOARD_USERNAME=<PICK-A-USERNAME>
 NANGO_DASHBOARD_PASSWORD=<PICK-A-PASSWORD>
 ```
 
-#### Encrypting sensitive data
-
-You can enforce encryption of sensitive data, including tokens, API keys, and app secrets, by setting a 256-bit base64-encoded key:
-
-```sh
-openssl rand -base64 32
-```
-
-Set the generated value as `NANGO_ENCRYPTION_KEY`:
-
-```sh
-NANGO_ENCRYPTION_KEY=<BASE64-256BIT-KEY>
-```
-
-After you restart the Nango server, database encryption happens automatically. The encryption key cannot currently be modified after it is set.
-
-<Warning>
-`NANGO_ENCRYPTION_KEY` is also required for Connect UI. It is used to generate sessions for [Connect UI](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui). Without this key, Connect UI will not work.
-</Warning>
-
 #### Internal mTLS
 
 If you terminate mutual TLS between Nango services at a load balancer or service mesh, Nango can present a client certificate on its service-to-service calls (server to orchestrator, jobs to orchestrator, jobs to runner, runner to jobs, runner to persist, runner to server).
@@ -577,11 +551,11 @@ Connect UI discovers the custom path on its own (from the connect session), so `
 
 ### Telemetry
 
-Self-hosted instances do not automatically send telemetry back to Nango. Operational metrics and logs stay within your own infrastructure and are only exported if you configure the OpenTelemetry Export add-on described above.
+Self-hosted instances do not automatically send telemetry back to Nango. Operational metrics and logs stay within your own infrastructure and are only exported if you configure the OpenTelemetry Export add-on.
 
 ### Logs
 
-Nango stores execution logs and powers the logs UI with either Elasticsearch or OpenSearch. To keep free self-hosted deployments lighter, this stack is optional.
+Nango stores execution logs and powers the logs UI with either Elasticsearch or OpenSearch. To keep lightweight deployments lighter, this stack is optional.
 
 To enable logs:
 
@@ -603,31 +577,25 @@ Elasticsearch hosting options include:
 
 If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in your host logs.
 
-### Run and update Nango
+## FAQ
 
-To install Nango on a VM:
-
-```bash
-mkdir nango && cd nango
-wget https://raw.githubusercontent.com/NangoHQ/nango/master/docker-compose.yaml
-docker-compose up -d
-```
-
-To update Nango:
-
-```bash
-docker-compose stop
-docker-compose rm -f
-docker-compose pull
-docker-compose up -d
-```
-
-<Tip>
-If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a call](https://nango.dev/contact).
-</Tip>
-
-## Related guides
-
-- [Security](/guides/platform/security) - review data, encryption, and access controls.
-- [Environments](/guides/platform/environments) - organize dev, staging, and production setups.
-- [Changelog](/updates/changelog) - track changes that affect self-hosted upgrades.
+<AccordionGroup>
+  <Accordion title="What support do we get?" defaultOpen="true">
+    Support per your contract's SLA, plus the managed image releases and Helm chart maintained by Nango. Nango doesn't have visibility into your instance, so support relies on what you share with us — logs, dashboard state, error messages.
+  </Accordion>
+  <Accordion title="Who applies updates?">
+    You do. We publish managed images on a two-month cadence plus hotfixes, and notify your Slack channel and the `managed-image-releases` repo — pulling and deploying them is on your team.
+  </Accordion>
+  <Accordion title="Which clouds are supported?">
+    AWS, GCP, Azure, and on-prem Kubernetes — anywhere you can run the Helm chart.
+  </Accordion>
+  <Accordion title="Can we start on the free tier and move to Self-Managed later?">
+    Yes — the free self-hosting option (see the [overview](/guides/platform/self-hosting#free-self-hosting)) is Auth and Proxy only. Moving to Enterprise Self-Managed unlocks the rest of the feature set; [talk to us](https://nango.dev/contact) when you're ready.
+  </Accordion>
+  <Accordion title="Is autoscaling included?">
+    Not out of the box — the default configuration scales far without it, and we can guide you on setting up autoscaling when you need it.
+  </Accordion>
+  <Accordion title="Does Nango have any visibility into our instance?">
+    None. Self-hosted instances send nothing back to Nango automatically. If you need our help debugging something, you share what's relevant with us directly.
+  </Accordion>
+</AccordionGroup>

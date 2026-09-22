@@ -9,7 +9,7 @@ import { createConnectionSeed } from '../../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../../seeders/environment.seeder.js';
 import remoteFileService from '../file/remote.service.js';
 import { deployBundle, prepareDeploymentBundle } from './deploy.js';
-import { upsert } from './models/functions.js';
+import { search, upsert } from './models/functions.js';
 import { CONFIGS_TABLE, INSTANCES_TABLE } from './models/tables.js';
 import { functionVersionHash } from './version.js';
 
@@ -261,6 +261,22 @@ describe('deployBundle instances', () => {
         const ctx = await setup();
         (await ctx.deploy([{ ...scheduled, trigger: { kind: 'schedule', frequency: 'every 5 minutes', autoStart: false } }])).unwrap();
         expect(ctx.orchestrator.scheduleFunctions.mock.calls[0]?.[0][0]?.autoStart).toBe(false);
+    });
+
+    it('does not create instances or schedules when a disabled function becomes scheduled', async () => {
+        const ctx = await setup();
+        (await ctx.deploy([githubArtifact])).unwrap();
+        await db.knex.from(CONFIGS_TABLE).where({ environment_id: ctx.environment.id, name: githubArtifact.name }).update({ enabled: false });
+
+        (await ctx.deploy([scheduled])).unwrap();
+
+        const [deployed] = (await search(db.knex, { environmentId: ctx.environment.id, filter: { integrationKey: scheduled.integrationId } })).unwrap();
+        expect(deployed).toMatchObject({
+            config: { enabled: false },
+            currentVersion: { trigger: { kind: 'schedule' } }
+        });
+        expect(await ctx.instances()).toEqual([]);
+        expect(ctx.orchestrator.scheduleFunctions).not.toHaveBeenCalled();
     });
 });
 

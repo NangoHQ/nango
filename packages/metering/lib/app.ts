@@ -11,7 +11,6 @@ import { metrics, once, report } from '@nangohq/utils';
 import { billingEventsS3DLQMonitorCron } from './crons/billingEventsS3DLQMonitor.js';
 import { billingEventsS3ExportCron } from './crons/billingEventsS3Export.js';
 import { exportUsageCron } from './crons/usage.js';
-import { e2bSandboxesDaemon } from './daemons/e2b-sandboxes.daemon.js';
 import { envs } from './env.js';
 import { AuditProcessor } from './processors/audit.js';
 import { TeamProcessor } from './processors/team.js';
@@ -99,11 +98,9 @@ try {
     exportUsageCron();
     billingEventsS3ExportCron();
     billingEventsS3DLQMonitorCron();
-    const e2bSandboxesDaemonHandle = e2bSandboxesDaemon();
 
     // Graceful shutdown
     const close = once(async () => {
-        await e2bSandboxesDaemonHandle?.abort();
         await auditProc?.stop();
         const disconnect = await pubsubTransport.disconnect();
         if (disconnect.isErr()) {

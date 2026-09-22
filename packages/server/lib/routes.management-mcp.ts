@@ -1,8 +1,8 @@
 import express from 'express';
 
 import { getManagementMcp, postManagementMcp } from './controllers/mcp/management.js';
+import { getManagementOAuthProtectedResourceMetadata, managementMcpAuth } from './controllers/mcp/managementAuth.js';
 import { envs } from './env.js';
-import authMiddleware from './middleware/access.middleware.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
@@ -10,7 +10,7 @@ import { withEnvironmentTarget } from './middleware/scope.middleware.js';
 
 import type { Request, RequestHandler } from 'express';
 
-const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const apiAuth: RequestHandler[] = [managementMcpAuth, rateLimiterMiddleware, egressMeterMiddleware];
 const bodyLimit = envs.NANGO_SERVER_PUBLIC_BODY_LIMIT;
 const managementMcpRouter = express.Router();
 
@@ -24,8 +24,10 @@ managementMcpRouter.use(
     }),
     jsonContentTypeMiddleware
 );
-managementMcpRouter.route('/mcp').post(apiAuth, withEnvironmentTarget, postManagementMcp);
-managementMcpRouter.route('/mcp').get(apiAuth, withEnvironmentTarget, getManagementMcp);
+managementMcpRouter.get('/.well-known/oauth-protected-resource', getManagementOAuthProtectedResourceMetadata);
+managementMcpRouter.get('/.well-known/oauth-protected-resource/mcp', getManagementOAuthProtectedResourceMetadata);
+managementMcpRouter.route('/mcp').post(apiAuth, withEnvironmentTargetUnlessOAuth, postManagementMcp);
+managementMcpRouter.route('/mcp').get(apiAuth, withEnvironmentTargetUnlessOAuth, getManagementMcp);
 managementMcpRouter.use((_, res) => {
     res.status(404).json({ error: { code: 'not_found', message: 'Not found' } });
 });
@@ -35,9 +37,16 @@ export const managementMcpAPI: RequestHandler = (req, res, next) => {
         next();
         return;
     }
-
-    managementMcpRouter(req, res, next);
+    void managementMcpRouter(req, res, next);
 };
+
+function withEnvironmentTargetUnlessOAuth(req: Request, res: Parameters<RequestHandler>[1], next: Parameters<RequestHandler>[2]): void {
+    if (res.locals['authType'] === 'mcpOAuth') {
+        next();
+        return;
+    }
+    withEnvironmentTarget(req, res, next);
+}
 
 function isManagementMcpHost(host: string): boolean {
     if (!envs.NANGO_MANAGEMENT_MCP_SERVER_URL) {
