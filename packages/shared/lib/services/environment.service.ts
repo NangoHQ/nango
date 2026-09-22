@@ -81,7 +81,7 @@ class EnvironmentService {
     async getEnvironmentsByAccountId(
         account_id: number,
         filter: { name?: string | undefined } = {}
-    ): Promise<Pick<DBEnvironment, 'id' | 'uuid' | 'name' | 'is_production'>[]> {
+    ): Promise<Result<Pick<DBEnvironment, 'id' | 'uuid' | 'name' | 'is_production'>[]>> {
         try {
             const result = await db.knex
                 .select<Pick<DBEnvironment, 'id' | 'uuid' | 'name' | 'is_production'>[]>('id', 'uuid', 'name', 'is_production')
@@ -94,11 +94,7 @@ class EnvironmentService {
                 })
                 .orderBy('name', 'asc');
 
-            if (result == null || result.length == 0) {
-                return [];
-            }
-
-            return result;
+            return Ok(result ?? []);
         } catch (err) {
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -106,7 +102,7 @@ class EnvironmentService {
                 accountId: account_id
             });
 
-            return [];
+            return Err(err);
         }
     }
 

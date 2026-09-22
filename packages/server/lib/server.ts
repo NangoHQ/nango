@@ -15,12 +15,13 @@ import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
-import { flags, getLogger, NANGO_VERSION, once, report } from '@nangohq/utils';
+import { flags, getLogger, metrics, NANGO_VERSION, once, report } from '@nangohq/utils';
 
 import { destroyAuditDb, migrateAuditDb, startAuditPartitions } from './auditDb.js';
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
 import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
+import { manageGrowthAddonsCron } from './crons/manageGrowthAddons.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutFunctionAsyncJobsCron } from './crons/timeoutFunctionAsyncJobs.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
@@ -101,6 +102,7 @@ refreshConnectionsCron();
 timeoutLogsOperations();
 timeoutFunctionAsyncJobsCron();
 deleteOldData();
+manageGrowthAddonsCron();
 trialCron();
 lambdaKeepWarmCron();
 tasks.start();
@@ -148,6 +150,7 @@ const close = once(() => {
 
         console.info('Closed');
 
+        await metrics.flush();
         process.exit();
     });
 });

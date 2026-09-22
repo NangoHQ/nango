@@ -4,7 +4,6 @@ import { uuidv7 } from 'uuidv7';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { getTestDbClient } from '../db/helpers.test.js';
-import { isDuplicateScheduleNameError } from '../errors.js';
 import * as schedules from './schedules.js';
 
 import type { Schedule } from '../types.js';
@@ -41,7 +40,7 @@ describe('Schedules', () => {
             lastScheduledTaskId: null
         });
     });
-    it('should fail to create a schedule when it already exists', async () => {
+    it('returns an existing schedule without changing any fields', async () => {
         const schedule = await createSchedule(db);
 
         const duplicate = await schedules.create(db, {
@@ -59,10 +58,9 @@ describe('Schedules', () => {
             lastScheduledTaskState: null
         });
 
-        expect(duplicate.isErr()).toBe(true);
-        expect(duplicate.isErr() && isDuplicateScheduleNameError(duplicate.error)).toBe(true);
+        expect(duplicate.unwrap()).toEqual(schedule);
         const existing = (await schedules.get(db, schedule.id)).unwrap();
-        expect(existing.payload).toEqual({ foo: 'bar' });
+        expect(existing).toEqual(schedule);
     });
     it('should resurrect a soft-deleted schedule', async () => {
         const schedule = await createSchedule(db);
@@ -104,6 +102,28 @@ describe('Schedules', () => {
         });
         expect(resurrected.createdAt).toEqual(schedule.createdAt);
     });
+
+    it('returns all requested schedules and leaves live duplicates untouched', async () => {
+        const existing = await createSchedule(db);
+        const requested = [
+            { ...existing, name: 'new-schedule', state: 'STARTED' as const },
+            { ...existing, state: 'PAUSED' as const, frequencyMs: 900_000, payload: { changed: true } }
+        ];
+        const rows = (await schedules.createBatch(db, requested)).unwrap();
+        expect(rows.map((row) => row.name).sort()).toEqual(requested.map((row) => row.name).sort());
+        expect(rows.find((row) => row.name === existing.name)).toEqual(existing);
+        expect(new Map((await schedules.createBatch(db, requested)).unwrap().map((row) => [row.name, row]))).toEqual(
+            new Map(rows.map((row) => [row.name, row]))
+        );
+    });
+
+    it('returns the same IDs when concurrent requests create the same schedule', async () => {
+        const existing = await createSchedule(db);
+        const props = [{ ...existing, name: 'concurrent-schedule', state: 'STARTED' as const }];
+        const results = await Promise.all([schedules.createBatch(db, props), schedules.createBatch(db, props)]);
+        expect(results[0]!.unwrap()).toEqual(results[1]!.unwrap());
+        expect(await db.from(schedules.SCHEDULES_TABLE).where('name', 'concurrent-schedule')).toHaveLength(1);
+    });
     it('should be successfully retrieved', async () => {
         const schedule = await createSchedule(db);
         const retrieved = (await schedules.get(db, schedule.id)).unwrap();
@@ -136,23 +156,83 @@ describe('Schedules', () => {
         const unpaused = await schedules.transitionState(db, schedule.id, 'STARTED');
         expect(unpaused.isErr()).toBe(true);
     });
-    it('should be successfully updated', async () => {
-        const schedule = await createSchedule(db);
+    it('updates multiple schedules with their respective values and leaves unrelated schedules unchanged', async () => {
+        const first = await createSchedule(db, 'first');
+        const second = await createSchedule(db, 'second');
+        const unrelated = await createSchedule(db, 'unrelated');
         await setTimeout(1);
-        const newFrequency = 600_000; // 10 minutes
+        const entries = [
+            { id: second.id, frequencyMs: 900_000, payload: { i: 3 } },
+            { id: first.id, frequencyMs: 600_000, payload: { i: 2 } }
+        ];
+        const updated = (await schedules.update(db, entries)).unwrap();
+        expect(updated).toHaveLength(2);
+        const byId = new Map(updated.map((schedule) => [schedule.id, schedule]));
+        for (const original of [first, second]) {
+            const expected = entries.find((entry) => entry.id === original.id)!;
+            const actual = byId.get(original.id)!;
+            expect(actual.frequencyMs).toBe(expected.frequencyMs);
+            expect(actual.payload).toEqual(expected.payload);
+            expect(actual.updatedAt.getTime()).toBeGreaterThan(original.updatedAt.getTime());
+            expect(actual.lastScheduledTaskId).toBeNull();
+            expect(actual.lastScheduledTaskState).toBeNull();
+            expect(actual.nextExecutionAt).toBeWithinMs(new Date(original.startsAt.getTime() + expected.frequencyMs), 3_000);
+            expect((await schedules.get(db, original.id)).unwrap()).toEqual(actual);
+        }
+        expect((await schedules.get(db, unrelated.id)).unwrap()).toEqual(unrelated);
+    });
+    it('preserves omitted fields in payload-only and frequency-only updates', async () => {
+        const payloadOnly = await createSchedule(db, 'payload-only');
+        const frequencyOnly = await createSchedule(db, 'frequency-only');
+        await setTimeout(1);
+
         const updated = (
-            await schedules.update(db, {
-                id: schedule.id,
-                frequencyMs: newFrequency,
-                payload: { i: 2 }
-            })
+            await schedules.update(db, [
+                { id: payloadOnly.id, payload: { changed: true } },
+                { id: frequencyOnly.id, frequencyMs: 600_000 }
+            ])
         ).unwrap();
-        expect(updated.frequencyMs).toBe(newFrequency);
-        expect(updated.payload).toMatchObject({ i: 2 });
-        expect(updated.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
-        expect(updated.lastScheduledTaskId).toBeNull();
-        expect(updated.lastScheduledTaskState).toBeNull();
-        expect(updated.nextExecutionAt).toBeWithinMs(new Date(updated.startsAt.getTime() + newFrequency), 3_000);
+
+        expect(updated).toHaveLength(2);
+        const byId = new Map(updated.map((schedule) => [schedule.id, schedule]));
+        const payloadResult = byId.get(payloadOnly.id)!;
+        expect(payloadResult.payload).toEqual({ changed: true });
+        expect(payloadResult.frequencyMs).toBe(payloadOnly.frequencyMs);
+        expect(payloadResult.nextExecutionAt).toEqual(payloadOnly.nextExecutionAt);
+
+        const frequencyResult = byId.get(frequencyOnly.id)!;
+        expect(frequencyResult.frequencyMs).toBe(600_000);
+        expect(frequencyResult.payload).toEqual(frequencyOnly.payload);
+        expect(frequencyResult.nextExecutionAt).toBeWithinMs(new Date(frequencyOnly.startsAt.getTime() + 600_000), 3_000);
+
+        expect((await schedules.get(db, payloadOnly.id)).unwrap()).toEqual(payloadResult);
+        expect((await schedules.get(db, frequencyOnly.id)).unwrap()).toEqual(frequencyResult);
+    });
+    it('rejects duplicate update IDs without changing the schedule', async () => {
+        const schedule = await createSchedule(db);
+        const result = await schedules.update(db, [
+            { id: schedule.id, frequencyMs: 600_000, payload: { i: 2 } },
+            { id: schedule.id, frequencyMs: 900_000, payload: { i: 3 } }
+        ]);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toBe('Duplicate schedule IDs in update');
+        }
+        expect((await schedules.get(db, schedule.id)).unwrap()).toEqual(schedule);
+    });
+    it('batch update fails when a schedule is missing', async () => {
+        const schedule = await createSchedule(db);
+        const result = await schedules.update(db, [
+            { id: schedule.id, frequencyMs: 600_000, payload: { i: 2 } },
+            { id: uuidv7(), frequencyMs: 900_000 }
+        ]);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toContain('Some schedules were not found during update');
+        }
+        expect((await schedules.get(db, schedule.id)).unwrap()).toEqual(schedule); // The existing schedule should remain unchanged
     });
     it('should be searchable', async () => {
         const schedule = await createSchedule(db);
@@ -212,10 +292,10 @@ describe('Schedules', () => {
     });
 });
 
-async function createSchedule(db: knex.Knex): Promise<Schedule> {
+async function createSchedule(db: knex.Knex, name = 'Test Schedule'): Promise<Schedule> {
     return (
         await schedules.create(db, {
-            name: 'Test Schedule',
+            name,
             state: 'STARTED',
             payload: { foo: 'bar' },
             startsAt: new Date(),

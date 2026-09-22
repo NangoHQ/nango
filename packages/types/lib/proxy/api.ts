@@ -49,7 +49,7 @@ export interface BaseProxyConfiguration {
 
 export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
     decompress?: boolean | string;
-    method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
+    method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'PROPFIND' | 'REPORT' | 'get' | 'post' | 'patch' | 'put' | 'delete' | 'propfind' | 'report';
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
 }
 

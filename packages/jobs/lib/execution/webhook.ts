@@ -104,7 +104,14 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
         });
 
         // capping
-        const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'function_duration_seconds', 'records');
+        const cappingStatus = await capping.getStatus(
+            plan,
+            'function_executions',
+            'function_compute_gbms',
+            'function_duration_seconds',
+            'records',
+            'data_transfer'
+        );
         if (cappingStatus.isCapped) {
             const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
             void logCtx.error(message, { cappingStatus });

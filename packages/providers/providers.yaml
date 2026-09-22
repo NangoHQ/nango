@@ -1193,6 +1193,30 @@ autotask:
             description: The secret for your API-only user account
             doc_section: '#step-4-generate-api-secret'
 
+autumn:
+    display_name: Autumn
+    categories:
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.useautumn.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/organization
+    docs: https://nango.dev/docs/api-integrations/autumn
+    docs_connect: https://nango.dev/docs/api-integrations/autumn/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Secret API Key
+            description: Your Autumn secret API key.
+            example: am_sk_live_51On1**********eHq
+            pattern: '^am_sk_(live|test)_[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-autumn-api-key'
+
 algolia:
     display_name: Algolia
     categories:
@@ -1875,6 +1899,32 @@ apple-business-manager:
             title: Private Key
             description: The EC private key (PEM format) used to sign the client assertion JWT.
             doc_section: '#step-1-create-an-api-account-and-generate-a-private-key'
+
+apple-calendar:
+    display_name: Apple Calendar
+    categories:
+        - productivity
+    auth_mode: BASIC
+    credentials_verification_script: appleCalendarCredentialsVerification
+    proxy:
+        base_url: https://caldav.icloud.com
+    docs: https://nango.dev/docs/api-integrations/apple-calendar
+    docs_connect: https://nango.dev/docs/api-integrations/apple-calendar/connect
+    credentials:
+        username:
+            type: string
+            title: Apple ID
+            description: Your Apple ID email address.
+            format: email
+            example: you@icloud.com
+            doc_section: '#step-1-find-your-apple-id'
+        password:
+            type: string
+            title: App-Specific Password
+            description: An app-specific password for your Apple ID.
+            example: abcd-****-****-mnop
+            pattern: '^[a-z]{4}-[a-z]{4}-[a-z]{4}-[a-z]{4}$'
+            doc_section: '#step-2-generate-an-app-specific-password'
 
 appstle-subscriptions:
     display_name: Appstle Subscriptions
@@ -11313,6 +11363,28 @@ hex:
             example: app
             doc_section: '#step-2-finding-your-subdomain'
 
+hex-mcp:
+    display_name: Hex (MCP)
+    categories:
+        - analytics
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://auth.app.hex.tech/oauth2/authorize
+    token_url: https://auth.app.hex.tech/oauth2/token
+    registration_url: https://auth.app.hex.tech/oauth2/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.hex.tech
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/hex-mcp
+
 heyreach:
     display_name: HeyReach
     categories:
@@ -13662,6 +13734,30 @@ linkhut:
         base_url: https://api.ln.ht
     docs: https://nango.dev/docs/integrations/all/linkhut
 
+linkly:
+    display_name: Linkly
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.linklyhq.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/workspaces
+    docs: https://nango.dev/docs/api-integrations/linkly
+    docs_connect: https://nango.dev/docs/api-integrations/linkly/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Linkly account
+            pattern: '^[A-Za-z0-9+/]{22}==$'
+            example: aB3d**************uk2Q==
+            doc_section: '#step-1-finding-your-api-key'
+
 livetennisapi:
     display_name: Live Tennis API
     categories:
@@ -13871,11 +13967,20 @@ lovable-mcp:
         - dev-tools
         - mcp
     auth_mode: MCP_OAUTH2
-    client_registration: cimd
+    client_registration: dynamic
     authorization_url: https://lovable.dev/oauth/authorize
     token_url: https://lovable.dev/oauth/token
+    registration_url: https://lovable.dev/oauth/register
+    default_scopes:
+        - offline
     authorization_params:
         response_type: code
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
     token_params:
         grant_type: authorization_code
     refresh_params:
@@ -15848,6 +15953,35 @@ neon:
             example: napi_1a2b3c4d5e6f****************************************************
             doc_section: '#step-1-creating-an-api-key'
 
+neon-mcp:
+    display_name: Neon (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.neon.tech/api/authorize
+    token_url: https://mcp.neon.tech/api/token
+    registration_url: https://mcp.neon.tech/api/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.neon.tech/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.neon.tech
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/neon-mcp
+
 nerdio:
     display_name: Nerdio
     categories:
@@ -15905,7 +16039,7 @@ netsapiens:
     categories:
         - communication
     auth_mode: TWO_STEP
-    body_format: form
+    body_format: json
     token_url: https://${connectionConfig.server}/ns-api/v2/tokens
     token_params:
         grant_type: password
@@ -15919,7 +16053,7 @@ netsapiens:
         client_secret: ${credentials.client_secret}
         refresh_token: ${refresh_token}
     token_headers:
-        content-type: application/x-www-form-urlencoded
+        content-type: application/json
         accept: application/json
     token_response:
         token: access_token
@@ -18685,6 +18819,40 @@ pleo:
                 - external
                 - external.staging
 
+pleo-api-key:
+    display_name: Pleo (API Key)
+    categories:
+        - payment
+        - invoicing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiSubdomain}.pleo.io
+        verification:
+            method: GET
+            endpoints:
+                - /v2/employees?limit=1
+        headers:
+            authorization: Basic ${base64(${apiKey}:)}
+    docs: https://nango.dev/docs/api-integrations/pleo-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/pleo-api-key/connect
+    connection_config:
+        apiSubdomain:
+            type: string
+            title: API Subdomain
+            description: The API subdomain for your Pleo environment.
+            enum:
+                - external
+                - external.staging
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Pleo Standalone API Key.
+            example: pls_********************************_620d75
+            pattern: '^pls_[a-f0-9]+_[a-f0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
+
 podium:
     display_name: Podium
     categories:
@@ -20881,6 +21049,45 @@ sap-ariba:
             pattern: '^AN[0-9]+$'
             doc_section: '#step-3-find-your-anid'
             order: 3
+
+salescaptain:
+    display_name: SalesCaptain
+    categories:
+        - crm
+        - communication
+        - support
+
+    auth_mode: API_KEY
+
+    proxy:
+        base_url: https://api.salescaptain.com
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/get-companies
+
+        retry:
+            after:
+                - 'retry-after'
+
+    docs: https://nango.dev/docs/api-integrations/salescaptain
+    docs_connect: https://nango.dev/docs/api-integrations/salescaptain/connect
+
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: API key for SalesCaptain API authentication.
+            secret: true
+            pattern: '^[a-fA-F0-9]{32}$'
+            example: 64f67b98****************4521acac
 
 salesforce:
     display_name: Salesforce
@@ -23691,13 +23898,20 @@ stripe-app-sandbox:
         base_url: https://api.stripe.com
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/integrations/all/stripe-app-sandbox
-    docs_connect: https://nango.dev/docs/integrations/all/stripe-app-sandbox/connect
+    docs: https://nango.dev/docs/api-integrations/stripe-app-sandbox
+    setup_guide_url: https://nango.dev/docs/api-integrations/stripe-app-sandbox/how-to-register-your-own-stripe-app-sandbox-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/stripe-app-sandbox/connect
+    integration_config:
+        appDomain:
+            type: string
+            title: App Domain
+            description: The unique identifier Stripe assigns to your app instance.
+            optional: true
     connection_config:
         appDomain:
             type: string
             title: App Domain
-            description: The unique identifier Stripe assigns to your app instance
+            description: The unique identifier Stripe assigns to your app instance.
             doc_section: '#step-1-finding-your-app-domain'
 
 stripe-api-key:
@@ -28209,6 +28423,9 @@ zoom:
             cursor_path_in_response: next_page_token
             cursor_name_in_request: next_page_token
             limit_name_in_request: page_size
+    webhook_routing_script: zoomWebhookRouting
+    webhook_user_defined_secret: true
+    post_connection_script: zoomPostConnection
     docs: https://nango.dev/docs/api-integrations/zoom
     setup_guide_url: https://nango.dev/docs/api-integrations/zoom/how-to-register-your-own-zoom-api-oauth-app
 
@@ -28224,6 +28441,8 @@ zoom-cc:
         account_id: ${connectionConfig.accountId}
     proxy:
         base_url: https://api.zoom.us
+    webhook_routing_script: zoomCcWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/zoom-cc
     docs_connect: https://nango.dev/docs/api-integrations/zoom-cc/connect
     connection_config:

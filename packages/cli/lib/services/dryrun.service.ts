@@ -110,7 +110,7 @@ export class DryRunService {
 
     public async run(options: RunArgs, debug = false): Promise<Result<string | undefined>> {
         let syncName = '';
-        let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata, rawStubbedCheckpoint, syncVariant;
+        let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata, rawStubbedCheckpoint, variant;
 
         const environment = options.optionalEnvironment || this.environment;
 
@@ -129,7 +129,7 @@ export class DryRunService {
         if (Object.keys(options).length > 0) {
             ({
                 sync: syncName,
-                variant: syncVariant,
+                variant,
                 connectionId,
                 lastSyncDate: suppliedLastSyncDate,
                 input: actionInput,
@@ -144,8 +144,8 @@ export class DryRunService {
             return Err(message);
         }
 
-        if (!syncVariant) {
-            syncVariant = BASE_VARIANT;
+        if (!variant) {
+            variant = BASE_VARIANT;
         }
 
         if (!connectionId) {
@@ -365,7 +365,8 @@ export class DryRunService {
                 syncId: 'dryrun-sync',
                 lastSyncDate: lastSyncDate as Date,
                 syncConfig,
-                syncVariant,
+                syncVariant: variant,
+                variant,
                 debug,
                 team: { id: 1, name: 'team' },
                 logger: sdkLogger,

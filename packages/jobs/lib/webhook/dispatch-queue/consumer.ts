@@ -62,6 +62,7 @@ const messageSchema: z.ZodType<DispatchMessage> = z.discriminatedUnion('kind', [
         kind: z.literal('function'),
         idempotencyKey: z.string().min(1),
         functionName: z.string().min(1),
+        functionConfigId: z.number().int().positive(),
         trigger: functionTriggerSchema,
         maxConcurrency: z.number().int().min(0)
     })
@@ -179,7 +180,7 @@ export class DispatchQueueConsumer {
         });
 
         const receivedAt = Date.now();
-        return await tracer.scope().activate(span, async () => {
+        return void (await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -254,7 +255,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        });
+        }));
     }
 
     private async processLegacyGroups(groupedEntries: ParsedLegacyEntry[][], receivedAt: number): Promise<Result<void, ClientError>> {
@@ -299,6 +300,7 @@ export class DispatchQueueConsumer {
                 ownerKey: `environment:${message.connection.environment_id}`,
                 args: {
                     functionName: message.functionName,
+                    functionConfigId: message.functionConfigId,
                     connection: message.connection,
                     activityLogId: message.activityLogId,
                     trigger: message.trigger,

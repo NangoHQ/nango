@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import { getIntegrations, getProvider } from '@/lib/api';
+import { useGlobal } from '@/lib/store';
 import { expectAccessibleInBothThemes } from '@/test/a11y';
 import { integrationsListResponse, providerResponse } from '@/test/fixtures';
 import { renderApp } from '@/test/render';
@@ -23,6 +24,13 @@ describe('IntegrationsList', () => {
 
     afterEach(() => {
         vi.clearAllMocks();
+    });
+
+    it('resolves a theme itself, since no request on this route brings one', async () => {
+        await renderApp({ route: '/integrations', seedStore: { theme: null } });
+
+        await expect.element(page.getByRole('heading', { name: 'Select Integration' })).toBeInTheDocument();
+        expect(useGlobal.getState().theme).toBe('system');
     });
 
     it('has no accessibility violations in light or dark mode', async () => {

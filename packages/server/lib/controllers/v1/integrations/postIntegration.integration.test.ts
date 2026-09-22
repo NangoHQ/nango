@@ -297,6 +297,41 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
+    it('should reject shared credentials combined with integrationConfig', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createSharedCredentialsSeed('stripe-app-sandbox');
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            body: {
+                provider: 'stripe-app-sandbox',
+                useSharedCredentials: true,
+                integrationConfig: { appDomain: 'acct_123' }
+            }
+        });
+
+        isError(res.json);
+        expect(res.json.error.code).toBe('invalid_body');
+    });
+
+    it('should reject shared credentials for a provider that declares integration_config, even without submitting one', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createSharedCredentialsSeed('stripe-app-sandbox');
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            body: {
+                provider: 'stripe-app-sandbox',
+                useSharedCredentials: true
+            }
+        });
+
+        isError(res.json);
+        expect(res.json.error.code).toBe('invalid_body');
+    });
+
     it('should generate unique key when provider name already exists', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');

@@ -93,6 +93,33 @@ export const twoStepOtherIntegrationFixture: GetPublicIntegration['Success']['da
     preconfigured_credentials: undefined
 };
 
+export const dualConfigProvider = {
+    auth_mode: 'OAUTH2',
+    display_name: 'Stripe App (Sandbox)',
+    docs: 'https://docs.example.com/stripe-app-sandbox',
+    name: 'stripe-app-sandbox',
+    logo_url: 'https://app.nango.dev/images/template-logos/stripe-app-sandbox.svg',
+    integration_config: {
+        appDomain: { type: 'string', title: 'App Domain', description: 'App Domain', automated: false, optional: true, order: 1 }
+    },
+    connection_config: {
+        appDomain: { type: 'string', title: 'App Domain', description: 'App Domain', automated: false, order: 1 }
+    }
+} satisfies GetPublicProvider['Success']['data'];
+
+export const dualConfigIntegrationFixture: GetPublicIntegration['Success']['data'] = {
+    ...integrationFixture,
+    unique_key: 'stripe-app-sandbox',
+    provider: 'stripe-app-sandbox',
+    display_name: 'Stripe App (Sandbox)',
+    preconfigured_connection_config: ['appDomain']
+};
+
+export const dualConfigIntegrationFixtureNoPreconfig: GetPublicIntegration['Success']['data'] = {
+    ...dualConfigIntegrationFixture,
+    preconfigured_connection_config: undefined
+};
+
 export const authResultFixture = {
     providerConfigKey: 'github',
     connectionId: 'conn_test_123'

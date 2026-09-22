@@ -1,3 +1,5 @@
+import { setTimeout } from 'node:timers/promises';
+
 import tracer from 'dd-trace';
 
 export enum Types {
@@ -52,6 +54,9 @@ export enum Types {
     PROXY_REDIRECT = 'nango.server.proxy.redirect',
     PROXY_BASE_URL_OVERRIDE_DENIED = 'nango.server.proxy.baseUrlOverrideDenied',
 
+    CRON_MANAGE_GROWTH_ADDON = 'nango.server.cron.manageGrowthAddon',
+    GROWTH_ADDON_CORRUPTED_STATE_COUNT = 'nango.server.growthAddon.corrupted.count',
+
     CRON_REFRESH_CONNECTIONS = 'nango.server.cron.refreshConnections',
     CRON_REFRESH_CONNECTIONS_FAILED = 'nango.server.cron.refreshConnections.failed',
     CRON_REFRESH_CONNECTIONS_SUCCESS = 'nango.server.cron.refreshConnections.success',
@@ -66,6 +71,7 @@ export enum Types {
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
 
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
+    FUNCTION_DURATION_MS = 'nango.jobs.function.duration_ms',
 
     WEBHOOK_INCOMING_RECEIVED = 'nango.webhook.incoming.received',
     WEBHOOK_INCOMING_RATE_LIMITED = 'nango.webhook.incoming.rateLimited',
@@ -150,8 +156,6 @@ export enum Types {
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
     MCP_TOOL_CALLS = 'nango.mcp.tool_calls',
     MCP_CLIENT_ID_METHOD = 'nango.mcp.client_id_method',
-
-    E2B_RUNNING_SANDBOXES = 'nango.server.e2b.sandboxes.running',
 
     BILLING_USAGE_CACHE = 'nango.billing.usage.cache',
     BILLING_USAGE_ORB_MS = 'nango.billing.usage.orb.ms',
@@ -259,6 +263,13 @@ export function duration(metricName: Types, value: number, dimensions?: Dimensio
 
 export function distribution(metricName: Types, value: number, dimensions?: Dimensions): void {
     tracer.dogstatsd.distribution(metricName, value, applyDimensionPolicy(metricName, dimensions) ?? {});
+}
+
+const FLUSH_SETTLE_MS = 100;
+
+export async function flush(): Promise<void> {
+    tracer.dogstatsd.flush();
+    await setTimeout(FLUSH_SETTLE_MS);
 }
 
 export function time<F extends (...args: unknown[]) => unknown>(metricName: Types, func: F, dimensions?: Dimensions): F {
