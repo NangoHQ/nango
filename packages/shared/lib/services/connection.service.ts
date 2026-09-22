@@ -1674,6 +1674,8 @@ export class ConnectionService {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
 
+                const token = rawCreds['access_token'] || (rawCreds['data'] && rawCreds['data']['token']) || rawCreds['jwt'];
+
                 let expiresAt: Date | undefined;
 
                 //fiserv returns expires_in in milliseconds
@@ -1683,13 +1685,20 @@ export class ConnectionService {
                     const expiresIn = Number.parseInt(rawCreds['expires_in'], 10);
                     const multiplier = template && 'expires_in_unit' in template && template.expires_in_unit === 'milliseconds' ? 1 : 1000;
                     expiresAt = new Date(Date.now() + expiresIn * multiplier);
-                } else {
+                } else if (typeof token === 'string') {
+                    const decoded = jwtClient.decode(token);
+                    if (decoded && typeof decoded['exp'] === 'number') {
+                        expiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
+                    }
+                }
+
+                if (!expiresAt) {
                     expiresAt = new Date(Date.now() + DEFAULT_OAUTHCC_EXPIRES_AT_MS);
                 }
 
                 const oauth2Creds: OAuth2ClientCredentials = {
                     type: 'OAUTH2_CC',
-                    token: rawCreds['access_token'] || (rawCreds['data'] && rawCreds['data']['token']) || rawCreds['jwt'],
+                    token,
                     client_id: '',
                     client_secret: '',
                     expires_at: expiresAt,
