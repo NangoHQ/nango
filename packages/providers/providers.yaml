@@ -22901,7 +22901,7 @@ simpplr:
         region:
             type: string
             title: Region
-            description: The region your Simpplr tenant is hosted in. Use `app` for the United States.
+            description: The region your Simpplr tenant is hosted in. Choose app for the United States.
             enum:
                 - app
                 - eu
