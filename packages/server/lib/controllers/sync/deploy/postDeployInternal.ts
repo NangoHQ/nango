@@ -77,8 +77,12 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
                         environmentId: devEnvironment.id,
                         configId: copiedFromId
                     });
-                    if (connections.length > 0) {
-                        await connectionService.copyConnections(connections, environment.id, copiedToId);
+                    if (connections.isErr()) {
+                        res.status(500).send({ error: { code: 'server_error', message: 'Failed to retrieve connections for deployment' } });
+                        return;
+                    }
+                    if (connections.value.length > 0) {
+                        await connectionService.copyConnections(connections.value, environment.id, copiedToId);
                     }
                 }
             }
@@ -93,7 +97,6 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
         environment,
         account,
         flows: cleanIncomingFlow(body.flowConfigs),
-        nangoYamlBody: body.nangoYamlBody,
         onEventScriptsByProvider: body.onEventScriptsByProvider,
         debug: body.debug,
         aggregatedJsonSchema: body.jsonSchema,

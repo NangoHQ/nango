@@ -259,7 +259,7 @@
     },
     {
       "source": "/guides/platform/free-self-hosting/configuration",
-      "destination": "/guides/platform/self-hosting"
+      "destination": "/guides/platform/free-self-hosting"
     },
     {
       "source": "/implementation-guides/platform/functions/customer-configuration",
@@ -714,6 +714,14 @@
       "destination": "/api-integrations/jobber"
     },
     {
+      "source": "/integrations/all/stripe-app-sandbox",
+      "destination": "/api-integrations/stripe-app-sandbox"
+    },
+    {
+      "source": "/integrations/all/stripe-app-sandbox/connect",
+      "destination": "/api-integrations/stripe-app-sandbox/connect"
+    },
+    {
       "source": "/guides/functions/tool-calling",
       "destination": "/guides/agent-sessions"
     }
@@ -800,11 +808,18 @@
                   "guides/platform/limits",
                   "guides/platform/security",
                   "guides/platform/audit-trail",
-                  "guides/platform/self-hosting",
                   "guides/platform/proxy-requests",
                   "guides/platform/webhooks-from-nango",
                   "guides/platform/webhook-forwarding",
                   "guides/platform/common-issues",
+                  {
+                    "group": "Self-Hosting",
+                    "pages": [
+                      "guides/platform/self-hosting/self-hosting",
+                      "guides/platform/self-hosting/byoc",
+                      "guides/platform/self-hosting/self-managed"
+                    ]
+                  },
                   {
                     "group": "Migrations",
                     "pages": [
@@ -1040,6 +1055,7 @@
               "api-integrations/amplitude",
               "api-integrations/amplitude-mcp",
               "api-integrations/amplitude-mcp-eu",
+              "api-integrations/anarlog-mcp",
               "integrations/all/anrok",
               "integrations/all/anthropic",
               "integrations/all/anthropic-admin",
@@ -1050,6 +1066,7 @@
               "integrations/all/apollo-oauth",
               "api-integrations/apple-app-store",
               "api-integrations/apple-business-manager",
+              "api-integrations/apple-calendar",
               "integrations/all/appstle-subscriptions",
               "api-integrations/asana",
               "api-integrations/asana-mcp",
@@ -1071,6 +1088,7 @@
               "integrations/all/autodesk",
               "api-integrations/autosana",
               "integrations/all/autotask",
+              "api-integrations/autumn",
               "integrations/all/auvik",
               "api-integrations/availity",
               "integrations/all/avalara",
@@ -1398,6 +1416,7 @@
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
               "api-integrations/hex",
+              "api-integrations/hex-mcp",
               "api-integrations/heygen",
               "api-integrations/heymarket",
               "integrations/all/heyreach",
@@ -1483,6 +1502,7 @@
               "api-integrations/linear-mcp",
               "api-integrations/linkedin",
               "integrations/all/linkhut",
+              "api-integrations/linkly",
               "integrations/all/listmonk",
               "api-integrations/listrak",
               "api-integrations/liveswitch",
@@ -1661,6 +1681,7 @@
               "api-integrations/planning-center-online",
               "api-integrations/planning-center-online-pat",
               "api-integrations/pleo",
+              "api-integrations/pleo-api-key",
               "integrations/all/podium",
               "api-integrations/podscribe",
               "api-integrations/posthog",
@@ -1837,7 +1858,7 @@
               "api-integrations/stripe",
               "api-integrations/stripe-api-key",
               "integrations/all/stripe-app",
-              "integrations/all/stripe-app-sandbox",
+              "api-integrations/stripe-app-sandbox",
               "integrations/all/stripe-express",
               "api-integrations/supabase",
               "api-integrations/supabase-mcp",

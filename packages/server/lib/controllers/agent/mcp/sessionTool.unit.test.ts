@@ -30,25 +30,38 @@ describe('callAgentSessionTool', () => {
         expect(result.content[0]).toStrictEqual({ type: 'text', text: 'null' });
     });
 
-    it('passes a public error back to the agent', async () => {
-        const result = await call(() => Promise.resolve(Err(new PublicMcpError('the doc is locked'))));
+    it('passes a public error back to the agent, with the code and integration it branches on', async () => {
+        const result = await call(() => Promise.resolve(Err(new PublicMcpError('the doc is locked', { code: 'tool_failed', integrationId: 'notion' }))));
 
         expect(result.isError).toBe(true);
         expect(result.content[0]).toStrictEqual({ type: 'text', text: 'the doc is locked' });
+        expect(result._meta).toStrictEqual({ 'nango/error_code': 'tool_failed', 'nango/integration_id': 'notion' });
     });
 
-    it('hides an internal error from the agent', async () => {
+    it('leaves the code off an error that carries none', async () => {
+        const result = await call(() => Promise.resolve(Err(new PublicMcpError('the doc is locked'))));
+
+        expect(result.isError).toBe(true);
+        expect(result._meta).toBeUndefined();
+    });
+
+    it('says a Nango-side failure in words the agent can act on, without saying what broke', async () => {
         const result = await call(() => Promise.resolve(Err(new InternalMcpError())));
 
         expect(result.isError).toBe(true);
-        expect(result.content[0]).toStrictEqual({ type: 'text', text: 'Internal error' });
+        expect(result.content[0]).toStrictEqual({
+            type: 'text',
+            text: 'The tool could not be run. Trying once more is reasonable, and tell the user if it keeps failing.'
+        });
+        expect(result._meta).toStrictEqual({ 'nango/error_code': 'internal_error' });
     });
 
     it('turns a thrown error into a tool result rather than letting it escape', async () => {
         const result = await call(() => Promise.reject(new Error('boom')));
 
         expect(result.isError).toBe(true);
-        expect(result.content[0]).toStrictEqual({ type: 'text', text: 'Internal error' });
+        expect(result.content[0]?.type).toBe('text');
+        expect(result._meta).toStrictEqual({ 'nango/error_code': 'internal_error' });
     });
 });
 
@@ -74,9 +87,10 @@ describe('callAgentSessionTool in structured mode', () => {
     });
 
     it('still reports an error as an error', async () => {
-        const result = await callStructured(() => Promise.resolve(Err(new PublicMcpError('nope'))));
+        const result = await callStructured(() => Promise.resolve(Err(new PublicMcpError('nope', { code: 'tool_failed' }))));
 
         expect(result.isError).toBe(true);
         expect(result.structuredContent).toBeUndefined();
+        expect(result._meta).toStrictEqual({ 'nango/error_code': 'tool_failed' });
     });
 });

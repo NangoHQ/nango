@@ -80,6 +80,8 @@ export interface RecordsServiceInterface {
 // TODO: move to @nangohq/types (with the rest of the ochestrator public types)
 export interface OrchestratorClientInterface {
     recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }>>;
+    recurring(props: RecurringProps[]): Promise<Result<{ scheduleIds: string[] }>>;
+    deleteSchedules({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn>;
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
     executeActionAsync(props: ExecuteActionProps): Promise<ExecuteAsyncReturn>;
     executeFunction(props: ExecuteFunctionProps): Promise<ExecuteFunctionReturn>;
@@ -151,6 +153,7 @@ export class Orchestrator {
     async invokeFunction({
         environment,
         connection,
+        functionConfigId,
         functionName,
         trigger,
         async,
@@ -161,6 +164,7 @@ export class Orchestrator {
         environment: DBEnvironment;
         connection: ConnectionJobs;
         functionName: string;
+        functionConfigId: number;
         trigger: FunctionTrigger;
         async: boolean;
         retryMax: number;
@@ -172,6 +176,7 @@ export class Orchestrator {
             const executionId = `${groupKey}:at:${new Date().toISOString()}:${uuid()}`;
             const args = {
                 functionName,
+                functionConfigId,
                 connection: {
                     id: connection.id,
                     connection_id: connection.connection_id,
@@ -942,22 +947,22 @@ export class Orchestrator {
 
     async scheduleFunctions(
         functions: {
-            connection: ConnectionInternal;
+            environmentId: number;
             instance: DBFunctionInstance;
-            frequency: string;
+            connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
+            frequencyFallback: string;
             autoStart: boolean;
         }[]
     ): Promise<Result<void>> {
         try {
-            // TODO: batch recurring
-            for (const { instance, connection, frequency, autoStart } of functions) {
-                const environmentId = connection.environment_id;
-                const frequencyMs = this.getFrequencyMs(instance.frequency || frequency);
+            const schedules: RecurringProps[] = [];
+            for (const { instance, connection, environmentId, frequencyFallback, autoStart } of functions) {
+                const frequencyMs = this.getFrequencyMs(instance.frequency || frequencyFallback);
                 if (frequencyMs.isErr()) {
                     return Err(frequencyMs.error);
                 }
-                const schedule = await this.client.recurring({
-                    name: FunctionScheduleId.get({ environmentId: connection.environment_id, id: instance.id }),
+                schedules.push({
+                    name: FunctionScheduleId.get({ environmentId, id: instance.id }),
                     state: autoStart ? 'STARTED' : 'PAUSED',
                     frequencyMs: frequencyMs.value,
                     group: {
@@ -973,17 +978,34 @@ export class Orchestrator {
                     startsAt: new Date(),
                     args: {
                         type: 'function',
-                        instanceId: instance.id
+                        functionConfigId: instance.function_config_id,
+                        functionName: instance.name,
+                        connection,
+                        variant: instance.variant,
+                        trigger: {
+                            kind: 'schedule',
+                            input: null,
+                            connection: { connectionId: connection.connection_id, integrationId: connection.provider_config_key }
+                        },
+                        async: true
                     }
                 });
-                if (schedule.isErr()) {
-                    return Err(schedule.error);
+            }
+            for (let offset = 0; offset < schedules.length; offset += 1000) {
+                const result = await this.client.recurring(schedules.slice(offset, offset + 1000));
+                if (result.isErr()) {
+                    return Err(new Error('Failed to schedule functions', { cause: result.error }));
                 }
             }
         } catch (err) {
             return Err(new Error('Failed to schedule functions', { cause: err }));
         }
         return Ok(undefined);
+    }
+
+    async deleteFunctionSchedules({ environmentId, instanceIds }: { environmentId: number; instanceIds: number[] }): Promise<Result<void>> {
+        const result = await this.client.deleteSchedules({ scheduleNames: instanceIds.map((id) => FunctionScheduleId.get({ environmentId, id })) });
+        return result.isErr() ? Err(new Error('Failed to delete function schedules', { cause: result.error })) : Ok(undefined);
     }
 
     private getFrequencyMs(runs: string): Result<number> {

@@ -8,7 +8,7 @@ import PageEnvironmentUnauthorized from '../../pages/PageEnvironmentUnauthorized
 import PageNotFound from '../../pages/PageNotFound';
 import { useStore } from '../../store';
 import { useAnalyticsIdentify } from '../../utils/analytics';
-import { isNonEnvPath } from '../../utils/routes';
+import { isNonEnvPath, signinPathWithNext } from '../../utils/routes';
 
 export const PrivateRoute: React.FC = () => {
     const { user, loading: loadingUser, error: userError } = useUser();
@@ -94,7 +94,7 @@ export const PrivateRoute: React.FC = () => {
     }, [user, meta, identify]);
 
     if (userError || metaError) {
-        return <Navigate to="/signin" replace />;
+        return <Navigate to={signinPathWithNext(location)} replace />;
     }
     if (loadingUser || loadingMeta || !ready) {
         return null;

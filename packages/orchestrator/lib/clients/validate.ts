@@ -4,7 +4,7 @@ import { taskStates } from '@nangohq/scheduler';
 import { Err, Ok } from '@nangohq/utils';
 
 import { jsonSchema } from '../utils/validation.js';
-import { TaskAbort, TaskAction, TaskFunction, TaskOnEvent, TaskScheduleFunction, TaskSync, TaskSyncAbort, TaskWebhook } from './types.js';
+import { TaskAbort, TaskAction, TaskFunction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from './types.js';
 
 import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
 import type { Schedule, Task } from '@nangohq/scheduler';
@@ -76,6 +76,7 @@ export const onEventArgsSchema = z.object({
 
 const functionBaseFields = {
     type: z.literal('function'),
+    functionConfigId: z.number().int().positive(),
     functionName: z.string().min(1)
 };
 
@@ -117,20 +118,22 @@ const functionTriggerSchema = z.discriminatedUnion('kind', [
     scheduleFunctionTriggerSchema
 ]);
 
-export const functionArgsSchema = z.object({
-    ...functionBaseFields,
-    activityLogId: z.string(),
-    trigger: functionTriggerSchema,
-    async: z.boolean().optional().default(false),
-    ...commonSchemaArgsFields
-});
-
-export const scheduleFunctionArgsSchema = z
+const functionArgsObjectSchema = z
     .object({
-        type: z.literal('function'),
-        instanceId: z.number().int().positive()
+        ...functionBaseFields,
+        activityLogId: z.string().optional(),
+        variant: z.string().min(1).optional(),
+        trigger: functionTriggerSchema,
+        async: z.boolean().optional().default(false),
+        ...commonSchemaArgsFields
     })
     .strict();
+
+export const functionArgsSchema = functionArgsObjectSchema.transform(({ activityLogId, variant, ...args }) => ({
+    ...args,
+    ...(activityLogId !== undefined && { activityLogId }),
+    ...(variant !== undefined && { variant })
+}));
 
 const commonSchemaFields = {
     id: z.string().uuid(),
@@ -171,10 +174,6 @@ const onEventSchema = z.object({
 const functionSchema = z.object({
     ...commonSchemaFields,
     payload: functionArgsSchema
-});
-const scheduleFunctionSchema = z.object({
-    ...commonSchemaFields,
-    payload: scheduleFunctionArgsSchema
 });
 
 export function validateTask(task: Task): Result<OrchestratorTask> {
@@ -302,8 +301,10 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 attempt: func.data.retryCount + 1,
                 attemptMax: func.data.retryMax + 1,
                 functionName: func.data.payload.functionName,
+                functionConfigId: func.data.payload.functionConfigId,
+                ...(func.data.payload.variant !== undefined && { variant: func.data.payload.variant }),
                 connection: func.data.payload.connection,
-                activityLogId: func.data.payload.activityLogId,
+                ...(func.data.payload.activityLogId !== undefined && { activityLogId: func.data.payload.activityLogId }),
                 trigger: func.data.payload.trigger,
                 async: func.data.payload.async,
                 groupKey: func.data.groupKey,
@@ -311,24 +312,6 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 ownerKey: func.data.ownerKey,
                 retryKey: func.data.retryKey,
                 heartbeatTimeoutSecs: func.data.heartbeatTimeoutSecs
-            })
-        );
-    }
-    const scheduleFunction = scheduleFunctionSchema.safeParse(task);
-    if (scheduleFunction.success) {
-        return Ok(
-            TaskScheduleFunction({
-                id: scheduleFunction.data.id,
-                state: scheduleFunction.data.state,
-                name: scheduleFunction.data.name,
-                attempt: scheduleFunction.data.retryCount + 1,
-                attemptMax: scheduleFunction.data.retryMax + 1,
-                instanceId: scheduleFunction.data.payload.instanceId,
-                groupKey: scheduleFunction.data.groupKey,
-                groupMaxConcurrency: scheduleFunction.data.groupMaxConcurrency,
-                ownerKey: scheduleFunction.data.ownerKey,
-                retryKey: scheduleFunction.data.retryKey,
-                heartbeatTimeoutSecs: scheduleFunction.data.heartbeatTimeoutSecs
             })
         );
     }

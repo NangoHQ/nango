@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
+import { Err, Ok } from '@nangohq/utils';
 
 import { createAccount } from '../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../seeders/config.seeder.js';
@@ -8,10 +9,11 @@ import { createConnectionSeed } from '../../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../../seeders/environment.seeder.js';
 import remoteFileService from '../file/remote.service.js';
 import { deployBundle, prepareDeploymentBundle } from './deploy.js';
-import { upsert } from './models/functions.js';
+import { search, upsert } from './models/functions.js';
 import { CONFIGS_TABLE, INSTANCES_TABLE } from './models/tables.js';
 import { functionVersionHash } from './version.js';
 
+import type { Orchestrator } from '../../clients/orchestrator.js';
 import type { DBFunctionConfigVersion, DBFunctionInstance, FunctionDeploymentArtifact } from '@nangohq/types';
 
 const githubArtifact = {
@@ -98,18 +100,22 @@ describe('deployBundle instances', () => {
         const environment = await createEnvironmentSeed(account.id);
         await createConfigSeed(environment, 'github', 'github');
         const connection = await createConnectionSeed({ env: environment, provider: 'github' });
+        const orchestrator = {
+            scheduleFunctions: vi.fn<Orchestrator['scheduleFunctions']>().mockResolvedValue(Ok(undefined)),
+            deleteFunctionSchedules: vi.fn<Orchestrator['deleteFunctionSchedules']>().mockResolvedValue(Ok(undefined))
+        };
         const deploy = async (functions: FunctionDeploymentArtifact[]) => {
             const reconciliation = (
                 await prepareDeploymentBundle({ functions, environmentId: environment.id, reconciliationScope: { kind: 'environment' } })
             ).unwrap();
-            return deployBundle({ accountId: account.id, environmentId: environment.id, environmentName: environment.name, reconciliation });
+            return deployBundle({ accountId: account.id, environmentId: environment.id, environmentName: environment.name, reconciliation, orchestrator });
         };
         const instances = () =>
             db.knex
                 .from<DBFunctionInstance>(INSTANCES_TABLE)
                 .whereIn('function_config_id', db.knex.from(CONFIGS_TABLE).select('id').where({ environment_id: environment.id }))
                 .orderBy('id');
-        return { environment, connection, deploy, instances };
+        return { environment, connection, deploy, instances, orchestrator };
     }
 
     it('creates base instances only for active connections in the matching integration and environment', async () => {
@@ -130,11 +136,26 @@ describe('deployBundle instances', () => {
             expect(row).toMatchObject({
                 name: scheduled.name,
                 variant: 'base',
-                frequency: scheduled.trigger.kind === 'schedule' ? scheduled.trigger.frequency : null,
+                frequency: null,
                 deleted_at: null
             });
         }
         expect(await other.instances()).toEqual([]);
+        expect(ctx.orchestrator.scheduleFunctions).toHaveBeenCalledWith(
+            rows.map((instance) => ({
+                environmentId: ctx.environment.id,
+                instance,
+                connection: {
+                    id: instance.nango_connection_id,
+                    connection_id: [ctx.connection, second].find((connection) => connection.id === instance.nango_connection_id)!.connection_id,
+                    provider_config_key: 'github',
+                    environment_id: ctx.environment.id
+                },
+                frequencyFallback: 'every 5 minutes',
+                autoStart: true
+            }))
+        );
+        expect(other.orchestrator.scheduleFunctions).not.toHaveBeenCalled();
     });
 
     it('creates instances when a non-scheduled function becomes scheduled', async () => {
@@ -156,6 +177,7 @@ describe('deployBundle instances', () => {
         expect(await ctx.instances()).toEqual(before);
         (await ctx.deploy([{ ...scheduled, trigger: { kind: 'schedule', frequency: 'every 10 minutes' } }])).unwrap();
         expect(await ctx.instances()).toEqual(before);
+        expect(ctx.orchestrator.scheduleFunctions).toHaveBeenCalledTimes(3);
     });
 
     it.each(['trigger change', 'config removal'])('soft-deletes instances on %s without affecting another environment', async (reason) => {
@@ -173,6 +195,88 @@ describe('deployBundle instances', () => {
         expect(after[0]?.id).toBe(before[0]?.id);
         expect(after[0]?.deleted_at).toBeInstanceOf(Date);
         expect(await other.instances()).toEqual(otherBefore);
+        expect(ctx.orchestrator.deleteFunctionSchedules).toHaveBeenCalledWith({ environmentId: ctx.environment.id, instanceIds: before.map((row) => row.id) });
+        expect(other.orchestrator.deleteFunctionSchedules).not.toHaveBeenCalled();
+    });
+
+    it('commits instances before scheduling and preserves them when scheduling fails', async () => {
+        const ctx = await setup();
+        const schedulingError = new Error('orchestrator unavailable');
+        let visibleInstances: DBFunctionInstance[] | undefined;
+        ctx.orchestrator.scheduleFunctions.mockImplementationOnce(async () => {
+            // Read on a separate connection: these rows must already be committed.
+            visibleInstances = await ctx.instances();
+            return Err(schedulingError);
+        });
+
+        const result = await ctx.deploy([scheduled]);
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.cause).toBe(schedulingError);
+        }
+        expect(ctx.orchestrator.scheduleFunctions).toHaveBeenCalledTimes(1);
+        expect(visibleInstances).toEqual([expect.objectContaining({ nango_connection_id: ctx.connection.id, variant: 'base', deleted_at: null })]);
+        const requestedInstances = ctx.orchestrator.scheduleFunctions.mock.calls[0]![0].map(({ instance }) => instance);
+        expect(visibleInstances).toEqual(requestedInstances);
+        expect(await ctx.instances()).toEqual(visibleInstances);
+    });
+
+    it('retries scheduling unchanged functions with the same instances after a scheduling failure', async () => {
+        const ctx = await setup();
+        ctx.orchestrator.scheduleFunctions.mockResolvedValueOnce(Err(new Error('orchestrator unavailable')));
+
+        expect((await ctx.deploy([scheduled])).isErr()).toBe(true);
+        const committed = await ctx.instances();
+        expect(committed).toHaveLength(1);
+
+        (await ctx.deploy([scheduled])).unwrap();
+        expect(await ctx.instances()).toEqual(committed);
+        expect(ctx.orchestrator.scheduleFunctions).toHaveBeenCalledTimes(2);
+        const retriedInstanceIds = ctx.orchestrator.scheduleFunctions.mock.calls[1]![0].map(({ instance }) => instance.id);
+        expect(retriedInstanceIds).toEqual(committed.map((instance) => instance.id));
+    });
+
+    it.each(['trigger change', 'config removal'])('rolls back and retries %s when schedule deletion fails', async (reason) => {
+        const ctx = await setup();
+        (await ctx.deploy([scheduled])).unwrap();
+        const before = await ctx.instances();
+        const functions = reason === 'trigger change' ? [githubArtifact] : [];
+        ctx.orchestrator.deleteFunctionSchedules.mockResolvedValueOnce(Err(new Error('orchestrator unavailable')));
+
+        expect((await ctx.deploy(functions)).isErr()).toBe(true);
+        expect(await ctx.instances()).toEqual(before);
+
+        (await ctx.deploy(functions)).unwrap();
+        const expectedDeletion = {
+            environmentId: ctx.environment.id,
+            instanceIds: before.map((instance) => instance.id)
+        };
+        expect(ctx.orchestrator.deleteFunctionSchedules).toHaveBeenCalledTimes(2);
+        expect(ctx.orchestrator.deleteFunctionSchedules).toHaveBeenNthCalledWith(1, expectedDeletion);
+        expect(ctx.orchestrator.deleteFunctionSchedules).toHaveBeenNthCalledWith(2, expectedDeletion);
+        expect((await ctx.instances())[0]?.deleted_at).toBeInstanceOf(Date);
+    });
+
+    it('respects autoStart when creating schedules', async () => {
+        const ctx = await setup();
+        (await ctx.deploy([{ ...scheduled, trigger: { kind: 'schedule', frequency: 'every 5 minutes', autoStart: false } }])).unwrap();
+        expect(ctx.orchestrator.scheduleFunctions.mock.calls[0]?.[0][0]?.autoStart).toBe(false);
+    });
+
+    it('does not create instances or schedules when a disabled function becomes scheduled', async () => {
+        const ctx = await setup();
+        (await ctx.deploy([githubArtifact])).unwrap();
+        await db.knex.from(CONFIGS_TABLE).where({ environment_id: ctx.environment.id, name: githubArtifact.name }).update({ enabled: false });
+
+        (await ctx.deploy([scheduled])).unwrap();
+
+        const [deployed] = (await search(db.knex, { environmentId: ctx.environment.id, filter: { integrationKey: scheduled.integrationId } })).unwrap();
+        expect(deployed).toMatchObject({
+            config: { enabled: false },
+            currentVersion: { trigger: { kind: 'schedule' } }
+        });
+        expect(await ctx.instances()).toEqual([]);
+        expect(ctx.orchestrator.scheduleFunctions).not.toHaveBeenCalled();
     });
 });
 

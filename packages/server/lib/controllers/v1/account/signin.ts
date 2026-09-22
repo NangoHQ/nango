@@ -16,7 +16,7 @@ const validation = z
     .object({
         email: z.string().email(),
         password: z.string().min(8).max(64),
-        returnTo: z.string().max(1024).optional()
+        returnTo: z.string().optional()
     })
     .strict();
 

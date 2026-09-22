@@ -997,6 +997,7 @@ const FUNCTION_BLOCKED_PROPERTIES = new Set<string | symbol>([
     'memoizedConnections',
     'memoizedIntegration',
     'attributes',
+    'functionVariant',
     'telemetryBag',
     'abortSignal',
     'lifecycle',

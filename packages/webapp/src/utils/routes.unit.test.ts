@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isNonEnvPath } from './routes.js';
+import { isNonEnvPath, MAX_NEXT_LENGTH, safeNextPath, signinPathWithNext } from './routes.js';
 
 describe('isNonEnvPath', () => {
     describe('direct non-env paths', () => {
@@ -49,5 +49,53 @@ describe('isNonEnvPath', () => {
             expect(isNonEnvPath('/dev/integrations')).toBe(false);
             expect(isNonEnvPath('/team-settings-prod/integrations')).toBe(false);
         });
+    });
+});
+
+describe('signinPathWithNext', () => {
+    const location = (pathname: string, search = '', hash = '') => ({ pathname, search, hash });
+
+    it('encodes the destination into the next param', () => {
+        expect(signinPathWithNext(location('/team/billing'))).toBe('/signin?next=%2Fteam%2Fbilling');
+    });
+
+    it('keeps the search string and hash', () => {
+        expect(signinPathWithNext(location('/dev/logs', '?states=failed&period=24h', '#top'))).toBe(
+            '/signin?next=%2Fdev%2Flogs%3Fstates%3Dfailed%26period%3D24h%23top'
+        );
+    });
+
+    it('omits next for the root path, which carries no destination', () => {
+        expect(signinPathWithNext(location('/'))).toBe('/signin');
+    });
+
+    it('omits next past the length the server accepts', () => {
+        const search = `?filters=${'a'.repeat(MAX_NEXT_LENGTH)}`;
+        expect(signinPathWithNext(location('/dev/logs', search))).toBe('/signin');
+        expect(signinPathWithNext(location('/dev/logs', `?filters=${'a'.repeat(MAX_NEXT_LENGTH - '/dev/logs?filters='.length)}`))).toContain('next=');
+    });
+});
+
+describe('safeNextPath', () => {
+    it('falls back to the root when there is no destination', () => {
+        expect(safeNextPath(null)).toBe('/');
+        expect(safeNextPath(undefined)).toBe('/');
+        expect(safeNextPath('')).toBe('/');
+    });
+
+    it('keeps an in-app path with its search and hash', () => {
+        expect(safeNextPath('/dev/logs?states=failed#top')).toBe('/dev/logs?states=failed#top');
+        expect(safeNextPath('/oauth/consent/abc-123/review')).toBe('/oauth/consent/abc-123/review');
+    });
+
+    it('rejects destinations on another origin', () => {
+        expect(safeNextPath('https://evil.example/steal')).toBe('/');
+        expect(safeNextPath('//evil.example/steal')).toBe('/');
+        expect(safeNextPath('/..//evil.example/steal')).toBe('/');
+        expect(safeNextPath('javascript:alert(1)')).toBe('/');
+    });
+
+    it('rejects destinations past the length the server accepts', () => {
+        expect(safeNextPath(`/dev/logs?filters=${'a'.repeat(MAX_NEXT_LENGTH)}`)).toBe('/');
     });
 });

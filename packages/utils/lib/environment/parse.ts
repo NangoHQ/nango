@@ -187,7 +187,7 @@ const ENVS_SHAPE = z.object({
     WORKOS_CLIENT_ID: z.string().optional(),
     NANGO_DASHBOARD_USERNAME: z.string().optional(),
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
-    LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
+    LOCAL_NANGO_USER_ID: z.coerce.number().int().nonnegative().optional(),
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
     DEFAULT_USER_ROLE: z.enum(roles).optional().default('administrator'),
     AUTH_SHADOW_CACHE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000), // 1 minute
@@ -206,7 +206,6 @@ const ENVS_SHAPE = z.object({
     // `/` keeps requests on whichever host served the dashboard (same-origin).
     NANGO_DASHBOARD_API_URL: z.url().or(z.literal('/')).optional(),
     NANGO_MANAGEMENT_MCP_SERVER_URL: z.url().optional(),
-    NANGO_MANAGEMENT_MCP_OAUTH_ENABLED: z.stringbool().optional().default(false),
     NANGO_OAUTH_SERVER_BASE_URL: z.url().optional(),
     NANGO_OAUTH_SERVER_COOKIE_KEYS: z.string().optional(),
     NANGO_OAUTH_SERVER_JWKS: z.string().optional(),
@@ -944,13 +943,9 @@ const ENVS_SHAPE = z.object({
     NANGO_TASK_DISPATCH_TASK_CAP_DEFER_MS: z.coerce.number().min(0).optional().default(15_000),
 
     // Sandboxes
-    SANDBOX_PROVIDER: z.enum(['e2b', 'docker', 'agentcore']).optional(),
+    SANDBOX_PROVIDER: z.enum(['docker', 'agentcore']).optional(),
     AGENTCORE_RUNTIME_ARN: z.string().min(1).optional(),
     AGENTCORE_RUNTIME_QUALIFIER: z.string().min(1).default('DEFAULT'),
-    E2B_API_KEY: z.string().optional(),
-    E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
-    E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
-    E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
     // Internal mTLS. The client certificate presented on service-to-service calls; enforcement happens
     // outside the app (load balancer). Each asset is inline PEM, base64 PEM, or a file path via _FILE.

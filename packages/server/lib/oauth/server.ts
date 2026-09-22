@@ -1,24 +1,32 @@
 import db from '@nangohq/database';
 import { createOAuthProvider } from '@nangohq/oauth-server';
+import { basePublicUrl } from '@nangohq/utils';
 
 import { getOAuthServerConfig } from './config.js';
 
 import type { OAuthProvider } from '@nangohq/oauth-server';
 
+export const oauthServerConfig = getOAuthServerConfig();
 export const oauthServer = createNangoOAuthServer();
 
 function createNangoOAuthServer(): OAuthProvider | null {
-    const config = getOAuthServerConfig();
-    if (!config) return null;
+    if (!oauthServerConfig) return null;
 
-    return createOAuthProvider({ knex: db.knex, accountExists, ...config });
+    return createOAuthProvider({
+        knex: db.knex,
+        ...oauthServerConfig,
+        userExists,
+        interactionUrl: (uid) => new URL(`/oauth/consent/${encodeURIComponent(uid)}/review`, basePublicUrl).href
+    });
 }
 
-async function accountExists(accountId: string): Promise<boolean> {
-    const id = Number(accountId);
-    if (!Number.isSafeInteger(id) || id <= 0 || accountId !== String(id)) {
-        return false;
-    }
-    const account = await db.knex<{ id: number }>('_nango_accounts').where({ id }).first('id');
-    return account !== undefined;
+async function userExists(userId: string): Promise<boolean> {
+    const id = Number(userId);
+    if (!Number.isSafeInteger(id) || id <= 0 || userId !== String(id)) return false;
+    const user = await db
+        .knex('_nango_users as users')
+        .innerJoin('_nango_accounts as accounts', 'accounts.id', 'users.account_id')
+        .where({ 'users.id': id, 'users.suspended': false })
+        .first('users.id');
+    return user !== undefined;
 }

@@ -24,13 +24,19 @@ import type * as z from 'zod/v4';
 
 const logger = getLogger('Server.ManagementMcpTool');
 
-export interface ManagementMcpContext {
+export type ManagementMcpEnvironment = Pick<DBEnvironment, 'id' | 'uuid' | 'name' | 'account_id' | 'is_production'>;
+
+export interface ManagementMcpAuditContext {
     account: DBTeam;
-    environment: DBEnvironment;
+    environment: ManagementMcpEnvironment;
     plan: DBPlan | null;
     grantedScopes: string[] | undefined;
-    customerApiKeyId?: number | undefined;
     audit?: AuditAttribution | undefined;
+}
+
+export interface ManagementMcpContext extends Omit<ManagementMcpAuditContext, 'environment'> {
+    environment: DBEnvironment;
+    customerApiKeyId?: number | undefined;
 }
 
 export type ManagementMcpSchema = z.ZodType;
@@ -38,7 +44,7 @@ export type ManagementMcpRequiredScopes = { none: true } | { every: ApiKeyScope[
 
 type DynamicManagementMcpAudit = {
     kind: 'dynamic-audit';
-    resolvePolicy: (args: unknown, context: ManagementMcpContext) => AuditPolicy | undefined;
+    resolvePolicy: (args: unknown, context: ManagementMcpAuditContext) => AuditPolicy | undefined;
 };
 
 export interface ManagementMcpTool<TResponse extends object = object> {
@@ -66,7 +72,7 @@ type ManagementMcpAuditedTool<TArgs, TResponse extends object> = {
 
 type DynamicManagementMcpAuditedTool<TArgs, TResponse extends object> = Omit<ManagementMcpAuditedTool<TArgs, TResponse>, keyof AuditPolicy> & {
     kind: 'dynamic-audit';
-    policy: (context: ManagementMcpContext & { args: unknown }) => AuditPolicy | undefined;
+    policy: (context: ManagementMcpAuditContext & { args: unknown }) => AuditPolicy | undefined;
 };
 
 type ManagementMcpToolAudit<TArgs, TResponse extends object> =
