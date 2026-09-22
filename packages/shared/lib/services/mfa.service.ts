@@ -265,9 +265,14 @@ class MFAService {
      * Checks a recovery code without spending it. Only for callers that are about to invalidate every
      * code anyway, such as disabling the factor, where burning one first buys nothing.
      *
-     * See {@link verifyTotp} for the options.
+     * `context` is required and pinned to that case, so an attempt can never report as `unknown`.
+     * See {@link verifyTotp} for `trx`.
      */
-    public async verifyRecoveryCode(userId: number, code: string, { trx: parentTrx, context = 'unknown' }: MFAVerifyOptions = {}): Promise<Result<boolean>> {
+    public async verifyRecoveryCode(
+        userId: number,
+        code: string,
+        { trx: parentTrx, context }: { trx?: Knex; context: Extract<MFAVerifyContext, 'disable'> }
+    ): Promise<Result<boolean>> {
         try {
             const codeHash = this.hashRecoveryCode(code);
             const verified = await this.inTransaction(parentTrx, async (trx) => {
