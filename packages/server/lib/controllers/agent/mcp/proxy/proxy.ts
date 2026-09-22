@@ -7,6 +7,8 @@ import { executeMcpProxyRequest } from '../../../../services/mcpProxy.service.js
 import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL } from '../../../../services/mcpProxyResponse.js';
 import { proxyRequestOutputSchema } from '../../../../services/mcpProxySchema.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
+import { notConnectedGuidance } from '../notConnectedGuidance.js';
+import { resolveSessionConnection } from '../sessionConnection.js';
 import { defineAgentSessionMcpTool } from '../sessionTool.js';
 import { proxyErrorToMcp } from './errors.js';
 import { rejectedHeaderNames } from './headers.js';
@@ -42,11 +44,11 @@ export const proxyTool = defineAgentSessionMcpTool({
             );
         }
 
-        const connection = Object.hasOwn(session.resolvedConnections, integrationId) ? session.resolvedConnections[integrationId] : undefined;
+        const connection = await resolveSessionConnection({ session, integrationId });
         if (!connection) {
             return Err(
                 new PublicMcpError(
-                    `Integration '${integrationId}' has no connection in this session, so no request to it can be authenticated. Tell the user they need to connect it.`,
+                    `Integration '${integrationId}' has no connection in this session, so no request to it can be authenticated. ${notConnectedGuidance(integrationId, session)}`,
                     { code: 'integration_not_connected', integrationId }
                 )
             );

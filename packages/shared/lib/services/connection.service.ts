@@ -1417,12 +1417,16 @@ export class ConnectionService {
         environmentId,
         tagSelectors,
         pinnedConnections,
-        candidateSampleSize
+        candidateSampleSize,
+        candidateOrder = 'newest_first',
+        database = db.readOnly
     }: {
         environmentId: number;
         tagSelectors: Tags[];
         pinnedConnections: { integrationId: string; connectionId: string }[];
         candidateSampleSize: number;
+        candidateOrder?: 'newest_first' | 'oldest_first';
+        database?: Knex;
     }): Promise<ConnectionIntegrationMatchRow[]> {
         if (tagSelectors.length === 0) {
             return [];
@@ -1431,7 +1435,7 @@ export class ConnectionService {
         const containment = tagSelectors.map(() => '_nango_connections.tags @> ?::jsonb').join(' OR ');
         const containmentBindings = tagSelectors.map((tags) => JSON.stringify(tags));
 
-        return await db.readOnly
+        return await database
             .with('matched', (qb) => {
                 qb.select(
                     '_nango_connections.id',
@@ -1450,11 +1454,12 @@ export class ConnectionService {
                     .whereRaw(`(${containment})`, containmentBindings);
             })
             .with('ranked', (qb) => {
-                qb.select('matched.*', db.knex.raw('COUNT(*) OVER (PARTITION BY integration_id) as match_count'))
+                qb.select('matched.*', database.raw('COUNT(*) OVER (PARTITION BY integration_id) as match_count'))
                     .rowNumber('rn', (rn) => {
+                        const order = candidateOrder === 'oldest_first' ? 'asc' : 'desc';
                         rn.partitionBy('integration_id').orderBy([
-                            { column: 'created_at', order: 'desc' },
-                            { column: 'id', order: 'desc' }
+                            { column: 'created_at', order },
+                            { column: 'id', order }
                         ]);
                     })
                     .from('matched');
@@ -1462,8 +1467,8 @@ export class ConnectionService {
             .select<ConnectionIntegrationMatchRow[]>(
                 'integration_id',
                 'provider',
-                db.knex.raw('MAX(match_count)::int as match_count'),
-                db.knex.raw(
+                database.raw('MAX(match_count)::int as match_count'),
+                database.raw(
                     `JSON_AGG(JSON_BUILD_OBJECT('id', id, 'connection_id', connection_id, 'config_id', config_id, 'tags', tags) ORDER BY rn) as candidates`
                 )
             )
