@@ -25,8 +25,7 @@ export function useUser(enabled: boolean = true) {
     });
 
     return {
-        // `isLoading` stays false until the mount effect starts the fetch, so guards would see a frame with no user and no error.
-        loading: query.isPending,
+        loading: query.isLoading,
         error: query.error?.json,
         user: query.data?.data,
         mutate: query.refetch
