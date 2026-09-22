@@ -69,7 +69,6 @@ describe('ConnectWise PSA webhook signing-key origins', () => {
     });
 
     it.each([
-        undefined,
         null,
         1,
         [],
@@ -80,7 +79,16 @@ describe('ConnectWise PSA webhook signing-key origins', () => {
         `${origin}#fragment`,
         'https://user:pass@cw.example.com'
     ])('rejects missing, malformed or mismatched metadata: %s', async (configured) => {
-        const { nango, get, execute } = setup([connection('conn-1', configured === undefined ? null : configured)]);
+        const { nango, get, execute } = setup([connection('conn-1', configured)]);
+        expect((await send(nango)).isErr()).toBe(true);
+        expect(get).not.toHaveBeenCalled();
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects a connection with no configured signing-key origin', async () => {
+        const missingOrigin = connection('conn-1');
+        delete missingOrigin.metadata?.['connectwiseWebhookKeyOrigin'];
+        const { nango, get, execute } = setup([missingOrigin]);
         expect((await send(nango)).isErr()).toBe(true);
         expect(get).not.toHaveBeenCalled();
         expect(execute).not.toHaveBeenCalled();
@@ -138,10 +146,11 @@ describe('ConnectWise PSA webhook signing-key origins', () => {
                 maxContentLength: 65536
             })
         );
-        vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '127.0.0.1', family: 4 }] as never);
+        const dnsLookup = vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '127.0.0.1', family: 4 }] as never);
         const lookup = getSafeHttpAgents(DEFAULT_OUTBOUND_URL_POLICY).httpsAgent.options.lookup as LookupFunction;
         const error = await new Promise((resolve) => lookup('rebound.example.com', {}, (err) => resolve(err)));
-        expect(error).toBeInstanceOf(Error);
+        expect(dnsLookup).toHaveBeenCalledWith('rebound.example.com', { all: true, verbatim: true });
+        expect(error).toMatchObject({ name: 'OutboundUrlError', code: 'denied_dns', hostname: 'rebound.example.com' });
     });
 
     it.each([cloudKeyUrl, customKeyUrl])('rejects a tampered body for %s', async (url) => {
