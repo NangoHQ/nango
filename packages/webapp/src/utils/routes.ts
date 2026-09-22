@@ -20,6 +20,27 @@ export const signinPathWithNext = (location: { pathname: string; search: string;
     return `/signin?next=${encodeURIComponent(destination)}`;
 };
 
+// Reserved TLD (RFC 2606), so a `next` pointing at another origin fails the comparison below.
+const NEXT_BASE_ORIGIN = 'https://internal.invalid';
+
+export const safeNextPath = (next: string | null | undefined): string => {
+    if (!next || next.length > MAX_NEXT_LENGTH) {
+        return '/';
+    }
+
+    try {
+        const url = new URL(next, NEXT_BASE_ORIGIN);
+        // `/..//evil.example` passes the origin check but normalises to `//evil.example`. The browser reads that as another host.
+        if (url.origin === NEXT_BASE_ORIGIN && !url.pathname.startsWith('//')) {
+            return url.pathname + url.search + url.hash;
+        }
+    } catch {
+        return '/';
+    }
+
+    return '/';
+};
+
 export const isNonEnvPath = (pathname: string): boolean => {
     // Direct non-env path: /team-settings, /team/billing, etc.
     if (NON_ENV_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
