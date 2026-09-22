@@ -13,9 +13,9 @@ import {
     externalWebhookService,
     getApiUrl,
     getEndUserByConnectionId,
-    getSyncConfigRaw,
     LogActionEnum,
     NangoError,
+    resolveRunnableAction,
     secretService
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
@@ -68,23 +68,22 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         providerConfig = await tracer.trace('action.prepare.providerConfig', async () =>
             configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id)
         );
-        if (providerConfig === null) {
+        if (!providerConfig) {
             throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
         }
 
-        const providerConfigEnvironmentId = providerConfig.environment_id;
-        const providerConfigId = providerConfig.id!;
-        syncConfig = await tracer.trace('action.prepare.syncConfig', async () =>
-            getSyncConfigRaw({
-                environmentId: providerConfigEnvironmentId,
-                config_id: providerConfigId,
-                name: task.actionName,
-                isAction: true
+        const integration = providerConfig;
+        const resolved = await tracer.trace('action.prepare.syncConfig', async () =>
+            resolveRunnableAction({
+                environmentId: integration.environment_id,
+                integration: integration,
+                name: task.actionName
             })
         );
-        if (!syncConfig) {
+        if (resolved.kind === 'missing') {
             throw new Error(`Action not found: ${task.id}`);
         }
+        syncConfig = resolved.config;
         if (!syncConfig.enabled) {
             throw new Error(`Action is disabled: ${task.id}`);
         }
@@ -607,7 +606,7 @@ function getLogCtx(
                     environment: { id: opts.environmentId, name: opts.environmentName },
                     integration: { id: opts.syncConfig.nango_config_id, name: opts.providerConfigKey, provider: opts.provider },
                     connection: { id: opts.nangoConnectionId, name: opts.connectionId },
-                    syncConfig: { id: opts.syncConfig.id, name: opts.syncConfig.sync_name }
+                    syncConfig: opts.syncConfig.id ? { id: opts.syncConfig.id, name: opts.syncConfig.sync_name } : { name: opts.syncConfig.sync_name }
                 }
             ),
             opts.startedAt

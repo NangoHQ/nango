@@ -1,7 +1,8 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import { seeders } from '@nangohq/shared';
+import { remoteFileService, seeders } from '@nangohq/shared';
+import { flags } from '@nangohq/utils';
 
 import { isError, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
@@ -108,6 +109,53 @@ describe(`GET ${endpoint}`, () => {
         expect(res.json.error.code).toBe('not_found');
     });
 
+    it('does not return catalog function code when the feature is disabled', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'aircall', 'aircall');
+
+        const original = flags.hasLiveCatalogActions;
+        flags.hasLiveCatalogActions = false;
+        try {
+            const res = await api.fetch(endpoint, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { uniqueKey: 'aircall', name: 'create-contact' },
+                query: { type: 'action' }
+            });
+
+            expect(res.res.status).toBe(404);
+            isError(res.json);
+            expect(res.json.error.code).toBe('not_found');
+            expect(res.json.error.message).toContain('Function');
+        } finally {
+            flags.hasLiveCatalogActions = original;
+        }
+    });
+
+    it('returns catalog function code', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'aircall', 'aircall');
+
+        const original = flags.hasLiveCatalogActions;
+        flags.hasLiveCatalogActions = true;
+        const getFileSpy = vi.spyOn(remoteFileService, 'getFile').mockResolvedValue('catalog source');
+        try {
+            const res = await api.fetch(endpoint, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { uniqueKey: 'aircall', name: 'create-contact' },
+                query: { type: 'action' }
+            });
+
+            expect(res.res.status).toBe(200);
+            expect(res.json).toEqual({ type: 'action', code: 'catalog source' });
+            expect(getFileSpy).toHaveBeenCalledWith('templates-zero/aircall/actions/create-contact.ts');
+        } finally {
+            getFileSpy.mockRestore();
+            flags.hasLiveCatalogActions = original;
+        }
+    });
+
     it('returns 409 ambiguous_function when sync and action share a name', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'github', 'github');
@@ -198,5 +246,45 @@ describe(`GET ${endpoint}`, () => {
                 { type: 'on-event', name: 'test-script' }
             ])
         });
+    });
+
+    it('returns 409 when a deployed sync shares a name with a catalog action', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const config = await seeders.createConfigSeed(env, 'aircall', 'aircall');
+        await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'create-contact', type: 'sync' });
+
+        const original = flags.hasLiveCatalogActions;
+        flags.hasLiveCatalogActions = true;
+        try {
+            const res = await api.fetch(endpoint, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { uniqueKey: 'aircall', name: 'create-contact' },
+                query: {}
+            });
+
+            expect(res.res.status).toBe(409);
+            isError(res.json);
+            expect(res.json.error.code).toBe('ambiguous_function');
+            expect(res.json.error.payload).toStrictEqual({
+                matches: expect.arrayContaining([
+                    { type: 'sync', name: 'create-contact' },
+                    { type: 'action', name: 'create-contact' }
+                ])
+            });
+
+            const syncOnly = await api.fetch(endpoint, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { uniqueKey: 'aircall', name: 'create-contact' },
+                query: { type: 'sync' }
+            });
+            expect(syncOnly.res.status).toBe(404);
+            isError(syncOnly.json);
+            expect(syncOnly.json.error.code).toBe('not_found');
+            expect(syncOnly.json.error.message).toContain('Source file');
+        } finally {
+            flags.hasLiveCatalogActions = original;
+        }
     });
 });
