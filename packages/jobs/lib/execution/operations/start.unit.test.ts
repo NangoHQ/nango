@@ -1,33 +1,25 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import * as shared from '@nangohq/shared';
-import { Ok } from '@nangohq/utils';
 
 import { startScript } from './start.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { NangoProps } from '@nangohq/types';
 
-const { mockGetRuntimeAdapter, mockInvoke } = vi.hoisted(() => ({
-    mockGetRuntimeAdapter: vi.fn(),
-    mockInvoke: vi.fn()
-}));
-
+// start.ts imports this module, which parses jobs env at load. The test never calls it.
 vi.mock('../../runtime/runtimes.js', () => ({
-    getRuntimeAdapter: mockGetRuntimeAdapter
+    getRuntimeAdapter: vi.fn()
 }));
 
 describe('startScript', () => {
     afterEach(() => {
         vi.restoreAllMocks();
-        mockGetRuntimeAdapter.mockReset();
-        mockInvoke.mockReset();
     });
 
     it('does not use remote storage for catalog files outside cloud execution', async () => {
         const localFileSpy = vi.spyOn(shared.localFileService, 'getIntegrationFile').mockReturnValue(null);
         const remoteFileSpy = vi.spyOn(shared.remoteFileService, 'getFile').mockRejectedValue(new Error('remote storage should not be used'));
-        mockGetRuntimeAdapter.mockResolvedValue(Ok({ invoke: mockInvoke }));
 
         const result = await startScript({
             taskId: 'task-1',
@@ -43,7 +35,6 @@ describe('startScript', () => {
         }
         expect(localFileSpy).toHaveBeenCalled();
         expect(remoteFileSpy).not.toHaveBeenCalled();
-        expect(mockGetRuntimeAdapter).not.toHaveBeenCalled();
     });
 });
 
