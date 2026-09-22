@@ -268,11 +268,7 @@ class MFAService {
      * `context` is required and pinned to that case, so an attempt can never report as `unknown`.
      * See {@link verifyTotp} for `trx`.
      */
-    public async verifyRecoveryCode(
-        userId: number,
-        code: string,
-        { trx: parentTrx, context }: { trx?: Knex; context: Extract<MFAVerifyContext, 'disable'> }
-    ): Promise<Result<boolean>> {
+    public async verifyRecoveryCode(userId: number, code: string, { trx: parentTrx, context }: { trx?: Knex; context: 'disable' }): Promise<Result<boolean>> {
         try {
             const codeHash = this.hashRecoveryCode(code);
             const verified = await this.inTransaction(parentTrx, async (trx) => {
