@@ -97,6 +97,24 @@ describe('getIntegrationCredentials', () => {
         });
     });
 
+    it('masks integration_config values the provider schema marks as secret', () => {
+        const result = getIntegrationCredentials(
+            integrationFixture({ custom: { service: 's3', awsSecretAccessKey: 'super-secret' } }),
+            providerFixture('AWS_SIGV4', {
+                integration_config: {
+                    service: { type: 'string', title: 'AWS Service', description: '', order: 1, automated: false },
+                    awsSecretAccessKey: { type: 'string', title: 'AWS Secret Access Key', description: '', order: 2, automated: false, secret: true }
+                }
+            })
+        );
+
+        expect(result).toStrictEqual({
+            type: 'INTEGRATION_CONFIG',
+            authMode: 'AWS_SIGV4',
+            integration_config: { service: 's3', awsSecretAccessKey: '***' }
+        });
+    });
+
     it('never leaks custom fields the provider does not declare in integration_config', () => {
         const result = getIntegrationCredentials(
             integrationFixture({ custom: { service: 's3', webhookSecret: 'should-not-leak' } }),

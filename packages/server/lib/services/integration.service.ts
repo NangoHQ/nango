@@ -325,7 +325,7 @@ export class IntegrationService {
                     integration.custom = { ...integration.custom, ...params.custom };
                 }
 
-                if (provider.integration_config) {
+                if (provider.integration_config || (params.integrationConfig && Object.keys(params.integrationConfig).length > 0)) {
                     const resolvedConfig = resolveIntegrationConfig(provider, params.integrationConfig ?? {});
                     if (resolvedConfig.isErr()) {
                         return Err(
@@ -600,7 +600,7 @@ function applyCredentials(integration: DBCreateIntegration, credentials: CreateI
             integration.custom = {
                 ...integration.custom,
                 ...(credentials.client_name && { oauth_client_name: credentials.client_name }),
-                ...(credentials.client_uri && { oauth_client_uri: credentials.client_uri }),
+                ...(credentials.client_uri !== undefined && { oauth_client_uri: credentials.client_uri }),
                 ...(credentials.client_logo_uri && { oauth_client_logo_uri: credentials.client_logo_uri })
             };
             break;

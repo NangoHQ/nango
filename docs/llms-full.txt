@@ -9731,7 +9731,55 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/get.md
   }
 }
 ```
+
+```json With credentials (MCP_OAUTH2_GENERIC)
+{
+  "data": {
+    "unique_key": "mcp-generic",
+    "display_name": "MCP Server OAuth2 (Generic)",
+    "provider": "mcp-generic",
+    "logo": "http://localhost:3003/images/template-logos/mcp-generic.svg",
+    "forward_webhooks": true,
+    "created_at": "2023-10-16T08:45:26.241Z",
+    "updated_at": "2023-10-16T08:45:26.241Z",
+    "credentials": {
+      "type": "MCP_OAUTH2_GENERIC",
+      "client_name": "Acme Inc",
+      "client_uri": "https://acme.com",
+      "client_logo_uri": "https://acme.com/logo.png"
+    }
+  }
+}
+```
+
+```json With credentials (integration_config-based, e.g. aws-sigv4)
+{
+  "data": {
+    "unique_key": "my-aws-integration",
+    "display_name": "AWS SigV4 Proxy",
+    "provider": "aws-sigv4",
+    "logo": "http://localhost:3003/images/template-logos/aws-sigv4.svg",
+    "forward_webhooks": true,
+    "created_at": "2023-10-16T08:45:26.241Z",
+    "updated_at": "2023-10-16T08:45:26.241Z",
+    "credentials": {
+      "type": "INTEGRATION_CONFIG",
+      "auth_mode": "AWS_SIGV4",
+      "integration_config": {
+        "service": "s3",
+        "stsMode": "builtin",
+        "awsAccessKeyId": "AKIAIOSFODNN7EXAMPLE",
+        "awsSecretAccessKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      }
+    }
+  }
+}
+```
 </ResponseExample>
+
+<Info>
+For providers that declare an `integration_config` schema, alongside or instead of fixed credential fields (e.g. `aws-sigv4`, `epic`, `private-api-generic`), `credentials` returns `type: "INTEGRATION_CONFIG"` with the provider's actual `auth_mode` and its `integration_config` values -- only the fields that provider's schema declares, nothing else from the integration's internal storage.
+</Info>
 
 ## Create an integration
 

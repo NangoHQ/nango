@@ -5272,21 +5272,27 @@ components:
                           enum:
                               - MCP_OAUTH2_GENERIC
                       client_name:
-                          type: string
-                          minLength: 1
-                          maxLength: 255
+                          anyOf:
+                              - type: string
+                                minLength: 1
+                                maxLength: 255
+                              - type: 'null'
                       client_uri:
-                          type: string
-                          maxLength: 255
+                          anyOf:
+                              - type: string
+                                maxLength: 255
+                              - type: 'null'
                       client_logo_uri:
-                          type: string
-                          maxLength: 255
+                          anyOf:
+                              - type: string
+                                maxLength: 255
+                              - type: 'null'
 
         IntegrationCredentialsWithConfig:
             description: >
                 Same as IntegrationCredentials, plus the shape returned for providers that declare an
-                `integration_config` schema (e.g. aws-sigv4, epic, private-api-generic) instead of fixed
-                credentials fields. This variant is response-only -- it can't be submitted on create or update.
+                `integration_config` schema (e.g. aws-sigv4, epic, private-api-generic), alongside or instead
+                of fixed credential fields. This variant is response-only -- it can't be submitted on create or update.
             oneOf:
                 - $ref: '#/components/schemas/IntegrationCredentials'
                 - type: object

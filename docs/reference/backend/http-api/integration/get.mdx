@@ -111,5 +111,5 @@ openapi: 'GET /integrations/{uniqueKey}'
 </ResponseExample>
 
 <Info>
-For providers that declare an `integration_config` schema instead of fixed credentials fields (e.g. `aws-sigv4`, `epic`, `private-api-generic`), `credentials` returns `type: "INTEGRATION_CONFIG"` with the provider's actual `auth_mode` and its `integration_config` values -- only the fields that provider's schema declares, nothing else from the integration's internal storage.
+For providers that declare an `integration_config` schema, alongside or instead of fixed credential fields (e.g. `aws-sigv4`, `epic`, `private-api-generic`), `credentials` returns `type: "INTEGRATION_CONFIG"` with the provider's actual `auth_mode` and its `integration_config` values -- only the fields that provider's schema declares, nothing else from the integration's internal storage.
 </Info>

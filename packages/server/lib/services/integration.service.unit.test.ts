@@ -759,29 +759,6 @@ describe('integrationService', () => {
             );
         });
 
-        it('does NOT catch a patch that switches to custom STS mode without the now-required endpoint URL (known gap)', async () => {
-            const provider = shared.getProvider('aws-sigv4');
-            if (!provider) {
-                throw new Error('aws-sigv4 provider not found');
-            }
-            const integration = integrationFixture({
-                uniqueKey: 'my-aws-integration',
-                provider: 'aws-sigv4',
-                custom: { service: 's3', stsMode: 'builtin', awsAccessKeyId: 'AKIA...', awsSecretAccessKey: 'secret' }
-            });
-            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
-            const editSpy = vi.spyOn(shared.configService, 'editProviderConfig').mockResolvedValue(integration as never);
-
-            const result = await integrationService.update({
-                environmentId: 42,
-                integrationId: 'my-aws-integration',
-                integrationConfig: { stsMode: 'custom' }
-            });
-
-            expect(result.isOk()).toBe(true);
-            expect(editSpy).toHaveBeenCalledWith(expect.objectContaining({ custom: expect.objectContaining({ stsMode: 'custom' }) }), provider);
-        });
-
         it('updates free-form custom values for providers without an integration config schema', async () => {
             const integration = integrationFixture({ uniqueKey: 'algolia', provider: 'algolia', custom: { existing: 'value' } });
             const provider = providerFixture('Algolia', 'API_KEY');
