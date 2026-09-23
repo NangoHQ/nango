@@ -1520,6 +1520,7 @@
               "api-integrations/luma-v2",
               "api-integrations/lumos",
               "integrations/all/mailchimp",
+              "api-integrations/mailerlite",
               "integrations/all/mailgun",
               "api-integrations/mailjet",
               "integrations/all/make",
