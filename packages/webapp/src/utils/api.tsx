@@ -115,3 +115,12 @@ export class APIError extends Error {
         this.res = res;
     }
 }
+
+// Only a missing session sends 401 `unauthorized`. Other 401s, like an unknown environment, come with a live session.
+export function isNoSessionError(status: number, json: unknown): boolean {
+    if (status !== 401 || typeof json !== 'object' || json === null || !('error' in json)) {
+        return false;
+    }
+    const { error } = json;
+    return typeof error === 'object' && error !== null && 'code' in error && error.code === 'unauthorized';
+}
