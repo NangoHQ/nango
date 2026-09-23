@@ -31,6 +31,7 @@ interface OrbSubscriptionScheduleItem {
 
 export interface OrbSubscriptionsClient {
     list(params: { external_customer_id: string[]; status: 'active'; limit: 100 }): AsyncIterable<OrbSubscription>;
+    fetch(subscriptionId: string): Promise<OrbSubscription>;
     fetchSchedule(subscriptionId: string): AsyncIterable<OrbSubscriptionScheduleItem>;
     unschedulePendingPlanChanges(subscriptionId: string): Promise<unknown>;
     schedulePlanChange(
@@ -282,6 +283,8 @@ export async function scheduleMigrations({
                 logSkip(row.accountId, `already on ${planExternalId}`);
                 continue;
             }
+
+            let priceIntervals = subscription.price_intervals;
             if (subscription.pending_subscription_change && !row.overrideScheduledPlanChange) {
                 summary.skipped++;
                 logSkip(row.accountId, `pending Orb plan change ${subscription.pending_subscription_change.id} already exists`);
@@ -303,7 +306,7 @@ export async function scheduleMigrations({
                         migrations.push({
                             ...row,
                             subscriptionId: subscription.id,
-                            priceIntervals: subscription.price_intervals,
+                            priceIntervals,
                             plannedPlan: planExternalId,
                             plannedAt: parseOrbDate(futureChange.start_date, 'plan change start date')
                         });
@@ -323,13 +326,14 @@ export async function scheduleMigrations({
                     migrations.push({
                         ...row,
                         subscriptionId: subscription.id,
-                        priceIntervals: subscription.price_intervals,
+                        priceIntervals,
                         plannedPlan: planExternalId,
                         plannedAt: null
                     });
                     continue;
                 }
                 await client.subscriptions.unschedulePendingPlanChanges(subscription.id);
+                priceIntervals = (await client.subscriptions.fetch(subscription.id)).price_intervals;
             }
 
             if (!execute) {
@@ -340,7 +344,7 @@ export async function scheduleMigrations({
                 migrations.push({
                     ...row,
                     subscriptionId: subscription.id,
-                    priceIntervals: subscription.price_intervals,
+                    priceIntervals,
                     plannedPlan: planExternalId,
                     plannedAt: null
                 });
@@ -378,7 +382,7 @@ export async function scheduleMigrations({
             migrations.push({
                 ...row,
                 subscriptionId: subscription.id,
-                priceIntervals: subscription.price_intervals,
+                priceIntervals,
                 plannedPlan: planExternalId,
                 plannedAt
             });
@@ -449,10 +453,14 @@ export async function scheduleGrowthAddons({
             // Scheduling the `has_growth_features` flag enabling to GROWTH_ADDON_ACTIVATION_LEAD_HOURS before the
             // actual plan change. This will ensure the flag is already flipped by the time the plan changes, thus
             // incurring no down time on the feature set gated by the add-on.
-            await db.setGrowthFeaturesStartsAt(migration.accountId, getGrowthAddonActivationAt(migration.plannedAt));
+            const plannedAt = migration.plannedAt;
+            if (!plannedAt) {
+                throw new Error('PAYG plan change date is required to schedule the growth add-on');
+            }
+            await db.setGrowthFeaturesStartsAt(migration.accountId, getGrowthAddonActivationAt(plannedAt));
 
             const updatedSubscription = await client.subscriptions.priceIntervals(migration.subscriptionId, {
-                add: [{ external_price_id: GROWTH_ADDON_PRICE_ID, start_date: migration.migrationDate ?? 'end_of_term' }]
+                add: [{ external_price_id: GROWTH_ADDON_PRICE_ID, start_date: plannedAt.toISOString() }]
             });
 
             // Sanity check that the schedule is set

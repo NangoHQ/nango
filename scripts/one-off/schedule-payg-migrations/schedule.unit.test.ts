@@ -28,7 +28,7 @@ describe('pay-as-you-go migration arguments', () => {
 });
 
 describe('pay-as-you-go migration CSV', () => {
-    it('validates and retains the growth add-on value', () => {
+    it('validates and retains all migration fields', () => {
         expect(
             parseMigrationCsv(
                 'account_id,current_plan,with_growth_addon,migration_date,override_scheduled_plan_change\n123,"growth, legacy",true,2026-10-15,true\n'
@@ -47,7 +47,7 @@ describe('pay-as-you-go migration CSV', () => {
         );
     });
 
-    it('rejects duplicate IDs and invalid add-on booleans', () => {
+    it('rejects duplicate IDs and invalid field values', () => {
         expect(() =>
             parseMigrationCsv(
                 'account_id,current_plan,with_growth_addon,migration_date,override_scheduled_plan_change\n123,growth,false,,false\n123,starter,true,,false\n'

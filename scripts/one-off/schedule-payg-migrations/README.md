@@ -18,6 +18,8 @@ account_id,current_plan,with_growth_addon,migration_date,override_scheduled_plan
 
 Set `override_scheduled_plan_change` to `true` only to replace an existing pending or future Orb plan change. On execution, the script unschedules Orb's pending plan changes before scheduling the CSV row's replacement. It remains a dry-run operation until `--execute` is supplied.
 
+For rows with `with_growth_addon=true`, the Growth add-on always follows Orb's actual PAYG plan-change timestamp. The CSV `migration_date` is used when creating or replacing a plan change; if the script retains an existing PAYG change because `override_scheduled_plan_change=false`, its Orb date takes precedence even when it differs from the CSV date.
+
 ## Run
 
 Always run a dry-run first. It reads Orb and prints every candidate, skipped row, and failure, but does not schedule changes:
