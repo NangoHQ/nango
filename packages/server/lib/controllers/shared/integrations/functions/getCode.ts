@@ -2,13 +2,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import {
-    catalogActionTsPath,
     configService,
     getSyncAndActionConfigsBySyncNameAndConfigId,
     localFileService,
     onEventScriptService,
     remoteFileService,
-    resolveRunnableAction
+    resolveRunnableTool
 } from '@nangohq/shared';
 import { report, useRemoteStorage } from '@nangohq/utils';
 
@@ -85,10 +84,10 @@ export async function handleGetFunctionCode({
     const match = filtered[0];
     if (!match) {
         if (type === undefined || type === 'action') {
-            const resolved = await resolveRunnableAction({ environmentId: environment.id, integration: providerConfig, name });
+            const resolved = await resolveRunnableTool({ environmentId: environment.id, integration: providerConfig, name });
             if (resolved.kind === 'catalog') {
                 try {
-                    const code = await remoteFileService.getFile(catalogActionTsPath({ provider: providerConfig.provider, name }));
+                    const code = await remoteFileService.getFile(resolved.tool.sourceLocation);
                     res.status(200).send({ type: 'action', code });
                     return;
                 } catch (err) {
@@ -103,9 +102,9 @@ export async function handleGetFunctionCode({
     }
 
     if (!type && match.type !== 'action') {
-        const resolved = await resolveRunnableAction({ environmentId: environment.id, integration: providerConfig, name });
+        const resolved = await resolveRunnableTool({ environmentId: environment.id, integration: providerConfig, name });
         if (resolved.kind === 'catalog') {
-            sendAmbiguous(res, providerConfigKey, name, [match, { type: 'action', name, fileLocation: resolved.config.file_location }]);
+            sendAmbiguous(res, providerConfigKey, name, [match, { type: 'action', name, fileLocation: resolved.tool.fileLocation }]);
             return;
         }
     }

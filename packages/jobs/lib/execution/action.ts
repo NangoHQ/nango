@@ -15,7 +15,7 @@ import {
     getEndUserByConnectionId,
     LogActionEnum,
     NangoError,
-    resolveRunnableAction,
+    resolveRunnableTool,
     secretService
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
@@ -27,6 +27,7 @@ import { getRunnerFlags } from '../utils/flags.js';
 import { pubsub } from '../utils/pubsub.js';
 import { startScript } from './operations/start.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
+import { toRunnableSyncConfig } from './runnableSyncConfig.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
@@ -74,7 +75,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
 
         const integration = providerConfig;
         const resolved = await tracer.trace('action.prepare.syncConfig', async () =>
-            resolveRunnableAction({
+            resolveRunnableTool({
                 environmentId: integration.environment_id,
                 integration: integration,
                 name: task.actionName
@@ -83,7 +84,14 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         if (resolved.kind === 'missing') {
             throw new Error(`Action not found: ${task.id}`);
         }
-        syncConfig = resolved.config;
+        if (resolved.kind === 'catalog') {
+            if (!integration.id) {
+                throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
+            }
+            syncConfig = toRunnableSyncConfig(resolved.tool, { environmentId: integration.environment_id, configId: integration.id });
+        } else {
+            syncConfig = resolved.config;
+        }
         if (!syncConfig.enabled) {
             throw new Error(`Action is disabled: ${task.id}`);
         }

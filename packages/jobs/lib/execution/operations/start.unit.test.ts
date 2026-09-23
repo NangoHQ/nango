@@ -3,9 +3,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as shared from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
+import { toRunnableSyncConfig } from '../runnableSyncConfig.js';
 import { startScript } from './start.js';
 
 import type { LogContext } from '@nangohq/logs';
+import type { CatalogTool } from '@nangohq/shared';
 import type { NangoProps } from '@nangohq/types';
 
 const { getRuntimeAdapter } = vi.hoisted(() => ({
@@ -38,11 +40,38 @@ describe('startScript', () => {
         });
 
         expect(result.isOk()).toBe(true);
-        expect(remoteFileSpy).toHaveBeenCalledWith('templates-zero/github/build/github_actions_create-issue.cjs');
+        expect(remoteFileSpy).toHaveBeenCalledWith(catalogTool.fileLocation);
         expect(localFileSpy).not.toHaveBeenCalled();
-        expect(invoke).toHaveBeenCalledWith(expect.objectContaining({ taskId: 'task-1', code: script }));
+        expect(invoke).toHaveBeenCalledWith(
+            expect.objectContaining({
+                taskId: 'task-1',
+                code: script,
+                nangoProps: expect.objectContaining({
+                    syncConfig: expect.objectContaining({
+                        file_location: catalogTool.fileLocation,
+                        type: 'action',
+                        sdk_version: catalogTool.sdkVersion
+                    })
+                })
+            })
+        );
     });
 });
+
+const catalogTool: CatalogTool = {
+    name: 'create-issue',
+    description: 'Create an issue',
+    input: 'Issue',
+    output: ['Issue'],
+    scopes: ['repo'],
+    jsonSchema: null,
+    version: '1.0.0',
+    sdkVersion: '0.69.0-zero',
+    fileLocation: 'templates-zero/github/build/github_actions_create-issue.cjs',
+    sourceLocation: 'templates-zero/github/actions/create-issue.ts',
+    capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+    module: 'action'
+};
 
 const catalogNangoProps = {
     team: { id: 1 },
@@ -54,8 +83,5 @@ const catalogNangoProps = {
     provider: 'github',
     nangoConnectionId: 3,
     scriptType: 'action',
-    syncConfig: {
-        sync_name: 'create-issue',
-        file_location: 'templates-zero/github/build/github_actions_create-issue.cjs'
-    }
+    syncConfig: toRunnableSyncConfig(catalogTool, { environmentId: 2, configId: 4 })
 } as NangoProps;
