@@ -77,6 +77,15 @@ describe('streak-webhook-routing', () => {
         expect(execute).toHaveBeenCalledWith(expect.objectContaining({ connectionIdentifierValue: 'conn-1', propName: 'connectionId' }));
     });
 
+    it('does not forward when the verified connection is gone by dispatch time', async () => {
+        mockConnection(TOKEN);
+        const { nango } = makeNango([]);
+
+        const result = await StreakWebhookRouting.default(nango, { 'x-streak-webhook-token': TOKEN }, body, rawBody, { nangoConnectionId: 'conn-1' });
+
+        expect(result.isOk() && result.value.statusCode).toBe(204);
+    });
+
     it('rejects a token that does not match the given connection', async () => {
         mockConnection(TOKEN);
         const { nango, execute } = makeNango();

@@ -149,6 +149,21 @@ describe('deliver request shape', () => {
         expect(config.httpAgent).toBe(allowAll.agents.httpAgent);
         expect(config.httpsAgent).toBe(allowAll.agents.httpsAgent);
     });
+
+    it('never forwards the Nango webhook secret, in any casing', async () => {
+        await deliver({
+            webhooks: [{ url: 'https://example.com/primary', type: 'primary' }],
+            body: { hello: 'world' },
+            webhookType: 'forward',
+            secret,
+            incomingHeaders: { 'X-Nango-Webhook-Secret': 'shh', 'x-provider-event': 'created' },
+            outbound: allowAll
+        });
+
+        const headers = postSpy.mock.calls[0]![2]!.headers as Record<string, string>;
+        expect(Object.keys(headers).map((key) => key.toLowerCase())).not.toContain('x-nango-webhook-secret');
+        expect(headers).toMatchObject({ 'x-provider-event': 'created' });
+    });
 });
 
 describe('resolveWebhookSettings', () => {

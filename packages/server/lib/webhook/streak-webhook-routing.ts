@@ -32,6 +32,10 @@ const route: WebhookHandler = async (nango, headers, body, _rawBody, query) => {
             propName: 'connectionId'
         });
 
+        if (!response?.connectionIds.length) {
+            return Ok({ content: null, statusCode: 204 });
+        }
+
         return Ok({
             content: { status: 'success' },
             statusCode: 200,

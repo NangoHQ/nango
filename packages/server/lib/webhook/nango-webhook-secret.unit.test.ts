@@ -83,6 +83,24 @@ describe.each<{ provider: string; route: WebhookHandler; body: unknown }>([
         expect(execute).toHaveBeenCalledOnce();
     });
 
+    it('routes a webhook carrying the secret as a query param', async () => {
+        const { nango, execute } = makeNango(provider, SECRET);
+
+        const result = await route(nango, {}, body, rawBody, { nangoWebhookSecret: SECRET });
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledOnce();
+    });
+
+    it('checks the header over the query param when both are sent', async () => {
+        const { nango, execute } = makeNango(provider, SECRET);
+
+        const result = await route(nango, { 'x-nango-webhook-secret': 'wrong' }, body, rawBody, { nangoWebhookSecret: SECRET });
+
+        expect(errType(result)).toBe('webhook_invalid_signature');
+        expect(execute).not.toHaveBeenCalled();
+    });
+
     it('rejects a webhook without the secret before dispatching', async () => {
         const { nango, execute } = makeNango(provider, SECRET);
 
