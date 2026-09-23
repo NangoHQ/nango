@@ -86,7 +86,7 @@ function tsPath(folder: string, name: string): string {
     return `${TEMPLATES_ZERO_PREFIX}/${folder}/actions/${name}.ts`;
 }
 
-function loadProvider(provider: string): CatalogTool[] {
+function loadCatalogTools(provider: string): CatalogTool[] {
     const cached = toolsByProvider.get(provider);
     if (cached) {
         return cached;
@@ -129,16 +129,16 @@ function loadProvider(provider: string): CatalogTool[] {
 }
 
 export function listCatalogTools(provider: string): CatalogTool[] {
-    return loadProvider(provider);
+    return loadCatalogTools(provider);
 }
 
 export function getCatalogTool(provider: string, name: string): CatalogTool | undefined {
-    loadProvider(provider);
+    loadCatalogTools(provider);
     return toolByProviderAndName.get(provider)?.get(name);
 }
 
 export function listCatalogToolEndpoints(provider: string): CatalogToolEndpoint[] {
-    loadProvider(provider);
+    loadCatalogTools(provider);
     return endpointsByProvider.get(provider) ?? [];
 }
 
