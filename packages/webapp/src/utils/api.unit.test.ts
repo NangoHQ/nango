@@ -4,7 +4,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { isNoSessionError } from './api.js';
 
 vi.hoisted(() => {
-    // utils/api imports utils/env, which reads the /env.js snapshot as it loads.
     vi.stubGlobal('_env', { apiUrl: 'http://localhost:3003', dashboardApiUrl: 'http://localhost:3003' });
 });
 

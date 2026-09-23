@@ -4,7 +4,6 @@ import { create } from 'zustand';
 import { APIError, isNoSessionError } from '../utils/api';
 import { PROD_ENVIRONMENT_NAME } from '../utils/environments';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
-// Keep this static. signout() takes its latch on the first 401, before PrivateRoute's redirect sends a second one from /signin.
 import { signout } from '../utils/user';
 import { resetPlayground } from './playground';
 
