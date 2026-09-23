@@ -4,7 +4,7 @@ import type { ProductTrackingTypes } from '@nangohq/shared';
 import type { AgentSession, HTTP_METHOD } from '@nangohq/types';
 
 /** Nango's own tools, as opposed to the integration tools an account deploys. */
-export type AgentSessionMetaTool = 'nango_execute' | 'nango_proxy' | 'nango_tool_search';
+export type AgentSessionMetaTool = 'nango_execute' | 'nango_proxy' | 'nango_tool_search' | 'nango_create_connection';
 
 interface Outcome {
     logOperationId?: string | undefined;
@@ -17,7 +17,8 @@ interface ToolCallParams extends Outcome {
     session: AgentSession;
     /** Unset when the call named a tool the session could not resolve to an integration. */
     integrationId?: string | undefined;
-    toolName: string;
+    /** Unset for a meta tool that runs no integration tool of its own, like asking for a connect link. */
+    toolName?: string | undefined;
     /** Pinned tools are listed, searchable ones answer to their name without being listed. Both are callable directly. */
     pinned?: boolean | undefined;
     /** Names the underlying failure when the action ran and failed, rather than being rejected before it ran. */
@@ -43,7 +44,8 @@ export function trackAgentSessionCreated(session: AgentSession): void {
         integration_count: Object.keys(session.compiledToolset).length,
         is_tool_search_enabled: session.metaTools.nangoToolSearch,
         is_execute_enabled: session.metaTools.nangoExecute,
-        is_proxy_enabled: session.metaTools.nangoProxy
+        is_proxy_enabled: session.metaTools.nangoProxy,
+        is_create_connection_enabled: session.metaTools.nangoCreateConnection.enabled
     });
 }
 
@@ -56,8 +58,8 @@ export function trackAgentSessionTerminated(session: AgentSession): void {
 
 export function trackAgentSessionToolCall({ metaTool, session, integrationId, toolName, pinned, underlyingErrorCode, ...outcome }: ToolCallParams): void {
     trackSessionEvent('agents:tool_call_complete', session, {
-        tool_name: toolName,
         ...outcomeProperties(outcome),
+        ...(toolName ? { tool_name: toolName } : {}),
         ...(metaTool ? { meta_tool: metaTool } : {}),
         ...(pinned === undefined ? {} : { is_pinned: pinned }),
         ...(integrationId ? { integration_id: integrationId } : {}),

@@ -2,6 +2,7 @@ import tracer from 'dd-trace';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
 import { AGENT_SESSION_TAG_KEY } from '../../../../services/agentSessionConnections.service.js';
 import * as connectSessionService from '../../../../services/connectSession.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
@@ -29,8 +30,13 @@ export const createConnectionTool = defineAgentSessionMcpTool({
     async handler({ args, account, environment, plan, session }) {
         const integrationId = args.integration;
 
+        const track = (errorCode?: string) => {
+            trackAgentSessionToolCall({ metaTool: 'nango_create_connection', session, integrationId, ...(errorCode ? { errorCode } : {}) });
+        };
+
         const integration = Object.hasOwn(session.compiledToolset, integrationId) ? session.compiledToolset[integrationId] : undefined;
         if (!integration) {
+            track('unknown_integration');
             return Err(
                 new PublicMcpError(
                     `Integration '${integrationId}' is not one of this session's integrations, so it cannot be connected here. Use one this session has.`,
@@ -41,6 +47,7 @@ export const createConnectionTool = defineAgentSessionMcpTool({
 
         const existing = await resolveSessionConnection({ session, integrationId });
         if (existing) {
+            track('already_connected');
             return Err(
                 new PublicMcpError(`Integration '${integrationId}' is already connected in this session. You can already call its tools`, {
                     code: 'already_connected',
@@ -70,6 +77,7 @@ export const createConnectionTool = defineAgentSessionMcpTool({
 
             if (created.isErr()) {
                 span.setTag('nango.error', created.error);
+                track('connect_link_failed');
                 return Err(
                     new PublicMcpError(
                         `The connect link for '${integrationId}' could not be created. Trying once more is reasonable, and tell the user if it keeps failing.`,
@@ -77,6 +85,8 @@ export const createConnectionTool = defineAgentSessionMcpTool({
                     )
                 );
             }
+
+            track();
 
             return Ok({
                 guidance: `Give this link to the user and wait. They open it and authorise ${integration.provider}, which is something only they can do. Once they say they are done, call the tool you wanted and it will run on the new connection.`,

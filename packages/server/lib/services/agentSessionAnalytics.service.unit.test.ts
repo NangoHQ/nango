@@ -64,7 +64,8 @@ describe('trackAgentSessionCreated', () => {
             integration_count: 2,
             is_tool_search_enabled: true,
             is_execute_enabled: true,
-            is_proxy_enabled: false
+            is_proxy_enabled: false,
+            is_create_connection_enabled: false
         });
     });
 
@@ -113,6 +114,16 @@ describe('trackAgentSessionToolCall', () => {
     });
 
     // A tool called by the name it is listed under goes through no meta tool of ours.
+    // A meta tool that runs no integration tool of its own still reports as a call.
+    it('reports a meta tool that runs no integration tool, like asking for a connect link', () => {
+        inRequest(() => trackAgentSessionToolCall({ metaTool: 'nango_create_connection', session, integrationId: 'notion' }));
+
+        const { event, properties } = onlyEvent();
+        expect(event).toBe('agents:tool_call_complete');
+        expect(properties).toMatchObject({ meta_tool: 'nango_create_connection', integration_id: 'notion', is_success: true });
+        expect(properties).not.toHaveProperty('tool_name');
+    });
+
     it('leaves the meta tool out when the agent called the tool by its own name', () => {
         inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc', pinned: true }));
 
