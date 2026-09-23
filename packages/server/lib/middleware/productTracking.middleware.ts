@@ -4,8 +4,8 @@ import type { RequestLocals } from '../utils/express.js';
 import type { NextFunction, Request, Response } from 'express';
 
 /**
- * Give every posthog event emitted while handling a request the account, environment and plan of
- * that request, so no call site has to pass them.
+ * Give every posthog event emitted while handling a request the account and environment of that
+ * request, so no call site has to pass them. The plan rides on the account group, not on events.
  *
  * Mounted before auth, so the locals are read when an event is emitted and not here.
  *
@@ -16,8 +16,7 @@ export function productTrackingMiddleware(_req: Request, res: Response<any, Part
     withProductTrackingContext(
         () => ({
             team: res.locals['account'],
-            environment: res.locals['environment'],
-            plan: res.locals['plan']
+            environment: res.locals['environment']
         }),
         next
     );

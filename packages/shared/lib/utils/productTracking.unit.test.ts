@@ -2,14 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { productTracking, withProductTrackingContext } from './productTracking.js';
 
-import type { DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type { DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
 
-const team = { id: 42, name: 'Acme' } as DBTeam;
-const environment = { id: 7, name: 'prod', is_production: true } as DBEnvironment;
-const plan = { name: 'growth-v2' } as DBPlan;
-const user = { id: 3, email: 'john@example.com', name: 'John' } as DBUser;
+const team = { id: 42 } as DBTeam;
+const environment = { is_production: true } as DBEnvironment;
+const user = { id: 3 } as DBUser;
 
-type Capture = (payload: { event: string; distinctId: string; properties: Record<string, unknown> }) => void;
+type Capture = (payload: { event: string; distinctId: string; properties: Record<string, unknown>; groups?: Record<string, string> }) => void;
 
 const capture = vi.fn<Capture>();
 const realClient = productTracking.client;
@@ -28,48 +27,48 @@ afterEach(() => {
 });
 
 describe('track', () => {
-    it('stamps account, environment and plan on the event', () => {
-        productTracking.track({ name: 'account:billing:downgraded', team, environment, plan, user, eventProperties: { source: 'repo' } });
+    it('attaches the event to the account group and says where it was sent from', () => {
+        productTracking.track({ name: 'account:billing:downgraded', team, environment, eventProperties: { source: 'repo' } });
 
         expect(capture).toHaveBeenCalledWith({
             event: 'account:billing:downgraded',
-            distinctId: 'team-42-user-3',
+            distinctId: 'account-42',
+            groups: { company: '42' },
             properties: expect.objectContaining({
                 source: 'repo',
-                'account-id': 42,
-                'team-id': 42,
-                'team-name': 'Acme',
-                'environment-id': 7,
-                'environment-name': 'prod',
-                'is-prod': true,
-                plan: 'growth-v2'
+                surface: 'server',
+                is_prod: true
             })
         });
     });
 
-    it('omits environment properties when there is no environment to resolve', () => {
+    it('creates no person for an event nobody is behind', () => {
         productTracking.track({ name: 'account:billing:downgraded', team });
 
-        const { properties, distinctId } = lastCapture();
-        expect(properties).not.toHaveProperty('environment-id');
-        expect(properties).not.toHaveProperty('is-prod');
-        expect(properties).not.toHaveProperty('plan');
-        expect(properties['account-id']).toBe(42);
-        expect(distinctId).toBe('team-42');
+        expect(lastCapture().properties['$process_person_profile']).toBe(false);
     });
 
-    it('sets account and user properties on the person', () => {
-        productTracking.track({ name: 'account:billing:downgraded', team, environment, plan, user });
+    it('identifies a person by their user id, and then keeps the profile', () => {
+        productTracking.track({ name: 'account:billing:downgraded', team, user });
 
-        expect(lastCapture().properties['$set']).toEqual({
-            'account-id': 42,
-            'team-id': 42,
-            'team-name': 'Acme',
-            plan: 'growth-v2',
-            id: 3,
-            email: 'john@example.com',
-            name: 'John'
-        });
+        const { distinctId, properties } = lastCapture();
+        expect(distinctId).toBe('3');
+        expect(properties).not.toHaveProperty('$process_person_profile');
+    });
+
+    it('omits is_prod when there is no environment to resolve', () => {
+        productTracking.track({ name: 'account:billing:downgraded', team });
+
+        expect(lastCapture().properties).not.toHaveProperty('is_prod');
+    });
+
+    it('sends no personal data', () => {
+        productTracking.track({ name: 'account:billing:downgraded', team, environment, user });
+
+        const properties = lastCapture().properties;
+        for (const forbidden of ['$set', 'email', 'name', 'team-name', 'team_name', 'account_name']) {
+            expect(properties).not.toHaveProperty(forbidden);
+        }
     });
 
     it('drops an event that has no account anywhere', () => {
@@ -82,15 +81,16 @@ describe('track', () => {
 describe('withProductTrackingContext', () => {
     it('stamps the context on an event that passes nothing', () => {
         withProductTrackingContext(
-            () => ({ team, environment, plan, user }),
+            () => ({ team, environment }),
             () => {
                 productTracking.track({ name: 'account:billing:downgraded' });
             }
         );
 
-        const { properties, distinctId } = lastCapture();
-        expect(distinctId).toBe('team-42-user-3');
-        expect(properties).toMatchObject({ 'account-id': 42, 'environment-id': 7, 'is-prod': true, plan: 'growth-v2' });
+        const { distinctId, groups, properties } = lastCapture();
+        expect(distinctId).toBe('account-42');
+        expect(groups).toStrictEqual({ company: '42' });
+        expect(properties).toMatchObject({ is_prod: true, surface: 'server' });
     });
 
     it('resolves the context at emit time, not when the context is entered', () => {
@@ -104,23 +104,23 @@ describe('withProductTrackingContext', () => {
             }
         );
 
-        expect(lastCapture().properties['environment-id']).toBe(7);
+        expect(lastCapture().properties['is_prod']).toBe(true);
     });
 
     it('lets the event override the context', () => {
-        const other = { id: 9, name: 'dev', is_production: false } as DBEnvironment;
+        const dev = { is_production: false } as DBEnvironment;
 
         withProductTrackingContext(
             () => ({ team, environment }),
             () => {
-                productTracking.track({ name: 'account:billing:downgraded', environment: other });
+                productTracking.track({ name: 'account:billing:downgraded', environment: dev });
             }
         );
 
-        expect(lastCapture().properties).toMatchObject({ 'environment-id': 9, 'is-prod': false });
+        expect(lastCapture().properties['is_prod']).toBe(false);
     });
 
-    it('stamps the context on anonymous events too', () => {
+    it('leaves an anonymous CLI event on its own surface, with no account', () => {
         withProductTrackingContext(
             () => ({ team, environment }),
             () => {
@@ -128,8 +128,10 @@ describe('withProductTrackingContext', () => {
             }
         );
 
-        const { properties, distinctId } = lastCapture();
+        const { distinctId, groups, properties } = lastCapture();
         expect(distinctId).toBe('device-1');
-        expect(properties).toMatchObject({ 'device-id': 'device-1', 'account-id': 42, 'environment-id': 7 });
+        expect(groups).toBeUndefined();
+        expect(properties).toMatchObject({ surface: 'cli' });
+        expect(properties).not.toHaveProperty('is_prod');
     });
 });

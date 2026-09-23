@@ -4,7 +4,7 @@ import { PostHog } from 'posthog-node';
 
 import { baseUrl, NANGO_VERSION, report } from '@nangohq/utils';
 
-import type { CliTelemetryEvent, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type { CliTelemetryEvent, DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
 
 export type ProductTrackingTypes =
     | CliTelemetryEvent
@@ -22,21 +22,24 @@ export type ProductTrackingTypes =
     | 'server:resource_capped:action_triggered'
     | 'server:resource_capped:active_records';
 
+/**
+ * Only ids: no email, no names, and no account name either, which defaults to "<person>'s Team" for
+ * anyone who signed up with a personal address. The plan is a group property, not an event one.
+ */
 export interface TrackingContext {
-    team: Pick<DBTeam, 'id' | 'name'>;
+    team: Pick<DBTeam, 'id'>;
     /**
      * Some events are account-wide and have no environment to resolve, so this stays optional.
      */
-    environment?: Pick<DBEnvironment, 'id' | 'name' | 'is_production'> | null | undefined;
-    plan?: Pick<DBPlan, 'name'> | null | undefined;
-    user?: Pick<DBUser, 'id' | 'email' | 'name'> | null | undefined;
+    environment?: Pick<DBEnvironment, 'is_production'> | null | undefined;
+    user?: Pick<DBUser, 'id'> | null | undefined;
 }
 
 /**
  * A context where nothing is guaranteed: the request may not be authenticated, and an event may be
  * emitted with no context at all.
  */
-export type TrackingContextInput = Partial<Omit<TrackingContext, 'team'>> & { team?: Pick<DBTeam, 'id' | 'name'> | null | undefined };
+export type TrackingContextInput = Partial<Omit<TrackingContext, 'team'>> & { team?: Pick<DBTeam, 'id'> | null | undefined };
 
 /**
  * Resolved lazily, at emit time: a request enters this context before auth runs, so the account
@@ -72,49 +75,37 @@ function resolveContext(explicit: TrackingContextInput): TrackingContext | null 
     return {
         team,
         environment: explicit.environment ?? ambient?.environment,
-        plan: explicit.plan ?? ambient?.plan,
         user: explicit.user ?? ambient?.user
     };
 }
 
-function commonProperties(): Record<string, unknown> {
+function commonProperties(surface: 'server' | 'cli'): Record<string, unknown> {
     return {
+        surface,
         host: baseUrl,
-        'nango-server-version': NANGO_VERSION || 'unknown'
+        server_version: NANGO_VERSION || 'unknown'
     };
 }
 
-function accountProperties({ team, plan }: Pick<TrackingContext, 'team' | 'plan'>): Record<string, unknown> {
+function contextProperties({ environment, user }: TrackingContext): Record<string, unknown> {
     return {
-        'account-id': team.id,
-        'team-id': team.id,
-        'team-name': team.name,
-        ...(plan ? { plan: plan.name } : {})
+        ...(environment ? { is_prod: environment.is_production } : {}),
+        // An event with no person behind it is attached to the account group instead of inventing one.
+        ...(user ? {} : { $process_person_profile: false })
     };
 }
 
-function contextEventProperties({ team, environment, plan }: TrackingContext): Record<string, unknown> {
-    return {
-        ...accountProperties({ team, plan }),
-        ...(environment
-            ? {
-                  'environment-id': environment.id,
-                  'environment-name': environment.name,
-                  'is-prod': environment.is_production
-              }
-            : {})
-    };
+/**
+ * A person is their user id. An event with no person still needs a distinct id, so it carries the
+ * account's, which creates no profile because person processing is off for those events.
+ */
+function distinctIdFor({ team, user }: TrackingContext): string {
+    return user ? String(user.id) : `account-${team.id}`;
 }
 
-function contextUserProperties({ team, plan, user }: TrackingContext): Record<string, unknown> {
-    return {
-        ...accountProperties({ team, plan }),
-        ...(user ? { id: user.id, email: user.email, name: user.name } : {})
-    };
-}
-
-function distinctIdFor({ team, user }: { team: Pick<DBTeam, 'id'>; user?: Pick<DBUser, 'id'> | null | undefined }): string {
-    return user ? `team-${team.id}-user-${user.id}` : `team-${team.id}`;
+/** Counting accounts rather than people is what the group is for, so every event carries it. */
+function groupsFor({ team }: TrackingContext): Record<string, string> {
+    return { company: String(team.id) };
 }
 
 class ProductTracking {
@@ -140,21 +131,18 @@ class ProductTracking {
         name,
         team,
         environment,
-        plan,
         user,
-        eventProperties,
-        userProperties
+        eventProperties
     }: {
         name: ProductTrackingTypes;
-        eventProperties?: Record<string | number, any>;
-        userProperties?: Record<string | number, any>;
+        eventProperties?: Record<string, string | number | boolean | null | undefined>;
     } & TrackingContextInput) {
         try {
             if (this.client == null) {
                 return;
             }
 
-            const context = resolveContext({ team, environment, plan, user });
+            const context = resolveContext({ team, environment, user });
             if (!context) {
                 report(new Error(`Product tracking event "${name}" has no account to attach to`));
                 return;
@@ -162,12 +150,11 @@ class ProductTracking {
 
             const properties = {
                 ...eventProperties,
-                ...commonProperties(),
-                ...contextEventProperties(context),
-                $set: { ...userProperties, ...contextUserProperties(context) }
+                ...commonProperties('server'),
+                ...contextProperties(context)
             };
 
-            this.client.capture({ event: name, distinctId: distinctIdFor(context), properties });
+            this.client.capture({ event: name, distinctId: distinctIdFor(context), properties, groups: groupsFor(context) });
         } catch (err) {
             report(err);
         }
@@ -175,7 +162,8 @@ class ProductTracking {
 
     /**
      * Track an event that isn't tied to a resolved team, e.g. CLI events sent before or without authentication.
-     * The distinctId is a client-generated device id
+     * The distinctId is a client-generated device id, and the event keeps the surface it came from
+     * rather than the one relaying it.
      */
     public trackAnonymous({
         name,
@@ -184,22 +172,14 @@ class ProductTracking {
     }: {
         name: ProductTrackingTypes;
         distinctId: string;
-        eventProperties?: Record<string | number, any>;
+        eventProperties?: Record<string, string | number | boolean | null | undefined>;
     }) {
         try {
             if (this.client == null) {
                 return;
             }
 
-            const context = resolveContext({});
-            const properties = {
-                ...eventProperties,
-                ...commonProperties(),
-                ...(context ? contextEventProperties(context) : {}),
-                'device-id': distinctId
-            };
-
-            this.client.capture({ event: name, distinctId, properties });
+            this.client.capture({ event: name, distinctId, properties: { ...eventProperties, ...commonProperties('cli') } });
         } catch (err) {
             report(err);
         }
