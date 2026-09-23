@@ -120,6 +120,20 @@ describe('deliver request shape', () => {
         expect(postSpy.mock.calls[1]![2]!.headers).not.toHaveProperty('x-nango-webhook-unverified');
     });
 
+    it('drops a caller supplied unverified header in any casing', async () => {
+        await deliver({
+            webhooks: [{ url: 'https://example.com/primary', type: 'primary' }],
+            body: { hello: 'world' },
+            webhookType: 'forward',
+            secret,
+            incomingHeaders: { 'X-Nango-Webhook-Unverified': 'false', 'X-NANGO-WEBHOOK-UNVERIFIED': 'false' },
+            outbound: allowAll
+        });
+
+        const headers = postSpy.mock.calls[0]![2]!.headers as Record<string, string>;
+        expect(Object.keys(headers).map((key) => key.toLowerCase())).not.toContain('x-nango-webhook-unverified');
+    });
+
     it('caps redirects and attaches the outbound agents from the transport', async () => {
         await deliver({
             webhooks: [{ url: 'https://example.com/primary', type: 'primary' }],
