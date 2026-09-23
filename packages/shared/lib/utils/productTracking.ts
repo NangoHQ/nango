@@ -14,10 +14,8 @@ export type ProductTrackingTypes =
     | 'account:billing:upgraded'
     | 'agents:session_create'
     | 'agents:session_end'
-    | 'agents:tool_run_succeed'
-    | 'agents:tool_run_fail'
-    | 'agents:proxy_request_succeed'
-    | 'agents:proxy_request_fail';
+    | 'agents:tool_call_complete'
+    | 'agents:proxy_request_complete';
 
 /**
  * Only ids: no email, no names, and no account name either, which defaults to "<person>'s Team" for

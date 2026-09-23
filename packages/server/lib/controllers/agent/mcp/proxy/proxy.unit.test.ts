@@ -312,7 +312,7 @@ describe('proxyTool analytics', () => {
         await callProxyInRequest({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
 
         const { event, properties } = onlyEvent();
-        expect(event).toBe('agents:proxy_request_succeed');
+        expect(event).toBe('agents:proxy_request_complete');
         expect(properties).toMatchObject({
             agent_session_id: 'session-1',
             integration_id: 'notion',

@@ -11,7 +11,7 @@ interface Outcome {
     errorCode?: string | undefined;
 }
 
-interface ToolRunParams extends Outcome {
+interface ToolCallParams extends Outcome {
     metaTool: AgentSessionMetaTool;
     session: AgentSession;
     /** Unset when the call named a tool the session could not resolve to an integration. */
@@ -53,8 +53,8 @@ export function trackAgentSessionTerminated(session: AgentSession): void {
     });
 }
 
-export function trackAgentSessionToolRun({ metaTool, session, integrationId, toolName, pinned, underlyingErrorCode, ...outcome }: ToolRunParams): void {
-    trackSessionEvent(outcome.errorCode ? 'agents:tool_run_fail' : 'agents:tool_run_succeed', session, {
+export function trackAgentSessionToolCall({ metaTool, session, integrationId, toolName, pinned, underlyingErrorCode, ...outcome }: ToolCallParams): void {
+    trackSessionEvent('agents:tool_call_complete', session, {
         meta_tool: metaTool,
         tool_name: toolName,
         ...outcomeProperties(outcome),
@@ -65,7 +65,7 @@ export function trackAgentSessionToolRun({ metaTool, session, integrationId, too
 }
 
 export function trackAgentSessionProxyRequest({ session, integrationId, provider, method, status, providerErrorCode, ...outcome }: ProxyRequestParams): void {
-    trackSessionEvent(outcome.errorCode ? 'agents:proxy_request_fail' : 'agents:proxy_request_succeed', session, {
+    trackSessionEvent('agents:proxy_request_complete', session, {
         integration_id: integrationId,
         http_method: method,
         ...outcomeProperties(outcome),
@@ -80,9 +80,10 @@ function trackSessionEvent(name: ProductTrackingTypes, session: AgentSession, pr
     productTracking.track({ name, eventProperties: { agent_session_id: session.id, ...properties } });
 }
 
-/** The outcome is in the event name, so what is left is why it failed and where to read the run. */
-function outcomeProperties({ logOperationId, errorCode }: Outcome): Record<string, string> {
+/** One event per call, so whether it worked is a property and the code says why it did not. */
+function outcomeProperties({ logOperationId, errorCode }: Outcome): Record<string, string | boolean> {
     return {
+        is_success: !errorCode,
         ...(logOperationId ? { log_operation_id: logOperationId } : {}),
         ...(errorCode ? { error_code: errorCode } : {})
     };

@@ -6,7 +6,7 @@ import {
     trackAgentSessionCreated,
     trackAgentSessionProxyRequest,
     trackAgentSessionTerminated,
-    trackAgentSessionToolRun
+    trackAgentSessionToolCall
 } from './agentSessionAnalytics.service.js';
 
 import type { AgentSession, DBEnvironment, DBTeam } from '@nangohq/types';
@@ -87,10 +87,10 @@ describe('trackAgentSessionTerminated', () => {
     });
 });
 
-describe('trackAgentSessionToolRun', () => {
+describe('trackAgentSessionToolCall', () => {
     it('reports a successful call under the event of the tool that ran it', () => {
         inRequest(() =>
-            trackAgentSessionToolRun({
+            trackAgentSessionToolCall({
                 metaTool: 'execute_pinned_tool',
                 session,
                 integrationId: 'notion',
@@ -100,19 +100,20 @@ describe('trackAgentSessionToolRun', () => {
         );
 
         const { event, properties } = onlyEvent();
-        expect(event).toBe('agents:tool_run_succeed');
+        expect(event).toBe('agents:tool_call_complete');
         expect(properties).toMatchObject({
             agent_session_id: 'session-1',
             integration_id: 'notion',
             tool_name: 'read_doc',
-            log_operation_id: 'op-1'
+            log_operation_id: 'op-1',
+            is_success: true
         });
         expect(properties).not.toHaveProperty('error_code');
     });
 
     it('reports the failure and the underlying error code', () => {
         inRequest(() =>
-            trackAgentSessionToolRun({
+            trackAgentSessionToolCall({
                 metaTool: 'nango_execute',
                 session,
                 integrationId: 'notion',
@@ -130,7 +131,7 @@ describe('trackAgentSessionToolRun', () => {
     });
 
     it('leaves the integration out when the call named a tool the session could not resolve', () => {
-        inRequest(() => trackAgentSessionToolRun({ metaTool: 'nango_execute', session, toolName: 'made_up', errorCode: 'tool_not_in_session' }));
+        inRequest(() => trackAgentSessionToolCall({ metaTool: 'nango_execute', session, toolName: 'made_up', errorCode: 'tool_not_in_session' }));
 
         const { properties } = onlyEvent();
         expect(properties).not.toHaveProperty('integration_id');
@@ -139,19 +140,19 @@ describe('trackAgentSessionToolRun', () => {
     });
 
     it.each([true, false])('separates a pinned tool from a searchable one called by its own name (pinned: %s)', (pinned) => {
-        inRequest(() => trackAgentSessionToolRun({ metaTool: 'execute_pinned_tool', session, integrationId: 'notion', toolName: 'read_doc', pinned }));
+        inRequest(() => trackAgentSessionToolCall({ metaTool: 'execute_pinned_tool', session, integrationId: 'notion', toolName: 'read_doc', pinned }));
 
         expect(onlyEvent().properties).toMatchObject({ is_pinned: pinned });
     });
 
     it('leaves pinned out when the call site cannot say', () => {
-        inRequest(() => trackAgentSessionToolRun({ metaTool: 'nango_execute', session, toolName: 'made_up', errorCode: 'tool_not_in_session' }));
+        inRequest(() => trackAgentSessionToolCall({ metaTool: 'nango_execute', session, toolName: 'made_up', errorCode: 'tool_not_in_session' }));
 
         expect(onlyEvent().properties).not.toHaveProperty('is_pinned');
     });
 
     it('sends no tool input', () => {
-        inRequest(() => trackAgentSessionToolRun({ metaTool: 'nango_execute', session, integrationId: 'notion', toolName: 'read_doc' }));
+        inRequest(() => trackAgentSessionToolCall({ metaTool: 'nango_execute', session, integrationId: 'notion', toolName: 'read_doc' }));
 
         expect(Object.keys(onlyEvent().properties)).not.toContain('input');
     });
@@ -171,14 +172,15 @@ describe('trackAgentSessionProxyRequest', () => {
         );
 
         const { event, properties } = onlyEvent();
-        expect(event).toBe('agents:proxy_request_succeed');
+        expect(event).toBe('agents:proxy_request_complete');
         expect(properties).toMatchObject({
             agent_session_id: 'session-1',
             integration_id: 'notion',
             provider: 'notion',
             http_method: 'GET',
             http_status: 200,
-            log_operation_id: 'op-2'
+            log_operation_id: 'op-2',
+            is_success: true
         });
     });
 

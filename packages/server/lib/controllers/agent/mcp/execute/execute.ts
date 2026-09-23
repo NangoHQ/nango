@@ -3,7 +3,7 @@ import tracer from 'dd-trace';
 import { Err, Ok } from '@nangohq/utils';
 
 import { executeAction } from '../../../../services/action.service.js';
-import { trackAgentSessionToolRun } from '../../../../services/agentSessionAnalytics.service.js';
+import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
 import { resolveSessionConnection } from '../sessionConnection.js';
@@ -37,7 +37,7 @@ export const executeTool = defineAgentSessionMcpTool({
 
         const tool = callable.get(args.tool);
         if (!tool) {
-            trackAgentSessionToolRun({ metaTool: 'nango_execute', session, toolName: args.tool, errorCode: 'tool_not_in_session' });
+            trackAgentSessionToolCall({ metaTool: 'nango_execute', session, toolName: args.tool, errorCode: 'tool_not_in_session' });
             return Err(new PublicMcpError(unknownToolMessage(args.tool, session), { code: 'tool_not_in_session' }));
         }
 
@@ -83,7 +83,7 @@ export async function executeSessionTool({
     const { account, environment, session } = context;
 
     const track = (properties: { logOperationId?: string | undefined; errorCode?: string | undefined; underlyingErrorCode?: string | undefined }) => {
-        trackAgentSessionToolRun({ metaTool, session, integrationId, toolName, pinned, ...properties });
+        trackAgentSessionToolCall({ metaTool, session, integrationId, toolName, pinned, ...properties });
     };
 
     const integration = Object.hasOwn(session.compiledToolset, integrationId) ? session.compiledToolset[integrationId] : undefined;
