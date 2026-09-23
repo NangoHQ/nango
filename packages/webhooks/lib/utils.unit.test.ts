@@ -93,6 +93,33 @@ describe('deliver request shape', () => {
         expect(postSpy).toHaveBeenNthCalledWith(2, 'https://example.com/secondary', bodyString, expect.objectContaining({ headers: expectedHeaders }));
     });
 
+    it('drops a caller supplied unverified header and keeps the one Nango sets', async () => {
+        await deliver({
+            webhooks: [{ url: 'https://example.com/primary', type: 'primary' }],
+            body: { hello: 'world' },
+            webhookType: 'forward',
+            secret,
+            incomingHeaders: { 'x-nango-webhook-unverified': 'false', 'x-provider-event': 'created' },
+            outbound: allowAll
+        });
+
+        expect(postSpy.mock.calls[0]![2]!.headers).not.toHaveProperty('x-nango-webhook-unverified');
+        expect(postSpy.mock.calls[0]![2]!.headers).toMatchObject({ 'x-provider-event': 'created' });
+
+        await deliver({
+            webhooks: [{ url: 'https://example.com/primary', type: 'primary' }],
+            body: { hello: 'world' },
+            webhookType: 'forward',
+            secret,
+            incomingHeaders: { 'x-nango-webhook-unverified': 'false' },
+            extraHeaders: { 'X-Nango-Webhook-Unverified': 'true' },
+            outbound: allowAll
+        });
+
+        expect(postSpy.mock.calls[1]![2]!.headers).toMatchObject({ 'X-Nango-Webhook-Unverified': 'true' });
+        expect(postSpy.mock.calls[1]![2]!.headers).not.toHaveProperty('x-nango-webhook-unverified');
+    });
+
     it('caps redirects and attaches the outbound agents from the transport', async () => {
         await deliver({
             webhooks: [{ url: 'https://example.com/primary', type: 'primary' }],
