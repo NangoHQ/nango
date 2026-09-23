@@ -1,3 +1,4 @@
+import { userQueryKey } from '../hooks/useUser';
 import { queryClient } from '../store';
 import { resetPlayground } from '../store/playground';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
@@ -30,6 +31,11 @@ interface SignoutOptions {
 
 // Not a hook: the query client's 401 handler calls this from outside React.
 export async function signout({ expired = false, from }: SignoutOptions = {}) {
+    // No user loaded in this tab means a signed-out visitor, not an expiry. Root and PrivateRoute redirect them without the banner.
+    if (expired && !queryClient.getQueryData(userQueryKey)) {
+        return;
+    }
+
     // The homepage's five insight charts fail together; without this each one logs out and redirects.
     if (signingOut) {
         return;
