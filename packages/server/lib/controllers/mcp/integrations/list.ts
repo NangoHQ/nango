@@ -10,7 +10,7 @@ export const listIntegrationsTool = defineManagementMcpTool<typeof listIntegrati
     description: 'List integrations configured in the authenticated Nango environment.',
     inputSchema: listIntegrationsArgumentsSchema,
     outputSchema: listIntegrationsOutputSchema,
-    annotations: { readOnlyHint: true },
+    annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     requiredScopes: { every: ['environment:integrations:list'] },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ environment }) {

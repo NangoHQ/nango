@@ -31,9 +31,9 @@ export const setSyncsStateTool = defineManagementMcpTool<typeof setSyncsStateArg
     },
     annotations: {
         readOnlyHint: false,
-        destructiveHint: false,
+        destructiveHint: true,
         idempotentHint: true,
-        openWorldHint: false
+        openWorldHint: true
     },
     async handler({ args, environment }) {
         const syncIdentifiers = normalizedSyncParams(args.syncs);
