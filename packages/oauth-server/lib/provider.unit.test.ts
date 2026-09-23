@@ -26,6 +26,8 @@ const artifacts = new Map<string, AdapterPayload>();
 const TEST_ACCOUNT_ID = 'test-account';
 const SWITCHED_ACCOUNT_ID = 'switched-account';
 const CLAUDE_CODE_CLIENT_ID = 'https://claude.ai/oauth/claude-code-client-metadata';
+const CHATGPT_CLIENT_ID = 'https://chatgpt.com/oauth/client.json';
+const CHATGPT_REDIRECT_URI = 'https://chatgpt.com/connector_platform_oauth_redirect';
 const existingAccounts = new Set([TEST_ACCOUNT_ID, SWITCHED_ACCOUNT_ID]);
 const adapter = (model: string): Adapter => ({
     upsert: (id, payload) => {
@@ -61,7 +63,7 @@ describe('OAuth provider', () => {
     beforeAll(async () => {
         vi.mocked(createOAuthAdapter).mockReturnValue(adapter);
         vi.mocked(allowCimdFetch).mockImplementation((candidate) =>
-            Promise.resolve(candidate.startsWith('https://client.example.com/oauth/') || candidate === CLAUDE_CODE_CLIENT_ID)
+            Promise.resolve(candidate.startsWith('https://client.example.com/oauth/') || candidate === CLAUDE_CODE_CLIENT_ID || candidate === CHATGPT_CLIENT_ID)
         );
         vi.mocked(secureCimdFetch).mockImplementation((input, init) => {
             cimdFetches++;
@@ -80,6 +82,25 @@ describe('OAuth provider', () => {
             }
             if (fetchedClientId.endsWith('/oversized.json')) {
                 return Promise.resolve(new Response('x'.repeat(5 * 1024 + 1), { status: 200, headers: { 'content-type': 'application/json' } }));
+            }
+            if (fetchedClientId === CHATGPT_CLIENT_ID) {
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            client_id: CHATGPT_CLIENT_ID,
+                            client_name: 'ChatGPT',
+                            client_uri: 'https://chatgpt.com/',
+                            redirect_uris: [CHATGPT_REDIRECT_URI],
+                            token_endpoint_auth_method: 'private_key_jwt',
+                            token_endpoint_auth_methods_supported: ['none', 'private_key_jwt'],
+                            token_endpoint_auth_signing_alg: 'RS256',
+                            jwks_uri: 'https://chatgpt.com/oauth/jwks.json',
+                            grant_types: ['authorization_code', 'refresh_token'],
+                            response_types: ['code']
+                        }),
+                        { status: 200, headers: { 'content-type': 'application/json', 'cache-control': 'max-age=3600' } }
+                    )
+                );
             }
             if (fetchedClientId === CLAUDE_CODE_CLIENT_ID || fetchedClientId.endsWith('/native.json') || fetchedClientId.endsWith('/unspecified.json')) {
                 return Promise.resolve(
@@ -312,6 +333,22 @@ describe('OAuth provider', () => {
         expect(replay.response.status).toBe(400);
         expect(replay.body['error']).toBe('invalid_grant');
         expect(cimdFetches).toBe(before);
+    });
+
+    it("uses ChatGPT's supported public-client token endpoint authentication method", async () => {
+        const authorization = await authorize(provider, origin, CHATGPT_CLIENT_ID, 'https://mcp.example.com/mcp', 'environment:*', {
+            redirectUri: CHATGPT_REDIRECT_URI
+        });
+        const tokens = await exchangeCode(
+            origin,
+            CHATGPT_CLIENT_ID,
+            authorization.code,
+            authorization.verifier,
+            'https://mcp.example.com/mcp',
+            CHATGPT_REDIRECT_URI
+        );
+
+        expect(tokens).toMatchObject({ token_type: 'Bearer', scope: 'environment:*' });
     });
 
     it('rejects token exchange when the referenced account no longer exists', async () => {

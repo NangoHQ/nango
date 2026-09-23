@@ -11,7 +11,7 @@ export const listFunctionsTool = defineManagementMcpTool<typeof listFunctionsArg
     description: 'List and filter functions deployed to an integration in the authenticated Nango environment.',
     inputSchema: listFunctionsArgumentsSchema,
     outputSchema: listFunctionsOutputSchema,
-    annotations: { readOnlyHint: true },
+    annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     requiredScopes: { every: ['environment:functions:list'] },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, environment }) {
