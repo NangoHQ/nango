@@ -1113,6 +1113,7 @@
               "api-integrations/basin",
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
+              "api-integrations/beeline-vms",
               "api-integrations/bettercontact",
               "api-integrations/bigchange",
               "api-integrations/bigcommerce",
