@@ -5,9 +5,14 @@ import { safeCompare } from './signature.js';
 
 import type { WebhookHandler } from './types.js';
 
-// Halo supports Basic authentication: use the connection ID as the username
-// and that connection's metadata.webhookSecret as the password.
-const route: WebhookHandler<Record<string, unknown>> = async (nango, headers, body) => {
+// The query parameter selects the connection; Basic authentication uses the fixed
+// username "nango" and that connection's metadata.webhookSecret as the password.
+const route: WebhookHandler<Record<string, unknown>> = async (nango, headers, body, _rawBody, query) => {
+    const connectionIdentifierValue = query?.['nangoConnectionId'];
+    if (!connectionIdentifierValue) {
+        return Err(new NangoError('webhook_missing_connection_id'));
+    }
+
     const authorization = /^Basic ([A-Za-z0-9+/]+=*)$/i.exec(headers['authorization'] ?? '')?.[1];
     if (!authorization) {
         return Err(new NangoError('webhook_missing_token'));
@@ -15,11 +20,10 @@ const route: WebhookHandler<Record<string, unknown>> = async (nango, headers, bo
 
     const credentials = Buffer.from(authorization, 'base64').toString('utf8');
     const separator = credentials.indexOf(':');
-    if (separator <= 0) {
+    if (separator <= 0 || credentials.slice(0, separator) !== 'nango') {
         return Err(new NangoError('webhook_invalid_signature'));
     }
 
-    const connectionIdentifierValue = credentials.slice(0, separator);
     const connection = await nango.getConnectionForWebhook(connectionIdentifierValue);
     const secret = connection?.metadata?.['webhookSecret'];
     if (typeof secret !== 'string' || !secret || !safeCompare(secret, credentials.slice(separator + 1))) {
