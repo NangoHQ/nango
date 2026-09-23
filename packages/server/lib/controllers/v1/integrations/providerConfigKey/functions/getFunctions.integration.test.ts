@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
-import { listCatalogActions } from '@nangohq/shared/lib/services/catalog/actions.js';
+import { listCatalogTools } from '@nangohq/shared/lib/services/catalog/actions.js';
 
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
 
@@ -30,12 +30,12 @@ function toFunctionKey(fn: { type: string; name: string; event?: string }) {
 }
 
 function deployedOnly<T extends { source: string }>(fns: T[]): T[] {
-    return fns.filter((fn) => fn.source !== 'live-catalog');
+    return fns.filter((fn) => fn.source !== 'tools-catalog');
 }
 
 function unoccupiedGithubCatalogCount(occupiedActionNames: Iterable<string> = []): number {
     const occupied = new Set(occupiedActionNames);
-    return listCatalogActions('github').filter((action) => !occupied.has(action.name)).length;
+    return listCatalogTools('github').filter((action) => !occupied.has(action.name)).length;
 }
 
 function expectedMergedGithubKeys({
@@ -49,7 +49,7 @@ function expectedMergedGithubKeys({
 }): string[] {
     const occupied = new Set(occupiedActionNames);
     const actionNames = [
-        ...listCatalogActions('github')
+        ...listCatalogTools('github')
             .filter((action) => !occupied.has(action.name))
             .map((action) => action.name),
         ...occupiedActionNames
@@ -100,7 +100,7 @@ describe(`GET ${route}`, () => {
         });
     });
 
-    it('should return only live-catalog actions when integration has no deployed functions', async () => {
+    it('should return only tools-catalog actions when integration has no deployed functions', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
@@ -116,8 +116,8 @@ describe(`GET ${route}`, () => {
         expect(deployedOnly(res.json.data)).toEqual([]);
         expect(res.json.pagination.total).toBe(unoccupiedGithubCatalogCount());
         expect(res.json.data).toHaveLength(unoccupiedGithubCatalogCount());
-        expect(res.json.data.some((fn) => fn.name === 'create-issue' && fn.source === 'live-catalog')).toBe(true);
-        expect(res.json.data.every((fn) => fn.source === 'live-catalog')).toBe(true);
+        expect(res.json.data.some((fn) => fn.name === 'create-issue' && fn.source === 'tools-catalog')).toBe(true);
+        expect(res.json.data.every((fn) => fn.source === 'tools-catalog')).toBe(true);
     });
 
     it('should aggregate sync, action, and on-event functions', async () => {
@@ -445,7 +445,7 @@ describe(`GET ${route}`, () => {
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         const occupied = new Set(['create-issue']);
-        const catalogIssueHits = listCatalogActions('github').filter(
+        const catalogIssueHits = listCatalogTools('github').filter(
             (action) => !occupied.has(action.name) && action.name.toLowerCase().includes('issue')
         ).length;
         expect(res.json.pagination.total).toBe(catalogIssueHits + 3);

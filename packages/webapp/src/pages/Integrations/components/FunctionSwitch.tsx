@@ -135,7 +135,7 @@ export const FunctionSwitch: React.FC<{
                         name="script"
                         checked={flow.enabled}
                         className="cursor-pointer"
-                        disabled={loading || !allowed || flow.source === 'live-catalog'}
+                        disabled={loading || !allowed || flow.source === 'tools-catalog'}
                         onClick={(e) => {
                             e.preventDefault();
                             toggleSync();

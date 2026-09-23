@@ -103,7 +103,7 @@ describe('createConnectionToolsMcpServer', () => {
 
     it('advertises and executes a catalog action', async () => {
         vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(
-            Ok([actionFixture({ enabled: true, name: 'delete-file', source: 'live-catalog' })])
+            Ok([actionFixture({ enabled: true, name: 'delete-file', source: 'tools-catalog' })])
         );
         mocks.executeAction.mockResolvedValue({ logCtx: undefined, result: Ok({ data: { deleted: true } }) });
         const { client, server } = await createTestClient();
@@ -158,16 +158,16 @@ function actionFixture({
 }: {
     enabled: boolean;
     name?: string;
-    source?: 'repo' | 'live-catalog';
+    source?: 'repo' | 'tools-catalog';
 }): ListedNangoActionFunction {
     return {
-        id: source === 'live-catalog' ? null : 30,
+        id: source === 'tools-catalog' ? null : 30,
         name,
         type: 'action',
         enabled,
         returns: [],
         json_schema: null,
-        last_deployed: source === 'live-catalog' ? null : new Date().toISOString(),
+        last_deployed: source === 'tools-catalog' ? null : new Date().toISOString(),
         source
     };
 }

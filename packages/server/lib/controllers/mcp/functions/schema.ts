@@ -75,7 +75,7 @@ const deployedFunctionBaseSchema = {
     scopes: z.array(z.string()).optional(),
     enabled: z.boolean(),
     last_deployed: z.iso.datetime().nullable(),
-    source: z.enum(['catalog', 'standalone', 'repo', 'live-catalog'])
+    source: z.enum(['catalog', 'standalone', 'repo', 'tools-catalog'])
 };
 
 const jsonSchemaSchema: z.ZodType<object> = z.looseObject({});

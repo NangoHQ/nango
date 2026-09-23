@@ -46,7 +46,7 @@ describe('listFunctionsTool', () => {
         }
     });
 
-    it('accepts catalog actions with a null id and live-catalog source', async () => {
+    it('accepts catalog actions with a null id and tools-catalog source', async () => {
         const catalog = catalogFunctionFixture;
         vi.spyOn(legacyFunctionService, 'listFunctions').mockResolvedValue(Ok({ rows: [catalog], total: 1 }));
 
@@ -160,5 +160,5 @@ const catalogFunctionFixture: ListedNangoFunction = {
     json_schema: null,
     enabled: true,
     last_deployed: null,
-    source: 'live-catalog'
+    source: 'tools-catalog'
 };

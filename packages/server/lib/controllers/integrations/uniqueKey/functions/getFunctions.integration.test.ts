@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
-import { listCatalogActions } from '@nangohq/shared/lib/services/catalog/actions.js';
+import { listCatalogTools } from '@nangohq/shared/lib/services/catalog/actions.js';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
@@ -16,12 +16,12 @@ async function seedWithScopes(scopes: string[]) {
 }
 
 function deployedOnly<T extends { source: string }>(fns: T[]): T[] {
-    return fns.filter((fn) => fn.source !== 'live-catalog');
+    return fns.filter((fn) => fn.source !== 'tools-catalog');
 }
 
 function unoccupiedGithubCatalogCount(occupiedActionNames: Iterable<string> = []): number {
     const occupied = new Set(occupiedActionNames);
-    return listCatalogActions('github').filter((action) => !occupied.has(action.name)).length;
+    return listCatalogTools('github').filter((action) => !occupied.has(action.name)).length;
 }
 
 describe(`GET ${route}`, () => {
@@ -100,7 +100,7 @@ describe(`GET ${route}`, () => {
         isSuccess(res.json);
         expect(res.json.pagination).toStrictEqual({ total: unoccupiedGithubCatalogCount(['my-action']) + 2, page: 0, limit: 100 });
         expect(res.json.data).toEqual(
-            expect.arrayContaining([expect.objectContaining({ name: 'create-issue', type: 'action', source: 'live-catalog', id: null, last_deployed: null })])
+            expect.arrayContaining([expect.objectContaining({ name: 'create-issue', type: 'action', source: 'tools-catalog', id: null, last_deployed: null })])
         );
         expect(deployedOnly(res.json.data).map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
             { name: 'my-action', type: 'action' },

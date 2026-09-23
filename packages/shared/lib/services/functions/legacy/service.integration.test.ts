@@ -10,27 +10,29 @@ import { getFunction, listActions, listFunctions } from './service.js';
 
 import type { DBEnvironment, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
 
-const { mockListCatalogActions, mockGetCatalogAction } = vi.hoisted(() => {
-    return { mockListCatalogActions: vi.fn(), mockGetCatalogAction: vi.fn() };
+const { mockListCatalogTools, mockGetCatalogTool } = vi.hoisted(() => {
+    return { mockListCatalogTools: vi.fn(), mockGetCatalogTool: vi.fn() };
 });
 
 vi.mock('../../catalog/actions.js', () => ({
-    listCatalogActions: mockListCatalogActions,
-    getCatalogAction: mockGetCatalogAction
+    listCatalogTools: mockListCatalogTools,
+    getCatalogTool: mockGetCatalogTool
 }));
 
-function catalogAction(name: string) {
+function catalogTool(name: string) {
     return {
         name,
         description: `${name} description`,
         scopes: [],
         input: null,
         output: [],
-        endpoint: null,
-        json_schema: null,
-        sdk_version: '0.0.0-zero',
-        features: [],
-        version: '0.0.1'
+        jsonSchema: null,
+        sdkVersion: '0.0.0-zero',
+        version: '0.0.1',
+        fileLocation: `templates-zero/github/build/github_actions_${name}.cjs`,
+        sourceLocation: `templates-zero/github/actions/${name}.ts`,
+        capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+        module: 'action' as const
     };
 }
 
@@ -110,13 +112,13 @@ describe('listFunctions with catalog actions', () => {
     });
 
     beforeEach(() => {
-        mockListCatalogActions.mockReturnValue([]);
-        mockGetCatalogAction.mockReturnValue(undefined);
+        mockListCatalogTools.mockReturnValue([]);
+        mockGetCatalogTool.mockReturnValue(undefined);
     });
 
     it('returns consecutive pages of the merged order without gaps or repeats', async () => {
         const { environment, integration } = await seedIntegration();
-        mockListCatalogActions.mockReturnValue([catalogAction('a'), catalogAction('b'), catalogAction('c')]);
+        mockListCatalogTools.mockReturnValue([catalogTool('a'), catalogTool('b'), catalogTool('c')]);
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'm', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'n', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'o', type: 'action' });
@@ -129,11 +131,11 @@ describe('listFunctions with catalog actions', () => {
         expect(page2.total).toBe(6);
         expect(page3.total).toBe(6);
         expect(page1.rows).toEqual([
-            { name: 'a', source: 'live-catalog', enabled: true, id: null },
-            { name: 'b', source: 'live-catalog', enabled: true, id: null }
+            { name: 'a', source: 'tools-catalog', enabled: true, id: null },
+            { name: 'b', source: 'tools-catalog', enabled: true, id: null }
         ]);
         expect(page2.rows).toEqual([
-            { name: 'c', source: 'live-catalog', enabled: true, id: null },
+            { name: 'c', source: 'tools-catalog', enabled: true, id: null },
             { name: 'm', source: 'repo', enabled: true, id: expect.any(Number) }
         ]);
         expect(page3.rows).toEqual([
@@ -144,7 +146,7 @@ describe('listFunctions with catalog actions', () => {
 
     it('interleaves catalog actions with deployed actions by name', async () => {
         const { environment, integration } = await seedIntegration();
-        mockListCatalogActions.mockReturnValue([catalogAction('delete'), catalogAction('list')]);
+        mockListCatalogTools.mockReturnValue([catalogTool('delete'), catalogTool('list')]);
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'create', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'update', type: 'action' });
 
@@ -153,17 +155,17 @@ describe('listFunctions with catalog actions', () => {
 
         expect(page1.rows).toEqual([
             { name: 'create', source: 'repo', enabled: true, id: expect.any(Number) },
-            { name: 'delete', source: 'live-catalog', enabled: true, id: null }
+            { name: 'delete', source: 'tools-catalog', enabled: true, id: null }
         ]);
         expect(page2.rows).toEqual([
-            { name: 'list', source: 'live-catalog', enabled: true, id: null },
+            { name: 'list', source: 'tools-catalog', enabled: true, id: null },
             { name: 'update', source: 'repo', enabled: true, id: expect.any(Number) }
         ]);
     });
 
     it('does not list a catalog action that already has a deployed row', async () => {
         const { environment, integration } = await seedIntegration();
-        mockListCatalogActions.mockReturnValue([catalogAction('create-issue')]);
+        mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'create-issue', type: 'action' });
 
         const page = await listPage({ environment, offset: 0, limit: 20 });
@@ -175,19 +177,19 @@ describe('listFunctions with catalog actions', () => {
     it('does not occupy a catalog name with a deployed action from another environment', async () => {
         const { environment, integration } = await seedIntegration();
         const other = await createEnvironmentSeed(environment.account_id);
-        mockListCatalogActions.mockReturnValue([catalogAction('create-issue')]);
+        mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
         await insertSyncConfig({ environmentId: other.id, integration, name: 'create-issue', type: 'action' });
 
         const page = await listPage({ environment, offset: 0, limit: 20 });
 
         expect(page.total).toBe(1);
-        expect(page.rows).toEqual([{ name: 'create-issue', source: 'live-catalog', enabled: true, id: null }]);
+        expect(page.rows).toEqual([{ name: 'create-issue', source: 'tools-catalog', enabled: true, id: null }]);
     });
 
     it('attaches catalog json_schema after listing', async () => {
         const { environment } = await seedIntegration();
         const jsonSchema = { type: 'object', properties: { title: { type: 'string' } } };
-        mockListCatalogActions.mockReturnValue([{ ...catalogAction('create-issue'), json_schema: jsonSchema }]);
+        mockListCatalogTools.mockReturnValue([{ ...catalogTool('create-issue'), jsonSchema }]);
 
         const result = await listFunctions({
             environmentId: environment.id,
@@ -202,12 +204,12 @@ describe('listFunctions with catalog actions', () => {
         if (result.isErr()) {
             return;
         }
-        expect(result.value.rows[0]).toMatchObject({ name: 'create-issue', source: 'live-catalog', json_schema: jsonSchema });
+        expect(result.value.rows[0]).toMatchObject({ name: 'create-issue', source: 'tools-catalog', json_schema: jsonSchema });
     });
 
     it('lists actions for connection tools using the merged deployed and catalog view', async () => {
         const { environment, integration } = await seedIntegration();
-        mockListCatalogActions.mockReturnValue([catalogAction('create-issue'), catalogAction('delete-issue')]);
+        mockListCatalogTools.mockReturnValue([catalogTool('create-issue'), catalogTool('delete-issue')]);
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'delete-issue', type: 'action' });
 
         const result = await listActions({ environmentId: environment.id, providerConfigKey: 'github' });
@@ -217,14 +219,14 @@ describe('listFunctions with catalog actions', () => {
             return;
         }
         expect(result.value.map((action) => ({ name: action.name, source: action.source, enabled: action.enabled }))).toEqual([
-            { name: 'create-issue', source: 'live-catalog', enabled: true },
+            { name: 'create-issue', source: 'tools-catalog', enabled: true },
             { name: 'delete-issue', source: 'repo', enabled: true }
         ]);
     });
 
     it('applies the requested action list limit', async () => {
         const { environment } = await seedIntegration();
-        mockListCatalogActions.mockReturnValue([catalogAction('create-issue'), catalogAction('delete-issue')]);
+        mockListCatalogTools.mockReturnValue([catalogTool('create-issue'), catalogTool('delete-issue')]);
 
         const result = await listActions({ environmentId: environment.id, providerConfigKey: 'github', limit: 1 });
 
@@ -242,13 +244,13 @@ describe('getFunction with catalog actions', () => {
     });
 
     beforeEach(() => {
-        mockListCatalogActions.mockReturnValue([]);
-        mockGetCatalogAction.mockReturnValue(undefined);
+        mockListCatalogTools.mockReturnValue([]);
+        mockGetCatalogTool.mockReturnValue(undefined);
     });
 
     it('returns a catalog action when no deployed row exists', async () => {
         const { environment } = await seedIntegration();
-        mockListCatalogActions.mockReturnValue([catalogAction('create-issue')]);
+        mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
 
         const result = await getFunction({
             environmentId: environment.id,
@@ -266,14 +268,14 @@ describe('getFunction with catalog actions', () => {
             type: 'action',
             id: null,
             last_deployed: null,
-            source: 'live-catalog',
+            source: 'tools-catalog',
             enabled: true
         });
     });
 
     it('returns the deployed row when the same catalog name exists', async () => {
         const { environment, integration } = await seedIntegration();
-        mockListCatalogActions.mockReturnValue([catalogAction('create-issue')]);
+        mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'create-issue', type: 'action' });
 
         const result = await getFunction({
@@ -300,7 +302,7 @@ describe('getFunction with catalog actions', () => {
         flags.hasLiveCatalogActions = false;
         try {
             const { environment } = await seedIntegration();
-            mockListCatalogActions.mockReturnValue([catalogAction('create-issue')]);
+            mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
 
             const result = await getFunction({
                 environmentId: environment.id,

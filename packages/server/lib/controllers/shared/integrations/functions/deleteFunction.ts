@@ -44,7 +44,7 @@ export async function handleDeleteIntegrationFunction({
         });
         return;
     }
-    if (fn.source === 'live-catalog') {
+    if (fn.source === 'tools-catalog') {
         res.status(400).send({
             error: { code: 'invalid_request', message: 'Catalog actions cannot be deleted' }
         });

@@ -5,7 +5,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 import { createAccount } from '../../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../../../../seeders/environment.seeder.js';
-import { getCatalogAction } from '../../../catalog/actions.js';
+import { getCatalogTool } from '../../../catalog/actions.js';
 import { findActionInputSchemas, findIntegrationFunctions } from './functions.js';
 
 import type { DBSyncConfig, IntegrationConfig, NangoConfigMetadata } from '@nangohq/types';
@@ -259,7 +259,7 @@ describe(findActionInputSchemas, () => {
         const environment = await createEnvironmentSeed(account.id);
         await createConfigSeed(environment, 'github', 'github');
 
-        const catalog = getCatalogAction('github', 'create-issue');
+        const catalog = getCatalogTool('github', 'create-issue');
         const rows = await findActionInputSchemas({
             environmentId: environment.id,
             actions: [{ integrationId: 'github', name: 'create-issue' }]
@@ -268,7 +268,7 @@ describe(findActionInputSchemas, () => {
         expect(rows).toHaveLength(1);
         expect(rows[0]?.name).toBe('create-issue');
         expect(rows[0]?.input).toBe(catalog?.input ?? null);
-        expect(rows[0]?.models_json_schema).toEqual(catalog?.json_schema);
+        expect(rows[0]?.models_json_schema).toEqual(catalog?.jsonSchema);
     });
 
     it('does not leak another environment', async () => {

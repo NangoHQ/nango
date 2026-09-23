@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
-import { customerKeyService, listCatalogActions, seeders } from '@nangohq/shared';
+import { customerKeyService, listCatalogTools, seeders } from '@nangohq/shared';
 import { baseUrl } from '@nangohq/utils';
 
 import { getAgentSessionByToken } from '../../services/agentSession.service.js';
@@ -51,7 +51,7 @@ async function insertAction({
 
 function searchableActionCount(provider: string, deployedActionNames: string[]): number {
     const deployed = new Set(deployedActionNames);
-    return listCatalogActions(provider).filter(({ name }) => !deployed.has(name)).length + deployedActionNames.length;
+    return listCatalogTools(provider).filter(({ name }) => !deployed.has(name)).length + deployedActionNames.length;
 }
 
 async function seedEnvironment(): Promise<{ account: DBTeam; env: DBEnvironment; token: string }> {

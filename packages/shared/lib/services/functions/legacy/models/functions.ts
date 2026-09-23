@@ -1,9 +1,9 @@
 import db from '@nangohq/database';
 import { flags } from '@nangohq/utils';
 
-import { getCatalogAction, listCatalogActions } from '../../../catalog/actions.js';
+import { getCatalogTool, listCatalogTools } from '../../../catalog/actions.js';
 
-import type { CatalogAction } from '../../../catalog/actions.js';
+import type { CatalogTool } from '../../../catalog/actions.js';
 import type { FunctionListSource, FunctionSource, FunctionType, NangoConfigMetadata } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 import type { Knex } from 'knex';
@@ -41,11 +41,11 @@ const listingOrderBy = [
     { column: 'id', order: 'asc' as const }
 ];
 
-function catalogActions(provider: string | undefined, type: FunctionType | undefined): CatalogAction[] {
+function catalogTools(provider: string | undefined, type: FunctionType | undefined): CatalogTool[] {
     if (!provider || !flags.hasLiveCatalogActions || (type !== undefined && type !== 'action')) {
         return [];
     }
-    return listCatalogActions(provider);
+    return listCatalogTools(provider);
 }
 
 async function providerForConfig(environmentId: number, providerConfigKey: string): Promise<string | undefined> {
@@ -72,7 +72,7 @@ export async function findActiveByEnvironment({
     limit: number;
     offset: number;
 }): Promise<{ rows: FunctionRow[]; total: number }> {
-    const catalog = catalogActions(await providerForConfig(environmentId, providerConfigKey), type);
+    const catalog = catalogTools(await providerForConfig(environmentId, providerConfigKey), type);
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search, catalog });
     const [pageRows, countRow] = await Promise.all([
         db.knex.from(listing).select<FunctionRow[]>('*').orderBy(listingOrderBy).limit(limit).offset(offset),
@@ -93,7 +93,7 @@ export async function findActiveActions({
     providerConfigKey: string;
     limit: number;
 }): Promise<FunctionRow[]> {
-    const catalog = catalogActions(await providerForConfig(environmentId, providerConfigKey), 'action');
+    const catalog = catalogTools(await providerForConfig(environmentId, providerConfigKey), 'action');
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type: 'action', search: undefined, catalog });
     const rows = await db.knex.from(listing).select<FunctionRow[]>('*').orderBy(listingOrderBy).limit(limit);
     hydrateCatalogJsonSchemas(rows, catalog);
@@ -204,7 +204,7 @@ function appendCatalogActions(deployedRows: DeployedFunctionRow[]): IntegrationF
 
         const deployedActionNames = new Set(group.filter((row) => row.type === 'action' && row.name).map((row) => row.name as string));
         const deployed = group.filter((row) => row.name !== null).map(toFunctionRow);
-        const catalog = listCatalogActions(sample.provider)
+        const catalog = listCatalogTools(sample.provider)
             .filter((action) => !deployedActionNames.has(action.name))
             .map((action) => ({
                 integration_id: sample.integration_id,
@@ -332,7 +332,7 @@ export async function findActionInputSchemas({
         if (!config) {
             continue;
         }
-        const catalog = getCatalogAction(config.provider, action.name);
+        const catalog = getCatalogTool(config.provider, action.name);
         if (!catalog) {
             continue;
         }
@@ -340,7 +340,7 @@ export async function findActionInputSchemas({
             integration_id: action.integrationId,
             name: action.name,
             input: catalog.input,
-            models_json_schema: catalog.json_schema as ActionInputSchemaRow['models_json_schema']
+            models_json_schema: catalog.jsonSchema as ActionInputSchemaRow['models_json_schema']
         });
     }
 
@@ -370,7 +370,7 @@ export async function findActiveByName({
     name: string;
     type: FunctionType | undefined;
 }): Promise<FunctionRow | undefined> {
-    const catalog = catalogActions(await providerForConfig(environmentId, providerConfigKey), type);
+    const catalog = catalogTools(await providerForConfig(environmentId, providerConfigKey), type);
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search: undefined, catalog });
 
     const row = await db.knex.from(listing).select<FunctionRow[]>('*').where('name', name).orderBy(listingOrderBy).first();
@@ -391,7 +391,7 @@ function buildListingSubquery({
     providerConfigKey: string;
     type: FunctionType | undefined;
     search: string | undefined;
-    catalog?: CatalogAction[];
+    catalog?: CatalogTool[];
 }): Knex.Raw {
     const branches: Knex.QueryBuilder[] = [];
     if (type !== 'on-event') {
@@ -411,7 +411,7 @@ function buildListingSubquery({
  * Strip away the extra fields from the catalog action object that are not needed for the listing.
  * Mainly json_schema which can be large.
  */
-function toCatalogListingBind(catalog: CatalogAction[]): Pick<CatalogAction, 'name' | 'description' | 'scopes' | 'input' | 'output'>[] {
+function toCatalogListingBind(catalog: CatalogTool[]): Pick<CatalogTool, 'name' | 'description' | 'scopes' | 'input' | 'output'>[] {
     return catalog.map((action) => ({
         name: action.name,
         description: action.description,
@@ -424,14 +424,14 @@ function toCatalogListingBind(catalog: CatalogAction[]): Pick<CatalogAction, 'na
 /**
  * Used to re-hydrate the json_schema field into the FunctionRow object.
  */
-function hydrateCatalogJsonSchemas(rows: FunctionRow[], catalog: CatalogAction[]): void {
+function hydrateCatalogJsonSchemas(rows: FunctionRow[], catalog: CatalogTool[]): void {
     if (catalog.length === 0) {
         return;
     }
 
-    const schemaByName = new Map(catalog.map((action) => [action.name, action.json_schema]));
+    const schemaByName = new Map(catalog.map((tool) => [tool.name, tool.jsonSchema]));
     for (const row of rows) {
-        if (row.source !== 'live-catalog') {
+        if (row.source !== 'tools-catalog') {
             continue;
         }
         row.json_schema = schemaByName.get(row.name) ?? null;
@@ -446,7 +446,7 @@ function buildCatalogBranch({
 }: {
     environmentId: number;
     providerConfigKey: string;
-    catalog: CatalogAction[];
+    catalog: CatalogTool[];
     search: string | undefined;
 }): Knex.QueryBuilder {
     const catalogRows = db.knex.raw(`jsonb_to_recordset(?::jsonb) AS c(name text, description text, scopes jsonb, input text, output text[])`, [
@@ -484,7 +484,7 @@ function buildCatalogBranch({
         db.knex.raw('NULL::boolean AS track_deletes'),
         db.knex.raw('true AS enabled'),
         db.knex.raw('NULL::timestamptz AS last_deployed'),
-        db.knex.raw(`'live-catalog'::text AS source`),
+        db.knex.raw(`'tools-catalog'::text AS source`),
         db.knex.raw('NULL::text AS event')
     );
 }
