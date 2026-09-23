@@ -1,9 +1,11 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 
+import { APIError } from '../utils/api';
 import { PROD_ENVIRONMENT_NAME } from '../utils/environments';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
-import { isAuthPath } from '../utils/routes';
+// Keep this static. signout() takes its latch on the first 401, before PrivateRoute's redirect sends a second one from /signin.
+import { signout } from '../utils/user';
 import { resetPlayground } from './playground';
 
 interface Env {
@@ -48,26 +50,10 @@ export const useStore = create<State>()((set, get) => ({
     setDebugMode: (value) => set({ debugMode: value })
 }));
 
-// Reads the location before awaiting anything: PrivateRoute redirects to /signin on the same 401.
 function handleQueryError(error: unknown) {
-    const { pathname, search, hash } = window.location;
-    if (isAuthPath(pathname)) {
-        return;
+    if (error instanceof APIError && error.res.status === 401) {
+        void signout({ expired: true });
     }
-
-    void signoutIfExpired(error, { pathname, search, hash });
-}
-
-async function signoutIfExpired(error: unknown, from: { pathname: string; search: string; hash: string }) {
-    // A static import would break this module's node-environment unit test: utils/api reads `window` as it loads.
-    const { APIError, isUnauthenticatedEndpoint } = await import('../utils/api');
-    if (!(error instanceof APIError) || error.res.status !== 401 || isUnauthenticatedEndpoint(error.res.url)) {
-        return;
-    }
-
-    // A static import would be circular: utils/user reads the queryClient declared below.
-    const { signout } = await import('../utils/user');
-    await signout({ expired: true, from });
 }
 
 export const queryClient = new QueryClient({

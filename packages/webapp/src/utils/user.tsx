@@ -23,26 +23,21 @@ export function useSignin() {
 
 let signingOut = false;
 
-interface SignoutOptions {
-    expired?: boolean;
-    /** Where the user was when the session died. PrivateRoute has already redirected to /signin by the time this runs. */
-    from?: { pathname: string; search: string; hash: string };
-}
-
-// Not a hook: the query client's 401 handler calls this from outside React.
-export async function signout({ expired = false, from }: SignoutOptions = {}) {
-    // No user loaded in this tab means a signed-out visitor, not an expiry. Root and PrivateRoute redirect them without the banner.
+// Keep this callable outside React: the query client's 401 handler has no component to call a hook from.
+export async function signout({ expired = false }: { expired?: boolean } = {}) {
+    // No user loaded in this tab means a signed-out visitor, not an expiry.
     if (expired && !queryClient.getQueryData(userQueryKey)) {
         return;
     }
 
-    // The homepage's five insight charts fail together; without this each one logs out and redirects.
+    // Every query on the page fails with the same 401. Without this, each one logs out and redirects.
     if (signingOut) {
         return;
     }
     signingOut = true;
 
-    const target = expired ? signinPathWithNext(from ?? window.location, { expired: true }) : '/signin';
+    // Read before the first await. Once React re-renders, PrivateRoute has already moved the page to /signin.
+    const target = expired ? signinPathWithNext(window.location, { expired: true }) : '/signin';
 
     storage.clearSession();
     resetPlayground(); // playground selections belong to the session's account/env
@@ -51,7 +46,7 @@ export async function signout({ expired = false, from }: SignoutOptions = {}) {
     try {
         await apiFetch('/api/v1/account/logout', { method: 'POST' });
     } catch {
-        // An expired session cannot destroy itself, and the user still has to reach the signin page.
+        // The user still has to reach the signin page when the logout request fails.
     }
 
     await queryClient.cancelQueries();

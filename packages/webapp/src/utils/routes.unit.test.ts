@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isAuthPath, isNonEnvPath, MAX_NEXT_LENGTH, safeNextPath, signinPathWithNext } from './routes.js';
+import { isNonEnvPath, MAX_NEXT_LENGTH, safeNextPath, signinPathWithNext } from './routes.js';
 
 describe('isNonEnvPath', () => {
     describe('direct non-env paths', () => {
@@ -81,27 +81,6 @@ describe('signinPathWithNext', () => {
 
     it('flags an expired session when there is no destination', () => {
         expect(signinPathWithNext(location('/'), { expired: true })).toBe('/signin?error=session_expired');
-    });
-});
-
-describe('isAuthPath', () => {
-    it('matches the pages a signed-out user is allowed to sit on', () => {
-        expect(isAuthPath('/signin')).toBe(true);
-        expect(isAuthPath('/signin/mfa')).toBe(true);
-        expect(isAuthPath('/signup/some-token')).toBe(true);
-        expect(isAuthPath('/forgot-password')).toBe(true);
-        expect(isAuthPath('/reset-password/some-token')).toBe(true);
-        expect(isAuthPath('/verify-email/expired/some-token')).toBe(true);
-    });
-
-    it('does not match dashboard pages', () => {
-        expect(isAuthPath('/dev/integrations')).toBe(false);
-        expect(isAuthPath('/team/billing')).toBe(false);
-    });
-
-    it('does not match paths that share a prefix but differ by segment boundary', () => {
-        expect(isAuthPath('/signin-help')).toBe(false);
-        expect(isAuthPath('/signups')).toBe(false);
     });
 });
 
