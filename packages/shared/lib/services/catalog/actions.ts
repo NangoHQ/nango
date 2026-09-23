@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 
 import { filterJsonSchemaForModels } from '@nangohq/utils';
 
-import type { Feature, FlowsZeroJson, NangoSyncEndpointV2 } from '@nangohq/types';
+import type { Feature, FlowsZeroJson, FunctionCapabilities, HTTP_METHOD } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 export const TEMPLATES_ZERO_PREFIX = 'templates-zero';
@@ -10,22 +10,36 @@ export const TEMPLATES_ZERO_PREFIX = 'templates-zero';
 const nodeRequire = createRequire(import.meta.url);
 let flowsJson: FlowsZeroJson | undefined;
 
-export interface CatalogAction {
+export interface CatalogTool {
     name: string;
     description: string;
-    scopes: string[];
+    /** Model name. The legacy function list stores this in `input`. */
     input: string | null;
+    /** Model names. The legacy function list stores these in `returns`. */
     output: string[];
-    endpoint: NangoSyncEndpointV2 | null;
-    json_schema: JSONSchema7 | null;
-    sdk_version: string;
-    features: Feature[];
+    scopes: string[];
+    jsonSchema: JSONSchema7 | null;
     version: string;
+    /** The action runner requires a `-zero` sdk version to load these modules. */
+    sdkVersion: string;
+    /** Compiled JavaScript under `templates-zero/`. */
+    fileLocation: string;
+    /** TypeScript source under `templates-zero/`. */
+    sourceLocation: string;
+    capabilities: FunctionCapabilities;
+    /** Compiled module `type`. Today's catalog files are action modules. */
+    module: 'action';
 }
 
-const actionsByProvider = new Map<string, CatalogAction[]>();
-const actionByProviderAndName = new Map<string, Map<string, CatalogAction>>();
-const templatesZeroFolderByProvider = new Map<string, string>();
+export interface CatalogToolEndpoint {
+    name: string;
+    method: HTTP_METHOD;
+    path: string;
+}
+
+const toolsByProvider = new Map<string, CatalogTool[]>();
+const toolByProviderAndName = new Map<string, Map<string, CatalogTool>>();
+const endpointsByProvider = new Map<string, CatalogToolEndpoint[]>();
 
 function getFlowsJson(): FlowsZeroJson {
     flowsJson ??= nodeRequire('../../../flows.zero.json') as FlowsZeroJson;
@@ -54,63 +68,78 @@ function resolveJsonSchema({
     return filtered.value;
 }
 
-function loadProvider(provider: string): CatalogAction[] {
-    const cached = actionsByProvider.get(provider);
+function toCapabilities(features: Feature[]): FunctionCapabilities {
+    return {
+        usesRecords: false,
+        usesOutbound: false,
+        usesCheckpoints: features.includes('checkpoints'),
+        usesMetadata: false,
+        usesInvoke: false
+    };
+}
+
+function jsPath(folder: string, name: string): string {
+    return `${TEMPLATES_ZERO_PREFIX}/${folder}/build/${folder}_actions_${name}.cjs`;
+}
+
+function tsPath(folder: string, name: string): string {
+    return `${TEMPLATES_ZERO_PREFIX}/${folder}/actions/${name}.ts`;
+}
+
+function loadProvider(provider: string): CatalogTool[] {
+    const cached = toolsByProvider.get(provider);
     if (cached) {
         return cached;
     }
 
     const integration = getFlowsJson().find((entry) => entry.providerConfigKey === provider);
     if (!integration) {
-        actionsByProvider.set(provider, []);
-        actionByProviderAndName.set(provider, new Map());
-        templatesZeroFolderByProvider.set(provider, provider);
+        toolsByProvider.set(provider, []);
+        toolByProviderAndName.set(provider, new Map());
+        endpointsByProvider.set(provider, []);
         return [];
     }
 
-    templatesZeroFolderByProvider.set(provider, integration.symLinkTargetName ?? provider);
+    const folder = integration.symLinkTargetName ?? provider;
+    const endpoints: CatalogToolEndpoint[] = [];
+    const tools: CatalogTool[] = integration.actions.map((item) => {
+        if (item.endpoint) {
+            endpoints.push({ name: item.name, method: item.endpoint.method, path: item.endpoint.path });
+        }
+        return {
+            name: item.name,
+            description: item.description,
+            input: item.input,
+            output: item.output ?? [],
+            scopes: item.scopes,
+            jsonSchema: resolveJsonSchema({ itemSchema: item.json_schema, integrationSchema: integration.jsonSchema, usedModels: item.usedModels }),
+            version: item.version,
+            sdkVersion: `${integration.sdkVersion}-zero`,
+            fileLocation: jsPath(folder, item.name),
+            sourceLocation: tsPath(folder, item.name),
+            capabilities: toCapabilities(item.features ?? []),
+            module: 'action'
+        };
+    });
 
-    const actions: CatalogAction[] = integration.actions.map((item) => ({
-        name: item.name,
-        description: item.description,
-        scopes: item.scopes,
-        input: item.input,
-        output: item.output ?? [],
-        endpoint: item.endpoint,
-        json_schema: resolveJsonSchema({ itemSchema: item.json_schema, integrationSchema: integration.jsonSchema, usedModels: item.usedModels }),
-        sdk_version: `${integration.sdkVersion}-zero`,
-        features: item.features ?? [],
-        version: item.version
-    }));
-
-    const byName = new Map(actions.map((action) => [action.name, action]));
-    actionsByProvider.set(provider, actions);
-    actionByProviderAndName.set(provider, byName);
-    return actions;
+    toolsByProvider.set(provider, tools);
+    toolByProviderAndName.set(provider, new Map(tools.map((tool) => [tool.name, tool])));
+    endpointsByProvider.set(provider, endpoints);
+    return tools;
 }
 
-export function listCatalogActions(provider: string): CatalogAction[] {
+export function listCatalogTools(provider: string): CatalogTool[] {
     return loadProvider(provider);
 }
 
-export function getCatalogAction(provider: string, name: string): CatalogAction | undefined {
+export function getCatalogTool(provider: string, name: string): CatalogTool | undefined {
     loadProvider(provider);
-    return actionByProviderAndName.get(provider)?.get(name);
+    return toolByProviderAndName.get(provider)?.get(name);
 }
 
-function templatesZeroFolder(provider: string): string {
+export function listCatalogToolEndpoints(provider: string): CatalogToolEndpoint[] {
     loadProvider(provider);
-    return templatesZeroFolderByProvider.get(provider) ?? provider;
-}
-
-export function catalogActionJsPath({ provider, name }: { provider: string; name: string }): string {
-    const folder = templatesZeroFolder(provider);
-    return `${TEMPLATES_ZERO_PREFIX}/${folder}/build/${folder}_actions_${name}.cjs`;
-}
-
-export function catalogActionTsPath({ provider, name }: { provider: string; name: string }): string {
-    const folder = templatesZeroFolder(provider);
-    return `${TEMPLATES_ZERO_PREFIX}/${folder}/actions/${name}.ts`;
+    return endpointsByProvider.get(provider) ?? [];
 }
 
 export function isTemplatesZeroPath(fileLocation: string): boolean {

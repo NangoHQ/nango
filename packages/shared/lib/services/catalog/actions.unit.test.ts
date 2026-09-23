@@ -1,34 +1,46 @@
 import { describe, expect, it } from 'vitest';
 
-import { catalogActionJsPath, catalogActionTsPath, getCatalogAction, isTemplatesZeroPath, listCatalogActions } from './actions.js';
+import { getCatalogTool, isTemplatesZeroPath, listCatalogToolEndpoints, listCatalogTools } from './actions.js';
 
-describe('catalog actions reader', () => {
+describe('catalog tools reader', () => {
     it('returns github create-issue from flows.zero.json', () => {
-        const action = getCatalogAction('github', 'create-issue');
-        expect(action).toBeDefined();
-        expect(action?.name).toBe('create-issue');
-        expect(action?.output.length).toBeGreaterThan(0);
-        expect(action?.sdk_version.endsWith('-zero')).toBe(true);
+        const tool = getCatalogTool('github', 'create-issue');
+        expect(tool).toBeDefined();
+        expect(tool?.name).toBe('create-issue');
+        expect(tool?.module).toBe('action');
+        expect(tool?.output.length).toBeGreaterThan(0);
+        expect(tool?.sdkVersion.endsWith('-zero')).toBe(true);
+        expect(tool?.fileLocation).toBe('templates-zero/github/build/github_actions_create-issue.cjs');
+        expect(tool?.sourceLocation).toBe('templates-zero/github/actions/create-issue.ts');
+        expect(tool?.capabilities.usesRecords).toBe(false);
+        expect(tool?.capabilities.usesOutbound).toBe(false);
+        expect(tool?.capabilities.usesMetadata).toBe(false);
+        expect(tool?.capabilities.usesInvoke).toBe(false);
+        expect(typeof tool?.capabilities.usesCheckpoints).toBe('boolean');
+        expect(tool).not.toHaveProperty('endpoint');
     });
 
-    it('lists catalog actions for a provider and omits unknown providers', () => {
-        const github = listCatalogActions('github');
-        expect(github.some((action) => action.name === 'create-issue')).toBe(true);
-        expect(listCatalogActions('this-provider-does-not-exist')).toEqual([]);
+    it('lists catalog tools for a provider and omits unknown providers', () => {
+        const github = listCatalogTools('github');
+        expect(github.some((tool) => tool.name === 'create-issue')).toBe(true);
+        expect(listCatalogTools('this-provider-does-not-exist')).toEqual([]);
+        expect(listCatalogToolEndpoints('this-provider-does-not-exist')).toEqual([]);
     });
 
-    it('builds templates-zero paths', () => {
-        expect(catalogActionJsPath({ provider: 'github', name: 'create-issue' })).toBe('templates-zero/github/build/github_actions_create-issue.cjs');
-        expect(catalogActionTsPath({ provider: 'github', name: 'create-issue' })).toBe('templates-zero/github/actions/create-issue.ts');
+    it('recognizes templates-zero paths', () => {
         expect(isTemplatesZeroPath('templates-zero/github/build/github_actions_create-issue.cjs')).toBe(true);
         expect(isTemplatesZeroPath('account/1/environment/1/config/2/create-issue-v1.js')).toBe(false);
     });
 
     it('resolves aliased providers to the canonical templates-zero folder', () => {
-        expect(listCatalogActions('airtable-pat').some((action) => action.name === 'batch-create-records')).toBe(true);
-        expect(catalogActionJsPath({ provider: 'airtable-pat', name: 'batch-create-records' })).toBe(
-            'templates-zero/airtable/build/airtable_actions_batch-create-records.cjs'
-        );
-        expect(catalogActionTsPath({ provider: 'airtable-pat', name: 'batch-create-records' })).toBe('templates-zero/airtable/actions/batch-create-records.ts');
+        const tool = getCatalogTool('airtable-pat', 'batch-create-records');
+        expect(tool?.fileLocation).toBe('templates-zero/airtable/build/airtable_actions_batch-create-records.cjs');
+        expect(tool?.sourceLocation).toBe('templates-zero/airtable/actions/batch-create-records.ts');
+    });
+
+    it('exposes endpoints separately from the tool', () => {
+        const endpoints = listCatalogToolEndpoints('aircall');
+        expect(endpoints).toContainEqual({ name: 'create-contact', method: 'POST', path: '/actions/create-contact' });
+        expect(getCatalogTool('aircall', 'create-contact')).not.toHaveProperty('endpoint');
     });
 });
