@@ -27,7 +27,7 @@ function Consent({ design, state }: ConsentArgs) {
 }
 
 const meta: Meta<ConsentArgs> = {
-    title: 'App Components/Pages/OAuthConsent',
+    title: 'Features/OAuth/ConsentScreen',
     render: (args) => <Consent {...args} />,
     parameters: { layout: 'fullscreen' },
     argTypes: {
