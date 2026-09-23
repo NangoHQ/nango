@@ -128,6 +128,25 @@ describe(`POST ${route}`, () => {
         expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/onboarding/account-discovery');
     });
 
+    it('should still send a new user to account discovery on the login after a destination deferred it', async () => {
+        const email = `${nanoid()}@example.com`;
+
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: { email, firstName: 'Managed', lastName: 'User' },
+            organizationId: undefined
+        });
+
+        const state = Buffer.from(JSON.stringify({ returnTo: '/team/billing' })).toString('base64');
+        const first = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123&state=${encodeURIComponent(state)}`, {
+            redirect: 'manual'
+        });
+        expect(first.headers.get('location')).toBe('http://localhost:3003/team/billing');
+        expect((await userService.getUserByEmail(email))?.account_discovery_pending).toBe(true);
+
+        const second = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { redirect: 'manual' });
+        expect(second.headers.get('location')).toBe('http://localhost:3003/onboarding/account-discovery');
+    });
+
     it('should complete the pending WorkOS email verification flow and create the local user', async () => {
         const email = `MixedCase-${nanoid()}@Example.com`;
         const verificationCode = '123456';
