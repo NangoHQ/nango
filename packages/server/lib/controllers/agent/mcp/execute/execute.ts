@@ -3,7 +3,7 @@ import tracer from 'dd-trace';
 import { Err, Ok } from '@nangohq/utils';
 
 import { executeAction } from '../../../../services/action.service.js';
-import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
+import { trackAgentSessionToolRun } from '../../../../services/agentSessionAnalytics.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
 import { resolveSessionConnection } from '../sessionConnection.js';
@@ -11,7 +11,7 @@ import { defineAgentSessionMcpTool } from '../sessionTool.js';
 import { actionExecutionErrorToMcp } from './errors.js';
 import { executeInputSchema } from './schema.js';
 
-import type { AgentSessionToolCallEvent } from '../../../../services/agentSessionAnalytics.service.js';
+import type { AgentSessionMetaTool } from '../../../../services/agentSessionAnalytics.service.js';
 import type { AgentSessionMcpContext } from '../sessionTool.js';
 import type { AgentSession } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -37,12 +37,12 @@ export const executeTool = defineAgentSessionMcpTool({
 
         const tool = callable.get(args.tool);
         if (!tool) {
-            trackAgentSessionToolCall({ event: 'nango_execute', session, toolName: args.tool, errorCode: 'tool_not_in_session' });
+            trackAgentSessionToolRun({ metaTool: 'nango_execute', session, toolName: args.tool, errorCode: 'tool_not_in_session' });
             return Err(new PublicMcpError(unknownToolMessage(args.tool, session), { code: 'tool_not_in_session' }));
         }
 
         return await executeSessionTool({
-            event: 'nango_execute',
+            metaTool: 'nango_execute',
             integrationId: tool.integrationId,
             toolName: tool.name,
             pinned: tool.pinned,
@@ -66,14 +66,14 @@ function unknownToolMessage(name: string, session: AgentSession): string {
 
 /** Synchronous, so a tool is capped at the orchestrator's synchronous limit (NAN-6090, ~120s). */
 export async function executeSessionTool({
-    event,
+    metaTool,
     integrationId,
     toolName,
     pinned,
     input,
     context
 }: {
-    event: AgentSessionToolCallEvent;
+    metaTool: AgentSessionMetaTool;
     integrationId: string;
     toolName: string;
     pinned: boolean;
@@ -83,7 +83,7 @@ export async function executeSessionTool({
     const { account, environment, session } = context;
 
     const track = (properties: { logOperationId?: string | undefined; errorCode?: string | undefined; underlyingErrorCode?: string | undefined }) => {
-        trackAgentSessionToolCall({ event, session, integrationId, toolName, pinned, ...properties });
+        trackAgentSessionToolRun({ metaTool, session, integrationId, toolName, pinned, ...properties });
     };
 
     const integration = Object.hasOwn(session.compiledToolset, integrationId) ? session.compiledToolset[integrationId] : undefined;

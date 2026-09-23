@@ -312,14 +312,13 @@ describe('proxyTool analytics', () => {
         await callProxyInRequest({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
 
         const { event, properties } = onlyEvent();
-        expect(event).toBe('nango_proxy');
+        expect(event).toBe('agents:proxy_request_succeed');
         expect(properties).toMatchObject({
-            'session-id': 'session-1',
-            'integration-id': 'notion',
+            agent_session_id: 'session-1',
+            integration_id: 'notion',
             provider: 'notion',
-            'http-method': 'GET',
-            'http-status': 200,
-            success: true
+            http_method: 'GET',
+            http_status: 200
         });
     });
 
@@ -329,7 +328,7 @@ describe('proxyTool analytics', () => {
 
         await callProxyInRequest({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
 
-        expect(onlyEvent().properties).toMatchObject({ success: false, 'http-status': 429, 'error-code': 'upstream_error' });
+        expect(onlyEvent().properties).toMatchObject({ http_status: 429, error_code: 'upstream_error' });
     });
 
     // A failure before the provider answered carries Nango's status, so reporting it would read as the provider's.
@@ -341,15 +340,15 @@ describe('proxyTool analytics', () => {
         await callProxyInRequest({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
 
         const { properties } = onlyEvent();
-        expect(properties).not.toHaveProperty('http-status');
-        expect(properties).toMatchObject({ success: false, 'error-code': 'proxy_request_failed', 'provider-error-code': 'bad_gateway' });
+        expect(properties).not.toHaveProperty('http_status');
+        expect(properties).toMatchObject({ error_code: 'proxy_request_failed', provider_error_code: 'bad_gateway' });
     });
 
     it('records a request the session rejected before it was made', async () => {
         await callProxyInRequest({ integration: 'slack', method: 'GET', path: '/api/conversations.list' });
 
         const { properties } = onlyEvent();
-        expect(properties).not.toHaveProperty('http-status');
-        expect(properties).toMatchObject({ 'integration-id': 'slack', success: false, 'error-code': 'integration_not_connected' });
+        expect(properties).not.toHaveProperty('http_status');
+        expect(properties).toMatchObject({ integration_id: 'slack', error_code: 'integration_not_connected' });
     });
 });

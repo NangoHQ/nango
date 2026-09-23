@@ -21,6 +21,7 @@ import { getEncryptionManager, pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
 export { productTracking, withProductTrackingContext } from './utils/productTracking.js';
+export type { ProductTrackingTypes } from './utils/productTracking.js';
 export * as billClient from './auth/bill.js';
 export * as githubAppClient from './auth/githubApp.js';
 export * as jwtClient from './auth/jwt.js';

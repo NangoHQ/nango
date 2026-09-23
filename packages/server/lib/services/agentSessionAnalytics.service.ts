@@ -1,19 +1,18 @@
 import { productTracking } from '@nangohq/shared';
 
+import type { ProductTrackingTypes } from '@nangohq/shared';
 import type { AgentSession, HTTP_METHOD } from '@nangohq/types';
 
 /** The two ways a session runs one of its own tools. A pinned tool is called by its own name, not through nango_execute. */
-export type AgentSessionToolCallEvent = 'nango_execute' | 'execute_pinned_tool';
-
-type AgentSessionEvent = AgentSessionToolCallEvent | 'session_created' | 'session_terminated' | 'nango_proxy';
+export type AgentSessionMetaTool = 'nango_execute' | 'execute_pinned_tool';
 
 interface Outcome {
     logOperationId?: string | undefined;
     errorCode?: string | undefined;
 }
 
-interface ToolCallParams extends Outcome {
-    event: AgentSessionToolCallEvent;
+interface ToolRunParams extends Outcome {
+    metaTool: AgentSessionMetaTool;
     session: AgentSession;
     /** Unset when the call named a tool the session could not resolve to an integration. */
     integrationId?: string | undefined;
@@ -35,56 +34,56 @@ interface ProxyRequestParams extends Outcome {
 }
 
 /**
- * Account, environment, is-prod and plan are stamped by the tracking context middleware, so nothing
- * here passes them. No tool input and no provider response is sent, on purpose.
+ * The account, the environment as is_prod and the surface are stamped by the tracking context
+ * middleware, so nothing here passes them. No tool input and no provider response is sent, on purpose.
  */
 export function trackAgentSessionCreated(session: AgentSession): void {
-    trackSessionEvent('session_created', session, {
-        'integration-count': Object.keys(session.compiledToolset).length,
-        'tool-search-enabled': session.metaTools.nangoToolSearch,
-        'execute-enabled': session.metaTools.nangoExecute,
-        'proxy-enabled': session.metaTools.nangoProxy
+    trackSessionEvent('agents:session_create', session, {
+        integration_count: Object.keys(session.compiledToolset).length,
+        is_tool_search_enabled: session.metaTools.nangoToolSearch,
+        is_execute_enabled: session.metaTools.nangoExecute,
+        is_proxy_enabled: session.metaTools.nangoProxy
     });
 }
 
 /** Terminations only. An expired session ends with no request behind it, the same gap the logs have. */
 export function trackAgentSessionTerminated(session: AgentSession): void {
-    trackSessionEvent('session_terminated', session, {
-        'session-duration-ms': (session.endedAt ?? new Date()).getTime() - session.createdAt.getTime()
+    trackSessionEvent('agents:session_end', session, {
+        session_duration_ms: (session.endedAt ?? new Date()).getTime() - session.createdAt.getTime()
     });
 }
 
-export function trackAgentSessionToolCall({ event, session, integrationId, toolName, pinned, underlyingErrorCode, ...outcome }: ToolCallParams): void {
-    trackSessionEvent(event, session, {
-        'tool-name': toolName,
+export function trackAgentSessionToolRun({ metaTool, session, integrationId, toolName, pinned, underlyingErrorCode, ...outcome }: ToolRunParams): void {
+    trackSessionEvent(outcome.errorCode ? 'agents:tool_run_fail' : 'agents:tool_run_succeed', session, {
+        meta_tool: metaTool,
+        tool_name: toolName,
         ...outcomeProperties(outcome),
-        ...(pinned === undefined ? {} : { pinned }),
-        ...(integrationId ? { 'integration-id': integrationId } : {}),
-        ...(underlyingErrorCode ? { 'underlying-error-code': underlyingErrorCode } : {})
+        ...(pinned === undefined ? {} : { is_pinned: pinned }),
+        ...(integrationId ? { integration_id: integrationId } : {}),
+        ...(underlyingErrorCode ? { underlying_error_code: underlyingErrorCode } : {})
     });
 }
 
 export function trackAgentSessionProxyRequest({ session, integrationId, provider, method, status, providerErrorCode, ...outcome }: ProxyRequestParams): void {
-    trackSessionEvent('nango_proxy', session, {
-        'integration-id': integrationId,
-        'http-method': method,
+    trackSessionEvent(outcome.errorCode ? 'agents:proxy_request_fail' : 'agents:proxy_request_succeed', session, {
+        integration_id: integrationId,
+        http_method: method,
         ...outcomeProperties(outcome),
         ...(provider ? { provider } : {}),
-        ...(status === undefined ? {} : { 'http-status': status }),
-        ...(providerErrorCode ? { 'provider-error-code': providerErrorCode } : {})
+        ...(status === undefined ? {} : { http_status: status }),
+        ...(providerErrorCode ? { provider_error_code: providerErrorCode } : {})
     });
 }
 
 /** Every session event carries the session it belongs to. */
-function trackSessionEvent(name: AgentSessionEvent, session: AgentSession, properties: Record<string, unknown>): void {
-    productTracking.track({ name, eventProperties: { 'session-id': session.id, ...properties } });
+function trackSessionEvent(name: ProductTrackingTypes, session: AgentSession, properties: Record<string, string | number | boolean>): void {
+    productTracking.track({ name, eventProperties: { agent_session_id: session.id, ...properties } });
 }
 
-/** Every session event that can fail reports the failure the same way. */
-function outcomeProperties({ logOperationId, errorCode }: Outcome): Record<string, unknown> {
+/** The outcome is in the event name, so what is left is why it failed and where to read the run. */
+function outcomeProperties({ logOperationId, errorCode }: Outcome): Record<string, string> {
     return {
-        success: !errorCode,
-        ...(logOperationId ? { 'log-operation-id': logOperationId } : {}),
-        ...(errorCode ? { 'error-code': errorCode } : {})
+        ...(logOperationId ? { log_operation_id: logOperationId } : {}),
+        ...(errorCode ? { error_code: errorCode } : {})
     };
 }
