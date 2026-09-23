@@ -1,11 +1,19 @@
 import { NangoError } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
+import { verifyNangoWebhookSecret } from './nango-webhook-secret.js';
+
 import type { ShipStationWebhook, WebhookHandler } from './types.js';
 
 const logger = getLogger('Webhook.Shipstation');
 
-const route: WebhookHandler<ShipStationWebhook> = async (nango, headers, body) => {
+const route: WebhookHandler<ShipStationWebhook> = async (nango, headers, body, _rawBody, query) => {
+    // ShipStation does not sign webhooks. v2 can send custom headers, v1 only takes a URL.
+    const verified = verifyNangoWebhookSecret({ secret: nango.integration.custom?.['webhookSecret'], headers, query });
+    if (verified.isErr()) {
+        return Err(verified.error);
+    }
+
     // https://docs.shipstation.com/openapi/webhooks/create_webhook
     // v2 allows for specifying for a connection ID in the headers
     let connectionIdentifierValue = headers['x-nango-connection-id'];

@@ -1,11 +1,16 @@
-import { Ok } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
+
+import { verifyNangoWebhookSecret } from './nango-webhook-secret.js';
 
 import type { WebhookHandler } from './types.js';
 
-const route: WebhookHandler = async (nango, _headers, body) => {
-    // We are not validating the webhook here since the provider does not offer a built-in validation method.
-    // They only mention that you can include a custom header to assist with validation.
+const route: WebhookHandler = async (nango, headers, body, _rawBody, query) => {
+    // Fillout does not sign webhooks, it only lets you add a custom header, which carries the Nango webhook secret.
     // https://www.fillout.com/help/webhook#available-webhook-options
+    const verified = verifyNangoWebhookSecret({ secret: nango.integration.custom?.['webhookSecret'], headers, query });
+    if (verified.isErr()) {
+        return Err(verified.error);
+    }
 
     if (Array.isArray(body)) {
         const connectionIds = new Set<string>();
