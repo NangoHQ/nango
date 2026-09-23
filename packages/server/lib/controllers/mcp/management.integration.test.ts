@@ -512,7 +512,7 @@ describe('POST /mcp management server', () => {
         expect(withoutUnscopedTools(res.json.result.tools)).toMatchObject([
             {
                 name: 'deploy_function',
-                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
             },
             {
                 name: 'deploy_template',

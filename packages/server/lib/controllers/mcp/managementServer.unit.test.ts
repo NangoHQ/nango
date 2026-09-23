@@ -88,7 +88,7 @@ describe('createManagementMcpServer', () => {
                 },
                 {
                     name: 'syncs_set_state',
-                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
                 },
                 {
                     name: 'syncs_trigger',
@@ -105,7 +105,7 @@ describe('createManagementMcpServer', () => {
                 { name: 'functions_list', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
                 {
                     name: 'deploy_function',
-                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 {
                     name: 'deploy_template',
@@ -738,7 +738,7 @@ describe('createManagementMcpServer', () => {
                     required: ['success'],
                     additionalProperties: false
                 },
-                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
             });
             expect(scopedTools[0]?.inputSchema.properties).toEqual({
                 syncs: {
