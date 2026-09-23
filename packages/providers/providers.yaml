@@ -11525,6 +11525,42 @@ heymarket:
             pattern: ^[A-Za-z0-9]+$
             doc_section: '#step-1-finding-your-api-secret-id-and-secret-key'
 
+higher-logic:
+    display_name: Higher Logic
+    categories:
+        - communication
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/higherlogic/external/oauth/connect/authorize
+    token_url: https://${connectionConfig.hostname}/higherlogic/external/oauth/connect/token
+    authorization_params:
+        response_type: code
+    token_request_auth_method: basic
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - openid
+        - webapi
+        - offline_access
+    scope_separator: ' '
+    disable_pkce: false
+    proxy:
+        base_url: https://${connectionConfig.hostname}/higherlogic/external/api
+    docs: https://nango.dev/docs/api-integrations/higher-logic
+    docs_connect: https://nango.dev/docs/api-integrations/higher-logic/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/higher-logic/how-to-register-your-own-higher-logic-api-oauth-app
+    connection_config:
+        hostname:
+            type: string
+            title: Community hostname
+            description: The primary hostname of your Higher Logic community, without a scheme or path.
+            format: hostname
+            pattern: '^[a-zA-Z0-9]+(?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9]+(?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)+$'
+            prefix: https://
+            example: yourcommunity.connectedcommunity.org
+            doc_section: '#step-1-find-your-community-hostname'
+
 highlevel:
     display_name: HighLevel
     categories:

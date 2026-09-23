@@ -1,0 +1,37 @@
+---
+title: 'Higher Logic'
+sidebarTitle: 'Higher Logic'
+description: 'Connect to the Higher Logic community CREST API with OAuth 2.0 and PKCE'
+---
+
+## Quickstart
+
+This provider uses Higher Logic's OIDC authorization code flow with PKCE to access the CREST API.
+
+1. Follow the [OAuth app setup guide](/api-integrations/higher-logic/how-to-register-your-own-higher-logic-api-oauth-app) to obtain a client ID and secret.
+2. In Nango's **Integrations** tab, create a **Higher Logic** integration and enter those credentials. Use the scopes `openid webapi offline_access`.
+3. In **Connections**, add a test connection. Enter your community's primary hostname and sign in with a Higher Logic account that can access the intended content.
+4. Make a read-only API request through Nango. Create an Environment API key in **Environment Settings > API Keys** and replace the placeholders below:
+
+```bash
+curl 'https://api.nango.dev/proxy/v2.0/Contacts/GetWhoAmI' \
+  -H 'Authorization: Bearer <NANGO-API-KEY>' \
+  -H 'Provider-Config-Key: <INTEGRATION-ID>' \
+  -H 'Connection-Id: <CONNECTION-ID>'
+```
+
+The proxy base URL is `https://<community-hostname>/higherlogic/external/api`. Include the API version in each request path, for example `/v2.0/Contacts/GetWhoAmI`. Paths without `/higherlogic/external/` do not accept these OIDC bearer tokens. Do not add legacy `HLAuthToken`, `HLIAMKey`, or `HLPassword` headers.
+
+Access is limited by the signed-in user's permissions. The `webapi` scope permits CREST API access; `offline_access` requests a refresh token when refresh tokens are enabled on the Higher Logic client.
+
+## Guides
+
+- [Register an OAuth app](/api-integrations/higher-logic/how-to-register-your-own-higher-logic-api-oauth-app)
+- [Connect your community](/api-integrations/higher-logic/connect)
+- [Higher Logic OIDC documentation](https://api.higherlogic.com/OIDC/)
+
+## Pre-built syncs and actions
+
+import PreBuiltUseCases from "/snippets/generated/higher-logic/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
