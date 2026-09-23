@@ -3,8 +3,8 @@ import { productTracking } from '@nangohq/shared';
 import type { ProductTrackingTypes } from '@nangohq/shared';
 import type { AgentSession, HTTP_METHOD } from '@nangohq/types';
 
-/** The two ways a session runs one of its own tools. A pinned tool is called by its own name, not through nango_execute. */
-export type AgentSessionMetaTool = 'nango_execute' | 'execute_pinned_tool';
+/** Nango's own tools, as opposed to the integration tools an account deploys. */
+export type AgentSessionMetaTool = 'nango_execute' | 'nango_proxy' | 'nango_tool_search';
 
 interface Outcome {
     logOperationId?: string | undefined;
@@ -12,7 +12,8 @@ interface Outcome {
 }
 
 interface ToolCallParams extends Outcome {
-    metaTool: AgentSessionMetaTool;
+    /** Unset when the agent called an integration tool directly, by the name it is listed under. */
+    metaTool?: AgentSessionMetaTool | undefined;
     session: AgentSession;
     /** Unset when the call named a tool the session could not resolve to an integration. */
     integrationId?: string | undefined;
@@ -38,7 +39,7 @@ interface ProxyRequestParams extends Outcome {
  * middleware, so nothing here passes them. No tool input and no provider response is sent, on purpose.
  */
 export function trackAgentSessionCreated(session: AgentSession): void {
-    trackSessionEvent('agents:session_create', session, {
+    trackSessionEvent('agents:session_start', session, {
         integration_count: Object.keys(session.compiledToolset).length,
         is_tool_search_enabled: session.metaTools.nangoToolSearch,
         is_execute_enabled: session.metaTools.nangoExecute,
@@ -55,9 +56,9 @@ export function trackAgentSessionTerminated(session: AgentSession): void {
 
 export function trackAgentSessionToolCall({ metaTool, session, integrationId, toolName, pinned, underlyingErrorCode, ...outcome }: ToolCallParams): void {
     trackSessionEvent('agents:tool_call_complete', session, {
-        meta_tool: metaTool,
         tool_name: toolName,
         ...outcomeProperties(outcome),
+        ...(metaTool ? { meta_tool: metaTool } : {}),
         ...(pinned === undefined ? {} : { is_pinned: pinned }),
         ...(integrationId ? { integration_id: integrationId } : {}),
         ...(underlyingErrorCode ? { underlying_error_code: underlyingErrorCode } : {})
@@ -66,6 +67,7 @@ export function trackAgentSessionToolCall({ metaTool, session, integrationId, to
 
 export function trackAgentSessionProxyRequest({ session, integrationId, provider, method, status, providerErrorCode, ...outcome }: ProxyRequestParams): void {
     trackSessionEvent('agents:proxy_request_complete', session, {
+        meta_tool: 'nango_proxy',
         integration_id: integrationId,
         http_method: method,
         ...outcomeProperties(outcome),

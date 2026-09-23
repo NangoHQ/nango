@@ -111,7 +111,6 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
                 // an explicit {} remains {} and is validated as provided input.
                 const input = originalToolArgumentsByRequestId.has(requestId) ? originalToolArgumentsByRequestId.get(requestId) : args;
                 return await executeSessionTool({
-                    metaTool: 'execute_pinned_tool',
                     integrationId: tool.integrationId,
                     toolName: tool.name,
                     pinned: tool.pinned,

@@ -12,7 +12,7 @@ export type ProductTrackingTypes =
     | 'account:billing:plan_changed:v2'
     | 'account:billing:downgraded'
     | 'account:billing:upgraded'
-    | 'agents:session_create'
+    | 'agents:session_start'
     | 'agents:session_end'
     | 'agents:tool_call_complete'
     | 'agents:proxy_request_complete';

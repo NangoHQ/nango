@@ -73,7 +73,7 @@ export async function executeSessionTool({
     input,
     context
 }: {
-    metaTool: AgentSessionMetaTool;
+    metaTool?: AgentSessionMetaTool | undefined;
     integrationId: string;
     toolName: string;
     pinned: boolean;

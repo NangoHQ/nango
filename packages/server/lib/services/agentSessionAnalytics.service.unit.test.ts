@@ -58,7 +58,7 @@ describe('trackAgentSessionCreated', () => {
         inRequest(() => trackAgentSessionCreated(session));
 
         const { event, properties } = onlyEvent();
-        expect(event).toBe('agents:session_create');
+        expect(event).toBe('agents:session_start');
         expect(properties).toMatchObject({
             agent_session_id: 'session-1',
             integration_count: 2,
@@ -88,10 +88,10 @@ describe('trackAgentSessionTerminated', () => {
 });
 
 describe('trackAgentSessionToolCall', () => {
-    it('reports a successful call under the event of the tool that ran it', () => {
+    it('reports a call that worked, under the meta tool that ran it', () => {
         inRequest(() =>
             trackAgentSessionToolCall({
-                metaTool: 'execute_pinned_tool',
+                metaTool: 'nango_execute',
                 session,
                 integrationId: 'notion',
                 toolName: 'read_doc',
@@ -103,12 +103,20 @@ describe('trackAgentSessionToolCall', () => {
         expect(event).toBe('agents:tool_call_complete');
         expect(properties).toMatchObject({
             agent_session_id: 'session-1',
+            meta_tool: 'nango_execute',
             integration_id: 'notion',
             tool_name: 'read_doc',
             log_operation_id: 'op-1',
             is_success: true
         });
         expect(properties).not.toHaveProperty('error_code');
+    });
+
+    // A tool called by the name it is listed under goes through no meta tool of ours.
+    it('leaves the meta tool out when the agent called the tool by its own name', () => {
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc', pinned: true }));
+
+        expect(onlyEvent().properties).not.toHaveProperty('meta_tool');
     });
 
     it('reports the failure and the underlying error code', () => {
@@ -140,7 +148,7 @@ describe('trackAgentSessionToolCall', () => {
     });
 
     it.each([true, false])('separates a pinned tool from a searchable one called by its own name (pinned: %s)', (pinned) => {
-        inRequest(() => trackAgentSessionToolCall({ metaTool: 'execute_pinned_tool', session, integrationId: 'notion', toolName: 'read_doc', pinned }));
+        inRequest(() => trackAgentSessionToolCall({ session, integrationId: 'notion', toolName: 'read_doc', pinned }));
 
         expect(onlyEvent().properties).toMatchObject({ is_pinned: pinned });
     });
@@ -175,6 +183,7 @@ describe('trackAgentSessionProxyRequest', () => {
         expect(event).toBe('agents:proxy_request_complete');
         expect(properties).toMatchObject({
             agent_session_id: 'session-1',
+            meta_tool: 'nango_proxy',
             integration_id: 'notion',
             provider: 'notion',
             http_method: 'GET',
