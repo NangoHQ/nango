@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useStore } from './index';
@@ -6,6 +7,9 @@ import { defaultPlaygroundState, usePlaygroundStore } from './playground';
 const storageState = vi.hoisted(() => {
     const localStore: Record<string, string> = {};
     const sessionStore: Record<string, string> = {};
+
+    // The store imports utils/env, which reads the /env.js snapshot as it loads.
+    vi.stubGlobal('_env', { apiUrl: 'http://localhost:3003', dashboardApiUrl: 'http://localhost:3003' });
 
     vi.stubGlobal('localStorage', {
         getItem: (k: string) => localStore[k] ?? null,
