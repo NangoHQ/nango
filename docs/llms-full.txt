@@ -10185,8 +10185,8 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/get.md
       "integration_config": {
         "service": "s3",
         "stsMode": "builtin",
-        "awsAccessKeyId": "AKIAIOSFODNN7EXAMPLE",
-        "awsSecretAccessKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+        "awsAccessKeyId": "***",
+        "awsSecretAccessKey": "***"
       }
     }
   }
@@ -10195,7 +10195,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/get.md
 </ResponseExample>
 
 <Info>
-For providers that declare an `integration_config` schema, alongside or instead of fixed credential fields (e.g. `aws-sigv4`, `epic`, `private-api-generic`), `credentials` returns `type: "INTEGRATION_CONFIG"` with the provider's actual `auth_mode` and its `integration_config` values -- only the fields that provider's schema declares, nothing else from the integration's internal storage.
+For providers that declare an `integration_config` schema, alongside or instead of fixed credential fields (e.g. `aws-sigv4`, `epic`, `private-api-generic`), `credentials` returns `type: "INTEGRATION_CONFIG"` with the provider's actual `auth_mode` and its `integration_config` values -- only the fields that provider's schema declares, nothing else from the integration's internal storage. Any `integration_config` field the provider's schema marks `secret: true` (e.g. `aws-sigv4`'s `awsAccessKeyId` and `awsSecretAccessKey`) is masked as `***` rather than echoed in cleartext, regardless of API key scope.
 </Info>
 
 ## Create an integration
