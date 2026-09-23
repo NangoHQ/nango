@@ -24716,6 +24716,32 @@ terraform:
             example: VbQo****************************
             pattern: '^[a-zA-Z0-9.]{50,}$'
 
+textus:
+    display_name: TextUs
+    categories:
+        - communication
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://next.textus.com
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/vnd.textus+jsonld
+            content-type: application/vnd.textus+jsonld
+        verification:
+            method: GET
+            endpoints:
+                - /accounts
+    docs: https://nango.dev/docs/api-integrations/textus
+    docs_connect: https://nango.dev/docs/api-integrations/textus/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your TextUs API Token.
+            example: eyJhbGciOi***.eyJzdWIiOi***.***************************
+            doc_section: '#step-1-generate-an-api-token'
+
 ticktick:
     display_name: TickTick
     categories:
