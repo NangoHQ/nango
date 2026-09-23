@@ -18850,7 +18850,7 @@ pleo-api-key:
             title: API Key
             description: Your Pleo Standalone API Key.
             example: pls_********************************_620d75
-            pattern: '^pls_[a-f0-9]+_[a-f0-9]+$'
+            pattern: '^pl[sp]_[a-f0-9]+_[a-f0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
 podium:
