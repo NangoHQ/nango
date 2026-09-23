@@ -71,7 +71,7 @@ describe('Halo PSA webhook routing', () => {
         const { nango, lookup, execute } = setup();
         const result = await route(nango, auth(`nango:${secret}`), body, JSON.stringify(body), { nangoConnectionId: connectionId });
         expect(lookup).toHaveBeenCalledWith(connectionId);
-        expect(execute).toHaveBeenCalledWith({ payload: body, connectionIdentifierValue: connectionId, propName: 'connectionId' });
+        expect(execute).toHaveBeenCalledWith({ payload: body, webhookType: 'event', connectionIdentifierValue: connectionId, propName: 'connectionId' });
         expect(result.unwrap()).toEqual({ content: { status: 'success' }, statusCode: 200, connectionIds: [connectionId], toForward: body });
 
         execute.mockClear();
