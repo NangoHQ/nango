@@ -233,13 +233,8 @@ function buildRuntimeTrigger({
         }
         case 'schedule':
             return Ok({ kind: 'schedule', input: null, connection });
-        case 'event': {
-            const event = version.trigger.events[0];
-            if (!event) {
-                return Err(new FunctionInvokeError({ code: 'invalid_invocation', message: 'Event-triggered function has no configured events' }));
-            }
-            return Ok({ kind: 'event', input: { event }, connection });
-        }
+        case 'event':
+            return Err(new FunctionInvokeError({ code: 'invalid_invocation', message: 'Event-triggered functions cannot be invoked directly' }));
         case 'none':
             return Ok({ kind: 'invoke', input, connection });
     }
@@ -255,7 +250,7 @@ function supportInvocation(version: DBFunctionConfigVersion, invocationType: Fun
     const supported: Record<DBFunctionConfigVersion['trigger']['kind'], FunctionInvocationType[]> = {
         http: ['wait', 'no_wait'],
         schedule: ['no_wait'],
-        event: ['no_wait'],
+        event: [],
         none: []
     };
     return supported[version.trigger.kind]?.includes(invocationType) ?? false;
