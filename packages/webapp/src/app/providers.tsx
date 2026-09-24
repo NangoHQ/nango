@@ -9,9 +9,9 @@ import { TooltipProvider } from '@nangohq/design-system';
 
 import { ErrorBoundary } from '@/components/patterns/ErrorBoundary';
 import { queryClient } from '@/store';
-import { fetcher } from '@/utils/api';
+import { fetcher, isNoSessionError } from '@/utils/api';
 import { SentryErrorBoundary } from '@/utils/sentry';
-import { useSignout } from '@/utils/user';
+import { signout } from '@/utils/user';
 
 import type { ReactNode } from 'react';
 
@@ -20,8 +20,6 @@ const theme = createTheme({
 });
 
 const SWRProvider = ({ children }: { children: ReactNode }) => {
-    const signout = useSignout();
-
     return (
         <SWRConfig
             value={{
@@ -32,8 +30,8 @@ const SWRProvider = ({ children }: { children: ReactNode }) => {
                 revalidateOnReconnect: true,
                 fetcher,
                 onError: (error) => {
-                    if (error.status === 401) {
-                        return signout();
+                    if (isNoSessionError(error.status, error.json)) {
+                        return signout({ expired: true });
                     }
                 }
             }}
