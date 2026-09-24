@@ -1,11 +1,9 @@
 import { getFlags } from '@nangohq/feature-flags';
-import { NangoError } from '@nangohq/shared';
-import { Err, Ok } from '@nangohq/utils';
+import { Ok } from '@nangohq/utils';
 
-import { NANGO_WEBHOOK_SECRET_HEADER, verifyNangoWebhookSecret } from './nango-webhook-secret.js';
+import { connectionsWithValidSecret, rejectUnverifiedWebhook } from './nango-webhook-secret.js';
 
-import type { WebhookHandler, WebhookResponse } from './types.js';
-import type { Result } from '@nangohq/utils';
+import type { WebhookHandler } from './types.js';
 
 // Salesforce events come from an Apex trigger the customer installs, not from Salesforce itself, so
 // there is no provider signature. The trigger sends the connection's Nango webhook secret instead.
@@ -14,17 +12,10 @@ import type { Result } from '@nangohq/utils';
 const route: WebhookHandler = async (nango, headers, body) => {
     const connectionId: unknown = body?.nango?.connectionId;
     const connection = typeof connectionId === 'string' && connectionId ? await nango.getConnectionForWebhook(connectionId) : null;
-    const secret = connection?.metadata?.['webhookSecret'];
 
-    // An unknown connection, one without a usable secret and one with a secret all answer based only
-    // on what the caller sent, so the response does not reveal which connections exist.
-    const rejectUnverifiable = (): Result<WebhookResponse> =>
-        Err(new NangoError(headers[NANGO_WEBHOOK_SECRET_HEADER] ? 'webhook_invalid_signature' : 'webhook_missing_signature'));
-
-    if (secret) {
-        const verified = verifyNangoWebhookSecret({ secret, headers });
-        if (verified.isErr()) {
-            return verified.error.type === 'webhook_invalid_secret' ? rejectUnverifiable() : Err(verified.error);
+    if (connection?.metadata?.['webhookSecret']) {
+        if (connectionsWithValidSecret([connection], headers).length === 0) {
+            return rejectUnverifiedWebhook(headers);
         }
     } else {
         nango.markUnverified({
@@ -33,7 +24,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
         });
 
         if (!(await getFlags().allowUnauthorizedSalesforceWebhook(nango.team.uuid))) {
-            return rejectUnverifiable();
+            return rejectUnverifiedWebhook(headers);
         }
     }
 
