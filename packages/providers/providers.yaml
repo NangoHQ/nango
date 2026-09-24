@@ -17170,10 +17170,6 @@ omnisend:
         headers:
             authorization: Omnisend-API-Key ${apiKey}
             omnisend-version: ${connectionConfig.apiVersion} || '2026-03-15'
-        verification:
-            method: GET
-            endpoints:
-                - /api/campaigns?limit=1
         retry:
             after:
                 - 'retry-after'
@@ -17190,7 +17186,7 @@ omnisend:
             type: string
             title: API Key
             description: Your Omnisend API key.
-            example: API Key
+            example: 6ab55b0af9*******f39f53-Tr7yFM*****************************Hs3v
             pattern: '^[A-Za-z0-9_-]+$'
             doc_section: '#step-2-create-an-omnisend-api-key'
 
