@@ -11,6 +11,7 @@ import type { WebhookHandler } from './types.js';
 const route: WebhookHandler = async (nango, headers, body, _rawBody, query) => {
     const events: Record<string, unknown>[] = Array.isArray(body) ? body : [body];
     const connectionIds = new Set<string>();
+    const verifiedEvents: Record<string, unknown>[] = [];
 
     for (const event of events) {
         const formId = event?.['formId'];
@@ -27,7 +28,12 @@ const route: WebhookHandler = async (nango, headers, body, _rawBody, query) => {
             })) || [];
 
         // Each connection is checked against its own secret, so only the ones it matches are routed.
-        for (const connection of connectionsWithValidSecret(connections, headers, query)) {
+        const verified = connectionsWithValidSecret(connections, headers, query);
+        if (verified.length > 0) {
+            verifiedEvents.push(event);
+        }
+
+        for (const connection of verified) {
             const response = await nango.executeScriptForWebhooks({
                 payload: event,
                 webhookType: 'type',
@@ -48,7 +54,8 @@ const route: WebhookHandler = async (nango, headers, body, _rawBody, query) => {
         content: { status: 'success' },
         statusCode: 200,
         connectionIds: Array.from(connectionIds),
-        toForward: body
+        // Events for forms the secret did not verify must not reach the verified connections.
+        toForward: Array.isArray(body) ? verifiedEvents : body
     });
 };
 

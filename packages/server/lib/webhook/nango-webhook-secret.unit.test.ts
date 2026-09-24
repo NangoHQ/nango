@@ -175,6 +175,7 @@ describe('fillout webhook routing', () => {
         const result = await FilloutWebhookRouting.default(nango, { 'x-nango-webhook-secret': SECRET }, batch, JSON.stringify(batch), {});
 
         expect(routedTo(result)).toEqual(['conn-1']);
+        expect((result as { value: { toForward: unknown } }).value.toForward).toEqual([body]);
     });
 
     it('rejects when no connection verifies, including an unknown form', async () => {
