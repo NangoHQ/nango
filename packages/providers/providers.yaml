@@ -8251,6 +8251,34 @@ everflow:
             description: The API key for your Everflow account.
             doc_section: '#step-1-generate-your-api-key'
 
+eway-crm:
+    display_name: eWay-CRM
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.serviceUrl}/auth/connect/authorize
+    token_url: https://${connectionConfig.serviceUrl}/auth/connect/token
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://${connectionConfig.serviceUrl}/API.svc
+    docs: https://nango.dev/docs/api-integrations/eway-crm
+    docs_connect: https://nango.dev/docs/api-integrations/eway-crm/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/eway-crm/how-to-register-your-own-eway-crm-api-oauth-app
+    connection_config:
+        serviceUrl:
+            type: string
+            title: Service URL
+            description: Your eWay-CRM Web Service address.
+            prefix: https://
+            example: free.eway-crm.com/31994
+            doc_section: '#step-1-finding-your-web-service-address'
+
 etsy:
     display_name: Etsy
     categories:

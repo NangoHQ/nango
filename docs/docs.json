@@ -1291,6 +1291,7 @@
               "integrations/all/evaluagent",
               "integrations/all/eventbrite",
               "api-integrations/everflow",
+              "api-integrations/eway-crm",
               "integrations/all/exa",
               "integrations/all/exact-online",
               "integrations/all/exist",
