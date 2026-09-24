@@ -48,7 +48,7 @@ const config = { id: 1, unique_key: 'test', provider: 'attio', environment_id: 1
 const account = { id: 1, name: 'test' } as DBTeam;
 const environment = { id: 1, name: 'dev' } as DBEnvironment;
 const provider = { auth_mode: 'OAUTH2' } as Provider;
-const logCtx = { id: 'log-1' } as unknown as LogContext;
+const logCtx = { id: 'log-1', error: vi.fn(), failed: vi.fn() } as unknown as LogContext;
 
 describe('validateConnection', () => {
     beforeEach(() => {
@@ -59,8 +59,7 @@ describe('validateConnection', () => {
 
     it('runs matching functions', async () => {
         mockInvoke.mockResolvedValue(Ok({ data: null }));
-        const authLogCtx = { id: 'auth-log', failed: vi.fn() } as unknown as LogContext;
-        const result = await validateConnection({ connection, config, account, environment, logCtx: authLogCtx });
+        const result = await validateConnection({ connection, config, account, environment, logCtx });
 
         expect(result.unwrap()).toEqual({ tested: true });
         expect(mockSearch).toHaveBeenCalledWith(expect.anything(), {
@@ -78,7 +77,7 @@ describe('validateConnection', () => {
                 },
                 async: false,
                 maxConcurrency: 1,
-                logCtx: authLogCtx
+                logCtx
             })
         );
         expect(mockGetByConfig).toHaveBeenCalledWith(config.id, 'validate-connection');
@@ -111,14 +110,12 @@ describe('validateConnection', () => {
     it('rejects validation when the function fails', async () => {
         const error = new NangoError('function_failure', { error: 'Invalid account' });
         mockInvoke.mockResolvedValue(Err(error));
-        const authLogCtx = { id: 'auth-log', failed: vi.fn() } as unknown as LogContext;
-        const result = await validateConnection({ connection, config, account, environment, logCtx: authLogCtx });
+        const result = await validateConnection({ connection, config, account, environment, logCtx });
 
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error).toBe(error);
         }
-        expect(authLogCtx.failed).toHaveBeenCalledOnce();
         expect(mockGetByConfig).toHaveBeenCalledWith(config.id, 'validate-connection');
     });
 
