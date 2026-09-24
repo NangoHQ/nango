@@ -2776,6 +2776,11 @@ etsy: []
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 eventbrite: []
 
+# source: https://free.eway-crm.com/31994/API/swagger.json (securityDefinitions.OAuth2.scopes)
+eway-crm:
+    - api
+    - offline_access
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 exact-online: []
 
