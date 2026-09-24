@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import { errorManager, ErrorSourceEnum, LogActionEnum } from '@nangohq/shared';
 import { flags } from '@nangohq/utils';
 
 import { withAnyScope as withAnyScopeAlias, withScope as withScopeAlias } from '../middleware/scope.middleware.js';
@@ -28,7 +29,11 @@ function run(middleware: ReturnType<typeof can>, requestLocals: Partial<RequestL
     };
     const next = vi.fn();
 
-    middleware({} as Request, res as unknown as Response<unknown, Partial<RequestLocals>>, next as unknown as NextFunction);
+    middleware(
+        { method: 'GET', path: '/test' } as unknown as Request,
+        res as unknown as Response<unknown, Partial<RequestLocals>>,
+        next as unknown as NextFunction
+    );
     return { next, status: res.status, json: res.json };
 }
 
@@ -103,11 +108,20 @@ describe('can', () => {
         expect(status).not.toHaveBeenCalled();
     });
 
-    it('responds 500 when nothing authenticated onto a principal', () => {
+    it('responds 500 and reports when nothing authenticated onto a principal', () => {
+        const report = vi.spyOn(errorManager, 'report').mockImplementation(() => undefined);
         const { next, status, json } = run(can('environment:deploy'), { account, environment });
 
         expect(next).not.toHaveBeenCalled();
         expect(status).toHaveBeenCalledWith(500);
         expect(json).toHaveBeenCalledWith({ error: { code: 'missing_principal' } });
+        expect(report).toHaveBeenCalledWith(expect.objectContaining({ name: 'MissingPrincipalError', scope: 'environment:deploy' }), {
+            source: ErrorSourceEnum.PLATFORM,
+            operation: LogActionEnum.INTERNAL_AUTHORIZATION,
+            accountId: account.id,
+            environmentId: environment.id,
+            metadata: { requiredScope: 'environment:deploy', route: '/test' }
+        });
+        report.mockRestore();
     });
 });

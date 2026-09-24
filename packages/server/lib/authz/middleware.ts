@@ -1,4 +1,5 @@
 import { ScopeRequiresEnvironmentError } from '@nangohq/authz';
+import { errorManager, ErrorSourceEnum, LogActionEnum } from '@nangohq/shared';
 
 import { MissingPrincipalError, principalCan } from './principal.js';
 
@@ -15,10 +16,10 @@ function insufficientScopeMessage(scopes: readonly Scope[]): string {
 
 export function can(scope: Scope, ...or: Scope[]) {
     const scopes = [scope, ...or];
-    return (_req: Request, res: Response, next: NextFunction): void => {
+    return (req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void => {
         try {
             for (const required of scopes) {
-                if (principalCan(res.locals as Partial<RequestLocals>, required)) {
+                if (principalCan(res.locals, required)) {
                     next();
                     return;
                 }
@@ -29,6 +30,16 @@ export function can(scope: Scope, ...or: Scope[]) {
                 return;
             }
             if (err instanceof MissingPrincipalError) {
+                errorManager.report(err, {
+                    source: ErrorSourceEnum.PLATFORM,
+                    operation: LogActionEnum.INTERNAL_AUTHORIZATION,
+                    ...(res.locals['account'] ? { accountId: res.locals['account'].id } : {}),
+                    ...(res.locals['environment'] ? { environmentId: res.locals['environment'].id } : {}),
+                    metadata: {
+                        requiredScope: err.scope,
+                        route: req.path
+                    }
+                });
                 res.status(500).json({ error: { code: 'missing_principal' } });
                 return;
             }
