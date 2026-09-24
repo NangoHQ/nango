@@ -1181,6 +1181,7 @@
               "api-integrations/cisco-duo-admin",
               "integrations/all/clari-copilot",
               "api-integrations/clay",
+              "api-integrations/clay-mcp",
               "integrations/all/clerk",
               "api-integrations/cleverreach",
               "api-integrations/clickhouse",

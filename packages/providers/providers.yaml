@@ -5192,6 +5192,38 @@ clay:
             pattern: '^[a-f0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
 
+clay-mcp:
+    display_name: Clay (MCP)
+    categories:
+        - crm
+        - marketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://app.clay.com/oauth/authorize
+    token_url: https://api.clay.com/oauth/token
+    registration_url: https://api.clay.com/oauth/register
+    default_scopes:
+        - mcp
+    authorization_params:
+        response_type: code
+        resource: https://api.clay.com/v3/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.clay.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/clay-mcp
+
 cleverreach:
     display_name: CleverReach
     categories:
