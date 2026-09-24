@@ -49,9 +49,9 @@ async function insertAction({
     });
 }
 
-function searchableActionCount(provider: string, deployedActionNames: string[]): number {
-    const deployed = new Set(deployedActionNames);
-    return listCatalogTools(provider).filter(({ name }) => !deployed.has(name)).length + deployedActionNames.length;
+function searchableToolCount(provider: string, deployedToolNames: string[]): number {
+    const deployed = new Set(deployedToolNames);
+    return listCatalogTools(provider).filter(({ name }) => !deployed.has(name)).length + deployedToolNames.length;
 }
 
 async function seedEnvironment(): Promise<{ account: DBTeam; env: DBEnvironment; token: string }> {
@@ -150,8 +150,8 @@ describe(`POST ${endpoint}`, () => {
 
         // The sync on notion is not a tool, and reddit has no connection so the default toolset leaves it out.
         expect(res.json.data.toolset).toStrictEqual({
-            notion: { connected: true, tools_pinned: 0, tools_searchable: searchableActionCount('notion', ['read_doc', 'upsert_doc']) },
-            slack: { connected: true, tools_pinned: 0, tools_searchable: searchableActionCount('slack', ['send_message']) }
+            notion: { connected: true, tools_pinned: 0, tools_searchable: searchableToolCount('notion', ['read_doc', 'upsert_doc']) },
+            slack: { connected: true, tools_pinned: 0, tools_searchable: searchableToolCount('slack', ['send_message']) }
         });
 
         const expiresIn = new Date(res.json.data.expires_at).getTime() - Date.now();
@@ -194,7 +194,7 @@ describe(`POST ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json.data.toolset).toStrictEqual({
             notion: { connected: true, tools_pinned: 1, tools_searchable: 1 },
-            slack: { connected: true, tools_pinned: 0, tools_searchable: searchableActionCount('slack', ['send_message']) }
+            slack: { connected: true, tools_pinned: 0, tools_searchable: searchableToolCount('slack', ['send_message']) }
         });
         expect(res.json.data.meta_tools).toStrictEqual({
             nango_tool_search: true,

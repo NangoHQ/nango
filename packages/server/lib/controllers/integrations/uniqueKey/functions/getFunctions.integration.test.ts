@@ -19,9 +19,9 @@ function deployedOnly<T extends { source: string }>(fns: T[]): T[] {
     return fns.filter((fn) => fn.source !== 'tools-catalog');
 }
 
-function unoccupiedGithubCatalogCount(occupiedActionNames: Iterable<string> = []): number {
-    const occupied = new Set(occupiedActionNames);
-    return listCatalogTools('github').filter((action) => !occupied.has(action.name)).length;
+function githubCatalogToolsNotDeployed(deployedNames: Iterable<string> = []): number {
+    const deployed = new Set(deployedNames);
+    return listCatalogTools('github').filter((tool) => !deployed.has(tool.name)).length;
 }
 
 describe(`GET ${route}`, () => {
@@ -98,7 +98,7 @@ describe(`GET ${route}`, () => {
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json.pagination).toStrictEqual({ total: unoccupiedGithubCatalogCount(['my-action']) + 2, page: 0, limit: 100 });
+        expect(res.json.pagination).toStrictEqual({ total: githubCatalogToolsNotDeployed(['my-action']) + 2, page: 0, limit: 100 });
         expect(res.json.data).toEqual(
             expect.arrayContaining([expect.objectContaining({ name: 'create-issue', type: 'action', source: 'tools-catalog', id: null, last_deployed: null })])
         );

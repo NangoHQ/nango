@@ -33,9 +33,9 @@ function deployedOnly<T extends { source: string }>(fns: T[]): T[] {
     return fns.filter((fn) => fn.source !== 'tools-catalog');
 }
 
-function unoccupiedGithubCatalogCount(occupiedActionNames: Iterable<string> = []): number {
-    const occupied = new Set(occupiedActionNames);
-    return listCatalogTools('github').filter((action) => !occupied.has(action.name)).length;
+function githubCatalogToolsNotDeployed(deployedNames: Iterable<string> = []): number {
+    const deployed = new Set(deployedNames);
+    return listCatalogTools('github').filter((tool) => !deployed.has(tool.name)).length;
 }
 
 function expectedMergedGithubKeys({
@@ -114,8 +114,8 @@ describe(`GET ${route}`, () => {
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         expect(deployedOnly(res.json.data)).toEqual([]);
-        expect(res.json.pagination.total).toBe(unoccupiedGithubCatalogCount());
-        expect(res.json.data).toHaveLength(unoccupiedGithubCatalogCount());
+        expect(res.json.pagination.total).toBe(githubCatalogToolsNotDeployed());
+        expect(res.json.data).toHaveLength(githubCatalogToolsNotDeployed());
         expect(res.json.data.some((fn) => fn.name === 'create-issue' && fn.source === 'tools-catalog')).toBe(true);
         expect(res.json.data.every((fn) => fn.source === 'tools-catalog')).toBe(true);
     });
@@ -153,7 +153,7 @@ describe(`GET ${route}`, () => {
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json.pagination).toStrictEqual({ total: unoccupiedGithubCatalogCount(['my-action']) + 3, page: 0, limit: 100 });
+        expect(res.json.pagination).toStrictEqual({ total: githubCatalogToolsNotDeployed(['my-action']) + 3, page: 0, limit: 100 });
         expect(deployedOnly(res.json.data).map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
             { name: 'my-action', type: 'action' },
             { name: 'my-on-event', type: 'on-event' },
