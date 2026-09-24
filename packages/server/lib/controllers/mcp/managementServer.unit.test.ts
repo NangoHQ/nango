@@ -62,37 +62,37 @@ describe('createManagementMcpServer', () => {
                     name: 'docs_query_filesystem',
                     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
                 },
-                { name: 'providers_get', annotations: { readOnlyHint: true, openWorldHint: false } },
+                { name: 'providers_get', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
                 {
                     name: 'connect_session_create',
                     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
                 },
-                { name: 'integrations_list', annotations: { readOnlyHint: true } },
-                { name: 'integrations_get', annotations: { readOnlyHint: true } },
+                { name: 'integrations_list', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
+                { name: 'integrations_get', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
                 {
                     name: 'integrations_create',
                     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
                 },
                 {
                     name: 'integrations_update',
-                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
                 },
                 {
                     name: 'integrations_delete',
                     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
                 },
-                { name: 'connections_list', annotations: { readOnlyHint: true } },
+                { name: 'connections_list', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
                 {
                     name: 'connections_get',
-                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 {
                     name: 'syncs_set_state',
-                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
                 },
                 {
                     name: 'syncs_trigger',
-                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 {
                     name: 'actions_trigger',
@@ -102,21 +102,21 @@ describe('createManagementMcpServer', () => {
                     name: 'proxy_request',
                     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
-                { name: 'functions_list', annotations: { readOnlyHint: true } },
+                { name: 'functions_list', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
                 {
                     name: 'deploy_function',
-                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 {
                     name: 'deploy_template',
-                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 {
                     name: 'get_deployment_status',
                     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
                 },
-                { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
-                { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
+                { name: 'logs_list_operations', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
+                { name: 'logs_get_operation', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } }
             ]);
         } finally {
             await client.close();
@@ -344,7 +344,7 @@ describe('createManagementMcpServer', () => {
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'integrations_update',
-                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
             });
         } finally {
             await authorized.client.close();
@@ -530,7 +530,7 @@ describe('createManagementMcpServer', () => {
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'connections_get',
-                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
             });
         } finally {
             await client.close();
@@ -738,7 +738,7 @@ describe('createManagementMcpServer', () => {
                     required: ['success'],
                     additionalProperties: false
                 },
-                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
             });
             expect(scopedTools[0]?.inputSchema.properties).toEqual({
                 syncs: {
@@ -777,7 +777,7 @@ describe('createManagementMcpServer', () => {
                     required: ['success'],
                     additionalProperties: false
                 },
-                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
             });
         } finally {
             await client.close();

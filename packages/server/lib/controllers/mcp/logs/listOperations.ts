@@ -22,7 +22,7 @@ export const listLogOperationsTool = defineManagementMcpTool<typeof listOperatio
     ].join(' '),
     inputSchema: listOperationsArgumentsSchema,
     outputSchema: listOperationsOutputSchema,
-    annotations: { readOnlyHint: true },
+    annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     requiredScopes: { every: [logsReadScope] },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, account, environment }) {

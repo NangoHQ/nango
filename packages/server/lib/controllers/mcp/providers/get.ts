@@ -11,7 +11,7 @@ export const getProvidersTool = defineManagementMcpTool<typeof getProviderArgume
     description: 'Get one provider and optionally include its available function templates.',
     inputSchema: getProviderArgumentsSchema,
     outputSchema: getProviderOutputSchema,
-    annotations: { readOnlyHint: true, openWorldHint: false },
+    annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     requiredScopes: { none: true },
     audit: { kind: 'no-audit', reason: 'read-only' },
     handler({ args }) {

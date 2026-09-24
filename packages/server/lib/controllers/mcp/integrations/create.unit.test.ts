@@ -63,7 +63,9 @@ describe('createIntegrationsTool', () => {
                 client_secret: 'client-secret',
                 scopes: 'repo'
             },
-            integrationConfig: { region: 'us' }
+            integrationConfig: { region: 'us' },
+            environment: context.environment,
+            team: context.account
         });
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -99,7 +101,9 @@ describe('createIntegrationsTool', () => {
             uniqueKey: 'github-own',
             credentialSource: 'nango',
             displayName: undefined,
-            forwardWebhooks: undefined
+            forwardWebhooks: undefined,
+            environment: context.environment,
+            team: context.account
         });
     });
 
@@ -123,7 +127,9 @@ describe('createIntegrationsTool', () => {
             credentialSource: 'own',
             displayName: undefined,
             forwardWebhooks: undefined,
-            integrationConfig: { keyLabel: 'Workspace token' }
+            integrationConfig: { keyLabel: 'Workspace token' },
+            environment: context.environment,
+            team: context.account
         });
     });
 

@@ -28,10 +28,6 @@ export function useAnalyticsIdentify() {
     };
 }
 
-export function useAnalyticsReset() {
-    const posthog = usePostHog();
-
-    return () => {
-        posthog?.reset();
-    };
+export function resetAnalytics() {
+    posthog?.reset();
 }
