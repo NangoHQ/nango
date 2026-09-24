@@ -89,7 +89,7 @@ function commonProperties(surface: 'server' | 'cli'): Record<string, unknown> {
 
 function contextProperties({ environment, user }: TrackingContext): Record<string, unknown> {
     return {
-        ...(environment ? { is_prod: environment.is_production } : {}),
+        ...(environment ? { is_production: environment.is_production } : {}),
         // An event with no person behind it is attached to the account group instead of inventing one.
         ...(user ? {} : { $process_person_profile: false })
     };

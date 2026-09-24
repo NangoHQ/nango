@@ -42,7 +42,7 @@ describe('productTrackingMiddleware', () => {
 
         const { groups, properties } = capture.mock.calls[0]![0];
         expect(groups).toStrictEqual({ company: '42' });
-        expect(properties).toMatchObject({ is_prod: true, surface: 'server' });
+        expect(properties).toMatchObject({ is_production: true, surface: 'server' });
     });
 
     it('keeps the account on an event from a request that resolved no environment', () => {
@@ -52,7 +52,7 @@ describe('productTrackingMiddleware', () => {
 
         const { groups, properties } = capture.mock.calls[0]![0];
         expect(groups).toStrictEqual({ company: '42' });
-        expect(properties).not.toHaveProperty('is_prod');
+        expect(properties).not.toHaveProperty('is_production');
     });
 
     it('drops an event from a request that resolved no account', () => {
