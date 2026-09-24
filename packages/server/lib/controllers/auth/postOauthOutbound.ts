@@ -159,6 +159,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapperWithEnvironment<
             connection: updatedConnection.connection,
             config,
             account,
+            environment,
             logCtx
         });
 

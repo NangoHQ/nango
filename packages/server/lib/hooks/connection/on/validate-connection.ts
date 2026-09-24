@@ -1,4 +1,5 @@
-import { connectionService, onEventScriptService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { connectionService, functionConfigService, getFunctionMaxConcurrency, NangoError, onEventScriptService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -6,7 +7,7 @@ import { getOrchestrator } from '../../../utils/utils.js';
 import { reconnectionFailed } from '../../hooks.js';
 
 import type { LogContext } from '@nangohq/logs';
-import type { Config, NangoError } from '@nangohq/shared';
+import type { Config } from '@nangohq/shared';
 import type { AuthOperationType, DBConnection, DBEnvironment, DBTeam, Provider } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -14,11 +15,13 @@ export async function validateConnection({
     connection,
     config,
     account,
+    environment,
     logCtx
 }: {
     config: Config;
     connection: DBConnection;
     account: DBTeam;
+    environment: DBEnvironment;
     logCtx: LogContext;
 }): Promise<Result<{ tested: boolean }, NangoError>> {
     if (!config.id) {
@@ -26,32 +29,62 @@ export async function validateConnection({
     }
     const event = 'validate-connection';
 
-    const validateConnectionScripts = await onEventScriptService.getByConfig(config.id, event);
-
-    if (validateConnectionScripts.length === 0) {
-        return Ok({ tested: false });
+    const functions = await functionConfigService.search(db.knex, {
+        environmentId: environment.id,
+        filter: { integrationKey: config.unique_key, enabled: true, trigger: { kind: 'event', event } }
+    });
+    if (functions.isErr()) {
+        return Err(new NangoError('function_failure', { error: functions.error.message }));
     }
 
-    for (const script of validateConnectionScripts) {
-        const { name, file_location: fileLocation, version } = script;
+    if (functions.value.length === 0) {
+        const validateConnectionScripts = await onEventScriptService.getByConfig(config.id, event);
 
-        const res = await getOrchestrator().triggerOnEventScript({
-            accountId: account.id,
-            connection: {
-                id: connection.id,
-                connection_id: connection.connection_id,
-                provider_config_key: config.unique_key,
-                environment_id: config.environment_id
+        for (const script of validateConnectionScripts) {
+            const { name, file_location: fileLocation, version } = script;
+
+            const res = await getOrchestrator().triggerOnEventScript({
+                accountId: account.id,
+                connection: {
+                    id: connection.id,
+                    connection_id: connection.connection_id,
+                    provider_config_key: config.unique_key,
+                    environment_id: config.environment_id
+                },
+                version,
+                name,
+                fileLocation,
+                sdkVersion: script.sdk_version,
+                async: false,
+                maxConcurrency: envs.ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY,
+                logCtx
+            });
+
+            if (res.isErr()) {
+                await logCtx.failed();
+                return Err(res.error);
+            }
+        }
+
+        return Ok({ tested: validateConnectionScripts.length > 0 });
+    }
+
+    for (const { config: functionConfig, currentVersion } of functions.value) {
+        const res = await getOrchestrator().invokeFunction({
+            environment,
+            connection,
+            functionConfigId: functionConfig.id,
+            functionName: functionConfig.name,
+            trigger: {
+                kind: 'event',
+                input: { event },
+                connection: { connectionId: connection.connection_id, integrationId: config.unique_key }
             },
-            version,
-            name,
-            fileLocation,
-            sdkVersion: script.sdk_version,
             async: false,
-            maxConcurrency: envs.ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY,
+            retryMax: 0,
+            maxConcurrency: getFunctionMaxConcurrency(currentVersion),
             logCtx
         });
-
         if (res.isErr()) {
             await logCtx.failed();
             return Err(res.error);
