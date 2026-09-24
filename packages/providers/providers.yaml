@@ -14285,6 +14285,30 @@ mailchimp:
             example: us6
             automated: true
 
+mailerlite:
+    display_name: MailerLite
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://connect.mailerlite.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /groups?limit=1
+    docs: https://nango.dev/docs/api-integrations/mailerlite
+    docs_connect: https://nango.dev/docs/api-integrations/mailerlite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your MailerLite API token.
+            example: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.****************.**********
+            pattern: '^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generate-your-mailerlite-api-token'
+
 mailjet:
     display_name: Mailjet
     categories:
