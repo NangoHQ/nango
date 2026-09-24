@@ -1,0 +1,89 @@
+---
+title: 'eWay-CRM'
+sidebarTitle: 'eWay-CRM'
+description: 'Integrate your application with the eWay-CRM API using OAuth2'
+---
+
+## 🚀 Quickstart
+
+Connect to eWay-CRM with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _eWay-CRM_.
+    </Step>
+    <Step id="authorize-eway-crm" title="Authorize eWay-CRM">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Service URL and log in to eWay-CRM. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-the-api" title="Call the eWay-CRM API">
+    Make your first request — a simple connectivity check. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/CheckStatus" \
+              -X GET \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.proxy({
+            method: 'GET',
+            endpoint: '/CheckStatus',
+            data: {},
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 eWay-CRM Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own eWay-CRM API OAuth app](/api-integrations/eway-crm/how-to-register-your-own-eway-crm-api-oauth-app)  
+Get your Client ID and Client Secret from eWay-CRM support
+
+- [How do I link my account?](/api-integrations/eway-crm/connect)  
+Connect your eWay-CRM account using the Connect UI and find your Service URL
+
+Official docs: [eWay-CRM API reference](https://swagger.eway-crm.io/), [eWay-CRM API GitHub](https://github.com/eway-crm/api)
+
+## 🧩 Pre-built syncs & actions for eWay-CRM
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/eway-crm/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
