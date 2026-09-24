@@ -49,7 +49,7 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
     await transport.handleRequest(req, res, req.body);
 });
 
-class ManagementMcpTransport extends NodeStreamableHTTPServerTransport {
+export class ManagementMcpTransport extends NodeStreamableHTTPServerTransport {
     override send(message: JSONRPCMessage, options?: { relatedRequestId?: RequestId }): Promise<void> {
         return super.send(withTopLevelToolSecuritySchemes(message), options);
     }
@@ -64,19 +64,13 @@ function withTopLevelToolSecuritySchemes(message: JSONRPCMessage): JSONRPCMessag
         return message;
     }
 
-    let changed = false;
     const tools = (message.result['tools'] as unknown[]).map((tool) => {
         if (!isRecord(tool) || !isRecord(tool['_meta']) || !Array.isArray(tool['_meta']['securitySchemes'])) {
             return tool;
         }
 
-        changed = true;
         return { ...tool, securitySchemes: tool['_meta']['securitySchemes'] };
     });
-
-    if (!changed) {
-        return message;
-    }
 
     return { ...message, result: { ...message.result, tools } } as JSONRPCMessage;
 }
