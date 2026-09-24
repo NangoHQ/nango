@@ -81,7 +81,19 @@ describe('validateConnection', () => {
                 logCtx: authLogCtx
             })
         );
-        expect(mockGetByConfig).not.toHaveBeenCalled();
+        expect(mockGetByConfig).toHaveBeenCalledWith(config.id, 'validate-connection');
+    });
+
+    it('runs matching functions and legacy scripts', async () => {
+        mockGetByConfig.mockResolvedValue([{ id: 18, name: 'legacyCheck', file_location: 'legacy.js', version: '1', sdk_version: '1' }]);
+        mockTriggerOnEventScript.mockResolvedValue(Ok({ data: null }));
+        mockInvoke.mockResolvedValue(Ok({ data: null }));
+
+        const result = await validateConnection({ connection, config, account, environment, logCtx });
+
+        expect(result.unwrap()).toEqual({ tested: true });
+        expect(mockTriggerOnEventScript).toHaveBeenCalledOnce();
+        expect(mockInvoke).toHaveBeenCalledOnce();
     });
 
     it('runs legacy when no function', async () => {
@@ -107,7 +119,7 @@ describe('validateConnection', () => {
             expect(result.error).toBe(error);
         }
         expect(authLogCtx.failed).toHaveBeenCalledOnce();
-        expect(mockGetByConfig).not.toHaveBeenCalled();
+        expect(mockGetByConfig).toHaveBeenCalledWith(config.id, 'validate-connection');
     });
 
     it('propagates function lookup failures without treating them as validation failures', async () => {

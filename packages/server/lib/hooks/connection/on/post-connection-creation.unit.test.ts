@@ -46,12 +46,12 @@ describe('postConnectionCreation', () => {
         mockTriggerOnEventScript.mockResolvedValue(Ok({ data: null }));
     });
 
-    it('runs matching functions', async () => {
+    it('runs matching functions and legacy scripts', async () => {
         await postConnectionCreation(createdConnection, 'provider', logContextGetter);
 
         expect(mockInvoke).toHaveBeenCalledOnce();
-        expect(mockGetByConfig).not.toHaveBeenCalled();
-        expect(mockTriggerOnEventScript).not.toHaveBeenCalled();
+        expect(mockGetByConfig).toHaveBeenCalledWith(connection.config_id, 'post-connection-creation');
+        expect(mockTriggerOnEventScript).toHaveBeenCalledOnce();
     });
 
     it('runs legacy when no function matches', async () => {

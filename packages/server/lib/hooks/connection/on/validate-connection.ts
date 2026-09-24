@@ -39,36 +39,32 @@ export async function validateConnection({
         throw functions.error;
     }
 
-    if (functions.value.length === 0) {
-        const validateConnectionScripts = await onEventScriptService.getByConfig(config.id, event);
+    const validateConnectionScripts = await onEventScriptService.getByConfig(config.id, event);
 
-        for (const script of validateConnectionScripts) {
-            const { name, file_location: fileLocation, version } = script;
+    for (const script of validateConnectionScripts) {
+        const { name, file_location: fileLocation, version } = script;
 
-            const res = await getOrchestrator().triggerOnEventScript({
-                accountId: account.id,
-                connection: {
-                    id: connection.id,
-                    connection_id: connection.connection_id,
-                    provider_config_key: config.unique_key,
-                    environment_id: config.environment_id
-                },
-                version,
-                name,
-                fileLocation,
-                sdkVersion: script.sdk_version,
-                async: false,
-                maxConcurrency: envs.ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY,
-                logCtx
-            });
+        const res = await getOrchestrator().triggerOnEventScript({
+            accountId: account.id,
+            connection: {
+                id: connection.id,
+                connection_id: connection.connection_id,
+                provider_config_key: config.unique_key,
+                environment_id: config.environment_id
+            },
+            version,
+            name,
+            fileLocation,
+            sdkVersion: script.sdk_version,
+            async: false,
+            maxConcurrency: envs.ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY,
+            logCtx
+        });
 
-            if (res.isErr()) {
-                await logCtx.failed();
-                return Err(res.error);
-            }
+        if (res.isErr()) {
+            await logCtx.failed();
+            return Err(res.error);
         }
-
-        return Ok({ tested: validateConnectionScripts.length > 0 });
     }
 
     for (const { config: functionConfig, currentVersion } of functions.value) {
@@ -93,7 +89,7 @@ export async function validateConnection({
         }
     }
 
-    return Ok({ tested: true });
+    return Ok({ tested: validateConnectionScripts.length > 0 || functions.value.length > 0 });
 }
 
 export function getValidateConnectionFailureMessage(error: NangoError): string {

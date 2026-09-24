@@ -49,29 +49,27 @@ export async function postConnectionCreation(
         throw functions.error;
     }
 
-    if (functions.value.length === 0) {
-        const postConnectionCreationScripts = await onEventScriptService.getByConfig(config_id, event);
+    const postConnectionCreationScripts = await onEventScriptService.getByConfig(config_id, event);
 
-        for (const script of postConnectionCreationScripts) {
-            const { name, file_location: fileLocation, version } = script;
+    for (const script of postConnectionCreationScripts) {
+        const { name, file_location: fileLocation, version } = script;
 
-            const logCtx = await createLogCtx(script.id, script.name);
+        const logCtx = await createLogCtx(script.id, script.name);
 
-            const res = await getOrchestrator().triggerOnEventScript({
-                accountId: account.id,
-                connection: createdConnection.connection,
-                version,
-                name,
-                fileLocation,
-                sdkVersion: script.sdk_version,
-                async: true,
-                maxConcurrency: envs.ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY,
-                logCtx
-            });
+        const res = await getOrchestrator().triggerOnEventScript({
+            accountId: account.id,
+            connection: createdConnection.connection,
+            version,
+            name,
+            fileLocation,
+            sdkVersion: script.sdk_version,
+            async: true,
+            maxConcurrency: envs.ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY,
+            logCtx
+        });
 
-            if (res.isErr()) {
-                await logCtx.failed();
-            }
+        if (res.isErr()) {
+            await logCtx.failed();
         }
     }
 

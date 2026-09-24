@@ -68,28 +68,26 @@ export async function preConnectionDeletion({
         throw functions.error;
     }
 
-    if (functions.value.length === 0) {
-        const preConnectionDeletionScripts = await onEventScriptService.getByConfig(connection.config_id, event);
+    const preConnectionDeletionScripts = await onEventScriptService.getByConfig(connection.config_id, event);
 
-        for (const script of preConnectionDeletionScripts) {
-            const { name, file_location: fileLocation, version } = script;
+    for (const script of preConnectionDeletionScripts) {
+        const { name, file_location: fileLocation, version } = script;
 
-            const logCtx = await createLogCtx(script.id, script.name);
+        const logCtx = await createLogCtx(script.id, script.name);
 
-            const res = await getOrchestrator().triggerOnEventScript({
-                accountId: team.id,
-                connection,
-                version,
-                name,
-                fileLocation,
-                sdkVersion: script.sdk_version,
-                async: false,
-                maxConcurrency: envs.ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY,
-                logCtx
-            });
-            if (res.isErr()) {
-                await logCtx.failed();
-            }
+        const res = await getOrchestrator().triggerOnEventScript({
+            accountId: team.id,
+            connection,
+            version,
+            name,
+            fileLocation,
+            sdkVersion: script.sdk_version,
+            async: false,
+            maxConcurrency: envs.ON_EVENT_ENVIRONMENT_MAX_CONCURRENCY,
+            logCtx
+        });
+        if (res.isErr()) {
+            await logCtx.failed();
         }
     }
 
