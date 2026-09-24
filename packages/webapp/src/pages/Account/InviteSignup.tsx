@@ -116,7 +116,7 @@ export const InviteSignup: React.FC = () => {
                     <ButtonLink to={'/'} variant="outline" size="lg">
                         Back to home
                     </ButtonLink>
-                    <Button onClick={signout} variant="primary" size="lg">
+                    <Button onClick={() => void signout()} variant="primary" size="lg">
                         <LogOut />
                         Log out
                     </Button>

@@ -33,13 +33,12 @@ export const postPreBuiltDeploy = asyncWrapperWithEnvironment<PostPreBuiltDeploy
     }
 
     const body: PostPreBuiltDeploy['Body'] = val.data;
-    const { environment, account, plan, user } = res.locals;
+    const { environment, account, plan } = res.locals;
 
     const outcome = await deployIntegrationTemplate({
         environment,
         account,
         plan,
-        user,
         providerConfigKey: body.providerConfigKey,
         name: body.scriptName,
         type: body.type
