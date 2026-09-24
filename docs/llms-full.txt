@@ -7397,12 +7397,14 @@ Verify forwarded webhooks the same way you verify other webhooks from Nango. See
 
 ## Unverified webhooks
 
-Nango verifies the provider signature before forwarding whenever the provider signs its webhooks and the integration has the secret to check it. When it cannot, for example because the webhook secret is not set on the integration, Nango still forwards the webhook but flags it:
+Nango verifies the provider signature before forwarding whenever the provider signs its webhooks and the integration has the secret to check it. When Nango knows it skipped that check, for example because the webhook secret is not set on the integration, it still forwards the webhook but flags it:
 
-- The `X-Nango-Webhook-Unverified: true` header is set on every forwarded request, including raw payloads.
+- The `X-Nango-Webhook-Unverified: true` header is set on the forwarded request, including raw payloads.
 - The Nango wrapper includes `"unverified": true`.
 
-The Nango signature on these requests only proves the webhook came through Nango, not that the provider sent it. Anyone who knows the integration's webhook URL can send one. Treat the payload as untrusted, and set the webhook secret on the integration to enable verification. The forward operation in the Nango logs also shows a warning with the reason.
+The flag is only set when the integration's webhook handling knows verification was skipped. A forward without it is not a guarantee that the provider signature was checked. Some integrations, such as the unauthenticated provider, never verify.
+
+The Nango signature on flagged requests only proves the webhook came through Nango, not that the provider sent it. Anyone who knows the integration's webhook URL can send one. Treat the payload as untrusted, and set the webhook secret on the integration to enable verification. The forward operation in the Nango logs also shows a warning with the reason.
 
 ## When to use forwarding
 
