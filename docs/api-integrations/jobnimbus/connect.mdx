@@ -1,0 +1,35 @@
+---
+title: 'JobNimbus - How do I link my account?'
+sidebarTitle: 'JobNimbus'
+---
+
+## Overview
+
+To authenticate with JobNimbus, you need:
+1. **API Key** — A key that grants Nango access to the JobNimbus API on your behalf.
+
+This guide will walk you through generating your API key.
+
+### Prerequisites
+
+- A JobNimbus account with administrator access.
+
+### Step 1: Generate your API key
+
+1. Log in to JobNimbus, click your profile icon in the top right corner, and select **Settings**.
+2. Go to **Integration Settings** and open the **API** tab.
+3. Click **New API Key**.
+4. In the **Description** dropdown, type `Nango` — it isn't one of the pre-listed options, so typing it in adds it as a custom entry.
+5. Assign an **Access Profile** to the key — this determines what the key can access.
+6. Save the integration. A new key appears in the **Key** column.
+7. Copy the generated API key.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with JobNimbus.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/jobnimbus/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to JobNimbus.

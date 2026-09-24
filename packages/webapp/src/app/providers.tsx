@@ -3,43 +3,18 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { NuqsAdapter } from 'nuqs/adapters/react-router/v6';
 import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
-import { SWRConfig } from 'swr';
 
 import { TooltipProvider } from '@nangohq/design-system';
 
 import { ErrorBoundary } from '@/components/patterns/ErrorBoundary';
 import { queryClient } from '@/store';
-import { fetcher, isNoSessionError } from '@/utils/api';
 import { SentryErrorBoundary } from '@/utils/sentry';
-import { signout } from '@/utils/user';
 
 import type { ReactNode } from 'react';
 
 const theme = createTheme({
     fontFamily: 'Inter'
 });
-
-const SWRProvider = ({ children }: { children: ReactNode }) => {
-    return (
-        <SWRConfig
-            value={{
-                refreshInterval: 15 * 60000,
-                // Our server is not well configured if we enable that it will just fetch all the time
-                revalidateIfStale: false,
-                revalidateOnFocus: false,
-                revalidateOnReconnect: true,
-                fetcher,
-                onError: (error) => {
-                    if (isNoSessionError(error.status, error.json)) {
-                        return signout({ expired: true });
-                    }
-                }
-            }}
-        >
-            {children}
-        </SWRConfig>
-    );
-};
 
 export const Providers = ({ children }: { children: ReactNode }) => {
     return (
@@ -48,9 +23,7 @@ export const Providers = ({ children }: { children: ReactNode }) => {
                 <NuqsAdapter>
                     <QueryClientProvider client={queryClient}>
                         <MantineProvider theme={theme}>
-                            <TooltipProvider>
-                                <SWRProvider>{children}</SWRProvider>
-                            </TooltipProvider>
+                            <TooltipProvider>{children}</TooltipProvider>
                         </MantineProvider>
                     </QueryClientProvider>
                 </NuqsAdapter>
