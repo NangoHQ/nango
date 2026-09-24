@@ -109,6 +109,15 @@ describe('validateConnection', () => {
         expect(authLogCtx.failed).toHaveBeenCalledOnce();
         expect(mockGetByConfig).not.toHaveBeenCalled();
     });
+
+    it('propagates function lookup failures without treating them as validation failures', async () => {
+        const error = new Error('failed_to_find_function');
+        mockSearch.mockResolvedValue(Err(error));
+
+        await expect(validateConnection({ connection, config, account, environment, logCtx })).rejects.toBe(error);
+        expect(mockGetByConfig).not.toHaveBeenCalled();
+        expect(mockInvoke).not.toHaveBeenCalled();
+    });
 });
 
 describe('getValidateConnectionFailureMessage', () => {

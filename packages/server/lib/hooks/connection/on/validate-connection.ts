@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { connectionService, functionConfigService, getFunctionMaxConcurrency, NangoError, onEventScriptService } from '@nangohq/shared';
+import { connectionService, functionConfigService, getFunctionMaxConcurrency, onEventScriptService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -7,7 +7,7 @@ import { getOrchestrator } from '../../../utils/utils.js';
 import { reconnectionFailed } from '../../hooks.js';
 
 import type { LogContext } from '@nangohq/logs';
-import type { Config } from '@nangohq/shared';
+import type { Config, NangoError } from '@nangohq/shared';
 import type { AuthOperationType, DBConnection, DBEnvironment, DBTeam, Provider } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -34,7 +34,9 @@ export async function validateConnection({
         filter: { integrationKey: config.unique_key, enabled: true, trigger: { kind: 'event', event } }
     });
     if (functions.isErr()) {
-        return Err(new NangoError('function_failure', { error: functions.error.message }));
+        // A function lookup failure is a server error, not a failed connection validation.
+        // We let the caller handle it without marking the connection as invalid.
+        throw functions.error;
     }
 
     if (functions.value.length === 0) {
