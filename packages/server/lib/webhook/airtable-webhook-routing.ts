@@ -77,7 +77,7 @@ const route: WebhookHandler<AirtableWebhookReference> = async (nango, headers, b
     }
 
     // An unknown webhook id is unverifiable too. Flagged accounts keep getting it forwarded without a connection, as before.
-    const needsFlag = secretless.length > 0 || connections.length === 0;
+    const needsFlag = !(hasSecret && verified.length === 0) && (secretless.length > 0 || connections.length === 0);
     const allowUnverified = needsFlag && (await getFlags().allowUnauthorizedAirtableWebhook(nango.team.uuid));
     const routed = allowUnverified ? [...verified, ...secretless] : verified;
 
