@@ -67,7 +67,9 @@ function context({
 }
 
 async function execute(toolName: string, args: Partial<Parameters<typeof executeSessionTool>[0]> = {}) {
-    return await executeSessionTool({ integrationId: 'notion', toolName, context: context(), ...args });
+    const pinned = TOOLSET['notion']?.pinned.some((tool) => tool.name === toolName) ?? false;
+
+    return await executeSessionTool({ metaTool: 'nango_execute', integrationId: 'notion', toolName, pinned, context: context(), ...args });
 }
 
 function errorOf(result: Result<unknown>): Error {

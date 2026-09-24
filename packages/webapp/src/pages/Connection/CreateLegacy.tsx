@@ -1,10 +1,10 @@
 import { Prism } from '@mantine/prism';
+import { useQueryClient } from '@tanstack/react-query';
 import { HelpCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam } from 'react-use';
-import { useSWRConfig } from 'swr';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 import Nango, { AuthError } from '@nangohq/frontend';
@@ -25,7 +25,7 @@ import { globalEnv } from '../../utils/env';
 import type { ApiIntegrationList, AuthModeType } from '@nangohq/types';
 
 export const ConnectionCreateLegacy: React.FC = () => {
-    const { mutate } = useSWRConfig();
+    const queryClient = useQueryClient();
     const env = useStore((state) => state.env);
     const darkMode = useThemeStore(darkModeSelector);
 
@@ -250,7 +250,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
             .then(() => {
                 toast({ variant: 'success', title: 'Connection created!' });
                 track('web:connection_created:legacy', { provider: integration?.provider || 'unknown' });
-                void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connections'), undefined);
+                void queryClient.invalidateQueries({ queryKey: ['connections'] });
                 navigate(`/${env}/connections`, { replace: true });
             })
             .catch((err: unknown) => {

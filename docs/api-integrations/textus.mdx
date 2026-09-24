@@ -1,0 +1,89 @@
+---
+title: 'TextUs'
+sidebarTitle: 'TextUs'
+description: 'Integrate your application with the TextUs API'
+---
+
+## Quickstart
+
+Connect to TextUs with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _TextUs_.
+    </Step>
+    <Step id="authorize-textus" title="Authorize TextUs">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API Token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-textus-api" title="Call the TextUs API">
+    Let's make your first request to the TextUs API (list the accounts your token has access to). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/accounts" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/accounts',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## TextUs integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my TextUs account?](/api-integrations/textus/connect)
+Generate a TextUs API token and connect it to Nango
+
+Official docs: [TextUs Next API](https://apidocs.next.textus.com/)
+
+## API gotchas
+
+- TextUs's API tokens never expire and are scoped to the single user that created them, with full access to every feature available in that user's account. There is no way to narrow a token's scope.
+- The API requires content negotiation: send both `Accept: application/vnd.textus+jsonld` and `Content-Type: application/vnd.textus+jsonld` on every request. Standard `application/json` headers are rejected. Nango's proxy sets these by default for this integration.
+- The API is Hydra/JSON-LD based — list responses come back as `hydra:Collection` objects (with `hydra:member` and `hydra:totalItems`) rather than a bare array, and paging follows `hydra:PartialCollectionView`.
+- Most endpoints are scoped under an account slug in the path, e.g. `/{account}/contacts`, `/{account}/campaigns`. A few resource-by-ID endpoints (e.g. `/contacts/{contact}/notes`, `/groups/{group}/contacts`) omit the account prefix since the ID itself is already unique. Copy the exact path from the endpoint's docs page rather than assuming every endpoint follows the same pattern.
+- `GET /accounts` lists every account the connected user has a membership in (including via account hierarchies) — use it to discover the account slug(s) to use in scoped endpoint paths, since TextUs's own docs never state a fixed one.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/textus.mdx)</Note>
+
+## Pre-built syncs & actions for TextUs
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/textus/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
