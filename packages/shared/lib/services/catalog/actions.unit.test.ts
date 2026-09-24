@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getCatalogTool, isTemplatesZeroPath, listCatalogToolEndpoints, listCatalogTools } from './actions.js';
+import { getCatalogTool, isTemplatesZeroPath, listCatalogTools } from './actions.js';
 
 describe('catalog tools reader', () => {
     it('returns github create-issue from flows.zero.json', () => {
@@ -24,7 +24,6 @@ describe('catalog tools reader', () => {
         const github = listCatalogTools('github');
         expect(github.some((tool) => tool.name === 'create-issue')).toBe(true);
         expect(listCatalogTools('this-provider-does-not-exist')).toEqual([]);
-        expect(listCatalogToolEndpoints('this-provider-does-not-exist')).toEqual([]);
     });
 
     it('recognizes templates-zero paths', () => {
@@ -36,11 +35,5 @@ describe('catalog tools reader', () => {
         const tool = getCatalogTool('airtable-pat', 'batch-create-records');
         expect(tool?.fileLocation).toBe('templates-zero/airtable/build/airtable_actions_batch-create-records.cjs');
         expect(tool?.sourceLocation).toBe('templates-zero/airtable/actions/batch-create-records.ts');
-    });
-
-    it('exposes endpoints separately from the tool', () => {
-        const endpoints = listCatalogToolEndpoints('aircall');
-        expect(endpoints).toContainEqual({ name: 'create-contact', method: 'POST', path: '/actions/create-contact' });
-        expect(getCatalogTool('aircall', 'create-contact')).not.toHaveProperty('endpoint');
     });
 });

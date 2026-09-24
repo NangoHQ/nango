@@ -27,7 +27,7 @@ export async function resolveRunnableTool({
         return { kind: 'deployed', config: deployed };
     }
 
-    if (!flags.hasLiveCatalogActions) {
+    if (!flags.hasCatalogTools) {
         return { kind: 'missing' };
     }
 

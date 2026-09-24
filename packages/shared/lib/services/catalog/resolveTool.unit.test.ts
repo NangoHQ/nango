@@ -53,17 +53,17 @@ const catalogTool: CatalogTool = {
     module: 'action'
 };
 
-const originalHasLiveCatalogActions = flags.hasLiveCatalogActions;
+const originalHasCatalogTools = flags.hasCatalogTools;
 
 describe('resolveRunnableTool', () => {
     beforeEach(() => {
-        flags.hasLiveCatalogActions = true;
+        flags.hasCatalogTools = true;
         mockGetSyncConfigRaw.mockReset();
         mockGetCatalogTool.mockReset();
     });
 
     afterEach(() => {
-        flags.hasLiveCatalogActions = originalHasLiveCatalogActions;
+        flags.hasCatalogTools = originalHasCatalogTools;
     });
 
     it('returns the deployed row when one exists', async () => {
@@ -95,8 +95,8 @@ describe('resolveRunnableTool', () => {
         expect(result).toEqual({ kind: 'missing' });
     });
 
-    it('does not fall back to the catalog when FLAG_LIVE_CATALOG_ACTIONS_ENABLED is off', async () => {
-        flags.hasLiveCatalogActions = false;
+    it('does not fall back to the catalog when FLAG_CATALOG_TOOLS_ENABLED is off', async () => {
+        flags.hasCatalogTools = false;
         mockGetSyncConfigRaw.mockResolvedValue(null);
         mockGetCatalogTool.mockReturnValue(catalogTool);
 

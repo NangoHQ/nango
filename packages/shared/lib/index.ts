@@ -67,8 +67,8 @@ export * from './services/checkpoints/checkpoints.js';
 export * from './services/shared-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
-export { listCatalogTools, getCatalogTool, listCatalogToolEndpoints, isTemplatesZeroPath } from './services/catalog/actions.js';
-export type { CatalogTool, CatalogToolEndpoint } from './services/catalog/actions.js';
+export { listCatalogTools, getCatalogTool, isTemplatesZeroPath } from './services/catalog/actions.js';
+export type { CatalogTool } from './services/catalog/actions.js';
 export { resolveRunnableTool } from './services/catalog/resolveTool.js';
 export type { ResolveRunnableToolResult } from './services/catalog/resolveTool.js';
 

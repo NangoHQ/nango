@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 
 import { filterJsonSchemaForModels } from '@nangohq/utils';
 
-import type { Feature, FlowsZeroJson, FunctionCapabilities, HTTP_METHOD } from '@nangohq/types';
+import type { Feature, FlowsZeroJson, FunctionCapabilities } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 export const TEMPLATES_ZERO_PREFIX = 'templates-zero';
@@ -27,19 +27,12 @@ export interface CatalogTool {
     /** TypeScript source under `templates-zero/`. */
     sourceLocation: string;
     capabilities: FunctionCapabilities;
-    /** Compiled module `type`. Today's catalog files are action modules. */
+    /** Compiled module `type`. Catalog files are action modules. */
     module: 'action';
-}
-
-export interface CatalogToolEndpoint {
-    name: string;
-    method: HTTP_METHOD;
-    path: string;
 }
 
 const toolsByProvider = new Map<string, CatalogTool[]>();
 const toolByProviderAndName = new Map<string, Map<string, CatalogTool>>();
-const endpointsByProvider = new Map<string, CatalogToolEndpoint[]>();
 
 function getFlowsJson(): FlowsZeroJson {
     flowsJson ??= nodeRequire('../../../flows.zero.json') as FlowsZeroJson;
@@ -96,16 +89,11 @@ function loadCatalogTools(provider: string): CatalogTool[] {
     if (!integration) {
         toolsByProvider.set(provider, []);
         toolByProviderAndName.set(provider, new Map());
-        endpointsByProvider.set(provider, []);
         return [];
     }
 
     const folder = integration.symLinkTargetName ?? provider;
-    const endpoints: CatalogToolEndpoint[] = [];
     const tools: CatalogTool[] = integration.actions.map((item) => {
-        if (item.endpoint) {
-            endpoints.push({ name: item.name, method: item.endpoint.method, path: item.endpoint.path });
-        }
         return {
             name: item.name,
             description: item.description,
@@ -124,7 +112,6 @@ function loadCatalogTools(provider: string): CatalogTool[] {
 
     toolsByProvider.set(provider, tools);
     toolByProviderAndName.set(provider, new Map(tools.map((tool) => [tool.name, tool])));
-    endpointsByProvider.set(provider, endpoints);
     return tools;
 }
 
@@ -135,11 +122,6 @@ export function listCatalogTools(provider: string): CatalogTool[] {
 export function getCatalogTool(provider: string, name: string): CatalogTool | undefined {
     loadCatalogTools(provider);
     return toolByProviderAndName.get(provider)?.get(name);
-}
-
-export function listCatalogToolEndpoints(provider: string): CatalogToolEndpoint[] {
-    loadCatalogTools(provider);
-    return endpointsByProvider.get(provider) ?? [];
 }
 
 export function isTemplatesZeroPath(fileLocation: string): boolean {
