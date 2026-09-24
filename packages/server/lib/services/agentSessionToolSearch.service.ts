@@ -390,9 +390,9 @@ function toolNames(matches: AgentSessionToolMatch[]): string {
 /** Scores run from 0, everything matched, to 1, nothing matched, and the event reports the other way round. */
 function searchHits(candidates: ScoredCandidate[]): AgentSessionToolSearchHit[] {
     return candidates.map((candidate) => ({
-        tool: candidate.action,
-        slug: candidate.slug,
-        integration: candidate.integration,
+        tool_name: candidate.action,
+        tool_slug: candidate.slug,
+        integration_id: candidate.integration,
         confidence: Math.round((1 - candidate.score) * 100) / 100
     }));
 }

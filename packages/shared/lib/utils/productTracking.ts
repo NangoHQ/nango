@@ -137,7 +137,7 @@ class ProductTracking {
          * Values the taxonomy's primitives-only rule does not allow, carried by the exception granted
          * to tool search so a query can be read next to the results it returned.
          */
-        structuredProperties?: Record<string, unknown>;
+        structuredProperties?: Record<string, ReadonlyArray<Record<string, string | number | boolean>>>;
     } & TrackingContextInput) {
         try {
             if (this.client == null) {

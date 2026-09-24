@@ -247,10 +247,10 @@ describe('trackAgentSessionProxyRequest', () => {
 
 describe('trackAgentSessionToolSearch', () => {
     const matches = [
-        { tool: 'send_email', slug: 'gmail__send_email', integration: 'gmail', confidence: 0.82 },
-        { tool: 'create_draft', slug: 'gmail__create_draft', integration: 'gmail', confidence: 0.61 }
+        { tool_name: 'send_email', tool_slug: 'gmail__send_email', integration_id: 'gmail', confidence: 0.82 },
+        { tool_name: 'create_draft', tool_slug: 'gmail__create_draft', integration_id: 'gmail', confidence: 0.61 }
     ];
-    const related = [{ tool: 'create_ticket', slug: 'zendesk__create_ticket', integration: 'zendesk', confidence: 0.28 }];
+    const related = [{ tool_name: 'create_ticket', tool_slug: 'zendesk__create_ticket', integration_id: 'zendesk', confidence: 0.28 }];
 
     it('carries the query as sent, with both result tiers and their confidence', () => {
         inRequest(() => trackAgentSessionToolSearch({ session, query: 'email a customer', matches, related, logOperationId: 'op-3' }));
@@ -263,11 +263,20 @@ describe('trackAgentSessionToolSearch', () => {
             query: 'email a customer',
             match_count: 2,
             related_count: 1,
+            top_match_confidence: 0.82,
             matches,
             related,
             log_operation_id: 'op-3',
             is_success: true
         });
+    });
+
+    it('reports a search rejected before its arguments could be read', () => {
+        inRequest(() => trackAgentSessionToolSearch({ session, matches: [], related: [], errorCode: 'invalid_input' }));
+
+        const { properties } = onlyEvent();
+        expect(properties).not.toHaveProperty('query');
+        expect(properties).toMatchObject({ is_success: false, error_code: 'invalid_input' });
     });
 
     it('reports a search that failed', () => {

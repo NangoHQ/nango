@@ -7,13 +7,13 @@ import type { AgentSession, HTTP_METHOD } from '@nangohq/types';
 export type AgentSessionMetaTool = 'nango_execute' | 'nango_proxy' | 'nango_tool_search' | 'nango_create_connection';
 
 /** One ranked tool, as the search returned it. Confidence runs from 0, nothing matched, to 1. */
-export interface AgentSessionToolSearchHit {
-    tool: string;
+export type AgentSessionToolSearchHit = {
+    tool_name: string;
     /** The name the agent was given for it, which collisions make impossible to derive afterwards. */
-    slug: string;
-    integration: string;
+    tool_slug: string;
+    integration_id: string;
     confidence: number;
-}
+};
 
 interface Outcome {
     logOperationId?: string | undefined;
@@ -36,7 +36,7 @@ interface ToolCallParams extends Outcome {
 
 interface ToolSearchParams extends Outcome {
     session: AgentSession;
-    query: string;
+    query?: string | undefined;
     matches: AgentSessionToolSearchHit[];
     related: AgentSessionToolSearchHit[];
 }
@@ -106,9 +106,10 @@ export function trackAgentSessionToolSearch({ session, query, matches, related, 
         eventProperties: {
             agent_session_id: session.id,
             meta_tool: 'nango_tool_search',
-            query,
+            ...(query === undefined ? {} : { query }),
             match_count: matches.length,
             related_count: related.length,
+            ...(matches[0] ? { top_match_confidence: matches[0].confidence } : {}),
             ...outcomeProperties(outcome)
         },
         structuredProperties: { matches, related }
