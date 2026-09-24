@@ -476,6 +476,7 @@ describe('createManagementMcpServer', () => {
             });
             expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('async');
             expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('max_retries');
+            expect(scopedTools[0]?.inputSchema.properties?.['input']).toMatchObject({ type: ['object', 'array', 'string', 'number', 'boolean', 'null'] });
         } finally {
             await authorized.client.close();
             await authorized.server.close();
