@@ -12,12 +12,11 @@ import type { DBConnectionDecrypted } from '@nangohq/types';
 const MAC_PREFIX = 'hmac-sha256=';
 const MISSING_SECRET = {
     reason: 'airtable_missing_mac_secret',
-    remediation: 'Store the webhook macSecretBase64 in the connection metadata under webhooks.<webhook id>'
+    remediation: 'Store the webhook macSecretBase64 in the connection metadata as webhooks.<webhook id>'
 };
 
 // Airtable returns macSecretBase64 once, when the webhook is created, so the connection has to
-// store it next to the webhook id it routes on. The create-webhook template stores it directly as
-// `webhooks[id]`, and `webhooks[id].macSecretBase64` is accepted for callers that keep the whole response.
+// store it next to the webhook id it routes on, as `webhooks[id]`. That is what the create-webhook template writes.
 // https://airtable.com/developers/web/api/webhooks-overview#webhook-notification-delivery
 function getMacSecret(connection: DBConnectionDecrypted, webhookId: string): Buffer | null {
     const webhooks = connection.metadata?.['webhooks'];
@@ -25,8 +24,7 @@ function getMacSecret(connection: DBConnectionDecrypted, webhookId: string): Buf
         return null;
     }
 
-    const webhook = (webhooks as Record<string, unknown>)[webhookId];
-    const macSecretBase64 = typeof webhook === 'string' ? webhook : (webhook as { macSecretBase64?: unknown } | null | undefined)?.macSecretBase64;
+    const macSecretBase64 = (webhooks as Record<string, unknown>)[webhookId];
     if (typeof macSecretBase64 !== 'string') {
         return null;
     }
