@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isNonEnvPath, MAX_NEXT_LENGTH, signinPathWithNext } from './routes.js';
+import { isNonEnvPath, MAX_NEXT_LENGTH, safeNextPath, signinPathWithNext } from './routes.js';
 
 describe('isNonEnvPath', () => {
     describe('direct non-env paths', () => {
@@ -73,5 +73,37 @@ describe('signinPathWithNext', () => {
         const search = `?filters=${'a'.repeat(MAX_NEXT_LENGTH)}`;
         expect(signinPathWithNext(location('/dev/logs', search))).toBe('/signin');
         expect(signinPathWithNext(location('/dev/logs', `?filters=${'a'.repeat(MAX_NEXT_LENGTH - '/dev/logs?filters='.length)}`))).toContain('next=');
+    });
+
+    it('flags an expired session alongside the destination', () => {
+        expect(signinPathWithNext(location('/dev/integrations'), { expired: true })).toBe('/signin?next=%2Fdev%2Fintegrations&error=session_expired');
+    });
+
+    it('flags an expired session when there is no destination', () => {
+        expect(signinPathWithNext(location('/'), { expired: true })).toBe('/signin?error=session_expired');
+    });
+});
+
+describe('safeNextPath', () => {
+    it('falls back to the root when there is no destination', () => {
+        expect(safeNextPath(null)).toBe('/');
+        expect(safeNextPath(undefined)).toBe('/');
+        expect(safeNextPath('')).toBe('/');
+    });
+
+    it('keeps an in-app path with its search and hash', () => {
+        expect(safeNextPath('/dev/logs?states=failed#top')).toBe('/dev/logs?states=failed#top');
+        expect(safeNextPath('/oauth/consent/abc-123/review')).toBe('/oauth/consent/abc-123/review');
+    });
+
+    it('rejects destinations on another origin', () => {
+        expect(safeNextPath('https://evil.example/steal')).toBe('/');
+        expect(safeNextPath('//evil.example/steal')).toBe('/');
+        expect(safeNextPath('/..//evil.example/steal')).toBe('/');
+        expect(safeNextPath('javascript:alert(1)')).toBe('/');
+    });
+
+    it('rejects destinations past the length the server accepts', () => {
+        expect(safeNextPath(`/dev/logs?filters=${'a'.repeat(MAX_NEXT_LENGTH)}`)).toBe('/');
     });
 });

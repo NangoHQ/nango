@@ -10,10 +10,10 @@ import type { GetIntegrationOutput } from './schema.js';
 
 export const getIntegrationsTool = defineManagementMcpTool<typeof getIntegrationArgumentsSchema, GetIntegrationOutput>({
     name: 'integrations_get',
-    description: 'Get a configured integration by ID.',
+    description: 'Get a configured integration by ID, optionally including its webhook URL or developer-app credentials when authorized.',
     inputSchema: getIntegrationArgumentsSchema,
     outputSchema: getIntegrationOutputSchema,
-    annotations: { readOnlyHint: true },
+    annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     requiredScopes: { anyOf: ['environment:integrations:read', 'environment:integrations:read_credentials'] },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, environment, grantedScopes }) {

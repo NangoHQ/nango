@@ -36,7 +36,7 @@ export const triggerSyncsTool = defineManagementMcpTool<typeof triggerSyncsArgum
         readOnlyHint: false,
         destructiveHint: true,
         idempotentHint: false,
-        openWorldHint: false
+        openWorldHint: true
     },
     async handler({ args, environment }) {
         const syncIdentifiers = normalizedSyncParams(args.syncs);

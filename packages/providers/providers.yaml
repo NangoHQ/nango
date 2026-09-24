@@ -11253,6 +11253,9 @@ halo-psa:
         - support
         - ticketing
     auth_mode: OAUTH2_CC
+    webhook_routing_script: haloPsaWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     token_url: https://${connectionConfig.hostname}/auth/token
     token_request_auth_method: basic
     scope_separator: ' '
@@ -14313,6 +14316,30 @@ mailchimp:
             pattern: '^[a-z]+\d*$'
             example: us6
             automated: true
+
+mailerlite:
+    display_name: MailerLite
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://connect.mailerlite.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /groups?limit=1
+    docs: https://nango.dev/docs/api-integrations/mailerlite
+    docs_connect: https://nango.dev/docs/api-integrations/mailerlite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your MailerLite API token.
+            example: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.****************.**********
+            pattern: '^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generate-your-mailerlite-api-token'
 
 mailjet:
     display_name: Mailjet
@@ -18882,7 +18909,7 @@ pleo-api-key:
             title: API Key
             description: Your Pleo Standalone API Key.
             example: pls_********************************_620d75
-            pattern: '^pls_[a-f0-9]+_[a-f0-9]+$'
+            pattern: '^pl[sp]_[a-f0-9]+_[a-f0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
 podium:
@@ -23056,6 +23083,49 @@ shortcut:
             type: string
             title: API Key
             description: The API key for your Shortcut account
+
+simpplr:
+    display_name: Simpplr
+    categories:
+        - knowledge-base
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://platform.${connectionConfig.region}.simpplr.com/v1/identity/oauth/token
+    body_format: json
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://platform.${connectionConfig.region}.simpplr.com
+    docs: https://nango.dev/docs/api-integrations/simpplr
+    docs_connect: https://nango.dev/docs/api-integrations/simpplr/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region your Simpplr tenant is hosted in. Choose app for the United States.
+            enum:
+                - app
+                - eu
+                - au
+                - ca
+            order: 1
+            doc_section: '#step-2-find-your-region'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID of your Simpplr client application.
+            pattern: '^\S+$'
+            example: 7f3a91c2****************************e85b
+            doc_section: '#step-1-create-a-client-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret of your Simpplr client application.
+            pattern: '^\S+$'
+            example: b41d7e60********************************************9af2
+            secret: true
+            doc_section: '#step-1-create-a-client-application'
 
 simpro:
     display_name: Simpro

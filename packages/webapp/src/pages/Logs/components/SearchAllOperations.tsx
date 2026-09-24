@@ -12,7 +12,7 @@ import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
 import { PeriodSelector } from '@/components/patterns/PeriodSelector';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { queryClient, useStore } from '../../../store';
-import { apiFetch } from '../../../utils/api';
+import { APIError, apiFetch } from '../../../utils/api';
 import { last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
 import { formatQuantity } from '../../../utils/utils';
 import { computeLogsColumnSizing, getLogsColumnStyle } from '../column-sizing';
@@ -120,7 +120,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 signal
             });
             if (res.status !== 200) {
-                throw new Error();
+                throw new APIError({ res, json: (await res.json()) as Record<string, unknown> });
             }
 
             return (await res.json()) as SearchOperations['Success'];

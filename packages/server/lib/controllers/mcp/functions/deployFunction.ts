@@ -25,7 +25,7 @@ export const deployFunctionTool = defineManagementMcpTool<typeof deployFunctionA
         readOnlyHint: false,
         destructiveHint: true,
         idempotentHint: false,
-        openWorldHint: false
+        openWorldHint: true
     },
     async handler({ args, environment, customerApiKeyId }) {
         return (

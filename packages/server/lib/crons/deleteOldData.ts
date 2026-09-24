@@ -12,6 +12,7 @@ import {
     deleteExpiredInvitations,
     deleteJobsByDate,
     environmentService,
+    functionConfigService,
     getSoftDeletedSyncConfig,
     getSoftDeletedSyncs
 } from '@nangohq/shared';
@@ -20,6 +21,7 @@ import { getLogger, metrics, report } from '@nangohq/utils';
 import { batchDelete } from '../deletion/batchDelete.js';
 import { deleteConnectionData } from '../deletion/deleteConnectionData.js';
 import { deleteEnvironmentData } from '../deletion/deleteEnvironmentData.js';
+import { deleteFunctionConfigData } from '../deletion/deleteFunctionConfigData.js';
 import { deleteProviderConfigData } from '../deletion/deleteProviderConfigData.js';
 import { deleteSyncConfigData } from '../deletion/deleteSyncConfigData.js';
 import { deleteSyncs } from '../deletion/deleteSyncs.js';
@@ -46,6 +48,7 @@ const deleteInvitationsOlderThan = envs.CRON_DELETE_OLD_INVITATIONS_MAX_DAYS;
 const deleteSyncsOlderThan = envs.CRON_DELETE_OLD_SYNCS_MAX_DAYS;
 const deleteConfigsOlderThan = envs.CRON_DELETE_OLD_CONFIGS_MAX_DAYS;
 const deleteSyncConfigsOlderThan = envs.CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS;
+const deleteFunctionConfigsOlderThan = envs.CRON_DELETE_OLD_FUNCTION_CONFIGS_MAX_DAYS;
 const deleteConnectionsOlderThan = envs.CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS;
 const deleteEnvironmentsOlderThan = envs.CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS;
 const deleteFunctionAsyncJobsOlderThanDays = 14;
@@ -201,6 +204,26 @@ export async function exec(): Promise<void> {
                 }
 
                 return syncsConfigs.length;
+            }
+        });
+
+        await batchDelete({
+            ...opts,
+            name: 'function configs',
+            deleteFn: async () => {
+                const functionConfigs = await functionConfigService.getSoftDeleted(db.knex, {
+                    olderThanDays: deleteFunctionConfigsOlderThan,
+                    limit
+                });
+                if (functionConfigs.isErr()) {
+                    throw functionConfigs.error;
+                }
+
+                for (const functionConfig of functionConfigs.value) {
+                    await deleteFunctionConfigData(functionConfig, opts);
+                }
+
+                return functionConfigs.value.length;
             }
         });
 
