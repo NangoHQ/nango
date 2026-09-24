@@ -767,8 +767,8 @@ affinity:
                 - 'x-ratelimit-limit-user'
                 - 'x-ratelimit-limit-org-reset'
     webhook_routing_script: affinityWebhookRouting
-    webhook_user_defined_secret: true
     webhook_allowed_query_params:
+        - nangoConnectionId
         - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/affinity
     docs_connect: https://nango.dev/docs/integrations/all/affinity/connect
@@ -9023,7 +9023,6 @@ fillout-api-key:
             endpoints:
                 - /v1/api/forms
     webhook_routing_script: filloutWebhookRouting
-    webhook_user_defined_secret: true
     webhook_allowed_query_params:
         - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/fillout-api-key
@@ -9058,7 +9057,6 @@ fillout:
     token_response_metadata:
         - base_url
     webhook_routing_script: filloutWebhookRouting
-    webhook_user_defined_secret: true
     webhook_allowed_query_params:
         - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/fillout
@@ -22810,7 +22808,6 @@ shipstation:
             endpoints:
                 - /users
     webhook_routing_script: shipstationWebhookRouting
-    webhook_user_defined_secret: true
     webhook_allowed_query_params:
         - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/shipstation
@@ -22850,7 +22847,6 @@ shipstation-v2:
             endpoints:
                 - /v2/users?page_size=1
     webhook_routing_script: shipstationWebhookRouting
-    webhook_user_defined_secret: true
     webhook_allowed_query_params:
         - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/shipstation-v2
