@@ -15,6 +15,7 @@ import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
+import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { useStore } from '../../store';
 import { track } from '../../utils/analytics';
 import { useGetHmacAPI } from '../../utils/api';
@@ -26,6 +27,7 @@ import type { ApiIntegrationList, AuthModeType } from '@nangohq/types';
 export const ConnectionCreateLegacy: React.FC = () => {
     const { mutate } = useSWRConfig();
     const env = useStore((state) => state.env);
+    const darkMode = useThemeStore(darkModeSelector);
 
     const { data: integrationsData } = useListIntegrations(env);
     const integrations = integrationsData?.data;
@@ -1129,7 +1131,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </div>
                                 <div>
                                     <div className="mt-6">
-                                        <Prism className="transparent-code" language="typescript" colorScheme="dark">
+                                        <Prism className="transparent-code" language="typescript" colorScheme={darkMode ? 'dark' : 'light'}>
                                             {snippet()}
                                         </Prism>
                                     </div>

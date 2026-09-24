@@ -405,23 +405,15 @@ html:not(.dark) #table-of-contents:not(:has(.toc-item[data-active="true"])) .toc
 /*
  * Each <Update> renders with py-8 (32px top and bottom), and the `---`
  * between entries renders as a prose <hr> with 3em (48px) margins above
- * and below. Stacked, that puts the divider 80px from the content on
- * each side and 160px between consecutive entries. Zero the <hr>
- * margins and trim the entry padding so the divider sits 24px from
- * the content on both sides.
- *
- * scroll-margin-top mirrors Mintlify's own rule on .update-container,
- * calc(var(--scroll-mt) - 2rem), with the new padding so anchor links
- * still land on the label.
+ * and below. Stacked, that put the divider 80px from the content on
+ * each side and 160px between consecutive entries, which read as too
+ * loose. 24px on each side was tried and read as too tight. Keep the
+ * component's own 32px padding and give the <hr> a 16px margin, so the
+ * divider sits 48px from the content on both sides.
  */
-[data-page-href*="updates/changelog"] .update-container {
-  padding-top: 1.5rem !important;
-  padding-bottom: 1.5rem !important;
-  scroll-margin-top: calc(var(--scroll-mt) - 1.5rem) !important;
-}
 [data-page-href*="updates/changelog"] .update-container + hr {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
+  margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
 }
 
 /* ══ LOGO ════════════════════════════════════════════════════════ */

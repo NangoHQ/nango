@@ -1,5 +1,6 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import * as shared from '@nangohq/shared';
 import { seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
@@ -371,5 +372,103 @@ describe(`POST ${endpoint}`, () => {
                 forward_webhooks: true
             }
         });
+    });
+
+    it('should reject a static MCP_OAUTH2 provider with no client credentials', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: env.name },
+            token: apiKey.secret,
+            body: {
+                provider: 'asana-mcp',
+                useSharedCredentials: false
+            }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'invalid_body', message: 'Missing credentials' }
+        });
+    });
+
+    it('should normalize comma/space-delimited scopes for a static MCP_OAUTH2 provider', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: env.name },
+            token: apiKey.secret,
+            body: {
+                provider: 'asana-mcp',
+                useSharedCredentials: false,
+                integrationId: 'asana-mcp-normalize-test',
+                auth: {
+                    authType: 'MCP_OAUTH2',
+                    clientId: 'test-client',
+                    clientSecret: 'test-secret',
+                    scopes: 'read write,admin access'
+                }
+            }
+        });
+
+        isSuccess(res.json);
+
+        const getRes = await api.fetch('/api/v1/integrations/:providerConfigKey', {
+            method: 'GET',
+            query: { env: env.name },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'asana-mcp-normalize-test' }
+        });
+        isSuccess(getRes.json);
+        expect(getRes.json.data.integration).toMatchObject({ oauth_scopes: 'read,write,admin,access' });
+    });
+
+    it('should reject a static MCP_OAUTH2 provider with only one of clientId/clientSecret', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: env.name },
+            token: apiKey.secret,
+            body: {
+                provider: 'asana-mcp',
+                useSharedCredentials: false,
+                auth: { authType: 'MCP_OAUTH2', clientId: 'only-a-client-id' }
+            }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'invalid_body', message: 'Missing credentials' }
+        });
+    });
+
+    it('rejects caller-supplied client credentials for a dynamically-registered MCP_OAUTH2 provider', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const registerSpy = vi.spyOn(shared.mcpClient, 'registerClientId').mockResolvedValue({
+            client_id: 'dcr-client-id',
+            client_secret: 'dcr-secret'
+        });
+
+        try {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                query: { env: env.name },
+                token: apiKey.secret,
+                body: {
+                    provider: 'amplitude-mcp',
+                    useSharedCredentials: false,
+                    integrationId: 'amplitude-mcp-dcr-rejects-caller-creds',
+                    auth: { authType: 'MCP_OAUTH2', clientId: 'attacker-supplied-client-id', clientSecret: 'attacker-supplied-secret' }
+                }
+            });
+
+            isError(res.json);
+            expect(res.json).toStrictEqual<typeof res.json>({
+                error: { code: 'invalid_body', message: "Client credentials can't be set for dynamic client registration" }
+            });
+            expect(registerSpy).not.toHaveBeenCalled();
+        } finally {
+            registerSpy.mockRestore();
+        }
     });
 });

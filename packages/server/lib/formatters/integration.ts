@@ -1,6 +1,7 @@
 import { getProvider } from '@nangohq/shared';
 import { basePublicUrl } from '@nangohq/utils';
 
+import { REGISTRATION_ACCESS_TOKEN_KEY, REGISTRATION_CLIENT_URI_KEY } from '../services/mcpClientRegistration.js';
 import { getPreconfiguredConnectionConfig, getPreconfiguredCredentials } from '../utils/integrations.js';
 
 import type { IntegrationCredentials } from '../utils/integrations.js';
@@ -18,7 +19,7 @@ export function integrationToApi(data: IntegrationConfig, options?: { includeCre
         oauth_scopes: data.oauth_scopes,
         environment_id: data.environment_id,
         app_link: hideCredentials ? null : data.app_link,
-        custom: hideCredentials ? null : maskSecretConfigFields(data.custom, provider),
+        custom: hideCredentials ? null : stripInternalCustomFields(maskSecretConfigFields(data.custom, provider)),
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString(),
         missing_fields: data.missing_fields,
@@ -48,6 +49,17 @@ function maskSecretConfigFields(custom: IntegrationConfig['custom'], provider: P
     }
 
     return masked ?? custom;
+}
+
+function stripInternalCustomFields(custom: IntegrationConfig['custom']): IntegrationConfig['custom'] {
+    if (!custom || (!(REGISTRATION_CLIENT_URI_KEY in custom) && !(REGISTRATION_ACCESS_TOKEN_KEY in custom))) {
+        return custom;
+    }
+
+    const stripped = { ...custom };
+    delete stripped[REGISTRATION_CLIENT_URI_KEY];
+    delete stripped[REGISTRATION_ACCESS_TOKEN_KEY];
+    return stripped;
 }
 
 export function integrationToPublicApi({
@@ -109,6 +121,13 @@ export function integrationCredentialsToPublicApi(credentials: IntegrationCreden
                 app_id: credentials.appId,
                 app_link: credentials.appLink,
                 private_key: credentials.privateKey
+            };
+        case 'MCP_OAUTH2':
+            return {
+                type: credentials.type,
+                client_id: credentials.clientId,
+                client_secret: credentials.clientSecret,
+                scopes: credentials.scopes
             };
     }
 }

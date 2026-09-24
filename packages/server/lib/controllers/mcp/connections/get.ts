@@ -12,10 +12,10 @@ import type { GetConnectionOutput } from './schema.js';
 
 export const getConnectionsTool = defineManagementMcpTool<typeof getConnectionArgumentsSchema, GetConnectionOutput>({
     name: 'connections_get',
-    description: 'Get one connection and its current credential state. Credential-reading access may refresh or rotate credential material.',
+    description: 'Get one connection and, when authorized, return its credentials. This may refresh or rotate stored credential material before returning it.',
     inputSchema: getConnectionArgumentsSchema,
     outputSchema: getConnectionOutputSchema,
-    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
     requiredScopes: { anyOf: ['environment:connections:read', 'environment:connections:read_credentials'] },
     audit: { kind: 'no-audit', reason: 'non-auditable' },
     async handler({ args, account, environment, grantedScopes }) {

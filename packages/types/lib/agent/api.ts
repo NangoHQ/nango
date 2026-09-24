@@ -2,7 +2,7 @@ import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { Tags } from '../db.js';
 import type { AgentSessionUnknownPinnedConnectionsPayload } from './connections.js';
-import type { AgentSessionEndedReason } from './session.js';
+import type { AgentSessionCreateConnectionConfig, AgentSessionEndedReason } from './session.js';
 import type {
     AgentSessionToolsNotInToolsetPayload,
     AgentSessionUnknownIntegrationsPayload,
@@ -21,6 +21,15 @@ export type AgentSessionIntegrationPolicyInput =
           deny?: AgentSessionToolListInput | undefined;
       };
 
+export type AgentSessionMetaToolInput = boolean | { enabled: boolean; tags?: Tags | undefined };
+
+export interface AgentSessionMetaToolsInput {
+    nango_tool_search?: boolean | { enabled: boolean } | undefined;
+    nango_execute?: boolean | { enabled: boolean } | undefined;
+    nango_proxy?: boolean | { enabled: boolean } | undefined;
+    nango_create_connection?: boolean | { enabled: boolean; tags?: Tags | undefined } | undefined;
+}
+
 export interface PostAgentSessionsBody {
     tenant: {
         connections: {
@@ -30,7 +39,7 @@ export interface PostAgentSessionsBody {
     };
     toolset?: '*' | Record<string, AgentSessionIntegrationPolicyInput> | undefined;
     pinned_tools?: Record<string, string[]> | undefined;
-    meta_tools?: Record<string, boolean> | undefined;
+    meta_tools?: AgentSessionMetaToolsInput | undefined;
     expires_in?: string | undefined;
 }
 
@@ -44,6 +53,7 @@ export interface AgentSessionMetaToolsSummary {
     nango_tool_search: boolean;
     nango_execute: boolean;
     nango_proxy: boolean;
+    nango_create_connection: AgentSessionCreateConnectionConfig;
 }
 
 export interface AgentSessionUnknownMetaToolsPayload {

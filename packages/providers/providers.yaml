@@ -1470,6 +1470,18 @@ a-leads:
             example: a3f8b2e1********************d9c4
             pattern: '^[a-f0-9]{32}$'
 
+anarlog-mcp:
+    display_name: Anarlog (MCP)
+    categories:
+        - mcp
+    auth_mode: MCP_OAUTH2_GENERIC
+    mcp_server_url: https://api.anarlog.so/mcp
+    proxy:
+        base_url: https://api.anarlog.so/mcp
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/anarlog-mcp
+
 anrok:
     display_name: Anrok
     categories:
@@ -3466,6 +3478,72 @@ beehiiv:
             example: pub_a3d1b49e-2a5d-4f4b-97c8-8f32e1d2f7b9
             pattern: '^(pub_[0-9a-fA-F\-]+)$'
 
+beeline-vms:
+    display_name: Beeline VMS
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://integrations.${connectionConfig.authHost}.beeline.com/oauth/token
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_params:
+        grant_type: client_credentials
+        audience: ${connectionConfig.audience}
+    proxy:
+        base_url: ${connectionConfig.audience}
+        headers:
+            accept: application/json
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+            remaining: 'x-rate-limit-remaining'
+    docs: https://nango.dev/docs/api-integrations/beeline-vms
+    docs_connect: https://nango.dev/docs/api-integrations/beeline-vms/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Client ID issued by your Beeline Customer Operations Manager (COM).
+            order: 1
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Client Secret issued alongside your Client ID.
+            secret: true
+            order: 2
+    connection_config:
+        authHost:
+            type: string
+            title: Authorization Server Region
+            description: The region your Beeline credentials were issued for.
+            enum:
+                - auth
+                - eu-auth
+            doc_section: '#step-2-choosing-your-region-and-audience'
+            order: 1
+        audience:
+            type: string
+            title: Audience
+            description: The audience Beeline granted your Client ID for.
+            enum:
+                - https://client.beeline.com/api
+                - https://client-eu.beeline.com/api
+                - https://edge.beeline.com/client-onboarding
+                - https://edge-eu.beeline.com/client-onboarding
+                - https://edge.beeline.com/worker
+                - https://edge-eu.beeline.com/worker
+                - https://edge-eu.beeline.com/reporting
+            doc_section: '#step-2-choosing-your-region-and-audience'
+            order: 2
+        clientSiteId:
+            type: string
+            title: Client Site ID
+            description: Issued alongside your Client credentials.
+            doc_section: '#step-1-getting-your-credentials-from-beeline'
+            order: 3
+
 bettercontact:
     display_name: BetterContact
     categories:
@@ -5179,6 +5257,38 @@ clay:
             example: 7de4ba****e439d39****
             pattern: '^[a-f0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
+
+clay-mcp:
+    display_name: Clay (MCP)
+    categories:
+        - crm
+        - marketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://app.clay.com/oauth/authorize
+    token_url: https://api.clay.com/oauth/token
+    registration_url: https://api.clay.com/oauth/register
+    default_scopes:
+        - mcp
+    authorization_params:
+        response_type: code
+        resource: https://api.clay.com/v3/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.clay.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/clay-mcp
 
 cleverreach:
     display_name: CleverReach
@@ -11209,6 +11319,9 @@ halo-psa:
         - support
         - ticketing
     auth_mode: OAUTH2_CC
+    webhook_routing_script: haloPsaWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     token_url: https://${connectionConfig.hostname}/auth/token
     token_request_auth_method: basic
     scope_separator: ' '
@@ -14269,6 +14382,30 @@ mailchimp:
             pattern: '^[a-z]+\d*$'
             example: us6
             automated: true
+
+mailerlite:
+    display_name: MailerLite
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://connect.mailerlite.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /groups?limit=1
+    docs: https://nango.dev/docs/api-integrations/mailerlite
+    docs_connect: https://nango.dev/docs/api-integrations/mailerlite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your MailerLite API token.
+            example: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.****************.**********
+            pattern: '^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generate-your-mailerlite-api-token'
 
 mailjet:
     display_name: Mailjet
@@ -18838,7 +18975,7 @@ pleo-api-key:
             title: API Key
             description: Your Pleo Standalone API Key.
             example: pls_********************************_620d75
-            pattern: '^pls_[a-f0-9]+_[a-f0-9]+$'
+            pattern: '^pl[sp]_[a-f0-9]+_[a-f0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
 podium:
@@ -23013,6 +23150,49 @@ shortcut:
             title: API Key
             description: The API key for your Shortcut account
 
+simpplr:
+    display_name: Simpplr
+    categories:
+        - knowledge-base
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://platform.${connectionConfig.region}.simpplr.com/v1/identity/oauth/token
+    body_format: json
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://platform.${connectionConfig.region}.simpplr.com
+    docs: https://nango.dev/docs/api-integrations/simpplr
+    docs_connect: https://nango.dev/docs/api-integrations/simpplr/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region your Simpplr tenant is hosted in. Choose app for the United States.
+            enum:
+                - app
+                - eu
+                - au
+                - ca
+            order: 1
+            doc_section: '#step-2-find-your-region'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID of your Simpplr client application.
+            pattern: '^\S+$'
+            example: 7f3a91c2****************************e85b
+            doc_section: '#step-1-create-a-client-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret of your Simpplr client application.
+            pattern: '^\S+$'
+            example: b41d7e60********************************************9af2
+            secret: true
+            doc_section: '#step-1-create-a-client-application'
+
 simpro:
     display_name: Simpro
     categories:
@@ -24749,6 +24929,32 @@ terraform:
             doc_section: '#step-1-generating-your-api-token'
             example: VbQo****************************
             pattern: '^[a-zA-Z0-9.]{50,}$'
+
+textus:
+    display_name: TextUs
+    categories:
+        - communication
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://next.textus.com
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/vnd.textus+jsonld
+            content-type: application/vnd.textus+jsonld
+        verification:
+            method: GET
+            endpoints:
+                - /accounts
+    docs: https://nango.dev/docs/api-integrations/textus
+    docs_connect: https://nango.dev/docs/api-integrations/textus/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your TextUs API Token.
+            example: eyJhbGciOi***.eyJzdWIiOi***.***************************
+            doc_section: '#step-1-generate-an-api-token'
 
 ticktick:
     display_name: TickTick
