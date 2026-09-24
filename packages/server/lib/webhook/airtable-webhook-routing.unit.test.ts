@@ -184,6 +184,16 @@ describe('airtable-webhook-routing', () => {
         expect(routedTo(result)).toEqual(['valid']);
     });
 
+    it('rejects a mac that fails the stored secret instead of falling back to secretless connections', async () => {
+        flagMocks.allowUnauthorizedAirtableWebhook.mockResolvedValue(true);
+        const { nango, execute } = makeNango([secretOf('verified'), secretlessOf('secretless')]);
+
+        const result = await AirtableWebhookRouting.default(nango, sign(rawBody, crypto.randomBytes(32)), body, rawBody);
+
+        expect(errType(result)).toBe('webhook_invalid_signature');
+        expect(execute).not.toHaveBeenCalled();
+    });
+
     it('rejects when no connection mac matches, even with the flag on', async () => {
         flagMocks.allowUnauthorizedAirtableWebhook.mockResolvedValue(true);
         const { nango, execute } = makeNango([secretOf('a', crypto.randomBytes(32)), secretOf('b', crypto.randomBytes(32))]);
