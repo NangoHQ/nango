@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { withEnvironmentTarget } from './scope.middleware.js';
+import { withEnvironmentTarget } from './environment-target.middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { ApiKeyPrincipal, DBEnvironment, DBTeam } from '@nangohq/types';

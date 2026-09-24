@@ -117,9 +117,9 @@ import {
 } from './middleware/audit/index.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
+import { withEnvironmentTarget } from './middleware/environment-target.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import { withEnvironmentTarget } from './middleware/scope.middleware.js';
 import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
