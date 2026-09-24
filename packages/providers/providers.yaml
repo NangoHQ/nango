@@ -19779,6 +19779,30 @@ quipteams:
             description: Your Quipteams API key.
             doc_section: '#step-1-finding-your-api-key'
 
+quiver:
+    display_name: Quiver
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.quivergtm.dev/api/public
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /content?limit=1
+    docs: https://nango.dev/docs/api-integrations/quiver
+    docs_connect: https://nango.dev/docs/api-integrations/quiver/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Quiver API token with the content_api scope.
+            example: qvr_****************************************
+            pattern: '^qvr_[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generate-your-api-token'
+
 ragieai:
     display_name: Ragie AI
     categories:

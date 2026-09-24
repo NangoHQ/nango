@@ -1716,6 +1716,7 @@
               "api-integrations/quickbooks",
               "api-integrations/quickbooks-sandbox",
               "api-integrations/quipteams",
+              "api-integrations/quiver",
               "integrations/all/ragieai",
               "api-integrations/raindrop-mcp",
               "integrations/all/ramp",
