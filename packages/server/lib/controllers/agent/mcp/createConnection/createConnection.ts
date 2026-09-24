@@ -27,6 +27,9 @@ export const createConnectionTool = defineAgentSessionMcpTool({
         openWorldHint: true
     },
     isEnabled: (metaTools) => metaTools.nangoCreateConnection.enabled,
+    onInvalidArguments: ({ session }) => {
+        trackAgentSessionToolCall({ metaTool: 'nango_create_connection', session, errorCode: 'invalid_input' });
+    },
     async handler({ args, account, environment, plan, session }) {
         const integrationId = args.integration;
 

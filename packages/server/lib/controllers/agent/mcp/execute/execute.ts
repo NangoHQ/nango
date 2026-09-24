@@ -32,6 +32,9 @@ export const executeTool = defineAgentSessionMcpTool({
         openWorldHint: true
     },
     isEnabled: (metaTools) => metaTools.nangoExecute,
+    onInvalidArguments: ({ session }) => {
+        trackAgentSessionToolCall({ metaTool: 'nango_execute', session, errorCode: 'invalid_input' });
+    },
     async handler({ args, ...context }) {
         const { session, callable } = context;
 

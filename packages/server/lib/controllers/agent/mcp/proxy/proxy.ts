@@ -32,6 +32,9 @@ export const proxyTool = defineAgentSessionMcpTool({
         openWorldHint: true
     },
     isEnabled: (metaTools) => metaTools.nangoProxy,
+    onInvalidArguments: ({ session }) => {
+        trackAgentSessionProxyRequest({ session, errorCode: 'invalid_input' });
+    },
     async handler({ args, account, environment, plan, session }) {
         const integrationId = args.integration;
 

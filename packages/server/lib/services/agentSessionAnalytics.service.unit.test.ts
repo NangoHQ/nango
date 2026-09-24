@@ -74,7 +74,7 @@ describe('trackAgentSessionCreated', () => {
 
         const { groups, properties } = onlyEvent();
         expect(groups).toStrictEqual({ company: '42' });
-        expect(properties).toMatchObject({ is_prod: true, surface: 'server' });
+        expect(properties).toMatchObject({ is_production: true, surface: 'server' });
     });
 });
 
@@ -222,6 +222,16 @@ describe('trackAgentSessionProxyRequest', () => {
             error_code: 'upstream_error',
             provider_error_code: 'rate_limited'
         });
+    });
+
+    it('reports a call rejected before its arguments could be read', () => {
+        inRequest(() => trackAgentSessionProxyRequest({ session, errorCode: 'invalid_input' }));
+
+        const { event, properties } = onlyEvent();
+        expect(event).toBe('agents:proxy_request_complete');
+        expect(properties).toMatchObject({ meta_tool: 'nango_proxy', is_success: false, error_code: 'invalid_input' });
+        expect(properties).not.toHaveProperty('integration_id');
+        expect(properties).not.toHaveProperty('http_method');
     });
 
     it('omits the status when the request never reached the provider', () => {

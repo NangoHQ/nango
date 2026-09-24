@@ -27,16 +27,16 @@ interface ToolCallParams extends Outcome {
 
 interface ProxyRequestParams extends Outcome {
     session: AgentSession;
-    integrationId: string;
+    integrationId?: string | undefined;
+    method?: HTTP_METHOD | undefined;
     provider?: string | undefined;
-    method: HTTP_METHOD;
     status?: number | undefined;
     /** The provider's own error code, when the failure carried one. */
     providerErrorCode?: string | undefined;
 }
 
 /**
- * The account, the environment as is_prod and the surface are stamped by the tracking context
+ * The account, the environment as is_production and the surface are stamped by the tracking context
  * middleware, so nothing here passes them. No tool input and no provider response is sent, on purpose.
  */
 export function trackAgentSessionCreated(session: AgentSession): void {
@@ -70,9 +70,9 @@ export function trackAgentSessionToolCall({ metaTool, session, integrationId, to
 export function trackAgentSessionProxyRequest({ session, integrationId, provider, method, status, providerErrorCode, ...outcome }: ProxyRequestParams): void {
     trackSessionEvent('agents:proxy_request_complete', session, {
         meta_tool: 'nango_proxy',
-        integration_id: integrationId,
-        http_method: method,
         ...outcomeProperties(outcome),
+        ...(integrationId ? { integration_id: integrationId } : {}),
+        ...(method ? { http_method: method } : {}),
         ...(provider ? { provider } : {}),
         ...(status === undefined ? {} : { http_status: status }),
         ...(providerErrorCode ? { provider_error_code: providerErrorCode } : {})
