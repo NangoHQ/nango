@@ -94,6 +94,30 @@ describe('parseSync', () => {
             }
         });
     });
+
+    it('should mark checkpoint as false when no checkpoint schema is declared', () => {
+        const res = parseSync({
+            filePath: './fetchIssues.ts',
+            params: syncParams,
+            basename: 'fetchIssues',
+            basenameClean: 'fetchIssues',
+            integrationIdClean: 'github'
+        });
+
+        expect(res.unwrap()).toMatchObject({ checkpoint: false });
+    });
+
+    it('should mark checkpoint as true when a checkpoint schema is declared', () => {
+        const res = parseSync({
+            filePath: './fetchIssues.ts',
+            params: { ...syncParams, checkpoint: z.object({ cursor: z.string() }) },
+            basename: 'fetchIssues',
+            basenameClean: 'fetchIssues',
+            integrationIdClean: 'github'
+        });
+
+        expect(res.unwrap()).toMatchObject({ checkpoint: true });
+    });
 });
 
 describe('parseAction', () => {
@@ -139,6 +163,30 @@ describe('parseAction', () => {
                 }
             }
         });
+    });
+
+    it('should mark checkpoint as false when no checkpoint schema is declared', () => {
+        const action = parseAction({
+            filePath: './createIssue.ts',
+            params: actionParams,
+            basename: 'createIssue',
+            basenameClean: 'createIssue',
+            integrationIdClean: 'github'
+        });
+
+        expect(action).toMatchObject({ checkpoint: false });
+    });
+
+    it('should mark checkpoint as true when a checkpoint schema is declared', () => {
+        const action = parseAction({
+            filePath: './createIssue.ts',
+            params: { ...actionParams, checkpoint: z.object({ cursor: z.string() }) },
+            basename: 'createIssue',
+            basenameClean: 'createIssue',
+            integrationIdClean: 'github'
+        });
+
+        expect(action).toMatchObject({ checkpoint: true });
     });
 });
 

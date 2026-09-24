@@ -110,6 +110,22 @@ export async function compileAllFunctions({
                         )
                     );
                 }
+                if (sync.checkpoint && !sync.features?.includes('checkpoints')) {
+                    console.warn(
+                        chalk.yellow(
+                            `Warning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' declares a 'checkpoint' schema but never calls 'saveCheckpoint()', 'getCheckpoint()', or 'clearCheckpoint()'. The schema only describes the checkpoint's shape -- declaring it does not persist or resume any state on its own.`
+                        )
+                    );
+                }
+            }
+            for (const action of integration.actions) {
+                if (action.checkpoint && !action.features?.includes('checkpoints')) {
+                    console.warn(
+                        chalk.yellow(
+                            `Warning: Action '${action.name}' for integration '${integration.providerConfigKey}' declares a 'checkpoint' schema but never calls 'saveCheckpoint()', 'getCheckpoint()', or 'clearCheckpoint()'. The schema only describes the checkpoint's shape -- declaring it does not persist or resume any state on its own.`
+                        )
+                    );
+                }
             }
         }
 

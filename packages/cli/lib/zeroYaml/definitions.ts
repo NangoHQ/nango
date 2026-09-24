@@ -286,7 +286,8 @@ export function parseSync({
         version: params.version || '',
         webhookSubscriptions: params.webhookSubscriptions || [],
         json_schema: jsonSchema,
-        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
+        features: features.isOk() ? features.value : [], // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
+        checkpoint: params.checkpoint !== undefined
     };
 
     return Ok(sync);
@@ -328,7 +329,8 @@ export function parseAction({
         usedModels: [inputName, outputName],
         version: params.version || '',
         json_schema: jsonSchema,
-        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
+        features: features.isOk() ? features.value : [], // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
+        checkpoint: params.checkpoint !== undefined
     };
 }
 
