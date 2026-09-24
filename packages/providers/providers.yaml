@@ -14302,7 +14302,6 @@ mailerlite:
             type: string
             title: API Token
             description: Your MailerLite API token.
-            secret: true
             example: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.****************.**********
             pattern: '^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
             doc_section: '#step-1-generate-your-mailerlite-api-token'
