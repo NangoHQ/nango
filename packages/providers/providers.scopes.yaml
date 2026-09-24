@@ -116,6 +116,10 @@ adp-workforce-now: []
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 adp-workforce-now-next-gen: []
 
+# source: https://apidocs.nextroll.com/guides/oauth.html
+adroll:
+    - all
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 adyen: []
 
