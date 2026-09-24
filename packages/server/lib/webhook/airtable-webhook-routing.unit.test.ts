@@ -20,7 +20,7 @@ vi.mock('@nangohq/feature-flags', () => ({
 
 const WEBHOOK_ID = 'achW8bAr7fk2Rj5Tx';
 const MAC_SECRET = crypto.randomBytes(32);
-const REMEDIATION = 'Store the webhook macSecretBase64 in the connection metadata under webhooks.<webhook id>';
+const REMEDIATION = 'Store the webhook macSecretBase64 in the connection metadata as webhooks.<webhook id>';
 
 const body = { base: { id: 'appXYZ' }, webhook: { id: WEBHOOK_ID }, timestamp: '2026-09-23T00:00:00.000Z' };
 const rawBody = JSON.stringify(body);
@@ -48,7 +48,7 @@ function makeNango(connections: DBConnectionDecrypted[] | null) {
     return { nango, execute, markUnverified };
 }
 
-const withSecret = () => [connectionWith({ webhooks: { [WEBHOOK_ID]: { macSecretBase64: MAC_SECRET.toString('base64') } } })];
+const withSecret = () => [connectionWith({ webhooks: { [WEBHOOK_ID]: MAC_SECRET.toString('base64') } })];
 const withoutSecret = () => [connectionWith({ webhooks: [WEBHOOK_ID] })];
 const secretOf = (connectionId: string, secret = MAC_SECRET) => connectionWith({ webhooks: { [WEBHOOK_ID]: secret.toString('base64') } }, connectionId);
 const secretlessOf = (connectionId: string) => connectionWith({ webhooks: [WEBHOOK_ID] }, connectionId);
@@ -109,7 +109,7 @@ describe('airtable-webhook-routing', () => {
     });
 
     it('treats an empty stored secret as missing', async () => {
-        const { nango, execute, markUnverified } = makeNango([connectionWith({ webhooks: { [WEBHOOK_ID]: { macSecretBase64: '' } } })]);
+        const { nango, execute, markUnverified } = makeNango([connectionWith({ webhooks: { [WEBHOOK_ID]: '' } })]);
 
         const result = await AirtableWebhookRouting.default(nango, sign(rawBody, Buffer.alloc(0)), body, rawBody);
 
@@ -148,14 +148,13 @@ describe('airtable-webhook-routing', () => {
         expect(execute).not.toHaveBeenCalled();
     });
 
-    it('accepts the secret stored directly under the webhook id, as the create-webhook template does', async () => {
-        const { nango, execute, markUnverified } = makeNango([secretOf('conn-1')]);
+    it('treats a secret nested under the webhook id as missing, only the create-webhook template shape is read', async () => {
+        const { nango, execute } = makeNango([connectionWith({ webhooks: { [WEBHOOK_ID]: { macSecretBase64: MAC_SECRET.toString('base64') } } })]);
 
         const result = await AirtableWebhookRouting.default(nango, sign(rawBody), body, rawBody);
 
-        expect(routedTo(result)).toEqual(['conn-1']);
-        expect(execute).toHaveBeenCalledOnce();
-        expect(markUnverified).not.toHaveBeenCalled();
+        expect(errType(result)).toBe('webhook_invalid_secret');
+        expect(execute).not.toHaveBeenCalled();
     });
 
     it('routes only to the verified connection when another one has no secret', async () => {

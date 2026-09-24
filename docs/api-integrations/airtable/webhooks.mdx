@@ -32,7 +32,7 @@ curl -X POST "https://api.nango.dev/proxy/v0/bases/<BASE-ID>/webhooks" \
   }'
 ```
 
-Airtable returns the webhook `id` and a `macSecretBase64`. The secret is only returned once, so store it in the connection's metadata right away, under `webhooks` and keyed by the webhook id. Nango reads either `webhooks.<WEBHOOK-ID>` as the secret itself, or `webhooks.<WEBHOOK-ID>.macSecretBase64`.
+Airtable returns the webhook `id` and a `macSecretBase64`. The secret is only returned once, so store it in the connection's metadata right away as `webhooks.<WEBHOOK-ID>`, with the `macSecretBase64` string as the value.
 
 The [`create-webhook` action template](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/actions/create-webhook.ts) does both steps and keeps the webhooks already stored on the connection. Use it, or copy its approach in your own function.
 
