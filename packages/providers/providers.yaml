@@ -21318,7 +21318,6 @@ salesforce:
     proxy:
         base_url: ${connectionConfig.instance_url}
     webhook_routing_script: salesforceWebhookRouting
-    webhook_user_defined_secret: true
     post_connection_script: salesforcePostConnection
     docs: https://nango.dev/docs/api-integrations/salesforce
     setup_guide_url: https://nango.dev/docs/api-integrations/salesforce/salesforce-api-oauth-app-setup
