@@ -12,7 +12,7 @@ export const listConnectionsTool = defineManagementMcpTool<typeof listConnection
     description: 'List and filter connections in the authenticated Nango environment.',
     inputSchema: listConnectionsArgumentsSchema,
     outputSchema: listConnectionsOutputSchema,
-    annotations: { readOnlyHint: true },
+    annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     requiredScopes: { anyOf: ['environment:connections:list', 'environment:connections:list_credentials'] },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, environment }) {

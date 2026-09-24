@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { trackAgentSessionCreated } from '../../services/agentSessionAnalytics.service.js';
 import * as agentSessionConnectionsService from '../../services/agentSessionConnections.service.js';
 import * as agentSessionCreationService from '../../services/agentSessionCreation.service.js';
 import * as agentSessionToolsetService from '../../services/agentSessionToolset.service.js';
@@ -15,7 +16,7 @@ const bodySchema = z.strictObject({
     }),
     toolset: agentSessionToolsetService.agentSessionToolsetSchema.optional(),
     pinned_tools: agentSessionToolsetService.agentSessionPinnedToolsSchema.optional(),
-    meta_tools: z.record(z.string(), z.boolean()).optional(),
+    meta_tools: agentSessionCreationService.agentSessionMetaToolsSchema.optional(),
     expires_in: agentSessionCreationService.agentSessionExpiresInSchema.optional()
 });
 
@@ -58,6 +59,8 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
         });
         return;
     }
+
+    trackAgentSessionCreated(created.value.session);
 
     res.status(201).send({
         data: {

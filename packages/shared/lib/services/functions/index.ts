@@ -4,6 +4,8 @@ export * as legacyFunctionService from './legacy/index.js';
 export type { ListFunctionsError, ListFunctionsErrorCode } from './legacy/service.js';
 export type { ActionInputSchemaRow, IntegrationFunctionCatalogRow } from './legacy/models/functions.js';
 export * as functionConfigService from './models/functions.js';
+export * as functionInstanceService from './models/instances.js';
+export type { FunctionInstanceFilter } from './models/instances.js';
 export * as functionLifecycle from './lifecycle.js';
 export { reconcile } from './reconcile.js';
 export type { DeploymentBundleReconciliation } from './reconcile.js';
