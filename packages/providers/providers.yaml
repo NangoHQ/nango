@@ -3478,6 +3478,72 @@ beehiiv:
             example: pub_a3d1b49e-2a5d-4f4b-97c8-8f32e1d2f7b9
             pattern: '^(pub_[0-9a-fA-F\-]+)$'
 
+beeline-vms:
+    display_name: Beeline VMS
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://integrations.${connectionConfig.authHost}.beeline.com/oauth/token
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_params:
+        grant_type: client_credentials
+        audience: ${connectionConfig.audience}
+    proxy:
+        base_url: ${connectionConfig.audience}
+        headers:
+            accept: application/json
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+            remaining: 'x-rate-limit-remaining'
+    docs: https://nango.dev/docs/api-integrations/beeline-vms
+    docs_connect: https://nango.dev/docs/api-integrations/beeline-vms/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Client ID issued by your Beeline Customer Operations Manager (COM).
+            order: 1
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Client Secret issued alongside your Client ID.
+            secret: true
+            order: 2
+    connection_config:
+        authHost:
+            type: string
+            title: Authorization Server Region
+            description: The region your Beeline credentials were issued for.
+            enum:
+                - auth
+                - eu-auth
+            doc_section: '#step-2-choosing-your-region-and-audience'
+            order: 1
+        audience:
+            type: string
+            title: Audience
+            description: The audience Beeline granted your Client ID for.
+            enum:
+                - https://client.beeline.com/api
+                - https://client-eu.beeline.com/api
+                - https://edge.beeline.com/client-onboarding
+                - https://edge-eu.beeline.com/client-onboarding
+                - https://edge.beeline.com/worker
+                - https://edge-eu.beeline.com/worker
+                - https://edge-eu.beeline.com/reporting
+            doc_section: '#step-2-choosing-your-region-and-audience'
+            order: 2
+        clientSiteId:
+            type: string
+            title: Client Site ID
+            description: Issued alongside your Client credentials.
+            doc_section: '#step-1-getting-your-credentials-from-beeline'
+            order: 3
+
 bettercontact:
     display_name: BetterContact
     categories:
