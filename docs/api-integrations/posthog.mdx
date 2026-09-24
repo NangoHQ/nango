@@ -72,6 +72,10 @@ Nango-maintained guides for common use cases.
 **Subdomain:** Use the part of your PostHog URL after `https://` and before `.posthog.com` (e.g. `us`, `eu.i` for US/EU Cloud). PostHog enforces different [rate limits](https://posthog.com/docs/api#rate-limiting) per resource.
 </Note>
 
+<Note>
+Only need to send events, not read data? Use the [PostHog (Capture API)](/api-integrations/posthog-capture) integration instead — it authenticates with a public Project Token instead of a personal API key, and doesn't require a logged-in PostHog user (events still need a `distinct_id`).
+</Note>
+
 Official docs: [PostHog API documentation](https://posthog.com/docs/api)
 
 ## 🧩 Pre-built syncs & actions for PostHog
