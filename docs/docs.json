@@ -1938,6 +1938,7 @@
               "integrations/all/ukg-pro",
               "api-integrations/ukg-pro-cc",
               "integrations/all/ukg-pro-wfm",
+              "api-integrations/ukg-pro-wfm-cc",
               "api-integrations/ukg-pro-wfm-ropc",
               "integrations/all/ukg-ready",
               "integrations/all/unanet",

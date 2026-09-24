@@ -26210,6 +26210,56 @@ ukg-pro-wfm:
             example: wfm
             doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
 
+ukg-pro-wfm-cc:
+    display_name: UKG Pro (Workforce Management Client Credentials)
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://welcome-us.ukg.net/oauth/token
+    token_headers:
+        content-type: application/json
+    token_params:
+        grant_type: client_credentials
+        audience: https://wfm.ukg.net/api
+        organization: ${connectionConfig.organization}
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/ukg-pro-wfm-cc
+    docs_connect: https://nango.dev/docs/api-integrations/ukg-pro-wfm-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Client ID for a client configured for the client credentials flow.
+            doc_section: '#step-1-finding-your-client-id-and-client-secret'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Client Secret for that client.
+            secret: true
+            doc_section: '#step-1-finding-your-client-id-and-client-secret'
+    connection_config:
+        organization:
+            type: string
+            title: Organization
+            description: The organization ID specific to your tenant.
+            doc_section: '#step-2-finding-your-organization-id'
+            order: 2
+        hostname:
+            type: string
+            title: Tenant URL
+            description: The tenant URL of your UKG Pro instance.
+            format: hostname
+            example: wfm.us1.ukg.com
+            suffix: /api
+            prefix: https://
+            doc_section: '#step-3-finding-your-tenant-url'
+            order: 1
+
 ukg-pro-wfm-ropc:
     display_name: UKG Pro (Workforce Management ROPC)
     categories:
