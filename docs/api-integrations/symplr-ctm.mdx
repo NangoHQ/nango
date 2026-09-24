@@ -21,7 +21,7 @@ Connect to symplr CTM with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/index.cfm?action=getRegions&resultType=json" \
+            curl "https://api.nango.dev/proxy/2_0/index.cfm?action=getRegions&resultType=json" \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to symplr CTM with Nango and see data flow in 2 minutes.
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/index.cfm',
+            endpoint: '/2_0/index.cfm',
             params: { action: 'getRegions', resultType: 'json' },
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
@@ -73,10 +73,10 @@ Official docs: [symplr CTM ClearConnect API 2.0](https://www.symplr.com/continge
 
 ## API gotchas
 
-- ClearConnect is an RPC-style API, not a resource-based REST API: every call goes through a single endpoint, `/index.cfm`, with an `action` query parameter (e.g. `?action=getClients&clientIdIn=12015`) selecting the actual operation. Copy the exact `action` name and its arguments from the endpoint's own documentation.
+- ClearConnect is an RPC-style API, not a resource-based REST API: every call goes through a single endpoint, `/2_0/index.cfm`, with an `action` query parameter (e.g. `?action=getClients&clientIdIn=12015`) selecting the actual operation. Copy the exact `action` name and its arguments from the endpoint's own documentation.
 - The `resultType` query parameter controls the response format (`json`, `xml`, `csv`, `tsv`). It is not required, but if omitted the API defaults to XML -- always pass `resultType=json`.
 - Authentication supports two REST patterns: a Basic Authorization header on every request (`Authorization: Basic base64(username:password)`), or a session-key exchange (`getSessionKey` with Basic auth, then `Authorization: Bearer {sessionKey}` on subsequent calls, with the session key expiring over time). Nango uses the simpler Basic-auth-on-every-request pattern, so there is no session to refresh.
-- The base URL is tenant-specific: `https://ctms.contingenttalentmanagement.com/{site-name}/clearConnect/2_0`. The site name comes from the customer's own ClearConnect base URL and is not discoverable through the API itself.
+- The base URL is tenant-specific: `https://ctms.contingenttalentmanagement.com/{site-name}/clearConnect`. The site name comes from the customer's own ClearConnect base URL and is not discoverable through the API itself. The `2_0` API version segment isn't part of the base URL — include it in each endpoint call (`/2_0/index.cfm`).
 - Some functions are Module Functions, only available to CTM customers who have purchased or enabled a specific module (e.g. Booking Region, PeopleSoft, Single Worker Portal). Calling one without the module enabled returns an error indicating the required module must be enabled.
 - `get*` actions have per-function record limits; `insert*` actions are capped at 200 records per batch/call.
 - String and numeric list arguments (e.g. `statusIn`, `tempIdIn`) are comma-delimited strings, not JSON arrays, and are always returned as strings even for numeric lists.
