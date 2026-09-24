@@ -113,8 +113,8 @@ describe(`GET ${endpoint}`, () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aircall', 'aircall');
 
-        const original = flags.hasLiveCatalogActions;
-        flags.hasLiveCatalogActions = false;
+        const original = flags.hasCatalogTools;
+        flags.hasCatalogTools = false;
         try {
             const res = await api.fetch(endpoint, {
                 method: 'GET',
@@ -128,7 +128,7 @@ describe(`GET ${endpoint}`, () => {
             expect(res.json.error.code).toBe('not_found');
             expect(res.json.error.message).toContain('Function');
         } finally {
-            flags.hasLiveCatalogActions = original;
+            flags.hasCatalogTools = original;
         }
     });
 
@@ -136,8 +136,8 @@ describe(`GET ${endpoint}`, () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aircall', 'aircall');
 
-        const original = flags.hasLiveCatalogActions;
-        flags.hasLiveCatalogActions = true;
+        const original = flags.hasCatalogTools;
+        flags.hasCatalogTools = true;
         const getFileSpy = vi.spyOn(remoteFileService, 'getFile').mockResolvedValue('catalog source');
         try {
             const res = await api.fetch(endpoint, {
@@ -152,7 +152,7 @@ describe(`GET ${endpoint}`, () => {
             expect(getFileSpy).toHaveBeenCalledWith('templates-zero/aircall/actions/create-contact.ts');
         } finally {
             getFileSpy.mockRestore();
-            flags.hasLiveCatalogActions = original;
+            flags.hasCatalogTools = original;
         }
     });
 
@@ -253,8 +253,8 @@ describe(`GET ${endpoint}`, () => {
         const config = await seeders.createConfigSeed(env, 'aircall', 'aircall');
         await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'create-contact', type: 'sync' });
 
-        const original = flags.hasLiveCatalogActions;
-        flags.hasLiveCatalogActions = true;
+        const original = flags.hasCatalogTools;
+        flags.hasCatalogTools = true;
         try {
             const res = await api.fetch(endpoint, {
                 method: 'GET',
@@ -284,7 +284,7 @@ describe(`GET ${endpoint}`, () => {
             expect(syncOnly.json.error.code).toBe('not_found');
             expect(syncOnly.json.error.message).toContain('Source file');
         } finally {
-            flags.hasLiveCatalogActions = original;
+            flags.hasCatalogTools = original;
         }
     });
 });
