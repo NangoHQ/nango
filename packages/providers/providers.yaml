@@ -24316,6 +24316,40 @@ swoogo:
             secret: true
             doc_section: '#step-1-generate-your-api-credentials'
 
+symplr-ctm:
+    display_name: symplr CTM (ClearConnect)
+    categories:
+        - hr
+        - ats
+    auth_mode: BASIC
+    proxy:
+        base_url: https://ctms.contingenttalentmanagement.com/${connectionConfig.siteName}/clearConnect
+        verification:
+            method: GET
+            endpoints:
+                - /2_0/index.cfm?action=getRegions&resultType=json
+    docs: https://nango.dev/docs/api-integrations/symplr-ctm
+    docs_connect: https://nango.dev/docs/api-integrations/symplr-ctm/connect
+    connection_config:
+        siteName:
+            type: string
+            title: Site Name
+            description: Your CTM customer site name.
+            order: 1
+            example: myCTM
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your ClearConnect API username.
+            doc_section: '#step-1-locate-your-clearconnect-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your ClearConnect API password.
+            secret: true
+            doc_section: '#step-1-locate-your-clearconnect-credentials'
+
 syncore:
     display_name: Syncore
     categories:

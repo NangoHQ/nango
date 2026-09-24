@@ -1870,6 +1870,7 @@
               "api-integrations/surecontact",
               "integrations/all/survey-monkey",
               "api-integrations/swoogo",
+              "api-integrations/symplr-ctm",
               "api-integrations/syncore",
               "integrations/all/tableau",
               "integrations/all/tailscale",
