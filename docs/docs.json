@@ -1685,6 +1685,7 @@
               "integrations/all/podium",
               "api-integrations/podscribe",
               "api-integrations/posthog",
+              "api-integrations/posthog-capture",
               "api-integrations/posthog-oauth",
               "api-integrations/postscript",
               "api-integrations/practicefusion",

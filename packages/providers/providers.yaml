@@ -18940,6 +18940,36 @@ posthog:
             example: phx_1PPf***************************k3D
             doc_section: '#step-2-finding-your-api-key'
 
+posthog-capture:
+    display_name: PostHog (Capture API)
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        body:
+            api_key: ${apiKey}
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/posthog-capture
+    docs_connect: https://nango.dev/docs/api-integrations/posthog-capture/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname your PostHog capture API requests are sent to.
+            format: hostname
+            prefix: https://
+            example: us.i.posthog.com
+            order: 1
+            doc_section: '#step-1-finding-your-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: Project Token
+            description: Your PostHog project token, used to send events via the capture API.
+            pattern: '^phc_[A-Za-z0-9]+$'
+            example: phc_1PPf***************************k3D
+            doc_section: '#step-2-finding-your-project-token'
+
 posthog-oauth:
     display_name: PostHog (OAuth)
     categories:
