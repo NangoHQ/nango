@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1016
+Provider count: 1019
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -186,6 +186,7 @@ URL patterns:
 | `cisco-duo-admin` | Cisco Duo Admin API | BASIC | [docs](https://nango.dev/docs/api-integrations/cisco-duo-admin.md) | [connect](https://nango.dev/docs/api-integrations/cisco-duo-admin/connect.md) |  | iam |
 | `clari-copilot` | Clari Copilot | API_KEY | [docs](https://nango.dev/docs/integrations/all/clari-copilot.md) |  |  | marketing |
 | `clay` | Clay | API_KEY | [docs](https://nango.dev/docs/api-integrations/clay.md) | [connect](https://nango.dev/docs/api-integrations/clay/connect.md) |  | crm, marketing |
+| `clay-mcp` | Clay (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/clay-mcp.md) |  |  | crm, marketing, mcp |
 | `clerk` | Clerk | API_KEY | [docs](https://nango.dev/docs/integrations/all/clerk.md) | [connect](https://nango.dev/docs/integrations/all/clerk/connect.md) |  | dev-tools, iam |
 | `cleverreach` | CleverReach | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/cleverreach.md) |  | [setup](https://nango.dev/docs/api-integrations/cleverreach/how-to-register-your-own-cleverreach-api-oauth-app.md) | marketing |
 | `clickhouse` | ClickHouse | BASIC | [docs](https://nango.dev/docs/api-integrations/clickhouse.md) | [connect](https://nango.dev/docs/api-integrations/clickhouse/connect.md) |  | dev-tools |
@@ -524,6 +525,7 @@ URL patterns:
 | `luma-v2` | Luma (v2) | API_KEY | [docs](https://nango.dev/docs/api-integrations/luma-v2.md) | [connect](https://nango.dev/docs/api-integrations/luma-v2/connect.md) |  | productivity, ticketing |
 | `lumos` | Lumos | API_KEY | [docs](https://nango.dev/docs/api-integrations/lumos.md) | [connect](https://nango.dev/docs/api-integrations/lumos/connect.md) |  | productivity |
 | `mailchimp` | Mailchimp | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/mailchimp.md) |  |  | marketing, surveys |
+| `mailerlite` | MailerLite | API_KEY | [docs](https://nango.dev/docs/api-integrations/mailerlite.md) | [connect](https://nango.dev/docs/api-integrations/mailerlite/connect.md) |  | marketing |
 | `mailgun` | Mailgun | BASIC | [docs](https://nango.dev/docs/integrations/all/mailgun.md) | [connect](https://nango.dev/docs/integrations/all/mailgun/connect.md) |  | marketing |
 | `mailjet` | Mailjet | BASIC | [docs](https://nango.dev/docs/api-integrations/mailjet.md) | [connect](https://nango.dev/docs/api-integrations/mailjet/connect.md) |  | marketing |
 | `make` | Make | API_KEY | [docs](https://nango.dev/docs/integrations/all/make.md) | [connect](https://nango.dev/docs/integrations/all/make/connect.md) |  | productivity |
@@ -887,6 +889,7 @@ URL patterns:
 | `telegram` | Telegram | API_KEY | [docs](https://nango.dev/docs/api-integrations/telegram.md) | [connect](https://nango.dev/docs/api-integrations/telegram/connect.md) |  | communication |
 | `tempo` | Tempo | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/tempo.md) | [connect](https://nango.dev/docs/api-integrations/tempo/connect.md) | [setup](https://nango.dev/docs/api-integrations/tempo/how-to-register-your-own-tempo-api-oauth-app.md) | productivity |
 | `terraform` | Terraform | API_KEY | [docs](https://nango.dev/docs/integrations/all/terraform.md) | [connect](https://nango.dev/docs/integrations/all/terraform/connect.md) |  | dev-tools |
+| `textus` | TextUs | API_KEY | [docs](https://nango.dev/docs/api-integrations/textus.md) | [connect](https://nango.dev/docs/api-integrations/textus/connect.md) |  | communication, marketing |
 | `the-swarm` | The Swarm | API_KEY | [docs](https://nango.dev/docs/api-integrations/the-swarm.md) | [connect](https://nango.dev/docs/api-integrations/the-swarm/connect.md) |  | crm |
 | `theirstack` | TheirStack | API_KEY | [docs](https://nango.dev/docs/api-integrations/theirstack.md) | [connect](https://nango.dev/docs/api-integrations/theirstack/connect.md) |  | marketing |
 | `thomson-reuters-legal-tracker` | Thomson Reuters Legal Tracker | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker.md) | [connect](https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker/connect.md) |  | legal |

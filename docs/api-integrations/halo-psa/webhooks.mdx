@@ -1,0 +1,88 @@
+---
+title: 'How to set up webhooks with Halo PSA on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Configure Halo PSA webhooks, connection authentication, and event subscriptions in Nango'
+---
+
+## How it works
+
+Halo sends a POST request to Nango when a selected event occurs. The `nangoConnectionId` query parameter identifies the connection. Nango checks Basic authentication against that connection's `metadata.webhookSecret`, then routes the unchanged payload to it.
+
+Create a separate Halo webhook for each Nango connection. Use a different random secret for each connection.
+
+## Setup
+
+### 1. Set the connection secret
+
+Generate a random secret, for example with `openssl rand -hex 32`. Store it as `webhookSecret` in the connection's metadata:
+
+```bash
+curl -X POST "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<WEBHOOK-SECRET>" }
+  }'
+```
+
+Use a Nango **Environment API key** from **Environment Settings > API Keys**, with the `environment:connections:update` scope. This request replaces the connection metadata, so include any existing metadata fields you need to keep. See [Set connection metadata](/reference/backend/http-api/connections/set-metadata).
+
+<Note>
+The webhook secret in the integration's **Settings** tab is integration-level. This handler only reads `webhookSecret` from the connection metadata. Set the connection secret even if you have only one connection. Do not use a Nango or Halo API key as the webhook password.
+</Note>
+
+### 2. Build the webhook URL
+
+In Nango, open your Halo PSA integration's **Settings** tab and copy the **Webhook URL**. Add `?nangoConnectionId=<URL-ENCODED-CONNECTION-ID>`.
+
+For example, the connection ID `tenant:123` becomes:
+
+```text
+<NANGO-WEBHOOK-URL>?nangoConnectionId=tenant%3A123
+```
+
+You can build the URL without encoding errors:
+
+```javascript
+const url = new URL('<NANGO-WEBHOOK-URL>');
+url.searchParams.set('nangoConnectionId', '<CONNECTION-ID>');
+console.log(url.toString());
+```
+
+### 3. Configure Halo
+
+Open **Configuration > Integrations > Webhooks > New** in Halo and set:
+
+| Setting | Value |
+| --- | --- |
+| Webhook type | Standard webhook |
+| Payload URL | The URL from step 2, including `nangoConnectionId` |
+| Method | POST |
+| Authentication | Basic Authentication |
+| Username | `nango` |
+| Password | The same secret stored in the connection's `metadata.webhookSecret` |
+| Payload | A standard payload, such as **Small object with key fields only** |
+| Batching | **One delivery for each occurrence of an event** |
+| Events | The events your application needs |
+
+Keep batching disabled so each delivery contains one event object. If you use a custom payload, retain the top-level `event` field to match named subscriptions.
+
+Save the webhook. Trigger a selected event, then inspect the request and response in Halo's **Deliveries** tab and the Nango logs. An authenticated delivery returns HTTP 200. A missing connection ID returns HTTP 400. Invalid credentials, an unknown connection, or a missing connection secret return HTTP 401.
+
+## Handle events
+
+Nango uses the payload's top-level `event` field to match sync subscriptions. Halo's [webhook guide](https://www.usehalo.com/guides/838) shows a delivery with `"event": "new ticket logged"`. Use the exact values from your Halo deliveries, including letter case:
+
+```typescript
+webhookSubscriptions: ['new ticket logged'],
+```
+
+Handle the payload in the sync function's `onWebhook` method. Add only the events that function needs; use `['*']` only when it must receive every event. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+You can also [forward external webhooks to your app](/guides/platform/webhook-forwarding). Nango preserves the payload and includes connection attribution.
+
+## Stop deliveries or change the secret
+
+Disable or delete the webhook in Halo before deleting its Nango connection. To change a secret, pause deliveries, update both the connection's `webhookSecret` and the Halo Basic authentication password, then enable deliveries again.

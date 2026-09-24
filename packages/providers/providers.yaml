@@ -5258,6 +5258,38 @@ clay:
             pattern: '^[a-f0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
 
+clay-mcp:
+    display_name: Clay (MCP)
+    categories:
+        - crm
+        - marketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://app.clay.com/oauth/authorize
+    token_url: https://api.clay.com/oauth/token
+    registration_url: https://api.clay.com/oauth/register
+    default_scopes:
+        - mcp
+    authorization_params:
+        response_type: code
+        resource: https://api.clay.com/v3/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.clay.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/clay-mcp
+
 cleverreach:
     display_name: CleverReach
     categories:
@@ -11287,6 +11319,9 @@ halo-psa:
         - support
         - ticketing
     auth_mode: OAUTH2_CC
+    webhook_routing_script: haloPsaWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     token_url: https://${connectionConfig.hostname}/auth/token
     token_request_auth_method: basic
     scope_separator: ' '
@@ -14347,6 +14382,30 @@ mailchimp:
             pattern: '^[a-z]+\d*$'
             example: us6
             automated: true
+
+mailerlite:
+    display_name: MailerLite
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://connect.mailerlite.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /groups?limit=1
+    docs: https://nango.dev/docs/api-integrations/mailerlite
+    docs_connect: https://nango.dev/docs/api-integrations/mailerlite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your MailerLite API token.
+            example: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.****************.**********
+            pattern: '^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generate-your-mailerlite-api-token'
 
 mailjet:
     display_name: Mailjet
@@ -18916,7 +18975,7 @@ pleo-api-key:
             title: API Key
             description: Your Pleo Standalone API Key.
             example: pls_********************************_620d75
-            pattern: '^pls_[a-f0-9]+_[a-f0-9]+$'
+            pattern: '^pl[sp]_[a-f0-9]+_[a-f0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
 podium:
@@ -24836,6 +24895,32 @@ terraform:
             doc_section: '#step-1-generating-your-api-token'
             example: VbQo****************************
             pattern: '^[a-zA-Z0-9.]{50,}$'
+
+textus:
+    display_name: TextUs
+    categories:
+        - communication
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://next.textus.com
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/vnd.textus+jsonld
+            content-type: application/vnd.textus+jsonld
+        verification:
+            method: GET
+            endpoints:
+                - /accounts
+    docs: https://nango.dev/docs/api-integrations/textus
+    docs_connect: https://nango.dev/docs/api-integrations/textus/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your TextUs API Token.
+            example: eyJhbGciOi***.eyJzdWIiOi***.***************************
+            doc_section: '#step-1-generate-an-api-token'
 
 ticktick:
     display_name: TickTick
