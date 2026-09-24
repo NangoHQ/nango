@@ -32,7 +32,11 @@ curl -X POST "https://api.nango.dev/proxy/v0/bases/<BASE-ID>/webhooks" \
   }'
 ```
 
-Airtable returns the webhook `id` and a `macSecretBase64`. The secret is only returned once, so store it in the connection's metadata right away, keyed by the webhook id:
+Airtable returns the webhook `id` and a `macSecretBase64`. The secret is only returned once, so store it in the connection's metadata right away, under `webhooks` and keyed by the webhook id. Nango reads either `webhooks.<WEBHOOK-ID>` as the secret itself, or `webhooks.<WEBHOOK-ID>.macSecretBase64`.
+
+The [`create-webhook` action template](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/actions/create-webhook.ts) does both steps and keeps the webhooks already stored on the connection. Use it, or copy its approach in your own function.
+
+If you store the secret through the API instead, send the full `webhooks` object:
 
 ```bash
 curl -X PATCH "https://api.nango.dev/connections/metadata" \
@@ -43,13 +47,16 @@ curl -X PATCH "https://api.nango.dev/connections/metadata" \
     "provider_config_key": "<INTEGRATION-ID>",
     "metadata": {
       "webhooks": {
-        "<WEBHOOK-ID>": { "macSecretBase64": "<MAC-SECRET-BASE64>" }
+        "<EXISTING-WEBHOOK-ID>": "<EXISTING-MAC-SECRET-BASE64>",
+        "<WEBHOOK-ID>": "<MAC-SECRET-BASE64>"
       }
     }
   }'
 ```
 
-See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference. You can do both steps in a [post-connection-creation script](/guides/functions/event-functions) with `nango.post` and `nango.updateMetadata`.
+<Warning>
+[Update connection metadata](/reference/backend/http-api/connections/update-metadata) only merges top-level keys. Sending `webhooks` replaces the whole object, so leaving out a webhook you already stored, for example one on another base, removes its secret and Nango starts rejecting its notifications.
+</Warning>
 
 <Note>
 Airtable webhooks expire after 7 days unless refreshed with the [refresh webhook](https://airtable.com/developers/web/api/refresh-a-webhook) endpoint. Refreshing keeps the same id and secret. If you create a new webhook instead, store its id and secret the same way.
