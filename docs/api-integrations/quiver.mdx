@@ -1,0 +1,95 @@
+---
+title: 'Quiver'
+sidebarTitle: 'Quiver'
+description: 'Integrate your application with the Quiver API'
+---
+
+## 🚀 Quickstart
+
+Connect to Quiver with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Quiver_.
+    </Step>
+    <Step id="authorize-quiver" title="Authorize Quiver">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Quiver API token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-quiver-api" title="Call the Quiver API">
+    Let's make your first request to the Quiver API (list published content). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/content?limit=1" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/content',
+            params: { limit: 1 },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Quiver integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my Quiver account?](/api-integrations/quiver/connect)  
+  Learn how to generate your Quiver API token and link your workspace
+
+Official docs: [Quiver docs](https://www.quivergtm.dev/docs)
+
+## API gotchas
+
+- The public Content API exposes two endpoints: `GET /content` (paginated list of published content) and `GET /content/{slug}` (a single published piece).
+- `GET /content` accepts `contentType` (for example `blog_post` or `changelog`), `limit` (default 20, maximum 50 — a larger value is clamped, not rejected) and `offset`, and returns `{ items, limit, offset }`. There is no total count in the response, so paginate until a page comes back shorter than the limit.
+- List items carry `title`, `slug`, `excerpt`, `contentType`, `tags`, `author`, `publishedAt` and `ogImageUrl` but no `body`. Fetch `GET /content/{slug}` for the full piece, which adds `body`, `meta`, `og` and `updatedAt`.
+- The API token identifies the Quiver workspace on its own, so no subdomain or workspace slug has to be configured — every connection uses the same base URL.
+- An invalid, revoked or expired token returns `401` with `WWW-Authenticate: Bearer` and `{ "error": "Invalid or expired API token." }`, so Nango's credentials verification correctly rejects a bad token at connection time. A `404` means something else: no credential was presented and no workspace could be resolved.
+- Only published content is exposed, and a workspace whose subscription has lapsed serves nothing publicly — it returns `404` rather than disclosing that it exists.
+- Requests are rate limited to 60 requests per minute per workspace and IP.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/quiver.mdx)</Note>
+
+## 🧩 Pre-built syncs & actions for Quiver
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/quiver/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

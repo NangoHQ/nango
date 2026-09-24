@@ -1,0 +1,41 @@
+---
+title: Quiver - How do I link my account?
+sidebarTitle: Quiver
+---
+
+## Overview
+
+To authenticate with Quiver, you need:
+
+1. **API Token** - A token generated in your Quiver workspace that grants access to the public Content API.
+
+This guide will walk you through generating your **API token** within Quiver.
+
+### Prerequisites
+
+- A Quiver workspace.
+- An admin role in that workspace — only admins can create API tokens.
+
+### Instructions
+
+#### Step 1: Generate your API token
+
+1. Log in to your Quiver workspace.
+2. Go to **Settings** → **API tokens**.
+3. Under **Create a token**, give the token a name.
+4. Tick **Public content API** and untick **MCP access** — the content API only accepts tokens carrying the `content_api` scope.
+5. Click **Create token** and copy the token. It starts with `qvr_`.
+
+<Tip>Quiver shows the token only once. If you lose it, revoke it and create a new one.</Tip>
+
+#### Step 2: Enter your API token in the Connect UI
+
+Once you have your **API Token**:
+
+1. Open the form where you need to authenticate with Quiver.
+2. Enter your **API Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/quiver/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Quiver.
