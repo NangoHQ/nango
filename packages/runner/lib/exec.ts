@@ -39,6 +39,20 @@ function formatStackTrace(stack: string | undefined, filename: string): string[]
         .slice(0, 10);
 }
 
+function assertOutputSizeAllowed(output: unknown, additionalMessage?: string): void {
+    if (!output || isEnterprise) {
+        return;
+    }
+
+    const outputSizeInBytes = Buffer.byteLength(JSON.stringify(output), 'utf8');
+    const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
+    if (outputSizeInBytes > maxSizeInBytes) {
+        throw new Error(
+            `Output size is too large: ${outputSizeInBytes} bytes. Maximum allowed size is ${maxSizeInBytes} bytes (2MB).${additionalMessage ? ` ${additionalMessage}` : ''}`
+        );
+    }
+}
+
 export async function exec({
     nangoProps,
     code,
@@ -65,6 +79,7 @@ export async function exec({
                 return new NangoSyncRunner(nangoProps, { persistClient, telemetryRecorder, locks });
             case 'action':
             case 'on-event':
+            case 'function':
                 return new NangoActionRunner(nangoProps, { persistClient, telemetryRecorder, locks });
         }
     })();
@@ -103,8 +118,10 @@ export async function exec({
                 require: (moduleName: string) => {
                     switch (moduleName) {
                         case 'url':
+                        case 'node:url':
                             return url;
                         case 'crypto':
+                        case 'node:crypto':
                             return crypto;
                         case 'zod':
                             return zod;
@@ -141,7 +158,11 @@ export async function exec({
             if (!isZeroYaml && !isNangoYaml) {
                 throw new Error(`Invalid script exports`);
             }
-            if (isZeroYaml && (!nangoProps.syncConfig.sdk_version || !nangoProps.syncConfig.sdk_version.includes('-zero'))) {
+            if (
+                isZeroYaml &&
+                nangoProps.scriptType !== 'function' &&
+                (!nangoProps.syncConfig.sdk_version || !nangoProps.syncConfig.sdk_version.includes('-zero'))
+            ) {
                 throw new Error(`Invalid script configuration`);
             }
 
@@ -177,6 +198,24 @@ export async function exec({
                 }
             }
 
+            // Function
+            if (nangoProps.scriptType === 'function') {
+                if (!isZeroYaml || def.type !== 'function') {
+                    throw new Error('Failed to load function');
+                }
+                if (!def.exec) {
+                    throw new Error('Missing exec function');
+                }
+
+                const output = await def.exec(functionNango as any, codeParams as any);
+                assertOutputSizeAllowed(output);
+                return Ok({
+                    output: output ?? null,
+                    telemetryBag: nango.telemetryBag,
+                    checkpoints: nango.getCheckpointRange()
+                });
+            }
+
             // Action
             if (nangoProps.scriptType === 'action') {
                 let inputParams = codeParams;
@@ -198,19 +237,7 @@ export async function exec({
                     output = await def(functionNango, inputParams);
                 }
 
-                if (output) {
-                    const stringifiedOutput = JSON.stringify(output);
-                    const outputSizeInBytes = Buffer.byteLength(stringifiedOutput, 'utf8');
-                    const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
-
-                    if (!isEnterprise) {
-                        if (outputSizeInBytes > maxSizeInBytes) {
-                            throw new Error(
-                                `Output size is too large: ${outputSizeInBytes} bytes. Maximum allowed size is ${maxSizeInBytes} bytes (2MB). See the deprecation announcement: https://nango.dev/docs/updates/dev#august-22-2025`
-                            );
-                        }
-                    }
-                }
+                assertOutputSizeAllowed(output, 'See the deprecation announcement: https://nango.dev/docs/updates/dev#august-22-2025');
 
                 return Ok({
                     output,

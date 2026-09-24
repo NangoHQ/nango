@@ -1,0 +1,82 @@
+---
+title: 'Splunk'
+sidebarTitle: 'Splunk'
+description: 'Integrate your application with the Splunk API'
+---
+
+## 🚀 Quickstart
+
+Connect to Splunk with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Splunk_.
+    </Step>
+    <Step title="Authorize Splunk">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Splunk host (including the management port, e.g. `my-splunk.example.com:8089`) and a Splunk authentication token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Splunk API">
+    Let's make your first request to the Splunk API (fetches the current authentication context). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/services/authentication/current-context?output_mode=json" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/services/authentication/current-context',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            params: { output_mode: 'json' }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the link below.
+    </Step>
+</Steps>
+
+## 📚 Splunk integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my Splunk account?](/api-integrations/splunk/connect)
+Learn how to create a Splunk authentication token and link your account
+
+Official docs: [Splunk REST API docs](https://docs.splunk.com/Documentation/Splunk/latest/RESTUM/RESTusing)
+
+## 🧩 Pre-built syncs & actions for Splunk
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/splunk/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

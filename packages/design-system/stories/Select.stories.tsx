@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/UI/Select',
+    title: 'App Components/UI/Select',
     parameters: { layout: 'padded' }
 };
 export default meta;

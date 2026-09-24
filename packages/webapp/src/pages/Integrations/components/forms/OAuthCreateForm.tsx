@@ -1,18 +1,35 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ExternalLinkIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button, FieldLabel, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import {
+    Alert,
+    AlertActions,
+    AlertDescription,
+    AlertTitle,
+    Button,
+    FieldLabel,
+    InputGroup,
+    InputGroupInput,
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger
+} from '@nangohq/design-system';
 
 import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { SecretInput } from '@/components/patterns/SecretInput';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/Form';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { NangoProvidedInput } from '../NangoProvidedInput';
+import {
+    buildIntegrationConfigSchema,
+    filterVisibleIntegrationConfig,
+    IntegrationConfigFormFields,
+    useIntegrationConfigFormPieces
+} from './IntegrationConfigFields';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
@@ -34,20 +51,43 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
         resolver: zodResolver(formSchema)
     });
 
+    const {
+        fields: configFields,
+        schemaMap: configSchemaMap,
+        defaultValues: configDefaultValues
+    } = useIntegrationConfigFormPieces(provider.integration_config);
+    const hasIntegrationConfig = configFields.length > 0;
+    const canUseSharedCredentials = provider.preConfigured && !hasIntegrationConfig;
+    const integrationConfigSchema = useMemo(() => buildIntegrationConfigSchema(configFields, configSchemaMap), [configFields, configSchemaMap]);
+    const integrationConfigForm = useForm({ resolver: zodResolver(integrationConfigSchema), defaultValues: configDefaultValues });
+    const watchedConfig = integrationConfigForm.watch();
+
     const [loading, setLoading] = useState(false);
 
     const onCreatePreProvisioned = async () => {
         setLoading(true);
-        await onSubmit?.({
-            provider: provider.name,
-            useSharedCredentials: true
-        });
-        setLoading(false);
+        try {
+            await onSubmit?.({
+                provider: provider.name,
+                useSharedCredentials: true
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const onSubmitForm = async (formData: FormData) => {
         setLoading(true);
         try {
+            let integrationConfig: Record<string, string> | undefined;
+            if (hasIntegrationConfig) {
+                const valid = await integrationConfigForm.trigger();
+                if (!valid) {
+                    return;
+                }
+                integrationConfig = filterVisibleIntegrationConfig(integrationConfigForm.getValues(), configSchemaMap);
+            }
+
             await onSubmit?.({
                 provider: provider.name,
                 useSharedCredentials: false,
@@ -56,7 +96,8 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                     clientId: formData.clientId,
                     clientSecret: formData.clientSecret,
                     scopes: formData.scopes
-                }
+                },
+                ...(integrationConfig && { integrationConfig })
             });
         } finally {
             setLoading(false);
@@ -64,9 +105,9 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
     };
 
     return (
-        <Navigation defaultValue={provider.preConfigured ? 'template' : 'custom'} orientation="horizontal">
+        <Navigation defaultValue={canUseSharedCredentials ? 'template' : 'custom'} orientation="horizontal">
             <NavigationList>
-                {provider.preConfigured ? (
+                {canUseSharedCredentials ? (
                     <NavigationTrigger value="template">Nango developer app</NavigationTrigger>
                 ) : (
                     <Tooltip>
@@ -75,7 +116,11 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                                 Nango developer app
                             </NavigationTrigger>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom">Nango doesn&apos;t provide test credentials for this API yet</TooltipContent>
+                        <TooltipContent side="bottom">
+                            {hasIntegrationConfig
+                                ? 'This integration requires configuration only available with your own developer app'
+                                : "Nango doesn't provide test credentials for this API yet"}
+                        </TooltipContent>
                     </Tooltip>
                 )}
                 <NavigationTrigger value="custom">Custom developer app</NavigationTrigger>
@@ -116,8 +161,8 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                         <AlertTitle>Developer app setup guide</AlertTitle>
                         <AlertDescription>Follow our step by step guide to use your own OAuth app.</AlertDescription>
                         <AlertActions>
-                            <AlertButtonLink to={provider.docs} target="_blank" variant="info-secondary">
-                                Go <ExternalLinkIcon />
+                            <AlertButtonLink to={provider.docs} target="_blank">
+                                View setup guide <ExternalLinkIcon />
                             </AlertButtonLink>
                         </AlertActions>
                     </Alert>
@@ -170,6 +215,17 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                                         </FormItem>
                                     )}
                                 />
+
+                                {hasIntegrationConfig && (
+                                    <Form {...integrationConfigForm}>
+                                        <IntegrationConfigFormFields
+                                            control={integrationConfigForm.control}
+                                            fields={configFields}
+                                            schemaMap={configSchemaMap}
+                                            watched={watchedConfig}
+                                        />
+                                    </Form>
+                                )}
                             </div>
 
                             <div>

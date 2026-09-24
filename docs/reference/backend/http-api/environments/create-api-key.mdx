@@ -1,0 +1,27 @@
+---
+title: 'Create an environment API key'
+openapi: 'POST /environments/{environmentUuid}/api-keys'
+---
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
+</Info>
+
+Creates an Environment API key. Keys created by this endpoint always have full environment access (`environment:*`). This endpoint does not accept custom scopes. Create keys with custom scopes under **Environment Settings > API Keys**.
+
+`environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create).
+
+<ResponseExample>
+```json Example Response
+{
+  "data": {
+    "id": 456,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
+    "display_name": "provisioned-ci",
+    "scopes": ["environment:*"],
+    "secret": "<YOUR-ENVIRONMENT-API-KEY>",
+    "created_at": "2026-08-18T12:00:00.000Z"
+  }
+}
+```
+</ResponseExample>

@@ -7,6 +7,9 @@ import type { FeatureFlagsClient } from './client.js';
  *
  * Add a method here when you add a flag, the method owns the context mapping
  * (targeting key, properties) and the default so it can't drift across call sites.
+ *
+ * Separate words in flag keys with dashes, never underscores: the env provider can't
+ * tell the two apart.
  */
 export function buildFlags(client: FeatureFlagsClient) {
     return {
@@ -19,8 +22,8 @@ export function buildFlags(client: FeatureFlagsClient) {
             // accountUuid is exposed as a property so strategies can allow/exclude specific accounts.
             return client.isEnabled('oauth-state-cookie-enforcement', { targetingKey: accountUuid, accountUuid }, false);
         },
-        isMFAEnabled(accountUuid: string) {
-            return client.isEnabled('mfa', { targetingKey: accountUuid, accountUuid }, false);
+        isAttioWebhookDedupeEnabled(accountUuid: string) {
+            return client.isEnabled('attio-webhook-dedupe', { targetingKey: accountUuid, accountUuid }, false);
         },
         /**
          * Sets Datadog manual.keep on action execution traces for this environment,
@@ -44,22 +47,17 @@ export function buildFlags(client: FeatureFlagsClient) {
                 true
             );
         },
-        /**
-         * Whether proxy responses forward all provider headers (minus hop-by-hop / CORS)
-         * instead of the buffered-path allowlist. Default `false`.
-         */
-        shouldForwardAllProxyResponseHeaders(accountUuid: string) {
-            return client.isEnabled('proxy-forward-all-response-headers', { targetingKey: accountUuid, accountUuid }, false);
+        /** Whether the Gmail webhook can be unverified. */
+        allowUnauthorizedGmailWebhook(accountUuid: string) {
+            return client.isEnabled('allow-unauthorized-gmail-webhook', { targetingKey: accountUuid, accountUuid }, false);
         },
         /**
-         * Whether the audit trail is enabled for this account. **Temporary** rollout
-         * safeguard: gated per-account so we can enable specific test accounts first,
-         * then ramp. To be replaced by a plan-based entitlement (opt-in via account
-         * plans) once the audit trail is productized. Default `false`.
+         * Whether GitHub App webhooks without an `x-hub-signature-256` header can be processed for
+         * this account. Escape hatch for apps set up without the derived webhook secret.
+         * Default `false`.
          */
-        isAuditTrailEnabled(accountUuid: string) {
-            // targetingKey drives gradual-rollout stickiness; accountUuid lets strategies allow/exclude specific accounts.
-            return client.isEnabled('audit-trail', { targetingKey: accountUuid, accountUuid }, false);
+        allowUnauthorizedGithubAppWebhook(accountUuid: string) {
+            return client.isEnabled('allow-unauthorized-github-app-webhook', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }

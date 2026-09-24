@@ -4,6 +4,7 @@ import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
     configService,
+    ConnectionCreationCappedError,
     connectionService,
     errorManager,
     ErrorSourceEnum,
@@ -227,6 +228,18 @@ export const postPublicTwoStepAuthorization = asyncWrapperWithEnvironment<PostPu
         void logCtx.info('TwoStep connection creation was successful');
         await logCtx.success();
 
+        req.audit = {
+            ...req.audit,
+            connectionUpsert: {
+                operation: updatedConnection.operation,
+                connectionId: updatedConnection.connection.connection_id,
+                providerConfigKey: updatedConnection.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { uuid: environment.uuid, name: environment.name },
+                endUser: res.locals.endUser
+            }
+        };
+
         void connectionCreatedHook(
             {
                 connection: updatedConnection.connection,
@@ -242,7 +255,7 @@ export const postPublicTwoStepAuthorization = asyncWrapperWithEnvironment<PostPu
             undefined
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider, providerConfigKey: config.unique_key });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -274,8 +287,15 @@ export const postPublicTwoStepAuthorization = asyncWrapperWithEnvironment<PostPu
             metadata: { providerConfigKey, connectionId }
         });
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'TWO_STEP', ...(config ? { provider: config.provider } : {}) });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+            auth_mode: 'TWO_STEP',
+            ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+        });
 
+        if (err instanceof ConnectionCreationCappedError) {
+            res.status(err.status).send({ error: { code: 'resource_capped', message: err.message } });
+            return;
+        }
         next(err);
     }
 });

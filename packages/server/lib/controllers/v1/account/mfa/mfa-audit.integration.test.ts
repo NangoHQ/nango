@@ -1,7 +1,6 @@
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
 import { mfaService, userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
@@ -9,8 +8,16 @@ import { audit } from '../../../../audit.js';
 import { isSuccess, runServer } from '../../../../utils/tests.js';
 
 import type { AuditAction } from '@nangohq/audit';
+import type * as NangoShared from '@nangohq/shared';
 import type { DBUser } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
+
+// The account is created by the signup route, so it is always on the free plan and not entitled to
+// ingestion. Entitle the lookup instead; the gate itself is covered in utils/auditTrail.unit.test.ts.
+vi.mock('@nangohq/shared', async (importOriginal) => {
+    const actual = await importOriginal<typeof NangoShared>();
+    return { ...actual, getPlanSafe: () => Promise.resolve({ has_audit_trail_control_plane: true }) };
+});
 
 const signupRoute = '/api/v1/account/signup';
 const signinRoute = '/api/v1/account/signin';
@@ -52,14 +59,11 @@ async function startPendingMfaLogin(): Promise<{ user: DBUser; totp: OTPAuth.TOT
 // The MFA login-verify flow is a dedicated middleware that resolves the acting user from the
 // pending-login session (real signup + signin + MFA activation + DB reads), so it only makes sense
 // against the live stack. The typed auditable() specs (enroll/enable/disable/recovery) are covered
-// off-stack in ../../../../middleware/auditable.unit.test.ts.
+// off-stack in ../../../../middleware/audit/mfa.middleware.unit.test.ts.
 describe('MFA verify audit — pending-login session (private API)', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // getFlags() returns the stable noop facade in tests; force both the MFA feature and the audit trail on.
-        vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {

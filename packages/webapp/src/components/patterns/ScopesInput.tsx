@@ -1,7 +1,7 @@
 import { CornerDownLeft, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { Badge, IconButton } from '@nangohq/design-system';
+import { Badge, IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { cn } from '@/utils/utils';
 import {
@@ -16,7 +16,6 @@ import {
     ComboboxValue
 } from '../ui/Combobox.js';
 import { CopyButton } from '../ui/CopyButton.js';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/Tooltip.js';
 
 interface ScopesInputProps {
     scopesString?: string | undefined;

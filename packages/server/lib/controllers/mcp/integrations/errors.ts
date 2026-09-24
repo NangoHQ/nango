@@ -2,7 +2,12 @@ import { getLogger } from '@nangohq/utils';
 
 import { InternalMcpError, PublicMcpError } from '../utils.js';
 
-import type { CreateIntegrationServiceError, GetIntegrationServiceError, UpdateIntegrationsServiceError } from '../../../services/integration.service.js';
+import type {
+    CreateIntegrationServiceError,
+    DeleteIntegrationsServiceError,
+    GetIntegrationServiceError,
+    UpdateIntegrationsServiceError
+} from '../../../services/integration.service.js';
 
 const logger = getLogger('Server.MCP.Integrations');
 
@@ -12,7 +17,7 @@ export function createIntegrationServiceErrorToMcp(error: CreateIntegrationServi
         case 'invalid_provider':
             return new PublicMcpError('Invalid provider');
         case 'incompatible_credentials':
-            return incompatibleCredentialsError();
+            return new PublicMcpError(error.message);
         case 'missing_credentials':
             return new PublicMcpError('Credentials are required for this provider');
         case 'nango_credentials_unsupported':
@@ -54,9 +59,8 @@ export function updateIntegrationsServiceErrorToMcp(error: UpdateIntegrationsSer
         case 'invalid_integration_config':
         case 'integration_has_connections':
         case 'custom_not_allowed':
-            return new PublicMcpError(error.message);
         case 'incompatible_credentials':
-            return incompatibleCredentialsError();
+            return new PublicMcpError(error.message);
         case 'integration_exists':
             return integrationExistsError();
         case 'update_failed':
@@ -68,15 +72,25 @@ export function updateIntegrationsServiceErrorToMcp(error: UpdateIntegrationsSer
     }
 }
 
-function incompatibleCredentialsError(): PublicMcpError {
-    return new PublicMcpError('Credentials are incompatible with the provider auth mode');
+export function deleteIntegrationsServiceErrorToMcp(error: DeleteIntegrationsServiceError): Error {
+    const code = error.code;
+    switch (code) {
+        case 'not_found':
+            return new PublicMcpError(error.message);
+        case 'delete_failed':
+            return error;
+        default: {
+            const exhaustiveCheck: never = code;
+            return unexpectedServiceError('deleting', exhaustiveCheck);
+        }
+    }
 }
 
 function integrationExistsError(): PublicMcpError {
     return new PublicMcpError('Integration ID already exists');
 }
 
-function unexpectedServiceError(operation: 'creating' | 'getting' | 'updating', code: never): InternalMcpError {
+function unexpectedServiceError(operation: 'creating' | 'deleting' | 'getting' | 'updating', code: never): InternalMcpError {
     logger.error(`Unexpected IntegrationService error code while ${operation} integration`, { code });
     return new InternalMcpError();
 }

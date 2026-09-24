@@ -1,12 +1,12 @@
 import * as z from 'zod';
 
-import { getFlags } from '@nangohq/feature-flags';
 import { MFAError, mfaService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { userToAPI } from '../../../../formatters/user.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { verifyPendingMfaLogin } from './login.js';
+import { mfaCredentialSchema } from './stepUp.js';
 
 import type { RequestLocals } from '../../../../utils/express.js';
 import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from '@nangohq/types';
@@ -18,20 +18,7 @@ const codeValidation = z
     })
     .strict();
 
-const loginValidation = z.discriminatedUnion('type', [
-    z
-        .object({
-            type: z.literal('code'),
-            code: z.string().regex(/^\d{6}$/)
-        })
-        .strict(),
-    z
-        .object({
-            type: z.literal('recoveryCode'),
-            recoveryCode: z.string().min(1).max(255)
-        })
-        .strict()
-]);
+const loginValidation = mfaCredentialSchema;
 
 function validateQuery(req: Request, res: Response): boolean {
     const emptyQuery = requireEmptyQuery(req, { withEnv: false });
@@ -61,20 +48,8 @@ function getAuthenticatedUser<T>(res: Response<T, RequestLocals>) {
     return user;
 }
 
-async function isMFAEnabled<T>(res: Response<T, RequestLocals>): Promise<boolean> {
-    return await getFlags().isMFAEnabled(res.locals['account'].uuid);
-}
-
-function rejectDisabledFeature<T>(res: Response<T, RequestLocals>) {
-    res.status(400).send({ error: { code: 'feature_disabled' } } as T);
-}
-
 export const getMFAStatus = asyncWrapper<GetMFAStatus>(async (req, res) => {
     if (!validateQuery(req, res)) {
-        return;
-    }
-    if (!(await isMFAEnabled(res))) {
-        rejectDisabledFeature(res);
         return;
     }
 
@@ -84,10 +59,6 @@ export const getMFAStatus = asyncWrapper<GetMFAStatus>(async (req, res) => {
 
 export const postMFAEnrollment = asyncWrapper<PostMFAEnrollment>(async (req, res) => {
     if (!validateQuery(req, res)) {
-        return;
-    }
-    if (!(await isMFAEnabled(res))) {
-        rejectDisabledFeature(res);
         return;
     }
 
@@ -105,10 +76,6 @@ export const postMFAEnrollment = asyncWrapper<PostMFAEnrollment>(async (req, res
 
 export const postMFAActivation = asyncWrapper<PostMFAActivation>(async (req, res) => {
     if (!validateQuery(req, res)) {
-        return;
-    }
-    if (!(await isMFAEnabled(res))) {
-        rejectDisabledFeature(res);
         return;
     }
 
@@ -137,10 +104,6 @@ export const postMFARecoveryCodes = asyncWrapper<PostMFARecoveryCodes>(async (re
     if (!validateQuery(req, res)) {
         return;
     }
-    if (!(await isMFAEnabled(res))) {
-        rejectDisabledFeature(res);
-        return;
-    }
 
     const code = validateCode(req, res);
     if (!code) {
@@ -152,7 +115,7 @@ export const postMFARecoveryCodes = asyncWrapper<PostMFARecoveryCodes>(async (re
         res.status(400).send({ error: { code: 'mfa_not_enabled' } });
         return;
     }
-    const verified = await mfaService.verifyTotp(user.id, code);
+    const verified = await mfaService.verifyTotp(user.id, code, { context: 'recovery_codes_regenerate' });
     if (verified.isErr()) {
         throw verified.error;
     }
@@ -172,13 +135,10 @@ export const deleteMFA = asyncWrapper<DeleteMFA>(async (req, res) => {
     if (!validateQuery(req, res)) {
         return;
     }
-    if (!(await isMFAEnabled(res))) {
-        rejectDisabledFeature(res);
-        return;
-    }
 
-    const code = validateCode(req, res);
-    if (!code) {
+    const val = mfaCredentialSchema.safeParse(req.body);
+    if (!val.success) {
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) } });
         return;
     }
 
@@ -187,7 +147,13 @@ export const deleteMFA = asyncWrapper<DeleteMFA>(async (req, res) => {
         res.status(400).send({ error: { code: 'mfa_not_enabled' } });
         return;
     }
-    const verified = await mfaService.verifyTotp(user.id, code);
+    const credential = val.data;
+    // Checked rather than consumed: the disable below deletes every recovery code, so spending one first
+    // would only cost the user a code on an attempt that fails afterwards.
+    const verified =
+        credential.type === 'recoveryCode'
+            ? await mfaService.verifyRecoveryCode(user.id, credential.recoveryCode, { context: 'disable' })
+            : await mfaService.verifyTotp(user.id, credential.code, { context: 'disable' });
     if (verified.isErr()) {
         throw verified.error;
     }

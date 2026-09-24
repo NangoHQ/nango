@@ -2,6 +2,7 @@ import { URL } from 'url';
 
 import * as z from 'zod';
 
+import { getProvider } from '@nangohq/providers';
 import {
     connectionTagsKeySchema,
     connectionTagsSchema,
@@ -64,13 +65,16 @@ export const scriptNameSchema = z
 export const functionTypeSchema = z.enum(['sync', 'action', 'on-event']);
 // On-event functions can't be targeted by name alone yet, so deletion is limited to sync/action.
 export const deletableFunctionTypeSchema = z.enum(['sync', 'action']);
+export const paginationQueryFields = {
+    page: z.coerce.number().int().min(0).optional().default(0),
+    limit: z.coerce.number().int().min(1).max(100).optional().default(20)
+};
 // Shared querystring fields for the function-list endpoints. The private route adds `env`; the public route
 // derives the environment from the secret key, so it spreads these as-is.
 export const functionListQueryFields = {
     type: functionTypeSchema.optional(),
     search: z.string().trim().min(1).max(255).optional(),
-    page: z.coerce.number().int().min(0).optional().default(0),
-    limit: z.coerce.number().int().min(1).max(100).optional().default(20)
+    ...paginationQueryFields
 };
 export const connectionIdSchema = z
     .string()
@@ -82,6 +86,8 @@ export const envSchema = z
     .max(255);
 export const connectSessionTokenPrefix = 'nango_connect_session_';
 export const connectSessionTokenSchema = z.string().regex(new RegExp(`^${connectSessionTokenPrefix}[a-f0-9]{64}$`));
+export const agentSessionTokenPrefix = 'nango_agent_session_';
+export const agentSessionTokenSchema = z.string().regex(new RegExp(`^${agentSessionTokenPrefix}[a-f0-9]{64}$`));
 export const modelSchema = z
     .string()
     .regex(/^[A-Z][a-zA-Z0-9_-]+$/)
@@ -107,7 +113,17 @@ export const connectionCredential = z.union([
 ]);
 
 export const privateKeySchema = z.string().startsWith('-----BEGIN RSA PRIVATE KEY----').endsWith('-----END RSA PRIVATE KEY-----');
-export const publicKeySchema = z.string().startsWith('-----BEGIN PUBLIC KEY----').endsWith('-----END PUBLIC KEY-----');
+// Some providers (e.g. Gong's "Show public key" UI) hand out the bare base64 DER body with no
+// PEM wrapper - accept that form too, alongside the full PEM, rather than requiring callers to
+// wrap it themselves.
+export const publicKeySchema = z.union([
+    z.string().startsWith('-----BEGIN PUBLIC KEY----').endsWith('-----END PUBLIC KEY-----'),
+    z
+        .string()
+        .regex(/^[A-Za-z0-9+/]+={0,2}$/)
+        .min(100)
+        .max(2000)
+]);
 export const integrationCredentialsSchema = z.discriminatedUnion(
     'type',
     [
@@ -116,7 +132,7 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
                 type: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
                 client_id: z.string().min(1).max(255),
                 client_secret: z.string().min(1),
-                scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional(),
+                scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.*-]+(,[0-9a-zA-Z:/_.*-]+)*$/), z.string().max(0)]).optional(),
                 webhook_secret: z.string().min(0).max(255).optional()
             })
             .strict(),
@@ -137,6 +153,14 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
                 app_link: z.string().min(1),
                 private_key: privateKeySchema
             })
+            .strict(),
+        z
+            .object({
+                type: z.enum(['MCP_OAUTH2']),
+                client_id: z.string().min(1).max(255).optional(),
+                client_secret: z.string().min(1).optional(),
+                scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.*-]+([, ]+[0-9a-zA-Z:/_.*-]+)*$/), z.string().max(0)]).optional()
+            })
             .strict()
     ],
     { error: () => ({ message: 'invalid credentials object' }) }
@@ -147,9 +171,26 @@ export const sharedCredentialsSchema = z
         name: providerNameSchema,
         client_id: z.string().min(1).max(255),
         client_secret: z.string().min(1),
-        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional()
+        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.*-]+(,[0-9a-zA-Z:/_.*-]+)*$/), z.string().max(0)]).optional(),
+        app_link: z.url().max(2048).optional()
     })
-    .strict();
+    .strict()
+    .check((ctx) => {
+        const provider = getProvider(ctx.value.name);
+        if (!provider) {
+            return;
+        }
+        if (provider.auth_mode === 'APP' && !ctx.value.app_link) {
+            ctx.issues.push({ code: 'custom', path: ['app_link'], message: 'app_link is required for providers with auth_mode APP', input: ctx.value });
+        } else if (provider.auth_mode !== 'APP' && ctx.value.app_link) {
+            ctx.issues.push({
+                code: 'custom',
+                path: ['app_link'],
+                message: 'app_link is only supported for providers with auth_mode APP',
+                input: ctx.value
+            });
+        }
+    });
 
 export const connectionCredentialsOauth2Schema = z.strictObject({
     access_token: z.string().min(1).max(envs.NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH),
@@ -183,7 +224,7 @@ export const connectionCredentialsBasicSchema = z.strictObject({
 });
 
 export const connectionCredentialsApiKeySchema = z.strictObject({
-    apiKey: z.string().min(1).max(1024)
+    apiKey: z.string().min(1).max(4096)
 });
 
 export const connectionCredentialsTBASchema = z.strictObject({

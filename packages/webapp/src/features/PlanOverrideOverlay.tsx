@@ -1,37 +1,110 @@
 import { ChevronLeft, X } from 'lucide-react';
+import { Children, createContext, useContext, useId, useMemo } from 'react';
 
-import { IconButton } from '@nangohq/design-system';
+import { Button, IconButton } from '@nangohq/design-system';
 
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { useApiGetPlans } from '@/hooks/usePlan';
+import { Switch } from '@/components/ui/Switch';
+import { Tag } from '@/components/ui/Tag';
+import { useEnvironment } from '@/hooks/useEnvironment';
+import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
+import { hasMonthlySpend, isRetiredPlan } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
-import { usePlanOverrideStore } from './planOverride';
+import { cn } from '@/utils/utils';
+import { DEFAULTS, usePlanOverrideStore } from './planOverride';
 
+import type { PeriodCostsOverride, SpendOverride, UsageLimitOverride } from './planOverride';
+import type { GrowthAddonState } from '@/pages/Team/Billing/planVisibility';
 import type { PlanDefinition } from '@nangohq/types';
 
 const REAL_PLAN_VALUE = '__real__';
 const NO_SCHEDULED_CHANGE_VALUE = '__none__';
-// Only these 3 self-serve tiers have a real downgrade/cancellation path — legacy and Enterprise
-// plans never schedule a change in practice, so they're not offered as scheduled-change targets.
-const MAIN_PLAN_ORDER: PlanDefinition['code'][] = ['free', 'starter-v2', 'growth-v2'];
-
+const REAL_USAGE_VALUE = '__real_usage__';
+const REAL_SPEND_VALUE = '__real_spend__';
+const UNAVAILABLE_SPEND_VALUE = 'unavailable';
+// A base-only Starter bill, a mid-period Growth bill, and the startup deal's real zero.
+const SPEND_PRESETS_IN_CENTS = [0, 5000, 128430];
+const REAL_PERIOD_COSTS_VALUE = '__real_period_costs__';
+const REAL_ADDON_VALUE = '__real_addon__';
+function scheduledChangeKind(target: PlanDefinition['code'], from: PlanDefinition['code'] | null): string {
+    if (target === 'free') {
+        return 'cancellation';
+    }
+    // Enterprise lists Pay-as-you-go as an ordinary downgrade, so the source plan decides.
+    if (target === 'pay-as-you-go' && from && isRetiredPlan(from)) {
+        return 'migration';
+    }
+    return 'downgrade';
+}
 interface PlanOverrideContentProps {
     onBack: () => void;
     onClose: () => void;
 }
 
 export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack, onClose }) => {
+    const store = usePlanOverrideStore();
     const env = useStore((s) => s.env);
     const { data: plansList } = useApiGetPlans(env);
     const overrideCode = usePlanOverrideStore((s) => s.overrideCode);
     const setOverride = usePlanOverrideStore((s) => s.setOverride);
     const scheduledTargetCode = usePlanOverrideStore((s) => s.scheduledTargetCode);
     const setScheduledTarget = usePlanOverrideStore((s) => s.setScheduledTarget);
+    const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
+    const setOverdueOverride = usePlanOverrideStore((s) => s.setOverdueOverride);
+    const usageLimitOverride = usePlanOverrideStore((s) => s.usageLimitOverride);
+    const setUsageLimitOverride = usePlanOverrideStore((s) => s.setUsageLimitOverride);
+    const spendOverride = usePlanOverrideStore((s) => s.spendOverride);
+    const setSpendOverride = usePlanOverrideStore((s) => s.setSpendOverride);
+    const periodCostsOverride = usePlanOverrideStore((s) => s.periodCostsOverride);
+    const setPeriodCostsOverride = usePlanOverrideStore((s) => s.setPeriodCostsOverride);
+    const addonState = usePlanOverrideStore((s) => s.addonState);
+    const setAddonState = usePlanOverrideStore((s) => s.setAddonState);
+    const paymentMethodOverride = usePlanOverrideStore((s) => s.paymentMethodOverride);
+    const setPaymentMethodOverride = usePlanOverrideStore((s) => s.setPaymentMethodOverride);
+    const resetAll = usePlanOverrideStore((s) => s.resetAll);
 
-    // Valid scheduled-change targets are the main plans below the selected override in MAIN_PLAN_ORDER.
-    const overrideOrderIndex = overrideCode ? MAIN_PLAN_ORDER.indexOf(overrideCode) : -1;
-    const scheduledChangeCodes = overrideOrderIndex > 0 ? MAIN_PLAN_ORDER.slice(0, overrideOrderIndex) : [];
-    const scheduledChangeOptions = plansList?.data.filter((plan) => scheduledChangeCodes.includes(plan.code));
+    // Plan caps are enforced on Free only, so that simulator is offered there alone. Overdue invoices
+    // aren't plan-specific — a downgraded account can still owe one — so that one is always offered.
+    const { data: environmentData } = useCurrentPlan(env);
+    const isFreePlan = environmentData?.plan?.name === 'free';
+    const isPayAsYouGo = environmentData?.plan?.name === 'pay-as-you-go';
+    const leadsWithSpend = hasMonthlySpend(environmentData?.plan);
+
+    // Several plans share a title — `starter` and `starter-legacy` are both "Starter (legacy)", as are
+    // `growth` and `growth-legacy` — which makes them indistinguishable in the list. Append the code to
+    // whichever titles collide, so the pairs stay tellable apart without labelling every plan twice.
+    const ambiguousTitles = useMemo(() => {
+        const seen = new Set<string>();
+        const duplicated = new Set<string>();
+        for (const plan of plansList?.data ?? []) {
+            if (seen.has(plan.title)) {
+                duplicated.add(plan.title);
+            }
+            seen.add(plan.title);
+        }
+        return duplicated;
+    }, [plansList]);
+
+    const realPlanName = useEnvironment(env).data?.plan?.name;
+
+    const scheduledChangeOptions = useMemo(() => {
+        const definitions = plansList?.data ?? [];
+        const current = definitions.find((plan) => plan.code === (overrideCode ?? realPlanName));
+        if (!current) {
+            return [];
+        }
+
+        const targets = new Set(current.prevPlan);
+        if (isRetiredPlan(current.code)) {
+            // We schedule the migration onto these plans, so `prevPlan` never lists it.
+            targets.add('pay-as-you-go');
+        }
+
+        return definitions.filter((plan) => targets.has(plan.code));
+    }, [plansList, overrideCode, realPlanName]);
+    const realPlanTitle = plansList?.data.find((plan) => plan.code === realPlanName)?.title;
+    const overrides = Object.entries(DEFAULTS).filter(([key, value]) => store[key as keyof typeof DEFAULTS] !== value).length;
 
     return (
         <>
@@ -40,57 +113,195 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                     <IconButton variant="ghost" size="2xs" label="Back" onClick={onBack}>
                         <ChevronLeft className="size-3.5" />
                     </IconButton>
-                    <span className="font-medium text-text-default">Plan Override</span>
+                    <span className="font-medium text-text-default">Billing Overrides</span>
+                    {overrides > 0 && <Tag variant="info">{overrides} active</Tag>}
                 </div>
-                <IconButton variant="ghost" size="2xs" label="Close" onClick={onClose}>
-                    <X className="size-3.5" />
-                </IconButton>
+                <div className="flex items-center gap-1">
+                    {overrides > 0 && (
+                        <Button variant="link-accent" size="xs" onClick={resetAll}>
+                            Reset
+                        </Button>
+                    )}
+                    <IconButton variant="ghost" size="2xs" label="Close" onClick={onClose}>
+                        <X className="size-3.5" />
+                    </IconButton>
+                </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
-                <p className="text-sm text-text-muted">
-                    Preview the app as if the account were on a different plan. This only changes what&apos;s displayed here in this browser — the
-                    account&apos;s real plan and billing are untouched.
-                </p>
-                <Select
-                    value={overrideCode ?? REAL_PLAN_VALUE}
-                    onValueChange={(value) => setOverride(value === REAL_PLAN_VALUE ? null : (value as PlanDefinition['code']))}
-                >
-                    <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                        <SelectValue placeholder="Real plan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value={REAL_PLAN_VALUE}>Real plan (no override)</SelectItem>
-                        {plansList?.data.map((plan) => (
-                            <SelectItem key={plan.code} value={plan.code}>
-                                {plan.title}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5">
+                <div className="flex flex-col gap-2">
+                    <Select
+                        value={overrideCode ?? REAL_PLAN_VALUE}
+                        onValueChange={(value) => setOverride(value === REAL_PLAN_VALUE ? null : (value as PlanDefinition['code']))}
+                    >
+                        <SelectTrigger className="w-full text-sm px-2.5 gap-2">
+                            <SelectValue placeholder="Real plan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value={REAL_PLAN_VALUE}>Real plan (no override)</SelectItem>
+                            {plansList?.data.map((plan) => (
+                                <SelectItem key={plan.code} value={plan.code}>
+                                    {ambiguousTitles.has(plan.title) ? `${plan.title} · ${plan.code}` : plan.title}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <p className="text-xs text-text-muted">
+                        {overrideCode ? `Display only — really on ${realPlanTitle ?? realPlanName}.` : 'Display only. Nothing here bills.'}
+                    </p>
+                </div>
 
-                {scheduledChangeOptions && scheduledChangeOptions.length > 0 && (
-                    <div className="flex flex-col gap-1.5">
-                        <span className="text-sm text-text-muted">Simulate a scheduled change (downgrade/cancellation in progress)</span>
-                        <Select
-                            value={scheduledTargetCode ?? NO_SCHEDULED_CHANGE_VALUE}
-                            onValueChange={(value) => setScheduledTarget(value === NO_SCHEDULED_CHANGE_VALUE ? null : (value as PlanDefinition['code']))}
-                        >
-                            <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                                <SelectValue placeholder="None" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={NO_SCHEDULED_CHANGE_VALUE}>None</SelectItem>
-                                {scheduledChangeOptions.map((plan) => (
-                                    <SelectItem key={plan.code} value={plan.code}>
-                                        {plan.code === 'free' ? 'Free (cancellation)' : `${plan.title} (downgrade)`}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                )}
+                <Section title="Plan state">
+                    {scheduledChangeOptions.length > 0 && (
+                        <Row label="Scheduled change">
+                            <Select
+                                value={scheduledTargetCode ?? NO_SCHEDULED_CHANGE_VALUE}
+                                onValueChange={(value) => setScheduledTarget(value === NO_SCHEDULED_CHANGE_VALUE ? null : (value as PlanDefinition['code']))}
+                            >
+                                <RowTrigger placeholder="None" />
+                                <SelectContent>
+                                    <SelectItem value={NO_SCHEDULED_CHANGE_VALUE}>None</SelectItem>
+                                    {scheduledChangeOptions.map((plan) => (
+                                        <SelectItem key={plan.code} value={plan.code}>
+                                            {plan.title} ({scheduledChangeKind(plan.code, overrideCode ?? realPlanName ?? null)})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </Row>
+                    )}
+
+                    {isPayAsYouGo && (
+                        <Row label="Growth add-on" hint="Removal scheduled has no real source yet — it is preview-only.">
+                            <Select
+                                value={addonState ?? REAL_ADDON_VALUE}
+                                onValueChange={(value) => setAddonState(value === REAL_ADDON_VALUE ? null : (value as GrowthAddonState))}
+                            >
+                                <RowTrigger placeholder="Real" />
+                                <SelectContent>
+                                    <SelectItem value={REAL_ADDON_VALUE}>Real</SelectItem>
+                                    <SelectItem value="none">Not on plan</SelectItem>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="pending-removal">Removal scheduled</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </Row>
+                    )}
+
+                    {isFreePlan && (
+                        <Row label="Plan limits">
+                            <Select
+                                value={usageLimitOverride ?? REAL_USAGE_VALUE}
+                                onValueChange={(value) => setUsageLimitOverride(value === REAL_USAGE_VALUE ? null : (value as UsageLimitOverride))}
+                            >
+                                <RowTrigger placeholder="Real" />
+                                <SelectContent>
+                                    <SelectItem value={REAL_USAGE_VALUE}>Real</SelectItem>
+                                    <SelectItem value="near">Nearing limits</SelectItem>
+                                    <SelectItem value="over">Limits reached</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </Row>
+                    )}
+                </Section>
+
+                <Section title="Billing">
+                    <Row label="Card on file" hint="A real card needs Stripe test keys and a setup round-trip; this skips both.">
+                        <RowSwitch checked={paymentMethodOverride} onCheckedChange={setPaymentMethodOverride} />
+                    </Row>
+                    <Row label="Overdue invoices">
+                        <RowSwitch checked={overdueOverride} onCheckedChange={setOverdueOverride} />
+                    </Row>
+
+                    {leadsWithSpend && (
+                        <>
+                            <Row label="Spend">
+                                <Select
+                                    value={spendOverride === null ? REAL_SPEND_VALUE : String(spendOverride)}
+                                    onValueChange={(value) =>
+                                        setSpendOverride(
+                                            value === REAL_SPEND_VALUE
+                                                ? null
+                                                : value === UNAVAILABLE_SPEND_VALUE
+                                                  ? UNAVAILABLE_SPEND_VALUE
+                                                  : (Number(value) as SpendOverride)
+                                        )
+                                    }
+                                >
+                                    <RowTrigger placeholder="Real" />
+                                    <SelectContent>
+                                        <SelectItem value={REAL_SPEND_VALUE}>Real</SelectItem>
+                                        {SPEND_PRESETS_IN_CENTS.map((cents) => (
+                                            <SelectItem key={cents} value={String(cents)}>
+                                                {(cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                                            </SelectItem>
+                                        ))}
+                                        <SelectItem value={UNAVAILABLE_SPEND_VALUE}>Unavailable</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </Row>
+
+                            <Row label="Charges">
+                                <Select
+                                    value={periodCostsOverride ?? REAL_PERIOD_COSTS_VALUE}
+                                    onValueChange={(value) => setPeriodCostsOverride(value === REAL_PERIOD_COSTS_VALUE ? null : (value as PeriodCostsOverride))}
+                                >
+                                    <RowTrigger placeholder="Real" />
+                                    <SelectContent>
+                                        <SelectItem value={REAL_PERIOD_COSTS_VALUE}>Real</SelectItem>
+                                        <SelectItem value="populated">Some metrics</SelectItem>
+                                        <SelectItem value="zero">$0.00 on all</SelectItem>
+                                        <SelectItem value="unavailable">Unavailable</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </Row>
+                        </>
+                    )}
+                </Section>
             </div>
         </>
     );
 };
+
+const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => {
+    const hasRows = Children.toArray(children).some(Boolean);
+    if (!hasRows) {
+        return null;
+    }
+    return (
+        <div className="flex flex-col gap-1">
+            <span className="type-label-xs uppercase text-text-muted px-1 pb-1">{title}</span>
+            {children}
+        </div>
+    );
+};
+
+// A row's control is named by the label beside it rather than by any text of its own.
+const RowLabelContext = createContext<string | undefined>(undefined);
+
+const Row: React.FC<{ label: string; hint?: string; indent?: boolean; children: React.ReactNode }> = ({ label, hint, indent, children }) => {
+    const labelId = useId();
+    return (
+        <div className={cn('flex items-center justify-between gap-3 min-h-8 px-1', indent && 'pl-5')}>
+            <span className="flex items-center gap-1.5 text-sm text-text-default">
+                <span id={labelId}>{label}</span>
+                {hint && <InfoTooltip side="right">{hint}</InfoTooltip>}
+            </span>
+            <RowLabelContext.Provider value={labelId}>{children}</RowLabelContext.Provider>
+        </div>
+    );
+};
+
+const RowTrigger: React.FC<{ placeholder: string }> = ({ placeholder }) => {
+    const labelId = useContext(RowLabelContext);
+    // Naming the trigger by the row label alone would drop the selected value from its name, so it
+    // also points at itself — the two ids read as "<label> <value>".
+    const valueId = useId();
+    return (
+        <SelectTrigger id={valueId} aria-labelledby={labelId ? `${labelId} ${valueId}` : undefined} className="w-52 text-sm px-2.5 gap-2">
+            <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+    );
+};
+
+const RowSwitch: React.FC<React.ComponentProps<typeof Switch>> = (props) => <Switch aria-labelledby={useContext(RowLabelContext)} {...props} />;

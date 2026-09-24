@@ -5,17 +5,17 @@ import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@nangohq/design-system';
 
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components-v2/ui/InputOTP';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { CopyButton } from '@/components/ui/CopyButton';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useMFA } from '@/hooks/useMFA';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { track } from '@/utils/analytics';
+import { getMFAErrorMessage } from '@/utils/mfaErrors';
 import { MfaStepper } from './components/MfaStepper';
 import { RecoveryCodes } from './components/RecoveryCodes';
-import { getMFAErrorMessage } from './mfaErrors';
 
 import type { MfaStep } from './components/MfaStepper';
 

@@ -22,7 +22,7 @@ Some Slack API endpoints require user-scoped permissions and will only accept us
 ```typescript
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
 // Fetch the connection with raw credentials
 const connection = await nango.getConnection(

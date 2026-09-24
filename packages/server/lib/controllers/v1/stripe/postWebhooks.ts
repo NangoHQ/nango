@@ -1,9 +1,10 @@
 import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { accountService, getPlan, handlePlanChanged, updatePlan } from '@nangohq/shared';
+import { accountService, getPlan, updatePlan } from '@nangohq/shared';
 import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
+import { applyPendingPlanChange } from '../../../services/planChange.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PostStripeWebhooks, Result } from '@nangohq/types';
@@ -164,41 +165,20 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
             }
 
             const sub = resSub.value;
-            if (!sub || !sub.pendingChangeId) {
-                return Err("team doesn't not have a subscription or pending changes");
+            if (!sub.pendingChangeId) {
+                return Err('team has no pending subscription change');
+            }
+
+            const team = await accountService.getAccountById(db.knex, plan.account_id);
+            if (!team) {
+                return Err('Failed to find team');
             }
 
             // Finally, we apply the pending change to confirm the card and the plan
-            const resApply = await billing.client.applyPendingChanges({
+            return await applyPendingPlanChange({
+                team,
                 pendingChangeId: sub.pendingChangeId,
-                paymentExternalId: data.id,
-                amountCollected: (data.amount / 100).toFixed(2)
-            });
-            if (resApply.isErr()) {
-                return Err(resApply.error);
-            }
-
-            // This operation is also done in orb/postWebhooks
-            // But their webhook system is so slow that we need to duplicate the logic here
-            return await db.knex.transaction(async (trx) => {
-                const team = await accountService.getAccountById(trx, plan.account_id);
-                if (!team) {
-                    return Err('Failed to find team');
-                }
-
-                const planExternalId = resApply.value.planExternalId;
-
-                const res = await handlePlanChanged(trx, team, {
-                    newPlanCode: planExternalId,
-                    orbSubscriptionId: resApply.value.id
-                });
-
-                if (res.isErr()) {
-                    return Err(res.error);
-                }
-                logger.info(`Plan updated for account ${team.id} to ${planExternalId}`);
-
-                return Ok(undefined);
+                payment: { externalId: data.id, amountCollected: (data.amount / 100).toFixed(2) }
             });
         }
 
@@ -224,8 +204,8 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
                 return Err(resSub.error);
             }
             const sub = resSub.value;
-            if (!sub || !sub.pendingChangeId) {
-                return Err("team doesn't not have a subscription or pending changes");
+            if (!sub.pendingChangeId) {
+                return Err('team has no pending subscription change');
             }
 
             const resCancel = await billing.client.cancelPendingChanges({

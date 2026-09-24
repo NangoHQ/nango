@@ -9,7 +9,7 @@ const logger = getLogger('server.egress.telemetry');
 
 export type ServerEgressCallsite = Extract<
     DataTransferCallsite,
-    'get_/records' | 'get_/proxy' | 'post_/proxy' | 'patch_/proxy' | 'put_/proxy' | 'delete_/proxy' | 'unknown_/proxy'
+    'proxy' | 'get_/records' | 'get_/proxy' | 'post_/proxy' | 'patch_/proxy' | 'put_/proxy' | 'delete_/proxy' | 'unknown_/proxy'
 >;
 
 export interface ServerEgressTelemetry {

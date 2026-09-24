@@ -1,10 +1,14 @@
 import jwt from 'jsonwebtoken';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import * as OTPAuth from 'otpauth';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import db from '@nangohq/database';
+import { hashOAuthIdentifier } from '@nangohq/oauth-server';
 import { userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
-import { isSuccess, runServer } from '../../../utils/tests.js';
+import { dek, envs } from '../../../env.js';
+import { isError, isSuccess, runServer } from '../../../utils/tests.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
 
 const signupRoute = '/api/v1/account/signup';
@@ -12,6 +16,7 @@ const signinRoute = '/api/v1/account/signin';
 const resetPasswordRoute = '/api/v1/account/reset-password';
 const userRoute = '/api/v1/user';
 const accountDiscoveryRoute = '/api/v1/account/onboarding/account-discovery';
+const mfaRoute = '/api/v1/account/mfa';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -39,6 +44,26 @@ async function signin(email: string, password: string): Promise<string> {
     return cookie!.split(';')[0]!;
 }
 
+async function enrollMfa(session: string): Promise<{ totp: OTPAuth.TOTP; recoveryCodes: string[] }> {
+    const enrollment = await api.fetch(`${mfaRoute}/enroll`, { method: 'POST', session });
+    expect(enrollment.res.status).toBe(200);
+    isSuccess(enrollment.json);
+    const totp = OTPAuth.URI.parse(enrollment.json.data.otpauthUri) as OTPAuth.TOTP;
+
+    const activation = await api.fetch(`${mfaRoute}/activate`, { method: 'POST', session, body: { code: totp.generate() } });
+    expect(activation.res.status).toBe(200);
+    isSuccess(activation.json);
+
+    return { totp, recoveryCodes: activation.json.data.recoveryCodes };
+}
+
+async function issueResetToken(email: string): Promise<string> {
+    const dbUser = await userService.getUserByEmail(email);
+    const token = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
+    await userService.editUserPassword({ id: dbUser!.id, reset_password_token: token, hashed_password: dbUser!.hashed_password });
+    return token;
+}
+
 describe(`PUT ${resetPasswordRoute}`, () => {
     beforeAll(async () => {
         api = await runServer();
@@ -46,6 +71,7 @@ describe(`PUT ${resetPasswordRoute}`, () => {
 
     afterAll(() => {
         api.server.close();
+        vi.restoreAllMocks();
     });
 
     it('should invalidate all sessions after a password reset', async () => {
@@ -58,22 +84,203 @@ describe(`PUT ${resetPasswordRoute}`, () => {
         expect((await api.fetch(userRoute, { method: 'GET', session: sessionB })).res.status).toBe(200);
 
         const dbUser = await userService.getUserByEmail(email);
+        const oauthSessionId = `oauth-session-${nanoid()}`;
+        const oauthGrantId = `oauth-grant-${nanoid()}`;
+        await insertOAuthSessionArtifact(oauthSessionId, dbUser!.id);
+        await insertOAuthGrantArtifact(oauthGrantId, dbUser!.id);
         const token = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
         await userService.editUserPassword({ id: dbUser!.id, reset_password_token: token, hashed_password: dbUser!.hashed_password });
 
-        const { res, json } = await api.fetch(resetPasswordRoute, {
-            method: 'PUT',
-            body: { token, password: 'aZ1-newpass!?' }
-        });
+        const previousBaseUrl = envs.NANGO_OAUTH_SERVER_BASE_URL;
+        envs.NANGO_OAUTH_SERVER_BASE_URL = undefined;
+        const { res, json } = await (async () => {
+            try {
+                return await api.fetch(resetPasswordRoute, {
+                    method: 'PUT',
+                    body: { token, password: 'aZ1-newpass!?' }
+                });
+            } finally {
+                envs.NANGO_OAUTH_SERVER_BASE_URL = previousBaseUrl;
+            }
+        })();
         expect(res.status).toBe(200);
         isSuccess(json);
 
         // every session is forcibly logged out (the reset flow is anonymous, so none is spared)
         expect((await api.fetch(userRoute, { method: 'GET', session: sessionA })).res.status).toBe(401);
         expect((await api.fetch(userRoute, { method: 'GET', session: sessionB })).res.status).toBe(401);
+        expect(await oauthArtifactRevokedAt('Session', oauthSessionId)).toBeInstanceOf(Date);
+        expect(await oauthArtifactRevokedAt('Grant', oauthGrantId)).toBeInstanceOf(Date);
 
         const recoveredSession = await signin(email, 'aZ1-newpass!?');
         // password recovery must not make an existing user eligible for new-user account discovery.
         expect((await api.fetch(accountDiscoveryRoute, { method: 'GET', session: recoveredSession })).res.status).toBe(404);
     });
+
+    it('should require a second factor when the user has one enrolled', async () => {
+        const { email, password } = await signupVerifiedUser();
+        const session = await signin(email, password);
+        await enrollMfa(session);
+
+        const token = await issueResetToken(email);
+
+        // a mailbox alone must not be enough to take the account over
+        const missing = await api.fetch(resetPasswordRoute, { method: 'PUT', body: { token, password: 'aZ1-newpass!?' } });
+        expect(missing.res.status).toBe(400);
+        isError(missing.json);
+        expect(missing.json).toStrictEqual({ error: { code: 'mfa_code_required' } });
+
+        const wrongCode = await api.fetch(resetPasswordRoute, {
+            method: 'PUT',
+            body: { token, password: 'aZ1-newpass!?', mfa: { type: 'code', code: '000000' } }
+        });
+        expect(wrongCode.res.status).toBe(400);
+        isError(wrongCode.json);
+        expect(wrongCode.json).toStrictEqual({ error: { code: 'invalid_mfa_code' } });
+
+        // the old password still works, so nothing was changed by the rejected attempts
+        await signin(email, password);
+    });
+
+    it('should reset the password with a valid code, and with a recovery code', async () => {
+        const { email, password } = await signupVerifiedUser();
+        const session = await signin(email, password);
+        const { totp, recoveryCodes } = await enrollMfa(session);
+
+        const withCode = await api.fetch(resetPasswordRoute, {
+            method: 'PUT',
+            body: {
+                token: await issueResetToken(email),
+                password: 'aZ1-newpass!?',
+                mfa: { type: 'code', code: totp.generate({ timestamp: Date.now() + 30_000 }) }
+            }
+        });
+        expect(withCode.res.status).toBe(200);
+        isSuccess(withCode.json);
+
+        const withRecoveryCode = await api.fetch(resetPasswordRoute, {
+            method: 'PUT',
+            body: { token: await issueResetToken(email), password: 'aZ1-thirdpass!?', mfa: { type: 'recoveryCode', recoveryCode: recoveryCodes[0]! } }
+        });
+        expect(withRecoveryCode.res.status).toBe(200);
+        isSuccess(withRecoveryCode.json);
+    });
+
+    it('should reject an invalid token before asking for a second factor', async () => {
+        const { email, password } = await signupVerifiedUser();
+        const session = await signin(email, password);
+        await enrollMfa(session);
+
+        await issueResetToken(email);
+        const { res, json } = await api.fetch(resetPasswordRoute, {
+            method: 'PUT',
+            body: { token: jwt.sign({ user: email }, 'not-the-reset-secret', { expiresIn: '10m' }), password: 'aZ1-newpass!?' }
+        });
+        expect(res.status).toBe(400);
+        isError(json);
+        expect(json).toStrictEqual({ error: { code: 'user_not_found' } });
+    });
+
+    it('should not spend a recovery code when the reset itself fails', async () => {
+        const { email, password } = await signupVerifiedUser();
+        const session = await signin(email, password);
+        const { recoveryCodes } = await enrollMfa(session);
+
+        // issue the token before spying, issueResetToken writes through editUserPassword too
+        const token = await issueResetToken(email);
+
+        vi.spyOn(userService, 'editUserPassword').mockRejectedValueOnce(new Error('write failed'));
+        const failed = await api.fetch(resetPasswordRoute, {
+            method: 'PUT',
+            body: { token, password: 'aZ1-newpass!?', mfa: { type: 'recoveryCode', recoveryCode: recoveryCodes[0]! } }
+        });
+        expect(failed.res.status).toBe(500);
+
+        // the password never changed
+        await signin(email, password);
+
+        // and the rollback left both the recovery code and the reset token spendable
+        const retry = await api.fetch(resetPasswordRoute, {
+            method: 'PUT',
+            body: { token, password: 'aZ1-newpass!?', mfa: { type: 'recoveryCode', recoveryCode: recoveryCodes[0]! } }
+        });
+        expect(retry.res.status).toBe(200);
+        isSuccess(retry.json);
+    });
+
+    it('should skip the second factor when the user has no factor enrolled', async () => {
+        const { email } = await signupVerifiedUser();
+
+        const token = await issueResetToken(email);
+        const { res, json } = await api.fetch(resetPasswordRoute, { method: 'PUT', body: { token, password: 'aZ1-newpass!?' } });
+
+        expect(res.status).toBe(200);
+        isSuccess(json);
+    });
+
+    it('should reset the password without an encryption key when OAuth is disabled', async () => {
+        const { email } = await signupVerifiedUser();
+        const token = await issueResetToken(email);
+        const previousBaseUrl = envs.NANGO_OAUTH_SERVER_BASE_URL;
+        envs.NANGO_OAUTH_SERVER_BASE_URL = undefined;
+        const getEncryptionKey = vi.spyOn(dek, 'get').mockReturnValue('');
+
+        try {
+            const { res, json } = await api.fetch(resetPasswordRoute, { method: 'PUT', body: { token, password: 'aZ1-newpass!?' } });
+
+            expect(envs.NANGO_OAUTH_SERVER_BASE_URL).toBeUndefined();
+            expect(res.status).toBe(200);
+            isSuccess(json);
+        } finally {
+            getEncryptionKey.mockRestore();
+            envs.NANGO_OAUTH_SERVER_BASE_URL = previousBaseUrl;
+        }
+    });
 });
+
+async function insertOAuthSessionArtifact(id: string, userId: number): Promise<void> {
+    const now = new Date();
+    const encryptionKey = dek.get();
+    await db.knex('oauth_server_artifacts').insert({
+        model: 'Session',
+        artifact_id_hash: hashOAuthIdentifier(id, encryptionKey),
+        payload_encrypted: Buffer.from('test-payload'),
+        grant_id_hash: null,
+        session_uid_hash: hashOAuthIdentifier(`uid-${id}`, encryptionKey),
+        user_id_hash: hashOAuthIdentifier(String(userId), encryptionKey),
+        user_authenticated_at: new Date(now.getTime() - 60_000),
+        expires_at: new Date(now.getTime() + 600_000),
+        consumed_at: null,
+        revoked_at: null,
+        created_at: now,
+        updated_at: now
+    });
+}
+
+async function insertOAuthGrantArtifact(id: string, userId: number): Promise<void> {
+    const now = new Date();
+    const encryptionKey = dek.get();
+    const grantIdHash = hashOAuthIdentifier(id, encryptionKey);
+    await db.knex('oauth_server_artifacts').insert({
+        model: 'Grant',
+        artifact_id_hash: grantIdHash,
+        payload_encrypted: Buffer.from('test-payload'),
+        grant_id_hash: grantIdHash,
+        session_uid_hash: null,
+        user_id_hash: hashOAuthIdentifier(String(userId), encryptionKey),
+        user_authenticated_at: new Date(now.getTime() - 60_000),
+        expires_at: new Date(now.getTime() + 600_000),
+        consumed_at: null,
+        revoked_at: null,
+        created_at: now,
+        updated_at: now
+    });
+}
+
+async function oauthArtifactRevokedAt(model: 'Grant' | 'Session', id: string): Promise<Date | null | undefined> {
+    const row = await db
+        .knex('oauth_server_artifacts')
+        .where({ model, artifact_id_hash: hashOAuthIdentifier(id, dek.get()) })
+        .first<{ revoked_at: Date | null }>('revoked_at');
+    return row?.revoked_at;
+}

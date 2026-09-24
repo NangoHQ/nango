@@ -180,11 +180,11 @@ Key rules:
 
 ### Step 4: Add a Storybook story
 
-Add the story to the top-level `stories/` dir as `stories/<ComponentName>.stories.tsx` (not co-located with the component). Show every variant and state (default, hover, disabled, focused). Use Tailwind classes for layout in stories — Tailwind's default 4px scale matches our spacing tokens exactly (`gap-2` = 8px = `--ds-space-2`), so no `var(--ds-space-*)` needed.
+Co-locate the story with the component as `src/components/ui/<component-name>.stories.tsx`, titled `Design System/Components/<ComponentName>`. (The top-level `stories/` dir is for the webapp's own components — different package, different title prefix.) Show every variant and state that needs to be *frozen* to be seen — default, hover, disabled. Skip a dedicated story for focus: it's driven by real browser focus behavior (click/tab), not a prop you can statically set in a way that renders meaningfully in Storybook's static preview — reviewers exercise it by clicking directly into the default/interactive story instead. Use Tailwind classes for layout in stories — Tailwind's default 4px scale matches our spacing tokens exactly (`gap-2` = 8px = `--ds-space-2`), so no `var(--ds-space-*)` needed.
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
-import { MyComponent } from '../src/components/ui/my-component';
+import { MyComponent } from './my-component';
 
 const meta: Meta<typeof MyComponent> = {
     title: 'Design System/Components/MyComponent',
@@ -218,14 +218,14 @@ src/
   components/
     ui/                    all components (flat, shadcn convention)
       button.tsx           exports Button and IconButton
-      button.stories.tsx
+      button.stories.tsx   co-located story, titled "Design System/Components/…"
       spinner.tsx          internal — used by Button for loading state
       …                    add new components here
   lib/
     cn.ts                  cn() helper: twMerge + clsx
   index.ts                 barrel — all public exports
   index.css                CSS entry (imports tokens.generated.css)
-stories/                   Storybook stories (*.stories.tsx) and MDX guides
+stories/                   MDX guides, plus stories for the webapp's own components (not this package's)
 tokens/
   tokens.generated.css     compiled CSS custom properties (source of truth for tokens)
   tokens.json              Tokens Studio export
@@ -247,3 +247,14 @@ npm run storybook   # opens at http://localhost:6006
 ```
 
 Use the **Themes** toolbar button to toggle light/dark. Verify every component looks correct in both themes.
+
+### Hosted builds
+
+Every PR touching `packages/design-system/**` or `packages/webapp/**` gets its own Storybook at
+`https://pr-<number>-storybook.app-development.nango.dev`, linked from the preview comment on the PR
+(`.github/workflows/preview.yml`). Use that to share WIP components — don't run `deploy-storybook.yml`
+from a feature branch, as that overwrites `storybook.nango.dev` until the next merge to master.
+
+`build-storybook` transforms every story eagerly, unlike `storybook dev`, so it fails on broken imports
+that the dev server never loads. Run `npm run -w @nangohq/design-system build-storybook` locally before
+pushing if a story's imports changed.

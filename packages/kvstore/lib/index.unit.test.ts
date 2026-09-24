@@ -92,6 +92,91 @@ describe('getKVStore', () => {
         expect(store).toBeInstanceOf(InMemoryKVStore);
     });
 
+    it('should return an in-memory sliding window limiter when no Redis config is provided', async () => {
+        vi.resetModules();
+
+        const { createSlidingWindowRateLimiter, InMemorySlidingWindowRateLimiter } = await import('./index.js');
+        const limiter = await createSlidingWindowRateLimiter({ keyPrefix: 'test', limit: 10, windowMs: 1000 });
+
+        expect(limiter).toBeInstanceOf(InMemorySlidingWindowRateLimiter);
+        await limiter.destroy();
+    });
+
+    it('should return a Redis sliding window limiter when Redis is configured', async () => {
+        mockEnvs.NANGO_REDIS_URL = 'redis://localhost:6379';
+        vi.resetModules();
+
+        const { createSlidingWindowRateLimiter, RedisSlidingWindowRateLimiter } = await import('./index.js');
+        const limiter = await createSlidingWindowRateLimiter({ keyPrefix: 'test', limit: 10, windowMs: 1000 });
+
+        expect(limiter).toBeInstanceOf(RedisSlidingWindowRateLimiter);
+        await limiter.destroy();
+    });
+
+    it('should cool down Redis connection attempts after a failure', async () => {
+        mockEnvs.NANGO_REDIS_URL = 'redis://localhost:6379';
+        vi.resetModules();
+        const { createClient } = await import('redis');
+        const connect = vi.fn().mockRejectedValue(new Error('unavailable'));
+        vi.mocked(createClient).mockReturnValueOnce({
+            connect,
+            disconnect: vi.fn().mockResolvedValue(undefined),
+            on: vi.fn(),
+            isOpen: false,
+            isReady: false
+        } as never);
+
+        const { createSlidingWindowRateLimiter } = await import('./index.js');
+        const limiter = await createSlidingWindowRateLimiter({ keyPrefix: 'test', limit: 1, windowMs: 1000 });
+
+        await expect(limiter.consume('key', 1)).resolves.toMatchObject({ admitted: 1, rejected: 0 });
+        await expect(limiter.consume('key', 1)).resolves.toMatchObject({ admitted: 1, rejected: 0 });
+        expect(connect).toHaveBeenCalledTimes(1);
+        await limiter.destroy();
+    });
+
+    it('should wait for an in-flight Redis connection during destroy', async () => {
+        mockEnvs.NANGO_REDIS_URL = 'redis://localhost:6379';
+        vi.resetModules();
+        const { createClient } = await import('redis');
+        let resolveConnection: ((client: unknown) => void) | undefined;
+        const connection = new Promise((resolve) => {
+            resolveConnection = resolve;
+        });
+        const disconnect = vi.fn().mockResolvedValue(undefined);
+        const redis = {
+            connect: vi.fn().mockReturnValue(connection),
+            disconnect,
+            on: vi.fn(),
+            isOpen: true,
+            isReady: false
+        };
+        vi.mocked(createClient).mockReturnValueOnce(redis as never);
+
+        const { createSlidingWindowRateLimiter } = await import('./index.js');
+        const limiter = await createSlidingWindowRateLimiter({ keyPrefix: 'test', limit: 1, windowMs: 1000 });
+        const consume = limiter.consume('key', 1);
+        let destroyCompleted = false;
+        const destroy = limiter.destroy().then(() => {
+            destroyCompleted = true;
+        });
+
+        await Promise.resolve();
+        expect(destroyCompleted).toBe(false);
+        resolveConnection?.(redis);
+        await destroy;
+        await expect(consume).resolves.toMatchObject({ admitted: 1, rejected: 0 });
+        expect(disconnect).toHaveBeenCalledOnce();
+    });
+
+    it('should reject invalid sliding window limiter options asynchronously', async () => {
+        vi.resetModules();
+
+        const { createSlidingWindowRateLimiter } = await import('./index.js');
+
+        await expect(createSlidingWindowRateLimiter({ keyPrefix: '', limit: 10, windowMs: 1000 })).rejects.toThrow('keyPrefix must not be empty');
+    });
+
     it('should return different instances for different boundaries', async () => {
         vi.resetModules();
 

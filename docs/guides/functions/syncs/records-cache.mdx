@@ -102,7 +102,7 @@ You must persist the cursor on your side for each combination of **connection** 
 ```ts
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
 // Fetch only records that changed since your last cursor
 const result = await nango.listRecords({

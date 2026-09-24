@@ -1,9 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { getFlags } from '@nangohq/feature-flags';
-import { basePublicUrl, Err, Ok } from '@nangohq/utils';
+import { basePublicUrl, Err, flags, Ok } from '@nangohq/utils';
 
-import { audit } from '../../../audit.js';
+import { audit, auditBackend } from '../../../audit.js';
 import integrationService, { IntegrationServiceError } from '../../../services/integration.service.js';
 import { PublicMcpError } from '../utils.js';
 import { createIntegrationsTool } from './create.js';
@@ -23,6 +22,8 @@ const updatedAt = new Date('2026-01-02T00:00:00.000Z');
 
 describe('createIntegrationsTool', () => {
     afterEach(() => {
+        flags.hasAuditTrail = false;
+        auditBackend.configured = false;
         vi.restoreAllMocks();
     });
 
@@ -62,7 +63,9 @@ describe('createIntegrationsTool', () => {
                 client_secret: 'client-secret',
                 scopes: 'repo'
             },
-            integrationConfig: { region: 'us' }
+            integrationConfig: { region: 'us' },
+            environment: context.environment,
+            team: context.account
         });
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -98,7 +101,9 @@ describe('createIntegrationsTool', () => {
             uniqueKey: 'github-own',
             credentialSource: 'nango',
             displayName: undefined,
-            forwardWebhooks: undefined
+            forwardWebhooks: undefined,
+            environment: context.environment,
+            team: context.account
         });
     });
 
@@ -122,7 +127,9 @@ describe('createIntegrationsTool', () => {
             credentialSource: 'own',
             displayName: undefined,
             forwardWebhooks: undefined,
-            integrationConfig: { keyLabel: 'Workspace token' }
+            integrationConfig: { keyLabel: 'Workspace token' },
+            environment: context.environment,
+            team: context.account
         });
     });
 
@@ -142,7 +149,9 @@ describe('createIntegrationsTool', () => {
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(PublicMcpError);
-            expect(result.error.message).toContain('Invalid integrations_create arguments: arguments:');
+            expect(result.error.message).toContain(
+                'Invalid integrations_create arguments: credentials: credentials is only allowed when credential_source is own'
+            );
         }
         expect(createSpy).not.toHaveBeenCalled();
     });
@@ -169,12 +178,13 @@ describe('createIntegrationsTool', () => {
     });
 
     it('audits creation without including credentials or integration configuration values', async () => {
-        vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        flags.hasAuditTrail = true;
+        auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         vi.spyOn(integrationService, 'create').mockResolvedValue(Ok({ integration: integrationFixture(), provider: providerFixture() }));
         const auditedContext = {
             account: { id: 1, uuid: 'account-uuid' },
-            environment: { id: 42, name: 'dev' },
+            environment: { id: 42, uuid: 'e0000000-0000-4000-8000-000000000042', name: 'dev' },
             grantedScopes: ['environment:integrations:create'],
             audit: {
                 actor: { type: 'api_key', id: '7', display: 'Management key' },
@@ -202,7 +212,8 @@ describe('createIntegrationsTool', () => {
             expect(auditSpy).toHaveBeenCalledWith({
                 occurredAt: expect.any(String),
                 accountId: 1,
-                environment: { id: 42, display: 'dev' },
+                scope: 'environment',
+                environment: { id: 'e0000000-0000-4000-8000-000000000042', display: 'dev' },
                 actor: { type: 'api_key', id: '7', display: 'Management key' },
                 resource: 'integration',
                 action: 'created',

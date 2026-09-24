@@ -9,6 +9,7 @@ export interface DBPlan extends Timestamps {
         | 'free'
         | 'free-uncapped'
         | 'startup-deal'
+        | 'pay-as-you-go'
         | 'starter-v2'
         | 'growth-v2'
         | 'enterprise'
@@ -29,6 +30,9 @@ export interface DBPlan extends Timestamps {
     orb_future_plan: string | null;
     orb_future_plan_at: Date | null;
     orb_subscribed_at: Date | null;
+    has_growth_features: boolean;
+    growth_features_starts_at: Date | null;
+    growth_features_ends_at: Date | null;
 
     // Trial
     // Remove all values when you upgrade a customer
@@ -71,6 +75,12 @@ export interface DBPlan extends Timestamps {
      */
     function_compute_gbms_max: number | null;
 
+    /** Limit the amount of function runtime (in "started seconds") that can be used in a month
+     * Set to null to remove limit
+     * @default null
+     */
+    function_duration_seconds_max: number | null;
+
     /** Limit the number of webhook forwards that can happen in a month
      * Set to null to remove limit
      * @default null
@@ -82,6 +92,12 @@ export interface DBPlan extends Timestamps {
      * @default null
      */
     function_logs_max: number | null;
+
+    /** Limit the amount of billable data transfer (in bytes) that can be used in a month
+     * Set to null to remove limit
+     * @default null
+     */
+    data_transfer_max: number | null;
 
     /**
      * Limit the number of environments that can be created
@@ -152,6 +168,18 @@ export interface DBPlan extends Timestamps {
     has_rbac: boolean;
 
     /**
+     * Record control-plane audit trail events
+     * @default false
+     */
+    has_audit_trail_control_plane: boolean;
+
+    /**
+     * Let the customer reach their audit trail, through the dashboard, the API and export
+     * @default false
+     */
+    has_audit_trail_access: boolean;
+
+    /**
      * Enable or disable the ability to override the docs connect url from the connect session
      * @default false
      */
@@ -198,6 +226,12 @@ export interface DBPlan extends Timestamps {
      * @default "runner"
      */
     on_event_function_runtime: FunctionRuntime;
+
+    /**
+     * Function Runtime
+     * @default "lambda"
+     */
+    function_runtime: FunctionRuntime;
 
     /**
      * Enable or disable records autopruning

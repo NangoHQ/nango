@@ -1,7 +1,14 @@
 export { deployBundle, prepareDeploymentBundle } from './deploy.js';
 export type { DeploymentBundleError, DeploymentBundlePreparationError } from './deploy.js';
 export * as legacyFunctionService from './legacy/index.js';
+export type { ListFunctionsError, ListFunctionsErrorCode } from './legacy/service.js';
+export type { ActionInputSchemaRow, IntegrationFunctionCatalogRow } from './legacy/models/functions.js';
 export * as functionConfigService from './models/functions.js';
+export * as functionInstanceService from './models/instances.js';
+export type { FunctionInstanceFilter } from './models/instances.js';
+export * as functionLifecycle from './lifecycle.js';
 export { reconcile } from './reconcile.js';
 export type { DeploymentBundleReconciliation } from './reconcile.js';
 export { functionVersionHash } from './version.js';
+export { validateFunctionInput } from './models/validate.js';
+export { getFunctionMaxConcurrency, invokeFunction } from './invoke.js';

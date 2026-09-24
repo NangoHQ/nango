@@ -16,13 +16,13 @@ description: 'Connect to the Passportal API in 2 minutes 💨'
       </Step>
 
       <Step title="Call the Passportal API">
-        Let's make your first request to Passportal (fetch a list of clients). Replace the placeholders below with your [Nango secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to Passportal (fetch a list of clients). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
 
         <Tabs>
           <Tab title="cURL">
             ```bash
             curl -X GET "https://api.nango.dev/proxy/api/v2/clients" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>" \
               -H "Accept: application/json"
@@ -35,7 +35,7 @@ description: 'Connect to the Passportal API in 2 minutes 💨'
             ```typescript
             import { Nango } from '@nangohq/node';
 
-            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
             // Fetch a list of clients from Passportal
             const res = await nango.get({

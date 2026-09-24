@@ -5,15 +5,19 @@ import chalk from 'chalk';
 import columnify from 'columnify';
 import promptly from 'promptly';
 
+import { cliFetch } from '../tls.js';
 import { getCliHeaders, isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { NANGO_VERSION } from '../version.js';
+import { tsToJsPath } from './compile.js';
 import { parseIntegrationDefinitions } from './definitions.js';
+import { resolveProjectPath } from './project-path.js';
 import { ReadableError } from './utils.js';
 
 import type { DeployOptions } from '../types.js';
 import type { FunctionConfig, ParsedIntegrationDefinitions } from './definitions.js';
+import type { ResolvedProjectPath } from './project-path.js';
 import type {
     CLIDeployFlowConfig,
     NangoConfigMetadata,
@@ -259,16 +263,22 @@ async function createFunctionsBundle({
 
     const functions: FunctionsBundle['functions'] = [];
     for (const config of selectedConfigs) {
+        const { filePath, ...artifact } = config;
+        const sourcePath = resolveProjectPath({ projectRoot: fullPath, filePath });
+        if (!sourcePath) {
+            return Err(new Error(`Function source path "${filePath}" must be within the project directory`));
+        }
         const fileBody = await loadScriptFiles({
             fullPath,
             scriptName: config.name,
             providerConfigKey: config.integrationId,
-            type: 'functions'
+            type: 'functions',
+            sourcePath
         });
         if (!fileBody) {
             return Err(new Error(`No function files found for "${config.name}"`));
         }
-        functions.push({ ...config, fileBody });
+        functions.push({ ...artifact, fileBody });
     }
 
     return Ok({
@@ -431,19 +441,33 @@ async function loadScriptFiles({
     fullPath,
     scriptName,
     providerConfigKey,
-    type
+    type,
+    sourcePath
 }: {
     fullPath: string;
     scriptName: string;
     providerConfigKey: string;
     type: ScriptFileType;
+    sourcePath?: ResolvedProjectPath;
 }): Promise<{ js: string; ts: string } | null> {
-    const js = await loadScriptJsFile({ fullPath, scriptName, providerConfigKey, type });
+    const js = await loadScriptJsFile({
+        fullPath,
+        scriptName,
+        providerConfigKey,
+        type,
+        ...(sourcePath ? { sourcePath: sourcePath.relative } : {})
+    });
     if (!js) {
         return null;
     }
 
-    const ts = await loadScriptTsFile({ fullPath, scriptName, providerConfigKey, type });
+    const ts = await loadScriptTsFile({
+        fullPath,
+        scriptName,
+        providerConfigKey,
+        type,
+        ...(sourcePath ? { sourceFilePath: sourcePath.absolute } : {})
+    });
     if (!ts) {
         return null;
     }
@@ -458,14 +482,18 @@ async function loadScriptJsFile({
     scriptName,
     providerConfigKey,
     fullPath,
-    type
+    type,
+    sourcePath
 }: {
     scriptName: string;
     type: ScriptFileType;
     providerConfigKey: string;
     fullPath: string;
+    sourcePath?: string;
 }): Promise<string | null> {
-    const filePath = path.join(fullPath, 'build', `${providerConfigKey}_${type}_${scriptName}.cjs`);
+    const filePath = sourcePath
+        ? path.join(fullPath, 'build', tsToJsPath(sourcePath.replace(/\.ts$/, '.js')))
+        : path.join(fullPath, 'build', `${providerConfigKey}_${type}_${scriptName}.cjs`);
 
     try {
         const content = await fs.promises.readFile(filePath, 'utf8');
@@ -484,14 +512,16 @@ async function loadScriptTsFile({
     fullPath,
     scriptName,
     providerConfigKey,
-    type
+    type,
+    sourceFilePath
 }: {
     fullPath: string;
     scriptName: string;
     providerConfigKey: string;
     type: ScriptFileType;
+    sourceFilePath?: string;
 }): Promise<string | null> {
-    const filePath = path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
+    const filePath = sourceFilePath || path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
 
     try {
         const content = await fs.promises.readFile(filePath, 'utf8');
@@ -515,7 +545,7 @@ async function postLegacyConfirmation({
     const url = new URL('/sync/deploy/confirmation', hostport);
 
     try {
-        const res = await fetch(url, {
+        const res = await cliFetch(url, {
             method: 'POST',
             body: JSON.stringify(body),
             headers: new Headers({
@@ -548,7 +578,7 @@ async function postLegacyDeploy({ hostport, body }: { hostport: string; body: Po
     const url = new URL('/sync/deploy', hostport);
 
     try {
-        const res = await fetch(url, {
+        const res = await cliFetch(url, {
             method: 'POST',
             body: JSON.stringify(body),
             headers: new Headers({
@@ -591,7 +621,7 @@ async function previewFunctionsDeployment({
     const url = new URL('/functions/deployments/bundle/preview', hostport);
 
     try {
-        const res = await fetch(url, {
+        const res = await cliFetch(url, {
             method: 'POST',
             body: JSON.stringify(body),
             headers: new Headers({
@@ -622,7 +652,7 @@ async function deployFunctions({
     const url = new URL('/functions/deployments/bundle', hostport);
 
     try {
-        const res = await fetch(url, {
+        const res = await cliFetch(url, {
             method: 'POST',
             body: JSON.stringify(body),
             headers: new Headers({

@@ -122,7 +122,7 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                                 <input
                                     type="text"
                                     placeholder={customPeriodInputExample}
-                                    className="w-full bg-transparent text-sm text-text-strong placeholder:text-text-disabled focus:outline-hidden focus:ring-0 border-none"
+                                    className="w-full bg-transparent text-sm text-text-strong placeholder:text-text-placeholder focus:outline-hidden focus:ring-0 border-none"
                                     value={customPeriodInputValue}
                                     onChange={(e) => setCustomPeriodInputValue(e.target.value)}
                                 />

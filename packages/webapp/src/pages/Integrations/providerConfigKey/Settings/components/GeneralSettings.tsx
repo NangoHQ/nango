@@ -2,12 +2,10 @@ import { AlertTriangle, Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
-import { FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Switch } from '@/components/ui/Switch';
@@ -31,7 +29,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
     const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
 
     const { can } = usePermissions();
-    const canEdit = !environment.is_production || can(permissions.canWriteProdIntegrations);
+    const canEdit = can('environment:integrations:update', environment);
 
     const [isEditingIntegrationId, setIsEditingIntegrationId] = useState(false);
 

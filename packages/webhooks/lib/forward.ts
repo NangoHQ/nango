@@ -20,6 +20,7 @@ export const forwardWebhook = async ({
     payload,
     webhookOriginalHeaders,
     logContextGetter,
+    unverified,
     onBytes
 }: {
     integration: IntegrationConfig;
@@ -29,9 +30,11 @@ export const forwardWebhook = async ({
     webhookSettings: DBExternalWebhook | null;
     connectionIds: string[];
     webhookUrlOverrideByConnectionId: Map<string, string>;
-    payload: Record<string, any> | null;
+    payload: unknown;
     webhookOriginalHeaders: Record<string, string>;
     logContextGetter: LogContextGetter;
+    /** Set when the provider signature was not verified, so the forward operation can say so. */
+    unverified?: { reason: string; message: string } | undefined;
     onBytes?: (bytes: MeteredBytes, connectionId: string) => void;
 }): Promise<Result<{ results: { connectionId: string; success: boolean }[] }>> => {
     const safeOnBytes = (bytes: MeteredBytes, connectionId: string) => {
@@ -58,6 +61,14 @@ export const forwardWebhook = async ({
         }
     );
     logCtx.attachSpan(new OtlpSpan(logCtx.operation));
+
+    if (unverified) {
+        void logCtx.warn(unverified.message, {
+            provider: integration.provider,
+            integration: integration.unique_key,
+            reason: unverified.reason
+        });
+    }
 
     const body: NangoForwardWebhookBody = {
         from: integration.provider,

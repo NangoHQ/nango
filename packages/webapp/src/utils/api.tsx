@@ -5,7 +5,7 @@ import { globalEnv } from './env';
 import type { ApiError } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit) {
-    return await fetch(new URL(input as string, globalEnv.apiUrl), {
+    return await fetch(new URL(input as string, globalEnv.dashboardApiUrl), {
         ...init,
         headers: {
             'Content-Type': 'application/json',
@@ -20,6 +20,8 @@ export async function publicApiFetch(
     { connectionId, providerConfigKey, secretKey }: { connectionId: string; providerConfigKey: string; secretKey: string },
     init?: RequestInit
 ) {
+    // Public API (e.g. /proxy), not dashboard admin. Keep this on apiUrl so split-host
+    // self-hosted setups still hit the public host the SDK would use.
     return await fetch(new URL(input as string, globalEnv.apiUrl), {
         ...init,
         headers: {
@@ -112,4 +114,13 @@ export class APIError extends Error {
         this.json = json;
         this.res = res;
     }
+}
+
+// Only a missing session sends 401 `unauthorized`. Other 401s, like an unknown environment, come with a live session.
+export function isNoSessionError(status: number, json: unknown): boolean {
+    if (status !== 401 || typeof json !== 'object' || json === null || !('error' in json)) {
+        return false;
+    }
+    const { error } = json;
+    return typeof error === 'object' && error !== null && 'code' in error && error.code === 'unauthorized';
 }

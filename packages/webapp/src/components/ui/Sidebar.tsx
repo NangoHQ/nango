@@ -5,12 +5,11 @@ import { cva } from 'class-variance-authority';
 import { PanelLeftIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { IconButton, Input } from '@nangohq/design-system';
+import { IconButton, Input, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@nangohq/design-system';
 
 import { Separator } from '@/components/ui/Separator';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/Sheet';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/utils/utils';
 
@@ -82,7 +81,7 @@ function SidebarProvider({
 
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
-        return isMobile ? void setOpenMobile((open) => !open) : void setOpen((open) => !open);
+        return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
     }, [isMobile, setOpen, setOpenMobile]);
 
     // Adds a keyboard shortcut to toggle the sidebar.

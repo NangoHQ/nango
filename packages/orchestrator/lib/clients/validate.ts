@@ -4,7 +4,7 @@ import { taskStates } from '@nangohq/scheduler';
 import { Err, Ok } from '@nangohq/utils';
 
 import { jsonSchema } from '../utils/validation.js';
-import { TaskAbort, TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from './types.js';
+import { TaskAbort, TaskAction, TaskFunction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from './types.js';
 
 import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
 import type { Schedule, Task } from '@nangohq/scheduler';
@@ -74,6 +74,67 @@ export const onEventArgsSchema = z.object({
     ...commonSchemaArgsFields
 });
 
+const functionBaseFields = {
+    type: z.literal('function'),
+    functionConfigId: z.number().int().positive(),
+    functionName: z.string().min(1)
+};
+
+const functionTriggerConnectionSchema = z.object({
+    connectionId: z.string().min(1),
+    integrationId: z.string().min(1)
+});
+
+const scheduleFunctionTriggerSchema = z.object({
+    kind: z.literal('schedule'),
+    input: z.null(),
+    connection: functionTriggerConnectionSchema
+});
+
+const functionTriggerSchema = z.discriminatedUnion('kind', [
+    z.object({
+        kind: z.literal('invoke'),
+        input: jsonSchema,
+        connection: functionTriggerConnectionSchema
+    }),
+    z.object({
+        kind: z.literal('http'),
+        input: jsonSchema.optional().default(null),
+        request: z.object({
+            method: z.enum(['GET', 'POST', 'PATCH', 'PUT', 'DELETE']),
+            path: z.string(),
+            headers: z.record(z.string(), z.string()),
+            query: z.record(z.string(), z.string()),
+            body: jsonSchema.optional().default(null)
+        }),
+        subscriptions: z.array(z.string()).default([]),
+        connection: functionTriggerConnectionSchema
+    }),
+    z.object({
+        kind: z.literal('event'),
+        input: z.object({ event: z.enum(['post-connection-creation', 'pre-connection-deletion', 'validate-connection']) }),
+        connection: functionTriggerConnectionSchema
+    }),
+    scheduleFunctionTriggerSchema
+]);
+
+const functionArgsObjectSchema = z
+    .object({
+        ...functionBaseFields,
+        activityLogId: z.string().optional(),
+        variant: z.string().min(1).optional(),
+        trigger: functionTriggerSchema,
+        async: z.boolean().optional().default(false),
+        ...commonSchemaArgsFields
+    })
+    .strict();
+
+export const functionArgsSchema = functionArgsObjectSchema.transform(({ activityLogId, variant, ...args }) => ({
+    ...args,
+    ...(activityLogId !== undefined && { activityLogId }),
+    ...(variant !== undefined && { variant })
+}));
+
 const commonSchemaFields = {
     id: z.string().uuid(),
     name: z.string().min(1),
@@ -109,6 +170,10 @@ const webhookSchema = z.object({
 const onEventSchema = z.object({
     ...commonSchemaFields,
     payload: onEventArgsSchema
+});
+const functionSchema = z.object({
+    ...commonSchemaFields,
+    payload: functionArgsSchema
 });
 
 export function validateTask(task: Task): Result<OrchestratorTask> {
@@ -223,6 +288,30 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 sdkVersion: onEvent.data.payload.sdkVersion,
                 activityLogId: onEvent.data.payload.activityLogId,
                 heartbeatTimeoutSecs: onEvent.data.heartbeatTimeoutSecs
+            })
+        );
+    }
+    const func = functionSchema.safeParse(task);
+    if (func.success) {
+        return Ok(
+            TaskFunction({
+                id: func.data.id,
+                state: func.data.state,
+                name: func.data.name,
+                attempt: func.data.retryCount + 1,
+                attemptMax: func.data.retryMax + 1,
+                functionName: func.data.payload.functionName,
+                functionConfigId: func.data.payload.functionConfigId,
+                ...(func.data.payload.variant !== undefined && { variant: func.data.payload.variant }),
+                connection: func.data.payload.connection,
+                ...(func.data.payload.activityLogId !== undefined && { activityLogId: func.data.payload.activityLogId }),
+                trigger: func.data.payload.trigger,
+                async: func.data.payload.async,
+                groupKey: func.data.groupKey,
+                groupMaxConcurrency: func.data.groupMaxConcurrency,
+                ownerKey: func.data.ownerKey,
+                retryKey: func.data.retryKey,
+                heartbeatTimeoutSecs: func.data.heartbeatTimeoutSecs
             })
         );
     }

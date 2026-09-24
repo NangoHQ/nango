@@ -1,17 +1,29 @@
 import helmet from 'helmet';
 
-import { basePublicUrl, baseUrl, connectUrl, connectUrlAsDocumentBase } from '@nangohq/utils';
+import { basePublicUrl, baseUrl, connectUrl, connectUrlAsDocumentBase, dashboardApiUrl } from '@nangohq/utils';
+
+import { envs } from '../env.js';
 
 import type { RequestHandler } from 'express';
 
 // CSP path matching: no trailing slash = exact match (URL older SDKs load), with = prefix match (assets/routes).
 const connectUrlCspSources = [...new Set([connectUrl, connectUrlAsDocumentBase().toString()])];
 
+function websocketOrigin(url: string): string {
+    const parsed = new URL(url);
+    parsed.protocol = url.startsWith('https') ? 'wss' : 'ws';
+    return parsed.href;
+}
+
 export function securityMiddlewares(): RequestHandler[] {
     const hostPublic = basePublicUrl;
     const hostApi = baseUrl;
-    const hostWs = new URL(hostApi);
-    hostWs.protocol = hostApi.startsWith('https') ? 'wss' : 'ws';
+    const hostWs = websocketOrigin(hostApi);
+    // `/` means same-origin dashboard fetches; `'self'` already covers that.
+    // An absolute dashboard host may differ from the public API one (Set dedups when they match).
+    const apiCspSources = dashboardApiUrl === '/' ? [hostApi] : [...new Set([hostApi, dashboardApiUrl])];
+    const apiWsCspSources = dashboardApiUrl === '/' ? [hostWs] : [...new Set([hostWs, websocketOrigin(dashboardApiUrl)])];
+    const oauthCspSources = envs.NANGO_OAUTH_SERVER_BASE_URL ? [new URL(envs.NANGO_OAUTH_SERVER_BASE_URL).origin] : [];
     const reportOnly = process.env['CSP_REPORT_ONLY'];
 
     return [
@@ -20,6 +32,10 @@ export function securityMiddlewares(): RequestHandler[] {
         helmet.ieNoOpen(),
         helmet.frameguard({ action: 'sameorigin' }),
         helmet.dnsPrefetchControl(),
+        // Auth urls carry tokens in the path, so never send one as a referrer — not even
+        // same-origin, where it would land in our own access logs. Cross-origin behaviour is
+        // unchanged from the browser default, keeping third-party referrer allowlists working.
+        helmet.referrerPolicy({ policy: 'strict-origin' }),
         helmet.hsts({
             maxAge: 5184000
         }),
@@ -27,16 +43,17 @@ export function securityMiddlewares(): RequestHandler[] {
         helmet.contentSecurityPolicy({
             reportOnly: reportOnly !== 'false',
             directives: {
-                defaultSrc: ["'self'", hostPublic, hostApi, ...connectUrlCspSources],
+                defaultSrc: ["'self'", hostPublic, ...apiCspSources, ...connectUrlCspSources],
                 childSrc: "'self'",
                 connectSrc: [
                     "'self'",
                     'https://*.google-analytics.com',
                     'https://*.sentry.io',
                     hostPublic,
-                    hostApi,
-                    hostWs.href,
+                    ...apiCspSources,
+                    ...apiWsCspSources,
                     ...connectUrlCspSources,
+                    ...oauthCspSources,
                     'https://*.posthog.com',
                     'https://*.stripe.com',
                     'https://*.plain.com',
@@ -44,6 +61,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://raw.githubusercontent.com'
                 ],
                 fontSrc: ["'self'", 'data:', 'https://*.googleapis.com', 'https://*.gstatic.com', 'https://*.cdn-plain.com'],
+                formAction: ["'self'", ...oauthCspSources],
                 frameSrc: [
                     "'self'",
                     'https://accounts.google.com',

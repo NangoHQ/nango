@@ -16,14 +16,14 @@ Connect to the Google Calendar MCP server with Nango using your **Google account
     Go to [Connections](https://app.nango.dev/dev/connections) → _Add Test Connection_ → _Google Calendar (MCP)_ and authorize with your Google account.
     </Step>
     <Step title="Call the Google Calendar MCP server">
-    Make your first MCP request (e.g. initialize). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Make your first MCP request (e.g. initialize). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/v1" \
               -X POST \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>" \
               -H "Content-Type: application/json" \
@@ -51,7 +51,7 @@ Connect to the Google Calendar MCP server with Nango using your **Google account
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.post({
             endpoint: '/v1',

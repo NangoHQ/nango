@@ -2,10 +2,13 @@ import crypto from 'node:crypto';
 
 import get from 'lodash-es/get.js';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { accountService, connectionService, getProvider, NangoError } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
+import { recordConnectionCreated } from '../hooks/auditConnection.js';
 import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
+import { safeCompare } from './signature.js';
 
 import type { InternalNango } from './internal-nango.js';
 import type { WebhookHandler } from './types.js';
@@ -24,21 +27,29 @@ function validate(integration: IntegrationConfig, headerSignature: string, rawBo
 
     const signature = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
 
-    const trusted = Buffer.from(`sha256=${signature}`, 'ascii');
-    const untrusted = Buffer.from(headerSignature, 'ascii');
-
-    return crypto.timingSafeEqual(trusted, untrusted);
+    return safeCompare(`sha256=${signature}`, headerSignature);
 }
 
 const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     const signature = headers['x-hub-signature-256'];
 
+    // Verified before handleCreateWebhook, so an unsigned installation event cannot finalize a
+    // pending connection.
     if (signature) {
         const valid = validate(nango.integration, signature, rawBody);
 
         if (!valid) {
             logger.error('Github App webhook signature invalid. Exiting');
             return Err(new NangoError('webhook_invalid_signature'));
+        }
+    } else {
+        nango.markUnverified({ reason: 'github_app_missing_signature', remediation: 'Set the Nango webhook secret on the GitHub App' });
+
+        const allowUnauthorized = await getFlags().allowUnauthorizedGithubAppWebhook(nango.team.uuid);
+
+        if (!allowUnauthorized) {
+            logger.error('Github App webhook signature missing. Exiting', { configId: nango.integration.id });
+            return Err(new NangoError('webhook_missing_signature'));
         }
     }
 
@@ -50,7 +61,7 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
     }
 
     const response = await nango.executeScriptForWebhooks({
-        body,
+        payload: body,
         webhookHeaderValue: headers['x-github-event'] as string,
         connectionIdentifier: 'installation.id',
         propName: 'installation_id'
@@ -113,6 +124,17 @@ async function handleCreateWebhook(nango: InternalNango, body: any): Promise<Res
         const logCtx = nango.logContextGetter.get({ id: activityLogId, accountId: account.id });
 
         const connCreatedHook = (res: ConnectionUpsertResponse) => {
+            // A GitHub App installation: nobody called us, so there is no route middleware to record this.
+            void recordConnectionCreated({
+                operation: res.operation,
+                connectionId: res.connection.connection_id,
+                providerConfigKey: res.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { uuid: environment.uuid, name: environment.name },
+                endUser: undefined,
+                auditAttribution: { kind: 'no-attribution', reason: 'provider webhook' }
+            });
+
             void connectionCreatedHook(
                 {
                     connection: res.connection,

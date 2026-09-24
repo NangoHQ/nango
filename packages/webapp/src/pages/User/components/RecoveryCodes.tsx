@@ -5,6 +5,7 @@ import { Button } from '@nangohq/design-system';
 
 import { useToast } from '@/hooks/useToast';
 import { track } from '@/utils/analytics';
+import { downloadBlob } from '@/utils/download';
 
 export const RecoveryCodes: React.FC<{ codes: string[]; context: 'enroll' | 'regenerate' }> = ({ codes, context }) => {
     const { toast } = useToast();
@@ -29,13 +30,7 @@ export const RecoveryCodes: React.FC<{ codes: string[]; context: 'enroll' | 'reg
     };
 
     const downloadAll = () => {
-        const blob = new Blob([codes.join('\n')], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'nango-recovery-codes.txt';
-        link.click();
-        URL.revokeObjectURL(url);
+        downloadBlob(new Blob([codes.join('\n')], { type: 'text/plain' }), 'nango-recovery-codes.txt');
         track('web:2fa:recovery_codes_downloaded', { context });
     };
 

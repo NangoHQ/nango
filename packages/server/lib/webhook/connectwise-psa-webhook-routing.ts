@@ -1,6 +1,10 @@
-import { createHash, createHmac, timingSafeEqual } from 'crypto';
+import { createHash, createHmac } from 'crypto';
 
+import { DEFAULT_OUTBOUND_URL_POLICY, getSafeHttpAgents, validateOutboundUrlSync } from '@nangohq/egress';
+import { connectionService, NangoError } from '@nangohq/shared';
 import { axiosInstance, Err, Ok } from '@nangohq/utils';
+
+import { safeCompare } from './signature.js';
 
 import type { ConnectWisePsaWebhookPayload, WebhookHandler } from './types.js';
 import type { Result } from '@nangohq/utils';
@@ -15,62 +19,40 @@ interface SigningKeyResponse {
  */
 const TRUSTED_CONNECTWISE_SUBDOMAINS = new Set(['api-au', 'api-eu', 'api-na', 'sandbox-au', 'sandbox-eu', 'sandbox-na', 'na', 'eu', 'au']);
 
-/**
- * Validates that a URL is from a trusted ConnectWise subdomain.
- * SECURITY CRITICAL: This prevents attackers from directing us to fetch signing keys
- * from malicious servers that they control.
- *
- * @param keyUrl - The URL from the webhook's Metadata.key_url field (UNTRUSTED)
- * @returns The validated key URL or an error
- */
-function trustedKeyUrl(keyUrl: string): Result<string> {
+/** Only an exact HTTPS origin saved on a connection can extend the cloud defaults. */
+function configuredOrigin(value: unknown): string | null {
+    if (typeof value !== 'string') return null;
     try {
-        const keyUrlParsed = new URL(keyUrl);
-
-        // Only accept HTTPS protocol
-        if (keyUrlParsed.protocol !== 'https:') {
-            return Err(new Error('webhook_invalid_key_url', { cause: 'Key URL must use HTTPS protocol' }));
-        }
-
-        // Verify the host is in the format: <subdomain>.myconnectwise.net
-        if (!keyUrlParsed.host.endsWith('.myconnectwise.net')) {
-            return Err(new Error('webhook_invalid_key_url', { cause: 'Key URL must be from myconnectwise.net domain' }));
-        }
-
-        // Extract subdomain (e.g., "api-na" from "api-na.myconnectwise.net")
-        const subdomain = keyUrlParsed.host.replace('.myconnectwise.net', '');
-
-        // Verify the subdomain is in our trusted list
-        if (!TRUSTED_CONNECTWISE_SUBDOMAINS.has(subdomain)) {
-            return Err(new Error('webhook_invalid_key_url', { cause: `Subdomain "${subdomain}" is not a known trusted ConnectWise subdomain` }));
-        }
-
-        return Ok(keyUrl);
-    } catch (err) {
-        return Err(new Error('webhook_invalid_key_url', { cause: err }));
+        const url = new URL(value);
+        if (url.protocol !== 'https:' || url.username || url.password || url.pathname !== '/' || url.search || url.hash) return null;
+        return url.origin;
+    } catch {
+        return null;
     }
 }
 
-/**
- * Fetches the signing key from ConnectWise key URL.
- * Only fetches from pre-validated trusted subdomains.
- *
- * @param keyUrl - The URL from the webhook's Metadata.key_url field (UNTRUSTED until validated)
- * @returns The signing key or an error
- */
-async function fetchSigningKey(keyUrl: string): Promise<Result<string>> {
-    try {
-        // Validate that the key URL is from a trusted subdomain BEFORE fetching
-        const trusted = trustedKeyUrl(keyUrl);
-        if (trusted.isErr()) {
-            return trusted;
-        }
+function isCloudKeyUrl(url: URL): boolean {
+    const suffix = '.myconnectwise.net';
+    return url.host.endsWith(suffix) && TRUSTED_CONNECTWISE_SUBDOMAINS.has(url.host.slice(0, -suffix.length));
+}
 
-        const response = await axiosInstance.get<SigningKeyResponse>(keyUrl);
-        if (!response.data?.signing_key) {
+/** Fetch only after checking the origin against trusted configuration. */
+async function fetchSigningKey(url: URL): Promise<Result<string>> {
+    try {
+        const allowed = validateOutboundUrlSync(url.href, DEFAULT_OUTBOUND_URL_POLICY);
+        if (!allowed.ok) return Err(allowed.error);
+
+        // Every key request needs socket-level DNS checks; proxies and redirects must not bypass them.
+        const response = await axiosInstance.get<SigningKeyResponse>(url.href, {
+            ...getSafeHttpAgents(DEFAULT_OUTBOUND_URL_POLICY),
+            proxy: false,
+            maxRedirects: 0,
+            timeout: 10000,
+            maxContentLength: 64 * 1024
+        });
+        if (typeof response.data?.signing_key !== 'string' || !response.data.signing_key) {
             return Err('webhook_invalid_signing_key');
         }
-
         return Ok(response.data.signing_key);
     } catch (err) {
         return Err(new Error('webhook_invalid_signing_key', { cause: err }));
@@ -95,14 +77,7 @@ function validateSignature(sharedSecretKey: string, headerSignature: string, raw
         const calculatedSignature = createHmac('sha256', keyHash).update(rawBody, 'utf8').digest('base64');
 
         // Step 3: Compare signatures using timing-safe comparison
-        const calculatedBuffer = Buffer.from(calculatedSignature);
-        const headerBuffer = Buffer.from(headerSignature);
-
-        if (calculatedBuffer.length !== headerBuffer.length) {
-            return false;
-        }
-
-        return timingSafeEqual(calculatedBuffer, headerBuffer);
+        return safeCompare(calculatedSignature, headerSignature);
     } catch {
         return false;
     }
@@ -112,38 +87,77 @@ const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, header
     const signature = headers['x-content-signature'];
 
     if (!signature || typeof signature !== 'string') {
-        return Err(new Error('webhook_missing_signature', { cause: 'Missing signature header' }));
+        return Err(new NangoError('webhook_missing_signature'));
     }
 
-    // Verify webhook signature using payload metadata key_url
-    // The key_url will be validated against our hardcoded list of trusted ConnectWise subdomains
     const keyUrl = body.Metadata?.key_url;
 
     if (typeof keyUrl !== 'string') {
-        return Err(new Error('webhook_invalid_signature', { cause: 'Missing or invalid key_url in webhook metadata' }));
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
-    const signingKey = await fetchSigningKey(keyUrl);
-
-    if (signingKey.isErr()) {
-        return Err(new Error('webhook_invalid_signature', { cause: signingKey.error }));
+    let url: URL;
+    try {
+        url = new URL(keyUrl);
+    } catch {
+        return Err(new NangoError('webhook_invalid_signature'));
+    }
+    if (url.protocol !== 'https:' || url.username || url.password || url.hash) {
+        return Err(new NangoError('webhook_invalid_signature'));
     }
 
-    if (!validateSignature(signingKey.value, signature, rawBody)) {
-        return Err(new Error('webhook_invalid_signature', { cause: 'Signature validation failed' }));
+    let customConnectionIds: string[] | undefined;
+    if (!isCloudKeyUrl(url)) {
+        if (typeof body.ProductInstanceId !== 'string' || !body.ProductInstanceId) {
+            return Err(new NangoError('webhook_invalid_signature'));
+        }
+        const connections = await connectionService.findConnectionsByMetadataValue({
+            metadataProperty: 'productInstanceId',
+            payloadIdentifier: body.ProductInstanceId,
+            configId: nango.integration.id,
+            environmentId: nango.environment.id
+        });
+        customConnectionIds = (connections || [])
+            .filter((connection) => configuredOrigin(connection.metadata?.['connectwiseWebhookKeyOrigin']) === url.origin)
+            .map((connection) => connection.connection_id);
+        if (customConnectionIds.length === 0) {
+            return Err(new NangoError('webhook_invalid_signature'));
+        }
     }
 
-    const response = await nango.executeScriptForWebhooks({
-        body,
-        webhookType: 'Type',
-        connectionIdentifier: 'ProductInstanceId',
-        propName: 'metadata.productInstanceId'
-    });
+    const signingKey = await fetchSigningKey(url);
+
+    if (signingKey.isErr() || !validateSignature(signingKey.value, signature, rawBody)) {
+        return Err(new NangoError('webhook_invalid_signature'));
+    }
+
+    // Do not fan out a custom-origin event to other connections with the same
+    // instance ID: each destination must explicitly trust the signing-key origin.
+    const connectionIds: string[] = [];
+    if (customConnectionIds) {
+        for (const connectionId of customConnectionIds) {
+            const response = await nango.executeScriptForWebhooks({
+                payload: body,
+                webhookType: 'Type',
+                connectionIdentifierValue: connectionId,
+                propName: 'connectionId'
+            });
+            connectionIds.push(...response.connectionIds);
+        }
+    } else {
+        const response = await nango.executeScriptForWebhooks({
+            payload: body,
+            webhookType: 'Type',
+            connectionIdentifier: 'ProductInstanceId',
+            propName: 'metadata.productInstanceId'
+        });
+        connectionIds.push(...response.connectionIds);
+    }
 
     return Ok({
         content: { status: 'success' },
         statusCode: 200,
-        connectionIds: response?.connectionIds || [],
+        connectionIds,
         toForward: body
     });
 };

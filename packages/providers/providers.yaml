@@ -814,6 +814,61 @@ affinity-v2:
             example: 'nrlW2KR5m-qUCA-rTqKb_EUK1swERlenqn70KNMMrTM'
             doc_section: '#step-1-generating-your-api-key'
 
+agencyzoom:
+    display_name: AgencyZoom
+    categories:
+        - crm
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.agencyzoom.com/v1/api/auth/login
+    token_params:
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: jwt
+    proxy:
+        base_url: https://api.agencyzoom.com
+    docs: https://nango.dev/docs/api-integrations/agencyzoom
+    docs_connect: https://nango.dev/docs/api-integrations/agencyzoom/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your AgencyZoom account email address.
+            doc_section: '#step-1-obtain-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your AgencyZoom account password.
+            secret: true
+            doc_section: '#step-1-obtain-your-credentials'
+
+agentline:
+    display_name: AgentLine
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.agentline.cloud
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/agents
+    docs: https://nango.dev/docs/api-integrations/agentline
+    docs_connect: https://nango.dev/docs/api-integrations/agentline/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your AgentLine API key.
+            pattern: '^al_live_[a-zA-Z0-9_]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 agiloft:
     display_name: Agiloft
     categories:
@@ -994,6 +1049,35 @@ airtable:
     docs: https://nango.dev/docs/api-integrations/airtable
     setup_guide_url: https://nango.dev/docs/api-integrations/airtable/how-to-register-your-own-airtable-api-oauth-app
 
+airtable-mcp:
+    display_name: Airtable (MCP)
+    categories:
+        - productivity
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://airtable.com/oauth2/v1/authorize
+    token_url: https://airtable.com/oauth2/v1/token
+    registration_url: https://airtable.com/oauth2/v1/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.airtable.com/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.airtable.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/airtable-mcp
+
 airtable-pat:
     display_name: Airtable (Personal Access Token)
     categories:
@@ -1108,6 +1192,30 @@ autotask:
             pattern: '^[A-Za-z0-9@#$~*]+$'
             description: The secret for your API-only user account
             doc_section: '#step-4-generate-api-secret'
+
+autumn:
+    display_name: Autumn
+    categories:
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.useautumn.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/organization
+    docs: https://nango.dev/docs/api-integrations/autumn
+    docs_connect: https://nango.dev/docs/api-integrations/autumn/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Secret API Key
+            description: Your Autumn secret API key.
+            example: am_sk_live_51On1**********eHq
+            pattern: '^am_sk_(live|test)_[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-autumn-api-key'
 
 algolia:
     display_name: Algolia
@@ -1362,6 +1470,18 @@ a-leads:
             example: a3f8b2e1********************d9c4
             pattern: '^[a-f0-9]{32}$'
 
+anarlog-mcp:
+    display_name: Anarlog (MCP)
+    categories:
+        - mcp
+    auth_mode: MCP_OAUTH2_GENERIC
+    mcp_server_url: https://api.anarlog.so/mcp
+    proxy:
+        base_url: https://api.anarlog.so/mcp
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/anarlog-mcp
+
 anrok:
     display_name: Anrok
     categories:
@@ -1381,6 +1501,28 @@ anrok:
             type: string
             title: API Key
             description: The API key for your Anrok account
+            doc_section: '#step-1-finding-your-api-key'
+
+amplemarket:
+    display_name: Amplemarket
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.amplemarket.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /account-info
+    docs: https://nango.dev/docs/api-integrations/amplemarket
+    docs_connect: https://nango.dev/docs/api-integrations/amplemarket/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Amplemarket account
             doc_section: '#step-1-finding-your-api-key'
 
 amplitude:
@@ -1758,6 +1900,32 @@ apple-business-manager:
             description: The EC private key (PEM format) used to sign the client assertion JWT.
             doc_section: '#step-1-create-an-api-account-and-generate-a-private-key'
 
+apple-calendar:
+    display_name: Apple Calendar
+    categories:
+        - productivity
+    auth_mode: BASIC
+    credentials_verification_script: appleCalendarCredentialsVerification
+    proxy:
+        base_url: https://caldav.icloud.com
+    docs: https://nango.dev/docs/api-integrations/apple-calendar
+    docs_connect: https://nango.dev/docs/api-integrations/apple-calendar/connect
+    credentials:
+        username:
+            type: string
+            title: Apple ID
+            description: Your Apple ID email address.
+            format: email
+            example: you@icloud.com
+            doc_section: '#step-1-find-your-apple-id'
+        password:
+            type: string
+            title: App-Specific Password
+            description: An app-specific password for your Apple ID.
+            example: abcd-****-****-mnop
+            pattern: '^[a-z]{4}-[a-z]{4}-[a-z]{4}-[a-z]{4}$'
+            doc_section: '#step-2-generate-an-app-specific-password'
+
 appstle-subscriptions:
     display_name: Appstle Subscriptions
     categories:
@@ -1975,6 +2143,53 @@ atlassian:
     proxy:
         base_url: https://api.atlassian.com
     docs: https://nango.dev/docs/integrations/all/atlassian
+
+athenahealth:
+    display_name: athenahealth
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.platform.athenahealth.com/oauth2/v1/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ' '
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.platform.athenahealth.com
+        connection_config:
+            practiceId: ${connectionConfig.practiceId}
+    docs: https://nango.dev/docs/api-integrations/athenahealth
+    docs_connect: https://nango.dev/docs/api-integrations/athenahealth/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API Environment
+            description: The athenahealth environment to connect to.
+            enum:
+                - api
+                - api.preview
+            doc_section: '#step-2-choose-your-environment'
+            order: 1
+        practiceId:
+            type: string
+            title: Practice ID
+            description: The ID of your athenahealth practice.
+            pattern: '^[0-9]+$'
+            example: '195900'
+            doc_section: '#step-3-find-your-practice-id'
+            order: 2
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID for your registered athenahealth app.
+            doc_section: '#step-4-connect-your-athenahealth-account'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret for your registered athenahealth app.
+            secret: true
+            doc_section: '#step-4-connect-your-athenahealth-account'
 
 atlassian-admin:
     display_name: Atlassian Cloud Admin
@@ -2305,13 +2520,10 @@ auvik:
         region:
             type: string
             title: Region
-            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI).
+            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI), e.g. us1, us2, eu1, lnx.
             doc_section: '#step-2-determine-your-region'
-            enum:
-                - us1
-                - us2
-                - us6
-                - eu1
+            example: us1
+            pattern: '^[a-z0-9-]+$'
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
 
@@ -3063,6 +3275,48 @@ bamboohr-basic:
             default_value: x
             hidden: true
 
+bandwidth:
+    display_name: Bandwidth
+    categories:
+        - communication
+    auth_mode: OAUTH2_CC
+    token_url: https://api.bandwidth.com/api/v1/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.bandwidth.com
+    docs: https://nango.dev/docs/api-integrations/bandwidth
+    docs_connect: https://nango.dev/docs/api-integrations/bandwidth/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API subdomain
+            description: The Bandwidth product API this connection calls by default.
+            enum:
+                - messaging
+                - voice
+                - numbers
+                - api
+            doc_section: '#step-2-choose-the-api-subdomain'
+            order: 1
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID of your Bandwidth API Credential
+            pattern: '^CLI-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            example: CLI-00000001-****-****-****-************
+            doc_section: '#step-1-create-an-api-credential'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret of your Bandwidth API Credential
+            pattern: '^\S{20,}$'
+            example: aB3**************************************x9
+            secret: true
+            doc_section: '#step-1-create-an-api-credential'
+
 basecamp:
     display_name: Basecamp
     categories:
@@ -3572,6 +3826,38 @@ boldsign:
     proxy:
         base_url: https://api.boldsign.com
     docs: https://nango.dev/docs/integrations/all/boldsign
+
+bol-com:
+    display_name: bol.com
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    token_url: https://login.bol.com/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.bol.com
+        headers:
+            accept: application/vnd.retailer.v10+json
+    docs: https://nango.dev/docs/api-integrations/bol-com
+    docs_connect: https://nango.dev/docs/api-integrations/bol-com/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your bol.com Retailer API client ID.
+            example: 123e4567-****-****-****-426614174000
+            format: uuid
+            doc_section: '#create-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your bol.com Retailer API client secret.
+            example: AAECAwQF**************************************************************D0-Pw
+            pattern: '^[A-Za-z0-9_-]+$'
+            secret: true
+            doc_section: '#create-client-credentials'
 
 boondmanager:
     display_name: BoondManager
@@ -4321,6 +4607,38 @@ canva-scim:
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
 
+cdw:
+    display_name: CDW
+    categories:
+        - erp
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+        headers:
+            subscription-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/cdw
+    docs_connect: https://nango.dev/docs/api-integrations/cdw/connect
+    credentials_verification_script: cdwCredentialsVerification
+    connection_config:
+        baseUrl:
+            type: string
+            title: Environment
+            description: The CDW API gateway you want to connect to.
+            enum:
+                - apiconnect.cdw.com/b2b
+                - apiconnect.preprod.cdw.com/pprd/b2b
+            order: 1
+            doc_section: '#step-3-choosing-your-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: Subscription Key
+            description: The subscription key from your CDW API Management developer portal account.
+            example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+            pattern: '^[a-fA-F0-9]{32}$'
+            doc_section: '#step-2-subscribing-to-a-product-and-generating-a-subscription-key'
+
 cerby:
     display_name: Cerby
     categories:
@@ -4443,6 +4761,38 @@ chargebee:
             # Chargebee is using basic auth with an api key
             default_value: ''
             hidden: true
+
+chartboost:
+    display_name: Chartboost
+    categories:
+        - marketing
+        - gaming
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://api.chartboost.com/v5/oauth/token
+    token_params:
+        grant_type: client_credentials
+        audience: https://public.api.gateway.chartboost.com
+    proxy:
+        base_url: https://api.chartboost.com
+    docs: https://nango.dev/docs/api-integrations/chartboost
+    docs_connect: https://nango.dev/docs/api-integrations/chartboost/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Chartboost API client_id.
+            example: a3f8c1d9b2e47a5c6f0b8d1e3a9c2f
+            pattern: '^[a-f0-9]+$'
+            doc_section: '#step-1-obtain-your-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Chartboost API client_secret.
+            example: a1b2c3d4e5f6********************************************9c8d7e6f
+            pattern: '^[a-f0-9]+$'
+            secret: true
+            doc_section: '#step-1-obtain-your-api-credentials'
 
 chatarmin:
     display_name: Chatarmin
@@ -4569,6 +4919,7 @@ checkr-partner:
     token_response_metadata:
         - checkr_account_id
     webhook_routing_script: checkrPartnerWebhookRouting
+    webhook_user_defined_secret: true
     post_connection_script: checkrPartnerPostConnection
     docs: https://nango.dev/docs/integrations/all/checkr-partner
     connection_config:
@@ -4595,6 +4946,7 @@ checkr-partner-staging:
     token_response_metadata:
         - checkr_account_id
     webhook_routing_script: checkrPartnerWebhookRouting
+    webhook_user_defined_secret: true
     post_connection_script: checkrPartnerPostConnection
     docs: https://nango.dev/docs/integrations/all/checkr-partner-staging
     connection_config:
@@ -4636,6 +4988,50 @@ checkout-com-sandbox:
         base_url: https://api.sandbox.checkout.com
     docs: https://nango.dev/docs/integrations/all/checkout-com-sandbox
     docs_connect: https://nango.dev/docs/integrations/all/checkout-com-sandbox/connect
+
+chili-piper:
+    display_name: Chili Piper
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://fire.chilipiper.com/api/fire-edge
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/org/health/ping
+    docs: https://nango.dev/docs/api-integrations/chili-piper
+    docs_connect: https://nango.dev/docs/api-integrations/chili-piper/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Access Token generated from your Chili Piper account.
+            doc_section: '#step-1-generating-your-api-key'
+
+chili-piper-mcp:
+    display_name: Chili Piper (MCP)
+    categories:
+        - crm
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://fire.chilipiper.com/api/fire-edge/v1/oauth/authorize
+    token_url: https://fire.chilipiper.com/api/fire-edge/v1/oauth/token
+    registration_url: https://fire.chilipiper.com/api/fire-edge/v1/oauth/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://fire.chilipiper.com/api/fire-edge/v1/org/mcp
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/chili-piper-mcp
 
 chorus:
     display_name: Chorus
@@ -6478,6 +6874,7 @@ digits:
     authorization_url: https://connect.digits.com/v1/oauth/authorize
     token_url: https://connect.digits.com/v1/oauth/token
     body_format: json
+    disable_pkce: true
     authorization_params:
         response_type: code
     token_params:
@@ -7461,21 +7858,22 @@ elevio:
         headers:
             x-api-key: ${apiKey}
             authorization: Bearer ${connectionConfig.jwt}
-    docs: https://nango.dev/docs/integrations/all/elevio
+    docs: https://nango.dev/docs/api-integrations/elevio
+    docs_connect: https://nango.dev/docs/api-integrations/elevio/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key to your Elevio account
-            pattern: '\b[a-f0-9]{40}\b'
-            example: 'x12z67890dd34t8gq5j01ycc75912348'
+            pattern: '^[a-f0-9]+$'
+            example: '4f3c12ef************************e9d41'
     connection_config:
         jwt:
             type: string
             title: JWT
             description: The JWT to your Elevio account
             pattern: '^[A-Za-z0-9-_]+\.([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+)$'
-
+            example: eyJhbGciOiJIUzI1NiJ9.****************.**********
 entrata:
     display_name: Entrata
     categories:
@@ -7537,6 +7935,84 @@ epc-gov-uk:
             example: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2'
             doc_section: '#step-2-finding-your-api-key'
 
+epic:
+    display_name: Epic (FHIR)
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.interconnectUrl}/oauth2/token
+    token_params:
+        grant_type: client_credentials
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+        scope: ${credentials.scope}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    assertion:
+        type: jwt
+        singleUse: true
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 300
+        header:
+            alg: ES256
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://${connectionConfig.interconnectUrl}/oauth2/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.interconnectUrl}/api
+        headers:
+            accept: application/fhir+json
+    docs: https://nango.dev/docs/api-integrations/epic
+    setup_guide_url: https://nango.dev/docs/api-integrations/epic/how-to-register-your-own-epic-app
+    docs_connect: https://nango.dev/docs/api-integrations/epic/connect
+    integration_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your registered application's Client ID.
+            order: 1
+        keyId:
+            type: string
+            title: Key ID
+            description: The kid of the EC (P-256) key registered in your hosted JWKS file.
+            order: 2
+        privateKey:
+            type: string
+            title: Private Key
+            description: The EC (P-256) private key (PEM) matching your published JWKS public key. Signed with ES256.
+            secret: true
+            order: 3
+        scope:
+            type: string
+            title: Scope
+            description: The SMART Backend Services scope(s) granted to this Client ID.
+            order: 4
+    credentials:
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    connection_config:
+        interconnectUrl:
+            type: string
+            prefix: https://
+            suffix: /oauth2/token
+            title: Interconnect Server URL
+            description: This health system's Epic Interconnect Server URL.
+            example: fhir.epic.com/interconnect-fhir-oauth
+            doc_section: '#step-1-finding-your-interconnect-server-url'
+            order: 1
+
 epic-games:
     display_name: Epic Games
     categories:
@@ -7548,6 +8024,26 @@ epic-games:
     proxy:
         base_url: https://api.epicgames.dev
     docs: https://nango.dev/docs/integrations/all/epic-games
+
+epost-klara:
+    display_name: ePost (KLARA)
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.klara.ch
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/epost-klara
+    docs_connect: https://nango.dev/docs/api-integrations/epost-klara/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your KLARA API key.
+            format: uuid
+            example: 0b6df221-****-****-****-********e06d
+            doc_section: '#step-1-finding-your-api-key'
 
 ergo:
     display_name: Ergo
@@ -7783,7 +8279,7 @@ expensify:
     docs_connect: https://nango.dev/docs/integrations/all/expensify/connect
 
 factorial:
-    display_name: Factorial
+    display_name: Factorial (OAuth)
     categories:
         - hr
     auth_mode: OAUTH2
@@ -7793,6 +8289,41 @@ factorial:
     proxy:
         base_url: https://api.factorialhr.com/api
     docs: https://nango.dev/docs/integrations/all/factorial
+
+factorial-api-key:
+    display_name: Factorial (API Key)
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}/api || https://api.factorialhr.com/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /2026-07-01/resources/api_public/credentials
+    docs: https://nango.dev/docs/api-integrations/factorial-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/factorial-api-key/connect
+    connection_config:
+        domain:
+            type: string
+            title: Environment
+            description: The Factorial API environment to connect to.
+            order: 1
+            format: hostname
+            enum:
+                - api.factorialhr.com
+                - api.eu2.demo.factorial.dev
+            doc_section: '#step-2-choosing-your-environment'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key generated from your Factorial account
+            example: 'eyJraWQiOiJmYWN.******************************.*****************************'
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generating-your-api-key'
 
 fairing:
     display_name: Fairing
@@ -7932,13 +8463,17 @@ fathom:
                 - /external/v1/teams
     webhook_routing_script: fathomWebhookRouting
     webhook_user_defined_secret: true
-    docs: https://nango.dev/docs/integrations/all/fathom
-    docs_connect: https://nango.dev/docs/integrations/all/fathom/connect
+    webhook_allowed_query_params:
+        - nangoConnectionId
+    docs: https://nango.dev/docs/api-integrations/fathom
+    docs_connect: https://nango.dev/docs/api-integrations/fathom/connect
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your Fathom account
+            description: The API key for your Fathom account.
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            example: zEqdWLo1************CQ.GUMvH9T6*****************************MFUJAw
 
 fathom-oauth:
     display_name: Fathom (OAuth)
@@ -7957,6 +8492,8 @@ fathom-oauth:
         grant_type: refresh_token
     webhook_routing_script: fathomWebhookRouting
     webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - nangoConnectionId
     proxy:
         base_url: https://api.fathom.ai
         retry:
@@ -8198,6 +8735,32 @@ findymail:
             type: string
             title: API Key
             description: The API key for your FindyMail account
+
+finta:
+    display_name: Finta
+    categories:
+        - banking
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.finta.io/
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v2/me
+    docs: https://nango.dev/docs/api-integrations/finta
+    docs_connect: https://nango.dev/docs/api-integrations/finta/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Finta account.
+            pattern: '^finta_[A-Za-z0-9]+$'
+            example: finta_ZdzcJWJv********************fVsY
+            doc_section: '#step-1-finding-your-api-key'
 
 firefish:
     display_name: Firefish
@@ -8990,6 +9553,9 @@ granola:
             method: GET
             endpoints:
                 - /v1/notes?page_size=1
+    webhook_routing_script: granolaWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/granola
     docs_connect: https://nango.dev/docs/api-integrations/granola/connect
     credentials:
@@ -9276,6 +9842,51 @@ gitlab-pat:
             doc_section: '#step-1-finding-your-hostname'
             order: 1
 
+gitlab-group-token:
+    alias: gitlab
+    display_name: GitLab (Group Access Token)
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            private-token: ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v4/user
+    docs: https://nango.dev/docs/api-integrations/gitlab-group-token
+    docs_connect: https://nango.dev/docs/api-integrations/gitlab-group-token/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Group Access Token
+            example: glpat-PMJoma_*******.***.***xwve
+            pattern: '^glpat-[A-Za-z0-9._-]+$'
+            description: The Group Access Token issued for your GitLab group.
+            doc_section: '#step-3-create-a-group-access-token'
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your GitLab instance
+            format: hostname
+            example: gitlab.com
+            doc_section: '#step-1-find-your-hostname'
+            order: 1
+        groupId:
+            type: string
+            title: Group ID
+            description: The numeric ID of the GitLab group this token belongs to.
+            example: '12345678'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-2-find-your-group-id'
+            order: 2
+
 ghost-admin:
     display_name: Ghost (Admin API)
     categories:
@@ -9383,8 +9994,12 @@ gong:
         retry:
             after:
                 - 'retry-after'
-    docs: https://nango.dev/docs/integrations/all/gong
-    docs_connect: https://nango.dev/docs/integrations/all/gong/connect
+    webhook_routing_script: gongWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - nangoConnectionId
+    docs: https://nango.dev/docs/api-integrations/gong
+    docs_connect: https://nango.dev/docs/api-integrations/gong/connect
     credentials:
         username:
             type: string
@@ -9426,7 +10041,12 @@ gong-oauth:
         retry:
             after:
                 - 'retry-after'
-    docs: https://nango.dev/docs/integrations/all/gong-oauth
+    webhook_routing_script: gongWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - nangoConnectionId
+    docs: https://nango.dev/docs/api-integrations/gong-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/gong-oauth/how-to-register-your-own-gong-oauth-api-oauth-app
     connection_config:
         api_base_url_for_customer:
             type: string
@@ -9586,6 +10206,7 @@ google:
     docs: https://nango.dev/docs/api-integrations/google
     setup_guide_url: https://nango.dev/docs/api-integrations/google/how-to-register-your-own-google-api-oauth-app
     webhook_routing_script: googleWebhookRouting
+    webhook_user_defined_secret: true
 
 google-analytics:
     display_name: Google Analytics
@@ -9626,6 +10247,7 @@ google-calendar:
                 - '401'
                 - '429'
     webhook_routing_script: googleCalendarWebhookRouting
+    webhook_user_defined_secret: true
     post_connection_script: googleCalendarPostConnection
     docs: https://nango.dev/docs/api-integrations/google-calendar
     setup_guide_url: https://nango.dev/docs/api-integrations/google-calendar/how-to-register-your-own-google-calendar-api-oauth-app
@@ -9745,6 +10367,7 @@ google-drive:
         - storage
     alias: google
     webhook_routing_script: googleDriveWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/google-drive
     setup_guide_url: https://nango.dev/docs/api-integrations/google-drive/how-to-register-your-own-google-drive-api-oauth-app
 
@@ -10060,6 +10683,42 @@ grain-api-key:
             type: string
             title: API Key
             description: The personal access token to your Grain account
+
+greenfield-meditech:
+    display_name: MEDITECH Greenfield
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.authHost}/oauth/authorize
+    token_url: https://${connectionConfig.host}/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.host}
+    docs: https://nango.dev/docs/api-integrations/greenfield-meditech
+    docs_connect: https://nango.dev/docs/api-integrations/greenfield-meditech/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/greenfield-meditech/how-to-register-your-own-greenfield-meditech-api-oauth-app
+    connection_config:
+        authHost:
+            type: string
+            title: Authorization host
+            description: The MEDITECH host that issues authorization codes.
+            example: greenfield-apis.meditech.com
+            format: hostname
+            prefix: https://
+            order: 1
+        host:
+            type: string
+            title: FHIR API host
+            description: The MEDITECH host that issues tokens and serves the FHIR API.
+            example: greenfield-prod-apis.meditech.com
+            format: hostname
+            prefix: https://
+            order: 2
 
 greenhouse:
     display_name: Greenhouse (OAuth)
@@ -10472,6 +11131,62 @@ hackerrank-work:
             default_value: ''
             hidden: true
 
+hail:
+    display_name: Hail
+    categories:
+        - communication
+        - dev-tools
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.hail.so
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /calls
+    docs: https://nango.dev/docs/api-integrations/hail
+    docs_connect: https://nango.dev/docs/api-integrations/hail/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Hail account API key.
+            pattern: '^hl_live_[A-Za-z0-9_-]+$'
+            example: hl_live_************
+            doc_section: '#step-1-getting-your-api-key'
+
+hail-mcp:
+    display_name: Hail (MCP)
+    categories:
+        - communication
+        - dev-tools
+        - marketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://hail.so/api/auth/oauth2/authorize
+    token_url: https://hail.so/api/auth/oauth2/token
+    registration_url: https://hail.so/api/auth/oauth2/register
+    default_scopes:
+        - offline_access
+    registration_params:
+        grant_types:
+            - authorization_code
+            - refresh_token
+        response_types:
+            - code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.hail.so
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/hail-mcp
+
 haileyhr:
     display_name: Hailey HR
     categories:
@@ -10506,6 +11221,9 @@ halo-psa:
         - support
         - ticketing
     auth_mode: OAUTH2_CC
+    webhook_routing_script: haloPsaWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     token_url: https://${connectionConfig.hostname}/auth/token
     token_request_auth_method: basic
     scope_separator: ' '
@@ -10647,6 +11365,28 @@ hex:
             pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
             example: app
             doc_section: '#step-2-finding-your-subdomain'
+
+hex-mcp:
+    display_name: Hex (MCP)
+    categories:
+        - analytics
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://auth.app.hex.tech/oauth2/authorize
+    token_url: https://auth.app.hex.tech/oauth2/token
+    registration_url: https://auth.app.hex.tech/oauth2/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.hex.tech
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/hex-mcp
 
 heyreach:
     display_name: HeyReach
@@ -10826,6 +11566,35 @@ highlevel-white-label:
     webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/highlevel-white-label
     setup_guide_url: https://nango.dev/docs/api-integrations/highlevel-white-label/how-to-register-your-own-highlevel-white-label-api-oauth-app
+
+highq:
+    display_name: HighQ
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/authorize.action
+    token_url: https://${connectionConfig.hostname}/api/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            auth-type: OAUTH2
+    docs: https://nango.dev/docs/api-integrations/highq
+    docs_connect: https://nango.dev/docs/api-integrations/highq/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/highq/how-to-register-your-own-highq-api-oauth-app
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your HighQ Collaborate hostname, including your instance path.
+            prefix: https://
+            example: acme.highq.com/main
+            doc_section: '#step-1-find-your-hostname'
 
 holded:
     display_name: Holded
@@ -11044,6 +11813,129 @@ incident-io:
             pattern: 'inc_[a-f0-9]{64}$'
             doc_section: '#step-1-generating-your-api-key'
 
+infor:
+    display_name: Infor (ION API)
+    categories:
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.ssoUrl}/${connectionConfig.tenant}/as/authorization.oauth2
+    token_url: https://${connectionConfig.ssoUrl}/${connectionConfig.tenant}/as/token.oauth2
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.ionApiUrl}/${connectionConfig.tenant}
+    docs: https://nango.dev/docs/api-integrations/infor
+    docs_connect: https://nango.dev/docs/api-integrations/infor/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/infor/how-to-register-your-own-infor-api-oauth-app
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: Your Infor OS tenant identifier.
+            example: ACME_PRD
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 1
+        ssoUrl:
+            type: string
+            title: Authorization Server URL
+            description: The authorization server hostname for your tenant.
+            example: mingle-sso.inforcloudsuite.com
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 2
+        ionApiUrl:
+            type: string
+            title: ION API Gateway URL
+            description: The ION API gateway hostname for your tenant.
+            example: mingle-ionapi.inforcloudsuite.com
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 3
+
+infor-cc:
+    display_name: Infor (ION API, Resource Owner Grant)
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.ssoUrl}/${connectionConfig.tenant}/as/token.oauth2
+    token_params:
+        grant_type: password
+        username: ${credentials.saak}
+        password: ${credentials.sask}
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.ionApiUrl}/${connectionConfig.tenant}
+    docs: https://nango.dev/docs/api-integrations/infor-cc
+    docs_connect: https://nango.dev/docs/api-integrations/infor-cc/connect
+    connection_config:
+        tenant:
+            type: string
+            title: Tenant
+            description: Your Infor OS tenant identifier.
+            example: ACME_PRD
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 1
+        ssoUrl:
+            type: string
+            title: Authorization Server URL
+            description: The authorization server hostname for your tenant.
+            example: mingle-sso.inforcloudsuite.com
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 2
+        ionApiUrl:
+            type: string
+            title: ION API Gateway URL
+            description: The ION API gateway hostname for your tenant.
+            example: mingle-ionapi.inforcloudsuite.com
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            doc_section: '#step-2-finding-your-tenant-and-urls'
+            order: 3
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Authorized App's Client ID.
+            doc_section: '#step-1-finding-your-credentials'
+            order: 1
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Authorized App's Client Secret.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+            order: 2
+        saak:
+            type: string
+            title: Service Account Access Key
+            description: Your Service Account's Access Key.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+            order: 3
+        sask:
+            type: string
+            title: Service Account Secret Key
+            description: Your Service Account's Secret Key.
+            secret: true
+            doc_section: '#step-1-finding-your-credentials'
+            order: 4
+
 ingenious-build:
     display_name: INGENIOUS.BUILD
     categories:
@@ -11186,7 +12078,7 @@ instagram:
         - social
     auth_mode: OAUTH2
     scope_separator: ','
-    authorization_url: https://api.instagram.com/oauth/authorize
+    authorization_url: https://www.instagram.com/oauth/authorize
     token_url: https://api.instagram.com/oauth/access_token
     refresh_url: https://graph.instagram.com/refresh_access_token
     proxy:
@@ -11343,6 +12235,56 @@ immybot:
             description: The client secret value from the Microsoft Entra app registration.
             secret: true
             doc_section: '#step-2-create-a-client-secret'
+
+inteliquent:
+    display_name: Inteliquent
+    categories:
+        - communication
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.inteliquent.com
+        body:
+            privateKey: ${credentials.username}
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /Services/2.0.0/tnDetail
+            data:
+                tnSearchList:
+                    tnSearchItem:
+                        - tnMask: xxxxxxxxxx
+                pageSort:
+                    size: 1
+    docs: https://nango.dev/docs/api-integrations/inteliquent
+    docs_connect: https://nango.dev/docs/api-integrations/inteliquent/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API subdomain
+            description: The Inteliquent Services API subdomain for your environment.
+            enum:
+                - services
+                - services-sandbox
+            doc_section: '#step-2-find-your-api-subdomain'
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Inteliquent API Key (not your portal username).
+            pattern: '^[A-Za-z0-9]+$'
+            example: E3A7RgBW********************
+            doc_section: '#step-1-generate-an-api-key-and-api-secret'
+        password:
+            type: string
+            title: API Secret
+            description: Your Inteliquent API Secret (not your portal password).
+            pattern: '^[A-Za-z0-9]+$'
+            example: zZZLA0HX********************
+            secret: true
+            doc_section: '#step-1-generate-an-api-key-and-api-secret'
 
 intercom:
     display_name: Intercom
@@ -12795,6 +13737,55 @@ linkhut:
         base_url: https://api.ln.ht
     docs: https://nango.dev/docs/integrations/all/linkhut
 
+linkly:
+    display_name: Linkly
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.linklyhq.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/workspaces
+    docs: https://nango.dev/docs/api-integrations/linkly
+    docs_connect: https://nango.dev/docs/api-integrations/linkly/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Linkly account
+            pattern: '^[A-Za-z0-9+/]{22}==$'
+            example: aB3d**************uk2Q==
+            doc_section: '#step-1-finding-your-api-key'
+
+livetennisapi:
+    display_name: Live Tennis API
+    categories:
+        - sports
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.livetennisapi.com
+        headers:
+            x-api-key: ${apiKey}
+            accept: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /api/public/v1/matches
+    docs: https://nango.dev/docs/api-integrations/livetennisapi
+    docs_connect: https://nango.dev/docs/api-integrations/livetennisapi/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Live Tennis API account. It starts with `twjp_`.
+            example: twjp_xxxxxxxxxxxxxxxxxxxx
+            pattern: '^twjp_\S+$'
+            doc_section: '#step-1-generating-your-api-key'
+
 lokalise:
     display_name: Lokalise
     categories:
@@ -12979,11 +13970,20 @@ lovable-mcp:
         - dev-tools
         - mcp
     auth_mode: MCP_OAUTH2
-    client_registration: cimd
+    client_registration: dynamic
     authorization_url: https://lovable.dev/oauth/authorize
     token_url: https://lovable.dev/oauth/token
+    registration_url: https://lovable.dev/oauth/register
+    default_scopes:
+        - offline
     authorization_params:
         response_type: code
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
     token_params:
         grant_type: authorization_code
     refresh_params:
@@ -13152,6 +14152,29 @@ listrak:
             description: Your Listrak API Client Secret
             secret: true
             doc_section: '#step-1-create-api-credentials'
+
+liveswitch:
+    display_name: LiveSwitch
+    categories:
+        - communication
+    auth_mode: OAUTH2
+    authorization_url: https://id.liveswitch.com/authorize
+    token_url: https://id.liveswitch.com/oauth/token
+    body_format: json
+    authorization_params:
+        response_type: code
+        audience: https://public-api.production.liveswitch.com/
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - offline_access
+    scope_separator: ' '
+    proxy:
+        base_url: https://public-api.production.liveswitch.com
+    docs: https://nango.dev/docs/api-integrations/liveswitch
+    setup_guide_url: https://nango.dev/docs/api-integrations/liveswitch/how-to-register-your-own-liveswitch-api-oauth-app
 
 lob:
     display_name: Lob
@@ -13515,6 +14538,35 @@ medallia:
             default_value: ''
             hidden: true # deprecating this in favor of apiHostUrl
 
+meilisearch:
+    display_name: Meilisearch
+    categories:
+        - search
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.instanceUrl}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /version
+    connection_config:
+        instanceUrl:
+            type: string
+            title: Instance URL
+            description: The base URL of your Meilisearch instance.
+            example: https://ms-1a2b3c4d5e6f.meilisearch.io
+            pattern: '^https?://.+[^/]$'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: A Meilisearch API key (not the master key).
+    docs: https://nango.dev/docs/api-integrations/meilisearch
+    docs_connect: https://nango.dev/docs/api-integrations/meilisearch/connect
+
 metabase:
     display_name: Metabase
     categories:
@@ -13598,6 +14650,24 @@ meta-marketing-api:
     alias: facebook
     docs: https://nango.dev/docs/api-integrations/meta-marketing-api
     setup_guide_url: https://nango.dev/docs/api-integrations/meta-marketing-api/how-to-register-your-own-meta-marketing-api-oauth-app
+
+meta-mcp:
+    display_name: Meta Ads (MCP)
+    categories:
+        - marketing
+        - mcp
+    auth_mode: OAUTH2
+    scope_separator: ','
+    authorization_url: https://www.facebook.com/v26.0/dialog/oauth
+    token_url: https://graph.facebook.com/v26.0/oauth/access_token
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://mcp.facebook.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/meta-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/meta-mcp/how-to-register-your-own-meta-mcp-oauth-app
 
 microsoft:
     display_name: Microsoft
@@ -14030,6 +15100,33 @@ microsoft-dynamics-365-finance-and-operations-cc:
             title: Environment URL
             description: The domain of your Finance and Operations environment.
             example: mycompany.operations.dynamics.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-2-finding-your-environment-url'
+            order: 2
+
+microsoft-dataverse:
+    display_name: Microsoft Dataverse (Dynamics 365 CRM)
+    alias: microsoft-dynamics-365-finance-and-operations
+    categories:
+        - crm
+    docs: https://nango.dev/docs/api-integrations/microsoft-dataverse
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-dataverse/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-dataverse/how-to-register-your-own-microsoft-dataverse-api-oauth-app
+    connection_config:
+        tenantId:
+            type: string
+            title: Tenant ID
+            description: The unique identifier for your organization's Microsoft Entra ID tenant.
+            format: uuid
+            example: 00000000-0000-0000-0000-000000000000
+            doc_section: '#step-1-finding-your-tenant-id'
+            order: 1
+        environmentUrl:
+            type: string
+            title: Environment URL
+            description: The domain of your Dataverse environment.
+            example: contoso.api.crm.dynamics.com
             format: hostname
             prefix: https://
             doc_section: '#step-2-finding-your-environment-url'
@@ -14493,6 +15590,25 @@ monday:
     docs: https://nango.dev/docs/api-integrations/monday
     setup_guide_url: https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app
 
+moneybird:
+    display_name: Moneybird
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://moneybird.com/oauth/authorize
+    token_url: https://moneybird.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://moneybird.com/api
+    docs: https://nango.dev/docs/api-integrations/moneybird
+    setup_guide_url: https://nango.dev/docs/api-integrations/moneybird/how-to-register-your-own-moneybird-oauth-app
+
 momentum-io:
     display_name: Momentum.io
     categories:
@@ -14816,6 +15932,59 @@ namely-pat:
             description: The Personal Access Token for your Namely account
             doc_section: '#step-2-generating-your-personal-access-token'
 
+neon:
+    display_name: Neon
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://console.neon.tech/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/users/me
+    docs: https://nango.dev/docs/api-integrations/neon
+    docs_connect: https://nango.dev/docs/api-integrations/neon/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Neon API key.
+            pattern: '^(napi_)?[a-z0-9]{64}$'
+            example: napi_1a2b3c4d5e6f****************************************************
+            doc_section: '#step-1-creating-an-api-key'
+
+neon-mcp:
+    display_name: Neon (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.neon.tech/api/authorize
+    token_url: https://mcp.neon.tech/api/token
+    registration_url: https://mcp.neon.tech/api/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.neon.tech/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.neon.tech
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/neon-mcp
+
 nerdio:
     display_name: Nerdio
     categories:
@@ -14867,6 +16036,76 @@ nerdio:
             description: The client secret from your Azure App Registration
             secret: true
             doc_section: '#step-2-getting-your-azure-credentials'
+
+netsapiens:
+    display_name: NetSapiens
+    categories:
+        - communication
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.server}/ns-api/v2/tokens
+    token_params:
+        grant_type: password
+        client_id: ${credentials.client_id}
+        client_secret: ${credentials.client_secret}
+        username: ${credentials.username}
+        password: ${credentials.password}
+    refresh_token_params:
+        grant_type: refresh_token
+        client_id: ${credentials.client_id}
+        client_secret: ${credentials.client_secret}
+        refresh_token: ${refresh_token}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: access_token
+        refresh_token: refresh_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.server}/ns-api
+    docs: https://nango.dev/docs/api-integrations/netsapiens
+    docs_connect: https://nango.dev/docs/api-integrations/netsapiens/connect
+    connection_config:
+        server:
+            type: string
+            title: NetSapiens Server
+            description: The hostname of your NetSapiens core.
+            example: mycompany.netsapiens.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-locate-your-netsapiens-server-hostname'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your NetSapiens API login username, in the form extension@domain.
+            example: 1000@mydomain.com
+            pattern: '^[^@\s]+@[^@\s]+$'
+            order: 1
+            doc_section: '#step-3-gather-your-api-user-login'
+        password:
+            type: string
+            title: Password
+            description: Your NetSapiens API login password.
+            secret: true
+            order: 2
+            doc_section: '#step-3-gather-your-api-user-login'
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID of your NetSapiens API application.
+            order: 3
+            doc_section: '#step-2-create-or-locate-your-api-client'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret of your NetSapiens API application.
+            secret: true
+            order: 4
+            doc_section: '#step-2-create-or-locate-your-api-client'
 
 netsuite:
     display_name: NetSuite (OAuth)
@@ -15155,8 +16394,8 @@ ninjaone-saas-backup:
             type: string
             title: API Host
             description: The host from your NinjaOne SaaS Backup API URL.
-            example: dropsuite.us
-            pattern: '^(dropsuite\.com|dropsuite\.(us|uk|ca)|dropsuite-au\.com|[a-z0-9.-]+\.dropsuite\.com)$'
+            example: na-saas-npp.backup.ninjarmm.com
+            pattern: '^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.backup\.ninjarmm\.com|dropsuite\.com|dropsuite\.(us|uk|ca)|dropsuite-au\.com|[a-z0-9.-]+\.dropsuite\.com)$'
             prefix: https://
             suffix: /api
             order: 1
@@ -15212,6 +16451,54 @@ nocrm:
             suffix: .nocrm.io
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
+
+nooks:
+    display_name: Nooks (OAuth)
+    categories:
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.nooks.in/oauth/authorize
+    token_url: https://oauth.nooks.in/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://partner-api.nooks.in
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/nooks
+    setup_guide_url: https://nango.dev/docs/api-integrations/nooks/how-to-register-your-own-nooks-api-oauth-app
+
+nooks-api-key:
+    display_name: Nooks (API Key)
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://partner-api.nooks.in
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users?page[size]=1
+    docs: https://nango.dev/docs/api-integrations/nooks-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/nooks-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Nooks workspace.
+            pattern: '^nooks-api-'
+            example: nooks-api-********************************
+            doc_section: '#step-1-generate-an-api-key'
 
 northbeam:
     display_name: Northbeam
@@ -15679,6 +16966,41 @@ onlogist:
             description: The API key for your OnLogist account
             doc_section: '#step-1-finding-your-api-key'
 
+omni:
+    display_name: Omni Analytics
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.omniapp.co/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/whoami
+    docs: https://nango.dev/docs/api-integrations/omni
+    docs_connect: https://nango.dev/docs/api-integrations/omni/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Instance Subdomain
+            description: Your Omni instance subdomain.
+            order: 1
+            pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'
+            example: acme
+            doc_section: '#step-1-finding-your-instance-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: An Omni Organization API key or Personal Access Token (PAT).
+            pattern: '^omni_[a-z]+_[A-Za-z0-9]+$'
+            example: omni_osk_40S5****************************************Aakd
+            doc_section: '#step-2-creating-an-api-key'
+
 one-drive:
     display_name: OneDrive for Business
     categories:
@@ -16104,12 +17426,35 @@ oura:
         base_url: https://api.ouraring.com
     docs: https://nango.dev/docs/integrations/all/oura
 
+outline:
+    display_name: Outline
+    categories:
+        - knowledge-base
+    auth_mode: OAUTH2
+    authorization_url: https://app.getoutline.com/oauth/authorize
+    token_url: https://app.getoutline.com/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.getoutline.com/api
+    docs: https://nango.dev/docs/api-integrations/outline
+    setup_guide_url: https://nango.dev/docs/api-integrations/outline/how-to-register-your-own-outline-api-oauth-app
+
 outlook:
     display_name: Outlook
     categories:
         - communication
         - popular
     alias: microsoft
+    webhook_routing_script: outlookWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - validationToken
     docs: https://nango.dev/docs/api-integrations/outlook
     setup_guide_url: https://nango.dev/docs/api-integrations/outlook/how-to-register-your-own-outlook-api-oauth-app
 
@@ -16190,8 +17535,8 @@ pandadoc:
     categories:
         - legal
     auth_mode: OAUTH2
-    authorization_url: https://app.pandadoc.com/oauth2/authorize
-    token_url: https://api.pandadoc.com/oauth2/access_token
+    authorization_url: https://app.${connectionConfig.region}/oauth2/authorize || https://app.pandadoc.com/oauth2/authorize
+    token_url: https://api.${connectionConfig.region}/oauth2/access_token || https://api.pandadoc.com/oauth2/access_token
     authorization_params:
         response_type: code
     token_params:
@@ -16199,8 +17544,18 @@ pandadoc:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api.pandadoc.com
-    docs: https://nango.dev/docs/integrations/all/pandadoc
+        base_url: https://api.${connectionConfig.region} || https://api.pandadoc.com
+    docs: https://nango.dev/docs/api-integrations/pandadoc
+    docs_connect: https://nango.dev/docs/api-integrations/pandadoc/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/pandadoc/how-to-register-your-own-pandadoc-api-oauth-app
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: Your Pandadoc account's data region.
+            enum:
+                - pandadoc.com
+                - pandadoc.eu
 
 pandadoc-api-key:
     display_name: Pandadoc (API Key)
@@ -16227,6 +17582,50 @@ pandadoc-api-key:
             doc_section: '#step-1-generating-your-api-key'
             example: 3039ba033eb1410caa0a2227158d63c9d6502cd8
             pattern: '^[a-fA-F0-9]+$'
+
+pandadoc-mcp:
+    display_name: Pandadoc (MCP)
+    categories:
+        - legal
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.pandadoc.com/authorize
+    token_url: https://mcp.pandadoc.com/token
+    registration_url: https://mcp.pandadoc.com/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.pandadoc.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/pandadoc-mcp
+
+pandadoc-mcp-eu:
+    display_name: Pandadoc (MCP EU)
+    categories:
+        - legal
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.pandadoc.eu/authorize
+    token_url: https://mcp.pandadoc.eu/token
+    registration_url: https://mcp.pandadoc.eu/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.pandadoc.eu
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/pandadoc-mcp-eu
 
 paddle:
     display_name: Paddle
@@ -17190,7 +18589,7 @@ pipelinecrm:
             title: API Key
             description: Authenticates API requests as a specific Pipeline CRM user.
             example: Ksh3************ol5g
-            pattern: '^[A-Za-z0-9]{20}$'
+            pattern: '^[A-Za-z0-9-]{20}$'
             doc_section: '#step-2-finding-your-api-key'
 
 pivotaltracker:
@@ -17327,6 +18726,42 @@ pushpay-chms-v1:
             secret: true
             doc_section: '#step-2-create-an-api-user'
 
+pushpay-chms-v2:
+    display_name: Pushpay ChMS (v2)
+    categories:
+        - crm
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.ccbchurch.com/oauth/authorize
+    token_url: https://api.ccbchurch.com/oauth/token
+    body_format: json
+    disable_pkce: true
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        subdomain: ${connectionConfig.subdomain}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.ccbchurch.com
+        headers:
+            accept: application/vnd.ccbchurch.v2+json
+    docs: https://nango.dev/docs/api-integrations/pushpay-chms-v2
+    docs_connect: https://nango.dev/docs/api-integrations/pushpay-chms-v2/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/pushpay-chms-v2/how-to-register-your-own-pushpay-chms-v2-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: Church subdomain
+            description: The subdomain for the Pushpay ChMS (Church Community Builder) site to authorize.
+            example: yourchurch
+            pattern: '^[a-zA-Z0-9-]+$'
+            prefix: https://
+            suffix: .ccbchurch.com
+            doc_section: '#step-1-finding-your-church-subdomain'
+
 plain:
     display_name: Plain
     categories:
@@ -17386,6 +18821,40 @@ pleo:
             enum:
                 - external
                 - external.staging
+
+pleo-api-key:
+    display_name: Pleo (API Key)
+    categories:
+        - payment
+        - invoicing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiSubdomain}.pleo.io
+        verification:
+            method: GET
+            endpoints:
+                - /v2/employees?limit=1
+        headers:
+            authorization: Basic ${base64(${apiKey}:)}
+    docs: https://nango.dev/docs/api-integrations/pleo-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/pleo-api-key/connect
+    connection_config:
+        apiSubdomain:
+            type: string
+            title: API Subdomain
+            description: The API subdomain for your Pleo environment.
+            enum:
+                - external
+                - external.staging
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Pleo Standalone API Key.
+            example: pls_********************************_620d75
+            pattern: '^pl[sp]_[a-f0-9]+_[a-f0-9]+$'
+            doc_section: '#step-1-generating-your-api-key'
 
 podium:
     display_name: Podium
@@ -18793,6 +20262,41 @@ revivn:
             secret: true
             doc_section: '#step-1-get-your-oauth2-credentials'
 
+revolut-business:
+    display_name: Revolut Business
+    categories:
+        - banking
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.authorizeHost}/app-confirm
+    authorization_params:
+        response_type: code
+    disable_pkce: true
+    token_url: https://${connectionConfig.apiHost}/api/1.0/auth/token
+    refresh_url: https://${connectionConfig.apiHost}/api/1.0/auth/token
+    scope_separator: ','
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+    docs: https://nango.dev/docs/api-integrations/revolut-business
+    docs_connect: https://nango.dev/docs/api-integrations/revolut-business/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/revolut-business/how-to-register-your-own-revolut-business-api-oauth-app
+    connection_config:
+        authorizeHost:
+            type: string
+            title: Authorization Host
+            description: The Revolut Business authorization hostname for your environment.
+            enum:
+                - business.revolut.com
+                - sandbox-business.revolut.com
+            doc_section: '#step-1-selecting-your-environment'
+        apiHost:
+            type: string
+            title: API Host
+            description: The Revolut Business API hostname for your environment.
+            enum:
+                - b2b.revolut.com
+                - sandbox-b2b.revolut.com
+            doc_section: '#step-1-selecting-your-environment'
+
 ring-central:
     display_name: RingCentral
     categories:
@@ -19073,6 +20577,33 @@ reapit:
             title: ''
             description: ''
             automated: true
+rydership:
+    display_name: RyderShip
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.environment}/oauth/authorize
+    token_url: https://${connectionConfig.environment}/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.environment}/api
+    docs: https://nango.dev/docs/api-integrations/rydership
+    setup_guide_url: https://nango.dev/docs/api-integrations/rydership/how-to-register-your-own-rydership-oauth-app
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The RyderShip environment to connect to.
+            enum:
+                - www.getwhiplash.com
+                - sandbox.whiplash.app
+
 rydoo:
     display_name: Rydoo
     categories:
@@ -19166,6 +20697,74 @@ sage-200:
             title: ''
             description: ''
             automated: true
+
+sage-300-cre:
+    display_name: Sage 300 Construction and Real Estate
+    categories:
+        - accounting
+        - erp
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.serverUrl}/api/common/user/authenticate
+    token_params:
+        userid: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        x-dppkey: ${credentials.dppKey}
+    token_response:
+        token: Data
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}
+        headers:
+            x-dppkey: ${credentials.dppKey}
+            x-credentials: ${accessToken}
+            x-databasename: ${connectionConfig.databaseName}
+    docs: https://nango.dev/docs/api-integrations/sage-300-cre
+    docs_connect: https://nango.dev/docs/api-integrations/sage-300-cre/connect
+    connection_config:
+        serverUrl:
+            type: string
+            title: Server Hostname
+            description: Hostname of your Sage 300 CRE Web API server.
+            example: myserver.company.com
+            order: 1
+            prefix: https://
+            doc_section: '#step-1-finding-your-server-hostname-and-company-data-folder'
+        databaseName:
+            type: string
+            title: Company Data Folder Name
+            description: Your Sage 300 CRE company data folder.
+            example: Company1
+            order: 2
+            doc_section: '#step-1-finding-your-server-hostname-and-company-data-folder'
+    integration_config:
+        dppKey:
+            type: string
+            title: DPP License Key
+            description: Sage DPP license key for this integration.
+            secret: true
+            optional: true
+            doc_section: '#step-3-dpp-license-key-only-if-not-already-configured'
+    credentials:
+        dppKey:
+            type: string
+            title: DPP License Key
+            description: Sage DPP license key (XML blob). Usually preconfigured — only fill in if asked to.
+            secret: true
+            optional: true
+            doc_section: '#step-3-dpp-license-key-only-if-not-already-configured'
+        username:
+            type: string
+            title: Username
+            description: Windows username, including the domain.
+            example: CORP\jdoe
+            doc_section: '#step-2-creating-a-dedicated-integration-user'
+        password:
+            type: string
+            title: Password
+            description: Password for the Windows user above.
+            secret: true
+            doc_section: '#step-2-creating-a-dedicated-integration-user'
 
 sage-hr:
     display_name: Sage HR
@@ -19453,6 +21052,45 @@ sap-ariba:
             pattern: '^AN[0-9]+$'
             doc_section: '#step-3-find-your-anid'
             order: 3
+
+salescaptain:
+    display_name: SalesCaptain
+    categories:
+        - crm
+        - communication
+        - support
+
+    auth_mode: API_KEY
+
+    proxy:
+        base_url: https://api.salescaptain.com
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/get-companies
+
+        retry:
+            after:
+                - 'retry-after'
+
+    docs: https://nango.dev/docs/api-integrations/salescaptain
+    docs_connect: https://nango.dev/docs/api-integrations/salescaptain/connect
+
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: API key for SalesCaptain API authentication.
+            secret: true
+            pattern: '^[a-fA-F0-9]{32}$'
+            example: 64f67b98****************4521acac
 
 salesforce:
     display_name: Salesforce
@@ -20119,6 +21757,31 @@ sap-odata-basic:
             doc_section: '#step-2-finding-your-api-server'
             order: 1
 
+scavio:
+    display_name: Scavio
+    categories:
+        - dev-tools
+        - e-commerce
+        - social
+    auth_mode: API_KEY
+    proxy:
+        retry:
+            after:
+                - 'retry-after'
+        base_url: https://api.scavio.dev
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/scavio
+    docs_connect: https://nango.dev/docs/api-integrations/scavio/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Scavio account
+            example: sk_0123456789ab************************************************cdef
+            pattern: '^sk_[0-9a-f]{64}$'
+            doc_section: '#step-1-finding-your-api-key'
+
 schwab:
     display_name: Schwab
     categories:
@@ -20159,6 +21822,35 @@ scrapedo:
             example: 3c12d71308a346c41d10b19a2b2ac1ea5cacb53588d
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
+
+scrollstash-mcp:
+    display_name: ScrollStash (MCP)
+    categories:
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.scrollstash.com/oauth2/authorize
+    token_url: https://mcp.scrollstash.com/oauth2/token
+    registration_url: https://mcp.scrollstash.com/oauth2/register
+    default_scopes:
+        - mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.scrollstash.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/scrollstash-mcp
 
 salesloft:
     display_name: Salesloft
@@ -21336,6 +23028,49 @@ shortcut:
             title: API Key
             description: The API key for your Shortcut account
 
+simpplr:
+    display_name: Simpplr
+    categories:
+        - knowledge-base
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://platform.${connectionConfig.region}.simpplr.com/v1/identity/oauth/token
+    body_format: json
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://platform.${connectionConfig.region}.simpplr.com
+    docs: https://nango.dev/docs/api-integrations/simpplr
+    docs_connect: https://nango.dev/docs/api-integrations/simpplr/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region your Simpplr tenant is hosted in. Choose app for the United States.
+            enum:
+                - app
+                - eu
+                - au
+                - ca
+            order: 1
+            doc_section: '#step-2-find-your-region'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID of your Simpplr client application.
+            pattern: '^\S+$'
+            example: 7f3a91c2****************************e85b
+            doc_section: '#step-1-create-a-client-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret of your Simpplr client application.
+            pattern: '^\S+$'
+            example: b41d7e60********************************************9af2
+            secret: true
+            doc_section: '#step-1-create-a-client-application'
+
 simpro:
     display_name: Simpro
     categories:
@@ -21393,6 +23128,7 @@ slack:
             cursor_name_in_request: cursor
             limit_name_in_request: limit
     webhook_routing_script: slackWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/slack
     setup_guide_url: https://nango.dev/docs/api-integrations/slack/how-to-register-your-own-slack-api-oauth-app
 
@@ -21695,6 +23431,36 @@ splitwise:
         base_url: https://secure.splitwise.com
     docs: https://nango.dev/docs/integrations/all/splitwise
 
+splunk:
+    display_name: Splunk
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /services/authentication/current-context?output_mode=json
+    docs: https://nango.dev/docs/api-integrations/splunk
+    docs_connect: https://nango.dev/docs/api-integrations/splunk/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Splunk host
+            description: Your Splunk management host and port.
+            example: my-splunk.example.com:8089
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: Authentication Token
+            description: Your Splunk authentication token.
+            doc_section: '#step-1-create-an-authentication-token'
+
 spotify:
     display_name: Spotify (OAuth)
     categories:
@@ -21860,6 +23626,30 @@ statista:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
 
+statsig:
+    display_name: Statsig
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://statsigapi.net
+        headers:
+            statsig-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /console/v1/users?limit=1&page=1
+    docs: https://nango.dev/docs/api-integrations/statsig
+    docs_connect: https://nango.dev/docs/api-integrations/statsig/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Statsig Console API Key from the Statsig Console.
+            example: console-***************************************amXc
+            pattern: '^console-[A-Za-z0-9]+$'
+            doc_section: '#step-1-get-your-api-key'
+
 stay-ai:
     display_name: Stay AI
     categories:
@@ -21950,6 +23740,31 @@ store-leads:
             pattern: '^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{8}$'
             example: a174****-****-****-****-****c6ee
 
+stedi:
+    display_name: Stedi (Healthcare)
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://healthcare.us.stedi.com
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /2024-04-01/payers?pageSize=10
+    docs: https://nango.dev/docs/api-integrations/stedi
+    docs_connect: https://nango.dev/docs/api-integrations/stedi/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Stedi API key.
+            example: test_JX***************48l
+            doc_section: '#step-1-creating-an-api-key'
+
 strava:
     display_name: Strava (Mobile)
     categories:
@@ -22022,6 +23837,61 @@ streak:
             default_value: ''
             hidden: true
 
+streamline-ai:
+    display_name: Streamline AI
+    categories:
+        - legal
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.customer}.${connectionConfig.domain}/api
+        headers:
+            authorization: 'Signature keyid="${credentials.username}"'
+            content-type: application/json
+            content-digest: 'sha-256=:${sha256Base64(${bodyCanonicalParams})}:'
+            signature-input: 'sig=("@method" "@target-uri" "content-digest" "content-type");alg="ed25519";created=${now:X};expires=${now+1:minutes:X};keyid="${credentials.username}"'
+            signature: "sig=:${ed25519Sign(\"@method\": ${method}\n\"@target-uri\": https://${host}${path}\n\"content-digest\": sha-256=:${sha256Base64(${bodyCanonicalParams})}:\n\"content-type\": application/json\n\"@signature-params\": (\"@method\" \"@target-uri\" \"content-digest\" \"content-type\");alg=\"ed25519\";created=${now:X};expires=${now+1:minutes:X};keyid=\"${credentials.username}\", ${credentials.password})}:"
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v0/request-forms
+    docs: https://nango.dev/docs/api-integrations/streamline-ai
+    docs_connect: https://nango.dev/docs/api-integrations/streamline-ai/connect
+    connection_config:
+        customer:
+            type: string
+            title: Customer Subdomain
+            description: Your Streamline AI customer subdomain.
+            example: acme
+            pattern: '^[a-z0-9-]+$'
+            order: 1
+            doc_section: '#step-2-find-your-customer-subdomain'
+        domain:
+            type: string
+            title: Environment
+            description: Whether this connection is to your production or demo/sandbox Streamline AI workspace.
+            enum:
+                - streamline.ai
+                - demo.streamline.ai
+            default_value: streamline.ai
+            order: 2
+            doc_section: '#step-2-find-your-customer-subdomain'
+    credentials:
+        username:
+            type: string
+            title: Auth Key ID
+            description: The Auth Key ID shown in Streamline AI after registering your public key.
+            example: slak_ceWnGIU******vfKI-t3ckVCw***************************
+            doc_section: '#step-1-generate-and-register-an-auth-key'
+        password:
+            type: string
+            title: Private Key
+            description: The private key (PEM format) for your Streamline AI Auth Key.
+            secret: true
+            doc_section: '#step-1-generate-and-register-an-auth-key'
+
 stripe:
     display_name: Stripe Connect
     categories:
@@ -22074,13 +23944,20 @@ stripe-app-sandbox:
         base_url: https://api.stripe.com
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/integrations/all/stripe-app-sandbox
-    docs_connect: https://nango.dev/docs/integrations/all/stripe-app-sandbox/connect
+    docs: https://nango.dev/docs/api-integrations/stripe-app-sandbox
+    setup_guide_url: https://nango.dev/docs/api-integrations/stripe-app-sandbox/how-to-register-your-own-stripe-app-sandbox-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/stripe-app-sandbox/connect
+    integration_config:
+        appDomain:
+            type: string
+            title: App Domain
+            description: The unique identifier Stripe assigns to your app instance.
+            optional: true
     connection_config:
         appDomain:
             type: string
             title: App Domain
-            description: The unique identifier Stripe assigns to your app instance
+            description: The unique identifier Stripe assigns to your app instance.
             doc_section: '#step-1-finding-your-app-domain'
 
 stripe-api-key:
@@ -22147,7 +24024,7 @@ supabase:
             title: Secret Key
             description: The secret key from your Supabase project.
             example: sb_secret_*******************************hm
-            pattern: '^sb_secret_[A-Za-z0-9_]+$'
+            pattern: '^sb_secret_[A-Za-z0-9_-]+$'
             doc_section: '#step-2-finding-your-secret-key'
 
 supabase-mcp:
@@ -23140,6 +25017,93 @@ trafft:
             secret: true
             doc_section: '#step-2-get-your-credentials'
 
+transporeon-carrier-basic:
+    display_name: Transporeon Carrier Interface (Basic Auth)
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.apiHost}/carrier_interface/openapi
+        verification:
+            method: GET
+            endpoints:
+                - /v1/transport
+    docs: https://nango.dev/docs/api-integrations/transporeon-carrier-basic
+    docs_connect: https://nango.dev/docs/api-integrations/transporeon-carrier-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Transporeon username.
+            example: demo@123
+            pattern: '^[^@]+@[^@]+$'
+            doc_section: '#step-1-obtaining-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Transporeon password.
+            secret: true
+            doc_section: '#step-1-obtaining-your-credentials'
+    connection_config:
+        apiHost:
+            type: string
+            title: API Host
+            description: The Transporeon Carrier Interface host to connect to.
+            enum:
+                - xp.transporeon.com
+                - xp.test.transporeon.com
+            doc_section: '#step-2-selecting-your-api-host'
+
+transporeon-carrier-oauth2-cc:
+    display_name: Transporeon Carrier Interface (Client Credentials)
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.environment}/oauth2/token
+    token_request_auth_method: basic
+    body_format: query
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.apiHost}/carrier_interface/openapi
+        verification:
+            method: GET
+            endpoints:
+                - /v1/transport
+    docs: https://nango.dev/docs/api-integrations/transporeon-carrier-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/transporeon-carrier-oauth2-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your API client ID.
+            example: username@companyId
+            pattern: '^[^@]+@[^@]+$'
+            doc_section: '#step-1-obtaining-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your API client secret
+            secret: true
+            doc_section: '#step-1-obtaining-your-client-credentials'
+    connection_config:
+        environment:
+            type: string
+            title: Token Host
+            description: The Transporeon OAuth2 token hostname.
+            enum:
+                - api.transporeon.com
+                - api.test.transporeon.com
+            doc_section: '#step-2-selecting-your-token-host-and-api-host'
+        apiHost:
+            type: string
+            title: API Host
+            description: The Transporeon Carrier Interface host to connect to.
+            enum:
+                - xp.transporeon.com
+                - xp.test.transporeon.com
+            doc_section: '#step-2-selecting-your-token-host-and-api-host'
+
 transporeon-oauth2-cc:
     display_name: Transporeon Appointment Scheduling (Client Credentials)
     categories:
@@ -23921,8 +25885,8 @@ typeform:
     categories:
         - surveys
     auth_mode: OAUTH2
-    authorization_url: https://api.typeform.com/oauth/authorize
-    token_url: https://api.typeform.com/oauth/token
+    authorization_url: https://${connectionConfig.authHost}/oauth/authorize || https://api.typeform.com/oauth/authorize
+    token_url: https://${connectionConfig.authHost}/oauth/token || https://api.typeform.com/oauth/token
     disable_pkce: true
     default_scopes:
         - offline
@@ -23933,8 +25897,28 @@ typeform:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api.typeform.com
-    docs: https://nango.dev/docs/integrations/all/typeform
+        base_url: https://${connectionConfig.apiHost} || https://api.typeform.com
+    docs: https://nango.dev/docs/api-integrations/typeform
+    docs_connect: https://nango.dev/docs/api-integrations/typeform/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/typeform/how-to-register-your-own-typeform-api-oauth-app
+    connection_config:
+        authHost:
+            type: string
+            title: Authorization host
+            description: The Typeform host that issues authorization codes for your data center.
+            enum:
+                - api.typeform.com
+                - api.typeform.eu
+            order: 1
+        apiHost:
+            type: string
+            title: API host
+            description: The Typeform host that serves the API for your data center.
+            enum:
+                - api.typeform.com
+                - api.eu.typeform.com
+                - api.typeform.eu
+            order: 2
 
 typefully:
     display_name: Typefully
@@ -24796,6 +26780,51 @@ viewpoint-vista:
             description: The subscriber code for your Vista account in Trimble Xchange
             pattern: '^[0-9]+$'
             example: '34509'
+vincere:
+    display_name: Vincere
+    categories:
+        - hr
+        - ats
+    auth_mode: OAUTH2
+    authorization_url: https://id.vincere.io/oauth2/authorize
+    token_url: https://id.vincere.io/oauth2/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_response_metadata:
+        - id_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.vincere.io/api
+        headers:
+            id-token: ${credentials.raw.id_token} || ${connectionConfig.id_token}
+            x-api-key: ${connectionConfig.apiKey}
+    docs: https://nango.dev/docs/api-integrations/vincere
+    docs_connect: https://nango.dev/docs/api-integrations/vincere/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/vincere/how-to-register-your-own-vincere-api-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Vincere tenant.
+            pattern: '^[a-zA-Z0-9-]+$'
+            example: mycompany
+            prefix: https://
+            suffix: .vincere.io
+            doc_section: '#step-1-find-your-vincere-subdomain'
+            order: 1
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key issued by Vincere for your tenant.
+            secret: true
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-2-request-your-api-key'
+            order: 2
 
 wappalyzer:
     display_name: Wappalyzer
@@ -26440,6 +28469,9 @@ zoom:
             cursor_path_in_response: next_page_token
             cursor_name_in_request: next_page_token
             limit_name_in_request: page_size
+    webhook_routing_script: zoomWebhookRouting
+    webhook_user_defined_secret: true
+    post_connection_script: zoomPostConnection
     docs: https://nango.dev/docs/api-integrations/zoom
     setup_guide_url: https://nango.dev/docs/api-integrations/zoom/how-to-register-your-own-zoom-api-oauth-app
 
@@ -26455,6 +28487,8 @@ zoom-cc:
         account_id: ${connectionConfig.accountId}
     proxy:
         base_url: https://api.zoom.us
+    webhook_routing_script: zoomCcWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/zoom-cc
     docs_connect: https://nango.dev/docs/api-integrations/zoom-cc/connect
     connection_config:

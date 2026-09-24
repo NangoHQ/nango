@@ -1,7 +1,5 @@
 import { Loader2 } from 'lucide-react';
 
-import { permissions } from '@nangohq/authz';
-
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
@@ -12,20 +10,19 @@ import { useCurrentPlan } from '../../../hooks/usePlan.js';
 import { useToast } from '../../../hooks/useToast.js';
 import { APIError } from '../../../utils/api.js';
 
-import type { ApiError, ApiIntegration, DeployedNangoActionFunction, DeployedNangoSyncFunction } from '@nangohq/types';
+import type { ApiError, ApiIntegration, ListedNangoActionFunction, ListedNangoSyncFunction } from '@nangohq/types';
 
 export const FunctionSwitch: React.FC<{
-    flow: DeployedNangoSyncFunction | DeployedNangoActionFunction;
+    flow: ListedNangoSyncFunction | ListedNangoActionFunction;
     integration: ApiIntegration;
 }> = ({ flow, integration }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
     const { data: environmentData, refetch: refetchEnv } = useCurrentPlan(env);
     const plan = environmentData?.plan;
-    const environment = environmentData?.environmentAndAccount?.environment;
 
     const { can } = usePermissions();
-    const canWriteFlows = can(permissions.canWriteProdFlows) || !environment?.is_production;
+    const canWriteFlows = can('environment:syncs:update');
 
     const { confirm, DialogComponent } = useConfirmDialog();
 

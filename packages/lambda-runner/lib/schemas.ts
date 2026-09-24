@@ -3,7 +3,7 @@ import * as z from 'zod';
 import type { LambdaRequestType } from '@nangohq/types';
 
 export const nangoPropsSchema = z.object({
-    scriptType: z.enum(['sync', 'action', 'webhook', 'on-event']),
+    scriptType: z.enum(['function', 'sync', 'action', 'webhook', 'on-event']),
     host: z.string().optional(),
     secretKey: z.string().min(1),
     team: z.object({
@@ -25,6 +25,7 @@ export const nangoPropsSchema = z.object({
     lastSyncDate: z.coerce.date().optional(),
     syncId: z.string().uuid().optional(),
     syncVariant: z.string().optional(),
+    variant: z.string().optional(),
     nangoConnectionId: z.number(),
     syncJobId: z.number().max(Number.MAX_SAFE_INTEGER).optional(),
     track_deletes: z.boolean().optional(),
@@ -116,7 +117,8 @@ const refCodeSchema = z.object({
 export const functionExecutionSchema = z
     .object({
         taskId: z.string(),
-        nangoProps: nangoPropsSchema
+        nangoProps: nangoPropsSchema,
+        internalAuthToken: z.string().optional()
     })
     .and(z.union([inlineCodeSchema, refCodeSchema]));
 

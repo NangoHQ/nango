@@ -19,8 +19,10 @@ import type {
 } from './account/api.js';
 import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
+import type { DeleteAgentSession, PostAgentSessions } from './agent/api.js';
+import type { GetAgentSessionMcp, PostAgentSessionMcp } from './agent/mcp.api.js';
 import type { EndpointMethod } from './api.js';
-import type { GetAuditTrail } from './audit-trail/api.js';
+import type { GetAuditTrail, GetAuditTrailExport } from './audit-trail/api.js';
 import type {
     PostPublicApiKeyAuthorization,
     PostPublicAwsSigV4Authorization,
@@ -63,12 +65,19 @@ import type {
     CreateApiKey,
     DeleteApiKey,
     DeleteEnvironment,
+    DeletePublicApiKey,
+    DeletePublicEnvironment,
     GetEnvironment,
     GetEnvironments,
+    GetPublicApiKey,
+    GetPublicApiKeys,
+    GetPublicEnvironments,
     ListApiKeys,
     PatchApiKey,
     PatchEnvironment,
     PostEnvironment,
+    PostPublicApiKey,
+    PostPublicEnvironment,
     PostPublicRotateWebhookSigningKey,
     PostRotateWebhookSigningKey
 } from './environment/api/index.js';
@@ -80,6 +89,7 @@ import type {
     DeletePublicIntegrationFunction,
     GetFunctionDeployment,
     GetFunctionDryrun,
+    GetFunctionInvocation,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
@@ -93,7 +103,8 @@ import type {
     PostFunctionDeploymentBundlePreview,
     PostFunctionDeploymentResult,
     PostFunctionDryrun,
-    PostFunctionDryrunResult
+    PostFunctionDryrunResult,
+    PostFunctionInvocation
 } from './functions/api.js';
 import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
@@ -116,7 +127,20 @@ import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchO
 import type { GetMeta } from './meta/api.js';
 import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from './mfa/api.js';
 import type { GetPlainHmac } from './plain/api.js';
-import type { GetBillingUsage, GetBillingUsageTopDimensionValues, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from './plans/http.api.js';
+import type {
+    DeleteSpendAlert,
+    GetBillingPeriodCosts,
+    GetBillingUsage,
+    GetBillingUsageTopDimensionValues,
+    GetOverdueInvoices,
+    GetProjectedCosts,
+    GetSpendAlert,
+    GetUpcomingInvoice,
+    PostPlanChange,
+    PostPlanExtendTrial,
+    PutBillingInvoicingDetails,
+    PutSpendAlert
+} from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { AllPublicProxy } from './proxy/http.api.js';
 import type { GetConnectionRecordModels, GetConnectionRecords, GetPublicRecords, PatchPublicPruneRecords } from './record/api.js';
@@ -127,7 +151,14 @@ import type {
     PatchSharedCredentialsProvider,
     PostSharedCredentialsProvider
 } from './sharedCredentials/api.js';
-import type { GetPublicSyncStatus, PostPublicSyncPause, PostPublicSyncStart, PostPublicTrigger, PutPublicSyncConnectionFrequency } from './sync/api.js';
+import type {
+    GetConnectionSyncs,
+    GetPublicSyncStatus,
+    PostPublicSyncPause,
+    PostPublicSyncStart,
+    PostPublicTrigger,
+    PutPublicSyncConnectionFrequency
+} from './sync/api.js';
 import type { DeleteTeamUser, GetTeam, PatchTeamUser, PutTeam } from './team/api.js';
 import type { GetUser, PatchUser, PutUserPassword } from './user/api.js';
 import type { PostPublicWebhook } from './webhooks/http.api.js';
@@ -149,6 +180,10 @@ export type PublicApiEndpoints =
     | GetPublicIntegration
     | DeletePublicIntegration
     | PostConnectSessions
+    | PostAgentSessions
+    | DeleteAgentSession
+    | PostAgentSessionMcp
+    | GetAgentSessionMcp
     | PostPublicConnectSessionsReconnect
     | GetPublicConnections
     | GetPublicConnection
@@ -188,6 +223,8 @@ export type PublicApiEndpoints =
     | PostFunctionDeployment
     | GetFunctionDeployment
     | PostFunctionDeploymentResult
+    | PostFunctionInvocation
+    | GetFunctionInvocation
     | PostFunctionDeploymentBundle
     | PostFunctionDeploymentBundlePreview
     | GetPublicFunctionCode
@@ -196,10 +233,18 @@ export type PublicApiEndpoints =
     | DeletePublicIntegrationFunction
     | GetPublicProviderTemplates
     | PostPublicRotateWebhookSigningKey
-    | AllPublicProxy;
+    | AllPublicProxy
+    | PostPublicEnvironment
+    | DeletePublicEnvironment
+    | GetPublicEnvironments
+    | GetPublicApiKey
+    | GetPublicApiKeys
+    | PostPublicApiKey
+    | DeletePublicApiKey;
 
 export type PrivateApiEndpoints =
     | GetAuditTrail
+    | GetAuditTrailExport
     | ListAccountApiKeys
     | CreateAccountApiKey
     | DeleteAccountApiKey
@@ -212,8 +257,15 @@ export type PrivateApiEndpoints =
     | PostPlanExtendTrial
     | PostPlanChange
     | PutBillingInvoicingDetails
+    | GetOverdueInvoices
     | GetBillingUsage
     | GetBillingUsageTopDimensionValues
+    | GetUpcomingInvoice
+    | GetBillingPeriodCosts
+    | GetProjectedCosts
+    | GetSpendAlert
+    | PutSpendAlert
+    | DeleteSpendAlert
     | GetUser
     | PatchUser
     | PutUserPassword
@@ -247,6 +299,7 @@ export type PrivateApiEndpoints =
     | PostConnectionMetadata
     | GetConnectionRecordModels
     | GetConnectionRecords
+    | GetConnectionSyncs
     | GetInvite
     | GetMeta
     | GetEmailByExpiredToken

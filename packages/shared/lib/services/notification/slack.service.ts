@@ -6,6 +6,7 @@ import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import { refreshOrTestCredentials } from '../connections/credentials/refresh.js';
 import environmentService from '../environment.service.js';
+import { getServerOutboundUrlPolicy } from '../proxy/outbound-policy.js';
 import { ProxyRequest } from '../proxy/request.js';
 import { getProxyConfiguration } from '../proxy/utils.js';
 
@@ -697,6 +698,8 @@ export class SlackService {
             const proxy = new ProxyRequest({
                 logger: () => {},
                 proxyConfig: proxyConfig.value,
+                outboundPolicy: getServerOutboundUrlPolicy(),
+                maxWaitMs: Infinity,
                 getConnection: () => slackConnection,
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,
@@ -770,6 +773,8 @@ export class SlackService {
             const proxy = new ProxyRequest({
                 logger: () => {},
                 proxyConfig: proxyConfig.value,
+                outboundPolicy: getServerOutboundUrlPolicy(),
+                maxWaitMs: Infinity,
                 getConnection: () => slackConnection,
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,

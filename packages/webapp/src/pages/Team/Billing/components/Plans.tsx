@@ -1,8 +1,6 @@
-import { format } from 'date-fns';
-import { ArrowRight, Check, Clock9, Loader } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowRight, Check, Loader } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 
-import { permissions } from '@nangohq/authz';
 import {
     Button,
     Card,
@@ -19,22 +17,30 @@ import {
     IconButton
 } from '@nangohq/design-system';
 
-import { PermissionGate } from '@/components/patterns/PermissionGate.js';
-import { Alert, AlertDescription } from '@/components/ui/Alert.js';
-import { StyledLink } from '@/components/ui/StyledLink.js';
-import { environmentQueryKey } from '@/hooks/useEnvironment';
+import { PERMISSION_DENIED_REASON, PermissionGate } from '@/components/patterns/PermissionGate.js';
+import { Checkbox } from '@/components/ui/Checkbox';
+import { Separator } from '@/components/ui/Separator';
 import { usePermissions } from '@/hooks/usePermissions.js';
-import { fetchCurrentPlan, useApiGetPlans, useApiPostPlanChange, useCurrentPlan } from '@/hooks/usePlan';
+import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe.js';
-import { useToast } from '@/hooks/useToast.js';
-import { queryClient, useStore } from '@/store';
-import { stripePromise } from '@/utils/stripe.js';
+import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
+import { openSupportChat } from '@/utils/support';
+import { isOnS26Pricing } from '@/utils/usage';
 import { cn } from '@/utils/utils';
+import { formatBillingDate, nextUsageResetDate } from '../billingPeriod.js';
+import { growthAddonState, isRetiredPlan } from '../planVisibility.js';
+import { pendingPlanChange } from '../summaryState.js';
+import { PlanChangeErrorAlert, usePlanChangeRequest } from '../usePlanChangeRequest.js';
+import { usePlanTransition } from '../usePlanTransition.js';
+import { GrowthAddon } from './GrowthAddon.js';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
-import { ENTERPRISE_PLAN_DESCRIPTION, PLAN_CARD_LIMITS } from './planCardCopy.js';
+import { ENTERPRISE_PLAN_DESCRIPTION, GROWTH_ADDON_COPY, GROWTH_ADDON_PRICE, PLAN_CARD_LIMITS, S26_PLAN_CARDS } from './planCardCopy.js';
 
+import type { PlanTransition } from '../planTransition.js';
+import type { GrowthAddonState } from '../planVisibility.js';
 import type { PlanDefinitionList } from '../types.js';
-import type { StripeError } from '@/utils/stripe.js';
+import type { S26PlanCard } from './planCardCopy.js';
 import type { PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
 export const Plans: React.FC = () => {
@@ -49,6 +55,9 @@ export const Plans: React.FC = () => {
         return paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
     }, [paymentMethods]);
 
+    const transition = usePlanTransition();
+    const showsNewPlans = isOnS26Pricing(currentPlan) || transition !== null;
+
     const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
         if (!currentPlan || !plansList) {
             return null;
@@ -56,113 +65,92 @@ export const Plans: React.FC = () => {
 
         const curr = plansList.data.find((p) => p.code === currentPlan.name)!;
 
-        const list: PlanDefinitionList[] = [];
-        for (const plan of plansList.data) {
-            if (plan.hidden) {
-                continue;
-            }
-            const same = plan.code === currentPlan.name;
+        const scheduledCode = pendingPlanChange({ plan: currentPlan, plans: plansList.data, now: new Date() })?.toCode;
 
-            list.push({
-                plan,
-                active: same,
-                isFuture: plan.code === currentPlan.orb_future_plan,
-                isDowngrade: curr.prevPlan?.includes(plan.code) || false,
-                isUpgrade: curr.nextPlan?.includes(plan.code) || false
-            });
-        }
+        // Picked by code rather than by `hidden`: `pay-as-you-go` is hidden in `plansList`, yet is one
+        // of the three cards.
+        const offered = showsNewPlans
+            ? S26_PLAN_CARDS.map((card) => plansList.data.find((p) => p.code === card.code)).filter((p) => p !== undefined)
+            : plansList.data.filter((p) => !p.hidden);
+
+        const list: PlanDefinitionList[] = offered.map((plan) => ({
+            plan,
+            active: plan.code === currentPlan.name,
+            isFuture: plan.code === scheduledCode,
+            isDowngrade: curr.prevPlan?.includes(plan.code) || false,
+            isUpgrade: curr.nextPlan?.includes(plan.code) || false
+        }));
         return { list, activePlan: curr };
-    }, [currentPlan, plansList]);
+    }, [currentPlan, plansList, showsNewPlans]);
 
-    // The target of a scheduled downgrade/cancellation, shown as an inline notice on the
-    // *active* plan's card (Figma: the "Your plan" card carries the "Scheduled plan change" alert).
-    const scheduledChange = useMemo(() => {
-        if (!currentPlan?.orb_future_plan || !currentPlan.orb_future_plan_at) {
-            return null;
-        }
-
-        const targetPlan = plansList?.data.find((p) => p.code === currentPlan.orb_future_plan);
-        if (!targetPlan) {
-            return null;
-        }
-
-        return { targetPlan, at: format(new Date(currentPlan.orb_future_plan_at), 'MMM d, yyyy') };
-    }, [currentPlan, plansList]);
+    const activeIsOffered = plans?.list.some((p) => p.active) ?? false;
+    const pendingChange = useMemo(
+        () => (currentPlan ? pendingPlanChange({ plan: currentPlan, plans: plansList?.data, now: new Date() }) : null),
+        [currentPlan, plansList]
+    );
+    const addonState = growthAddonState(currentPlan);
 
     return (
         <div className="flex flex-col gap-4">
-            {plans?.activePlan.hidden && <CurrentPlanCard plan={plans.activePlan} scheduledChange={scheduledChange} />}
-            <div className="grid grid-cols-4 gap-4">
+            {plans && !activeIsOffered && !transition && <CurrentPlanCard plan={plans.activePlan} />}
+            <div className={cn('grid gap-4', showsNewPlans ? 'grid-cols-3' : 'grid-cols-4')}>
                 {plans?.list.map((plan) => (
                     <PlanCard
                         key={plan.plan.code}
                         planDefinition={plan}
                         activePlan={plans?.activePlan}
+                        activeIsOffered={activeIsOffered}
+                        card={showsNewPlans ? S26_PLAN_CARDS.find((c) => c.code === plan.plan.code) : undefined}
+                        addonState={addonState}
+                        endsAt={currentPlan?.growth_features_ends_at ?? undefined}
+                        pendingChangeAt={pendingChange?.at}
+                        transition={transition}
+                        closed={!showsNewPlans && isRetiredPlan(plan.plan.code)}
                         paymentMethod={paymentMethod}
-                        scheduledChange={plan.active ? scheduledChange : null}
                     />
                 ))}
             </div>
-            <StyledLink to="https://nango.dev/pricing" icon type="external">
-                View full pricing detail
-            </StyledLink>
         </div>
     );
 };
 
 /** Compact "CURRENT PLAN" summary shown when the account's active plan isn't one of the 4 self-serve cards below (legacy plan). */
-const CurrentPlanCard: React.FC<{ plan: PlanDefinition; scheduledChange: { targetPlan: PlanDefinition; at: string } | null }> = ({ plan, scheduledChange }) => {
+const CurrentPlanCard: React.FC<{ plan: PlanDefinition }> = ({ plan }) => {
     return (
         <Card selected>
-            <div className="flex flex-col gap-2 p-4">
-                <div className="flex flex-col gap-1">
-                    <span className="text-text-disabled text-body-medium-regular uppercase">Current plan</span>
-                    <span className="text-text-default text-body-medium-regular">{plan.title}</span>
-                </div>
-                <ScheduledChangeNotice scheduledChange={scheduledChange} />
+            <div className="flex flex-col gap-1 p-4">
+                <span className="text-text-disabled text-body-medium-regular uppercase">Current plan</span>
+                <span className="text-text-default text-body-medium-regular">{plan.title}</span>
             </div>
         </Card>
-    );
-};
-
-/** Inline "Scheduled plan change" notice, shown on whichever card represents the account's current plan. */
-const ScheduledChangeNotice: React.FC<{ scheduledChange: { targetPlan: PlanDefinition; at: string } | null }> = ({ scheduledChange }) => {
-    if (!scheduledChange) {
-        return null;
-    }
-
-    return (
-        <div className="flex flex-col gap-1 rounded-sm border-[0.5px] border-status-warning-border bg-status-warning-bg p-2">
-            <div className="flex gap-2 items-start">
-                <Clock9 className="size-4 shrink-0 mt-0.5 text-status-warning-text" />
-                <div className="flex flex-col gap-0.5">
-                    <span className="text-status-warning-text text-body-small-regular">Scheduled plan change</span>
-                    <span className="text-text-default text-body-small-regular">
-                        {scheduledChange.targetPlan.code === 'free'
-                            ? `Your subscription will be cancelled on ${scheduledChange.at}`
-                            : `Switches to ${scheduledChange.targetPlan.title} on ${scheduledChange.at}`}
-                    </span>
-                </div>
-            </div>
-        </div>
     );
 };
 
 const PlanCard: React.FC<{
     planDefinition: PlanDefinitionList;
     activePlan?: PlanDefinition;
+    activeIsOffered: boolean;
+    /** Undefined while the old set of cards is on screen. */
+    card?: S26PlanCard;
+    addonState: GrowthAddonState;
+    endsAt?: string;
+    pendingChangeAt?: string;
+    transition?: PlanTransition | null;
+    /** Whether this plan is no longer something the account can move to. */
+    closed?: boolean;
     paymentMethod?: StripePaymentMethod | null;
-    scheduledChange?: { targetPlan: PlanDefinition; at: string } | null;
-}> = ({ planDefinition, activePlan, paymentMethod, scheduledChange }) => {
+}> = ({ planDefinition, activePlan, activeIsOffered, card, addonState, endsAt, pendingChangeAt, transition, closed, paymentMethod }) => {
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
+    const [addonAction, setAddonAction] = useState<'add' | 'remove' | null>(null);
 
     const { can } = usePermissions();
-    const canChangePlan = can(permissions.canChangePlan);
+    const canChangePlan = can('account:plan:update');
 
     const [paymentMethodDialogOpen, setPaymentMethodDialogOpen] = useState(false);
     const [planChangeDialogOpen, setPlanChangeDialogOpen] = useState(false);
 
     const onUpgradeClicked = useCallback(() => {
+        track('web:usage:upgrade_clicked', {});
         if (!paymentMethod) {
             setPaymentMethodDialogOpen(true);
         } else {
@@ -170,26 +158,27 @@ const PlanCard: React.FC<{
         }
     }, [paymentMethod]);
 
+    const CTA = card ? PlanFooterButton : PlanFooterCTA;
+    const isUpcoming = isFuture && !!transition;
+
     const ButtonComponent = (() => {
         if (active) {
-            return <PlanFooterCTA label="Current plan" disabled />;
+            return <CTA label={card ? 'Your plan' : 'Current plan'} disabled />;
         }
         if (isFuture) {
-            return <PlanFooterCTA label="Scheduled" disabled />;
+            return <CTA label={isUpcoming ? 'Your upcoming plan' : 'Scheduled'} disabled />;
         }
 
-        // Once the account is on a custom/negotiated plan — Enterprise, or any `hidden` tier (legacy
-        // v1 plans, other old/negotiated plans) — plan changes go through sales rather than
-        // self-serve upgrade/downgrade, even if that plan's own definition would otherwise permit a
-        // move (e.g. legacy Growth's `prevPlan` still lists Free). Every other card routes to
-        // Contact Us instead.
-        const selfServeChange = !activePlan?.hidden && activePlan?.canChange !== false;
+        // A custom or negotiated plan changes through sales, even where its own definition would permit
+        // the move — legacy Growth's `prevPlan` still lists Free.
+        // We hide a migrating account's own card, so `activeIsOffered` is false. It can still downgrade.
+        const selfServeChange = (activeIsOffered || !!transition) && activePlan?.canChange !== false;
 
-        if (isUpgrade && plan.canChange && selfServeChange) {
+        if (!closed && isUpgrade && plan.canChange && selfServeChange) {
             return (
                 <>
                     <PermissionGate asChild condition={canChangePlan}>
-                        {(allowed) => <PlanFooterCTA label="Upgrade" onClick={onUpgradeClicked} disabled={!allowed} />}
+                        {(allowed) => <CTA label="Upgrade" variant="primary" onClick={onUpgradeClicked} disabled={!allowed} />}
                     </PermissionGate>
                     <PaymentMethodDialog
                         open={paymentMethodDialogOpen}
@@ -201,29 +190,92 @@ const PlanCard: React.FC<{
                         onOpenChange={setPlanChangeDialogOpen}
                         selectedPlan={planDefinition}
                         activePlan={activePlan}
+                        newPricing={!!card}
                     />
                 </>
             );
         }
 
-        if (isDowngrade && plan.canChange && selfServeChange) {
+        if (!closed && isDowngrade && plan.canChange && selfServeChange) {
             return (
                 <>
                     <PermissionGate asChild condition={canChangePlan}>
-                        {(allowed) => <PlanFooterCTA label="Downgrade" onClick={() => setPlanChangeDialogOpen(true)} disabled={!allowed} />}
+                        {(allowed) => <CTA label="Downgrade" onClick={() => setPlanChangeDialogOpen(true)} disabled={!allowed} />}
                     </PermissionGate>
                     <PlanChangeDialog
                         open={planChangeDialogOpen}
                         onOpenChange={setPlanChangeDialogOpen}
                         selectedPlan={planDefinition}
                         activePlan={activePlan}
+                        newPricing={!!card}
                     />
                 </>
             );
         }
 
-        return <PlanFooterCTA label={plan.cta ?? 'Contact us'} href="https://nango.dev/demo" target="_blank" />;
+        return <CTA label={plan.cta ?? 'Contact us'} variant="outline" onClick={openSupportChat} />;
     })();
+
+    if (card) {
+        const carriesAddon = isUpcoming && transition.keepsGrowthAddOn;
+        const showsAddon = carriesAddon || (active && plan.code === 'pay-as-you-go');
+        const features = showsAddon || !card.addonTeaser ? card.features : [...card.features, card.addonTeaser];
+
+        return (
+            <Card selected={active || isUpcoming}>
+                <div className="flex flex-col gap-4 p-4 flex-1">
+                    <div className="flex flex-col gap-1">
+                        <span className="text-text-strong text-body-medium-semi">{plan.title}</span>
+                        {card.priceSuffix ? (
+                            <span className="text-text-default type-text-medium-md">
+                                {card.price}
+                                <span className="text-text-secondary type-text-regular-md">{card.priceSuffix}</span>
+                            </span>
+                        ) : (
+                            <span className="text-text-secondary type-text-regular-md">{card.price}</span>
+                        )}
+                        <span className="text-text-muted text-body-small-regular">{card.tagline}</span>
+                    </div>
+                    <Separator />
+                    <ul className="flex flex-col gap-2">
+                        {features.map((feature) => (
+                            <li key={feature} className="flex gap-2 items-baseline">
+                                <span className="text-text-muted text-body-small-regular">&middot;</span>
+                                <span className="text-text-secondary text-body-small-regular">{feature}</span>
+                            </li>
+                        ))}
+                    </ul>
+                    {showsAddon && (
+                        <>
+                            <GrowthAddon
+                                state={carriesAddon ? 'pending-activation' : addonState}
+                                endsAt={endsAt}
+                                onAdd={() => setAddonAction('add')}
+                                onRemove={() => setAddonAction('remove')}
+                                lockedReason={
+                                    !canChangePlan ? PERMISSION_DENIED_REASON : pendingChangeAt ? `Your plan changes on ${pendingChangeAt}.` : undefined
+                                }
+                            />
+                            {addonAction && (
+                                <GrowthAddonDialog planCode={plan.code} action={addonAction} open onOpenChange={(next) => !next && setAddonAction(null)} />
+                            )}
+                        </>
+                    )}
+                </div>
+                <div className="w-full px-4 py-6 flex flex-col gap-3">
+                    {isUpcoming && (
+                        <div className="flex items-center gap-1 text-body-small-regular">
+                            <span className="text-text-secondary">Question about your plan?</span>
+                            <button type="button" onClick={openSupportChat} className="text-text-default cursor-pointer hover:underline">
+                                Contact us
+                            </button>
+                        </div>
+                    )}
+                    {ButtonComponent}
+                </div>
+            </Card>
+        );
+    }
 
     const limits = PLAN_CARD_LIMITS[plan.code];
 
@@ -236,7 +288,6 @@ const PlanCard: React.FC<{
                         <span className="text-text-secondary text-body-medium-regular whitespace-nowrap">${plan.basePrice}/mo</span>
                     )}
                 </div>
-                <ScheduledChangeNotice scheduledChange={scheduledChange ?? null} />
                 {limits ? (
                     limits.map((limit) => (
                         <div key={limit} className="flex gap-2 items-center">
@@ -253,32 +304,29 @@ const PlanCard: React.FC<{
     );
 };
 
-const PlanFooterCTA: React.FC<{
+interface PlanFooterProps {
     label: string;
+    variant?: 'primary' | 'secondary' | 'outline';
     disabled?: boolean;
     onClick?: () => void;
-    href?: string;
-    target?: string;
-}> = ({ label, disabled, onClick, href, target }) => {
+}
+
+/** The design system has no full-width variant and forbids `className`, so the grid does the stretching. */
+const PlanFooterButton: React.FC<PlanFooterProps> = ({ label, variant = 'secondary', disabled, onClick }) => {
+    return (
+        <div className="grid w-full">
+            <Button variant={variant} size="md" disabled={disabled} onClick={onClick}>
+                {label}
+            </Button>
+        </div>
+    );
+};
+
+const PlanFooterCTA: React.FC<PlanFooterProps> = ({ label, disabled, onClick }) => {
     const labelClasses = cn(
         'text-body-medium-medium text-left transition-colors',
         disabled ? 'text-text-disabled' : 'text-text-strong hover:text-text-secondary hover:underline'
     );
-
-    if (href) {
-        return (
-            <div className="flex w-full items-center justify-between gap-2">
-                <a href={href} target={target} rel="noopener noreferrer" className={labelClasses}>
-                    {label}
-                </a>
-                <IconButton asChild variant="secondary" size="sm" label={label}>
-                    <a href={href} target={target} rel="noopener noreferrer">
-                        <ArrowRight />
-                    </a>
-                </IconButton>
-            </div>
-        );
-    }
 
     return (
         <div className="flex w-full items-center justify-between gap-2">
@@ -295,12 +343,17 @@ const PlanFooterCTA: React.FC<{
 const PlanChangeDialog: React.FC<{
     activePlan?: PlanDefinition | null;
     selectedPlan: PlanDefinitionList;
+    newPricing?: boolean;
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
     children?: React.ReactNode;
-}> = ({ activePlan, selectedPlan, open: openProp, onOpenChange, children }) => {
+}> = ({ activePlan, selectedPlan, newPricing, open: openProp, onOpenChange, children }) => {
     const env = useStore((state) => state.env);
-    const { toast } = useToast();
+    const { submit, reset, loading, longWait, error } = usePlanChangeRequest(env);
+
+    const offersAddon = Boolean(newPricing && selectedPlan.isUpgrade && selectedPlan.plan.code === 'pay-as-you-go');
+    const [withAddon, setWithAddon] = useState(false);
+    const wantsAddon = offersAddon && withAddon;
 
     const [internalOpen, setInternalOpen] = useState(false);
     const isControlled = openProp !== undefined;
@@ -311,165 +364,64 @@ const PlanChangeDialog: React.FC<{
                 setInternalOpen(value);
             }
             if (!value) {
-                setError(null);
+                reset();
+                setWithAddon(false);
             }
             onOpenChange?.(value);
         },
-        [isControlled, onOpenChange]
+        [isControlled, onOpenChange, reset]
     );
 
-    const { mutateAsync: postPlanChange } = useApiPostPlanChange(env);
+    const code = selectedPlan.plan.code;
+    const onConfirm = async () => {
+        const done = selectedPlan.isUpgrade
+            ? await submit({
+                  orbId: code,
+                  withGrowthFeatures: wantsAddon,
+                  settled: (plan) => plan.name === code && plan.has_growth_features === wantsAddon,
+                  successTitle: `Upgraded successfully to ${selectedPlan.plan.title}`
+              })
+            : await submit({
+                  orbId: code,
+                  withGrowthFeatures: false,
+                  settled: (plan) => plan.orb_future_plan === code,
+                  successTitle: `Downgraded successfully to ${selectedPlan.plan.title}`
+              });
 
-    const [loading, setLoading] = useState(false);
-    const [longWait, setLongWait] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const refInterval = useRef<NodeJS.Timeout>();
-
-    /**
-     * Extracts a `card_error` from the Stripe error or fallback to `defaultError`.
-     *
-     * @param error - The `StripeError` object returned from `confirmCardPayment`
-     * @param defaultError - Fallback message when the error type is not user-actionable
-     * @returns `card_error` message if present, otherwise the `defaultError`
-     */
-    const getStripeCardErrorOrDefault = (error: StripeError, defaultError: string = 'An error occurred while validating your payment.') => {
-        switch (error.type) {
-            case 'card_error':
-                return error.message ?? defaultError;
-            default:
-                return defaultError;
+        if (done) {
+            setOpen(false);
         }
     };
 
-    const onUpgrade = async () => {
-        if (!selectedPlan?.plan.code) {
-            return;
-        }
-
-        setLoading(true);
-        setLongWait(false);
-        setError(null);
-
-        let json: Awaited<ReturnType<typeof postPlanChange>>;
-        try {
-            json = await postPlanChange({ orbId: selectedPlan.plan.code });
-        } catch {
-            setLoading(false);
-            setError('An error occurred. Please try again.');
-            return;
-        }
-
-        if ('paymentIntent' in json.data) {
-            const stripe = await stripePromise;
-            if (!stripe) {
-                setLoading(false);
-                setError('Payment processor failed to load. Please refresh the page and try again.');
-                return;
-            }
-
-            const result = await stripe.confirmCardPayment(json.data.paymentIntent.client_secret);
-            if (result.error) {
-                setLoading(false);
-                setError(getStripeCardErrorOrDefault(result.error));
-                return;
-            } else if (result.paymentIntent.status === 'succeeded') {
-                console.log('payment success', result);
-            }
-        }
-
-        refInterval.current = setInterval(async () => {
-            const json = await fetchCurrentPlan(env).catch(() => null);
-            if (!json) {
-                return;
-            }
-            if (json.data.name !== selectedPlan.plan.code) {
-                setLongWait(true);
-                return;
-            }
-
-            clearInterval(refInterval.current);
-
-            await Promise.all([
-                queryClient.invalidateQueries({ exact: false, queryKey: ['plans'], type: 'all' }),
-                queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) })
-            ]);
-
-            setLongWait(false);
-            setLoading(false);
-
-            toast({ title: `Upgraded successfully to ${selectedPlan.plan.title}`, variant: 'success' });
-        }, 500);
-    };
-
-    const onDowngrade = async () => {
-        if (!selectedPlan?.plan.code) {
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
-
-        try {
-            await postPlanChange({ orbId: selectedPlan.plan.code });
-        } catch {
-            setLoading(false);
-            setError('An error occurred. Please try again.');
-            return;
-        }
-
-        refInterval.current = setInterval(async () => {
-            const json = await fetchCurrentPlan(env).catch(() => null);
-            if (!json) {
-                return;
-            }
-            if (json.data.orb_future_plan !== selectedPlan.plan.code) {
-                setLongWait(true);
-                return;
-            }
-
-            clearInterval(refInterval.current);
-
-            await Promise.all([
-                queryClient.invalidateQueries({ exact: false, queryKey: ['plans'], type: 'all' }),
-                queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) })
-            ]);
-
-            setLongWait(false);
-            setLoading(false);
-
-            toast({ title: `Downgraded successfully to ${selectedPlan.plan.title}`, variant: 'success' });
-        }, 500);
-    };
-
-    useEffect(() => {
-        if (!selectedPlan && refInterval.current) {
-            clearInterval(refInterval.current);
-            setLongWait(false);
-        }
-
-        return () => {
-            if (refInterval.current) {
-                clearInterval(refInterval.current);
-            }
-        };
-    }, [selectedPlan]);
+    const switchesOn = useMemo(() => formatBillingDate(nextUsageResetDate(new Date())), []);
 
     const description = useMemo(() => {
         if (selectedPlan.isUpgrade) {
+            if (newPricing) {
+                // Orb prices every metric in arrears under a plan-level minimum, so there is no base
+                // fee to prorate and the upgrade collects nothing.
+                return `${selectedPlan.plan.title} bills at the end of each month — your usage, or a $${selectedPlan.plan.basePrice} monthly minimum, whichever is higher. Nothing is charged today, and this month's minimum and any add-on are prorated from the day you upgrade.`;
+            }
             return `The ${selectedPlan.plan.title} plan includes a ${selectedPlan.plan.basePrice} monthly base fee, plus additional usage-based charges. When you upgrade, you'll be charged a prorated base fee for the current month.`;
         }
+        if (newPricing) {
+            return `You'll keep ${activePlan?.title ?? 'your current plan'} features until the end of your current billing period. Your plan switches to ${selectedPlan.plan.title} on ${switchesOn}, and your usage will be capped to the ${selectedPlan.plan.title} limits.`;
+        }
         return `Your ${activePlan?.title ? activePlan.title : 'current'} subscription will end at the end of this month and won't renew. Any remaining usage will be billed after the month ends.`;
-    }, [selectedPlan, activePlan]);
+    }, [selectedPlan, activePlan, newPricing, switchesOn]);
+
+    const title =
+        newPricing && !selectedPlan.isUpgrade
+            ? `Downgrade to ${selectedPlan.plan.title}`
+            : `Confirm ${selectedPlan.isUpgrade ? 'upgrade' : 'downgrade'} to ${selectedPlan.plan.title}${newPricing ? '' : ' plan'}`;
+    const confirmLabel = selectedPlan.isUpgrade ? 'Upgrade' : newPricing ? `Downgrade to ${selectedPlan.plan.title}` : 'Downgrade';
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             {children && <DialogTrigger asChild>{children}</DialogTrigger>}
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>
-                        Confirm {selectedPlan.isUpgrade ? 'upgrade' : 'downgrade'} to {selectedPlan.plan.title} plan
-                    </DialogTitle>
+                    <DialogTitle>{title}</DialogTitle>
                     <DialogDescription className="sr-only">{description}</DialogDescription>
                 </DialogHeader>
                 <DialogBody>
@@ -480,11 +432,26 @@ const PlanChangeDialog: React.FC<{
                                 <p className="text-s text-text-muted text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
                             )}
                         </div>
-                        {error && (
-                            <Alert variant="error">
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
+                        {offersAddon && (
+                            <>
+                                <label className="flex gap-3 items-start rounded bg-surface-input-muted border border-dashed border-border-strong p-3 cursor-pointer">
+                                    <Checkbox checked={withAddon} onCheckedChange={(checked) => setWithAddon(checked === true)} className="mt-0.5" />
+                                    <span className="flex flex-col gap-1">
+                                        <span className="text-text-strong text-body-medium-medium">Include {GROWTH_ADDON_COPY.title}</span>
+                                        <span className="text-text-secondary text-body-medium-regular">{GROWTH_ADDON_COPY.price}</span>
+                                        <span className="text-text-secondary text-body-small-regular">{GROWTH_ADDON_COPY.features}</span>
+                                    </span>
+                                </label>
+                                <div className="flex items-baseline justify-between">
+                                    <span className="text-text-strong text-body-medium-medium">Monthly total</span>
+                                    <span className="text-text-strong type-text-medium-md">
+                                        ${(selectedPlan.plan.basePrice ?? 0) + (wantsAddon ? GROWTH_ADDON_PRICE : 0)}
+                                        <span className="text-text-secondary type-text-regular-md">/mo</span>
+                                    </span>
+                                </div>
+                            </>
                         )}
+                        <PlanChangeErrorAlert error={error} />
                     </div>
                 </DialogBody>
                 <DialogFooter>
@@ -493,9 +460,87 @@ const PlanChangeDialog: React.FC<{
                             Cancel
                         </Button>
                     </DialogClose>
-                    <Button variant="primary" size="sm" onClick={selectedPlan.isUpgrade ? onUpgrade : onDowngrade} disabled={loading}>
+                    <Button
+                        variant={newPricing && !selectedPlan.isUpgrade ? 'danger' : 'primary'}
+                        size="sm"
+                        onClick={() => void onConfirm()}
+                        disabled={loading}
+                    >
                         {loading && <Loader className="size-4 animate-spin" />}
-                        {selectedPlan.isUpgrade ? 'Upgrade' : 'Downgrade'}
+                        {confirmLabel}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+const GrowthAddonDialog: React.FC<{
+    planCode: PlanDefinition['code'];
+    action: 'add' | 'remove';
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+}> = ({ planCode, action, open, onOpenChange }) => {
+    const env = useStore((state) => state.env);
+    const { submit, reset, loading, error } = usePlanChangeRequest(env);
+    const endsOn = useMemo(() => formatBillingDate(nextUsageResetDate(new Date())), []);
+
+    const setOpen = (value: boolean) => {
+        if (!value) {
+            reset();
+        }
+        onOpenChange(value);
+    };
+
+    const onConfirm = async () => {
+        const done =
+            action === 'add'
+                ? await submit({
+                      orbId: planCode,
+                      withGrowthFeatures: true,
+                      settled: (plan) => plan.has_growth_features,
+                      successTitle: `${GROWTH_ADDON_COPY.title} added`
+                  })
+                : await submit({
+                      orbId: planCode,
+                      withGrowthFeatures: false,
+                      successTitle: `${GROWTH_ADDON_COPY.title} will be removed on ${endsOn}`
+                  });
+
+        if (done) {
+            onOpenChange(false);
+        }
+    };
+
+    const description =
+        action === 'add'
+            ? `The ${GROWTH_ADDON_COPY.title} is ${GROWTH_ADDON_COPY.price.replace('/mo', '')} per month, billed alongside your plan. Nothing is charged today — a prorated amount lands on your next invoice, then the full amount each month from ${endsOn}.`
+            : `You'll keep Growth features until the end of your current billing period. The add-on is removed on ${endsOn}, and you won't be charged for it moving forward.`;
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>
+                        {action === 'add' ? 'Confirm' : 'Remove'} {GROWTH_ADDON_COPY.title}
+                    </DialogTitle>
+                    <DialogDescription className="sr-only">{description}</DialogDescription>
+                </DialogHeader>
+                <DialogBody>
+                    <div className="flex flex-col gap-4">
+                        <p className="text-text-secondary text-sm">{description}</p>
+                        <PlanChangeErrorAlert error={error} />
+                    </div>
+                </DialogBody>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline" size="sm">
+                            Cancel
+                        </Button>
+                    </DialogClose>
+                    <Button variant={action === 'add' ? 'primary' : 'danger'} size="sm" onClick={() => void onConfirm()} disabled={loading}>
+                        {loading && <Loader className="size-4 animate-spin" />}
+                        {action === 'add' ? `Add ${GROWTH_ADDON_COPY.title}` : `Remove ${GROWTH_ADDON_COPY.title}`}
                     </Button>
                 </DialogFooter>
             </DialogContent>

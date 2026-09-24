@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, errorManager, getProvider, syncEndUserToConnection } from '@nangohq/shared';
+import { configService, ConnectionCreationCappedError, connectionService, getProvider, syncEndUserToConnection } from '@nangohq/shared';
 import { metrics, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
@@ -29,7 +29,7 @@ const paramValidation = z
     })
     .strict();
 
-export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicUnauthenticatedAuthorization>(async (req, res) => {
+export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicUnauthenticatedAuthorization>(async (req, res, next) => {
     const valBody = requireEmptyBody(req);
     if (valBody) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
@@ -182,6 +182,18 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
         void logCtx.info('Unauthenticated connection creation was successful');
         await logCtx.success();
 
+        req.audit = {
+            ...req.audit,
+            connectionUpsert: {
+                operation: updatedConnection.operation,
+                connectionId: updatedConnection.connection.connection_id,
+                providerConfigKey: updatedConnection.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { uuid: environment.uuid, name: environment.name },
+                endUser: res.locals.endUser
+            }
+        };
+
         void connectionCreated(
             {
                 connection: updatedConnection.connection,
@@ -197,7 +209,7 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
             undefined
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider, providerConfigKey: config.unique_key });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -219,8 +231,15 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
             await logCtx.failed();
         }
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'NONE', ...(config ? { provider: config.provider } : {}) });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+            auth_mode: 'NONE',
+            ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+        });
 
-        errorManager.handleGenericError(err, req, res);
+        if (err instanceof ConnectionCreationCappedError) {
+            res.status(err.status).send({ error: { code: 'resource_capped', message: err.message } });
+            return;
+        }
+        next(err);
     }
 });

@@ -13,7 +13,7 @@ export type PutRecurring = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Body: {
-        schedule: { name: string; state: 'STARTED' | 'PAUSED' | 'DELETED' } | { name: string; frequencyMs: number };
+        schedule: { name: string; state: 'STARTED' | 'PAUSED' | 'DELETED'; preserveIfPaused?: boolean } | { name: string; frequencyMs: number };
     };
     Error: ApiError<'put_recurring_failed'>;
     Success: { scheduleId: string };
@@ -24,7 +24,8 @@ const bodySchema = z
         schedule: z.union([
             z.object({
                 name: z.string().min(1),
-                state: z.union([z.literal('STARTED'), z.literal('PAUSED'), z.literal('DELETED')])
+                state: z.union([z.literal('STARTED'), z.literal('PAUSED'), z.literal('DELETED')]),
+                preserveIfPaused: z.boolean().optional().default(false)
             }),
             z.object({
                 name: z.string().min(1),
@@ -43,7 +44,11 @@ const handler = (scheduler: Scheduler) => {
         const { schedule } = res.locals.parsedBody;
         let updatedSchedule;
         if ('state' in schedule) {
-            updatedSchedule = await scheduler.setScheduleState({ scheduleName: schedule.name, state: schedule.state });
+            updatedSchedule = await scheduler.setScheduleState({
+                scheduleName: schedule.name,
+                state: schedule.state,
+                preserveIfPaused: schedule.preserveIfPaused ?? false
+            });
         }
         if ('frequencyMs' in schedule) {
             updatedSchedule = await scheduler.setScheduleFrequency({ scheduleName: schedule.name, frequencyMs: schedule.frequencyMs });

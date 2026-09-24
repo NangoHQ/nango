@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import { seeders, userService } from '@nangohq/shared';
@@ -14,9 +14,11 @@ describe('authz integration', () => {
     beforeAll(async () => {
         api = await runServer();
         flags.hasAuthRoles = true;
+        // The audit-trail route is entitlement-gated too; keep it on so these cases exercise authz, not the gate.
     });
     afterAll(() => {
         api.server.close();
+        vi.restoreAllMocks();
     });
     afterEach(() => {
         flags.hasAuthRoles = true;
@@ -24,7 +26,7 @@ describe('authz integration', () => {
 
     // ── Helpers ──────────────────────────────────────────────
     async function seedAccountWithProdEnv() {
-        const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
+        const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true, has_audit_trail_access: true } });
         // Create a production environment
         const prodEnv = await seeders.createEnvironmentSeed(account.id, 'prod');
         await db.knex.from<DBEnvironment>('_nango_environments').where({ id: prodEnv.id }).update({ is_production: true });
@@ -517,10 +519,9 @@ describe('authz integration', () => {
             const devUser = await createUserWithRole(account.id, 'development_full_access');
             const session = await authenticateUser(api, devUser);
 
-            // @ts-expect-error authz test — /sync not in endpoint types
             const res = await api.fetch('/api/v1/sync', {
                 method: 'GET',
-                query: { env: 'prod' },
+                query: { env: 'prod', connection_id: 'conn', provider_config_key: 'github' },
                 session
             });
 

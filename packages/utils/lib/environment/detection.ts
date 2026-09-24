@@ -2,6 +2,7 @@ import { localhostUrl, NodeEnv } from './constants.js';
 
 export const baseUrl = process.env['NANGO_SERVER_URL'] || localhostUrl;
 export const basePublicUrl = process.env['NANGO_PUBLIC_SERVER_URL'] || baseUrl;
+export const dashboardApiUrl = process.env['NANGO_DASHBOARD_API_URL'] || baseUrl;
 export const connectUrl = process.env['NANGO_PUBLIC_CONNECT_URL'] || 'http://localhost:3009';
 
 export const isDocker = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED';
@@ -21,7 +22,10 @@ export const env = isStaging ? NodeEnv.Staging : isProd ? NodeEnv.Prod : NodeEnv
 export const useS3 = Boolean(
     (process.env['AWS_INTEGRATIONS_REGION'] && process.env['AWS_INTEGRATIONS_BUCKET_NAME']) || (process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME'])
 );
-export const integrationFilesAreRemote = isEnterprise && useS3;
+export const useGcs = Boolean(process.env['GCS_INTEGRATIONS_BUCKET_NAME']);
+export const useAzure = Boolean(process.env['AZURE_INTEGRATIONS_ACCOUNT_NAME'] && process.env['AZURE_INTEGRATIONS_CONTAINER_NAME']);
+export const useRemoteStorage = useS3 || useGcs || useAzure;
+export const integrationFilesAreRemote = isEnterprise && useRemoteStorage;
 
 export const flagHasScripts = isLocal || isEnterprise || isCloud || isTest;
 export const flagHasAuth = process.env['FLAG_AUTH_ENABLED'] !== 'false';
@@ -36,5 +40,6 @@ export const flagEnforceCLIVersion = process.env['FLAG_ENFORCE_CLI_VERSION'] ===
 // It's an object because we want to be able to mock it in tests
 export const flags = {
     hasAdminCapabilities: Boolean(process.env['NANGO_ADMIN_UUID']),
-    hasAuthRoles: process.env['FLAG_AUTH_ROLES_ENABLED'] === 'true'
+    hasAuthRoles: process.env['FLAG_AUTH_ROLES_ENABLED'] === 'true',
+    hasAuditTrail: process.env['FLAG_AUDIT_TRAIL_ENABLED'] === 'true'
 };

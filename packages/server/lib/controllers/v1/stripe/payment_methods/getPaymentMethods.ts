@@ -41,7 +41,10 @@ export const getStripePaymentMethods = asyncWrapper<GetStripePaymentMethods>(asy
         data: list.data.map((p) => {
             return {
                 id: p.id,
-                last4: p.card!.last4
+                brand: p.card!.brand,
+                last4: p.card!.last4,
+                expMonth: p.card!.exp_month,
+                expYear: p.card!.exp_year
             };
         })
     });

@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { connectionService, connectionTagsSchema } from '@nangohq/shared';
-import { zodErrorToHTTP } from '@nangohq/utils';
+import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToPublicApi } from '../../formatters/connection.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
@@ -31,8 +31,12 @@ export const getPublicConnections = asyncWrapperWithEnvironment<GetPublicConnect
         return;
     }
 
-    const { environment } = res.locals;
+    const { account, environment } = res.locals;
     const queryParam = queryParamValues.data;
+
+    if (queryParam.search) {
+        metrics.increment(metrics.Types.CONNECTIONS_SEARCH_PARAM_USED, 1, { accountId: account.id });
+    }
 
     const connections = await connectionService.listConnections({
         environmentId: environment.id,

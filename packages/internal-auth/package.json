@@ -1,0 +1,29 @@
+{
+    "name": "@nangohq/internal-auth",
+    "version": "1.0.0",
+    "description": "Internal service auth for Nango control-plane HTTP",
+    "type": "module",
+    "main": "./dist/index.js",
+    "typings": "./dist/index.d.ts",
+    "private": true,
+    "scripts": {},
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/internal-auth"
+    },
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "dependencies": {
+        "@nangohq/utils": "file:../utils"
+    },
+    "devDependencies": {
+        "@nangohq/types": "file:../types",
+        "@types/express": "5.0.2",
+        "express": "5.1.0",
+        "vitest": "4.1.9"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}

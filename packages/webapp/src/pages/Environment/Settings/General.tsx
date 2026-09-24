@@ -1,14 +1,13 @@
-import { ExternalLink, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
+import { Alert, AlertDescription, Input } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { ButtonLink } from '@/components/ui/ButtonLink';
+import { CopyButton } from '@/components/ui/CopyButton';
 import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -19,6 +18,7 @@ import { useDeleteEnvironment, useEnvironment, usePatchEnvironment } from '../..
 import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
 import { DeleteButton } from './components/DeleteButton';
+import { DocsIconLink } from './components/DocsIconLink';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 
@@ -38,8 +38,8 @@ export const General: React.FC = () => {
     const { mutateAsync: deleteEnvironmentAsync } = useDeleteEnvironment(env);
 
     const { can } = usePermissions();
-    const canEditEnvironment = !environment?.is_production || can(permissions.canWriteProdEnvironment);
-    const canToggleIsProduction = can(permissions.canToggleIsProduction);
+    const canEditEnvironment = can('environment:settings:update');
+    const canToggleIsProduction = can('account:environments:set_production');
 
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
@@ -92,7 +92,7 @@ export const General: React.FC = () => {
                             <AlertDescription>
                                 <span>
                                     When using the CLI for custom functions, add this to your .env:{' '}
-                                    <code className="font-mono text-sm font-semibold">
+                                    <code className="text-text-strong">
                                         NANGO_SECRET_KEY_{env.toUpperCase()}={'<secret-key>'}
                                     </code>
                                     .
@@ -103,13 +103,23 @@ export const General: React.FC = () => {
                 </div>
             </SettingsGroup>
 
+            <SettingsGroup label="Environment ID">
+                <div className="relative">
+                    <Input value={environmentAndAccount?.environment.uuid ?? ''} disabled className="font-mono bg-surface-canvas text-text-muted pr-10" />
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+                        <CopyButton text={environmentAndAccount?.environment.uuid ?? ''} />
+                    </div>
+                </div>
+            </SettingsGroup>
+
             <SettingsGroup
                 label={
                     <div className="flex items-center gap-1.5">
                         <span>Production environment</span>
-                        <ButtonLink to="https://nango.dev/docs/guides/platform/environments#production-environments" size="2xs" variant="ghost" target="_blank">
-                            <ExternalLink />
-                        </ButtonLink>
+                        <DocsIconLink
+                            href="https://nango.dev/docs/guides/platform/environments#production-environments"
+                            label="Production environments documentation"
+                        />
                     </div>
                 }
             >

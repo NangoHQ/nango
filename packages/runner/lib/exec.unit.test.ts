@@ -40,6 +40,32 @@ function getNangoProps(): NangoProps {
 }
 
 describe('Exec', () => {
+    it('executes a function', async () => {
+        const nangoProps = {
+            ...getNangoProps(),
+            scriptType: 'function' as const,
+            syncId: undefined,
+            syncJobId: undefined,
+            variant: 'canary',
+            syncConfig: { sync_name: 'my-function' } as DBSyncConfig
+        };
+        const code = `
+        exports.default = {
+            type: 'function',
+            exec: async (nango, trigger) => ({ kind: trigger.kind, value: trigger.input.value, variant: nango.getVariant() })
+        }
+        `;
+        const trigger = {
+            kind: 'invoke',
+            input: { value: 42 },
+            connection: { connectionId: 'connection-id', integrationId: 'provider-config-key' }
+        };
+
+        const res = await exec({ nangoProps, code, codeParams: trigger });
+
+        expect(res.unwrap().output).toEqual({ kind: 'invoke', value: 42, variant: 'canary' });
+    });
+
     it('execute code', async () => {
         const nangoProps = getNangoProps();
         const code = `

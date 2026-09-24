@@ -1,3 +1,10 @@
-_No pre-built syncs or actions available yet._
+### Others
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-note` | Retrieve a single meeting note, optionally with its transcript inlined. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/granola/actions/get-note.ts) |
+| `get-transcript` | Retrieve a meeting transcript in pages - use when get-note's inline transcript is too large, or to page through a transcript directly. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/granola/actions/get-transcript.ts) |
+| `list-folders` | List folders, including their parent/child hierarchy. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/granola/actions/list-folders.ts) |
+| `list-notes` | List meeting notes visible to the API key, with date and folder filtering. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/granola/actions/list-notes.ts) |
+| `folders` | Sync folders (id, name, parent hierarchy) | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/granola/syncs/folders.ts) |
+| `notes` | Sync meeting notes (metadata, summary, attendees, folder/space membership - not the transcript) | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/granola/syncs/notes.ts) |

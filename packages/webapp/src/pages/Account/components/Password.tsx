@@ -5,7 +5,7 @@ import z from 'zod';
 
 import { FieldDescription, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
-import { FormControl, FormItem, FormMessage, useFormField } from '@/components/ui/Form';
+import { FormControl, FormItem, FormLabel, FormMessage, useFormField } from '@/components/ui/Form';
 import { cn } from '@/utils/utils';
 
 import type { InputProps } from '@nangohq/design-system';
@@ -13,11 +13,12 @@ import type { InputProps } from '@nangohq/design-system';
 export const passwordSchema = z
     .string()
     .min(12, 'Password must be at least 12 characters')
+    .max(64, 'Password must be 64 characters or fewer')
     .refine((value) => /[A-Z]/.test(value), 'Password must contain at least one uppercase letter')
     .refine((value) => /[0-9]/.test(value), 'Password must contain at least one number')
     .refine((value) => /[^a-zA-Z0-9]/.test(value), 'Password must contain at least one special character');
 
-export const Password: React.FC<InputProps> = (props) => {
+export const Password: React.FC<InputProps & { label?: string }> = ({ label, ...props }) => {
     const { name } = useFormField();
     const { control } = useFormContext();
     const { field, fieldState } = useController({ name, control });
@@ -28,7 +29,7 @@ export const Password: React.FC<InputProps> = (props) => {
 
     const checks = useMemo(
         () => ({
-            length: value.length >= 12,
+            length: value.length >= 12 && value.length <= 64,
             uppercase: value.match(/[A-Z]/) !== null,
             number: value.match(/[0-9]/) !== null,
             special: value.match(/[^a-zA-Z0-9]/) !== null
@@ -38,11 +39,11 @@ export const Password: React.FC<InputProps> = (props) => {
 
     return (
         <FormItem>
-            <FormControl>
-                <InputGroup>
+            {label && <FormLabel>{label}</FormLabel>}
+            <InputGroup>
+                <FormControl>
                     <InputGroupInput
                         {...field}
-                        id={field.name}
                         type="password"
                         placeholder="Password"
                         aria-invalid={!!fieldState.error}
@@ -52,8 +53,8 @@ export const Password: React.FC<InputProps> = (props) => {
                         }}
                         {...props}
                     />
-                </InputGroup>
-            </FormControl>
+                </FormControl>
+            </InputGroup>
             <FormMessage />
 
             <div
@@ -61,7 +62,7 @@ export const Password: React.FC<InputProps> = (props) => {
                 className={cn('flex flex-col gap-1.5 overflow-hidden transition-[max-height] duration-200 ease-out', open ? 'max-h-40' : 'max-h-0 absolute')}
             >
                 <FieldDescription>Password must contain:</FieldDescription>
-                <Requirement text="At least 12 characters" check={checks.length} />
+                <Requirement text="12–64 characters" check={checks.length} />
                 <Requirement text="At least one uppercase letter" check={checks.uppercase} />
                 <Requirement text="At least one number" check={checks.number} />
                 <Requirement text="At least one special character" check={checks.special} />

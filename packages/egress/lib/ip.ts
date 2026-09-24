@@ -229,3 +229,39 @@ export function isBlockedIpLiteral(hostname: string, options: { blockPrivateIps:
     }
     return null;
 }
+
+/** IPv4 CIDRs matching {@link classifyBlockedIpv4}. Used for Kubernetes NetworkPolicy `ipBlock.except`. */
+export const BLOCKED_IPV4_CIDRS = {
+    private: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10'],
+    linkLocal: ['169.254.0.0/16'],
+    metadata: ['169.254.169.254/32']
+} as const;
+
+/**
+ * CIDRs to except from `0.0.0.0/0` so CNI enforcement matches the JS outbound policy.
+ * Always includes cloud-metadata; private and link-local ranges follow the policy flags.
+ * Denylist IPv4 literals are added as /32s so the hostname list and the except list cannot drift.
+ */
+export function ipv4ExceptCidrsForNetworkPolicy(policy: { blockPrivateIps: boolean; blockLinkLocal: boolean; denylist: Iterable<string> }): string[] {
+    const cidrs = new Set<string>(BLOCKED_IPV4_CIDRS.metadata);
+
+    if (policy.blockLinkLocal) {
+        for (const cidr of BLOCKED_IPV4_CIDRS.linkLocal) {
+            cidrs.add(cidr);
+        }
+    }
+    if (policy.blockPrivateIps) {
+        for (const cidr of BLOCKED_IPV4_CIDRS.private) {
+            cidrs.add(cidr);
+        }
+    }
+
+    for (const host of policy.denylist) {
+        const canonical = canonicalizeHostnameForDenylist(host);
+        if (net.isIP(canonical) === 4) {
+            cidrs.add(`${canonical}/32`);
+        }
+    }
+
+    return [...cidrs].sort();
+}

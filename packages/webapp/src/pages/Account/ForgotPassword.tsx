@@ -5,9 +5,8 @@ import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
 import { useToast } from '@/hooks/useToast';
 import { useRequestPasswordResetAPI } from '../../hooks/useAuth';
@@ -59,7 +58,7 @@ export default function Signin() {
             <h2 className="text-title-group text-text-strong">Request password reset</h2>
 
             {serverErrorMessage && (
-                <Alert variant="error">
+                <Alert variant="danger">
                     <CircleX />
                     <AlertDescription>{serverErrorMessage}</AlertDescription>
                 </Alert>

@@ -1,4 +1,3 @@
-import { permissions } from '@nangohq/authz';
 import { FieldLabel } from '@nangohq/design-system';
 
 import { ScopesInput } from '@/components/patterns/ScopesInput';
@@ -7,18 +6,15 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 
-import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
+import type { GetIntegration } from '@nangohq/types';
 
-export const OAuth2CCSettings: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({
-    data: { integration, template },
-    environment
-}) => {
+export const OAuth2CCSettings: React.FC<{ data: GetIntegration['Success']['data'] }> = ({ data: { integration, template } }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
 
     const { can } = usePermissions();
-    const canEdit = !environment.is_production || can(permissions.canWriteProdIntegrations);
+    const canEdit = can('environment:integrations:update');
 
     const isSharedCredentials = Boolean(integration.shared_credentials_id);
 

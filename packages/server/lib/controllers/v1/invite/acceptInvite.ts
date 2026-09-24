@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
-import { acceptInvitation, getInvitation, userService } from '@nangohq/shared';
-import { normalizeEmail, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { acceptInvitation, getInvitation, userService, validateInvitation } from '@nangohq/shared';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
@@ -30,14 +30,14 @@ export const acceptInvite = asyncWrapper<AcceptInvite>(async (req, res) => {
 
     const { user } = res.locals;
     const data: AcceptInvite['Params'] = val.data;
-    const invitation = await getInvitation(data.id);
-    if (!invitation || normalizeEmail(invitation.email) !== normalizeEmail(user.email)) {
-        res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exist or is expired' } });
+    const invitation = validateInvitation(await getInvitation(data.id), user.email);
+    if (invitation.isErr()) {
+        res.status(400).send({ error: { code: invitation.error.code, message: invitation.error.message } });
         return;
     }
 
     await acceptInvitation(data.id);
-    const updated = await userService.update({ id: user.id, account_id: invitation.account_id, role: invitation.role });
+    const updated = await userService.update({ id: user.id, account_id: invitation.value.account_id, role: invitation.value.role });
     if (!updated) {
         res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
         return;

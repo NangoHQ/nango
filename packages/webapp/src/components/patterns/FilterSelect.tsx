@@ -220,7 +220,7 @@ const FilterValuePane: React.FC<{
                             }}
                             className={cn(
                                 searchable
-                                    ? 'mb-1 h-8 w-full rounded border-[0.5px] border-border-muted bg-surface-canvas pr-8 pl-2.5 text-body-medium-regular text-text-strong outline-none placeholder:text-text-muted'
+                                    ? 'mb-1 h-8 w-full rounded border-[0.5px] border-border-muted bg-surface-canvas pr-8 pl-2.5 text-body-medium-regular text-text-strong outline-none placeholder:text-text-placeholder'
                                     : 'sr-only'
                             )}
                         />

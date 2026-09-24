@@ -84,21 +84,21 @@ export async function createPreprovisionedProviderConfigSeed(
     unique_key: string,
     providerName: string,
     shared_credentials_name?: string,
-    rest?: Partial<IntegrationConfig>
+    options?: { rest?: Partial<IntegrationConfig>; shared_credentials_app_link?: string }
 ): Promise<IntegrationConfig> {
     const provider = getProvider(providerName);
     if (!provider) {
         throw new Error(`createPreprovisionedProviderSeed: ${providerName} provider not found`);
     }
 
-    const sharedCredentials = await createSharedCredentialsSeed(shared_credentials_name ?? providerName);
+    const sharedCredentials = await createSharedCredentialsSeed(shared_credentials_name ?? providerName, options?.shared_credentials_app_link);
 
     const created = await configService.createProviderConfig(
         {
             unique_key,
             provider: providerName,
             environment_id: env.id,
-            ...rest,
+            ...options?.rest,
             forward_webhooks: true,
             shared_credentials_id: sharedCredentials.id
         },
@@ -110,11 +110,12 @@ export async function createPreprovisionedProviderConfigSeed(
     return created;
 }
 
-export async function createSharedCredentialsSeed(providerName: string): Promise<DBSharedCredentials> {
+export async function createSharedCredentialsSeed(providerName: string, app_link?: string): Promise<DBSharedCredentials> {
     const credentials = {
         oauth_client_id: 'test',
         oauth_client_secret: 'test',
-        oauth_scopes: 'test'
+        oauth_scopes: 'test',
+        ...(app_link ? { app_link } : {})
     };
 
     // Create shared credentials

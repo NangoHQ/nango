@@ -1,15 +1,49 @@
 import { describe, expect, it } from 'vitest';
 
-import { getPlanDefinition } from './definitions.js';
-import { mergeFlags } from './plans.js';
+import { getPlanDefinition, plansList } from './definitions.js';
+import { getGrowthAddonFlags, mergeFlags } from './plans.js';
 
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
 describe('mergeFlags', () => {
+    it('restores growth feature flags to the plan defaults when the add-on is disabled', () => {
+        const definition = getPlanDefinition('pay-as-you-go')!;
+
+        expect(getGrowthAddonFlags(definition, true)).toMatchObject({
+            has_otel: true,
+            has_rbac: true,
+            can_override_docs_connect_url: true,
+            can_customize_connect_ui_theme: true,
+            can_disable_connect_ui_watermark: true
+        });
+        expect(getGrowthAddonFlags(definition, false)).toMatchObject({
+            has_otel: false,
+            has_rbac: false,
+            can_override_docs_connect_url: false,
+            can_customize_connect_ui_theme: false,
+            can_disable_connect_ui_watermark: false
+        });
+    });
+
+    it('should cap only connections, function runtime and data transfer on the free plan', () => {
+        expect(getPlanDefinition('free')?.flags).toMatchObject({
+            connections_max: 10,
+            function_duration_seconds_max: 36_000,
+            records_max: null,
+            proxy_max: null,
+            function_executions_max: null,
+            function_compute_gbms_max: null,
+            webhook_forwards_max: null,
+            function_logs_max: null,
+            data_transfer_max: 10_000_000_000
+        });
+    });
+
     it('should enable RBAC by default on free-uncapped, startup-deal, growth, growth-v2 and enterprise plans', () => {
         expect(getPlanDefinition('free')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('starter')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('starter-v2')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('pay-as-you-go')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('starter-legacy')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('scale-legacy')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('growth-legacy')?.flags.has_rbac).toBe(false);
@@ -21,8 +55,22 @@ describe('mergeFlags', () => {
         expect(getPlanDefinition('startup-deal')?.flags.has_rbac).toBe(true);
     });
 
+    it('should enable control-plane audit trail ingestion by default on every plan but free', () => {
+        expect(getPlanDefinition('free')?.flags.has_audit_trail_control_plane).toBe(false);
+        for (const plan of plansList.filter((p) => p.code !== 'free')) {
+            expect(plan.flags.has_audit_trail_control_plane, plan.code).toBe(true);
+        }
+    });
+
+    it('should not grant the audit trail UI on any plan, since it is enabled per account by hand', () => {
+        for (const plan of plansList) {
+            expect(plan.flags.has_audit_trail_access, plan.code).toBeUndefined();
+        }
+    });
+
     describe.each([
         { from: 'starter-v2', to: 'free' },
+        { from: 'pay-as-you-go', to: 'free' },
         { from: 'growth-v2', to: 'starter-v2' },
         { from: 'enterprise-cloud-hosted', to: 'free' },
         { from: 'enterprise-cloud-hosted', to: 'starter-v2' },
@@ -47,7 +95,9 @@ describe('mergeFlags', () => {
                     environments_max: 99,
                     api_rate_limit_size: 'xl',
                     has_otel: true,
-                    proxy_max: 99_999_999
+                    proxy_max: 99_999_999,
+                    has_audit_trail_control_plane: true,
+                    has_audit_trail_access: true
                 }
             });
             const newPlanDefinition = getPlanDefinition(to)!;
@@ -57,6 +107,9 @@ describe('mergeFlags', () => {
             });
 
             expect(newFlags).toMatchObject(newPlanDefinition.flags);
+            // No plan grants the audit trail UI, so it is absent from the merge and the column keeps
+            // whatever was set by hand — unlike every other flag, a downgrade does not revoke it.
+            expect(newFlags).not.toHaveProperty('has_audit_trail_access');
         });
     });
 
@@ -67,6 +120,8 @@ describe('mergeFlags', () => {
         { from: 'starter-legacy', to: 'starter-v2' }, // migration
         { from: 'starter', to: 'growth-v2' }, // upgrade and migration
         { from: 'starter-legacy', to: 'growth-v2' } // upgrade and migration
+        // NOTE: pay-as-you-go is deliberately absent: its add-on-gated flags are recomputed rather than
+        // merged, so the "keep more generous overrides" rule does not hold for them. Covered below.
     ] as { from: PlanDefinition['code']; to: PlanDefinition['code'] }[])('when upgrading/migrating from $from to $to', ({ from, to }) => {
         it('should apply new plan defaults if no overrides', () => {
             const currentPlan = makePlan({ code: from, flagOverrides: {} });
@@ -86,7 +141,9 @@ describe('mergeFlags', () => {
                     api_rate_limit_size: '2xl',
                     proxy_max: 99_999_999,
                     auto_idle: true,
-                    can_disable_connect_ui_watermark: false
+                    can_disable_connect_ui_watermark: false,
+                    has_audit_trail_control_plane: false,
+                    has_audit_trail_access: true
                 }
             });
             const newPlanDefinition = getPlanDefinition(to)!;
@@ -99,21 +156,147 @@ describe('mergeFlags', () => {
                 ...newPlanDefinition.flags,
                 environments_max: 50, // Keep override
                 has_otel: true, // Keep override
-                api_rate_limit_size: '2xl' // Keep override
+                api_rate_limit_size: '2xl', // Keep override
+                has_audit_trail_control_plane: true // New plan grants it, so a paid plan always ends up recording
                 // proxy_max: new plan more generous default (null)
                 // auto_idle: new plan more generous default (false)
                 // can_disable_connect_ui_watermark: new plan more generous default (true)
             });
+            expect(newFlags).not.toHaveProperty('has_audit_trail_access');
         });
+    });
+
+    describe.each([{ from: 'free' }, { from: 'starter-v2' }, { from: 'growth-v2' }] as { from: PlanDefinition['code'] }[])(
+        'when moving from $from to pay-as-you-go',
+        ({ from }) => {
+            const payAsYouGo = getPlanDefinition('pay-as-you-go')!;
+
+            it('should apply the plan defaults for the gated flags when no add-on is active', () => {
+                const newFlags = mergeFlags({
+                    currentPlan: makePlan({ code: from, flagOverrides: {} }),
+                    newPlanDefinition: payAsYouGo
+                });
+                expect(newFlags).toMatchObject({
+                    has_otel: false,
+                    has_rbac: false,
+                    can_override_docs_connect_url: false,
+                    can_customize_connect_ui_theme: false,
+                    can_disable_connect_ui_watermark: false
+                });
+            });
+
+            it('should keep a higher limit the source plan carries', () => {
+                const newFlags = mergeFlags({
+                    currentPlan: makePlan({ code: from, flagOverrides: {} }),
+                    newPlanDefinition: payAsYouGo
+                });
+                const source = getPlanDefinition(from)!;
+                expect(newFlags.environments_max).toBe(Math.max(source.flags.environments_max ?? 0, payAsYouGo.flags.environments_max ?? 0));
+            });
+
+            it('should keep overrides on flags the growth add-on does not gate', () => {
+                const currentPlan = makePlan({ code: from, flagOverrides: { environments_max: 50, api_rate_limit_size: '2xl' } });
+                const newFlags = mergeFlags({ currentPlan, newPlanDefinition: payAsYouGo });
+                expect(newFlags).toMatchObject({ environments_max: 50, api_rate_limit_size: '2xl' });
+            });
+
+            it('should revoke add-on-gated flags when no add-on is active, override or not', () => {
+                const currentPlan = makePlan({ code: from, flagOverrides: { has_otel: true, has_rbac: true, can_customize_connect_ui_theme: true } });
+                const newFlags = mergeFlags({ currentPlan, newPlanDefinition: payAsYouGo });
+
+                expect(newFlags).toMatchObject({ has_otel: false, has_rbac: false, can_customize_connect_ui_theme: false });
+            });
+
+            it('should grant the growth feature set when the add-on is active', () => {
+                const newFlags = mergeFlags({
+                    currentPlan: makePlan({ code: from, flagOverrides: {}, hasGrowthFeatures: true }),
+                    newPlanDefinition: payAsYouGo
+                });
+
+                expect(newFlags).toMatchObject({
+                    has_otel: true,
+                    has_rbac: true,
+                    can_customize_connect_ui_theme: true,
+                    can_override_docs_connect_url: true,
+                    can_disable_connect_ui_watermark: true
+                });
+            });
+        }
+    );
+
+    it('should leave every other plan untouched by the add-on pass', () => {
+        // Enterprise grants the same features directly, so it must not be affected by add-on state
+        const enterprise = getPlanDefinition('enterprise')!;
+        const currentPlan = makePlan({ code: 'growth-v2', flagOverrides: { has_rbac: true, has_otel: true } });
+
+        expect(mergeFlags({ currentPlan, newPlanDefinition: enterprise })).toEqual(
+            mergeFlags({ currentPlan: { ...currentPlan, has_growth_features: true }, newPlanDefinition: enterprise })
+        );
     });
 });
 
-function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides: PlanDefinition['flags'] }): DBPlan {
+describe('self-serve transitions', () => {
+    const starter = getPlanDefinition('starter-v2')!;
+    const growth = getPlanDefinition('growth-v2')!;
+
+    it('should not offer a move between the sunset starter-v2 and growth-v2 plans', () => {
+        expect(starter.nextPlan).not.toContain('growth-v2');
+        expect(starter.prevPlan).not.toContain('growth-v2');
+        expect(growth.nextPlan).not.toContain('starter-v2');
+        expect(growth.prevPlan).not.toContain('starter-v2');
+    });
+
+    it('should keep the moves off a sunset plan that stay open', () => {
+        expect(starter.prevPlan).toContain('free');
+        expect(starter.nextPlan).toContain('enterprise');
+        expect(growth.prevPlan).toContain('free');
+        expect(growth.nextPlan).toContain('enterprise');
+    });
+
+    it.each(['starter-v2', 'growth-v2', 'starter', 'growth', 'starter-legacy', 'scale-legacy', 'growth-legacy'] as DBPlan['name'][])(
+        'should mark %s retired',
+        (code) => {
+            expect(getPlanDefinition(code)?.retired).toBe(true);
+        }
+    );
+
+    it.each(['free', 'free-uncapped', 'pay-as-you-go', 'startup-deal', 'enterprise', 'enterprise-cloud-hosted'] as DBPlan['name'][])(
+        'should leave %s on sale',
+        (code) => {
+            expect(getPlanDefinition(code)?.retired ?? false).toBe(false);
+        }
+    );
+
+    it('should keep pay-as-you-go out of the legacy card set', () => {
+        expect(getPlanDefinition('pay-as-you-go')?.hidden).toBe(true);
+    });
+
+    it('should not offer retired plans to new accounts', () => {
+        expect(getPlanDefinition('free')?.nextPlan).not.toContain('starter-v2');
+        expect(getPlanDefinition('free')?.nextPlan).not.toContain('growth-v2');
+        expect(getPlanDefinition('free')?.nextPlan).toContain('pay-as-you-go');
+        expect(starter.retired).toBe(true);
+        expect(growth.retired).toBe(true);
+    });
+});
+
+function makePlan({
+    code,
+    flagOverrides,
+    hasGrowthFeatures = false
+}: {
+    code: DBPlan['name'];
+    flagOverrides: PlanDefinition['flags'];
+    hasGrowthFeatures?: boolean;
+}): DBPlan {
     const defaultPlanDefinition = getPlanDefinition(code)!;
     return {
         id: 1,
         account_id: 1,
         name: code,
+        has_growth_features: hasGrowthFeatures,
+        growth_features_starts_at: null,
+        growth_features_ends_at: null,
         created_at: new Date(),
         updated_at: new Date(),
         stripe_customer_id: null,
@@ -137,6 +320,8 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         has_webhooks_forward: false,
         has_webhooks_script: false,
         has_rbac: false,
+        has_audit_trail_control_plane: false,
+        has_audit_trail_access: false,
         can_customize_connect_ui_theme: false,
         can_override_docs_connect_url: false,
         can_disable_connect_ui_watermark: false,
@@ -146,20 +331,23 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         proxy_max: null,
         function_executions_max: null,
         function_compute_gbms_max: null,
+        function_duration_seconds_max: null,
         webhook_forwards_max: null,
         function_logs_max: null,
+        data_transfer_max: null,
         sync_function_runtime: 'runner',
         sync_lambda_checkpoint_required: true,
         action_function_runtime: 'runner',
         webhook_function_runtime: 'runner',
         on_event_function_runtime: 'runner',
+        function_runtime: 'lambda',
         has_records_autopruning: true,
         variants_per_sync_max: 100,
         fleet_node_routing_override: null,
         records_store: 'default',
         lambda_tenant_isolation: defaultPlanDefinition.flags.lambda_tenant_isolation ?? false,
         export_runner_telemetry: defaultPlanDefinition.flags.export_runner_telemetry ?? false,
-        ...defaultPlanDefinition,
+        ...defaultPlanDefinition.flags,
         ...flagOverrides
     };
 }

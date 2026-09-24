@@ -17,6 +17,9 @@
             "path": "packages/egress"
         },
         {
+            "path": "packages/internal-auth"
+        },
+        {
             "path": "packages/utils"
         },
         {
@@ -66,6 +69,9 @@
         },
         {
             "path": "packages/orchestrator"
+        },
+        {
+            "path": "packages/oauth-server"
         },
         {
             "path": "packages/server"

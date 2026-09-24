@@ -1,0 +1,103 @@
+---
+title: 'CDW'
+sidebarTitle: 'CDW'
+description: 'Integrate your application with the CDW API'
+---
+
+<Note>
+CDW's API access is self-serve through their [developer portal](https://portal.apiconnect.cdw.com/): anyone can sign up, subscribe to a product, and generate a subscription key — see the [setup guide](/api-integrations/cdw/connect) below.
+</Note>
+
+## 🚀 Quickstart
+
+Connect to CDW with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _CDW_.
+    </Step>
+    <Step title="Authorize CDW">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your subscription key (leave **Environment** on production unless you subscribed via CDW's PreProd sandbox). Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the CDW API">
+    Let's make your first request to the CDW API. This example creates a customer order (`POST /v1/customers/orders`) — swap in the endpoint for the product(s) you subscribed to if different. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+    <Warning>
+    This creates a real order if `customerId` matches a customer registered in your CDW account and CDW's schema validation accepts the rest of the payload — the placeholders below are rejected before that happens, but don't swap in real values here. For a safe test, connect to CDW's PreProd sandbox (pick **Environment** on the Connect form) or use a `customerId` your account team set up specifically for testing.
+    </Warning>
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/customers/orders" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{ "orderHeader": { "customerId": "...", "orderId": "...", "orderDate": "2026-01-01", "orderAmount": "1.00", "currency": "USD" }, "orderLines": [] }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/v1/customers/orders',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                orderHeader: { customerId: '...', orderId: '...', orderDate: '2026-01-01', orderAmount: '1.00', currency: 'USD' },
+                orderLines: []
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 CDW Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my CDW account?](/api-integrations/cdw/connect)
+  Sign up on the CDW developer portal, subscribe to a product, and connect your subscription key to Nango
+
+Official docs: [CDW API Management developer portal](https://portal.apiconnect.cdw.com/)
+
+## 🧩 Pre-built syncs & actions for CDW
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/cdw/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- CDW's gateway (Azure API Management) automatically rotates subscription keys every 30 days. If requests start failing with an authentication error, generate a new subscription key from the [developer portal](https://portal.apiconnect.cdw.com/) and update your Nango connection.
+- Available products/endpoints depend on what you subscribed to in the developer portal (for example, the **Customers** product exposes the Customer Order API at `/v1/customers/orders`). CDW also runs a separate PreProd sandbox (`apiconnect.preprod.cdw.com`) with its own products and subscription keys — pick **Environment** on the Connect form (or set `baseUrl` in the connection config) to switch between production and PreProd.
+- Creating a real order additionally requires a `customerId` that CDW's account team has registered for you — an unrecognized `customerId` is rejected with `"statusCode": "REJECTED"` before anything is processed.
+
+---

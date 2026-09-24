@@ -1,44 +1,11 @@
-import * as z from 'zod/v4';
-
 import { makeAuditTarget } from '../../../audit.js';
-import {
-    integrationCredentialsSchema,
-    integrationDisplayNameSchema,
-    integrationForwardWebhooksSchema,
-    providerConfigKeySchema,
-    providerSchema
-} from '../../../helpers/validation.js';
 import integrationService from '../../../services/integration.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { createIntegrationServiceErrorToMcp } from './errors.js';
 import { integrationToMcp } from './formatter.js';
-import { createIntegrationsOutputSchema } from './schema.js';
+import { createIntegrationArgumentsSchema, createIntegrationsOutputSchema } from './schema.js';
 
 import type { CreateIntegrationsOutput } from './schema.js';
-
-const createIntegrationBaseArguments = {
-    provider: providerSchema,
-    integration_id: providerConfigKeySchema,
-    display_name: integrationDisplayNameSchema,
-    forward_webhooks: integrationForwardWebhooksSchema
-};
-
-const createIntegrationArgumentsSchema = z.discriminatedUnion('credential_source', [
-    z
-        .object({
-            ...createIntegrationBaseArguments,
-            credential_source: z.literal('nango')
-        })
-        .strict(),
-    z
-        .object({
-            ...createIntegrationBaseArguments,
-            credential_source: z.literal('own'),
-            credentials: integrationCredentialsSchema.optional(),
-            integration_config: z.record(z.string(), z.string().max(8192)).optional()
-        })
-        .strict()
-]);
 
 export const createIntegrationsTool = defineManagementMcpTool<typeof createIntegrationArgumentsSchema, CreateIntegrationsOutput>({
     name: 'integrations_create',
@@ -60,7 +27,7 @@ export const createIntegrationsTool = defineManagementMcpTool<typeof createInteg
         idempotentHint: false,
         openWorldHint: false
     },
-    async handler({ args, environment }) {
+    async handler({ args, environment, account }) {
         const result = await integrationService.create({
             environmentId: environment.id,
             provider: args.provider,
@@ -69,7 +36,9 @@ export const createIntegrationsTool = defineManagementMcpTool<typeof createInteg
             displayName: args.display_name,
             forwardWebhooks: args.forward_webhooks,
             ...('credentials' in args ? { credentials: args.credentials } : {}),
-            ...('integration_config' in args ? { integrationConfig: args.integration_config } : {})
+            ...('integration_config' in args ? { integrationConfig: args.integration_config } : {}),
+            environment,
+            team: account
         });
 
         return result

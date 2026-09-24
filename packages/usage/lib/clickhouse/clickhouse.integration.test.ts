@@ -19,7 +19,7 @@ describe('Clickhouse', () => {
         const cleanupClient = clickhouseClient();
         await cleanupClient?.command({ query: `DROP DATABASE IF EXISTS ${database}` });
         await cleanupClient?.close();
-        await migrate({ database });
+        (await migrate({ database })).unwrap();
     };
 
     describe('should ingest and retrieve usage', () => {
@@ -95,7 +95,7 @@ describe('Clickhouse', () => {
                     attributes: { egressedBytes: 1000, ingressedBytes: 0, package: 'runner', callsite: 'proxy' },
                     value: 1000
                 }),
-                // day 1: 2 events × 500 bytes via server = 1000 bytes
+                // day 1: ingress via a billable callsite is observed but not billed.
                 ...genEventsN({
                     n: 2,
                     date: dayFromNow(1),
@@ -103,6 +103,14 @@ describe('Clickhouse', () => {
                     accountId,
                     attributes: { egressedBytes: 0, ingressedBytes: 500, package: 'server', callsite: 'proxy' },
                     value: 500
+                }),
+                // Non-billable callsites are observed but not billed even when egressing.
+                genEvent({
+                    date: dayFromNow(),
+                    type: 'usage.data_transfer',
+                    accountId,
+                    value: 9_999,
+                    attributes: { egressedBytes: 9_999, ingressedBytes: 0, package: 'runner', callsite: 'persist_system_logs' }
                 }),
                 // different account (must be excluded)
                 ...genEventsN({
@@ -227,7 +235,7 @@ describe('Clickhouse', () => {
                 });
             });
 
-            it('function_logs and function_compute_gbms expose their per-metric quantity', async () => {
+            it('function_logs, function_compute_gbms, and function_duration_seconds expose their per-metric quantities', async () => {
                 const logs = await clickhouse.getDailyCounter({ accountId, metric: 'function_logs', dimension: 'none', timeframe: { start, end } });
                 expect(logs.unwrap()).toStrictEqual({
                     accountId,
@@ -260,6 +268,37 @@ describe('Clickhouse', () => {
                         }
                     ]
                 });
+
+                const duration = await clickhouse.getDailyCounter({
+                    accountId,
+                    metric: 'function_duration_seconds',
+                    dimension: 'function_type',
+                    timeframe: { start, end }
+                });
+                expect(duration.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'function_duration_seconds',
+                    series: [
+                        {
+                            dimension: 'function_type',
+                            dimensionValue: 'action',
+                            days: [{ day: dayFromNow(1), value: 1 }]
+                        },
+                        {
+                            dimension: 'function_type',
+                            dimensionValue: 'sync',
+                            days: [
+                                { day: dayFromNow(), value: 1 },
+                                { day: dayFromNow(1), value: 1 }
+                            ]
+                        },
+                        {
+                            dimension: 'function_type',
+                            dimensionValue: 'webhook',
+                            days: [{ day: dayFromNow(1), value: 1 }]
+                        }
+                    ]
+                });
             });
 
             it('webhook_forwards aggregates per-day successes and failures', async () => {
@@ -279,7 +318,12 @@ describe('Clickhouse', () => {
             });
 
             it('data_transfer, no dimension', async () => {
-                const res = await clickhouse.getDailyCounter({ accountId, metric: 'data_transfer', dimension: 'none', timeframe: { start, end } });
+                const res = await clickhouse.getDailyCounter({
+                    accountId,
+                    metric: 'data_transfer',
+                    dimension: 'none',
+                    timeframe: { start, end }
+                });
                 expect(res.unwrap()).toStrictEqual({
                     accountId,
                     metric: 'data_transfer',
@@ -287,28 +331,33 @@ describe('Clickhouse', () => {
                         {
                             days: [
                                 { day: dayFromNow(), value: 3000 },
-                                { day: dayFromNow(1), value: 1000 }
+                                { day: dayFromNow(1), value: 0 }
                             ]
                         }
                     ]
                 });
             });
 
-            it('data_transfer broken down by package', async () => {
-                const res = await clickhouse.getDailyCounter({ accountId, metric: 'data_transfer', dimension: 'package', timeframe: { start, end } });
+            it('data_transfer broken down by source', async () => {
+                const res = await clickhouse.getDailyCounter({
+                    accountId,
+                    metric: 'data_transfer',
+                    dimension: 'source',
+                    timeframe: { start, end }
+                });
                 expect(res.unwrap()).toStrictEqual({
                     accountId,
                     metric: 'data_transfer',
                     series: [
                         {
-                            dimension: 'package',
-                            dimensionValue: 'runner',
+                            dimension: 'source',
+                            dimensionValue: 'runner.proxy',
                             days: [{ day: dayFromNow(), value: 3000 }]
                         },
                         {
-                            dimension: 'package',
-                            dimensionValue: 'server',
-                            days: [{ day: dayFromNow(1), value: 1000 }]
+                            dimension: 'source',
+                            dimensionValue: 'server.proxy',
+                            days: [{ day: dayFromNow(1), value: 0 }]
                         }
                     ]
                 });
@@ -528,6 +577,17 @@ describe('Clickhouse', () => {
         });
 
         describe('getTopDimensionValues', () => {
+            it('only returns billable data-transfer sources', async () => {
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId,
+                    metric: 'data_transfer',
+                    dimension: 'source',
+                    timeframe: { start, end },
+                    page: 0
+                });
+                expect(res.unwrap().values).toEqual(['runner.proxy', 'server.proxy']);
+            });
+
             it('returns dimension values ordered by SUM(value) DESC', async () => {
                 // records fixture: integrationId=a → 1000+1100+1100=3200; b → 500+500=1000.
                 const res = await clickhouse.getTopDimensionValues({
@@ -787,7 +847,7 @@ describe('Clickhouse', () => {
             const client = clickhouseClient();
             await client?.command({ query: `DROP DATABASE IF EXISTS ${dedupDatabase}` });
             await client?.close();
-            await migrate({ database: dedupDatabase });
+            (await migrate({ database: dedupDatabase })).unwrap();
 
             // Plain ReplacingMergeTree has block dedup disabled by default
             // (non_replicated_deduplication_window=0). CH Cloud's SharedReplacingMergeTree
@@ -914,6 +974,7 @@ describe('Clickhouse', () => {
             expect(usage.function_executions?.total).toBe(3);
             expect(usage.function_logs?.total).toBe(15); // SUM(custom_logs) = 3 * 5
             expect(usage.function_compute_gbms?.total).toBe(300); // SUM(duration_ms) = 3 * 100
+            expect(usage.function_duration_seconds?.total).toBe(3); // SUM(ceil(duration_ms / 1000)) = 3 * 1
             expect(usage.webhook_forwards?.total).toBe(5);
 
             // AVG metrics aren't in the response — capping reads connections/records from Postgres.

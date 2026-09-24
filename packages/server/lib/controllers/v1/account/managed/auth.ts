@@ -1,12 +1,12 @@
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService } from '@nangohq/shared';
-import { basePublicUrl, flagHasUsage, nanoid, normalizeEmail, report } from '@nangohq/utils';
+import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService, validateInvitation } from '@nangohq/shared';
+import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
+import { isOAuthConsentReturnTo, safeReturnTo } from '../returnTo.js';
 
-import type { InviteAccountState } from './postSignup.js';
 import type { DBInvitation, DBTeam } from '@nangohq/types';
 import type { User, WorkOS } from '@workos-inc/node';
 import type { Request, Response } from 'express';
@@ -36,13 +36,30 @@ interface ManagedAuthVerificationRequiredError {
     };
 }
 
+export interface InviteAccountState {
+    token?: string;
+    returnTo?: string;
+}
+
+export function encodeManagedAuthState(state: InviteAccountState): string {
+    const value = state.token ? { token: state.token } : state.returnTo ? { returnTo: state.returnTo } : null;
+    return value ? Buffer.from(JSON.stringify(value)).toString('base64') : '';
+}
+
 export function parseManagedAuthState(state: string): InviteAccountState | null {
     try {
-        const res = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
-        if (!res || !(typeof res === 'object') || !('token' in res)) {
+        const res = JSON.parse(Buffer.from(state, 'base64').toString('utf8')) as unknown;
+        if (!res || !(typeof res === 'object')) {
             return null;
         }
-        return res as InviteAccountState;
+        const candidate = res as Record<string, unknown>;
+        if (candidate['token'] !== undefined && typeof candidate['token'] !== 'string') return null;
+        if (candidate['returnTo'] !== undefined && typeof candidate['returnTo'] !== 'string') return null;
+        if (candidate['token'] === undefined && candidate['returnTo'] === undefined) return null;
+        return {
+            ...(typeof candidate['token'] === 'string' ? { token: candidate['token'] } : {}),
+            ...(typeof candidate['returnTo'] === 'string' ? { returnTo: safeReturnTo(candidate['returnTo']) } : {})
+        };
     } catch {
         return null;
     }
@@ -120,16 +137,29 @@ export async function finalizeManagedAuthentication({
     const state = parseManagedAuthState(encodedState || '');
     let invitation: DBInvitation | null = null;
     if (state?.token) {
-        invitation = await getInvitation(state.token);
-        if (!invitation || normalizeEmail(invitation.email) !== normalizeEmail(authorizedUser.email)) {
-            res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exist or is expired' } });
+        const validatedInvitation = validateInvitation(await getInvitation(state.token), authorizedUser.email);
+        if (validatedInvitation.isErr()) {
+            res.status(400).send({ error: { code: validatedInvitation.error.code, message: validatedInvitation.error.message } });
             return;
         }
+        invitation = validatedInvitation.value;
     }
 
     let isNewTeam = true;
     let isNewUser = false;
     let user = await userService.getUserByEmail(authorizedUser.email);
+    // Google identifies the user at this point. An OAuth consent request may only continue for an
+    // existing Nango user, so stop before the normal managed-auth flow creates an account.
+    if (!user && isOAuthConsentReturnTo(state?.returnTo)) {
+        clearManagedAuthEmailVerification(req);
+        req.audit = { ...req.audit, managedSignup: false };
+
+        const signinUrl = new URL('/signin', basePublicUrl);
+        signinUrl.searchParams.set('error', 'oauth_signup_not_allowed');
+        signinUrl.searchParams.set('next', state.returnTo);
+        respondWithSuccess(res, signinUrl.href, responseMode);
+        return;
+    }
     if (!user) {
         isNewUser = true;
         let account: DBTeam;
@@ -202,7 +232,7 @@ export async function finalizeManagedAuthentication({
 
     clearManagedAuthEmailVerification(req);
 
-    let destination = '/';
+    let destination = state?.token ? '/' : (state?.returnTo ?? '/');
     try {
         if (invitation && isNewUser) {
             // New user with an invitation: created directly in the invited team, auto-accept and proceed
@@ -210,8 +240,8 @@ export async function finalizeManagedAuthentication({
         } else if (invitation) {
             // Existing user with an invitation: let them explicitly accept or decline on the invite page
             destination = `/signup/${invitation.token}`;
-        } else if (isNewUser) {
-            // New user without an invitation: redirect to account discovery onboarding
+        } else if (user.account_discovery_pending && (!state?.returnTo || state.returnTo === '/')) {
+            // Only reaching onboarding clears the flag, so a destination defers this to the next sign-in.
             destination = '/onboarding/account-discovery';
         }
     } catch (err) {
@@ -232,7 +262,7 @@ export async function finalizeManagedAuthentication({
         return;
     }
 
-    req.auditManagedSignup = isNewUser;
+    req.audit = { ...req.audit, managedSignup: isNewUser };
 
     respondWithSuccess(res, `${basePublicUrl}${destination}`, responseMode);
 }

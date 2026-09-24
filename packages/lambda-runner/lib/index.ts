@@ -129,7 +129,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
             return;
         }
 
-        const res = await jobsClient.postHeartbeat({ taskId: request.taskId });
+        const res = await jobsClient.postHeartbeat({ taskId: request.taskId, internalAuthToken: request.internalAuthToken });
         if (res.isOk()) {
             lastSuccessHeartbeatAt = Date.now();
         }
@@ -169,17 +169,22 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
         const checkpoints = execRes.isErr() ? execRes.error.checkpoints : execRes.value.checkpoints;
         telemetryBag.durationMs = Date.now() - startTime;
         telemetryBag.memoryGb = Number(context.memoryLimitInMB) / 1024;
-        await jobsClient.putTask({
+        const putRes = await jobsClient.putTask({
             taskId: request.taskId,
             nangoProps: request.nangoProps as unknown as NangoProps,
             functionRuntime: 'lambda',
             telemetryBag,
             checkpoints,
+            internalAuthToken: request.internalAuthToken,
             ...(execRes.isErr() ? { error: execRes.error.toJSON() } : { output: execRes.value.output as any })
         });
+        if (putRes.isErr()) {
+            logger.error('Failed to report task result, task will be left to expire', { error: putRes.error, taskId: request.taskId });
+        }
     } catch (err: any) {
-        await jobsClient.putTask({
+        const putRes = await jobsClient.putTask({
             taskId: request.taskId,
+            internalAuthToken: request.internalAuthToken,
             error: {
                 type: 'function_internal_error',
                 payload: {
@@ -195,6 +200,9 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
             },
             functionRuntime: 'lambda'
         });
+        if (putRes.isErr()) {
+            logger.error('Failed to report task failure, task will be left to expire', { error: putRes.error, taskId: request.taskId });
+        }
     } finally {
         clearInterval(heartbeat);
         clearInterval(abort);

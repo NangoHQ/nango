@@ -1,0 +1,47 @@
+name: 'Deploy preview'
+description: 'Upload a built static site to the shared preview bucket under previews/<slug>/ and invalidate it on CloudFront.'
+
+inputs:
+    role:
+        description: 'IAM role to assume via GitHub OIDC'
+        required: true
+    region:
+        description: 'AWS region'
+        required: true
+    bucket:
+        description: 'Preview S3 bucket name'
+        required: true
+    distribution_id:
+        description: 'CloudFront distribution serving the preview bucket'
+        required: true
+    slug:
+        description: 'Preview slug — also the host label the CloudFront function maps back to previews/<slug>/'
+        required: true
+    dist_path:
+        description: 'Local directory holding the built site'
+        required: true
+
+runs:
+    using: composite
+    steps:
+        - name: Configure AWS credentials
+          uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+          with:
+              role-to-assume: ${{ inputs.role }}
+              role-session-name: GitHub_to_AWS_via_FederatedOIDC
+              aws-region: ${{ inputs.region }}
+
+        - name: Deploy to S3
+          shell: bash
+          env:
+              BUCKET: ${{ inputs.bucket }}
+              SLUG: ${{ inputs.slug }}
+              DIST_PATH: ${{ inputs.dist_path }}
+          run: aws s3 sync --delete "$DIST_PATH" "s3://$BUCKET/previews/$SLUG/"
+
+        - name: Create CloudFront invalidation
+          shell: bash
+          env:
+              DISTRIBUTION_ID: ${{ inputs.distribution_id }}
+              SLUG: ${{ inputs.slug }}
+          run: aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/previews/$SLUG/*"

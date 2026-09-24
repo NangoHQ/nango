@@ -4,7 +4,9 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useInterval } from 'react-use';
 
-import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Alert, AlertDescription } from '@nangohq/design-system';
+
+import { CopyButton } from '@/components/ui/CopyButton';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useGetOperation } from '../../../hooks/useLogs';
@@ -38,6 +40,9 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         // We keep refreshing N seconds after end to catch logs that could be indexed after the operation is done
         return !operation || !operation.endedAt || new Date(operation.endedAt).getTime() > Date.now() - 160_000;
     }, [operation]);
+
+    const sessionId = operation?.actor?.kind === 'session' ? operation.actor.id : null;
+    const isAgentToolCall = sessionId !== null && operation?.operation.type === 'action';
 
     const payload = useMemo(() => {
         if (!operation?.meta && !operation?.request && !operation?.response) {
@@ -91,7 +96,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
     if (error || !operation) {
         return (
             <div className="py-6 px-6 flex flex-col gap-9">
-                <Alert variant="error">
+                <Alert variant="danger">
                     <AlertDescription>An error occurred</AlertDescription>
                 </Alert>
             </div>
@@ -123,7 +128,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Type</div>
                     <div className="text-text-muted text-xs pt-px">
-                        <OperationTag message={operation.message} operation={operation.operation} />
+                        <OperationTag message={operation.message} operation={operation.operation} actor={operation.actor} />
                     </div>
                 </div>
             </div>
@@ -165,9 +170,21 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                 </div>
                 <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
                 <div className="flex gap-2 items-center max-w-[30%]">
-                    <div className="font-semibold text-sm">Script</div>
+                    <div className="font-semibold text-sm">{isAgentToolCall ? 'Tool' : 'Script'}</div>
                     <div className="text-text-muted text-s pt-px truncate">{operation.syncConfigName ? operation.syncConfigName : 'n/a'}</div>
                 </div>
+                {sessionId && (
+                    <>
+                        <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
+                        <div className="flex gap-2 items-center max-w-[30%]">
+                            <div className="font-semibold text-sm">Session</div>
+                            <div className="flex gap-1 items-center text-text-muted text-s font-code truncate">
+                                <div className="truncate">{sessionId}</div>
+                                <CopyButton text={sessionId} />
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
             <div className="">
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>

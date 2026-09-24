@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, getInvitation, pbkdf2, userService } from '@nangohq/shared';
+import { acceptInvitation, accountService, getInvitation, pbkdf2, userService, validateInvitation } from '@nangohq/shared';
 import { flagHasUsage, PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -72,19 +72,19 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     let invitationRole: Role = envs.DEFAULT_USER_ROLE;
     if (token) {
         // Invitation signup
-        const validToken = await getInvitation(token);
-        if (!validToken) {
-            res.status(400).send({ error: { code: 'invalid_invite_token', message: 'The token used was found to be invalid.' } });
+        const invitation = validateInvitation(await getInvitation(token), email);
+        if (invitation.isErr()) {
+            res.status(400).send({ error: { code: invitation.error.code, message: invitation.error.message } });
             return;
         }
 
-        account = await accountService.getAccountById(db.knex, validToken.account_id);
+        account = await accountService.getAccountById(db.knex, invitation.value.account_id);
         if (!account) {
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to get team' } });
             return;
         }
 
-        invitationRole = validToken.role;
+        invitationRole = invitation.value.role;
         await acceptInvitation(token);
     } else {
         if (!envs.AUTH_ALLOW_SIGNUP) {

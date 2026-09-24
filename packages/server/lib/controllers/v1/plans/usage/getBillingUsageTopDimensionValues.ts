@@ -19,6 +19,7 @@ const metricBranches = {
     function_executions: z.object({ metric: z.literal('function_executions'), dimension: z.enum(BREAKDOWN_DIMENSIONS.function_executions) }),
     function_logs: z.object({ metric: z.literal('function_logs'), dimension: z.enum(BREAKDOWN_DIMENSIONS.function_logs) }),
     function_compute_gbms: z.object({ metric: z.literal('function_compute_gbms'), dimension: z.enum(BREAKDOWN_DIMENSIONS.function_compute_gbms) }),
+    function_duration_seconds: z.object({ metric: z.literal('function_duration_seconds'), dimension: z.enum(BREAKDOWN_DIMENSIONS.function_duration_seconds) }),
     webhook_forwards: z.object({ metric: z.literal('webhook_forwards'), dimension: z.enum(BREAKDOWN_DIMENSIONS.webhook_forwards) }),
     records: z.object({ metric: z.literal('records'), dimension: z.enum(BREAKDOWN_DIMENSIONS.records) }),
     connections: z.object({ metric: z.literal('connections'), dimension: z.enum(BREAKDOWN_DIMENSIONS.connections) }),

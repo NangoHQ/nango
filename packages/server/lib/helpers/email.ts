@@ -9,6 +9,12 @@ export function sanitizeEmailSubject(subject: string): string {
     return subject.replace(/[\r\n]+/g, ' ');
 }
 
+// Encoding matters: URLSearchParams.get() turns "+" into a space, so a plus-addressed email
+// would come back malformed and the dashboard would silently drop the prefill.
+export function buildInvitePrefillUrl(email: string): string {
+    return `${basePublicUrl}/team-settings?invite_email=${encodeURIComponent(email)}`;
+}
+
 export async function sendVerificationEmail(email: string, name: string, token: string) {
     const emailClient = EmailClient.getInstance();
     await emailClient.send(
@@ -90,6 +96,7 @@ export async function sendAccountInvitationRequestEmail({
     requester: Pick<DBUser, 'name' | 'email'>;
 }) {
     const emailClient = EmailClient.getInstance();
+    const inviteUrl = buildInvitePrefillUrl(requester.email);
     await emailClient.send(
         email,
         sanitizeEmailSubject(`${requester.name} wants to join "${account.name}" on Nango`),
@@ -97,7 +104,9 @@ export async function sendAccountInvitationRequestEmail({
 
 <p><strong>${he.encode(requester.name)}</strong> (${he.encode(requester.email)}) has requested to join <strong>${he.encode(account.name)}</strong> on Nango.</p>
 
-<p>Their email address has been verified. To invite them, go to <a href="${basePublicUrl}/team-settings">Team Settings</a>.</p>
+<p>Their email address has been verified.</p>
+
+<p><a href="${he.encode(inviteUrl)}">Invite them to your team</a></p>
 
 <p>Best,<br>
 Team Nango</p>
@@ -140,6 +149,55 @@ export async function sendTrialHasExpired({ user }: { user: Pick<DBUser, 'name' 
 <p>We idle syncs & actions because they use dedicated infrastructure, which is too costly to run indefinitely on free plans. <a href="https://app.nango.dev/prod/team/billing">Upgrade</a> to prevent auto idling forever.</p>
 
 <p>Need help or have questions? Join us in the <a href="https://nango.dev/slack">Slack community</a>!</p>
+
+<p>Best,<br>
+Team Nango</p>
+            `
+    );
+}
+
+function formatAmount(amountInCents: number, currency: string | null): string {
+    const amount = amountInCents / 100;
+    const code = (currency ?? '').trim().toUpperCase();
+    // Intl throws on anything that isn't a currency code, and Orb also reports the literal `credits`.
+    if (!/^[A-Z]{3}$/.test(code)) {
+        return amount.toFixed(2);
+    }
+
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: code }).format(amount);
+}
+
+/** In UTC: billing period boundaries are UTC instants, so a local-time formatter can name the wrong day. */
+function formatPeriodEnd(date: Date): string {
+    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+}
+
+export async function sendSpendAlertEmail({
+    email,
+    accountName,
+    thresholdInCents,
+    currency,
+    periodEnd
+}: {
+    email: string;
+    accountName: string;
+    thresholdInCents: number;
+    currency: string | null;
+    periodEnd: Date;
+}) {
+    const emailClient = EmailClient.getInstance();
+    const threshold = formatAmount(thresholdInCents, currency);
+
+    await emailClient.send(
+        email,
+        sanitizeEmailSubject(`Nango spend for "${accountName}" has passed ${threshold}`),
+        `<p>Hi,</p>
+
+<p>Spend for <strong>${he.encode(accountName)}</strong> has passed its ${he.encode(threshold)} spend alert. The current billing period ends on ${he.encode(formatPeriodEnd(periodEnd))}, and usage keeps accruing until then.</p>
+
+<p>See the breakdown on the <a href="${basePublicUrl}/team/billing">billing page</a>.</p>
+
+<p>This alert goes to the billing contacts and admins on the account. The threshold can be changed or removed from the same page.</p>
 
 <p>Best,<br>
 Team Nango</p>

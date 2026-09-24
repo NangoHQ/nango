@@ -1,0 +1,100 @@
+---
+title: 'Chili Piper (MCP)'
+sidebarTitle: 'Chili Piper (MCP)'
+description: 'Connect AI tools to Chili Piper via the Model Context Protocol (MCP) to manage users, routing rules, distributions, and meetings'
+---
+
+## 🚀 Quickstart
+
+Connect to the Chili Piper MCP server with Nango and call MCP tools in minutes. Chili Piper MCP uses OAuth 2.0 with **dynamic client registration**, so no app registration is required — just an Admin account on a paid Chili Piper plan.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Chili Piper (MCP)_.
+    </Step>
+    <Step id="authorize-chili-piper" title="Authorize Chili Piper">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Chili Piper as an Admin. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-chili-piper-mcp" title="Call a Chili Piper MCP tool">
+    Make your first MCP request (initialize handshake). Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {
+                        "name": "nango-client",
+                        "version": "1.0.0"
+                    }
+                }
+            }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'initialize',
+                params: {
+                    protocolVersion: '2024-11-05',
+                    capabilities: {},
+                    clientInfo: {
+                        name: 'nango-client',
+                        version: '1.0.0'
+                    }
+                }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Chili Piper (MCP) guides
+
+Nango uses **dynamic client registration** with Chili Piper's MCP OAuth server. You do not need to register an application — just create the integration in Nango and authorize with an Admin account on a paid Chili Piper plan.
+
+<Note>
+Chili Piper's MCP server exposes tools that can modify production data (creating users, adjusting distributions, cancelling meetings, deleting rules). Review each tool call before letting it run against a production account.
+
+For automation or CI use cases, or to call Chili Piper's REST endpoints directly instead of through MCP, see the [Chili Piper](/api-integrations/chili-piper) integration, which authenticates with an API key instead.
+</Note>
+
+Official resources: [How do I connect Chili Piper via MCP?](https://help.chilipiper.com/hc/en-us/articles/50430350863635-How-do-I-connect-Chili-Piper-via-MCP)
+
+---

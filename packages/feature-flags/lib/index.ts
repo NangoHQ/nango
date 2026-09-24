@@ -3,6 +3,7 @@ import { getLogger, metrics } from '@nangohq/utils';
 import { buildFeatureFlagsClient } from './client.js';
 import { envs } from './env.js';
 import { buildFlags } from './flags.js';
+import { EnvProvider } from './providers/env.js';
 import { NoopProvider } from './providers/noop.js';
 import { UnleashProvider } from './providers/unleash.js';
 
@@ -68,6 +69,13 @@ async function createClient(): Promise<FeatureFlagsClient> {
 }
 
 async function buildProvider(): Promise<Provider> {
+    if (envs.NANGO_FLAG_PROVIDER === 'env') {
+        if (envs.NANGO_CLOUD) {
+            logger.warning('NANGO_FLAG_PROVIDER=env is not supported on cloud; using noop provider');
+            return new NoopProvider();
+        }
+        return new EnvProvider();
+    }
     if (envs.NANGO_FLAG_PROVIDER === 'unleash') {
         if (!envs.NANGO_UNLEASH_URL) {
             logger.warning('NANGO_FLAG_PROVIDER=unleash but NANGO_UNLEASH_URL is unset; using noop provider');

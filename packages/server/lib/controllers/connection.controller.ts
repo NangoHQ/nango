@@ -3,6 +3,7 @@ import { envs, logContextGetter } from '@nangohq/logs';
 import {
     accountService,
     configService,
+    ConnectionCreationCappedError,
     connectionService,
     errorManager,
     generateSlackConnectionId,
@@ -13,12 +14,9 @@ import {
 import { flags, zodErrorToHTTP } from '@nangohq/utils';
 
 import { webhookUrlSchema } from '../helpers/validation.js';
+import { noteConnectionUpsert } from '../hooks/auditConnection.js';
 import { preConnectionDeletion } from '../hooks/connection/on/pre-connection-deletion.js';
-import {
-    connectionCreated as connectionCreatedHook,
-    connectionCreationStartCapCheck as connectionCreationStartCapCheckHook,
-    connectionRefreshSuccess
-} from '../hooks/hooks.js';
+import { connectionCreated as connectionCreatedHook, connectionRefreshSuccess } from '../hooks/hooks.js';
 import { slackService } from '../services/slack.js';
 import { requireEnvironment } from '../utils/asyncWrapper.js';
 import { getOrchestrator } from '../utils/utils.js';
@@ -183,7 +181,7 @@ class ConnectionController {
 
     async createConnection(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
-            const { account, plan } = res.locals;
+            const { account } = res.locals;
             const environment = requireEnvironment(req, res);
             if (!environment) {
                 return;
@@ -214,23 +212,6 @@ class ConnectionController {
             }
 
             const providerName = integration.provider;
-
-            if (plan) {
-                const isCapped = await connectionCreationStartCapCheckHook({
-                    creationType: 'import',
-                    team: account,
-                    plan
-                });
-                if (isCapped.capped) {
-                    res.status(400).send({
-                        error: {
-                            code: 'resource_capped',
-                            message: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.'
-                        }
-                    });
-                    return;
-                }
-            }
 
             const provider = getProvider(providerName);
             if (!provider) {
@@ -294,6 +275,14 @@ class ConnectionController {
                 }
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { uuid: environment.uuid, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -358,6 +347,14 @@ class ConnectionController {
                 }
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { uuid: environment.uuid, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -408,12 +405,20 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { uuid: environment.uuid, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
                             environment,
                             account,
-                            auth_mode: 'OAUTH2',
+                            auth_mode: 'OAUTH1',
                             operation: res.operation,
                             endUser: undefined
                         },
@@ -452,6 +457,14 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { uuid: environment.uuid, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -494,6 +507,14 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { uuid: environment.uuid, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -644,6 +665,14 @@ class ConnectionController {
             }
 
             if (updatedConnection && runHook) {
+                noteConnectionUpsert(req, {
+                    operation: updatedConnection.operation,
+                    connectionId: updatedConnection.connection.connection_id,
+                    providerConfigKey: updatedConnection.connection.provider_config_key,
+                    account: { id: account.id, uuid: account.uuid },
+                    environment: { uuid: environment.uuid, name: environment.name },
+                    endUser: undefined
+                });
                 void connectionCreatedHook(
                     {
                         connection: updatedConnection.connection,
@@ -669,6 +698,10 @@ class ConnectionController {
                 connection_id: connectionId
             });
         } catch (err) {
+            if (err instanceof ConnectionCreationCappedError) {
+                res.status(err.status).send({ error: { code: 'resource_capped', message: err.message } });
+                return;
+            }
             next(err);
         }
     }

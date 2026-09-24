@@ -5,7 +5,7 @@ import { DispatchQueuePublisher } from './publisher.js';
 
 import type { PreparedDispatchMessage } from './publisher.js';
 import type { SendMessageBatchCommandOutput, SQSClient } from '@aws-sdk/client-sqs';
-import type { WebhookDispatchMessage } from '@nangohq/types';
+import type { LegacyDispatchMessage } from '@nangohq/types';
 import type { Mock } from 'vitest';
 
 const tracerMocks = vi.hoisted(() => {
@@ -68,7 +68,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
     };
 });
 
-function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookDispatchMessage {
+function buildMessage(overrides: Partial<LegacyDispatchMessage> = {}): LegacyDispatchMessage {
     return {
         version: 1,
         kind: 'webhook',
@@ -90,7 +90,7 @@ function buildPreparedMessage({
     messageOverrides,
     byteSize
 }: {
-    messageOverrides?: Partial<WebhookDispatchMessage>;
+    messageOverrides?: Partial<LegacyDispatchMessage>;
     byteSize?: number;
 } = {}): PreparedDispatchMessage {
     const message = buildMessage(messageOverrides);
@@ -198,7 +198,10 @@ describe('DispatchQueuePublisher', () => {
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedEntries', 0);
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedBatches', 0);
         expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledTimes(1);
-        expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.publish.success', 25, { provider: 'github' });
+        expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.publish.success', 25, {
+            provider: 'github',
+            providerConfigKey: 'github-dev'
+        });
         expect(tracerMocks.span.finish).toHaveBeenCalledTimes(1);
     });
 
@@ -220,6 +223,20 @@ describe('DispatchQueuePublisher', () => {
         await publisher.publish([first, second], groupId);
         expect(seen).toEqual([groupId, groupId]);
         expect(bodies).toEqual([JSON.stringify(first.message), JSON.stringify(second.message)]);
+    });
+
+    it('sets a per-message delay when requested', async () => {
+        const seen: Array<number | undefined> = [];
+        const { sqs } = makeSqsMock((cmd) => {
+            seen.push(...(cmd.input.Entries ?? []).map((entry) => entry.DelaySeconds));
+            return successfulBatchResponse(cmd);
+        });
+        const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
+        const delayed = { ...buildPreparedMessage(), delaySeconds: 7 };
+
+        await publisher.publish([delayed, buildPreparedMessage()], 'account:1:env:2');
+
+        expect(seen).toEqual([7, undefined]);
     });
 
     it('splits batches when cumulative bytes exceed the SQS request limit', async () => {
@@ -311,8 +328,14 @@ describe('DispatchQueuePublisher', () => {
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.partialFailure', true);
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('error', expect.any(Error));
         expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledTimes(2);
-        expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.publish.success', 2, { provider: 'github' });
-        expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.publish.failure', 1, { provider: 'github' });
+        expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.publish.success', 2, {
+            provider: 'github',
+            providerConfigKey: 'github-dev'
+        });
+        expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.publish.failure', 1, {
+            provider: 'github',
+            providerConfigKey: 'github-dev'
+        });
         expect(tracerMocks.span.finish).toHaveBeenCalledTimes(1);
     });
 

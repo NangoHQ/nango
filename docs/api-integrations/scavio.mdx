@@ -1,0 +1,98 @@
+---
+title: 'Scavio'
+sidebarTitle: 'Scavio'
+description: 'Integrate your application with the Scavio web data API'
+---
+
+## 🚀 Quickstart
+
+Connect to Scavio with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Scavio_.
+    </Step>
+    <Step id="authorize-scavio" title="Authorize Scavio">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API Key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-scavio-api" title="Call the Scavio API">
+    Let's make your first request to the Scavio API (a Google search). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/api/v2/google" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"query": "coffee grinders"}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/api/v2/google',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: { query: 'coffee grinders' }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Scavio integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/scavio/connect)
+  Find your Scavio API key and connect it to Nango
+
+Official docs: [Scavio](https://scavio.dev/docs/introduction)
+
+## API gotchas
+
+-   Scavio is billed in **credits**, not requests. Most endpoints cost 1 credit per call, but some
+    cost more, so read the per-endpoint cost in the [docs](https://scavio.dev/docs/introduction)
+    before running a large sync.
+-   Platform endpoints live under two versions. Google search endpoints are on `/api/v2/google`;
+    the other platforms are on `/api/v1/<platform>/...`. Copy the path from the endpoint's docs
+    page rather than deriving it, since a few paths do not match their platform name.
+-   The generic extract endpoint is `POST /api/v1/extract`, which is not tied to a platform. It
+    takes a URL and returns Markdown, plain text or HTML, and is priced by tier rather than by the
+    flat per-call cost most platform endpoints use.
+-   Most endpoints are `POST` with a JSON body. Calling one with `GET` returns a 404 rather than a
+    405, which reads like a missing endpoint.
+
+## 🧩 Pre-built syncs & actions for Scavio
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/scavio/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

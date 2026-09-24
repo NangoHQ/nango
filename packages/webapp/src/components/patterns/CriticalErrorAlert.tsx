@@ -1,8 +1,7 @@
-import { CircleX } from 'lucide-react';
+import { CircleX, ExternalLink } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { Alert, AlertDescription } from '../ui/Alert';
-import { StyledLink } from '../ui/StyledLink';
+import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
 /**
  * For reuse on generic error scenarios.
@@ -14,14 +13,19 @@ export const CriticalErrorAlert: React.FC<{ message: string }> = ({ message }) =
     }, [message]);
 
     return (
-        <Alert variant="error" className="w-full">
+        <Alert variant="danger">
             <CircleX />
             <AlertDescription>
-                {finalMessage}. Please{' '}
-                <StyledLink to="https://nango.dev/slack" icon type="external" variant="error">
-                    contact support
-                </StyledLink>
-                .
+                <span>
+                    {finalMessage}. Please{' '}
+                    <Button asChild variant="link-danger" size="xs">
+                        <a href="https://nango.dev/slack" target="_blank" rel="noopener noreferrer">
+                            contact support
+                            <ExternalLink />
+                        </a>
+                    </Button>
+                    .
+                </span>
             </AlertDescription>
         </Alert>
     );

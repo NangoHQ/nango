@@ -7,7 +7,8 @@ export function sharedCredentialsToApi(provider: DBSharedCredentials): SharedCre
         credentials: {
             client_id: provider.credentials.oauth_client_id,
             client_secret: provider.credentials.oauth_client_secret,
-            scopes: provider.credentials.oauth_scopes
+            scopes: provider.credentials.oauth_scopes,
+            app_link: provider.credentials.app_link
         },
         created_at: provider.created_at.toISOString(),
         updated_at: provider.updated_at.toISOString()

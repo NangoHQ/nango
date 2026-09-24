@@ -1,7 +1,8 @@
 import { getProvider } from '@nangohq/shared';
 import { basePublicUrl } from '@nangohq/utils';
 
-import { getPreconfiguredCredentials } from '../utils/integrations.js';
+import { REGISTRATION_ACCESS_TOKEN_KEY, REGISTRATION_CLIENT_URI_KEY } from '../services/mcpClientRegistration.js';
+import { getPreconfiguredConnectionConfig, getPreconfiguredCredentials } from '../utils/integrations.js';
 
 import type { IntegrationCredentials } from '../utils/integrations.js';
 import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude, IntegrationConfig, Provider } from '@nangohq/types';
@@ -17,8 +18,8 @@ export function integrationToApi(data: IntegrationConfig, options?: { includeCre
         oauth_client_secret: hideCredentials ? '' : data.oauth_client_secret,
         oauth_scopes: data.oauth_scopes,
         environment_id: data.environment_id,
-        app_link: data.app_link,
-        custom: hideCredentials ? null : maskSecretConfigFields(data.custom, provider),
+        app_link: hideCredentials ? null : data.app_link,
+        custom: hideCredentials ? null : stripInternalCustomFields(maskSecretConfigFields(data.custom, provider)),
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString(),
         missing_fields: data.missing_fields,
@@ -50,6 +51,17 @@ function maskSecretConfigFields(custom: IntegrationConfig['custom'], provider: P
     return masked ?? custom;
 }
 
+function stripInternalCustomFields(custom: IntegrationConfig['custom']): IntegrationConfig['custom'] {
+    if (!custom || (!(REGISTRATION_CLIENT_URI_KEY in custom) && !(REGISTRATION_ACCESS_TOKEN_KEY in custom))) {
+        return custom;
+    }
+
+    const stripped = { ...custom };
+    delete stripped[REGISTRATION_CLIENT_URI_KEY];
+    delete stripped[REGISTRATION_ACCESS_TOKEN_KEY];
+    return stripped;
+}
+
 export function integrationToPublicApi({
     integration,
     include,
@@ -60,6 +72,7 @@ export function integrationToPublicApi({
     include?: ApiPublicIntegrationInclude;
 }): ApiPublicIntegration {
     const preconfiguredCredentials = getPreconfiguredCredentials(integration.custom, provider);
+    const preconfiguredConnectionConfig = getPreconfiguredConnectionConfig(integration.custom, provider);
     return {
         unique_key: integration.unique_key,
         provider: integration.provider,
@@ -69,6 +82,7 @@ export function integrationToPublicApi({
         // Only providers that declare `integration_config`, never expose the whole `custom` object.
         ...(provider.integration_config && integration.custom?.['keyLabel'] ? { credentials_label: { apiKey: integration.custom['keyLabel'] } } : {}),
         ...(preconfiguredCredentials.length > 0 ? { preconfigured_credentials: preconfiguredCredentials } : {}),
+        ...(preconfiguredConnectionConfig.length > 0 ? { preconfigured_connection_config: preconfiguredConnectionConfig } : {}),
         ...include,
         forward_webhooks: integration.forward_webhooks === undefined ? true : integration.forward_webhooks,
         created_at: integration.created_at.toISOString(),
@@ -107,6 +121,13 @@ export function integrationCredentialsToPublicApi(credentials: IntegrationCreden
                 app_id: credentials.appId,
                 app_link: credentials.appLink,
                 private_key: credentials.privateKey
+            };
+        case 'MCP_OAUTH2':
+            return {
+                type: credentials.type,
+                client_id: credentials.clientId,
+                client_secret: credentials.clientSecret,
+                scopes: credentials.scopes
             };
     }
 }

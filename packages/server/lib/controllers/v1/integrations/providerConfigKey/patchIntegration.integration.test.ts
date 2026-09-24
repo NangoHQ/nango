@@ -271,6 +271,23 @@ describe(`PATCH ${endpoint}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({ data: { success: true } });
     });
 
+    it('normalizes MCP_OAUTH2 scopes on update the same way create does', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'amplitude-mcp', 'amplitude-mcp');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'amplitude-mcp' },
+            body: { authType: 'MCP_OAUTH2', scopes: 'read write,admin access' }
+        });
+        isSuccess(res.json);
+
+        const stored = await configService.getProviderConfig('amplitude-mcp', env.id);
+        expect(stored?.oauth_scopes).toBe('read,write,admin,access');
+    });
+
     it('allows client credential updates for MCP integrations with static client registration', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         // asana-mcp uses client_registration: static, users bring their own credentials
@@ -311,5 +328,46 @@ describe(`PATCH ${endpoint}`, () => {
 
         const stored = await configService.getProviderConfig('sage-intacct-cc', env.id);
         expect(stored?.custom).toMatchObject({ clientId: 'first-client-id', clientSecret: 'second-secret' });
+    });
+
+    it('rejects credential updates on an integration using Nango-provided (shared) credentials', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createPreprovisionedProviderConfigSeed(env, 'github-app-shared', 'github-app', 'github-app-shared-patch-test');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'github-app-shared' },
+            body: { authType: 'APP', appId: 'attacker-app-id' }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'invalid_body', message: "Can't edit credentials on an integration using Nango-provided credentials" }
+        });
+
+        // The rejected PATCH must not have written through: the shared credential's app_id should be unchanged.
+        const stored = await configService.getProviderConfig('github-app-shared', env.id);
+        expect(stored?.oauth_client_id).toBe('test');
+    });
+
+    it('rejects integrationConfig updates on an integration using Nango-provided (shared) credentials', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createPreprovisionedProviderConfigSeed(env, 'stripe-app-sandbox-shared', 'stripe-app-sandbox', 'stripe-app-sandbox-shared-patch-test');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'stripe-app-sandbox-shared' },
+            body: { integrationConfig: { appDomain: 'acct_123' } }
+        });
+
+        isError(res.json);
+        expect(res.json.error.code).toBe('invalid_body');
+
+        const stored = await configService.getProviderConfig('stripe-app-sandbox-shared', env.id);
+        expect(stored?.custom).toBeFalsy();
     });
 });

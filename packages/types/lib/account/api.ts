@@ -1,12 +1,15 @@
 import type { AccountApiKeyScope } from '../api-keys/scopes.js';
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
+import type { MFACredential } from '../mfa/credential.js';
 import type { ApiUser } from '../user/api.js';
 
 export interface AccountApiKey {
     id: number;
+    uuid: string;
     display_name: string;
     scopes: AccountApiKeyScope[];
+    secret: string;
     last_used_at: string | null;
     created_at: string;
 }
@@ -24,9 +27,7 @@ export type CreateAccountApiKey = ApiEndpoint<{
     Path: '/api/v1/account/api-keys';
     Body: { display_name: string };
     Success: {
-        data: Omit<AccountApiKey, 'last_used_at'> & {
-            secret: string;
-        };
+        data: Omit<AccountApiKey, 'last_used_at'>;
     };
     Error: ApiError<'conflict' | 'resource_capped'>;
 }>;
@@ -56,7 +57,7 @@ export type PostSignup = ApiEndpoint<{
         | ApiError<'error_creating_user'>
         | ApiError<'user_already_exists'>
         | ApiError<'error_creating_account'>
-        | ApiError<'invalid_invite_token'>
+        | ApiError<'not_found'>
         | ApiError<'email_not_verified'>;
     Success: {
         data: {
@@ -165,8 +166,9 @@ export type PutResetPassword = ApiEndpoint<{
     Body: {
         token: string;
         password: string;
+        mfa?: MFACredential | undefined;
     };
-    Error: ApiError<'user_not_found'> | ApiError<'invalid_token'>;
+    Error: ApiError<'user_not_found'> | ApiError<'invalid_token'> | ApiError<'invalid_mfa_code'> | ApiError<'mfa_code_required'>;
     Success: {
         success: true;
     };
@@ -181,6 +183,7 @@ export type PostManagedSignup = ApiEndpoint<{
     Body: {
         provider: 'GoogleOAuth';
         token?: string | undefined;
+        returnTo?: string | undefined;
     };
     Success: {
         data: {

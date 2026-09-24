@@ -2,10 +2,9 @@ import { ArrowLeft, ChevronDown, ChevronUp, Contrast, Download, Hash, Link2, Lis
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { RgbaColorPicker } from 'react-colorful';
 
-import { Button, Input } from '@nangohq/design-system';
+import { Button, Input, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 // Raw import avoids TypeScript OOM on the 3k-line JSON (same technique as design-system/tokens/types.ts).
 // The relative escape from webapp into design-system is intentional for this dev-only tool.

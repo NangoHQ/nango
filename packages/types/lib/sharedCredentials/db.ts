@@ -6,6 +6,7 @@ export interface SharedCredentials {
     oauth_scopes?: string;
     oauth_client_secret_iv: string;
     oauth_client_secret_tag: string;
+    app_link?: string;
 }
 
 export interface DBSharedCredentials extends Timestamps {

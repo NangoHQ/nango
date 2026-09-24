@@ -1,3 +1,5 @@
+import { isDeepStrictEqual } from 'node:util';
+
 import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok, stringifyError } from '@nangohq/utils';
@@ -357,9 +359,11 @@ export class Scheduler {
     }
 
     /**
-     * Create a recurring schedule
-     * @param props - Schedule properties
-     * @returns Schedule
+     * Create missing recurring schedules and restore deleted schedules.
+     * Existing live schedules only receive frequency and payload changes.
+     * Use explicit state transitions to pause or resume an existing schedule.
+     * @param props - Properties for one schedule or a batch of schedules
+     * @returns The resulting schedule or schedules
      * @example
      * const schedulingProps = {
      *    name: 'schedule-name',
@@ -375,8 +379,52 @@ export class Scheduler {
      * };
      * const schedule = await scheduler.recurring(schedulingProps);
      */
-    public async recurring(props: ScheduleProps): Promise<Result<Schedule>> {
-        return schedules.create(this.db, props);
+    public async recurring(props: ScheduleProps): Promise<Result<Schedule>>;
+    public async recurring(props: ScheduleProps[]): Promise<Result<Schedule[]>>;
+    public async recurring(props: ScheduleProps | ScheduleProps[]): Promise<Result<Schedule | Schedule[]>> {
+        const entries = Array.isArray(props) ? props : [props];
+
+        try {
+            const result = await this.db.transaction(async (trx) => {
+                const created = await schedules.createBatch(trx, entries);
+                if (created.isErr()) {
+                    throw created.error;
+                }
+
+                const updates: { id: string; frequencyMs?: number; payload?: ScheduleProps['payload'] }[] = [];
+                const byName = new Map(created.value.map((schedule) => [schedule.name, schedule]));
+                for (const requested of entries) {
+                    const schedule = byName.get(requested.name);
+                    if (!schedule) {
+                        throw new Error(`Schedule '${requested.name}' missing after creation`);
+                    }
+
+                    const frequencyChanged = schedule.frequencyMs !== requested.frequencyMs;
+                    const payloadChanged = !isDeepStrictEqual(schedule.payload, requested.payload);
+
+                    if (frequencyChanged || payloadChanged) {
+                        updates.push({
+                            id: schedule.id,
+                            ...(frequencyChanged && { frequencyMs: requested.frequencyMs }),
+                            ...(payloadChanged && { payload: requested.payload })
+                        });
+                    }
+                }
+
+                const updated = await schedules.update(trx, updates);
+                if (updated.isErr()) {
+                    throw updated.error;
+                }
+                for (const schedule of updated.value) {
+                    byName.set(schedule.name, schedule);
+                }
+                return Array.from(byName.values());
+            });
+
+            return Ok(Array.isArray(props) ? result : result[0]!);
+        } catch (err) {
+            return Err(err instanceof Error ? err : new Error(stringifyError(err)));
+        }
     }
 
     /**
@@ -562,16 +610,27 @@ export class Scheduler {
      * Set schedule state
      * @param scheduleName - Schedule name
      * @param state - Schedule state
+     * @param preserveIfPaused - If the schedule is currently `PAUSED`, leave it alone regardless of the
+     * requested `state`. Lets a caller request "do this, but don't clobber an existing pause" in one round
+     * trip instead of checking state first and conditionally calling this after.
      * @notes Cancels all running tasks if the schedule is paused or deleted
      * @returns Schedule
      * @example
      * const schedule = await scheduler.setScheduleState({ scheduleName: 'schedule123', state: 'PAUSED' });
      */
-    public async setScheduleState({ scheduleName, state }: { scheduleName: string; state: ScheduleState }): Promise<Result<Schedule>> {
+    public async setScheduleState({
+        scheduleName,
+        state,
+        preserveIfPaused = false
+    }: {
+        scheduleName: string;
+        state: ScheduleState;
+        preserveIfPaused?: boolean;
+    }): Promise<Result<Schedule>> {
         let cancelledTasks: Task[] = [];
         try {
             const schedule = await this.db.transaction(async (trx) => {
-                const transitioned = await this.transitionScheduleStateInTrx(trx, { scheduleName, state });
+                const transitioned = await this.transitionScheduleStateInTrx(trx, { scheduleName, state, preserveIfPaused });
                 if (transitioned.isErr()) {
                     throw transitioned.error;
                 }
@@ -590,10 +649,7 @@ export class Scheduler {
     }
 
     /**
-     * Set the state of many schedules atomically — used to unschedule a deleted function's syncs in one batch.
-     * The whole batch runs in a single transaction: if any schedule fails to transition, the transaction rolls
-     * back so none are changed, and an error is returned (all-or-nothing, so a failing batch is easy to track
-     * and safe to retry). A missing schedule is tolerated (it is already effectively in the target state).
+     * Set the state of many schedules atomically
      */
     public async setScheduleStates({ scheduleNames, state }: { scheduleNames: string[]; state: ScheduleState }): Promise<Result<void>> {
         let cancelledTasks: Task[] = [];
@@ -623,7 +679,7 @@ export class Scheduler {
      */
     private async transitionScheduleStateInTrx(
         trx: knex.Knex.Transaction,
-        { scheduleName, state }: { scheduleName: string; state: ScheduleState }
+        { scheduleName, state, preserveIfPaused = false }: { scheduleName: string; state: ScheduleState; preserveIfPaused?: boolean }
     ): Promise<Result<{ schedule: Schedule | null; cancelledTasks: Task[] }>> {
         // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
         const found = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
@@ -636,6 +692,10 @@ export class Scheduler {
         }
         if (schedule.state === state) {
             // No-op if the schedule is already in the desired state
+            return Ok({ schedule, cancelledTasks: [] });
+        }
+        if (preserveIfPaused && schedule.state === 'PAUSED') {
+            // The caller opted not to override an existing pause, regardless of the requested transition — leave it alone.
             return Ok({ schedule, cancelledTasks: [] });
         }
 
@@ -690,11 +750,11 @@ export class Scheduler {
             if (schedule.value[0].frequencyMs === frequencyMs) {
                 return Ok(schedule.value[0]);
             }
-            const res = await schedules.update(trx, { id: schedule.value[0].id, frequencyMs });
+            const res = await schedules.update(trx, [{ id: schedule.value[0].id, frequencyMs }]);
             if (res.isErr()) {
                 return Err(`Error updating schedule frequency '${scheduleName}': ${stringifyError(res.error)}`);
             }
-            return res;
+            return Ok(res.value[0]!);
         });
     }
 

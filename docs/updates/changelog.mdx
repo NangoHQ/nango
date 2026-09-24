@@ -4,6 +4,258 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="BYOC self-hosting" description="September 21, 2026">
+  Bring Your Own Cloud (BYOC) is now the recommended way to self-host Nango. Self-hosting usually means operating the platform yourself in exchange for keeping data in your own infrastructure. BYOC removes that trade-off. 
+  
+  Nango deploys and operates a dedicated instance inside your own cloud account, so your end users' credentials, synced records, and logs never leave it. Nango handles deployments, upgrades, scaling, incident response, and support, and you get every feature of Nango Cloud.
+
+  The new [BYOC guide](/guides/platform/self-hosting/byoc) covers this in full detail. BYOC supports AWS, GCP, and Azure. 
+  
+  If you prefer to run Nango yourself, see the [Self-Managed guide](/guides/platform/self-hosting/self-managed). Both require an [Enterprise plan](https://nango.dev/pricing). See the [self-hosting overview](/guides/platform/self-hosting/self-hosting#choose-your-path) for a comparison.
+</Update>
+---
+
+<Update label="Smaller improvements" description="September 17, 2026">
+  - **MCP integrations:** For integrations that use the generic MCP OAuth provider, you can set the OAuth scopes Nango requests, in the integration settings or when creating the integration. Previously, scopes came only from the MCP server's metadata. See [MCP auth](/guides/auth/mcp-auth).
+  - **CLI source maps:** Pass `--sourcemap false` to `nango compile`, `nango dryrun`, or `nango deploy` to leave source maps out of compiled function bundles.
+  - **Functions:** `nango.getVariant()` returns the variant of the current sync or action run.
+  - **New webhooks:** Nango can receive and forward webhooks from [Zoom](/api-integrations/zoom/webhooks), [Gong](/api-integrations/gong/webhooks), [Granola](/api-integrations/granola/webhooks), and [Outlook](/api-integrations/outlook/webhooks).
+</Update>
+---
+
+<Update label="nango.yaml sunset" description="September 16, 2026">
+  Nango no longer accepts deployments that use a `nango.yaml` configuration file. The deprecation was announced in July 2025, when TypeScript-based function configuration replaced it.
+
+  **Am I impacted?** Only if you still deploy custom functions from a `nango.yaml`. Those deployments now fail with an error that links to the migration guide. Functions that are already deployed keep running.
+
+  **What to do:** Upgrade the Nango CLI, run `nango migrate-to-zero-yaml`, and redeploy. The [migration guide](/guides/platform/migrations/migrate-to-zero-yaml) explains each change.
+</Update>
+---
+
+<Update label="Agent sessions updates" description="September 16, 2026">
+  Improvements to [agent sessions](/guides/agent-sessions) since the public beta launch:
+
+  - **Proxy tool:** A new `nango_proxy` meta tool lets the agent call any endpoint of a connected integration when no tool in the session fits. Nango authenticates the request, so the agent never sees credentials. It is off by default; turn it on per session. See [meta tools](/guides/agent-sessions#meta-tools).
+  - **Terminate a session:** A new `DELETE /sessions/{session_id}` API to end a session before it expires and revoke its token. See [terminating a session](/guides/agent-sessions#terminating-a-session).
+  - **Logs filter:** The Logs page has an Agent session filter that shows the operations a session ran. Each operation also shows which session drove it.
+  - **Clearer tool errors:** Failed tool calls return a message that says what failed and what the agent should do next.
+</Update>
+---
+
+<Update label="1,000+ supported APIs" description="September 14, 2026">
+  Nango now supports more than 1,000 APIs. Each comes with pre-built authorization, the proxy, and logs, and many include pre-built tools, triggers, and syncs.
+
+  Browse the [full list](/integrations/overview). If an API you need is missing, you can [request it or contribute it](/integrations/contribute-or-request-api).
+</Update>
+---
+
+<Update label="Webhook verification" description="September 14, 2026">
+  Nango now verifies more of the webhooks it receives from external APIs before forwarding them to your app.
+
+  - **Gmail:** Nango already verified the OIDC token that Google attaches when authentication is enabled on your Pub/Sub subscription. Pushes without one are now rejected by default and not forwarded, so enabling authentication is a required step in the [Gmail webhook guide](/api-integrations/google-mail/webhooks). If you need time to enable it, contact us and we can temporarily allow unsigned pushes for your account.
+  - **Google Drive and Calendar:** You can now save a webhook secret on the integration. Once set, Nango checks each notification's `X-Goog-Channel-Token` header against it and rejects mismatches. Without a secret, notifications are forwarded unverified, so set the secret before creating channels and pass it as the channel `token`. See the [Drive](/api-integrations/google-drive/webhooks) and [Calendar](/api-integrations/google-calendar/webhooks) guides.
+  - **GitHub App:** Webhooks without an `x-hub-signature-256` header are now rejected by default. GitHub only signs payloads when a webhook secret is set on your app, so it must match the secret shown on your Nango integration page. See the [GitHub App setup guide](/api-integrations/github-app/how-to-register-your-own-github-app-api-app).
+  - **Other providers:** Slack, PagerDuty, and Checkr webhooks with an invalid signature are now rejected instead of processed. Where a provider supports signature verification but no secret is configured on the integration, Nango still forwards the webhook and writes a warning to your logs.
+
+  **Am I impacted?** If your Gmail Pub/Sub subscription has no authentication, or your GitHub App has no webhook secret, those webhooks are no longer forwarded until you fix the setup. Drive and Calendar channels created without a `token` keep working until you save a webhook secret; recreate them with a `token` once you do. For other providers, check your logs for unverified-webhook warnings and set the signing secret on the integration.
+</Update>
+---
+
+<Update label="Billing page improvements" description="September 9, 2026">
+  We updated the billing page to make your spend easier to analyze:
+  - **Spend summary:** The top of the page shows what you will be billed for the current period, your plan, and when the period renews. Free accounts see when their limits reset.
+  - **Charges per metric:** The usage table shows what each metric costs, for the current period and past months, so you can see what drives your bill. Expand a metric to [see usage charts](/updates/changelog#usage-breakdowns).
+  - **Spend alerts:** Set a threshold on your current-period spend. When it is crossed, your billing contacts and account admins get an email with a link to the billing page. Available on paid plans.
+  - **Billing emails:** Add more than one billing email address.
+
+  ![New billing page](/images/changelog/new-billing-page.png)
+
+</Update>
+---
+
+<Update label="Environment read APIs" description="September 9, 2026">
+  The [account-level API](/updates/changelog#account-level-apis) launched with endpoints to create and delete environments and their API keys. It now has read endpoints too:
+
+  - [List environments](/reference/backend/http-api/environments/list), with an optional exact `name` filter. Scope: `account:environments:list`.
+  - [List environment API keys](/reference/backend/http-api/environments/list-api-keys), with an optional `display_name` filter. Scope: `account:environments:api_keys:list`.
+  - [Get an environment API key](/reference/backend/http-api/environments/get-api-key), including its secret. Scope: `account:environments:api_keys:read`.
+
+  All three take an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the matching scope.
+</Update>
+---
+
+<Update label="Audit trail" description="September 3, 2026">
+  Nango now records an audit trail of the control-plane activity in your account: connection changes, integration settings, teammate roles, sign-ins, and more.
+
+  Each entry captures the actor, the action, the affected resource, and the outcome, so you can answer "who did this, and when" during an incident or a compliance review. Entries are immutable and retained for 1 year by default.
+
+  You can browse and filter the Audit trail, and export filtered entries to CSV. The trail covers all environments in your account.
+
+  Audit trail is available on the [Enterprise plan](https://nango.dev/pricing). See the [audit trail documentation](/guides/platform/audit-trail) for what is recorded. If you self-host Nango, follow the [self-hosting instructions](/guides/platform/self-hosting#audit-trail) to enable it on your instance.
+
+  ![Audit trail page in the dashboard](/images/changelog/audit-trail.png)
+</Update>
+---
+
+<Update label="Agent sessions (public beta)" description="September 2, 2026">
+  Agent sessions are a new interface for AI agents to use integrations, now in public beta.
+
+  Your backend creates a session that defines what the agent can do:
+
+  - **Tenant:** On whose behalf the agent calls integrations, resolved from connection tags
+  - **Toolset:** Which integrations and tools it can use
+  - **Discovery:** How it finds and calls those tools, with pinned tools and a built-in tool search that keeps large toolsets out of the agent's context
+
+  Nango returns a dedicated MCP server for the session, which you pass to any MCP-capable agent. The agent never sees raw credentials and cannot change the scope of its own session.
+
+  See the [agent sessions guide](/guides/agent-sessions) to get started.
+
+  ![An AI agent handling a support ticket with tools from an agent session](/images/changelog/agent-sessions.png)
+</Update>
+---
+
+<Update label="Simpler plans, lower prices" description="September 2, 2026">
+  We updated [Nango's pricing](https://nango.dev/pricing):
+
+  - **71% lower connection price:** Connections now cost \$0.29 per connection per month on Pay-as-you-go.
+  - **Simpler plans:** Free, Pay-as-you-go, and Enterprise. Growth features — RBAC, OpenTelemetry export, and Connect UI customization — are now an optional add-on on Pay-as-you-go.
+  - **Credits included:** The \$50/month Pay-as-you-go subscription comes back as \$50 of usage credits each month.
+</Update>
+---
+
+<Update label="August 2026 roundup" description="September 1, 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="49 new APIs in August">
+      - [AgencyZoom](/api-integrations/agencyzoom)
+      - [AgentLine](/api-integrations/agentline)
+      - [athenahealth](/api-integrations/athenahealth)
+      - [Back Market](/api-integrations/back-market)
+      - [CDW](/api-integrations/cdw)
+      - [Chartboost](/api-integrations/chartboost)
+      - [Chili Piper](/api-integrations/chili-piper)
+      - [Chili Piper (MCP)](/api-integrations/chili-piper-mcp)
+      - [ePost (KLARA)](/api-integrations/epost-klara)
+      - [Factorial (API Key)](/api-integrations/factorial-api-key)
+      - [Facebook (System User Token)](/api-integrations/facebook-system-user)
+      - [Garmin (OAuth2)](/api-integrations/garmin-oauth2)
+      - [GitLab (Group Access Token)](/api-integrations/gitlab-group-token)
+      - [Hail](/api-integrations/hail)
+      - [Hail (MCP)](/api-integrations/hail-mcp)
+      - [HiBob (OAuth)](/api-integrations/hibob-oauth)
+      - [Holded (v2)](/api-integrations/holded-v2)
+      - [Judge.me (API Key)](/api-integrations/judgeme)
+      - [Judge.me (OAuth)](/api-integrations/judgeme-oauth)
+      - [Live Tennis API](/api-integrations/livetennisapi)
+      - [Lovable (MCP)](/api-integrations/lovable-mcp)
+      - [Luma (v2)](/api-integrations/luma-v2)
+      - [Meilisearch](/api-integrations/meilisearch)
+      - [MYOB](/api-integrations/myob)
+      - [Neon](/api-integrations/neon)
+      - [Okta (API Token)](/api-integrations/okta-api-key)
+      - [Omni Analytics](/api-integrations/omni)
+      - [Onshape](/api-integrations/onshape)
+      - [Pushpay ChMS (v2)](/api-integrations/pushpay-chms-v2)
+      - [Redo](/api-integrations/redo)
+      - [Revolut Business](/api-integrations/revolut-business)
+      - [RyderShip](/api-integrations/rydership)
+      - [Sage 300 Construction and Real Estate](/api-integrations/sage-300-cre)
+      - [ServiceNow (JWT)](/api-integrations/servicenow-jwt)
+      - [SHOPLINE](/api-integrations/shopline)
+      - [SHOPLINE (OAuth)](/api-integrations/shopline-oauth)
+      - [Splunk](/api-integrations/splunk)
+      - [Statsig](/api-integrations/statsig)
+      - [Stedi (Healthcare)](/api-integrations/stedi)
+      - [Streamline AI](/api-integrations/streamline-ai)
+      - [Threads](/api-integrations/threads)
+      - [Transporeon Carrier Interface (Basic Auth)](/api-integrations/transporeon-carrier-basic)
+      - [Transporeon Carrier Interface (Client Credentials)](/api-integrations/transporeon-carrier-oauth2-cc)
+      - [Trustpilot](/api-integrations/trustpilot)
+      - [Trustpilot (Client Credentials)](/api-integrations/trustpilot-cc)
+      - [UKG Pro (Workforce Management ROPC)](/api-integrations/ukg-pro-wfm-ropc)
+      - [Viewpoint Vista](/api-integrations/viewpoint-vista)
+      - [Vincere](/api-integrations/vincere)
+      - [Yokoy](/api-integrations/yokoy)
+    </Accordion>
+  </AccordionGroup>
+
+  ## New blog posts
+
+  New posts from the Nango team in August:
+
+  - [What we learned operating auth for 900+ APIs](https://nango.dev/blog/lessons-from-operating-api-auth-for-900-apis)
+  - [What engineering teams look for in API integration platforms](https://nango.dev/blog/what-engineering-teams-look-for-in-api-integration-platforms)
+  - [How developers secure AI agent access to APIs](https://nango.dev/blog/how-developers-secure-ai-agent-access-to-apis)
+</Update>
+---
+
+<Update label="New Management MCP tools" description="August 25, 2026">
+  The [Management MCP server](/reference/backend/management-mcp) initially launched with logs tools only. It now exposes 14 tools covering most day-to-day Nango operations, so an agent can configure integrations, inspect connections, call external APIs, and look things up in the Nango docs directly:
+
+  - **Integrations:** `integrations_list`, `integrations_get`, `integrations_create`, `integrations_update`, `integrations_delete`
+  - **Connections:** `connections_list`, `connections_get`
+  - **Connect sessions:** `connect_session_create`
+  - **Proxy:** `proxy_request`, to make authenticated requests to external APIs through Nango
+  - **Functions:** `functions_list`
+  - **Documentation:** `docs_search`, `docs_query_filesystem`
+
+  Except for the documentation tools, each tool requires a matching API key scope, listed in the [Management MCP reference](/reference/backend/management-mcp#tools).
+
+  ![New Management MCP tools shown working with Claude](/images/changelog/management-mcp-claude-tools.png)
+
+</Update>
+---
+
+<Update label="Connection recovery webhook" description="August 24, 2026">
+  Nango previously sent a webhook when an OAuth connection's token refresh failed. Since a failure can be transient and Nango keeps retrying, it now also sends a follow-up webhook with `"success": true` when a refresh succeeds after a previous failure.
+
+  This closes the loop on your side: flag the connection when the failure webhook arrives, and clear the flag automatically when it recovers.
+
+  See [auth webhooks](/guides/platform/webhooks-from-nango#auth-webhooks) for the payload.
+</Update>
+---
+
+<Update label="Account-level APIs" description="August 21, 2026">
+  You can now create and tear down Nango environments from code, for example to provision one environment per tenant.
+
+  - **Environment management API:** New endpoints to create and delete environments and their Environment API keys. See the [environments API reference](/reference/backend/http-api/environments/create).
+  - **Account API keys:** These endpoints are account-level, so they are authenticated with a new kind of key that is scoped to your account instead of a single environment. Admins manage them on the new Account API keys page, in the profile menu. See the [Account API keys reference](/reference/backend/http-api/api-keys#account-api-keys).
+
+  ![Account API keys page in the dashboard](/images/changelog/account-api-keys.png)
+</Update>
+---
+
+<Update label="2FA on password changes" description="August 20, 2026">
+  If two-factor authentication is enabled on your account, changing your password from the dashboard or resetting it by email now requires a one-time code from your authenticator app.
+
+  ![2FA on password changes](/images/changelog/change-password-2fa-confirmation.png)
+</Update>
+---
+
+<Update label="Change password" description="August 13, 2026">
+  You can now change your account password from the dashboard. Go to Profile settings > "Change password", enter your current password, and choose a new one.
+
+  The option appears for accounts that sign in with email and password.
+
+  ![Changing your password from profile settings](/images/changelog/change-password.png)
+</Update>
+---
+
+<Update label="Japanese support - Connect UI" description="August 9, 2026">
+  The Connect UI is now available in Japanese, alongside English, French, German, and Spanish. The language defaults to your user's browser language, and you can set it explicitly with the `lang` parameter of [openConnectUI](/reference/frontend/frontend-sdk).
+
+  ![Connect UI in Japanese](/images/changelog/connect-ui-japanese.png)
+</Update>
+---
+
+<Update label="Account discovery" description="August 4, 2026">
+  New users whose email domain matches an existing Nango account are now offered to join that account at signup, instead of unknowingly creating a duplicate one.
+
+  After verifying their email, the user sees the matching account and can request to join it in one click. Admins receive the request by email and approve it through the usual Team settings invite flow.
+
+  ![Suggested team during signup](/images/changelog/account-discovery-signup.png)
+</Update>
+---
+
 <Update label="July 2026 roundup" description="August 3, 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="62 new APIs in July">
@@ -116,7 +368,7 @@ description: "Important developer & product updates, including deprecations & br
 
   Authenticate with a Nango API key sent as a Bearer token. The logs tools require the `environment:logs:read` scope. More tools are on the way, with the goal of supporting the full public API.
 
-  Learn more in the [Management MCP reference](/reference/backend/management-mcp) and the [coding agent setup page](/getting-started/coding-agent-setup#management-mcp-server-beta). Self-hosted instances can enable it by following the [self-hosting guide](/guides/platform/self-hosting#management-mcp-server).
+  Learn more in the [Management MCP reference](/reference/backend/management-mcp) and the [coding agent setup page](/getting-started/coding-agent-setup#management-mcp-server).
 
   ![Claude Code querying Nango logs through the Management MCP server](/images/changelog/nango-management-mcp-logs.png)
 </Update>
@@ -1476,7 +1728,7 @@ description: "Important developer & product updates, including deprecations & br
 
   - Two-month release cadence
   - Semantic versioning adopted
-  - Clearer update process in the [self-hosting docs](/guides/platform/self-hosting#updates).
+  - Clearer update process in the [self-hosting docs](/guides/platform/self-hosting#operating-your-instance).
 </Update>
 ---
 
@@ -2003,7 +2255,7 @@ description: "Important developer & product updates, including deprecations & br
       - [Dialpad (sandbox)](/integrations/all/dialpad)
       - [Dixa](/integrations/all/dixa)
       - [Eleven Labs](/integrations/all/elevenlabs)
-      - [Elevio](/integrations/all/elevio)
+      - [Elevio](/api-integrations/elevio)
       - [fal.ai](/integrations/all/falai)
       - [Firefish](/integrations/all/firefish)
       - [Ghost (Admin API)](/integrations/all/ghost-admin)

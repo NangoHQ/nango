@@ -31,6 +31,7 @@ vi.mock('../env.js', () => ({
         JOBS_PROCESSOR_CONFIG: [
             { groupKeyPattern: 'sync*', maxConcurrency: 100 },
             { groupKeyPattern: 'action*', maxConcurrency: 100 },
+            { groupKeyPattern: 'function*', maxConcurrency: 100 },
             { groupKeyPattern: 'webhook*', maxConcurrency: 0 },
             { groupKeyPattern: 'on-event*', maxConcurrency: 50 }
         ]
@@ -45,12 +46,13 @@ describe('Processor', () => {
     it('should create processors from config and skip zero concurrency ones', () => {
         new Processor('http://localhost:3008');
 
-        // Should create 3 processors (webhook* skipped due to maxConcurrency = 0)
-        expect(OrchestratorProcessor).toHaveBeenCalledTimes(3);
+        // Should create 4 processors (webhook* skipped due to maxConcurrency = 0)
+        expect(OrchestratorProcessor).toHaveBeenCalledTimes(4);
 
         // Verify correct processors were created
         expect(OrchestratorProcessor).toHaveBeenCalledWith(expect.objectContaining({ groupKeyPattern: 'sync*', maxConcurrency: 100 }));
         expect(OrchestratorProcessor).toHaveBeenCalledWith(expect.objectContaining({ groupKeyPattern: 'action*', maxConcurrency: 100 }));
+        expect(OrchestratorProcessor).toHaveBeenCalledWith(expect.objectContaining({ groupKeyPattern: 'function*', maxConcurrency: 100 }));
         expect(OrchestratorProcessor).toHaveBeenCalledWith(expect.objectContaining({ groupKeyPattern: 'on-event*', maxConcurrency: 50 }));
 
         // Verify webhook* was not created

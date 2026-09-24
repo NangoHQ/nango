@@ -1,11 +1,13 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import { createConfigSeed, createConfigSeeds } from '../seeders/config.seeder.js';
+import { createConfigSeed, createConfigSeeds, createPreprovisionedProviderConfigSeed } from '../seeders/config.seeder.js';
 import { createConnectionSeed, createConnectionSeeds, getTestConnection } from '../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
+import { seedAccountEnvAndUser } from '../seeders/global.seeder.js';
 import { createSyncSeeds } from '../seeders/sync.seeder.js';
+import { ConnectionCreationCappedError } from '../utils/error.js';
 import connectionService from './connection.service.js';
 import { errorNotificationService } from './notification/error.service.js';
 
@@ -15,6 +17,97 @@ import type { Metadata } from '@nangohq/types';
 describe('Connection service integration tests', () => {
     beforeAll(async () => {
         await multipleMigrations();
+    });
+
+    describe('connection cap', () => {
+        it('rejects inserting a new connection at the cap', async () => {
+            const { env } = await seedAccountEnvAndUser({ plan: { connections_max: 0 } });
+            const config = await createConfigSeed(env, `capped-${Math.random().toString(36).slice(2, 10)}`, 'unauthenticated');
+
+            await expect(
+                connectionService.upsertUnauthConnection({
+                    connectionId: 'new-connection',
+                    providerConfigKey: config.unique_key,
+                    environment: env
+                })
+            ).rejects.toBeInstanceOf(ConnectionCreationCappedError);
+
+            await expect(
+                connectionService.checkIfConnectionExists(db.knex, {
+                    connectionId: 'new-connection',
+                    providerConfigKey: config.unique_key,
+                    environmentId: env.id
+                })
+            ).resolves.toBeNull();
+        });
+
+        it('allows completing an existing staged connection at the cap', async () => {
+            const { env, plan } = await seedAccountEnvAndUser();
+            const config = await createConfigSeed(env, `reconnect-${Math.random().toString(36).slice(2, 10)}`, 'unauthenticated');
+            const existing = await createConnectionSeed({ env, provider: config.unique_key, connectionId: 'existing-connection' });
+            await db.knex('plans').where({ id: plan.id }).update({ connections_max: 1 });
+
+            const [updated] = await connectionService.upsertConnection({
+                connectionId: existing.connection_id,
+                providerConfigKey: config.unique_key,
+                environmentId: env.id,
+                parsedRawCredentials: { type: 'API_KEY', apiKey: 'updated' },
+                connectionConfig: { reconnected: true }
+            });
+
+            expect(updated?.operation).toBe('override');
+        });
+
+        it('does not exceed the cap when connections are created concurrently', async () => {
+            const { account, env } = await seedAccountEnvAndUser({ plan: { connections_max: 1 } });
+            const config = await createConfigSeed(env, `concurrent-${Math.random().toString(36).slice(2, 10)}`, 'unauthenticated');
+
+            const attempts = await Promise.allSettled(
+                Array.from({ length: 5 }, (_, index) =>
+                    connectionService.upsertUnauthConnection({
+                        connectionId: `concurrent-connection-${index}`,
+                        providerConfigKey: config.unique_key,
+                        environment: env
+                    })
+                )
+            );
+
+            expect(attempts.filter((attempt) => attempt.status === 'fulfilled')).toHaveLength(1);
+            expect(
+                attempts.filter((attempt) => attempt.status === 'rejected').every((attempt) => attempt.reason instanceof ConnectionCreationCappedError)
+            ).toBe(true);
+            await expect(connectionService.countByAccountId(account.id)).resolves.toBe(1);
+        });
+
+        it('does not lock uncapped accounts during connection creation', async () => {
+            const { account, env } = await seedAccountEnvAndUser({ plan: { connections_max: null } });
+            const config = await createConfigSeed(env, `uncapped-${Math.random().toString(36).slice(2, 10)}`, 'unauthenticated');
+            const capCheckStarted = Promise.withResolvers<undefined>();
+            const continueCapCheck = Promise.withResolvers<undefined>();
+            const enforceCreationCap = vi.spyOn(connectionService, 'enforceCreationCap').mockImplementation(async () => {
+                capCheckStarted.resolve(undefined);
+                await continueCapCheck.promise;
+            });
+
+            const connectionCreation = connectionService.upsertUnauthConnection({
+                connectionId: 'uncapped-connection',
+                providerConfigKey: config.unique_key,
+                environment: env
+            });
+
+            try {
+                await capCheckStarted.promise;
+                await db.knex.transaction(async (trx) => {
+                    await trx.raw("SET LOCAL lock_timeout = '1s'");
+                    await trx.from('_nango_accounts').select('id').where({ id: account.id }).forUpdate().first();
+                });
+            } finally {
+                continueCapCheck.resolve(undefined);
+                enforceCreationCap.mockRestore();
+            }
+
+            await expect(connectionCreation).resolves.toHaveLength(1);
+        });
     });
 
     describe('Metadata simple operations', () => {
@@ -233,6 +326,93 @@ describe('Connection service integration tests', () => {
             });
 
             expect(result.size).toBe(0);
+        });
+    });
+
+    describe('getConnectionWithDetails', () => {
+        it('returns a decrypted connection with its provider and active errors', async () => {
+            const env = await createEnvironmentSeed();
+            await createConfigSeed(env, 'notion', 'notion');
+            const connection = await createConnectionSeed({ env, provider: 'notion', rawCredentials: { type: 'API_KEY', apiKey: 'secret' } });
+            await errorNotificationService.auth.create({
+                type: 'auth',
+                action: 'connection_test',
+                connection_id: connection.id,
+                log_id: 'log-id',
+                active: true
+            });
+
+            const result = await connectionService.getConnectionWithDetails({
+                environmentId: env.id,
+                connectionId: connection.connection_id,
+                providerConfigKey: 'notion'
+            });
+
+            expect(result.isOk()).toBe(true);
+            if (result.isOk()) {
+                expect(result.value).toMatchObject({
+                    provider: 'notion',
+                    endUser: null,
+                    activeLogs: [{ type: 'auth', log_id: 'log-id' }],
+                    connection: {
+                        connection_id: connection.connection_id,
+                        provider_config_key: 'notion',
+                        credentials: { type: 'API_KEY', apiKey: 'secret' }
+                    }
+                });
+            }
+        });
+
+        it('returns an error when the connection does not exist', async () => {
+            const env = await createEnvironmentSeed();
+            await createConfigSeed(env, 'notion', 'notion');
+
+            const result = await connectionService.getConnectionWithDetails({
+                environmentId: env.id,
+                connectionId: 'missing',
+                providerConfigKey: 'notion'
+            });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.type).toBe('unknown_connection');
+            }
+        });
+
+        it('does not select or decrypt credentials when they are excluded', async () => {
+            const env = await createEnvironmentSeed();
+            await createConfigSeed(env, 'notion', 'notion');
+            const connection = await createConnectionSeed({
+                env,
+                provider: 'notion',
+                rawCredentials: { type: 'API_KEY', apiKey: 'secret' },
+                connectionConfig: { safe: 'value' }
+            });
+            await db.knex
+                .from('_nango_connections')
+                .where({ id: connection.id })
+                .update({
+                    credentials: { encrypted_credentials: 'invalid-ciphertext' },
+                    credentials_iv: 'invalid-iv',
+                    credentials_tag: 'invalid-tag'
+                });
+
+            const result = await connectionService.getConnectionWithDetails({
+                environmentId: env.id,
+                connectionId: connection.connection_id,
+                providerConfigKey: 'notion',
+                includeCredentials: false
+            });
+
+            expect(result.isOk()).toBe(true);
+            if (result.isOk()) {
+                expect(result.value.connection).not.toHaveProperty('credentials');
+                expect(result.value.connection).toMatchObject({
+                    connection_id: connection.connection_id,
+                    provider_config_key: 'notion',
+                    connection_config: { safe: 'value' }
+                });
+            }
         });
     });
 
@@ -519,6 +699,25 @@ describe('Connection service integration tests', () => {
             expect(updated?.refresh_exhausted).toBe(true);
             expect(updated?.last_refresh_success).toBeNull();
             expect(updated?.last_refresh_failure).not.toBeNull();
+        });
+    });
+
+    describe('getStaleConnections', () => {
+        it('should merge shared credentials into the integration for a preprovisioned provider config', async () => {
+            const env = await createEnvironmentSeed();
+            const config = await createPreprovisionedProviderConfigSeed(env, `preprovisioned-${Math.random().toString(36).slice(2, 10)}`, 'google');
+            const connection = await createConnectionSeed({ env, provider: config.unique_key });
+
+            await db.knex('_nango_connections').where({ id: connection.id }).update({ last_fetched_at: null });
+
+            const sharedCredentials = await db.knex('providers_shared_credentials').where({ id: config.shared_credentials_id }).first();
+
+            const staleConnections = await connectionService.getStaleConnections({ days: 1, limit: 5000 });
+            const match = staleConnections.find((row) => row.connection.id === connection.id);
+
+            expect(match).toBeDefined();
+            expect(match?.integration.oauth_client_id).toBe(sharedCredentials.credentials.oauth_client_id);
+            expect(match?.integration.oauth_client_secret).toBe(sharedCredentials.credentials.oauth_client_secret);
         });
     });
 });

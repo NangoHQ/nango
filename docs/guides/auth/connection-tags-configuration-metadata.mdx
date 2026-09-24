@@ -47,7 +47,7 @@ When requesting a new Connect session token from Nango, pass a `tags` object:
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
+    const nango = new Nango({ apiKey: process.env['<NANGO-API-KEY>'] });
 
     api.post('/sessionToken', async (req, res) => {
       const { data } = await nango.createConnectSession({
@@ -112,7 +112,7 @@ Nango stores tags on the connection itself.
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+    const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
     const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
 
     console.log(connection.tags);
@@ -122,7 +122,7 @@ Nango stores tags on the connection itself.
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+    const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
     const { connections } = await nango.listConnections({
       tags: {
@@ -156,7 +156,7 @@ If you need to update tags after a connection is created, patch the connection:
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+    const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
     await nango.patchConnection(
       {

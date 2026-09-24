@@ -12,6 +12,6 @@ export type PostImpersonate = ApiEndpoint<{
         loginReason: string;
         code?: string | undefined;
     };
-    Error: ApiError<'invalid_mfa_code'> | ApiError<'mfa_not_enabled'>;
+    Error: ApiError<'invalid_mfa_code'> | ApiError<'mfa_code_required'> | ApiError<'mfa_not_enabled'>;
     Success: { success: true };
 }>;

@@ -4,6 +4,7 @@ import qs from 'qs';
 import { createRoute } from '@nangohq/utils';
 
 import { authMiddleware } from './middleware/auth.middleware.js';
+import { connectionOwnershipMiddleware } from './middleware/connectionOwnership.middleware.js';
 import { recordsPath } from './records.js';
 import { routeHandler as deleteCheckpointHandler } from './routes/environment/environmentId/connection/connectionId/checkpoint/deleteCheckpoint.js';
 import {
@@ -51,6 +52,7 @@ server.set('query parser', (str: string) => {
 });
 
 server.use('/environment/:environmentId/*splat', authMiddleware);
+server.use('/environment/:environmentId/connection/:nangoConnectionId/*splat', connectionOwnershipMiddleware);
 server.use('/environment/:environmentId/log', express.json({ limit: maxSizeJsonLog }));
 server.use(recordsPath, express.json({ limit: maxSizeJsonRecords }));
 server.use(getCursorRoute.path, express.json());

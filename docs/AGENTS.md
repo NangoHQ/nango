@@ -13,7 +13,7 @@ Run `mintlify broken-links` from `docs/` before pushing any change that:
 - changes a heading (anchors are derived from heading text)
 - updates internal `/...` links
 
-The scan must end with `success no broken links found`.
+The scan must end with `success no broken links found`
 
 ## Preview docs from the docs directory
 
@@ -51,9 +51,9 @@ Use sentence case for page titles, sidebar titles, card titles, and headings. Ke
 
 In "For agents" accordions and other coding-agent-specific instructions, prefer Nango's HTTP APIs over backend SDK snippets. Coding agents can translate HTTP examples into the user's stack, and API examples avoid assuming a specific language or package.
 
-When an agent instruction calls the Nango API, include or reference Nango API authentication: the user must create/sign into a Nango account, provide a Nango API key from the Environment settings tab > API Keys, and send it as `Authorization: Bearer <NANGO-API-KEY>`. Mention the required scopes when a scoped API key can be used instead of the default full-access API key.
+When an agent instruction calls the Nango API, include or reference Nango API authentication: the user must create/sign into a Nango account, provide a Nango Environment API key from **Environment Settings > API Keys**, and send it as `Authorization: Bearer <NANGO-API-KEY>`. Mention the required scopes when a scoped Environment API key can be used instead of the default full-access key. For account-level APIs, use an Account API key from [Account API keys](https://app.nango.dev/api-keys).
 
-Use the term "API key" for Nango environment keys. Avoid legacy key terminology in docs or examples, except when referencing exact current CLI environment variables such as `NANGO_SECRET_KEY_<ENV_NAME>`. In those cases, explain that the variable stores a Nango API key.
+Use **Environment API key** when you mean an environment-scoped key, and **Account API key** when you mean an account-scoped key. Prefer the shorter term "API key" only when the type is already clear from context. Avoid legacy key terminology in docs or examples, except when referencing exact current CLI environment variables such as `NANGO_SECRET_KEY_<ENV_NAME>`. In those cases, explain that the variable stores a Nango Environment API key.
 
 ## Keep link maintenance tightly scoped
 
@@ -66,6 +66,22 @@ Generated docs output must stay out of link-only PRs unless the user explicitly 
 ## Reference dashboard tabs by name, not URL
 
 When guiding readers to a tab in the Nango dashboard, reference the tab by its visible name instead of linking to a dashboard URL. Dashboard URLs include the environment, and that environment is not predictable across accounts.
+
+## Start body headings at H2
+
+Mintlify renders the frontmatter `title` as the page's only H1. Never add an H1 (`# Heading`) to an MDX body — it produces a second H1, which breaks the document outline for screen readers and SEO. Body sections start at `##` and nest from there without skipping a level.
+
+Do not repeat the page title as a body heading either. If a page opens with a heading that restates its `title`, delete the heading rather than demoting it.
+
+After creating or editing docs pages, scan the files you touched:
+
+```bash
+rg -n '^# ' <changed-mdx-files>
+```
+
+Every hit is either a body H1 to fix or a `#` comment inside a fenced code block, which must be left alone. When demoting a heading that has `##` children, demote the children too so the hierarchy stays intact.
+
+Heading anchors are derived from heading text, not level, so changing a heading's level keeps its anchor. Deleting or retitling one does not — see the link validation section above.
 
 ## Never use `{#anchor}` heading-id syntax
 

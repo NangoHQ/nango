@@ -1,10 +1,9 @@
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
-import { FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';

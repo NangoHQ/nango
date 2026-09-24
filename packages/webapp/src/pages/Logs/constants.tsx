@@ -45,7 +45,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         header: 'Type',
         size: 140,
         cell: ({ row }) => {
-            return <OperationTag message={row.original.message} operation={row.original.operation} />;
+            return <OperationTag message={row.original.message} operation={row.original.operation} actor={row.original.actor} />;
         }
     },
     {
@@ -145,48 +145,27 @@ export const typesOptions: FilterOption<SearchOperationsType>[] = [
             { label: 'External webhook forwarded', value: 'webhook:forward' },
             { label: 'Connection creation webhook', value: 'webhook:connection_create' },
             { label: 'Sync completion webhook', value: 'webhook:sync' },
-            { label: 'Token refresh webhook', value: 'webhook:connection_refresh' }
+            { label: 'Token refresh webhook', value: 'webhook:connection_refresh' },
+            { label: 'Connection deletion webhook', value: 'webhook:connection_delete' }
         ]
     },
     { value: 'action', label: 'Action' },
     { value: 'events', label: 'Event-based execution' },
     { value: 'proxy', label: 'Proxy' },
-    { value: 'deploy', label: 'Deploy' }
+    { value: 'deploy', label: 'Deploy' },
+    {
+        value: 'function',
+        label: 'Function',
+        children: [{ label: 'Function invoked', value: 'function:invoke' }]
+    },
+    {
+        value: 'agent_session',
+        label: 'Agent session',
+        children: [
+            { label: 'Agent session created', value: 'agent_session:create' },
+            { label: 'Agent session terminated', value: 'agent_session:terminate' },
+            { label: 'Agent session tool search', value: 'agent_session:tool_search' }
+        ]
+    }
 ];
-export const typesList = Object.keys({
-    'action:run': null,
-    'admin:impersonation': null,
-    'auth:connection_test': null,
-    'auth:create_connection': null,
-    'auth:post_connection': null,
-    'auth:refresh_token': null,
-    'deploy:custom': null,
-    'deploy:prebuilt': null,
-    'events:post_connection_creation': null,
-    'events:pre_connection_deletion': null,
-    'events:validate_connection': null,
-    'proxy:call': null,
-    'sync:cancel': null,
-    'sync:create_variant': null,
-    'sync:delete_variant': null,
-    'sync:init': null,
-    'sync:pause': null,
-    'sync:request_run': null,
-    'sync:request_run_full': null,
-    'sync:run': null,
-    'sync:unpause': null,
-    'webhook:connection_create': null,
-    'webhook:connection_refresh': null,
-    'webhook:forward': null,
-    'webhook:incoming': null,
-    'webhook:sync': null,
-    action: null,
-    admin: null,
-    all: null,
-    auth: null,
-    deploy: null,
-    events: null,
-    proxy: null,
-    sync: null,
-    webhook: null
-} satisfies Record<SearchOperationsType, null>) as SearchOperationsType[];
+export const typesList = typesOptions.flatMap((opt) => [opt.value, ...(opt.children?.map((child) => child.value) ?? [])]);

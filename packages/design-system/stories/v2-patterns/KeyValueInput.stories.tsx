@@ -5,7 +5,7 @@ import { KeyValueInput } from '@/components/patterns/KeyValueInput';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/Patterns/KeyValueInput',
+    title: 'App Components/Patterns/KeyValueInput',
     parameters: { layout: 'padded' }
 };
 export default meta;

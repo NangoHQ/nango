@@ -42,4 +42,8 @@ describe(functionVersionHash, () => {
             functionVersionHash(artifact).unwrap()
         );
     });
+
+    it('changes when the trigger changes', () => {
+        expect(functionVersionHash({ ...artifact, trigger: { kind: 'http' } }).unwrap()).not.toBe(functionVersionHash(artifact).unwrap());
+    });
 });

@@ -1,19 +1,32 @@
 import Orb from 'orb-billing';
 
-import { Err, metrics, Ok, retry } from '@nangohq/utils';
+import { Err, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../envs.js';
-import { fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
+import {
+    fromOrbAlert,
+    fromOrbCustomer,
+    fromOrbPeriodCosts,
+    fromOrbUpcomingInvoice,
+    growthAddonStateFromOrb,
+    orbMetricToUsageMetric,
+    toOrbPutCustomerPayload
+} from './adapters.js';
+import { growthAddonPriceId } from './catalogue.js';
 
 import type {
     BillingClient,
     BillingCustomer,
-    BillingEvent,
     BillingInvoicingDetails,
+    BillingOverdueInvoices,
+    BillingPeriodCosts,
+    BillingSpendAlert,
     BillingSubscription,
+    BillingUpcomingInvoice,
     BillingUsageMetrics,
     DBTeam,
     GetBillingUsageOpts,
+    PlanChangeRequest,
     Result
 } from '@nangohq/types';
 
@@ -25,40 +38,6 @@ export class OrbClient implements BillingClient {
             apiKey: envs.ORB_API_KEY || 'empty',
             maxRetries: envs.ORB_MAX_RETRIES
         });
-    }
-
-    async ingest(events: BillingEvent[]): Promise<Result<void>> {
-        // Orb limit the number of events per batch to 500
-        const batchSize = 500;
-        for (let i = 0; i < events.length; i += batchSize) {
-            const batch = events.slice(i, i + batchSize);
-            try {
-                const initialDelayMs = envs.ORB_RETRY_INITIAL_DELAY_MS;
-                await retry(
-                    () => {
-                        return this.orbSDK.events.ingest({
-                            events: batch.map(toOrbEvent)
-                        });
-                    },
-                    {
-                        maxAttempts: envs.ORB_RETRY_MAX_ATTEMPTS,
-                        delayMs: (attempt) => initialDelayMs * 2 ** attempt + Math.random() * initialDelayMs, // exponential backoff with jitter
-                        retryOnError: (e) => {
-                            // retry only on 429
-                            if (e instanceof Orb.APIError) {
-                                return e.status === 429;
-                            }
-                            return false;
-                        }
-                    }
-                );
-                metrics.increment(metrics.Types.ORB_BILLING_EVENTS_INGESTED, batch.length, { success: 'true' });
-            } catch (err) {
-                metrics.increment(metrics.Types.ORB_BILLING_EVENTS_INGESTED, batch.length, { success: 'false' });
-                return Err(new Error('failed_to_ingest_events', { cause: err }));
-            }
-        }
-        return Ok(undefined);
     }
 
     async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
@@ -137,28 +116,207 @@ export class OrbClient implements BillingClient {
                 external_plan_id: planExternalId,
                 start_date: startDate
             });
-            return Ok({ id: subscription.id, planExternalId: planExternalId });
+            return Ok({ id: subscription.id, planExternalId, ...growthAddonStateFromOrb(subscription.price_intervals) });
         } catch (err) {
             return Err(new Error('failed_to_create_subscription', { cause: err }));
         }
     }
 
-    async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
+    async getSubscription(accountId: number): Promise<Result<BillingSubscription>> {
         try {
             const subs = await this.orbSDK.subscriptions.list({ external_customer_id: [String(accountId)], status: 'active' });
             if (subs.data.length === 0) {
-                return Ok(null);
+                return Err(new Error('failed_to_get_subscription', { cause: 'no active subscription' }));
             }
 
             const sub = subs.data[0]!;
             return Ok({
                 id: sub.id,
                 pendingChangeId: sub.pending_subscription_change?.id,
-                planExternalId: sub.plan?.external_plan_id || ''
+                planExternalId: sub.plan?.external_plan_id || '',
+                ...growthAddonStateFromOrb(sub.price_intervals)
             });
         } catch (err) {
             return Err(new Error('failed_to_get_customer', { cause: err }));
         }
+    }
+
+    async getOverdueInvoices(accountId: number): Promise<Result<BillingOverdueInvoices>> {
+        try {
+            // A day of grace while Orb's own charge retries play out. Orb rejects a timestamp here and
+            // matches the given date inclusively.
+            const dueOnOrBefore = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+            // Pages are walked until a match: a page of fully-credited invoices doesn't end the search.
+            for await (const invoice of this.orbSDK.invoices.list({
+                external_customer_id: String(accountId),
+                // `synced` is an issued invoice exported to external accounting — still owed.
+                status: ['issued', 'synced'],
+                // Orb applies the date filter to whichever field `date_type` names and defaults that to
+                // `invoice_date`, where it matches every issued invoice, due or not.
+                date_type: 'due_date',
+                'due_date[lt]': dueOnOrBefore
+            })) {
+                // Orb can't filter on the amount, and a fully-credited invoice is still `issued`.
+                if (Number(invoice.amount_due) > 0) {
+                    return Ok({ hasOverdue: true });
+                }
+            }
+
+            return Ok({ hasOverdue: false });
+        } catch (err) {
+            // A paying account should always have an Orb customer, but guard the
+            // not-found case (e.g. never linked) as "nothing overdue" rather than error.
+            if (isOrbNotFoundError(err)) {
+                return Ok({ hasOverdue: false });
+            }
+            return Err(new Error('failed_to_get_overdue_invoices', { cause: err }));
+        }
+    }
+
+    async getUpcomingInvoice(subscriptionId: string): Promise<Result<BillingUpcomingInvoice | null>> {
+        try {
+            const invoice = await this.orbSDK.invoices.fetchUpcoming(
+                { subscription_id: subscriptionId },
+                {
+                    headers: {
+                        'Orb-Cache-Control': 'cache',
+                        'Orb-Cache-Max-Age-Seconds': '300'
+                    }
+                }
+            );
+
+            return Ok(fromOrbUpcomingInvoice(invoice));
+        } catch (err) {
+            if (isOrbNotFoundError(err) || isOrbEndedSubscriptionError(err)) {
+                return Ok(null);
+            }
+            return Err(new Error('failed_to_get_upcoming_invoice', { cause: err }));
+        }
+    }
+
+    async getPeriodCosts(subscriptionId: string, timeframe?: { start: Date; end: Date }): Promise<Result<BillingPeriodCosts | null>> {
+        try {
+            const costs = await this.orbSDK.subscriptions.fetchCosts(
+                subscriptionId,
+                {
+                    view_mode: 'cumulative',
+                    ...(timeframe ? { timeframe_start: timeframe.start.toISOString(), timeframe_end: timeframe.end.toISOString() } : {})
+                },
+                {
+                    headers: {
+                        'Orb-Cache-Control': 'cache',
+                        'Orb-Cache-Max-Age-Seconds': '300'
+                    }
+                }
+            );
+
+            const result = fromOrbPeriodCosts(costs, new Date(), { explicitTimeframe: timeframe !== undefined });
+            if (result && result.flagged.length > 0) {
+                // A price we couldn't cleanly turn into a metric's charge: nothing else would signal
+                // that a figure is missing, or that another metric's $0 can no longer be trusted.
+                metrics.increment(metrics.Types.BILLING_PERIOD_COSTS_UNATTRIBUTED);
+                report(new Error('billing_period_costs_unattributed'), {
+                    subscriptionId,
+                    malformedMetrics: result.malformedMetrics,
+                    fullyAttributed: result.fullyAttributed,
+                    flagged: result.flagged
+                });
+            }
+            return Ok(result);
+        } catch (err) {
+            if (isOrbNotFoundError(err)) {
+                return Ok(null);
+            }
+            return Err(new Error('failed_to_get_period_costs', { cause: err }));
+        }
+    }
+
+    async getSpendAlert(subscriptionId: string): Promise<Result<BillingSpendAlert | null>> {
+        try {
+            const alert = await this.findCostAlert(subscriptionId);
+            // A disabled alert is how removal is recorded — Orb has no delete for alerts — so it
+            // reads as "no alert" to every caller of this function.
+            if (!alert || !alert.enabled) {
+                return Ok(null);
+            }
+
+            return Ok(fromOrbAlert(alert));
+        } catch (err) {
+            if (isOrbNotFoundError(err)) {
+                return Ok(null);
+            }
+            return Err(new Error('failed_to_get_spend_alert', { cause: err }));
+        }
+    }
+
+    async setSpendAlert(subscriptionId: string, opts: { thresholdInCents: number }): Promise<Result<BillingSpendAlert>> {
+        try {
+            const thresholds = [{ value: opts.thresholdInCents / 100 }];
+            const existing = await this.findCostAlert(subscriptionId);
+
+            // Orb permits only one cost_exceeded alert per subscription, and a removed one is still
+            // there (disabled), so creating unconditionally would conflict.
+            let alert = existing ? await this.orbSDK.alerts.update(existing.id, { thresholds }) : await this.createCostAlert(subscriptionId, thresholds);
+
+            if (!alert.enabled) {
+                alert = await this.orbSDK.alerts.enable(alert.id);
+            }
+
+            const mapped = fromOrbAlert(alert);
+            if (!mapped) {
+                return Err(new Error('failed_to_set_spend_alert', { cause: 'Orb returned an alert without a threshold' }));
+            }
+
+            return Ok(mapped);
+        } catch (err) {
+            return Err(new Error('failed_to_set_spend_alert', { cause: err }));
+        }
+    }
+
+    async removeSpendAlert(subscriptionId: string): Promise<Result<void>> {
+        try {
+            const existing = await this.findCostAlert(subscriptionId);
+            if (existing?.enabled) {
+                await this.orbSDK.alerts.disable(existing.id);
+            }
+
+            return Ok(undefined);
+        } catch (err) {
+            if (isOrbNotFoundError(err)) {
+                return Ok(undefined);
+            }
+            return Err(new Error('failed_to_remove_spend_alert', { cause: err }));
+        }
+    }
+
+    private async createCostAlert(subscriptionId: string, thresholds: { value: number }[]): Promise<Orb.Alert> {
+        try {
+            return await this.orbSDK.alerts.createForSubscription(subscriptionId, { type: 'cost_exceeded', thresholds });
+        } catch (err) {
+            // Orb allows only one cost_exceeded alert per subscription, so this create lost a race
+            // against a concurrent save. Re-read and update instead of surfacing the conflict.
+            const raced = await this.findCostAlert(subscriptionId);
+            if (!raced) {
+                throw err;
+            }
+            return await this.orbSDK.alerts.update(raced.id, { thresholds });
+        }
+    }
+
+    /**
+     * Orb thresholds carry no id of their own, so every write has to start from the alert that
+     * holds them. Listing by subscription also returns the plan-level alerts inherited from the
+     * plan, which we neither own nor may edit — hence the check on the alert's own subscription.
+     */
+    private async findCostAlert(subscriptionId: string): Promise<Orb.Alert | null> {
+        for await (const alert of this.orbSDK.alerts.list({ subscription_id: subscriptionId })) {
+            if (alert.type === 'cost_exceeded' && alert.subscription?.id === subscriptionId) {
+                return alert;
+            }
+        }
+
+        return null;
     }
 
     async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
@@ -225,7 +383,7 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
+    async upgrade(opts: PlanChangeRequest): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
         try {
             // We schedule the upgrade but we don't apply it yet
             // We apply it when the first payment is made to confirm the card
@@ -265,7 +423,38 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async downgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<void>> {
+    /**
+     * Attaches the growth add-on price to the subscription, billing from now:
+     * the customer pays for it from the moment they turn it on, prorated by Orb.
+     */
+    async startGrowthAddon(opts: { subscriptionId: string }): Promise<Result<{ priceIntervalId: string | null }>> {
+        try {
+            const subscription = await this.orbSDK.subscriptions.priceIntervals(opts.subscriptionId, {
+                add: [{ external_price_id: growthAddonPriceId, start_date: new Date().toISOString() }]
+            });
+
+            return Ok({ priceIntervalId: growthAddonStateFromOrb(subscription.price_intervals).growthFeaturesPriceIntervalId });
+        } catch (err) {
+            return Err(new Error('failed_to_start_growth_addon', { cause: err }));
+        }
+    }
+
+    /**
+     * Schedules the disablement of the growth add-on to the end of the term.
+     */
+    async endGrowthAddon(opts: { subscriptionId: string; priceIntervalId: string }): Promise<Result<{ growthFeaturesEndsAt: Date | null }>> {
+        try {
+            const subscription = await this.orbSDK.subscriptions.priceIntervals(opts.subscriptionId, {
+                edit: [{ price_interval_id: opts.priceIntervalId, end_date: 'end_of_term' }]
+            });
+
+            return Ok({ growthFeaturesEndsAt: growthAddonStateFromOrb(subscription.price_intervals).growthFeaturesEndsAt });
+        } catch (err) {
+            return Err(new Error('failed_to_end_growth_addon', { cause: err }));
+        }
+    }
+
+    async downgrade(opts: PlanChangeRequest): Promise<Result<void>> {
         try {
             await this.orbSDK.subscriptions.schedulePlanChange(opts.subscriptionId, {
                 change_option: 'end_of_subscription_term',
@@ -275,19 +464,32 @@ export class OrbClient implements BillingClient {
 
             return Ok(undefined);
         } catch (err) {
-            return Err(new Error('failed_to_upgrade_customer', { cause: err }));
+            return Err(new Error('failed_to_downgrade_customer', { cause: err }));
         }
     }
 
-    async applyPendingChanges(opts: { pendingChangeId: string; amountCollected: string; paymentExternalId: string }): Promise<Result<BillingSubscription>> {
+    async applyPendingChanges(opts: {
+        pendingChangeId: string;
+        payment?: { externalId: string; amountCollected: string } | undefined;
+    }): Promise<Result<BillingSubscription>> {
         try {
-            const res = await this.orbSDK.subscriptionChanges.apply(opts.pendingChangeId, {
-                description: 'Initial payment on subscription',
-                mark_as_paid: true,
-                previously_collected_amount: opts.amountCollected,
-                payment_external_id: opts.paymentExternalId,
-                payment_notes: `Stripe collected: $${opts.amountCollected}`
-            });
+            const res = await this.orbSDK.subscriptionChanges.apply(
+                opts.pendingChangeId,
+                opts.payment
+                    ? {
+                          description: 'Initial payment on subscription',
+                          mark_as_paid: true,
+                          previously_collected_amount: opts.payment.amountCollected,
+                          payment_external_id: opts.payment.externalId,
+                          payment_notes: `Stripe collected: $${opts.payment.amountCollected}`
+                      }
+                    : {
+                          // Nothing was collected up front, so there is no payment to record and no
+                          // invoice to mark as paid. This happens when the plan bills fully in-arrears:
+                          // Orb invoices the period at its end as usual, but with zero charges.
+                          description: 'Plan change with no upfront payment'
+                      }
+            );
 
             if (!res.subscription) {
                 return Err(new Error('failed_to_apply_pending_changes', { cause: 'no subscription' }));
@@ -295,7 +497,8 @@ export class OrbClient implements BillingClient {
 
             return Ok({
                 id: res.subscription.id,
-                planExternalId: res.subscription.plan!.external_plan_id!
+                planExternalId: res.subscription.plan!.external_plan_id!,
+                ...growthAddonStateFromOrb(res.subscription.price_intervals)
             });
         } catch (err) {
             return Err(new Error('failed_to_apply_pending_changes', { cause: err }));
@@ -335,4 +538,14 @@ export class OrbClient implements BillingClient {
 
 function isOrbNotFoundError(err: unknown): err is InstanceType<typeof Orb.NotFoundError> {
     return err instanceof Orb.NotFoundError;
+}
+
+// Orb answers a fetchUpcoming for an ended subscription with a 400 rather than a 404, and the only
+// signal is the validation message. Matched narrowly so a genuinely malformed request still errors.
+function isOrbEndedSubscriptionError(err: unknown): boolean {
+    if (!(err instanceof Orb.BadRequestError)) {
+        return false;
+    }
+    const errors = (err.error as { validation_errors?: unknown } | undefined)?.validation_errors;
+    return Array.isArray(errors) && errors.some((e) => typeof e === 'string' && e.includes('status ended'));
 }

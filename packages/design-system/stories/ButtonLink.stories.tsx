@@ -6,7 +6,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof ButtonLink> = {
     component: ButtonLink,
-    title: 'Components/UI/ButtonLink',
+    title: 'App Components/UI/ButtonLink',
     parameters: { layout: 'padded' },
     decorators: [
         (Story) => (

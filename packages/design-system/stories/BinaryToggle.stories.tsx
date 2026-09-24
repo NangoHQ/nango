@@ -5,7 +5,7 @@ import { BinaryToggle } from '@/components/ui/BinaryToggle';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/UI/BinaryToggle',
+    title: 'App Components/UI/BinaryToggle',
     parameters: { layout: 'padded' }
 };
 export default meta;

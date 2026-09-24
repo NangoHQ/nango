@@ -1,15 +1,13 @@
+import { v4 as uuid } from 'uuid';
+
 import db from '@nangohq/database';
 
 import environmentService from '../services/environment.service.js';
 
 import type { DBEnvironment } from '@nangohq/types';
 
-export async function createEnvironmentSeed(accountId: number = 0, envName: string = 'test'): Promise<DBEnvironment> {
-    const env = await environmentService.createEnvironment(db.knex, { accountId: accountId, name: envName });
-    if (!env) {
-        throw new Error('Failed to create environment');
-    }
-    return env;
+export async function createEnvironmentSeed(accountId: number = 0, envName: string = uuid()): Promise<DBEnvironment> {
+    return (await environmentService.createEnvironment(db.knex, { accountId: accountId, name: envName })).unwrap();
 }
 
 export function getTestEnvironment(data?: Partial<DBEnvironment>): DBEnvironment {

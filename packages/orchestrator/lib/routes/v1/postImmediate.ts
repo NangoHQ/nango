@@ -1,11 +1,12 @@
 import * as z from 'zod';
 
 import { isDuplicateTaskNameError } from '@nangohq/scheduler';
-import { validateRequest } from '@nangohq/utils';
+import { metrics, validateRequest } from '@nangohq/utils';
 
-import { actionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
+import { actionArgsSchema, functionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
 
 import type { TaskType } from '../../types.js';
+import type { SlidingWindowRateLimiter } from '@nangohq/kvstore';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
@@ -19,10 +20,15 @@ export interface ImmediateSuccess {
     retryKey: string;
 }
 
+export interface RateLimitPayload {
+    retryAfterMs: number;
+}
+
 export const immediateTaskSchema = z
     .object({
         name: z.string().min(1),
         ownerKey: z.string().optional().default(''), // for backwards compatibility. TODO: replace with z.string() once all callers are updated
+        rateLimitKey: z.string().min(1).optional(),
         group: z.object({
             key: z.string().min(1),
             maxConcurrency: z.coerce.number()
@@ -36,7 +42,7 @@ export const immediateTaskSchema = z
             startedToCompleted: z.number().int().positive(),
             heartbeat: z.number().int().positive()
         }),
-        args: z.discriminatedUnion('type', [syncArgsSchema, actionArgsSchema, webhookArgsSchema, onEventArgsSchema, syncAbortArgsSchema])
+        args: z.discriminatedUnion('type', [syncArgsSchema, actionArgsSchema, webhookArgsSchema, onEventArgsSchema, syncAbortArgsSchema, functionArgsSchema])
     })
     .strict();
 
@@ -46,6 +52,7 @@ export type PostImmediate = Endpoint<{
     Body: {
         name: string;
         ownerKey?: string;
+        rateLimitKey?: string | undefined;
         group: {
             key: string;
             maxConcurrency: number;
@@ -61,7 +68,7 @@ export type PostImmediate = Endpoint<{
         };
         args: JsonObject & { type: TaskType };
     };
-    Error: ApiError<'immediate_failed' | 'duplicate_task_name'>;
+    Error: ApiError<'immediate_failed' | 'duplicate_task_name' | 'invalid_request'> | ApiError<'rate_limit_exceeded', undefined, RateLimitPayload>;
     Success: ImmediateSuccess;
 }>;
 
@@ -80,8 +87,25 @@ const validate = validateRequest<PostImmediate>({
     }
 });
 
-const handler = (scheduler: Scheduler) => {
+const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediate>) => {
+        const rateLimitKey = res.locals.parsedBody.rateLimitKey;
+        if (rateLimitKey) {
+            const rateLimit = await rateLimiter.consume(rateLimitKey, 1);
+            if (rateLimit.rejected > 0) {
+                metrics.increment(metrics.Types.ORCH_TASKS_REJECTED, 1, { reason: 'rate_limit' });
+                res.setHeader('Retry-After', Math.max(1, Math.ceil(rateLimit.retryAfterMs / 1000)));
+                res.status(429).json({
+                    error: {
+                        code: 'rate_limit_exceeded',
+                        message: 'Rate limit exceeded',
+                        payload: { retryAfterMs: rateLimit.retryAfterMs }
+                    }
+                });
+                return;
+            }
+        }
+
         const task = await scheduler.immediate({
             name: res.locals.parsedBody.name,
             payload: res.locals.parsedBody.args,
@@ -115,10 +139,10 @@ const handler = (scheduler: Scheduler) => {
 
 export const route: Route<PostImmediate> = { path, method };
 
-export const routeHandler = (scheduler: Scheduler): RouteHandler<PostImmediate> => {
+export const routeHandler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter): RouteHandler<PostImmediate> => {
     return {
         ...route,
         validate,
-        handler: handler(scheduler)
+        handler: handler(scheduler, rateLimiter)
     };
 };

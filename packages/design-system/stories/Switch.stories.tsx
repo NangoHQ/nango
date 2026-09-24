@@ -4,7 +4,7 @@ import { FieldLabel } from '../src/components/ui/field';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/UI/Switch',
+    title: 'App Components/UI/Switch',
     parameters: { layout: 'padded' }
 };
 export default meta;

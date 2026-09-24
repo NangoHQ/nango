@@ -1,7 +1,7 @@
 import { Ellipsis, ExternalLink, Trash2, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
 import {
     Badge,
     Button,
@@ -20,12 +20,9 @@ import {
 } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Dot } from '@/components/ui/Dot';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
-import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteInvite } from '@/hooks/useInvite';
@@ -68,9 +65,12 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                     <DialogTitle>Edit role</DialogTitle>
                     <DialogDescription>
                         Manage access level and permissions.{' '}
-                        <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon variant="muted" size="sm">
-                            Learn more
-                        </StyledLink>
+                        <Button asChild variant="link-neutral">
+                            <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
+                                Learn more
+                                <ExternalLink />
+                            </a>
+                        </Button>
                     </DialogDescription>
                 </DialogHeader>
 
@@ -115,8 +115,6 @@ export const TeamMembers: React.FC = () => {
 
     const [editingUser, setEditingUser] = useState<ApiUser | null>(null);
 
-    const mfaFeatureEnabled = data?.data.mfaFeatureEnabled ?? false;
-
     const allUsers: ((ApiTeamUser & { is_invitation: false }) | (ApiInvitation & { is_invitation: true }))[] = useMemo(
         () =>
             [
@@ -127,7 +125,7 @@ export const TeamMembers: React.FC = () => {
     );
 
     const { can } = usePermissions();
-    const canManageTeam = can(permissions.canManageTeam);
+    const canManageTeam = can('account:team:update');
 
     const onRemoveUser = async (user: ApiUser) => {
         try {
@@ -149,10 +147,7 @@ export const TeamMembers: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-3">
-            <div className="inline-flex items-center gap-1.5">
-                <h3 className="text-text-strong text-ds-md font-ds-medium leading-ds-normal">Team members</h3>
-                <InfoTooltip>Everyone with access to this team. Manage roles or remove members here.</InfoTooltip>
-            </div>
+            <h3 className="text-text-strong text-ds-md font-ds-medium leading-ds-normal">Team members</h3>
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -161,12 +156,14 @@ export const TeamMembers: React.FC = () => {
                         <TableHead>
                             <div className="inline-flex items-center gap-0.5">
                                 <span>Role</span>
-                                <ButtonLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" size="2xs" variant="ghost" target="_blank">
-                                    <ExternalLink className="size-3" />
-                                </ButtonLink>
+                                <IconButton asChild variant="link-accent" size="xs" label="Team roles and permissions documentation">
+                                    <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink />
+                                    </a>
+                                </IconButton>
                             </div>
                         </TableHead>
-                        {mfaFeatureEnabled && <TableHead>2FA</TableHead>}
+                        <TableHead>2FA</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">{/* Actions */}</TableHead>
                     </TableRow>
@@ -187,10 +184,10 @@ export const TeamMembers: React.FC = () => {
                                             variant="warning"
                                             tooltipContent={
                                                 <span>
-                                                    RBAC is only available for &apos;Growth&apos; plans. This role is overwritten by &apos;Full access&apos;.{' '}
-                                                    <StyledLink to={`/team/billing#plans`} className="text-s">
-                                                        Upgrade
-                                                    </StyledLink>{' '}
+                                                    RBAC is only available with the Growth add-on. This role is overwritten by &apos;Full access&apos;.{' '}
+                                                    <Button asChild variant="link-accent" size="sm">
+                                                        <Link to={`/team/billing#plans`}>Upgrade</Link>
+                                                    </Button>{' '}
                                                     to reactivate role.
                                                 </span>
                                             }
@@ -201,17 +198,15 @@ export const TeamMembers: React.FC = () => {
                                 </div>
                             </TableCell>
 
-                            {mfaFeatureEnabled && (
-                                <TableCell>
-                                    {user.is_invitation ? (
-                                        <span className="text-text-secondary">—</span>
-                                    ) : user.mfaEnabled ? (
-                                        <Badge variant="success">Enabled</Badge>
-                                    ) : (
-                                        <Badge variant="ghost">Disabled</Badge>
-                                    )}
-                                </TableCell>
-                            )}
+                            <TableCell>
+                                {user.is_invitation ? (
+                                    <span className="text-text-secondary">—</span>
+                                ) : user.mfaEnabled ? (
+                                    <Badge variant="success">Enabled</Badge>
+                                ) : (
+                                    <Badge variant="ghost">Disabled</Badge>
+                                )}
+                            </TableCell>
 
                             <TableCell>
                                 {user.is_invitation ? (

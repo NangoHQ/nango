@@ -180,7 +180,7 @@ Configure your app's Nango webhook URL in **Environment Settings > Webhook URLs*
   ```typescript
   import { Nango } from '@nangohq/node';
 
-  const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+  const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
   const result = await nango.listRecords({
       providerConfigKey: 'crm',

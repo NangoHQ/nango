@@ -13,17 +13,25 @@ import { resolveLocalFileName, resolveLocalFilePath } from '../../utils/utils.js
 import type { DBSyncConfig, NangoProps } from '@nangohq/types';
 import type { Response } from 'express';
 
-const scriptTypeToPath: Record<NangoProps['scriptType'], string> = {
+const scriptTypeToPath: Record<DBSyncConfig['type'], string> = {
     'on-event': 'on-events',
     action: 'actions',
-    sync: 'syncs',
-    webhook: 'syncs'
+    sync: 'syncs'
 };
 
 class LocalFileService {
-    public getIntegrationFile({ syncConfig, providerConfigKey }: { syncConfig: DBSyncConfig; providerConfigKey: string }) {
+    public getIntegrationFile({
+        syncConfig,
+        providerConfigKey,
+        scriptType
+    }: {
+        syncConfig: DBSyncConfig;
+        providerConfigKey: string;
+        scriptType: NangoProps['scriptType'];
+    }) {
         try {
-            const filePath = resolveLocalFilePath({ fileName: resolveLocalFileName({ syncName: syncConfig.sync_name, providerConfigKey }) });
+            const fileName = resolveLocalFileName({ syncName: syncConfig.sync_name, providerConfigKey, scriptType });
+            const filePath = resolveLocalFilePath({ fileName, providerConfigKey, scriptType });
             const integrationFileContents = fs.readFileSync(filePath, 'utf8');
             return integrationFileContents;
         } catch (err) {

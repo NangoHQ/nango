@@ -6,7 +6,7 @@ description: 'Let your users connect external APIs to your agents & apps.'
 
 ## Overview
 
-Nango Auth lets your users connect 900+ external APIs to your product. You embed a Nango-managed auth flow in your application, and Nango handles authorization, credential storage, refresh, and validation.
+Nango Auth lets your users connect 1,000+ external APIs to your product. You embed a Nango-managed auth flow in your application, and Nango handles authorization, credential storage, refresh, and validation.
 
 A **Connection** is created after each successful authorization. It stores one user's credentials for one external API and keeps them valid over time. Credentials can be retrieved at scale or used directly by other Nango primitives — without ever passing through your codebase.
 
@@ -30,14 +30,14 @@ Once you have the connection ID, fetch credentials whenever you need them:
   <Tab title="cURL">
   ```bash
   curl "https://api.nango.dev/connections/{connectionId}?provider_config_key={integrationId}" \
-    -H "Authorization: Bearer {nangoSecretKey}"
+    -H "Authorization: Bearer {nangoApiKey}"
   ```
   </Tab>
 </Tabs>
 
 ## Capabilities
 
-- **Auth schemes** — OAuth 2.0, OAuth 1.0a, API keys, basic auth, custom. 900+ APIs supported; new ones [added on demand](/integrations/contribute-or-request-api) within days, by request or self-contributed.
+- **Auth schemes** — OAuth 2.0, OAuth 1.0a, API keys, basic auth, custom. 1,000+ APIs supported; new ones [added on demand](/integrations/contribute-or-request-api) within days, by request or self-contributed.
 - **Pre-built UI** — Embedded Connect UI with API-specific guidance, input validation, and your branding. Or [customize Connect UI or build a custom UI](/guides/auth/customize-connect-ui).
 - **Credential management** — Encrypted storage, automatic refresh, retrieval at scale. Combine with [Proxy](/guides/platform/proxy-requests) or [Functions](/guides/functions/functions-guide) to avoid handling credentials directly.
 - **Observability** — Failure detection, reconnect flow, and per-connection logs.
@@ -160,7 +160,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     3. After confirming steps 1 and 2, update the callback URL in Nango's **Environment Settings**. Settings are per-environment, so repeat for every environment.
 
     <Accordion title="For agents">
-      Ask the user what production callback URL they want to use, then have them add a 308 redirect from that URL to `https://api.nango.dev/oauth/callback` before they register provider OAuth apps. The Nango environment setting is dashboard-only — ask the user to paste the final callback URL into **Environment Settings > Backend**.
+      Ask the user what production callback URL they want to use, then have them add a 308 redirect from that URL to `https://api.nango.dev/oauth/callback` before they register provider OAuth apps. You can set `callback_url` when creating an environment from [the public endpoint](/reference/backend/http-api/environments/create). Ask the user for an [Account API key](https://app.nango.dev/api-keys) and send it as `Authorization: Bearer <NANGO-API-KEY>`. Updating an existing environment's callback URL is dashboard-only — ask the user to paste the final callback URL into **Environment Settings > Backend**.
     </Accordion>
   </Step>
 
@@ -174,7 +174,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
         ```ts
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
+        const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
         api.post('/sessionToken', async (req, res) => {
           const { data } = await nango.createConnectSession({
@@ -260,7 +260,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     3. Handle `POST` requests on that route in your backend.
 
     <Accordion title="For agents">
-      Webhook URL configuration is dashboard-only — there is no public API for environment settings. Ask the user to paste the webhook URL into **Environment Settings** and enable **Send New Connection Creation Webhooks**.
+      Webhook URL configuration is dashboard-only — there is no public API to set environment webhook URLs. Ask the user to paste the webhook URL into **Environment Settings** and enable **Send New Connection Creation Webhooks**.
     </Accordion>
 
     Webhook payload:
@@ -292,7 +292,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
       ```ts
       import { Nango } from '@nangohq/node';
 
-      const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
+      const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
       try {
         await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
@@ -323,7 +323,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
       ```ts
       import { Nango } from '@nangohq/node';
 
-      const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
+      const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
       api.post('/sessionToken', async (req, res) => {
         const { data } = await nango.createReconnectSession({

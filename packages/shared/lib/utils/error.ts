@@ -33,6 +33,14 @@ export class AuthCredentialsError extends NangoInternalError {
     }
 }
 
+export class ConnectionCreationCappedError extends NangoInternalError {
+    constructor() {
+        super('resource_capped');
+        this.status = 400;
+        this.message = 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.';
+    }
+}
+
 export class NangoError extends NangoInternalError {
     public additional_properties?: Record<string, JsonValue> | undefined = undefined;
     public override readonly message: string;
@@ -91,6 +99,21 @@ export class NangoError extends NangoInternalError {
             case 'unknown_connect_session_token':
                 this.status = 401;
                 this.message = 'Authentication failed. The provided connect session token does not match any account.';
+                break;
+
+            case 'invalid_agent_session_token_format':
+                this.status = 401;
+                this.message = 'Authentication failed. The provided agent session token is not following correct format: nango_agent_session_RANDOM';
+                break;
+
+            case 'unknown_agent_session_token':
+                this.status = 401;
+                this.message = 'Authentication failed. The provided agent session token does not match any account.';
+                break;
+
+            case 'agent_session_ended':
+                this.status = 401;
+                this.message = 'Authentication failed. The agent session has ended or expired. Create a new session to continue.';
                 break;
 
             case 'only_nango_cloud':
@@ -256,9 +279,19 @@ export class NangoError extends NangoInternalError {
                 this.message = `Failed to perform the action`;
                 break;
 
+            case 'function_failure':
+                this.status = 400;
+                this.message = `Failed to invoke the function`;
+                break;
+
             case 'webhook_failure':
                 this.status = 400;
                 this.message = `Failed to perform the webhook`;
+                break;
+
+            case 'webhook_rate_limit_exceeded':
+                this.status = 429;
+                this.message = `The webhook was not executed because this environment reached its webhook dispatch rate limit`;
                 break;
 
             case 'on_event_failure':
@@ -345,6 +378,22 @@ export class NangoError extends NangoInternalError {
             case 'attio_mcp_refresh_token_request_error':
                 this.status = 400;
                 this.message = `The Attio MCP API returned an error when trying to refresh the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
+            case 'scrollstash_mcp_token_request_error':
+                this.status = 400;
+                this.message = `The ScrollStash MCP API returned an error when trying to request an access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
+            case 'scrollstash_mcp_refresh_token_request_error':
+                this.status = 400;
+                this.message = `The ScrollStash MCP API returned an error when trying to refresh the access token. Please try again later.`;
                 if (this.payload) {
                     this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
                 }
@@ -506,6 +555,10 @@ export class NangoError extends NangoInternalError {
                 this.message = `Invalid app secret key. Please make sure the app secret is correct.`;
                 break;
 
+            case 'function_execution_failure':
+                this.message = `The function failed with an error.`;
+                break;
+
             case 'action_script_failure':
                 this.message = `The action script failed with an error: ${stringifyError(this.payload)}`;
                 break;
@@ -632,6 +685,36 @@ export class NangoError extends NangoInternalError {
             case 'webhook_missing_token':
                 this.status = 401;
                 this.message = 'Missing webhook token';
+                break;
+
+            case 'webhook_invalid_secret':
+                this.status = 400;
+                this.message = 'Invalid webhook secret configuration';
+                break;
+
+            case 'webhook_invalid_body':
+                this.status = 400;
+                this.message = 'Invalid webhook body';
+                break;
+
+            case 'webhook_missing_shop_domain':
+                this.status = 400;
+                this.message = 'Webhook is missing the shop domain header';
+                break;
+
+            case 'webhook_missing_nango_connection_id':
+                this.status = 400;
+                this.message = 'Webhook is missing the Nango connection id';
+                break;
+
+            case 'webhook_no_connection':
+                this.status = 400;
+                this.message = 'No connection found for this webhook';
+                break;
+
+            case 'webhook_oauth2webhook_failed':
+                this.status = 500;
+                this.message = 'Failed to finish the connection from the webhook';
                 break;
 
             case 'webhook_invalid_payload':

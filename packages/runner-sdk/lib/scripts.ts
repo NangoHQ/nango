@@ -1,14 +1,26 @@
 import type { NangoActionBase } from './action.js';
+import type { CreateFunctionResponse, FunctionRequires, FunctionTriggerDefinition } from './function.js';
 import type { NangoSyncBase } from './sync.js';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from './types.js';
 import type { NangoSyncEndpointV2 } from '@nangohq/types';
 import type { MaybePromise } from 'rollup';
 import type * as z from 'zod';
 
+type CreateAnyFunctionResponse = CreateFunctionResponse<
+    Record<string, ZodModel>,
+    z.ZodTypeAny,
+    z.ZodTypeAny,
+    ZodMetadata,
+    ZodCheckpoint,
+    FunctionTriggerDefinition | undefined,
+    FunctionRequires
+>;
+
 export type CreateAnyResponse =
     | CreateSyncResponse<any, ZodMetadata, ZodCheckpoint>
     | CreateActionResponse<any, any, ZodMetadata, ZodCheckpoint>
-    | CreateOnEventResponse<ZodMetadata, ZodCheckpoint>;
+    | CreateOnEventResponse<ZodMetadata, ZodCheckpoint>
+    | CreateAnyFunctionResponse;
 
 export type { ActionError } from './errors.js';
 export type { NangoActionBase as NangoAction, ProxyConfiguration } from './action.js';

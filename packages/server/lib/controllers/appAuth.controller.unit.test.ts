@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ConnectionCreationCappedError } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
 import appAuthController from './appAuth.controller.js';
@@ -100,7 +101,10 @@ describe('AppAuthController.connect', () => {
             activityLogId: 'activity-1',
             connectSessionId: 10
         });
-        mockGetAccountContext.mockResolvedValue({ environment: { id: 2, name: 'dev' }, account: { id: 1, name: 'acme' } });
+        mockGetAccountContext.mockResolvedValue({
+            environment: { id: 2, uuid: 'e0000000-0000-4000-8000-000000000002', name: 'dev' },
+            account: { id: 1, uuid: 'a0000000-0000-4000-8000-000000000001', name: 'acme' }
+        });
         mockGetProviderConfig.mockResolvedValue({ id: 1, unique_key: 'github-app', provider: 'github-app', oauth_client_id: 'app-123' });
         mockGetProvider.mockReturnValue({ auth_mode: 'APP', token_url: 'https://api.github.com/app/installations' });
         mockCreateCredentials.mockResolvedValue(Ok({ type: 'APP', jwtToken: 'jwt-token' }));
@@ -119,9 +123,17 @@ describe('AppAuthController.connect', () => {
 
     it('stores the connect session webhook URL override as webhook_url_override (not connection_config)', async () => {
         const req = {
-            query: { installation_id: 'install-1', state: 'session-id' }
+            query: { installation_id: 'install-1', state: 'session-id' },
+            ip: '203.0.113.7',
+            get: vi.fn(() => 'vitest')
         } as unknown as Request;
-        const res = { redirect: vi.fn(), sendStatus: vi.fn(), status: vi.fn().mockReturnThis(), send: vi.fn().mockReturnThis() } as unknown as Response;
+        const res = {
+            locals: {},
+            redirect: vi.fn(),
+            sendStatus: vi.fn(),
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
         const next = vi.fn();
 
         await appAuthController.connect(req, res, next);
@@ -139,15 +151,32 @@ describe('AppAuthController.connect', () => {
         expect(mockUpsertConnection).toHaveBeenCalledWith(
             expect.objectContaining({ connectionConfig: expect.not.objectContaining({ webhook_url: expect.anything() }) })
         );
+        // The route middleware records the event, so what this handler owes it is the upsert outcome and
+        // the account it happened to — an unauthenticated callback carries neither on its locals.
+        expect(req.audit?.connectionUpsert).toMatchObject({
+            operation: 'creation',
+            connectionId: 'conn-1',
+            providerConfigKey: 'github-app',
+            account: { id: 1 },
+            environment: { uuid: 'e0000000-0000-4000-8000-000000000002', name: 'dev' }
+        });
     });
 
     it('threads the per-connection webhook URL override into the creation-failure hook', async () => {
         mockUpsertConnection.mockRejectedValue(new Error('boom'));
 
         const req = {
-            query: { installation_id: 'install-1', state: 'session-id' }
+            query: { installation_id: 'install-1', state: 'session-id' },
+            ip: '203.0.113.7',
+            get: vi.fn(() => 'vitest')
         } as unknown as Request;
-        const res = { redirect: vi.fn(), sendStatus: vi.fn(), status: vi.fn().mockReturnThis(), send: vi.fn().mockReturnThis() } as unknown as Response;
+        const res = {
+            locals: {},
+            redirect: vi.fn(),
+            sendStatus: vi.fn(),
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
         const next = vi.fn();
 
         await appAuthController.connect(req, res, next);
@@ -157,6 +186,35 @@ describe('AppAuthController.connect', () => {
                 connection: expect.objectContaining({
                     webhook_url_override: 'https://override.example.com/hook'
                 })
+            }),
+            expect.anything()
+        );
+    });
+
+    it('triggers the creation-failure hook when connection creation is capped', async () => {
+        mockUpsertConnection.mockRejectedValue(new ConnectionCreationCappedError());
+
+        const req = {
+            query: { installation_id: 'install-1', state: 'session-id' },
+            ip: '203.0.113.7',
+            get: vi.fn(() => 'vitest')
+        } as unknown as Request;
+        const res = {
+            locals: {},
+            redirect: vi.fn(),
+            sendStatus: vi.fn(),
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
+
+        await appAuthController.connect(req, res, vi.fn());
+
+        expect(mockConnectionCreationFailed).toHaveBeenCalledWith(
+            expect.objectContaining({
+                error: {
+                    type: 'resource_capped',
+                    description: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.'
+                }
             }),
             expect.anything()
         );

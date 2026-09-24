@@ -5,6 +5,143 @@ import { roles } from '../roles.js';
 
 const PUBSUB_SUBJECTS = ['user', 'usage', 'team', 'lambda_keep_warm', 'audit'] as const;
 
+export const DEFAULT_RUNNER_EGRESS_NANGO_POD_SELECTOR = {
+    matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In' as const, values: ['persist', 'jobs', 'server'] }]
+};
+
+export const DEFAULT_RUNNER_EGRESS_NANGO_PORTS = [80];
+
+/** Kubernetes qualified name: 1–63 chars, alphanumeric, with `-`, `_`, `.` in the middle. */
+const K8S_LABEL_NAME = /^[A-Za-z0-9]([-A-Za-z0-9_.]*[A-Za-z0-9])?$/;
+/** DNS-1123 subdomain used as an optional label-key prefix (max 253). */
+const K8S_DNS1123_SUBDOMAIN = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+const DNS1123_LABEL_MAX_LENGTH = 63;
+const DNS1123_SUBDOMAIN_MAX_LENGTH = 253;
+
+function isK8sLabelName(name: string): boolean {
+    return name.length >= 1 && name.length <= 63 && K8S_LABEL_NAME.test(name);
+}
+
+/** RFC 1123 subdomain: total ≤253, each label ≤63. The regex alone does not cap per-label length. */
+function isK8sDns1123Subdomain(prefix: string): boolean {
+    if (prefix.length < 1 || prefix.length > DNS1123_SUBDOMAIN_MAX_LENGTH || !K8S_DNS1123_SUBDOMAIN.test(prefix)) {
+        return false;
+    }
+    return prefix.split('.').every((label) => label.length <= DNS1123_LABEL_MAX_LENGTH);
+}
+
+/** Kubernetes label key: `[prefix/]name`. Prefix is a DNS-1123 subdomain. */
+function isK8sLabelKey(key: string): boolean {
+    const parts = key.split('/');
+    if (parts.length === 1) {
+        return isK8sLabelName(parts[0]!);
+    }
+    const prefix = parts[0];
+    const name = parts[1];
+    if (parts.length !== 2 || prefix === undefined || name === undefined) {
+        return false;
+    }
+    return isK8sDns1123Subdomain(prefix) && isK8sLabelName(name);
+}
+
+/** Kubernetes label value: empty or a qualified name, max 63 chars. */
+function isK8sLabelValue(value: string): boolean {
+    return value.length <= 63 && (value === '' || K8S_LABEL_NAME.test(value));
+}
+
+const k8sLabelKeySchema = z.string().refine(isK8sLabelKey, {
+    message: 'RUNNER_EGRESS_NANGO_POD_SELECTOR contains an invalid Kubernetes label key'
+});
+const k8sLabelValueSchema = z.string().refine(isK8sLabelValue, {
+    message: 'RUNNER_EGRESS_NANGO_POD_SELECTOR contains an invalid Kubernetes label value'
+});
+
+const runnerEgressNangoPortsSchema = z
+    .string()
+    .optional()
+    .transform((s, ctx) => {
+        if (s === undefined || s.trim() === '') {
+            return [...DEFAULT_RUNNER_EGRESS_NANGO_PORTS];
+        }
+        const ports = new Set<number>();
+        for (const part of s.split(',')) {
+            const trimmed = part.trim();
+            if (trimmed === '') {
+                continue;
+            }
+            const port = Number(trimmed);
+            if (!Number.isInteger(port) || port < 1 || port > 65535) {
+                ctx.addIssue(`Invalid port in RUNNER_EGRESS_NANGO_PORTS: ${part}`);
+                return z.NEVER;
+            }
+            ports.add(port);
+        }
+        if (ports.size === 0) {
+            ctx.addIssue('RUNNER_EGRESS_NANGO_PORTS must include at least one port');
+            return z.NEVER;
+        }
+        return [...ports].sort((a, b) => a - b);
+    });
+
+const runnerEgressNangoPodSelectorSchema = z
+    .string()
+    .optional()
+    .transform((s, ctx) => {
+        if (s === undefined || s.trim() === '') {
+            return structuredClone(DEFAULT_RUNNER_EGRESS_NANGO_POD_SELECTOR);
+        }
+        try {
+            return JSON.parse(s) as unknown;
+        } catch {
+            ctx.addIssue(`Invalid JSON in RUNNER_EGRESS_NANGO_POD_SELECTOR`);
+            return z.NEVER;
+        }
+    })
+    .pipe(
+        z
+            .object({
+                matchLabels: z
+                    .record(z.string(), k8sLabelValueSchema)
+                    .refine((labels) => Object.keys(labels).every(isK8sLabelKey), {
+                        message: 'RUNNER_EGRESS_NANGO_POD_SELECTOR contains an invalid Kubernetes label key'
+                    })
+                    .optional(),
+                matchExpressions: z
+                    .array(
+                        z
+                            .object({
+                                key: k8sLabelKeySchema,
+                                operator: z.enum(['In', 'NotIn', 'Exists', 'DoesNotExist']),
+                                values: z.array(k8sLabelValueSchema).optional()
+                            })
+                            .strict()
+                            .refine(
+                                (expr) => {
+                                    const hasValues = expr.values !== undefined && expr.values.length > 0;
+                                    if (expr.operator === 'In' || expr.operator === 'NotIn') {
+                                        return hasValues;
+                                    }
+                                    return !hasValues;
+                                },
+                                {
+                                    message:
+                                        'RUNNER_EGRESS_NANGO_POD_SELECTOR matchExpressions require values for In/NotIn and must omit values for Exists/DoesNotExist'
+                                }
+                            )
+                    )
+                    .optional()
+            })
+            .strict()
+            .refine(
+                (sel) => {
+                    const hasLabels = sel.matchLabels !== undefined && Object.keys(sel.matchLabels).length > 0;
+                    const hasExpressions = sel.matchExpressions !== undefined && sel.matchExpressions.length > 0;
+                    return hasLabels || hasExpressions;
+                },
+                { message: 'RUNNER_EGRESS_NANGO_POD_SELECTOR must select specific pods (empty selector is not allowed)' }
+            )
+    );
+
 function outboundUrlPolicySchema(varName: string) {
     return z
         .string()
@@ -50,7 +187,7 @@ const ENVS_SHAPE = z.object({
     WORKOS_CLIENT_ID: z.string().optional(),
     NANGO_DASHBOARD_USERNAME: z.string().optional(),
     NANGO_DASHBOARD_PASSWORD: z.string().optional(),
-    LOCAL_NANGO_USER_ID: z.coerce.number().optional(),
+    LOCAL_NANGO_USER_ID: z.coerce.number().int().nonnegative().optional(),
     AUTH_ALLOW_SIGNUP: z.stringbool().optional().default(true),
     DEFAULT_USER_ROLE: z.enum(roles).optional().default('administrator'),
     AUTH_SHADOW_CACHE_TTL_MS: z.coerce.number().int().positive().optional().default(60_000), // 1 minute
@@ -65,7 +202,13 @@ const ENVS_SHAPE = z.object({
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
     NANGO_SERVER_URL: z.url().optional(),
+    // Where the dashboard sends its API requests. Defaults to NANGO_SERVER_URL when unset.
+    // `/` keeps requests on whichever host served the dashboard (same-origin).
+    NANGO_DASHBOARD_API_URL: z.url().or(z.literal('/')).optional(),
     NANGO_MANAGEMENT_MCP_SERVER_URL: z.url().optional(),
+    NANGO_OAUTH_SERVER_BASE_URL: z.url().optional(),
+    NANGO_OAUTH_SERVER_COOKIE_KEYS: z.string().optional(),
+    NANGO_OAUTH_SERVER_JWKS: z.string().optional(),
     NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional().default(200),
     NANGO_CACHE_ENV_KEYS: z.stringbool().optional().default(false),
@@ -110,6 +253,18 @@ const ENVS_SHAPE = z.object({
                 return z.NEVER;
             }
         }),
+    NANGO_PROXY_MAX_RETRY_WAIT_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(10 * 60 * 1000), // 10 minutes
+    NANGO_WEBHOOK_MAX_RETRY_WAIT_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(10 * 60 * 1000), // 10 minutes
     // Outbound URL policy (JSON), consumed by @nangohq/egress for proxy/webhook/uncontrolledFetch paths.
     NANGO_OUTBOUND_URL_POLICY: outboundUrlPolicySchema('NANGO_OUTBOUND_URL_POLICY'),
     // Outbound URL policy overlay for OAuth/token flows. Applied on top of NANGO_OUTBOUND_URL_POLICY,
@@ -135,10 +290,12 @@ const ENVS_SHAPE = z.object({
     CRON_DELETE_OLD_SYNCS_LIMIT: z.coerce.number().optional().default(25),
     CRON_DELETE_OLD_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_FUNCTION_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
+    CRON_MANAGE_GROWTH_ADDONS_EVERY_MIN: z.coerce.number().optional().default(60),
     CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES: z.coerce.number().optional().default(0),
     // Billing-events S3 export cron (hourly). Value is the minute-of-the-hour the
     // cron fires on (0–59). -1 (default) disables the cron entirely. 15 gives
@@ -194,6 +351,7 @@ const ENVS_SHAPE = z.object({
     ORCHESTRATOR_BACKPRESSURE_MONITORING_TOP_N: z.coerce.number().optional().default(10),
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
+    ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: z.coerce.number().int().nonnegative().optional().default(0),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
     ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 
@@ -237,6 +395,10 @@ const ENVS_SHAPE = z.object({
             },
             {
                 groupKeyPattern: 'action*',
+                maxConcurrency: 200
+            },
+            {
+                groupKeyPattern: 'function*',
                 maxConcurrency: 200
             },
             {
@@ -285,6 +447,8 @@ const ENVS_SHAPE = z.object({
     RUNNER_URL: z.url().optional(),
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
+    RUNNER_EGRESS_NANGO_POD_SELECTOR: runnerEgressNangoPodSelectorSchema,
+    RUNNER_EGRESS_NANGO_PORTS: runnerEgressNangoPortsSchema,
     RUNNER_HTTP_LOG_SAMPLE_PCT: z.coerce.number().optional(),
     NAMESPACE_PER_RUNNER: z.stringbool().optional().default(false),
     RUNNER_CLIENT_HEADERS_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
@@ -360,22 +524,8 @@ const ENVS_SHAPE = z.object({
     ORB_API_KEY: z.string().optional(),
     ORB_WEBHOOKS_SECRET: z.string().optional(),
     ORB_MAX_RETRIES: z.coerce.number().optional().default(3),
-    ORB_RETRY_MAX_ATTEMPTS: z.coerce.number().optional().default(3),
-    ORB_RETRY_INITIAL_DELAY_MS: z.coerce.number().optional().default(10_000),
-    BILLING_INGEST_BATCH_SIZE: z.coerce.number().optional().default(500),
-    BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(5_000),
-    BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(100_000),
-    BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
     BILLING_EVENTS_S3_BUCKET: z.string().optional(),
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
-    // Temporary. ISO 8601 timestamp at which the S3-fed pipeline becomes
-    // authoritative for billing. Before this instant, S3 events ship as
-    // "<name>_s3" shadow and HTTP events ship canonical (unsuffixed). At
-    // and after this instant, the two swap roles — HTTP events pick up
-    // the "_http" suffix and S3 events become canonical. Unset (or set
-    // to a future date) to defer or roll back the cutover. Remove once
-    // the HTTP emission path is retired.
-    BILLING_EVENTS_CUTOVER_AT: z.string().datetime().optional(),
     BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
     // DLQ bucket Orb writes to when it can't ingest a billing event. Watched by the
     // metering DLQ monitor cron (CRON_BILLING_EVENTS_S3_DLQ_MONITOR_MINUTE).
@@ -402,15 +552,24 @@ const ENVS_SHAPE = z.object({
     AWS_REGION: z.string().optional(),
     AWS_BUCKET_NAME: z.string().optional(),
     AWS_ACCESS_KEY_ID: z.string().optional(),
+    AWS_SECRET_ACCESS_KEY: z.string().optional(),
 
     AWS_INTEGRATIONS_ACCESS_KEY_ID: z.string().optional(),
     AWS_INTEGRATIONS_SECRET_ACCESS_KEY: z.string().optional(),
     AWS_INTEGRATIONS_REGION: z.string().optional(),
     AWS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
 
+    GCS_INTEGRATIONS_BUCKET_NAME: z.string().optional(),
+
+    AZURE_INTEGRATIONS_ACCOUNT_NAME: z.string().optional(),
+    AZURE_INTEGRATIONS_CONTAINER_NAME: z.string().optional(),
+    AZURE_INTEGRATIONS_ACCOUNT_KEY: z.string().optional(),
+    OBJECT_STORE_DELETE_CONCURRENCY: z.coerce.number().int().min(1).optional().default(16),
+
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
+    FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
@@ -433,6 +592,7 @@ const ENVS_SHAPE = z.object({
     NANGO_LOGS_ES_SHARD_PER_DAY_OPERATIONS: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_SHARD_PER_DAY_MESSAGES: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_WARM_MIN_AGE: z.string().optional().default('48h'),
+    NANGO_LOGS_ES_RETENTION_DAYS: z.coerce.number().int().positive().optional().default(15),
     NANGO_LOGS_CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.coerce.number().optional().default(3),
     NANGO_LOGS_CIRCUIT_BREAKER_RECOVERY_THRESHOLD: z.coerce.number().optional().default(1),
     NANGO_LOGS_CIRCUIT_BREAKER_HEALTHCHECK_INTERVAL_MS: z.coerce.number().optional().default(3000),
@@ -507,6 +667,7 @@ const ENVS_SHAPE = z.object({
     // KMS-wrapped alternative to NANGO_ENCRYPTION_KEY (mutually exclusive, enforced at DEK load).
     NANGO_ENCRYPTION_KEY_WRAPPED: z.string().optional(),
     NANGO_KMS_KEY_ARN: z.string().optional(),
+    NANGO_GCP_KMS_KEY_NAME: z.string().optional(), // GCP-KMS alternative wrapping-key identifier
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
     NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),
@@ -588,6 +749,16 @@ const ENVS_SHAPE = z.object({
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
 
+    // Internal service auth (orchestrator / jobs). All optional so a default image is a no-op.
+    NANGO_INTERNAL_AUTH_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_SIGNING_KEY: z.string().optional(),
+    NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY: z.string().optional(),
+    NANGO_INTERNAL_AUTH_REQUIRED: z
+        .stringbool({ truthy: ['true'], falsy: ['false'] })
+        .optional()
+        .default(false),
+
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),
 
@@ -597,6 +768,17 @@ const ENVS_SHAPE = z.object({
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
+    // The following are only considered in local, self-hosted and BYOC deployments that configure
+    // Postgres storage for the audit trail. The URL can point to the main database.
+    NANGO_AUDIT_POSTGRES_DATABASE_URL: z.url().optional(),
+    NANGO_AUDIT_POSTGRES_POOL_MAX: z.coerce.number().optional().default(5),
+    NANGO_AUDIT_POSTGRES_SSL: z.stringbool().optional().default(false),
+    NANGO_AUDIT_POSTGRES_RETENTION_DAYS: z.coerce.number().int().positive().optional().default(365),
+    NANGO_AUDIT_POSTGRES_PARTITION_INTERVAL_MS: z.coerce
+        .number()
+        .positive()
+        .max(6 * 3600 * 1000) // capped so tomorrow's partition is always created before midnight reaches it
+        .default(1 * 3600 * 1000),
     // .int() because these go straight into SQS request fields, which reject a fractional value outright.
     // One poll loop on purpose. Long polling returns as soon as a single message is available, so a batch
     // only grows while an insert is in flight — extra loops would be parked in ReceiveMessage and take those
@@ -757,15 +939,14 @@ const ENVS_SHAPE = z.object({
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
     NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),
+    NANGO_TASK_DISPATCH_RATE_LIMIT_THROTTLE_MAX_MS: z.coerce.number().min(0).optional().default(60_000),
+    NANGO_TASK_DISPATCH_DEFER_JITTER_RATIO: z.coerce.number().min(0).max(1).optional().default(0.2),
+    NANGO_TASK_DISPATCH_TASK_CAP_DEFER_MS: z.coerce.number().min(0).optional().default(15_000),
 
     // Sandboxes
-    SANDBOX_PROVIDER: z.enum(['e2b', 'docker', 'agentcore']).optional(),
+    SANDBOX_PROVIDER: z.enum(['docker', 'agentcore']).optional(),
     AGENTCORE_RUNTIME_ARN: z.string().min(1).optional(),
     AGENTCORE_RUNTIME_QUALIFIER: z.string().min(1).default('DEFAULT'),
-    E2B_API_KEY: z.string().optional(),
-    E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
-    E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
-    E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
     // Internal mTLS. The client certificate presented on service-to-service calls; enforcement happens
     // outside the app (load balancer). Each asset is inline PEM, base64 PEM, or a file path via _FILE.
@@ -778,7 +959,7 @@ const ENVS_SHAPE = z.object({
     NANGO_INTERNAL_TLS_KEY_PASSPHRASE: z.string().optional(),
 
     // Feature Flags
-    NANGO_FLAG_PROVIDER: z.enum(['noop', 'unleash']).optional().default('noop'),
+    NANGO_FLAG_PROVIDER: z.enum(['noop', 'unleash', 'env']).optional().default('noop'),
     NANGO_UNLEASH_URL: z.url().optional(),
     NANGO_UNLEASH_API_TOKEN: z.string().optional(),
     NANGO_UNLEASH_APP_NAME: z.string().optional().default('nango'),
@@ -790,6 +971,7 @@ const ENVS_SHAPE = z.object({
     NANGO_CLOUD: z.stringbool().optional().default(false),
     NANGO_ENTERPRISE: z.stringbool().optional().default(false),
     NANGO_TELEMETRY_SDK: z.stringbool().optional().default(false),
+    NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: z.stringbool().optional().default(false),
     NANGO_ADMIN_KEY: z.string().optional(),
     NANGO_INTEGRATIONS_FULL_PATH: z.string().optional(),
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')

@@ -16,6 +16,7 @@ import {
 } from '@nangohq/design-system';
 
 import { Skeleton } from '@/components/ui/Skeleton';
+import { GetOverdueInvoicesQueryKey } from '@/hooks/usePlan';
 import { apiPostStripeCollectPayment } from '@/hooks/useStripe';
 import { useToast } from '@/hooks/useToast';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
@@ -169,6 +170,9 @@ const PaymentMethodForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
         } else {
             toast({ title: 'Payment method added', variant: 'success' });
             await queryClient.invalidateQueries({ queryKey: ['stripe'] });
+            // Orb retries the charge against the new card, so re-check rather than leaving the
+            // overdue alert telling them to do what they just did.
+            await queryClient.invalidateQueries({ queryKey: GetOverdueInvoicesQueryKey });
             onSuccess();
         }
 

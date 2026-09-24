@@ -1,3 +1,4 @@
+import type { GrowthAddonState } from '@/pages/Team/Billing/planVisibility';
 import type { AnyBreakdownDimension } from '@/pages/Team/Billing/usageBreakdown';
 import type { PostOnboardingHearAboutUs, UsageMetric } from '@nangohq/types';
 
@@ -26,6 +27,11 @@ export interface AnalyticsEvents {
     'web:usage:value_opened': { metric: UsageMetric; dimension: AnyBreakdownDimension };
     'web:usage:invoice_details_clicked': Record<string, never>;
     'web:usage:billing_portal_clicked': Record<string, never>;
+    'web:usage:legacy_metrics_toggled': { shown: boolean };
+    'web:usage:upgrade_clicked': Record<string, never>;
+    'web:usage:addon_action_clicked': { state: GrowthAddonState };
+    'web:usage:edit_payment_method_clicked': { source: 'billing_page' };
+    'web:usage:overdue_alert_clicked': Record<string, never>;
 
     // Playground
     'web:playground:opened': { source: 'header' | 'connection' | 'integration' | 'function' };
@@ -67,4 +73,14 @@ export interface AnalyticsEvents {
     'web:2fa:recovery_codes_regenerated': Record<string, never>;
     'web:2fa:recovery_codes_copied': { context: 'enroll' | 'regenerate' };
     'web:2fa:recovery_codes_downloaded': { context: 'enroll' | 'regenerate' };
+    'web:audit:exported': { truncated: boolean };
+
+    // Password
+    'web:password:changed': Record<string, never>;
+
+    // Account API keys
+    'web:account_api_keys:opened': { source: 'profile_menu' };
+    'web:account_api_keys:created': Record<string, never>;
+    'web:account_api_keys:secret_copied': Record<string, never>;
+    'web:account_api_keys:deleted': Record<string, never>;
 }

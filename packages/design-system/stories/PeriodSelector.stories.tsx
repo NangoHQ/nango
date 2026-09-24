@@ -8,7 +8,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof PeriodSelector> = {
     component: PeriodSelector,
-    title: 'Components/Patterns/PeriodSelector',
+    title: 'App Components/Patterns/PeriodSelector',
     parameters: { layout: 'padded' }
 };
 export default meta;

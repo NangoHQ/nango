@@ -15,22 +15,25 @@ import {
     Input
 } from '@nangohq/design-system';
 
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components-v2/ui/InputOTP';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { EditableInput } from '@/components/patterns/EditableInput';
+import { MfaChallengeDialog } from '@/components/patterns/MfaChallengeDialog';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useThemeStore } from '@/lib/theme';
 import { track } from '@/utils/analytics';
+import { getMFAErrorMessage } from '@/utils/mfaErrors';
 import { useMFA } from '../../hooks/useMFA';
 import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { APIError } from '../../utils/api';
+import { ChangePasswordDialog } from './ChangePasswordDialog';
 import { RecoveryCodes } from './components/RecoveryCodes';
-import { getMFAErrorMessage } from './mfaErrors';
 
 import type { Theme } from '@/lib/theme';
+import type { MFACredential } from '@nangohq/types';
 
 // Mirrors the backend constraint (PATCH /api/v1/user: z.string().min(3).max(255)).
 const validateDisplayName = (value: string): string | null => {
@@ -112,6 +115,15 @@ export const UserSettings: React.FC = () => {
                     </SelectContent>
                 </Select>
 
+                {user.hasPassword && (
+                    <>
+                        <FieldLabel>Password</FieldLabel>
+                        <div className="flex flex-col items-start">
+                            <ChangePasswordDialog />
+                        </div>
+                    </>
+                )}
+
                 <MFASettings />
             </div>
         </DashboardLayout>
@@ -123,6 +135,7 @@ const MFASettings: React.FC = () => {
     const { toast } = useToast();
     const { enabled, loading, error, regenerateRecoveryCodes, disable } = useMFA();
     const [disableOpen, setDisableOpen] = useState(false);
+    const [disableError, setDisableError] = useState<string | null>(null);
     const [regenOpen, setRegenOpen] = useState(false);
     const [newCodes, setNewCodes] = useState<string[] | null>(null);
     const [code, setCode] = useState('');
@@ -130,7 +143,7 @@ const MFASettings: React.FC = () => {
 
     const closeDisable = () => {
         setDisableOpen(false);
-        setCode('');
+        setDisableError(null);
     };
 
     const closeRegen = () => {
@@ -145,15 +158,15 @@ const MFASettings: React.FC = () => {
         }
     }
 
-    const confirmDisable = async () => {
+    const confirmDisable = async (credential: MFACredential) => {
+        setDisableError(null);
         try {
-            await disable.mutateAsync({ code });
+            await disable.mutateAsync(credential);
             track('web:2fa:disabled', {});
             toast({ title: 'Two-factor authentication is disabled', variant: 'success' });
             closeDisable();
         } catch (err) {
-            setCode('');
-            toast({ title: getMFAErrorMessage(err), variant: 'error' });
+            setDisableError(getMFAErrorMessage(err));
         }
     };
 
@@ -194,34 +207,16 @@ const MFASettings: React.FC = () => {
                 </div>
             </div>
 
-            <Dialog open={disableOpen} onOpenChange={(open) => !open && closeDisable()}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Disable two-factor authentication</DialogTitle>
-                        <DialogDescription>Enter the 6-digit code from your authenticator app to disable two-factor authentication</DialogDescription>
-                    </DialogHeader>
-                    <DialogBody>
-                        <div className="flex flex-col items-center gap-3">
-                            <span className="text-body-small-medium text-text-strong">Enter your verification code:</span>
-                            <InputOTP maxLength={6} value={code} onChange={setCode} autoFocus>
-                                <InputOTPGroup>
-                                    {[0, 1, 2, 3, 4, 5].map((i) => (
-                                        <InputOTPSlot key={i} index={i} />
-                                    ))}
-                                </InputOTPGroup>
-                            </InputOTP>
-                        </div>
-                    </DialogBody>
-                    <DialogFooter>
-                        <Button variant="outline" size="sm" onClick={closeDisable}>
-                            Cancel
-                        </Button>
-                        <Button variant="danger" size="sm" onClick={() => void confirmDisable()} loading={disable.isPending} disabled={!hasValidCode}>
-                            Disable 2FA
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <MfaChallengeDialog
+                open={disableOpen}
+                purpose="disable two-factor authentication"
+                confirmText="Disable 2FA"
+                confirmVariant="danger"
+                error={disableError}
+                verifying={disable.isPending}
+                onCancel={closeDisable}
+                onConfirm={(credential) => void confirmDisable(credential)}
+            />
 
             <Dialog open={regenOpen} onOpenChange={(open) => !open && closeRegen()}>
                 <DialogContent>

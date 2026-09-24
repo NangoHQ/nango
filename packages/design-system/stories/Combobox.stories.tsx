@@ -13,7 +13,7 @@ const options = [
 ];
 
 const meta: Meta = {
-    title: 'Components/UI/Combobox',
+    title: 'App Components/UI/Combobox',
     parameters: { layout: 'padded' }
 };
 export default meta;

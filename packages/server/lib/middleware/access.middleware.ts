@@ -19,11 +19,12 @@ import {
 } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
+import { agentSessionTokenSchema, connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
+import * as agentSessionService from '../services/agentSession.service.js';
 import * as connectSessionService from '../services/connectSession.service.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { ApiKeyContext, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
+import type { AgentSession, ApiKeyContext, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -34,6 +35,7 @@ const ignoreEnvPaths = [
     '/api/v1/environments',
     '/api/v1/meta',
     '/api/v1/audit-trail',
+    '/api/v1/audit-trail/export',
     '/api/v1/user',
     '/api/v1/user/name',
     '/api/v1/user/password',
@@ -89,6 +91,9 @@ export class AccessMiddleware {
         if (context.auth.apiKeyId !== undefined) {
             res.locals['apiKeyId'] = context.auth.apiKeyId;
         }
+        if (context.auth.apiKeyUuid !== undefined) {
+            res.locals['apiKeyUuid'] = context.auth.apiKeyUuid;
+        }
         if (context.auth.apiKeyDisplayName !== undefined) {
             res.locals['apiKeyDisplayName'] = context.auth.apiKeyDisplayName;
         }
@@ -103,34 +108,32 @@ export class AccessMiddleware {
         }
     }
 
-    async secretKeyAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
+    /**
+     * Resolve and apply API-key authentication without writing an error response. This lets routes
+     * that support another bearer-token scheme decide which authentication challenge to return.
+     */
+    async authenticateSecretKey(req: Request, res: Response<unknown, Partial<RequestLocals>>): Promise<Result<void>> {
         const active = tracer.scope().active();
         const span = tracer.startSpan('secretKeyAuth', {
-            childOf: active!
+            childOf: active
         });
-
         const start = Date.now();
+
         try {
             const authorizationHeader = req.get('authorization');
-
             if (!authorizationHeader) {
-                errorManager.errRes(res, 'missing_auth_header');
-                return;
+                return Err('missing_auth_header');
             }
 
             const secret = authorizationHeader.split('Bearer ').pop();
-
             if (!secret) {
-                errorManager.errRes(res, 'malformed_auth_header');
-                return;
+                return Err('malformed_auth_header');
             }
 
             const isScript = req.get('Nango-Is-Script') === 'true';
-
             const result = await this.validateApiKey(secret, { isScript });
             if (result.isErr()) {
-                errorManager.errRes(res, result.error.message);
-                return;
+                return Err(result.error);
             }
 
             this.setApiKeyLocals(res, result.value);
@@ -139,15 +142,28 @@ export class AccessMiddleware {
                 auth_source: isScript && authSource === 'api_secret' ? 'internal_script' : authSource
             });
             tagTraceUser({ account: result.value.account, environment: result.value.environment, plan: result.value.plan });
-            next();
+            return Ok(undefined);
         } catch (err) {
-            logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
             span.setTag('error', err);
-            errorManager.errRes(res, 'malformed_auth_header');
-            return;
+            throw err;
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start, { accountId: res.locals['account']?.id || 'unknown' });
             span.finish();
+        }
+    }
+
+    async secretKeyAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
+        try {
+            const result = await this.authenticateSecretKey(req, res);
+            if (result.isErr()) {
+                errorManager.errRes(res, result.error.message);
+                return;
+            }
+            next();
+        } catch (err) {
+            logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
+            res.status(500).send({ error: { code: 'server_error' } });
+            return;
         }
     }
 
@@ -200,7 +216,7 @@ export class AccessMiddleware {
     async noAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         res.locals['authType'] = 'none';
         if (!req.isAuthenticated()) {
-            const user = await userService.getUserById(process.env['LOCAL_NANGO_USER_ID'] ? parseInt(process.env['LOCAL_NANGO_USER_ID']) : 0);
+            const user = await userService.getUserById(envs.LOCAL_NANGO_USER_ID ?? 0);
             if (!user) {
                 res.status(500).send({ error: { code: 'server_error', message: 'failed to find user in no-auth mode' } });
                 return;
@@ -318,6 +334,94 @@ export class AccessMiddleware {
             return;
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION, Date.now() - start);
+            span.finish();
+        }
+    }
+
+    private async validateAgentSessionToken(token: string): Promise<
+        Result<{
+            account: DBTeam;
+            environment: DBEnvironment;
+            secret: DBAPISecret;
+            agentSession: AgentSession;
+            plan: DBPlan | null;
+        }>
+    > {
+        const parsedToken = agentSessionTokenSchema.safeParse(token);
+        if (!parsedToken.success) {
+            return Err('invalid_agent_session_token_format');
+        }
+
+        const getAgentSession = await agentSessionService.getAgentSessionByToken(db.knex, token);
+        if (getAgentSession.isErr()) {
+            return Err('unknown_agent_session_token');
+        }
+
+        // Checked on the session rather than trusted to the credential's own expiry, so the
+        // planned switch to session-scoped customer keys does not change what gets rejected.
+        const agentSession = getAgentSession.value;
+        if (agentSession.endedAt !== null || agentSession.expiresAt.getTime() <= Date.now()) {
+            return Err('agent_session_ended');
+        }
+
+        const accountContext = await accountService.getAccountContext({ environmentId: agentSession.environmentId });
+        if (!accountContext) {
+            return Err('unknown_account');
+        }
+
+        if (flagHasPlan && !accountContext.plan) {
+            return Err('plan_not_found');
+        }
+
+        return Ok({
+            account: accountContext.account,
+            environment: accountContext.environment,
+            secret: accountContext.secret,
+            agentSession,
+            plan: accountContext.plan
+        });
+    }
+
+    async agentSessionAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('agentSessionAuth', {
+            childOf: active!
+        });
+
+        const start = Date.now();
+        try {
+            const authorizationHeader = req.get('authorization');
+            if (!authorizationHeader) {
+                errorManager.errRes(res, 'missing_auth_header');
+                return;
+            }
+
+            const token = authorizationHeader.split('Bearer ').pop();
+            if (!token) {
+                errorManager.errRes(res, 'malformed_auth_header');
+                return;
+            }
+
+            const result = await this.validateAgentSessionToken(token);
+            if (result.isErr()) {
+                errorManager.errRes(res, result.error.message);
+                return;
+            }
+
+            res.locals['authType'] = 'agentSession';
+            res.locals['account'] = result.value.account;
+            res.locals['environment'] = result.value.environment;
+            res.locals['agentSession'] = result.value.agentSession;
+            res.locals['plan'] = result.value.plan;
+            tagTraceUser(result.value);
+            next();
+        } catch (err) {
+            logger.error(`failed_get_env_by_agent_session ${stringifyError(err)}`);
+            span.setTag('error', err);
+            errorManager.errRes(res, 'unknown_account');
+            return;
+        } finally {
+            metrics.duration(metrics.Types.AUTH_GET_ENV_BY_AGENT_SESSION, Date.now() - start);
             span.finish();
         }
     }

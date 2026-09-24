@@ -10,6 +10,7 @@ import { getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
 import { Err, getInternalTlsEnv, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { mintRunnerAuthEnv } from '../internal-auth.js';
 import { RenderAPI } from './render.api.js';
 import { notifyOnIdle } from './runner.js';
 
@@ -79,7 +80,8 @@ export const renderNodeProvider: NodeProvider = {
                     { key: 'PROVIDERS_URL', value: getProvidersUrl() },
                     { key: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
                     ...(envs.RUNNER_HTTP_LOG_SAMPLE_PCT ? [{ key: 'RUNNER_HTTP_LOG_SAMPLE_PCT', value: envs.RUNNER_HTTP_LOG_SAMPLE_PCT.toString() }] : []),
-                    ...Object.entries(getInternalTlsEnv()).map(([key, value]) => ({ key, value }))
+                    ...Object.entries(getInternalTlsEnv()).map(([key, value]) => ({ key, value })),
+                    ...Object.entries(mintRunnerAuthEnv(node.id)).map(([key, value]) => ({ key, value }))
                 ]
             })
         );

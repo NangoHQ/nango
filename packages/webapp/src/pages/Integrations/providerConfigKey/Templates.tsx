@@ -4,11 +4,10 @@ import { useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { Badge, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { AlertButton, Badge, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
-import { AlertButton } from '@/components/ui/Alert';
 import { SingleSelectFilter } from '@/components/ui/Combobox';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -110,11 +109,7 @@ export const Templates: React.FC = () => {
                 title: `${selected.name} deployed successfully`,
                 variant: 'success',
                 duration: 10_000, // 10 seconds
-                action: (
-                    <AlertButton variant="success-secondary" onClick={() => navigate(functionPath)}>
-                        View
-                    </AlertButton>
-                )
+                action: <AlertButton onClick={() => navigate(functionPath)}>View</AlertButton>
             });
         } catch (err) {
             const message = err instanceof APIError ? (err.json as ApiError<string>).error.message : undefined;

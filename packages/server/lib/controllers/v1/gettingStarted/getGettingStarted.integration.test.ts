@@ -56,7 +56,7 @@ describe(`GET ${endpoint}`, () => {
         const provider = getProvider('github');
         expect(provider).toBeTruthy();
         const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'github-getting-started', 'github', 'github-getting-started', {
-            display_name: 'Github (Getting Started)'
+            rest: { display_name: 'Github (Getting Started)' }
         });
 
         // Create meta without progress
@@ -94,7 +94,7 @@ describe(`GET ${endpoint}`, () => {
 
         // Create integration
         const integration = await seeders.createPreprovisionedProviderConfigSeed(env, 'github-getting-started', 'github', 'github-getting-started', {
-            display_name: 'Github (Getting Started)'
+            rest: { display_name: 'Github (Getting Started)' }
         });
 
         // Create meta and and progress

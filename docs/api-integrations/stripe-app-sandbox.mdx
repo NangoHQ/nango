@@ -1,0 +1,82 @@
+---
+title: 'Stripe App Sandbox'
+sidebarTitle: 'Stripe App Sandbox'
+description: 'Integrate your application with the Stripe App Sandbox API'
+---
+
+## 🚀 Quickstart
+
+Connect to Stripe App Sandbox with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Stripe App (Sandbox)_.
+    </Step>
+    <Step id="authorize" title="Authorize Stripe App Sandbox">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Stripe App Sandbox. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-api" title="Call the Stripe API">
+    Let's make your first request to the Stripe API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/customers" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/customers',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Stripe App Sandbox integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Stripe App Sandbox OAuth app](/api-integrations/stripe-app-sandbox/how-to-register-your-own-stripe-app-sandbox-api-oauth-app)  
+Register a Stripe App and obtain OAuth credentials to connect it to Nango
+
+Official docs: [Stripe Apps documentation](https://docs.stripe.com/stripe-apps)
+
+## 🧩 Pre-built syncs & actions for Stripe App Sandbox
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/stripe-app-sandbox/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

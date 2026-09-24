@@ -6,6 +6,7 @@ import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@na
 import {
     awsSigV4Client,
     configService,
+    ConnectionCreationCappedError,
     connectionService,
     errorManager,
     ErrorSourceEnum,
@@ -19,6 +20,7 @@ import {
 } from '@nangohq/shared';
 import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
 import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
@@ -317,6 +319,18 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
         void logCtx.info('AWS SigV4 connection creation was successful');
         await logCtx.success();
 
+        req.audit = {
+            ...req.audit,
+            connectionUpsert: {
+                operation: storedConnection.operation,
+                connectionId: storedConnection.connection.connection_id,
+                providerConfigKey: storedConnection.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { uuid: environment.uuid, name: environment.name },
+                endUser: res.locals.endUser
+            }
+        };
+
         void connectionCreatedHook(
             {
                 connection: storedConnection.connection,
@@ -331,7 +345,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
             logContextGetter
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: 'AWS_SIGV4', provider: config.provider });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: 'AWS_SIGV4', provider: config.provider, providerConfigKey: config.unique_key });
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
         void connectionCreationFailedHook(
@@ -356,7 +370,14 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
             void logCtx.error('uncaught error', { error: err });
             await logCtx.failed();
         }
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'AWS_SIGV4', ...(config ? { provider: config.provider } : {}) });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+            auth_mode: 'AWS_SIGV4',
+            ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+        });
+        if (err instanceof ConnectionCreationCappedError) {
+            res.status(err.status).send({ error: { code: 'resource_capped', message: err.message } });
+            return;
+        }
         next(err);
     }
 });
@@ -414,6 +435,7 @@ async function verifyAwsCredentials({
     const proxy = new ProxyRequest({
         proxyConfig: proxyConfigResult.value,
         outboundPolicy: getServerOutboundUrlPolicy(),
+        maxWaitMs: envs.NANGO_PROXY_MAX_RETRY_WAIT_MS,
         logger: (msg) => {
             void logCtx?.log(msg);
         },

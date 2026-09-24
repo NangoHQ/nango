@@ -1,0 +1,36 @@
+---
+title: Autumn - How do I link my account?
+sidebarTitle: Autumn
+---
+
+## Overview
+
+To authenticate with Autumn, you will need:
+1. **Secret API Key** - A secret key generated from your Autumn dashboard's Developer settings.
+
+This guide will walk you through generating your **Secret API Key** within Autumn.
+
+### Prerequisites:
+
+- You must have an Autumn account. Sign up at [useautumn.com](https://useautumn.com).
+
+#### Step 1: Generating your Autumn API key
+
+1. Log in to the [Autumn dashboard](https://app.useautumn.com).
+2. Navigate to **Developer** -> **API Keys**.
+3. Click **Create Secret Key** (skip this if you already have one).
+4. Copy the generated **Live** or **Sandbox** secret key (it starts with `am_sk_live_` or `am_sk_test_`).
+
+<img src="/api-integrations/autumn/developer_settings.png" />
+
+<Tip>Use a sandbox (`am_sk_test_...`) key while testing, and a live (`am_sk_live_...`) key in production.</Tip>
+
+#### Step 2: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Autumn.
+2. Enter your **Secret API Key**.
+3. Submit the form.
+
+<img src="/api-integrations/autumn/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Autumn.

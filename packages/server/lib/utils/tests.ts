@@ -136,6 +136,13 @@ export function shouldBeProtected({ res, json }: { res: Response; json: any }) {
     expect(res.status).toBe(401);
 }
 
+/** Session auth resolves the environment from the query, so it rejects the request before the handler runs. */
+export function shouldRequireSessionEnv({ res, json }: { res: Response; json: any }) {
+    isError(json);
+    expect(json).toStrictEqual({ error: { code: 'invalid_env' } });
+    expect(res.status).toBe(401);
+}
+
 /**
  * Check if an endpoint requires the query params to be set
  */
@@ -161,6 +168,8 @@ export async function runServer(): Promise<{ server: Server; url: string; fetch:
 
     const app = express();
     app.set('query parser', 'extended');
+    // Mirrors server.ts, so req.ip resolves the way it does behind the ingress.
+    app.set('trust proxy', 1);
     app.use(router);
     const server = createServer(app);
     const port = await getPort();

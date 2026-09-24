@@ -1,5 +1,6 @@
-import type { ApiEndpoint, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError, Endpoint } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
+import type { MFACredential } from '../mfa/credential.js';
 import type { Role } from './db.js';
 
 export type GetUser = ApiEndpoint<{
@@ -7,7 +8,7 @@ export type GetUser = ApiEndpoint<{
     Method: 'GET';
     Path: `/api/v1/user`;
     Success: {
-        data: ApiUserWithPermissions;
+        data: ApiUserWithGrants;
     };
 }>;
 
@@ -43,19 +44,18 @@ export interface ApiUser {
     gettingStartedClosed: boolean;
 }
 
-export type AllowedPermissions = Partial<
-    Record<string, Partial<Record<'production' | 'non-production' | 'global', ('create' | 'read' | 'update' | 'delete' | '*')[]>>>
->;
+export type ApiGrant = { can: string[]; where: string[] };
 
-export type ApiUserWithPermissions = ApiUser & {
-    role: Role;
-    permissions: AllowedPermissions;
+export type ApiUserWithGrants = ApiUser & {
+    grants: readonly ApiGrant[];
+    hasPassword: boolean;
 };
 
 export type PutUserPassword = ApiEndpoint<{
     Audit: AuditPolicy<'app_auth', 'password_changed', 'account'>;
     Method: 'PUT';
     Path: `/api/v1/user/password`;
-    Body: { oldPassword: string; newPassword: string };
+    Body: { oldPassword: string; newPassword: string; mfa?: MFACredential | undefined };
+    Error: ApiError<'incorrect_password'> | ApiError<'invalid_mfa_code'> | ApiError<'mfa_code_required'>;
     Success: { success: true };
 }>;

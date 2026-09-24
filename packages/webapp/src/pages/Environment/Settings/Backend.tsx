@@ -2,11 +2,9 @@ import { ExternalLink, Info } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
+import { Alert, AlertActions, AlertButton, AlertDescription } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
@@ -23,10 +21,8 @@ export const BackendSettings: React.FC = () => {
     const environmentAndAccount = data?.environmentAndAccount;
     const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
 
-    const isProdEnv = environmentAndAccount?.environment.is_production || false;
-
     const { can } = usePermissions();
-    const canEditEnv = can(permissions.canWriteProdEnvironment) || !isProdEnv;
+    const canEditEnvironment = can('environment:settings:update');
 
     const [isEditingCallbackUrl, setIsEditingCallbackUrl] = useState(false);
 
@@ -72,7 +68,7 @@ export const BackendSettings: React.FC = () => {
                                 throw err;
                             }
                         }}
-                        canEdit={canEditEnv}
+                        canEdit={canEditEnvironment}
                     />
                     {isEditingCallbackUrl && (
                         <Alert variant="info">
@@ -80,17 +76,21 @@ export const BackendSettings: React.FC = () => {
                             <AlertDescription>
                                 <span>
                                     Changing the callback URL requires an active 308 redirect and updating the registered callback URL with all OAuth API
-                                    providers. Otherwise authorization attempts will fail. Details in{' '}
-                                    <StyledLink
-                                        to="https://nango.dev/docs/guides/auth/auth-guide#custom-oauth-callback-url-optional"
-                                        type="external"
-                                        variant="info"
-                                    >
-                                        docs
-                                    </StyledLink>
-                                    .
+                                    providers. Otherwise authorization attempts will fail.
                                 </span>
                             </AlertDescription>
+                            <AlertActions>
+                                <AlertButton asChild>
+                                    <a
+                                        href="https://nango.dev/docs/guides/auth/auth-guide#custom-oauth-callback-url-optional"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        View docs
+                                        <ExternalLink />
+                                    </a>
+                                </AlertButton>
+                            </AlertActions>
                         </Alert>
                     )}
                 </div>

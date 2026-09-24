@@ -53,8 +53,12 @@ Click on the default subscription for your topic (if one was created) or create 
 
 1. **Delivery type**: Set as push
 2. **Endpoint URL**: Copy the webhook URL from your Gmail integration page in the Nango dashboard, under the **Webhook URL** section.
-3. **Authentication** (recommended): Enable authentication and configure a service account for added security.
+3. **Authentication** (required): Enable authentication and configure a service account. Set the audience to your Nango webhook URL from the previous step. Google then signs every push with an OIDC JWT that Nango verifies.
 4. **Save the changes**
+
+<Warning>
+Nango rejects a push that arrives with no `Authorization` header, and the notification is not forwarded to your app. A subscription created without authentication will silently deliver nothing.
+</Warning>
 
 ### 4. Activate the watch subscription
 
@@ -192,7 +196,7 @@ Once you receive the webhook, trigger your existing sync for that connection:
 
 ```bash
 curl -X POST "https://api.nango.dev/sync/trigger" \
-  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
   -H "Content-Type: application/json" \
   -d '{
     "sync_mode": "incremental",
@@ -227,7 +231,7 @@ For **existing connections** created before this feature was available, you have
 
 ```bash
 curl -X PATCH "https://api.nango.dev/connections/metadata" \
-  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
   -H "Content-Type: application/json" \
   -d '{
     "connection_id": "<CONNECTION_ID>",

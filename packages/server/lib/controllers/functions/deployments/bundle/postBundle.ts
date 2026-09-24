@@ -5,6 +5,7 @@ import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/u
 
 import { envs } from '../../../../env.js';
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../../../utils/utils.js';
 import { toErrorResponse, toResponse } from './format.js';
 import { validation } from './validation.js';
 
@@ -70,7 +71,8 @@ export const postFunctionDeploymentBundle = asyncWrapperWithEnvironment<PostFunc
             accountId: account.id,
             environmentId: environment.id,
             environmentName: environment.name,
-            reconciliation: prepared.value
+            reconciliation: prepared.value,
+            orchestrator: getOrchestrator()
         });
         if (deployed.isErr()) {
             const error = deployed.error;

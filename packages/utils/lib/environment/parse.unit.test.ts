@@ -16,12 +16,47 @@ describe('parse', () => {
 
     it('should have some default', () => {
         const res = parseEnvs(ENVS, {});
-        expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
+        expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007, ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: 0 });
     });
 
-    it('should parse the sandbox compiler template', () => {
-        const res = parseEnvs(ENVS, { E2B_SANDBOX_COMPILER_TEMPLATE: 'blank-workspace:dev' });
-        expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
+    it('parses the local Nango user id as a non-negative integer', () => {
+        expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '0' }).LOCAL_NANGO_USER_ID).toBe(0);
+        expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '1e2' }).LOCAL_NANGO_USER_ID).toBe(100);
+        expect(() => parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '1.5' })).toThrowError(/LOCAL_NANGO_USER_ID/);
+        expect(() => parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '-1' })).toThrowError(/LOCAL_NANGO_USER_ID/);
+    });
+
+    it('should parse the throttled immediate limit', () => {
+        expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '123' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(123);
+        // 0 disables throttling
+        expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '0' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(0);
+        expect(() => parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '-1' })).toThrowError();
+    });
+
+    it('rejects NANGO_INTERNAL_AUTH_REQUIRED=1', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_INTERNAL_AUTH_REQUIRED: '1' })).toThrowError(/NANGO_INTERNAL_AUTH_REQUIRED/);
+    });
+
+    it('defaults NANGO_INTERNAL_AUTH_REQUIRED to false', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_INTERNAL_AUTH_REQUIRED).toBe(false);
+        expect(res.NANGO_INTERNAL_AUTH_TOKEN).toBeUndefined();
+        expect(res.NANGO_INTERNAL_AUTH_SIGNING_KEY).toBeUndefined();
+        expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_TOKEN_FILE');
+        expect(res.NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN).toBeUndefined();
+        expect(res.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY).toBeUndefined();
+        expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT');
+        expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_AUDIENCE');
+    });
+
+    it('defaults NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY to false', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(false);
+    });
+
+    it('parses NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY', () => {
+        expect(parseEnvs(ENVS, { NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: 'true' }).NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(true);
+        expect(parseEnvs(ENVS, { NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: 'false' }).NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(false);
     });
 
     it('should parse the management MCP server URL', () => {
@@ -29,13 +64,26 @@ describe('parse', () => {
         expect(res.NANGO_MANAGEMENT_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
     });
 
-    it('should parse E2B sandbox metric settings', () => {
+    it('parses OAuth server settings', () => {
         const res = parseEnvs(ENVS, {
-            E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: '120000',
-            E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS: '5000'
+            NANGO_OAUTH_SERVER_BASE_URL: 'https://api.example.com',
+            NANGO_OAUTH_SERVER_COOKIE_KEYS: '["first","second"]',
+            NANGO_OAUTH_SERVER_JWKS: '{"keys":[]}'
         });
-        expect(res.E2B_SANDBOX_METRICS_POLL_INTERVAL_MS).toBe(120_000);
-        expect(res.E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS).toBe(5_000);
+        expect(res).toMatchObject({
+            NANGO_OAUTH_SERVER_BASE_URL: 'https://api.example.com'
+        });
+    });
+
+    it('should accept `/` as NANGO_DASHBOARD_API_URL', () => {
+        const res = parseEnvs(ENVS, { NANGO_DASHBOARD_API_URL: '/' });
+        expect(res.NANGO_DASHBOARD_API_URL).toBe('/');
+    });
+
+    it('should reject a path other than `/` for NANGO_DASHBOARD_API_URL', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_DASHBOARD_API_URL: '/nango-api' });
+        }).toThrow();
     });
 
     it('should parse the sandbox provider', () => {
@@ -152,12 +200,13 @@ describe('parse', () => {
     it('should parse JOBS_PROCESSOR_CONFIG', () => {
         const res = parseEnvs(ENVS, {
             JOBS_PROCESSOR_CONFIG:
-                '[{"groupKeyPattern":"sync","maxConcurrency":200},{"groupKeyPattern":"action","maxConcurrency":200},{"groupKeyPattern":"webhook","maxConcurrency":200},{"groupKeyPattern":"on-event","maxConcurrency":50}]'
+                '[{"groupKeyPattern":"sync","maxConcurrency":200},{"groupKeyPattern":"action","maxConcurrency":200},{"groupKeyPattern":"function","maxConcurrency":200},{"groupKeyPattern":"webhook","maxConcurrency":200},{"groupKeyPattern":"on-event","maxConcurrency":50}]'
         });
         expect(res).toMatchObject({
             JOBS_PROCESSOR_CONFIG: [
                 { groupKeyPattern: 'sync', maxConcurrency: 200 },
                 { groupKeyPattern: 'action', maxConcurrency: 200 },
+                { groupKeyPattern: 'function', maxConcurrency: 200 },
                 { groupKeyPattern: 'webhook', maxConcurrency: 200 },
                 { groupKeyPattern: 'on-event', maxConcurrency: 50 }
             ]
@@ -225,9 +274,157 @@ describe('parse', () => {
         }).toThrow();
     });
 
+    it('should default RUNNER_EGRESS_NANGO_POD_SELECTOR to persist, jobs, and server', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.RUNNER_EGRESS_NANGO_POD_SELECTOR).toEqual({
+            matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In', values: ['persist', 'jobs', 'server'] }]
+        });
+    });
+
+    it('should parse a valid RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        const selector = { matchLabels: { app: 'persist' } };
+        const res = parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify(selector) });
+        expect(res.RUNNER_EGRESS_NANGO_POD_SELECTOR).toEqual(selector);
+    });
+
+    it('should throw on an empty RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({}) });
+        }).toThrow(/empty selector is not allowed/);
+    });
+
+    it('should throw on invalid JSON in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: 'not-json' });
+        }).toThrow('Invalid JSON in RUNNER_EGRESS_NANGO_POD_SELECTOR');
+    });
+
+    it('should parse Exists without values', () => {
+        const selector = { matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'Exists' }] };
+        const res = parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify(selector) });
+        expect(res.RUNNER_EGRESS_NANGO_POD_SELECTOR).toEqual(selector);
+    });
+
+    it('should throw when In/NotIn is missing values', () => {
+        expect(() => {
+            parseEnvs(ENVS, {
+                RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({
+                    matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In' }]
+                })
+            });
+        }).toThrow(/require values for In\/NotIn/);
+    });
+
+    it('should throw when Exists/DoesNotExist includes values', () => {
+        expect(() => {
+            parseEnvs(ENVS, {
+                RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({
+                    matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'Exists', values: ['persist'] }]
+                })
+            });
+        }).toThrow(/must omit values for Exists\/DoesNotExist/);
+    });
+
+    it('should throw on an empty label key in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({ matchLabels: { '': 'persist' } }) });
+        }).toThrow(/invalid Kubernetes label key/);
+    });
+
+    it('should throw on a syntactically invalid label key in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({ matchLabels: { '-app': 'persist' } }) });
+        }).toThrow(/invalid Kubernetes label key/);
+    });
+
+    it('should parse a label key whose DNS prefix segments are 63 characters', () => {
+        const segment = 'a'.repeat(63);
+        const selector = { matchLabels: { [`${segment}.io/app`]: 'persist' } };
+        const res = parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify(selector) });
+        expect(res.RUNNER_EGRESS_NANGO_POD_SELECTOR).toEqual(selector);
+    });
+
+    it('should throw when a label-key prefix has a DNS segment longer than 63 characters', () => {
+        const segment = 'a'.repeat(64);
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({ matchLabels: { [`${segment}.io/app`]: 'persist' } }) });
+        }).toThrow(/invalid Kubernetes label key/);
+    });
+
+    it('should throw on a syntactically invalid label value in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({ matchLabels: { app: 'persist!' } }) });
+        }).toThrow(/invalid Kubernetes label value/);
+    });
+
+    it('should throw on an invalid matchExpression key in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, {
+                RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({
+                    matchExpressions: [{ key: 'not a key', operator: 'In', values: ['persist'] }]
+                })
+            });
+        }).toThrow(/invalid Kubernetes label key/);
+    });
+
+    it('should throw on an invalid matchExpression value in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, {
+                RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({
+                    matchExpressions: [{ key: 'app', operator: 'In', values: ['persist!'] }]
+                })
+            });
+        }).toThrow(/invalid Kubernetes label value/);
+    });
+
+    it('should default RUNNER_EGRESS_NANGO_PORTS to 80', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.RUNNER_EGRESS_NANGO_PORTS).toEqual([80]);
+    });
+
+    it('should parse a comma-separated RUNNER_EGRESS_NANGO_PORTS list', () => {
+        const res = parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_PORTS: '443, 80, 443' });
+        expect(res.RUNNER_EGRESS_NANGO_PORTS).toEqual([80, 443]);
+    });
+
+    it('should throw on an empty RUNNER_EGRESS_NANGO_PORTS list', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_PORTS: ',' });
+        }).toThrow(/at least one port/);
+    });
+
+    it('should throw on an invalid port in RUNNER_EGRESS_NANGO_PORTS', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_PORTS: '80,not-a-port' });
+        }).toThrow('Invalid port in RUNNER_EGRESS_NANGO_PORTS');
+    });
+
     it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
+    });
+
+    it('should default NANGO_LOGS_ES_RETENTION_DAYS to 15', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_LOGS_ES_RETENTION_DAYS).toBe(15);
+    });
+
+    it('should coerce NANGO_LOGS_ES_RETENTION_DAYS from a numeric string', () => {
+        const res = parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '30' });
+        expect(res.NANGO_LOGS_ES_RETENTION_DAYS).toBe(30);
+    });
+
+    it('should throw on a non-positive NANGO_LOGS_ES_RETENTION_DAYS', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '0' })).toThrow();
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '-5' })).toThrow();
+    });
+
+    it('should throw on a non-integer NANGO_LOGS_ES_RETENTION_DAYS', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '15.5' })).toThrow();
+    });
+
+    it('should throw on a non-numeric NANGO_LOGS_ES_RETENTION_DAYS', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: 'abc' })).toThrow();
     });
 
     it('should default NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED to true', () => {
@@ -406,7 +603,8 @@ describe('parse', () => {
                 NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: 30,
                 NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: 5,
                 NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: 10,
-                NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: 10
+                NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: 10,
+                NANGO_TASK_DISPATCH_TASK_CAP_DEFER_MS: 15_000
             });
             expect(res.NANGO_TASK_DISPATCH_QUEUE_URL).toBeUndefined();
             expect(res.NANGO_TASK_DISPATCH_DLQ_URL).toBeUndefined();

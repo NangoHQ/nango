@@ -1,4 +1,4 @@
-import { createHmac, randomUUID } from 'crypto';
+import { createHmac, createSign, randomUUID } from 'crypto';
 
 import braintree from 'braintree';
 import qs from 'qs';
@@ -7,7 +7,7 @@ import { axiosInstance, getLogger, stringifyError } from '@nangohq/utils';
 
 import { assertSafeOAuthUrl, getOAuthAxiosRequestConfig } from '../services/proxy/outbound-policy.js';
 import { NangoError } from '../utils/error.js';
-import { isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
+import { formatPem, getGlobalOAuthCallbackUrl, isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
 
 import type { Config as ProviderConfig } from '../models/index.js';
 import type {
@@ -50,6 +50,7 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
             case 'facebook':
+            case 'meta-mcp':
             case 'followupboss':
             case 'instagram':
             case 'jobber':
@@ -73,6 +74,8 @@ class ProviderClient {
             case 'walmart':
             case 'slack':
             case 'attio-mcp':
+            case 'revolut-business':
+            case 'scrollstash-mcp':
             case 'shopline-oauth':
             case 'threads':
                 return true;
@@ -112,6 +115,8 @@ class ProviderClient {
         switch (config.provider) {
             case 'attio-mcp':
                 return this.createAttioMcpToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
+            case 'scrollstash-mcp':
+                return this.createScrollstashMcpToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
             case 'agiloft':
                 return this.createAgiloftToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'braintree':
@@ -130,6 +135,7 @@ class ProviderClient {
             case 'jobber':
                 return this.createJobberToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
+            case 'meta-mcp':
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             case 'instagram':
                 return this.createInstagramToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
@@ -189,6 +195,8 @@ class ProviderClient {
                     callBackUrl,
                     provider.alternate_access_token_response_path
                 );
+            case 'revolut-business':
+                return this.createRevolutToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'shopline-oauth':
                 return this.createShoplineToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             default:
@@ -196,7 +204,12 @@ class ProviderClient {
         }
     }
 
-    public async refreshToken(provider: ProviderOAuth2, config: ProviderConfig, connection: DBConnectionDecrypted): Promise<object> {
+    public async refreshToken(
+        provider: ProviderOAuth2,
+        config: ProviderConfig,
+        connection: DBConnectionDecrypted,
+        callbackUrl?: string | null
+    ): Promise<object> {
         if (connection.credentials.type !== 'OAUTH2') {
             throw new NangoError('wrong_credentials_type');
         }
@@ -216,6 +229,7 @@ class ProviderClient {
 
         if (
             config.provider !== 'facebook' &&
+            config.provider !== 'meta-mcp' &&
             !credentials.refresh_token &&
             config.provider !== 'microsoft-admin' &&
             config.provider !== 'instagram' &&
@@ -223,7 +237,10 @@ class ProviderClient {
             config.provider !== 'threads'
         ) {
             throw new NangoError('missing_refresh_token');
-        } else if ((config.provider === 'facebook' || config.provider === 'instagram' || config.provider === 'threads') && !credentials.access_token) {
+        } else if (
+            (config.provider === 'facebook' || config.provider === 'meta-mcp' || config.provider === 'instagram' || config.provider === 'threads') &&
+            !credentials.access_token
+        ) {
             throw new NangoError('missing_access_token');
         }
 
@@ -257,9 +274,18 @@ class ProviderClient {
             case 'jobber':
                 return this.refreshJobberToken(provider.token_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
+            case 'meta-mcp':
                 return this.refreshFacebookToken(provider.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
             case 'instagram':
                 return this.refreshInstagramToken(provider.refresh_url as string, credentials.access_token);
+            case 'revolut-business':
+                return this.refreshRevolutToken(
+                    interpolatedRefreshUrl!.href,
+                    credentials.refresh_token!,
+                    config.oauth_client_id,
+                    config.oauth_client_secret,
+                    callbackUrl || getGlobalOAuthCallbackUrl()
+                );
             case 'shopline-oauth':
                 return this.refreshShoplineToken(interpolatedRefreshUrl!.href, config.oauth_client_id, config.oauth_client_secret);
             case 'threads':
@@ -350,6 +376,8 @@ class ProviderClient {
                 );
             case 'attio-mcp':
                 return this.refreshAttioMcpToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
+            case 'scrollstash-mcp':
+                return this.refreshScrollstashMcpToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -440,6 +468,94 @@ class ProviderClient {
             throw new NangoError('agiloft_refresh_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('agiloft_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private base64url(input: Buffer | string): string {
+        return Buffer.from(input).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    private signRevolutClientAssertion(clientId: string, privateKeyPem: string, callBackUrl: string): string {
+        const header = { alg: 'RS256', typ: 'JWT' };
+        const payload = {
+            iss: new URL(callBackUrl).host,
+            sub: clientId,
+            aud: 'https://revolut.com',
+            exp: Math.floor(Date.now() / 1000) + 300
+        };
+
+        const signingInput = `${this.base64url(JSON.stringify(header))}.${this.base64url(JSON.stringify(payload))}`;
+        const keyType = privateKeyPem.includes('RSA PRIVATE KEY') ? 'RSA PRIVATE KEY' : 'PRIVATE KEY';
+        const signature = createSign('RSA-SHA256').update(signingInput).sign(formatPem(privateKeyPem, keyType), 'base64');
+
+        return `${signingInput}.${this.base64url(Buffer.from(signature, 'base64'))}`;
+    }
+
+    private async createRevolutToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        privateKey: string,
+        callBackUrl: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const clientAssertion = this.signRevolutClientAssertion(clientId, privateKey, callBackUrl);
+            const body = qs.stringify({
+                grant_type: 'authorization_code',
+                code,
+                client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+                client_assertion: clientAssertion
+            });
+
+            const response = await axios.post(tokenUrl, body, {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+
+            if (response.status === 200 && response.data?.access_token) {
+                return {
+                    access_token: response.data.access_token,
+                    refresh_token: response.data.refresh_token,
+                    expires_in: response.data.expires_in
+                };
+            }
+
+            throw new NangoError('revolut_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('revolut_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshRevolutToken(
+        refreshUrl: string,
+        refreshToken: string,
+        clientId: string,
+        privateKey: string,
+        callBackUrl: string
+    ): Promise<RefreshTokenResponse> {
+        try {
+            const clientAssertion = this.signRevolutClientAssertion(clientId, privateKey, callBackUrl);
+            const body = qs.stringify({
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken,
+                client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+                client_assertion: clientAssertion
+            });
+
+            const response = await axios.post(refreshUrl, body, {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+
+            if (response.status === 200 && response.data?.access_token) {
+                return {
+                    access_token: response.data.access_token,
+                    refresh_token: response.data.refresh_token ?? refreshToken,
+                    expires_in: response.data.expires_in
+                };
+            }
+
+            throw new NangoError('revolut_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('revolut_refresh_token_request_error', stringifyError(err));
         }
     }
 
@@ -2212,6 +2328,66 @@ class ProviderClient {
             throw new NangoError('attio_mcp_refresh_token_request_error');
         } catch (err: any) {
             throw new NangoError('attio_mcp_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createScrollstashMcpToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        redirectUri: string,
+        codeVerifier: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'authorization_code',
+                code,
+                client_id: clientId,
+                redirect_uri: redirectUri,
+                code_verifier: codeVerifier
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('scrollstash_mcp_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('scrollstash_mcp_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshScrollstashMcpToken(tokenUrl: string, refreshToken: string, clientId: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                client_id: clientId,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('scrollstash_mcp_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('scrollstash_mcp_refresh_token_request_error', stringifyError(err));
         }
     }
 }

@@ -3,7 +3,7 @@ import GoogleButton from '@/components/patterns/GoogleButton';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/Patterns/GoogleButton',
+    title: 'App Components/Patterns/GoogleButton',
     parameters: { layout: 'padded' }
 };
 export default meta;

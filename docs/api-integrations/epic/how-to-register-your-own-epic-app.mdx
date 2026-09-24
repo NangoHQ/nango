@@ -1,0 +1,70 @@
+---
+title: 'How to register your own Epic app'
+sidebarTitle: 'Epic Setup'
+description: 'Register with Epic App Market and connect it to Nango'
+---
+
+This guide covers the one-time setup for Epic's [SMART Backend Services](https://fhir.epic.com/Documentation?docId=oauth2) flow. You do this once for your whole application — every connection you create afterward (one per health system) reuses the same Client ID and key.
+
+<Note>
+Backend Services authenticates your application, not an individual end user — there's no OAuth redirect or login screen. Epic verifies a JWT that Nango signs on your behalf, checking it against a public key you publish yourself. Nango signs with `ES256`, so the private key you generate and give Nango must be an EC (P-256) key — the same key type Epic verifies against.
+</Note>
+
+<Steps>
+  <Step id="register-app" title="Register your app with Epic's App Market">
+    Go to the [Epic on FHIR App Market](https://fhir.epic.com/Developer/Apps) and register as a developer/vendor. Create an app entry and select the **Backend Systems** (non-interactive) authentication type. Do this once for Production and once for your Non-Production/sandbox environment — each gets its own Client ID.
+  </Step>
+  <Step id="generate-key-pair" title="Generate a key pair">
+    Generate an EC (P-256) key pair. Epic supports `ES256`/`ES384` for apps that register a JSON Web Key Set URL (the setup this guide uses) — Nango's Epic integration signs with `ES256`. One pair per environment (production, non-production) is typical:
+
+    ```bash
+    openssl ecparam -name prime256v1 -genkey -noout -out privatekey.pem
+    openssl ec -in privatekey.pem -pubout -out publickey.pem
+    ```
+
+    Keep `privatekey.pem` secret — you'll paste its contents into Nango in a later step. Never commit it to source control or share it outside Nango.
+  </Step>
+  <Step id="host-jwks-file" title="Host a JWKS file with your public key">
+    Convert your public key to JWK format and publish it as a JWKS document at a stable, publicly reachable URL you control (e.g. `https://your-domain.com/.well-known/epic-jwks-prod.json`). Assign a unique `kid` (key ID) to the key entry — you'll need this exact value in Nango.
+
+    ```json
+    {
+      "keys": [
+        {
+          "kty": "EC",
+          "crv": "P-256",
+          "alg": "ES256",
+          "use": "sig",
+          "kid": "<your-key-id>",
+          "x": "<x-coordinate>",
+          "y": "<y-coordinate>"
+        }
+      ]
+    }
+    ```
+
+    <Warning>This URL must stay reachable indefinitely — Epic fetches your public key from it on every token request. If it goes down or the key is removed, every connection using it stops authenticating.</Warning>
+  </Step>
+  <Step id="register-jwks-url" title="Register your JWKS URL with Epic">
+    On your app's entry in the Epic App Market, add the JWKS URL from the previous step. Note the **Client ID** Epic assigns your app — you'll need it for the next step, along with the `kid` you chose.
+
+    Repeat steps 2–4 for your other environment (production or non-production) — each has its own key pair, JWKS URL, and Client ID.
+  </Step>
+  <Step id="enter-credentials-in-nango" title="Enter your credentials in Nango">
+    1. In Nango, go to **Integrations** → your Epic (FHIR) integration → **Settings** tab.
+    2. Enter:
+        - **Client ID** — from the previous step
+        - **Key ID** — the `kid` from your JWKS entry
+        - **Private Key** — the full contents of `privatekey.pem`, the EC (P-256) private key you generated in step 2. Nango signs with `ES256`, so this must be an EC key — an RSA key won't work.
+        - **Scope** — the SMART Backend Services scope(s) Epic granted your app (e.g. `system/Patient.read system/Observation.read`)
+
+    Each field saves as soon as you leave it. Every connection you create under this integration reuses these values automatically — you won't be asked for them again per health system.
+  </Step>
+  <Step id="connect-a-health-system" title="Next">
+    Follow the [connect guide](/api-integrations/epic/connect) to create a connection for your first health system.
+  </Step>
+</Steps>
+
+For more details, see [Epic on FHIR — Backend Systems OAuth2](https://fhir.epic.com/Documentation?docId=oauth2).
+
+---

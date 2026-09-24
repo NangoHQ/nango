@@ -3,7 +3,7 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Badge, Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Badge, Button, InputGroup, InputGroupAddon, InputGroupInput, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
@@ -14,7 +14,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
@@ -23,7 +22,7 @@ import { isSyncOrAction } from '@/utils/scripts';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 
 import type { ComboboxOption } from '@/components/ui/Combobox';
-import type { ApiIntegration, DeployedNangoFunction, FunctionType } from '@nangohq/types';
+import type { ApiIntegration, FunctionType, ListedNangoFunction } from '@nangohq/types';
 
 const TYPE_FILTER_VALUES = ['sync', 'action', 'on-event'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
@@ -83,13 +82,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     }, [env, integration.unique_key, navigate]);
 
     const onFunctionClick = useCallback(
-        (fn: DeployedNangoFunction) => {
+        (fn: ListedNangoFunction) => {
             navigate(`/${env}/integrations/${integration.unique_key}/functions/${encodeURIComponent(fn.name)}?type=${fn.type}`);
         },
         [env, integration.unique_key, navigate]
     );
 
-    const functions: DeployedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
+    const functions: ListedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
     const total = data?.pages[0]?.pagination.total ?? 0;
 
     if (error) {

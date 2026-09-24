@@ -5,6 +5,7 @@ import { gettingStartedService } from '../index.js';
 import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
+import * as functionLifecycle from './functions/lifecycle.js';
 import { getProvider } from './providers.js';
 import syncManager from './sync/manager.service.js';
 
@@ -57,6 +58,16 @@ class ConfigService {
         }
     }
 
+    async getIntegrationSummary(environment_id: number, providerConfigKey: string): Promise<{ provider: string; display_name: string | null } | null> {
+        const result = await db.readOnly
+            .select('provider', 'display_name')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ unique_key: providerConfigKey, environment_id, deleted: false })
+            .first();
+
+        return result ? { provider: result.provider, display_name: result.display_name } : null;
+    }
+
     async getProviderConfig(providerConfigKey: string, environment_id: number, trx = db.readOnly): Promise<ProviderConfig | null> {
         const result = (await trx
             .select('_nango_configs.*', 'providers_shared_credentials.credentials')
@@ -75,6 +86,9 @@ class ConfigService {
             result.oauth_scopes = result.credentials.oauth_scopes;
             result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
             result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
+            if (result.credentials.app_link) {
+                result.app_link = result.credentials.app_link;
+            }
         }
         delete result.credentials;
 
@@ -98,6 +112,9 @@ class ConfigService {
                     result.oauth_scopes = result.credentials.oauth_scopes;
                     result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
                     result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
+                    if (result.credentials.app_link) {
+                        result.app_link = result.credentials.app_link;
+                    }
                 }
                 delete result.credentials;
                 return getEncryptionManager().decryptProviderConfig(result);
@@ -202,8 +219,17 @@ class ConfigService {
         id: number;
         environmentId: number;
         providerConfigKey: string;
-        orchestrator: Orchestrator;
+        orchestrator: Pick<Orchestrator, 'deleteSync' | 'deleteFunctionSchedules'>;
     }): Promise<boolean> {
+        const functionsDeletion = await functionLifecycle.deleteForIntegration(db.knex, {
+            integrationConfigId: id,
+            environmentId,
+            orchestrator
+        });
+        if (functionsDeletion.isErr()) {
+            throw functionsDeletion.error;
+        }
+
         // TODO: might be useless since we are dropping the data after a while
         await syncManager.deleteSyncsByProviderConfig(environmentId, providerConfigKey, orchestrator);
 

@@ -1,5 +1,7 @@
+/** Every wildcard in a namespace: `environment:*`, `environment:connections:*`, … */
+export type WildcardsFor<Namespace extends string> = `${Namespace}:*` | `${Namespace}:${string}:*`;
+
 export const API_KEY_SCOPES = [
-    'environment:*',
     // Integrations
     'environment:integrations:list',
     'environment:integrations:list_credentials',
@@ -9,7 +11,6 @@ export const API_KEY_SCOPES = [
     'environment:integrations:create',
     'environment:integrations:update',
     'environment:integrations:delete',
-    'environment:integrations:*',
     // Connections
     'environment:connections:list',
     'environment:connections:list_credentials',
@@ -18,34 +19,32 @@ export const API_KEY_SCOPES = [
     'environment:connections:create',
     'environment:connections:update',
     'environment:connections:delete',
-    'environment:connections:*',
     // Connect Sessions
     'environment:connect_sessions:write',
+    // Agent Sessions
+    'environment:agent_sessions:write',
     // Syncs
     'environment:syncs:read',
     'environment:syncs:execute',
     'environment:syncs:update',
     'environment:syncs:variant:create',
     'environment:syncs:variant:delete',
-    'environment:syncs:*',
     // Functions
     'environment:functions:list',
     'environment:functions:read',
     'environment:functions:delete',
     'environment:functions:compile',
     'environment:functions:dryrun',
-    'environment:functions:*',
+    'environment:functions:invocations',
     // Deploy
     'environment:deploy',
     // Records
     'environment:records:read',
     'environment:records:write',
-    'environment:records:*',
     // Logs
     'environment:logs:read',
     // Actions
     'environment:actions:execute',
-    'environment:actions:*',
     // Proxy
     'environment:proxy',
     // Variables
@@ -56,9 +55,25 @@ export const API_KEY_SCOPES = [
     'environment:mcp'
 ] as const;
 
-export type ApiKeyScope = (typeof API_KEY_SCOPES)[number];
+export type ConcreteApiKeyScope = (typeof API_KEY_SCOPES)[number];
 
-export const ACCOUNT_API_KEY_SCOPES = ['account:*', 'account:billing:read', 'account:team:invite_member'] as const;
+/** A scope, or a wildcard over scopes. Which wildcards resolve to something is checked at runtime. */
+export type ApiKeyScope = ConcreteApiKeyScope | WildcardsFor<'environment'>;
 
-export type AccountApiKeyScope = (typeof ACCOUNT_API_KEY_SCOPES)[number];
+export const ACCOUNT_API_KEY_SCOPES = [
+    // Environments
+    'account:environments:list',
+    'account:environments:create',
+    'account:environments:delete',
+    'account:environments:set_production',
+    'account:environments:api_keys:list',
+    'account:environments:api_keys:read',
+    'account:environments:api_keys:create',
+    'account:environments:api_keys:delete'
+] as const;
+
+export type ConcreteAccountApiKeyScope = (typeof ACCOUNT_API_KEY_SCOPES)[number];
+
+export type AccountApiKeyScope = ConcreteAccountApiKeyScope | WildcardsFor<'account'>;
+
 export type CustomerKeyScope = ApiKeyScope | AccountApiKeyScope;

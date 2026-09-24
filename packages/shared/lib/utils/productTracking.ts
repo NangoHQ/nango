@@ -6,20 +6,10 @@ import type { CliTelemetryEvent, DBTeam, DBUser } from '@nangohq/types';
 
 export type ProductTrackingTypes =
     | CliTelemetryEvent
-    | 'account:trial:extend'
-    | 'account:trial:started'
     | 'account:billing:plan_changed'
+    | 'account:billing:plan_changed:v2'
     | 'account:billing:downgraded'
-    | 'account:billing:upgraded'
-    | 'deploy:success'
-    | 'deploy:error'
-    | 'prod:connections:threshold_hit'
-    | 'server:resource_capped:connection_creation'
-    | 'server:resource_capped:connection_imported'
-    | 'server:resource_capped:script_activate'
-    | 'server:resource_capped:script_deploy_is_disabled'
-    | 'server:resource_capped:action_triggered'
-    | 'server:resource_capped:active_records';
+    | 'account:billing:upgraded';
 
 class ProductTracking {
     client: PostHog | undefined;

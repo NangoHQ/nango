@@ -390,6 +390,10 @@ asana:
     - workspaces:read
     - workspaces.typeahead:read
 
+# source: https://docs.intraconnects.com/docs/ehr-basics/athena/Auth/tokenep/ + https://www.stitchflow.com/user-management/athenaone/api + https://mirth.support/blog/athenahealth-integration
+athenahealth:
+    - athena/service/Athenanet.MDP.*
+
 # source: https://auth.atlassian.com/.well-known/openid-configuration (scopes_supported) + https://developer.atlassian.com/cloud/jira/platform/scopes-for-connect-and-oauth-2-3LO-apps + https://developer.atlassian.com/cloud/confluence/scopes-for-oauth-2-3LO-and-forge-apps + https://developer.atlassian.com/cloud/jira/service-desk/scopes-for-oauth-2-3LO-and-forge-apps
 atlassian:
     - address
@@ -3839,6 +3843,30 @@ grain: []
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 grammarly: []
 
+# source: MEDITECH Greenfield US Core FHIR API Postman collection (SMART on FHIR scope syntax)
+greenfield-meditech:
+    - launch
+    - user/*.*
+    - patient/*.read
+    - patient/AllergyIntolerance.read
+    - patient/CarePlan.read
+    - patient/CareTeam.read
+    - patient/Condition.read
+    - patient/DiagnosticReport.read
+    - patient/DocumentReference.read
+    - patient/Encounter.read
+    - patient/Goal.read
+    - patient/Immunization.read
+    - patient/Location.read
+    - patient/Medication.read
+    - patient/MedicationRequest.read
+    - patient/Observation.read
+    - patient/Patient.read
+    - patient/Practitioner.read
+    - patient/PractitionerRole.read
+    - patient/Procedure.read
+    - patient/ServiceRequest.read
+
 # source: https://developers.greenhouse.io/candidate-ingestion.html (OAuth Scopes)
 greenhouse:
     - candidates.create
@@ -4739,6 +4767,9 @@ highlevel-white-label:
     - voice-ai-dashboard.readonly
     - workflows.readonly
 
+# source: https://developerportal.thomsonreuters.com/authentication/documents/api-access-mechanism-using-oauth2 (no scopes parameter — API access is governed by the authenticated user's Collaborate permissions)
+highq: []
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 hover: []
 
@@ -4917,6 +4948,9 @@ hubstaff:
     - profile
     - tasks:read
     - tasks:write
+
+# source: https://docs.infor.com/inforos/2026.x/en-us/useradminlib_cloud/apigatewayag_cloud/vya1611685179822.html (scopes are disabled by default; when a tenant enables "Enforced Per Authorized App", the admin defines custom scope names per authorized app — there is no fixed, vendor-wide scope catalog)
+infor: []
 
 # source: https://developers.facebook.com/docs/instagram-basic-display-api/overview/permissions
 instagram:
@@ -5758,6 +5792,31 @@ linkhut:
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 listrak: []
 
+# source: https://developer.liveswitch.com/docs/basic-concepts
+liveswitch:
+    - contacts
+    - contacts.write
+    - conversations
+    - conversations.write
+    - documents
+    - email
+    - me
+    - offline_access
+    - openid
+    - organizations
+    - organizations.write
+    - profile
+    - projects
+    - projects.write
+    - recordings
+    - spark-templates
+    - sparks
+    - sparks.write
+    - tags
+    - tags.write
+    - webhooks
+    - webhooks.write
+
 # source: https://developers.lokalise.com/reference/oauth-2-flow
 # source: https://developers.lokalise.com/reference/lokalise-rest-api
 lokalise:
@@ -5899,6 +5958,16 @@ meta-marketing-api:
     - user_videos
     - whatsapp_business_management
     - whatsapp_business_messaging
+
+# source: https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-get-started
+meta-mcp:
+    - ads_management
+    - ads_mcp_management
+    - ads_read
+    - business_management
+    - catalog_management
+    - instagram_basic
+    - pages_show_list
 
 # source: https://learn.microsoft.com/en-us/graph/permissions-reference
 microsoft:
@@ -6414,6 +6483,10 @@ microsoft-ads:
 # source: providers.yaml base_url (Microsoft client credentials resource scope pattern)
 microsoft-business-central:
     - https://api.businesscentral.dynamics.com/.default
+
+# source: Azure Portal API permissions picker for "Dynamics CRM" delegated permissions
+microsoft-dataverse:
+    - user_impersonation
 
 # source: Azure Portal API permissions picker for "Dynamics ERP" (Microsoft.ERP)
 microsoft-dynamics-365-finance-and-operations:
@@ -8327,6 +8400,15 @@ monday:
     - workspaces:read
     - workspaces:write
 
+# source: https://developer.moneybird.com/authentication#scopes
+moneybird:
+    - bank
+    - documents
+    - estimates
+    - sales_invoices
+    - settings
+    - time_entries
+
 # source: https://developers.mural.co/public/docs/scopes
 mural:
     - identity:read
@@ -8376,6 +8458,34 @@ ninjaone-rmm:
 # source: https://app.ninjarmm.com/.well-known/oauth-authorization-server (scopes_supported)
 ninjaone-rmm-oauth2:
     - monitoring
+
+# source: https://oauth.nooks.in/.well-known/oauth-authorization-server (scopes_supported)
+nooks:
+    - accounts:read
+    - call-dispositions:read
+    - calls:read
+    - calls:write
+    - coaching:read
+    - desktop-notes:read
+    - email-templates:read
+    - emails:read
+    - emails:write
+    - mailboxes:read
+    - notes:write
+    - opportunities:read
+    - prospects:read
+    - prospects:write
+    - search:read
+    - sequence-states:read
+    - sequence-states:write
+    - sequence-steps:read
+    - sequence-steps:write
+    - sequences:read
+    - sequences:write
+    - tasks:read
+    - tasks:write
+    - teams:read
+    - users:read
 
 # source: https://developers.notion.com/docs/authorization
 notion: []
@@ -8954,6 +9064,11 @@ oura:
     - tag
     - workout
 
+# source: https://app.getoutline.com/.well-known/oauth-authorization-server (scopes_supported)
+outline:
+    - read
+    - write
+
 # source: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration (scopes_supported)
 # source: providers.yaml default_scopes
 outlook:
@@ -9035,7 +9150,7 @@ pagerduty:
     - services.read
     - write
 
-# source: https://app.pandadoc.com/.well-known/oauth-authorization-server (scopes_supported)
+# source: https://app.pandadoc.com/.well-known/oauth-authorization-server + https://app.pandadoc.eu/.well-known/oauth-authorization-server (scopes_supported, identical for both regions)
 pandadoc:
     - read
     - read+write
@@ -9907,6 +10022,13 @@ reddit:
     - wikiedit
     - wikiread
 
+# source: https://developer.revolut.com/docs/business/business-api
+revolut-business:
+    - READ
+    - WRITE
+    - PAY
+    - READ_SENSITIVE_CARD_DATA
+
 # source: https://platform.ringcentral.com/.well-known/openid-configuration (scopes_supported)
 ring-central:
     - A2PSMS
@@ -9994,6 +10116,11 @@ rippling-shop-app: []
 
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 roller: []
+
+# source: https://help.whiplash.com/hc/en-us/articles/360050873291-The-RyderShip-API (scope parameter)
+rydership:
+    - user_read
+    - user_manage
 
 # source: https://accounts.rydoo.com/.well-known/openid-configuration (scopes_supported)
 rydoo:

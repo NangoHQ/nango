@@ -1,6 +1,7 @@
 export enum LogActionEnum {
     ACCOUNT = 'account',
     ACTION = 'action',
+    FUNCTION = 'function',
     ANALYTICS = 'analytics',
     AUTH = 'auth',
     DATABASE = 'database',

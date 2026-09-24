@@ -11,6 +11,7 @@ import { PersistClient } from '../clients/persist.js';
 import { MapLocks } from './locks.js';
 import { createFunctionFacade, NangoActionRunner, NangoSyncRunner } from './sdk.js';
 
+import type { TelemetryRecorder } from '../telemetry.js';
 import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 import type { Mock } from 'vitest';
@@ -521,6 +522,26 @@ describe('Log', () => {
         });
     });
 
+    it('records customer and system log data-transfers as separate telemetry callsites', async () => {
+        const telemetryRecorder = {
+            record: vi.fn(),
+            shutdown: vi.fn().mockResolvedValue(Ok(undefined))
+        } satisfies TelemetryRecorder;
+        const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistClient, telemetryRecorder, locks });
+
+        await nangoAction.log('customer log');
+        await nangoAction['sendLogToPersist']({
+            type: 'log',
+            level: 'info',
+            source: 'internal',
+            message: 'system log',
+            createdAt: new Date().toISOString()
+        });
+
+        expect(telemetryRecorder.record).toHaveBeenNthCalledWith(1, expect.objectContaining({ callsite: 'persist_customer_logs' }));
+        expect(telemetryRecorder.record).toHaveBeenNthCalledWith(2, expect.objectContaining({ callsite: 'persist_system_logs' }));
+    });
+
     it('should enforce type: log message + object + level', async () => {
         await nangoAction.log('hello', { foo: 'bar' }, { level: 'foobar' });
     });
@@ -840,7 +861,7 @@ describe('proxy 401 invalid credentials', () => {
 });
 
 describe('createFunctionFacade', () => {
-    const blockedProperties = ['nango', 'persistClient', 'telemetryRecorder', 'locking', 'checkpointing', 'checkpointKey'] as const;
+    const blockedProperties = ['nango', 'persistClient', 'telemetryRecorder', 'locking', 'checkpointing', 'checkpointKey', 'functionVariant'] as const;
 
     beforeEach(async () => {
         const nodeClient = (await import('@nangohq/node')).Nango;
@@ -896,17 +917,22 @@ describe('createFunctionFacade', () => {
 
         it('hides blocked properties from "in", Object.keys and ownKeys', () => {
             const { facade } = buildActionFacade();
+            const enumerableKeys = Object.keys(facade);
+            const ownKeys = Reflect.ownKeys(facade);
             for (const prop of blockedProperties) {
                 expect(prop in facade).toBe(false);
+                expect(enumerableKeys).not.toContain(prop);
+                expect(ownKeys).not.toContain(prop);
             }
-            expect(Object.keys(facade)).not.toContain('nango');
-            expect(Reflect.ownKeys(facade)).not.toContain('nango');
         });
 
         it('throws when writing to a blocked property', () => {
             const { facade } = buildActionFacade();
             expect(() => {
                 (facade as any).nango = {};
+            }).toThrowError(/is not allowed/);
+            expect(() => {
+                (facade as any).functionVariant = 'other';
             }).toThrowError(/is not allowed/);
         });
 
@@ -1045,6 +1071,7 @@ describe('createFunctionFacade', () => {
             const { facade } = buildActionFacade();
             expect(facade.connectionId).toBe(nangoProps.connectionId);
             expect(facade.providerConfigKey).toBe(nangoProps.providerConfigKey);
+            expect(facade.getVariant()).toBe('base');
         });
 
         it('runs proxy() through the facade', async () => {

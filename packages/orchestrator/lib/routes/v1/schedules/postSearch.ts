@@ -2,6 +2,8 @@ import * as z from 'zod';
 
 import { validateRequest } from '@nangohq/utils';
 
+import { maxScheduleNamesPerSearch } from '../../../constants.js';
+
 import type { Schedule, Scheduler, ScheduleState } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
@@ -23,8 +25,7 @@ type PostSearch = Endpoint<{
 
 const bodySchema = z
     .object({
-        // max = page size (20 connections) * (~25 assumed schedules per connection) * 2 as buffer
-        names: z.array(z.string().min(1)).max(1000).optional(),
+        names: z.array(z.string().min(1)).max(maxScheduleNamesPerSearch).optional(),
         state: z.enum(['STARTED', 'PAUSED', 'DELETED'] satisfies ScheduleState[]).optional(),
         limit: z.number().int()
     })

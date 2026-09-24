@@ -11,6 +11,7 @@ export interface DBMFAFactor extends Timestamps {
     auth_tag: string;
     enabled_at: Date | null;
     last_accepted_counter: string | null;
+    clock_offset_steps: number;
 }
 
 export interface DBMFARecoveryCode {

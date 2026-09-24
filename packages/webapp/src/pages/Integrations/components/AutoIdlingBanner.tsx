@@ -1,10 +1,10 @@
 import { Clock, Loader2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
-import { permissions } from '@nangohq/authz';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { usePermissions } from '@/hooks/usePermissions';
 import { apiPostPlanExtendTrial, useCurrentPlan, useTrial } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
@@ -19,7 +19,7 @@ export const AutoIdlingBanner: React.FC = () => {
     const { isTrial, isTrialOver, daysRemaining } = useTrial(plan);
 
     const { can } = usePermissions();
-    const canExtendTrial = can(permissions.canChangePlan);
+    const canExtendTrial = can('account:plan:update');
 
     const [trialLoading, setTrialLoading] = useState(false);
 
@@ -51,15 +51,13 @@ export const AutoIdlingBanner: React.FC = () => {
                 <AlertActions>
                     <PermissionGate condition={canExtendTrial}>
                         {(allowed) => (
-                            <AlertButton variant={'warning-secondary'} onClick={onClickExtend} disabled={trialLoading || !allowed}>
+                            <AlertButton onClick={onClickExtend} disabled={trialLoading || !allowed}>
                                 {trialLoading && <Loader2 className="animate-spin" />}
                                 Restart
                             </AlertButton>
                         )}
                     </PermissionGate>
-                    <AlertButtonLink variant={'warning'} to={`/team/billing#plans`}>
-                        Upgrade
-                    </AlertButtonLink>
+                    <AlertButtonLink to={`/team/billing#plans`}>Upgrade</AlertButtonLink>
                 </AlertActions>
             </Alert>
         );
@@ -73,15 +71,13 @@ export const AutoIdlingBanner: React.FC = () => {
             <AlertActions>
                 <PermissionGate condition={canExtendTrial}>
                     {(allowed) => (
-                        <AlertButton variant={'info-secondary'} onClick={onClickExtend} disabled={trialLoading || !allowed}>
+                        <AlertButton onClick={onClickExtend} disabled={trialLoading || !allowed}>
                             {trialLoading && <Loader2 className="animate-spin" />}
                             Extend
                         </AlertButton>
                     )}
                 </PermissionGate>
-                <AlertButtonLink variant={'info'} to={`/team/billing#plans`}>
-                    Upgrade
-                </AlertButtonLink>
+                <AlertButtonLink to={`/team/billing#plans`}>Upgrade</AlertButtonLink>
             </AlertActions>
         </Alert>
     );

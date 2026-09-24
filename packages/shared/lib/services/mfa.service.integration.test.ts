@@ -2,11 +2,33 @@ import * as OTPAuth from 'otpauth';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { multipleMigrations } from '@nangohq/database';
+import { metrics } from '@nangohq/utils';
 
 import { createAccount } from '../seeders/account.seeder.js';
 import { seedUser } from '../seeders/user.seeder.js';
 import * as encryptionManager from '../utils/encryption.manager.js';
 import mfaService from './mfa.service.js';
+
+const STEP_MS = 30 * 1000;
+// Wider than the service's drift diagnostic window, so a code rejected here is wrong at any offset it probes.
+const WRONG_CODE_PROBE_STEPS = 25;
+
+/** A six-digit code this factor does not accept at any offset the service checks. */
+function wrongCodeFor(totp: OTPAuth.TOTP, timestamp: number): string {
+    const accepted = new Set<string>();
+    for (let step = -WRONG_CODE_PROBE_STEPS; step <= WRONG_CODE_PROBE_STEPS; step++) {
+        accepted.add(totp.generate({ timestamp: timestamp + step * STEP_MS }));
+    }
+
+    for (let candidate = 0; candidate <= accepted.size; candidate++) {
+        const code = String(candidate).padStart(6, '0');
+        if (!accepted.has(code)) {
+            return code;
+        }
+    }
+
+    throw new Error('no wrong code available');
+}
 
 describe('MFA service', () => {
     beforeAll(async () => {
@@ -45,6 +67,31 @@ describe('MFA service', () => {
         expect((await mfaService.consumeRecoveryCode(user.id, activated.recoveryCodes[0]!)).unwrap()).toBe(false);
     });
 
+    it('checks a recovery code without spending it', async () => {
+        const account = await createAccount();
+        const user = await seedUser(account.id);
+        const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+        const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+        const activated = (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
+
+        const code = activated.recoveryCodes[0]!;
+        expect((await mfaService.verifyRecoveryCode(user.id, code, { context: 'disable' })).unwrap()).toBe(true);
+        expect((await mfaService.verifyRecoveryCode(user.id, code, { context: 'disable' })).unwrap()).toBe(true);
+        // Still spendable afterwards, which is what separates this from consumeRecoveryCode.
+        expect((await mfaService.consumeRecoveryCode(user.id, code)).unwrap()).toBe(true);
+        expect((await mfaService.verifyRecoveryCode(user.id, code, { context: 'disable' })).unwrap()).toBe(false);
+    });
+
+    it('rejects an unknown recovery code', async () => {
+        const account = await createAccount();
+        const user = await seedUser(account.id);
+        const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+        const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+        (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
+
+        expect((await mfaService.verifyRecoveryCode(user.id, 'not-a-real-code', { context: 'disable' })).unwrap()).toBe(false);
+    });
+
     it('replaces recovery codes and disables the factor', async () => {
         const account = await createAccount();
         const user = await seedUser(account.id);
@@ -59,6 +106,95 @@ describe('MFA service', () => {
 
         (await mfaService.disable(user.id)).unwrap();
         expect(await mfaService.hasActiveFactor(user.id)).toBe(false);
+    });
+
+    it('tracks the clock offset of a device that runs ahead', async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-08-12T12:00:00Z'));
+
+        const account = await createAccount();
+        const user = await seedUser(account.id);
+        const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+        const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+        (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(0);
+
+        // Marcin's case: the authenticator is 2 steps (60s) ahead of us
+        const twoStepsAhead = totp.generate({ timestamp: Date.now() + 2 * STEP_MS });
+        expect((await mfaService.verifyTotp(user.id, twoStepsAhead)).unwrap()).toBe(true);
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(2);
+
+        // the window now sits on the offset, so a code 4 steps out is reachable where it was not before
+        const fourStepsAhead = totp.generate({ timestamp: Date.now() + 4 * STEP_MS });
+        expect((await mfaService.verifyTotp(user.id, fourStepsAhead)).unwrap()).toBe(true);
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(4);
+
+        // a fixed clock is accepted on the real time center rather than being locked out by the
+        // stale offset. Advance well past the recorded offset so the replay guard below is not
+        // what this assertion ends up measuring.
+        vi.setSystemTime(new Date('2026-08-12T12:04:00Z'));
+        expect((await mfaService.verifyTotp(user.id, totp.generate())).unwrap()).toBe(true);
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(0);
+    });
+
+    it('makes a corrected clock wait out the recorded offset', async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-08-12T12:00:00Z'));
+
+        const account = await createAccount();
+        const user = await seedUser(account.id);
+        const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+        const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+        (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
+
+        const twoStepsAhead = totp.generate({ timestamp: Date.now() + 2 * STEP_MS });
+        expect((await mfaService.verifyTotp(user.id, twoStepsAhead)).unwrap()).toBe(true);
+        const threeStepsAhead = totp.generate({ timestamp: Date.now() + 3 * STEP_MS });
+        expect((await mfaService.verifyTotp(user.id, threeStepsAhead)).unwrap()).toBe(true);
+
+        // Accepted behaviour, not a fix we are chasing. The replay guard stores the step of the
+        // code we accepted, which was 3 ahead of us, so a device that gets corrected has to catch
+        // up to it before its codes are new enough. The wait is bounded by the recorded offset,
+        // so at most MAX_CLOCK_OFFSET_STEPS steps, and nothing is written while it is failing.
+        vi.setSystemTime(new Date('2026-08-12T12:01:00Z'));
+        expect((await mfaService.verifyTotp(user.id, totp.generate())).unwrap()).toBe(false);
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(3);
+
+        vi.setSystemTime(new Date('2026-08-12T12:02:00Z'));
+        expect((await mfaService.verifyTotp(user.id, totp.generate())).unwrap()).toBe(true);
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(0);
+    });
+
+    it('rejects a login code beyond the window when no offset is known', async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-08-12T12:00:00Z'));
+
+        const account = await createAccount();
+        const user = await seedUser(account.id);
+        const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+        const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+        (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
+
+        const fiveStepsAhead = totp.generate({ timestamp: Date.now() + 5 * STEP_MS });
+        expect((await mfaService.verifyTotp(user.id, fiveStepsAhead)).unwrap()).toBe(false);
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(0);
+    });
+
+    it('seeds the offset at activation so a badly unsynced device can still enroll', async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-08-12T12:00:00Z'));
+
+        const account = await createAccount();
+        const user = await seedUser(account.id);
+        const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+        const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+
+        // 5 steps out would be refused at login, but activation is lenient enough to learn it
+        (await mfaService.activateEnrollment(user.id, totp.generate({ timestamp: Date.now() + 5 * STEP_MS }))).unwrap();
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(5);
+
+        const sixStepsAhead = totp.generate({ timestamp: Date.now() + 6 * STEP_MS });
+        expect((await mfaService.verifyTotp(user.id, sixStepsAhead)).unwrap()).toBe(true);
     });
 
     it('returns only the user ids with an active factor', async () => {
@@ -78,6 +214,128 @@ describe('MFA service', () => {
         expect(enabledIds).toEqual(new Set([enabledUser.id]));
 
         expect(await mfaService.getEnabledUserIds([])).toEqual(new Set());
+    });
+
+    describe('verification metrics', () => {
+        function spyOnMetrics() {
+            const increment = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+            return {
+                failures: () => increment.mock.calls.filter(([name]) => name === metrics.Types.MFA_VERIFY_FAILURE).map(([, , dimensions]) => dimensions),
+                successes: () => increment.mock.calls.filter(([name]) => name === metrics.Types.MFA_VERIFY_SUCCESS).map(([, , dimensions]) => dimensions)
+            };
+        }
+
+        async function seedActiveFactor() {
+            const account = await createAccount();
+            const user = await seedUser(account.id);
+            const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+            const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+            (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
+            return { user, totp };
+        }
+
+        it('tells clock drift apart from a genuinely wrong code', async () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2026-08-14T12:00:00Z'));
+
+            const { user, totp } = await seedActiveFactor();
+            const { failures } = spyOnMetrics();
+
+            // right secret, 5 steps out, so past TOTP_WINDOW but inside the diagnostic window
+            const drifted = totp.generate({ timestamp: Date.now() + 5 * STEP_MS });
+            expect((await mfaService.verifyTotp(user.id, drifted, { context: 'login' })).unwrap()).toBe(false);
+
+            // a code this factor never produces, so it is wrong rather than drifted
+            expect((await mfaService.verifyTotp(user.id, wrongCodeFor(totp, Date.now()), { context: 'login' })).unwrap()).toBe(false);
+
+            expect(failures()).toEqual([
+                { context: 'login', method: 'totp', reason: 'clock_drift' },
+                { context: 'login', method: 'totp', reason: 'wrong_code' }
+            ]);
+        });
+
+        it('records a replayed code as reuse rather than a wrong code', async () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2026-08-14T12:00:00Z'));
+
+            const { user, totp } = await seedActiveFactor();
+            vi.setSystemTime(new Date('2026-08-14T12:00:30Z'));
+            const { failures, successes } = spyOnMetrics();
+
+            const token = totp.generate();
+            expect((await mfaService.verifyTotp(user.id, token, { context: 'step_up' })).unwrap()).toBe(true);
+            expect((await mfaService.verifyTotp(user.id, token, { context: 'step_up' })).unwrap()).toBe(false);
+
+            expect(successes()).toEqual([{ context: 'step_up', method: 'totp', drift: 0 }]);
+            expect(failures()).toEqual([{ context: 'step_up', method: 'totp', reason: 'code_reuse' }]);
+        });
+
+        it('tags an accepted code with the clock offset it was accepted at', async () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2026-08-14T12:00:00Z'));
+
+            const { user, totp } = await seedActiveFactor();
+            const { successes } = spyOnMetrics();
+
+            const twoStepsAhead = totp.generate({ timestamp: Date.now() + 2 * STEP_MS });
+            expect((await mfaService.verifyTotp(user.id, twoStepsAhead, { context: 'login' })).unwrap()).toBe(true);
+
+            expect(successes()).toEqual([{ context: 'login', method: 'totp', drift: 2 }]);
+        });
+
+        it('reports the real drift once it climbs past the stored ceiling', async () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2026-08-14T12:00:00Z'));
+
+            const account = await createAccount();
+            const user = await seedUser(account.id);
+            const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+            const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+
+            // activation is lenient enough to seed 5, then each verify walks the window 2 further out
+            (await mfaService.activateEnrollment(user.id, totp.generate({ timestamp: Date.now() + 5 * STEP_MS }))).unwrap();
+            const { successes } = spyOnMetrics();
+
+            for (const steps of [7, 9, 11]) {
+                const code = totp.generate({ timestamp: Date.now() + steps * STEP_MS });
+                expect((await mfaService.verifyTotp(user.id, code, { context: 'login' })).unwrap()).toBe(true);
+            }
+
+            // the column stays bounded by MAX_CLOCK_OFFSET_STEPS, the metric reports what actually matched
+            expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(10);
+            expect(successes().map((dimensions) => dimensions?.['drift'])).toEqual([7, 9, 11]);
+        });
+
+        it('separates a malformed code, an unenrolled user and a spent recovery code', async () => {
+            const account = await createAccount();
+            const noFactorUser = await seedUser(account.id);
+            const enrollment = (await mfaService.startEnrollment(noFactorUser.id, noFactorUser.email)).unwrap();
+            const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+            const activated = (await mfaService.activateEnrollment(noFactorUser.id, totp.generate())).unwrap();
+            const { failures } = spyOnMetrics();
+
+            expect((await mfaService.verifyTotp(noFactorUser.id, '12345', { context: 'disable' })).unwrap()).toBe(false);
+            expect((await mfaService.consumeRecoveryCode(noFactorUser.id, activated.recoveryCodes[0]!, { context: 'login' })).unwrap()).toBe(true);
+            expect((await mfaService.consumeRecoveryCode(noFactorUser.id, activated.recoveryCodes[0]!, { context: 'login' })).unwrap()).toBe(false);
+
+            (await mfaService.disable(noFactorUser.id)).unwrap();
+            expect((await mfaService.verifyTotp(noFactorUser.id, totp.generate(), { context: 'login' })).unwrap()).toBe(false);
+
+            expect(failures()).toEqual([
+                { context: 'disable', method: 'totp', reason: 'malformed_code' },
+                { context: 'login', method: 'recovery_code', reason: 'unknown_recovery_code' },
+                { context: 'login', method: 'totp', reason: 'not_enrolled' }
+            ]);
+        });
+
+        it('defaults the context when a caller does not pass one', async () => {
+            const { user } = await seedActiveFactor();
+            const { failures } = spyOnMetrics();
+
+            expect((await mfaService.verifyTotp(user.id, '000')).unwrap()).toBe(false);
+
+            expect(failures()).toEqual([{ context: 'unknown', method: 'totp', reason: 'malformed_code' }]);
+        });
     });
 
     it('returns encryption setup failures instead of rejecting', async () => {

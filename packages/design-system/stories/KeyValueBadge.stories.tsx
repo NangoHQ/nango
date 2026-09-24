@@ -3,7 +3,7 @@ import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/UI/KeyValueBadge',
+    title: 'App Components/UI/KeyValueBadge',
     parameters: { layout: 'padded' }
 };
 export default meta;
