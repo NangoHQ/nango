@@ -29,7 +29,7 @@ export const postCliTelemetry = asyncWrapper<PostCliTelemetry>((req, res) => {
     }
 
     const { deviceId, event, ephemeral } = val.data;
-    productTracking.trackAnonymous({ name: event, distinctId: deviceId, ...(ephemeral ? { eventProperties: { 'device-id-ephemeral': true } } : {}) });
+    productTracking.trackAnonymous({ name: event, distinctId: deviceId, ...(ephemeral ? { eventProperties: { is_device_ephemeral: true } } : {}) });
 
     res.status(204).send();
 });

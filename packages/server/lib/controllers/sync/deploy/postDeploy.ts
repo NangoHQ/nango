@@ -33,12 +33,7 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
     const body: PostDeploy['Body'] = val.data;
     const { environment, account, plan } = res.locals;
 
-    const { cliVersion, deviceId } = getCliContext(req);
-    const trackingProperties: Record<string, string | number | boolean> = {
-        'cli-version': cliVersion || 'unknown',
-        source: body.source ?? 'repo',
-        'flow-count': body.flowConfigs.length
-    };
+    const { deviceId } = getCliContext(req);
 
     if (deviceId) {
         productTracking.alias({ deviceId, team: account });
@@ -82,11 +77,9 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
 
         if (plan && !plan.trial_end_at && plan.auto_idle) {
             await startTrial(db.knex, plan);
-            productTracking.track({ name: 'account:trial:started', team: account });
         }
 
         if (!success || !syncConfigDeployResult) {
-            productTracking.track({ name: 'deploy:error', team: account, eventProperties: { ...trackingProperties, 'error-code': error?.type || 'unknown' } });
             errorManager.errResFromNangoErr(res, error);
             return;
         }
@@ -105,7 +98,6 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
                 onFunctionDeleted: ({ syncConfigId, models }) => startFunctionDeletion({ syncConfigId, environmentId: environment.id, models })
             });
             if (!success) {
-                productTracking.track({ name: 'deploy:error', team: account, eventProperties: { ...trackingProperties, 'error-code': 'reconcile_failed' } });
                 res.status(500).send({
                     error: {
                         code: 'server_error',
@@ -115,8 +107,6 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
                 return;
             }
         }
-
-        productTracking.track({ name: 'deploy:success', team: account, eventProperties: trackingProperties });
 
         res.send(syncConfigDeployResult.result);
     } finally {

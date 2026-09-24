@@ -3,7 +3,6 @@ import { Link2 } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam, useUnmount } from 'react-use';
-import { useSWRConfig } from 'swr';
 
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 import Nango from '@nangohq/frontend';
@@ -13,7 +12,6 @@ import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { usePermissions } from '@/hooks/usePermissions';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { apiConnectSessions } from '../../../hooks/useConnect';
-import { clearConnectionsCache } from '../../../hooks/useConnections';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useListIntegrations } from '../../../hooks/useIntegration';
 import { GetUsageQueryKey, useApiGetUsage } from '../../../hooks/usePlan';
@@ -76,7 +74,6 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const connectUI = useRef<ConnectUI>();
     const isDarkMode = useThemeStore(darkModeSelector);
     const hasConnected = useRef<AuthResult | undefined>();
-    const { mutate, cache } = useSWRConfig();
     const [isShareLinkLoading, setIsShareLinkLoading] = useState(false);
 
     const testUser = useMemo(() => {
@@ -242,8 +239,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                     navigate(`/${env}/connections/${integration?.unique_key || hasConnected.current.providerConfigKey}/${hasConnected.current.connectionId}`);
                 }
             } else if (event.type === 'connect') {
-                // TODO: remove after migrating all connection operations to tanstack query
-                clearConnectionsCache(cache, mutate);
+                queryClient.invalidateQueries({ queryKey: ['connections'] });
                 queryClient.invalidateQueries({ queryKey: ['integrations', env] });
                 queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
                 hasConnected.current = event.payload;
@@ -255,7 +251,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                 });
             }
         },
-        [toast, queryClient, env, navigate, integration, cache, mutate]
+        [toast, queryClient, env, navigate, integration]
     );
 
     useUnmount(() => {

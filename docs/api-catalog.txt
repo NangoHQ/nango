@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1016
+Provider count: 1022
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -117,6 +117,7 @@ URL patterns:
 | `basin` | Basin | API_KEY | [docs](https://nango.dev/docs/api-integrations/basin.md) | [connect](https://nango.dev/docs/api-integrations/basin/connect.md) |  | dev-tools |
 | `battlenet` | Battle.net | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/battlenet.md) |  |  | gaming |
 | `beehiiv` | Beehiiv | API_KEY | [docs](https://nango.dev/docs/integrations/all/beehiiv.md) |  |  | communication, marketing |
+| `beeline-vms` | Beeline VMS | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/beeline-vms.md) | [connect](https://nango.dev/docs/api-integrations/beeline-vms/connect.md) |  | hr |
 | `bettercontact` | BetterContact | API_KEY | [docs](https://nango.dev/docs/api-integrations/bettercontact.md) | [connect](https://nango.dev/docs/api-integrations/bettercontact/connect.md) |  | crm |
 | `bigchange` | BigChange | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bigchange.md) | [connect](https://nango.dev/docs/api-integrations/bigchange/connect.md) |  | productivity |
 | `bigcommerce` | BigCommerce | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/bigcommerce.md) | [connect](https://nango.dev/docs/api-integrations/bigcommerce/connect.md) | [setup](https://nango.dev/docs/api-integrations/bigcommerce/how-to-register-your-own-bigcommerce-api-oauth-app.md) | e-commerce |
@@ -185,6 +186,7 @@ URL patterns:
 | `cisco-duo-admin` | Cisco Duo Admin API | BASIC | [docs](https://nango.dev/docs/api-integrations/cisco-duo-admin.md) | [connect](https://nango.dev/docs/api-integrations/cisco-duo-admin/connect.md) |  | iam |
 | `clari-copilot` | Clari Copilot | API_KEY | [docs](https://nango.dev/docs/integrations/all/clari-copilot.md) |  |  | marketing |
 | `clay` | Clay | API_KEY | [docs](https://nango.dev/docs/api-integrations/clay.md) | [connect](https://nango.dev/docs/api-integrations/clay/connect.md) |  | crm, marketing |
+| `clay-mcp` | Clay (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/clay-mcp.md) |  |  | crm, marketing, mcp |
 | `clerk` | Clerk | API_KEY | [docs](https://nango.dev/docs/integrations/all/clerk.md) | [connect](https://nango.dev/docs/integrations/all/clerk/connect.md) |  | dev-tools, iam |
 | `cleverreach` | CleverReach | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/cleverreach.md) |  | [setup](https://nango.dev/docs/api-integrations/cleverreach/how-to-register-your-own-cleverreach-api-oauth-app.md) | marketing |
 | `clickhouse` | ClickHouse | BASIC | [docs](https://nango.dev/docs/api-integrations/clickhouse.md) | [connect](https://nango.dev/docs/api-integrations/clickhouse/connect.md) |  | dev-tools |
@@ -524,6 +526,7 @@ URL patterns:
 | `luma-v2` | Luma (v2) | API_KEY | [docs](https://nango.dev/docs/api-integrations/luma-v2.md) | [connect](https://nango.dev/docs/api-integrations/luma-v2/connect.md) |  | productivity, ticketing |
 | `lumos` | Lumos | API_KEY | [docs](https://nango.dev/docs/api-integrations/lumos.md) | [connect](https://nango.dev/docs/api-integrations/lumos/connect.md) |  | productivity |
 | `mailchimp` | Mailchimp | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/mailchimp.md) |  |  | marketing, surveys |
+| `mailerlite` | MailerLite | API_KEY | [docs](https://nango.dev/docs/api-integrations/mailerlite.md) | [connect](https://nango.dev/docs/api-integrations/mailerlite/connect.md) |  | marketing |
 | `mailgun` | Mailgun | BASIC | [docs](https://nango.dev/docs/integrations/all/mailgun.md) | [connect](https://nango.dev/docs/integrations/all/mailgun/connect.md) |  | marketing |
 | `mailjet` | Mailjet | BASIC | [docs](https://nango.dev/docs/api-integrations/mailjet.md) | [connect](https://nango.dev/docs/api-integrations/mailjet/connect.md) |  | marketing |
 | `make` | Make | API_KEY | [docs](https://nango.dev/docs/integrations/all/make.md) | [connect](https://nango.dev/docs/integrations/all/make/connect.md) |  | productivity |
@@ -873,6 +876,7 @@ URL patterns:
 | `surecontact` | SureContact | API_KEY | [docs](https://nango.dev/docs/api-integrations/surecontact.md) | [connect](https://nango.dev/docs/api-integrations/surecontact/connect.md) |  | crm |
 | `survey-monkey` | SurveyMonkey | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/survey-monkey.md) |  |  | surveys |
 | `swoogo` | Swoogo | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/swoogo.md) | [connect](https://nango.dev/docs/api-integrations/swoogo/connect.md) |  | marketing |
+| `symplr-ctm` | symplr CTM (ClearConnect) | BASIC | [docs](https://nango.dev/docs/api-integrations/symplr-ctm.md) | [connect](https://nango.dev/docs/api-integrations/symplr-ctm/connect.md) |  | hr, ats |
 | `syncore` | Syncore | API_KEY | [docs](https://nango.dev/docs/api-integrations/syncore.md) | [connect](https://nango.dev/docs/api-integrations/syncore/connect.md) |  | crm |
 | `tableau` | Tableau (PAT) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/tableau.md) | [connect](https://nango.dev/docs/integrations/all/tableau/connect.md) |  | analytics |
 | `tailscale` | Tailscale (OAuth) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/tailscale.md) | [connect](https://nango.dev/docs/integrations/all/tailscale/connect.md) |  | dev-tools, productivity |
@@ -887,6 +891,7 @@ URL patterns:
 | `telegram` | Telegram | API_KEY | [docs](https://nango.dev/docs/api-integrations/telegram.md) | [connect](https://nango.dev/docs/api-integrations/telegram/connect.md) |  | communication |
 | `tempo` | Tempo | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/tempo.md) | [connect](https://nango.dev/docs/api-integrations/tempo/connect.md) | [setup](https://nango.dev/docs/api-integrations/tempo/how-to-register-your-own-tempo-api-oauth-app.md) | productivity |
 | `terraform` | Terraform | API_KEY | [docs](https://nango.dev/docs/integrations/all/terraform.md) | [connect](https://nango.dev/docs/integrations/all/terraform/connect.md) |  | dev-tools |
+| `textus` | TextUs | API_KEY | [docs](https://nango.dev/docs/api-integrations/textus.md) | [connect](https://nango.dev/docs/api-integrations/textus/connect.md) |  | communication, marketing |
 | `the-swarm` | The Swarm | API_KEY | [docs](https://nango.dev/docs/api-integrations/the-swarm.md) | [connect](https://nango.dev/docs/api-integrations/the-swarm/connect.md) |  | crm |
 | `theirstack` | TheirStack | API_KEY | [docs](https://nango.dev/docs/api-integrations/theirstack.md) | [connect](https://nango.dev/docs/api-integrations/theirstack/connect.md) |  | marketing |
 | `thomson-reuters-legal-tracker` | Thomson Reuters Legal Tracker | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker.md) | [connect](https://nango.dev/docs/api-integrations/thomson-reuters-legal-tracker/connect.md) |  | legal |
@@ -939,6 +944,7 @@ URL patterns:
 | `ukg-pro` | UKG Pro | BASIC | [docs](https://nango.dev/docs/integrations/all/ukg-pro.md) | [connect](https://nango.dev/docs/integrations/all/ukg-pro/connect.md) |  | hr, popular |
 | `ukg-pro-cc` | UKG Pro HCM (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/ukg-pro-cc.md) | [connect](https://nango.dev/docs/api-integrations/ukg-pro-cc/connect.md) |  | hr |
 | `ukg-pro-wfm` | UKG Pro (Workforce Management) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ukg-pro-wfm.md) | [connect](https://nango.dev/docs/integrations/all/ukg-pro-wfm/connect.md) |  | hr |
+| `ukg-pro-wfm-cc` | UKG Pro (Workforce Management Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/ukg-pro-wfm-cc.md) | [connect](https://nango.dev/docs/api-integrations/ukg-pro-wfm-cc/connect.md) |  | hr |
 | `ukg-pro-wfm-ropc` | UKG Pro (Workforce Management ROPC) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/ukg-pro-wfm-ropc.md) | [connect](https://nango.dev/docs/api-integrations/ukg-pro-wfm-ropc/connect.md) |  | hr |
 | `ukg-ready` | UKG Ready | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/ukg-ready.md) | [connect](https://nango.dev/docs/integrations/all/ukg-ready/connect.md) |  | hr |
 | `unanet` | Unanet | BASIC | [docs](https://nango.dev/docs/integrations/all/unanet.md) | [connect](https://nango.dev/docs/integrations/all/unanet/connect.md) |  | crm, erp, accounting |

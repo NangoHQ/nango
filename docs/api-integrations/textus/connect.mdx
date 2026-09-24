@@ -1,0 +1,45 @@
+---
+title: TextUs - How do I link my account?
+sidebarTitle: TextUs
+---
+
+## Overview
+
+To authenticate with TextUs, you need:
+
+1. **API Token** — A token that grants Nango permission to call the TextUs API on your behalf, scoped to the user that creates it.
+
+This guide will walk you through finding this within TextUs.
+
+### Prerequisites
+
+- An account with [TextUs](https://next.textus.com).
+
+### Step 1: Generate an API token
+
+1. Log in to [account](https://next.textus.com).
+2. Click your user icon in the top right, then click **Profile**.
+
+<img src="/api-integrations/textus/auth_profile.png"/>
+
+
+3. In the sidebar, click **Advanced user settings**, then **API Tokens**.
+4. Enter a description for the token and click **Create Token**.
+5. Copy the generated token immediately — TextUs only shows it once.
+
+<img src="/api-integrations/textus/auth_token.png"/>
+
+Your token never expires. It is tied to the user that created it, and only that user can revoke it (also from the **API Tokens** page).
+
+### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Token**:
+
+1. Open the form where you need to authenticate with TextUs.
+2. Enter your **API Token** in its respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/textus/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to TextUs.

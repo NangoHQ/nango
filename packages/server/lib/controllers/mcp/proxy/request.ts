@@ -24,7 +24,7 @@ export const proxyRequestTool: ManagementMcpTool<ProxyRequestOutput> = defineMan
         openWorldHint: true
     },
     async handler({ args, account, environment, plan }) {
-        const result = await executeMcpProxyRequest({
+        const execution = await executeMcpProxyRequest({
             account,
             environment,
             plan,
@@ -41,6 +41,8 @@ export const proxyRequestTool: ManagementMcpTool<ProxyRequestOutput> = defineMan
             retryOn: args.retry_on,
             forwardHeadersOnRedirect: args.forward_headers_on_redirect
         });
+
+        const { result } = execution;
 
         return result.isErr() ? Err(proxyRequestErrorToMcp(result.error)) : Ok(result.value);
     }
