@@ -53,6 +53,7 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
+            expect(result.tools.every(({ title }) => typeof title === 'string' && title.trim().length > 0)).toBe(true);
             expect(result.tools.map(({ name, annotations }) => ({ name, annotations }))).toStrictEqual([
                 {
                     name: 'docs_search',

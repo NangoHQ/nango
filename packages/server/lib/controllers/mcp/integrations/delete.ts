@@ -8,6 +8,7 @@ import type { DeleteIntegrationsOutput } from './schema.js';
 
 export const deleteIntegrationsTool = defineManagementMcpTool<typeof deleteIntegrationsArgumentsSchema, DeleteIntegrationsOutput>({
     name: 'integrations_delete',
+    title: 'Delete Integration',
     description: 'Delete a configured integration by ID.',
     inputSchema: deleteIntegrationsArgumentsSchema,
     outputSchema: deleteIntegrationsOutputSchema,

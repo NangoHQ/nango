@@ -49,6 +49,7 @@ type DynamicManagementMcpAudit = {
 
 export interface ManagementMcpTool<TResponse extends object = object> {
     name: string;
+    title: string;
     description: string;
     inputSchema: ManagementMcpSchema;
     outputSchema?: ManagementMcpSchema;
