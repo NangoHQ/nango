@@ -624,14 +624,34 @@ describe('getRecordsById', () => {
         const recordsArray = Array.from(records.values());
         mockPersistClient.getRecords = vi
             .fn()
-            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(0, 100), nextCursor: 'next' }))
-            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(100, 200), nextCursor: 'next' }));
+            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(0, 100), nextCursor: null }))
+            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(100, 200), nextCursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const result = await nango.getRecordsByIds(Array.from(records.keys()), 'Whatever');
 
         expect(result).toEqual(records);
         expect(mockPersistClient.getRecords).toHaveBeenCalledTimes(2);
+    });
+
+    it('should read every page of a batch before starting the next batch', async () => {
+        const ids = Array.from({ length: 101 }, (_, i) => i.toString());
+        const records = ids.map((id) => ({ id }));
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        mockPersistClient.getRecords = vi
+            .fn()
+            .mockResolvedValueOnce(Ok({ records: records.slice(0, 99), nextCursor: 'page-2' }))
+            .mockResolvedValueOnce(Ok({ records: records.slice(99, 100), nextCursor: null }))
+            .mockResolvedValueOnce(Ok({ records: records.slice(100), nextCursor: null }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
+        const result = await nango.getRecordsByIds(ids, 'Whatever');
+
+        expect(result).toEqual(new Map(records.map((record) => [record.id, record])));
+        expect(mockPersistClient.getRecords).toHaveBeenCalledTimes(3);
+        expect(mockPersistClient.getRecords).toHaveBeenNthCalledWith(2, expect.objectContaining({ cursor: 'page-2', externalIds: ids.slice(0, 100) }));
+        expect(mockPersistClient.getRecords).toHaveBeenNthCalledWith(3, expect.objectContaining({ externalIds: [ids[100]] }));
+        expect(mockPersistClient.getRecords).toHaveBeenNthCalledWith(3, expect.not.objectContaining({ cursor: expect.anything() }));
     });
 });
 
