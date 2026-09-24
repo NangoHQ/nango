@@ -93,7 +93,8 @@ export function usePostInsights(env: string, body: PostInsights['Body']) {
 
             return json;
         },
-        refetchInterval: 60 * 1000
+        refetchInterval: 60 * 1000,
+        refetchOnMount: 'always'
     });
 
     return {
