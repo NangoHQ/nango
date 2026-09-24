@@ -297,9 +297,9 @@ describe('getFunction with catalog actions', () => {
         });
     });
 
-    it('does not return a catalog action when FLAG_LIVE_CATALOG_ACTIONS_ENABLED is off', async () => {
-        const original = flags.hasLiveCatalogActions;
-        flags.hasLiveCatalogActions = false;
+    it('does not return a catalog action when FLAG_CATALOG_TOOLS_ENABLED is off', async () => {
+        const original = flags.hasCatalogTools;
+        flags.hasCatalogTools = false;
         try {
             const { environment } = await seedIntegration();
             mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
@@ -317,7 +317,7 @@ describe('getFunction with catalog actions', () => {
             }
             expect(result.value).toBeUndefined();
         } finally {
-            flags.hasLiveCatalogActions = original;
+            flags.hasCatalogTools = original;
         }
     });
 });

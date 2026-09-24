@@ -42,7 +42,7 @@ const listingOrderBy = [
 ];
 
 function catalogTools(provider: string | undefined, type: FunctionType | undefined): CatalogTool[] {
-    if (!provider || !flags.hasLiveCatalogActions || (type !== undefined && type !== 'action')) {
+    if (!provider || !flags.hasCatalogTools || (type !== undefined && type !== 'action')) {
         return [];
     }
     return listCatalogTools(provider);
@@ -184,7 +184,7 @@ export async function findIntegrationFunctions({
 type DeployedFunctionRow = IntegrationFunctionRow;
 
 function appendCatalogActions(deployedRows: DeployedFunctionRow[]): IntegrationFunctionRow[] {
-    if (!flags.hasLiveCatalogActions) {
+    if (!flags.hasCatalogTools) {
         return deployedRows.map(toFunctionRow);
     }
 
@@ -313,7 +313,7 @@ export async function findActionInputSchemas({
     }
 
     const missing = actions.filter((action) => !occupied.has(`${action.integrationId}:${action.name}`));
-    if (!flags.hasLiveCatalogActions || missing.length === 0) {
+    if (!flags.hasCatalogTools || missing.length === 0) {
         return deployed;
     }
 
