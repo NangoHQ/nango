@@ -12927,6 +12927,28 @@ jobber:
             description: ''
             automated: true
 
+jobnimbus:
+    display_name: JobNimbus
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.jobnimbus.com/
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api1/contacts
+    docs: https://nango.dev/docs/api-integrations/jobnimbus
+    docs_connect: https://nango.dev/docs/api-integrations/jobnimbus/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your JobNimbus API Key.
+            doc_section: '#step-1-generate-your-api-key'
+
 jobvite:
     display_name: Jobvite
     categories:
