@@ -84,6 +84,7 @@ export async function validateConnection({
             logCtx
         });
         if (res.isErr()) {
+            await logCtx.error(res.error.message, { error: res.error });
             await logCtx.failed();
             return Err(res.error);
         }
