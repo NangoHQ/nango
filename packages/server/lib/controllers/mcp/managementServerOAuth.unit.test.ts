@@ -66,6 +66,7 @@ describe('createManagementMcpServer with OAuth', () => {
 
             expect(result.tools.map((tool) => tool.name)).toStrictEqual(['environments_list', ...managementToolNames]);
             expect(result.tools.every(({ title }) => typeof title === 'string' && title.trim().length > 0)).toBe(true);
+            expect(result.tools.every(({ title, annotations }) => annotations?.title === title)).toBe(true);
             expect(result.tools[0]).toMatchObject({
                 name: 'environments_list',
                 title: 'List Environments',

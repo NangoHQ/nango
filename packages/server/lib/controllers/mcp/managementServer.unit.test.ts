@@ -54,7 +54,8 @@ describe('createManagementMcpServer', () => {
             const result = await client.listTools();
 
             expect(result.tools.every(({ title }) => typeof title === 'string' && title.trim().length > 0)).toBe(true);
-            expect(result.tools.map(({ name, annotations }) => ({ name, annotations }))).toStrictEqual([
+            expect(result.tools.every(({ title, annotations }) => annotations?.title === title)).toBe(true);
+            expect(result.tools.map(({ name, annotations }) => ({ name, annotations }))).toMatchObject([
                 {
                     name: 'docs_search',
                     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
