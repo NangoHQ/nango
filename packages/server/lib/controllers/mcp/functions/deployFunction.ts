@@ -8,6 +8,7 @@ import type { DeploymentCreateOutput } from './schema.js';
 
 export const deployFunctionTool = defineManagementMcpTool<typeof deployFunctionArgumentsSchema, DeploymentCreateOutput>({
     name: 'deploy_function',
+    title: 'Deploy Function',
     description:
         'Start a code function deployment and return its initial job status. This tool does not wait for completion; use get_deployment_status to retrieve the final status.',
     inputSchema: deployFunctionArgumentsSchema,

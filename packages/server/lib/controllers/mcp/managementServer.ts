@@ -72,9 +72,10 @@ const managementMcpTools: ManagementMcpTool[] = [
 const managementMcpToolRegistrations = managementMcpTools.map((toolDefinition) => {
     const inputSchema = toJsonSchema202012(toolDefinition.inputSchema, 'input');
     const sharedConfig = {
+        title: toolDefinition.title,
         description: toolDefinition.description,
         ...(toolDefinition.outputSchema ? { outputSchema: fromJsonSchema(toJsonSchema202012(toolDefinition.outputSchema, 'output')) } : {}),
-        ...(toolDefinition.annotations ? { annotations: toolDefinition.annotations } : {})
+        annotations: { ...toolDefinition.annotations, title: toolDefinition.title }
     };
 
     return {
@@ -91,10 +92,11 @@ const managementMcpToolRegistrations = managementMcpTools.map((toolDefinition) =
 });
 
 const environmentsListToolConfig = {
+    title: listEnvironmentsTool.title,
     description: listEnvironmentsTool.description,
     inputSchema: fromJsonSchema(toJsonSchema202012(listEnvironmentsTool.inputSchema, 'input')),
     outputSchema: fromJsonSchema(toJsonSchema202012(listEnvironmentsTool.outputSchema, 'output')),
-    annotations: listEnvironmentsTool.annotations
+    annotations: { ...listEnvironmentsTool.annotations, title: listEnvironmentsTool.title }
 };
 
 const oauthUnsupportedToolNames = new Set([deployFunctionTool.name, proxyRequestTool.name]);

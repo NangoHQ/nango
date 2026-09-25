@@ -10,6 +10,7 @@ import type { GetIntegrationOutput } from './schema.js';
 
 export const getIntegrationsTool = defineManagementMcpTool<typeof getIntegrationArgumentsSchema, GetIntegrationOutput>({
     name: 'integrations_get',
+    title: 'Get Integration',
     description: 'Get a configured integration by ID, optionally including its webhook URL or developer-app credentials when authorized.',
     inputSchema: getIntegrationArgumentsSchema,
     outputSchema: getIntegrationOutputSchema,

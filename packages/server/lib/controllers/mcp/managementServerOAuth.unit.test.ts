@@ -65,8 +65,11 @@ describe('createManagementMcpServer with OAuth', () => {
             const result = await client.listTools();
 
             expect(result.tools.map((tool) => tool.name)).toStrictEqual(['environments_list', ...managementToolNames]);
+            expect(result.tools.every(({ title }) => typeof title === 'string' && title.trim().length > 0)).toBe(true);
+            expect(result.tools.every(({ title, annotations }) => annotations?.title === title)).toBe(true);
             expect(result.tools[0]).toMatchObject({
                 name: 'environments_list',
+                title: 'List Environments',
                 description:
                     'List the Nango environments currently available to your user. Call this first, then ask the user to choose an environment before using environment-bound tools. Do not automatically query every returned environment.',
                 annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
