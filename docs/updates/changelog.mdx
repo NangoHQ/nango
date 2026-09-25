@@ -4,6 +4,24 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="OAuth for Management MCP" description="September 22, 2026">
+  The Management MCP server now connects with OAuth. [Add](/getting-started/coding-agent-setup#management-mcp-server) `https://mcp.nango.dev/mcp` to your MCP client, sign in to Nango in the browser, and approve access.
+  - **Supported clients:** Claude Code, Codex, VS Code, ChatGPT or any other MCP client.
+  - **API keys still work:** Environment API keys remain an option for non-interactive clients and clients without CIMD support.
+
+  ![Management MCP OAuth Screen](/images/changelog/management-mcp-oauth-screen.png)
+
+  We also added more tools the Management MCP:
+
+  - **Providers:** `providers_get`, to look up a provider and its function templates
+  - **Actions and syncs:** `actions_trigger`, `syncs_trigger`, `syncs_set_state`
+  - **Deployments:** `deploy_template`, `deploy_function`, `get_deployment_status`
+  - **Environments:** `environments_list`
+  
+  See [Management MCP reference](/reference/backend/management-mcp#tools) for the full list.
+</Update>
+---
+
 <Update label="BYOC self-hosting" description="September 21, 2026">
   Bring Your Own Cloud (BYOC) is now the recommended way to self-host Nango. Self-hosting usually means operating the platform yourself in exchange for keeping data in your own infrastructure. BYOC removes that trade-off. 
   
