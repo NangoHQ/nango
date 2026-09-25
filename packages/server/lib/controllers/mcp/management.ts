@@ -4,6 +4,7 @@ import { environmentService } from '@nangohq/shared';
 
 import { principalFor } from '../../authz/principal.js';
 import { resolveAuditAttribution } from '../../middleware/audit/index.js';
+import { trackMcpServer } from '../../services/mcpAnalytics.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { createManagementMcpServer } from './managementServer.js';
 
@@ -38,6 +39,7 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
                   }
               } as const);
     const server = await createManagementMcpServer(authentication, req.body);
+    trackMcpServer({ server, mcpType: 'management', accountId: account.id, authType: authentication.type });
     const transport = new ManagementMcpTransport();
 
     res.on('close', () => {

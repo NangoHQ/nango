@@ -30,6 +30,7 @@ import { envs } from './env.js';
 import { migrateFleets, stopFleets } from './fleet.js';
 import { beginShutdown } from './ready.js';
 import { router } from './routes.js';
+import { shutdownMcpAnalytics } from './services/mcpAnalytics.js';
 import { tasks } from './tasks/index.js';
 import { egressTelemetryRecorder } from './utils/egressTelemetry.js';
 import migrate from './utils/migrate.js';
@@ -145,6 +146,7 @@ const close = once(() => {
         await destroyFeatureFlags();
         await egressTelemetryRecorder.shutdown();
         await pubsub.disconnect();
+        await shutdownMcpAnalytics();
 
         logger.close();
 
