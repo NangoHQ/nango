@@ -4,7 +4,7 @@ import { PostHog } from 'posthog-node';
 
 import { baseUrl, FixedSizeMap, NANGO_VERSION, report } from '@nangohq/utils';
 
-import type { CliTelemetryEvent, DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
+import type { AccountGroupProperties, CliTelemetryEvent, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
 export type ProductTrackingTypes =
     | CliTelemetryEvent
@@ -19,7 +19,9 @@ export type ProductTrackingTypes =
 
 const ACCOUNT_GROUP = 'company';
 
-type TrackedTeam = Pick<DBTeam, 'id'> & Partial<Pick<DBTeam, 'name'>>;
+type TrackedTeam = Pick<DBTeam, 'id'> & Partial<Pick<DBTeam, 'name' | 'created_at'>>;
+
+type TrackedPlan = Pick<DBPlan, 'name'>;
 
 /** No email and no person's name. The account name and plan are group properties, never event ones. */
 export interface TrackingContext {
@@ -29,6 +31,7 @@ export interface TrackingContext {
      */
     environment?: Pick<DBEnvironment, 'is_production'> | null | undefined;
     user?: Pick<DBUser, 'id'> | null | undefined;
+    plan?: TrackedPlan | null | undefined;
 }
 
 /**
@@ -71,7 +74,16 @@ function resolveContext(explicit: TrackingContextInput): TrackingContext | null 
     return {
         team,
         environment: explicit.environment ?? ambient?.environment,
-        user: explicit.user ?? ambient?.user
+        user: explicit.user ?? ambient?.user,
+        plan: explicit.plan ?? ambient?.plan
+    };
+}
+
+export function accountGroupProperties(team: TrackedTeam, plan: TrackedPlan | null | undefined): AccountGroupProperties {
+    return {
+        ...(team.name ? { name: team.name } : {}),
+        ...(plan ? { plan: plan.name } : {}),
+        ...(team.created_at ? { created_date: new Date(team.created_at).toISOString() } : {})
     };
 }
 
@@ -83,18 +95,11 @@ function commonProperties(surface: 'server' | 'cli'): Record<string, unknown> {
     };
 }
 
-function contextProperties({ environment, user }: TrackingContext): Record<string, unknown> {
-    return {
-        ...(environment ? { is_production: environment.is_production } : {}),
-        // An event with no person behind it is attached to the account group instead of inventing one.
-        ...(user ? {} : { $process_person_profile: false })
-    };
+function contextProperties({ environment }: TrackingContext): Record<string, unknown> {
+    return environment ? { is_production: environment.is_production } : {};
 }
 
-/**
- * A person is their user id. An event with no person still needs a distinct id, so it carries the
- * account's, which creates no profile because person processing is off for those events.
- */
+// Keep person processing on for `account-<id>`: PostHog links no personless event to a group.
 function distinctIdFor({ team, user }: TrackingContext): string {
     return user ? String(user.id) : `account-${team.id}`;
 }
@@ -106,8 +111,8 @@ function groupsFor({ team }: TrackingContext): Record<string, string> {
 
 class ProductTracking {
     client: PostHog | undefined;
-    // Each groupIdentify sends its own $groupidentify event. Send one per account name, not one per capture.
-    readonly identifiedAccountNames = new FixedSizeMap<number, string>(10_000);
+    // Each groupIdentify sends its own $groupidentify event. Send one per property change, not one per capture.
+    readonly identifiedAccounts = new FixedSizeMap<number, AccountGroupProperties>(10_000);
 
     constructor() {
         const key = process.env['PUBLIC_POSTHOG_KEY'];
@@ -130,6 +135,7 @@ class ProductTracking {
         team,
         environment,
         user,
+        plan,
         eventProperties
     }: {
         name: ProductTrackingTypes;
@@ -140,7 +146,7 @@ class ProductTracking {
                 return;
             }
 
-            const context = resolveContext({ team, environment, user });
+            const context = resolveContext({ team, environment, user, plan });
             if (!context) {
                 report(new Error(`Product tracking event "${name}" has no account to attach to`));
                 return;
@@ -152,21 +158,25 @@ class ProductTracking {
                 ...contextProperties(context)
             };
 
-            this.identifyAccount(this.client, context.team);
+            this.identifyAccount(this.client, context);
             this.client.capture({ event: name, distinctId: distinctIdFor(context), properties, groups: groupsFor(context) });
         } catch (err) {
             report(err);
         }
     }
 
-    private identifyAccount(client: PostHog, team: TrackedTeam) {
-        if (!team.name || this.identifiedAccountNames.get(team.id) === team.name) {
-            return;
-        }
-
+    private identifyAccount(client: PostHog, { team, plan }: TrackingContext) {
         try {
-            client.groupIdentify({ groupType: ACCOUNT_GROUP, groupKey: String(team.id), properties: { name: team.name } });
-            this.identifiedAccountNames.set(team.id, team.name);
+            const sent = this.identifiedAccounts.get(team.id) ?? {};
+            const changed = Object.fromEntries(
+                Object.entries(accountGroupProperties(team, plan)).filter(([key, value]) => sent[key as keyof AccountGroupProperties] !== value)
+            );
+            if (Object.keys(changed).length === 0) {
+                return;
+            }
+
+            client.groupIdentify({ groupType: ACCOUNT_GROUP, groupKey: String(team.id), properties: changed });
+            this.identifiedAccounts.set(team.id, { ...sent, ...changed });
         } catch (err) {
             report(err);
         }

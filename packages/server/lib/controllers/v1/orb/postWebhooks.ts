@@ -131,6 +131,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 productTracking.track({
                     name: 'account:billing:plan_changed',
                     team,
+                    plan: planChange.updatedPlan,
                     eventProperties: {
                         previousPlan: planChange.previousPlan.name,
                         newPlan: planChange.updatedPlan.name,
@@ -145,6 +146,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                     productTracking.track({
                         name: 'account:billing:plan_changed:v2',
                         team,
+                        plan: planChange.updatedPlan,
                         eventProperties: {
                             type: 'scheduled',
                             previousPlan: planChange.previousPlan.name + (planChange.previousPlan.has_growth_features ? ' + growth add-on' : ''),

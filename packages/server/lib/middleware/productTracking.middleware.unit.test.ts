@@ -5,12 +5,15 @@ import { productTracking } from '@nangohq/shared';
 import { productTrackingMiddleware } from './productTracking.middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 type Capture = (payload: { event: string; distinctId: string; properties: Record<string, unknown>; groups?: Record<string, string> }) => void;
 
+type GroupIdentify = (payload: { groupType: string; groupKey: string; properties: Record<string, unknown> }) => void;
+
 const capture = vi.fn<Capture>();
+const groupIdentify = vi.fn<GroupIdentify>();
 const realClient = productTracking.client;
 
 /** Auth fills the locals after the middleware has run, which is what `resolve` stands in for. */
@@ -26,7 +29,9 @@ function handleRequest(resolve: (locals: Partial<RequestLocals>) => void): void 
 
 beforeEach(() => {
     capture.mockClear();
-    productTracking.client = { capture } as unknown as typeof productTracking.client;
+    groupIdentify.mockClear();
+    productTracking.identifiedAccounts.clear();
+    productTracking.client = { capture, groupIdentify } as unknown as typeof productTracking.client;
 });
 
 afterEach(() => {
@@ -53,6 +58,15 @@ describe('productTrackingMiddleware', () => {
         const { groups, properties } = capture.mock.calls[0]![0];
         expect(groups).toStrictEqual({ company: '42' });
         expect(properties).not.toHaveProperty('is_production');
+    });
+
+    it("sets the request's plan on the account group", () => {
+        handleRequest((locals) => {
+            locals.account = { id: 42 } as DBTeam;
+            locals.plan = { name: 'growth' } as DBPlan;
+        });
+
+        expect(groupIdentify).toHaveBeenCalledWith({ groupType: 'company', groupKey: '42', properties: { plan: 'growth' } });
     });
 
     it('drops an event from a request that resolved no account', () => {

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { productTracking, withProductTrackingContext } from './productTracking.js';
+import { accountGroupProperties, productTracking, withProductTrackingContext } from './productTracking.js';
 
 import type { DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
 
@@ -23,7 +23,7 @@ function lastCapture() {
 beforeEach(() => {
     capture.mockClear();
     groupIdentify.mockClear();
-    productTracking.identifiedAccountNames.clear();
+    productTracking.identifiedAccounts.clear();
     productTracking.client = { capture, groupIdentify } as unknown as typeof productTracking.client;
 });
 
@@ -47,10 +47,12 @@ describe('track', () => {
         });
     });
 
-    it('creates no person for an event nobody is behind', () => {
+    it('sends an event nobody is behind as the account, with person processing on so it links to the group', () => {
         productTracking.track({ name: 'account:billing:downgraded', team });
 
-        expect(lastCapture().properties['$process_person_profile']).toBe(false);
+        const { distinctId, properties } = lastCapture();
+        expect(distinctId).toBe('account-42');
+        expect(properties).not.toHaveProperty('$process_person_profile');
     });
 
     it('identifies a person by their user id, and then keeps the profile', () => {
@@ -103,10 +105,35 @@ describe('track', () => {
         expect(capture).toHaveBeenCalledTimes(1);
     });
 
-    it('leaves the account group alone when the name is unknown', () => {
+    it('leaves the account group alone when nothing about it is known', () => {
         productTracking.track({ name: 'account:billing:downgraded', team });
 
         expect(groupIdentify).not.toHaveBeenCalled();
+    });
+
+    it('sets the plan and created date on the account group', () => {
+        const createdAt = new Date('2024-03-01T10:00:00.000Z');
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 46, name: 'Acme', created_at: createdAt }, plan: { name: 'growth' } });
+
+        expect(groupIdentify).toHaveBeenCalledWith({
+            groupType: 'company',
+            groupKey: '46',
+            properties: { name: 'Acme', plan: 'growth', created_date: '2024-03-01T10:00:00.000Z' }
+        });
+    });
+
+    it('sends only the group properties that changed', () => {
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 47, name: 'Acme' }, plan: { name: 'free' } });
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 47 }, plan: { name: 'free' } });
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 47, name: 'Acme' }, plan: { name: 'growth' } });
+
+        expect(groupIdentify.mock.calls.map(([payload]) => payload.properties)).toStrictEqual([{ name: 'Acme', plan: 'free' }, { plan: 'growth' }]);
+    });
+});
+
+describe('accountGroupProperties', () => {
+    it('leaves out what it does not know', () => {
+        expect(accountGroupProperties({ id: 1 }, null)).toStrictEqual({});
     });
 });
 
