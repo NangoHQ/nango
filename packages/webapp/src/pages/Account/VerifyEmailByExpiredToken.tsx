@@ -20,7 +20,8 @@ export function VerifyEmailByExpiredToken() {
 
     const email = data?.email ?? '';
     const uuid = data?.uuid ?? '';
-    const lookupErrorMessage = error ? (error.json as GetEmailByExpiredToken['Errors']).error?.message || 'Issue verifying email. Please try again.' : '';
+    const lookupError = error instanceof APIError ? (error.json as GetEmailByExpiredToken['Errors']) : undefined;
+    const lookupErrorMessage = error ? lookupError?.error?.message || 'Issue verifying email. Please try again.' : '';
     const serverErrorMessage = resendErrorMessage || lookupErrorMessage;
 
     useEffect(() => {
