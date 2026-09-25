@@ -1,0 +1,59 @@
+---
+title: 'Billit - How do I link my account?'
+sidebarTitle: 'Billit'
+description: 'Find your Billit Access Point API key and master account Party ID, then connect to Nango'
+---
+
+## Overview
+
+To connect the Billit Access Point API in Nango, provide:
+
+1. **Environment** — The Billit sandbox or production API host.
+2. **Master Account Party ID** — The Registration ID of your Billit master account.
+3. **API Key** — An API key belonging to a user with access to the master account.
+
+### Prerequisites
+
+- A Billit Access Point master account.
+- A user with access to the master account.
+
+### Step 1: Choose your environment
+
+Billit keeps sandbox and production completely separate:
+
+- **Sandbox** — `api.sandbox.billit.be`
+- **Production** — `api.billit.be`
+
+Create a [sandbox account](https://my.sandbox.billit.be/Account/Register) for testing. Credentials created in one environment do not work in the other.
+
+### Step 2: Get your API key
+
+1. Sign in to [Billit Sandbox](https://my.sandbox.billit.be) or [Billit Production](https://my.billit.be), matching the environment selected above.
+2. Open **My Profile**, then **Users & API Key**.
+3. Copy the API key for a user with access to the master account.
+
+Keep the API key secret. If it is exposed, renew it in Billit and update the Nango connection.
+
+### Step 3: Find your master account Party ID
+
+1. In MyBillit, select your **master account** company.
+2. Open **My company**.
+3. Copy the number between `/Manage/` and `/CompanyEdit` in the browser address bar. For example, in `https://my.sandbox.billit.be/Manage/123456/CompanyEdit`, the Party ID is `123456`. Use your own account's value, not this example.
+
+This is the master account's Registration ID, sent as the **Party ID** in API request headers. See Billit's [Party ID guide](https://docs.billit.be/docs/partyid-and-key) for a screenshot of its location.
+
+<Warning>
+Use the master account Registration ID, not the Registration ID of an entity or subaccount referenced in an API path. Billit requires the master account Party ID for every production API call and for KYC identification calls in both environments.
+</Warning>
+
+### Step 4: Connect Billit in Nango
+
+1. Open the Nango Connect form.
+2. Select the **Environment** matching your credentials.
+3. Enter the **Master Account Party ID**.
+4. Enter the **API Key**.
+5. Submit the form.
+
+<img src="/api-integrations/billit/form.png" alt="Nango Connect UI form with Environment, Master Account Party ID, and API Key fields for Billit" style={{maxWidth: "450px" }}/>
+
+Nango verifies the connection by listing the entities linked to the master account.

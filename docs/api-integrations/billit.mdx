@@ -1,0 +1,73 @@
+---
+title: 'Billit'
+sidebarTitle: 'Billit'
+description: 'Connect to the Billit Access Point API with an API key'
+---
+
+## Quickstart
+
+Connect to the Billit Access Point API with Nango and make your first authenticated API request. This integration uses API key authentication, not the general Billit API's OAuth flow.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango, go to **Integrations**, select **Configure New Integration**, then select **Billit**.
+    </Step>
+    <Step id="authorize-billit" title="Authorize Billit">
+    Go to **Connections**, select **Add Test Connection**, then enter the Billit environment, master account Party ID, and API key. See the [connect guide](/api-integrations/billit/connect) for details.
+    </Step>
+    <Step id="call-billit-api" title="Call the Billit API">
+    List the entities linked to the Billit master account. Replace the placeholders with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/einvoices/registrations" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const response = await nango.get({
+            endpoint: '/v1/einvoices/registrations',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(response.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Nango sends the stored Billit API key in the `apiKey` header and the master account Registration ID in the `partyID` header. Check the **Logs** tab in Nango to inspect the request.
+    </Step>
+    <Step id="implement-nango" title="Implement Nango in your app">
+    Follow the [Auth implementation guide](/guides/auth/auth-guide) to add the connection flow to your application.
+    </Step>
+</Steps>
+
+## Environments
+
+Billit provides isolated sandbox and production environments. API keys and master account Party IDs are not shared between them.
+
+## Billit integration guides
+
+- [How do I link my Billit account?](/api-integrations/billit/connect): Find your API key and master account Party ID, then connect the appropriate environment.
+
+Official docs: [Billit Access Point documentation](https://docs.accesspoint.billit.eu/), [authentication](https://docs.accesspoint.billit.eu/docs/authentication), and [sandbox versus production](https://docs.accesspoint.billit.eu/docs/sandbox-vs-production).
+
+## Pre-built syncs & actions for Billit
+
+import PreBuiltUseCases from "/snippets/generated/billit/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
