@@ -9,6 +9,7 @@ import type { UpdateIntegrationsOutput } from './schema.js';
 
 export const updateIntegrationsTool = defineManagementMcpTool<typeof updateIntegrationsArgumentsSchema, UpdateIntegrationsOutput>({
     name: 'integrations_update',
+    title: 'Update Integration',
     description: "Update an integration's ID, display name, developer-app credentials, webhook forwarding, integration configuration, or custom settings.",
     inputSchema: updateIntegrationsArgumentsSchema,
     outputSchema: updateIntegrationsOutputSchema,

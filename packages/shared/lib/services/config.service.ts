@@ -143,7 +143,7 @@ class ConfigService {
     }
 
     async createProviderConfig(config: DBCreateIntegration, provider: Provider): Promise<IntegrationConfig | null> {
-        const configToInsert = config.oauth_client_secret ? getEncryptionManager().encryptProviderConfig(config as ProviderConfig) : config;
+        const configToInsert = getEncryptionManager().encryptProviderConfig(config as ProviderConfig);
         configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config as ProviderConfig);
         if (!configToInsert.oauth_scopes && provider.default_scopes?.length) {
             configToInsert.oauth_scopes = provider.default_scopes.join(',');

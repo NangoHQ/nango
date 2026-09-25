@@ -206,6 +206,7 @@ const ENVS_SHAPE = z.object({
     // `/` keeps requests on whichever host served the dashboard (same-origin).
     NANGO_DASHBOARD_API_URL: z.url().or(z.literal('/')).optional(),
     NANGO_MANAGEMENT_MCP_SERVER_URL: z.url().optional(),
+    NANGO_OPENAI_APPS_CHALLENGE_TOKEN: z.string().optional(),
     NANGO_OAUTH_SERVER_BASE_URL: z.url().optional(),
     NANGO_OAUTH_SERVER_COOKIE_KEYS: z.string().optional(),
     NANGO_OAUTH_SERVER_JWKS: z.string().optional(),
@@ -570,6 +571,7 @@ const ENVS_SHAPE = z.object({
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
     FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
+    FLAG_CATALOG_TOOLS_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog

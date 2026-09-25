@@ -169,7 +169,8 @@ export async function exec(): Promise<void> {
                         id: sync.id,
                         nangoConnectionId: sync.nango_connection_id,
                         environmentId: syncConfig?.environment_id ?? null,
-                        models: syncConfig?.models ?? []
+                        models: syncConfig?.models ?? [],
+                        variant: sync.variant
                     })),
                     opts
                 );

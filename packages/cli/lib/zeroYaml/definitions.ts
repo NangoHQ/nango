@@ -62,7 +62,10 @@ const functionTriggerDefinitionSchema = z.discriminatedUnion('kind', [
     z
         .object({
             kind: z.literal('event'),
-            events: z.array(z.enum(['post-connection-creation', 'pre-connection-deletion', 'validate-connection']))
+            events: z
+                .array(z.enum(['post-connection-creation', 'pre-connection-deletion', 'validate-connection']))
+                .nonempty()
+                .refine((events) => new Set(events).size === events.length, 'Event names must be unique')
         })
         .strict()
 ]) satisfies z.ZodType<FunctionTriggerDefinition>;
@@ -337,15 +340,14 @@ export function validateFunction({
     integrationId,
     basename
 }: {
-    params: Pick<FunctionDefinition, 'trigger' | 'data' | 'requires'>;
+    params: Pick<FunctionDefinition, 'trigger' | 'input' | 'data' | 'requires'>;
     integrationId: string;
     basename: string;
 }): Result<void> {
     const fnPath = `${integrationId}/functions/${basename}.ts`;
 
-    // For now only HTTP-triggered and trigger-less functions are supported.
-    // TODO: Add support for schedule/event triggers and records.
-    const supportedFunctionTriggerKinds: FunctionTriggerDefinition['kind'][] = ['none', 'http'];
+    // TODO: Add support for records.
+    const supportedFunctionTriggerKinds: FunctionTriggerDefinition['kind'][] = ['none', 'http', 'schedule', 'event'];
 
     if (params.trigger && !supportedFunctionTriggerKinds.includes(params.trigger.kind)) {
         const supported = supportedFunctionTriggerKinds.map((kind) => `'${kind}'`).join(', ');
@@ -364,6 +366,9 @@ export function validateFunction({
     // TODO: Add support for HTTP trigger options (debounce)
     if (params.trigger?.kind === 'http' && params.trigger.debounce !== undefined) {
         return Err(new Error(`Function '${fnPath}' uses unsupported HTTP trigger options: 'debounce'.`));
+    }
+    if ((params.trigger?.kind === 'schedule' || params.trigger?.kind === 'event') && params.input !== undefined) {
+        return Err(new Error(`Function '${fnPath}' declares 'input', which is not supported for ${params.trigger.kind} triggers.`));
     }
     if (params.data?.models) {
         return Err(new Error(`Function '${fnPath}' declares 'data.models', which is not supported yet.`));

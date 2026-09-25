@@ -51,8 +51,8 @@ describe('deleteSyncs', () => {
     it('bulk-unschedules the whole batch BEFORE tearing down any sync, then deletes records + the sync row', async () => {
         await deleteSyncs(
             [
-                { id: 's1', nangoConnectionId: 5, environmentId: 10, models: ['User'] },
-                { id: 's2', nangoConnectionId: 6, environmentId: 10, models: ['User'] }
+                { id: 's1', nangoConnectionId: 5, environmentId: 10, models: ['User'], variant: 'base' },
+                { id: 's2', nangoConnectionId: 6, environmentId: 10, models: ['User'], variant: 'base' }
             ],
             opts
         );
@@ -68,9 +68,9 @@ describe('deleteSyncs', () => {
     it('groups the bulk-unschedule by environment (one call per env)', async () => {
         await deleteSyncs(
             [
-                { id: 's1', nangoConnectionId: 5, environmentId: 10, models: ['User'] },
-                { id: 's2', nangoConnectionId: 6, environmentId: 20, models: ['User'] },
-                { id: 's3', nangoConnectionId: 7, environmentId: 10, models: ['User'] }
+                { id: 's1', nangoConnectionId: 5, environmentId: 10, models: ['User'], variant: 'base' },
+                { id: 's2', nangoConnectionId: 6, environmentId: 20, models: ['User'], variant: 'base' },
+                { id: 's3', nangoConnectionId: 7, environmentId: 10, models: ['User'], variant: 'base' }
             ],
             opts
         );
@@ -83,7 +83,9 @@ describe('deleteSyncs', () => {
     it('aborts teardown (throws, no hard-delete) when the bulk unschedule fails', async () => {
         deleteSyncsClient.mockReset().mockResolvedValue(Err(new Error('orchestrator down')));
 
-        await expect(deleteSyncs([{ id: 's1', nangoConnectionId: 5, environmentId: 10, models: ['User'] }], opts)).rejects.toThrow('orchestrator down');
+        await expect(deleteSyncs([{ id: 's1', nangoConnectionId: 5, environmentId: 10, models: ['User'], variant: 'base' }], opts)).rejects.toThrow(
+            'orchestrator down'
+        );
 
         // Nothing torn down — the sync's schedule may still be live, so we must not hard-delete it.
         expect(hardDeleteSync).not.toHaveBeenCalled();
@@ -97,7 +99,7 @@ describe('deleteSyncs', () => {
     });
 
     it('skips unschedule and records for a null-environment sync but still hard-deletes it', async () => {
-        await deleteSyncs([{ id: 's1', nangoConnectionId: 5, environmentId: null, models: ['User'] }], opts);
+        await deleteSyncs([{ id: 's1', nangoConnectionId: 5, environmentId: null, models: ['User'], variant: 'base' }], opts);
 
         expect(deleteSyncsClient).not.toHaveBeenCalled();
         expect(enqueue).not.toHaveBeenCalled();
@@ -107,9 +109,34 @@ describe('deleteSyncs', () => {
     it('does not dispatch deleteRecords for a sync that never ran (no job)', async () => {
         getLatestSyncJob.mockResolvedValue(null);
 
-        await deleteSyncs([{ id: 's1', nangoConnectionId: 5, environmentId: 10, models: ['User'] }], opts);
+        await deleteSyncs([{ id: 's1', nangoConnectionId: 5, environmentId: 10, models: ['User'], variant: 'base' }], opts);
 
         expect(enqueue).not.toHaveBeenCalled();
         expect(hardDeleteSync).toHaveBeenCalledWith('s1');
+    });
+
+    it('suffixes record models for a non-base variant and leaves the base model bare', async () => {
+        await deleteSyncs(
+            [
+                { id: 'base', nangoConnectionId: 5, environmentId: 10, models: ['User', 'Account'], variant: 'base' },
+                { id: 'foo', nangoConnectionId: 5, environmentId: 10, models: ['User', 'Account'], variant: 'foo' }
+            ],
+            opts
+        );
+
+        expect(enqueue).toHaveBeenCalledWith('deleteRecords', {
+            syncId: 'base',
+            nangoConnectionId: 5,
+            environmentId: 10,
+            models: ['User', 'Account'],
+            generation: 6
+        });
+        expect(enqueue).toHaveBeenCalledWith('deleteRecords', {
+            syncId: 'foo',
+            nangoConnectionId: 5,
+            environmentId: 10,
+            models: ['User::foo', 'Account::foo'],
+            generation: 6
+        });
     });
 });

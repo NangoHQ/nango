@@ -58,6 +58,13 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         allowUnauthorizedGithubAppWebhook(accountUuid: string) {
             return client.isEnabled('allow-unauthorized-github-app-webhook', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether Salesforce webhooks can be processed without the Nango webhook secret for this account.
+         * Escape hatch for Apex triggers installed before the secret was required. Default `false`.
+         */
+        allowUnauthorizedSalesforceWebhook(accountUuid: string) {
+            return client.isEnabled('allow-unauthorized-salesforce-webhook', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }

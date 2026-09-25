@@ -7445,6 +7445,21 @@ Use [webhook functions](/guides/functions/webhook-functions) when Nango should u
   Implement signature verification with `X-Nango-Hmac-Sha256`, then branch on whether the incoming body has `type: "forward"`. Store and use `connectionId` only when it is present.
 </Accordion>
 
+## Providers that do not sign webhooks
+
+Affinity, Fillout and ShipStation do not sign their webhooks, so Nango checks a secret you choose for each connection instead. Nango rejects a webhook unless it carries the secret of the connection it is routed to.
+
+1. Generate a random secret of at least 16 characters per connection and store it as `webhookSecret` in that connection's [metadata](/reference/backend/http-api/connections/update-metadata).
+2. Send that connection's secret with every webhook registered for it, in the `X-Nango-Webhook-Secret` header or, when the provider only lets you set a URL, as a `nangoWebhookSecret` query param on the Nango webhook URL.
+
+Prefer the header when the provider supports custom headers (Fillout, ShipStation v2). Affinity and ShipStation v1 only take a URL. Nango removes the secret before the webhook reaches your functions or your app.
+
+Affinity's payload does not say which connection it is for, so also add `nangoConnectionId=<CONNECTION-ID>` to the webhook URL registered in each end user's Affinity instance.
+
+The secret usually sits in your end user's own webhook config, where their admins can see it. Because it belongs to one connection, it only lets them send events for their own connection.
+
+Salesforce events come from an Apex trigger you install in each connected org, and use the same per-connection secret. See [How to set up webhooks with Salesforce on Nango](/api-integrations/salesforce/webhooks).
+
 ## Retries and debugging
 
 Nango retries forwarded webhooks when your app returns a non-2xx response or has a network failure. Forwarded attempts appear in Nango logs as webhook forwarding operations.
@@ -10159,7 +10174,55 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/get.md
   }
 }
 ```
+
+```json With credentials (MCP_OAUTH2_GENERIC)
+{
+  "data": {
+    "unique_key": "mcp-generic",
+    "display_name": "MCP Server OAuth2 (Generic)",
+    "provider": "mcp-generic",
+    "logo": "http://localhost:3003/images/template-logos/mcp-generic.svg",
+    "forward_webhooks": true,
+    "created_at": "2023-10-16T08:45:26.241Z",
+    "updated_at": "2023-10-16T08:45:26.241Z",
+    "credentials": {
+      "type": "MCP_OAUTH2_GENERIC",
+      "client_name": "Acme Inc",
+      "client_uri": "https://acme.com",
+      "client_logo_uri": "https://acme.com/logo.png"
+    }
+  }
+}
+```
+
+```json With credentials (integration_config-based, e.g. aws-sigv4)
+{
+  "data": {
+    "unique_key": "my-aws-integration",
+    "display_name": "AWS SigV4 Proxy",
+    "provider": "aws-sigv4",
+    "logo": "http://localhost:3003/images/template-logos/aws-sigv4.svg",
+    "forward_webhooks": true,
+    "created_at": "2023-10-16T08:45:26.241Z",
+    "updated_at": "2023-10-16T08:45:26.241Z",
+    "credentials": {
+      "type": "INTEGRATION_CONFIG",
+      "auth_mode": "AWS_SIGV4",
+      "integration_config": {
+        "service": "s3",
+        "stsMode": "builtin",
+        "awsAccessKeyId": "***",
+        "awsSecretAccessKey": "***"
+      }
+    }
+  }
+}
+```
 </ResponseExample>
+
+<Info>
+For providers that declare an `integration_config` schema, alongside or instead of fixed credential fields (e.g. `aws-sigv4`, `epic`, `private-api-generic`), `credentials` returns `type: "INTEGRATION_CONFIG"` with the provider's actual `auth_mode` and its `integration_config` values -- only the fields that provider's schema declares, nothing else from the integration's internal storage. Any `integration_config` field the provider's schema marks `secret: true` (e.g. `aws-sigv4`'s `awsAccessKeyId` and `awsSecretAccessKey`) is masked as `***` rather than echoed in cleartext, regardless of API key scope.
+</Info>
 
 ## Create an integration
 
