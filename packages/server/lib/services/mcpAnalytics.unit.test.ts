@@ -14,7 +14,7 @@ describe('trackMcpServer', () => {
             captures.push(event);
         });
         const groupIdentify = vi.fn();
-        productTracking.identifiedAccountNames.clear();
+        productTracking.identifiedAccounts.clear();
         productTracking.client = { capture, groupIdentify } as unknown as typeof productTracking.client;
         const server = new McpServer({ name: 'Nango Management MCP server', version: '1.0.0' });
         const inputSchema = fromJsonSchema({
@@ -72,11 +72,7 @@ describe('trackMcpServer', () => {
                     $mcp_is_error: false
                 }
             });
-            if (authType === 'oauth') {
-                expect(toolCall?.properties).not.toHaveProperty('$process_person_profile');
-            } else {
-                expect(toolCall?.properties).toHaveProperty('$process_person_profile', false);
-            }
+            expect(toolCall?.properties).not.toHaveProperty('$process_person_profile');
             expect(toolCall?.properties).not.toHaveProperty('$mcp_parameters');
             expect(toolCall?.properties).not.toHaveProperty('$mcp_response');
             expect(groupIdentify).toHaveBeenCalledWith({ groupType: 'company', groupKey: '42', properties: { name: 'Acme' } });

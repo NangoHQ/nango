@@ -202,6 +202,7 @@ export async function applyPendingPlanChange({
         productTracking.track({
             name: 'account:billing:plan_changed',
             team,
+            plan: planChange.updatedPlan,
             eventProperties: {
                 previousPlan: planChange.previousPlan.name,
                 newPlan: planChange.updatedPlan.name,

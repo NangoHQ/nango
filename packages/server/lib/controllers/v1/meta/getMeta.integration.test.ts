@@ -31,4 +31,13 @@ describe(`GET ${route}`, () => {
         isSuccess(res.json);
         expect(res.json.data.auditTrail).toBe(false);
     });
+
+    it('returns the account group properties the server sends to posthog', async () => {
+        const { account, user, plan } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        // @ts-expect-error type declares `env` but the controller rejects any query param
+        const res = await api.fetch(route, { method: 'GET', session });
+        isSuccess(res.json);
+        expect(res.json.data.accountGroup).toStrictEqual({ name: account.name, plan: plan.name, created_date: new Date(account.created_at).toISOString() });
+    });
 });
