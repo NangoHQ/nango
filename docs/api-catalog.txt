@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1024
+Provider count: 1025
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -123,6 +123,7 @@ URL patterns:
 | `bigcommerce` | BigCommerce | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/bigcommerce.md) | [connect](https://nango.dev/docs/api-integrations/bigcommerce/connect.md) | [setup](https://nango.dev/docs/api-integrations/bigcommerce/how-to-register-your-own-bigcommerce-api-oauth-app.md) | e-commerce |
 | `bill` | Bill (Connect API) | BILL | [docs](https://nango.dev/docs/integrations/all/bill.md) |  |  | payment |
 | `bill-sandbox` | Bill (Connect API Sandbox) | BILL | [docs](https://nango.dev/docs/integrations/all/bill-sandbox.md) | [connect](https://nango.dev/docs/integrations/all/bill-sandbox/connect.md) |  | payment |
+| `billit` | Billit | API_KEY | [docs](https://nango.dev/docs/api-integrations/billit.md) | [connect](https://nango.dev/docs/api-integrations/billit/connect.md) |  | accounting, invoicing |
 | `bing-webmasters` | Bing Webmasters | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/bing-webmasters.md) |  | [setup](https://nango.dev/docs/api-integrations/bing-webmasters/how-to-register-your-own-bing-webmasters-api-oauth-app.md) | dev-tools |
 | `bird` | Bird | API_KEY | [docs](https://nango.dev/docs/api-integrations/bird.md) | [connect](https://nango.dev/docs/api-integrations/bird/connect.md) |  | communication |
 | `bitbucket` | Bitbucket | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/bitbucket.md) |  |  | dev-tools |

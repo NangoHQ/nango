@@ -1119,6 +1119,7 @@
               "api-integrations/bigcommerce",
               "integrations/all/bill",
               "integrations/all/bill-sandbox",
+              "api-integrations/billit",
               "api-integrations/bing-webmasters",
               "api-integrations/bird",
               "integrations/all/bitbucket",
