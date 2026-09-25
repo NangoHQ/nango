@@ -40,7 +40,6 @@ const botFrameworkJWKSchema = z.object({
     kty: z.literal('RSA'),
     n: z.string(),
     e: z.string(),
-    // An empty list enforces nothing, same as the Bot Framework SDK
     endorsements: z
         .array(z.string())
         .optional()
@@ -53,7 +52,6 @@ export type BotFrameworkJWK = z.infer<typeof botFrameworkJWKSchema>;
 const BOT_FRAMEWORK_JWKS_URL = 'https://login.botframework.com/v1/.well-known/keys';
 const BOT_FRAMEWORK_JWKS_TIMEOUT_MS = 5 * 1000;
 const BOT_FRAMEWORK_JWKS_TTL_MS = 24 * 60 * 60 * 1000;
-// Bounds how often an unknown kid, which anyone can put in a token, or a failing endpoint can trigger a refetch.
 const BOT_FRAMEWORK_JWKS_MIN_REFRESH_MS = 5 * 60 * 1000;
 
 let botFrameworkJwksCache: { keys: BotFrameworkJWK[]; fetchedAt: number } | null = null;
