@@ -164,8 +164,12 @@ class ProductTracking {
             return;
         }
 
-        client.groupIdentify({ groupType: ACCOUNT_GROUP, groupKey: String(team.id), properties: { name: team.name } });
-        this.identifiedAccountNames.set(team.id, team.name);
+        try {
+            client.groupIdentify({ groupType: ACCOUNT_GROUP, groupKey: String(team.id), properties: { name: team.name } });
+            this.identifiedAccountNames.set(team.id, team.name);
+        } catch (err) {
+            report(err);
+        }
     }
 
     /**

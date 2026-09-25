@@ -93,6 +93,16 @@ describe('track', () => {
         ]);
     });
 
+    it('still sends the event when naming the account group fails', () => {
+        groupIdentify.mockImplementationOnce(() => {
+            throw new Error('boom');
+        });
+
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 45, name: 'Acme' } });
+
+        expect(capture).toHaveBeenCalledTimes(1);
+    });
+
     it('leaves the account group alone when the name is unknown', () => {
         productTracking.track({ name: 'account:billing:downgraded', team });
 
