@@ -75,13 +75,13 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
             source: body.source ?? 'repo'
         });
 
-        if (plan && !plan.trial_end_at && plan.auto_idle) {
-            await startTrial(db.knex, plan);
-        }
-
         if (!success || !syncConfigDeployResult) {
             errorManager.errResFromNangoErr(res, error);
             return;
+        }
+
+        if (plan && !plan.trial_end_at && plan.auto_idle) {
+            await startTrial(db.knex, plan);
         }
 
         if (body.reconcile) {
