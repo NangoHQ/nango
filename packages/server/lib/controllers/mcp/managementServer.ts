@@ -23,6 +23,7 @@ import { listIntegrationsTool } from './integrations/list.js';
 import { updateIntegrationsTool } from './integrations/update.js';
 import { getLogOperationTool } from './logs/getOperation.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
+import { MANAGEMENT_MCP_OAUTH_SCOPE } from './managementAuth.js';
 import { getProvidersTool } from './providers/get.js';
 import { proxyRequestTool } from './proxy/request.js';
 import { setSyncsStateTool } from './syncs/setState.js';
@@ -40,6 +41,7 @@ import type { Principal } from '@nangohq/authz';
 import type { ApiKeyScope, AuditAttribution, AuditPolicy, DBPlan, DBTeam } from '@nangohq/types';
 
 const logger = getLogger('Server.ManagementMcpServer');
+const oauthToolSecuritySchemes = [{ type: 'oauth2', scopes: [MANAGEMENT_MCP_OAUTH_SCOPE] }] as const;
 
 const oauthServerInstructions =
     'Before using an environment-bound tool, always ask the user which Nango environment to use. Call environments_list first when you need to present the available choices. Use only the environment the user selects; do not query every environment unless the user explicitly asks you to.';
@@ -86,7 +88,8 @@ const managementMcpToolRegistrations = managementMcpTools.map((toolDefinition) =
         },
         oauthConfig: {
             ...sharedConfig,
-            inputSchema: fromJsonSchema(withRequiredEnvironment(inputSchema))
+            inputSchema: fromJsonSchema(withRequiredEnvironment(inputSchema)),
+            _meta: { securitySchemes: oauthToolSecuritySchemes }
         }
     };
 });
@@ -96,7 +99,8 @@ const environmentsListToolConfig = {
     description: listEnvironmentsTool.description,
     inputSchema: fromJsonSchema(toJsonSchema202012(listEnvironmentsTool.inputSchema, 'input')),
     outputSchema: fromJsonSchema(toJsonSchema202012(listEnvironmentsTool.outputSchema, 'output')),
-    annotations: { ...listEnvironmentsTool.annotations, title: listEnvironmentsTool.title }
+    annotations: { ...listEnvironmentsTool.annotations, title: listEnvironmentsTool.title },
+    _meta: { securitySchemes: oauthToolSecuritySchemes }
 };
 
 const oauthUnsupportedToolNames = new Set([deployFunctionTool.name, proxyRequestTool.name]);
