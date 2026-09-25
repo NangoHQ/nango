@@ -3,12 +3,13 @@ import * as React from 'react';
 
 import { cn } from '@/utils/utils';
 
-function Switch({ className, ...props }: React.ComponentProps<typeof SwitchPrimitive.Root>) {
+function Switch({ className, variant = 'default', ...props }: React.ComponentProps<typeof SwitchPrimitive.Root> & { variant?: 'default' | 'success' }) {
     return (
         <SwitchPrimitive.Root
             data-slot="switch"
             className={cn(
-                'peer cursor-pointer data-[state=checked]:bg-interactive-primary data-[state=unchecked]:bg-control-switch-track-off focus-default inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-border-default shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50',
+                'peer cursor-pointer data-[state=unchecked]:bg-control-switch-track-off focus-default inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-border-default shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50',
+                variant === 'success' ? 'data-[state=checked]:bg-status-success-icon' : 'data-[state=checked]:bg-interactive-primary',
                 className
             )}
             {...props}
