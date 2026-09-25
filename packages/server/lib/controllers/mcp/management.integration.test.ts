@@ -1,6 +1,7 @@
 import { request } from 'node:http';
 import { Readable } from 'node:stream';
 
+import { PostHog } from 'posthog-node';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
@@ -8,7 +9,9 @@ import { getGlobalWebhookReceiveUrl, ProxyRequest, remoteFileService, seeders, s
 import { Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
+import { envs } from '../../env.js';
 import * as actionService from '../../services/action.service.js';
+import { shutdownMcpAnalytics } from '../../services/mcpAnalytics.js';
 import { authenticateUser, runServer } from '../../utils/tests.js';
 import { withoutUnscopedTools } from './testUtils.js';
 
@@ -150,6 +153,48 @@ describe('POST /mcp management server', () => {
 
     beforeEach(() => {
         auditSpy.mockClear();
+    });
+
+    it('captures management MCP usage through the HTTP endpoint', async () => {
+        const originalKey = envs.PUBLIC_POSTHOG_KEY;
+        const originalHost = envs.PUBLIC_POSTHOG_HOST;
+        envs.PUBLIC_POSTHOG_KEY = 'phc_local_test';
+        envs.PUBLIC_POSTHOG_HOST = 'http://127.0.0.1:1';
+        const capture = vi.spyOn(PostHog.prototype, 'capture').mockImplementation(() => undefined);
+
+        try {
+            const { secret, account } = await createKeyWithScopes(['environment:mcp']);
+            const response = await mcpPost({
+                token: secret,
+                body: {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'tools/call',
+                    params: { name: 'providers_get', arguments: { provider: 'github' } }
+                }
+            });
+
+            expect(response.status).toBe(200);
+            expect(response.json.result.structuredContent).toMatchObject({ name: 'github' });
+            await vi.waitFor(() => expect(capture).toHaveBeenCalledWith(expect.objectContaining({ event: '$mcp_tool_call' })));
+            const event = capture.mock.calls.find(([call]) => call.event === '$mcp_tool_call')?.[0];
+            expect(event?.properties).toMatchObject({
+                'mcp-type': 'management',
+                'mcp-auth-type': 'apiKey',
+                'team-id': account.id,
+                'account-id': account.id,
+                $mcp_server_name: 'Nango Management MCP server',
+                $mcp_tool_name: 'providers_get',
+                $mcp_is_error: false
+            });
+            expect(event?.properties).not.toHaveProperty('$mcp_parameters');
+            expect(event?.properties).not.toHaveProperty('$mcp_response');
+        } finally {
+            await shutdownMcpAnalytics();
+            envs.PUBLIC_POSTHOG_KEY = originalKey;
+            envs.PUBLIC_POSTHOG_HOST = originalHost;
+            capture.mockRestore();
+        }
     });
 
     it('lists all tools with environment:* scope', async () => {
