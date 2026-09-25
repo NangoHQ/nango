@@ -1,14 +1,13 @@
-import { Anchor, BookOpen, Cloud, Code, FolderGit2, GitBranch, Info, LayoutTemplate, LibraryBig, Plus, Search } from 'lucide-react';
+import { Anchor, BookOpen, Code, GitBranch, LayoutTemplate, LibraryBig, Plus, Search } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Badge, Button, InputGroup, InputGroupAddon, InputGroupInput, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { ButtonLink } from '@/components/ui/ButtonLink';
-import { CopyButton } from '@/components/ui/CopyButton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
@@ -26,7 +25,7 @@ import { isSyncOrAction } from '@/utils/scripts';
 import { cn } from '@/utils/utils';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 
-import type { ApiError, ApiIntegration, FunctionListSource, FunctionType, ListedNangoFunction, NangoFunctionTemplate } from '@nangohq/types';
+import type { ApiError, ApiIntegration, FunctionListSource, ListedNangoFunction, NangoFunctionTemplate } from '@nangohq/types';
 
 const TYPE_FILTER_VALUES = ['action', 'sync', 'on-event'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
@@ -36,12 +35,6 @@ const TYPE_PILLS: { value: TypeFilterValue; label: string; emptyLabel: string }[
     { value: 'sync', label: 'Syncs', emptyLabel: 'No syncs' },
     { value: 'on-event', label: 'Triggers', emptyLabel: 'No triggers' }
 ];
-
-const TYPE_BADGE_LABEL: Record<FunctionType, string> = {
-    sync: 'sync',
-    action: 'action',
-    'on-event': 'on event'
-};
 
 const SOURCE_LABEL: Record<FunctionListSource, { label: string; icon: typeof BookOpen }> = {
     catalog: { label: 'Standalone', icon: Anchor },
@@ -87,6 +80,31 @@ function FunctionNameCell({ name, description }: { name: string; description?: s
                 {description && <span className="truncate type-label-xxs text-text-disabled">{description}</span>}
             </div>
         </TableCell>
+    );
+}
+
+function FunctionStatus({ fn, integration }: { fn: ListedNangoFunction; integration: ApiIntegration }) {
+    if (fn.source === 'tools-catalog') {
+        return (
+            <div className="flex items-center gap-1">
+                <span className="type-label-sm !leading-none text-text-link-success">Enabled</span>
+                <span
+                    className="inline-flex -translate-y-px"
+                    onClick={(event) => {
+                        event.stopPropagation();
+                    }}
+                >
+                    <InfoTooltip size="sm">Nango catalog tools are always enabled</InfoTooltip>
+                </span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex items-center gap-1.5">
+            <span className={cn('type-label-sm', fn.enabled ? 'text-text-link-success' : 'text-text-secondary')}>{fn.enabled ? 'Enabled' : 'Disabled'}</span>
+            {isSyncOrAction(fn) && <FunctionSwitch flow={fn} integration={integration} variant="success" />}
+        </div>
     );
 }
 
@@ -357,28 +375,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                             <FunctionSourceLabel source={fn.source} />
                                         </TableCell>
                                         <TableCell className="w-35 px-3">
-                                            {fn.source === 'tools-catalog' ? (
-                                                <div className="flex items-center gap-1">
-                                                    <span className="type-label-sm !leading-none text-text-link-success">Enabled</span>
-                                                    <span
-                                                        className="inline-flex -translate-y-px"
-                                                        onClick={(event) => {
-                                                            event.stopPropagation();
-                                                        }}
-                                                    >
-                                                        <InfoTooltip size="sm">Nango catalog tools are always enabled</InfoTooltip>
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                isSyncOrAction(fn) && (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span className={cn('type-label-sm', fn.enabled ? 'text-text-link-success' : 'text-text-secondary')}>
-                                                            {fn.enabled ? 'Enabled' : 'Disabled'}
-                                                        </span>
-                                                        <FunctionSwitch flow={fn} integration={integration} variant="success" />
-                                                    </div>
-                                                )
-                                            )}
+                                            <FunctionStatus fn={fn} integration={integration} />
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -412,12 +409,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                             <FunctionSourceLabel source={fn.source} />
                                         </TableCell>
                                         <TableCell className="w-35 px-3">
-                                            <div className="flex items-center gap-1.5">
-                                                <span className={cn('type-label-sm', fn.enabled ? 'text-text-link-success' : 'text-text-secondary')}>
-                                                    {fn.enabled ? 'Enabled' : 'Disabled'}
-                                                </span>
-                                                {isSyncOrAction(fn) && <FunctionSwitch flow={fn} integration={integration} variant="success" />}
-                                            </div>
+                                            <FunctionStatus fn={fn} integration={integration} />
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -455,55 +447,35 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Source code</TableHead>
-                                    <TableHead className="text-center">Enabled</TableHead>
+                                    <ColumnHead>Function name</ColumnHead>
+                                    <ColumnHead className="w-35">Source</ColumnHead>
+                                    <ColumnHead className="w-35">Status</ColumnHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {functions.map((fn) => (
                                     <TableRow
                                         key={functionRowKey(fn)}
-                                        className="cursor-pointer hover:bg-surface-panel-inset"
+                                        className="h-12 cursor-pointer hover:bg-surface-panel-inset"
                                         onClick={() => onFunctionClick(fn)}
                                     >
-                                        <TableCell>
-                                            <div className="flex items-center gap-1.5">
-                                                {fn.name}
-                                                {fn.description && (
-                                                    <Tooltip>
-                                                        <TooltipTrigger>
-                                                            <Info className="size-3.5 text-icon-muted cursor-pointer" />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>{fn.description}</TooltipContent>
-                                                    </Tooltip>
-                                                )}
-                                                <CopyButton text={fn.name} />
-                                            </div>
+                                        <FunctionNameCell name={fn.name} description={fn.description} />
+                                        <TableCell className="w-35 px-3">
+                                            <FunctionSourceLabel source={fn.source} />
                                         </TableCell>
-                                        <TableCell>
-                                            <Badge case="capitalize">{TYPE_BADGE_LABEL[fn.type]}</Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            {fn.source === 'repo' ? (
-                                                <Badge variant="outline">
-                                                    <FolderGit2 /> Your repo
-                                                </Badge>
-                                            ) : (
-                                                <Badge variant="outline">
-                                                    <Cloud /> Nango
-                                                </Badge>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex justify-center items-center">
-                                                {isSyncOrAction(fn) && <FunctionSwitch flow={fn} integration={integration} />}
-                                            </div>
+                                        <TableCell className="w-35 px-3">
+                                            <FunctionStatus fn={fn} integration={integration} />
                                         </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
+                            <TableFooter className="bg-transparent font-ds-regular">
+                                <TableRow className="h-8 hover:bg-transparent">
+                                    <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
+                                        Showing {functions.length} of {total} triggers
+                                    </TableCell>
+                                </TableRow>
+                            </TableFooter>
                         </Table>
                     )}
 
