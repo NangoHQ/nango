@@ -1,9 +1,11 @@
 import tracer from 'dd-trace';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 
+import { createInternalServiceToken, INTERNAL_SERVICE_AUDIENCE_SERVER, TASK_CAPABILITY_ACTIONS } from '@nangohq/internal-auth';
 import { accountService } from '@nangohq/shared';
 import { metrics } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import accessMiddleware from './access.middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -11,6 +13,9 @@ import type { ApiKeyContext, DBEnvironment, DBTeam } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 const secretKey = '00000000-0000-4000-8000-000000000000';
+const signingKey = 'sign';
+const previousSigningKey = envs.NANGO_INTERNAL_AUTH_SIGNING_KEY;
+envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = signingKey;
 
 const context: ApiKeyContext = {
     account: { id: 1 } as DBTeam,
@@ -20,8 +25,20 @@ const context: ApiKeyContext = {
     auth: { source: 'customer_key' }
 };
 
-async function runSecretKeyAuth(authorization: string | undefined) {
-    const req = { get: (name: string) => (name.toLowerCase() === 'authorization' ? authorization : undefined) } as unknown as Request;
+async function runSecretKeyAuth(authorization: string | undefined, extras?: { isScript?: boolean; method?: string; path?: string }) {
+    const req = {
+        method: extras?.method ?? 'GET',
+        path: extras?.path ?? '/connections/abc',
+        get: (name: string) => {
+            if (name.toLowerCase() === 'authorization') {
+                return authorization;
+            }
+            if (name === 'Nango-Is-Script') {
+                return extras?.isScript ? 'true' : undefined;
+            }
+            return undefined;
+        }
+    } as unknown as Request;
     const res = {
         locals: {} as Partial<RequestLocals>,
         status: vi.fn().mockReturnThis(),
@@ -39,6 +56,11 @@ async function runSecretKeyAuth(authorization: string | undefined) {
 describe('secretKeyAuth', () => {
     afterEach(() => {
         vi.restoreAllMocks();
+        envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = signingKey;
+    });
+
+    afterAll(() => {
+        envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = previousSigningKey;
     });
 
     it('responds 500 when the account lookup throws', async () => {
@@ -105,6 +127,75 @@ describe('secretKeyAuth', () => {
         expect(status).toHaveBeenCalledWith(401);
         expect(code).toBe(expected);
         expect(lookup).not.toHaveBeenCalled();
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it('authenticates a script capability token for a script-allowed route', async () => {
+        vi.spyOn(accountService, 'getAccountContext').mockResolvedValue({
+            account: context.account,
+            environment: context.environment!,
+            secret: { secret: 'unused' } as never,
+            plan: null
+        });
+        const token = createInternalServiceToken(
+            {
+                taskId: 'task-1',
+                audience: INTERNAL_SERVICE_AUDIENCE_SERVER,
+                environmentId: 10,
+                connectionId: 42,
+                actions: [TASK_CAPABILITY_ACTIONS.apiConnectionRead],
+                expiresInSecs: 120
+            },
+            signingKey
+        );
+
+        const { next, locals } = await runSecretKeyAuth(`Bearer ${token}`, { isScript: true, method: 'GET', path: '/connections/other' });
+
+        expect(next).toHaveBeenCalled();
+        expect(locals.account).toStrictEqual(context.account);
+        expect(locals.environment).toStrictEqual(context.environment);
+        expect(accountService.getAccountContext).toHaveBeenCalledWith({ environmentId: 10 });
+    });
+
+    it('rejects a script capability token on a non-script route', async () => {
+        const token = createInternalServiceToken(
+            {
+                taskId: 'task-1',
+                audience: INTERNAL_SERVICE_AUDIENCE_SERVER,
+                environmentId: 10,
+                connectionId: 42,
+                actions: [TASK_CAPABILITY_ACTIONS.apiConnectionRead],
+                expiresInSecs: 120
+            },
+            signingKey
+        );
+        const lookup = vi.spyOn(accountService, 'getAccountContext');
+
+        const { next, status } = await runSecretKeyAuth(`Bearer ${token}`, { isScript: true, method: 'GET', path: '/api/v1/account/api-keys' });
+
+        expect(status).toHaveBeenCalledWith(401);
+        expect(lookup).not.toHaveBeenCalled();
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it('rejects a script capability token minted for a different environment', async () => {
+        const lookup = vi.spyOn(accountService, 'getAccountContext').mockResolvedValue(null);
+        const token = createInternalServiceToken(
+            {
+                taskId: 'task-1',
+                audience: INTERNAL_SERVICE_AUDIENCE_SERVER,
+                environmentId: 99,
+                connectionId: 42,
+                actions: [TASK_CAPABILITY_ACTIONS.apiConnectionRead],
+                expiresInSecs: 120
+            },
+            signingKey
+        );
+
+        const { next, status } = await runSecretKeyAuth(`Bearer ${token}`, { isScript: true, method: 'GET', path: '/connections/abc' });
+
+        expect(status).toHaveBeenCalledWith(401);
+        expect(lookup).toHaveBeenCalledWith({ environmentId: 99 });
         expect(next).not.toHaveBeenCalled();
     });
 });

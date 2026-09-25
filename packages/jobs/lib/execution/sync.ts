@@ -22,7 +22,6 @@ import {
     getSyncJobByRunId,
     LogActionEnum,
     NangoError,
-    secretService,
     setLastSyncDate,
     SyncJobsType,
     SyncStatus,
@@ -177,11 +176,6 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment);
-        if (defaultSecret.isErr()) {
-            throw defaultSecret.error;
-        }
-
         const nangoProps: NangoProps = {
             scriptType: 'sync',
             host: getApiUrl(),
@@ -195,7 +189,6 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             providerConfigKey: task.connection.provider_config_key,
             provider: providerConfig.provider,
             activityLogId: logCtx.id,
-            secretKey: defaultSecret.value.secret,
             nangoConnectionId: task.connection.id,
             syncId: task.syncId,
             syncVariant: task.syncVariant,

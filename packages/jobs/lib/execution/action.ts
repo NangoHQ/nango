@@ -15,8 +15,7 @@ import {
     getEndUserByConnectionId,
     getSyncConfigRaw,
     LogActionEnum,
-    NangoError,
-    secretService
+    NangoError
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
@@ -139,13 +138,6 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             sdkLogger = await tracer.trace('action.prepare.sdkLogger', async () => environmentService.getSdkLogger(accountContext.environment.id));
         }
 
-        const defaultSecret = await tracer.trace('action.prepare.defaultSecret', async () =>
-            secretService.getDefaultSecretForEnv(db.readOnly, accountContext.environment)
-        );
-        if (defaultSecret.isErr()) {
-            return Err(defaultSecret.error);
-        }
-
         const nangoProps: NangoProps = {
             scriptType: 'action',
             host: getApiUrl(),
@@ -159,7 +151,6 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             providerConfigKey: task.connection.provider_config_key,
             provider: providerConfig.provider,
             activityLogId: task.activityLogId,
-            secretKey: defaultSecret.value.secret,
             nangoConnectionId: task.connection.id,
             attributes: syncConfig.attributes,
             syncConfig: syncConfig,
