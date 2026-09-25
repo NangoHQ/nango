@@ -1,9 +1,10 @@
-import { vi, expect, it, describe } from 'vitest';
+import { NangoActionMock } from 'nango/test';
+import { expect, it, describe } from 'vitest';
 
 import createAction from '../actions/<%= actionName %>.js';
 
 describe('<%= integration %> <%= actionName %> tests', () => {
-  const nangoMock = new global.vitest.NangoActionMock({ 
+  const nangoMock = new NangoActionMock({
       dirname: __dirname,
       name: "<%= actionName %>",
       Model: "<%= output %>"

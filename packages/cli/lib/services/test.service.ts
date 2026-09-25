@@ -8,6 +8,7 @@ import readline from 'readline';
 import axios from 'axios';
 import chalk from 'chalk';
 import ejs from 'ejs';
+import { glob } from 'glob';
 
 import { detectPackageManager, printDebug } from '../utils.js';
 import { Spinner } from '../utils/spinner.js';
@@ -390,10 +391,35 @@ export async function generateActionTest({
     return outputPath;
 }
 
-async function generateTestConfigs({ debug, force = false }: { debug: boolean; force?: boolean }): Promise<boolean> {
-    try {
-        const rootPath = await getProjectRoot();
+async function hasLegacyGlobalTests(absolutePath: string): Promise<boolean> {
+    const testFiles = await glob('**/*.test.ts', {
+        absolute: true,
+        cwd: absolutePath,
+        ignore: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/.nango/**']
+    });
 
+    for (const testFile of testFiles) {
+        const content = await fs.readFile(testFile, 'utf8');
+        if (content.includes('global.vitest.NangoSyncMock') || content.includes('global.vitest.NangoActionMock')) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+export async function generateTestConfigs({
+    absolutePath,
+    rootPath,
+    debug,
+    force = false
+}: {
+    absolutePath: string;
+    rootPath: string;
+    debug: boolean;
+    force?: boolean;
+}): Promise<boolean> {
+    try {
         if (debug) {
             printDebug(`Resolved project root: ${rootPath}`);
             printDebug(`Generating config files in: ${rootPath}`);
@@ -401,24 +427,28 @@ async function generateTestConfigs({ debug, force = false }: { debug: boolean; f
 
         const viteConfigPath = path.resolve(rootPath, 'vite.config.ts');
         const vitestSetupPath = path.resolve(rootPath, 'vitest.setup.ts');
+        const legacySetupRequired = (await pathExists(vitestSetupPath)) || (await hasLegacyGlobalTests(absolutePath));
 
         const viteTemplate = await fs.readFile(VITE_CONFIG_TEMPLATE, 'utf8');
-        const vitestTemplateSource = await fs.readFile(VITEST_SETUP_TEMPLATE, 'utf8');
-
-        const vitestTemplate = ejs.render(vitestTemplateSource);
+        const renderedViteTemplate = ejs.render(viteTemplate, { legacySetupRequired });
 
         if (force || !(await pathExists(viteConfigPath))) {
-            await fs.writeFile(viteConfigPath, viteTemplate);
+            await fs.writeFile(viteConfigPath, renderedViteTemplate);
             if (debug) printDebug(`Created/Overwritten vite.config.ts at ${viteConfigPath}`);
         } else if (debug) {
             printDebug(`vite.config.ts already exists and force is not enabled, skipping`);
         }
 
-        if (force || !(await pathExists(vitestSetupPath))) {
-            await fs.writeFile(vitestSetupPath, vitestTemplate);
-            if (debug) printDebug(`Created/Overwritten vitest.setup.ts at ${vitestSetupPath}`);
-        } else if (debug) {
-            printDebug(`vitest.setup.ts already exists and force is not enabled, skipping`);
+        if (legacySetupRequired) {
+            const vitestTemplateSource = await fs.readFile(VITEST_SETUP_TEMPLATE, 'utf8');
+            const vitestTemplate = ejs.render(vitestTemplateSource);
+
+            if (force || !(await pathExists(vitestSetupPath))) {
+                await fs.writeFile(vitestSetupPath, vitestTemplate);
+                if (debug) printDebug(`Created/Overwritten vitest.setup.ts at ${vitestSetupPath}`);
+            } else if (debug) {
+                printDebug(`vitest.setup.ts already exists and force is not enabled, skipping`);
+            }
         }
 
         return true;
@@ -483,7 +513,7 @@ export async function generateTests({
             }
         }
 
-        await generateTestConfigs({ debug, force: forceOverwrite });
+        await generateTestConfigs({ absolutePath, rootPath, debug, force: forceOverwrite });
 
         let integrationsToProcess: Record<string, any> = {};
 
