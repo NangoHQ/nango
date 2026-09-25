@@ -3687,6 +3687,48 @@ bill:
         base_url: https://gateway.prod.bill.com/connect
     docs: https://nango.dev/docs/integrations/all/bill
 
+billit:
+    display_name: Billit
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+        headers:
+            apikey: ${apiKey}
+            partyid: ${connectionConfig.partyId}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/einvoices/registrations
+    docs: https://nango.dev/docs/api-integrations/billit
+    docs_connect: https://nango.dev/docs/api-integrations/billit/connect
+    connection_config:
+        apiHost:
+            type: string
+            title: Environment
+            description: The Billit API environment to connect to.
+            enum:
+                - api.sandbox.billit.be
+                - api.billit.be
+            order: 1
+            doc_section: '#step-1-choose-your-environment'
+        partyId:
+            type: string
+            title: Master Account Party ID
+            description: The Registration ID of your Billit master account.
+            pattern: '^[0-9]+$'
+            example: '588999'
+            order: 2
+            doc_section: '#step-3-find-your-master-account-party-id'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for a user with access to your Billit master account.
+            doc_section: '#step-2-get-your-api-key'
+
 bing-webmasters:
     display_name: Bing Webmasters
     categories:
