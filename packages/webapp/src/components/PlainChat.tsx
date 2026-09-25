@@ -1,10 +1,11 @@
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
-import { apiFetch } from '@/utils/api';
+import { APIError, apiFetch } from '@/utils/api';
 import { globalEnv } from '@/utils/env';
 
-import type { ApiUser } from '@nangohq/types';
+import type { ApiUser, GetPlainHmac } from '@nangohq/types';
 
 // ─── Plain types ──────────────────────────────────────────────────────────────
 
@@ -139,24 +140,37 @@ export const PlainChat: React.FC<{ user?: ApiUser }> = ({ user }) => {
     const emailHashRef = useRef<string | undefined>(undefined);
     const scriptStartedRef = useRef(false);
 
+    const { data: emailHash, status: emailHashStatus } = useQuery<string, APIError>({
+        queryKey: ['plain', 'hmac', user?.email],
+        queryFn: async (): Promise<string> => {
+            const res = await apiFetch('/api/v1/plain');
+
+            const json = (await res.json()) as GetPlainHmac['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json.data.hash;
+        },
+        enabled: Boolean(appId && user),
+        staleTime: Infinity
+    });
+
     useEffect(() => {
         if (!appId) return;
 
         if (user) {
-            apiFetch('/api/v1/plain')
-                .then((r) => r.json() as Promise<{ data: { hash: string } }>)
-                .then(({ data }) => {
-                    emailHashRef.current = data.hash;
-                    if (window.Plain) {
-                        window.Plain.update({
-                            customerDetails: { email: user.email, emailHash: data.hash, fullName: user.name },
-                            requireAuthentication: false
-                        });
-                        return;
-                    }
-                    loadScript(appId);
-                })
-                .catch(() => loadScript(appId));
+            if (emailHashStatus === 'pending') return;
+
+            emailHashRef.current = emailHash;
+            if (emailHash && window.Plain) {
+                window.Plain.update({
+                    customerDetails: { email: user.email, emailHash, fullName: user.name },
+                    requireAuthentication: false
+                });
+                return;
+            }
+            loadScript(appId);
         } else {
             if (window.Plain?.isInitialized()) {
                 window.Plain.update({ customerDetails: undefined, requireAuthentication: true });
@@ -174,7 +188,7 @@ export const PlainChat: React.FC<{ user?: ApiUser }> = ({ user }) => {
             script.onload = () => window.Plain?.init(buildConfig(id, darkModeRef.current, userRef.current, emailHashRef.current));
             document.head.appendChild(script);
         }
-    }, [appId, user?.email]);
+    }, [appId, user?.email, emailHash, emailHashStatus]);
 
     useEffect(() => {
         if (window.Plain?.isInitialized()) {
