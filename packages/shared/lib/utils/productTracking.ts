@@ -2,7 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 
 import { PostHog } from 'posthog-node';
 
-import { baseUrl, NANGO_VERSION, report } from '@nangohq/utils';
+import { baseUrl, FixedSizeMap, NANGO_VERSION, report } from '@nangohq/utils';
 
 import type { CliTelemetryEvent, DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
 
@@ -18,12 +18,13 @@ export type ProductTrackingTypes =
     | 'agents:proxy_request_complete'
     | 'agents:tool_search_complete';
 
-/**
- * Only ids: no email, no names, and no account name either, which defaults to "<person>'s Team" for
- * anyone who signed up with a personal address. The plan is a group property, not an event one.
- */
+const ACCOUNT_GROUP = 'company';
+
+type TrackedTeam = Pick<DBTeam, 'id'> & Partial<Pick<DBTeam, 'name'>>;
+
+/** No email and no person's name. The account name and plan are group properties, never event ones. */
 export interface TrackingContext {
-    team: Pick<DBTeam, 'id'>;
+    team: TrackedTeam;
     /**
      * Some events are account-wide and have no environment to resolve, so this stays optional.
      */
@@ -35,7 +36,7 @@ export interface TrackingContext {
  * A context where nothing is guaranteed: the request may not be authenticated, and an event may be
  * emitted with no context at all.
  */
-export type TrackingContextInput = Partial<Omit<TrackingContext, 'team'>> & { team?: Pick<DBTeam, 'id'> | null | undefined };
+export type TrackingContextInput = Partial<Omit<TrackingContext, 'team'>> & { team?: TrackedTeam | null | undefined };
 
 /**
  * Resolved lazily, at emit time: a request enters this context before auth runs, so the account
@@ -101,11 +102,13 @@ function distinctIdFor({ team, user }: TrackingContext): string {
 
 /** Counting accounts rather than people is what the group is for, so every event carries it. */
 function groupsFor({ team }: TrackingContext): Record<string, string> {
-    return { company: String(team.id) };
+    return { [ACCOUNT_GROUP]: String(team.id) };
 }
 
 class ProductTracking {
     client: PostHog | undefined;
+    // Each groupIdentify sends its own $groupidentify event. Send one per account name, not one per capture.
+    readonly identifiedAccountNames = new FixedSizeMap<number, string>(10_000);
 
     constructor() {
         const key = process.env['PUBLIC_POSTHOG_KEY'];
@@ -157,7 +160,21 @@ class ProductTracking {
                 ...contextProperties(context)
             };
 
+            this.identifyAccount(this.client, context.team);
             this.client.capture({ event: name, distinctId: distinctIdFor(context), properties, groups: groupsFor(context) });
+        } catch (err) {
+            report(err);
+        }
+    }
+
+    private identifyAccount(client: PostHog, team: TrackedTeam) {
+        if (!team.name || this.identifiedAccountNames.get(team.id) === team.name) {
+            return;
+        }
+
+        try {
+            client.groupIdentify({ groupType: ACCOUNT_GROUP, groupKey: String(team.id), properties: { name: team.name } });
+            this.identifiedAccountNames.set(team.id, team.name);
         } catch (err) {
             report(err);
         }

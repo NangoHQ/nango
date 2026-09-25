@@ -1,12 +1,11 @@
 import { Prism } from '@mantine/prism';
 import { useQueryClient } from '@tanstack/react-query';
-import { HelpCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam } from 'react-use';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+import { Button, FieldDescription } from '@nangohq/design-system';
 import Nango, { AuthError } from '@nangohq/frontend';
 
 import { SecretInput } from '@/components/patterns/SecretInput';
@@ -23,6 +22,9 @@ import { isCloudProd } from '../../utils/cloud.js';
 import { globalEnv } from '../../utils/env';
 
 import type { ApiIntegrationList, AuthModeType } from '@nangohq/types';
+
+const AUTHORIZATION_PARAMS_DESCRIPTION =
+    'Query parameters added to the authorization URL for this connection, as a JSON object — e.g. { "key": "value" }. Most integrations don\'t need this.';
 
 export const ConnectionCreateLegacy: React.FC = () => {
     const queryClient = useQueryClient();
@@ -652,12 +654,6 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         <label htmlFor="connection_id" className="text-text-secondary block text-sm font-semibold">
                                             Connection ID
                                         </label>
-                                        <Tooltip>
-                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
-                                            </TooltipTrigger>
-                                            <TooltipContent>{`The ID you will use to retrieve the connection (most often the user ID).`}</TooltipContent>
-                                        </Tooltip>
                                     </div>
                                     <div className="mt-1">
                                         <input
@@ -671,6 +667,9 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             onChange={handleConnectionIdChange}
                                         />
                                     </div>
+                                    <FieldDescription className="mt-1">
+                                        The ID you will use to retrieve the connection, most often the user ID.
+                                    </FieldDescription>
                                 </div>
                             </div>
                             {integration?.provider === 'slack' && (
@@ -868,23 +867,6 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         <label htmlFor="extra_configuration" className="text-text-secondary block text-sm font-semibold">
                                             Extra Configuration: {paramName}
                                         </label>
-                                        <Tooltip>
-                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <span>Some integrations require extra configuration (cf. </span>
-                                                <a
-                                                    href="https://nango.dev/docs/guides/auth/customize-connect-ui#handle-apis-requiring-connection-specific-configuration-for-authorization"
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="text-text-link hover:text-text-link"
-                                                >
-                                                    docs
-                                                </a>
-                                                <span>).</span>
-                                            </TooltipContent>
-                                        </Tooltip>
                                     </div>
                                     <div className="mt-1">
                                         <input
@@ -897,6 +879,19 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             onChange={handleConnectionConfigParamsChange}
                                         />
                                     </div>
+                                    <FieldDescription className="mt-1">
+                                        Some integrations require extra configuration — see{' '}
+                                        <Button asChild variant="link-accent" size="xs">
+                                            <a
+                                                href="https://nango.dev/docs/guides/auth/customize-connect-ui#handle-apis-requiring-connection-specific-configuration-for-authorization"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                connection-specific configuration
+                                            </a>
+                                        </Button>
+                                        .
+                                    </FieldDescription>
                                 </div>
                             ))}
 
@@ -950,12 +945,6 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                 <label htmlFor="connection_id" className="text-text-secondary block text-sm font-semibold">
                                                     API Key
                                                 </label>
-                                                <Tooltip>
-                                                    <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                        <HelpCircle className="h-5 ml-1 text-text-muted" />
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>{`The API key to authenticate requests`}</TooltipContent>
-                                                </Tooltip>
                                             </div>
 
                                             <div className="mt-1">
@@ -968,6 +957,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                     required
                                                 />
                                             </div>
+                                            <FieldDescription className="mt-1">The API key used to authenticate requests.</FieldDescription>
                                         </div>
                                     )}
                                 </div>
@@ -1012,12 +1002,6 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         <label htmlFor="optional_authorization_params" className="text-text-secondary block text-sm font-semibold">
                                             Optional: Additional Authorization Params
                                         </label>
-                                        <Tooltip>
-                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
-                                            </TooltipTrigger>
-                                            <TooltipContent>{`Add query parameters in the authorization URL, on a per-connection basis. Most integrations don't require this. This should be formatted as a JSON object, e.g. { "key" : "value" }. `}</TooltipContent>
-                                        </Tooltip>
                                     </div>
                                     <div className="mt-1">
                                         <input
@@ -1032,6 +1016,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             onChange={handleAuthorizationParamsChange}
                                         />
                                     </div>
+                                    <FieldDescription className="mt-1">{AUTHORIZATION_PARAMS_DESCRIPTION}</FieldDescription>
                                 </div>
                             )}
 
@@ -1041,12 +1026,6 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         <label htmlFor="optional_authorization_params" className="text-text-secondary block text-sm font-semibold">
                                             Optional: Additional Authorization Params
                                         </label>
-                                        <Tooltip>
-                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
-                                            </TooltipTrigger>
-                                            <TooltipContent>{`Add query parameters in the authorization URL, on a per-connection basis. Most integrations don't require this. This should be formatted as a JSON object, e.g. { "key" : "value" }. `}</TooltipContent>
-                                        </Tooltip>
                                     </div>
                                     <div className="mt-1">
                                         <input
@@ -1061,6 +1040,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             onChange={handleAuthorizationParamsChange}
                                         />
                                     </div>
+                                    <FieldDescription className="mt-1">{AUTHORIZATION_PARAMS_DESCRIPTION}</FieldDescription>
                                 </div>
                             )}
                             {(authMode === 'TWO_STEP' || authMode === 'JWT') && (
