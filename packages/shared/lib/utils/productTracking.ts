@@ -174,24 +174,11 @@ class ProductTracking {
                 return;
             }
 
-            this.client.capture({ event: name, distinctId, properties: { ...eventProperties, ...commonProperties('cli') } });
-        } catch (err) {
-            report(err);
-        }
-    }
-
-    /**
-     * Link an anonymous CLI device id to an identified team/user, so anonymous CLI
-     * events (tracked via trackAnonymous) merge into the identified profile in PostHog.
-     * Called from authenticated CLI requests that carry a device id, e.g. deploy.
-     */
-    public alias({ deviceId, team, user }: { deviceId: string; team: Pick<DBTeam, 'id'>; user?: Pick<DBUser, 'id'> | undefined }) {
-        try {
-            if (this.client == null) {
-                return;
-            }
-
-            this.client.alias({ distinctId: deviceId, alias: distinctIdFor({ team, user }) });
+            this.client.capture({
+                event: name,
+                distinctId,
+                properties: { ...eventProperties, ...commonProperties('cli'), $process_person_profile: false }
+            });
         } catch (err) {
             report(err);
         }
