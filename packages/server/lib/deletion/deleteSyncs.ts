@@ -1,4 +1,5 @@
 import db from '@nangohq/database';
+import { recordModelName } from '@nangohq/records';
 import { getLatestSyncJob, hardDeleteJobs, hardDeleteSync } from '@nangohq/shared';
 
 import { tasks } from '../tasks/index.js';
@@ -17,7 +18,9 @@ export interface DeleteSyncInput {
     nangoConnectionId: number;
     /** null when the config is already gone; unschedule and records deletion are skipped for that sync. */
     environmentId: number | null;
+    /** Bare sync-config model names. The variant suffix is applied when records are deleted. */
     models: string[];
+    variant: string;
 }
 
 /**
@@ -63,7 +66,7 @@ export async function deleteSyncs(syncs: DeleteSyncInput[], opts: BatchDeleteSha
                 syncId: sync.id,
                 nangoConnectionId: sync.nangoConnectionId,
                 environmentId: sync.environmentId,
-                models: sync.models,
+                models: sync.models.map((model) => recordModelName(model, sync.variant)),
                 generation: lastJob.id + 1
             });
             if (res.isErr()) {
