@@ -1,6 +1,5 @@
 import * as React from 'react';
 
-import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { cn } from '@/utils/utils';
 
 interface BinaryToggleProps {
@@ -8,13 +7,11 @@ interface BinaryToggleProps {
     onChange: (value: boolean) => void;
     offLabel: string;
     onLabel: string;
-    offTooltip?: React.ReactNode;
-    onTooltip?: React.ReactNode;
     disabled?: boolean;
     className?: string;
 }
 
-export const BinaryToggle: React.FC<BinaryToggleProps> = ({ value, onChange, offLabel, onLabel, offTooltip, onTooltip, disabled = false, className }) => {
+export const BinaryToggle: React.FC<BinaryToggleProps> = ({ value, onChange, offLabel, onLabel, disabled = false, className }) => {
     const handleToggle = () => {
         if (!disabled) {
             onChange(!value);
@@ -44,7 +41,6 @@ export const BinaryToggle: React.FC<BinaryToggleProps> = ({ value, onChange, off
                 )}
             >
                 <span>{offLabel}</span>
-                {offTooltip && <InfoTooltip>{offTooltip}</InfoTooltip>}
             </div>
             <div
                 className={cn(
@@ -53,7 +49,6 @@ export const BinaryToggle: React.FC<BinaryToggleProps> = ({ value, onChange, off
                 )}
             >
                 <span>{onLabel}</span>
-                {onTooltip && <InfoTooltip>{onTooltip}</InfoTooltip>}
             </div>
         </div>
     );
