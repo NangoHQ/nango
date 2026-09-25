@@ -22,8 +22,10 @@ interface ConnectionAdvancedConfigProps {
 const RequiredLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
         <FormLabel>
-            {children}
-            <span className="text-text-danger">*</span>
+            <span>
+                {children}
+                <span className="ml-0.5 text-text-danger">*</span>
+            </span>
         </FormLabel>
     );
 };
