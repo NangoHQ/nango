@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Plus } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
@@ -16,9 +16,11 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { openPlaygroundWithContext } from '@/utils/playground';
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
-import { IntegrationSideInfo } from './components/IntegrationSideInfo';
 import { FunctionsTab } from './Functions/Tab';
 import { SettingsTab } from './Settings/Tab';
+
+const integrationTabClassName = 'gap-1 px-2 py-1.5 data-[state=active]:border-interactive-selected-fill';
+const integrationLinkTabClassName = 'w-fit inline-flex items-center gap-1 px-2 py-1.5';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
@@ -42,98 +44,91 @@ export const ShowIntegration: React.FC = () => {
 
     if (isLoading) {
         return (
-            <DashboardLayout className="flex flex-col gap-8">
+            <DashboardLayout
+                fullWidth
+                className="flex flex-col gap-4"
+                title=" "
+                titleLeading={<Skeleton className="size-6" />}
+                titleActions={<Skeleton className="h-8 w-44" />}
+            >
                 <Helmet>
                     <title>Integration - Nango</title>
                 </Helmet>
-
-                <div className="flex flex-col gap-5 w-full">
-                    <div className="inline-flex justify-between">
-                        <div className="inline-flex items-center gap-2">
-                            <Skeleton className="size-15" />
-                            <Skeleton className="w-36 h-6" />
-                        </div>
-                        <Skeleton className="w-36 h-10" />
-                    </div>
-                    <Skeleton className="w-full h-10" />
-                    <Skeleton className="w-56 h-10" />
-                </div>
+                <Skeleton className="w-full h-10" />
+                <Skeleton className="w-56 h-8" />
             </DashboardLayout>
         );
     }
+
+    const displayName = integration.integration.display_name || integration.template.display_name;
+
     return (
-        <DashboardLayout className="flex flex-col gap-8">
+        <DashboardLayout
+            fullWidth
+            className="flex flex-col gap-4"
+            title={displayName}
+            titleLeading={<IntegrationLogo provider={integration.integration.provider} className="size-6 rounded-[10px] p-0.5" />}
+            titleActions={
+                <PermissionGate condition={canCreateTestConnection} asChild>
+                    {(allowed) => (
+                        <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="md" disabled={!allowed}>
+                            <Plus />
+                            Add test connection
+                        </ButtonLink>
+                    )}
+                </PermissionGate>
+            }
+        >
             <Helmet>
                 <title>Integration - Nango</title>
             </Helmet>
 
             <AutoIdlingBanner />
 
-            <div className="flex flex-col gap-5 w-full">
-                <div className="inline-flex justify-between">
-                    <div className="inline-flex items-center gap-2">
-                        <IntegrationLogo provider={integration.integration.provider} className="size-15" />
-                        <span className="text-text-strong text-body-large-semi">
-                            {integration.integration.display_name ?? integration.template.display_name}
-                        </span>
-                    </div>
-                    <PermissionGate condition={canCreateTestConnection} asChild>
-                        {(allowed) => (
-                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="md" disabled={!allowed}>
-                                Add test connection
-                            </ButtonLink>
-                        )}
-                    </PermissionGate>
-                </div>
-                <Tabs
-                    value={activeTab}
-                    onValueChange={(value) => {
-                        if (value === 'playground') {
-                            openPlaygroundWithContext({ source: 'integration', integration: integration.integration.unique_key });
-                        } else {
-                            setActiveTab(value);
-                        }
-                    }}
-                >
-                    <TabsList>
-                        <TabsTrigger value="functions">Functions</TabsTrigger>
-                        <TabsTrigger value="settings">Settings</TabsTrigger>
-                        <TabsTrigger value="setup-guide" disabled asChild>
-                            <Link to={integration.template.docs} target="_blank" className="w-fit inline-flex items-center gap-1.5">
-                                API setup guide <ExternalLink className="size-4" />
-                            </Link>
-                        </TabsTrigger>
-                        <TabsTrigger value="logs" disabled asChild>
-                            <Link to={`/${env}/logs?integrations=${integration.integration.unique_key}`} className="w-fit inline-flex items-center gap-1.5">
-                                Logs <ExternalLink className="size-4" />
-                            </Link>
-                        </TabsTrigger>
-                        <TabsTrigger value="connections" disabled asChild>
-                            <Link
-                                to={`/${env}/connections?integrations=${integration.integration.unique_key}`}
-                                className="w-fit inline-flex items-center gap-1.5"
-                            >
-                                Connections <ExternalLink className="size-4" />
-                            </Link>
-                        </TabsTrigger>
-                        <TabsTrigger value="playground">
-                            Playground <ExternalLink className="size-4" />
-                        </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="functions">
-                        <div className="flex w-full gap-11 justify-between">
-                            <FunctionsTab integration={integration.integration} />
-                            <IntegrationSideInfo integration={integration.integration} provider={integration.template} />
-                        </div>
-                    </TabsContent>
-                    <TabsContent value="settings">
-                        <div className="flex w-full gap-11 justify-between">
-                            <SettingsTab data={integration} environment={environmentAndAccount?.environment} />
-                            <IntegrationSideInfo integration={integration.integration} provider={integration.template} />
-                        </div>
-                    </TabsContent>
-                </Tabs>
-            </div>
+            <Tabs
+                value={activeTab}
+                onValueChange={(value) => {
+                    if (value === 'playground') {
+                        openPlaygroundWithContext({ source: 'integration', integration: integration.integration.unique_key });
+                    } else {
+                        setActiveTab(value);
+                    }
+                }}
+                className="gap-4"
+            >
+                <TabsList className="gap-3">
+                    <TabsTrigger value="functions" className={integrationTabClassName}>
+                        Functions
+                    </TabsTrigger>
+                    <TabsTrigger value="settings" className={integrationTabClassName}>
+                        Settings
+                    </TabsTrigger>
+                    <TabsTrigger value="setup-guide" disabled asChild>
+                        <Link to={integration.template.docs} target="_blank" className={integrationLinkTabClassName}>
+                            API setup guide <ExternalLink className="size-3.5" />
+                        </Link>
+                    </TabsTrigger>
+                    <TabsTrigger value="logs" disabled asChild>
+                        <Link to={`/${env}/logs?integrations=${integration.integration.unique_key}`} className={integrationLinkTabClassName}>
+                            Logs <ExternalLink className="size-3.5" />
+                        </Link>
+                    </TabsTrigger>
+                    <TabsTrigger value="connections" disabled asChild>
+                        <Link to={`/${env}/connections?integrations=${integration.integration.unique_key}`} className={integrationLinkTabClassName}>
+                            Connections <ExternalLink className="size-3.5" />
+                        </Link>
+                    </TabsTrigger>
+                    <TabsTrigger value="playground" className={integrationTabClassName}>
+                        Playground <ExternalLink className="size-3.5" />
+                    </TabsTrigger>
+                </TabsList>
+                <TabsContent value="functions">
+                    <FunctionsTab integration={integration.integration} />
+                </TabsContent>
+                <TabsContent value="settings">
+                    <SettingsTab data={integration} environment={environmentAndAccount.environment} />
+                </TabsContent>
+            </Tabs>
         </DashboardLayout>
     );
 };
