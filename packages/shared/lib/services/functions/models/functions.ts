@@ -220,10 +220,9 @@ export async function search(
             query.where('config.enabled', filter.enabled);
         }
         if (filter?.trigger) {
-            query.whereRaw("version.trigger->>'kind' = ?", [filter.trigger.kind]);
             switch (filter.trigger.kind) {
                 case 'http': {
-                    // TODO: index subscriptions array length for performance
+                    query.whereRaw("version.trigger->>'kind' = 'http'");
                     const subscriptionCount = `CASE
                         WHEN jsonb_typeof(version.trigger->'subscriptions') = 'array'
                         THEN jsonb_array_length(version.trigger->'subscriptions')
@@ -233,6 +232,7 @@ export async function search(
                     break;
                 }
                 case 'event':
+                    query.whereRaw("version.trigger->>'kind' = 'event'");
                     query.whereRaw("version.trigger->'events' @> ?::jsonb", [JSON.stringify([filter.trigger.event])]);
                     break;
             }
