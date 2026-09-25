@@ -10,7 +10,10 @@ const user = { id: 3 } as DBUser;
 
 type Capture = (payload: { event: string; distinctId: string; properties: Record<string, unknown>; groups?: Record<string, string> }) => void;
 
+type GroupIdentify = (payload: { groupType: string; groupKey: string; properties: Record<string, unknown> }) => void;
+
 const capture = vi.fn<Capture>();
+const groupIdentify = vi.fn<GroupIdentify>();
 const realClient = productTracking.client;
 
 function lastCapture() {
@@ -19,7 +22,8 @@ function lastCapture() {
 
 beforeEach(() => {
     capture.mockClear();
-    productTracking.client = { capture } as unknown as typeof productTracking.client;
+    groupIdentify.mockClear();
+    productTracking.client = { capture, groupIdentify } as unknown as typeof productTracking.client;
 });
 
 afterEach(() => {
@@ -62,8 +66,8 @@ describe('track', () => {
         expect(lastCapture().properties).not.toHaveProperty('is_production');
     });
 
-    it('sends no personal data', () => {
-        productTracking.track({ name: 'account:billing:downgraded', team, environment, user });
+    it('sends no personal data on the event', () => {
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 43, name: 'Acme' }, environment, user });
 
         const properties = lastCapture().properties;
         for (const forbidden of ['$set', 'email', 'name', 'team-name', 'team_name', 'account_name']) {
@@ -75,6 +79,23 @@ describe('track', () => {
         productTracking.track({ name: 'account:billing:downgraded' });
 
         expect(capture).not.toHaveBeenCalled();
+    });
+
+    it('names the account group once, and again only when the name changes', () => {
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 44, name: 'Acme' } });
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 44, name: 'Acme' } });
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 44, name: 'Acme Inc' } });
+
+        expect(groupIdentify.mock.calls.map(([payload]) => payload)).toStrictEqual([
+            { groupType: 'company', groupKey: '44', properties: { name: 'Acme' } },
+            { groupType: 'company', groupKey: '44', properties: { name: 'Acme Inc' } }
+        ]);
+    });
+
+    it('leaves the account group alone when the name is unknown', () => {
+        productTracking.track({ name: 'account:billing:downgraded', team });
+
+        expect(groupIdentify).not.toHaveBeenCalled();
     });
 });
 
