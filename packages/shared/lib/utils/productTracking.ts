@@ -107,7 +107,7 @@ function groupsFor({ team }: TrackingContext): Record<string, string> {
 class ProductTracking {
     client: PostHog | undefined;
     // Each groupIdentify sends its own $groupidentify event. Send one per account name, not one per capture.
-    private identifiedAccountNames = new FixedSizeMap<number, string>(10_000);
+    readonly identifiedAccountNames = new FixedSizeMap<number, string>(10_000);
 
     constructor() {
         const key = process.env['PUBLIC_POSTHOG_KEY'];

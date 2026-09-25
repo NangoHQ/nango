@@ -23,6 +23,7 @@ function lastCapture() {
 beforeEach(() => {
     capture.mockClear();
     groupIdentify.mockClear();
+    productTracking.identifiedAccountNames.clear();
     productTracking.client = { capture, groupIdentify } as unknown as typeof productTracking.client;
 });
 
