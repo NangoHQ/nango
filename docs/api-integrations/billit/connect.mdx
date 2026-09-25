@@ -29,8 +29,12 @@ Create a [sandbox account](https://my.sandbox.billit.be/Account/Register) for te
 ### Step 2: Get your API key
 
 1. Sign in to [Billit Sandbox](https://my.sandbox.billit.be) or [Billit Production](https://my.billit.be), matching the environment selected above.
-2. Open **My Profile**, then **Users & API Key**.
+2. Open **My profile** using the profile icon in the top-right corner, then find the **API** section.
 3. Copy the API key for a user with access to the master account.
+
+<img src="/api-integrations/billit/api-key.png" alt="Billit My profile page showing the masked API key in the API section" style={{maxWidth: "700px" }} />
+
+The screenshot above is from Billit's [Access Point authentication guide](https://docs.accesspoint.billit.eu/docs/authentication).
 
 Keep the API key secret. If it is exposed, renew it in Billit and update the Nango connection.
 
@@ -40,7 +44,9 @@ Keep the API key secret. If it is exposed, renew it in Billit and update the Nan
 2. Open **My company**.
 3. Copy the number between `/Manage/` and `/CompanyEdit` in the browser address bar. For example, in `https://my.sandbox.billit.be/Manage/123456/CompanyEdit`, the Party ID is `123456`. Use your own account's value, not this example.
 
-This is the master account's Registration ID, sent as the **Party ID** in API request headers. See Billit's [Party ID guide](https://docs.billit.be/docs/partyid-and-key) for a screenshot of its location.
+<img src="/api-integrations/billit/party-id.png" alt="Billit My company page with the Party ID highlighted in the browser address bar" style={{maxWidth: "700px" }} />
+
+This is the master account's Registration ID, sent as the **Party ID** in API request headers. The screenshot above is from Billit's [Party ID guide](https://docs.billit.be/docs/partyid-and-key).
 
 <Warning>
 Use the master account Registration ID, not the Registration ID of an entity or subaccount referenced in an API path. Billit requires the master account Party ID for every production API call and for KYC identification calls in both environments.

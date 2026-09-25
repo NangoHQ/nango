@@ -3727,6 +3727,7 @@ billit:
             type: string
             title: API Key
             description: The API key for a user with access to your Billit master account.
+            example: 'abcd1234********'
             doc_section: '#step-2-get-your-api-key'
 
 bing-webmasters:
