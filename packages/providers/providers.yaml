@@ -767,6 +767,9 @@ affinity:
                 - 'x-ratelimit-limit-user'
                 - 'x-ratelimit-limit-org-reset'
     webhook_routing_script: affinityWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
+        - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/affinity
     docs_connect: https://nango.dev/docs/integrations/all/affinity/connect
     credentials:
@@ -3478,6 +3481,72 @@ beehiiv:
             example: pub_a3d1b49e-2a5d-4f4b-97c8-8f32e1d2f7b9
             pattern: '^(pub_[0-9a-fA-F\-]+)$'
 
+beeline-vms:
+    display_name: Beeline VMS
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://integrations.${connectionConfig.authHost}.beeline.com/oauth/token
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_params:
+        grant_type: client_credentials
+        audience: ${connectionConfig.audience}
+    proxy:
+        base_url: ${connectionConfig.audience}
+        headers:
+            accept: application/json
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+            remaining: 'x-rate-limit-remaining'
+    docs: https://nango.dev/docs/api-integrations/beeline-vms
+    docs_connect: https://nango.dev/docs/api-integrations/beeline-vms/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Client ID issued by your Beeline Customer Operations Manager (COM).
+            order: 1
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Client Secret issued alongside your Client ID.
+            secret: true
+            order: 2
+    connection_config:
+        authHost:
+            type: string
+            title: Authorization Server Region
+            description: The region your Beeline credentials were issued for.
+            enum:
+                - auth
+                - eu-auth
+            doc_section: '#step-2-choosing-your-region-and-audience'
+            order: 1
+        audience:
+            type: string
+            title: Audience
+            description: The audience Beeline granted your Client ID for.
+            enum:
+                - https://client.beeline.com/api
+                - https://client-eu.beeline.com/api
+                - https://edge.beeline.com/client-onboarding
+                - https://edge-eu.beeline.com/client-onboarding
+                - https://edge.beeline.com/worker
+                - https://edge-eu.beeline.com/worker
+                - https://edge-eu.beeline.com/reporting
+            doc_section: '#step-2-choosing-your-region-and-audience'
+            order: 2
+        clientSiteId:
+            type: string
+            title: Client Site ID
+            description: Issued alongside your Client credentials.
+            doc_section: '#step-1-getting-your-credentials-from-beeline'
+            order: 3
+
 bettercontact:
     display_name: BetterContact
     categories:
@@ -5191,6 +5260,38 @@ clay:
             example: 7de4ba****e439d39****
             pattern: '^[a-f0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
+
+clay-mcp:
+    display_name: Clay (MCP)
+    categories:
+        - crm
+        - marketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://app.clay.com/oauth/authorize
+    token_url: https://api.clay.com/oauth/token
+    registration_url: https://api.clay.com/oauth/register
+    default_scopes:
+        - mcp
+    authorization_params:
+        response_type: code
+        resource: https://api.clay.com/v3/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.clay.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/clay-mcp
 
 cleverreach:
     display_name: CleverReach
@@ -8153,6 +8254,34 @@ everflow:
             description: The API key for your Everflow account.
             doc_section: '#step-1-generate-your-api-key'
 
+eway-crm:
+    display_name: eWay-CRM
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.serviceUrl}/auth/connect/authorize
+    token_url: https://${connectionConfig.serviceUrl}/auth/connect/token
+    scope_separator: ' '
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://${connectionConfig.serviceUrl}/API.svc
+    docs: https://nango.dev/docs/api-integrations/eway-crm
+    docs_connect: https://nango.dev/docs/api-integrations/eway-crm/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/eway-crm/how-to-register-your-own-eway-crm-api-oauth-app
+    connection_config:
+        serviceUrl:
+            type: string
+            title: Service URL
+            description: Your eWay-CRM Web Service address.
+            prefix: https://
+            example: free.eway-crm.com/31994
+            doc_section: '#step-1-finding-your-web-service-address'
+
 etsy:
     display_name: Etsy
     categories:
@@ -8894,6 +9023,8 @@ fillout-api-key:
             endpoints:
                 - /v1/api/forms
     webhook_routing_script: filloutWebhookRouting
+    webhook_allowed_query_params:
+        - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/fillout-api-key
     docs_connect: https://nango.dev/docs/integrations/all/fillout-api-key/connect
     connection_config:
@@ -8926,6 +9057,8 @@ fillout:
     token_response_metadata:
         - base_url
     webhook_routing_script: filloutWebhookRouting
+    webhook_allowed_query_params:
+        - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/fillout
     connection_config:
         base_url:
@@ -11221,6 +11354,9 @@ halo-psa:
         - support
         - ticketing
     auth_mode: OAUTH2_CC
+    webhook_routing_script: haloPsaWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     token_url: https://${connectionConfig.hostname}/auth/token
     token_request_auth_method: basic
     scope_separator: ' '
@@ -12798,6 +12934,28 @@ jobber:
             description: ''
             automated: true
 
+jobnimbus:
+    display_name: JobNimbus
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://app.jobnimbus.com/
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api1/contacts
+    docs: https://nango.dev/docs/api-integrations/jobnimbus
+    docs_connect: https://nango.dev/docs/api-integrations/jobnimbus/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your JobNimbus API Key.
+            doc_section: '#step-1-generate-your-api-key'
+
 jobvite:
     display_name: Jobvite
     categories:
@@ -14281,6 +14439,30 @@ mailchimp:
             pattern: '^[a-z]+\d*$'
             example: us6
             automated: true
+
+mailerlite:
+    display_name: MailerLite
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://connect.mailerlite.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /groups?limit=1
+    docs: https://nango.dev/docs/api-integrations/mailerlite
+    docs_connect: https://nango.dev/docs/api-integrations/mailerlite/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your MailerLite API token.
+            example: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.****************.**********
+            pattern: '^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generate-your-mailerlite-api-token'
 
 mailjet:
     display_name: Mailjet
@@ -18881,7 +19063,7 @@ pleo-api-key:
             title: API Key
             description: Your Pleo Standalone API Key.
             example: pls_********************************_620d75
-            pattern: '^pls_[a-f0-9]+_[a-f0-9]+$'
+            pattern: '^pl[sp]_[a-f0-9]+_[a-f0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
 podium:
@@ -18967,6 +19149,36 @@ posthog:
             pattern: '^phx_[A-Za-z0-9]+$'
             example: phx_1PPf***************************k3D
             doc_section: '#step-2-finding-your-api-key'
+
+posthog-capture:
+    display_name: PostHog (Capture API)
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        body:
+            api_key: ${apiKey}
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/posthog-capture
+    docs_connect: https://nango.dev/docs/api-integrations/posthog-capture/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname your PostHog capture API requests are sent to.
+            format: hostname
+            prefix: https://
+            example: us.i.posthog.com
+            order: 1
+            doc_section: '#step-1-finding-your-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: Project Token
+            description: Your PostHog project token, used to send events via the capture API.
+            pattern: '^phc_[A-Za-z0-9]+$'
+            example: phc_1PPf***************************k3D
+            doc_section: '#step-2-finding-your-project-token'
 
 posthog-oauth:
     display_name: PostHog (OAuth)
@@ -22627,6 +22839,8 @@ shipstation:
             endpoints:
                 - /users
     webhook_routing_script: shipstationWebhookRouting
+    webhook_allowed_query_params:
+        - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/shipstation
     docs_connect: https://nango.dev/docs/integrations/all/shipstation/connect
     credentials:
@@ -22664,6 +22878,8 @@ shipstation-v2:
             endpoints:
                 - /v2/users?page_size=1
     webhook_routing_script: shipstationWebhookRouting
+    webhook_allowed_query_params:
+        - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/shipstation-v2
     docs_connect: https://nango.dev/docs/integrations/all/shipstation-v2/connect
     credentials:
@@ -23055,6 +23271,49 @@ shortcut:
             type: string
             title: API Key
             description: The API key for your Shortcut account
+
+simpplr:
+    display_name: Simpplr
+    categories:
+        - knowledge-base
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://platform.${connectionConfig.region}.simpplr.com/v1/identity/oauth/token
+    body_format: json
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://platform.${connectionConfig.region}.simpplr.com
+    docs: https://nango.dev/docs/api-integrations/simpplr
+    docs_connect: https://nango.dev/docs/api-integrations/simpplr/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The region your Simpplr tenant is hosted in. Choose app for the United States.
+            enum:
+                - app
+                - eu
+                - au
+                - ca
+            order: 1
+            doc_section: '#step-2-find-your-region'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID of your Simpplr client application.
+            pattern: '^\S+$'
+            example: 7f3a91c2****************************e85b
+            doc_section: '#step-1-create-a-client-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret of your Simpplr client application.
+            pattern: '^\S+$'
+            example: b41d7e60********************************************9af2
+            secret: true
+            doc_section: '#step-1-create-a-client-application'
 
 simpro:
     display_name: Simpro
@@ -23805,6 +24064,8 @@ streak:
                 content-type: application/json
                 accept: application/json
     webhook_routing_script: streakWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/streak
     docs_connect: https://nango.dev/docs/api-integrations/streak/connect
     credentials:
@@ -24178,6 +24439,40 @@ swoogo:
             description: Your Swoogo API secret.
             secret: true
             doc_section: '#step-1-generate-your-api-credentials'
+
+symplr-ctm:
+    display_name: symplr CTM (ClearConnect)
+    categories:
+        - hr
+        - ats
+    auth_mode: BASIC
+    proxy:
+        base_url: https://ctms.contingenttalentmanagement.com/${connectionConfig.siteName}/clearConnect
+        verification:
+            method: GET
+            endpoints:
+                - /2_0/index.cfm?action=getRegions&resultType=json
+    docs: https://nango.dev/docs/api-integrations/symplr-ctm
+    docs_connect: https://nango.dev/docs/api-integrations/symplr-ctm/connect
+    connection_config:
+        siteName:
+            type: string
+            title: Site Name
+            description: Your CTM customer site name.
+            order: 1
+            example: myCTM
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your ClearConnect API username.
+            doc_section: '#step-1-locate-your-clearconnect-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your ClearConnect API password.
+            secret: true
+            doc_section: '#step-1-locate-your-clearconnect-credentials'
 
 syncore:
     display_name: Syncore
@@ -24758,6 +25053,32 @@ terraform:
             doc_section: '#step-1-generating-your-api-token'
             example: VbQo****************************
             pattern: '^[a-zA-Z0-9.]{50,}$'
+
+textus:
+    display_name: TextUs
+    categories:
+        - communication
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://next.textus.com
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/vnd.textus+jsonld
+            content-type: application/vnd.textus+jsonld
+        verification:
+            method: GET
+            endpoints:
+                - /accounts
+    docs: https://nango.dev/docs/api-integrations/textus
+    docs_connect: https://nango.dev/docs/api-integrations/textus/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your TextUs API Token.
+            example: eyJhbGciOi***.eyJzdWIiOi***.***************************
+            doc_section: '#step-1-generate-an-api-token'
 
 ticktick:
     display_name: TickTick
@@ -26012,6 +26333,56 @@ ukg-pro-wfm:
             description: The tenant name of your UKG Pro instance
             example: wfm
             doc_section: '#step-1-finding-your-tenant-url-and-tenant-name'
+
+ukg-pro-wfm-cc:
+    display_name: UKG Pro (Workforce Management Client Credentials)
+    categories:
+        - hr
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://welcome-us.ukg.net/oauth/token
+    token_headers:
+        content-type: application/json
+    token_params:
+        grant_type: client_credentials
+        audience: https://wfm.ukg.net/api
+        organization: ${connectionConfig.organization}
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/ukg-pro-wfm-cc
+    docs_connect: https://nango.dev/docs/api-integrations/ukg-pro-wfm-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Client ID for a client configured for the client credentials flow.
+            doc_section: '#step-1-finding-your-client-id-and-client-secret'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Client Secret for that client.
+            secret: true
+            doc_section: '#step-1-finding-your-client-id-and-client-secret'
+    connection_config:
+        organization:
+            type: string
+            title: Organization
+            description: The organization ID specific to your tenant.
+            doc_section: '#step-2-finding-your-organization-id'
+            order: 2
+        hostname:
+            type: string
+            title: Tenant URL
+            description: The tenant URL of your UKG Pro instance.
+            format: hostname
+            example: wfm.us1.ukg.com
+            suffix: /api
+            prefix: https://
+            doc_section: '#step-3-finding-your-tenant-url'
+            order: 1
 
 ukg-pro-wfm-ropc:
     display_name: UKG Pro (Workforce Management ROPC)

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as z from 'zod';
 
-import { parseAction, parseFunction, parseSync } from './definitions.js';
+import { parseAction, parseFunction, parseSync, validateFunction } from './definitions.js';
 
 const syncParams = {
     type: 'sync' as const,
@@ -223,5 +223,29 @@ describe('parseFunction', () => {
         expect(fn.json_schema.definitions).toHaveProperty('GithubIssue');
         expect(fn.json_schema.definitions).toHaveProperty('FunctionMetadata_github_fetchIssues');
         expect(fn.json_schema.definitions).toHaveProperty('FunctionCheckpoint_github_fetchIssues');
+    });
+});
+
+describe('validateFunction trigger input', () => {
+    const base = { integrationId: 'github', basename: 'onConnection' };
+
+    it('accepts multiple distinct lifecycle events', () => {
+        const result = validateFunction({ ...base, params: { trigger: { kind: 'event', events: ['post-connection-creation', 'pre-connection-deletion'] } } });
+        expect(result.isOk()).toBe(true);
+    });
+
+    it.each([
+        { reason: 'empty', events: [] },
+        { reason: 'duplicate', events: ['post-connection-creation', 'post-connection-creation'] },
+        { reason: 'unknown', events: ['unknown'] }
+    ])('rejects invalid lifecycle events: $reason', ({ events }) => {
+        const result = validateFunction({ ...base, params: { trigger: { kind: 'event', events } as never } });
+        expect(result.isErr()).toBe(true);
+    });
+
+    it.each(['schedule', 'event'] as const)('rejects input on a %s trigger', (kind) => {
+        const trigger = kind === 'schedule' ? { kind, frequency: 'every hour' } : { kind, events: ['validate-connection'] as ['validate-connection'] };
+        const result = validateFunction({ ...base, params: { trigger, input: z.string() } });
+        expect(result.isErr()).toBe(true);
     });
 });

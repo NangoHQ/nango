@@ -2,7 +2,7 @@ import { Readable } from 'node:stream';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { NangoError } from '@nangohq/shared';
+import { NangoError, productTracking, withProductTrackingContext } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import proxyService, { ProxyServiceError } from '../../../../services/proxy.service.js';
@@ -40,7 +40,7 @@ function context(): AgentSessionMcpContext {
         accountId: 1,
         resolvedConnections: CONNECTIONS,
         compiledToolset: TOOLSET,
-        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: true },
+        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: true, nangoCreateConnection: { enabled: false, tags: {} } },
         expiresAt: new Date(),
         endedAt: null,
         endedReason: null,
@@ -57,9 +57,9 @@ function context(): AgentSessionMcpContext {
     };
 }
 
-function jsonResponse(body: unknown, status = 200): ProxyServiceResponse {
+function jsonResponse(body: unknown, status = 200, outcome: ProxyServiceResponse['outcome'] = 'success'): ProxyServiceResponse {
     return {
-        outcome: 'success',
+        outcome,
         status,
         headers: { 'content-type': 'application/json' },
         body: Readable.from([Buffer.from(JSON.stringify(body))]),
@@ -152,7 +152,7 @@ describe('proxyTool', () => {
         const result = await callProxy({ integration: 'slack', method: 'GET', path: '/api/auth.test' });
 
         expect(errorOf(result).message).toBe(
-            "Integration 'slack' has no connection in this session, so no request to it can be authenticated. Tell the user they need to connect it."
+            "Integration 'slack' has no connection in this session, so no request to it can be authenticated. Tell the user they need to connect it, and carry on with the tools you do have."
         );
         expect(codeOf(result)).toBe('integration_not_connected');
         expect(request).not.toHaveBeenCalled();
@@ -269,7 +269,86 @@ describe('proxyTool', () => {
     });
 
     it('is enabled only when the session turned the meta tool on', () => {
-        expect(proxyTool.isEnabled({ nangoToolSearch: true, nangoExecute: true, nangoProxy: true })).toBe(true);
-        expect(proxyTool.isEnabled({ nangoToolSearch: true, nangoExecute: true, nangoProxy: false })).toBe(false);
+        expect(proxyTool.isEnabled({ nangoToolSearch: true, nangoExecute: true, nangoProxy: true, nangoCreateConnection: { enabled: false, tags: {} } })).toBe(
+            true
+        );
+        expect(proxyTool.isEnabled({ nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } })).toBe(
+            false
+        );
+    });
+});
+
+describe('proxyTool analytics', () => {
+    const capture = vi.fn();
+    const realClient = productTracking.client;
+
+    beforeEach(() => {
+        capture.mockClear();
+        productTracking.client = { capture } as unknown as typeof productTracking.client;
+        vi.spyOn(egressTelemetryRecorder, 'record').mockImplementation(vi.fn());
+    });
+
+    afterEach(() => {
+        productTracking.client = realClient;
+        vi.restoreAllMocks();
+    });
+
+    // The account comes from the tracking context middleware, which is what a request enters.
+    async function callProxyInRequest(args: Record<string, unknown>) {
+        return await withProductTrackingContext(
+            () => ({ team: { id: 42, name: 'Acme' } as DBTeam }),
+            async () => await callProxy(args)
+        );
+    }
+
+    function onlyEvent() {
+        expect(capture).toHaveBeenCalledTimes(1);
+        return capture.mock.calls[0]![0] as { event: string; properties: Record<string, unknown> };
+    }
+
+    it('records a completed request', async () => {
+        vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse({ ok: true })) });
+
+        await callProxyInRequest({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
+
+        const { event, properties } = onlyEvent();
+        expect(event).toBe('agents:proxy_request_complete');
+        expect(properties).toMatchObject({
+            agent_session_id: 'session-1',
+            integration_id: 'notion',
+            provider: 'notion',
+            http_method: 'GET',
+            http_status: 200
+        });
+    });
+
+    // A provider 4xx or 5xx is returned to the agent as a result, so only the outcome says it failed.
+    it('records a provider error as a failed request', async () => {
+        vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(jsonResponse({ error: 'slow down' }, 429, 'upstream_error')) });
+
+        await callProxyInRequest({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
+
+        expect(onlyEvent().properties).toMatchObject({ http_status: 429, error_code: 'upstream_error' });
+    });
+
+    // A failure before the provider answered carries Nango's status, so reporting it would read as the provider's.
+    it('records a request that never reached the provider without a status', async () => {
+        vi.spyOn(proxyService, 'request').mockResolvedValue({
+            result: Err(new ProxyServiceError({ code: 'proxy_request_failed', message: 'nope', status: 400, providerCode: 'bad_gateway' }))
+        });
+
+        await callProxyInRequest({ integration: 'notion', method: 'GET', path: '/v1/pages/1' });
+
+        const { properties } = onlyEvent();
+        expect(properties).not.toHaveProperty('http_status');
+        expect(properties).toMatchObject({ error_code: 'proxy_request_failed', provider_error_code: 'bad_gateway' });
+    });
+
+    it('records a request the session rejected before it was made', async () => {
+        await callProxyInRequest({ integration: 'slack', method: 'GET', path: '/api/conversations.list' });
+
+        const { properties } = onlyEvent();
+        expect(properties).not.toHaveProperty('http_status');
+        expect(properties).toMatchObject({ integration_id: 'slack', error_code: 'integration_not_connected' });
     });
 });

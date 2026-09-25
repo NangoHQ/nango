@@ -1,10 +1,10 @@
 import { Prism } from '@mantine/prism';
+import { useQueryClient } from '@tanstack/react-query';
 import { HelpCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam } from 'react-use';
-import { useSWRConfig } from 'swr';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 import Nango, { AuthError } from '@nangohq/frontend';
@@ -15,6 +15,7 @@ import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
+import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { useStore } from '../../store';
 import { track } from '../../utils/analytics';
 import { useGetHmacAPI } from '../../utils/api';
@@ -24,8 +25,9 @@ import { globalEnv } from '../../utils/env';
 import type { ApiIntegrationList, AuthModeType } from '@nangohq/types';
 
 export const ConnectionCreateLegacy: React.FC = () => {
-    const { mutate } = useSWRConfig();
+    const queryClient = useQueryClient();
     const env = useStore((state) => state.env);
+    const darkMode = useThemeStore(darkModeSelector);
 
     const { data: integrationsData } = useListIntegrations(env);
     const integrations = integrationsData?.data;
@@ -248,7 +250,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
             .then(() => {
                 toast({ variant: 'success', title: 'Connection created!' });
                 track('web:connection_created:legacy', { provider: integration?.provider || 'unknown' });
-                void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connections'), undefined);
+                void queryClient.invalidateQueries({ queryKey: ['connections'] });
                 navigate(`/${env}/connections`, { replace: true });
             })
             .catch((err: unknown) => {
@@ -1129,7 +1131,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </div>
                                 <div>
                                     <div className="mt-6">
-                                        <Prism className="transparent-code" language="typescript" colorScheme="dark">
+                                        <Prism className="transparent-code" language="typescript" colorScheme={darkMode ? 'dark' : 'light'}>
                                             {snippet()}
                                         </Prism>
                                     </div>

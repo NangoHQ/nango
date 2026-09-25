@@ -1,6 +1,7 @@
 import db from '@nangohq/database';
 import { connectionService } from '@nangohq/shared';
 
+import { deleteFunctionInstancesData } from './deleteFunctionInstancesData.js';
 import { deleteSyncs } from './deleteSyncs.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
@@ -10,6 +11,8 @@ import type { DBConnection, DBSyncConfig } from '@nangohq/types';
 export async function deleteConnectionData(connection: DBConnection, opts: BatchDeleteSharedOptions) {
     const { logger } = opts;
     logger.info('Deleting connection...', { connectionId: connection.id, externalConnectionId: connection.connection_id });
+
+    await deleteFunctionInstancesData({ environmentId: connection.environment_id, filter: { connectionIds: [connection.id] } }, opts);
 
     const resSyncs = await db.knex
         .select<
@@ -23,7 +26,13 @@ export async function deleteConnectionData(connection: DBConnection, opts: Batch
         .where({ nango_connection_id: connection.id });
 
     await deleteSyncs(
-        resSyncs.map((res) => ({ id: res.sync.id, nangoConnectionId: connection.id, environmentId: connection.environment_id, models: res.syncConfig.models })),
+        resSyncs.map((res) => ({
+            id: res.sync.id,
+            nangoConnectionId: connection.id,
+            environmentId: connection.environment_id,
+            models: res.syncConfig.models,
+            variant: res.sync.variant
+        })),
         opts
     );
 

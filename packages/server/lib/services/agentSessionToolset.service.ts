@@ -5,7 +5,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { providerConfigKeySchema, scriptNameSchema } from '../helpers/validation.js';
 
-import type { IntegrationFunctionCatalogRow } from '@nangohq/shared';
+import type { IntegrationFunctionRow } from '@nangohq/shared';
 import type {
     AgentSessionCompiledIntegration,
     AgentSessionCompiledTool,
@@ -67,8 +67,9 @@ export class AgentSessionToolsetCompilationError extends Error {
 }
 
 /**
- * Evaluates a toolset policy against what the environment actually has deployed and produces
- * the pinned and searchable tool lists the session serves for the rest of its life.
+ * Evaluates a toolset policy against the functions available on each integration
+ * (deployed rows plus catalog actions) and produces the pinned and searchable
+ * tool lists the session serves for the rest of its life.
  *
  * An omitted toolset means every integration the tenant resolved a connection for. An explicit
  * `'*'` means every integration in the environment, connected or not, which is the difference
@@ -86,29 +87,29 @@ export async function compileToolset({
     connectedIntegrations: string[];
 }): Promise<Result<AgentSessionCompiledToolset, AgentSessionToolsetCompilationError>> {
     const named = namedIntegrations({ toolset, pinnedTools, connectedIntegrations });
-    const catalog = await legacyFunctionService.findIntegrationFunctionCatalog({ environmentId, providerConfigKeys: named });
+    const functions = await legacyFunctionService.findIntegrationFunctions({ environmentId, providerConfigKeys: named });
 
-    return compileToolsetFromCatalog({ toolset, pinnedTools, connectedIntegrations, catalog });
+    return compileToolsetFromFunctions({ toolset, pinnedTools, connectedIntegrations, functions });
 }
 
 /**
- * Works out which integrations the policy covers, rejects every name in it the catalog cannot
- * back, filters each integration's actions through its allow and deny lists, and splits what
+ * Works out which integrations the policy covers, rejects every name in it the functions
+ * list cannot back, filters each integration's actions through its allow and deny lists, and splits what
  * survives into pinned and searchable. Any rejection fails the whole compilation, so a session
  * is either fully valid or not created at all.
  */
-export function compileToolsetFromCatalog({
+export function compileToolsetFromFunctions({
     toolset,
     pinnedTools,
     connectedIntegrations,
-    catalog
+    functions
 }: {
     toolset: AgentSessionToolsetPolicy | undefined;
     pinnedTools: AgentSessionPinnedTools | undefined;
     connectedIntegrations: string[];
-    catalog: IntegrationFunctionCatalogRow[];
+    functions: IntegrationFunctionRow[];
 }): Result<AgentSessionCompiledToolset, AgentSessionToolsetCompilationError> {
-    const integrations = groupCatalogByIntegration(catalog);
+    const integrations = groupFunctionsByIntegration(functions);
 
     // Step 1. Resolve which integrations the policy covers.
     const policies = resolvePolicies({ toolset, connectedIntegrations, integrations });
@@ -131,7 +132,7 @@ export function compileToolsetFromCatalog({
         }
     }
 
-    // Step 3. Reject any name the catalog cannot back.
+    // Step 3. Reject any name the integration does not have.
     const referenced = referencedTools({ policies: policies.value, pinned });
     const rejected = rejectUnusableReferences({ referenced, integrations });
     if (rejected) {
@@ -171,7 +172,7 @@ export function compileToolsetFromCatalog({
     return Ok(Object.fromEntries(compiled));
 }
 
-interface CatalogIntegration {
+interface IntegrationFunctions {
     provider: string;
     actions: { name: string; description: string }[];
     functionTypesByName: Map<string, string>;
@@ -213,7 +214,7 @@ function resolvePolicies({
 }: {
     toolset: AgentSessionToolsetPolicy | undefined;
     connectedIntegrations: string[];
-    integrations: Map<string, CatalogIntegration>;
+    integrations: Map<string, IntegrationFunctions>;
 }): Result<Map<string, AgentSessionIntegrationPolicy>, AgentSessionToolsetCompilationError> {
     const allTools: AgentSessionIntegrationPolicy = { allow: ALLOW_ALL, deny: [] };
 
@@ -251,7 +252,7 @@ function referencedTools({ policies, pinned }: { policies: Map<string, AgentSess
 }
 
 /**
- * Classifies every named reference against the catalog and returns the error to fail on, or null
+ * Classifies every named reference against the available functions and returns the error to fail on, or null
  * when all of them are usable.
  *
  * A name that is deployed but is not an action is reported ahead of one that does not exist at
@@ -263,7 +264,7 @@ function rejectUnusableReferences({
     integrations
 }: {
     referenced: ToolReference[];
-    integrations: Map<string, CatalogIntegration>;
+    integrations: Map<string, IntegrationFunctions>;
 }): AgentSessionToolsetCompilationError | null {
     const unknown: ToolReference[] = [];
     const unsupported: { integrationId: string; name: string; type: string }[] = [];
@@ -301,10 +302,10 @@ function isAllowed(name: string, policy: AgentSessionIntegrationPolicy): boolean
     return policy.allow === ALLOW_ALL || policy.allow.includes(name);
 }
 
-function groupCatalogByIntegration(catalog: IntegrationFunctionCatalogRow[]): Map<string, CatalogIntegration> {
-    const integrations = new Map<string, CatalogIntegration>();
+function groupFunctionsByIntegration(functions: IntegrationFunctionRow[]): Map<string, IntegrationFunctions> {
+    const integrations = new Map<string, IntegrationFunctions>();
 
-    for (const row of catalog) {
+    for (const row of functions) {
         let integration = integrations.get(row.integration_id);
         if (!integration) {
             integration = { provider: row.provider, actions: [], functionTypesByName: new Map() };

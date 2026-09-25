@@ -1,4 +1,4 @@
-import { apiFetch } from '@/utils/api';
+import { APIError, apiFetch } from '@/utils/api';
 
 import type { InputField } from './types';
 import type { GetOperation, SearchOperations } from '@nangohq/types';
@@ -118,6 +118,10 @@ export async function fetchOperation(operationId: string, env: string, signal?: 
         method: 'GET',
         signal
     });
+    // Returning null here would hide an expired session from the query client's 401 handler.
+    if (res.status === 401) {
+        throw new APIError({ res, json: (await res.json()) as Record<string, unknown> });
+    }
     if (!res.ok) return null;
     const json = (await res.json()) as GetOperation['Success'];
     return json.data;

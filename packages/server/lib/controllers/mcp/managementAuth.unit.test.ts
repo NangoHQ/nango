@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getManagementOAuthProtectedResourceMetadata, managementMcpAuth } from './managementAuth.js';
+import { envs } from '../../env.js';
+import { getManagementOAuthProtectedResourceMetadata, getOpenAIAppsChallenge, managementMcpAuth } from './managementAuth.js';
 
 import type { RequestLocals } from '../../utils/express.js';
 import type * as Utils from '@nangohq/utils';
@@ -50,6 +51,7 @@ vi.mock('../../oauth/server.js', () => ({
 const user = { id: 7, account_id: 42, email: 'user@example.com', suspended: false };
 const account = { id: 42, uuid: 'account-uuid', name: 'Test account' };
 const plan = { id: 3, account_id: 42, has_rbac: true };
+const originalOpenAIAppsChallengeToken = envs.NANGO_OPENAI_APPS_CHALLENGE_TOKEN;
 const validAccessToken = {
     aud: 'https://mcp.nango.dev/mcp',
     accountId: '7',
@@ -68,8 +70,13 @@ function validGrant(overrides: Record<string, unknown> = {}) {
 }
 
 describe('Management MCP OAuth authentication', () => {
+    afterAll(() => {
+        envs.NANGO_OPENAI_APPS_CHALLENGE_TOKEN = originalOpenAIAppsChallengeToken;
+    });
+
     beforeEach(() => {
         vi.clearAllMocks();
+        envs.NANGO_OPENAI_APPS_CHALLENGE_TOKEN = undefined;
         accessTokenFindMock.mockResolvedValue(validAccessToken);
         grantFindMock.mockResolvedValue(validGrant());
         clientFindMock.mockResolvedValue({ clientId: 'https://client.example.com/metadata.json' });
@@ -77,6 +84,28 @@ describe('Management MCP OAuth authentication', () => {
         accountGetMock.mockResolvedValue(account);
         getPlanMock.mockResolvedValue({ isErr: () => false, value: plan });
         apiKeyAuthenticateMock.mockResolvedValue({ isOk: () => false });
+    });
+
+    it('serves the configured OpenAI Apps challenge as plain text', () => {
+        envs.NANGO_OPENAI_APPS_CHALLENGE_TOKEN = 'challenge-token';
+        const { res, headers, status, type, send } = response();
+
+        void getOpenAIAppsChallenge({} as Request, res, vi.fn());
+
+        expect(headers.get('Cache-Control')).toBe('no-store');
+        expect(status).toHaveBeenCalledWith(200);
+        expect(type).toHaveBeenCalledWith('text/plain');
+        expect(send).toHaveBeenCalledWith('challenge-token');
+    });
+
+    it('does not expose an OpenAI Apps challenge when none is configured', () => {
+        const { res, status, json, send } = response();
+
+        void getOpenAIAppsChallenge({} as Request, res, vi.fn());
+
+        expect(status).toHaveBeenCalledWith(404);
+        expect(json).toHaveBeenCalledWith({ error: { code: 'not_found', message: 'Not found' } });
+        expect(send).not.toHaveBeenCalled();
     });
 
     it('publishes the protected-resource metadata for the exact MCP resource', () => {
@@ -293,15 +322,21 @@ function response(): {
     headers: Map<string, string>;
     status: ReturnType<typeof vi.fn>;
     json: ReturnType<typeof vi.fn>;
+    type: ReturnType<typeof vi.fn>;
+    send: ReturnType<typeof vi.fn>;
 } {
     const headers = new Map<string, string>();
     const status = vi.fn().mockReturnThis();
     const json = vi.fn().mockReturnThis();
+    const type = vi.fn().mockReturnThis();
+    const send = vi.fn().mockReturnThis();
     const res = {
         locals: {},
         setHeader: vi.fn((name: string, value: string) => headers.set(name, value)),
         status,
-        json
+        json,
+        type,
+        send
     } as unknown as Response<unknown, Partial<RequestLocals>>;
-    return { res, headers, status, json };
+    return { res, headers, status, json, type, send };
 }

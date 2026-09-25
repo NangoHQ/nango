@@ -7,10 +7,11 @@ import type { ListIntegrationsOutput } from './schema.js';
 
 export const listIntegrationsTool = defineManagementMcpTool<typeof listIntegrationsArgumentsSchema, ListIntegrationsOutput>({
     name: 'integrations_list',
+    title: 'List Integrations',
     description: 'List integrations configured in the authenticated Nango environment.',
     inputSchema: listIntegrationsArgumentsSchema,
     outputSchema: listIntegrationsOutputSchema,
-    annotations: { readOnlyHint: true },
+    annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     requiredScopes: { every: ['environment:integrations:list'] },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ environment }) {

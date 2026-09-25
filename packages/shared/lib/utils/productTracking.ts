@@ -1,24 +1,108 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
+
 import { PostHog } from 'posthog-node';
 
 import { baseUrl, NANGO_VERSION, report } from '@nangohq/utils';
 
-import type { CliTelemetryEvent, DBTeam, DBUser } from '@nangohq/types';
+import type { CliTelemetryEvent, DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
 
 export type ProductTrackingTypes =
     | CliTelemetryEvent
-    | 'account:trial:extend'
-    | 'account:trial:started'
     | 'account:billing:plan_changed'
     | 'account:billing:plan_changed:v2'
     | 'account:billing:downgraded'
     | 'account:billing:upgraded'
-    | 'deploy:success'
-    | 'deploy:error'
-    | 'prod:connections:threshold_hit'
-    | 'server:resource_capped:script_activate'
-    | 'server:resource_capped:script_deploy_is_disabled'
-    | 'server:resource_capped:action_triggered'
-    | 'server:resource_capped:active_records';
+    | 'agents:session_start'
+    | 'agents:session_end'
+    | 'agents:tool_call_complete'
+    | 'agents:proxy_request_complete'
+    | 'agents:tool_search_complete';
+
+/**
+ * Only ids: no email, no names, and no account name either, which defaults to "<person>'s Team" for
+ * anyone who signed up with a personal address. The plan is a group property, not an event one.
+ */
+export interface TrackingContext {
+    team: Pick<DBTeam, 'id'>;
+    /**
+     * Some events are account-wide and have no environment to resolve, so this stays optional.
+     */
+    environment?: Pick<DBEnvironment, 'is_production'> | null | undefined;
+    user?: Pick<DBUser, 'id'> | null | undefined;
+}
+
+/**
+ * A context where nothing is guaranteed: the request may not be authenticated, and an event may be
+ * emitted with no context at all.
+ */
+export type TrackingContextInput = Partial<Omit<TrackingContext, 'team'>> & { team?: Pick<DBTeam, 'id'> | null | undefined };
+
+/**
+ * Resolved lazily, at emit time: a request enters this context before auth runs, so the account
+ * and environment it reads are only set later in the request.
+ */
+type TrackingContextResolver = () => TrackingContextInput;
+
+const contextStorage = new AsyncLocalStorage<TrackingContextResolver>();
+
+/**
+ * Run `fn` with a tracking context that every posthog event emitted inside it inherits.
+ *
+ * A context field an event passes itself wins over the ambient one. The properties resolved from the
+ * context always win over an event's own property bags, so an event cannot claim another account.
+ */
+export function withProductTrackingContext<T>(resolver: TrackingContextResolver, fn: () => T): T {
+    return contextStorage.run(resolver, fn);
+}
+
+function resolveContext(explicit: TrackingContextInput): TrackingContext | null {
+    let ambient: TrackingContextInput | undefined;
+    try {
+        ambient = contextStorage.getStore()?.();
+    } catch (err) {
+        report(err);
+    }
+
+    const team = explicit.team ?? ambient?.team;
+    if (!team) {
+        return null;
+    }
+
+    return {
+        team,
+        environment: explicit.environment ?? ambient?.environment,
+        user: explicit.user ?? ambient?.user
+    };
+}
+
+function commonProperties(surface: 'server' | 'cli'): Record<string, unknown> {
+    return {
+        surface,
+        host: baseUrl,
+        server_version: NANGO_VERSION || 'unknown'
+    };
+}
+
+function contextProperties({ environment, user }: TrackingContext): Record<string, unknown> {
+    return {
+        ...(environment ? { is_production: environment.is_production } : {}),
+        // An event with no person behind it is attached to the account group instead of inventing one.
+        ...(user ? {} : { $process_person_profile: false })
+    };
+}
+
+/**
+ * A person is their user id. An event with no person still needs a distinct id, so it carries the
+ * account's, which creates no profile because person processing is off for those events.
+ */
+function distinctIdFor({ team, user }: TrackingContext): string {
+    return user ? String(user.id) : `account-${team.id}`;
+}
+
+/** Counting accounts rather than people is what the group is for, so every event carries it. */
+function groupsFor({ team }: TrackingContext): Record<string, string> {
+    return { company: String(team.id) };
+}
 
 class ProductTracking {
     client: PostHog | undefined;
@@ -42,41 +126,38 @@ class ProductTracking {
     public track({
         name,
         team,
+        environment,
         user,
         eventProperties,
-        userProperties
+        structuredProperties
     }: {
         name: ProductTrackingTypes;
-        team: Pick<DBTeam, 'id' | 'name'>;
-        user?: Pick<DBUser, 'id' | 'email' | 'name'> | undefined;
-        eventProperties?: Record<string | number, any>;
-        userProperties?: Record<string | number, any>;
-    }) {
+        eventProperties?: Record<string, string | number | boolean | null | undefined>;
+        /**
+         * Values the taxonomy's primitives-only rule does not allow, carried by the exception granted
+         * to tool search so a query can be read next to the results it returned.
+         */
+        structuredProperties?: Record<string, ReadonlyArray<Record<string, string | number | boolean>>>;
+    } & TrackingContextInput) {
         try {
             if (this.client == null) {
                 return;
             }
 
-            eventProperties = eventProperties || {};
-            userProperties = userProperties || {};
-
-            eventProperties['host'] = baseUrl;
-            eventProperties['nango-server-version'] = NANGO_VERSION || 'unknown';
-
-            eventProperties['team-id'] = team.id;
-            eventProperties['team-name'] = team.name;
-            userProperties['team-id'] = team.id;
-            userProperties['team-name'] = team.name;
-            let distinctId = `team-${team.id}`;
-            if (user) {
-                userProperties['email'] = user.email;
-                userProperties['name'] = user.name;
-                userProperties['id'] = user.id;
-                distinctId += `-user-${user.id}`;
+            const context = resolveContext({ team, environment, user });
+            if (!context) {
+                report(new Error(`Product tracking event "${name}" has no account to attach to`));
+                return;
             }
 
-            eventProperties['$set'] = userProperties;
-            this.client.capture({ event: name, distinctId, properties: eventProperties });
+            const properties = {
+                ...eventProperties,
+                ...structuredProperties,
+                ...commonProperties('server'),
+                ...contextProperties(context)
+            };
+
+            this.client.capture({ event: name, distinctId: distinctIdFor(context), properties, groups: groupsFor(context) });
         } catch (err) {
             report(err);
         }
@@ -84,7 +165,8 @@ class ProductTracking {
 
     /**
      * Track an event that isn't tied to a resolved team, e.g. CLI events sent before or without authentication.
-     * The distinctId is a client-generated device id
+     * The distinctId is a client-generated device id, and the event keeps the surface it came from
+     * rather than the one relaying it.
      */
     public trackAnonymous({
         name,
@@ -93,19 +175,14 @@ class ProductTracking {
     }: {
         name: ProductTrackingTypes;
         distinctId: string;
-        eventProperties?: Record<string | number, any>;
+        eventProperties?: Record<string, string | number | boolean | null | undefined>;
     }) {
         try {
             if (this.client == null) {
                 return;
             }
 
-            eventProperties = eventProperties || {};
-            eventProperties['host'] = baseUrl;
-            eventProperties['nango-server-version'] = NANGO_VERSION || 'unknown';
-            eventProperties['device-id'] = distinctId;
-
-            this.client.capture({ event: name, distinctId, properties: eventProperties });
+            this.client.capture({ event: name, distinctId, properties: { ...eventProperties, ...commonProperties('cli') } });
         } catch (err) {
             report(err);
         }
@@ -122,12 +199,7 @@ class ProductTracking {
                 return;
             }
 
-            let alias = `team-${team.id}`;
-            if (user) {
-                alias += `-user-${user.id}`;
-            }
-
-            this.client.alias({ distinctId: deviceId, alias });
+            this.client.alias({ distinctId: deviceId, alias: distinctIdFor({ team, user }) });
         } catch (err) {
             report(err);
         }

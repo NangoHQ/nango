@@ -125,3 +125,26 @@ export async function softDelete(
         return Err(new Error('failed_to_soft_delete_function_instances', { cause: err }));
     }
 }
+
+export async function hardDelete(
+    db: Knex,
+    filter: FunctionInstanceFilter,
+    { environmentId }: { environmentId: number }
+): Promise<Result<DBFunctionInstance[]>> {
+    try {
+        const [field, ids] = resolveFilter(filter);
+        if (ids.length === 0) {
+            return Ok([]);
+        }
+
+        const deleted = await db
+            .from<DBFunctionInstance>(INSTANCES_TABLE)
+            .whereIn('function_config_id', db.from<DBFunctionConfig>(CONFIGS_TABLE).select('id').where({ environment_id: environmentId }))
+            .whereIn(field, ids)
+            .delete()
+            .returning('*');
+        return Ok(deleted);
+    } catch (err) {
+        return Err(new Error('failed_to_hard_delete_function_instances', { cause: err }));
+    }
+}

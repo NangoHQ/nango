@@ -1,6 +1,7 @@
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import { PrivateRoute } from '@/components/patterns/PrivateRoute';
+import { SignedOutRoute } from '@/components/patterns/SignedOutRoute';
 import { EmailVerified } from '@/pages/Account/EmailVerified';
 import ForgotPassword from '@/pages/Account/ForgotPassword';
 import { InviteSignup } from '@/pages/Account/InviteSignup';
@@ -47,6 +48,7 @@ import { globalEnv } from '@/utils/env';
 import { sentryCreateBrowserRouter } from '@/utils/sentry';
 
 import type { BreadcrumbHandle } from '@/hooks/useBreadcrumbs';
+import type { RouteObject } from 'react-router-dom';
 
 const GettingStartedRoute = () => {
     const showGettingStarted = useStore((state) => state.showGettingStarted);
@@ -88,12 +90,12 @@ const ConnectionIndexRedirect = () => {
     return <Navigate to={{ pathname: targetTab, search: location.search }} replace />;
 };
 
-const publicAuthRoutes = (() => {
+const authRoutes = (() => {
     if (!globalEnv.features.auth && !globalEnv.features.managedAuth) {
         return [];
     }
 
-    const routes = [
+    const signedOutOnlyRoutes: RouteObject[] = [
         {
             path: '/signin',
             element: <Signin />
@@ -103,16 +105,23 @@ const publicAuthRoutes = (() => {
             element: <MFALogin />
         }
     ];
+    const alwaysOpenRoutes: RouteObject[] = [];
 
     if (globalEnv.features.managedAuth) {
-        routes.push({
+        signedOutOnlyRoutes.push({
             path: '/signin/verify',
             element: <ManagedEmailVerification />
         });
     }
 
     if (globalEnv.features.auth) {
-        routes.push(
+        signedOutOnlyRoutes.push({
+            path: '/signup',
+            element: <Signup />
+        });
+
+        // An invite or reset link can be for a different account than the one signed in.
+        alwaysOpenRoutes.push(
             {
                 path: '/signup/:token',
                 element: <InviteSignup />
@@ -136,15 +145,11 @@ const publicAuthRoutes = (() => {
             {
                 path: '/signup/verification/:token',
                 element: <EmailVerified />
-            },
-            {
-                path: '/signup',
-                element: <Signup />
             }
         );
     }
 
-    return routes;
+    return [{ element: <SignedOutRoute />, children: signedOutOnlyRoutes }, ...alwaysOpenRoutes];
 })();
 
 export const router = sentryCreateBrowserRouter([
@@ -390,7 +395,7 @@ export const router = sentryCreateBrowserRouter([
         path: '/hn-demo',
         element: <Navigate to={'/signup'} />
     },
-    ...publicAuthRoutes,
+    ...authRoutes,
     {
         path: '*',
         element: <NotFound />

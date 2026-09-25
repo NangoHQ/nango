@@ -30,7 +30,10 @@ const trigger = z.discriminatedUnion('kind', [
     z
         .object({
             kind: z.literal('event'),
-            events: z.array(z.enum(['post-connection-creation', 'pre-connection-deletion', 'validate-connection']))
+            events: z
+                .array(z.enum(['post-connection-creation', 'pre-connection-deletion', 'validate-connection']))
+                .nonempty()
+                .refine((events) => new Set(events).size === events.length, 'Event names must be unique')
         })
         .strict()
 ]) satisfies z.ZodType<FunctionTriggerDefinition>;
@@ -116,6 +119,11 @@ const functionConfig = z
     .refine((fn) => fn.capabilities.usesInvoke === (fn.requires.invoke === true), {
         message: 'usesInvoke must match requires.invoke',
         path: ['capabilities', 'usesInvoke']
+    })
+    .superRefine((fn, ctx) => {
+        if ((fn.trigger.kind === 'schedule' || fn.trigger.kind === 'event') && fn.input_schema_ref !== null) {
+            ctx.addIssue({ code: 'custom', message: `${fn.trigger.kind} must not declare input`, path: ['input_schema_ref'] });
+        }
     })
     .refine(
         (fn) =>

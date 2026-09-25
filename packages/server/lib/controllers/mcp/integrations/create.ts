@@ -9,6 +9,7 @@ import type { CreateIntegrationsOutput } from './schema.js';
 
 export const createIntegrationsTool = defineManagementMcpTool<typeof createIntegrationArgumentsSchema, CreateIntegrationsOutput>({
     name: 'integrations_create',
+    title: 'Create Integration',
     description: 'Create an integration in Nango using caller-supplied or Nango-provided developer-app credentials.',
     inputSchema: createIntegrationArgumentsSchema,
     outputSchema: createIntegrationsOutputSchema,
@@ -27,7 +28,7 @@ export const createIntegrationsTool = defineManagementMcpTool<typeof createInteg
         idempotentHint: false,
         openWorldHint: false
     },
-    async handler({ args, environment }) {
+    async handler({ args, environment, account }) {
         const result = await integrationService.create({
             environmentId: environment.id,
             provider: args.provider,
@@ -36,7 +37,9 @@ export const createIntegrationsTool = defineManagementMcpTool<typeof createInteg
             displayName: args.display_name,
             forwardWebhooks: args.forward_webhooks,
             ...('credentials' in args ? { credentials: args.credentials } : {}),
-            ...('integration_config' in args ? { integrationConfig: args.integration_config } : {})
+            ...('integration_config' in args ? { integrationConfig: args.integration_config } : {}),
+            environment,
+            team: account
         });
 
         return result

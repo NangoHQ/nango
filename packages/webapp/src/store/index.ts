@@ -1,8 +1,10 @@
-import { QueryClient } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 
+import { APIError, isNoSessionError } from '../utils/api';
 import { PROD_ENVIRONMENT_NAME } from '../utils/environments';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
+import { signout } from '../utils/user';
 import { resetPlayground } from './playground';
 
 interface Env {
@@ -47,7 +49,15 @@ export const useStore = create<State>()((set, get) => ({
     setDebugMode: (value) => set({ debugMode: value })
 }));
 
+function handleQueryError(error: unknown) {
+    if (error instanceof APIError && isNoSessionError(error.res.status, error.json)) {
+        void signout({ expired: true });
+    }
+}
+
 export const queryClient = new QueryClient({
+    queryCache: new QueryCache({ onError: (error) => handleQueryError(error) }),
+    mutationCache: new MutationCache({ onError: (error) => handleQueryError(error) }),
     defaultOptions: {
         queries: {
             refetchInterval: 0,

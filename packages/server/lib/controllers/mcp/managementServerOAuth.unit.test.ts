@@ -1,4 +1,5 @@
 import { Client } from '@modelcontextprotocol/client';
+import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -8,10 +9,11 @@ import { Err, flags, metrics, Ok } from '@nangohq/utils';
 import { audit, auditBackend } from '../../audit.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { listIntegrationsTool } from './integrations/list.js';
+import { ManagementMcpTransport } from './management.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { getProvidersTool } from './providers/get.js';
 
-import type { McpServer } from '@modelcontextprotocol/server';
+import type { JSONRPCMessage, McpServer } from '@modelcontextprotocol/server';
 import type { Principal, ScopeSelector, WhereSelector } from '@nangohq/authz';
 import type { AuditAttribution, DBEnvironment, DBTeam } from '@nangohq/types';
 import type * as Utils from '@nangohq/utils';
@@ -65,8 +67,33 @@ describe('createManagementMcpServer with OAuth', () => {
             const result = await client.listTools();
 
             expect(result.tools.map((tool) => tool.name)).toStrictEqual(['environments_list', ...managementToolNames]);
+            expect(result.tools.every(({ title }) => typeof title === 'string' && title.trim().length > 0)).toBe(true);
+            expect(result.tools.every(({ title, annotations }) => annotations?.title === title)).toBe(true);
+            for (const tool of result.tools) {
+                expect(tool._meta).toStrictEqual({
+                    securitySchemes: [{ type: 'oauth2', scopes: ['environment:*'] }]
+                });
+            }
+
+            // The MCP SDK currently strips the top-level securitySchemes extension required
+            // by OpenAI, so inspect the raw HTTP message to verify it and its _meta compatibility mirror.
+            const send = vi.spyOn(NodeStreamableHTTPServerTransport.prototype, 'send').mockResolvedValue(undefined);
+            await new ManagementMcpTransport().send({ jsonrpc: '2.0', id: 1, result } as JSONRPCMessage);
+            const serialized = JSON.parse(JSON.stringify(send.mock.calls[0]?.[0])) as {
+                result: { tools: Array<Record<string, unknown>> };
+            };
+            for (const tool of serialized.result.tools) {
+                expect(tool).toMatchObject({
+                    securitySchemes: [{ type: 'oauth2', scopes: ['environment:*'] }],
+                    _meta: {
+                        securitySchemes: [{ type: 'oauth2', scopes: ['environment:*'] }]
+                    }
+                });
+            }
+
             expect(result.tools[0]).toMatchObject({
                 name: 'environments_list',
+                title: 'List Environments',
                 description:
                     'List the Nango environments currently available to your user. Call this first, then ask the user to choose an environment before using environment-bound tools. Do not automatically query every returned environment.',
                 annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
