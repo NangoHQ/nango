@@ -4,7 +4,7 @@ import { report } from '@nangohq/utils';
 import { startFunctionDeletion } from '../../../../tasks/startFunctionDeletion.js';
 
 import type { RequestLocalsWithEnvironment } from '../../../../utils/express.js';
-import type { DBEnvironment, DeleteIntegrationFunction } from '@nangohq/types';
+import type { DBEnvironment, DeleteIntegrationFunction, FunctionType } from '@nangohq/types';
 import type { Response } from 'express';
 
 export async function handleDeleteIntegrationFunction({
@@ -18,7 +18,7 @@ export async function handleDeleteIntegrationFunction({
     environment: DBEnvironment;
     providerConfigKey: string;
     name: string;
-    type: 'sync' | 'action';
+    type: FunctionType;
 }): Promise<void> {
     const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
     if (!integration) {
