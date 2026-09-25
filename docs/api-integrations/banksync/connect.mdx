@@ -1,0 +1,38 @@
+---
+title: 'BankSync - How do I link my account?'
+sidebarTitle: 'BankSync'
+---
+
+## Overview
+
+To authenticate with BankSync, you will need:
+1. **API Key** - A workspace key that grants Nango permission to call BankSync's API on your behalf.
+
+This guide will walk you through creating the API Key within BankSync.
+
+### Prerequisites:
+
+- You must have a BankSync workspace (14-day free trial at [app.banksync.io](https://app.banksync.io/signup)).
+- API access requires the Standard plan or above.
+
+### Instructions:
+
+#### Step 1: Creating your API Key
+
+1. **Log in** to [BankSync](https://app.banksync.io/signin).
+2. Click your **workspace menu**, then select **Developers**. The **API Keys** panel opens.
+3. Click **Create Key**.
+4. Give the key a **Name**, pick an **Expiration** (30 days, 60 days, 90 days, 1 year, or Never), and select the **scopes** it needs. For reading bank connections, accounts, transactions, balances and holdings choose `banks:read`.
+5. Click **Create**. The full secret is shown **exactly once**, at creation. Copy it now. It starts with `bsk_`.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Key**:
+
+1. Open the form where you need to authenticate with BankSync.
+2. Enter the **API Key** in its designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to BankSync.
+
+To revoke a key later, open **Developers** -> **API Keys** and click the trash icon on the key's row.

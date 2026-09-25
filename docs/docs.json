@@ -1108,6 +1108,7 @@
               "api-integrations/bamboohr",
               "integrations/all/bamboohr-basic",
               "api-integrations/bandwidth",
+              "api-integrations/banksync",
               "integrations/all/basecamp",
               "api-integrations/baserow",
               "api-integrations/basin",
