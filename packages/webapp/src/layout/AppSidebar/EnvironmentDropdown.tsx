@@ -1,11 +1,13 @@
-import { ChevronsUpDown } from 'lucide-react';
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+import { ArrowUpRight, ChevronsUpDown, TriangleAlert } from 'lucide-react';
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-import { Badge, Button } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertDescription, Badge, Button } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar.js';
 import { useMeta } from '@/hooks/useMeta';
@@ -128,19 +130,25 @@ export const EnvironmentDropdown: React.FC = () => {
                                     </div>
                                 )}
                             </PermissionGate>
-                            {canCreateEnvironment &&
-                                isMaxEnvironmentsReached &&
-                                (isLegacy ? (
-                                    <p className="text-body-small-regular text-text-secondary">
-                                        Max number of environments reached. Contact Nango to add more.
-                                    </p>
-                                ) : (
-                                    <DropdownMenuItem asChild className="-mx-1 block px-1 py-0 text-body-small-regular text-text-secondary">
-                                        <Link to="/team/billing#plans">
-                                            Max number of environments reached. <span className="text-text-link underline">Upgrade</span> to add more.
-                                        </Link>
-                                    </DropdownMenuItem>
-                                ))}
+                            {canCreateEnvironment && isMaxEnvironmentsReached && (
+                                <Alert variant="warning" size="compact">
+                                    <TriangleAlert />
+                                    <AlertDescription>
+                                        Max number of environments reached. {isLegacy ? 'Contact Nango to add more.' : 'Upgrade for more.'}
+                                    </AlertDescription>
+                                    {!isLegacy && (
+                                        <AlertActions>
+                                            {/* Unwrapped, the link can't be reached by keyboard while the menu is open. */}
+                                            {/* Radix focuses items on hover; preventing it keeps the focus ring keyboard-only. */}
+                                            <DropdownMenuPrimitive.Item asChild onPointerMove={(event) => event.preventDefault()}>
+                                                <AlertButtonLink to="/team/billing#plans">
+                                                    Upgrade <ArrowUpRight />
+                                                </AlertButtonLink>
+                                            </DropdownMenuPrimitive.Item>
+                                        </AlertActions>
+                                    )}
+                                </Alert>
+                            )}
                         </div>
                     </DropdownMenuContent>
                 </DropdownMenu>
