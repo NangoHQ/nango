@@ -5,6 +5,7 @@ import { multipleMigrations } from '@nangohq/database';
 import { createConfigSeed, createPreprovisionedProviderConfigSeed } from '../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
 import configService from './config.service.js';
+import { getProvider } from './providers.js';
 
 describe('Config service integration tests', () => {
     beforeAll(async () => {
@@ -18,6 +19,31 @@ describe('Config service integration tests', () => {
             const config = await createConfigSeed(env, 'google', 'google');
 
             expect(config.missing_fields).toEqual(expect.arrayContaining(['oauth_client_id', 'oauth_client_secret']));
+        });
+
+        it('should encrypt custom secrets at rest even when oauth_client_secret is not set', async () => {
+            const env = await createEnvironmentSeed();
+            const provider = getProvider('aws-sigv4');
+            if (!provider) {
+                throw new Error('aws-sigv4 provider not found');
+            }
+
+            const created = await configService.createProviderConfig(
+                {
+                    unique_key: Math.random().toString(36).substring(7),
+                    provider: 'aws-sigv4',
+                    environment_id: env.id,
+                    forward_webhooks: true,
+                    custom: { service: 's3', awsSecretAccessKey: 'super-secret-value' }
+                },
+                provider
+            );
+
+            expect(created).not.toBeNull();
+            expect(created?.custom).not.toEqual(expect.objectContaining({ awsSecretAccessKey: 'super-secret-value' }));
+            expect(created?.custom).toEqual(
+                expect.objectContaining({ encryptedValue: expect.any(String), iv: expect.any(String), authTag: expect.any(String) })
+            );
         });
     });
 
