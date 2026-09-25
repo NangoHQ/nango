@@ -17,6 +17,7 @@ export type PatchWebhook = ApiEndpoint<{
         on_sync_error?: boolean | undefined;
         on_async_action_completion?: boolean | undefined;
         on_connection_deletion?: boolean | undefined;
+        on_auth_override?: boolean | undefined;
     };
     Success: {
         success: boolean;
