@@ -131,7 +131,7 @@ describe('withProductTrackingContext', () => {
         const { distinctId, groups, properties } = lastCapture();
         expect(distinctId).toBe('device-1');
         expect(groups).toBeUndefined();
-        expect(properties).toMatchObject({ surface: 'cli' });
+        expect(properties).toMatchObject({ surface: 'cli', $process_person_profile: false });
         expect(properties).not.toHaveProperty('is_production');
     });
 });
