@@ -89,7 +89,7 @@ export const PrivateRoute: React.FC = () => {
 
     useEffect(() => {
         if (user && meta && !meta.debugMode) {
-            identify(user);
+            identify(user, meta.accountGroup);
         }
     }, [user, meta, identify]);
 
