@@ -8,8 +8,8 @@ function makeSocketError(): Error {
     return Object.assign(new Error('other side closed'), { code: 'UND_ERR_SOCKET' });
 }
 
-function makeUndSocketError(): Error {
-    const cause = Object.assign(new Error('other side closed'), { code: 'UND_ERR_SOCKET' });
+function makeCauseError(code: string, message: string): Error {
+    const cause = Object.assign(new Error(message), { code });
     return Object.assign(new TypeError('fetch failed'), { cause });
 }
 
@@ -43,12 +43,15 @@ describe('httpFetch', () => {
             });
         });
 
-        describe('UND_ERR_SOCKET', () => {
+        describe.each([
+            ['UND_ERR_SOCKET', 'other side closed'],
+            ['EPIPE', 'write EPIPE']
+        ])('error with code on cause: %s', (code, message) => {
             it('retries and succeeds when fetch eventually resolves', async () => {
                 const fetchMock = vi
                     .fn()
-                    .mockRejectedValueOnce(makeUndSocketError())
-                    .mockRejectedValueOnce(makeUndSocketError())
+                    .mockRejectedValueOnce(makeCauseError(code, message))
+                    .mockRejectedValueOnce(makeCauseError(code, message))
                     .mockResolvedValueOnce(new Response('ok', { status: 200 }));
                 vi.stubGlobal('fetch', fetchMock);
 
@@ -59,7 +62,7 @@ describe('httpFetch', () => {
             });
 
             it('returns 502 after all retries exhausted', async () => {
-                vi.stubGlobal('fetch', vi.fn().mockRejectedValue(makeUndSocketError()));
+                vi.stubGlobal('fetch', vi.fn().mockRejectedValue(makeCauseError(code, message)));
 
                 const res = await httpFetch(url, undefined, { numOfAttempts: 3, startingDelay: 0 });
 

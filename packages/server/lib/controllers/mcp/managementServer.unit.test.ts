@@ -40,6 +40,7 @@ describe('createManagementMcpServer', () => {
 
         try {
             expect(client.getServerCapabilities()?.tools?.listChanged).toBe(false);
+            expect(client.getInstructions()).toBeUndefined();
         } finally {
             await client.close();
             await server.close();
@@ -52,7 +53,9 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools.map(({ name, annotations }) => ({ name, annotations }))).toStrictEqual([
+            expect(result.tools.every(({ title }) => typeof title === 'string' && title.trim().length > 0)).toBe(true);
+            expect(result.tools.every(({ title, annotations }) => annotations?.title === title)).toBe(true);
+            expect(result.tools.map(({ name, annotations }) => ({ name, annotations }))).toMatchObject([
                 {
                     name: 'docs_search',
                     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
@@ -61,37 +64,37 @@ describe('createManagementMcpServer', () => {
                     name: 'docs_query_filesystem',
                     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
                 },
-                { name: 'providers_get', annotations: { readOnlyHint: true, openWorldHint: false } },
+                { name: 'providers_get', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
                 {
                     name: 'connect_session_create',
                     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
                 },
-                { name: 'integrations_list', annotations: { readOnlyHint: true } },
-                { name: 'integrations_get', annotations: { readOnlyHint: true } },
+                { name: 'integrations_list', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
+                { name: 'integrations_get', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
                 {
                     name: 'integrations_create',
                     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
                 },
                 {
                     name: 'integrations_update',
-                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
                 },
                 {
                     name: 'integrations_delete',
                     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
                 },
-                { name: 'connections_list', annotations: { readOnlyHint: true } },
+                { name: 'connections_list', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
                 {
                     name: 'connections_get',
-                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 {
                     name: 'syncs_set_state',
-                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
                 },
                 {
                     name: 'syncs_trigger',
-                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 {
                     name: 'actions_trigger',
@@ -101,21 +104,21 @@ describe('createManagementMcpServer', () => {
                     name: 'proxy_request',
                     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
-                { name: 'functions_list', annotations: { readOnlyHint: true } },
+                { name: 'functions_list', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
                 {
                     name: 'deploy_function',
-                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 {
                     name: 'deploy_template',
-                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 {
                     name: 'get_deployment_status',
                     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
                 },
-                { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
-                { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
+                { name: 'logs_list_operations', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
+                { name: 'logs_get_operation', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } }
             ]);
         } finally {
             await client.close();
@@ -159,6 +162,7 @@ describe('createManagementMcpServer', () => {
                     additionalProperties: false
                 }
             });
+            expect(providerTool?.inputSchema.properties).not.toHaveProperty('environment');
 
             const result = await client.callTool({ name: 'providers_get', arguments: { provider: 'github', include_templates: true } });
 
@@ -342,7 +346,7 @@ describe('createManagementMcpServer', () => {
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'integrations_update',
-                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
             });
         } finally {
             await authorized.client.close();
@@ -473,6 +477,7 @@ describe('createManagementMcpServer', () => {
             });
             expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('async');
             expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('max_retries');
+            expect(scopedTools[0]?.inputSchema.properties?.['input']).toMatchObject({ type: ['object', 'array', 'string', 'number', 'boolean', 'null'] });
         } finally {
             await authorized.client.close();
             await authorized.server.close();
@@ -528,7 +533,7 @@ describe('createManagementMcpServer', () => {
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'connections_get',
-                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
             });
         } finally {
             await client.close();
@@ -736,7 +741,7 @@ describe('createManagementMcpServer', () => {
                     required: ['success'],
                     additionalProperties: false
                 },
-                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
             });
             expect(scopedTools[0]?.inputSchema.properties).toEqual({
                 syncs: {
@@ -775,7 +780,7 @@ describe('createManagementMcpServer', () => {
                     required: ['success'],
                     additionalProperties: false
                 },
-                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
             });
         } finally {
             await client.close();
@@ -1013,16 +1018,19 @@ describe('createManagementMcpServer', () => {
                 arguments: { credentials: { client_secret: 'credential-secret-value' } }
             }
         };
-        const server = createManagementMcpServer(
+        const server = await createManagementMcpServer(
             {
-                account: fakeAccount(),
-                environment: fakeEnvironment(),
-                plan: null,
-                grantedScopes: ['environment:mcp'],
-                audit: {
-                    kind: 'request',
-                    actor: { type: 'api_key', id: '7', display: 'Management key' },
-                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                type: 'apiKey',
+                context: {
+                    account: fakeAccount(),
+                    environment: fakeEnvironment(),
+                    plan: null,
+                    grantedScopes: ['environment:mcp'],
+                    audit: {
+                        kind: 'request',
+                        actor: { type: 'api_key', id: '7', display: 'Management key' },
+                        context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                    }
                 }
             },
             requestBody
@@ -1061,16 +1069,19 @@ describe('createManagementMcpServer', () => {
                 arguments: { integration_id: 42, connection_id: 'connection-secret', syncs: [{ name: 'issues' }], state }
             }
         };
-        const server = createManagementMcpServer(
+        const server = await createManagementMcpServer(
             {
-                account: fakeAccount(),
-                environment: fakeEnvironment(),
-                plan: null,
-                grantedScopes: ['environment:mcp'],
-                audit: {
-                    kind: 'request',
-                    actor: { type: 'api_key', id: '7', display: 'Management key' },
-                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                type: 'apiKey',
+                context: {
+                    account: fakeAccount(),
+                    environment: fakeEnvironment(),
+                    plan: null,
+                    grantedScopes: ['environment:mcp'],
+                    audit: {
+                        kind: 'request',
+                        actor: { type: 'api_key', id: '7', display: 'Management key' },
+                        context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                    }
                 }
             },
             requestBody
@@ -1096,16 +1107,19 @@ describe('createManagementMcpServer', () => {
         flags.hasAuditTrail = true;
         auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
-        const server = createManagementMcpServer(
+        const server = await createManagementMcpServer(
             {
-                account: fakeAccount(),
-                environment: fakeEnvironment(),
-                plan: null,
-                grantedScopes: ['environment:syncs:execute'],
-                audit: {
-                    kind: 'request',
-                    actor: { type: 'api_key', id: '7', display: 'Management key' },
-                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                type: 'apiKey',
+                context: {
+                    account: fakeAccount(),
+                    environment: fakeEnvironment(),
+                    plan: null,
+                    grantedScopes: ['environment:syncs:execute'],
+                    audit: {
+                        kind: 'request',
+                        actor: { type: 'api_key', id: '7', display: 'Management key' },
+                        context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                    }
                 }
             },
             {
@@ -1130,16 +1144,19 @@ describe('createManagementMcpServer', () => {
         flags.hasAuditTrail = true;
         auditBackend.configured = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
-        const server = createManagementMcpServer(
+        const server = await createManagementMcpServer(
             {
-                account: fakeAccount(),
-                environment: fakeEnvironment(),
-                plan: null,
-                grantedScopes: ['environment:mcp'],
-                audit: {
-                    kind: 'request',
-                    actor: { type: 'api_key', id: '7', display: 'Management key' },
-                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                type: 'apiKey',
+                context: {
+                    account: fakeAccount(),
+                    environment: fakeEnvironment(),
+                    plan: null,
+                    grantedScopes: ['environment:mcp'],
+                    audit: {
+                        kind: 'request',
+                        actor: { type: 'api_key', id: '7', display: 'Management key' },
+                        context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                    }
                 }
             },
             {
@@ -1329,7 +1346,10 @@ async function expectDisabledTool(client: Client, name: string, args: Record<str
 
 async function createTestClient(grantedScopes: string[]): Promise<{ client: Client; server: McpServer }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    const server = createManagementMcpServer({ account: fakeAccount(), environment: fakeEnvironment(), plan: null, grantedScopes });
+    const server = await createManagementMcpServer({
+        type: 'apiKey',
+        context: { account: fakeAccount(), environment: fakeEnvironment(), plan: null, grantedScopes }
+    });
     const client = new Client({ name: 'test-client', version: '1.0.0' });
 
     await server.connect(serverTransport);

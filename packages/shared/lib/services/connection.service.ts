@@ -40,9 +40,11 @@ import {
     DEFAULT_INFINITE_EXPIRES_AT_MS,
     DEFAULT_OAUTHCC_EXPIRES_AT_MS,
     getExpiresAtFromCredentials,
+    jwtExpiresAt,
     MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
     REFRESH_MARGIN_MS
 } from './connections/utils.js';
+import * as functionLifecycle from './functions/lifecycle.js';
 import {
     assertSafeOAuthUrl,
     findOutboundUrlError,
@@ -1416,12 +1418,16 @@ export class ConnectionService {
         environmentId,
         tagSelectors,
         pinnedConnections,
-        candidateSampleSize
+        candidateSampleSize,
+        candidateOrder = 'newest_first',
+        database = db.readOnly
     }: {
         environmentId: number;
         tagSelectors: Tags[];
         pinnedConnections: { integrationId: string; connectionId: string }[];
         candidateSampleSize: number;
+        candidateOrder?: 'newest_first' | 'oldest_first';
+        database?: Knex;
     }): Promise<ConnectionIntegrationMatchRow[]> {
         if (tagSelectors.length === 0) {
             return [];
@@ -1430,7 +1436,7 @@ export class ConnectionService {
         const containment = tagSelectors.map(() => '_nango_connections.tags @> ?::jsonb').join(' OR ');
         const containmentBindings = tagSelectors.map((tags) => JSON.stringify(tags));
 
-        return await db.readOnly
+        return await database
             .with('matched', (qb) => {
                 qb.select(
                     '_nango_connections.id',
@@ -1449,11 +1455,12 @@ export class ConnectionService {
                     .whereRaw(`(${containment})`, containmentBindings);
             })
             .with('ranked', (qb) => {
-                qb.select('matched.*', db.knex.raw('COUNT(*) OVER (PARTITION BY integration_id) as match_count'))
+                qb.select('matched.*', database.raw('COUNT(*) OVER (PARTITION BY integration_id) as match_count'))
                     .rowNumber('rn', (rn) => {
+                        const order = candidateOrder === 'oldest_first' ? 'asc' : 'desc';
                         rn.partitionBy('integration_id').orderBy([
-                            { column: 'created_at', order: 'desc' },
-                            { column: 'id', order: 'desc' }
+                            { column: 'created_at', order },
+                            { column: 'id', order }
                         ]);
                     })
                     .from('matched');
@@ -1461,8 +1468,8 @@ export class ConnectionService {
             .select<ConnectionIntegrationMatchRow[]>(
                 'integration_id',
                 'provider',
-                db.knex.raw('MAX(match_count)::int as match_count'),
-                db.knex.raw(
+                database.raw('MAX(match_count)::int as match_count'),
+                database.raw(
                     `JSON_AGG(JSON_BUILD_OBJECT('id', id, 'connection_id', connection_id, 'config_id', config_id, 'tags', tags) ORDER BY rn) as candidates`
                 )
             )
@@ -1526,15 +1533,37 @@ export class ConnectionService {
     }): Promise<number> {
         await preDeletionHook();
 
-        const del = await db.knex
-            .from(`_nango_connections`)
-            .where({
-                connection_id: connection.connection_id,
-                provider_config_key: providerConfigKey,
-                environment_id: environmentId,
-                deleted: false
-            })
-            .update({ deleted: true, deleted_at: new Date() });
+        const del = await db.knex.transaction(async (trx) => {
+            const deleted = await trx
+                .from(`_nango_connections`)
+                .where({
+                    connection_id: connection.connection_id,
+                    provider_config_key: providerConfigKey,
+                    environment_id: environmentId,
+                    deleted: false
+                })
+                .update({ deleted: true, deleted_at: new Date() });
+
+            if (deleted > 0) {
+                const functionsDeletion = await functionLifecycle.softDeleteInstancesForConnection(trx, { connection });
+                if (functionsDeletion.isErr()) {
+                    throw functionsDeletion.error;
+                }
+
+                const instanceIds = functionsDeletion.value.map((instance) => instance.id);
+                if (instanceIds.length > 0) {
+                    const schedulesDeletion = await orchestrator.deleteFunctionSchedules({
+                        environmentId: connection.environment_id,
+                        instanceIds
+                    });
+                    if (schedulesDeletion.isErr()) {
+                        throw schedulesDeletion.error;
+                    }
+                }
+            }
+
+            return deleted;
+        });
 
         // TODO: move the following side effects to a post deletion hook
         // so we can remove the orchestrator dependencies
@@ -1542,6 +1571,32 @@ export class ConnectionService {
         await slackService.closeOpenNotificationForConnection({ connectionId: connection.id, environmentId });
 
         return del;
+    }
+
+    public async ensureFunctionInstances({
+        connection,
+        orchestrator
+    }: {
+        connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
+        orchestrator: Pick<Orchestrator, 'scheduleFunctions'>;
+    }): Promise<Result<void>> {
+        try {
+            return await db.knex.transaction(async (trx) => {
+                const activeConnection = await trx
+                    .from('_nango_connections')
+                    .select('id')
+                    .where({ id: connection.id, deleted: false })
+                    .forUpdate() // Lock the row to prevent deletion during instance creation
+                    .first();
+                if (!activeConnection) {
+                    return Ok(undefined);
+                }
+
+                return await functionLifecycle.ensureForConnection(trx, { connection, orchestrator });
+            });
+        } catch (err) {
+            return Err(new Error('failed_to_ensure_function_instances_for_connection', { cause: err }));
+        }
     }
 
     public async updateLastFetched(id: number): Promise<void> {
@@ -1625,6 +1680,8 @@ export class ConnectionService {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
 
+                const token = rawCreds['access_token'] || (rawCreds['data'] && rawCreds['data']['token']) || rawCreds['jwt'];
+
                 let expiresAt: Date | undefined;
 
                 //fiserv returns expires_in in milliseconds
@@ -1634,13 +1691,17 @@ export class ConnectionService {
                     const expiresIn = Number.parseInt(rawCreds['expires_in'], 10);
                     const multiplier = template && 'expires_in_unit' in template && template.expires_in_unit === 'milliseconds' ? 1 : 1000;
                     expiresAt = new Date(Date.now() + expiresIn * multiplier);
-                } else {
+                } else if (typeof token === 'string') {
+                    expiresAt = jwtExpiresAt(token, REFRESH_MARGIN_MS);
+                }
+
+                if (!expiresAt) {
                     expiresAt = new Date(Date.now() + DEFAULT_OAUTHCC_EXPIRES_AT_MS);
                 }
 
                 const oauth2Creds: OAuth2ClientCredentials = {
                     type: 'OAUTH2_CC',
-                    token: rawCreds['access_token'] || (rawCreds['data'] && rawCreds['data']['token']) || rawCreds['jwt'],
+                    token,
                     client_id: '',
                     client_secret: '',
                     expires_at: expiresAt,
@@ -1689,22 +1750,16 @@ export class ConnectionService {
                 }
 
                 if (!expiration && typeof token === 'string') {
-                    const decoded = jwtClient.decode(token);
-                    if (decoded && typeof decoded['exp'] === 'number') {
-                        const tokenExpiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
-                        if (!expiresAt || tokenExpiresAt < expiresAt) {
-                            expiresAt = tokenExpiresAt;
-                        }
+                    const tokenExpiresAt = jwtExpiresAt(token, REFRESH_MARGIN_MS);
+                    if (tokenExpiresAt && (!expiresAt || tokenExpiresAt < expiresAt)) {
+                        expiresAt = tokenExpiresAt;
                     }
                 }
 
                 if (refreshToken) {
-                    const decoded = jwtClient.decode(refreshToken);
-                    if (decoded && typeof decoded['exp'] === 'number') {
-                        const refreshTokenExpiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
-                        if (!expiresAt || refreshTokenExpiresAt < expiresAt) {
-                            expiresAt = refreshTokenExpiresAt;
-                        }
+                    const refreshTokenExpiresAt = jwtExpiresAt(refreshToken, REFRESH_MARGIN_MS);
+                    if (refreshTokenExpiresAt && (!expiresAt || refreshTokenExpiresAt < expiresAt)) {
+                        expiresAt = refreshTokenExpiresAt;
                     }
                 }
 

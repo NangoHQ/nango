@@ -184,6 +184,7 @@ export const postPublicBillAuthorization = asyncWrapperWithEnvironment<PostPubli
             connection: updatedConnection.connection,
             config,
             account,
+            environment,
             logCtx
         });
 

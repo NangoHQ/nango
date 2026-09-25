@@ -121,14 +121,14 @@ Nango processes billions of API requests. The runtime provides per-tenant isolat
 OAuth flows, token refresh, credential storage, and multi-tenant support handled for you. Connect to any API without building auth from scratch.
 
 **Open source and self-hostable.** 
-Nango is fully open source. Run it on Nango Cloud or self-host on your own infrastructure. SOC 2 Type II, HIPAA, and GDPR compliant.
+Nango is fully open source. Run it on Nango Cloud, in your own cloud account with [BYOC](https://nango.dev/docs/guides/platform/self-hosting), or self-host it yourself. SOC 2 Type II, HIPAA, and GDPR compliant.
 
 **Fits your workflow.** 
 Fully operable via CLI and API. Compatible with any backend language or framework, AI coding tools (Cursor, Codex, Claude Code), and agent SDKs (MCP, LangChain).
 
 ## Open-source vs. paid
 
-Nango is available under the [Elastic License](https://github.com/NangoHQ/nango/blob/master/LICENSE). The Cloud and Enterprise Self-Hosted versions give you access to all features, based on your [plan](https://www.nango.dev/pricing). You can also [self-host for free](https://nango.dev/docs/guides/platform/self-hosting#free-self-hosting) with a limited feature set.
+Nango is available under the [Elastic License](https://github.com/NangoHQ/nango/blob/master/LICENSE). Nango Cloud and [BYOC](https://nango.dev/docs/guides/platform/self-hosting) give you access to all features, based on your [plan](https://www.nango.dev/pricing). You can also [self-host for free](https://nango.dev/docs/guides/platform/free-self-hosting) with a limited feature set.
 
 ## Contributing
 

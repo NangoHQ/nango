@@ -2,7 +2,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { CONFIGS_TABLE, INTEGRATIONS_TABLE, VERSIONS_TABLE } from './tables.js';
 
-import type { DBFunctionConfig, DBFunctionConfigVersion, DBIntegrationDecrypted } from '@nangohq/types';
+import type { DBFunctionConfig, DBFunctionConfigVersion, DBIntegrationDecrypted, OnEventType } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
@@ -73,6 +73,97 @@ export interface CurrentFunctionConfig {
     currentVersion: DBFunctionConfigVersion;
 }
 
+export async function rows(
+    trx: Knex,
+    { environmentId, integrationId }: { environmentId: number; integrationId: number },
+    { includeDeleted = false, limit }: { includeDeleted?: boolean; limit?: number } = {}
+): Promise<Result<DBFunctionConfig[]>> {
+    try {
+        const query = trx
+            .from<DBFunctionConfig>(CONFIGS_TABLE)
+            .select('*')
+            .where({ environment_id: environmentId, nango_config_id: integrationId })
+            .orderBy('id');
+        if (!includeDeleted) {
+            query.whereNull('deleted_at');
+        }
+        if (limit !== undefined) {
+            query.limit(limit);
+        }
+        const configs = await query;
+        return Ok(configs);
+    } catch (err) {
+        return Err(new Error('failed_to_find_function_configs', { cause: err }));
+    }
+}
+
+export async function getSoftDeleted(trx: Knex, { olderThanDays, limit }: { olderThanDays: number; limit: number }): Promise<Result<DBFunctionConfig[]>> {
+    try {
+        const threshold = new Date();
+        threshold.setDate(threshold.getDate() - olderThanDays);
+        const configs = await trx
+            .from<DBFunctionConfig>(CONFIGS_TABLE)
+            .select('*')
+            .whereNotNull('deleted_at')
+            .andWhere('deleted_at', '<=', threshold.toISOString())
+            .orderBy('deleted_at')
+            .orderBy('id')
+            .limit(limit);
+        return Ok(configs);
+    } catch (err) {
+        return Err(new Error('failed_to_find_soft_deleted_function_configs', { cause: err }));
+    }
+}
+
+// Gathers the `file_location` of every version of a function config, skipping local files.
+export async function getArtifactFileLocations(trx: Knex, { environmentId, id }: { environmentId: number; id: number }): Promise<Result<string[]>> {
+    try {
+        const versions = await trx
+            .from<DBFunctionConfigVersion>({ version: VERSIONS_TABLE })
+            .join<DBFunctionConfig>({ config: CONFIGS_TABLE }, 'config.id', 'version.function_config_id')
+            .select<Pick<DBFunctionConfigVersion, 'file_location'>[]>('version.file_location')
+            .where('config.id', id)
+            .where('config.environment_id', environmentId)
+            .orderBy('version.id');
+
+        return Ok([...new Set(versions.map(({ file_location }) => file_location).filter((location) => location !== '_LOCAL_FILE_'))]);
+    } catch (err) {
+        return Err(new Error('failed_to_find_function_artifacts', { cause: err }));
+    }
+}
+
+/**
+ * Turns `file_location`s into the artifact keys that are safe to delete.
+ * Artifacts still referenced by a live config are excluded.
+ */
+export async function safeToDeleteArtifacts(
+    trx: Knex,
+    { environmentId, fileLocations }: { environmentId: number; fileLocations: string[] }
+): Promise<Result<string[]>> {
+    try {
+        if (fileLocations.length === 0) {
+            return Ok([]);
+        }
+
+        const referencedByLiveConfig = await trx
+            .from<DBFunctionConfigVersion>({ version: VERSIONS_TABLE })
+            .join<DBFunctionConfig>({ config: CONFIGS_TABLE }, 'config.id', 'version.function_config_id')
+            .select<Pick<DBFunctionConfigVersion, 'file_location'>[]>('version.file_location')
+            .where('config.environment_id', environmentId)
+            .whereNull('config.deleted_at')
+            .whereIn('version.file_location', fileLocations);
+        const retained = new Set(referencedByLiveConfig.map(({ file_location }) => file_location));
+
+        return Ok(
+            fileLocations
+                .filter((location) => !retained.has(location) && location.endsWith('.js'))
+                .flatMap((location) => [location, `${location.slice(0, -3)}.ts`])
+        );
+    } catch (err) {
+        return Err(new Error('failed_safe_to_delete_artifacts', { cause: err }));
+    }
+}
+
 type Prefixed<T, Prefix extends string> = {
     [K in keyof T as `${Prefix}${Extract<K, string>}`]: T[K];
 };
@@ -86,7 +177,7 @@ interface FunctionSearchFilter {
     id?: number | undefined;
     name?: string | undefined;
     enabled?: boolean | undefined;
-    trigger?: { kind: 'http'; hasSubscriptions: boolean } | undefined;
+    trigger?: { kind: 'http'; hasSubscriptions: boolean } | { kind: 'event'; event: OnEventType } | undefined;
 }
 
 export async function search(
@@ -129,14 +220,22 @@ export async function search(
             query.where('config.enabled', filter.enabled);
         }
         if (filter?.trigger) {
-            // TODO: index subscriptions array length for performance
             query.whereRaw("version.trigger->>'kind' = ?", [filter.trigger.kind]);
-            const subscriptionCount = `CASE
-                WHEN jsonb_typeof(version.trigger->'subscriptions') = 'array'
-                THEN jsonb_array_length(version.trigger->'subscriptions')
-                ELSE 0
-            END`;
-            query.whereRaw(`${subscriptionCount} ${filter.trigger.hasSubscriptions ? '>' : '='} 0`);
+            switch (filter.trigger.kind) {
+                case 'http': {
+                    // TODO: index subscriptions array length for performance
+                    const subscriptionCount = `CASE
+                        WHEN jsonb_typeof(version.trigger->'subscriptions') = 'array'
+                        THEN jsonb_array_length(version.trigger->'subscriptions')
+                        ELSE 0
+                    END`;
+                    query.whereRaw(`${subscriptionCount} ${filter.trigger.hasSubscriptions ? '>' : '='} 0`);
+                    break;
+                }
+                case 'event':
+                    query.whereRaw("version.trigger->'events' @> ?::jsonb", [JSON.stringify([filter.trigger.event])]);
+                    break;
+            }
         }
 
         const rows = await query;
@@ -254,5 +353,17 @@ export async function softDelete(trx: Knex, { environmentId, ids }: { environmen
         return Ok(deleted);
     } catch (err) {
         return Err(new Error('failed_to_soft_delete_functions', { cause: err }));
+    }
+}
+
+export async function hardDelete(trx: Knex, { environmentId, ids }: { environmentId: number; ids: number[] }): Promise<Result<number>> {
+    try {
+        if (ids.length === 0) {
+            return Ok(0);
+        }
+        const deleted = await trx.from<DBFunctionConfig>(CONFIGS_TABLE).where({ environment_id: environmentId }).whereIn('id', ids).delete();
+        return Ok(deleted);
+    } catch (err) {
+        return Err(new Error('failed_to_hard_delete_functions', { cause: err }));
     }
 }

@@ -153,6 +153,22 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
                 app_link: z.string().min(1),
                 private_key: privateKeySchema
             })
+            .strict(),
+        z
+            .object({
+                type: z.enum(['MCP_OAUTH2_GENERIC']),
+                client_name: z.string().min(1).max(255).optional(),
+                client_uri: z.url().max(255).or(z.literal('')).optional(),
+                client_logo_uri: z.url().max(255).optional()
+            })
+            .strict(),
+        z
+            .object({
+                type: z.enum(['MCP_OAUTH2']),
+                client_id: z.string().min(1).max(255).optional(),
+                client_secret: z.string().min(1).optional(),
+                scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.*-]+([, ]+[0-9a-zA-Z:/_.*-]+)*$/), z.string().max(0)]).optional()
+            })
             .strict()
     ],
     { error: () => ({ message: 'invalid credentials object' }) }

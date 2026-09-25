@@ -15,6 +15,7 @@ const logger = getLogger('Server.MCP.Actions');
 
 export const triggerActionTool: ManagementMcpTool<TriggerActionOutput> = defineManagementMcpTool<typeof triggerActionArgumentsSchema, TriggerActionOutput>({
     name: 'actions_trigger',
+    title: 'Trigger Action',
     description:
         'Trigger an action synchronously for a connection and return its result in the data field. Expect the MCP request to time out within 90 seconds, but this does not cancel the action, which may continue running for up to 15 minutes. If the request times out, this tool cannot return the result or an action ID; retrying will execute the action again.',
     inputSchema: triggerActionArgumentsSchema,

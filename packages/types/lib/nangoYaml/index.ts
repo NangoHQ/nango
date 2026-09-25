@@ -2,7 +2,7 @@ import type { OnEventType } from '../scripts/on-events/api.js';
 import type { Feature } from '../syncConfigs/db.js';
 import type { JSONSchema7 } from 'json-schema';
 
-export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'PROPFIND' | 'REPORT';
 /** @deprecated **/
 export type SyncTypeLiteral = 'incremental' | 'full';
 export type ScriptFileType = 'actions' | 'syncs' | 'on-events' | 'functions' | 'webhooks' | 'post-connection-scripts'; // post-connection-scripts is deprecated

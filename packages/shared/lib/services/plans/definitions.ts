@@ -410,10 +410,10 @@ export const GROWTH_FEATURE_FLAGS = {
     can_disable_connect_ui_watermark: true
 } satisfies Record<GrowthFeatureFlag, boolean>;
 
-export const PLANS_WITH_GROWTH_ADD_ON: PlanDefinition['code'][] = ['pay-as-you-go'];
+export const PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON: PlanDefinition['code'][] = ['pay-as-you-go'];
 
 export function canHaveGrowthAddon(planCode: PlanDefinition['code']): boolean {
-    return PLANS_WITH_GROWTH_ADD_ON.includes(planCode);
+    return PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON.includes(planCode);
 }
 
 export const plansList: PlanDefinition[] = [

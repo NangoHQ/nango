@@ -15,6 +15,7 @@ const orchestrator = getOrchestrator();
 
 export const triggerSyncsTool = defineManagementMcpTool<typeof triggerSyncsArgumentsSchema, TriggerSyncsOutput>({
     name: 'syncs_trigger',
+    title: 'Trigger Syncs',
     description: 'Trigger one or more syncs, optionally performing a full reset and/or clearing existing synced records.',
     inputSchema: triggerSyncsArgumentsSchema,
     outputSchema: triggerSyncsOutputSchema,
@@ -36,7 +37,7 @@ export const triggerSyncsTool = defineManagementMcpTool<typeof triggerSyncsArgum
         readOnlyHint: false,
         destructiveHint: true,
         idempotentHint: false,
-        openWorldHint: false
+        openWorldHint: true
     },
     async handler({ args, environment }) {
         const syncIdentifiers = normalizedSyncParams(args.syncs);

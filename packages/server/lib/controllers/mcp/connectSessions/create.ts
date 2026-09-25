@@ -9,8 +9,9 @@ import type { CreateConnectSessionOutput } from './schema.js';
 
 export const createConnectSessionTool = defineManagementMcpTool<typeof createConnectSessionArgumentsSchema, CreateConnectSessionOutput>({
     name: 'connect_session_create',
+    title: 'Create Connect Session',
     description:
-        'Create a short-lived Connect session for authorizing an integration. Send the returned connect_link to the end user so they can complete OAuth or enter credentials. After authorization, use connections_list to find the resulting connection. At least one of end_user or tags must be provided.',
+        'Create a short-lived Connect session and return its token and authorization link. Send the connect_link to the end user so they can complete OAuth or enter credentials. After authorization, use connections_list to find the resulting connection. At least one of end_user or tags must be provided.',
     inputSchema: createConnectSessionArgumentsSchema,
     outputSchema: createConnectSessionOutputSchema,
     requiredScopes: { every: ['environment:connect_sessions:write'] },

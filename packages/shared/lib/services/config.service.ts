@@ -5,6 +5,7 @@ import { gettingStartedService } from '../index.js';
 import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
+import * as functionLifecycle from './functions/lifecycle.js';
 import { getProvider } from './providers.js';
 import syncManager from './sync/manager.service.js';
 
@@ -142,7 +143,7 @@ class ConfigService {
     }
 
     async createProviderConfig(config: DBCreateIntegration, provider: Provider): Promise<IntegrationConfig | null> {
-        const configToInsert = config.oauth_client_secret ? getEncryptionManager().encryptProviderConfig(config as ProviderConfig) : config;
+        const configToInsert = getEncryptionManager().encryptProviderConfig(config as ProviderConfig);
         configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config as ProviderConfig);
         if (!configToInsert.oauth_scopes && provider.default_scopes?.length) {
             configToInsert.oauth_scopes = provider.default_scopes.join(',');
@@ -218,8 +219,17 @@ class ConfigService {
         id: number;
         environmentId: number;
         providerConfigKey: string;
-        orchestrator: Orchestrator;
+        orchestrator: Pick<Orchestrator, 'deleteSync' | 'deleteFunctionSchedules'>;
     }): Promise<boolean> {
+        const functionsDeletion = await functionLifecycle.deleteForIntegration(db.knex, {
+            integrationConfigId: id,
+            environmentId,
+            orchestrator
+        });
+        if (functionsDeletion.isErr()) {
+            throw functionsDeletion.error;
+        }
+
         // TODO: might be useless since we are dropping the data after a while
         await syncManager.deleteSyncsByProviderConfig(environmentId, providerConfigKey, orchestrator);
 

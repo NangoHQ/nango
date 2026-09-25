@@ -49,6 +49,17 @@ Every forwarded webhook is signed with the same headers used by other Nango webh
 
 Verify forwarded webhooks the same way you verify other webhooks from Nango. See [Verifying webhooks from Nango](/guides/platform/webhooks-from-nango#verifying-webhooks-from-nango).
 
+## Unverified webhooks
+
+Nango verifies the provider signature before forwarding whenever the provider signs its webhooks and the integration has the secret to check it. When Nango knows it skipped that check, for example because the webhook secret is not set on the integration, it still forwards the webhook but flags it:
+
+- The `X-Nango-Webhook-Unverified: true` header is set on the forwarded request, including raw payloads.
+- The Nango wrapper includes `"unverified": true`.
+
+The flag is only set when the integration's webhook handling knows verification was skipped. A forward without it is not a guarantee that the provider signature was checked. Some integrations, such as the unauthenticated provider, never verify.
+
+The Nango signature on flagged requests only proves the webhook came through Nango, not that the provider sent it. Anyone who knows the integration's webhook URL can send one. Treat the payload as untrusted, and set the webhook secret on the integration to enable verification. The forward operation in the Nango logs also shows a warning with the reason.
+
 ## When to use forwarding
 
 Use forwarding when:
@@ -87,6 +98,19 @@ Use [webhook functions](/guides/functions/webhook-functions) when Nango should u
 
   Implement signature verification with `X-Nango-Hmac-Sha256`, then branch on whether the incoming body has `type: "forward"`. Store and use `connectionId` only when it is present.
 </Accordion>
+
+## Providers that do not sign webhooks
+
+Affinity, Fillout and ShipStation do not sign their webhooks, so Nango checks a secret you choose for each connection instead. Nango rejects a webhook unless it carries the secret of the connection it is routed to.
+
+1. Generate a random secret of at least 16 characters per connection and store it as `webhookSecret` in that connection's [metadata](/reference/backend/http-api/connections/update-metadata).
+2. Send that connection's secret with every webhook registered for it, in the `X-Nango-Webhook-Secret` header or, when the provider only lets you set a URL, as a `nangoWebhookSecret` query param on the Nango webhook URL.
+
+Prefer the header when the provider supports custom headers (Fillout, ShipStation v2). Affinity and ShipStation v1 only take a URL. Nango removes the secret before the webhook reaches your functions or your app.
+
+Affinity's payload does not say which connection it is for, so also add `nangoConnectionId=<CONNECTION-ID>` to the webhook URL registered in each end user's Affinity instance.
+
+The secret usually sits in your end user's own webhook config, where their admins can see it. Because it belongs to one connection, it only lets them send events for their own connection.
 
 ## Retries and debugging
 

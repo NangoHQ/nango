@@ -5,7 +5,11 @@ import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../
 export const triggerActionArgumentsSchema = z
     .object({
         action_name: syncNameSchema,
-        input: z.json().optional(),
+        // Keep every JSON value valid while giving the MCP parameter an explicit type.
+        input: z
+            .json()
+            .meta({ type: ['object', 'array', 'string', 'number', 'boolean', 'null'] })
+            .optional(),
         integration_id: providerConfigKeySchema,
         connection_id: connectionIdSchema
     })
