@@ -99,6 +99,19 @@ Use [webhook functions](/guides/functions/webhook-functions) when Nango should u
   Implement signature verification with `X-Nango-Hmac-Sha256`, then branch on whether the incoming body has `type: "forward"`. Store and use `connectionId` only when it is present.
 </Accordion>
 
+## Providers that do not sign webhooks
+
+Affinity, Fillout and ShipStation do not sign their webhooks, so Nango checks a secret you choose for each connection instead. Nango rejects a webhook unless it carries the secret of the connection it is routed to.
+
+1. Generate a random secret of at least 16 characters per connection and store it as `webhookSecret` in that connection's [metadata](/reference/backend/http-api/connections/update-metadata).
+2. Send that connection's secret with every webhook registered for it, in the `X-Nango-Webhook-Secret` header or, when the provider only lets you set a URL, as a `nangoWebhookSecret` query param on the Nango webhook URL.
+
+Prefer the header when the provider supports custom headers (Fillout, ShipStation v2). Affinity and ShipStation v1 only take a URL. Nango removes the secret before the webhook reaches your functions or your app.
+
+Affinity's payload does not say which connection it is for, so also add `nangoConnectionId=<CONNECTION-ID>` to the webhook URL registered in each end user's Affinity instance.
+
+The secret usually sits in your end user's own webhook config, where their admins can see it. Because it belongs to one connection, it only lets them send events for their own connection.
+
 ## Retries and debugging
 
 Nango retries forwarded webhooks when your app returns a non-2xx response or has a network failure. Forwarded attempts appear in Nango logs as webhook forwarding operations.

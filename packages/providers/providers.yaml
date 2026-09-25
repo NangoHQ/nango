@@ -767,6 +767,9 @@ affinity:
                 - 'x-ratelimit-limit-user'
                 - 'x-ratelimit-limit-org-reset'
     webhook_routing_script: affinityWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
+        - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/affinity
     docs_connect: https://nango.dev/docs/integrations/all/affinity/connect
     credentials:
@@ -9020,6 +9023,8 @@ fillout-api-key:
             endpoints:
                 - /v1/api/forms
     webhook_routing_script: filloutWebhookRouting
+    webhook_allowed_query_params:
+        - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/fillout-api-key
     docs_connect: https://nango.dev/docs/integrations/all/fillout-api-key/connect
     connection_config:
@@ -9052,6 +9057,8 @@ fillout:
     token_response_metadata:
         - base_url
     webhook_routing_script: filloutWebhookRouting
+    webhook_allowed_query_params:
+        - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/fillout
     connection_config:
         base_url:
@@ -22801,6 +22808,8 @@ shipstation:
             endpoints:
                 - /users
     webhook_routing_script: shipstationWebhookRouting
+    webhook_allowed_query_params:
+        - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/shipstation
     docs_connect: https://nango.dev/docs/integrations/all/shipstation/connect
     credentials:
@@ -22838,6 +22847,8 @@ shipstation-v2:
             endpoints:
                 - /v2/users?page_size=1
     webhook_routing_script: shipstationWebhookRouting
+    webhook_allowed_query_params:
+        - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/shipstation-v2
     docs_connect: https://nango.dev/docs/integrations/all/shipstation-v2/connect
     credentials:
@@ -24022,6 +24033,8 @@ streak:
                 content-type: application/json
                 accept: application/json
     webhook_routing_script: streakWebhookRouting
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/streak
     docs_connect: https://nango.dev/docs/api-integrations/streak/connect
     credentials:

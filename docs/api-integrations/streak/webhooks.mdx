@@ -32,7 +32,8 @@ export default createOnEvent({
     event: 'post-connection-creation',
     description: 'Register a Streak outbound webhook and store the token for routing',
     exec: async (nango) => {
-        const webhookUrl = await nango.getWebhookURL();
+        // nangoConnectionId lets Nango check the token against this one connection
+        const webhookUrl = `${await nango.getWebhookURL()}?nangoConnectionId=${encodeURIComponent(nango.connectionId)}`;
         const token = randomBytes(32).toString('hex');
 
         // Register the webhook with Streak
@@ -81,7 +82,7 @@ When a Streak event fires, Nango matches the `X-Streak-Webhook-Token` header aga
 ```
 
 <Note>
-If the `X-Streak-Webhook-Token` header is missing, Nango will reject the request. If it does not match any connection's config.
+If the `X-Streak-Webhook-Token` header is missing, or does not match the connection in `nangoConnectionId`, Nango rejects the request. Without `nangoConnectionId`, a token that matches no connection is dropped.
 </Note>
 
 ### 4. Delete the webhook on connection removal
