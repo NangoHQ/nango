@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { connectionService } from '@nangohq/shared';
+import { CONNECTION_LIST_DEFAULT_LIMIT, connectionService } from '@nangohq/shared';
 
 import { PublicMcpError } from '../utils.js';
 import { listConnectionsTool } from './list.js';
@@ -67,12 +67,12 @@ describe('listConnectionsTool', () => {
         }
     });
 
-    it('uses the service default when the limit is omitted', async () => {
+    it('uses the shared default limit when the limit is omitted', async () => {
         const listSpy = vi.spyOn(connectionService, 'listConnections').mockResolvedValue([]);
 
         await listConnectionsTool.handler({}, context(['environment:connections:list']));
 
-        expect(listSpy.mock.calls[0]?.[0]).not.toHaveProperty('limit');
+        expect(listSpy).toHaveBeenCalledWith(expect.objectContaining({ limit: CONNECTION_LIST_DEFAULT_LIMIT, environmentId: 42 }));
     });
 
     it('rejects limits above the list maximum', async () => {
