@@ -348,7 +348,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_invocation',
-                message: "Function 'test-function' is not invokable with no_wait"
+                message: 'Event-triggered functions cannot be invoked directly'
             }
         });
         expect(spy).not.toHaveBeenCalled();
