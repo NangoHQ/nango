@@ -223,6 +223,7 @@ export const postPublicTbaAuthorization = asyncWrapperWithEnvironment<PostPublic
             connection: updatedConnection.connection,
             config,
             account,
+            environment,
             logCtx
         });
 
