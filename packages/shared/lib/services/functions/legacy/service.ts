@@ -4,7 +4,8 @@ import configService from '../../config.service.js';
 import { toListedNangoFunction } from './mappers.js';
 import * as functionsModel from './models/functions.js';
 
-import type { FunctionType, ListedNangoFunction } from '@nangohq/types';
+import type { FunctionRow } from './models/functions.js';
+import type { FunctionType, ListedNangoActionFunction, ListedNangoFunction } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export type ListFunctionsErrorCode = 'integration_not_found' | 'list_failed';
@@ -20,9 +21,8 @@ export class ListFunctionsError extends Error {
 }
 
 /**
- * Lists active deployed functions for a single integration across syncs,
- * actions, and on-event scripts. Pagination total is returned independently
- * of the page so out-of-range pages still surface the correct total.
+ * Lists functions for a single integration: deployed syncs/actions/on-events plus
+ * catalog actions.
  */
 export async function listFunctions({
     environmentId,
@@ -50,27 +50,60 @@ export async function listFunctions({
             );
         }
 
-        const { rows: dbRows, total } = await functionsModel.findActiveByEnvironment({ environmentId, providerConfigKey, type, search, limit, offset });
-        const rows: ListedNangoFunction[] = [];
-
-        for (const row of dbRows) {
-            const fn = toListedNangoFunction(row);
-            if (fn.isErr()) {
-                return Err(new ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions', cause: fn.error }));
-            }
-            rows.push(fn.value);
-        }
-
-        return Ok({ rows, total });
+        const page = await functionsModel.findActiveByEnvironment({
+            environmentId,
+            providerConfigKey,
+            type,
+            search,
+            limit,
+            offset
+        });
+        return mapListingPage(page);
     } catch (err) {
         return Err(new ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions', cause: err }));
     }
 }
 
 /**
- * Fetches a single deployed function by name within a provider config.
+ * Lists all action functions for a single integration without pagination.
+ * The result includes disabled actions so callers can decide how to expose them.
+ */
+export async function listActions({
+    environmentId,
+    providerConfigKey,
+    limit = 200
+}: {
+    environmentId: number;
+    providerConfigKey: string;
+    limit?: number;
+}): Promise<Result<ListedNangoActionFunction[], ListFunctionsError>> {
+    try {
+        const integrationId = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
+        if (!integrationId) {
+            return Err(
+                new ListFunctionsError({
+                    code: 'integration_not_found',
+                    message: 'Integration does not exist'
+                })
+            );
+        }
+
+        const rows = await functionsModel.findActiveActions({ environmentId, providerConfigKey, limit });
+        const mapped = mapListingRows(rows);
+        if (mapped.isErr()) {
+            return Err(mapped.error);
+        }
+
+        return Ok(mapped.value.filter((row): row is ListedNangoActionFunction => row.type === 'action'));
+    } catch (err) {
+        return Err(new ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions', cause: err }));
+    }
+}
+
+/**
+ * Fetches a single function by name within a provider config.
  * If `type` is omitted and multiple types share the same name, the first
- * match by the listing's stable order is returned.
+ * match by the listing's stable order is returned. Deployed rows win over catalog.
  */
 export async function getFunction({
     environmentId,
@@ -93,9 +126,28 @@ export async function getFunction({
         if (fn.isErr()) {
             return Err(new Error('failed_to_get_function', { cause: fn.error }));
         }
-
         return Ok(fn.value);
     } catch (err) {
         return Err(new Error('failed_to_get_function', { cause: err }));
     }
+}
+
+function mapListingPage(page: { rows: FunctionRow[]; total: number }): Result<{ rows: ListedNangoFunction[]; total: number }, ListFunctionsError> {
+    const mapped = mapListingRows(page.rows);
+    if (mapped.isErr()) {
+        return Err(mapped.error);
+    }
+    return Ok({ rows: mapped.value, total: page.total });
+}
+
+function mapListingRows(rows: FunctionRow[]): Result<ListedNangoFunction[], ListFunctionsError> {
+    const mapped: ListedNangoFunction[] = [];
+    for (const row of rows) {
+        const fn = toListedNangoFunction(row);
+        if (fn.isErr()) {
+            return Err(new ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions', cause: fn.error }));
+        }
+        mapped.push(fn.value);
+    }
+    return Ok(mapped);
 }

@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
-import { customerKeyService, seeders } from '@nangohq/shared';
+import { customerKeyService, listCatalogTools, seeders } from '@nangohq/shared';
 import { baseUrl } from '@nangohq/utils';
 
 import { getAgentSessionByToken } from '../../services/agentSession.service.js';
@@ -47,6 +47,11 @@ async function insertAction({
         deleted: false,
         deleted_at: null
     });
+}
+
+function searchableToolCount(provider: string, deployedToolNames: string[]): number {
+    const deployed = new Set(deployedToolNames);
+    return listCatalogTools(provider).filter(({ name }) => !deployed.has(name)).length + deployedToolNames.length;
 }
 
 async function seedEnvironment(): Promise<{ account: DBTeam; env: DBEnvironment; token: string }> {
@@ -145,8 +150,8 @@ describe(`POST ${endpoint}`, () => {
 
         // The sync on notion is not a tool, and reddit has no connection so the default toolset leaves it out.
         expect(res.json.data.toolset).toStrictEqual({
-            notion: { connected: true, tools_pinned: 0, tools_searchable: 2 },
-            slack: { connected: true, tools_pinned: 0, tools_searchable: 1 }
+            notion: { connected: true, tools_pinned: 0, tools_searchable: searchableToolCount('notion', ['read_doc', 'upsert_doc']) },
+            slack: { connected: true, tools_pinned: 0, tools_searchable: searchableToolCount('slack', ['send_message']) }
         });
 
         const expiresIn = new Date(res.json.data.expires_at).getTime() - Date.now();
@@ -189,7 +194,7 @@ describe(`POST ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json.data.toolset).toStrictEqual({
             notion: { connected: true, tools_pinned: 1, tools_searchable: 1 },
-            slack: { connected: true, tools_pinned: 0, tools_searchable: 1 }
+            slack: { connected: true, tools_pinned: 0, tools_searchable: searchableToolCount('slack', ['send_message']) }
         });
         expect(res.json.data.meta_tools).toStrictEqual({
             nango_tool_search: true,
