@@ -51,7 +51,7 @@ description: "Important developer & product updates, including deprecations & br
 ---
 
 <Update label="Agent sessions updates" description="September 16, 2026">
-  Improvements to [agent sessions](/guides/agent-sessions) since the public beta launch:
+  Improvements to [agent sessions](/guides/agent-sessions) since launch:
 
   - **Proxy tool:** A new `nango_proxy` meta tool lets the agent call any endpoint of a connected integration when no tool in the session fits. Nango authenticates the request, so the agent never sees credentials. It is off by default; turn it on per session. See [meta tools](/guides/agent-sessions#meta-tools).
   - **Terminate a session:** A new `DELETE /sessions/{session_id}` API to end a session before it expires and revoke its token. See [terminating a session](/guides/agent-sessions#terminating-a-session).
@@ -115,8 +115,8 @@ description: "Important developer & product updates, including deprecations & br
 </Update>
 ---
 
-<Update label="Agent sessions (public beta)" description="September 2, 2026">
-  Agent sessions are a new interface for AI agents to use integrations, now in public beta.
+<Update label="Agent sessions" description="September 2, 2026">
+  Agent sessions are a new interface for AI agents to use integrations.
 
   Your backend creates a session that defines what the agent can do:
 
