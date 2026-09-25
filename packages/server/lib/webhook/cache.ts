@@ -40,7 +40,11 @@ const botFrameworkJWKSchema = z.object({
     kty: z.literal('RSA'),
     n: z.string(),
     e: z.string(),
-    endorsements: z.array(z.string()).optional()
+    // An empty list enforces nothing, same as the Bot Framework SDK
+    endorsements: z
+        .array(z.string())
+        .optional()
+        .transform((endorsements) => (endorsements?.length ? endorsements : undefined))
 });
 const botFrameworkJWKSResponseSchema = z.object({ keys: z.array(z.unknown()) });
 
@@ -68,7 +72,7 @@ export async function getBotFrameworkJWK(kid: string): Promise<BotFrameworkJWK |
     if (cached && age < BOT_FRAMEWORK_JWKS_TTL_MS) {
         return cached;
     }
-    if (now - botFrameworkJwksLastAttemptAt < BOT_FRAMEWORK_JWKS_MIN_REFRESH_MS) {
+    if (!botFrameworkJwksFetch && now - botFrameworkJwksLastAttemptAt < BOT_FRAMEWORK_JWKS_MIN_REFRESH_MS) {
         return cached;
     }
 

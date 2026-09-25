@@ -148,7 +148,10 @@ describe('microsoft-teams-webhook-routing', () => {
     });
 
     it('rejects a body without a service url', async () => {
-        const { result } = await route({ authorization: `Bearer ${sign()}` }, null);
+        const { result } = await route(
+            { authorization: `Bearer ${sign()}` },
+            { type: activity.type, channelId: activity.channelId, channelData: activity.channelData }
+        );
 
         expect(errType(result)).toBe('webhook_invalid_signature');
         expect(countedReason()).toBe('microsoft_teams_invalid_token');

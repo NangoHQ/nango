@@ -37,8 +37,17 @@ describe('getBotFrameworkJWK', () => {
     });
 
     it('shares one fetch between concurrent lookups', async () => {
-        await Promise.all([getBotFrameworkJWK('a'), getBotFrameworkJWK('a')]);
+        expect(await Promise.all([getBotFrameworkJWK('a'), getBotFrameworkJWK('a')])).toEqual([key('a'), key('a')]);
         expect(get).toHaveBeenCalledOnce();
+    });
+
+    it('waits for an in flight refetch when a kid is unknown', async () => {
+        await getBotFrameworkJWK('a');
+        get.mockResolvedValue({ data: { keys: [key('a'), key('b')] } });
+        vi.advanceTimersByTime(REFRESH_MS);
+
+        expect(await Promise.all([getBotFrameworkJWK('b'), getBotFrameworkJWK('b')])).toEqual([key('b'), key('b')]);
+        expect(get).toHaveBeenCalledTimes(2);
     });
 
     it('refetches for an unknown kid at most once per refresh window', async () => {
@@ -98,6 +107,12 @@ describe('getBotFrameworkJWK', () => {
         vi.advanceTimersByTime(REFRESH_MS);
 
         expect(await getBotFrameworkJWK('a')).toEqual(key('a'));
+    });
+
+    it('treats an empty endorsement list as no endorsements', async () => {
+        get.mockResolvedValue({ data: { keys: [{ ...key('a'), endorsements: [] }] } });
+
+        expect((await getBotFrameworkJWK('a'))?.endorsements).toBeUndefined();
     });
 
     it('drops keys it cannot use and keeps the rest', async () => {

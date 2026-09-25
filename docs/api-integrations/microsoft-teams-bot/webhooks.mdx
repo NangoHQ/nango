@@ -36,7 +36,7 @@ On the same **Configuration** page, compare the **Microsoft App ID** with the cl
 
 ### 4. Send a test message
 
-Message the bot in Teams, then open the [Logs](https://app.nango.dev/dev/logs) tab in Nango. The webhook appears with the connection it was routed to. An activity that failed verification carries a warning that says why.
+Message the bot in Teams, then open the [Logs](https://app.nango.dev/dev/logs) tab in Nango. The activity shows up there once something consumes it, either [webhook forwarding](/guides/platform/webhook-forwarding) or a sync subscribed to its type (see [Handle the webhook](#handle-the-webhook)). An activity that failed verification carries a warning on that operation that says why.
 
 ## Handle the webhook
 
