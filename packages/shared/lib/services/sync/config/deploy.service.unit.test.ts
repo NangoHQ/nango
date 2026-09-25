@@ -823,6 +823,14 @@ describe('Deploy file upload and version resolution', () => {
                 expect(capturedSyncConfigs[0]?.['version']).toBe(expectedVersion);
             }
         );
+
+        it('returns a clean error instead of throwing when the previous version cannot be auto-incremented', async () => {
+            const { uploadSpy } = setupDeployTestMocks({ previousVersion: 'f4a9c21', jsChanged: false });
+            const { success, error } = await deployTestFlow({ ...deployBaseFlow, version: '' });
+            expect(success).toBe(false);
+            expect(error).toMatchObject({ type: 'invalid_previous_sync_version' });
+            expect(uploadSpy).not.toHaveBeenCalled();
+        });
     });
 });
 

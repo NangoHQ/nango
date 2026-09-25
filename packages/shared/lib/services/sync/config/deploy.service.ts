@@ -279,7 +279,15 @@ async function compileDeployInfo({
 
     if (previousSyncAndActionConfig) {
         if (!userSpecifiedVersion) {
-            bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
+            try {
+                bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
+            } catch {
+                const error = new NangoError('invalid_previous_sync_version', {
+                    syncName,
+                    previousVersion: previousSyncAndActionConfig.version
+                });
+                return { success: false, error, response: null };
+            }
         }
 
         if (debug) {

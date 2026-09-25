@@ -31,6 +31,10 @@ describe('Sync config increment', () => {
         expect(() => SyncConfigService.increment('a.b.c')).toThrowError('Invalid version string: a.b.c');
     });
 
+    it('should throw error on a non-numeric, non-dotted version string (e.g. a git SHA)', () => {
+        expect(() => SyncConfigService.increment('f4a9c21')).toThrowError('Invalid version string segment: f4a9c21');
+    });
+
     it('should throw error on invalid input', () => {
         expect(() => SyncConfigService.increment({} as unknown as string)).toThrowError('Invalid version input: [object Object]');
         expect(() => SyncConfigService.increment(undefined as unknown as string)).toThrowError('Invalid version input: undefined');

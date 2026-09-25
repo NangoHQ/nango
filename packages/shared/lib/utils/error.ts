@@ -607,6 +607,11 @@ export class NangoError extends NangoInternalError {
                 this.message = JSON.stringify(this.payload);
                 break;
 
+            case 'invalid_previous_sync_version':
+                this.status = 400;
+                this.message = `Cannot auto-increment the version for '${this.payload['syncName'] as string}': its previous version ('${this.payload['previousVersion'] as string}') is not a semver (e.g. '1.0.0') or plain number. Specify an explicit version for this deploy.`;
+                break;
+
             case 'invalid_action_input':
                 this.status = 400;
                 this.message = 'Failed to validate the input passed to the action';
