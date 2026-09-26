@@ -1,0 +1,56 @@
+---
+title: 'How to set up webhooks with Microsoft Teams Bot on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Receive Microsoft Teams bot activities in your app using Nango webhooks'
+---
+
+Microsoft Teams sends your bot an activity for every message, mention, conversation update and card action. Point your bot's messaging endpoint at Nango and Nango verifies each activity, routes it to the right connection and forwards it to your app.
+
+This page covers both the **Microsoft Teams Bot** and **Microsoft Teams** integrations. They route webhooks the same way.
+
+## How it works
+
+1. Teams sends the activity to your bot's messaging endpoint, which is your Nango webhook URL, through the Bot Framework connector.
+2. Nango verifies the Bot Framework token in the `Authorization` header. The token must be signed by Microsoft, issued by `https://api.botframework.com`, issued to your bot's Microsoft App ID, and match the activity's `serviceUrl`.
+3. Nango routes the activity to the connection whose `tenantId` matches the activity's `channelData.tenant.id`.
+
+<Warning>
+Nango checks the token's audience against the **client ID** of your Nango integration. Your integration's client ID must be your bot's Microsoft App ID. With the **Microsoft Teams** integration, that means the bot has to use the same Microsoft Entra app as the integration. If it uses a different app, every activity is flagged as unverified.
+</Warning>
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Microsoft Teams Bot or Microsoft Teams integration and copy the **Webhook URL**.
+
+### 2. Set it as the bot's messaging endpoint
+
+1. In the [Azure portal](https://portal.azure.com), open your **Azure Bot** resource.
+2. Go to **Settings** > **Configuration**.
+3. Paste your Nango webhook URL in **Messaging endpoint** and select **Apply**.
+
+### 3. Check the client ID
+
+On the same **Configuration** page, compare the **Microsoft App ID** with the client ID of your Nango integration. They must be the same value. See [How to register your own Microsoft Teams Bot](/api-integrations/microsoft-teams-bot/how-to-register-your-own-microsoft-teams-bot-oauth-app).
+
+### 4. Send a test message
+
+Message the bot in Teams, then open the [Logs](https://app.nango.dev/dev/logs) tab in Nango. The activity shows up there once something consumes it, either [webhook forwarding](/guides/platform/webhook-forwarding) or a sync subscribed to its type (see [Handle the webhook](#handle-the-webhook)). An activity that failed verification carries a warning on that operation that says why.
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the activity to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync**: run a sync when the activity arrives using `webhookSubscriptions` and `onWebhook`. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+Subscriptions match the activity's `type`, for example `message`, `conversationUpdate`, `messageReaction` or `invoke`. Use `['*']` to receive every type.
+
+For the activity schema, see Microsoft's [Bot Framework activity reference](https://learn.microsoft.com/en-us/azure/bot-service/rest-api/bot-framework-rest-connector-api-reference#activity-object).
+
+## Rollback strategy
+
+To stop deliveries through Nango, clear the **Messaging endpoint** on the Azure Bot's **Configuration** page, or point it back at your own bot service.
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>
