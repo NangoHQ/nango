@@ -3940,6 +3940,29 @@ boondmanager:
     docs: https://nango.dev/docs/api-integrations/boondmanager
     setup_guide_url: https://nango.dev/docs/api-integrations/boondmanager/how-to-register-your-own-boondmanager-api-oauth-app
 
+bouncer:
+    display_name: Bouncer
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.usebouncer.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1.1/credits
+    docs: https://nango.dev/docs/api-integrations/bouncer
+    docs_connect: https://nango.dev/docs/api-integrations/bouncer/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Bouncer account
+            secret: true
+            doc_section: '#step-1-generate-your-bouncer-api-key'
+
 box:
     display_name: Box
     categories:
