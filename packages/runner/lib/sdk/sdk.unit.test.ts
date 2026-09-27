@@ -605,7 +605,7 @@ describe('getRecordsById', () => {
         }
 
         const mockPersistClient = new PersistClient({ secretKey: '***' });
-        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: Array.from(records.values()), nextCursor: undefined }));
+        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: Array.from(records.values()), next_cursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const result = await nango.getRecordsByIds(Array.from(records.keys()), 'Whatever');
@@ -624,8 +624,8 @@ describe('getRecordsById', () => {
         const recordsArray = Array.from(records.values());
         mockPersistClient.getRecords = vi
             .fn()
-            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(0, 100), nextCursor: null }))
-            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(100, 200), nextCursor: null }));
+            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(0, 100), next_cursor: null }))
+            .mockResolvedValueOnce(Ok({ records: recordsArray.slice(100, 200), next_cursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const result = await nango.getRecordsByIds(Array.from(records.keys()), 'Whatever');
@@ -640,9 +640,9 @@ describe('getRecordsById', () => {
         const mockPersistClient = new PersistClient({ secretKey: '***' });
         mockPersistClient.getRecords = vi
             .fn()
-            .mockResolvedValueOnce(Ok({ records: records.slice(0, 99), nextCursor: 'page-2' }))
-            .mockResolvedValueOnce(Ok({ records: records.slice(99, 100), nextCursor: null }))
-            .mockResolvedValueOnce(Ok({ records: records.slice(100), nextCursor: null }));
+            .mockResolvedValueOnce(Ok({ records: records.slice(0, 99), next_cursor: 'page-2' }))
+            .mockResolvedValueOnce(Ok({ records: records.slice(99, 100), next_cursor: null }))
+            .mockResolvedValueOnce(Ok({ records: records.slice(100), next_cursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const result = await nango.getRecordsByIds(ids, 'Whatever');
@@ -675,7 +675,7 @@ describe('listRecords', () => {
             { id: '2', name: 'b' }
         ];
         const mockPersistClient = new PersistClient({ secretKey: '***' });
-        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records, nextCursor: null }));
+        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records, next_cursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const out: unknown[] = [];
@@ -697,7 +697,7 @@ describe('listRecords', () => {
 
     it('should pass cursor to getRecords when options.cursor is set', async () => {
         const mockPersistClient = new PersistClient({ secretKey: '***' });
-        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: [], nextCursor: null }));
+        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: [], next_cursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         for await (const _ of nango.listRecords('SomeModel', { cursor: 'cursor123' })) {
@@ -720,8 +720,8 @@ describe('listRecords', () => {
         const mockPersistClient = new PersistClient({ secretKey: '***' });
         mockPersistClient.getRecords = vi
             .fn()
-            .mockResolvedValueOnce(Ok({ records: page1, nextCursor: 'c2' }))
-            .mockResolvedValueOnce(Ok({ records: page2, nextCursor: null }));
+            .mockResolvedValueOnce(Ok({ records: page1, next_cursor: 'c2' }))
+            .mockResolvedValueOnce(Ok({ records: page2, next_cursor: null }));
 
         const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
         const out: unknown[] = [];

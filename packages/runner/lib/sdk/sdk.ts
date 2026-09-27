@@ -810,7 +810,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
             count: 1
         });
 
-        return { records: res.value.records as NangoRecord<T>[], next_cursor: res.value.nextCursor ?? null };
+        return { records: res.value.records as NangoRecord<T>[], next_cursor: res.value.next_cursor };
     }
 
     public async getRecordsByIds<K = string | number, T extends Record<string, any> = Record<string, any>>(ids: K[], model: string): Promise<Map<K, T>> {

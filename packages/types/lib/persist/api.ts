@@ -72,7 +72,7 @@ export interface GetCursorSuccess {
 
 export interface GetRecordsSuccess {
     records: NangoRecord[];
-    nextCursor?: string;
+    next_cursor: string | null;
 }
 
 export interface GetCheckpointSuccess {
