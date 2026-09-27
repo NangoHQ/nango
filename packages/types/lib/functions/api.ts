@@ -325,7 +325,7 @@ export type DeleteIntegrationFunction = ApiEndpoint<{
     /** TODO: support deleting on-event functions */
     Querystring: { env: string; type: RunnableFunctionType };
     Params: { providerConfigKey: string; functionName: string };
-    Error: ApiError<'function_managed_by_deploy'>;
+    Error: ApiError<'function_managed_by_deploy' | 'invalid_request'>;
     Success: FunctionDeletionSuccess;
 }>;
 
@@ -363,7 +363,7 @@ export type DeletePublicIntegrationFunction = ApiEndpoint<{
     /** TODO: support deleting on-event functions */
     Querystring: { type: RunnableFunctionType };
     Params: { uniqueKey: string; name: string };
-    Error: ApiError<'function_managed_by_deploy'>;
+    Error: ApiError<'function_managed_by_deploy' | 'invalid_request'>;
     Success: FunctionDeletionSuccess;
 }>;
 

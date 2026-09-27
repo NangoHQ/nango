@@ -15,7 +15,7 @@ export interface AdditionalOperationData {
     environment?: { id: number; name: string } | undefined;
     connection?: { id: number; name: string } | undefined;
     integration?: { id: number; name: string; provider: string } | undefined;
-    syncConfig?: { id: number; name: string } | undefined; // TODO: rename to functions or something similar because it also apply to legacy syncs/actions/on-events scripts but also to functions
+    syncConfig?: { id?: number; name: string } | undefined; // TODO: rename to functions or something similar because it also apply to legacy syncs/actions/on-events scripts but also to functions
     meta?: MessageRow['meta'];
 }
 

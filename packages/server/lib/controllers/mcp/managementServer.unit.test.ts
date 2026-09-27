@@ -53,7 +53,9 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools.map(({ name, annotations }) => ({ name, annotations }))).toStrictEqual([
+            expect(result.tools.every(({ title }) => typeof title === 'string' && title.trim().length > 0)).toBe(true);
+            expect(result.tools.every(({ title, annotations }) => annotations?.title === title)).toBe(true);
+            expect(result.tools.map(({ name, annotations }) => ({ name, annotations }))).toMatchObject([
                 {
                     name: 'docs_search',
                     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
@@ -475,6 +477,7 @@ describe('createManagementMcpServer', () => {
             });
             expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('async');
             expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('max_retries');
+            expect(scopedTools[0]?.inputSchema.properties?.['input']).toMatchObject({ type: ['object', 'array', 'string', 'number', 'boolean', 'null'] });
         } finally {
             await authorized.client.close();
             await authorized.server.close();

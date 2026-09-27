@@ -2,7 +2,7 @@ import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
-import { getGrowthAddonFlags, getPlanDefinition, plansList } from '@nangohq/shared';
+import { getGrowthAddonFlags, getPlanDefinition, PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON, plansList } from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -16,11 +16,12 @@ const cronMinutes = envs.CRON_MANAGE_GROWTH_ADDONS_EVERY_MIN;
 const cronExpression = `*/${cronMinutes} * * * *`;
 const lockTtlMs = cronMinutes * 60 * 1000;
 
-// growth-v2 already includes these features in its base plan, but the plan is included in the list
-// to enable growth-v2 -> payg + add-on transitions without downtime in terms of available features:
-// the add-on transition is scheduled a few hours before the plan change takes effect, so that by the
-// time the plan lands in payg, it already has the add-on enabled and thus no downtime is achieved.
-const PLANS_ALLOWED_TO_HAVE_GROWTH_FEATURES: PlanDefinition['code'][] = ['pay-as-you-go', 'growth-v2'];
+// Add-on transitions are scheduled a few hours before plan changes take effect so customers experience
+// no downtime when migrating from plans such as growth-v2 and startup-deal - where growth features are
+// already available - into PAYG + add-on. Thus these plans are allowed to have the `has_growth_features`
+// flag enabled if a future change into PAYG is scheduled.
+const PLANS_ALLOWED_TO_TEMPORARILY_HAVE_GROWTH_ADD_ON: PlanDefinition['code'][] = ['growth-v2', 'startup-deal'];
+const PLANS_ALLOWED_TO_ENABLE_GROWTH_ADD_ON = [...new Set([...PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON, ...PLANS_ALLOWED_TO_TEMPORARILY_HAVE_GROWTH_ADD_ON])];
 
 type GrowthAddonSchedulingColumn = keyof Pick<DBPlan, 'growth_features_starts_at' | 'growth_features_ends_at'>;
 type GrowthAddonOperation = 'enable' | 'disable';
@@ -75,12 +76,26 @@ export async function exec(date = new Date()): Promise<void> {
     }
 }
 
+/**
+ * A plan with growth features enabled is valid when either:
+ * - its current plan supports the growth add-on; or
+ * - it is temporarily allowed to retain the add-on while Orb has scheduled a
+ *   transition to an add-on-capable plan.
+ *
+ * Reports every other plan as corrupted.
+ */
 async function reportCorruptedPlans() {
     const corrupted = await db.knex
         .from<Pick<DBPlan, 'id' | 'account_id' | 'name'>>('plans')
         .select('id', 'account_id', 'name')
         .where('has_growth_features', true)
-        .whereNotIn('name', PLANS_ALLOWED_TO_HAVE_GROWTH_FEATURES);
+        .whereNotIn('name', PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON)
+        .where((query) => {
+            query
+                .whereNotIn('name', PLANS_ALLOWED_TO_TEMPORARILY_HAVE_GROWTH_ADD_ON)
+                .orWhereNull('orb_future_plan')
+                .orWhereNotIn('orb_future_plan', PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON);
+        });
 
     if (corrupted.length > 0) {
         for (const plan of corrupted) {
@@ -139,7 +154,7 @@ function getPlansToFilterBy(operation: GrowthAddonOperation): PlanDefinition[] {
         return plansList;
     }
 
-    return PLANS_ALLOWED_TO_HAVE_GROWTH_FEATURES.map((planCode) => {
+    return PLANS_ALLOWED_TO_ENABLE_GROWTH_ADD_ON.map((planCode) => {
         const definition = getPlanDefinition(planCode);
         if (!definition) {
             throw new Error(`Missing plan definition for ${planCode}`);

@@ -204,6 +204,46 @@ describe(search, () => {
         expect(disabledSubscribed.map((func) => func.config.name)).toEqual(['disabled']);
     });
 
+    it('filters enabled on-event functions', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+        const configs = (
+            await upsert(db.knex, [
+                {
+                    environmentId: environment.id,
+                    integrationId: github.unique_key,
+                    name: 'setup',
+                    version: functionVersion('setup', { kind: 'event', events: ['post-connection-creation'] })
+                },
+                {
+                    environmentId: environment.id,
+                    integrationId: github.unique_key,
+                    name: 'validation',
+                    version: functionVersion('validation', { kind: 'event', events: ['validate-connection'] })
+                },
+                {
+                    environmentId: environment.id,
+                    integrationId: github.unique_key,
+                    name: 'disabled',
+                    version: functionVersion('disabled-event', { kind: 'event', events: ['validate-connection'] })
+                },
+                { environmentId: environment.id, integrationId: github.unique_key, name: 'http', version: functionVersion('http-event', { kind: 'http' }) }
+            ])
+        ).unwrap();
+        const disabled = configs.find(({ config }) => config.name === 'disabled');
+        await db.knex('function_configs').where({ id: disabled!.config.id }).update({ enabled: false });
+
+        const functions = (
+            await search(db.knex, {
+                environmentId: environment.id,
+                filter: { integrationKey: github.unique_key, enabled: true, trigger: { kind: 'event', event: 'validate-connection' } }
+            })
+        ).unwrap();
+
+        expect(functions.map(({ config }) => config.name)).toEqual(['validation']);
+    });
+
     it('does not ignore empty filter values', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);

@@ -4,6 +4,7 @@ import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/ut
 
 import { terminatedAgentSessionToPublicApi } from '../../formatters/agentSession.js';
 import * as agentSessionService from '../../services/agentSession.service.js';
+import { trackAgentSessionTerminated } from '../../services/agentSessionAnalytics.service.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type { DeleteAgentSession } from '@nangohq/types';
@@ -46,6 +47,11 @@ export const deleteAgentSession = asyncWrapperWithEnvironment<DeleteAgentSession
 
         res.status(500).send({ error: { code: 'server_error', message: terminated.error.message } });
         return;
+    }
+
+    // A repeat terminate ends nothing, so it is not a second termination either.
+    if (!terminated.value.alreadyEnded) {
+        trackAgentSessionTerminated(terminated.value.session);
     }
 
     res.status(200).send({ data: terminatedAgentSessionToPublicApi(terminated.value.session) });

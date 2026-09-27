@@ -1,0 +1,92 @@
+---
+title: 'symplr CTM'
+sidebarTitle: 'symplr CTM'
+description: 'Integrate your application with the symplr Contingent Talent Management (CTM) ClearConnect API'
+---
+
+## Quickstart
+
+Connect to symplr CTM with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _symplr CTM_.
+    </Step>
+    <Step id="authorize-symplr-ctm" title="Authorize symplr CTM">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your CTM site name, username and password. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-symplr-ctm-api" title="Call the symplr CTM API">
+    Let's make your first request to the ClearConnect API (list regions). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/2_0/index.cfm?action=getRegions&resultType=json" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/2_0/index.cfm',
+            params: { action: 'getRegions', resultType: 'json' },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## symplr CTM integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my symplr CTM account?](/api-integrations/symplr-ctm/connect)
+Find your ClearConnect site name, username and password and connect them to Nango
+
+Official docs: [symplr CTM ClearConnect API 2.0](https://www.symplr.com/contingent-talent-management)
+
+## API gotchas
+
+- ClearConnect is an RPC-style API, not a resource-based REST API: every call goes through a single endpoint, `/2_0/index.cfm`, with an `action` query parameter (e.g. `?action=getClients&clientIdIn=12015`) selecting the actual operation. Copy the exact `action` name and its arguments from the endpoint's own documentation.
+- The `resultType` query parameter controls the response format (`json`, `xml`, `csv`, `tsv`). It is not required, but if omitted the API defaults to XML -- always pass `resultType=json`.
+- Authentication supports two REST patterns: a Basic Authorization header on every request (`Authorization: Basic base64(username:password)`), or a session-key exchange (`getSessionKey` with Basic auth, then `Authorization: Bearer {sessionKey}` on subsequent calls, with the session key expiring over time). Nango uses the simpler Basic-auth-on-every-request pattern, so there is no session to refresh.
+- The base URL is tenant-specific: `https://ctms.contingenttalentmanagement.com/{site-name}/clearConnect`. The site name comes from the customer's own ClearConnect base URL and is not discoverable through the API itself. The `2_0` API version segment isn't part of the base URL — include it in each endpoint call (`/2_0/index.cfm`).
+- Some functions are Module Functions, only available to CTM customers who have purchased or enabled a specific module (e.g. Booking Region, PeopleSoft, Single Worker Portal). Calling one without the module enabled returns an error indicating the required module must be enabled.
+- `get*` actions have per-function record limits; `insert*` actions are capped at 200 records per batch/call.
+- String and numeric list arguments (e.g. `statusIn`, `tempIdIn`) are comma-delimited strings, not JSON arrays, and are always returned as strings even for numeric lists.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/symplr-ctm.mdx)</Note>
+
+## Pre-built syncs & actions for symplr CTM
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/symplr-ctm/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />

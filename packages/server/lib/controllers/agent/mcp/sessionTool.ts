@@ -17,6 +17,8 @@ export interface AgentSessionCallableTool {
     integrationId: string;
     name: string;
     description: string;
+    /** A searchable tool answers to its name too, so being callable does not make a tool pinned. */
+    pinned: boolean;
 }
 
 /**
@@ -47,6 +49,7 @@ export interface AgentSessionMcpTool {
 
 type AgentSessionMcpToolDefinition<TInputSchema extends z.ZodType> = Omit<AgentSessionMcpTool, 'handler' | 'inputSchema'> & {
     inputSchema: TInputSchema;
+    onInvalidArguments?: (context: AgentSessionMcpContext) => void;
     handler: (context: AgentSessionMcpContext & { args: z.output<TInputSchema> }) => Result<unknown> | Promise<Result<unknown>>;
 };
 
@@ -56,6 +59,7 @@ export function defineAgentSessionMcpTool<TInputSchema extends z.ZodType>(tool: 
         async handler(args, context) {
             const parsedArgs = tool.inputSchema.safeParse(args ?? {});
             if (!parsedArgs.success) {
+                tool.onInvalidArguments?.(context);
                 return Err(
                     new PublicMcpError(`${formatMcpArgumentsError(tool.name, parsedArgs.error)}. Correct the arguments and call it again.`, {
                         code: 'invalid_input'

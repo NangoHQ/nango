@@ -451,24 +451,39 @@ describe('POST /mcp management server', () => {
             type: 'action'
         });
 
-        const res = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'tools/call',
-                params: {
-                    name: 'functions_list',
-                    arguments: { integration_id: 'github', type: 'action', search: 'issue', page: 0, limit: 1 }
+        const listFunctions = async (arguments_: Record<string, unknown>) => {
+            const res = await mcpPost({
+                token: secret,
+                body: {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'tools/call',
+                    params: { name: 'functions_list', arguments: arguments_ }
                 }
-            }
-        });
+            });
+            expect(res.status).toBe(200);
+            expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
+            return res.json.result.structuredContent as {
+                data: { name: string; type: string; source: string }[];
+                pagination: { total: number; page: number; limit: number };
+            };
+        };
 
-        expect(res.status).toBe(200);
-        expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
-        expect(res.json.result.structuredContent.pagination).toStrictEqual({ total: 1, page: 0, limit: 1 });
-        expect(res.json.result.structuredContent.data).toHaveLength(1);
-        expect(res.json.result.structuredContent.data[0]).toMatchObject({ name: 'create-issue', type: 'action' });
+        const allActions = await listFunctions({ integration_id: 'github', type: 'action', page: 0, limit: 100 });
+        expect(allActions.data.every((fn) => fn.type === 'action')).toBe(true);
+        expect(allActions.data.some((fn) => fn.name === 'sync-issues')).toBe(false);
+        expect(allActions.data.some((fn) => fn.name === 'create-user' && fn.source !== 'tools-catalog')).toBe(true);
+        expect(allActions.data.some((fn) => fn.name === 'create-issue' && fn.source !== 'tools-catalog')).toBe(true);
+        expect(allActions.data.some((fn) => fn.name === 'list-issues' && fn.source === 'tools-catalog')).toBe(true);
+        expect(new Set(allActions.data.map((fn) => fn.name)).size).toBe(allActions.data.length);
+
+        const searched = await listFunctions({ integration_id: 'github', type: 'action', search: 'issue', page: 0, limit: 100 });
+        const expected = allActions.data.filter((fn) => fn.name.toLowerCase().includes('issue'));
+        expect(searched.data.map((fn) => fn.name)).toEqual(expected.map((fn) => fn.name));
+        expect(searched.pagination).toStrictEqual({ total: expected.length, page: 0, limit: 100 });
+        expect(searched.data.some((fn) => fn.name === 'create-user')).toBe(false);
+        expect(searched.data.some((fn) => fn.name === 'create-issue' && fn.source !== 'tools-catalog')).toBe(true);
+        expect(searched.data.some((fn) => fn.name === 'list-issues' && fn.source === 'tools-catalog')).toBe(true);
     });
 
     it('returns public errors for invalid function arguments and missing integrations', async () => {

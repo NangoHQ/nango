@@ -5,6 +5,7 @@ import { Err, Ok } from '@nangohq/utils';
 import integrationService, { IntegrationServiceError } from '../../../services/integration.service.js';
 import { PublicMcpError } from '../utils.js';
 import { getIntegrationsTool } from './get.js';
+import { getIntegrationOutputSchema } from './schema.js';
 
 import type { ManagementMcpContext } from '../managementTool.js';
 import type { Config } from '@nangohq/shared';
@@ -88,6 +89,70 @@ describe('getIntegrationsTool', () => {
                 scopes: 'repo,user',
                 webhook_secret: null
             });
+        }
+    });
+
+    it('returns masked integration_config credentials and matches the declared output schema', async () => {
+        const integration = integrationFixture();
+        const provider = providerFixture();
+        vi.spyOn(integrationService, 'get').mockResolvedValue(
+            Ok({
+                integration,
+                provider,
+                credentials: {
+                    type: 'INTEGRATION_CONFIG',
+                    authMode: 'AWS_SIGV4',
+                    integration_config: { service: 's3', awsSecretAccessKey: '***' }
+                }
+            })
+        );
+
+        const result = await getIntegrationsTool.handler(
+            { integration_id: 'my-aws-integration', include: ['credentials'] },
+            context(['environment:integrations:read_credentials'])
+        );
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.data.credentials).toStrictEqual({
+                type: 'INTEGRATION_CONFIG',
+                auth_mode: 'AWS_SIGV4',
+                integration_config: { service: 's3', awsSecretAccessKey: '***' }
+            });
+            expect(() => getIntegrationOutputSchema.parse(result.value)).not.toThrow();
+        }
+    });
+
+    it('returns mcp_oauth2_generic client branding and matches the declared output schema', async () => {
+        const integration = integrationFixture();
+        const provider = providerFixture();
+        vi.spyOn(integrationService, 'get').mockResolvedValue(
+            Ok({
+                integration,
+                provider,
+                credentials: {
+                    type: 'MCP_OAUTH2_GENERIC',
+                    clientName: 'Acme Inc',
+                    clientUri: 'https://acme.com',
+                    clientLogoUri: null
+                }
+            })
+        );
+
+        const result = await getIntegrationsTool.handler(
+            { integration_id: 'mcp-generic', include: ['credentials'] },
+            context(['environment:integrations:read_credentials'])
+        );
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.data.credentials).toStrictEqual({
+                type: 'MCP_OAUTH2_GENERIC',
+                client_name: 'Acme Inc',
+                client_uri: 'https://acme.com',
+                client_logo_uri: null
+            });
+            expect(() => getIntegrationOutputSchema.parse(result.value)).not.toThrow();
         }
     });
 

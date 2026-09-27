@@ -2,7 +2,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { CONFIGS_TABLE, INTEGRATIONS_TABLE, VERSIONS_TABLE } from './tables.js';
 
-import type { DBFunctionConfig, DBFunctionConfigVersion, DBIntegrationDecrypted } from '@nangohq/types';
+import type { DBFunctionConfig, DBFunctionConfigVersion, DBIntegrationDecrypted, OnEventType } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
@@ -177,7 +177,7 @@ interface FunctionSearchFilter {
     id?: number | undefined;
     name?: string | undefined;
     enabled?: boolean | undefined;
-    trigger?: { kind: 'http'; hasSubscriptions: boolean } | undefined;
+    trigger?: { kind: 'http'; hasSubscriptions: boolean } | { kind: 'event'; event: OnEventType } | undefined;
 }
 
 export async function search(
@@ -220,14 +220,22 @@ export async function search(
             query.where('config.enabled', filter.enabled);
         }
         if (filter?.trigger) {
-            // TODO: index subscriptions array length for performance
             query.whereRaw("version.trigger->>'kind' = ?", [filter.trigger.kind]);
-            const subscriptionCount = `CASE
-                WHEN jsonb_typeof(version.trigger->'subscriptions') = 'array'
-                THEN jsonb_array_length(version.trigger->'subscriptions')
-                ELSE 0
-            END`;
-            query.whereRaw(`${subscriptionCount} ${filter.trigger.hasSubscriptions ? '>' : '='} 0`);
+            switch (filter.trigger.kind) {
+                case 'http': {
+                    // TODO: index subscriptions array length for performance
+                    const subscriptionCount = `CASE
+                        WHEN jsonb_typeof(version.trigger->'subscriptions') = 'array'
+                        THEN jsonb_array_length(version.trigger->'subscriptions')
+                        ELSE 0
+                    END`;
+                    query.whereRaw(`${subscriptionCount} ${filter.trigger.hasSubscriptions ? '>' : '='} 0`);
+                    break;
+                }
+                case 'event':
+                    query.whereRaw("version.trigger->'events' @> ?::jsonb", [JSON.stringify([filter.trigger.event])]);
+                    break;
+            }
         }
 
         const rows = await query;

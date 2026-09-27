@@ -1,0 +1,77 @@
+---
+title: 'Beeline VMS'
+sidebarTitle: 'Beeline VMS'
+description: 'Integrate your application with Beeline VMS APIs using OAuth2 client credentials'
+---
+
+## 🚀 Quickstart
+
+Connect to Beeline VMS with Nango using client credentials and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Beeline VMS_.
+    </Step>
+    <Step id="authorize-beeline" title="Authorize Beeline VMS">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Client ID, Client Secret, Authorization Server Region, Audience, and Client Site ID — see the [connect guide](/api-integrations/beeline-vms/connect) for where to find each one. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-the-api" title="Call the Beeline VMS API">
+    Make your first request. This example uses the Client APIs (the Audience you set determines which API product your requests can reach — see the [connect guide](/api-integrations/beeline-vms/connect)). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections), and your **Client Site ID** in the path:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/sites/<CLIENT-SITE-ID>/sows" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/sites/<CLIENT-SITE-ID>/sows',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Beeline VMS Integration Guides
+
+- [How do I link my account?](/api-integrations/beeline-vms/connect)  
+Connect your Beeline VMS account using the Connect UI and get your Client ID, Client Secret, Authorization Server Region, Audience, and Client Site ID
+
+Official docs: [The Beeline Developers Portal](https://developers.beeline.com/authentication)
+
+## 🧩 Pre-built syncs & actions for Beeline VMS
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/beeline-vms/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

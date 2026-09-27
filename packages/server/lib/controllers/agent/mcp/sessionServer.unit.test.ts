@@ -261,8 +261,18 @@ describe('listSessionTools', () => {
         );
 
         expect(listed.map((tool) => tool.name)).not.toContain('notion__upsert_doc');
-        expect(callable.get('notion__upsert_doc')).toStrictEqual({ integrationId: 'notion', name: 'upsert_doc', description: 'upsert_doc description' });
-        expect(callable.get('notion__read_doc')).toStrictEqual({ integrationId: 'notion', name: 'read_doc', description: 'read_doc description' });
+        expect(callable.get('notion__upsert_doc')).toStrictEqual({
+            integrationId: 'notion',
+            name: 'upsert_doc',
+            description: 'upsert_doc description',
+            pinned: false
+        });
+        expect(callable.get('notion__read_doc')).toStrictEqual({
+            integrationId: 'notion',
+            name: 'read_doc',
+            description: 'read_doc description',
+            pinned: true
+        });
     });
 
     it('never lets a searchable tool take a name a listed tool already answers to', () => {
@@ -277,8 +287,8 @@ describe('listSessionTools', () => {
         );
 
         expect(listed.map((tool) => tool.name)).toContain('a_b__c');
-        expect(callable.get('a_b__c')).toStrictEqual({ integrationId: 'a.b', name: 'c', description: 'c description' });
-        expect(callable.get('a_b__c_2')).toStrictEqual({ integrationId: 'a_b', name: 'c', description: 'c description' });
+        expect(callable.get('a_b__c')).toStrictEqual({ integrationId: 'a.b', name: 'c', description: 'c description', pinned: true });
+        expect(callable.get('a_b__c_2')).toStrictEqual({ integrationId: 'a_b', name: 'c', description: 'c description', pinned: false });
     });
 
     it('keeps a page worth of tools listable', () => {
