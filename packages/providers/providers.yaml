@@ -4831,6 +4831,30 @@ chargebee:
             default_value: ''
             hidden: true
 
+chameleon-i:
+    display_name: Chameleon-I
+    categories:
+        - crm
+        - ats
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.chameleoni.com
+        headers:
+            api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/candidate/search
+    docs: https://nango.dev/docs/api-integrations/chameleon-i
+    docs_connect: https://nango.dev/docs/api-integrations/chameleon-i/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Chameleon-I workspace API key
+            secret: true
+            doc_section: '#step-1-generate-api-key'
+
 chartboost:
     display_name: Chartboost
     categories:

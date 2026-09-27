@@ -1164,6 +1164,7 @@
               "integrations/all/certn",
               "integrations/all/certn-partner",
               "integrations/all/chargebee",
+              "api-integrations/chameleon-i",
               "api-integrations/chartboost",
               "api-integrations/chatarmin",
               "api-integrations/chatgpt-enterprise",
