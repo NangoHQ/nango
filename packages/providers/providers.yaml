@@ -4853,7 +4853,7 @@ chameleon-i:
             title: API Key
             description: Your Chameleon-I workspace API key
             secret: true
-            doc_section: '#step-1-generate-api-key'
+            doc_section: '#step-1-generate-an-api-key'
 
 chartboost:
     display_name: Chartboost
