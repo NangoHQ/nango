@@ -1,0 +1,44 @@
+---
+title: 'How to register your own HitPay (Sandbox) OAuth app'
+sidebarTitle: 'HitPay (Sandbox) setup'
+description: 'Register an OAuth app with HitPay (Sandbox) and connect it to Nango'
+---
+
+This guide shows you how to register your own app with HitPay (Sandbox) to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their HitPay (Sandbox) business.
+
+<Steps>
+  <Step title="Sign in to the HitPay (Sandbox) dashboard">
+    Sign in to the [HitPay (Sandbox) dashboard](https://dashboard.sandbox.hit-pay.com) with an account that is an **Owner** or **Admin** of the business that will own the app.
+  </Step>
+  <Step title="Create a new app">
+    1. Go to **Payments** -> **Developers** and open the **App Builder** tab.
+    2. Click **New App**.
+    3. Fill in the **App Name** and optionally the **Developer website** and an icon.
+    4. Under **Redirect URIs**, add the Nango callback URL: `https://api.nango.dev/oauth/callback`.
+    5. Choose the **Availability**: **Private** limits the app to your own business, **Public** lets other HitPay businesses connect.
+    6. Click **Create**.
+  </Step>
+  <Step title="Get your credentials">
+    Copy the **Client ID** and the **Client Secret**. The secret is only shown once; if you lose it, use **Regenerate Secret** on the app.
+  </Step>
+  <Step title="Configure scopes in Nango">
+    When configuring the integration in Nango, add the scopes your app needs. Available scopes are `business:read`, `payments`, `commerce`, and `customer`, plus their granular variants (e.g. `payments:read`, `payments:refund`). A parent scope such as `payments` also grants all of its `payments:*` children.
+
+    <Note>
+      New apps can use `business:read`, `payments`, and `commerce` (and their children). HitPay silently drops any other scope the app hasn't been granted, so request access to `customer` scopes from HitPay before relying on them.
+    </Note>
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+## Good to know
+
+- Only business **Owners** and **Admins** can authorize a connection. During authorization, the user picks which business to connect.
+- Access and refresh tokens are valid for one year. Each refresh issues a new refresh token.
+- The token response doesn't include the business ID. Call `GET /v1/info` to retrieve the connected business.
+
+For more details, see the [HitPay API documentation](https://docs.hitpayapp.com/apis/overview).
+
+---
