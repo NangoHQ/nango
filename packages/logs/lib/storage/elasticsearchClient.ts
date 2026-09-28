@@ -93,7 +93,12 @@ export class ElasticsearchLogsClient implements LogsStorageClient {
 
     async healthCheck(): Promise<boolean> {
         try {
-            await this.client.cluster.health();
+            if (this.serverless) {
+                // Serverless rejects GET /_cluster/health with 410. GET / is the supported probe.
+                await this.client.info();
+            } else {
+                await this.client.cluster.health();
+            }
             return true;
         } catch {
             return false;

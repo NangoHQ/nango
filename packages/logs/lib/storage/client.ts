@@ -11,8 +11,8 @@ import type { LogsStorageClientConfig, LogsStoragePolicies, LogsStorageProvider 
 export type { LogsStorageClient } from './logsStorageClient.js';
 export type { LogsStoragePolicies, LogsStorageProvider } from './types.js';
 
-function createClientConfig(): LogsStorageClientConfig {
-    const serverless = envs.NANGO_LOGS_PROVIDER === 'ec-serverless';
+function createClientConfig(provider: LogsStorageProvider = envs.NANGO_LOGS_PROVIDER): LogsStorageClientConfig {
+    const serverless = provider === 'ec-serverless';
     return {
         nodes: envs.NANGO_LOGS_ES_URL || 'http://localhost:0',
         requestTimeout: envs.NANGO_LOGS_ES_REQUEST_TIMEOUT_MS,
@@ -27,7 +27,7 @@ function createClientConfig(): LogsStorageClientConfig {
     };
 }
 
-export function createLogsStorageBackend(provider: LogsStorageProvider, config: LogsStorageClientConfig = createClientConfig()): LogsStorageBackend {
+export function createLogsStorageBackend(provider: LogsStorageProvider, config: LogsStorageClientConfig = createClientConfig(provider)): LogsStorageBackend {
     if (provider === 'opensearch') {
         return new OpenSearchLogsClient(config);
     }

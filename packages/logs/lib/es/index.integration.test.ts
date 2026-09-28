@@ -10,7 +10,7 @@ import { createOperation, getOperation, updateOperation } from '../models/operat
 import { putIsmPolicies } from '../opensearch/ismPolicies.js';
 import { client, logsStorage } from '../storage/client.js';
 import { deleteIndex, migrateMapping } from './helpers.js';
-import { indexOperations, policyMessages, policyOperations, retentionMinAge } from './schema.js';
+import { indexMessages, indexOperations, policyMessages, policyOperations, retentionMinAge } from './schema.js';
 
 import type { OperationRow } from '@nangohq/types';
 
@@ -169,6 +169,17 @@ describe('retention policy', () => {
             expect(minIndexAgeOf(after)).toBe(retentionMinAge);
         } finally {
             await putIsmPolicies(openSearchRaw);
+        }
+    });
+
+    it.skipIf(envs.NANGO_LOGS_PROVIDER !== 'ec-serverless')('sets data stream data_retention to NANGO_LOGS_ES_RETENTION_DAYS after migration', async () => {
+        await migrateMapping();
+
+        const esRaw = raw as ElasticsearchClient;
+        for (const name of [indexMessages.index, indexOperations.index]) {
+            const res = await esRaw.indices.getDataLifecycle({ name });
+            const stream = res.data_streams.find((entry) => entry.name === name);
+            expect(stream?.lifecycle?.data_retention).toBe(retentionMinAge);
         }
     });
 

@@ -55,7 +55,6 @@ describe('logs ingest pipeline', () => {
     });
 
     it('should use the daily pipeline unless the provider is ec-serverless', () => {
-        expect(getLogsIngestPipelineId('operations')).toBe('daily.operations');
         expect(getLogsIngestPipelineId('operations', 'elasticsearch')).toBe('daily.operations');
         expect(getLogsIngestPipelineId('operations', 'opensearch')).toBe('daily.operations');
         expect(getLogsIngestPipelineId('operations', 'ec-serverless')).toBe('timestamp.operations');

@@ -280,6 +280,54 @@ describe('ElasticsearchLogsClient', () => {
         await client.putDataStreamLifecycle({ name: '20240528_messages', data_retention: '15d' });
         expect(raw.indices.putDataLifecycle).toHaveBeenCalledWith({ name: '20240528_messages', data_retention: '15d' });
     });
+
+    it('should probe with cluster health when not serverless', async () => {
+        const raw = { cluster: { health: vi.fn().mockResolvedValue({}) }, info: vi.fn() };
+        const client = new ElasticsearchLogsClient({
+            nodes: 'http://localhost:9200',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            auth: { username: 'u', password: 'p' }
+        });
+        (client as unknown as { client: typeof raw }).client = raw;
+
+        await expect(client.healthCheck()).resolves.toBe(true);
+        expect(raw.cluster.health).toHaveBeenCalledOnce();
+        expect(raw.info).not.toHaveBeenCalled();
+    });
+
+    it('should probe with info when serverless', async () => {
+        const raw = { cluster: { health: vi.fn() }, info: vi.fn().mockResolvedValue({}) };
+        const client = new ElasticsearchLogsClient({
+            nodes: 'https://example.es.cloud',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            auth: { apiKey: 'encoded-key' },
+            serverless: true
+        });
+        (client as unknown as { client: typeof raw }).client = raw;
+
+        await expect(client.healthCheck()).resolves.toBe(true);
+        expect(raw.info).toHaveBeenCalledOnce();
+        expect(raw.cluster.health).not.toHaveBeenCalled();
+    });
+
+    it('should follow an explicit ec-serverless provider', async () => {
+        const backend = createLogsStorageBackend('ec-serverless');
+        const raw = {
+            ilm: { putLifecycle: vi.fn() },
+            cluster: { health: vi.fn() },
+            info: vi.fn().mockResolvedValue({})
+        };
+        (backend as unknown as { client: typeof raw }).client = raw;
+
+        await backend.setupRetentionPolicies(policies);
+        await expect(backend.healthCheck()).resolves.toBe(true);
+
+        expect(raw.ilm.putLifecycle).not.toHaveBeenCalled();
+        expect(raw.info).toHaveBeenCalledOnce();
+        expect(raw.cluster.health).not.toHaveBeenCalled();
+    });
 });
 
 describe('CircuitBreakerLogsClient', () => {

@@ -46,6 +46,7 @@ services:
             - NANGO_LOGS_ES_USER
             - NANGO_LOGS_ES_PWD
             - NANGO_LOGS_ES_API_KEY
+            - NANGO_LOGS_ES_RETENTION_DAYS
             - FLAG_SERVE_CONNECT_UI=${FLAG_SERVE_CONNECT_UI:-true}
             - NANGO_PUBLIC_CONNECT_URL
         volumes:
