@@ -1,4 +1,4 @@
-import { FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { ScopesInput } from '@/components/patterns/ScopesInput';
@@ -10,6 +10,7 @@ import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { defaultCallback } from '@/utils/cloud';
+import { SettingsField } from './SettingsLayout';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
@@ -63,43 +64,35 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
     };
 
     return (
-        <div className="flex flex-col gap-10">
-            {/* Callback URL */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="callback_url">Callback URL</FieldLabel>
+        <div className="flex flex-col gap-6">
+            <SettingsField label="Callback URL" htmlFor="callback_url">
                 <InputGroup>
                     <InputGroupInput disabled value={callbackUrl} />
                     <InputGroupAddon align="inline-end">
                         <CopyButton text={callbackUrl} />
                     </InputGroupAddon>
                 </InputGroup>
-            </div>
+            </SettingsField>
 
-            {/* OAuth Client Name */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="client_name">OAuth Client Name</FieldLabel>
+            <SettingsField label="OAuth client name" htmlFor="client_name">
                 <EditableInput
                     initialValue={integration.custom?.oauth_client_name || ''}
                     onSave={(value) => onSave({ clientName: value })}
                     validate={validateNotEmpty}
                     canEdit={canEdit}
                 />
-            </div>
+            </SettingsField>
 
-            {/* OAuth Client URI */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="client_uri">OAuth Client URI</FieldLabel>
+            <SettingsField label="OAuth client URI" htmlFor="client_uri">
                 <EditableInput
                     initialValue={integration.custom?.oauth_client_uri || ''}
                     onSave={(value) => onSave({ clientUri: value })}
                     validate={validateNotEmpty}
                     canEdit={canEdit}
                 />
-            </div>
+            </SettingsField>
 
-            {/* OAuth Client Logo URI */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="client_logo_uri">OAuth Client Logo URI</FieldLabel>
+            <SettingsField label="OAuth client logo URI" htmlFor="client_logo_uri">
                 <EditableInput
                     initialValue={integration.custom?.oauth_client_logo_uri || ''}
                     onSave={(value) => onSave({ clientLogoUri: value })}
@@ -107,13 +100,11 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
                     validate={validateUrl}
                     canEdit={canEdit}
                 />
-            </div>
+            </SettingsField>
 
-            {/* Scopes */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="scopes">Scopes</FieldLabel>
+            <SettingsField label="Scopes" htmlFor="scopes">
                 <ScopesInput scopesString={integration.oauth_scopes || ''} onChange={handleScopesChange} readOnly={!canEdit} />
-            </div>
+            </SettingsField>
         </div>
     );
 };
