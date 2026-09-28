@@ -12,14 +12,18 @@ export type { LogsStorageClient } from './logsStorageClient.js';
 export type { LogsStoragePolicies, LogsStorageProvider } from './types.js';
 
 function createClientConfig(): LogsStorageClientConfig {
+    const serverless = envs.NANGO_LOGS_PROVIDER === 'ec-serverless';
     return {
         nodes: envs.NANGO_LOGS_ES_URL || 'http://localhost:0',
         requestTimeout: envs.NANGO_LOGS_ES_REQUEST_TIMEOUT_MS,
         maxRetries: envs.NANGO_LOGS_ES_MAX_RETRIES,
-        auth: {
-            username: envs.NANGO_LOGS_ES_USER!, // ggignore
-            password: envs.NANGO_LOGS_ES_PWD! // ggignore
-        }
+        auth: serverless
+            ? { apiKey: envs.NANGO_LOGS_ES_API_KEY! } // ggignore
+            : {
+                  username: envs.NANGO_LOGS_ES_USER!, // ggignore
+                  password: envs.NANGO_LOGS_ES_PWD! // ggignore
+              },
+        ...(serverless ? { serverless: true } : {})
     };
 }
 
@@ -53,6 +57,13 @@ export class LogsStorage {
 
     async setupPolicies(policies: LogsStoragePolicies): Promise<void> {
         await this.backend.setupRetentionPolicies(policies);
+    }
+
+    async putDataStreamLifecycle(name: string, dataRetention: string): Promise<void> {
+        if (!(this.backend instanceof ElasticsearchLogsClient)) {
+            throw new Error('Data stream lifecycle is only supported for Elasticsearch');
+        }
+        await this.backend.putDataStreamLifecycle({ name, data_retention: dataRetention });
     }
 }
 

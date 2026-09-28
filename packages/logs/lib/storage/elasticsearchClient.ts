@@ -23,9 +23,12 @@ import type {
 
 export class ElasticsearchLogsClient implements LogsStorageClient {
     private readonly client: ElasticsearchClient;
+    private readonly serverless: boolean;
 
     constructor(config: LogsStorageClientConfig) {
-        this.client = new ElasticsearchClient(config);
+        const { serverless = false, ...clientConfig } = config;
+        this.serverless = serverless;
+        this.client = new ElasticsearchClient(clientConfig);
     }
 
     async search<TDocument, TAggregations>(params: LogsSearchParams): Promise<LogsSearchResponse<TDocument, TAggregations>> {
@@ -98,8 +101,15 @@ export class ElasticsearchLogsClient implements LogsStorageClient {
     }
 
     async setupRetentionPolicies(policies: LogsStoragePolicies): Promise<void> {
+        if (this.serverless) {
+            return;
+        }
         await this.client.ilm.putLifecycle(policies.messagesPolicy);
         await this.client.ilm.putLifecycle(policies.operationsPolicy);
+    }
+
+    async putDataStreamLifecycle(params: { name: string; data_retention: string }): Promise<void> {
+        await this.client.indices.putDataLifecycle(params);
     }
 
     async close(): Promise<void> {

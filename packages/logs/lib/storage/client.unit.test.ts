@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { policyMessages, policyOperations } from '../es/schema.js';
 import { CircuitBreaker } from './circuitBreaker.js';
 import { CircuitBreakerLogsClient } from './circuitBreakerLogsClient.js';
 import { createLogsStorageBackend, LogsStorage } from './client.js';
@@ -51,12 +52,35 @@ describe('createLogsStorageBackend', () => {
         });
         expect(backend).toBeInstanceOf(ElasticsearchLogsClient);
     });
+
+    it('should create ElasticsearchLogsClient for ec-serverless', () => {
+        const backend = createLogsStorageBackend('ec-serverless', {
+            nodes: 'https://example.es.cloud',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            auth: { apiKey: 'encoded-key' },
+            serverless: true
+        });
+        expect(backend).toBeInstanceOf(ElasticsearchLogsClient);
+    });
+
+    it('should reject API key auth for opensearch', () => {
+        expect(() =>
+            createLogsStorageBackend('opensearch', {
+                nodes: 'http://localhost:9200',
+                requestTimeout: 1000,
+                maxRetries: 0,
+                auth: { apiKey: 'encoded-key' }
+            })
+        ).toThrow(/API key/);
+    });
 });
 
 describe('LogsStorage', () => {
     it('should select provider from constructor', () => {
         expect(new LogsStorage('opensearch').provider).toBe('opensearch');
         expect(new LogsStorage('elasticsearch').provider).toBe('elasticsearch');
+        expect(new LogsStorage('ec-serverless').provider).toBe('ec-serverless');
     });
 });
 
@@ -213,6 +237,48 @@ describe('OpenSearchLogsClient', () => {
 
         const indices = await client.cat.indices({ format: 'json' });
         expect(indices).toEqual([{ index: 'logs.2025-01-01' }]);
+    });
+});
+
+describe('ElasticsearchLogsClient', () => {
+    const policies = { messagesPolicy: policyMessages, operationsPolicy: policyOperations };
+
+    it('should install ILM policies when not serverless', async () => {
+        const raw = { ilm: { putLifecycle: vi.fn().mockResolvedValue({ acknowledged: true }) } };
+        const client = new ElasticsearchLogsClient({
+            nodes: 'http://localhost:9200',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            auth: { username: 'u', password: 'p' }
+        });
+        (client as unknown as { client: typeof raw }).client = raw;
+
+        await client.setupRetentionPolicies(policies);
+
+        expect(raw.ilm.putLifecycle).toHaveBeenCalledTimes(2);
+        expect(raw.ilm.putLifecycle).toHaveBeenCalledWith(policyMessages);
+        expect(raw.ilm.putLifecycle).toHaveBeenCalledWith(policyOperations);
+    });
+
+    it('should skip ILM and update data stream retention when serverless', async () => {
+        const raw = {
+            ilm: { putLifecycle: vi.fn() },
+            indices: { putDataLifecycle: vi.fn().mockResolvedValue({ acknowledged: true }) }
+        };
+        const client = new ElasticsearchLogsClient({
+            nodes: 'https://example.es.cloud',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            auth: { apiKey: 'encoded-key' },
+            serverless: true
+        });
+        (client as unknown as { client: typeof raw }).client = raw;
+
+        await client.setupRetentionPolicies(policies);
+        expect(raw.ilm.putLifecycle).not.toHaveBeenCalled();
+
+        await client.putDataStreamLifecycle({ name: '20240528_messages', data_retention: '15d' });
+        expect(raw.indices.putDataLifecycle).toHaveBeenCalledWith({ name: '20240528_messages', data_retention: '15d' });
     });
 });
 

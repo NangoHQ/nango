@@ -1,6 +1,6 @@
 import { isTest } from '@nangohq/utils';
 
-import { indexOperations } from '../es/schema.js';
+import { getLogsIngestPipelineId, indexOperations } from '../es/schema.js';
 import { client } from '../storage/client.js';
 import { throwLogsNotFound } from '../utils.js';
 import { createCursor, getFullIndexName, parseCursor } from './helpers.js';
@@ -38,7 +38,7 @@ export async function createOperation(row: OperationRow): Promise<{ index: strin
         id: row.id,
         document: row,
         refresh: isTest,
-        pipeline: `daily.${indexOperations.index}`
+        pipeline: getLogsIngestPipelineId(indexOperations.index)
     });
     return { index: res._index };
 }
