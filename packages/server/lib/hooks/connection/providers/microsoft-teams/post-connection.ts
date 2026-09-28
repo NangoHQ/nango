@@ -50,16 +50,18 @@ export default async function execute(nango: Nango) {
         scope: TEAMS_DEV_PORTAL_SCOPE
     });
 
-    const tokenResponse = await nango.proxy<TeamsDevPortalTokenResponse>({
-        method: 'POST',
-        baseUrlOverride: 'https://login.microsoftonline.com',
-        endpoint: `/${tenantId}/oauth2/v2.0/token`,
-        providerConfigKey: connection.provider_config_key,
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        data: params.toString()
-    });
+    const tokenResponse = await nango
+        .proxy<TeamsDevPortalTokenResponse>({
+            method: 'POST',
+            baseUrlOverride: 'https://login.microsoftonline.com',
+            endpoint: `/${tenantId}/oauth2/v2.0/token`,
+            providerConfigKey: connection.provider_config_key,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            data: params.toString()
+        })
+        .catch(() => null);
 
     if (!tokenResponse || axios.isAxiosError(tokenResponse) || !tokenResponse.data?.access_token) {
         return;
