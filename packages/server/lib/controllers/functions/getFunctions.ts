@@ -17,7 +17,11 @@ function encodeCursor(id: number): string {
 
 function decodeCursor(cursor: string): number | undefined {
     const decoded = Buffer.from(cursor, 'base64url').toString('utf8');
-    return /^\d+$/.test(decoded) ? Number.parseInt(decoded, 10) : undefined;
+    if (!/^\d+$/.test(decoded)) {
+        return undefined;
+    }
+    const parsed = z.int32().positive().safeParse(Number(decoded));
+    return parsed.success ? parsed.data : undefined;
 }
 
 const queryValidation = z
