@@ -174,7 +174,8 @@ type SearchFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> 
     Prefixed<FunctionIntegration, typeof INTEGRATION_PREFIX>;
 
 interface FunctionSearchFilter {
-    integrationKey: string;
+    integrationKey?: string | undefined;
+    uuid?: string | undefined;
     id?: number | undefined;
     name?: string | undefined;
     enabled?: boolean | undefined;
@@ -208,8 +209,11 @@ export async function search(
             .whereNull('config.deleted_at')
             .whereNull('version.deleted_at');
 
-        if (filter) {
+        if (filter?.integrationKey !== undefined) {
             query.where('integration.unique_key', filter.integrationKey);
+        }
+        if (filter?.uuid !== undefined) {
+            query.where('config.uuid', filter.uuid);
         }
         if (filter?.name !== undefined) {
             query.where('config.name', filter.name);
