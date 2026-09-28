@@ -15,7 +15,7 @@ This page covers both the **Microsoft Teams Bot** and **Microsoft Teams** integr
 3. Nango routes the activity to the connection whose `tenantId` matches the activity's `channelData.tenant.id`.
 
 <Warning>
-Nango checks the token's audience against the **client ID** of your Nango integration. Your integration's client ID must be your bot's Microsoft App ID. With the **Microsoft Teams** integration, that means the bot has to use the same Microsoft Entra app as the integration. If it uses a different app, every activity is flagged as unverified.
+Nango checks the token's audience against the **client ID** of your Nango integration. Your integration's client ID must be your bot's Microsoft App ID. With the **Microsoft Teams** integration, that means the bot has to use the same Microsoft Entra app as the integration. If it uses a different app, Nango rejects every activity.
 </Warning>
 
 ## Setup
@@ -36,7 +36,7 @@ On the same **Configuration** page, compare the **Microsoft App ID** with the cl
 
 ### 4. Send a test message
 
-Message the bot in Teams, then open the [Logs](https://app.nango.dev/dev/logs) tab in Nango. The activity shows up there once something consumes it, either [webhook forwarding](/guides/platform/webhook-forwarding) or a sync subscribed to its type (see [Handle the webhook](#handle-the-webhook)). An activity that failed verification carries a warning on that operation that says why.
+Message the bot in Teams, then open the [Logs](https://app.nango.dev/dev/logs) tab in Nango. The activity shows up there once something consumes it, either [webhook forwarding](/guides/platform/webhook-forwarding) or a sync subscribed to its type (see [Handle the webhook](#handle-the-webhook)). Nango rejects an activity that fails verification with a `401`, so it never reaches your app or Logs. If activities don't show up, check the client ID first ([step 3](#3-check-the-client-id)).
 
 ## Handle the webhook
 

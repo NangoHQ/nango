@@ -13,10 +13,10 @@ import * as MicrosoftTeamsWebhookRouting from './microsoft-teams-webhook-routing
 import type { BotFrameworkJWK } from './cache.js';
 import type { NangoError } from '@nangohq/shared';
 
-const flagMocks = vi.hoisted(() => ({ isMicrosoftTeamsWebhookVerificationEnforced: vi.fn() }));
+const flagMocks = vi.hoisted(() => ({ allowUnauthorizedMicrosoftTeamsWebhook: vi.fn() }));
 
 vi.mock('@nangohq/feature-flags', () => ({
-    getFlags: () => ({ isMicrosoftTeamsWebhookVerificationEnforced: flagMocks.isMicrosoftTeamsWebhookVerificationEnforced })
+    getFlags: () => ({ allowUnauthorizedMicrosoftTeamsWebhook: flagMocks.allowUnauthorizedMicrosoftTeamsWebhook })
 }));
 
 vi.mock('./cache.js', () => ({
@@ -78,8 +78,8 @@ describe('microsoft-teams-webhook-routing', () => {
         getBotFrameworkJWKMock.mockReset();
         getBotFrameworkJWKMock.mockImplementation((kid) => Promise.resolve(kid === KID ? jwk : undefined));
         countUnverifiedWebhookMock.mockReset();
-        flagMocks.isMicrosoftTeamsWebhookVerificationEnforced.mockReset();
-        flagMocks.isMicrosoftTeamsWebhookVerificationEnforced.mockResolvedValue(true);
+        flagMocks.allowUnauthorizedMicrosoftTeamsWebhook.mockReset();
+        flagMocks.allowUnauthorizedMicrosoftTeamsWebhook.mockResolvedValue(false);
     });
 
     it('routes an activity with a valid Bot Framework token', async () => {
@@ -171,8 +171,8 @@ describe('microsoft-teams-webhook-routing', () => {
         expect(countedReason()).toBe('microsoft_teams_invalid_token');
     });
 
-    it('counts and still routes unverified activities while enforcement is off', async () => {
-        flagMocks.isMicrosoftTeamsWebhookVerificationEnforced.mockResolvedValue(false);
+    it('counts and still routes unverified activities when the account is opted out', async () => {
+        flagMocks.allowUnauthorizedMicrosoftTeamsWebhook.mockResolvedValue(true);
         const { result, execute, nango } = await route({ authorization: `Bearer ${sign({ aud: 'other-app-id' })}` });
 
         expect(result.isOk()).toBe(true);

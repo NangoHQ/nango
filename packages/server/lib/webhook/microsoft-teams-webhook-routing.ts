@@ -125,7 +125,7 @@ const route: WebhookHandler<Record<string, unknown>> = async (nango, headers, bo
     if (unverified) {
         nango.markUnverified(unverified);
 
-        if (await getFlags().isMicrosoftTeamsWebhookVerificationEnforced(nango.team.uuid)) {
+        if (!(await getFlags().allowUnauthorizedMicrosoftTeamsWebhook(nango.team.uuid))) {
             return Err(new NangoError(unverified === UNVERIFIED.missingAuthorization ? 'webhook_missing_signature' : 'webhook_invalid_signature'));
         }
     }
