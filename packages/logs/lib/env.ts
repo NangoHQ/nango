@@ -2,8 +2,15 @@ import { ENVS, MAX_ACTION_DURATION, MAX_SYNC_DURATION, MAX_WEBHOOK_DURATION, par
 
 // Do not require in community and enterprise right now
 const required = process.env['NANGO_LOGS_ENABLED'] === 'true';
+const logsProvider = process.env['NANGO_LOGS_PROVIDER'];
 
-export const envs = parseEnvs(required ? ENVS.required({ NANGO_LOGS_ES_URL: true, NANGO_LOGS_ES_USER: true, NANGO_LOGS_ES_PWD: true }) : ENVS);
+export const envs = parseEnvs(
+    required
+        ? logsProvider === 'ec-serverless'
+            ? ENVS.required({ NANGO_LOGS_ES_URL: true, NANGO_LOGS_ES_API_KEY: true })
+            : ENVS.required({ NANGO_LOGS_ES_URL: true, NANGO_LOGS_ES_USER: true, NANGO_LOGS_ES_PWD: true })
+        : ENVS
+);
 
 envs.NANGO_LOGS_ENABLED = Boolean(envs.NANGO_LOGS_ENABLED && envs.NANGO_LOGS_ES_URL);
 
