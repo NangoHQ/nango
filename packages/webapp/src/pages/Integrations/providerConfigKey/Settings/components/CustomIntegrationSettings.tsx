@@ -1,7 +1,7 @@
 import { AlertTriangle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { Alert, AlertDescription, FieldLabel } from '@nangohq/design-system';
+import { Alert, AlertDescription } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
@@ -11,6 +11,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { isIntegrationConfigFieldVisible } from '@/utils/integrationConfig';
+import { SettingsField } from './SettingsLayout';
 
 import type { GetIntegration, SimplifiedJSONSchema } from '@nangohq/types';
 
@@ -99,13 +100,14 @@ export const CustomIntegrationSettings: React.FC<{ data: GetIntegration['Success
     };
 
     return (
-        <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-6">
             {visibleFields.map(([name, definition]) => (
-                <div key={name} className="flex flex-col gap-2">
-                    <div className="flex gap-2 items-center">
-                        <FieldLabel htmlFor={name}>{definition.title}</FieldLabel>
-                        {definition.description && <InfoTooltip>{definition.description}</InfoTooltip>}
-                    </div>
+                <SettingsField
+                    key={name}
+                    label={definition.title}
+                    htmlFor={name}
+                    info={definition.description ? <InfoTooltip size="sm">{definition.description}</InfoTooltip> : undefined}
+                >
                     {definition.enum && definition.enum.length > 0 ? (
                         <EnumField name={name} definition={definition} initialValue={integration.custom?.[name]} onSave={saveField} canEdit={canEdit} />
                     ) : (
@@ -120,7 +122,7 @@ export const CustomIntegrationSettings: React.FC<{ data: GetIntegration['Success
                             canRead={canEdit}
                         />
                     )}
-                </div>
+                </SettingsField>
             ))}
         </div>
     );

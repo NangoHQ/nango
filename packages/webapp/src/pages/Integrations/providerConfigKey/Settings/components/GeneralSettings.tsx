@@ -2,7 +2,7 @@ import { AlertTriangle, Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Alert, AlertDescription, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -15,6 +15,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
+import { SettingsField, SettingsSection } from './SettingsLayout';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
@@ -95,56 +96,55 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
         });
     };
 
+    const webhookUrl = `${environment.webhook_receive_url}/${integration.unique_key}`;
+
     return (
-        <div className="flex flex-col gap-10">
-            {/* Display name */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="display_name">Display name</FieldLabel>
-                <EditableInput
-                    initialValue={integration.display_name || template.display_name}
-                    onSave={(value) => onSave({ displayName: value })}
-                    validate={validateNotEmpty}
-                    canEdit={canEdit}
-                />
-            </div>
+        <>
+            <SettingsSection title="Identity">
+                <SettingsField label="Display name" htmlFor="display_name">
+                    <EditableInput
+                        initialValue={integration.display_name || template.display_name}
+                        onSave={(value) => onSave({ displayName: value })}
+                        validate={validateNotEmpty}
+                        canEdit={canEdit}
+                    />
+                </SettingsField>
+                <SettingsField label="Integration ID" htmlFor="unique_key">
+                    <EditableInput
+                        initialValue={integration.unique_key}
+                        hintText="Must only contain letters, numbers, underscores and dashes."
+                        validate={(value) => {
+                            if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
+                                return 'Must only contain letters, numbers, underscores and dashes.';
+                            }
+                            return null;
+                        }}
+                        onEditingChange={(isEditing) => {
+                            setIsEditingIntegrationId(isEditing);
+                        }}
+                        onSave={async (value) => {
+                            await onSave({ integrationId: value });
+                            navigate(`/${env}/integrations/${value}/settings`);
+                        }}
+                        canEdit={canEdit}
+                    />
+                    {isEditingIntegrationId && (
+                        <Alert variant="info">
+                            <Info />
+                            <AlertDescription>
+                                You won&apos;t be able to change the integration ID if the integration has any active connections.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                </SettingsField>
+            </SettingsSection>
 
-            {/* Integration ID */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="unique_key">Integration ID</FieldLabel>
-                <EditableInput
-                    initialValue={integration.unique_key}
-                    hintText="Must only contain letters, numbers, underscores and dashes."
-                    validate={(value) => {
-                        if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
-                            return 'Must only contain letters, numbers, underscores and dashes.';
-                        }
-                        return null;
-                    }}
-                    onEditingChange={(isEditing) => {
-                        setIsEditingIntegrationId(isEditing);
-                    }}
-                    onSave={async (value) => {
-                        await onSave({ integrationId: value });
-                        navigate(`/${env}/integrations/${value}/settings`);
-                    }}
-                    canEdit={canEdit}
-                />
-                {isEditingIntegrationId && (
-                    <Alert variant="info">
-                        <Info />
-                        <AlertDescription>You won&apos;t be able to change the integration ID if the integration has any active connections.</AlertDescription>
-                    </Alert>
-                )}
-            </div>
-
-            {/* Webhook settings */}
             {template.webhook_routing_script && (
-                <>
-                    <div className="flex gap-5 items-center">
-                        <FieldLabel htmlFor="webhook_forwarding">Webhook Forwarding</FieldLabel>
+                <SettingsSection title="Webhooks">
+                    <SettingsField label="Webhook forwarding" htmlFor="webhook_forwarding">
                         <PermissionGate asChild condition={canEdit}>
                             {(allowed) => (
-                                <div className="flex items-center">
+                                <div className="flex h-8 items-center">
                                     <Switch
                                         name="webhook_forwarding"
                                         checked={webhookForwarding}
@@ -154,18 +154,20 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                                 </div>
                             )}
                         </PermissionGate>
-                    </div>
-                    <div className="flex gap-5 items-center">
-                        <div className="flex gap-2 items-center">
-                            <FieldLabel htmlFor="allow_unverified_webhooks">Allow unverified webhooks</FieldLabel>
-                            <InfoTooltip>
+                    </SettingsField>
+                    <SettingsField
+                        label="Allow unverified webhooks"
+                        htmlFor="allow_unverified_webhooks"
+                        info={
+                            <InfoTooltip size="sm">
                                 Process webhooks that are missing a signature or that Nango cannot verify. Webhooks with an invalid signature are always
                                 rejected.
                             </InfoTooltip>
-                        </div>
+                        }
+                    >
                         <PermissionGate asChild condition={canEdit}>
                             {(allowed) => (
-                                <div className="flex items-center">
+                                <div className="flex h-8 items-center">
                                     <Switch
                                         id="allow_unverified_webhooks"
                                         name="allow_unverified_webhooks"
@@ -176,46 +178,47 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                                 </div>
                             )}
                         </PermissionGate>
-                    </div>
-                    {/* Webhook URL */}
-                    <div className="flex flex-col gap-2">
-                        <div className="flex gap-2 items-center">
-                            <FieldLabel htmlFor="webhook_url">Webhook URL</FieldLabel>
-                            <InfoTooltip>
+                    </SettingsField>
+                    <SettingsField
+                        label="Webhook URL"
+                        htmlFor="webhook_url"
+                        info={
+                            <InfoTooltip size="sm">
                                 Register this webhook URL on the developer portal of the Integration Provider to receive incoming webhooks
                             </InfoTooltip>
-                        </div>
+                        }
+                    >
                         <InputGroup>
-                            <InputGroupInput disabled value={`${environment.webhook_receive_url}/${integration.unique_key}`} />
+                            <InputGroupInput disabled value={webhookUrl} />
                             <InputGroupAddon align="inline-end">
-                                <CopyButton text={`${environment.webhook_receive_url}/${integration.unique_key}`} />
+                                <CopyButton text={webhookUrl} />
                             </InputGroupAddon>
                         </InputGroup>
-                    </div>
-
-                    {/* Webhook Secret */}
+                    </SettingsField>
                     {meta.webhookSecret && (
-                        <div className="flex flex-col gap-2">
-                            <div className="flex gap-2 items-center">
-                                <FieldLabel htmlFor="webhook_secret">Webhook Secret</FieldLabel>
-                                <InfoTooltip>Input this secret into the &quot;Webhook secret (optional)&quot; field in the Webhook section</InfoTooltip>
-                            </div>
+                        <SettingsField
+                            label="Webhook secret"
+                            htmlFor="webhook_secret"
+                            info={
+                                <InfoTooltip size="sm">
+                                    Input this secret into the &quot;Webhook secret (optional)&quot; field in the Webhook section
+                                </InfoTooltip>
+                            }
+                        >
                             <InputGroup>
                                 <InputGroupInput disabled value={meta.webhookSecret} />
                                 <InputGroupAddon align="inline-end">
                                     <CopyButton text={meta.webhookSecret} />
                                 </InputGroupAddon>
                             </InputGroup>
-                        </div>
+                        </SettingsField>
                     )}
-
-                    {/* User-defined webhook secret */}
                     {template.webhook_user_defined_secret && (
-                        <div className="flex flex-col gap-2">
-                            <div className="flex gap-2 items-center">
-                                <FieldLabel htmlFor="incoming_webhook_secret">Webhook Secret</FieldLabel>
-                                <InfoTooltip>Obtain the Webhook Secret from on the developer portal of the Integration Provider</InfoTooltip>
-                            </div>
+                        <SettingsField
+                            label="Webhook secret"
+                            htmlFor="incoming_webhook_secret"
+                            info={<InfoTooltip size="sm">Obtain the Webhook Secret from on the developer portal of the Integration Provider</InfoTooltip>}
+                        >
                             <EditableInput
                                 secret
                                 initialValue={integration.custom?.webhookSecret || ''}
@@ -223,13 +226,12 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                                 canEdit={canEdit}
                                 canRead={canEdit}
                             />
-                        </div>
+                        </SettingsField>
                     )}
-                </>
+                </SettingsSection>
             )}
 
-            {/* Confirmation Dialog */}
             {DialogComponent}
-        </div>
+        </>
     );
 };
