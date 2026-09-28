@@ -1,4 +1,11 @@
-import { internalRouteFetch } from '@nangohq/internal-auth';
+import {
+    INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR,
+    INTERNAL_SERVICE_ISSUER_JOBS,
+    INTERNAL_SERVICE_ISSUER_SERVER,
+    INTERNAL_SERVICE_TOKEN_TTL_SECS,
+    internalRouteFetch,
+    mint
+} from '@nangohq/internal-auth';
 import { Err, getLogger, Ok, retry } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -43,11 +50,39 @@ import type { JsonValue } from 'type-fest';
 
 const logger = getLogger('orchestrator.client');
 
+export type OrchestratorCaller = 'server' | 'jobs';
+
 export class OrchestratorClient {
     private baseUrl: string;
+    private service: OrchestratorCaller | undefined;
 
-    constructor({ baseUrl }: { baseUrl: string }) {
+    constructor({ baseUrl, service }: { baseUrl: string; service?: OrchestratorCaller }) {
         this.baseUrl = baseUrl;
+        this.service = service;
+    }
+
+    private async authorizationToken(): Promise<string | null | undefined> {
+        if (this.service === 'jobs') {
+            const privateKey = envs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY?.trim();
+            const kid = envs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID?.trim();
+            if (privateKey && kid) {
+                return mint(
+                    { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid, privateKey },
+                    { sub: INTERNAL_SERVICE_ISSUER_JOBS, aud: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, ttlSecs: INTERNAL_SERVICE_TOKEN_TTL_SECS }
+                );
+            }
+        }
+        if (this.service === 'server') {
+            const privateKey = envs.NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY?.trim();
+            const kid = envs.NANGO_INTERNAL_AUTH_SERVER_KEY_ID?.trim();
+            if (privateKey && kid) {
+                return mint(
+                    { iss: INTERNAL_SERVICE_ISSUER_SERVER, kid, privateKey },
+                    { sub: INTERNAL_SERVICE_ISSUER_SERVER, aud: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, ttlSecs: INTERNAL_SERVICE_TOKEN_TTL_SECS }
+                );
+            }
+        }
+        return envs.NANGO_INTERNAL_AUTH_TOKEN;
     }
 
     private routeFetch<E extends Endpoint<any>>(
@@ -59,7 +94,7 @@ export class OrchestratorClient {
     ): (props: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }) => Promise<E['Reply']> {
         return (props) => {
             const fetch = async () => {
-                return await internalRouteFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs, token: envs.NANGO_INTERNAL_AUTH_TOKEN })(props);
+                return await internalRouteFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs, token: await this.authorizationToken() })(props);
             };
             const retryConfig: RetryConfig<E['Reply']> = config?.retryConfig || {
                 maxAttempts: 3,

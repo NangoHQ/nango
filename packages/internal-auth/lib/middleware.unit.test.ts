@@ -1,7 +1,10 @@
+import { generateKeyPairSync } from 'node:crypto';
+
 import express from 'express';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR } from './constants.js';
+import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, INTERNAL_SERVICE_ISSUER_JOBS, taskSubject } from './constants.js';
+import { mint } from './jwt.js';
 import { internalServiceAuthMiddleware, requireFleetAuth, requireTaskBoundAuth } from './middleware.js';
 import { createInternalServiceToken } from './token.js';
 
@@ -69,6 +72,8 @@ afterEach(() => {
     envs.NANGO_INTERNAL_AUTH_TOKEN = undefined;
     envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
     envs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY = undefined;
+    envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = undefined;
+    envs.NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS = undefined;
 });
 
 describe('internalServiceAuthMiddleware', () => {
@@ -341,6 +346,31 @@ describe('jobs route policy', () => {
         try {
             const res = await fetch(`${url}/runners/1/idle`, { method: 'POST', headers: { Authorization: 'Bearer secret' } });
             expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('accepts a workload task JWT on putTask when REQUIRED', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+        const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+        const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
+            .subarray(12)
+            .toString('base64url');
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        const taskId = '11111111-1111-4111-8111-111111111111';
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
+        );
+        const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
+        try {
+            const res = await fetch(`${url}/tasks/${taskId}`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(204);
         } finally {
             await close();
         }

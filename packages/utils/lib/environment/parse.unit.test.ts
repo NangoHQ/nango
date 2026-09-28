@@ -1,3 +1,5 @@
+import { generateKeyPairSync } from 'node:crypto';
+
 import { describe, expect, it } from 'vitest';
 
 import { ENVS, parseEnvs } from './parse.js';
@@ -47,6 +49,40 @@ describe('parse', () => {
         expect(res.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY).toBeUndefined();
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT');
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_AUDIENCE');
+        expect(res.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY).toBeUndefined();
+        expect(res.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS).toBeUndefined();
+        expect(res.NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY).toBeUndefined();
+        expect(res.NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS).toBeUndefined();
+    });
+
+    it('rejects a jobs private key that is not paired with its public key', () => {
+        const { privateKey, publicKey } = generateKeyPairSync('ed25519');
+        const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+        const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
+            .subarray(12)
+            .toString('base64url');
+        expect(() => parseEnvs(ENVS, { NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: pem })).toThrowError(/NANGO_INTERNAL_AUTH_JOBS_KEY_ID/);
+        expect(() =>
+            parseEnvs(ENVS, {
+                NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: pem,
+                NANGO_INTERNAL_AUTH_JOBS_KEY_ID: 'jobs-2026-09',
+                NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: `other:${raw}`
+            })
+        ).toThrowError(/NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS/);
+    });
+
+    it('accepts a jobs key pair whose kid is in the public key list', () => {
+        const { privateKey, publicKey } = generateKeyPairSync('ed25519');
+        const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+        const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
+            .subarray(12)
+            .toString('base64url');
+        const res = parseEnvs(ENVS, {
+            NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: pem,
+            NANGO_INTERNAL_AUTH_JOBS_KEY_ID: 'jobs-2026-09',
+            NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: `jobs-2026-09:${raw}`
+        });
+        expect(res.NANGO_INTERNAL_AUTH_JOBS_KEY_ID).toBe('jobs-2026-09');
     });
 
     it('defaults NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY to false', () => {

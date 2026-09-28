@@ -49,7 +49,7 @@ export function isJwtShape(token: string): boolean {
     return parts.length === 3 && parts.every((part) => part.length > 0);
 }
 
-export function jwtHeaderAlg(token: string): string | null {
+function readJwtHeader(token: string): { alg?: unknown; kid?: unknown } | null {
     if (!isJwtShape(token)) {
         return null;
     }
@@ -59,13 +59,23 @@ export function jwtHeaderAlg(token: string): string | null {
     }
     try {
         const parsed: unknown = JSON.parse(base64UrlDecode(headerPart));
-        if (!parsed || typeof parsed !== 'object' || !('alg' in parsed) || typeof parsed.alg !== 'string') {
+        if (!parsed || typeof parsed !== 'object') {
             return null;
         }
-        return parsed.alg;
+        return parsed as { alg?: unknown; kid?: unknown };
     } catch {
         return null;
     }
+}
+
+export function jwtHeaderAlg(token: string): string | null {
+    const header = readJwtHeader(token);
+    return header && typeof header.alg === 'string' ? header.alg : null;
+}
+
+export function jwtHeaderKid(token: string): string | null {
+    const header = readJwtHeader(token);
+    return header && typeof header.kid === 'string' && header.kid.length > 0 ? header.kid : null;
 }
 
 function signHs256(signingInput: string, key: string): string {

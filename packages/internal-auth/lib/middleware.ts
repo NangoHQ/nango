@@ -1,7 +1,8 @@
-import { INTERNAL_SERVICE_AUTH_LOCALS_KEY } from './constants.js';
+import { INTERNAL_SERVICE_AUTH_LOCALS_KEY, INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER, nodeSubject, taskSubject } from './constants.js';
+import { keyRegistryFromPublicKeys, mergeKeyRegistries } from './jwt.js';
 import { verifyInternalServiceCredential } from './verify.js';
 
-import type { InternalServiceAuth } from './constants.js';
+import type { InternalServiceAuth, InternalServiceIssuer } from './constants.js';
 import type { InternalAuthEnvs } from './credential.js';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -25,15 +26,43 @@ export function getInternalServiceAuth(res: Response): InternalServiceAuth | und
 }
 
 export function isTaskBoundAuth(auth: InternalServiceAuth | undefined, taskId: string | undefined): boolean {
-    return Boolean(isSignedAuth(auth) && auth?.op === 'task' && taskId && auth.taskId === taskId);
+    if (!taskId) {
+        return false;
+    }
+    if (auth?.kind === 'jwt') {
+        return auth.sub === taskSubject(taskId);
+    }
+    return Boolean(isSignedAuth(auth) && auth?.op === 'task' && auth.taskId === taskId);
 }
 
 export function isNodeBoundAuth(auth: InternalServiceAuth | undefined, nodeId: string | undefined): boolean {
-    return Boolean(isSignedAuth(auth) && auth?.op === 'node' && nodeId && auth.nodeId === nodeId);
+    if (!nodeId) {
+        return false;
+    }
+    if (auth?.kind === 'jwt') {
+        return auth.sub === nodeSubject(nodeId);
+    }
+    return Boolean(isSignedAuth(auth) && auth?.op === 'node' && auth.nodeId === nodeId);
+}
+
+/** Jobs service token. Runner dispatch uses this instead of a task or node binding. */
+export function isJobsServiceAuth(auth: InternalServiceAuth | undefined): boolean {
+    return isServiceAuth(auth, INTERNAL_SERVICE_ISSUER_JOBS);
+}
+
+function isServiceAuth(auth: InternalServiceAuth | undefined, issuer: InternalServiceIssuer): boolean {
+    return auth?.kind === 'jwt' && auth.issuer === issuer && auth.sub === issuer;
 }
 
 function isSignedAuth(auth: InternalServiceAuth | undefined): boolean {
     return auth?.kind === 'hmac' || auth?.kind === 'eddsa';
+}
+
+function registryFromEnvs(envs: InternalAuthEnvs) {
+    return mergeKeyRegistries(
+        keyRegistryFromPublicKeys(envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS, INTERNAL_SERVICE_ISSUER_JOBS),
+        keyRegistryFromPublicKeys(envs.NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS, INTERNAL_SERVICE_ISSUER_SERVER)
+    );
 }
 
 export function internalServiceAuthMiddleware(opts: {
@@ -42,34 +71,43 @@ export function internalServiceAuthMiddleware(opts: {
     skip?: (req: Request) => boolean;
 }): (req: Request, res: Response, next: NextFunction) => void {
     return (req, res, next) => {
-        if (opts.skip?.(req) || !opts.envs.NANGO_INTERNAL_AUTH_REQUIRED) {
-            next();
-            return;
-        }
-
-        const parsed = parseBearer(req.get('authorization'));
-
-        if (!parsed.ok) {
-            unauthorized(
-                res,
-                parsed.code,
-                parsed.code === 'missing_auth_header' ? 'Missing authorization header' : 'Malformed authorization header. Expected `Bearer <token>`'
-            );
-            return;
-        }
-
-        const auth = verifyInternalServiceCredential(parsed.token, opts.audience, {
-            signingKey: opts.envs.NANGO_INTERNAL_AUTH_SIGNING_KEY,
-            staticToken: opts.envs.NANGO_INTERNAL_AUTH_TOKEN,
-            runnerPublicKey: opts.envs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY
-        });
-        if (!auth) {
-            unauthorized(res, 'unauthorized', 'Unauthorized');
-            return;
-        }
-        res.locals[INTERNAL_SERVICE_AUTH_LOCALS_KEY] = auth;
-        next();
+        void authenticate(req, res, next);
     };
+
+    async function authenticate(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            if (opts.skip?.(req) || !opts.envs.NANGO_INTERNAL_AUTH_REQUIRED) {
+                next();
+                return;
+            }
+
+            const parsed = parseBearer(req.get('authorization'));
+
+            if (!parsed.ok) {
+                unauthorized(
+                    res,
+                    parsed.code,
+                    parsed.code === 'missing_auth_header' ? 'Missing authorization header' : 'Malformed authorization header. Expected `Bearer <token>`'
+                );
+                return;
+            }
+
+            const auth = await verifyInternalServiceCredential(parsed.token, opts.audience, {
+                signingKey: opts.envs.NANGO_INTERNAL_AUTH_SIGNING_KEY,
+                staticToken: opts.envs.NANGO_INTERNAL_AUTH_TOKEN,
+                runnerPublicKey: opts.envs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY,
+                registry: registryFromEnvs(opts.envs)
+            });
+            if (!auth) {
+                unauthorized(res, 'unauthorized', 'Unauthorized');
+                return;
+            }
+            res.locals[INTERNAL_SERVICE_AUTH_LOCALS_KEY] = auth;
+            next();
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 function routeParam(req: Request, name: string): string | undefined {
