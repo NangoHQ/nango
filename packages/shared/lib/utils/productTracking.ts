@@ -126,6 +126,24 @@ class ProductTracking {
         }
     }
 
+    /** Use the same account identity, group name and properties for events captured outside `track`. */
+    public getServerEventAttribution(context: TrackingContextInput) {
+        const resolved = resolveContext(context);
+        if (!resolved) {
+            return null;
+        }
+
+        if (this.client) {
+            this.identifyAccount(this.client, resolved.team);
+        }
+
+        return {
+            distinctId: distinctIdFor(resolved),
+            groups: groupsFor(resolved),
+            properties: { ...commonProperties('server'), ...contextProperties(resolved) }
+        };
+    }
+
     public track({
         name,
         team,
@@ -147,8 +165,8 @@ class ProductTracking {
                 return;
             }
 
-            const context = resolveContext({ team, environment, user });
-            if (!context) {
+            const attribution = this.getServerEventAttribution({ team, environment, user });
+            if (!attribution) {
                 report(new Error(`Product tracking event "${name}" has no account to attach to`));
                 return;
             }
@@ -156,12 +174,10 @@ class ProductTracking {
             const properties = {
                 ...eventProperties,
                 ...structuredProperties,
-                ...commonProperties('server'),
-                ...contextProperties(context)
+                ...attribution.properties
             };
 
-            this.identifyAccount(this.client, context.team);
-            this.client.capture({ event: name, distinctId: distinctIdFor(context), properties, groups: groupsFor(context) });
+            this.client.capture({ event: name, distinctId: attribution.distinctId, properties, groups: attribution.groups });
         } catch (err) {
             report(err);
         }
@@ -204,6 +220,14 @@ class ProductTracking {
                 distinctId,
                 properties: { ...eventProperties, ...commonProperties('cli'), $process_person_profile: false }
             });
+        } catch (err) {
+            report(err);
+        }
+    }
+
+    public async shutdown(): Promise<void> {
+        try {
+            await this.client?.shutdown();
         } catch (err) {
             report(err);
         }

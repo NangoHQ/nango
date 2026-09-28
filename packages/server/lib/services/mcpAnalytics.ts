@@ -1,44 +1,37 @@
 import { instrument } from '@posthog/mcp';
-import { PostHog } from 'posthog-node';
 
+import { productTracking } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
-import { envs } from '../env.js';
-
 import type { McpServer } from '@modelcontextprotocol/server';
+import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 // Add agent_session after defining how customer-specific tool names should be grouped.
 type McpType = 'management';
 type McpAuthType = 'oauth' | 'apiKey';
+type Environment = Pick<DBEnvironment, 'is_production'>;
+type NamedEnvironment = Pick<DBEnvironment, 'name' | 'is_production'>;
 
-let client: PostHog | undefined;
-
-function getClient(): PostHog | undefined {
-    if (!envs.PUBLIC_POSTHOG_KEY) {
-        return undefined;
-    }
-
-    client ??= new PostHog(envs.PUBLIC_POSTHOG_KEY, { host: envs.PUBLIC_POSTHOG_HOST || 'https://app.posthog.com' });
-    return client;
-}
-
-/** Instrument each request-scoped MCP server with one process-scoped PostHog client. */
+/** Instrument each request-scoped MCP server with the shared PostHog client and account attribution. */
 export function trackMcpServer({
     server,
     mcpType,
-    accountId,
+    account,
     authType,
-    posthogClient
+    environment,
+    environments
 }: {
     server: McpServer;
     mcpType: McpType;
-    accountId: number;
+    account: Pick<DBTeam, 'id' | 'name'>;
     authType: McpAuthType;
-    posthogClient?: PostHog;
+    environment?: Environment;
+    environments?: readonly NamedEnvironment[];
 }): void {
     try {
-        const posthog = posthogClient ?? getClient();
-        if (!posthog) {
+        const posthog = productTracking.client;
+        const accountAttribution = productTracking.getServerEventAttribution({ team: account });
+        if (!posthog || !accountAttribution) {
             return;
         }
 
@@ -48,8 +41,17 @@ export function trackMcpServer({
             captureModel: false,
             enableConversationId: false,
             enableExceptionAutocapture: false,
-            eventProperties: () => ({ 'mcp-type': mcpType, 'mcp-auth-type': authType, 'team-id': accountId, 'account-id': accountId }),
+            eventProperties: (request) => {
+                const selectedEnvironment = environment ?? environments?.find((candidate) => candidate.name === request.params?.arguments?.['environment']);
+                const attribution = productTracking.getServerEventAttribution({ team: account, environment: selectedEnvironment });
+                return { ...attribution?.properties, mcp_type: mcpType, mcp_auth_type: authType };
+            },
             beforeSend: (event) => {
+                // MCP requests have no user. Keep their identity and group consistent with other account-scoped events.
+                event.distinct_id = accountAttribution.distinctId;
+                Object.assign(event.properties, accountAttribution.properties);
+                event.properties['$groups'] = accountAttribution.groups;
+
                 // MCP arguments, responses and errors can contain customer data or secrets.
                 delete event.properties['$mcp_parameters'];
                 delete event.properties['$mcp_response'];
@@ -57,20 +59,6 @@ export function trackMcpServer({
                 return event;
             }
         });
-    } catch (err) {
-        report(err);
-    }
-}
-
-export async function shutdownMcpAnalytics(): Promise<void> {
-    const posthog = client;
-    client = undefined;
-    if (!posthog) {
-        return;
-    }
-
-    try {
-        await posthog.shutdown();
     } catch (err) {
         report(err);
     }

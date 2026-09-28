@@ -14,7 +14,7 @@ import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
 import { records } from '@nangohq/records';
-import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
+import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, productTracking, pubsub } from '@nangohq/shared';
 import { flags, getLogger, metrics, NANGO_VERSION, once, report } from '@nangohq/utils';
 
 import { destroyAuditDb, migrateAuditDb, startAuditPartitions } from './auditDb.js';
@@ -30,7 +30,6 @@ import { envs } from './env.js';
 import { migrateFleets, stopFleets } from './fleet.js';
 import { beginShutdown } from './ready.js';
 import { router } from './routes.js';
-import { shutdownMcpAnalytics } from './services/mcpAnalytics.js';
 import { tasks } from './tasks/index.js';
 import { egressTelemetryRecorder } from './utils/egressTelemetry.js';
 import migrate from './utils/migrate.js';
@@ -146,7 +145,7 @@ const close = once(() => {
         await destroyFeatureFlags();
         await egressTelemetryRecorder.shutdown();
         await pubsub.disconnect();
-        await shutdownMcpAnalytics();
+        await productTracking.shutdown();
 
         logger.close();
 

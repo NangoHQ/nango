@@ -39,7 +39,13 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
                   }
               } as const);
     const server = await createManagementMcpServer(authentication, req.body);
-    trackMcpServer({ server, mcpType: 'management', accountId: account.id, authType: authentication.type });
+    trackMcpServer({
+        server,
+        mcpType: 'management',
+        account,
+        authType: authentication.type,
+        ...(authentication.type === 'apiKey' ? { environment: authentication.context.environment } : { environments: authentication.context.environments })
+    });
     const transport = new ManagementMcpTransport();
 
     res.on('close', () => {
