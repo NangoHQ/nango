@@ -7,7 +7,6 @@ import { Button, IconButton } from '@nangohq/design-system';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Sheet, SheetContent } from '@/components/ui/Sheet';
-import { useGetIntegrationFlows } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
@@ -17,8 +16,8 @@ import { PlaygroundResult } from './PlaygroundResult';
 import { PlaygroundSelectors } from './PlaygroundSelectors';
 import { getInputFields } from './types';
 import { usePlayground } from './usePlayground';
+import { usePlaygroundFunctions } from './usePlaygroundFunctions';
 
-import type { NangoSyncConfig } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 export const Playground: React.FC = () => {
@@ -45,17 +44,12 @@ export const Playground: React.FC = () => {
 
     const queryEnv = playgroundOpen ? env : '';
 
-    const { data: flowsData } = useGetIntegrationFlows(queryEnv, playgroundIntegration || '');
-
-    const allFlows: (NangoSyncConfig & { resolvedType: 'action' | 'sync' })[] = useMemo(() => {
-        if (!flowsData) return [];
-        return flowsData.data.flows.filter((f) => f.type === 'action' || f.type === 'sync').map((f) => ({ ...f, resolvedType: f.type as 'action' | 'sync' }));
-    }, [flowsData]);
+    const playgroundFunctions = usePlaygroundFunctions({ env: queryEnv, providerConfigKey: playgroundIntegration || '' });
 
     const playgroundFunction = useMemo(() => {
         if (!playgroundFunctionName) return undefined;
-        return allFlows.find((f) => f.name === playgroundFunctionName);
-    }, [allFlows, playgroundFunctionName]);
+        return playgroundFunctions.rows.find((row) => row.name === playgroundFunctionName);
+    }, [playgroundFunctions.rows, playgroundFunctionName]);
 
     const inputSchema = useMemo((): JSONSchema7 | null => {
         if (!playgroundFunction || !playgroundFunction.json_schema || typeof playgroundFunction.json_schema !== 'object') return null;
@@ -79,7 +73,7 @@ export const Playground: React.FC = () => {
 
     const playgroundConnection = usePlaygroundStore((s) => s.connection);
     const isFunctionDisabled = Boolean(playgroundFunction && playgroundFunction.enabled === false);
-    const canRun = Boolean(playgroundIntegration && playgroundConnection && playgroundFunctionName && playgroundFunctionType) && !isFunctionDisabled;
+    const canRun = Boolean(playgroundIntegration && playgroundConnection && playgroundFunction && playgroundFunctionType) && !isFunctionDisabled;
     const isSync = playgroundFunctionType === 'sync';
     const showInputs = Boolean(playgroundFunction && (isSync || inputFields.length > 0));
 
@@ -126,7 +120,14 @@ export const Playground: React.FC = () => {
 
                             {/* Content */}
                             <div className="flex w-full flex-col gap-6">
-                                <PlaygroundSelectors env={env} queryEnv={queryEnv} />
+                                <PlaygroundSelectors
+                                    env={env}
+                                    queryEnv={queryEnv}
+                                    functions={playgroundFunctions.rows}
+                                    functionsReady={playgroundFunctions.ready}
+                                    functionsError={playgroundFunctions.error}
+                                    onRetryFunctions={playgroundFunctions.retry}
+                                />
 
                                 {showInputs && (
                                     <PlaygroundInputs
