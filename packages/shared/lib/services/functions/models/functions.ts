@@ -8,6 +8,7 @@ import type { Knex } from 'knex';
 
 const CONFIG_COLUMNS = {
     id: true,
+    uuid: true,
     nango_config_id: true,
     environment_id: true,
     name: true,
