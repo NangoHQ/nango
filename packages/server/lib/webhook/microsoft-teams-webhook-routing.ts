@@ -12,6 +12,7 @@ import type { UnverifiedWebhook } from './missing-secret.js';
 import type { WebhookHandler } from './types.js';
 
 const BOT_FRAMEWORK_ISSUER = 'https://api.botframework.com';
+const ENTRA_ISSUER = /^https:\/\/(sts\.windows\.net\/[0-9a-f-]{36}\/|login\.microsoftonline\.com\/[0-9a-f-]{36}\/v2\.0)$/i;
 const CLOCK_TOLERANCE_SECONDS = 5 * 60;
 
 const UNVERIFIED = {
@@ -21,6 +22,10 @@ const UNVERIFIED = {
     },
     invalidToken: {
         reason: 'microsoft_teams_invalid_token',
+        remediation: 'Send activities to this URL through the Bot Framework connector'
+    },
+    entraIssuer: {
+        reason: 'microsoft_teams_entra_issuer',
         remediation: 'Send activities to this URL through the Bot Framework connector'
     },
     unexpectedIssuer: {
@@ -68,9 +73,9 @@ export async function verifyBotFrameworkToken({
         }
 
         // Only labels the metric, the token is still rejected. Separates Entra issued tokens, which
-        // Bot Framework does not send to channel bots today, from forged ones.
+        // Bot Framework does not send to channel bots today, from any other issuer.
         if (decoded.payload.iss !== BOT_FRAMEWORK_ISSUER) {
-            return UNVERIFIED.unexpectedIssuer;
+            return typeof decoded.payload.iss === 'string' && ENTRA_ISSUER.test(decoded.payload.iss) ? UNVERIFIED.entraIssuer : UNVERIFIED.unexpectedIssuer;
         }
 
         const jwk = await getBotFrameworkJWK(decoded.header.kid);

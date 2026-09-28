@@ -114,11 +114,17 @@ describe('microsoft-teams-webhook-routing', () => {
         expect(countedReason()).toBe('microsoft_teams_invalid_token');
     });
 
-    it('rejects a token from another issuer before looking up its key', async () => {
-        const { result } = await route({ authorization: `Bearer ${sign({ iss: 'https://sts.windows.net/tenant/' })}` });
+    it.each([
+        ['an Entra v1 issuer', 'https://sts.windows.net/d6d49420-f39b-4df7-a1dc-d59a935871db/', 'microsoft_teams_entra_issuer'],
+        ['an Entra v2 issuer', 'https://login.microsoftonline.com/d6d49420-f39b-4df7-a1dc-d59a935871db/v2.0', 'microsoft_teams_entra_issuer'],
+        ['the government issuer', 'https://api.botframework.us', 'microsoft_teams_unexpected_issuer'],
+        ['an Entra lookalike without a tenant', 'https://sts.windows.net/tenant/', 'microsoft_teams_unexpected_issuer'],
+        ['no issuer', undefined, 'microsoft_teams_unexpected_issuer']
+    ])('rejects a token with %s before looking up its key', async (_name, iss, reason) => {
+        const { result } = await route({ authorization: `Bearer ${sign({ iss })}` });
 
         expect(errType(result)).toBe('webhook_invalid_signature');
-        expect(countedReason()).toBe('microsoft_teams_unexpected_issuer');
+        expect(countedReason()).toBe(reason);
         expect(getBotFrameworkJWKMock).not.toHaveBeenCalled();
     });
 
