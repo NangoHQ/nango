@@ -57,6 +57,7 @@ import { postFunctionDeploymentResult } from './controllers/functions/deployment
 import { getFunctionDryrun } from './controllers/functions/dryrun/getDryrun.js';
 import { postFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDryrunResult.js';
+import { getFunction } from './controllers/functions/getFunction.js';
 import { getFunctionInvocation } from './controllers/functions/getInvocation.js';
 import { postFunctionInvocation } from './controllers/functions/postInvocation.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
@@ -444,6 +445,7 @@ publicAPI.route('/functions/deployments/bundle').post(envAuth, auditFunctionDepl
 
 publicAPI.route('/functions/invocations').post(envAuth, can('environment:functions:invocations'), postFunctionInvocation);
 publicAPI.route('/functions/invocations/:id').get(envAuth, can('environment:functions:invocations'), getFunctionInvocation);
+publicAPI.route('/functions/:uuid').get(envAuth, can('environment:functions:read'), getFunction);
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);
