@@ -47,7 +47,6 @@ export function trackMcpServer({
                 return { ...attribution?.properties, mcp_type: mcpType, mcp_auth_type: authType };
             },
             beforeSend: (event) => {
-                // MCP requests have no user. Keep their identity and group consistent with other account-scoped events.
                 event.distinct_id = accountAttribution.distinctId;
                 Object.assign(event.properties, accountAttribution.properties);
                 event.properties['$groups'] = accountAttribution.groups;
