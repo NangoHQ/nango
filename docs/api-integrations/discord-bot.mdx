@@ -1,0 +1,96 @@
+---
+title: 'Discord Bot'
+sidebarTitle: 'Discord Bot'
+description: 'Integrate your application with the Discord API using a bot token'
+---
+
+## 🚀 Quickstart
+
+Connect to Discord with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Discord Bot_.
+    </Step>
+    <Step title="Authorize Discord Bot">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your bot token from the Discord Developer Portal. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Discord API">
+    Make your first request to the Discord API (e.g. get your application info). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v10/applications/@me" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v10/applications/@me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain a bot token, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## Common Scopes
+
+Discord bots are not authorized with OAuth scopes. Instead, a bot's capabilities are controlled by:
+
+- The **permissions** granted when the bot is invited to a server (guild), encoded in the invite URL.
+- The **privileged gateway intents** enabled in the Discord Developer Portal (e.g. Server Members, Message Content).
+
+## 📚 Discord Bot Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my Discord bot?](/api-integrations/discord-bot/connect)
+Learn how to create a Discord application, obtain your bot token, and link your account.
+
+Official docs: [Discord Developer Portal](https://discord.com/developers/docs/intro)
+
+## API gotchas
+
+- Discord bot tokens authenticate with the `Bot` prefix (`Authorization: Bot <token>`), which Nango handles automatically. This is different from the OAuth-based [Discord](/api-integrations/discord) integration, which yields user access tokens authenticated with `Bearer`.
+- Resetting a bot token in the Discord Developer Portal invalidates the previous token immediately.
+- Some API endpoints require privileged gateway intents to be enabled for your application in the Discord Developer Portal.
+
+## Pre-built syncs & actions for Discord Bot
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltTooling from "/snippets/generated/discord-bot/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/discord-bot/PreBuiltUseCases.mdx"
+
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+---

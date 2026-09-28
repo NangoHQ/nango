@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1029
+Provider count: 1030
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -256,6 +256,7 @@ URL patterns:
 | `digits-mcp` | Digits (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/digits-mcp.md) |  |  | accounting, mcp |
 | `discolike` | DiscoLike | API_KEY | [docs](https://nango.dev/docs/api-integrations/discolike.md) | [connect](https://nango.dev/docs/api-integrations/discolike/connect.md) |  | marketing |
 | `discord` | Discord | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/discord.md) |  | [setup](https://nango.dev/docs/api-integrations/discord/how-to-register-your-own-discord-api-oauth-app.md) | gaming, social |
+| `discord-bot` | Discord Bot | API_KEY | [docs](https://nango.dev/docs/api-integrations/discord-bot.md) | [connect](https://nango.dev/docs/api-integrations/discord-bot/connect.md) |  | gaming, social |
 | `discourse` | Discourse | API_KEY | [docs](https://nango.dev/docs/integrations/all/discourse.md) |  |  | communication |
 | `dixa` | Dixa | API_KEY | [docs](https://nango.dev/docs/integrations/all/dixa.md) |  |  | support |
 | `document360` | Document360 | API_KEY | [docs](https://nango.dev/docs/integrations/all/document360.md) |  |  | knowledge-base |
