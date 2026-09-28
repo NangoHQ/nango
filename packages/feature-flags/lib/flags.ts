@@ -65,6 +65,13 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         allowUnauthorizedSalesforceWebhook(accountUuid: string) {
             return client.isEnabled('allow-unauthorized-salesforce-webhook', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether Microsoft Teams webhooks without a valid Bot Framework token can be processed for this account.
+         * Escape hatch while the unverified metric shows who would break. Default `false`.
+         */
+        allowUnauthorizedMicrosoftTeamsWebhook(accountUuid: string) {
+            return client.isEnabled('allow-unauthorized-microsoft-teams-webhook', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }
