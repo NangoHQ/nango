@@ -1,3 +1,4 @@
+import tracer from 'dd-trace';
 import { z } from 'zod';
 
 import db from '@nangohq/database';
@@ -26,6 +27,7 @@ export const getFunction = asyncWrapperWithEnvironment<GetFunction>(async (req, 
     const { environment } = res.locals;
     const result = await functionConfigService.search(db.knex, { environmentId: environment.id, filter: { uuid: params.data.uuid } });
     if (result.isErr()) {
+        tracer.scope().active()?.setTag('error', result.error);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch function' } });
         return;
     }

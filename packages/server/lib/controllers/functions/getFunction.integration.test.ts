@@ -91,4 +91,19 @@ describe(`GET ${route}`, () => {
         isError(response.json);
         expect(response.json.error.code).toBe('not_found');
     });
+
+    it('returns 404 if the function belongs to another environment', async () => {
+        const { env: otherEnv } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(otherEnv, 'github', 'github');
+        const [fn] = (
+            await functionConfigService.upsert(db.knex, [{ environmentId: otherEnv.id, integrationId: 'github', name: 'fetchIssue', version }])
+        ).unwrap();
+        expect(fn).toBeDefined();
+
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const response = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { uuid: fn!.config.uuid } });
+        expect(response.res.status).toBe(404);
+        isError(response.json);
+        expect(response.json.error.code).toBe('not_found');
+    });
 });
