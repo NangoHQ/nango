@@ -1,5 +1,5 @@
 import { RefreshCw, TriangleAlert } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Alert, AlertDescription, AlertTitle, Button, FieldLabel } from '@nangohq/design-system';
 
@@ -35,6 +35,14 @@ export const Webhooks: React.FC = () => {
     const canWriteWebhooks = can('environment:webhooks:update');
     const canReadSigningKey = can('environment:settings:read_secret');
     const canRotateSigningKey = can('environment:webhook_signing_key:rotate');
+
+    useEffect(() => {
+        if (!bothKeysValidUntil) {
+            return;
+        }
+        const timeout = setTimeout(() => setBothKeysValidUntil(null), bothKeysValidUntil.getTime() - Date.now());
+        return () => clearTimeout(timeout);
+    }, [bothKeysValidUntil]);
 
     const onSave = async (body: PatchWebhook['Body']) => {
         try {
