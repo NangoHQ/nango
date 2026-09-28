@@ -53,9 +53,10 @@ const BOT_FRAMEWORK_JWKS_URL = 'https://login.botframework.com/v1/.well-known/ke
 const BOT_FRAMEWORK_JWKS_TIMEOUT_MS = 5 * 1000;
 const BOT_FRAMEWORK_JWKS_TTL_MS = 24 * 60 * 60 * 1000;
 const BOT_FRAMEWORK_JWKS_MIN_REFRESH_MS = 5 * 60 * 1000;
+const BOT_FRAMEWORK_JWKS_RETRY_MS = 30 * 1000;
 
 let botFrameworkJwksCache: { keys: BotFrameworkJWK[]; fetchedAt: number } | null = null;
-let botFrameworkJwksLastAttemptAt = -Infinity;
+let botFrameworkJwksNextAttemptAt = -Infinity;
 let botFrameworkJwksFetch: Promise<BotFrameworkJWK[]> | null = null;
 
 /**
@@ -70,7 +71,7 @@ export async function getBotFrameworkJWK(kid: string): Promise<BotFrameworkJWK |
     if (cached && age < BOT_FRAMEWORK_JWKS_TTL_MS) {
         return cached;
     }
-    if (!botFrameworkJwksFetch && now - botFrameworkJwksLastAttemptAt < BOT_FRAMEWORK_JWKS_MIN_REFRESH_MS) {
+    if (!botFrameworkJwksFetch && now < botFrameworkJwksNextAttemptAt) {
         return cached;
     }
 
@@ -87,13 +88,13 @@ export async function getBotFrameworkJWK(kid: string): Promise<BotFrameworkJWK |
 
 export function resetBotFrameworkJWKSCache(): void {
     botFrameworkJwksCache = null;
-    botFrameworkJwksLastAttemptAt = -Infinity;
+    botFrameworkJwksNextAttemptAt = -Infinity;
     botFrameworkJwksFetch = null;
 }
 
 async function fetchBotFrameworkJWKS(): Promise<BotFrameworkJWK[]> {
     if (!botFrameworkJwksFetch) {
-        botFrameworkJwksLastAttemptAt = Date.now();
+        botFrameworkJwksNextAttemptAt = Date.now() + BOT_FRAMEWORK_JWKS_MIN_REFRESH_MS;
         botFrameworkJwksFetch = axios
             .get<unknown>(BOT_FRAMEWORK_JWKS_URL, { timeout: BOT_FRAMEWORK_JWKS_TIMEOUT_MS })
             .then((response) => {
@@ -108,6 +109,10 @@ async function fetchBotFrameworkJWKS(): Promise<BotFrameworkJWK[]> {
 
                 botFrameworkJwksCache = { keys, fetchedAt: Date.now() };
                 return keys;
+            })
+            .catch((err: unknown) => {
+                botFrameworkJwksNextAttemptAt = Date.now() + BOT_FRAMEWORK_JWKS_RETRY_MS;
+                throw err;
             })
             .finally(() => {
                 botFrameworkJwksFetch = null;

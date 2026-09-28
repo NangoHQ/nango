@@ -6,6 +6,7 @@ import { getBotFrameworkJWK, resetBotFrameworkJWKSCache } from './cache.js';
 import type { MockInstance } from 'vitest';
 
 const REFRESH_MS = 5 * 60 * 1000;
+const RETRY_MS = 30 * 1000;
 const TTL_MS = 24 * 60 * 60 * 1000;
 
 const key = (kid: string) => ({ kid, kty: 'RSA', n: 'n', e: 'AQAB' });
@@ -63,7 +64,7 @@ describe('getBotFrameworkJWK', () => {
         expect(get).toHaveBeenCalledTimes(2);
     });
 
-    it('keeps the refresh window after a failed fetch', async () => {
+    it('retries a failed fetch after a short backoff, not the full refresh window', async () => {
         get.mockRejectedValue(new Error('network down'));
 
         await expect(getBotFrameworkJWK('a')).rejects.toThrow('network down');
@@ -72,7 +73,7 @@ describe('getBotFrameworkJWK', () => {
         expect(get).toHaveBeenCalledOnce();
 
         get.mockResolvedValue({ data: { keys: [key('a')] } });
-        vi.advanceTimersByTime(REFRESH_MS);
+        vi.advanceTimersByTime(RETRY_MS);
 
         expect(await getBotFrameworkJWK('a')).toEqual(key('a'));
         expect(get).toHaveBeenCalledTimes(2);
