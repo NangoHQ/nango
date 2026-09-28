@@ -47,9 +47,9 @@ export const Playground: React.FC = () => {
     const playgroundFunctions = usePlaygroundFunctions({ env: queryEnv, providerConfigKey: playgroundIntegration || '' });
 
     const playgroundFunction = useMemo(() => {
-        if (!playgroundFunctionName) return undefined;
-        return playgroundFunctions.rows.find((row) => row.name === playgroundFunctionName);
-    }, [playgroundFunctions.rows, playgroundFunctionName]);
+        if (!playgroundFunctionName || !playgroundFunctionType) return undefined;
+        return playgroundFunctions.rows.find((row) => row.name === playgroundFunctionName && row.type === playgroundFunctionType);
+    }, [playgroundFunctions.rows, playgroundFunctionName, playgroundFunctionType]);
 
     const inputSchema = useMemo((): JSONSchema7 | null => {
         if (!playgroundFunction || !playgroundFunction.json_schema || typeof playgroundFunction.json_schema !== 'object') return null;

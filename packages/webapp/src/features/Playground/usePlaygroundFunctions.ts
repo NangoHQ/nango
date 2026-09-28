@@ -20,11 +20,11 @@ export function usePlaygroundFunctions({ env, providerConfigKey }: { env: string
     const canUseRows = Boolean(env && providerConfigKey) && !isPlaceholderData;
 
     useEffect(() => {
-        if (!env || !providerConfigKey || isPlaceholderData || !hasNextPage || isFetchingNextPage || isFetchNextPageError) {
+        if (!env || !providerConfigKey || isPlaceholderData || !hasNextPage || isFetching || isFetchingNextPage || isError || isFetchNextPageError) {
             return;
         }
         void fetchNextPage();
-    }, [env, providerConfigKey, isPlaceholderData, hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
+    }, [env, providerConfigKey, isPlaceholderData, hasNextPage, isFetching, isFetchingNextPage, isError, isFetchNextPageError, fetchNextPage]);
 
     const rows = useMemo(() => {
         if (!canUseRows) {

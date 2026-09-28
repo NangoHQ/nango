@@ -13,6 +13,20 @@ import { usePlaygroundStore } from '@/store/playground';
 
 import type { PlaygroundFunctionRow } from './usePlaygroundFunctions';
 import type { ComboboxOption } from '@/components/ui/Combobox';
+import type { PlaygroundFunctionType } from '@/store/playground';
+
+function functionOptionValue(type: Exclude<PlaygroundFunctionType, null>, name: string): string {
+    return `${type}:${name}`;
+}
+
+function parseFunctionOptionValue(value: string): { type: Exclude<PlaygroundFunctionType, null>; name: string } | null {
+    const separator = value.indexOf(':');
+    if (separator <= 0) return null;
+    const type = value.slice(0, separator);
+    const name = value.slice(separator + 1);
+    if ((type !== 'action' && type !== 'sync') || !name) return null;
+    return { type, name };
+}
 
 interface Props {
     env: string;
@@ -29,6 +43,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv, functions,
     const playgroundIntegration = usePlaygroundStore((s) => s.integration);
     const playgroundConnection = usePlaygroundStore((s) => s.connection);
     const playgroundFunction = usePlaygroundStore((s) => s.function);
+    const playgroundFunctionType = usePlaygroundStore((s) => s.functionType);
     const connectionSearch = usePlaygroundStore((s) => s.connectionSearch);
     const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
     const setPlaygroundIntegration = usePlaygroundStore((s) => s.setIntegration);
@@ -64,20 +79,22 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv, functions,
         return opts;
     }, [connections, playgroundConnection]);
 
+    const selectedFunctionValue = playgroundFunction && playgroundFunctionType ? functionOptionValue(playgroundFunctionType, playgroundFunction) : '';
+
     const functionOptions = useMemo(() => {
         const opts: ComboboxOption[] = functions
             .filter((fn) => fn.enabled === true)
             .map((fn) => ({
-                value: fn.name,
+                value: functionOptionValue(fn.type, fn.name),
                 label: fn.name,
                 filterValue: `${fn.name} ${fn.type}`,
                 tag: <Badge case="capitalize">{fn.type}</Badge>
             }));
-        if (playgroundFunction && !opts.some((option) => option.value === playgroundFunction)) {
-            opts.unshift({ value: playgroundFunction, label: playgroundFunction, filterValue: playgroundFunction });
+        if (selectedFunctionValue && playgroundFunction && !opts.some((option) => option.value === selectedFunctionValue)) {
+            opts.unshift({ value: selectedFunctionValue, label: playgroundFunction, filterValue: playgroundFunction });
         }
         return opts;
-    }, [functions, playgroundFunction]);
+    }, [functions, playgroundFunction, selectedFunctionValue]);
 
     const integrationOptions = useMemo(() => {
         const list = integrations?.data ?? [];
@@ -116,8 +133,9 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv, functions,
 
     const handleFunctionChange = useCallback(
         (val: string) => {
-            const fn = functions.find((row) => row.name === val);
-            if (fn) setPlaygroundFunction(val, fn.type);
+            const selected = parseFunctionOptionValue(val);
+            const fn = selected ? functions.find((row) => row.name === selected.name && row.type === selected.type) : undefined;
+            if (fn) setPlaygroundFunction(fn.name, fn.type);
             setPlaygroundInputErrors({});
             setPlaygroundResult(null);
             setPlaygroundPendingOperationId(null);
@@ -188,7 +206,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv, functions,
 
             <FieldLabel>Function</FieldLabel>
             <ComboboxSelect
-                value={playgroundFunction || ''}
+                value={selectedFunctionValue}
                 onValueChange={handleFunctionChange}
                 placeholder="Select function"
                 disabled={running || !playgroundIntegration || !functionsReady}
