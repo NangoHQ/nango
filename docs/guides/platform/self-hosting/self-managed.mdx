@@ -527,7 +527,7 @@ Until you set a private key, callers keep minting the previous credentials, and 
 Set the new keys in this order so a rolling deploy keeps accepting in-flight tokens:
 
 1. Deploy server, jobs, and orchestrator. Runners pick up the new image the next time jobs starts them.
-2. Set the public keys on orchestrator and jobs. Do not set private keys yet. Jobs copies the jobs public keys onto new runners and still injects the legacy derived public key.
+2. Set the public keys, and do not set private keys yet. Set `NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS` on orchestrator and jobs, and `NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS` on the server and orchestrator. Jobs copies the jobs public keys onto new runners and still injects the legacy derived public key.
 3. Recycle runners so every live runner can verify both shapes.
 4. Set the server private key, then the jobs private key. Jobs then mints service and workload JWTs. In-flight HMAC task tokens (up to 25 hours) and node tokens on runners that have not been recycled still verify.
 

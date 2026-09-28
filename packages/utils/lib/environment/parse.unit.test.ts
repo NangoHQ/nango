@@ -71,6 +71,28 @@ describe('parse', () => {
         ).toThrowError(/NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS/);
     });
 
+    it('rejects __proto__ as an internal auth key id', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: `__proto__:${'A'.repeat(43)}` })).toThrowError(
+            /NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS/
+        );
+    });
+
+    it('rejects a jobs public key that does not match the private key', () => {
+        const { privateKey } = generateKeyPairSync('ed25519');
+        const { publicKey: otherPublicKey } = generateKeyPairSync('ed25519');
+        const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+        const otherRaw = Buffer.from(otherPublicKey.export({ format: 'der', type: 'spki' }))
+            .subarray(12)
+            .toString('base64url');
+        expect(() =>
+            parseEnvs(ENVS, {
+                NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: pem,
+                NANGO_INTERNAL_AUTH_JOBS_KEY_ID: 'jobs-2026-09',
+                NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: `jobs-2026-09:${otherRaw}`
+            })
+        ).toThrowError(/does not match/);
+    });
+
     it('accepts a jobs key pair whose kid is in the public key list', () => {
         const { privateKey, publicKey } = generateKeyPairSync('ed25519');
         const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();

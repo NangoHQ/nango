@@ -6,6 +6,7 @@ import {
     INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR,
     INTERNAL_SERVICE_ISSUER_JOBS,
     INTERNAL_SERVICE_ISSUER_SERVER,
+    INTERNAL_SERVICE_TOKEN_TTL_SECS,
     keyRegistryFromPublicKeys,
     verify
 } from '@nangohq/internal-auth';
@@ -65,6 +66,14 @@ function authorizationHeader(fetchMock: ReturnType<typeof vi.fn>): string | unde
     return init?.headers?.['Authorization'];
 }
 
+function tokenLifetimeSecs(token: string): number {
+    const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')) as { iat?: unknown; exp?: unknown };
+    if (typeof payload.iat !== 'number' || typeof payload.exp !== 'number') {
+        throw new Error('expected iat and exp');
+    }
+    return payload.exp - payload.iat;
+}
+
 describe('OrchestratorClient service tokens', () => {
     afterEach(() => {
         vi.unstubAllGlobals();
@@ -106,6 +115,7 @@ describe('OrchestratorClient service tokens', () => {
             sub: INTERNAL_SERVICE_ISSUER_JOBS,
             issuer: INTERNAL_SERVICE_ISSUER_JOBS
         });
+        expect(tokenLifetimeSecs(token)).toBe(INTERNAL_SERVICE_TOKEN_TTL_SECS);
     });
 
     it('sends a server service token when the server private key is set', async () => {
@@ -125,5 +135,6 @@ describe('OrchestratorClient service tokens', () => {
             sub: INTERNAL_SERVICE_ISSUER_SERVER,
             issuer: INTERNAL_SERVICE_ISSUER_SERVER
         });
+        expect(tokenLifetimeSecs(token)).toBe(INTERNAL_SERVICE_TOKEN_TTL_SECS);
     });
 });
