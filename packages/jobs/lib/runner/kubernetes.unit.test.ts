@@ -680,5 +680,13 @@ describe('runner internal auth env', () => {
         });
         expect(auth).toMatchObject({ kind: 'jwt', sub: nodeSubject('1'), issuer: INTERNAL_SERVICE_ISSUER_JOBS });
         expect(JSON.stringify(secret.stringData)).not.toContain('BEGIN PRIVATE KEY');
+
+        const deployment = k8sMock.calls.find((call) => call.method === 'createNamespacedDeployment')?.body;
+        const containerEnv = deployment.spec.template.spec.containers[0].env as { name: string }[];
+        expect(containerEnv.find((env) => env.name === 'NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY')).toBeUndefined();
+        expect(containerEnv.find((env) => env.name === 'NANGO_INTERNAL_AUTH_JOBS_KEY_ID')).toBeUndefined();
+        expect(containerEnv.find((env) => env.name === 'NANGO_INTERNAL_AUTH_SIGNING_KEY')).toBeUndefined();
+        expect(containerEnv.find((env) => env.name === 'NANGO_INTERNAL_AUTH_TOKEN')).toBeUndefined();
+        expect(JSON.stringify(deployment)).not.toContain('BEGIN PRIVATE KEY');
     });
 });

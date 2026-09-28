@@ -55,6 +55,17 @@ describe('unified internal auth JWT', () => {
         expect(auth).toMatchObject({ kind: 'jwt', sub: 'task:task-1', issuer: INTERNAL_SERVICE_ISSUER_JOBS });
     });
 
+    it('rejects a token signed by a different key than the kid entry', async () => {
+        const current = ed25519Material();
+        const next = ed25519Material();
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: current.pem },
+            { sub: INTERNAL_SERVICE_ISSUER_JOBS, aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
+        );
+        const registry = keyRegistryFromPublicKeys(`jobs-2026-09:${next.raw}`, INTERNAL_SERVICE_ISSUER_JOBS);
+        expect(await verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_JOBS, { registry })).toBeNull();
+    });
+
     it('rejects a token whose issuer does not match the kid entry', async () => {
         const jobs = ed25519Material();
         const token = await mint(
