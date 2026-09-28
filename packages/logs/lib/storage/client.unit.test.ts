@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { policyMessages, policyOperations } from '../es/schema.js';
 import { CircuitBreaker } from './circuitBreaker.js';
 import { CircuitBreakerLogsClient } from './circuitBreakerLogsClient.js';
-import { createLogsStorageBackend, LogsStorage } from './client.js';
+import { createLogsStorageBackend, LogsStorage, logsStorageClientConfig } from './client.js';
 import { ElasticsearchLogsClient } from './elasticsearchClient.js';
 import { OpenSearchLogsClient } from './openSearchClient.js';
 
@@ -313,7 +313,23 @@ describe('ElasticsearchLogsClient', () => {
     });
 
     it('should follow an explicit ec-serverless provider', async () => {
-        const backend = createLogsStorageBackend('ec-serverless');
+        const config = logsStorageClientConfig('ec-serverless', {
+            nodes: 'https://example.es.cloud',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            username: 'u',
+            password: 'p',
+            apiKey: 'encoded-key'
+        });
+        expect(config).toEqual({
+            nodes: 'https://example.es.cloud',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            auth: { apiKey: 'encoded-key' },
+            serverless: true
+        });
+
+        const backend = createLogsStorageBackend('ec-serverless', config);
         const raw = {
             ilm: { putLifecycle: vi.fn() },
             cluster: { health: vi.fn() },
@@ -327,6 +343,24 @@ describe('ElasticsearchLogsClient', () => {
         expect(raw.ilm.putLifecycle).not.toHaveBeenCalled();
         expect(raw.info).toHaveBeenCalledOnce();
         expect(raw.cluster.health).not.toHaveBeenCalled();
+    });
+
+    it('should map hosted providers to basic auth', () => {
+        const connection = {
+            nodes: 'http://localhost:9200',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            username: 'u',
+            password: 'p',
+            apiKey: 'encoded-key'
+        };
+        expect(logsStorageClientConfig('elasticsearch', connection)).toEqual({
+            nodes: connection.nodes,
+            requestTimeout: connection.requestTimeout,
+            maxRetries: connection.maxRetries,
+            auth: { username: 'u', password: 'p' }
+        });
+        expect(logsStorageClientConfig('opensearch', connection).auth).toEqual({ username: 'u', password: 'p' });
     });
 });
 
