@@ -173,14 +173,13 @@ type SearchFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> 
     Prefixed<DBFunctionConfigVersion, typeof VERSION_PREFIX> &
     Prefixed<FunctionIntegration, typeof INTEGRATION_PREFIX>;
 
-interface FunctionSearchFilter {
+// `id` and `uuid` fields are mutually exclusive. Only one of them can be provided at a time.
+type FunctionSearchFilter = ({ id?: number | undefined; uuid?: undefined } | { uuid?: string | undefined; id?: undefined }) & {
     integrationKey?: string | undefined;
-    uuid?: string | undefined;
-    id?: number | undefined;
     name?: string | undefined;
     enabled?: boolean | undefined;
     trigger?: { kind: 'http'; hasSubscriptions: boolean } | { kind: 'event'; event: OnEventType } | undefined;
-}
+};
 
 export async function search(
     trx: Knex,
