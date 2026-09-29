@@ -43,7 +43,7 @@ Nango consists of several core services, each handling specific responsibilities
 - **Runner (Node service)**: Executes integration code and interacts with external APIs.
 - **Persist (Node service)**: Stores synced records and logs.
 - **Postgres**: Stores data for the control plane, API credentials, scheduled tasks, and synced records.
-- **Object Storage (e.g. S3)**: Stores compiled integration code for execution by the Runner.
+- **Object storage (S3, GCS, or Azure)**: Stores compiled integration code for execution by the Runner.
 - **ElasticSearch**: Stores customer-facing observability.
 - **Redis**: Caches system data, including socket information, token refresh locks, and rate limits.
 
@@ -63,7 +63,7 @@ All paid features available on Nango Cloud are also included in both BYOC and Se
 - **Postgres database**: 2 CPU, 8GB RAM, 128GB storage
 - **Redis data store**: 128MB
 - **ElasticSearch data store**: 2 vCPU, 1GB RAM, 30GB storage
-- **Object storage (e.g. S3)**: less than 500MB of storage
+- **Object storage (S3, GCS, or Azure)**: less than 500MB of storage
 
 ## Scaling
 
@@ -76,7 +76,7 @@ Bottlenecks mostly depend on:
 ## Data storage
 
 - **Postgres**: Stores data for the control plane, API credentials, scheduled tasks, and synced records.
-- **Object Storage (e.g. S3)**: Stores compiled integration code for execution by the Runner.
+- **Object storage (S3, GCS, or Azure)**: Stores compiled integration code for execution by the Runner.
 - **ElasticSearch**: Stores customer-facing observability.
 - **Redis**: Caches system data, including socket information, token refresh locks, and rate limits.
 

@@ -1,5 +1,5 @@
 import { defaultOperationExpiration, logContextGetter, OtlpSpan } from '@nangohq/logs';
-import { configService, connectionService, getSyncConfigRaw, pubsub } from '@nangohq/shared';
+import { configService, connectionService, pubsub, resolveRunnableTool } from '@nangohq/shared';
 import { Err, Ok, truncateJson } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -74,14 +74,16 @@ export async function executeAction({
             return { logCtx, result: Err(new ActionExecutionError({ code: 'unknown_provider', message: 'Failed to find provider' })) };
         }
 
-        const syncConfig = await getSyncConfigRaw({ environmentId: environment.id, config_id: provider.id!, name: actionName, isAction: true });
-        if (!syncConfig) {
+        const resolved = await resolveRunnableTool({ environmentId: environment.id, integration: provider, name: actionName });
+        if (resolved.kind === 'missing') {
             return { logCtx, result: Err(new ActionExecutionError({ code: 'unknown_action', message: 'Action not found' })) };
         }
 
-        if (!syncConfig.enabled) {
+        if (resolved.kind === 'deployed' && !resolved.config.enabled) {
             return { logCtx, result: Err(new ActionExecutionError({ code: 'disabled_action', message: 'The action is disabled' })) };
         }
+
+        const loggedSyncConfig = resolved.kind === 'deployed' ? { id: resolved.config.id, name: resolved.config.sync_name } : { name: resolved.tool.name };
 
         span.setTag('nango.actionName', actionName)
             .setTag('nango.connectionId', connectionId)
@@ -95,7 +97,7 @@ export async function executeAction({
                 environment,
                 integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
                 connection: { id: connection.id, name: connection.connection_id },
-                syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
+                syncConfig: loggedSyncConfig,
                 meta: truncateJson({ input })
             }
         );
