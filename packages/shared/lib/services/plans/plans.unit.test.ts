@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { getPlanDefinition, plansList } from './definitions.js';
-import { getGrowthAddonFlags, mergeFlags } from './plans.js';
+import { getGrowthAddonEnvironmentsMax, getGrowthAddonFlags, mergeFlags } from './plans.js';
 
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
@@ -23,6 +23,8 @@ describe('mergeFlags', () => {
             can_customize_connect_ui_theme: false,
             can_disable_connect_ui_watermark: false
         });
+        expect(getGrowthAddonEnvironmentsMax(definition, true, 3)).toBe(10);
+        expect(getGrowthAddonEnvironmentsMax(definition, false, 10)).toBe(3);
     });
 
     it('should cap only connections, function runtime and data transfer on the free plan', () => {
@@ -218,8 +220,18 @@ describe('mergeFlags', () => {
                     has_rbac: true,
                     can_customize_connect_ui_theme: true,
                     can_override_docs_connect_url: true,
-                    can_disable_connect_ui_watermark: true
+                    can_disable_connect_ui_watermark: true,
+                    environments_max: 10
                 });
+            });
+
+            it('should keep a higher environment cap than the add-on grants', () => {
+                const newFlags = mergeFlags({
+                    currentPlan: makePlan({ code: from, flagOverrides: { environments_max: 50 }, hasGrowthFeatures: true }),
+                    newPlanDefinition: payAsYouGo
+                });
+
+                expect(newFlags.environments_max).toBe(50);
             });
         }
     );
