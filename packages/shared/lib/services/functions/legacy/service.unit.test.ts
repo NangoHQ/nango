@@ -47,7 +47,6 @@ describe('functions service', () => {
 
     it('returns mapped rows and total for valid functions', async () => {
         const result = await listFunctions({
-            accountUuid: 'account-uuid',
             environmentId: 1,
             providerConfigKey: 'github',
             type: undefined,
@@ -84,7 +83,6 @@ describe('functions service', () => {
         });
         expect(mockGetIdByProviderConfigKey).toHaveBeenCalledWith(1, 'github');
         expect(mockFindActiveByEnvironment).toHaveBeenCalledWith({
-            accountUuid: 'account-uuid',
             environmentId: 1,
             providerConfigKey: 'github',
             type: undefined,
@@ -98,7 +96,6 @@ describe('functions service', () => {
         mockGetIdByProviderConfigKey.mockResolvedValue(null);
 
         const result = await listFunctions({
-            accountUuid: 'account-uuid',
             environmentId: 1,
             providerConfigKey: 'missing',
             type: undefined,
@@ -120,7 +117,6 @@ describe('functions service', () => {
         mockFindActiveByEnvironment.mockRejectedValue(cause);
 
         const result = await listFunctions({
-            accountUuid: 'account-uuid',
             environmentId: 1,
             providerConfigKey: 'github',
             type: 'sync',
@@ -143,7 +139,6 @@ describe('functions service', () => {
         });
 
         const result = await listFunctions({
-            accountUuid: 'account-uuid',
             environmentId: 1,
             providerConfigKey: 'github',
             type: undefined,
@@ -172,7 +167,6 @@ describe('functions service', () => {
         });
 
         const result = await getFunction({
-            accountUuid: 'account-uuid',
             environmentId: 1,
             providerConfigKey: 'github',
             name: 'users',
@@ -196,7 +190,6 @@ describe('functions service', () => {
         });
 
         const result = await getFunction({
-            accountUuid: 'account-uuid',
             environmentId: 1,
             providerConfigKey: 'github',
             name: 'create-issue',

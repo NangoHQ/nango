@@ -25,7 +25,6 @@ export async function handleGetIntegrationFunction({
     }
 
     const fnResult = await legacyFunctionService.getFunction({
-        accountUuid: res.locals.account.uuid,
         environmentId: environment.id,
         providerConfigKey,
         name,

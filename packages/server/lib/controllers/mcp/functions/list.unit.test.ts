@@ -30,7 +30,6 @@ describe('listFunctionsTool', () => {
         );
 
         expect(listSpy).toHaveBeenCalledWith({
-            accountUuid,
             environmentId: 42,
             providerConfigKey: 'github',
             type: 'action',
@@ -65,7 +64,6 @@ describe('listFunctionsTool', () => {
         const result = await listFunctionsTool.handler({ integration_id: 'github' }, context);
 
         expect(listSpy).toHaveBeenCalledWith({
-            accountUuid,
             environmentId: 42,
             providerConfigKey: 'github',
             type: undefined,

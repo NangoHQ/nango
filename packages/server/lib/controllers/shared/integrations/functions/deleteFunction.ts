@@ -27,7 +27,6 @@ export async function handleDeleteIntegrationFunction({
     }
 
     const fnResult = await legacyFunctionService.getFunction({
-        accountUuid: res.locals.account.uuid,
         environmentId: environment.id,
         providerConfigKey,
         name,

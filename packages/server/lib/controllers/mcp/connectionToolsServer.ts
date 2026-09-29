@@ -43,7 +43,7 @@ export async function createConnectionToolsMcpServer(
         return Err(new Error(`Provider config ${providerConfigKey} not found`));
     }
 
-    const actionsResult = await legacyFunctionService.listActions({ accountUuid: account.uuid, environmentId: environment.id, providerConfigKey });
+    const actionsResult = await legacyFunctionService.listActions({ environmentId: environment.id, providerConfigKey });
     if (actionsResult.isErr()) {
         return Err(actionsResult.error);
     }

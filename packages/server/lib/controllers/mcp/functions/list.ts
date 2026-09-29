@@ -15,9 +15,8 @@ export const listFunctionsTool = defineManagementMcpTool<typeof listFunctionsArg
     annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     requiredScopes: { every: ['environment:functions:list'] },
     audit: { kind: 'no-audit', reason: 'read-only' },
-    async handler({ args, account, environment }) {
+    async handler({ args, environment }) {
         const result = await legacyFunctionService.listFunctions({
-            accountUuid: account.uuid,
             environmentId: environment.id,
             providerConfigKey: args.integration_id,
             type: args.type,

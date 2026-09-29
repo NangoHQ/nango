@@ -25,7 +25,6 @@ export class ListFunctionsError extends Error {
  * catalog actions.
  */
 export async function listFunctions({
-    accountUuid,
     environmentId,
     providerConfigKey,
     type,
@@ -33,7 +32,6 @@ export async function listFunctions({
     limit,
     offset
 }: {
-    accountUuid: string;
     environmentId: number;
     providerConfigKey: string;
     type: FunctionType | undefined;
@@ -53,7 +51,6 @@ export async function listFunctions({
         }
 
         const page = await functionsModel.findActiveByEnvironment({
-            accountUuid,
             environmentId,
             providerConfigKey,
             type,
@@ -72,12 +69,10 @@ export async function listFunctions({
  * The result includes disabled actions so callers can decide how to expose them.
  */
 export async function listActions({
-    accountUuid,
     environmentId,
     providerConfigKey,
     limit = 200
 }: {
-    accountUuid: string;
     environmentId: number;
     providerConfigKey: string;
     limit?: number;
@@ -93,7 +88,7 @@ export async function listActions({
             );
         }
 
-        const rows = await functionsModel.findActiveActions({ accountUuid, environmentId, providerConfigKey, limit });
+        const rows = await functionsModel.findActiveActions({ environmentId, providerConfigKey, limit });
         const mapped = mapListingRows(rows);
         if (mapped.isErr()) {
             return Err(mapped.error);
@@ -111,20 +106,18 @@ export async function listActions({
  * match by the listing's stable order is returned. Deployed rows win over catalog.
  */
 export async function getFunction({
-    accountUuid,
     environmentId,
     providerConfigKey,
     name,
     type
 }: {
-    accountUuid: string;
     environmentId: number;
     providerConfigKey: string;
     name: string;
     type: FunctionType | undefined;
 }): Promise<Result<ListedNangoFunction | undefined>> {
     try {
-        const row = await functionsModel.findActiveByName({ accountUuid, environmentId, providerConfigKey, name, type });
+        const row = await functionsModel.findActiveByName({ environmentId, providerConfigKey, name, type });
         if (!row) {
             return Ok(undefined);
         }
