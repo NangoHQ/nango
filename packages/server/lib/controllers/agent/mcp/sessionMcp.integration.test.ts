@@ -517,7 +517,7 @@ describe('/session/:sessionId/mcp', () => {
 
         expect(match?.connection).toStrictEqual({ status: 'not_connected' });
         expect(result.guidance).toContain(
-            "'zendesk' has no connection in this session, so its tools will fail if you call them. Tell the user they need to connect it, and carry on with the tools you do have."
+            "'zendesk' has no connection in this session. Their tools are listed for completeness and will fail if you call them. Tell the user they need to connect it, and carry on with the tools you do have."
         );
     });
 
@@ -528,7 +528,7 @@ describe('/session/:sessionId/mcp', () => {
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket' } });
 
         expect(searchResult(res).guidance).toContain(
-            "'zendesk' has no connection in this session, so its tools will fail if you call them. Call nango_create_connection with integration 'zendesk' to get a link the user can follow, then try again once they tell you they are done."
+            "'zendesk' has no connection in this session. Their tools are listed for completeness and will fail if you call them. Call nango_create_connection with integration 'zendesk' to get a link the user can follow, then try again once they tell you they are done."
         );
     });
 
