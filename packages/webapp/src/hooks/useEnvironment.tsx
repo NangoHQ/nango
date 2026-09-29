@@ -83,8 +83,11 @@ export function usePostRotateWebhookSigningKey(env: string) {
 
             return json;
         },
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) });
+        // Not a refetch: the server caches the key for 5 minutes, so it can still return the old one.
+        onSuccess: ({ data }) => {
+            queryClient.setQueryData<GetEnvironment['Success']>(environmentQueryKey(env), (prev) =>
+                prev ? { ...prev, environmentAndAccount: { ...prev.environmentAndAccount, webhook_signing_key: data.webhook_signing_key } } : prev
+            );
         }
     });
 }
