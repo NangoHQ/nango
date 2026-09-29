@@ -66,6 +66,10 @@ Connect to Webflow with Nango and see data flow in 2 minutes.
 Webflow's Data API is versioned explicitly in the endpoint URL — use `/v2/` for production endpoints and `/beta/` for endpoints still in beta. Access tokens work across both.
 </Note>
 
+<Warning>
+**Webflow Marketplace installation flow is not supported.** Nango only supports OAuth flows initiated through Nango (e.g. via the Connect UI or the [Nango Auth API](/guides/primitives/auth)), because Nango issues its own `state` parameter to match the OAuth callback back to the connection attempt that started it. A flow started from the Webflow Marketplace's "Install" button doesn't carry that state, so Nango's callback has nothing to match it against and the connection fails. If your Webflow app is listed on the Marketplace, users must connect through your Nango-powered flow, not the Marketplace install button.
+</Warning>
+
 ## 📚 Webflow integration guides
 
 Nango maintained guides for common use cases.
