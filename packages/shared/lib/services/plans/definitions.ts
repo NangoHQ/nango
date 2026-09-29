@@ -404,8 +404,6 @@ export const GROWTH_FEATURE_FLAGS = {
     can_disable_connect_ui_watermark: true
 } satisfies Record<GrowthFeatureFlag, boolean>;
 
-// Toggling the add-on is not a plan change, so `mergePlanFlags` never applies this cap.
-// Unlike the flags above, starting the add-on only raises it. A higher hand-granted cap survives.
 export const GROWTH_ADDON_ENVIRONMENTS_MAX = 10;
 
 export const PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON: PlanDefinition['code'][] = ['pay-as-you-go'];
