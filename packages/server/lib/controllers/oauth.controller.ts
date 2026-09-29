@@ -569,6 +569,7 @@ class OAuthController {
                 connection: updatedConnection.connection,
                 config,
                 account,
+                environment,
                 logCtx
             });
 
@@ -2016,6 +2017,7 @@ class OAuthController {
                 connection: updatedConnection.connection,
                 config,
                 account,
+                environment,
                 logCtx
             });
 
@@ -2272,6 +2274,7 @@ class OAuthController {
             connection: updatedConnection.connection,
             config,
             account,
+            environment,
             logCtx
         });
 
@@ -2458,6 +2461,7 @@ class OAuthController {
                     connection: updatedConnection.connection,
                     config,
                     account,
+                    environment,
                     logCtx
                 });
 

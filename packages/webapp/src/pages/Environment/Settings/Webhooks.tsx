@@ -1,5 +1,6 @@
 import { FieldLabel } from '@nangohq/design-system';
 
+import { DocsIconLink } from '@/components/patterns/DocsIconLink.js';
 import { EditableInput } from '@/components/patterns/EditableInput.js';
 import { SecretInput } from '@/components/patterns/SecretInput.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
@@ -7,7 +8,6 @@ import { useToast } from '@/hooks/useToast.js';
 import { validateUrl } from '@/pages/Integrations/utils.js';
 import { useStore } from '@/store';
 import { useEnvironment, usePatchWebhook } from '../../../hooks/useEnvironment.js';
-import { DocsIconLink } from './components/DocsIconLink.js';
 import SettingsContent from './components/SettingsContent.js';
 import SettingsGroup from './components/SettingsGroup.js';
 import { WebhookCheckboxes } from './components/WebhookCheckboxes.js';

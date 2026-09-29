@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1025
+Provider count: 1027
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -124,6 +124,7 @@ URL patterns:
 | `bigcommerce` | BigCommerce | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/bigcommerce.md) | [connect](https://nango.dev/docs/api-integrations/bigcommerce/connect.md) | [setup](https://nango.dev/docs/api-integrations/bigcommerce/how-to-register-your-own-bigcommerce-api-oauth-app.md) | e-commerce |
 | `bill` | Bill (Connect API) | BILL | [docs](https://nango.dev/docs/integrations/all/bill.md) |  |  | payment |
 | `bill-sandbox` | Bill (Connect API Sandbox) | BILL | [docs](https://nango.dev/docs/integrations/all/bill-sandbox.md) | [connect](https://nango.dev/docs/integrations/all/bill-sandbox/connect.md) |  | payment |
+| `billit` | Billit | API_KEY | [docs](https://nango.dev/docs/api-integrations/billit.md) | [connect](https://nango.dev/docs/api-integrations/billit/connect.md) |  | accounting, invoicing |
 | `bing-webmasters` | Bing Webmasters | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/bing-webmasters.md) |  | [setup](https://nango.dev/docs/api-integrations/bing-webmasters/how-to-register-your-own-bing-webmasters-api-oauth-app.md) | dev-tools |
 | `bird` | Bird | API_KEY | [docs](https://nango.dev/docs/api-integrations/bird.md) | [connect](https://nango.dev/docs/api-integrations/bird/connect.md) |  | communication |
 | `bitbucket` | Bitbucket | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/bitbucket.md) |  |  | dev-tools |
@@ -624,6 +625,7 @@ URL patterns:
 | `okta-cc` | Okta (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/okta-cc.md) | [connect](https://nango.dev/docs/api-integrations/okta-cc/connect.md) |  | dev-tools, iam |
 | `okta-preview` | Okta (Preview) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/okta-preview.md) |  |  | dev-tools, iam |
 | `omni` | Omni Analytics | API_KEY | [docs](https://nango.dev/docs/api-integrations/omni.md) | [connect](https://nango.dev/docs/api-integrations/omni/connect.md) |  | analytics |
+| `omnisend` | Omnisend | API_KEY | [docs](https://nango.dev/docs/api-integrations/omnisend.md) | [connect](https://nango.dev/docs/api-integrations/omnisend/connect.md) |  | marketing, e-commerce |
 | `one-drive` | OneDrive for Business | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/one-drive.md) |  | [setup](https://nango.dev/docs/api-integrations/one-drive/how-to-register-your-own-onedrive-for-business-api-oauth-app.md) | knowledge-base, storage |
 | `one-drive-personal` | OneDrive Personal | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/one-drive-personal.md) |  |  | knowledge-base, storage |
 | `one-note` | One Note | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/one-note.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | productivity |
@@ -914,6 +916,7 @@ URL patterns:
 | `todoist` | Todoist | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/todoist.md) |  |  | productivity, ticketing |
 | `toggl` | Toggl Track | BASIC | [docs](https://nango.dev/docs/api-integrations/toggl.md) | [connect](https://nango.dev/docs/api-integrations/toggl/connect.md) |  | productivity |
 | `torii` | Torii | API_KEY | [docs](https://nango.dev/docs/api-integrations/torii.md) | [connect](https://nango.dev/docs/api-integrations/torii/connect.md) |  | productivity |
+| `tracify` | Tracify | API_KEY | [docs](https://nango.dev/docs/api-integrations/tracify.md) | [connect](https://nango.dev/docs/api-integrations/tracify/connect.md) |  | analytics, marketing |
 | `trading-economics` | Trading Economics | API_KEY | [docs](https://nango.dev/docs/api-integrations/trading-economics.md) | [connect](https://nango.dev/docs/api-integrations/trading-economics/connect.md) |  | analytics |
 | `trafft` | Trafft | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/trafft.md) | [connect](https://nango.dev/docs/integrations/all/trafft/connect.md) |  | productivity |
 | `trakstar-hire` | Trakstar Hire | BASIC | [docs](https://nango.dev/docs/integrations/all/trakstar-hire.md) | [connect](https://nango.dev/docs/integrations/all/trakstar-hire/connect.md) |  | ats |

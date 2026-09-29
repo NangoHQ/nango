@@ -12,6 +12,7 @@ import type { GetConnectionOutput } from './schema.js';
 
 export const getConnectionsTool = defineManagementMcpTool<typeof getConnectionArgumentsSchema, GetConnectionOutput>({
     name: 'connections_get',
+    title: 'Get Connection',
     description: 'Get one connection and, when authorized, return its credentials. This may refresh or rotate stored credential material before returning it.',
     inputSchema: getConnectionArgumentsSchema,
     outputSchema: getConnectionOutputSchema,

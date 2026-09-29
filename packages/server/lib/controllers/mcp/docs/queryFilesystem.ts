@@ -6,6 +6,7 @@ import type { QueryDocsFilesystemOutput } from './schema.js';
 
 export const queryDocsFilesystemTool = defineManagementMcpTool<typeof queryDocsFilesystemInputSchema, QueryDocsFilesystemOutput>({
     name: 'docs_query_filesystem',
+    title: 'Query Nango Documentation Filesystem',
     description:
         "Run a read-only shell-like command against Mintlify's virtual Nango documentation filesystem. Use this to read full pages, browse the documentation structure, or perform exact text searches. Supported commands include rg, grep, find, tree, ls, cat, head, tail, sed, awk, and jq. The filesystem is an isolated documentation sandbox, not the Nango server or the caller's computer.",
     inputSchema: queryDocsFilesystemInputSchema,

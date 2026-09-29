@@ -35,7 +35,7 @@ Everything runs on your infrastructure, configured by you:
 | Store | Holds |
 | --- | --- |
 | Postgres | Control-plane data, your end users' connection credentials, scheduled tasks, synced records |
-| Object storage (e.g. S3) | Compiled integration code for the Runner |
+| Object storage (S3, GCS, or Azure) | Compiled integration code for the Runner |
 | ElasticSearch / OpenSearch | Execution logs |
 | Redis / Valkey | Cache — socket info, token refresh locks, rate limits |
 
@@ -151,10 +151,18 @@ Everything below is what you configure directly to run a production instance —
 | `NANGO_DATABASE_URL` | `postgresql://nango:••••@db.internal:5432/nango` | Postgres connection string |
 | `NANGO_REDIS_URL` | `rediss://:••••@redis.internal:6379` | Redis / Valkey connection string |
 | `NANGO_ADMIN_INVITE_TOKEN` | *(generated, single-use token)* | Token for inviting the first admin |
-| `AWS_BUCKET_NAME` | `my-company-nango-integrations` | Object storage for integration files |
+| `AWS_INTEGRATIONS_BUCKET_NAME` | `my-company-nango-integrations` | S3 bucket for compiled integration files |
+| `GCS_INTEGRATIONS_BUCKET_NAME` | `my-company-nango-integrations` | GCS bucket for compiled integration files |
+| `AZURE_INTEGRATIONS_ACCOUNT_NAME` | `mycompanynango` | Azure storage account for compiled integration files |
+| `AZURE_INTEGRATIONS_CONTAINER_NAME` | `integrations` | Azure blob container for compiled integration files |
+| `AZURE_INTEGRATIONS_ACCOUNT_KEY` | `••••••••` | Optional Azure shared key. Omit to use `DefaultAzureCredential` |
 | `MAILGUN_API_KEY` | `key-••••••••••••••••` | Transactional email |
 | `NANGO_LOGS_ES_USER` | `nango_logs` | OpenSearch/Elasticsearch username |
 | `NANGO_LOGS_ES_PWD` | `••••••••` | OpenSearch/Elasticsearch password |
+
+<Note>
+Set one object store. On AWS, set `AWS_INTEGRATIONS_BUCKET_NAME`. On Google Cloud Storage, set `GCS_INTEGRATIONS_BUCKET_NAME`; Nango authenticates with Application Default Credentials, so the workload needs permission to read and write objects in that bucket. On Azure Blob Storage, set `AZURE_INTEGRATIONS_ACCOUNT_NAME` and `AZURE_INTEGRATIONS_CONTAINER_NAME` together. Set `AZURE_INTEGRATIONS_ACCOUNT_KEY` to authenticate with a shared key, or omit it to use `DefaultAzureCredential`. S3, GCS, and Azure cannot be configured together.
+</Note>
 
 <Tip>
 This is the *minimum* set to get a production instance running. The sections below cover what each optional subsystem (logs, encryption, audit trail, Redis, hardening) additionally needs.

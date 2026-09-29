@@ -98,6 +98,39 @@ describe('function deploy validation', () => {
         }
     });
 
+    it('accepts an event trigger with multiple distinct events and no input schema', () => {
+        const result = validation.safeParse({
+            ...validBody,
+            functions: [{ ...validFunction, trigger: { kind: 'event', events: ['post-connection-creation', 'validate-connection'] }, input_schema_ref: null }]
+        });
+        expect(result.success).toBe(true);
+    });
+
+    it.each([
+        { reason: 'empty', events: [] },
+        { reason: 'duplicate', events: ['post-connection-creation', 'post-connection-creation'] },
+        { reason: 'unknown', events: ['unknown'] }
+    ])('rejects invalid event lists: $reason', ({ events }) => {
+        const result = validation.safeParse({
+            ...validBody,
+            functions: [{ ...validFunction, trigger: { kind: 'event', events }, input_schema_ref: null }]
+        });
+        expect(result.success).toBe(false);
+    });
+
+    it.each([
+        { kind: 'schedule', trigger: { kind: 'schedule', frequency: 'every hour' } },
+        { kind: 'event', trigger: { kind: 'event', events: ['validate-connection'] } }
+    ])('rejects input on a $kind trigger', ({ kind, trigger }) => {
+        const result = validation.safeParse({ ...validBody, functions: [{ ...validFunction, trigger }] });
+        expect(result.success).toBe(false);
+        if (!result.success) {
+            expect(result.error.issues).toContainEqual(
+                expect.objectContaining({ path: ['functions', 0, 'input_schema_ref'], message: `${kind} must not declare input` })
+            );
+        }
+    });
+
     it('rejects duplicate names within an integration', () => {
         const result = validation.safeParse({ ...validBody, functions: [validFunction, validFunction] });
 

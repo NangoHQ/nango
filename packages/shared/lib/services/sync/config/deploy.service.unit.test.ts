@@ -6,6 +6,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { Orchestrator } from '../../../clients/orchestrator.js';
 import { getTestTeam } from '../../../seeders/account.seeder.js';
 import { getTestEnvironment } from '../../../seeders/environment.seeder.js';
+import { NangoError } from '../../../utils/error.js';
 import accountService from '../../account.service.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
@@ -525,19 +526,23 @@ describe('Sync config create', () => {
         } as any);
         vi.spyOn(db.knex, 'transaction').mockRejectedValue(new Error());
 
-        await expect(
-            DeployConfigService.deploy({
-                environment,
-                account,
-                flows: syncs,
-                logContextGetter,
-                orchestrator: mockOrchestrator,
-                debug,
-                sdkVersion: '0.0.0-yaml',
-                onEventScriptsByProvider: [],
-                source: 'repo'
-            })
-        ).rejects.toThrowError('Error creating sync config from a deploy. Please contact support with the sync name and connection details');
+        const { success, error } = await DeployConfigService.deploy({
+            environment,
+            account,
+            flows: syncs,
+            logContextGetter,
+            orchestrator: mockOrchestrator,
+            debug,
+            sdkVersion: '0.0.0-yaml',
+            onEventScriptsByProvider: [],
+            source: 'repo'
+        });
+
+        expect(success).toBe(false);
+        expect(error).toMatchObject({
+            type: 'error_creating_sync_config',
+            message: 'Error creating sync config from a deploy. Please contact support with the sync name and connection details'
+        });
     });
 });
 
@@ -823,6 +828,36 @@ describe('Deploy file upload and version resolution', () => {
                 expect(capturedSyncConfigs[0]?.['version']).toBe(expectedVersion);
             }
         );
+
+        it('returns a clean error instead of throwing when the previous version cannot be auto-incremented', async () => {
+            const { uploadSpy } = setupDeployTestMocks({ previousVersion: 'f4a9c21', jsChanged: false });
+            const { success, error } = await deployTestFlow({ ...deployBaseFlow, version: '' });
+            expect(success).toBe(false);
+            expect(error).toMatchObject({ type: 'invalid_previous_sync_version' });
+            expect(uploadSpy).not.toHaveBeenCalled();
+        });
+
+        it('surfaces the specific error from onEventScriptService.update instead of collapsing it into the generic error_creating_sync_config', async () => {
+            setupDeployTestMocks({ jsChanged: false });
+            vi.spyOn(onEventScriptService, 'update').mockRejectedValue(
+                new NangoError('invalid_previous_sync_version', { syncName: 'post-connection', previousVersion: 'f4a9c21' })
+            );
+
+            const { success, error } = await DeployConfigService.deploy({
+                account: getTestTeam(),
+                environment: getTestEnvironment(),
+                flows: [deployBaseFlow],
+                logContextGetter,
+                orchestrator: mockOrchestrator,
+                sdkVersion: '0.0.0',
+                onEventScriptsByProvider: [{ providerConfigKey: 'google', scripts: [] }],
+                source: 'repo'
+            });
+
+            expect(success).toBe(false);
+            expect(error).toMatchObject({ type: 'invalid_previous_sync_version' });
+            expect(error?.message).toContain('post-connection');
+        });
     });
 });
 

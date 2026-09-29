@@ -64,6 +64,11 @@ describe('parse', () => {
         expect(res.NANGO_MANAGEMENT_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
     });
 
+    it('should parse the OpenAI Apps challenge token', () => {
+        const res = parseEnvs(ENVS, { NANGO_OPENAI_APPS_CHALLENGE_TOKEN: 'challenge-token' });
+        expect(res.NANGO_OPENAI_APPS_CHALLENGE_TOKEN).toBe('challenge-token');
+    });
+
     it('parses OAuth server settings', () => {
         const res = parseEnvs(ENVS, {
             NANGO_OAUTH_SERVER_BASE_URL: 'https://api.example.com',
@@ -402,6 +407,15 @@ describe('parse', () => {
     it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
+    });
+
+    it('should accept ec-serverless as NANGO_LOGS_PROVIDER', () => {
+        const res = parseEnvs(ENVS, { NANGO_LOGS_PROVIDER: 'ec-serverless' });
+        expect(res.NANGO_LOGS_PROVIDER).toBe('ec-serverless');
+    });
+
+    it('should throw on an unknown NANGO_LOGS_PROVIDER', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_PROVIDER: 'not-a-provider' })).toThrow();
     });
 
     it('should default NANGO_LOGS_ES_RETENTION_DAYS to 15', () => {

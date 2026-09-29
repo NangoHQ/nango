@@ -4531,7 +4531,7 @@ components:
                           description: Configure your integration webhooks to point to this URL
                       credentials:
                           anyOf:
-                              - $ref: '#/components/schemas/IntegrationCredentials'
+                              - $ref: '#/components/schemas/IntegrationCredentialsWithConfig'
                               - type: 'null'
 
         ConnectSessionInput:
@@ -5270,6 +5270,30 @@ components:
                       type:
                           type: string
                           enum:
+                              - MCP_OAUTH2_GENERIC
+                      client_name:
+                          anyOf:
+                              - type: string
+                                minLength: 1
+                                maxLength: 255
+                              - type: 'null'
+                      client_uri:
+                          anyOf:
+                              - type: string
+                                maxLength: 255
+                              - type: 'null'
+                      client_logo_uri:
+                          anyOf:
+                              - type: string
+                                maxLength: 255
+                              - type: 'null'
+                - type: object
+                  required:
+                      - type
+                  properties:
+                      type:
+                          type: string
+                          enum:
                               - MCP_OAUTH2
                       client_id:
                           anyOf:
@@ -5287,6 +5311,32 @@ components:
                               - type: string
                                 pattern: '^(?:[0-9a-zA-Z:/_.*-]+([, ]+[0-9a-zA-Z:/_.*-]+)*)?$'
                               - type: 'null'
+
+        IntegrationCredentialsWithConfig:
+            description: >
+                Same as IntegrationCredentials, plus the shape returned for providers that declare an
+                `integration_config` schema (e.g. aws-sigv4, epic, private-api-generic), alongside or instead
+                of fixed credential fields. This variant is response-only -- it can't be submitted on create or update.
+            oneOf:
+                - $ref: '#/components/schemas/IntegrationCredentials'
+                - type: object
+                  required:
+                      - type
+                      - auth_mode
+                      - integration_config
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - INTEGRATION_CONFIG
+                      auth_mode:
+                          type: string
+                          description: The provider's actual auth mode (e.g. AWS_SIGV4, TWO_STEP, API_KEY).
+                      integration_config:
+                          type: object
+                          additionalProperties:
+                              type: string
+                          description: The provider's `integration_config` values, keyed by the fields it declares.
 
         IntegrationCredentialsInput:
             description: Integration credentials schema accepted in create/update request bodies. For MCP_OAUTH2, static creation requires both client_id and client_secret; dynamic and CIMD providers reject those fields because Nango manages them. Optional fields may be omitted but must not be null.
@@ -5367,6 +5417,24 @@ components:
                       private_key:
                           type: string
                           pattern: '^-----BEGIN RSA PRIVATE KEY----.*-----END RSA PRIVATE KEY-----$'
+                - type: object
+                  required:
+                      - type
+                  properties:
+                      type:
+                          type: string
+                          enum:
+                              - MCP_OAUTH2_GENERIC
+                      client_name:
+                          type: string
+                          minLength: 1
+                          maxLength: 255
+                      client_uri:
+                          type: string
+                          maxLength: 255
+                      client_logo_uri:
+                          type: string
+                          maxLength: 255
                 - type: object
                   required:
                       - type

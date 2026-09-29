@@ -8,6 +8,7 @@ import type { DeploymentCreateOutput } from './schema.js';
 
 export const deployTemplateTool = defineManagementMcpTool<typeof deployTemplateArgumentsSchema, DeploymentCreateOutput>({
     name: 'deploy_template',
+    title: 'Deploy Template',
     description:
         'Deploy a function template, replacing any same-named non-catalog function configuration. If the template is a sync, start it for existing connections.',
     inputSchema: deployTemplateArgumentsSchema,

@@ -14,6 +14,7 @@ type ParsedListOperationsArguments = Omit<ListLogOperationsParams, 'accountId' |
 
 export const listLogOperationsTool = defineManagementMcpTool<typeof listOperationsArgumentsSchema, ListLogOperationsResult>({
     name: 'logs_list_operations',
+    title: 'List Log Operations',
     description: [
         'List Nango log operations.',
         'Log operations are top-level execution records for syncs, actions, auth, webhooks, proxy calls, and other Nango activity; each operation contains its related log messages.',

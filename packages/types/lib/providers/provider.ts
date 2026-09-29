@@ -34,7 +34,7 @@ export interface SimplifiedJSONSchema {
     prefix?: string;
     suffix?: string;
     doc_section?: string;
-    secret?: string;
+    secret?: boolean;
     automated: boolean;
     enum?: string[];
     // Maps a field value to a warning shown when that value is selected (e.g. discouraged enum options).

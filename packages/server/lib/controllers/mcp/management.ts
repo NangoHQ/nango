@@ -4,11 +4,13 @@ import { environmentService } from '@nangohq/shared';
 
 import { principalFor } from '../../authz/principal.js';
 import { resolveAuditAttribution } from '../../middleware/audit/index.js';
+import { trackMcpServer } from '../../services/mcpAnalytics.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { createManagementMcpServer } from './managementServer.js';
 
 import type { RequestLocals } from '../../utils/express.js';
 import type { ManagementMcpEnvironment } from './managementTool.js';
+import type { JSONRPCMessage, RequestId } from '@modelcontextprotocol/server';
 import type { GetManagementMcp, PostManagementMcp } from '@nangohq/types';
 
 export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res) => {
@@ -37,7 +39,15 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
                   }
               } as const);
     const server = await createManagementMcpServer(authentication, req.body);
-    const transport: NodeStreamableHTTPServerTransport = new NodeStreamableHTTPServerTransport();
+    trackMcpServer({
+        server,
+        mcpType: 'management',
+        account,
+        ...(authentication.type === 'oauth' ? { user: res.locals.user } : {}),
+        authType: authentication.type,
+        ...(authentication.type === 'apiKey' ? { environment: authentication.context.environment } : { environments: authentication.context.environments })
+    });
+    const transport = new ManagementMcpTransport();
 
     res.on('close', () => {
         void transport.close();
@@ -47,6 +57,32 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
     await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
 });
+
+export class ManagementMcpTransport extends NodeStreamableHTTPServerTransport {
+    override send(message: JSONRPCMessage, options?: { relatedRequestId?: RequestId }): Promise<void> {
+        return super.send(withTopLevelToolSecuritySchemes(message), options);
+    }
+}
+
+/**
+ * @modelcontextprotocol/server currently emits only the compatibility mirror in
+ * `_meta.securitySchemes`. OpenAI also expects the top-level tool descriptor field.
+ */
+function withTopLevelToolSecuritySchemes(message: JSONRPCMessage): JSONRPCMessage {
+    if (!('result' in message) || !isRecord(message.result) || !Array.isArray(message.result['tools'])) {
+        return message;
+    }
+
+    const tools = (message.result['tools'] as unknown[]).map((tool) => {
+        if (!isRecord(tool) || !isRecord(tool['_meta']) || !Array.isArray(tool['_meta']['securitySchemes'])) {
+            return tool;
+        }
+
+        return { ...tool, securitySchemes: tool['_meta']['securitySchemes'] };
+    });
+
+    return { ...message, result: { ...message.result, tools } } as JSONRPCMessage;
+}
 
 // We have to be explicit about not supporting SSE
 export const getManagementMcp = asyncWrapper<GetManagementMcp>((_, res) => {
@@ -88,4 +124,8 @@ async function loadManagementMcpEnvironments(accountId: number): Promise<Managem
     }
 
     return environments.value.map(({ id, uuid, name, is_production }) => ({ id, uuid, name, account_id: accountId, is_production }));
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

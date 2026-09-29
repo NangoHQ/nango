@@ -1,50 +1,62 @@
+import { connectionService } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
+
+import { connectionsWithValidSecret, rejectUnverifiedWebhook } from './nango-webhook-secret.js';
 
 import type { WebhookHandler } from './types.js';
 
-const route: WebhookHandler = async (nango, _headers, body) => {
-    // We are not validating the webhook here since the provider does not offer a built-in validation method.
-    // They only mention that you can include a custom header to assist with validation.
-    // https://www.fillout.com/help/webhook#available-webhook-options
+// Fillout does not sign webhooks. It lets you add a custom header, which carries the Nango webhook
+// secret of the connection that owns the form.
+// https://www.fillout.com/help/webhook#available-webhook-options
+const route: WebhookHandler = async (nango, headers, body, _rawBody, query) => {
+    const events: Record<string, unknown>[] = Array.isArray(body) ? body : [body];
+    const connectionIds = new Set<string>();
+    const verifiedEvents: Record<string, unknown>[] = [];
 
-    if (Array.isArray(body)) {
-        const connectionIds = new Set<string>();
+    for (const event of events) {
+        const formId = event?.['formId'];
+        if (typeof formId !== 'string' || !formId) {
+            continue;
+        }
 
-        for (const event of body) {
+        const connections =
+            (await connectionService.findConnectionsByMetadataValue({
+                metadataProperty: 'formId',
+                payloadIdentifier: formId,
+                configId: nango.integration.id,
+                environmentId: nango.environment.id
+            })) || [];
+
+        // Each connection is checked against its own secret, so only the ones it matches are routed.
+        const verified = connectionsWithValidSecret(connections, headers, query);
+        if (verified.length > 0) {
+            verifiedEvents.push(event);
+        }
+
+        for (const connection of verified) {
             const response = await nango.executeScriptForWebhooks({
                 payload: event,
                 webhookType: 'type',
-                connectionIdentifier: 'formId',
-                propName: 'metadata.formId'
+                connectionIdentifierValue: connection.connection_id,
+                propName: 'connectionId'
             });
-
-            if (response?.connectionIds?.length) {
-                for (const id of response.connectionIds) {
-                    connectionIds.add(id);
-                }
+            for (const id of response.connectionIds) {
+                connectionIds.add(id);
             }
         }
-
-        return Ok({
-            content: { status: 'success' },
-            statusCode: 200,
-            connectionIds: Array.from(connectionIds),
-            toForward: body
-        });
-    } else {
-        const response = await nango.executeScriptForWebhooks({
-            payload: body,
-            webhookType: 'type',
-            connectionIdentifier: 'formId',
-            propName: 'metadata.formId'
-        });
-        return Ok({
-            content: { status: 'success' },
-            statusCode: 200,
-            connectionIds: response?.connectionIds || [],
-            toForward: body
-        });
     }
+
+    if (connectionIds.size === 0) {
+        return rejectUnverifiedWebhook(headers, query);
+    }
+
+    return Ok({
+        content: { status: 'success' },
+        statusCode: 200,
+        connectionIds: Array.from(connectionIds),
+        // Events for forms the secret did not verify must not reach the verified connections.
+        toForward: Array.isArray(body) ? verifiedEvents : body
+    });
 };
 
 export default route;

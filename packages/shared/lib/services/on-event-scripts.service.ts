@@ -1,6 +1,7 @@
 import db from '@nangohq/database';
 import { env } from '@nangohq/utils';
 
+import { NangoError } from '../utils/error.js';
 import { resolveLocalFileName } from '../utils/utils.js';
 import configService from './config.service.js';
 import remoteFileService from './file/remote.service.js';
@@ -104,7 +105,17 @@ export const onEventScriptService = {
                     const event = eventTypeMapper.toDb(scriptEvent);
 
                     const previousScriptVersion = previousScriptVersions.find((p) => p.config_id === config.id && p.name === name && p.event === event);
-                    const version = previousScriptVersion ? increment(previousScriptVersion.version) : '0.0.1';
+                    let version = '0.0.1';
+                    if (previousScriptVersion) {
+                        const incrementResult = increment(previousScriptVersion.version);
+                        if (incrementResult.isErr()) {
+                            throw new NangoError('invalid_previous_sync_version', {
+                                syncName: name,
+                                previousVersion: previousScriptVersion.version
+                            });
+                        }
+                        version = incrementResult.value;
+                    }
 
                     const file_location = await remoteFileService.upload({
                         content: fileBody.js,
@@ -126,7 +137,7 @@ export const onEventScriptService = {
                         config_id: config.id,
                         name,
                         file_location,
-                        version: version.toString(),
+                        version,
                         active: true,
                         event,
                         sdk_version: sdkVersion || null
