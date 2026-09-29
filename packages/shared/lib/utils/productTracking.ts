@@ -76,7 +76,8 @@ function resolveContext(explicit: TrackingContextInput): TrackingContext | null 
         team,
         environment: explicit.environment ?? ambient?.environment,
         user: explicit.user ?? ambient?.user,
-        // `plan: null` opts out of the request's plan, which a plan change in the same request makes stale.
+        // Without an explicit plan, an event uses the plan its request loaded during auth.
+        // A plan change later in that request makes it stale, so `plan: null` turns the fallback off.
         plan: explicit.plan === null ? null : (explicit.plan ?? ambient?.plan)
     };
 }
