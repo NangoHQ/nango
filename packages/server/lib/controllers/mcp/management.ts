@@ -43,6 +43,7 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
         server,
         mcpType: 'management',
         account,
+        ...(authentication.type === 'oauth' ? { user: res.locals.user } : {}),
         authType: authentication.type,
         ...(authentication.type === 'apiKey' ? { environment: authentication.context.environment } : { environments: authentication.context.environments })
     });

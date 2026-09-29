@@ -4,7 +4,7 @@ import { productTracking } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
 import type { McpServer } from '@modelcontextprotocol/server';
-import type { DBEnvironment, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
 
 // Add agent_session after defining how customer-specific tool names should be grouped.
 type McpType = 'management';
@@ -17,6 +17,7 @@ export function trackMcpServer({
     server,
     mcpType,
     account,
+    user,
     authType,
     environment,
     environments
@@ -24,13 +25,14 @@ export function trackMcpServer({
     server: McpServer;
     mcpType: McpType;
     account: Pick<DBTeam, 'id' | 'name'>;
+    user?: Pick<DBUser, 'id'>;
     authType: McpAuthType;
     environment?: Environment;
     environments?: readonly NamedEnvironment[];
 }): void {
     try {
         const posthog = productTracking.client;
-        const accountAttribution = productTracking.getServerEventAttribution({ team: account });
+        const accountAttribution = productTracking.getServerEventAttribution({ team: account, user });
         if (!posthog || !accountAttribution) {
             return;
         }
@@ -43,13 +45,17 @@ export function trackMcpServer({
             enableExceptionAutocapture: false,
             eventProperties: (request) => {
                 const selectedEnvironment = environment ?? environments?.find((candidate) => candidate.name === request.params?.arguments?.['environment']);
-                const attribution = productTracking.getServerEventAttribution({ team: account, environment: selectedEnvironment });
+                const attribution = productTracking.getServerEventAttribution({ team: account, user, environment: selectedEnvironment });
                 return { ...attribution?.properties, mcp_type: mcpType, mcp_auth_type: authType };
             },
             beforeSend: (event) => {
                 event.distinct_id = accountAttribution.distinctId;
                 Object.assign(event.properties, accountAttribution.properties);
                 event.properties['$groups'] = accountAttribution.groups;
+                if (user) {
+                    // The MCP SDK disables person profiles for its anonymous identity by default.
+                    delete event.properties['$process_person_profile'];
+                }
 
                 // MCP arguments, responses and errors can contain customer data or secrets.
                 delete event.properties['$mcp_parameters'];

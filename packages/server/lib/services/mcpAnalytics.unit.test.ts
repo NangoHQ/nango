@@ -31,6 +31,7 @@ describe('trackMcpServer', () => {
             server,
             mcpType: 'management',
             account: { id: 42, name: 'Acme' },
+            ...(authType === 'oauth' ? { user: { id: 7 } } : {}),
             authType,
             ...(authType === 'apiKey' ? { environment: { is_production: true } } : { environments: [{ name: 'prod', is_production: true }] })
         });
@@ -59,19 +60,23 @@ describe('trackMcpServer', () => {
             await vi.waitFor(() => expect(capture).toHaveBeenCalledWith(expect.objectContaining({ event: '$mcp_tool_call' })));
             const toolCall = captures.find((event) => event.event === '$mcp_tool_call' && event.properties['$mcp_tool_name'] === 'example');
             expect(toolCall).toMatchObject({
-                distinctId: 'account-42',
+                distinctId: authType === 'oauth' ? '7' : 'account-42',
                 groups: { company: '42' },
                 properties: {
                     mcp_type: 'management',
                     mcp_auth_type: authType,
                     surface: 'server',
                     is_production: true,
-                    $process_person_profile: false,
                     $mcp_server_name: 'Nango Management MCP server',
                     $mcp_tool_name: 'example',
                     $mcp_is_error: false
                 }
             });
+            if (authType === 'oauth') {
+                expect(toolCall?.properties).not.toHaveProperty('$process_person_profile');
+            } else {
+                expect(toolCall?.properties).toHaveProperty('$process_person_profile', false);
+            }
             expect(toolCall?.properties).not.toHaveProperty('$mcp_parameters');
             expect(toolCall?.properties).not.toHaveProperty('$mcp_response');
             expect(groupIdentify).toHaveBeenCalledWith({ groupType: 'company', groupKey: '42', properties: { name: 'Acme' } });
@@ -85,6 +90,7 @@ describe('trackMcpServer', () => {
                 expect(captures.some((event) => event.event === '$mcp_tool_call' && event.properties['$mcp_tool_name'] === 'failing')).toBe(true)
             );
             const failedCall = captures.find((event) => event.event === '$mcp_tool_call' && event.properties['$mcp_tool_name'] === 'failing');
+            expect(failedCall?.distinctId).toBe(authType === 'oauth' ? '7' : 'account-42');
             expect(failedCall?.properties).toMatchObject({ $mcp_is_error: true });
             expect(failedCall?.properties).not.toHaveProperty('$mcp_parameters');
             expect(failedCall?.properties).not.toHaveProperty('$mcp_response');
