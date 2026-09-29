@@ -13,7 +13,7 @@ Connect to HitPay with Nango and see data flow in 2 minutes.
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _HitPay_.
     </Step>
     <Step title="Authorize HitPay">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to HitPay and pick the business to connect. Later, you'll let your users do the same directly from your app.
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, select the **Environment** (`hit-pay.com` for production or `sandbox.hit-pay.com` for sandbox), then log in to HitPay and pick the business to connect. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the HitPay API">
     Make your first request to the HitPay API (e.g. get the connected business). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
@@ -65,6 +65,9 @@ Connect to HitPay with Nango and see data flow in 2 minutes.
 ## 📚 HitPay integration guides
 
 Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/hitpay/connect)  
+Connect your HitPay account (production or sandbox) using the Connect UI
 
 - [How to register your own HitPay OAuth app](/api-integrations/hitpay/how-to-register-your-own-hitpay-oauth-app)  
 Register an OAuth app with HitPay and obtain credentials to connect it to Nango

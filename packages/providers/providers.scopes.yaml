@@ -4794,25 +4794,6 @@ hitpay:
     - payments:read
     - payments:refund
 
-# source: HitPay Passport scope definitions (parent scopes such as `payments` also grant their `:read`/`:create`/... children)
-hitpay-sandbox:
-    - business:read
-    - commerce
-    - commerce:create
-    - commerce:delete
-    - commerce:read
-    - commerce:update
-    - customer
-    - customer:create
-    - customer:delete
-    - customer:read
-    - customer:update
-    - payments
-    - payments:cancel
-    - payments:create
-    - payments:read
-    - payments:refund
-
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 hover: []
 

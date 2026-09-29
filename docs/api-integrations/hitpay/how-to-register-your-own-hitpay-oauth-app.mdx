@@ -9,6 +9,10 @@ This guide shows you how to register your own app with HitPay to obtain your OAu
 <Steps>
   <Step title="Sign in to the HitPay dashboard">
     Sign in to the [HitPay dashboard](https://dashboard.hit-pay.com) with an account that is an **Owner** or **Admin** of the business that will own the app.
+
+    <Note>
+      To test against HitPay's sandbox, repeat this guide in the [HitPay sandbox dashboard](https://dashboard.sandbox.hit-pay.com). Sandbox apps have their own client ID and secret, so create a separate Nango integration for them and select `sandbox.hit-pay.com` as the environment when connecting.
+    </Note>
   </Step>
   <Step title="Create a new app">
     1. Go to **Payments** -> **Developers** and open the **App Builder** tab.
@@ -35,6 +39,7 @@ This guide shows you how to register your own app with HitPay to obtain your OAu
 
 ## Good to know
 
+- Each Nango integration holds one set of credentials. Use one integration per HitPay environment, and choose the matching environment when connecting.
 - Only business **Owners** and **Admins** can authorize a connection. During authorization, the user picks which business to connect.
 - Access and refresh tokens are valid for one year. Each refresh issues a new refresh token.
 

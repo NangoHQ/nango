@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1029
+Provider count: 1028
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -433,8 +433,7 @@ URL patterns:
 | `highlevel` | HighLevel | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highlevel.md) |  | [setup](https://nango.dev/docs/api-integrations/highlevel/how-to-register-your-own-highlevel-api-oauth-app.md) | marketing |
 | `highlevel-white-label` | HighLevel (LeadConnector) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highlevel-white-label.md) |  | [setup](https://nango.dev/docs/api-integrations/highlevel-white-label/how-to-register-your-own-highlevel-white-label-api-oauth-app.md) | crm |
 | `highq` | HighQ | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highq.md) | [connect](https://nango.dev/docs/api-integrations/highq/connect.md) | [setup](https://nango.dev/docs/api-integrations/highq/how-to-register-your-own-highq-api-oauth-app.md) | legal |
-| `hitpay` | HitPay | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hitpay.md) |  | [setup](https://nango.dev/docs/api-integrations/hitpay/how-to-register-your-own-hitpay-oauth-app.md) | payment |
-| `hitpay-sandbox` | HitPay (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hitpay-sandbox.md) |  | [setup](https://nango.dev/docs/api-integrations/hitpay-sandbox/how-to-register-your-own-hitpay-sandbox-oauth-app.md) | payment |
+| `hitpay` | HitPay App | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hitpay.md) | [connect](https://nango.dev/docs/api-integrations/hitpay/connect.md) | [setup](https://nango.dev/docs/api-integrations/hitpay/how-to-register-your-own-hitpay-oauth-app.md) | payment, e-commerce |
 | `holded` | Holded | API_KEY | [docs](https://nango.dev/docs/integrations/all/holded.md) |  |  | accounting, crm, invoicing |
 | `holded-v2` | Holded (v2) | API_KEY | [docs](https://nango.dev/docs/api-integrations/holded-v2.md) | [connect](https://nango.dev/docs/api-integrations/holded-v2/connect.md) |  | accounting, crm, invoicing |
 | `hover` | Hover | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/hover.md) |  |  | productivity |
