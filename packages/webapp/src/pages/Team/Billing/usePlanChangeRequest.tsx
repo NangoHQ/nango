@@ -4,7 +4,7 @@ import { Alert, AlertDescription } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { environmentQueryKey } from '@/hooks/useEnvironment';
-import { fetchCurrentPlan, useApiPostPlanChange } from '@/hooks/usePlan';
+import { currentPlanQueryOptions, useApiPostPlanChange } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient } from '@/store';
 import { stripePromise } from '@/utils/stripe.js';
@@ -94,7 +94,11 @@ export function usePlanChangeRequest(env: string) {
             // The plan row lags the response wherever a webhook applies the change — Orb's for a
             // downgrade, Stripe's for a paid upgrade. NAN-6840 covers giving this wait a deadline.
             if (settled) {
-                const caughtUp = await waitFor(() => fetchCurrentPlan(env).then((current) => settled(current.data)), abandoned, setLongWait);
+                const caughtUp = await waitFor(
+                    () => queryClient.fetchQuery({ ...currentPlanQueryOptions(env), staleTime: 0 }).then((current) => settled(current.data)),
+                    abandoned,
+                    setLongWait
+                );
                 if (!caughtUp || abandoned.current) {
                     return false;
                 }

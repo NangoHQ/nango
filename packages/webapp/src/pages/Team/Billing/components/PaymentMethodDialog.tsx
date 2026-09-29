@@ -17,13 +17,11 @@ import {
 
 import { Skeleton } from '@/components/ui/Skeleton';
 import { GetOverdueInvoicesQueryKey } from '@/hooks/usePlan';
-import { apiPostStripeCollectPayment } from '@/hooks/useStripe';
+import { usePostStripeCollectPayment } from '@/hooks/useStripe';
 import { useToast } from '@/hooks/useToast';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe';
-
-import type { PostStripeCollectPayment } from '@nangohq/types';
 
 export const PaymentMethodDialog: React.FC<{
     replace?: boolean;
@@ -35,7 +33,8 @@ export const PaymentMethodDialog: React.FC<{
     const env = useStore((state) => state.env);
     const darkMode = useThemeStore(darkModeSelector);
 
-    const [clientSecret, setClientSecret] = useState<string | null>(null);
+    const { mutate: collectPayment, data: collectPaymentData, status: collectPaymentStatus, reset: resetCollectPayment } = usePostStripeCollectPayment(env);
+    const clientSecret = collectPaymentData?.data.secret ?? null;
 
     const [internalOpen, setInternalOpen] = useState(false);
     const isControlled = openProp !== undefined;
@@ -51,20 +50,15 @@ export const PaymentMethodDialog: React.FC<{
     );
 
     useEffect(() => {
-        if (open && !clientSecret) {
-            const fetchClientSecret = async () => {
-                const secret = ((await apiPostStripeCollectPayment(env)).json as PostStripeCollectPayment['Success']).data.secret;
-                setClientSecret(secret);
-            };
-            void fetchClientSecret();
+        if (open && collectPaymentStatus === 'idle') {
+            collectPayment();
         }
-    }, [open, clientSecret, env]);
+    }, [open, collectPaymentStatus, collectPayment]);
 
     const handleDialogOpenChange = (newOpen: boolean) => {
         setOpen(newOpen);
         if (newOpen) {
-            // Reset client secret when opening dialog
-            setClientSecret(null);
+            resetCollectPayment();
         }
     };
 
