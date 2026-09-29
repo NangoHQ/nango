@@ -170,21 +170,15 @@ describe('mintRunnerAuthEnv', () => {
 });
 
 describe('assertRunnerAuthMaterial', () => {
-    it('rejects REQUIRED with public keys and nothing to mint', () => {
-        expect(() =>
-            assertRunnerAuthMaterial({
-                required: true,
-                jobsPublicKeys: 'jobs-2026-09:cHVibGlj'
-            })
-        ).toThrow(/no private key or HMAC signing key/);
+    it('rejects REQUIRED when jobs has nothing to mint', () => {
+        expect(() => assertRunnerAuthMaterial({ required: true })).toThrow(/no private key or HMAC signing key/);
+        expect(() => assertRunnerAuthMaterial({ required: true, privateKey: 'pem' })).toThrow(/no private key or HMAC signing key/);
     });
 
     it('allows REQUIRED when a signing key or jobs private key is set', () => {
-        expect(() => assertRunnerAuthMaterial({ required: true, jobsPublicKeys: 'jobs-2026-09:cHVibGlj', signingKey: 'sign' })).not.toThrow();
-        expect(() =>
-            assertRunnerAuthMaterial({ required: true, jobsPublicKeys: 'jobs-2026-09:cHVibGlj', privateKey: 'pem', keyId: 'jobs-2026-09' })
-        ).not.toThrow();
-        expect(() => assertRunnerAuthMaterial({ required: false, jobsPublicKeys: 'jobs-2026-09:cHVibGlj' })).not.toThrow();
+        expect(() => assertRunnerAuthMaterial({ required: true, signingKey: 'sign' })).not.toThrow();
+        expect(() => assertRunnerAuthMaterial({ required: true, privateKey: 'pem', keyId: 'jobs-2026-09' })).not.toThrow();
+        expect(() => assertRunnerAuthMaterial({ required: false })).not.toThrow();
     });
 });
 

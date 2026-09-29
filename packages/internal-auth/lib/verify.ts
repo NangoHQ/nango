@@ -15,8 +15,12 @@ export async function verifyInternalServiceCredential(
     const alg = jwtHeaderAlg(token);
     if (alg === 'EdDSA') {
         const unified = await verifyUnifiedToken(token, audience, creds.registry ?? {});
-        if (unified) {
-            return unified;
+        if (unified.auth) {
+            return unified.auth;
+        }
+        // A kid selects one registry key. The legacy dispatch verifier ignores kid, so only kid-less tokens may use it.
+        if (unified.kidBound) {
+            return null;
         }
         const eddsa = verifyRunnerDispatchToken(token, audience, creds.runnerPublicKey);
         return eddsa.ok ? eddsa : null;

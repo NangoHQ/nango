@@ -3,6 +3,7 @@ import { decodeProtectedHeader, importJWK, importPKCS8, jwtVerify, SignJWT } fro
 import { normalizePem, parseInternalAuthPublicKeys } from '@nangohq/utils';
 
 import type { InternalServiceAuth, InternalServiceIssuer } from './constants.js';
+import type { CryptoKey } from 'jose';
 
 export interface KeyRegistryEntry {
     iss: InternalServiceIssuer;
@@ -100,25 +101,35 @@ export async function mint(signer: MintSigner, claims: MintClaims): Promise<stri
         .sign(key);
 }
 
+export interface UnifiedVerifyResult {
+    auth: InternalServiceAuth | null;
+    /**
+     * True when the header carries a `kid`. A failed kid token selected a key and must not be
+     * retried against a verifier that ignores `kid`.
+     */
+    kidBound: boolean;
+}
+
 /**
- * Verify a `kid` EdDSA token against the registry. Returns null on any failure.
- * Callers must not fall through to the static secret after this returns null.
+ * Verify a `kid` EdDSA token against the registry.
+ * `kidBound` is false only when the token has no key id, so a caller may try the legacy kid-less verifier.
+ * Callers must not fall through to the static secret when this returns no auth.
  */
-export async function verify(token: string, audience: string, registry: KeyRegistry): Promise<InternalServiceAuth | null> {
+export async function verify(token: string, audience: string, registry: KeyRegistry): Promise<UnifiedVerifyResult> {
     let kid: string;
     try {
         const header = decodeProtectedHeader(token);
         if (header.alg !== 'EdDSA' || header.typ !== 'JWT' || typeof header.kid !== 'string' || header.kid.length === 0) {
-            return null;
+            return { auth: null, kidBound: false };
         }
         kid = header.kid;
     } catch {
-        return null;
+        return { auth: null, kidBound: false };
     }
 
     const entry = registry[kid];
     if (!entry) {
-        return null;
+        return { auth: null, kidBound: true };
     }
 
     try {
@@ -132,16 +143,19 @@ export async function verify(token: string, audience: string, registry: KeyRegis
             requiredClaims: ['iss', 'sub', 'aud', 'exp']
         });
         if (payload.iss !== entry.iss || typeof payload.sub !== 'string' || payload.sub.length === 0) {
-            return null;
+            return { auth: null, kidBound: true };
         }
         return {
-            kind: 'jwt',
-            subject: payload.sub,
-            sub: payload.sub,
-            issuer: entry.iss,
-            audience
+            auth: {
+                kind: 'jwt',
+                subject: payload.sub,
+                sub: payload.sub,
+                issuer: entry.iss,
+                audience
+            },
+            kidBound: true
         };
     } catch {
-        return null;
+        return { auth: null, kidBound: true };
     }
 }

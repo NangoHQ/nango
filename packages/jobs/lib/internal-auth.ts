@@ -102,29 +102,25 @@ export async function mintRunnerAuthEnv(nodeId: number): Promise<Record<string, 
 }
 
 /**
- * Jobs with REQUIRED and jobs public keys will copy that onto runners. Refuse to start when jobs
- * cannot mint a credential those runners will accept.
+ * REQUIRED jobs routes reject runners that have no credential. Refuse to start unless jobs can mint one,
+ * whether or not a public-key list is configured.
  */
 export function assertRunnerAuthMaterial({
     required = Boolean(envs.NANGO_INTERNAL_AUTH_REQUIRED),
-    jobsPublicKeys = envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS,
     signingKey = envs.NANGO_INTERNAL_AUTH_SIGNING_KEY,
     privateKey = envs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY,
     keyId = envs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID
 }: {
     required?: boolean;
-    jobsPublicKeys?: string | undefined;
     signingKey?: string | undefined;
     privateKey?: string | undefined;
     keyId?: string | undefined;
 } = {}): void {
-    if (!required || !jobsPublicKeys?.trim()) {
+    if (!required) {
         return;
     }
     if (signingKey?.trim() || (privateKey?.trim() && keyId?.trim())) {
         return;
     }
-    throw new Error(
-        'NANGO_INTERNAL_AUTH_REQUIRED is true and NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS is set, but jobs has no private key or HMAC signing key to mint runner credentials.'
-    );
+    throw new Error('NANGO_INTERNAL_AUTH_REQUIRED is true, but jobs has no private key or HMAC signing key to mint runner credentials.');
 }

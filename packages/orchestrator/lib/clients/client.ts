@@ -57,10 +57,21 @@ const SERVICE_TOKEN_REFRESH_SKEW_SECS = 60;
 
 export type OrchestratorCaller = 'server' | 'jobs';
 
+interface CachedServiceToken {
+    token: string;
+    refreshAtMs: number;
+}
+
+/** Shared across client instances. The server constructs a new client for many calls. */
+const serviceTokenCache = new Map<string, CachedServiceToken>();
+
+function serviceTokenCacheKey(signer: MintSigner): string {
+    return `${signer.iss}\0${signer.kid}\0${signer.privateKey}`;
+}
+
 export class OrchestratorClient {
     private baseUrl: string;
     private service: OrchestratorCaller | undefined;
-    private cachedServiceToken: { token: string; refreshAtMs: number } | undefined;
 
     constructor({ baseUrl, service }: { baseUrl: string; service?: OrchestratorCaller }) {
         this.baseUrl = baseUrl;
@@ -79,15 +90,17 @@ export class OrchestratorClient {
 
     private async serviceToken(signer: MintSigner): Promise<string> {
         const now = Date.now();
-        if (this.cachedServiceToken && now < this.cachedServiceToken.refreshAtMs) {
-            return this.cachedServiceToken.token;
+        const cacheKey = serviceTokenCacheKey(signer);
+        const cached = serviceTokenCache.get(cacheKey);
+        if (cached && now < cached.refreshAtMs) {
+            return cached.token;
         }
         const token = await mint(signer, {
             sub: signer.iss,
             aud: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR,
             ttlSecs: INTERNAL_SERVICE_TOKEN_TTL_SECS
         });
-        this.cachedServiceToken = { token, refreshAtMs: now + (INTERNAL_SERVICE_TOKEN_TTL_SECS - SERVICE_TOKEN_REFRESH_SKEW_SECS) * 1000 };
+        serviceTokenCache.set(cacheKey, { token, refreshAtMs: now + (INTERNAL_SERVICE_TOKEN_TTL_SECS - SERVICE_TOKEN_REFRESH_SKEW_SECS) * 1000 });
         return token;
     }
 

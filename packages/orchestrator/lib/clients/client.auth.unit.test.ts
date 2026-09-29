@@ -61,8 +61,8 @@ function immediateProps(): ImmediateProps {
     };
 }
 
-function authorizationHeader(fetchMock: ReturnType<typeof vi.fn>): string | undefined {
-    const init = fetchMock.mock.calls[0]?.[1] as { headers?: Record<string, string> } | undefined;
+function authorizationHeader(fetchMock: ReturnType<typeof vi.fn>, call = 0): string | undefined {
+    const init = fetchMock.mock.calls[call]?.[1] as { headers?: Record<string, string> } | undefined;
     return init?.headers?.['Authorization'];
 }
 
@@ -76,6 +76,7 @@ function tokenLifetimeSecs(token: string): number {
 
 describe('OrchestratorClient service tokens', () => {
     afterEach(() => {
+        vi.useRealTimers();
         vi.unstubAllGlobals();
         mockEnvs.NANGO_INTERNAL_AUTH_TOKEN = undefined;
         mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = undefined;
@@ -110,7 +111,7 @@ describe('OrchestratorClient service tokens', () => {
         expect(header?.startsWith('Bearer ')).toBe(true);
         const token = header?.slice('Bearer '.length) ?? '';
         const registry = keyRegistryFromPublicKeys(`jobs-2026-09:${jobs.raw}`, INTERNAL_SERVICE_ISSUER_JOBS);
-        expect(await verify(token, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, registry)).toMatchObject({
+        expect((await verify(token, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, registry)).auth).toMatchObject({
             kind: 'jwt',
             sub: INTERNAL_SERVICE_ISSUER_JOBS,
             issuer: INTERNAL_SERVICE_ISSUER_JOBS
@@ -118,19 +119,40 @@ describe('OrchestratorClient service tokens', () => {
         expect(tokenLifetimeSecs(token)).toBe(INTERNAL_SERVICE_TOKEN_TTL_SECS);
     });
 
-    it('reuses a jobs service token until shortly before it expires', async () => {
+    it('reuses a jobs service token across clients until shortly before it expires', async () => {
+        vi.useFakeTimers();
+        const start = new Date('2026-09-29T12:00:00.000Z');
+        vi.setSystemTime(start);
+
         const jobs = ed25519Material();
         mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = jobs.pem;
         mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
         const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ taskId: 'task-1', retryKey: 'retry-key-1' }), { status: 200 }));
         vi.stubGlobal('fetch', fetchMock);
 
-        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test', service: 'jobs' });
-        expect((await client.immediate(immediateProps())).isOk()).toBe(true);
-        expect((await client.immediate(immediateProps())).isOk()).toBe(true);
+        const client = () => new OrchestratorClient({ baseUrl: 'http://orchestrator.test', service: 'jobs' });
+        expect((await client().immediate(immediateProps())).isOk()).toBe(true);
         const first = authorizationHeader(fetchMock);
-        const secondInit = fetchMock.mock.calls[1]?.[1] as { headers?: Record<string, string> } | undefined;
-        expect(secondInit?.headers?.['Authorization']).toBe(first);
+
+        // A later iat would change the signature. Reuse is only visible once the clock has moved.
+        vi.setSystemTime(start.getTime() + 1000);
+        expect((await client().immediate(immediateProps())).isOk()).toBe(true);
+        expect(authorizationHeader(fetchMock, 1)).toBe(first);
+
+        const refreshAtMs = (INTERNAL_SERVICE_TOKEN_TTL_SECS - 60) * 1000;
+        vi.setSystemTime(start.getTime() + refreshAtMs - 1);
+        expect((await client().immediate(immediateProps())).isOk()).toBe(true);
+        expect(authorizationHeader(fetchMock, 2)).toBe(first);
+
+        vi.setSystemTime(start.getTime() + refreshAtMs);
+        expect((await client().immediate(immediateProps())).isOk()).toBe(true);
+        const refreshed = authorizationHeader(fetchMock, 3);
+        expect(refreshed).not.toBe(first);
+        const registry = keyRegistryFromPublicKeys(`jobs-2026-09:${jobs.raw}`, INTERNAL_SERVICE_ISSUER_JOBS);
+        expect((await verify(refreshed?.slice('Bearer '.length) ?? '', INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, registry)).auth).toMatchObject({
+            kind: 'jwt',
+            sub: INTERNAL_SERVICE_ISSUER_JOBS
+        });
     });
 
     it('sends a server service token when the server private key is set', async () => {
@@ -145,7 +167,7 @@ describe('OrchestratorClient service tokens', () => {
         expect(res.isOk()).toBe(true);
         const token = authorizationHeader(fetchMock)?.slice('Bearer '.length) ?? '';
         const registry = keyRegistryFromPublicKeys(`server-2026-09:${server.raw}`, INTERNAL_SERVICE_ISSUER_SERVER);
-        expect(await verify(token, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, registry)).toMatchObject({
+        expect((await verify(token, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, registry)).auth).toMatchObject({
             kind: 'jwt',
             sub: INTERNAL_SERVICE_ISSUER_SERVER,
             issuer: INTERNAL_SERVICE_ISSUER_SERVER
