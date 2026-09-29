@@ -1,0 +1,82 @@
+---
+title: 'eClinicalWorks (FHIR)'
+sidebarTitle: 'eClinicalWorks (FHIR)'
+description: 'Integrate your application with the eClinicalWorks FHIR API using SMART Backend Services'
+---
+
+## 🚀 Quickstart
+
+Connect to eClinicalWorks with Nango and see data flow in a few minutes. eClinicalWorks uses the SMART Backend Services flow — a machine-to-machine, JWT-signed authentication, with no end-user OAuth redirect.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** → _Configure New Integration_ → _eClinicalWorks (FHIR)_. Register your Client ID, Key ID, Private Key, and Scope in the **Settings** tab — see the [setup guide](/api-integrations/eclinicalworks/how-to-register-your-own-eclinicalworks-app). These are entered once and reused automatically by every connection.
+    </Step>
+    <Step id="connect-eclinicalworks-practice" title="Connect a practice">
+    Each connection represents one practice's FHIR facade. Create it by supplying that practice's FHIR base URL — see the [connect guide](/api-integrations/eclinicalworks/connect) for the exact field.
+    </Step>
+    <Step id="call-eclinicalworks-api" title="Call the eClinicalWorks FHIR API">
+    Make your first request. Replace the placeholders with your API key (from **Environment Settings**), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/Patient" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/Patient',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 eClinicalWorks (FHIR) integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own eClinicalWorks app](/api-integrations/eclinicalworks/how-to-register-your-own-eclinicalworks-app)  
+Register with the eClinicalWorks Dev Portal, generate a key pair, host your JWKS file, and obtain your Client ID
+
+- [How to connect a practice to eClinicalWorks](/api-integrations/eclinicalworks/connect)  
+Create a connection for a practice once your app is registered and approved
+
+Official docs: [eClinicalWorks Platform for Open Development — Backend Services authentication](https://fhir.eclinicalworks.com/ecwopendev/documentation/getting-started/backend/authentication)
+
+## 🧩 Pre-built syncs & actions for eClinicalWorks (FHIR)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/eclinicalworks/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
