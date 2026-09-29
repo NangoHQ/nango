@@ -1,0 +1,71 @@
+---
+title: 'Billit (OAuth)'
+sidebarTitle: 'Billit (OAuth)'
+description: 'Connect to the general Billit API with OAuth2'
+---
+
+## Quickstart
+
+Connect to the general Billit API with Nango using OAuth2. For API key authentication to the Access Point API, use the separate [Billit integration](/api-integrations/billit).
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango, go to **Integrations**, select **Configure New Integration**, then select **Billit (OAuth)**. Enter the Client ID and Client Secret issued by Billit. Follow the [setup guide](/api-integrations/billit-oauth/how-to-register-your-own-billit-oauth-app) to request them.
+    </Step>
+    <Step id="authorize-billit" title="Authorize Billit">
+    Go to **Connections**, select **Add Test Connection**, and choose the environment matching your OAuth client: `sandbox.billit.be` for sandbox or `billit.be` for production. Select **Authorize**, then sign in to Billit and grant access.
+    </Step>
+    <Step id="call-billit-api" title="Call the Billit API">
+    Read account information. Replace the placeholders with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID, and the [Party ID](https://docs.billit.be/docs/partyid-and-key) of a company the connected user can access:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/account/accountInformation" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Nango-Proxy-partyid: <PARTY-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const response = await nango.get({
+            endpoint: '/v1/account/accountInformation',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            headers: { partyid: '<PARTY-ID>' }
+        });
+
+        console.log(response.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    For company-specific API requests, pass that company's `partyid` header. Nango adds the OAuth bearer token automatically.
+    </Step>
+    <Step id="implement-nango" title="Implement Nango in your app">
+    Follow the [Auth implementation guide](/guides/auth/auth-guide) to add the connection flow to your application.
+    </Step>
+</Steps>
+
+## Billit integration guides
+
+- [How to register your own Billit OAuth app](/api-integrations/billit-oauth/how-to-register-your-own-billit-oauth-app): Request OAuth credentials and configure Nango.
+
+Official docs: [Billit OAuth](https://docs.billit.be/docs/how-do-i-get-started-with-oauth) and [account information](https://docs.billit.be/reference/account_getaccountinformation-1).
+
+## Pre-built syncs & actions for Billit
+
+import PreBuiltUseCases from "/snippets/generated/billit-oauth/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />

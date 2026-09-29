@@ -3764,6 +3764,35 @@ billit:
             example: 'abcd1234********'
             doc_section: '#step-2-get-your-api-key'
 
+billit-oauth:
+    display_name: Billit (OAuth)
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://my.${connectionConfig.domain}/Account/Logon
+    token_url: https://api.${connectionConfig.domain}/OAuth2/token
+    body_format: json
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.${connectionConfig.domain}
+    docs: https://nango.dev/docs/api-integrations/billit-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/billit-oauth/how-to-register-your-own-billit-oauth-app
+    connection_config:
+        domain:
+            type: string
+            title: Environment
+            description: Choose the environment matching this integration's OAuth client.
+            enum:
+                - sandbox.billit.be
+                - billit.be
+
 bing-webmasters:
     display_name: Bing Webmasters
     categories:
