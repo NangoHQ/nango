@@ -2107,6 +2107,37 @@ aspire:
             example: 7hLp************************nHa5
             doc_section: '#step-2-generate-your-client-id-and-secret'
 
+astro-mcp:
+    display_name: Astro (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://api.astronomer.io/v1alpha1/astro/mcp/authorize
+    token_url: https://api.astronomer.io/v1alpha1/astro/mcp/token
+    registration_url: https://api.astronomer.io/v1alpha1/astro/mcp/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+        resource: https://api.astronomer.io/v1alpha1/astro/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.astronomer.io/v1alpha1/astro
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/astro-mcp
+
 atlas-so:
     display_name: Atlas.so
     categories:
