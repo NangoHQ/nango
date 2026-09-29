@@ -2133,7 +2133,7 @@ astro-mcp:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api.astronomer.io/v1alpha1/astro
+        base_url: https://api.astronomer.io
         headers:
             accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/astro-mcp

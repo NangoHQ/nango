@@ -25,7 +25,7 @@ Connect to the Astro MCP server with Nango and call MCP tools in minutes. Astro 
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/mcp" \
+            curl "https://api.nango.dev/proxy/v1alpha1/astro/mcp" \
               -X POST \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
@@ -58,7 +58,7 @@ Connect to the Astro MCP server with Nango and call MCP tools in minutes. Astro 
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.post({
-            endpoint: '/mcp',
+            endpoint: '/v1alpha1/astro/mcp',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>',
             body: {
