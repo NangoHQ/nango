@@ -187,19 +187,16 @@ describe('mergeFlags', () => {
                 });
             });
 
-            it('should keep a higher limit the source plan carries', () => {
-                const newFlags = mergeFlags({
-                    currentPlan: makePlan({ code: from, flagOverrides: {} }),
-                    newPlanDefinition: payAsYouGo
-                });
-                const source = getPlanDefinition(from)!;
-                expect(newFlags.environments_max).toBe(Math.max(source.flags.environments_max ?? 0, payAsYouGo.flags.environments_max ?? 0));
+            it('should reset the environment cap to the plan default when no add-on is active, override or not', () => {
+                const currentPlan = makePlan({ code: from, flagOverrides: { environments_max: 50 } });
+                const newFlags = mergeFlags({ currentPlan, newPlanDefinition: payAsYouGo });
+                expect(newFlags.environments_max).toBe(payAsYouGo.flags.environments_max);
             });
 
             it('should keep overrides on flags the growth add-on does not gate', () => {
-                const currentPlan = makePlan({ code: from, flagOverrides: { environments_max: 50, api_rate_limit_size: '2xl' } });
+                const currentPlan = makePlan({ code: from, flagOverrides: { api_rate_limit_size: '2xl' } });
                 const newFlags = mergeFlags({ currentPlan, newPlanDefinition: payAsYouGo });
-                expect(newFlags).toMatchObject({ environments_max: 50, api_rate_limit_size: '2xl' });
+                expect(newFlags).toMatchObject({ api_rate_limit_size: '2xl' });
             });
 
             it('should revoke add-on-gated flags when no add-on is active, override or not', () => {

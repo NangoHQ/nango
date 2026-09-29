@@ -313,10 +313,11 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
 
     if (canHaveGrowthAddon(newPlanDefinition.code)) {
         // Force-update growth feature flags on top of merged plan flags, based on whether the add-on is enabled or not.
-        flags = { ...flags, ...getGrowthAddonFlags(newPlanDefinition, hasGrowthFeatures) };
-        if (hasGrowthFeatures) {
-            flags.environments_max = getGrowthAddonEnvironmentsMax(newPlanDefinition, true, flags.environments_max ?? 0);
-        }
+        flags = {
+            ...flags,
+            ...getGrowthAddonFlags(newPlanDefinition, hasGrowthFeatures),
+            environments_max: getGrowthAddonEnvironmentsMax(newPlanDefinition, hasGrowthFeatures, flags.environments_max ?? 0)
+        };
     }
 
     return flags;
