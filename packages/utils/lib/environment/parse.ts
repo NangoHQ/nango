@@ -748,6 +748,12 @@ const ENVS_SHAPE = z.object({
     PLAIN_APP_ID: z.string().optional(),
     PLAIN_HMAC_SECRET: z.string().optional(),
 
+    NANGO_AGENT_PLAYGROUND_PROVIDER: z.enum(['openai', 'mock']).optional().default('mock'),
+    NANGO_AGENT_PLAYGROUND_MODEL: z.string().optional().default('gpt-6-luna'),
+    NANGO_AGENT_PLAYGROUND_CACHE: z.enum(['off', 'readwrite', 'readonly']).optional().default('off'),
+    NANGO_AGENT_PLAYGROUND_CACHE_DIR: z.string().optional(),
+    OPENAI_API_KEY: z.string().optional(),
+
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
 

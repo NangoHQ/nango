@@ -86,6 +86,9 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         allowUnauthorizedAirtableWebhook(accountUuid: string) {
             return client.isEnabled('allow-unauthorized-airtable-webhook', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        isAgentPlaygroundEnabled(accountUuid: string) {
+            return client.isEnabled('agent-playground', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }
