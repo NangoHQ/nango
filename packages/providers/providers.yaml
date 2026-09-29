@@ -27409,7 +27409,8 @@ webflow:
         grant_type: authorization_code
     proxy:
         base_url: https://api.webflow.com
-    docs: https://nango.dev/docs/integrations/all/webflow
+    docs: https://nango.dev/docs/api-integrations/webflow
+    setup_guide_url: https://nango.dev/docs/api-integrations/webflow/how-to-register-your-own-webflow-api-oauth-app
 
 webex:
     display_name: Webex
