@@ -516,7 +516,7 @@ NANGO_CLI_TLS_KEY_PASSPHRASE=
 
 Orchestrator, jobs, and runner HTTP APIs accept an `Authorization: Bearer` credential except `GET /health`, which stays open for probes. Enforcement is off until you set `NANGO_INTERNAL_AUTH_REQUIRED=true`. Shipping the image with no new variables is a no-op.
 
-New tokens are EdDSA JWTs with the same shape on every hop. The `kid` header selects the verifying key. Service tokens are minted by the caller (`iss` and `sub` are `service:jobs` or `service:server`) and last 5 minutes. Workload tokens are minted by jobs and carried by the runner: `sub` is `task:<id>` or `node:<id>`. Runners never receive a private key.
+New tokens are EdDSA JWTs with the same shape on every hop. The `kid` header selects the verifying key. Service tokens are minted by the caller (`iss` and `sub` are `service:jobs` or `service:server`) and last 5 minutes. Jobs → runner tokens are `sub: task:<id>` or `node:<id>`, `aud: runner`, and last 5 minutes. Workload tokens are minted by jobs and carried by the runner: `sub` is `task:<id>` or `node:<id>`. Runners never receive a private key.
 
 Until you set a private key, callers keep minting the previous credentials, and every receiver still accepts them:
 
