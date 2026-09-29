@@ -401,12 +401,19 @@ class CustomerKeyService {
         return key;
     }
 
-    public async getWebhookSigningKeyForEnv(trx: Knex, envId: number, { bypassCache = false }: { bypassCache?: boolean } = {}): Promise<Result<string>> {
+    public async getWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<string>> {
         const cached = webhookSigningKeyCache.get(envId);
-        if (!bypassCache && cached && cached.expiresAt > Date.now()) {
+        if (cached && cached.expiresAt > Date.now()) {
             return Ok(cached.key);
         }
 
+        return this.getUncachedWebhookSigningKeyForEnv(trx, envId);
+    }
+
+    /**
+     * Reads the key from the DB even when this process has it cached, then refreshes the cache.
+     */
+    public async getUncachedWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<string>> {
         try {
             const row = await this.webhookSigningKeyForEnv(trx, envId).first();
 
