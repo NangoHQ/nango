@@ -300,7 +300,11 @@ export async function deployBundle({
                 const connections = await getConnections(db.knex, config.integration.id);
                 let afterId = 0;
                 while (true) {
-                    const instances = await functionInstanceService.search(db.knex, { functionConfigIds: [config.config.id] }, { afterId, limit: 1000 });
+                    const instances = await functionInstanceService.search(
+                        db.knex,
+                        { functionConfigIds: [config.config.id] },
+                        { enabled: true, afterId, limit: 1000 }
+                    );
                     if (instances.isErr()) {
                         throw instances.error;
                     }
