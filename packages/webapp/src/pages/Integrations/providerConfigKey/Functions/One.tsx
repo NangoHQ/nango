@@ -18,7 +18,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Spinner } from '@/components/ui/Spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { apiFlowDownload } from '@/hooks/useFlow';
+import { useFlowDownload } from '@/hooks/useFlow';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useDeleteIntegrationFunction, useGetIntegration } from '@/hooks/useIntegration';
 import { useGetIntegrationFunction, useGetIntegrationFunctionCode } from '@/hooks/useIntegrationFunctions';
@@ -65,6 +65,7 @@ export const FunctionsOne: React.FC = () => {
 
     const functionType = func?.type === 'sync' ? 'sync' : 'action';
     const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, providerConfigKey!, functionName!, functionType);
+    const { mutateAsync: downloadFlow } = useFlowDownload(env);
 
     const inputSchema: JSONSchema7 | null = useMemo(() => {
         if (!func || func.type === 'on-event' || !func.input || !func.json_schema) {
@@ -118,7 +119,7 @@ export const FunctionsOne: React.FC = () => {
             return;
         }
         try {
-            await apiFlowDownload(env, { id: func.id }, func.name);
+            await downloadFlow({ params: { id: func.id }, flowName: func.name });
             toast({
                 title: 'Downloading function code',
                 variant: 'success'
@@ -131,7 +132,7 @@ export const FunctionsOne: React.FC = () => {
                 variant: 'error'
             });
         }
-    }, [func, env, toast]);
+    }, [func, downloadFlow, toast]);
 
     const onDelete = useCallback(async () => {
         try {

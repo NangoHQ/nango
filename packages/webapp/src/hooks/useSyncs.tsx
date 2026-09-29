@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryOptions, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 
@@ -47,7 +47,7 @@ export function useSyncs({ env, connection_id, provider_config_key }: UseSyncsAr
     });
 }
 
-export async function fetchSyncByName({
+export function syncByNameQueryOptions({
     env,
     connection_id,
     provider_config_key,
@@ -60,16 +60,22 @@ export async function fetchSyncByName({
     name: string;
     variant?: string;
 }) {
-    const usp = new URLSearchParams();
-    usp.set('env', env);
-    usp.set('connection_id', connection_id);
-    usp.set('provider_config_key', provider_config_key);
-    usp.set('name', name);
-    usp.set('variant', variant);
-    usp.set('limit', '1');
+    return queryOptions({
+        queryKey: ['syncs', env, provider_config_key, connection_id, 'by-name', name, variant],
+        queryFn: async () => {
+            const usp = new URLSearchParams();
+            usp.set('env', env);
+            usp.set('connection_id', connection_id);
+            usp.set('provider_config_key', provider_config_key);
+            usp.set('name', name);
+            usp.set('variant', variant);
+            usp.set('limit', '1');
 
-    const json = await fetchSyncs(usp);
-    return json.data[0] ?? null;
+            const json = await fetchSyncs(usp);
+            return json.data[0] ?? null;
+        },
+        staleTime: 0
+    });
 }
 
 export function useRunSyncCommand(env: string) {

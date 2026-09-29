@@ -16,7 +16,7 @@ import {
     DialogTrigger
 } from '@nangohq/design-system';
 
-import { apiAuditTrailExport } from '@/hooks/useAudit';
+import { useAuditTrailExport } from '@/hooks/useAudit';
 import { useToast } from '@/hooks/useToast';
 import { track } from '@/utils/analytics';
 import { openSupportChat } from '@/utils/support';
@@ -40,7 +40,7 @@ interface AuditExportDialogProps {
 export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ query, selection, total, disabled }) => {
     const { toast } = useToast();
     const [isOpen, setIsOpen] = useState(false);
-    const [isExporting, setIsExporting] = useState(false);
+    const { mutateAsync: exportAuditTrail, isPending: isExporting } = useAuditTrailExport();
     const exportButtonRef = useRef<HTMLButtonElement>(null);
     const openSupportOnClose = useRef(false);
     const windowField = exportWindowField(query.from, query.to);
@@ -54,9 +54,8 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ query, sel
     };
 
     const onExport = async () => {
-        setIsExporting(true);
         try {
-            const { truncated } = await apiAuditTrailExport(query);
+            const { truncated } = await exportAuditTrail(query);
             track('web:audit:exported', { truncated });
             setIsOpen(false);
             toast(
@@ -70,8 +69,6 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ query, sel
             );
         } catch {
             toast({ title: 'Failed to export the audit trail', variant: 'error' });
-        } finally {
-            setIsExporting(false);
         }
     };
 

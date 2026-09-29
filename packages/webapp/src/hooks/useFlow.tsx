@@ -93,13 +93,17 @@ export async function apiFlowUpdateFrequency(env: string, params: PatchFlowFrequ
     };
 }
 
-export async function apiFlowDownload(env: string, params: GetFlowDownload['Params'], flowName = 'flow') {
-    const res = await apiFetch(`/api/v1/flows/${params.id}/download?env=${env}`, {
-        method: 'GET'
+export function useFlowDownload(env: string) {
+    return useMutation<void, APIError, { params: GetFlowDownload['Params']; flowName?: string }>({
+        mutationFn: async ({ params, flowName = 'flow' }) => {
+            const res = await apiFetch(`/api/v1/flows/${params.id}/download?env=${env}`, {
+                method: 'GET'
+            });
+            if (!res.ok) {
+                const json = (await res.json()) as GetFlowDownload['Errors'];
+                throw new APIError({ res, json });
+            }
+            downloadBlob(await res.blob(), `${flowName}.zip`);
+        }
     });
-    if (!res.ok) {
-        const json = (await res.json()) as GetFlowDownload['Errors'];
-        throw new APIError({ res, json });
-    }
-    downloadBlob(await res.blob(), `${flowName}.zip`);
 }
