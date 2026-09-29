@@ -987,7 +987,7 @@ const ENVS_SHAPE = z.object({
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
 });
 
-/** PKCS#8 prefix length for an Ed25519 public key (RFC 8410). The raw key is the remaining 32 bytes. */
+/** SPKI prefix length for an Ed25519 public key (RFC 8410). The raw key is the remaining 32 bytes. */
 const ED25519_SPKI_PREFIX_LEN = 12;
 const INTERNAL_AUTH_KID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const INTERNAL_AUTH_RAW_PUBLIC_KEY = /^[A-Za-z0-9_-]{43}$/;
@@ -1028,8 +1028,10 @@ export function parseInternalAuthPublicKeys(raw: string | undefined): InternalAu
     return entries;
 }
 
-function normalizePem(value: string): string {
-    return value.includes('\\n') ? value.replace(/\\n/g, '\n') : value;
+/** Env files often store PEM with escaped newlines. */
+export function normalizePem(value: string): string {
+    const trimmed = value.trim();
+    return trimmed.includes('\\n') ? trimmed.replace(/\\n/g, '\n') : trimmed;
 }
 
 function presentEnv(value: string | undefined): string | undefined {

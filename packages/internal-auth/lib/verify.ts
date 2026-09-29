@@ -2,7 +2,7 @@ import { stringTimingSafeEqual } from '@nangohq/utils';
 
 import { trimOrNull } from './credential.js';
 import { verify as verifyUnifiedToken } from './jwt.js';
-import { jwtHeaderAlg, jwtHeaderKid, verifyInternalServiceToken, verifyRunnerDispatchToken } from './token.js';
+import { jwtHeaderAlg, verifyInternalServiceToken, verifyRunnerDispatchToken } from './token.js';
 
 import type { InternalServiceAuth } from './constants.js';
 import type { KeyRegistry } from './jwt.js';
@@ -13,11 +13,11 @@ export async function verifyInternalServiceCredential(
     creds: { signingKey?: string | undefined; staticToken?: string | undefined; runnerPublicKey?: string | undefined; registry?: KeyRegistry | undefined }
 ): Promise<InternalServiceAuth | null> {
     const alg = jwtHeaderAlg(token);
-    if (alg === 'EdDSA' && jwtHeaderKid(token)) {
-        return verifyUnifiedToken(token, audience, creds.registry ?? {});
-    }
-
     if (alg === 'EdDSA') {
+        const unified = await verifyUnifiedToken(token, audience, creds.registry ?? {});
+        if (unified) {
+            return unified;
+        }
         const eddsa = verifyRunnerDispatchToken(token, audience, creds.runnerPublicKey);
         return eddsa.ok ? eddsa : null;
     }

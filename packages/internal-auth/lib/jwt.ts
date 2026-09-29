@@ -1,6 +1,6 @@
 import { decodeProtectedHeader, importJWK, importPKCS8, jwtVerify, SignJWT } from 'jose';
 
-import { parseInternalAuthPublicKeys } from '@nangohq/utils';
+import { normalizePem, parseInternalAuthPublicKeys } from '@nangohq/utils';
 
 import type { InternalServiceAuth, InternalServiceIssuer } from './constants.js';
 
@@ -37,12 +37,6 @@ export interface MintClaims {
 
 const privateKeyCache = new Map<string, Promise<CryptoKey>>();
 const publicKeyCache = new Map<string, Promise<CryptoKey>>();
-
-/** Env files often store PEM with escaped newlines. */
-export function normalizePem(value: string): string {
-    const trimmed = value.trim();
-    return trimmed.includes('\\n') ? trimmed.replace(/\\n/g, '\n') : trimmed;
-}
 
 export function keyRegistryFromPublicKeys(raw: string | undefined, iss: InternalServiceIssuer): KeyRegistry {
     const entries = parseInternalAuthPublicKeys(raw);

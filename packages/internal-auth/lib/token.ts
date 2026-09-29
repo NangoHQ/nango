@@ -73,11 +73,6 @@ export function jwtHeaderAlg(token: string): string | null {
     return header && typeof header.alg === 'string' ? header.alg : null;
 }
 
-export function jwtHeaderKid(token: string): string | null {
-    const header = readJwtHeader(token);
-    return header && typeof header.kid === 'string' && header.kid.length > 0 ? header.kid : null;
-}
-
 function signHs256(signingInput: string, key: string): string {
     return createHmac('sha256', key).update(signingInput).digest('base64url');
 }
