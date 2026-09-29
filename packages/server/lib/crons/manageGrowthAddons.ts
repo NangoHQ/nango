@@ -2,13 +2,22 @@ import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
-import { getGrowthAddonFlags, getPlanDefinition, GROWTH_ADDON_ENVIRONMENTS_MAX, PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON, plansList } from '@nangohq/shared';
+import {
+    API_RATE_LIMIT_SIZES,
+    getGrowthAddonFlags,
+    getPlanDefinition,
+    GROWTH_ADDON_ENVIRONMENTS_MAX,
+    GROWTH_ADDON_RATE_LIMIT_SIZE,
+    PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON,
+    plansList
+} from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
 import type { Lock } from '@nangohq/kvstore';
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
+import type { Knex } from 'knex';
 
 const logger = getLogger('cron.manageGrowthAddons');
 
@@ -128,11 +137,6 @@ async function updateGrowthAddonState(date: Date, operation: GrowthAddonOperatio
     const { hasGrowthFeatures, schedulingColumn } = growthAddonOperations[operation];
     const accountIds = await Promise.all(
         getPlansToFilterBy(operation).map(async (plan) => {
-            const addonFlags = getGrowthAddonFlags(plan, hasGrowthFeatures);
-            const environmentsMax = hasGrowthFeatures
-                ? db.knex.raw('GREATEST(environments_max, ?)', [GROWTH_ADDON_ENVIRONMENTS_MAX])
-                : (plan.flags.environments_max as number);
-
             const updated = await db.knex
                 .from<DBPlan>('plans')
                 .where('name', plan.code)
@@ -141,8 +145,9 @@ async function updateGrowthAddonState(date: Date, operation: GrowthAddonOperatio
                 .update({
                     has_growth_features: hasGrowthFeatures,
                     [schedulingColumn]: null,
-                    ...addonFlags,
-                    environments_max: environmentsMax,
+                    ...getGrowthAddonFlags(plan, hasGrowthFeatures),
+                    environments_max: getGrowthAddonMaxEnvironments(plan, hasGrowthFeatures),
+                    api_rate_limit_size: getGrowthAddonRateLimitSize(plan, hasGrowthFeatures),
                     updated_at: db.knex.fn.now()
                 })
                 .returning('account_id');
@@ -151,6 +156,21 @@ async function updateGrowthAddonState(date: Date, operation: GrowthAddonOperatio
         })
     );
     return accountIds.flat();
+}
+
+function getGrowthAddonMaxEnvironments(plan: PlanDefinition, hasGrowthFeatures: boolean): Knex.Raw | number {
+    if (!hasGrowthFeatures) {
+        return plan.flags.environments_max as number;
+    }
+    return db.knex.raw('GREATEST(environments_max, ?)', [GROWTH_ADDON_ENVIRONMENTS_MAX]);
+}
+
+function getGrowthAddonRateLimitSize(plan: PlanDefinition, hasGrowthFeatures: boolean): Knex.Raw | DBPlan['api_rate_limit_size'] {
+    if (!hasGrowthFeatures) {
+        return plan.flags.api_rate_limit_size as DBPlan['api_rate_limit_size'];
+    }
+    const smallerSizes = API_RATE_LIMIT_SIZES.slice(0, API_RATE_LIMIT_SIZES.indexOf(GROWTH_ADDON_RATE_LIMIT_SIZE));
+    return db.knex.raw('CASE WHEN api_rate_limit_size = ANY(?) THEN ? ELSE api_rate_limit_size END', [smallerSizes, GROWTH_ADDON_RATE_LIMIT_SIZE]);
 }
 
 function getPlansToFilterBy(operation: GrowthAddonOperation): PlanDefinition[] {
