@@ -4,6 +4,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { legacyFunctionService } from '@nangohq/shared';
 import { filterJsonSchemaForModels } from '@nangohq/utils';
 
+import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
 import { trackAgentSessionToolSearch } from './agentSessionAnalytics.service.js';
 
 import type { AgentSessionToolSearchHit } from './agentSessionAnalytics.service.js';
@@ -142,7 +143,7 @@ export async function searchSessionTools({
             logOperationId: logCtx.id
         });
 
-        return { guidance: guidanceFor({ query, matches, related }), matches, related };
+        return { guidance: guidanceFor({ session, query, matches, related }), matches, related };
     } catch (err) {
         void logCtx.error('Failed to search the session tools', { error: err });
         await logCtx.failed();
@@ -333,7 +334,17 @@ function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | unde
     };
 }
 
-function guidanceFor({ query, matches, related }: { query: string; matches: AgentSessionToolMatch[]; related: AgentSessionToolMatch[] }): string {
+function guidanceFor({
+    session,
+    query,
+    matches,
+    related
+}: {
+    session: AgentSession;
+    query: string;
+    matches: AgentSessionToolMatch[];
+    related: AgentSessionToolMatch[];
+}): string {
     if (matches.length === 0 && related.length === 0) {
         return `No tool in this session matches '${query}'. Try a shorter query, or words describing the operation rather than the product, and note that this session may simply not carry a tool for it.`;
     }
@@ -374,9 +385,9 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
     }
 
     const unconnected = [...new Set([...matches, ...related].filter((match) => match.connection.status === 'not_connected').map((match) => match.integration))];
-    if (unconnected.length > 0) {
+    for (const integration of unconnected) {
         lines.push(
-            `${unconnected.map((integration) => `'${integration}'`).join(', ')} ${unconnected.length === 1 ? 'has' : 'have'} no connection in this session. Their tools are listed for completeness and will fail if you call them.`
+            `'${integration}' has no connection in this session, so its tools will fail if you call them. ${notConnectedGuidance(integration, session)}`
         );
     }
 
