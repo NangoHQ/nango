@@ -18,7 +18,7 @@ import {
     verifyRunnerDispatchToken
 } from '@nangohq/internal-auth';
 
-import { mintRunnerAuthEnv, mintRunnerDispatchToken, mintTaskAuthToken } from './internal-auth.js';
+import { assertRunnerAuthMaterial, mintRunnerAuthEnv, mintRunnerDispatchToken, mintTaskAuthToken } from './internal-auth.js';
 
 const { mockEnvs } = vi.hoisted(() => ({
     mockEnvs: {
@@ -117,6 +117,12 @@ describe('mintRunnerAuthEnv', () => {
         expect(await mintRunnerAuthEnv(7)).toEqual({});
     });
 
+    it('returns nothing when only jobs public keys are set', async () => {
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = 'jobs-2026-09:cHVibGlj';
+        mockEnvs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        expect(await mintRunnerAuthEnv(7)).toEqual({});
+    });
+
     it('injects a node-bound jobs JWT and the Ed25519 public key, never a minting secret', async () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         mockEnvs.NANGO_INTERNAL_AUTH_REQUIRED = true;
@@ -160,6 +166,25 @@ describe('mintRunnerAuthEnv', () => {
         const registry = keyRegistryFromPublicKeys(env['NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS'], INTERNAL_SERVICE_ISSUER_JOBS);
         const auth = await verifyInternalServiceCredential(env['NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN']!, INTERNAL_SERVICE_AUDIENCE_JOBS, { registry });
         expect(auth).toMatchObject({ kind: 'jwt', sub: nodeSubject('7'), issuer: INTERNAL_SERVICE_ISSUER_JOBS });
+    });
+});
+
+describe('assertRunnerAuthMaterial', () => {
+    it('rejects REQUIRED with public keys and nothing to mint', () => {
+        expect(() =>
+            assertRunnerAuthMaterial({
+                required: true,
+                jobsPublicKeys: 'jobs-2026-09:cHVibGlj'
+            })
+        ).toThrow(/no private key or HMAC signing key/);
+    });
+
+    it('allows REQUIRED when a signing key or jobs private key is set', () => {
+        expect(() => assertRunnerAuthMaterial({ required: true, jobsPublicKeys: 'jobs-2026-09:cHVibGlj', signingKey: 'sign' })).not.toThrow();
+        expect(() =>
+            assertRunnerAuthMaterial({ required: true, jobsPublicKeys: 'jobs-2026-09:cHVibGlj', privateKey: 'pem', keyId: 'jobs-2026-09' })
+        ).not.toThrow();
+        expect(() => assertRunnerAuthMaterial({ required: false, jobsPublicKeys: 'jobs-2026-09:cHVibGlj' })).not.toThrow();
     });
 });
 
