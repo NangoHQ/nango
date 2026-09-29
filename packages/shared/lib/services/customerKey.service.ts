@@ -401,9 +401,9 @@ class CustomerKeyService {
         return key;
     }
 
-    public async getWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<string>> {
+    public async getWebhookSigningKeyForEnv(trx: Knex, envId: number, { bypassCache = false }: { bypassCache?: boolean } = {}): Promise<Result<string>> {
         const cached = webhookSigningKeyCache.get(envId);
-        if (cached && cached.expiresAt > Date.now()) {
+        if (!bypassCache && cached && cached.expiresAt > Date.now()) {
             return Ok(cached.key);
         }
 
