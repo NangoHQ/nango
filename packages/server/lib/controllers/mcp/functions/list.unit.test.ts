@@ -30,6 +30,7 @@ describe('listFunctionsTool', () => {
         );
 
         expect(listSpy).toHaveBeenCalledWith({
+            accountUuid,
             environmentId: 42,
             providerConfigKey: 'github',
             type: 'action',
@@ -64,6 +65,7 @@ describe('listFunctionsTool', () => {
         const result = await listFunctionsTool.handler({ integration_id: 'github' }, context);
 
         expect(listSpy).toHaveBeenCalledWith({
+            accountUuid,
             environmentId: 42,
             providerConfigKey: 'github',
             type: undefined,
@@ -131,8 +133,10 @@ describe('listFunctionsTool', () => {
     });
 });
 
+const accountUuid = '8d49e079-aa61-44ae-b0cf-823662523527';
+
 const context = {
-    account: {},
+    account: { uuid: accountUuid },
     environment: { id: 42 },
     grantedScopes: ['environment:functions:list']
 } as ManagementMcpContext;
