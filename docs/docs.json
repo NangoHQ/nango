@@ -98,6 +98,10 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/webflow",
+      "destination": "/api-integrations/webflow"
+    },
+    {
       "source": "/integrations/all/pandadoc",
       "destination": "/api-integrations/pandadoc"
     },
@@ -1972,7 +1976,7 @@
               "integrations/all/wave-accounting",
               "integrations/all/wealthbox",
               "integrations/all/webex",
-              "integrations/all/webflow",
+              "api-integrations/webflow",
               "api-integrations/webinarjam",
               "api-integrations/wejam",
               "api-integrations/whatsapp-business",
