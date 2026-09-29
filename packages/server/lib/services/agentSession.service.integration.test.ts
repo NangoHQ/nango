@@ -8,12 +8,12 @@ import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 
 import {
-    createAgentSession,
     createAgentSessionToken,
     endAgentSession,
     expireAgentSessions,
     getAgentSession,
     getAgentSessionByToken,
+    insertAgentSession,
     listExpiredAgentSessions,
     terminateAgentSession
 } from './agentSession.service.js';
@@ -58,7 +58,7 @@ describe('agentSession service', () => {
         } satisfies AgentSessionCompiledToolset;
 
         const created = (
-            await createAgentSession(db.knex, {
+            await insertAgentSession(db.knex, {
                 accountId: account.id,
                 environmentId: environment.id,
                 resolvedConnections,
@@ -120,7 +120,7 @@ describe('agentSession service', () => {
     it('rejects an environment owned by another account', async () => {
         const other = await seeders.seedAccountEnvAndUser();
 
-        const result = await createAgentSession(db.knex, {
+        const result = await insertAgentSession(db.knex, {
             accountId: account.id,
             environmentId: other.env.id,
             resolvedConnections: {},
@@ -138,7 +138,7 @@ describe('agentSession service', () => {
     it('rejects a soft-deleted environment', async () => {
         await db.knex('_nango_environments').where({ id: environment.id }).update({ deleted: true, deleted_at: new Date() });
 
-        const result = await createAgentSession(db.knex, {
+        const result = await insertAgentSession(db.knex, {
             accountId: account.id,
             environmentId: environment.id,
             resolvedConnections: {},
@@ -355,7 +355,7 @@ async function createSession({
     expiresAt?: Date;
 }): Promise<AgentSession> {
     return (
-        await createAgentSession(db.knex, {
+        await insertAgentSession(db.knex, {
             accountId: account.id,
             environmentId: environment.id,
             resolvedConnections: {},

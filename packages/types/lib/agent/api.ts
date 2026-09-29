@@ -113,6 +113,15 @@ export type AgentSessionCreationErrorPayload =
 
 export type PostAgentSessionsCreationError = ApiError<AgentSessionCreationErrorCode, undefined, AgentSessionCreationErrorPayload>;
 
+export interface ApiCreatedAgentSession {
+    session_id: string;
+    session_token: string;
+    mcp_url: string;
+    expires_at: string;
+    toolset: Record<string, AgentSessionToolsetSummary>;
+    meta_tools: AgentSessionMetaToolsSummary;
+}
+
 export type PostAgentSessions = ApiEndpoint<{
     Audit: AuditPolicy<'agent_session', 'created', 'environment'>;
     Method: 'POST';
@@ -120,14 +129,7 @@ export type PostAgentSessions = ApiEndpoint<{
     Body: PostAgentSessionsBody;
     Error: PostAgentSessionsCreationError;
     Success: {
-        data: {
-            session_id: string;
-            session_token: string;
-            mcp_url: string;
-            expires_at: string;
-            toolset: Record<string, AgentSessionToolsetSummary>;
-            meta_tools: AgentSessionMetaToolsSummary;
-        };
+        data: ApiCreatedAgentSession;
     };
 }>;
 
