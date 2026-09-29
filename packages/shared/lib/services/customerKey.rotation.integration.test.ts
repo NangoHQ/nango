@@ -86,7 +86,7 @@ describe('rotateWebhookSigningKey cache', () => {
         expect(served.value).not.toBe(before.value);
     });
 
-    it('the uncached read serves a key rotated elsewhere and refreshes the cache', async () => {
+    it('the uncached read serves a key rotated elsewhere without touching the cache', async () => {
         const { env } = await seedAccountEnvAndUser();
 
         const before = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, env.id);
@@ -111,6 +111,6 @@ describe('rotateWebhookSigningKey cache', () => {
         if (after.isErr()) {
             throw after.error;
         }
-        expect(after.value).toBe(rotated);
+        expect(after.value).toBe(before.value);
     });
 });

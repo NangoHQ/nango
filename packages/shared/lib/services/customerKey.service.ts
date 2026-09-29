@@ -401,28 +401,35 @@ class CustomerKeyService {
         return key;
     }
 
+    private async readWebhookSigningKey(trx: Knex, envId: number): Promise<{ key: string; updatedAt: Date }> {
+        const row = await this.webhookSigningKeyForEnv(trx, envId).first();
+
+        if (!row) {
+            throw new NangoError('no_webhook_signing_key', { environment_id: envId });
+        }
+
+        const decrypted = getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey;
+        return { key: decrypted.secret, updatedAt: row.updated_at };
+    }
+
     public async getWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<string>> {
         const cached = webhookSigningKeyCache.get(envId);
         if (cached && cached.expiresAt > Date.now()) {
             return Ok(cached.key);
         }
 
-        return this.getUncachedWebhookSigningKeyForEnv(trx, envId);
+        try {
+            const { key, updatedAt } = await this.readWebhookSigningKey(trx, envId);
+            return Ok(this.cacheWebhookSigningKey(envId, key, updatedAt));
+        } catch (err) {
+            return Err(err);
+        }
     }
 
-    /**
-     * Reads the key from the DB even when this process has it cached, then refreshes the cache.
-     */
     public async getUncachedWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<string>> {
         try {
-            const row = await this.webhookSigningKeyForEnv(trx, envId).first();
-
-            if (!row) {
-                throw new NangoError('no_webhook_signing_key', { environment_id: envId });
-            }
-
-            const decrypted = getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey;
-            return Ok(this.cacheWebhookSigningKey(envId, decrypted.secret, row.updated_at));
+            const { key } = await this.readWebhookSigningKey(trx, envId);
+            return Ok(key);
         } catch (err) {
             return Err(err);
         }
