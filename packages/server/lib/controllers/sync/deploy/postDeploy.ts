@@ -1,11 +1,10 @@
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
 import { logContextGetter } from '@nangohq/logs';
-import { cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences, NangoError, productTracking, startTrial } from '@nangohq/shared';
+import { cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences, NangoError, startTrial } from '@nangohq/shared';
 import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
-import { getCliContext } from '../../../middleware/cliVersionCheck.js';
 import { startFunctionDeletion } from '../../../tasks/startFunctionDeletion.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
@@ -32,12 +31,6 @@ export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, re
 
     const body: PostDeploy['Body'] = val.data;
     const { environment, account, plan } = res.locals;
-
-    const { deviceId } = getCliContext(req);
-
-    if (deviceId) {
-        productTracking.alias({ deviceId, team: account });
-    }
 
     // Prevent concurrent deploys per environment, fail immediately if another deploy is in flight.
     const locking = await getLocking();
