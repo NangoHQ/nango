@@ -47,6 +47,7 @@
         "@nangohq/usage": "file:../usage",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
+        "@posthog/mcp": "0.18.0",
         "@workos-inc/node": "6.2.0",
         "axios": "1.18.0",
         "body-parser": "2.3.0",
