@@ -2,7 +2,7 @@ import { INTERNAL_SERVICE_AUTH_LOCALS_KEY, INTERNAL_SERVICE_ISSUER_JOBS, INTERNA
 import { keyRegistryFromPublicKeys, mergeKeyRegistries } from './jwt.js';
 import { verifyInternalServiceCredential } from './verify.js';
 
-import type { InternalServiceAuth, InternalServiceIssuer } from './constants.js';
+import type { InternalServiceAuth } from './constants.js';
 import type { InternalAuthEnvs } from './credential.js';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -43,15 +43,6 @@ export function isNodeBoundAuth(auth: InternalServiceAuth | undefined, nodeId: s
         return auth.sub === nodeSubject(nodeId);
     }
     return Boolean(isSignedAuth(auth) && auth?.op === 'node' && auth.nodeId === nodeId);
-}
-
-/** Jobs service token. Runner dispatch uses this instead of a task or node binding. */
-export function isJobsServiceAuth(auth: InternalServiceAuth | undefined): boolean {
-    return isServiceAuth(auth, INTERNAL_SERVICE_ISSUER_JOBS);
-}
-
-function isServiceAuth(auth: InternalServiceAuth | undefined, issuer: InternalServiceIssuer): boolean {
-    return auth?.kind === 'jwt' && auth.issuer === issuer && auth.sub === issuer;
 }
 
 function isSignedAuth(auth: InternalServiceAuth | undefined): boolean {

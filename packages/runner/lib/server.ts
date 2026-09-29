@@ -9,7 +9,6 @@ import {
     getInternalServiceAuth,
     INTERNAL_SERVICE_AUDIENCE_RUNNER,
     internalServiceAuthMiddleware,
-    isJobsServiceAuth,
     isNodeBoundAuth,
     isTaskBoundAuth
 } from '@nangohq/internal-auth';
@@ -51,7 +50,7 @@ const taskBoundProcedure = t.procedure.use(({ ctx, rawInput, next }) => {
     if (!ctx.required) {
         return next();
     }
-    if (isJobsServiceAuth(ctx.auth) || isTaskBoundAuth(ctx.auth, taskIdFromRawInput(rawInput))) {
+    if (isTaskBoundAuth(ctx.auth, taskIdFromRawInput(rawInput))) {
         return next();
     }
     throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Unauthorized' });
@@ -61,7 +60,7 @@ const nodeBoundProcedure = t.procedure.use(({ ctx, next }) => {
     if (!ctx.required) {
         return next();
     }
-    if (isJobsServiceAuth(ctx.auth) || isNodeBoundAuth(ctx.auth, String(envs.RUNNER_NODE_ID))) {
+    if (isNodeBoundAuth(ctx.auth, String(envs.RUNNER_NODE_ID))) {
         return next();
     }
     throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Unauthorized' });

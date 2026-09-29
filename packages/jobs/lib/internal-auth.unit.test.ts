@@ -164,7 +164,7 @@ describe('mintRunnerAuthEnv', () => {
 });
 
 describe('unified mint', () => {
-    it('prefers a workload task token and a service dispatch token when the jobs private key is set', async () => {
+    it('prefers a workload task token and a task-bound dispatch token when the jobs private key is set', async () => {
         const { publicKey, privateKey } = generateKeyPairSync('ed25519');
         const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
         const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
@@ -184,7 +184,7 @@ describe('unified mint', () => {
         const dispatch = await mintRunnerDispatchToken({ taskId: 'task-1' });
         expect(dispatch).toEqual(expect.any(String));
         const dispatchAuth = await verifyInternalServiceCredential(dispatch!, INTERNAL_SERVICE_AUDIENCE_RUNNER, { registry });
-        expect(dispatchAuth).toMatchObject({ kind: 'jwt', sub: INTERNAL_SERVICE_ISSUER_JOBS, issuer: INTERNAL_SERVICE_ISSUER_JOBS });
+        expect(dispatchAuth).toMatchObject({ kind: 'jwt', sub: taskSubject('task-1'), issuer: INTERNAL_SERVICE_ISSUER_JOBS });
         const payload = JSON.parse(Buffer.from(dispatch!.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
         expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_TOKEN_TTL_SECS);
         expect(payload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_TOKEN_TTL_SECS + 5);

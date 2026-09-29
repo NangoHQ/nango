@@ -45,15 +45,16 @@ export async function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoPr
 }
 
 /**
- * Mint a runner-audience token for jobs→runner dispatch. Uses a short-lived jobs service token
- * when the jobs private key is set, otherwise the legacy derived-Ed25519 dispatch token.
+ * Mint a runner-audience token for jobs→runner dispatch. Bound to the task or node it may act on.
+ * Uses the jobs Ed25519 key when configured, otherwise the legacy derived-Ed25519 dispatch token.
  */
 export async function mintRunnerDispatchToken(
     args: { taskId: string; nangoProps?: Pick<NangoProps, 'lifecycle'> } | { nodeId: string }
 ): Promise<string | null> {
     const signer = jobsSigner();
     if (signer) {
-        return mint(signer, { sub: INTERNAL_SERVICE_ISSUER_JOBS, aud: INTERNAL_SERVICE_AUDIENCE_RUNNER, ttlSecs: INTERNAL_SERVICE_TOKEN_TTL_SECS });
+        const sub = 'nodeId' in args ? nodeSubject(args.nodeId) : taskSubject(args.taskId);
+        return mint(signer, { sub, aud: INTERNAL_SERVICE_AUDIENCE_RUNNER, ttlSecs: INTERNAL_SERVICE_TOKEN_TTL_SECS });
     }
     if ('nodeId' in args) {
         return createRunnerDispatchToken({ op: 'node', nodeId: args.nodeId }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);

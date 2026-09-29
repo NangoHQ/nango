@@ -9,7 +9,9 @@ import {
     INTERNAL_SERVICE_AUDIENCE_JOBS,
     INTERNAL_SERVICE_AUDIENCE_RUNNER,
     INTERNAL_SERVICE_ISSUER_JOBS,
-    mint
+    mint,
+    nodeSubject,
+    taskSubject
 } from '@nangohq/internal-auth';
 
 import { getRunnerClient } from './client.js';
@@ -200,7 +202,29 @@ describe('runner internal service auth', () => {
         }
     });
 
-    it('accepts a jobs service token for abort and notifyWhenIdle when REQUIRED is true', async () => {
+    it('accepts a task-bound jobs JWT for abort and rejects it for a different task', async () => {
+        authEnvs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+        const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+        const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
+            .subarray(12)
+            .toString('base64url');
+        authEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: taskSubject('task-id'), aud: INTERNAL_SERVICE_AUDIENCE_RUNNER, ttlSecs: 60 }
+        );
+        const { url, close } = await listen();
+        try {
+            const client = getRunnerClient(url, httpOpts, { token });
+            await expect(client.abort.mutate({ taskId: 'task-id' })).resolves.toBe(false);
+            await expect(client.abort.mutate({ taskId: 'any-task' })).rejects.toThrow();
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a jobs service token for abort and notifyWhenIdle when REQUIRED is true', async () => {
         authEnvs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const { publicKey, privateKey } = generateKeyPairSync('ed25519');
         const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
@@ -212,11 +236,17 @@ describe('runner internal service auth', () => {
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
             { sub: INTERNAL_SERVICE_ISSUER_JOBS, aud: INTERNAL_SERVICE_AUDIENCE_RUNNER, ttlSecs: 60 }
         );
+        const nodeToken = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: nodeSubject('999'), aud: INTERNAL_SERVICE_AUDIENCE_RUNNER, ttlSecs: 60 }
+        );
         const { url, close } = await listen();
         try {
             const client = getRunnerClient(url, httpOpts, { token });
-            await expect(client.abort.mutate({ taskId: 'any-task' })).resolves.toBe(false);
-            await expect(client.notifyWhenIdle.mutate()).resolves.toEqual(true);
+            await expect(client.abort.mutate({ taskId: 'any-task' })).rejects.toThrow();
+            await expect(client.notifyWhenIdle.mutate()).rejects.toThrow();
+            const otherNode = getRunnerClient(url, httpOpts, { token: nodeToken });
+            await expect(otherNode.notifyWhenIdle.mutate()).rejects.toThrow();
         } finally {
             await close();
         }
