@@ -46,8 +46,8 @@ describe(`PATCH ${endpoint}`, () => {
                 code: 'invalid_body',
                 errors: [
                     {
-                        code: 'invalid_format',
-                        message: 'Invalid string: must match pattern /^[a-zA-Z0-9,.;:=+~[\\]|@${}"\'\\\\/_ -]+$/',
+                        code: 'invalid_union',
+                        message: 'Invalid input',
                         path: ['connection_id']
                     }
                 ]

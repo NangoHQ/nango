@@ -26,12 +26,7 @@ export const webhookUrlSchema = z
     .refine(
         (url) => {
             if (!url || url.trim() === '') return true;
-            let hostname: string;
-            try {
-                hostname = new URL(url).hostname.replace(/\.+$/, '');
-            } catch {
-                return true;
-            }
+            const hostname = new URL(url).hostname.replace(/\.+$/, '');
             return hostname !== 'nango.dev' && !hostname.endsWith('.nango.dev');
         },
         { message: `Webhook URLs cannot point to Nango's domain (nango.dev).` }

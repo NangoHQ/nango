@@ -373,8 +373,8 @@ describe('Persist API', () => {
                 code: 'invalid_request',
                 errors: [
                     {
-                        code: 'too_big',
-                        message: 'Too big: expected string to have <=255 characters',
+                        code: 'invalid_union',
+                        message: 'Invalid input',
                         path: ['records', '0', 'id']
                     }
                 ]
