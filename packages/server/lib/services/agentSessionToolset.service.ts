@@ -76,18 +76,20 @@ export class AgentSessionToolsetCompilationError extends Error {
  * between "whatever this tenant has" and "everything we offer".
  */
 export async function compileToolset({
+    accountUuid,
     environmentId,
     toolset,
     pinnedTools,
     connectedIntegrations
 }: {
+    accountUuid: string;
     environmentId: number;
     toolset: AgentSessionToolsetPolicy | undefined;
     pinnedTools: AgentSessionPinnedTools | undefined;
     connectedIntegrations: string[];
 }): Promise<Result<AgentSessionCompiledToolset, AgentSessionToolsetCompilationError>> {
     const named = namedIntegrations({ toolset, pinnedTools, connectedIntegrations });
-    const functions = await legacyFunctionService.findIntegrationFunctions({ environmentId, providerConfigKeys: named });
+    const functions = await legacyFunctionService.findIntegrationFunctions({ accountUuid, environmentId, providerConfigKeys: named });
 
     return compileToolsetFromFunctions({ toolset, pinnedTools, connectedIntegrations, functions });
 }

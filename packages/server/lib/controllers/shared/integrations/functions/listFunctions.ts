@@ -23,6 +23,7 @@ export async function handleListIntegrationFunctions({
     limit: number;
 }): Promise<void> {
     const fnResult = await legacyFunctionService.listFunctions({
+        accountUuid: res.locals.account.uuid,
         environmentId: environment.id,
         providerConfigKey,
         type,

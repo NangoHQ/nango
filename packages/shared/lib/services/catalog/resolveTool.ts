@@ -1,4 +1,4 @@
-import { flags } from '@nangohq/utils';
+import { getFlags } from '@nangohq/feature-flags';
 
 import { getSyncConfigRaw } from '../sync/config/config.service.js';
 import { getCatalogTool } from './actions.js';
@@ -9,10 +9,12 @@ import type { DBSyncConfig, IntegrationConfig } from '@nangohq/types';
 export type ResolveRunnableToolResult = { kind: 'deployed'; config: DBSyncConfig } | { kind: 'catalog'; tool: CatalogTool } | { kind: 'missing' };
 
 export async function resolveRunnableTool({
+    accountUuid,
     environmentId,
     integration,
     name
 }: {
+    accountUuid: string;
     environmentId: number;
     integration: Pick<IntegrationConfig, 'id' | 'provider'>;
     name: string;
@@ -27,7 +29,7 @@ export async function resolveRunnableTool({
         return { kind: 'deployed', config: deployed };
     }
 
-    if (!flags.hasCatalogTools) {
+    if (!(await getFlags().hasCatalogTools(accountUuid))) {
         return { kind: 'missing' };
     }
 

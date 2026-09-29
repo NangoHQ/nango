@@ -249,6 +249,7 @@ async function runCreation(params: CreateAgentSessionParams, logCtx: LogContextO
     }
 
     const compiledToolset = await agentSessionToolsetService.compileToolset({
+        accountUuid: account.uuid,
         environmentId: environment.id,
         toolset: params.toolset,
         pinnedTools: params.pinnedTools,

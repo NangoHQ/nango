@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
-import { flags } from '@nangohq/utils';
+import { getFlags } from '@nangohq/feature-flags';
 
 import { createAccount } from '../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../seeders/config.seeder.js';
@@ -76,19 +76,22 @@ async function seedIntegration() {
     const account = await createAccount();
     const environment = await createEnvironmentSeed(account.id);
     const integration = await createConfigSeed(environment, 'github', 'github');
-    return { environment, integration };
+    return { account, environment, integration };
 }
 
 async function listPage({
+    account,
     environment,
     offset,
     limit
 }: {
+    account: { uuid: string };
     environment: DBEnvironment;
     offset: number;
     limit: number;
 }): Promise<{ rows: { name: string; source: string; enabled: boolean; id: number | null }[]; total: number }> {
     const result = await listFunctions({
+        accountUuid: account.uuid,
         environmentId: environment.id,
         providerConfigKey: 'github',
         type: undefined,
@@ -117,15 +120,15 @@ describe('listFunctions with catalog actions', () => {
     });
 
     it('returns consecutive pages of the merged order without gaps or repeats', async () => {
-        const { environment, integration } = await seedIntegration();
+        const { account, environment, integration } = await seedIntegration();
         mockListCatalogTools.mockReturnValue([catalogTool('a'), catalogTool('b'), catalogTool('c')]);
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'm', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'n', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'o', type: 'action' });
 
-        const page1 = await listPage({ environment, offset: 0, limit: 2 });
-        const page2 = await listPage({ environment, offset: 2, limit: 2 });
-        const page3 = await listPage({ environment, offset: 4, limit: 2 });
+        const page1 = await listPage({ account, environment, offset: 0, limit: 2 });
+        const page2 = await listPage({ account, environment, offset: 2, limit: 2 });
+        const page3 = await listPage({ account, environment, offset: 4, limit: 2 });
 
         expect(page1.total).toBe(6);
         expect(page2.total).toBe(6);
@@ -145,13 +148,13 @@ describe('listFunctions with catalog actions', () => {
     });
 
     it('interleaves catalog actions with deployed actions by name', async () => {
-        const { environment, integration } = await seedIntegration();
+        const { account, environment, integration } = await seedIntegration();
         mockListCatalogTools.mockReturnValue([catalogTool('delete'), catalogTool('list')]);
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'create', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'update', type: 'action' });
 
-        const page1 = await listPage({ environment, offset: 0, limit: 2 });
-        const page2 = await listPage({ environment, offset: 2, limit: 2 });
+        const page1 = await listPage({ account, environment, offset: 0, limit: 2 });
+        const page2 = await listPage({ account, environment, offset: 2, limit: 2 });
 
         expect(page1.rows).toEqual([
             { name: 'create', source: 'repo', enabled: true, id: expect.any(Number) },
@@ -164,34 +167,35 @@ describe('listFunctions with catalog actions', () => {
     });
 
     it('does not list a catalog action that already has a deployed row', async () => {
-        const { environment, integration } = await seedIntegration();
+        const { account, environment, integration } = await seedIntegration();
         mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'create-issue', type: 'action' });
 
-        const page = await listPage({ environment, offset: 0, limit: 20 });
+        const page = await listPage({ account, environment, offset: 0, limit: 20 });
 
         expect(page.total).toBe(1);
         expect(page.rows).toEqual([{ name: 'create-issue', source: 'repo', enabled: true, id: expect.any(Number) }]);
     });
 
     it('does not occupy a catalog name with a deployed action from another environment', async () => {
-        const { environment, integration } = await seedIntegration();
+        const { account, environment, integration } = await seedIntegration();
         const other = await createEnvironmentSeed(environment.account_id);
         mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
         await insertSyncConfig({ environmentId: other.id, integration, name: 'create-issue', type: 'action' });
 
-        const page = await listPage({ environment, offset: 0, limit: 20 });
+        const page = await listPage({ account, environment, offset: 0, limit: 20 });
 
         expect(page.total).toBe(1);
         expect(page.rows).toEqual([{ name: 'create-issue', source: 'tools-catalog', enabled: true, id: null }]);
     });
 
     it('attaches catalog json_schema after listing', async () => {
-        const { environment } = await seedIntegration();
+        const { account, environment } = await seedIntegration();
         const jsonSchema = { type: 'object', properties: { title: { type: 'string' } } };
         mockListCatalogTools.mockReturnValue([{ ...catalogTool('create-issue'), jsonSchema }]);
 
         const result = await listFunctions({
+            accountUuid: account.uuid,
             environmentId: environment.id,
             providerConfigKey: 'github',
             type: undefined,
@@ -208,11 +212,11 @@ describe('listFunctions with catalog actions', () => {
     });
 
     it('lists actions for connection tools using the merged deployed and catalog view', async () => {
-        const { environment, integration } = await seedIntegration();
+        const { account, environment, integration } = await seedIntegration();
         mockListCatalogTools.mockReturnValue([catalogTool('create-issue'), catalogTool('delete-issue')]);
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'delete-issue', type: 'action' });
 
-        const result = await listActions({ environmentId: environment.id, providerConfigKey: 'github' });
+        const result = await listActions({ accountUuid: account.uuid, environmentId: environment.id, providerConfigKey: 'github' });
 
         expect(result.isOk()).toBe(true);
         if (result.isErr()) {
@@ -225,10 +229,10 @@ describe('listFunctions with catalog actions', () => {
     });
 
     it('applies the requested action list limit', async () => {
-        const { environment } = await seedIntegration();
+        const { account, environment } = await seedIntegration();
         mockListCatalogTools.mockReturnValue([catalogTool('create-issue'), catalogTool('delete-issue')]);
 
-        const result = await listActions({ environmentId: environment.id, providerConfigKey: 'github', limit: 1 });
+        const result = await listActions({ accountUuid: account.uuid, environmentId: environment.id, providerConfigKey: 'github', limit: 1 });
 
         expect(result.isOk()).toBe(true);
         if (result.isErr()) {
@@ -249,10 +253,11 @@ describe('getFunction with catalog actions', () => {
     });
 
     it('returns a catalog action when no deployed row exists', async () => {
-        const { environment } = await seedIntegration();
+        const { account, environment } = await seedIntegration();
         mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
 
         const result = await getFunction({
+            accountUuid: account.uuid,
             environmentId: environment.id,
             providerConfigKey: 'github',
             name: 'create-issue',
@@ -274,11 +279,12 @@ describe('getFunction with catalog actions', () => {
     });
 
     it('returns the deployed row when the same catalog name exists', async () => {
-        const { environment, integration } = await seedIntegration();
+        const { account, environment, integration } = await seedIntegration();
         mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
         await insertSyncConfig({ environmentId: environment.id, integration, name: 'create-issue', type: 'action' });
 
         const result = await getFunction({
+            accountUuid: account.uuid,
             environmentId: environment.id,
             providerConfigKey: 'github',
             name: 'create-issue',
@@ -297,14 +303,14 @@ describe('getFunction with catalog actions', () => {
         });
     });
 
-    it('does not return a catalog action when FLAG_CATALOG_TOOLS_ENABLED is off', async () => {
-        const original = flags.hasCatalogTools;
-        flags.hasCatalogTools = false;
+    it('does not return a catalog action when tools-catalog is off', async () => {
+        const spy = vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(false);
         try {
-            const { environment } = await seedIntegration();
+            const { account, environment } = await seedIntegration();
             mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
 
             const result = await getFunction({
+                accountUuid: account.uuid,
                 environmentId: environment.id,
                 providerConfigKey: 'github',
                 name: 'create-issue',
@@ -317,7 +323,7 @@ describe('getFunction with catalog actions', () => {
             }
             expect(result.value).toBeUndefined();
         } finally {
-            flags.hasCatalogTools = original;
+            spy.mockRestore();
         }
     });
 });

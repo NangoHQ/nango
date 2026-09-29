@@ -1,5 +1,12 @@
 import { expect } from 'vitest';
 
+// Integration runs set NANGO_FLAG_PROVIDER=env so catalog tests see tools-catalog.
+// Unit runs leave the provider unset and keep the noop defaults.
+if (process.env['NANGO_FLAG_PROVIDER'] === 'env') {
+    const { initialize } = await import('@nangohq/feature-flags');
+    await initialize();
+}
+
 const dateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(.\d{1,6})?Z$/;
 const dateRegexWithTZ = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(.\d{1,6})?\+\d{2}:\d{2}$/;
 const uuidRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;

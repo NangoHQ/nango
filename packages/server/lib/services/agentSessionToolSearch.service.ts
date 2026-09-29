@@ -124,7 +124,7 @@ export async function searchSessionTools({
 
     try {
         const ranked = rankSessionTools({ session, query, slugOf });
-        const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
+        const inputs = await findToolInputs({ accountUuid: account.uuid, environmentId: session.environmentId, candidates: ranked.best });
 
         // It's possible a tool was removed after the session compiled, so we set input as unavailable.
         const matches = ranked.best.map((candidate) => toMatch(candidate, inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' }));
@@ -263,13 +263,16 @@ function own<T>(record: Record<string, T>, key: string): T | undefined {
 }
 
 async function findToolInputs({
+    accountUuid,
     environmentId,
     candidates
 }: {
+    accountUuid: string;
     environmentId: number;
     candidates: SearchCandidate[];
 }): Promise<Map<string, Map<string, AgentSessionToolInput>>> {
     const rows = await legacyFunctionService.findActionInputSchemas({
+        accountUuid,
         environmentId,
         actions: candidates.map((candidate) => ({ integrationId: candidate.integration, name: candidate.action }))
     });

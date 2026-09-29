@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { flags } from '@nangohq/utils';
+import { getFlags } from '@nangohq/feature-flags';
 
 import { getCatalogTool, listCatalogTools } from '../../../catalog/actions.js';
 
@@ -41,8 +41,8 @@ const listingOrderBy = [
     { column: 'id', order: 'asc' as const }
 ];
 
-function catalogTools(provider: string | undefined, type: FunctionType | undefined): CatalogTool[] {
-    if (!provider || !flags.hasCatalogTools || (type !== undefined && type !== 'action')) {
+async function catalogTools(accountUuid: string, provider: string | undefined, type: FunctionType | undefined): Promise<CatalogTool[]> {
+    if (!provider || !(await getFlags().hasCatalogTools(accountUuid)) || (type !== undefined && type !== 'action')) {
         return [];
     }
     return listCatalogTools(provider);
@@ -58,6 +58,7 @@ async function providerForConfig(environmentId: number, providerConfigKey: strin
 }
 
 export async function findActiveByEnvironment({
+    accountUuid,
     environmentId,
     providerConfigKey,
     type,
@@ -65,6 +66,7 @@ export async function findActiveByEnvironment({
     limit,
     offset
 }: {
+    accountUuid: string;
     environmentId: number;
     providerConfigKey: string;
     type: FunctionType | undefined;
@@ -72,7 +74,7 @@ export async function findActiveByEnvironment({
     limit: number;
     offset: number;
 }): Promise<{ rows: FunctionRow[]; total: number }> {
-    const catalog = catalogTools(await providerForConfig(environmentId, providerConfigKey), type);
+    const catalog = await catalogTools(accountUuid, await providerForConfig(environmentId, providerConfigKey), type);
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search, catalog });
     const [pageRows, countRow] = await Promise.all([
         db.knex.from(listing).select<FunctionRow[]>('*').orderBy(listingOrderBy).limit(limit).offset(offset),
@@ -85,15 +87,17 @@ export async function findActiveByEnvironment({
 }
 
 export async function findActiveActions({
+    accountUuid,
     environmentId,
     providerConfigKey,
     limit
 }: {
+    accountUuid: string;
     environmentId: number;
     providerConfigKey: string;
     limit: number;
 }): Promise<FunctionRow[]> {
-    const catalog = catalogTools(await providerForConfig(environmentId, providerConfigKey), 'action');
+    const catalog = await catalogTools(accountUuid, await providerForConfig(environmentId, providerConfigKey), 'action');
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type: 'action', search: undefined, catalog });
     const rows = await db.knex.from(listing).select<FunctionRow[]>('*').orderBy(listingOrderBy).limit(limit);
     hydrateCatalogJsonSchemas(rows, catalog);
@@ -144,9 +148,11 @@ export interface IntegrationFunctionRow {
  * one is rejected as the wrong function type rather than as an unknown tool.
  */
 export async function findIntegrationFunctions({
+    accountUuid,
     environmentId,
     providerConfigKeys
 }: {
+    accountUuid: string;
     environmentId: number;
     providerConfigKeys?: string[] | undefined;
 }): Promise<IntegrationFunctionRow[]> {
@@ -178,13 +184,13 @@ export async function findIntegrationFunctions({
         query.whereIn('nc.unique_key', providerConfigKeys);
     }
 
-    return appendCatalogActions(await query);
+    return appendCatalogActions(accountUuid, await query);
 }
 
 type DeployedFunctionRow = IntegrationFunctionRow;
 
-function appendCatalogActions(deployedRows: DeployedFunctionRow[]): IntegrationFunctionRow[] {
-    if (!flags.hasCatalogTools) {
+async function appendCatalogActions(accountUuid: string, deployedRows: DeployedFunctionRow[]): Promise<IntegrationFunctionRow[]> {
+    if (!(await getFlags().hasCatalogTools(accountUuid))) {
         return deployedRows.map(toFunctionRow);
     }
 
@@ -267,9 +273,11 @@ export interface ActionInputSchemaRow {
  * are returned only for unoccupied names.
  */
 export async function findActionInputSchemas({
+    accountUuid,
     environmentId,
     actions
 }: {
+    accountUuid: string;
     environmentId: number;
     actions: { integrationId: string; name: string }[];
 }): Promise<ActionInputSchemaRow[]> {
@@ -313,7 +321,7 @@ export async function findActionInputSchemas({
     }
 
     const missing = actions.filter((action) => !occupied.has(`${action.integrationId}:${action.name}`));
-    if (!flags.hasCatalogTools || missing.length === 0) {
+    if (!(await getFlags().hasCatalogTools(accountUuid)) || missing.length === 0) {
         return deployed;
     }
 
@@ -360,17 +368,19 @@ function activeSyncConfigBase({ environmentId, providerConfigKey }: { environmen
 }
 
 export async function findActiveByName({
+    accountUuid,
     environmentId,
     providerConfigKey,
     name,
     type
 }: {
+    accountUuid: string;
     environmentId: number;
     providerConfigKey: string;
     name: string;
     type: FunctionType | undefined;
 }): Promise<FunctionRow | undefined> {
-    const catalog = catalogTools(await providerForConfig(environmentId, providerConfigKey), type);
+    const catalog = await catalogTools(accountUuid, await providerForConfig(environmentId, providerConfigKey), type);
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search: undefined, catalog });
 
     const row = await db.knex.from(listing).select<FunctionRow[]>('*').where('name', name).orderBy(listingOrderBy).first();
