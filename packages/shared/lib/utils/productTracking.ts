@@ -76,7 +76,8 @@ function resolveContext(explicit: TrackingContextInput): TrackingContext | null 
         team,
         environment: explicit.environment ?? ambient?.environment,
         user: explicit.user ?? ambient?.user,
-        plan: explicit.plan ?? ambient?.plan
+        // `plan: null` opts out of the request's plan, which a plan change in the same request makes stale.
+        plan: explicit.plan === null ? null : (explicit.plan ?? ambient?.plan)
     };
 }
 

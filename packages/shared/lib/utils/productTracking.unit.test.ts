@@ -131,6 +131,20 @@ describe('track', () => {
     });
 });
 
+describe('plan: null', () => {
+    it("keeps the request's plan off the account group", () => {
+        withProductTrackingContext(
+            () => ({ team: { id: 48 }, plan: { name: 'free' } }),
+            () => {
+                productTracking.track({ name: 'account:billing:plan_changed', plan: { name: 'growth' } });
+                productTracking.track({ name: 'account:billing:plan_changed:v2', plan: null });
+            }
+        );
+
+        expect(groupIdentify.mock.calls.map(([payload]) => payload.properties)).toStrictEqual([{ plan: 'growth' }]);
+    });
+});
+
 describe('accountGroupProperties', () => {
     it('leaves out what it does not know', () => {
         expect(accountGroupProperties({ id: 1 }, null)).toStrictEqual({});
