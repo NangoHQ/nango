@@ -1,7 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
-import { getFlags } from '@nangohq/feature-flags';
 
 import { createAccount } from '../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../seeders/config.seeder.js';
@@ -10,9 +9,13 @@ import { getFunction, listActions, listFunctions } from './service.js';
 
 import type { DBEnvironment, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
 
-const { mockListCatalogTools, mockGetCatalogTool } = vi.hoisted(() => {
-    return { mockListCatalogTools: vi.fn(), mockGetCatalogTool: vi.fn() };
+const { mockListCatalogTools, mockGetCatalogTool, mockHasCatalogTools } = vi.hoisted(() => {
+    return { mockListCatalogTools: vi.fn(), mockGetCatalogTool: vi.fn(), mockHasCatalogTools: vi.fn() };
 });
+
+vi.mock('@nangohq/feature-flags', () => ({
+    getFlags: () => ({ hasCatalogTools: mockHasCatalogTools })
+}));
 
 vi.mock('../../catalog/actions.js', () => ({
     listCatalogTools: mockListCatalogTools,
@@ -115,6 +118,7 @@ describe('listFunctions with catalog actions', () => {
     });
 
     beforeEach(() => {
+        mockHasCatalogTools.mockResolvedValue(true);
         mockListCatalogTools.mockReturnValue([]);
         mockGetCatalogTool.mockReturnValue(undefined);
     });
@@ -248,6 +252,7 @@ describe('getFunction with catalog actions', () => {
     });
 
     beforeEach(() => {
+        mockHasCatalogTools.mockResolvedValue(true);
         mockListCatalogTools.mockReturnValue([]);
         mockGetCatalogTool.mockReturnValue(undefined);
     });
@@ -304,26 +309,22 @@ describe('getFunction with catalog actions', () => {
     });
 
     it('does not return a catalog action when tools-catalog is off', async () => {
-        const spy = vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(false);
-        try {
-            const { account, environment } = await seedIntegration();
-            mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
+        mockHasCatalogTools.mockResolvedValue(false);
+        const { account, environment } = await seedIntegration();
+        mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
 
-            const result = await getFunction({
-                accountUuid: account.uuid,
-                environmentId: environment.id,
-                providerConfigKey: 'github',
-                name: 'create-issue',
-                type: 'action'
-            });
+        const result = await getFunction({
+            accountUuid: account.uuid,
+            environmentId: environment.id,
+            providerConfigKey: 'github',
+            name: 'create-issue',
+            type: 'action'
+        });
 
-            expect(result.isOk()).toBe(true);
-            if (result.isErr()) {
-                return;
-            }
-            expect(result.value).toBeUndefined();
-        } finally {
-            spy.mockRestore();
+        expect(result.isOk()).toBe(true);
+        if (result.isErr()) {
+            return;
         }
+        expect(result.value).toBeUndefined();
     });
 });

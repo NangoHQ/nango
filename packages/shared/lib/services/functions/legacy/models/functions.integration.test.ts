@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
@@ -10,6 +10,10 @@ import { findActionInputSchemas, findIntegrationFunctions } from './functions.js
 
 import type { DBSyncConfig, IntegrationConfig, NangoConfigMetadata } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+
+vi.mock('@nangohq/feature-flags', () => ({
+    getFlags: () => ({ hasCatalogTools: vi.fn().mockResolvedValue(true) })
+}));
 
 async function insertSyncConfig({
     environmentId,

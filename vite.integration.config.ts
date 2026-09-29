@@ -53,10 +53,6 @@ const shared = {
         RUNNER_NODE_ID: '1',
         FLAG_API_RATE_LIMIT_ENABLED: 'false',
         FLAG_AUTH_ROLES_ENABLED: 'true',
-        // Env provider is rejected when NANGO_CLOUD is true, which would leave tools-catalog at its default.
-        NANGO_CLOUD: 'false',
-        NANGO_FLAG_PROVIDER: 'env',
-        NANGO_FEATURE_FLAG_TOOLS_CATALOG: 'true',
         NANGO_MANAGEMENT_MCP_SERVER_URL: 'https://mcp-test.nango.dev',
         // Used by allProxy.integration.test.ts denylist case; must be set before server modules load
         NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify(['denylisted-proxy-test.invalid']),
