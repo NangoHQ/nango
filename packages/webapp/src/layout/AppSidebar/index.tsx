@@ -19,7 +19,7 @@ import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
-import { apiPatchUser } from '@/hooks/useUser';
+import { usePatchUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { EnvironmentDropdown } from './EnvironmentDropdown';
@@ -42,6 +42,7 @@ export const AppSidebar: React.FC = () => {
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
+    const { mutateAsync: patchUser } = usePatchUser();
 
     const items = useMemo<SidebarItem[]>(() => {
         const gettingStarted = {
@@ -49,7 +50,7 @@ export const AppSidebar: React.FC = () => {
             url: `/${env}/getting-started`,
             icon: Sprout,
             onClose: async () => {
-                await apiPatchUser({
+                await patchUser({
                     gettingStartedClosed: true
                 });
                 void refetchMeta();
@@ -64,7 +65,7 @@ export const AppSidebar: React.FC = () => {
             { title: 'Metrics', url: `/${env}`, icon: BarChart3 },
             { title: 'Environment settings', url: `/${env}/environment-settings`, icon: Cog }
         ].filter((item) => item !== null);
-    }, [env, meta, refetchMeta, showGettingStarted]);
+    }, [env, meta, patchUser, refetchMeta, showGettingStarted]);
 
     // Only free accounts see the usage-limit alert. Paid accounts have no enforced caps, so it
     // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).

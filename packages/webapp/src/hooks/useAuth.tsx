@@ -3,6 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { APIError, apiFetch } from '@/utils/api';
 
 import type {
+    ConfirmEmail,
     GetEmailByExpiredToken,
     GetEmailByUuid,
     GetManagedEmailVerification,
@@ -10,6 +11,7 @@ import type {
     GetOnboardingHearAboutUs,
     PostForgotPassword,
     PostManagedEmailVerification,
+    PostManagedSignup,
     PostMFALoginVerification,
     PostOnboardingHearAboutUs,
     PostOnboardingRequestInvite,
@@ -164,6 +166,32 @@ export function useMFALoginVerification() {
         mutationFn: async (body) => {
             const res = await apiFetch('/api/v1/account/mfa/login/verify', { method: 'POST', body: JSON.stringify(body) });
             const json = (await res.json()) as PostMFALoginVerification['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        }
+    });
+}
+
+export function useManagedSignup() {
+    return useMutation<PostManagedSignup['Success'], APIError, PostManagedSignup['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch('/api/v1/account/managed/signup', { method: 'POST', body: JSON.stringify(body) });
+            const json = (await res.json()) as PostManagedSignup['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        }
+    });
+}
+
+export function useConfirmEmail() {
+    return useMutation<ConfirmEmail['Success'], APIError, ConfirmEmail['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch('/api/v1/account/verify/code', { method: 'POST', body: JSON.stringify(body) });
+            const json = (await res.json()) as ConfirmEmail['Reply'];
             if (!res.ok || 'error' in json) {
                 throw new APIError({ res, json });
             }

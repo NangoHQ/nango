@@ -1,4 +1,5 @@
-import { apiFetch } from '../../utils/api';
+import { useManagedSignup } from '../../hooks/useAuth';
+import { APIError } from '../../utils/api';
 
 import type { PostManagedSignup } from '@nangohq/types';
 
@@ -11,19 +12,16 @@ interface Props {
 }
 
 export default function GoogleButton({ text, setServerErrorMessage, token, returnTo }: Props) {
-    const googleLogin = async () => {
-        const res = await apiFetch(`/api/v1/account/managed/signup`, {
-            method: 'POST',
-            body: JSON.stringify({ provider: 'GoogleOAuth', token, returnTo: token ? undefined : returnTo })
-        });
+    const { mutateAsync: managedSignup } = useManagedSignup();
 
-        if (res.status === 200) {
-            const data = (await res.json()) as PostManagedSignup['Success'];
-            const { url } = data.data;
-            window.location.href = url;
-        } else if (res != null) {
-            const error = ((await res.json()) as PostManagedSignup['Errors']).error;
-            setServerErrorMessage(error.code);
+    const googleLogin = async () => {
+        try {
+            const { data } = await managedSignup({ provider: 'GoogleOAuth', token, returnTo: token ? undefined : returnTo });
+            window.location.href = data.url;
+        } catch (err) {
+            if (err instanceof APIError) {
+                setServerErrorMessage((err.json as PostManagedSignup['Errors']).error.code);
+            }
         }
     };
     return (
