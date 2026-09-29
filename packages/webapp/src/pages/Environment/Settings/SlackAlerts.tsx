@@ -4,11 +4,10 @@ import { Button } from '@nangohq/design-system';
 
 import { SlackIcon } from '@/assets/SlackIcon';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { useEnvironment, usePatchEnvironment } from '@/hooks/useEnvironment';
+import { useDisconnectSlack, useEnvironment, usePatchEnvironment, useSlackAdminAuth } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 import { useToast } from '../../../hooks/useToast';
-import { apiFetch } from '../../../utils/api';
 import { globalEnv } from '../../../utils/env';
 import { connectSlack } from '../../../utils/slack-connection';
 import SettingsContent from './components/SettingsContent';
@@ -18,6 +17,8 @@ export const SlackAlertsSettings: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data, refetch: refetchEnvironment } = useEnvironment(env);
     const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
+    const { mutateAsync: getSlackAdminAuth } = useSlackAdminAuth(env);
+    const { mutateAsync: disconnectSlack } = useDisconnectSlack(env);
     const environmentAndAccount = data?.environmentAndAccount;
     const [slackIsConnecting, setSlackIsConnecting] = useState(false);
     const { toast } = useToast();
@@ -43,24 +44,17 @@ export const SlackAlertsSettings: React.FC = () => {
         await connectSlack({
             accountUUID: environmentAndAccount.uuid,
             envId: environmentAndAccount.environment.id,
-            env,
             hostUrl: globalEnv.apiUrl,
+            getAdminAuth: (connectionId) => getSlackAdminAuth({ connectionId }),
+            enableNotifications: () => patchEnvironmentAsync({ slack_notifications: true }),
             onFinish,
             onFailure
         });
     };
 
     const slackDisconnect = async () => {
-        const res = await apiFetch(`/api/v1/connections/admin/account-${environmentAndAccount?.uuid}-${environmentAndAccount?.environment.id}?env=${env}`, {
-            method: 'DELETE'
-        });
-
-        if (res.status !== 204) {
-            toast({ title: 'There was a problem when disconnecting Slack', variant: 'error' });
-            return;
-        }
-
         try {
+            await disconnectSlack({ connectionId: `account-${environmentAndAccount.uuid}-${environmentAndAccount.environment.id}` });
             await patchEnvironmentAsync({ slack_notifications: false });
         } catch {
             toast({ title: 'There was a problem when disconnecting Slack', variant: 'error' });
