@@ -68,6 +68,7 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
     { group: 'Actions', items: [{ value: 'environment:actions:execute', label: 'execute' }] },
     { group: 'Proxy', items: [{ value: 'environment:proxy', label: 'proxy' }] },
     { group: 'Variables', items: [{ value: 'environment:variables:read', label: 'read' }] },
+    { group: 'Webhooks', items: [{ value: 'environment:webhook_signing_key:rotate', label: 'rotate signing key' }] },
     { group: 'MCP', items: [{ value: 'environment:mcp', label: 'mcp' }] }
 ];
 
