@@ -11780,8 +11780,6 @@ hitpay:
     auth_mode: OAUTH2
     authorization_url: https://dashboard.hit-pay.com/oauth/authorize
     token_url: https://api.hit-pay.com/v1/open/oauth/token
-    default_scopes:
-        - business:read
     authorization_params:
         response_type: code
     token_params:
@@ -11790,10 +11788,6 @@ hitpay:
         grant_type: refresh_token
     proxy:
         base_url: https://api.hit-pay.com
-        verification:
-            method: GET
-            endpoints:
-                - /v1/info
     docs: https://nango.dev/docs/api-integrations/hitpay
     setup_guide_url: https://nango.dev/docs/api-integrations/hitpay/how-to-register-your-own-hitpay-oauth-app
 
@@ -11804,8 +11798,6 @@ hitpay-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://dashboard.sandbox.hit-pay.com/oauth/authorize
     token_url: https://api.sandbox.hit-pay.com/v1/open/oauth/token
-    default_scopes:
-        - business:read
     authorization_params:
         response_type: code
     token_params:
@@ -11814,10 +11806,6 @@ hitpay-sandbox:
         grant_type: refresh_token
     proxy:
         base_url: https://api.sandbox.hit-pay.com
-        verification:
-            method: GET
-            endpoints:
-                - /v1/info
     docs: https://nango.dev/docs/api-integrations/hitpay-sandbox
     setup_guide_url: https://nango.dev/docs/api-integrations/hitpay-sandbox/how-to-register-your-own-hitpay-sandbox-oauth-app
 
