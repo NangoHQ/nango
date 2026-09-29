@@ -40,7 +40,12 @@ export const AgentPlaygroundShow: React.FC = () => {
         setTurns((prev) => [...prev, { prompt: text }]);
 
         try {
-            const { data } = await chat.mutateAsync({ sessionId, messages: history, prompt: text });
+            const { data } = await chat.mutateAsync({
+                sessionId,
+                messages: history,
+                prompt: text,
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            });
             setSessionId(data.sessionId);
             setHistory((prev) => [...prev, ...data.messages]);
             setTurns((prev) => [...prev.slice(0, -1), { prompt: text, reply: data.reply, toolCalls: data.toolCalls, usage: data.usage }]);
