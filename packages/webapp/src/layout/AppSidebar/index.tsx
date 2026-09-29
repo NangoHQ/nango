@@ -1,4 +1,4 @@
-import { ArrowUpRight, BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'lucide-react';
+import { ArrowUpRight, BarChart3, Blocks, Bot, Cog, List, Plug, Sprout, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -57,6 +57,7 @@ export const AppSidebar: React.FC = () => {
         };
 
         return [
+            meta?.agentPlayground ? { title: 'Agent Playground', url: `/${env}/agent-playground`, icon: Bot } : null,
             meta && showGettingStarted && !meta.gettingStartedClosed ? gettingStarted : null,
             { title: 'Integrations', url: `/${env}/integrations`, icon: Blocks },
             { title: 'Connections', url: `/${env}/connections`, icon: Plug },
