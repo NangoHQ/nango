@@ -12,6 +12,7 @@ import { Signin } from '@/pages/Account/Signin';
 import { Signup } from '@/pages/Account/Signup';
 import { VerifyEmail } from '@/pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from '@/pages/Account/VerifyEmailByExpiredToken';
+import { AgentPlaygroundShow } from '@/pages/AgentPlayground/Show';
 import { AccountApiKeysShow } from '@/pages/ApiKeys/Show';
 import { AuditShow } from '@/pages/Audit/Show';
 import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
@@ -356,6 +357,11 @@ export const router = sentryCreateBrowserRouter([
                     {
                         path: 'activity',
                         element: <RedirectWithEnv path="logs" />
+                    },
+                    {
+                        path: 'agent-playground',
+                        element: <AgentPlaygroundShow />,
+                        handle: { breadcrumb: 'Agent Playground' } as BreadcrumbHandle
                     },
                     {
                         path: 'environment-settings',
