@@ -18,6 +18,16 @@ export interface MintSigner {
     privateKey: string;
 }
 
+/** Signer from env. Empty or whitespace-only values are unset. */
+export function signerFromEnv(iss: InternalServiceIssuer, privateKey: string | undefined, kid: string | undefined): MintSigner | null {
+    const key = privateKey?.trim();
+    const keyId = kid?.trim();
+    if (!key || !keyId) {
+        return null;
+    }
+    return { iss, kid: keyId, privateKey: key };
+}
+
 export interface MintClaims {
     sub: string;
     aud: string;

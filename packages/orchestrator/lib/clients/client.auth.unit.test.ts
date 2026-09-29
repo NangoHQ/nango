@@ -118,6 +118,21 @@ describe('OrchestratorClient service tokens', () => {
         expect(tokenLifetimeSecs(token)).toBe(INTERNAL_SERVICE_TOKEN_TTL_SECS);
     });
 
+    it('reuses a jobs service token until shortly before it expires', async () => {
+        const jobs = ed25519Material();
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = jobs.pem;
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
+        const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ taskId: 'task-1', retryKey: 'retry-key-1' }), { status: 200 }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test', service: 'jobs' });
+        expect((await client.immediate(immediateProps())).isOk()).toBe(true);
+        expect((await client.immediate(immediateProps())).isOk()).toBe(true);
+        const first = authorizationHeader(fetchMock);
+        const secondInit = fetchMock.mock.calls[1]?.[1] as { headers?: Record<string, string> } | undefined;
+        expect(secondInit?.headers?.['Authorization']).toBe(first);
+    });
+
     it('sends a server service token when the server private key is set', async () => {
         const server = ed25519Material();
         mockEnvs.NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY = server.pem;

@@ -4,7 +4,8 @@ import {
     INTERNAL_SERVICE_ISSUER_SERVER,
     INTERNAL_SERVICE_TOKEN_TTL_SECS,
     internalRouteFetch,
-    mint
+    mint,
+    signerFromEnv
 } from '@nangohq/internal-auth';
 import { Err, getLogger, Ok, retry } from '@nangohq/utils';
 
@@ -44,17 +45,22 @@ import type {
     SchedulesReturn,
     VoidReturn
 } from './types.js';
+import type { MintSigner } from '@nangohq/internal-auth';
 import type { Endpoint } from '@nangohq/types';
 import type { Result, RetryConfig, Route } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
 const logger = getLogger('orchestrator.client');
 
+/** Re-mint this long before `exp` so an in-flight request does not present a token that expires mid-flight. */
+const SERVICE_TOKEN_REFRESH_SKEW_SECS = 60;
+
 export type OrchestratorCaller = 'server' | 'jobs';
 
 export class OrchestratorClient {
     private baseUrl: string;
     private service: OrchestratorCaller | undefined;
+    private cachedServiceToken: { token: string; refreshAtMs: number } | undefined;
 
     constructor({ baseUrl, service }: { baseUrl: string; service?: OrchestratorCaller }) {
         this.baseUrl = baseUrl;
@@ -62,27 +68,27 @@ export class OrchestratorClient {
     }
 
     private async authorizationToken(): Promise<string | null | undefined> {
+        let signer: MintSigner | null = null;
         if (this.service === 'jobs') {
-            const privateKey = envs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY?.trim();
-            const kid = envs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID?.trim();
-            if (privateKey && kid) {
-                return mint(
-                    { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid, privateKey },
-                    { sub: INTERNAL_SERVICE_ISSUER_JOBS, aud: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, ttlSecs: INTERNAL_SERVICE_TOKEN_TTL_SECS }
-                );
-            }
+            signer = signerFromEnv(INTERNAL_SERVICE_ISSUER_JOBS, envs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY, envs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID);
+        } else if (this.service === 'server') {
+            signer = signerFromEnv(INTERNAL_SERVICE_ISSUER_SERVER, envs.NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY, envs.NANGO_INTERNAL_AUTH_SERVER_KEY_ID);
         }
-        if (this.service === 'server') {
-            const privateKey = envs.NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY?.trim();
-            const kid = envs.NANGO_INTERNAL_AUTH_SERVER_KEY_ID?.trim();
-            if (privateKey && kid) {
-                return mint(
-                    { iss: INTERNAL_SERVICE_ISSUER_SERVER, kid, privateKey },
-                    { sub: INTERNAL_SERVICE_ISSUER_SERVER, aud: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, ttlSecs: INTERNAL_SERVICE_TOKEN_TTL_SECS }
-                );
-            }
+        return signer ? this.serviceToken(signer) : envs.NANGO_INTERNAL_AUTH_TOKEN;
+    }
+
+    private async serviceToken(signer: MintSigner): Promise<string> {
+        const now = Date.now();
+        if (this.cachedServiceToken && now < this.cachedServiceToken.refreshAtMs) {
+            return this.cachedServiceToken.token;
         }
-        return envs.NANGO_INTERNAL_AUTH_TOKEN;
+        const token = await mint(signer, {
+            sub: signer.iss,
+            aud: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR,
+            ttlSecs: INTERNAL_SERVICE_TOKEN_TTL_SECS
+        });
+        this.cachedServiceToken = { token, refreshAtMs: now + (INTERNAL_SERVICE_TOKEN_TTL_SECS - SERVICE_TOKEN_REFRESH_SKEW_SECS) * 1000 };
+        return token;
     }
 
     private routeFetch<E extends Endpoint<any>>(

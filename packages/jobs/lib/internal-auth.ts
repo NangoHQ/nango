@@ -10,6 +10,7 @@ import {
     INTERNAL_SERVICE_TOKEN_TTL_SECS,
     mint,
     nodeSubject,
+    signerFromEnv,
     taskSubject
 } from '@nangohq/internal-auth';
 
@@ -22,13 +23,8 @@ function taskExpiresInSecs(nangoProps?: Pick<NangoProps, 'lifecycle'>): number {
     return killAfterMs !== undefined ? Math.max(60, Math.ceil(killAfterMs / 1000) + 60) : INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS;
 }
 
-function jobsSigner(): { iss: typeof INTERNAL_SERVICE_ISSUER_JOBS; kid: string; privateKey: string } | null {
-    const privateKey = envs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY?.trim();
-    const kid = envs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID?.trim();
-    if (!privateKey || !kid) {
-        return null;
-    }
-    return { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid, privateKey };
+function jobsSigner() {
+    return signerFromEnv(INTERNAL_SERVICE_ISSUER_JOBS, envs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY, envs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID);
 }
 
 /**
