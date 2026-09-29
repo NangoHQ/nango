@@ -58,6 +58,7 @@ import { getFunctionDryrun } from './controllers/functions/dryrun/getDryrun.js';
 import { postFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDryrunResult.js';
 import { getFunction } from './controllers/functions/getFunction.js';
+import { getFunctions } from './controllers/functions/getFunctions.js';
 import { getFunctionInvocation } from './controllers/functions/getInvocation.js';
 import { postFunctionInvocation } from './controllers/functions/postInvocation.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
@@ -431,6 +432,8 @@ publicAPI.route('/scripts/config').get(envAuth, can('environment:integrations:li
 
 // Functions
 publicAPI.use('/functions', jsonContentTypeMiddleware);
+
+publicAPI.route('/functions').get(envAuth, can('environment:functions:list'), getFunctions);
 
 publicAPI.route('/functions/compile').post(functionCompileAuth, postFunctionCompile);
 publicAPI.route('/functions/dryruns').post(functionDryrunAuth, postFunctionDryrun);

@@ -91,6 +91,7 @@ import type {
     GetFunctionDeployment,
     GetFunctionDryrun,
     GetFunctionInvocation,
+    GetFunctions,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
@@ -219,6 +220,7 @@ export type PublicApiEndpoints =
     | PostPublicTriggerAction
     | PostFunctionCompile
     | GetFunction
+    | GetFunctions
     | PostFunctionDryrun
     | GetFunctionDryrun
     | PostFunctionDryrunResult
