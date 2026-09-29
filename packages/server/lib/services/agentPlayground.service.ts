@@ -23,6 +23,21 @@ const INSTRUCTIONS = `You are the Nango Agent Playground assistant. You act on t
 Use nango_tool_search to find a tool for what the user asks, then call it (directly, or through nango_execute).
 Report what the tools returned plainly and do not invent data. If no tool fits or a call fails, say so.`;
 
+// Rounded to the hour: the instructions are part of the model cache key.
+export function buildInstructions(timeZone: string, now: Date): string {
+    const local = new Intl.DateTimeFormat('en-GB', {
+        timeZone,
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        hourCycle: 'h23'
+    }).format(now);
+
+    return `${INSTRUCTIONS}\nThe user's time zone is ${timeZone}. It is currently ${local}:00 there.`;
+}
+
 export interface PlaygroundContext {
     account: DBTeam;
     environment: DBEnvironment;
@@ -135,12 +150,14 @@ export async function runTurn({
     sessionId,
     history,
     prompt,
+    timeZone,
     model
 }: {
     ctx: PlaygroundContext;
     sessionId: string | undefined;
     history: ModelMessage[];
     prompt: string;
+    timeZone: string;
     model?: (stats: ModelCallStats) => LanguageModel;
 }): Promise<Result<PlaygroundTurn, AgentPlaygroundError>> {
     const session = await getOrCreateSession(ctx, sessionId);
@@ -164,7 +181,7 @@ export async function runTurn({
         try {
             result = await generateText({
                 model: (model ?? createPlaygroundModel)(stats),
-                instructions: INSTRUCTIONS,
+                instructions: buildInstructions(timeZone, new Date()),
                 messages: [...history, userMessage],
                 tools: await buildMcpTools(client, toolCalls),
                 stopWhen: stepCountIs(MAX_STEPS)

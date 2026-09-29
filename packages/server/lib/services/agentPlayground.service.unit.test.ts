@@ -8,7 +8,7 @@ import { seeders } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
 import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionServer.js';
-import { buildMcpTools, pinNewestConnectionPerIntegration } from './agentPlayground.service.js';
+import { buildInstructions, buildMcpTools, pinNewestConnectionPerIntegration } from './agentPlayground.service.js';
 
 import type { AgentPlaygroundToolCall, AgentSession } from '@nangohq/types';
 
@@ -37,6 +37,18 @@ function session(): AgentSession {
         updatedAt: new Date()
     };
 }
+
+describe('buildInstructions', () => {
+    it("states the hour in the user's time zone", () => {
+        const instructions = buildInstructions('Europe/Prague', new Date('2026-09-29T15:42:10Z'));
+
+        expect(instructions).toContain("The user's time zone is Europe/Prague. It is currently Tuesday, 29 September 2026 at 17:00 there.");
+    });
+
+    it('is identical for two times within the same hour', () => {
+        expect(buildInstructions('UTC', new Date('2026-09-29T15:01:00Z'))).toBe(buildInstructions('UTC', new Date('2026-09-29T15:59:00Z')));
+    });
+});
 
 describe('pinNewestConnectionPerIntegration', () => {
     it('keeps the first connection listed for each integration', () => {

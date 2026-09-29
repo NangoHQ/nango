@@ -15,7 +15,11 @@ const bodySchema = z.strictObject({
     sessionId: z.uuid().optional(),
     // No system role: history comes from the browser and must not carry instructions.
     messages: z.array(z.union([userModelMessageSchema, assistantModelMessageSchema, toolModelMessageSchema])).max(200),
-    prompt: z.string().trim().min(1).max(10_000)
+    prompt: z.string().trim().min(1).max(10_000),
+    timeZone: z
+        .string()
+        .refine((tz) => Intl.supportedValuesOf('timeZone').includes(tz) || tz === 'UTC', { message: 'Unknown IANA time zone' })
+        .optional()
 });
 
 export const postAgentPlaygroundChat = asyncWrapperWithEnvironment<PostAgentPlaygroundChat>(async (req, res) => {
@@ -42,7 +46,8 @@ export const postAgentPlaygroundChat = asyncWrapperWithEnvironment<PostAgentPlay
         ctx: { account, environment, plan },
         sessionId: body.data.sessionId,
         history: body.data.messages,
-        prompt: body.data.prompt
+        prompt: body.data.prompt,
+        timeZone: body.data.timeZone ?? 'UTC'
     });
 
     if (turn.isErr()) {
