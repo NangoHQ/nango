@@ -1,8 +1,7 @@
 import tracer from 'dd-trace';
 import { z } from 'zod';
 
-import db from '@nangohq/database';
-import { functionConfigService, functionLifecycle } from '@nangohq/shared';
+import { functionLifecycle } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
@@ -34,29 +33,20 @@ export const patchFunction = asyncWrapperWithEnvironment<PatchFunction>(async (r
     }
 
     const { environment } = res.locals;
-    const result = await functionConfigService.search(db.knex, { environmentId: environment.id, filter: { uuid: params.data.uuid } });
-    if (result.isErr()) {
-        tracer.scope().active()?.setTag('error', result.error);
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch function' } });
-        return;
-    }
-
-    const fn = result.value[0];
-    if (!fn) {
-        res.status(404).send({ error: { code: 'not_found', message: `Function '${params.data.uuid}' was not found` } });
-        return;
-    }
-
     const orchestrator = getOrchestrator();
     const updated =
         body.data.state === 'enabled'
-            ? await functionLifecycle.enable({ environmentId: environment.id, config: fn, orchestrator })
-            : await functionLifecycle.disable({ environmentId: environment.id, config: fn, orchestrator });
+            ? await functionLifecycle.enable({ environmentId: environment.id, uuid: params.data.uuid, orchestrator })
+            : await functionLifecycle.disable({ environmentId: environment.id, uuid: params.data.uuid, orchestrator });
     if (updated.isErr()) {
         tracer.scope().active()?.setTag('error', updated.error);
         res.status(500).send({ error: { code: 'server_error', message: `Failed to ${body.data.state === 'enabled' ? 'enable' : 'disable'} function` } });
         return;
     }
+    if (!updated.value) {
+        res.status(404).send({ error: { code: 'not_found', message: `Function '${params.data.uuid}' was not found` } });
+        return;
+    }
 
-    res.status(200).send(toGetFunctionResponse({ ...fn, config: updated.value }));
+    res.status(200).send(toGetFunctionResponse(updated.value));
 });

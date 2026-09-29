@@ -21,10 +21,11 @@ export async function ensureForConnection(
     }
 ): Promise<Result<void>> {
     try {
-        const configs = await functionConfigService.search(trx, {
-            environmentId: connection.environment_id,
-            filter: { integrationKey: connection.provider_config_key, enabled: true }
-        });
+        const configs = await functionConfigService.search(
+            trx,
+            { environmentId: connection.environment_id, filter: { integrationKey: connection.provider_config_key, enabled: true } },
+            { forShare: true }
+        );
         if (configs.isErr()) {
             return Err(configs.error);
         }

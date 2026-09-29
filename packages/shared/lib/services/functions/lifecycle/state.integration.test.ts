@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
@@ -56,9 +58,9 @@ describe(enable, () => {
         const otherConnection = await createConnectionSeed({ env, provider: integrationKey });
         const scheduleFunctions = vi.fn<Orchestrator['scheduleFunctions']>().mockResolvedValue(Ok(undefined));
 
-        const updated = (await enable({ environmentId: env.id, config, orchestrator: { scheduleFunctions } })).unwrap();
+        const updated = (await enable({ environmentId: env.id, uuid: config.config.uuid, orchestrator: { scheduleFunctions } })).unwrap();
 
-        expect(updated.enabled).toBe(true);
+        expect(updated?.config.enabled).toBe(true);
         const instances = (await searchInstances(db.knex, { functionConfigIds: [config.config.id] })).unwrap();
         expect(instances).toEqual(
             expect.arrayContaining([
@@ -91,7 +93,7 @@ describe(enable, () => {
         await createConnectionSeed({ env, provider: integrationKey });
         const scheduleFunctions = vi.fn<Orchestrator['scheduleFunctions']>().mockResolvedValue(Ok(undefined));
 
-        (await enable({ environmentId: env.id, config, orchestrator: { scheduleFunctions } })).unwrap();
+        (await enable({ environmentId: env.id, uuid: config.config.uuid, orchestrator: { scheduleFunctions } })).unwrap();
 
         expect(scheduleFunctions).toHaveBeenCalledWith([expect.objectContaining({ autoStart: false })]);
     });
@@ -102,11 +104,21 @@ describe(enable, () => {
         await createConnectionSeed({ env, provider: integrationKey });
         const scheduleFunctions = vi.fn<Orchestrator['scheduleFunctions']>().mockResolvedValue(Ok(undefined));
 
-        const updated = (await enable({ environmentId: env.id, config, orchestrator: { scheduleFunctions } })).unwrap();
+        const updated = (await enable({ environmentId: env.id, uuid: config.config.uuid, orchestrator: { scheduleFunctions } })).unwrap();
 
-        expect(updated.enabled).toBe(true);
+        expect(updated?.config.enabled).toBe(true);
         expect(scheduleFunctions).not.toHaveBeenCalled();
         expect((await searchInstances(db.knex, { functionConfigIds: [config.config.id] })).unwrap()).toEqual([]);
+    });
+
+    it('returns undefined when the function does not exist', async () => {
+        const { env } = await seed();
+        const scheduleFunctions = vi.fn<Orchestrator['scheduleFunctions']>().mockResolvedValue(Ok(undefined));
+
+        const updated = (await enable({ environmentId: env.id, uuid: randomUUID(), orchestrator: { scheduleFunctions } })).unwrap();
+
+        expect(updated).toBeUndefined();
+        expect(scheduleFunctions).not.toHaveBeenCalled();
     });
 
     it('re-enables base instances but leaves disabled variants off and unscheduled', async () => {
@@ -122,7 +134,7 @@ describe(enable, () => {
         await db.knex('function_instances').whereIn('id', [base!.id, canary!.id]).update({ enabled: false });
         const scheduleFunctions = vi.fn<Orchestrator['scheduleFunctions']>().mockResolvedValue(Ok(undefined));
 
-        (await enable({ environmentId: env.id, config, orchestrator: { scheduleFunctions } })).unwrap();
+        (await enable({ environmentId: env.id, uuid: config.config.uuid, orchestrator: { scheduleFunctions } })).unwrap();
 
         const instances = (await searchInstances(db.knex, { functionConfigIds: [config.config.id] })).unwrap();
         expect(instances).toEqual(
@@ -144,7 +156,7 @@ describe(enable, () => {
         ).unwrap();
         const scheduleFunctions = vi.fn<Orchestrator['scheduleFunctions']>().mockResolvedValue(Ok(undefined));
 
-        (await enable({ environmentId: env.id, config, orchestrator: { scheduleFunctions } })).unwrap();
+        (await enable({ environmentId: env.id, uuid: config.config.uuid, orchestrator: { scheduleFunctions } })).unwrap();
 
         const instances = (await searchInstances(db.knex, { functionConfigIds: [config.config.id] })).unwrap();
         expect(instances.map((instance) => instance.id)).toEqual(existing.map((instance) => instance.id));
@@ -163,9 +175,9 @@ describe(disable, () => {
         ).unwrap();
         const deleteFunctionSchedules = vi.fn<Orchestrator['deleteFunctionSchedules']>().mockResolvedValue(Ok(undefined));
 
-        const updated = (await disable({ environmentId: env.id, config, orchestrator: { deleteFunctionSchedules } })).unwrap();
+        const updated = (await disable({ environmentId: env.id, uuid: config.config.uuid, orchestrator: { deleteFunctionSchedules } })).unwrap();
 
-        expect(updated.enabled).toBe(false);
+        expect(updated?.config.enabled).toBe(false);
         expect(deleteFunctionSchedules).toHaveBeenCalledWith({ environmentId: env.id, instanceIds: instances.map((instance) => instance.id) });
         const after = (await searchInstances(db.knex, { functionConfigIds: [config.config.id] })).unwrap();
         expect(after).toEqual(
@@ -181,9 +193,19 @@ describe(disable, () => {
         await db.knex('function_configs').where({ id: config.config.id }).update({ enabled: false });
         const deleteFunctionSchedules = vi.fn<Orchestrator['deleteFunctionSchedules']>().mockResolvedValue(Ok(undefined));
 
-        const updated = (await disable({ environmentId: env.id, config, orchestrator: { deleteFunctionSchedules } })).unwrap();
+        const updated = (await disable({ environmentId: env.id, uuid: config.config.uuid, orchestrator: { deleteFunctionSchedules } })).unwrap();
 
-        expect(updated.enabled).toBe(false);
+        expect(updated?.config.enabled).toBe(false);
+        expect(deleteFunctionSchedules).not.toHaveBeenCalled();
+    });
+
+    it('returns undefined when the function does not exist', async () => {
+        const { env } = await seed();
+        const deleteFunctionSchedules = vi.fn<Orchestrator['deleteFunctionSchedules']>().mockResolvedValue(Ok(undefined));
+
+        const updated = (await disable({ environmentId: env.id, uuid: randomUUID(), orchestrator: { deleteFunctionSchedules } })).unwrap();
+
+        expect(updated).toBeUndefined();
         expect(deleteFunctionSchedules).not.toHaveBeenCalled();
     });
 });

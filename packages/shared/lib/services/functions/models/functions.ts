@@ -187,6 +187,7 @@ type FunctionSearchFilter = {
 export interface FunctionSearchOptions {
     limit?: number | undefined;
     afterId?: number | undefined;
+    forShare?: boolean | undefined;
 }
 
 export async function search(
@@ -198,7 +199,7 @@ export async function search(
         environmentId: number;
         filter?: FunctionSearchFilter | undefined;
     },
-    { limit, afterId }: FunctionSearchOptions = {}
+    { limit, afterId, forShare }: FunctionSearchOptions = {}
 ): Promise<Result<CurrentFunctionConfig[]>> {
     try {
         const query = trx
@@ -276,6 +277,9 @@ export async function search(
         }
         if (limit !== undefined) {
             query.limit(limit);
+        }
+        if (forShare) {
+            query.forShare('config');
         }
 
         const rows = await query;
@@ -376,7 +380,7 @@ type FunctionConfigUpdate = { environmentId: number; fields: Partial<Pick<DBFunc
     | { uuid: string; id?: never }
 );
 
-export async function update(trx: Knex, { environmentId, fields, ...identity }: FunctionConfigUpdate): Promise<Result<DBFunctionConfig>> {
+export async function update(trx: Knex, { environmentId, fields, ...identity }: FunctionConfigUpdate): Promise<Result<DBFunctionConfig | undefined>> {
     try {
         const [updated] = await trx
             .from<DBFunctionConfig>(CONFIGS_TABLE)
@@ -384,9 +388,6 @@ export async function update(trx: Knex, { environmentId, fields, ...identity }: 
             .whereNull('deleted_at')
             .update({ ...fields, updated_at: new Date() })
             .returning<DBFunctionConfig[]>('*');
-        if (!updated) {
-            return Err(new Error('failed_to_update_function_config', { cause: { environmentId, identity, fields } }));
-        }
         return Ok(updated);
     } catch (err) {
         return Err(new Error('failed_to_update_function_config', { cause: err }));
