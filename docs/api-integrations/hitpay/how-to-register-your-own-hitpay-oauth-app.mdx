@@ -11,7 +11,7 @@ This guide shows you how to register your own app with HitPay to obtain your OAu
     Sign in to the [HitPay dashboard](https://dashboard.hit-pay.com) with an account that is an **Owner** or **Admin** of the business that will own the app.
 
     <Note>
-      To test against HitPay's sandbox, repeat this guide in the [HitPay sandbox dashboard](https://dashboard.sandbox.hit-pay.com). Sandbox apps have their own client ID and secret, so create a separate Nango integration for them and select `sandbox.hit-pay.com` as the environment when connecting.
+      To test against HitPay's sandbox, repeat this guide in the [HitPay sandbox dashboard](https://dashboard.sandbox.hit-pay.com). Sandbox apps have their own client ID and secret, so create a separate Nango integration for them and select `sandbox.hit-pay.com` as the environment when connecting. The same applies to staging: use the [HitPay staging dashboard](https://dashboard.staging.hit-pay.com) and select `staging.hit-pay.com`.
     </Note>
   </Step>
   <Step title="Create a new app">
@@ -31,6 +31,23 @@ This guide shows you how to register your own app with HitPay to obtain your OAu
     <Note>
       New apps can use `business:read`, `payments`, and `commerce` (and their children). HitPay silently drops any other scope the app hasn't been granted, so request access to `customer` scopes from HitPay before relying on them.
     </Note>
+  </Step>
+  <Step title="Pre-set the environment (recommended)">
+    Your credentials only work with one HitPay environment, so set it when you [create the connect session](/reference/backend/http-api/connect/sessions/create) instead of asking users to pick it. The Connect UI then hides the **Environment** field:
+
+    ```json
+    {
+        "integrations_config_defaults": {
+            "<INTEGRATION-ID>": {
+                "connection_config": {
+                    "environment": "hit-pay.com"
+                }
+            }
+        }
+    }
+    ```
+
+    Use `hit-pay.com` for production, `sandbox.hit-pay.com` for sandbox, or `staging.hit-pay.com` for staging, matching the credentials of `<INTEGRATION-ID>`.
   </Step>
   <Step title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
