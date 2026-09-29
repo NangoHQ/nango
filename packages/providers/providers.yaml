@@ -8111,6 +8111,93 @@ epc-gov-uk:
             example: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2'
             doc_section: '#step-2-finding-your-api-key'
 
+eclinicalworks:
+    display_name: eClinicalWorks (FHIR)
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.oauthServerUrl}/oauth/oauth2/token
+    token_params:
+        grant_type: client_credentials
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+        scope: ${credentials.scope}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    assertion:
+        type: jwt
+        singleUse: true
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 300
+        header:
+            alg: RS384
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://${connectionConfig.oauthServerUrl}/oauth/oauth2/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.fhirBaseUrl}
+        headers:
+            accept: application/fhir+json
+    docs: https://nango.dev/docs/api-integrations/eclinicalworks
+    setup_guide_url: https://nango.dev/docs/api-integrations/eclinicalworks/how-to-register-your-own-eclinicalworks-app
+    docs_connect: https://nango.dev/docs/api-integrations/eclinicalworks/connect
+    connection_config:
+        fhirBaseUrl:
+            type: string
+            prefix: https://
+            title: FHIR Base URL
+            description: This practice's eClinicalWorks FHIR R4 base URL.
+            example: fhir4.eclinicalworks.com/fhir/r4/SANDBOX
+            doc_section: '#step-1-finding-your-fhir-base-url'
+            order: 1
+        oauthServerUrl:
+            type: string
+            prefix: https://
+            title: OAuth Server URL
+            description: This practice's eClinicalWorks OAuth issuer URL.
+            example: oauthserver.eclinicalworks.com
+            doc_section: '#step-2-finding-your-oauth-server-url'
+            order: 2
+    integration_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your registered application's Client ID from the eClinicalWorks Dev Portal.
+            order: 1
+        keyId:
+            type: string
+            title: Key ID
+            description: The kid of the RSA key registered in your hosted JWKS file.
+            order: 2
+        privateKey:
+            type: string
+            title: Private Key
+            description: The RSA private key (PEM) matching your published JWKS public key. Signed with RS384.
+            secret: true
+            order: 3
+        scope:
+            type: string
+            title: Scope
+            description: >-
+                The SMART Backend Services scope(s) granted to this Client ID (e.g. system/Patient.read).
+                Include system/Group.read only for bulk Group/$export requests, and omit it for single-patient backend access.
+            order: 4
+    credentials:
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 epic:
     display_name: Epic (FHIR)
     categories:

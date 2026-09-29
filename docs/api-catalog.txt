@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1028
+Provider count: 1029
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -277,6 +277,7 @@ URL patterns:
 | `easypost` | EasyPost | BASIC | [docs](https://nango.dev/docs/api-integrations/easypost.md) | [connect](https://nango.dev/docs/api-integrations/easypost/connect.md) |  | e-commerce |
 | `ebay` | eBay | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ebay.md) |  |  | e-commerce |
 | `ebay-sandbox` | eBay (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ebay-sandbox.md) |  |  | e-commerce |
+| `eclinicalworks` | eClinicalWorks (FHIR) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/eclinicalworks.md) | [connect](https://nango.dev/docs/api-integrations/eclinicalworks/connect.md) | [setup](https://nango.dev/docs/api-integrations/eclinicalworks/how-to-register-your-own-eclinicalworks-app.md) | other |
 | `ecu360` | ECU360 (Test) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/ecu360.md) | [connect](https://nango.dev/docs/api-integrations/ecu360/connect.md) |  | other |
 | `ecu360-production` | ECU360 (Production) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/ecu360-production.md) | [connect](https://nango.dev/docs/api-integrations/ecu360-production/connect.md) |  | other |
 | `egnyte` | Egnyte | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/egnyte.md) |  |  | storage |

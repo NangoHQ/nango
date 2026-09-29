@@ -1277,6 +1277,7 @@
               "api-integrations/easypost",
               "integrations/all/ebay",
               "integrations/all/ebay-sandbox",
+              "api-integrations/eclinicalworks",
               "api-integrations/ecu360",
               "api-integrations/ecu360-production",
               "integrations/all/egnyte",
