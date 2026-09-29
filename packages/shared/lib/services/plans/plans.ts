@@ -2,7 +2,7 @@ import ms from 'ms';
 
 import { Err, flagHasPlan, Ok } from '@nangohq/utils';
 
-import { canHaveGrowthAddon, freePlan, GROWTH_FEATURE_FLAGS, isPotentialDowngrade, plansList } from './definitions.js';
+import { canHaveGrowthAddon, freePlan, GROWTH_ADDON_ENVIRONMENTS_MAX, GROWTH_FEATURE_FLAGS, isPotentialDowngrade, plansList } from './definitions.js';
 
 import type { DBEnvironment, DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -207,6 +207,10 @@ export function getGrowthAddonFlags(definition: PlanDefinition, hasGrowthFeature
     return flags;
 }
 
+export function getGrowthAddonEnvironmentsMax(definition: PlanDefinition, hasGrowthFeatures: boolean, currentEnvironmentsMax: number): number {
+    return hasGrowthFeatures ? Math.max(currentEnvironmentsMax, GROWTH_ADDON_ENVIRONMENTS_MAX) : (definition.flags.environments_max as number);
+}
+
 export async function setGrowthAddon(
     db: Knex,
     team: DBTeam,
@@ -227,7 +231,8 @@ export async function setGrowthAddon(
         has_growth_features: hasGrowthFeatures,
         growth_features_starts_at: null,
         growth_features_ends_at: hasGrowthFeatures ? endsAt : null,
-        ...getGrowthAddonFlags(definition, hasGrowthFeatures)
+        ...getGrowthAddonFlags(definition, hasGrowthFeatures),
+        environments_max: getGrowthAddonEnvironmentsMax(definition, hasGrowthFeatures, plan.value.environments_max)
     });
     if (updated.isErr()) {
         return Err(new Error('Failed to update growth add-on', { cause: updated.error }));
@@ -308,7 +313,11 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
 
     if (canHaveGrowthAddon(newPlanDefinition.code)) {
         // Force-update growth feature flags on top of merged plan flags, based on whether the add-on is enabled or not.
-        flags = { ...flags, ...getGrowthAddonFlags(newPlanDefinition, hasGrowthFeatures) };
+        flags = {
+            ...flags,
+            ...getGrowthAddonFlags(newPlanDefinition, hasGrowthFeatures),
+            environments_max: getGrowthAddonEnvironmentsMax(newPlanDefinition, hasGrowthFeatures, flags.environments_max ?? 0)
+        };
     }
 
     return flags;

@@ -239,6 +239,7 @@ export type FunctionInvocationType = 'wait' | 'no_wait';
 export interface GetFunctionResponse {
     uuid: string;
     integration_id: string;
+    provider: string;
     name: string;
     description: string;
     state: 'enabled' | 'disabled';
@@ -254,6 +255,26 @@ export type GetFunction = ApiEndpoint<{
     Path: '/functions/:uuid';
     Params: { uuid: string };
     Success: GetFunctionResponse;
+}>;
+
+export interface GetFunctionsQuery {
+    integration?: string | undefined;
+    provider?: string | undefined;
+    state?: 'enabled' | 'disabled' | undefined;
+    'trigger.kind'?: FunctionTriggerDefinition['kind'] | undefined;
+    cursor?: string | undefined;
+    limit?: number | undefined;
+}
+
+export type GetFunctions = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/functions';
+    Querystring: GetFunctionsQuery;
+    Success: {
+        data: GetFunctionResponse[];
+        next_cursor: string | null;
+    };
 }>;
 
 export type FunctionInvocationErrorCode =

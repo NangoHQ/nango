@@ -2,7 +2,7 @@ import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
-import { getGrowthAddonFlags, getPlanDefinition, PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON, plansList } from '@nangohq/shared';
+import { getGrowthAddonFlags, getPlanDefinition, GROWTH_ADDON_ENVIRONMENTS_MAX, PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON, plansList } from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -129,6 +129,9 @@ async function updateGrowthAddonState(date: Date, operation: GrowthAddonOperatio
     const accountIds = await Promise.all(
         getPlansToFilterBy(operation).map(async (plan) => {
             const addonFlags = getGrowthAddonFlags(plan, hasGrowthFeatures);
+            const environmentsMax = hasGrowthFeatures
+                ? db.knex.raw('GREATEST(environments_max, ?)', [GROWTH_ADDON_ENVIRONMENTS_MAX])
+                : (plan.flags.environments_max as number);
 
             const updated = await db.knex
                 .from<DBPlan>('plans')
@@ -139,6 +142,7 @@ async function updateGrowthAddonState(date: Date, operation: GrowthAddonOperatio
                     has_growth_features: hasGrowthFeatures,
                     [schedulingColumn]: null,
                     ...addonFlags,
+                    environments_max: environmentsMax,
                     updated_at: db.knex.fn.now()
                 })
                 .returning('account_id');

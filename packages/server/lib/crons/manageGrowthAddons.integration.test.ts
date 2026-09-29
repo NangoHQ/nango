@@ -71,14 +71,25 @@ describe('manageGrowthAddonsCron exec', () => {
                 has_rbac: true,
                 can_override_docs_connect_url: true,
                 can_customize_connect_ui_theme: true,
-                can_disable_connect_ui_watermark: true
+                can_disable_connect_ui_watermark: true,
+                environments_max: 10
             });
         }
     });
 
+    it('keeps a hand-granted environment cap above the add-on one when enabling', async () => {
+        const scheduledAt = new Date('2026-10-01T00:00:00.000Z');
+        const activation = await seedPlan({ name: 'pay-as-you-go', has_growth_features: false, growth_features_starts_at: scheduledAt, environments_max: 50 });
+
+        await exec(scheduledAt);
+
+        const updated = (await getPlan(db.knex, { accountId: activation.account_id })).unwrap();
+        expect(updated).toMatchObject({ has_growth_features: true, environments_max: 50 });
+    });
+
     it('disables the growth add-on at its scheduled time', async () => {
         const scheduledAt = new Date('2026-10-01T00:00:00.000Z');
-        const deactivation = await seedPlan({ name: 'pay-as-you-go', has_growth_features: true, growth_features_ends_at: scheduledAt });
+        const deactivation = await seedPlan({ name: 'pay-as-you-go', has_growth_features: true, growth_features_ends_at: scheduledAt, environments_max: 10 });
 
         await exec(scheduledAt);
 
@@ -90,7 +101,8 @@ describe('manageGrowthAddonsCron exec', () => {
             has_rbac: false,
             can_override_docs_connect_url: false,
             can_customize_connect_ui_theme: false,
-            can_disable_connect_ui_watermark: false
+            can_disable_connect_ui_watermark: false,
+            environments_max: 3
         });
     });
 });

@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1028
+Provider count: 1030
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -77,6 +77,7 @@ URL patterns:
 | `asana-scim` | Asana (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/asana-scim.md) | [connect](https://nango.dev/docs/integrations/all/asana-scim/connect.md) |  | productivity, ticketing |
 | `ashby` | Ashby | BASIC | [docs](https://nango.dev/docs/integrations/all/ashby.md) | [connect](https://nango.dev/docs/integrations/all/ashby/connect.md) |  | ats, popular |
 | `aspire` | Aspire | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/aspire.md) | [connect](https://nango.dev/docs/api-integrations/aspire/connect.md) |  | erp |
+| `astro-mcp` | Astro (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/astro-mcp.md) |  |  | dev-tools, mcp |
 | `athenahealth` | athenahealth | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/athenahealth.md) | [connect](https://nango.dev/docs/api-integrations/athenahealth/connect.md) |  | other |
 | `atlas-so` | Atlas.so | API_KEY | [docs](https://nango.dev/docs/integrations/all/atlas-so.md) |  |  | support |
 | `atlassian` | Atlassian | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/atlassian.md) |  |  | dev-tools |
@@ -276,6 +277,7 @@ URL patterns:
 | `easypost` | EasyPost | BASIC | [docs](https://nango.dev/docs/api-integrations/easypost.md) | [connect](https://nango.dev/docs/api-integrations/easypost/connect.md) |  | e-commerce |
 | `ebay` | eBay | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ebay.md) |  |  | e-commerce |
 | `ebay-sandbox` | eBay (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ebay-sandbox.md) |  |  | e-commerce |
+| `eclinicalworks` | eClinicalWorks (FHIR) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/eclinicalworks.md) | [connect](https://nango.dev/docs/api-integrations/eclinicalworks/connect.md) | [setup](https://nango.dev/docs/api-integrations/eclinicalworks/how-to-register-your-own-eclinicalworks-app.md) | other |
 | `ecu360` | ECU360 (Test) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/ecu360.md) | [connect](https://nango.dev/docs/api-integrations/ecu360/connect.md) |  | other |
 | `ecu360-production` | ECU360 (Production) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/ecu360-production.md) | [connect](https://nango.dev/docs/api-integrations/ecu360-production/connect.md) |  | other |
 | `egnyte` | Egnyte | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/egnyte.md) |  |  | storage |
@@ -978,7 +980,7 @@ URL patterns:
 | `wave-accounting` | Wave Accounting | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wave-accounting.md) |  |  | accounting |
 | `wealthbox` | Wealthbox | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wealthbox.md) |  |  | crm |
 | `webex` | Webex | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/webex.md) |  |  | communication |
-| `webflow` | Webflow | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/webflow.md) |  |  | dev-tools, design, cms |
+| `webflow` | Webflow | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/webflow.md) |  | [setup](https://nango.dev/docs/api-integrations/webflow/how-to-register-your-own-webflow-api-oauth-app.md) | dev-tools, design, cms |
 | `webinarjam` | WebinarJam | API_KEY | [docs](https://nango.dev/docs/api-integrations/webinarjam.md) | [connect](https://nango.dev/docs/api-integrations/webinarjam/connect.md) |  | marketing |
 | `wejam` | WeJam AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/wejam.md) | [connect](https://nango.dev/docs/api-integrations/wejam/connect.md) |  | productivity |
 | `whatsapp-business` | WhatsApp Business | API_KEY | [docs](https://nango.dev/docs/api-integrations/whatsapp-business.md) |  | [setup](https://nango.dev/docs/api-integrations/whatsapp-business/how-to-register-your-own-whatsapp-business-api-oauth-app.md) | communication, marketing |

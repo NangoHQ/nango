@@ -4,7 +4,7 @@ import { Readable } from 'node:stream';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
-import { getGlobalWebhookReceiveUrl, ProxyRequest, remoteFileService, seeders, syncManager } from '@nangohq/shared';
+import { getGlobalWebhookReceiveUrl, productTracking, ProxyRequest, remoteFileService, seeders, syncManager } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
@@ -150,6 +150,68 @@ describe('POST /mcp management server', () => {
 
     beforeEach(() => {
         auditSpy.mockClear();
+    });
+
+    it('captures management MCP usage through the HTTP endpoint', async () => {
+        const originalClient = productTracking.client;
+        const capture = vi.fn(
+            (_event: { event: string; distinctId: string; groups?: Record<string, string>; properties: Record<string, unknown> }) => undefined
+        );
+        productTracking.client = { capture, groupIdentify: vi.fn() } as unknown as typeof productTracking.client;
+
+        try {
+            const { secret, account, env } = await createKeyWithScopes(['environment:mcp']);
+            const response = await mcpPost({
+                token: secret,
+                body: {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'tools/call',
+                    params: { name: 'providers_get', arguments: { provider: 'github' } }
+                }
+            });
+
+            expect(response.status).toBe(200);
+            expect(response.json.result.structuredContent).toMatchObject({ name: 'github' });
+            await vi.waitFor(() => expect(capture).toHaveBeenCalledWith(expect.objectContaining({ event: '$mcp_tool_call' })));
+            const event = capture.mock.calls.find(([call]) => call.event === '$mcp_tool_call')?.[0];
+            expect(event?.distinctId).toBe(`account-${account.id}`);
+            expect(event?.groups).toStrictEqual({ company: String(account.id) });
+            expect(event?.properties).toMatchObject({
+                mcp_type: 'management',
+                mcp_auth_type: 'apiKey',
+                surface: 'server',
+                is_production: env.is_production,
+                $process_person_profile: false,
+                $mcp_server_name: 'Nango Management MCP server',
+                $mcp_tool_name: 'providers_get',
+                $mcp_is_error: false
+            });
+            expect(event?.properties).not.toHaveProperty('$mcp_parameters');
+            expect(event?.properties).not.toHaveProperty('$mcp_response');
+
+            const failedResponse = await mcpPost({
+                token: secret,
+                body: {
+                    jsonrpc: '2.0',
+                    id: 2,
+                    method: 'tools/call',
+                    params: { name: 'providers_get', arguments: { provider: 'customer-secret-provider' } }
+                }
+            });
+            expect(failedResponse.status).toBe(200);
+            expect(failedResponse.json.result.isError).toBe(true);
+            await vi.waitFor(() =>
+                expect(capture).toHaveBeenCalledWith(expect.objectContaining({ properties: expect.objectContaining({ $mcp_is_error: true }) }))
+            );
+            const failedEvent = capture.mock.calls.find(([call]) => call.event === '$mcp_tool_call' && call.properties['$mcp_is_error'] === true)?.[0];
+            expect(failedEvent?.properties).not.toHaveProperty('$mcp_parameters');
+            expect(failedEvent?.properties).not.toHaveProperty('$mcp_response');
+            expect(failedEvent?.properties).not.toHaveProperty('$mcp_error_message');
+            expect(JSON.stringify(capture.mock.calls)).not.toContain('customer-secret-provider');
+        } finally {
+            productTracking.client = originalClient;
+        }
     });
 
     it('lists all tools with environment:* scope', async () => {

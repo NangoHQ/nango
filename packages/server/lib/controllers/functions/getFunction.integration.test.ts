@@ -65,15 +65,18 @@ describe(`GET ${route}`, () => {
 
     it('returns a function by UUID', async () => {
         const { apiKey, env } = await seeders.seedAccountEnvAndUser();
-        await seeders.createConfigSeed(env, 'github', 'github');
-        const [fn] = (await functionConfigService.upsert(db.knex, [{ environmentId: env.id, integrationId: 'github', name: 'fetchIssue', version }])).unwrap();
+        await seeders.createConfigSeed(env, 'github-123', 'github');
+        const [fn] = (
+            await functionConfigService.upsert(db.knex, [{ environmentId: env.id, integrationId: 'github-123', name: 'fetchIssue', version }])
+        ).unwrap();
         expect(fn).toBeDefined();
 
         const response = await api.fetch(route, { method: 'GET', token: apiKey.secret, params: { uuid: fn!.config.uuid } });
         expect(response.res.status).toBe(200);
         expect(response.json).toMatchObject({
             uuid: fn!.config.uuid,
-            integration_id: 'github',
+            integration_id: 'github-123',
+            provider: 'github',
             name: 'fetchIssue',
             description: 'Fetch an issue',
             state: 'enabled',
@@ -94,9 +97,9 @@ describe(`GET ${route}`, () => {
 
     it('returns 404 if the function belongs to another environment', async () => {
         const { env: otherEnv } = await seeders.seedAccountEnvAndUser();
-        await seeders.createConfigSeed(otherEnv, 'github', 'github');
+        await seeders.createConfigSeed(otherEnv, 'github-123', 'github');
         const [fn] = (
-            await functionConfigService.upsert(db.knex, [{ environmentId: otherEnv.id, integrationId: 'github', name: 'fetchIssue', version }])
+            await functionConfigService.upsert(db.knex, [{ environmentId: otherEnv.id, integrationId: 'github-123', name: 'fetchIssue', version }])
         ).unwrap();
         expect(fn).toBeDefined();
 

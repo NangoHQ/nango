@@ -173,13 +173,20 @@ type SearchFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> 
     Prefixed<DBFunctionConfigVersion, typeof VERSION_PREFIX> &
     Prefixed<FunctionIntegration, typeof INTEGRATION_PREFIX>;
 
-// `id` and `uuid` fields are mutually exclusive. Only one of them can be provided at a time.
-type FunctionSearchFilter = ({ id?: number | undefined; uuid?: undefined } | { uuid?: string | undefined; id?: undefined }) & {
-    integrationKey?: string | undefined;
-    name?: string | undefined;
-    enabled?: boolean | undefined;
-    trigger?: { kind: 'http'; hasSubscriptions: boolean } | { kind: 'event'; event: OnEventType } | undefined;
-};
+type FunctionSearchFilter =
+    // `id` and `uuid` fields are mutually exclusive. Only one of them can be provided at a time.
+    ({ id?: number | undefined; uuid?: never } | { uuid?: string | undefined; id?: never }) & {
+        integrationKey?: string | undefined;
+        provider?: string | undefined;
+        name?: string | undefined;
+        enabled?: boolean | undefined;
+        trigger?: { kind: 'http'; hasSubscriptions?: boolean } | { kind: 'event'; event?: OnEventType } | { kind: 'schedule' } | { kind: 'none' };
+    };
+
+export interface FunctionSearchOptions {
+    limit?: number | undefined;
+    afterId?: number | undefined;
+}
 
 export async function search(
     trx: Knex,
@@ -189,7 +196,8 @@ export async function search(
     }: {
         environmentId: number;
         filter?: FunctionSearchFilter | undefined;
-    }
+    },
+    { limit, afterId }: FunctionSearchOptions = {}
 ): Promise<Result<CurrentFunctionConfig[]>> {
     try {
         const query = trx
@@ -211,6 +219,9 @@ export async function search(
         if (filter?.integrationKey !== undefined) {
             query.where('integration.unique_key', filter.integrationKey);
         }
+        if (filter?.provider !== undefined) {
+            query.where('integration.provider', filter.provider);
+        }
         if (filter?.uuid !== undefined) {
             query.where('config.uuid', filter.uuid);
         }
@@ -227,19 +238,43 @@ export async function search(
             switch (filter.trigger.kind) {
                 case 'http': {
                     query.whereRaw("version.trigger->>'kind' = 'http'");
-                    const subscriptionCount = `CASE
-                        WHEN jsonb_typeof(version.trigger->'subscriptions') = 'array'
-                        THEN jsonb_array_length(version.trigger->'subscriptions')
-                        ELSE 0
-                    END`;
-                    query.whereRaw(`${subscriptionCount} ${filter.trigger.hasSubscriptions ? '>' : '='} 0`);
+                    if (filter.trigger.hasSubscriptions !== undefined) {
+                        const subscriptionCount = `CASE
+                            WHEN jsonb_typeof(version.trigger->'subscriptions') = 'array'
+                            THEN jsonb_array_length(version.trigger->'subscriptions')
+                            ELSE 0
+                        END`;
+                        query.whereRaw(`${subscriptionCount} ${filter.trigger.hasSubscriptions ? '>' : '='} 0`);
+                    }
                     break;
                 }
                 case 'event':
                     query.whereRaw("version.trigger->>'kind' = 'event'");
-                    query.whereRaw("version.trigger->'events' @> ?::jsonb", [JSON.stringify([filter.trigger.event])]);
+                    if (filter.trigger.event !== undefined) {
+                        query.whereRaw("version.trigger->'events' @> ?::jsonb", [JSON.stringify([filter.trigger.event])]);
+                    }
                     break;
+                case 'schedule':
+                    query.whereRaw("version.trigger->>'kind' = 'schedule'");
+                    break;
+                case 'none':
+                    query.whereRaw("version.trigger->>'kind' = 'none'");
+                    break;
+                default: {
+                    const exhaustiveCheck: never = filter.trigger;
+                    throw new Error('unsupported_trigger_kind', { cause: exhaustiveCheck });
+                }
             }
+        }
+
+        if (limit !== undefined || afterId !== undefined) {
+            query.orderBy('config.id', 'asc');
+        }
+        if (afterId !== undefined) {
+            query.where('config.id', '>', afterId);
+        }
+        if (limit !== undefined) {
+            query.limit(limit);
         }
 
         const rows = await query;
