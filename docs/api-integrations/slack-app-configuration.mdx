@@ -8,12 +8,6 @@ description: 'Manage Slack apps programmatically with the App Manifest APIs'
 
 This integration authenticates with a Slack [app configuration token](https://docs.slack.dev/authentication/tokens/#config) instead of OAuth. Config tokens are used solely to create and configure Slack apps via the [App Manifest APIs](https://docs.slack.dev/app-manifests/configuring-apps-with-app-manifests/) (`apps.manifest.create`, `apps.manifest.update`, etc.).
 
-Slack config access tokens expire after 12 hours and are refreshed with a single-use refresh token via [`tooling.tokens.rotate`](https://docs.slack.dev/reference/methods/tooling.tokens.rotate/). Nango owns this rotation cycle: you provide the refresh token once, and Nango keeps exchanging it for fresh token pairs so your application always retrieves a valid access token.
-
-<Note>
-For regular Slack workspace access (sending messages, reading channels), use the standard [Slack integration](/api-integrations/slack) instead. Config tokens cannot call workspace APIs, and workspace tokens cannot call the Manifest APIs.
-</Note>
-
 ## Quickstart
 
 Connect to the Slack App Manifest APIs with Nango in 2 minutes.
@@ -90,5 +84,11 @@ Enable them in your dashboard. Extend and customize to fit your needs.
 import PreBuiltUseCases from "/snippets/generated/slack-app-configuration/PreBuiltUseCases.mdx"
 
 <PreBuiltUseCases />
+
+## API gotchas
+
+- **Config tokens are scoped to one Slack user and workspace, not to an app.** Any app created through this connection is homed in the workspace the user selected when generating the token, and the connection can configure any app that user owns in that workspace.
+- **Config tokens cannot call workspace APIs.** For regular Slack workspace access (sending messages, reading channels), use the standard [Slack integration](/api-integrations/slack). Workspace bot tokens cannot call the Manifest APIs.
+- **Do not rotate the refresh token manually.** Slack invalidates each refresh token every time it is exchanged. After you submit it to Nango, do not reuse it in another tool or call `tooling.tokens.rotate` yourself, or the connection will break.
 
 ---

@@ -23545,7 +23545,6 @@ slack-app-configuration:
     auth_mode: TWO_STEP
     body_format: form
     token_url: https://slack.com/api/tooling.tokens.rotate
-    refresh_url: https://slack.com/api/tooling.tokens.rotate
     token_params:
         refresh_token: ${credentials.refresh_token}
     refresh_token_params:
@@ -23569,7 +23568,7 @@ slack-app-configuration:
         refresh_token:
             type: string
             title: App configuration refresh token
-            description: The refresh token from "Your App Configuration Tokens" at api.slack.com/apps.
+            description: Slack app configuration refresh token.
             secret: true
             pattern: '^xoxe-1-[A-Za-z0-9_-]+$'
             example: xoxe-1-A08************************
