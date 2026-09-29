@@ -61,6 +61,7 @@ export function internalServiceAuthMiddleware(opts: {
     envs: InternalAuthEnvs;
     skip?: (req: Request) => boolean;
 }): (req: Request, res: Response, next: NextFunction) => void {
+    const registry = registryFromEnvs(opts.envs);
     return (req, res, next) => {
         void authenticate(req, res, next);
     };
@@ -87,7 +88,7 @@ export function internalServiceAuthMiddleware(opts: {
                 signingKey: opts.envs.NANGO_INTERNAL_AUTH_SIGNING_KEY,
                 staticToken: opts.envs.NANGO_INTERNAL_AUTH_TOKEN,
                 runnerPublicKey: opts.envs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY,
-                registry: registryFromEnvs(opts.envs)
+                registry
             });
             if (!auth) {
                 unauthorized(res, 'unauthorized', 'Unauthorized');
