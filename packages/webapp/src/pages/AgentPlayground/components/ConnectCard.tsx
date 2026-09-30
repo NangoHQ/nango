@@ -68,8 +68,8 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({ integrationId, provide
     };
 
     return (
-        <div className="flex items-center gap-3 rounded-ds-xs border border-border-muted bg-surface-panel px-3 py-2.5">
-            <IntegrationLogo provider={provider} className="size-7" />
+        <div className="flex items-center gap-3 rounded-ds-xs border border-border-muted bg-surface-panel px-4 py-3">
+            <IntegrationLogo provider={provider} className="size-8" />
             <div className="flex min-w-0 flex-1 flex-col">
                 <span className="text-body-medium-medium text-text-strong">Connect {name}</span>
                 {failure && status === 'idle' ? (
@@ -84,7 +84,7 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({ integrationId, provide
                 )}
             </div>
             {status === 'connected' ? (
-                <CheckCircle2 className="size-5 text-icon-success" />
+                <CheckCircle2 className="size-4 text-icon-success" />
             ) : (
                 <Button size="sm" onClick={connect} loading={status === 'waiting'}>
                     {failure && status === 'idle' ? 'Try again' : `Connect ${name}`} <ArrowRight />
