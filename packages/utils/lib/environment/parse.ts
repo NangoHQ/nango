@@ -999,6 +999,14 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
             input: ctx.value.EMAIL_HTTP_BODY
         });
     }
+    if (ctx.value.NANGO_AGENT_PLAYGROUND_PROVIDER === 'openai' && !ctx.value.OPENAI_API_KEY) {
+        ctx.issues.push({
+            code: 'custom',
+            message: 'OPENAI_API_KEY is required when NANGO_AGENT_PLAYGROUND_PROVIDER is openai',
+            path: ['OPENAI_API_KEY'],
+            input: ctx.value.OPENAI_API_KEY
+        });
+    }
 });
 
 export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<string, unknown> = process.env): z.ZodSafeParseSuccess<z.infer<T>>['data'] {
