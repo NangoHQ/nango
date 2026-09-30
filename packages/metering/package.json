@@ -33,6 +33,6 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     }
 }
