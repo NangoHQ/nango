@@ -7,6 +7,7 @@ export type AccountGroupProperties = {
     name?: string;
     plan?: string;
     created_date?: string;
+    is_internal?: boolean;
 };
 
 export type GetMeta = ApiEndpoint<{
