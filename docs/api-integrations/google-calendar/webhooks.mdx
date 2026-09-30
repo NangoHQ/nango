@@ -319,7 +319,7 @@ curl -X PATCH "https://api.nango.dev/connection/metadata" \
   }'
 ```
 
-To do this in bulk, iterate over the [list connections](/reference/api/connection/list) response and [update the metadata](/reference/api/connection/update-metadata) for each one.
+To do this in bulk, iterate over the [list connections](/reference/backend/http-api/connections/list) response and [update the metadata](/reference/backend/http-api/connections/update-metadata) for each one.
 
 ### Other calendars
 
@@ -347,7 +347,7 @@ curl -X PATCH "https://api.nango.dev/connection/metadata" \
 ```
 This will associate both listed calendar resource URIs with the connection. Nango will match any incoming webhook with those exact `X-Goog-Resource-URI` values to this connection.
 
-To do this in bulk, iterate over the [list connections](/reference/api/connection/list) response and [update the metadata](/reference/api/connection/update-metadata) for each one.
+To do this in bulk, iterate over the [list connections](/reference/backend/http-api/connections/list) response and [update the metadata](/reference/backend/http-api/connections/update-metadata) for each one.
 
 
 <Warning>
