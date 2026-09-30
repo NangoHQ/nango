@@ -7,6 +7,7 @@ import { getLogger } from '@nangohq/utils';
 import type { InternalNango as Nango } from '../../internal-nango.js';
 import type { TeamsDevPortalTokenResponse } from './types.js';
 import type { OAuth2Credentials } from '@nangohq/types';
+import type { AxiosError, AxiosResponse } from 'axios';
 
 const logger = getLogger('post-connection:microsoft-teams');
 
@@ -50,8 +51,15 @@ export default async function execute(nango: Nango) {
         scope: TEAMS_DEV_PORTAL_SCOPE
     });
 
-    const tokenResponse = await nango
-        .proxy<TeamsDevPortalTokenResponse>({
+    const logContext = {
+        connection_id: connection.connection_id,
+        provider_config_key: connection.provider_config_key,
+        environment_id: connection.environment_id
+    };
+
+    let tokenResponse: AxiosResponse<TeamsDevPortalTokenResponse> | AxiosError;
+    try {
+        tokenResponse = await nango.proxy<TeamsDevPortalTokenResponse>({
             method: 'POST',
             baseUrlOverride: 'https://login.microsoftonline.com',
             endpoint: `/${tenantId}/oauth2/v2.0/token`,
@@ -60,10 +68,29 @@ export default async function execute(nango: Nango) {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             data: params.toString()
-        })
-        .catch(() => null);
+        });
+    } catch (err) {
+        logger.warning('Failed to mint Teams Dev Portal token; leaving devPortalAccessToken unset', {
+            ...logContext,
+            error: err instanceof Error ? { message: err.message } : { message: String(err) }
+        });
+        return;
+    }
 
-    if (!tokenResponse || axios.isAxiosError(tokenResponse) || !tokenResponse.data?.access_token) {
+    if (axios.isAxiosError(tokenResponse)) {
+        logger.warning('Teams Dev Portal token request returned an error; leaving devPortalAccessToken unset', {
+            ...logContext,
+            status: tokenResponse.response?.status,
+            body: tokenResponse.response?.data
+        });
+        return;
+    }
+
+    if (!tokenResponse.data?.access_token) {
+        logger.warning('Teams Dev Portal token response missing access_token; leaving devPortalAccessToken unset', {
+            ...logContext,
+            body: tokenResponse.data
+        });
         return;
     }
 
