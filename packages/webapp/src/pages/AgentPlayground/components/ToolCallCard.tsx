@@ -190,7 +190,13 @@ const ApprovalCard: React.FC<{
                 <IconBox display={display} providerFor={providerFor} />
                 <div className="flex min-w-0 flex-1 flex-col">
                     <span className="text-body-medium-medium text-text-strong">The agent wants to make a change</span>
-                    <Subtitle display={display} />
+                    <Subtitle
+                        display={
+                            display.kind === 'integration' && display.integrationId
+                                ? { ...display, subtitle: `${display.title} · ${humanize(display.integrationId)}` }
+                                : display
+                        }
+                    />
                 </div>
                 <div className="flex shrink-0 items-center gap-2" onClick={(e) => e.stopPropagation()}>
                     <Button size="sm" variant="secondary" onClick={() => onApprove(approvalId, false)}>
