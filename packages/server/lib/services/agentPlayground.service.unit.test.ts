@@ -105,7 +105,7 @@ describe('pinNewestConnectionPerIntegration', () => {
 
 describe('buildMcpTools', () => {
     let client: Client;
-    let close: () => Promise<void>;
+    let close: (() => Promise<void>) | undefined;
 
     beforeEach(async () => {
         executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { title: 'Roadmap' } }) });
@@ -118,16 +118,17 @@ describe('buildMcpTools', () => {
         });
         const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
         client = new Client({ name: 'test-client', version: '1.0.0' });
-        await server.connect(serverTransport);
-        await client.connect(clientTransport);
         close = async () => {
             await client.close();
             await server.close();
         };
+        await server.connect(serverTransport);
+        await client.connect(clientTransport);
     });
 
     afterEach(async () => {
-        await close();
+        await close?.();
+        close = undefined;
     });
 
     it('runs the tool the model calls through the session', async () => {
