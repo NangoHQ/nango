@@ -180,7 +180,7 @@ describe('timeouts', () => {
         (await proxy.request()).unwrap();
 
         const config = httpCall.mock.calls[0]![0];
-        expect(config.timeout).toBe(5 * 60 * 1000);
+        expect(config.timeout).toBe(60 * 1000);
         expect(config.signal).toBeUndefined();
     });
 
