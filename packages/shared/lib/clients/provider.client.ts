@@ -2101,6 +2101,14 @@ class ProviderClient {
 
                 const devPortalTokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
 
+                try {
+                    await assertSafeOAuthUrl(devPortalTokenUrl);
+                } catch (err) {
+                    throw new NangoError('refresh_token_external_error', {
+                        message: err instanceof Error ? err.message : 'Outbound URL blocked by policy'
+                    });
+                }
+
                 const devPortalBody = {
                     client_id: clientId,
                     client_secret: clientSecret,
@@ -2141,6 +2149,20 @@ class ProviderClient {
 
             throw new NangoError('microsoft_teams_refresh_token_request_error', response.data);
         } catch (err: any) {
+            // Preserve the provider error body when the failure is an axios error, matching what
+            // `getFreshOAuth2Credentials` surfaces via `logCtx.http({ meta: { body } })` on the
+            // standard OAuth refresh path. Falls back to `err.message` for non-axios failures.
+            const providerBody = err?.response?.data;
+            const providerStatus = err?.response?.status;
+            if (providerBody !== undefined) {
+                logger.warning(
+                    `microsoft-teams refresh token request failed: status=${String(providerStatus)} body=${typeof providerBody === 'string' ? providerBody : JSON.stringify(providerBody)}`
+                );
+                throw new NangoError('microsoft_teams_refresh_token_request_error', {
+                    status: providerStatus,
+                    body: providerBody
+                });
+            }
             throw new NangoError('microsoft_teams_refresh_token_request_error', err.message);
         }
     }
