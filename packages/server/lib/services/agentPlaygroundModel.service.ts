@@ -67,8 +67,7 @@ export function createCacheMiddleware({ mode, dir, stats }: { mode: CacheMode; d
             }
 
             const result = await doGenerate();
-            await fs.mkdir(dir, { recursive: true });
-            await fs.writeFile(file, JSON.stringify(result));
+            await writeCache(dir, file, result);
             logger.info(`Model cache miss ${key}, stored`);
             return result;
         },
@@ -104,8 +103,7 @@ export function createCacheMiddleware({ mode, dir, stats }: { mode: CacheMode; d
                         if (chunks.some((chunk) => chunk.type === 'error')) {
                             return;
                         }
-                        await fs.mkdir(dir, { recursive: true });
-                        await fs.writeFile(file, JSON.stringify(chunks));
+                        await writeCache(dir, file, chunks);
                         logger.info(`Model cache miss ${key}, stored`);
                     }
                 })
@@ -115,30 +113,32 @@ export function createCacheMiddleware({ mode, dir, stats }: { mode: CacheMode; d
     };
 }
 
-async function readCachedStream(file: string): Promise<StreamPart[] | null> {
-    let raw: string;
+// A missing or corrupt entry is a miss, so readwrite mode refills it.
+async function readJson<T>(file: string): Promise<T | null> {
     try {
-        raw = await fs.readFile(file, 'utf8');
+        return JSON.parse(await fs.readFile(file, 'utf8')) as T;
     } catch {
         return null;
     }
+}
 
-    return (JSON.parse(raw) as StreamPart[]).map((chunk) =>
-        chunk.type === 'response-metadata' && chunk.timestamp ? { ...chunk, timestamp: new Date(chunk.timestamp) } : chunk
-    );
+// Cached responses can hold data from the user's connected apps.
+async function writeCache(dir: string, file: string, value: unknown): Promise<void> {
+    await fs.mkdir(dir, { recursive: true, mode: 0o700 });
+    await fs.writeFile(file, JSON.stringify(value), { mode: 0o600 });
+}
+
+async function readCachedStream(file: string): Promise<StreamPart[] | null> {
+    const cached = await readJson<StreamPart[]>(file);
+    return cached
+        ? cached.map((chunk) => (chunk.type === 'response-metadata' && chunk.timestamp ? { ...chunk, timestamp: new Date(chunk.timestamp) } : chunk))
+        : null;
 }
 
 async function readCached(file: string): Promise<GenerateResult | null> {
-    let raw: string;
-    try {
-        raw = await fs.readFile(file, 'utf8');
-    } catch {
-        return null;
-    }
-
-    const cached = JSON.parse(raw) as GenerateResult;
-    const timestamp = cached.response?.timestamp;
-    return timestamp ? { ...cached, response: { ...cached.response, timestamp: new Date(timestamp) } } : cached;
+    const cached = await readJson<GenerateResult>(file);
+    const timestamp = cached?.response?.timestamp;
+    return cached && timestamp ? { ...cached, response: { ...cached.response, timestamp: new Date(timestamp) } } : cached;
 }
 
 // Keep the real nango_tool_search call: mock mode is how the tool path gets exercised for free.

@@ -77,6 +77,49 @@ describe('createCacheMiddleware', () => {
         expect(calls()).toBe(0);
     });
 
+    it('serves a stored call in readonly mode', async () => {
+        const { model, calls } = textModel();
+        const stats = { modelCalls: 0, cachedModelCalls: 0 };
+
+        const stored = await generateText({ model: cached(model, 'readwrite', stats), prompt: 'hello' });
+        const replayed = await generateText({ model: cached(model, 'readonly', stats), prompt: 'hello', maxRetries: 0 });
+
+        expect(calls()).toBe(1);
+        expect(replayed.text).toBe(stored.text);
+    });
+
+    it('treats a corrupt entry as a miss and stores a fresh one', async () => {
+        const { model, calls } = textModel();
+        const stats = { modelCalls: 0, cachedModelCalls: 0 };
+
+        await generateText({ model: cached(model, 'readwrite', stats), prompt: 'hello' });
+        const [entry] = await fs.readdir(dir);
+        await fs.writeFile(path.join(dir, entry!), '{"truncated');
+
+        await generateText({ model: cached(model, 'readwrite', stats), prompt: 'hello' });
+        const replayed = await generateText({ model: cached(model, 'readwrite', stats), prompt: 'hello' });
+
+        expect(calls()).toBe(2);
+        expect(replayed.text).toBe('answer 2');
+    });
+
+    it('keeps the cache readable by its owner only', async () => {
+        const { model } = textModel();
+        const nested = path.join(dir, 'nested');
+
+        await generateText({
+            model: wrapLanguageModel({
+                model,
+                middleware: createCacheMiddleware({ mode: 'readwrite', dir: nested, stats: { modelCalls: 0, cachedModelCalls: 0 } })
+            }),
+            prompt: 'hello'
+        });
+        const [entry] = await fs.readdir(nested);
+
+        expect((await fs.stat(nested)).mode & 0o777).toBe(0o700);
+        expect((await fs.stat(path.join(nested, entry!))).mode & 0o777).toBe(0o600);
+    });
+
     it('never reads or writes the cache when off', async () => {
         const { model, calls } = textModel();
         const stats = { modelCalls: 0, cachedModelCalls: 0 };
