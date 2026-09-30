@@ -3740,7 +3740,6 @@ billit-oauth:
     authorization_url: https://my.${connectionConfig.domain}/Account/Logon
     token_url: https://api.${connectionConfig.domain}/OAuth2/token
     body_format: json
-    disable_pkce: true
     authorization_params:
         response_type: code
     token_params:
