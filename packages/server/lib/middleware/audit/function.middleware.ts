@@ -8,6 +8,8 @@ import type {
     DeletePublicIntegrationFunction,
     FunctionDeployedMetadata,
     FunctionSource,
+    FunctionUpdatedMetadata,
+    PatchFunction,
     PostDeploy,
     PostFunctionDeployment,
     PostFunctionDeploymentBundle,
@@ -53,6 +55,12 @@ export const auditFunctionUpgraded = auditable<PutUpgradePreBuiltFlow>({
     policy: Audit.auditable({ resource: 'function', action: 'upgraded', scope: 'environment' }),
     target: (req) => makeTarget('function', functionTargetId(req.body.providerConfigKey, req.body.scriptName)),
     metadata: (req) => omitUndefined({ upgradeVersion: nonEmptyString(req.body.upgradeVersion) })
+});
+
+export const auditFunctionUpdated = auditable<PatchFunction>({
+    policy: Audit.auditable({ resource: 'function', action: 'updated', scope: 'environment' }),
+    target: (req) => makeTarget('function', nonEmptyString(req.params.uuid)),
+    metadata: (req) => omitUndefined<FunctionUpdatedMetadata>({ state: nonEmptyString(req.body.state) })
 });
 
 export const auditFunctionDeleted = auditable<DeleteIntegrationFunction>({

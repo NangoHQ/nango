@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1030
+Provider count: 1031
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -435,6 +435,7 @@ URL patterns:
 | `highlevel` | HighLevel | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highlevel.md) |  | [setup](https://nango.dev/docs/api-integrations/highlevel/how-to-register-your-own-highlevel-api-oauth-app.md) | marketing |
 | `highlevel-white-label` | HighLevel (LeadConnector) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highlevel-white-label.md) |  | [setup](https://nango.dev/docs/api-integrations/highlevel-white-label/how-to-register-your-own-highlevel-white-label-api-oauth-app.md) | crm |
 | `highq` | HighQ | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highq.md) | [connect](https://nango.dev/docs/api-integrations/highq/connect.md) | [setup](https://nango.dev/docs/api-integrations/highq/how-to-register-your-own-highq-api-oauth-app.md) | legal |
+| `hitpay` | HitPay App | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hitpay.md) | [connect](https://nango.dev/docs/api-integrations/hitpay/connect.md) | [setup](https://nango.dev/docs/api-integrations/hitpay/how-to-register-your-own-hitpay-oauth-app.md) | payment, e-commerce |
 | `holded` | Holded | API_KEY | [docs](https://nango.dev/docs/integrations/all/holded.md) |  |  | accounting, crm, invoicing |
 | `holded-v2` | Holded (v2) | API_KEY | [docs](https://nango.dev/docs/api-integrations/holded-v2.md) | [connect](https://nango.dev/docs/api-integrations/holded-v2/connect.md) |  | accounting, crm, invoicing |
 | `hover` | Hover | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/hover.md) |  |  | productivity |
@@ -637,7 +638,6 @@ URL patterns:
 | `open-hands` | Open Hands | API_KEY | [docs](https://nango.dev/docs/integrations/all/open-hands.md) | [connect](https://nango.dev/docs/integrations/all/open-hands/connect.md) |  | dev-tools |
 | `openai` | OpenAI | API_KEY | [docs](https://nango.dev/docs/integrations/all/openai.md) | [connect](https://nango.dev/docs/integrations/all/openai/connect.md) |  | productivity, dev-tools, popular |
 | `openai-admin` | OpenAI (Admin) | API_KEY | [docs](https://nango.dev/docs/integrations/all/openai-admin.md) | [connect](https://nango.dev/docs/integrations/all/openai-admin/connect.md) |  | productivity, dev-tools |
-| `openrouter` | OpenRouter | API_KEY | [docs](https://nango.dev/docs/api-integrations/openrouter.md) | [connect](https://nango.dev/docs/api-integrations/openrouter/connect.md) |  | dev-tools, productivity |
 | `optum-real` | Optum Real | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/optum-real.md) | [connect](https://nango.dev/docs/api-integrations/optum-real/connect.md) |  | other |
 | `oracle-cloud-identity` | Oracle Cloud Identity | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/oracle-cloud-identity.md) | [connect](https://nango.dev/docs/api-integrations/oracle-cloud-identity/connect.md) |  | dev-tools, iam |
 | `oracle-hcm` | Oracle Fusion Cloud (HCM) | BASIC | [docs](https://nango.dev/docs/integrations/all/oracle-hcm.md) | [connect](https://nango.dev/docs/integrations/all/oracle-hcm/connect.md) |  | hr |
@@ -982,6 +982,7 @@ URL patterns:
 | `webex` | Webex | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/webex.md) |  |  | communication |
 | `webflow` | Webflow | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/webflow.md) |  | [setup](https://nango.dev/docs/api-integrations/webflow/how-to-register-your-own-webflow-api-oauth-app.md) | dev-tools, design, cms |
 | `webinarjam` | WebinarJam | API_KEY | [docs](https://nango.dev/docs/api-integrations/webinarjam.md) | [connect](https://nango.dev/docs/api-integrations/webinarjam/connect.md) |  | marketing |
+| `weflow` | Weflow | API_KEY | [docs](https://nango.dev/docs/api-integrations/weflow.md) | [connect](https://nango.dev/docs/api-integrations/weflow/connect.md) |  | communication, crm, video |
 | `wejam` | WeJam AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/wejam.md) | [connect](https://nango.dev/docs/api-integrations/wejam/connect.md) |  | productivity |
 | `whatsapp-business` | WhatsApp Business | API_KEY | [docs](https://nango.dev/docs/api-integrations/whatsapp-business.md) |  | [setup](https://nango.dev/docs/api-integrations/whatsapp-business/how-to-register-your-own-whatsapp-business-api-oauth-app.md) | communication, marketing |
 | `whoop` | Whoop | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/whoop.md) |  |  | sports |

@@ -1,9 +1,9 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import * as functionConfigService from './models/functions.js';
-import * as functionInstanceService from './models/instances.js';
+import * as functionConfigService from '../models/functions.js';
+import * as functionInstanceService from '../models/instances.js';
 
-import type { Orchestrator } from '../../clients/orchestrator.js';
+import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 

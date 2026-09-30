@@ -14,7 +14,7 @@
     },
     "devDependencies": {
         "@nangohq/types": "0.71.10",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     },
     "files": [
         "dist/**/*",

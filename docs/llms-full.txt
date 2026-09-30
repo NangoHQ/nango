@@ -16056,6 +16056,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `highlevel` | HighLevel | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highlevel.md) |  | [setup](https://nango.dev/docs/api-integrations/highlevel/how-to-register-your-own-highlevel-api-oauth-app.md) | marketing |
 | `highlevel-white-label` | HighLevel (LeadConnector) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highlevel-white-label.md) |  | [setup](https://nango.dev/docs/api-integrations/highlevel-white-label/how-to-register-your-own-highlevel-white-label-api-oauth-app.md) | crm |
 | `highq` | HighQ | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highq.md) | [connect](https://nango.dev/docs/api-integrations/highq/connect.md) | [setup](https://nango.dev/docs/api-integrations/highq/how-to-register-your-own-highq-api-oauth-app.md) | legal |
+| `hitpay` | HitPay App | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hitpay.md) | [connect](https://nango.dev/docs/api-integrations/hitpay/connect.md) | [setup](https://nango.dev/docs/api-integrations/hitpay/how-to-register-your-own-hitpay-oauth-app.md) | payment, e-commerce |
 | `holded` | Holded | API_KEY | [docs](https://nango.dev/docs/integrations/all/holded.md) |  |  | accounting, crm, invoicing |
 | `holded-v2` | Holded (v2) | API_KEY | [docs](https://nango.dev/docs/api-integrations/holded-v2.md) | [connect](https://nango.dev/docs/api-integrations/holded-v2/connect.md) |  | accounting, crm, invoicing |
 | `hover` | Hover | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/hover.md) |  |  | productivity |
@@ -16603,6 +16604,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `webex` | Webex | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/webex.md) |  |  | communication |
 | `webflow` | Webflow | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/webflow.md) |  | [setup](https://nango.dev/docs/api-integrations/webflow/how-to-register-your-own-webflow-api-oauth-app.md) | dev-tools, design, cms |
 | `webinarjam` | WebinarJam | API_KEY | [docs](https://nango.dev/docs/api-integrations/webinarjam.md) | [connect](https://nango.dev/docs/api-integrations/webinarjam/connect.md) |  | marketing |
+| `weflow` | Weflow | API_KEY | [docs](https://nango.dev/docs/api-integrations/weflow.md) | [connect](https://nango.dev/docs/api-integrations/weflow/connect.md) |  | communication, crm, video |
 | `wejam` | WeJam AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/wejam.md) | [connect](https://nango.dev/docs/api-integrations/wejam/connect.md) |  | productivity |
 | `whatsapp-business` | WhatsApp Business | API_KEY | [docs](https://nango.dev/docs/api-integrations/whatsapp-business.md) |  | [setup](https://nango.dev/docs/api-integrations/whatsapp-business/how-to-register-your-own-whatsapp-business-api-oauth-app.md) | communication, marketing |
 | `whoop` | Whoop | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/whoop.md) |  |  | sports |

@@ -76,6 +76,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         const integration = providerConfig;
         const resolved = await tracer.trace('action.prepare.syncConfig', async () =>
             resolveRunnableTool({
+                accountUuid: accountContext.account.uuid,
                 environmentId: integration.environment_id,
                 integration: integration,
                 name: task.actionName
