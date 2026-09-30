@@ -17,6 +17,9 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 const logger = getLogger('proxy:metering');
 
+// Resets whenever bytes arrive, so large responses that keep flowing are unaffected
+const PROXY_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+
 interface Props {
     proxyConfig: ApplicationConstructedProxyConfiguration;
     logger: (msg: MessageRowInsert) => MaybePromise<void>;
@@ -26,6 +29,7 @@ interface Props {
     getIntegrationConfig: () => MaybePromise<IntegrationConfigForProxy>;
     outboundPolicy: OutboundUrlPolicy;
     maxWaitMs: number;
+    abortSignal?: AbortSignal | undefined;
 }
 
 /**
@@ -85,6 +89,11 @@ export class ProxyRequest {
      */
     maxWaitMs: number;
 
+    /**
+     * Aborts the in-flight attempt, e.g. when the script running this request is cancelled
+     */
+    abortSignal?: AbortSignal | undefined;
+
     constructor(props: Props) {
         this.config = props.proxyConfig;
         this.logger = props.logger;
@@ -94,6 +103,7 @@ export class ProxyRequest {
         this.getIntegrationConfig = props.getIntegrationConfig;
         this.outboundPolicy = props.outboundPolicy;
         this.maxWaitMs = props.maxWaitMs;
+        this.abortSignal = props.abortSignal;
     }
 
     /**
@@ -123,6 +133,10 @@ export class ProxyRequest {
                         connection: this.connection,
                         outboundPolicy: this.outboundPolicy
                     });
+                    this.axiosConfig.timeout = PROXY_IDLE_TIMEOUT_MS;
+                    if (this.abortSignal) {
+                        this.axiosConfig.signal = this.abortSignal;
+                    }
 
                     const byteTotals = { sent: 0, received: 0 };
 

@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 
 import { AxiosError } from 'axios';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DEFAULT_OUTBOUND_URL_POLICY, OutboundUrlError } from '@nangohq/egress';
 
@@ -151,5 +151,61 @@ describe('call', () => {
         const result = await proxy.request();
         assert(result.isErr());
         expect(result.error).toBeInstanceOf(OutboundUrlError);
+    });
+});
+
+describe('timeouts', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function getProxy(props: { retries?: number; abortSignal?: AbortSignal } = {}) {
+        return new ProxyRequest({
+            logger: vi.fn(),
+            proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200', retries: props.retries ?? 0 }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            maxWaitMs: Infinity,
+            abortSignal: props.abortSignal,
+            getConnection: () => getTestConnection(),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
+        });
+    }
+
+    const okResponse = { status: 200, data: {}, headers: {}, config: {} as InternalAxiosRequestConfig, statusText: 'OK' };
+
+    it('should set an idle timeout', async () => {
+        const proxy = getProxy();
+        const httpCall = vi.spyOn(proxy, 'httpCall').mockResolvedValue(okResponse);
+
+        (await proxy.request()).unwrap();
+
+        const config = httpCall.mock.calls[0]![0];
+        expect(config.timeout).toBe(5 * 60 * 1000);
+        expect(config.signal).toBeUndefined();
+    });
+
+    it('should abort the in-flight attempt when the caller aborts', async () => {
+        const controller = new AbortController();
+        const proxy = getProxy({ abortSignal: controller.signal });
+        const httpCall = vi.spyOn(proxy, 'httpCall').mockImplementation((config) => {
+            controller.abort();
+            expect((config.signal as AbortSignal).aborted).toBe(true);
+            return Promise.reject(new AxiosError('canceled', AxiosError.ERR_CANCELED));
+        });
+
+        const result = await proxy.request();
+        assert(result.isErr());
+        expect(httpCall).toHaveBeenCalledTimes(1);
+    });
+
+    it('should retry a response truncated mid-body', { timeout: 10000 }, async () => {
+        const proxy = getProxy({ retries: 1 });
+        const truncated = makeAxiosError(200);
+        truncated.code = AxiosError.ERR_BAD_RESPONSE;
+        const httpCall = vi.spyOn(proxy, 'httpCall').mockRejectedValueOnce(truncated).mockResolvedValueOnce(okResponse);
+
+        const res = (await proxy.request()).unwrap();
+        expect(res).toMatchObject({ status: 200 });
+        expect(httpCall).toHaveBeenCalledTimes(2);
     });
 });
