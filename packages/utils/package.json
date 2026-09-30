@@ -27,7 +27,7 @@
         "nanoid": "5.1.16",
         "serialize-error": "12.0.0",
         "truncate-json": "3.0.0",
-        "undici": "6.28.0",
+        "undici": "6.29.0",
         "winston": "3.13.0",
         "zod": "4.3.6"
     },
@@ -35,7 +35,7 @@
         "@nangohq/types": "file:../types",
         "express": "5.1.0",
         "ms": "3.0.0-canary.1",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     },
     "files": [
         "dist/**/*"
