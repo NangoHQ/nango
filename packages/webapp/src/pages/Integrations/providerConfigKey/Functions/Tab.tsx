@@ -3,7 +3,7 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupAddon, InputGroupInput, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
@@ -36,11 +36,16 @@ const TYPE_PILLS: { value: TypeFilterValue; label: string; emptyLabel: string }[
     { value: 'on-event', label: 'Triggers', emptyLabel: 'No triggers' }
 ];
 
-const SOURCE_LABEL: Record<FunctionListSource, { label: string; icon: typeof BookOpen }> = {
-    catalog: { label: 'Standalone', icon: Anchor },
-    standalone: { label: 'Standalone', icon: Anchor },
-    repo: { label: 'Your repo', icon: GitBranch },
-    'tools-catalog': { label: 'Nango catalog', icon: BookOpen }
+const SOURCE_LABEL: Record<FunctionListSource | 'template', { label: string; icon: typeof BookOpen; tooltip: string }> = {
+    catalog: { label: 'Standalone', icon: Anchor, tooltip: 'Deployed function, the source-code lives in Nango.' },
+    standalone: { label: 'Standalone', icon: Anchor, tooltip: 'Deployed function, the source-code lives in Nango.' },
+    repo: { label: 'Your repo', icon: GitBranch, tooltip: 'Deployed from the Nango CLI. You own the source-code.' },
+    'tools-catalog': {
+        label: 'Nango catalog',
+        icon: BookOpen,
+        tooltip: 'Written and maintained by Nango. Always on the latest version (auto-updates).'
+    },
+    template: { label: 'Template', icon: LayoutTemplate, tooltip: 'A template you can deploy or customize.' }
 };
 
 function functionRowKey(fn: ListedNangoFunction): string {
@@ -62,13 +67,18 @@ function ColumnHead({ className, children }: { className?: string; children: str
     );
 }
 
-function FunctionSourceLabel({ source }: { source: FunctionListSource }) {
-    const { label, icon: Icon } = SOURCE_LABEL[source];
+function FunctionSourceLabel({ source }: { source: FunctionListSource | 'template' }) {
+    const { label, icon: Icon, tooltip } = SOURCE_LABEL[source];
     return (
-        <span className="inline-flex items-center gap-1 type-label-sm text-text-default">
-            <Icon className="size-3 shrink-0" />
-            {label}
-        </span>
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <span className="inline-flex items-center gap-1 type-label-sm text-text-default">
+                    <Icon className="size-3 shrink-0" />
+                    {label}
+                </span>
+            </TooltipTrigger>
+            <TooltipContent side="left">{tooltip}</TooltipContent>
+        </Tooltip>
     );
 }
 
@@ -300,7 +310,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                         </InputGroup>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button type="button" size="md">
+                                <Button type="button" variant="secondary" size="md">
                                     <Plus /> Add
                                 </Button>
                             </DropdownMenuTrigger>
@@ -417,10 +427,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                     <TableRow key={`template:${template.name}`} className="h-12 hover:bg-transparent">
                                         <FunctionNameCell name={template.name} description={template.description} />
                                         <TableCell className="w-35 px-3">
-                                            <span className="inline-flex items-center gap-1 type-label-sm text-text-default">
-                                                <LayoutTemplate className="size-3 shrink-0" />
-                                                Template
-                                            </span>
+                                            <FunctionSourceLabel source="template" />
                                         </TableCell>
                                         <TableCell className="w-35 px-3">
                                             <button
