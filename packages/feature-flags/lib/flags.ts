@@ -79,6 +79,13 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         hasCatalogTools(accountUuid: string) {
             return client.isEnabled('tools-catalog', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether Airtable webhooks that cannot be verified, because the connection does not store the
+         * webhook's `macSecretBase64`, can be processed for this account. Default `false`.
+         */
+        allowUnauthorizedAirtableWebhook(accountUuid: string) {
+            return client.isEnabled('allow-unauthorized-airtable-webhook', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }
