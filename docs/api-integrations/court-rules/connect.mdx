@@ -1,0 +1,34 @@
+---
+title: Court Rules - How do I link my account?
+sidebarTitle: Court Rules
+---
+
+## Overview
+
+To authenticate with Court Rules, you need:
+1. **API key** - A key shown on the dashboard of the Court Rules console. Keys look like `crm_prod_...`.
+
+This guide will walk you through getting your **API key** from the Court Rules console.
+
+### Prerequisites
+
+- A Court Rules console login. Sign in with a Google or email account at [console.courtrules.app](https://console.courtrules.app).
+
+### Instructions
+
+#### Step 1: Get your Court Rules API key
+
+1. Log in to the [Court Rules console](https://console.courtrules.app).
+2. On the dashboard, find the **API Key** card and click **Copy**.
+
+<Tip>Each key has per-minute limits: 300 requests per minute on court, judge, rule and holiday lookups, 60 on compliance checks and 5 on document classification. When a limit is exceeded, Court Rules returns a `429` with a `Retry-After` header, which Nango uses as the retry delay. Email [api@courtrules.app](mailto:api@courtrules.app) if you need higher limits.</Tip>
+
+#### Step 2: Enter your API key in the Connect UI
+
+Once you have your **API key**:
+
+1. Open the form where you need to authenticate with Court Rules.
+2. Enter your **API key** in the field.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Court Rules.

@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1030
+Provider count: 1031
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -225,6 +225,7 @@ URL patterns:
 | `coros` | Coros | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/coros.md) |  |  | sports |
 | `coros-sandbox` | Coros (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/coros-sandbox.md) |  |  | sports |
 | `coupa-compass` | Coupa Compass | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/coupa-compass.md) |  |  | payment, invoicing |
+| `court-rules` | Court Rules | API_KEY | [docs](https://nango.dev/docs/api-integrations/court-rules.md) | [connect](https://nango.dev/docs/api-integrations/court-rules/connect.md) |  | legal |
 | `crisp` | Crisp | BASIC | [docs](https://nango.dev/docs/integrations/all/crisp.md) | [connect](https://nango.dev/docs/integrations/all/crisp/connect.md) |  | communication, support |
 | `crisp-plugin-install` | Crisp (Plugin Install) | INSTALL_PLUGIN | [docs](https://nango.dev/docs/api-integrations/crisp-plugin-install.md) |  | [setup](https://nango.dev/docs/api-integrations/crisp-plugin-install/how-to-register-your-own-crisp-plugin.md) | communication, support |
 | `crowdstrike` | CrowdStrike | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/crowdstrike.md) | [connect](https://nango.dev/docs/integrations/all/crowdstrike/connect.md) |  | dev-tools |
