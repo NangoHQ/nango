@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { createOpenAI } from '@ai-sdk/openai';
-import { wrapLanguageModel } from 'ai';
+import { simulateReadableStream, simulateStreamingMiddleware, wrapLanguageModel } from 'ai';
 import { MockLanguageModelV4 } from 'ai/test';
 
 import { getLogger } from '@nangohq/utils';
@@ -18,6 +18,8 @@ const logger = getLogger('AgentPlayground.Model');
 type WrapGenerate = NonNullable<LanguageModelMiddleware['wrapGenerate']>;
 type GenerateResult = Awaited<ReturnType<Parameters<WrapGenerate>[0]['doGenerate']>>;
 type GenerateParams = Parameters<WrapGenerate>[0]['params'];
+type WrapStream = NonNullable<LanguageModelMiddleware['wrapStream']>;
+type StreamPart = Awaited<ReturnType<Parameters<WrapStream>[0]['doStream']>>['stream'] extends ReadableStream<infer T> ? T : never;
 
 export type CacheMode = 'off' | 'readwrite' | 'readonly';
 
@@ -69,8 +71,61 @@ export function createCacheMiddleware({ mode, dir, stats }: { mode: CacheMode; d
             await fs.writeFile(file, JSON.stringify(result));
             logger.info(`Model cache miss ${key}, stored`);
             return result;
+        },
+        wrapStream: async ({ doStream, params, model }) => {
+            stats.modelCalls += 1;
+            if (mode === 'off') {
+                return await doStream();
+            }
+
+            const key = cacheKey(model.modelId, params);
+            const file = path.join(dir, `${key}.stream.json`);
+
+            const cached = await readCachedStream(file);
+            if (cached) {
+                stats.cachedModelCalls += 1;
+                logger.info(`Model cache hit ${key}`);
+                return { stream: simulateReadableStream({ chunks: cached, initialDelayInMs: 0, chunkDelayInMs: 5 }) };
+            }
+
+            if (mode === 'readonly') {
+                throw new ModelCacheMissError(key);
+            }
+
+            const { stream, ...rest } = await doStream();
+            const chunks: StreamPart[] = [];
+            const recorded = stream.pipeThrough(
+                new TransformStream<StreamPart, StreamPart>({
+                    transform(chunk, controller) {
+                        chunks.push(chunk);
+                        controller.enqueue(chunk);
+                    },
+                    async flush() {
+                        if (chunks.some((chunk) => chunk.type === 'error')) {
+                            return;
+                        }
+                        await fs.mkdir(dir, { recursive: true });
+                        await fs.writeFile(file, JSON.stringify(chunks));
+                        logger.info(`Model cache miss ${key}, stored`);
+                    }
+                })
+            );
+            return { stream: recorded, ...rest };
         }
     };
+}
+
+async function readCachedStream(file: string): Promise<StreamPart[] | null> {
+    let raw: string;
+    try {
+        raw = await fs.readFile(file, 'utf8');
+    } catch {
+        return null;
+    }
+
+    return (JSON.parse(raw) as StreamPart[]).map((chunk) =>
+        chunk.type === 'response-metadata' && chunk.timestamp ? { ...chunk, timestamp: new Date(chunk.timestamp) } : chunk
+    );
 }
 
 async function readCached(file: string): Promise<GenerateResult | null> {
@@ -136,7 +191,7 @@ export function createPlaygroundModel(stats: ModelCallStats): LanguageModel {
     const base =
         envs.NANGO_AGENT_PLAYGROUND_PROVIDER === 'openai'
             ? createOpenAI(envs.OPENAI_API_KEY ? { apiKey: envs.OPENAI_API_KEY } : {})(envs.NANGO_AGENT_PLAYGROUND_MODEL)
-            : createMockModel();
+            : wrapLanguageModel({ model: createMockModel(), middleware: simulateStreamingMiddleware() });
 
     return wrapLanguageModel({
         model: base,
