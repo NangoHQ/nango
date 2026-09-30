@@ -111,6 +111,7 @@
             "style-dictionary": "5.4.4"
         },
         "@xmldom/xmldom": "0.8.15",
+        "axios": "1.20.0",
         "joi": "17.13.8",
         "valibot": "1.5.0"
     }
