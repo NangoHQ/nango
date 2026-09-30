@@ -33,12 +33,16 @@ describe('manageGrowthAddonsCron exec', () => {
             { name: 'pay-as-you-go', has_growth_features: true },
             { name: 'pay-as-you-go', has_growth_features: true, orb_future_plan: 'free' },
             { name: 'growth-v2', has_growth_features: true, orb_future_plan: 'pay-as-you-go' },
-            { name: 'startup-deal', has_growth_features: true, orb_future_plan: 'pay-as-you-go' }
+            { name: 'startup-deal', has_growth_features: true, orb_future_plan: 'pay-as-you-go' },
+            { name: 'scale-legacy', has_growth_features: true, orb_future_plan: 'pay-as-you-go' }
         ];
         const corruptedPlanConfigs: Partial<DBPlan>[] = [
             { name: 'free', has_growth_features: true },
             { name: 'growth-v2', has_growth_features: true },
-            { name: 'startup-deal', has_growth_features: true, orb_future_plan: 'free' }
+            { name: 'growth-v2', has_growth_features: true, orb_future_plan: 'free' },
+            { name: 'startup-deal', has_growth_features: true, orb_future_plan: 'free' },
+            { name: 'scale-legacy', has_growth_features: true },
+            { name: 'scale-legacy', has_growth_features: true, orb_future_plan: 'free' }
         ];
 
         for (const config of [...validPlanConfigs, ...corruptedPlanConfigs]) {
@@ -52,19 +56,36 @@ describe('manageGrowthAddonsCron exec', () => {
 
     it('enables the growth add-on at its scheduled time', async () => {
         const scheduledAt = new Date('2026-10-01T00:00:00.000Z');
+        const transitionAt = new Date('2026-10-01T06:00:00.000Z');
         const paygActivation = await seedPlan({ name: 'pay-as-you-go', has_growth_features: false, growth_features_starts_at: scheduledAt });
-        const temporaryActivation = await seedPlan({
-            name: 'growth-v2',
-            has_growth_features: false,
-            growth_features_starts_at: scheduledAt,
-            orb_future_plan: 'pay-as-you-go'
-        });
+        const activations = [paygActivation];
+        for (const name of ['growth-v2', 'startup-deal', 'scale-legacy'] as const) {
+            activations.push(
+                await seedPlan({
+                    name,
+                    has_growth_features: false,
+                    growth_features_starts_at: scheduledAt,
+                    orb_future_plan: 'pay-as-you-go',
+                    orb_future_plan_at: transitionAt
+                })
+            );
+        }
+
+        await exec(new Date(scheduledAt.getTime() - 1));
+
+        for (const plan of activations) {
+            const beforeActivation = (await getPlan(db.knex, { accountId: plan.account_id })).unwrap();
+            expect(beforeActivation).toMatchObject({ has_growth_features: false, growth_features_starts_at: scheduledAt });
+        }
 
         await exec(scheduledAt);
 
-        for (const plan of [paygActivation, temporaryActivation]) {
+        for (const plan of activations) {
             const updated = (await getPlan(db.knex, { accountId: plan.account_id })).unwrap();
             expect(updated).toMatchObject({
+                name: plan.name,
+                orb_future_plan: plan.orb_future_plan,
+                orb_future_plan_at: plan.orb_future_plan_at,
                 has_growth_features: true,
                 growth_features_starts_at: null,
                 has_otel: true,
