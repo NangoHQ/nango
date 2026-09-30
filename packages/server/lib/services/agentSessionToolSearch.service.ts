@@ -387,7 +387,7 @@ function guidanceFor({
     const unconnected = [...new Set([...matches, ...related].filter((match) => match.connection.status === 'not_connected').map((match) => match.integration))];
     if (unconnected.length > 0) {
         lines.push(
-            `${unconnected.map((integration) => `'${integration}'`).join(', ')} ${unconnected.length === 1 ? 'has' : 'have'} no connection in this session. Their tools are listed for completeness and will fail if you call them.`,
+            `${unconnected.map((integration) => `'${integration}'`).join(', ')} ${unconnected.length === 1 ? 'has no connection' : 'have no connections'} in this session. Their tools are listed for completeness and will fail if you call them.`,
             ...new Set(unconnected.map((integration) => notConnectedGuidance(integration, session)))
         );
     }
