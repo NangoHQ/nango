@@ -81,7 +81,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
     const canUsePlayground = fn.enabled && isSyncOrAction(fn);
 
     return (
-        <aside className="sticky top-0 flex max-h-[calc(100dvh-7rem)] min-h-[min(606px,calc(100dvh-7rem))] w-full flex-col overflow-y-auto overscroll-y-contain border border-border-muted bg-surface-panel">
+        <aside className="sticky top-0 flex max-h-[calc(100dvh-7rem)] min-h-[min(606px,calc(100dvh-7rem))] w-full flex-col overflow-y-auto overscroll-y-contain bg-surface-panel">
             <div className="flex items-start justify-between gap-2 border-b border-border-default p-3">
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                     <div className="flex items-center gap-1">
