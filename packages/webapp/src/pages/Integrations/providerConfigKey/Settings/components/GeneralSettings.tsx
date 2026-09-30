@@ -167,6 +167,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                             {(allowed) => (
                                 <div className="flex items-center">
                                     <Switch
+                                        id="allow_unverified_webhooks"
                                         name="allow_unverified_webhooks"
                                         checked={allowUnverifiedWebhooks}
                                         onCheckedChange={handleAllowUnverifiedWebhooksChange}

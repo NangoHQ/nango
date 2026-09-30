@@ -69,7 +69,6 @@ export async function createConfigSeed(
             environment_id: env.id,
             ...rest,
             forward_webhooks: true,
-            allow_unverified_webhooks: false,
             shared_credentials_id: null
         },
         provider
@@ -101,7 +100,6 @@ export async function createPreprovisionedProviderConfigSeed(
             environment_id: env.id,
             ...options?.rest,
             forward_webhooks: true,
-            allow_unverified_webhooks: false,
             shared_credentials_id: sharedCredentials.id
         },
         provider
