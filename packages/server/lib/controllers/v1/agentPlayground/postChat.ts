@@ -1,21 +1,18 @@
-import { assistantModelMessageSchema, toolModelMessageSchema, userModelMessageSchema } from 'ai';
+import { pipeUIMessageStreamToResponse, validateUIMessages } from 'ai';
 import { z } from 'zod';
 
 import { getFlags } from '@nangohq/feature-flags';
-import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { runTurn } from '../../../services/agentPlayground.service.js';
+import { startTurn } from '../../../services/agentPlayground.service.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
+import type { PlaygroundUIMessage } from '../../../services/agentPlayground.service.js';
 import type { PostAgentPlaygroundChat } from '@nangohq/types';
 
-const logger = getLogger('AgentPlayground');
-
-const bodySchema = z.strictObject({
+const bodySchema = z.object({
     sessionId: z.uuid().optional(),
-    // No system role: history comes from the browser and must not carry instructions.
-    messages: z.array(z.union([userModelMessageSchema, assistantModelMessageSchema, toolModelMessageSchema])).max(200),
-    prompt: z.string().trim().min(1).max(10_000),
+    messages: z.array(z.unknown()).min(1).max(200),
     timeZone: z
         .string()
         .refine((tz) => Intl.supportedValuesOf('timeZone').includes(tz) || tz === 'UTC', { message: 'Unknown IANA time zone' })
@@ -29,7 +26,7 @@ export const postAgentPlaygroundChat = asyncWrapperWithEnvironment<PostAgentPlay
         return;
     }
 
-    const { account, environment, plan } = res.locals;
+    const { account, environment, plan, user } = res.locals;
 
     if (!(await getFlags().isAgentPlaygroundEnabled(account.uuid))) {
         res.status(404).send({ error: { code: 'feature_disabled', message: 'Agent Playground is not enabled for this account' } });
@@ -42,24 +39,30 @@ export const postAgentPlaygroundChat = asyncWrapperWithEnvironment<PostAgentPlay
         return;
     }
 
-    const turn = await runTurn({
-        ctx: { account, environment, plan },
-        sessionId: body.data.sessionId,
-        history: body.data.messages,
-        prompt: body.data.prompt,
-        timeZone: body.data.timeZone ?? 'UTC'
-    });
-
-    if (turn.isErr()) {
-        logger.error(`Agent Playground turn failed: ${turn.error.message}`);
-        res.status(turn.error.code === 'model_error' ? 502 : 500).send({ error: { code: turn.error.code, message: turn.error.message } });
+    let messages: PlaygroundUIMessage[];
+    try {
+        messages = await validateUIMessages<PlaygroundUIMessage>({ messages: body.data.messages });
+    } catch (err) {
+        res.status(400).send({ error: { code: 'invalid_body', message: err instanceof Error ? err.message : 'Invalid messages' } });
+        return;
+    }
+    // History comes from the browser, so it must not carry system instructions.
+    if (messages.some((message) => message.role === 'system')) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'System messages are not allowed' } });
         return;
     }
 
-    const { usage } = turn.value;
-    logger.info(
-        `Agent Playground turn: ${usage.inputTokens} in / ${usage.outputTokens} out tokens, ${usage.cachedModelCalls}/${usage.modelCalls} model calls from cache`
-    );
+    const stream = await startTurn({
+        ctx: { account, environment, plan, user },
+        sessionId: body.data.sessionId,
+        messages,
+        timeZone: body.data.timeZone ?? 'UTC'
+    });
 
-    res.status(200).send({ data: turn.value });
+    if (stream.isErr()) {
+        res.status(500).send({ error: { code: stream.error.code, message: stream.error.message } });
+        return;
+    }
+
+    await pipeUIMessageStreamToResponse({ response: res, stream: stream.value });
 });

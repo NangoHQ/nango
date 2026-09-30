@@ -752,6 +752,8 @@ const ENVS_SHAPE = z.object({
     NANGO_AGENT_PLAYGROUND_MODEL: z.string().optional().default('gpt-6-luna'),
     NANGO_AGENT_PLAYGROUND_CACHE: z.enum(['off', 'readwrite', 'readonly']).optional().default('off'),
     NANGO_AGENT_PLAYGROUND_CACHE_DIR: z.string().optional(),
+    // JSON of provider -> { clientId, clientSecret, scopes? }, used instead of Nango's shared OAuth apps.
+    NANGO_AGENT_PLAYGROUND_OAUTH_APPS: z.string().optional(),
     OPENAI_API_KEY: z.string().optional(),
 
     // Internal API

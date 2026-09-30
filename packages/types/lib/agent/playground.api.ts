@@ -1,14 +1,5 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 
-export interface AgentPlaygroundToolCall {
-    id: string;
-    name: string;
-    input: unknown;
-    output: unknown;
-    isError: boolean;
-    durationMs: number;
-}
-
 export interface AgentPlaygroundUsage {
     inputTokens: number;
     outputTokens: number;
@@ -16,7 +7,13 @@ export interface AgentPlaygroundUsage {
     modelCalls: number;
 }
 
-export type AgentPlaygroundErrorCode = 'feature_disabled' | 'session_not_found' | 'session_creation_failed' | 'model_error';
+export interface AgentPlaygroundMessageMetadata {
+    sessionId?: string;
+    hidden?: boolean;
+    usage?: AgentPlaygroundUsage;
+}
+
+export type AgentPlaygroundErrorCode = 'feature_disabled' | 'session_creation_failed' | 'model_error';
 
 export type PostAgentPlaygroundChat = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
@@ -26,18 +23,8 @@ export type PostAgentPlaygroundChat = ApiEndpoint<{
     Body: {
         sessionId?: string | undefined;
         messages: unknown[];
-        prompt: string;
         timeZone?: string | undefined;
     };
-    Success: {
-        data: {
-            sessionId: string;
-            /** Already includes the prompt: append as-is, don't add the prompt again. */
-            messages: unknown[];
-            reply: string;
-            toolCalls: AgentPlaygroundToolCall[];
-            usage: AgentPlaygroundUsage;
-        };
-    };
+    Success: Record<string, unknown>;
     Error: ApiError<AgentPlaygroundErrorCode>;
 }>;
