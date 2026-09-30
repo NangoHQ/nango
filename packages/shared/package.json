@@ -60,14 +60,14 @@
         "oauth-1.0a": "2.2.6",
         "otpauth": "9.5.1",
         "parse-link-header": "2.0.0",
-        "posthog-node": "5.37.1",
+        "posthog-node": "5.53.0",
         "qs": "6.15.3",
         "semver": "7.5.4",
         "simple-oauth2": "5.1.0",
         "undici": "6.28.0",
         "uuid": "14.0.0",
         "xml-crypto": "6.1.2",
-        "zod": "4.0.5"
+        "zod": "4.3.6"
     },
     "devDependencies": {
         "@nangohq/logs": "file:../logs",

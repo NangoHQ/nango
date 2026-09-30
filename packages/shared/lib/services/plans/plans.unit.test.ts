@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { getPlanDefinition, plansList } from './definitions.js';
-import { getGrowthAddonFlags, mergeFlags } from './plans.js';
+import { getGrowthAddonEnvironmentsMax, getGrowthAddonFlags, mergeFlags } from './plans.js';
 
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
@@ -23,6 +23,8 @@ describe('mergeFlags', () => {
             can_customize_connect_ui_theme: false,
             can_disable_connect_ui_watermark: false
         });
+        expect(getGrowthAddonEnvironmentsMax(definition, true, 3)).toBe(10);
+        expect(getGrowthAddonEnvironmentsMax(definition, false, 10)).toBe(3);
     });
 
     it('should cap only connections, function runtime and data transfer on the free plan', () => {
@@ -185,19 +187,16 @@ describe('mergeFlags', () => {
                 });
             });
 
-            it('should keep a higher limit the source plan carries', () => {
-                const newFlags = mergeFlags({
-                    currentPlan: makePlan({ code: from, flagOverrides: {} }),
-                    newPlanDefinition: payAsYouGo
-                });
-                const source = getPlanDefinition(from)!;
-                expect(newFlags.environments_max).toBe(Math.max(source.flags.environments_max ?? 0, payAsYouGo.flags.environments_max ?? 0));
+            it('should reset the environment cap to the plan default when no add-on is active, override or not', () => {
+                const currentPlan = makePlan({ code: from, flagOverrides: { environments_max: 50 } });
+                const newFlags = mergeFlags({ currentPlan, newPlanDefinition: payAsYouGo });
+                expect(newFlags.environments_max).toBe(payAsYouGo.flags.environments_max);
             });
 
             it('should keep overrides on flags the growth add-on does not gate', () => {
-                const currentPlan = makePlan({ code: from, flagOverrides: { environments_max: 50, api_rate_limit_size: '2xl' } });
+                const currentPlan = makePlan({ code: from, flagOverrides: { api_rate_limit_size: '2xl' } });
                 const newFlags = mergeFlags({ currentPlan, newPlanDefinition: payAsYouGo });
-                expect(newFlags).toMatchObject({ environments_max: 50, api_rate_limit_size: '2xl' });
+                expect(newFlags).toMatchObject({ api_rate_limit_size: '2xl' });
             });
 
             it('should revoke add-on-gated flags when no add-on is active, override or not', () => {
@@ -218,8 +217,18 @@ describe('mergeFlags', () => {
                     has_rbac: true,
                     can_customize_connect_ui_theme: true,
                     can_override_docs_connect_url: true,
-                    can_disable_connect_ui_watermark: true
+                    can_disable_connect_ui_watermark: true,
+                    environments_max: 10
                 });
+            });
+
+            it('should keep a higher environment cap than the add-on grants', () => {
+                const newFlags = mergeFlags({
+                    currentPlan: makePlan({ code: from, flagOverrides: { environments_max: 50 }, hasGrowthFeatures: true }),
+                    newPlanDefinition: payAsYouGo
+                });
+
+                expect(newFlags.environments_max).toBe(50);
             });
         }
     );

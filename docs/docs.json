@@ -98,6 +98,10 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/webflow",
+      "destination": "/api-integrations/webflow"
+    },
+    {
       "source": "/integrations/all/pandadoc",
       "destination": "/api-integrations/pandadoc"
     },
@@ -1073,6 +1077,7 @@
               "integrations/all/asana-scim",
               "integrations/all/ashby",
               "api-integrations/aspire",
+              "api-integrations/astro-mcp",
               "api-integrations/athenahealth",
               "integrations/all/atlas-so",
               "integrations/all/atlassian",
@@ -1119,6 +1124,7 @@
               "api-integrations/bigcommerce",
               "integrations/all/bill",
               "integrations/all/bill-sandbox",
+              "api-integrations/billit",
               "api-integrations/bing-webmasters",
               "api-integrations/bird",
               "integrations/all/bitbucket",
@@ -1272,6 +1278,7 @@
               "api-integrations/easypost",
               "integrations/all/ebay",
               "integrations/all/ebay-sandbox",
+              "api-integrations/eclinicalworks",
               "api-integrations/ecu360",
               "api-integrations/ecu360-production",
               "integrations/all/egnyte",
@@ -1972,7 +1979,7 @@
               "integrations/all/wave-accounting",
               "integrations/all/wealthbox",
               "integrations/all/webex",
-              "integrations/all/webflow",
+              "api-integrations/webflow",
               "api-integrations/webinarjam",
               "api-integrations/wejam",
               "api-integrations/whatsapp-business",

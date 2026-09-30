@@ -1,29 +1,48 @@
-import { FieldLabel } from '@nangohq/design-system';
+import { RefreshCw, TriangleAlert } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+import { Alert, AlertDescription, AlertTitle, Button, FieldLabel } from '@nangohq/design-system';
 
 import { DocsIconLink } from '@/components/patterns/DocsIconLink.js';
 import { EditableInput } from '@/components/patterns/EditableInput.js';
+import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { SecretInput } from '@/components/patterns/SecretInput.js';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useToast } from '@/hooks/useToast.js';
 import { validateUrl } from '@/pages/Integrations/utils.js';
 import { useStore } from '@/store';
-import { useEnvironment, usePatchWebhook } from '../../../hooks/useEnvironment.js';
+import { useEnvironment, usePatchWebhook, usePostRotateWebhookSigningKey } from '../../../hooks/useEnvironment.js';
 import SettingsContent from './components/SettingsContent.js';
 import SettingsGroup from './components/SettingsGroup.js';
 import { WebhookCheckboxes } from './components/WebhookCheckboxes.js';
 
 import type { PatchWebhook } from '@nangohq/types';
 
+const SIGNING_KEY_PROPAGATION_MS = 5 * 60 * 1000;
+
 export const Webhooks: React.FC = () => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { mutateAsync: patchWebhookAsync } = usePatchWebhook(env);
+    const { mutateAsync: rotateSigningKeyAsync } = usePostRotateWebhookSigningKey(env);
+    const { confirm, DialogComponent } = useConfirmDialog();
+    const [bothKeysValidUntil, setBothKeysValidUntil] = useState<Date | null>(null);
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
 
     const { can } = usePermissions();
     const canWriteWebhooks = can('environment:webhooks:update');
     const canReadSigningKey = can('environment:settings:read_secret');
+    const canRotateSigningKey = can('environment:webhook_signing_key:rotate');
+
+    useEffect(() => {
+        if (!bothKeysValidUntil) {
+            return;
+        }
+        const timeout = setTimeout(() => setBothKeysValidUntil(null), bothKeysValidUntil.getTime() - Date.now());
+        return () => clearTimeout(timeout);
+    }, [bothKeysValidUntil]);
 
     const onSave = async (body: PatchWebhook['Body']) => {
         try {
@@ -35,12 +54,32 @@ export const Webhooks: React.FC = () => {
         }
     };
 
+    const onRotateSigningKey = () =>
+        confirm({
+            title: 'Rotate signing key?',
+            description:
+                'A new key replaces the current one. For up to 5 minutes, webhooks are signed with either the old or the new key, so keep accepting both until then.',
+            confirmButtonText: 'Rotate key',
+            confirmVariant: 'danger',
+            icon: <RefreshCw />,
+            onConfirm: async () => {
+                try {
+                    await rotateSigningKeyAsync();
+                    setBothKeysValidUntil(new Date(Date.now() + SIGNING_KEY_PROPAGATION_MS));
+                    toast({ title: 'Signing key rotated', variant: 'success' });
+                } catch {
+                    toast({ title: 'Failed to rotate signing key', variant: 'error' });
+                }
+            }
+        });
+
     if (!environmentAndAccount) {
         return null;
     }
 
     return (
         <SettingsContent title="Webhooks">
+            {DialogComponent}
             <SettingsGroup
                 label={
                     <div className="flex gap-1.5">
@@ -88,6 +127,26 @@ export const Webhooks: React.FC = () => {
                         </a>
                     </p>
                     <SecretInput value={environmentAndAccount.webhook_signing_key ?? ''} copy={canReadSigningKey} canRead={canReadSigningKey} readOnly />
+                    {bothKeysValidUntil && (
+                        <Alert variant="warning" size="compact">
+                            <TriangleAlert />
+                            <AlertTitle>Accept both keys until {bothKeysValidUntil.toLocaleTimeString()}</AlertTitle>
+                            <AlertDescription>
+                                The new key takes up to 5 minutes to reach every Nango process. Until then, webhooks can be signed with either the old or the
+                                new key. Switching verification over right away will reject valid webhooks.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                    <div className="self-start">
+                        <PermissionGate condition={canRotateSigningKey}>
+                            {(allowed) => (
+                                <Button variant="outline" size="sm" disabled={!allowed} onClick={() => void onRotateSigningKey()}>
+                                    <RefreshCw />
+                                    Rotate key
+                                </Button>
+                            )}
+                        </PermissionGate>
+                    </div>
                 </div>
             </SettingsGroup>
             <SettingsGroup label="Subscriptions">

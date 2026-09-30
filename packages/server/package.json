@@ -47,6 +47,7 @@
         "@nangohq/usage": "file:../usage",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
+        "@posthog/mcp": "0.18.0",
         "@workos-inc/node": "6.2.0",
         "axios": "1.18.0",
         "body-parser": "2.3.0",
@@ -81,7 +82,7 @@
         "ua-parser-js": "2.0.10",
         "uuid": "14.0.0",
         "ws": "8.21.0",
-        "zod": "4.0.5"
+        "zod": "4.3.6"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
