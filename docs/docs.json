@@ -1981,6 +1981,7 @@
               "integrations/all/webex",
               "api-integrations/webflow",
               "api-integrations/webinarjam",
+              "api-integrations/weflow",
               "api-integrations/wejam",
               "api-integrations/whatsapp-business",
               "integrations/all/whoop",
