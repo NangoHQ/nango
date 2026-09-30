@@ -41,7 +41,7 @@ export interface AnalyticsEvents {
 
     // Two-factor authentication
     'auth:two_factor_start': Record<string, never>;
-    'auth:two_factor_complete': { is_success: true };
+    'auth:two_factor_complete': { is_success: true } | { is_success: false; error_code: string };
     'auth:two_factor_cancel': { step: 'scan' | 'save' };
     'auth:two_factor_remove': Record<string, never>;
     'auth:recovery_codes_generate': Record<string, never>;

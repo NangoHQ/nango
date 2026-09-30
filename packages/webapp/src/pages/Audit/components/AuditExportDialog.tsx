@@ -19,7 +19,7 @@ import {
 import { apiAuditTrailExport } from '@/hooks/useAudit';
 import { useToast } from '@/hooks/useToast';
 import { track } from '@/utils/analytics';
-import { APIError } from '@/utils/api';
+import { apiErrorCode } from '@/utils/api';
 import { openSupportChat } from '@/utils/support';
 import { actionSelectionLabel, resourceSelectionLabel } from '../constants';
 import { AUDIT_EXPORT_MAX_ROWS, exportWindowField } from '../export';
@@ -70,8 +70,7 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ query, sel
                     : { title: 'Audit trail exported', variant: 'success' }
             );
         } catch (err) {
-            const errorCode = err instanceof APIError && 'error' in err.json ? err.json.error.code : 'unknown_error';
-            track('audit:export_complete', { is_success: false, error_code: errorCode });
+            track('audit:export_complete', { is_success: false, error_code: apiErrorCode(err) });
             toast({ title: 'Failed to export the audit trail', variant: 'error' });
         } finally {
             setIsExporting(false);

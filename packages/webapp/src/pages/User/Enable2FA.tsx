@@ -13,6 +13,7 @@ import { useMFA } from '@/hooks/useMFA';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { track } from '@/utils/analytics';
+import { apiErrorCode } from '@/utils/api';
 import { getMFAErrorMessage } from '@/utils/mfaErrors';
 import { MfaStepper } from './components/MfaStepper';
 import { RecoveryCodes } from './components/RecoveryCodes';
@@ -74,6 +75,7 @@ export const Enable2FA: React.FC = () => {
             setRecoveryCodes(result.data.recoveryCodes);
             setStep('save');
         } catch (err) {
+            track('auth:two_factor_complete', { is_success: false, error_code: apiErrorCode(err) });
             setCode('');
             toast({ title: getMFAErrorMessage(err), variant: 'error' });
         }
