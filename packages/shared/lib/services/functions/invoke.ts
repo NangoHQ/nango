@@ -42,9 +42,8 @@ export class FunctionInvokeError extends Error {
 export async function invokeFunction({
     account,
     environment,
-    integrationId,
     connectionId,
-    functionName,
+    functionUuid,
     input,
     request,
     invocationType,
@@ -53,9 +52,8 @@ export async function invokeFunction({
 }: {
     account: DBTeam;
     environment: DBEnvironment;
-    integrationId: string;
     connectionId: string;
-    functionName: string;
+    functionUuid: string;
     input?: unknown | undefined;
     request: Omit<Extract<FunctionTrigger, { kind: 'http' }>['request'], 'body'>;
     invocationType: FunctionInvocationType;
@@ -66,26 +64,14 @@ export async function invokeFunction({
         span.addTags({
             accountId: account.id,
             environmentId: environment.id,
-            integrationId,
             connectionId,
-            functionName,
+            functionUuid,
             invocationType
         });
 
-        const connectionRes = await connectionService.getConnection(connectionId, integrationId, environment.id);
-
-        if (!connectionRes.success) {
-            return Err(
-                new FunctionInvokeError({
-                    code: 'connection_not_found',
-                    message: `Connection '${connectionId}' was not found for integration '${integrationId}'`
-                })
-            );
-        }
-
         const functionRes = await functionConfigService.search(db.knex, {
             environmentId: environment.id,
-            filter: { integrationKey: integrationId, name: functionName }
+            filter: { uuid: functionUuid }
         });
 
         if (functionRes.isErr()) {
@@ -102,7 +88,7 @@ export async function invokeFunction({
             return Err(
                 new FunctionInvokeError({
                     code: 'function_not_found',
-                    message: `Function '${functionName}' was not found`
+                    message: `Function '${functionUuid}' was not found`
                 })
             );
         }
@@ -111,12 +97,19 @@ export async function invokeFunction({
             return Err(
                 new FunctionInvokeError({
                     code: 'function_disabled',
-                    message: `Function '${functionName}' is disabled`
+                    message: `Function '${functionUuid}' is disabled`
                 })
             );
         }
 
         const { currentVersion, integration, config } = functionRes.value[0];
+        const integrationId = integration.unique_key;
+        span.addTags({ integrationId });
+        const connectionRes = await connectionService.getConnection(connectionId, integrationId, environment.id);
+        const connection = connectionRes.response;
+        if (!connection) {
+            return Err(new FunctionInvokeError({ code: 'connection_not_found', message: `Connection '${connectionId}' was not found` }));
+        }
 
         const canInvokeRes = canInvoke(currentVersion, invocationType);
         if (canInvokeRes.isErr()) {
@@ -135,7 +128,6 @@ export async function invokeFunction({
             );
         }
 
-        const connection = connectionRes.response!;
         const trigger = buildInvokeTrigger({
             version: currentVersion,
             input: validation.value,
@@ -174,7 +166,8 @@ export async function invokeFunction({
             environment,
             connection,
             functionConfigId: config.id,
-            functionName,
+            functionName: config.name,
+            functionUuid: config.uuid,
             trigger: trigger.value,
             async: invocationType === 'no_wait',
             retryMax: 0,

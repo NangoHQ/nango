@@ -155,6 +155,7 @@ export class Orchestrator {
         connection,
         functionConfigId,
         functionName,
+        functionUuid,
         trigger,
         async,
         retryMax,
@@ -164,6 +165,7 @@ export class Orchestrator {
         environment: DBEnvironment;
         connection: ConnectionJobs;
         functionName: string;
+        functionUuid: string;
         functionConfigId: number;
         trigger: FunctionTrigger;
         async: boolean;
@@ -215,7 +217,10 @@ export class Orchestrator {
                     connection: connection.connection_id,
                     integration: connection.provider_config_key
                 });
-                return Ok({ id: res.value.retryKey, statusUrl: `/functions/invocations/${res.value.retryKey}` });
+                return Ok({
+                    id: res.value.retryKey,
+                    statusUrl: `/connections/${encodeURIComponent(connection.connection_id)}/functions/${functionUuid}/invocations/${res.value.retryKey}`
+                });
             }
 
             void logCtx.enrichOperation({

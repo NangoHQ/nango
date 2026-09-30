@@ -195,6 +195,7 @@ async function executeFunctionDirect({ context, execution }: { context: Dispatch
             environment: context.environment,
             connection: execution.connection,
             functionName: execution.config.name,
+            functionUuid: execution.config.uuid,
             functionConfigId: execution.config.id,
             trigger: execution.trigger,
             async: true,

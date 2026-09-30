@@ -102,6 +102,7 @@ export async function preConnectionDeletion({
                     connection,
                     functionConfigId: config.id,
                     functionName: config.name,
+                    functionUuid: config.uuid,
                     trigger: {
                         kind: 'event',
                         input: { event },
