@@ -6360,6 +6360,33 @@ coupa-compass:
             format: hostname
             prefix: https://
 
+court-rules:
+    display_name: Court Rules
+    categories:
+        - legal
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.courtrules.app
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/holidays?limit=1
+    docs: https://nango.dev/docs/api-integrations/court-rules
+    docs_connect: https://nango.dev/docs/api-integrations/court-rules/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Court Rules API key.
+            example: crm_prod_****************
+            pattern: '^\S+$'
+            doc_section: '#step-1-get-your-court-rules-api-key'
+
 cyberimpact:
     display_name: Cyberimpact
     categories:
