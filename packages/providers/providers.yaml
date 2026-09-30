@@ -27546,6 +27546,31 @@ webinarjam:
             format: uuid
             doc_section: '#step-1-getting-your-api-key'
 
+weflow:
+    display_name: Weflow
+    categories:
+        - communication
+        - crm
+        - video
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.getweflow.app
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/summary-templates
+    docs: https://nango.dev/docs/api-integrations/weflow
+    docs_connect: https://nango.dev/docs/api-integrations/weflow/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your Weflow workspace.
+            example: wfl_****************************
+            doc_section: '#step-1-create-your-api-key'
+
 wejam:
     display_name: WeJam AI
     categories:
