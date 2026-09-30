@@ -8,7 +8,7 @@ import { seeders } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionServer.js';
-import { buildInstructions, buildMcpTools, pinNewestConnectionPerIntegration, proxyNeedsApproval } from './agentPlayground.service.js';
+import { buildInstructions, buildMcpTools, pinNewestConnectionPerIntegration, toolNeedsApproval } from './agentPlayground.service.js';
 
 import type { AgentSession } from '@nangohq/types';
 
@@ -68,15 +68,23 @@ describe('buildInstructions', () => {
     });
 });
 
-describe('proxyNeedsApproval', () => {
+describe('toolNeedsApproval', () => {
     it.each([
         { toolName: 'nango_proxy', input: { method: 'GET' }, expected: false },
         { toolName: 'nango_proxy', input: { method: 'get' }, expected: false },
         { toolName: 'nango_proxy', input: { method: 'PUT' }, expected: true },
         { toolName: 'nango_proxy', input: {}, expected: true },
-        { toolName: 'nango_execute', input: { method: 'PUT' }, expected: false }
-    ])('$toolName $input.method → $expected', ({ toolName, input, expected }) => {
-        expect(proxyNeedsApproval(toolName, input)).toBe(expected);
+        { toolName: 'nango_execute', input: { tool: 'pg-google-calendar__list-events' }, expected: false },
+        { toolName: 'nango_execute', input: { tool: 'pg-google-calendar__get-event' }, expected: false },
+        { toolName: 'nango_execute', input: { tool: 'pg-google-calendar__clear-calendar' }, expected: true },
+        { toolName: 'nango_execute', input: { tool: 'pg-google-calendar__create-all-day-event' }, expected: true },
+        { toolName: 'nango_execute', input: {}, expected: true },
+        { toolName: 'pg-google-calendar__delete-event', input: {}, expected: true },
+        { toolName: 'pg-google-calendar__search-events', input: {}, expected: false },
+        { toolName: 'nango_tool_search', input: { query: 'delete event' }, expected: false },
+        { toolName: 'nango_create_connection', input: {}, expected: false }
+    ])('$toolName $input → $expected', ({ toolName, input, expected }) => {
+        expect(toolNeedsApproval(toolName, input)).toBe(expected);
     });
 });
 
