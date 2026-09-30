@@ -202,6 +202,7 @@ export async function applyPendingPlanChange({
         productTracking.track({
             name: 'account:billing:plan_changed',
             team,
+            plan: planChange.updatedPlan,
             eventProperties: {
                 previousPlan: planChange.previousPlan.name,
                 newPlan: planChange.updatedPlan.name,
@@ -288,6 +289,7 @@ export function trackPlanChange(context: PlanChangeContext, change: PlanChanges)
     productTracking.track({
         name: 'account:billing:plan_changed:v2',
         team,
+        plan: null,
         eventProperties: {
             type: 'self-serve',
             previousPlan: currentPlan.name + (currentPlan.has_growth_features ? ' + growth add-on' : ''),
@@ -303,6 +305,7 @@ export function trackPlanChange(context: PlanChangeContext, change: PlanChanges)
     productTracking.track({
         name: 'account:billing:downgraded',
         team,
+        plan: null,
         eventProperties: {
             previousPlan: currentPlan.name,
             newPlan: requested.newPlanCode,

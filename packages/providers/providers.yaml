@@ -11891,6 +11891,36 @@ highq:
             example: acme.highq.com/main
             doc_section: '#step-1-find-your-hostname'
 
+hitpay:
+    display_name: HitPay App
+    categories:
+        - payment
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://dashboard.${connectionConfig.environment}/oauth/authorize
+    token_url: https://api.${connectionConfig.environment}/v1/open/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.${connectionConfig.environment}
+    docs: https://nango.dev/docs/api-integrations/hitpay
+    setup_guide_url: https://nango.dev/docs/api-integrations/hitpay/how-to-register-your-own-hitpay-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/hitpay/connect
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The HitPay environment to connect to. Use sandbox.hit-pay.com with sandbox app credentials.
+            doc_section: '#step-1-choose-your-environment'
+            enum:
+                - hit-pay.com
+                - sandbox.hit-pay.com
+                - staging.hit-pay.com
+
 holded:
     display_name: Holded
     categories:
