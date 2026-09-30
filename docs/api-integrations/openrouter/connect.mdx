@@ -1,0 +1,36 @@
+---
+title: 'OpenRouter - How do I link my account?'
+sidebarTitle: 'OpenRouter'
+---
+
+## Overview
+
+To authenticate with OpenRouter, you need:
+1. **API Key** — A key that grants Nango access to the OpenRouter API on your behalf.
+
+This guide will walk you through creating your API key.
+
+### Prerequisites
+
+- An OpenRouter account.
+
+### Step 1: Create your API key
+
+1. Log in to OpenRouter and go to the [**API Keys**](https://openrouter.ai/settings/keys) page in your settings.
+2. Create a new key and give it a name, such as `Nango`.
+3. Choose a **credit limit**. OpenRouter recommends setting a limit on every key so that a leaked key can't spend your entire balance.
+4. Set **Expiration** to **No expiration** so the key doesn't expire and break the connection.
+
+<img src="/api-integrations/openrouter/create_api_key.png" >
+
+5. Copy the generated key. It starts with `sk-or-v1-`.
+
+### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with OpenRouter.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/openrouter/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to OpenRouter.
