@@ -10,7 +10,7 @@ import type { AccountGroupProperties, ApiUser } from '@nangohq/types';
  * {@link AnalyticsEvents} at compile time.
  */
 export function track<E extends keyof AnalyticsEvents>(event: E, properties: AnalyticsEvents[E]) {
-    posthog?.capture(event, properties);
+    posthog?.capture(event, { ...properties, surface: 'web' });
 }
 
 // Every group() call with properties sends a $groupidentify event, and PrivateRoute identifies on each render.

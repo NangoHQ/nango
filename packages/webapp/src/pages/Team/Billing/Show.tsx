@@ -69,17 +69,12 @@ export const TeamBilling: React.FC = () => {
     const overdueBanner = overdue?.data.hasOverdue && (
         <OverdueInvoiceAlert size="wide" canManageBilling={canManageBilling}>
             {overdue.data.portalUrl && (
-                <AlertButtonLink
-                    to={overdue.data.portalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => track('web:usage:invoice_details_clicked', {})}
-                >
+                <AlertButtonLink to={overdue.data.portalUrl} target="_blank" rel="noopener noreferrer" onClick={() => track('billing:invoice_link_click', {})}>
                     View invoices <ExternalLink />
                 </AlertButtonLink>
             )}
             <PaymentMethodDialog replace>
-                <AlertButton onClick={() => track('web:usage:edit_payment_method_clicked', { source: 'billing_page' })}>
+                <AlertButton onClick={() => track('billing:payment_method_button_click', {})}>
                     Edit payment method <ArrowUpRight />
                 </AlertButton>
             </PaymentMethodDialog>
@@ -87,7 +82,7 @@ export const TeamBilling: React.FC = () => {
     );
 
     useEffect(() => {
-        track('web:usage:viewed', {});
+        track('billing:usage_view', {});
     }, []);
 
     const scrollRef = useRef<HTMLDivElement>(null);

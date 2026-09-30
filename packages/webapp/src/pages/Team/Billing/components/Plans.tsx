@@ -150,7 +150,7 @@ const PlanCard: React.FC<{
     const [planChangeDialogOpen, setPlanChangeDialogOpen] = useState(false);
 
     const onUpgradeClicked = useCallback(() => {
-        track('web:usage:upgrade_clicked', {});
+        track('billing:upgrade_button_click', {});
         if (!paymentMethod) {
             setPaymentMethodDialogOpen(true);
         } else {
