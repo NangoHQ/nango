@@ -18,8 +18,7 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 const logger = getLogger('proxy:metering');
 
 // Resets whenever bytes arrive, so large responses that keep flowing are unaffected
-// TODO(NAN-7303): back to 5 * 60 * 1000 before merging, lowered to test on development behind ngrok's 300s idle cutoff
-const PROXY_IDLE_TIMEOUT_MS = 60 * 1000;
+const PROXY_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 
 interface Props {
     proxyConfig: ApplicationConstructedProxyConfiguration;
