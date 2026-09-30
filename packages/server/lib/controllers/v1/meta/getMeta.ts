@@ -1,4 +1,4 @@
-import { environmentService } from '@nangohq/shared';
+import { accountGroupProperties, environmentService } from '@nangohq/shared';
 import { baseUrl, NANGO_VERSION, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -13,7 +13,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
         return;
     }
 
-    const { user: sessionUser, plan } = res.locals;
+    const { user: sessionUser, account, plan } = res.locals;
 
     const environments = await environmentService.getEnvironmentsByAccountId(sessionUser.account_id);
     if (environments.isErr()) {
@@ -29,7 +29,8 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             baseUrl,
             debugMode: req.session.debugMode === true,
             gettingStartedClosed: sessionUser.getting_started_closed,
-            auditTrail: await canViewAuditTrail(req, plan)
+            auditTrail: await canViewAuditTrail(req, plan),
+            accountGroup: accountGroupProperties(account, plan)
         }
     });
 });

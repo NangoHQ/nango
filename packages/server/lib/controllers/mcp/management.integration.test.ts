@@ -182,11 +182,11 @@ describe('POST /mcp management server', () => {
                 mcp_auth_type: 'apiKey',
                 surface: 'server',
                 is_production: env.is_production,
-                $process_person_profile: false,
                 $mcp_server_name: 'Nango Management MCP server',
                 $mcp_tool_name: 'providers_get',
                 $mcp_is_error: false
             });
+            expect(event?.properties).not.toHaveProperty('$process_person_profile');
             expect(event?.properties).not.toHaveProperty('$mcp_parameters');
             expect(event?.properties).not.toHaveProperty('$mcp_response');
 
