@@ -169,23 +169,25 @@ type Prefixed<T, Prefix extends string> = {
     [K in keyof T as `${Prefix}${Extract<K, string>}`]: T[K];
 };
 
+// `id` and `uuid` fields are mutually exclusive. Only one of them is provided at a time.
+type FunctionIdentity = { id?: number | undefined; uuid?: never } | { uuid?: string | undefined; id?: never };
+
 type SearchFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> &
     Prefixed<DBFunctionConfigVersion, typeof VERSION_PREFIX> &
     Prefixed<FunctionIntegration, typeof INTEGRATION_PREFIX>;
 
-type FunctionSearchFilter =
-    // `id` and `uuid` fields are mutually exclusive. Only one of them can be provided at a time.
-    ({ id?: number | undefined; uuid?: never } | { uuid?: string | undefined; id?: never }) & {
-        integrationKey?: string | undefined;
-        provider?: string | undefined;
-        name?: string | undefined;
-        enabled?: boolean | undefined;
-        trigger?: { kind: 'http'; hasSubscriptions?: boolean } | { kind: 'event'; event?: OnEventType } | { kind: 'schedule' } | { kind: 'none' };
-    };
+type FunctionSearchFilter = {
+    integrationKey?: string | undefined;
+    provider?: string | undefined;
+    name?: string | undefined;
+    enabled?: boolean | undefined;
+    trigger?: { kind: 'http'; hasSubscriptions?: boolean } | { kind: 'event'; event?: OnEventType } | { kind: 'schedule' } | { kind: 'none' };
+} & FunctionIdentity;
 
 export interface FunctionSearchOptions {
     limit?: number | undefined;
     afterId?: number | undefined;
+    forShare?: boolean | undefined;
 }
 
 export async function search(
@@ -197,7 +199,7 @@ export async function search(
         environmentId: number;
         filter?: FunctionSearchFilter | undefined;
     },
-    { limit, afterId }: FunctionSearchOptions = {}
+    { limit, afterId, forShare }: FunctionSearchOptions = {}
 ): Promise<Result<CurrentFunctionConfig[]>> {
     try {
         const query = trx
@@ -275,6 +277,9 @@ export async function search(
         }
         if (limit !== undefined) {
             query.limit(limit);
+        }
+        if (forShare) {
+            query.forShare('config');
         }
 
         const rows = await query;
@@ -367,6 +372,25 @@ export async function upsert(db: Knex, inputs: FunctionConfigUpsert[]): Promise<
         return Ok(upserted);
     } catch (err) {
         return Err(new Error('failed_to_upsert_function', { cause: err }));
+    }
+}
+
+type FunctionConfigUpdate = { environmentId: number; fields: Partial<Pick<DBFunctionConfig, 'enabled'>> } & (
+    | { id: number; uuid?: never }
+    | { uuid: string; id?: never }
+);
+
+export async function update(trx: Knex, { environmentId, fields, ...identity }: FunctionConfigUpdate): Promise<Result<DBFunctionConfig | undefined>> {
+    try {
+        const [updated] = await trx
+            .from<DBFunctionConfig>(CONFIGS_TABLE)
+            .where({ environment_id: environmentId, ...(identity.id !== undefined ? { id: identity.id } : { uuid: identity.uuid }) })
+            .whereNull('deleted_at')
+            .update({ ...fields, updated_at: new Date() })
+            .returning<DBFunctionConfig[]>('*');
+        return Ok(updated);
+    } catch (err) {
+        return Err(new Error('failed_to_update_function_config', { cause: err }));
     }
 }
 

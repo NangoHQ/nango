@@ -3,17 +3,17 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 import { Ok } from '@nangohq/utils';
 
-import { createConfigSeed } from '../../seeders/config.seeder.js';
-import { createConnectionSeed } from '../../seeders/connection.seeder.js';
-import { seedAccountEnvAndUser } from '../../seeders/global.seeder.js';
-import connectionService from '../connection.service.js';
+import { createConfigSeed } from '../../../seeders/config.seeder.js';
+import { createConnectionSeed } from '../../../seeders/connection.seeder.js';
+import { seedAccountEnvAndUser } from '../../../seeders/global.seeder.js';
+import connectionService from '../../connection.service.js';
+import { upsert as upsertFunctionConfigs } from '../models/functions.js';
+import { search as searchInstances, upsert as upsertInstances } from '../models/instances.js';
 import { ensureForConnection, softDeleteInstancesForConnection } from './connection.js';
-import { upsert as upsertFunctionConfigs } from './models/functions.js';
-import { search as searchInstances, upsert as upsertInstances } from './models/instances.js';
 
-import type { Orchestrator } from '../../clients/orchestrator.js';
-import type { SlackService } from '../notification/slack.service.js';
-import type { FunctionConfigUpsert } from './models/functions.js';
+import type { Orchestrator } from '../../../clients/orchestrator.js';
+import type { SlackService } from '../../notification/slack.service.js';
+import type { FunctionConfigUpsert } from '../models/functions.js';
 import type { DBConnectionDecrypted } from '@nangohq/types';
 
 const functionVersion: FunctionConfigUpsert['version'] = {

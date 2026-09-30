@@ -60,6 +60,7 @@ import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDry
 import { getFunction } from './controllers/functions/getFunction.js';
 import { getFunctions } from './controllers/functions/getFunctions.js';
 import { getFunctionInvocation } from './controllers/functions/getInvocation.js';
+import { patchFunction } from './controllers/functions/patchFunction.js';
 import { postFunctionInvocation } from './controllers/functions/postInvocation.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
@@ -99,6 +100,7 @@ import {
     auditFunctionDeployedCli,
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
+    auditFunctionUpdated,
     auditPublicApiKeyCreated,
     auditPublicApiKeyDeleted,
     auditPublicConnectionDeleted,
@@ -448,7 +450,10 @@ publicAPI.route('/functions/deployments/bundle').post(envAuth, auditFunctionDepl
 
 publicAPI.route('/functions/invocations').post(envAuth, can('environment:functions:invocations'), postFunctionInvocation);
 publicAPI.route('/functions/invocations/:id').get(envAuth, can('environment:functions:invocations'), getFunctionInvocation);
-publicAPI.route('/functions/:uuid').get(envAuth, can('environment:functions:read'), getFunction);
+publicAPI
+    .route('/functions/:uuid')
+    .get(envAuth, can('environment:functions:read'), getFunction)
+    .patch(envAuth, auditFunctionUpdated, can('environment:functions:update'), patchFunction);
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);

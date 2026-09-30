@@ -53,6 +53,7 @@ export {
     auditFunctionDeployedCli,
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
+    auditFunctionUpdated,
     auditFunctionUpgraded,
     auditPreBuiltDeployed,
     auditPublicFunctionDeleted
