@@ -257,6 +257,15 @@ export type GetFunction = ApiEndpoint<{
     Success: GetFunctionResponse;
 }>;
 
+export type PatchFunction = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'updated', 'environment'>;
+    Method: 'PATCH';
+    Path: '/functions/:uuid';
+    Params: { uuid: string };
+    Body: { state: 'enabled' | 'disabled' };
+    Success: GetFunctionResponse;
+}>;
+
 export interface GetFunctionsQuery {
     integration?: string | undefined;
     provider?: string | undefined;

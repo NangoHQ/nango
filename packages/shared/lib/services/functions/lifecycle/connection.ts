@@ -1,9 +1,9 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import * as functionConfigService from './models/functions.js';
-import * as functionInstanceService from './models/instances.js';
+import * as functionConfigService from '../models/functions.js';
+import * as functionInstanceService from '../models/instances.js';
 
-import type { Orchestrator } from '../../clients/orchestrator.js';
+import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { DBConnection, DBFunctionInstance } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
@@ -21,10 +21,11 @@ export async function ensureForConnection(
     }
 ): Promise<Result<void>> {
     try {
-        const configs = await functionConfigService.search(trx, {
-            environmentId: connection.environment_id,
-            filter: { integrationKey: connection.provider_config_key, enabled: true }
-        });
+        const configs = await functionConfigService.search(
+            trx,
+            { environmentId: connection.environment_id, filter: { integrationKey: connection.provider_config_key, enabled: true } },
+            { forShare: true }
+        );
         if (configs.isErr()) {
             return Err(configs.error);
         }
@@ -54,6 +55,9 @@ export async function ensureForConnection(
         const triggerByConfigId = new Map(scheduled.map(({ config, trigger }) => [config.id, trigger]));
         return await orchestrator.scheduleFunctions(
             instances.value.flatMap((instance) => {
+                if (!instance.enabled) {
+                    return [];
+                }
                 const trigger = triggerByConfigId.get(instance.function_config_id);
                 return trigger
                     ? [

@@ -5,6 +5,7 @@ import {
     auditFunctionDeployedCli,
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
+    auditFunctionUpdated,
     auditFunctionUpgraded,
     auditPreBuiltDeployed,
     auditPublicFunctionDeleted
@@ -175,5 +176,32 @@ describe('function audit middleware (unit)', () => {
             targets: [{ type: 'function', id: 'algolia:my-prebuilt-sync' }]
         });
         expect(event?.metadata).toEqual({ source: 'catalog', type: 'sync' });
+    });
+
+    it('function update: the uuid is the target, the requested state is the metadata', async () => {
+        const req = fakeReq({ params: { uuid: 'f0000000-0000-4000-8000-000000000042' }, body: { state: 'disabled' } });
+        const event = await runAudit(auditFunctionUpdated, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'function',
+            action: 'updated',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
+            actor: { type: 'api_key', id: 'c0000000-0000-4000-8000-000000000005', display: 'ci-key' },
+            targets: [{ type: 'function', id: 'f0000000-0000-4000-8000-000000000042' }],
+            metadata: { state: 'disabled' }
+        });
+    });
+
+    it('function update: a denied request still records the attempt', async () => {
+        const req = fakeReq({ params: { uuid: 'f0000000-0000-4000-8000-000000000042' }, body: { state: 'enabled' } });
+        const event = await runAudit(auditFunctionUpdated, req, fakeRes(secretKeyLocals, 403));
+        expect(event).toMatchObject({
+            resource: 'function',
+            action: 'updated',
+            outcome: 'denied',
+            targets: [{ type: 'function', id: 'f0000000-0000-4000-8000-000000000042' }],
+            metadata: { state: 'enabled' }
+        });
     });
 });

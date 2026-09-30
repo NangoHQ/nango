@@ -1,7 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
-import { flags } from '@nangohq/utils';
 
 import { createAccount } from '../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../seeders/config.seeder.js';
@@ -10,9 +9,13 @@ import { getFunction, listActions, listFunctions } from './service.js';
 
 import type { DBEnvironment, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
 
-const { mockListCatalogTools, mockGetCatalogTool } = vi.hoisted(() => {
-    return { mockListCatalogTools: vi.fn(), mockGetCatalogTool: vi.fn() };
+const { mockListCatalogTools, mockGetCatalogTool, mockHasCatalogTools } = vi.hoisted(() => {
+    return { mockListCatalogTools: vi.fn(), mockGetCatalogTool: vi.fn(), mockHasCatalogTools: vi.fn() };
 });
+
+vi.mock('@nangohq/feature-flags', () => ({
+    getFlags: () => ({ hasCatalogTools: mockHasCatalogTools })
+}));
 
 vi.mock('../../catalog/actions.js', () => ({
     listCatalogTools: mockListCatalogTools,
@@ -76,7 +79,7 @@ async function seedIntegration() {
     const account = await createAccount();
     const environment = await createEnvironmentSeed(account.id);
     const integration = await createConfigSeed(environment, 'github', 'github');
-    return { environment, integration };
+    return { account, environment, integration };
 }
 
 async function listPage({
@@ -112,6 +115,7 @@ describe('listFunctions with catalog actions', () => {
     });
 
     beforeEach(() => {
+        mockHasCatalogTools.mockResolvedValue(true);
         mockListCatalogTools.mockReturnValue([]);
         mockGetCatalogTool.mockReturnValue(undefined);
     });
@@ -244,6 +248,7 @@ describe('getFunction with catalog actions', () => {
     });
 
     beforeEach(() => {
+        mockHasCatalogTools.mockResolvedValue(true);
         mockListCatalogTools.mockReturnValue([]);
         mockGetCatalogTool.mockReturnValue(undefined);
     });
@@ -297,27 +302,22 @@ describe('getFunction with catalog actions', () => {
         });
     });
 
-    it('does not return a catalog action when FLAG_CATALOG_TOOLS_ENABLED is off', async () => {
-        const original = flags.hasCatalogTools;
-        flags.hasCatalogTools = false;
-        try {
-            const { environment } = await seedIntegration();
-            mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
+    it('does not return a catalog action when tools-catalog is off', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const { environment } = await seedIntegration();
+        mockListCatalogTools.mockReturnValue([catalogTool('create-issue')]);
 
-            const result = await getFunction({
-                environmentId: environment.id,
-                providerConfigKey: 'github',
-                name: 'create-issue',
-                type: 'action'
-            });
+        const result = await getFunction({
+            environmentId: environment.id,
+            providerConfigKey: 'github',
+            name: 'create-issue',
+            type: 'action'
+        });
 
-            expect(result.isOk()).toBe(true);
-            if (result.isErr()) {
-                return;
-            }
-            expect(result.value).toBeUndefined();
-        } finally {
-            flags.hasCatalogTools = original;
+        expect(result.isOk()).toBe(true);
+        if (result.isErr()) {
+            return;
         }
+        expect(result.value).toBeUndefined();
     });
 });
