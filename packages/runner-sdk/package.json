@@ -17,14 +17,14 @@
         "ajv-formats": "3.0.1",
         "lodash-es": "4.18.1",
         "parse-link-header": "2.0.0",
-        "undici": "6.28.0"
+        "undici": "6.29.0"
     },
     "devDependencies": {
         "@nangohq/types": "0.71.10",
         "@types/json-schema": "7.0.15",
         "axios": "1.18.0",
         "json-schema": "0.4.0",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     },
     "peerDependencies": {
         "zod": "4.3.6"

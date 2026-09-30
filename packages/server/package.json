@@ -67,13 +67,13 @@
         "jsonwebtoken": "9.0.3",
         "knex": "3.1.0",
         "lodash-es": "4.18.1",
-        "multer": "2.3.0",
+        "multer": "2.4.0",
         "node-cron": "4.6.0",
         "oauth": "0.10.0",
         "passport": "0.6.0",
         "passport-http": "0.3.0",
         "passport-local": "1.0.0",
-        "qs": "6.15.3",
+        "qs": "6.16.0",
         "rate-limiter-flexible": "5.0.3",
         "redis": "5.12.1",
         "semver": "7.6.3",
@@ -106,6 +106,6 @@
         "nodemon": "3.1.10",
         "type-fest": "4.41.0",
         "typescript": "5.8.3",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     }
 }

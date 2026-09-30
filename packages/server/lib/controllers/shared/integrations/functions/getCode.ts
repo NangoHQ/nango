@@ -84,7 +84,12 @@ export async function handleGetFunctionCode({
     const match = filtered[0];
     if (!match) {
         if (type === undefined || type === 'action') {
-            const resolved = await resolveRunnableTool({ environmentId: environment.id, integration: providerConfig, name });
+            const resolved = await resolveRunnableTool({
+                accountUuid: res.locals.account.uuid,
+                environmentId: environment.id,
+                integration: providerConfig,
+                name
+            });
             if (resolved.kind === 'catalog') {
                 try {
                     const code = await remoteFileService.getFile(resolved.tool.sourceLocation);
@@ -102,7 +107,7 @@ export async function handleGetFunctionCode({
     }
 
     if (!type && match.type !== 'action') {
-        const resolved = await resolveRunnableTool({ environmentId: environment.id, integration: providerConfig, name });
+        const resolved = await resolveRunnableTool({ accountUuid: res.locals.account.uuid, environmentId: environment.id, integration: providerConfig, name });
         if (resolved.kind === 'catalog') {
             sendAmbiguous(res, providerConfigKey, name, [match, { type: 'action', name, fileLocation: resolved.tool.fileLocation }]);
             return;

@@ -3,6 +3,7 @@ import { Readable } from 'node:stream';
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { logContextGetter } from '@nangohq/logs';
 import { getGlobalWebhookReceiveUrl, productTracking, ProxyRequest, remoteFileService, seeders, syncManager } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
@@ -485,6 +486,7 @@ describe('POST /mcp management server', () => {
     });
 
     it('lists filtered functions for an integration', async () => {
+        vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
         const { secret, env } = await createKeyWithScopes(['environment:functions:list']);
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
