@@ -35,6 +35,7 @@ const config: IntegrationConfig = {
     missing_fields: [],
     display_name: 'GitHub',
     forward_webhooks: true,
+    allow_unverified_webhooks: false,
     shared_credentials_id: null,
     created_at: new Date(),
     updated_at: new Date(),
