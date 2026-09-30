@@ -103,5 +103,11 @@
         "zod": "3.25.76",
         "zustand": "5.0.3"
     },
-    "proxy": "http://localhost:3003"
+    "proxy": "http://localhost:3003",
+    "dependencies": {
+        "@ai-sdk/react": "4.0.125",
+        "ai": "7.0.122",
+        "react-markdown": "10.1.0",
+        "remark-gfm": "4.0.1"
+    }
 }
