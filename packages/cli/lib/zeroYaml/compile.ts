@@ -452,25 +452,94 @@ export function tsToJsPath(filePath: string) {
 
 /**
  * Detects which features are used in function code
- */
+ * */
 export function detectFeatures({ entryPoint }: { entryPoint: string }): Result<Feature[]> {
     try {
-        const source = fs.readFileSync(entryPoint, { encoding: 'utf8' });
-        const { plugin, bag } = nangoPlugin({ entryPoint });
-        babel.transformSync(source, {
-            filename: entryPoint,
-            plugins: [plugin],
-            parserOpts: { sourceType: 'module', plugins: ['typescript'] },
-            generatorOpts: { decoratorsBeforeExport: true }
-        });
+        fs.readFileSync(entryPoint, { encoding: 'utf8' });
+
         const features: Feature[] = [];
-        if (bag.checkpointsLines.length > 0) {
+        if (usesCheckpointApi(entryPoint, new Set())) {
             features.push('checkpoints');
         }
         return Ok(features);
     } catch (err) {
         return Err(new Error('failed_to_detect_features', { cause: err }));
     }
+}
+
+// Scans filePath and its local helper imports for checkpoint API calls.
+function usesCheckpointApi(filePath: string, visited: Set<string>): boolean {
+    const resolved = path.resolve(filePath);
+    if (visited.has(resolved)) {
+        return false;
+    }
+    visited.add(resolved);
+
+    let source: string;
+    try {
+        source = fs.readFileSync(resolved, { encoding: 'utf8' });
+    } catch {
+        return false;
+    }
+
+    const checkpointsLines: number[] = [];
+    const localImportSources: string[] = [];
+
+    babel.transformSync(source, {
+        filename: resolved,
+        parserOpts: { sourceType: 'module', plugins: ['typescript'] },
+        generatorOpts: { decoratorsBeforeExport: true },
+        plugins: [
+            () => ({
+                visitor: {
+                    ImportDeclaration(astPath: babel.NodePath<babel.types.ImportDeclaration>) {
+                        const importSource = astPath.node.source.value;
+                        if (typeof importSource === 'string' && (importSource.startsWith('./') || importSource.startsWith('../'))) {
+                            localImportSources.push(importSource);
+                        }
+                    },
+                    CallExpression(astPath: babel.NodePath<babel.types.CallExpression>) {
+                        const callee = astPath.node.callee;
+                        if (!('object' in callee) || !('property' in callee)) {
+                            return;
+                        }
+                        if (callee.object.type !== 'Identifier' || callee.object.name !== 'nango' || callee.property?.type !== 'Identifier') {
+                            return;
+                        }
+                        if (['getCheckpoint', 'saveCheckpoint', 'clearCheckpoint'].includes(callee.property.name)) {
+                            checkpointsLines.push(astPath.node.loc?.start.line || 0);
+                        }
+                    }
+                }
+            })
+        ]
+    });
+
+    if (checkpointsLines.length > 0) {
+        return true;
+    }
+
+    return localImportSources.some((importSource) => {
+        const resolvedImport = resolveLocalImport(path.dirname(resolved), importSource);
+        return resolvedImport && usesCheckpointApi(resolvedImport, visited);
+    });
+}
+
+function resolveLocalImport(baseDir: string, importSource: string): string | null {
+    const base = path.resolve(baseDir, importSource);
+    const candidates = [base];
+    if (base.endsWith('.js')) {
+        candidates.push(`${base.slice(0, -3)}.ts`, `${base.slice(0, -3)}.tsx`);
+    }
+    candidates.push(`${base}.ts`, `${base}.tsx`, `${base}.js`, path.join(base, 'index.ts'), path.join(base, 'index.js'));
+    for (const candidate of candidates) {
+        try {
+            if (fs.statSync(candidate).isFile()) {
+                return candidate;
+            }
+        } catch {}
+    }
+    return null;
 }
 
 type AugmentedExport = babel.types.ExportNamedDeclaration & { __transformedByRemoveCreateWrappers?: boolean };

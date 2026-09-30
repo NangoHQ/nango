@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { assert, describe, expect, it } from 'vitest';
+import { assert, describe, expect, it, vi } from 'vitest';
 import * as z from 'zod';
 
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
@@ -85,6 +85,30 @@ describe('compileAll', () => {
             filePath: './github.js/functions/fetchIssues.ts'
         });
         expect(fs.existsSync(path.join(dir, 'build', 'github.js_functions_fetchIssues.cjs'))).toBe(true);
+    });
+
+    it('should warn when a sync declares a checkpoint schema but never uses it, and stay silent when it does via a helper', async () => {
+        const dir = await getTestDirectory('zero_checkpoint_warning');
+        await copyDirectoryAndContents(path.join(fixturesPath, 'zero/checkpoint-warning'), dir);
+
+        const pkg = { name: 'test', type: 'module', dependencies: { nango: `file:${path.resolve(path.join(fixturesPath, '..'))}`, zod: '4.3.6' } };
+        await fs.promises.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkg, null, 2));
+        await exec('npm i --no-audit --no-fund', { cwd: dir });
+
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        try {
+            const result = await compileAllFunctions({ fullPath: dir, debug: false, interactive: false });
+            result.unwrap();
+            expect(result.isOk()).toBe(true);
+
+            const messages = warnSpy.mock.calls.map((call) => String(call[0]));
+            const checkpointWarnings = messages.filter((m) => m.includes(`declares a 'checkpoint' schema but never calls`));
+            expect(checkpointWarnings).toHaveLength(1);
+            expect(checkpointWarnings[0]).toContain('declaredButUnused');
+            expect(checkpointWarnings[0]).not.toContain('usedViaHelper');
+        } finally {
+            warnSpy.mockRestore();
+        }
     });
 });
 
@@ -268,5 +292,9 @@ describe('detectFeatures', () => {
     it('should not detect features if none', () => {
         const features = detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.none.ts') }).unwrap();
         expect(features).toEqual([]);
+    });
+    it('should detect features used only inside a locally imported helper file', () => {
+        const features = detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.helper.ts') }).unwrap();
+        expect(features).toEqual(['checkpoints']);
     });
 });

@@ -42,6 +42,7 @@ describe('parseSync', () => {
         const { endpoints, ...syncParamsWithoutEndpoints } = syncParams;
         const res = parseSync({
             filePath: './fetchIssues.ts',
+            absoluteFilePath: '/tmp/fetchIssues.ts',
             params: syncParamsWithoutEndpoints,
             basename: 'fetchIssues',
             basenameClean: 'fetchIssues',
@@ -58,6 +59,7 @@ describe('parseSync', () => {
     it('should return the parsed sync', () => {
         const res = parseSync({
             filePath: './fetchIssues.ts',
+            absoluteFilePath: '/tmp/fetchIssues.ts',
             params: syncParams,
             basename: 'fetchIssues',
             basenameClean: 'fetchIssues',
@@ -98,6 +100,7 @@ describe('parseSync', () => {
     it('should mark checkpoint as false when no checkpoint schema is declared', () => {
         const res = parseSync({
             filePath: './fetchIssues.ts',
+            absoluteFilePath: '/tmp/fetchIssues.ts',
             params: syncParams,
             basename: 'fetchIssues',
             basenameClean: 'fetchIssues',
@@ -110,6 +113,7 @@ describe('parseSync', () => {
     it('should mark checkpoint as true when a checkpoint schema is declared', () => {
         const res = parseSync({
             filePath: './fetchIssues.ts',
+            absoluteFilePath: '/tmp/fetchIssues.ts',
             params: { ...syncParams, checkpoint: z.object({ cursor: z.string() }) },
             basename: 'fetchIssues',
             basenameClean: 'fetchIssues',
@@ -124,7 +128,7 @@ describe('parseAction', () => {
     it('should return the parsed action without endpoint', () => {
         const { endpoint, ...actionParamsWithoutEndpoint } = actionParams;
         const action = parseAction({
-            filePath: './createIssue.ts',
+            absoluteFilePath: '/tmp/createIssue.ts',
             params: actionParamsWithoutEndpoint,
             basename: 'createIssue',
             basenameClean: 'createIssue',
@@ -140,7 +144,7 @@ describe('parseAction', () => {
 
     it('should return the parsed action', () => {
         const action = parseAction({
-            filePath: './createIssue.ts',
+            absoluteFilePath: '/tmp/createIssue.ts',
             params: actionParams,
             basename: 'createIssue',
             basenameClean: 'createIssue',
@@ -167,7 +171,7 @@ describe('parseAction', () => {
 
     it('should mark checkpoint as false when no checkpoint schema is declared', () => {
         const action = parseAction({
-            filePath: './createIssue.ts',
+            absoluteFilePath: '/tmp/createIssue.ts',
             params: actionParams,
             basename: 'createIssue',
             basenameClean: 'createIssue',
@@ -179,7 +183,7 @@ describe('parseAction', () => {
 
     it('should mark checkpoint as true when a checkpoint schema is declared', () => {
         const action = parseAction({
-            filePath: './createIssue.ts',
+            absoluteFilePath: '/tmp/createIssue.ts',
             params: { ...actionParams, checkpoint: z.object({ cursor: z.string() }) },
             basename: 'createIssue',
             basenameClean: 'createIssue',
