@@ -22,12 +22,11 @@ import type { GettingStartedOutput } from '@nangohq/types';
 interface FirstStepProps {
     connection: GettingStartedOutput['connection'] | null;
     integration: GettingStartedOutput['meta']['integration'] | null;
-    onConnectClicked: () => void;
     onConnected: (connectionId: string) => void;
     onDisconnected: () => void;
 }
 
-export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, onConnectClicked, onConnected, onDisconnected }) => {
+export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, onConnected, onDisconnected }) => {
     const env = useStore((state) => state.env);
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
@@ -42,8 +41,6 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
         if (!environmentAndAccount || !user) {
             return;
         }
-
-        onConnectClicked();
 
         const nango = new Nango({
             host: globalEnv.apiUrl,
