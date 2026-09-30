@@ -46,6 +46,7 @@ export function stopAnalytics() {
 export function resumeAnalytics() {
     if (posthog?.has_opted_out_capturing()) {
         posthog.opt_in_capturing({ captureEventName: false });
+        posthog.startSessionRecording();
     }
 }
 
