@@ -37,7 +37,7 @@ export function useAnalyticsIdentify() {
     };
 }
 
-// Opting out persists in the browser, so capturing stays off across the reload that starts an impersonation.
+// Opt-out persists in the browser. That keeps capturing off through the reload that starts an impersonation.
 export function stopAnalytics() {
     posthog?.opt_out_capturing();
     posthog?.stopSessionRecording();
