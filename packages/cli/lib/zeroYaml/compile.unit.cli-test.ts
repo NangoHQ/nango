@@ -87,7 +87,7 @@ describe('compileAll', () => {
         expect(fs.existsSync(path.join(dir, 'build', 'github.js_functions_fetchIssues.cjs'))).toBe(true);
     });
 
-    it('should warn when a sync declares a checkpoint schema but never uses it, and stay silent when it does via a helper', async () => {
+    it('should warn when a sync or action declares a checkpoint schema but never uses it, and stay silent when it does via a helper', async () => {
         const dir = await getTestDirectory('zero_checkpoint_warning');
         await copyDirectoryAndContents(path.join(fixturesPath, 'zero/checkpoint-warning'), dir);
 
@@ -103,9 +103,10 @@ describe('compileAll', () => {
 
             const messages = warnSpy.mock.calls.map((call) => String(call[0]));
             const checkpointWarnings = messages.filter((m) => m.includes(`declares a 'checkpoint' schema but never calls`));
-            expect(checkpointWarnings).toHaveLength(1);
-            expect(checkpointWarnings[0]).toContain('declaredButUnused');
-            expect(checkpointWarnings[0]).not.toContain('usedViaHelper');
+            expect(checkpointWarnings).toHaveLength(2);
+            expect(checkpointWarnings.some((m) => m.includes("Sync 'declaredButUnused'"))).toBe(true);
+            expect(checkpointWarnings.some((m) => m.includes("Action 'declaredButUnusedAction'"))).toBe(true);
+            expect(checkpointWarnings.some((m) => m.includes('usedViaHelper'))).toBe(false);
         } finally {
             warnSpy.mockRestore();
         }
