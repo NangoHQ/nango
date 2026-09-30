@@ -198,6 +198,22 @@ describe('timeouts', () => {
         expect(httpCall).toHaveBeenCalledTimes(1);
     });
 
+    it('should not wait out the retry backoff once the caller aborts', async () => {
+        const controller = new AbortController();
+        const proxy = getProxy({ retries: 1, abortSignal: controller.signal });
+        const httpCall = vi.spyOn(proxy, 'httpCall').mockImplementation(() => {
+            controller.abort();
+            return Promise.reject(makeAxiosError(500));
+        });
+
+        const start = Date.now();
+        const result = await proxy.request();
+        assert(result.isErr());
+        expect(httpCall).toHaveBeenCalledTimes(1);
+        // the first retry would otherwise wait 3s
+        expect(Date.now() - start).toBeLessThan(1000);
+    });
+
     it('should retry a response truncated mid-body', { timeout: 10000 }, async () => {
         const proxy = getProxy({ retries: 1 });
         const truncated = makeAxiosError(200);

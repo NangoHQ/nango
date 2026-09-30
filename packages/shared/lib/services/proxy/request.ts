@@ -182,6 +182,7 @@ export class ProxyRequest {
                 {
                     max: this.config.retries || 0,
                     maxWaitMs: this.maxWaitMs,
+                    signal: this.abortSignal,
                     onError: async ({ err, nextWait, max, attempt }) => {
                         let retry = getProxyRetryFromErr({ err, proxyConfig: this.config, maxWaitMs: this.maxWaitMs });
 
