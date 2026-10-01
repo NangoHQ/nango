@@ -30,10 +30,11 @@ import type { JSONSchema7 } from 'json-schema';
 interface FunctionDetailsPanelProps {
     fn: ListedNangoFunction;
     integration: ApiIntegration;
+    repoProvider: string;
     onDeleted: () => void;
 }
 
-export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, integration, onDeleted }) => {
+export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, integration, repoProvider, onDeleted }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
@@ -76,7 +77,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
         type: fn.type,
         source: { env }
     });
-    const gitUrl = `${githubRepo}/tree/main/${functionRepoPath({ provider: integration.provider, name: fn.name, type: fn.type })}`;
+    const gitUrl = `${githubRepo}/tree/main/${functionRepoPath({ provider: repoProvider, name: fn.name, type: fn.type })}`;
     const canDelete = fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn);
     const canUsePlayground = fn.enabled && isSyncOrAction(fn);
 
@@ -112,23 +113,25 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                             Delete function <Trash2 />
                         </Button>
                     )}
-                    <ConditionalTooltip condition={!canUsePlayground} content="Enable this function to use it in the Playground." side="left">
-                        <Button
-                            variant="link-accent"
-                            size="xs"
-                            disabled={!canUsePlayground}
-                            onClick={() => {
-                                if (!isSyncOrAction(fn)) return;
-                                openPlaygroundWithContext({
-                                    source: 'function',
-                                    integration: integration.unique_key,
-                                    functionName: fn.name,
-                                    functionType: fn.type
-                                });
-                            }}
-                        >
-                            View in playground <ArrowRight />
-                        </Button>
+                    <ConditionalTooltip condition={!canUsePlayground} content="Enable this function to use it in the Playground." side="left" asChild>
+                        <span className="inline-flex">
+                            <Button
+                                variant="link-accent"
+                                size="xs"
+                                disabled={!canUsePlayground}
+                                onClick={() => {
+                                    if (!isSyncOrAction(fn)) return;
+                                    openPlaygroundWithContext({
+                                        source: 'function',
+                                        integration: integration.unique_key,
+                                        functionName: fn.name,
+                                        functionType: fn.type
+                                    });
+                                }}
+                            >
+                                View in playground <ArrowRight />
+                            </Button>
+                        </span>
                     </ConditionalTooltip>
                 </div>
             </div>
