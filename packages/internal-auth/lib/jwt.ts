@@ -1,8 +1,9 @@
 import { decodeProtectedHeader, importJWK, importPKCS8, jwtVerify, SignJWT } from 'jose';
 
-import { normalizePem, parseInternalAuthPublicKeys } from '@nangohq/utils';
+import { normalizePem } from '@nangohq/utils';
 
 import type { InternalServiceAuth, InternalServiceIssuer } from './constants.js';
+import type { InternalAuthPublicKey } from '@nangohq/types';
 import type { CryptoKey } from 'jose';
 
 export interface KeyRegistryEntry {
@@ -39,8 +40,7 @@ export interface MintClaims {
 const privateKeyCache = new Map<string, Promise<CryptoKey>>();
 const publicKeyCache = new Map<string, Promise<CryptoKey>>();
 
-export function keyRegistryFromPublicKeys(raw: string | undefined, iss: InternalServiceIssuer): KeyRegistry {
-    const entries = parseInternalAuthPublicKeys(raw);
+export function keyRegistryFromPublicKeys(entries: readonly InternalAuthPublicKey[] | undefined, iss: InternalServiceIssuer): KeyRegistry {
     if (!entries) {
         return {};
     }

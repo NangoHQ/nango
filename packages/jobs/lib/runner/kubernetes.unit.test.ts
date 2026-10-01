@@ -45,7 +45,7 @@ const { getInternalTlsEnvMock, k8sMock, mockEnvs, defaultRunnerEnvs } = vi.hoist
         NANGO_INTERNAL_AUTH_REQUIRED: false,
         NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: undefined as string | undefined,
         NANGO_INTERNAL_AUTH_JOBS_KEY_ID: undefined as string | undefined,
-        NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: undefined as string | undefined
+        NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: undefined as { kid: string; publicKey: string }[] | undefined
     };
     return {
         getInternalTlsEnvMock: vi.fn<() => Record<string, string>>(() => ({})),
@@ -662,7 +662,7 @@ describe('runner internal auth env', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = pem;
         mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
-        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
 
         const res = await kubernetesNodeProvider.start(node);
         expect(res.isOk()).toBe(true);
@@ -671,10 +671,13 @@ describe('runner internal auth env', () => {
         expect(secret.stringData).not.toHaveProperty('NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY');
         expect(secret.stringData).not.toHaveProperty('NANGO_INTERNAL_AUTH_JOBS_KEY_ID');
         expect(secret.stringData).not.toHaveProperty('NANGO_INTERNAL_AUTH_SIGNING_KEY');
-        expect(secret.stringData.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS).toBe(`jobs-2026-09:${raw}`);
+        expect(secret.stringData.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS).toBe(JSON.stringify([{ kid: 'jobs-2026-09', publicKey: raw }]));
         expect(secret.stringData.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY).toBe(exportRunnerPublicKey('sign'));
 
-        const registry = keyRegistryFromPublicKeys(secret.stringData.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS, INTERNAL_SERVICE_ISSUER_JOBS);
+        const registry = keyRegistryFromPublicKeys(
+            JSON.parse(secret.stringData.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS) as { kid: string; publicKey: string }[],
+            INTERNAL_SERVICE_ISSUER_JOBS
+        );
         const auth = await verifyInternalServiceCredential(secret.stringData.NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN, INTERNAL_SERVICE_AUDIENCE_JOBS, {
             registry
         });

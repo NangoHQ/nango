@@ -531,7 +531,21 @@ Set the new keys in this order so a rolling deploy keeps accepting in-flight tok
 3. Recycle runners so every live runner can verify both shapes.
 4. Set the server private key, then the jobs private key. Jobs then mints service and workload JWTs. In-flight HMAC task tokens (up to 25 hours) and node tokens on runners that have not been recycled still verify.
 
-To rotate a key, append the new `kid` to the public-key list and deploy the verifiers before you switch the minter's key id and private key.
+To rotate a key, append the new entry to the public-key JSON array and deploy the verifiers before you switch the minter's key id and private key.
+
+```yaml
+NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: |
+  [
+    {
+      "kid": "jobs-2026-09",
+      "publicKey": "<base64url of the raw 32-byte key>"
+    },
+    {
+      "kid": "jobs-2026-10",
+      "publicKey": "<base64url of the next key>"
+    }
+  ]
+```
 
 | Variable | Where | Purpose |
 | - | - | - |
@@ -540,10 +554,10 @@ To rotate a key, append the new `kid` to the public-key list and deploy the veri
 | `NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY` | runners (injected by jobs at node start) | Legacy Ed25519 public key. Verify-only. |
 | `NANGO_INTERNAL_AUTH_JOBS_KEY_ID` | jobs | `kid` for the jobs private key, for example `jobs-2026-09`. |
 | `NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY` | jobs only. Never set on runners. | Unencrypted Ed25519 PKCS8 PEM. Mints service and workload tokens. |
-| `NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS` | orchestrator, jobs, runners | Comma-separated `kid:<base64url of the raw 32-byte public key>`. Must include the jobs key id before the private key is set. |
+| `NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS` | orchestrator, jobs, runners | JSON array of `{"kid","publicKey"}`. `publicKey` is the base64url raw 32-byte Ed25519 key. Must include the jobs key id before the private key is set. |
 | `NANGO_INTERNAL_AUTH_SERVER_KEY_ID` | server | `kid` for the server private key, for example `server-2026-09`. |
 | `NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY` | server only | Unencrypted Ed25519 PKCS8 PEM. Mints tokens for orchestrator. |
-| `NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS` | server, orchestrator | Same `kid:publicKey` list. Must include the server key id on the server process before the private key is set. |
+| `NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS` | server, orchestrator | Same JSON array. Must include the server key id on the server process before the private key is set. |
 | `NANGO_INTERNAL_AUTH_REQUIRED` | orchestrator, jobs, runners | Fail closed. Default `false`. Flip independently on orchestrator, then jobs. Runners inherit `REQUIRED` at node start. |
 
 #### Custom websockets path

@@ -32,7 +32,7 @@ describe('unified internal auth JWT', () => {
         const header = JSON.parse(Buffer.from(token.split('.')[0] ?? '', 'base64url').toString('utf8')) as { alg: string; kid: string; typ: string };
         expect(header).toEqual({ alg: 'EdDSA', kid: 'jobs-2026-09', typ: 'JWT' });
 
-        const registry = keyRegistryFromPublicKeys(`jobs-2026-09:${jobs.raw}`, INTERNAL_SERVICE_ISSUER_JOBS);
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: jobs.raw }], INTERNAL_SERVICE_ISSUER_JOBS);
         const auth = await verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_RUNNER, { registry });
         expect(auth).toEqual({
             kind: 'jwt',
@@ -50,7 +50,13 @@ describe('unified internal auth JWT', () => {
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-next', privateKey: next.pem },
             { sub: taskSubject('task-1'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
         );
-        const registry = keyRegistryFromPublicKeys(`jobs-2026-09:${current.raw},jobs-next:${next.raw}`, INTERNAL_SERVICE_ISSUER_JOBS);
+        const registry = keyRegistryFromPublicKeys(
+            [
+                { kid: 'jobs-2026-09', publicKey: current.raw },
+                { kid: 'jobs-next', publicKey: next.raw }
+            ],
+            INTERNAL_SERVICE_ISSUER_JOBS
+        );
         const auth = await verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_JOBS, { registry });
         expect(auth).toMatchObject({ kind: 'jwt', sub: 'task:task-1', issuer: INTERNAL_SERVICE_ISSUER_JOBS });
     });
@@ -62,7 +68,7 @@ describe('unified internal auth JWT', () => {
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: current.pem },
             { sub: INTERNAL_SERVICE_ISSUER_JOBS, aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
         );
-        const registry = keyRegistryFromPublicKeys(`jobs-2026-09:${next.raw}`, INTERNAL_SERVICE_ISSUER_JOBS);
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: next.raw }], INTERNAL_SERVICE_ISSUER_JOBS);
         expect(await verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_JOBS, { registry })).toBeNull();
     });
 
@@ -72,13 +78,13 @@ describe('unified internal auth JWT', () => {
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'shared-kid', privateKey: jobs.pem },
             { sub: INTERNAL_SERVICE_ISSUER_JOBS, aud: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, ttlSecs: 60 }
         );
-        const registry = keyRegistryFromPublicKeys(`shared-kid:${jobs.raw}`, INTERNAL_SERVICE_ISSUER_SERVER);
+        const registry = keyRegistryFromPublicKeys([{ kid: 'shared-kid', publicKey: jobs.raw }], INTERNAL_SERVICE_ISSUER_SERVER);
         expect(await verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, { registry })).toBeNull();
     });
 
     it('rejects the wrong audience and an expired token', async () => {
         const jobs = ed25519Material();
-        const registry = keyRegistryFromPublicKeys(`jobs-2026-09:${jobs.raw}`, INTERNAL_SERVICE_ISSUER_JOBS);
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: jobs.raw }], INTERNAL_SERVICE_ISSUER_JOBS);
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: jobs.pem },
             { sub: INTERNAL_SERVICE_ISSUER_JOBS, aud: INTERNAL_SERVICE_AUDIENCE_RUNNER, ttlSecs: 60 }

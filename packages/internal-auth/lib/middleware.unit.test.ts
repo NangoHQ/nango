@@ -363,7 +363,7 @@ describe('jobs route policy', () => {
     it('accepts a workload task JWT on putTask when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const { pem, raw } = ed25519Material();
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
         const taskId = '11111111-1111-4111-8111-111111111111';
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
@@ -384,7 +384,7 @@ describe('jobs route policy', () => {
     it('accepts a workload task JWT on heartbeat when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const { pem, raw } = ed25519Material();
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
         const taskId = '11111111-1111-4111-8111-111111111111';
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
@@ -405,7 +405,7 @@ describe('jobs route policy', () => {
     it('accepts a workload node JWT on register when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const { pem, raw } = ed25519Material();
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
             { sub: nodeSubject('1'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
@@ -422,7 +422,7 @@ describe('jobs route policy', () => {
     it('accepts a workload node JWT on idle when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const { pem, raw } = ed25519Material();
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
             { sub: nodeSubject('1'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
@@ -439,7 +439,7 @@ describe('jobs route policy', () => {
     it('rejects a workload task JWT for a different task on putTask when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const { pem, raw } = ed25519Material();
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
             { sub: taskSubject('22222222-2222-4222-8222-222222222222'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
@@ -459,7 +459,7 @@ describe('jobs route policy', () => {
     it('rejects a workload task JWT for a different task on heartbeat when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const { pem, raw } = ed25519Material();
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
             { sub: taskSubject('22222222-2222-4222-8222-222222222222'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
@@ -479,7 +479,7 @@ describe('jobs route policy', () => {
     it('rejects a workload node JWT for a different node on register when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const { pem, raw } = ed25519Material();
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
             { sub: nodeSubject('2'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
@@ -496,7 +496,7 @@ describe('jobs route policy', () => {
     it('rejects a workload node JWT for a different node on idle when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const { pem, raw } = ed25519Material();
-        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
             { sub: nodeSubject('2'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }

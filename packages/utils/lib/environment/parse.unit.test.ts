@@ -50,9 +50,9 @@ describe('parse', () => {
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT');
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_AUDIENCE');
         expect(res.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY).toBeUndefined();
-        expect(res.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS).toBeUndefined();
+        expect(res.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS).toEqual([]);
         expect(res.NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY).toBeUndefined();
-        expect(res.NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS).toBeUndefined();
+        expect(res.NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS).toEqual([]);
     });
 
     it('rejects a jobs private key that is not paired with its public key', () => {
@@ -66,13 +66,25 @@ describe('parse', () => {
             parseEnvs(ENVS, {
                 NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: pem,
                 NANGO_INTERNAL_AUTH_JOBS_KEY_ID: 'jobs-2026-09',
-                NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: `other:${raw}`
+                NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: JSON.stringify([{ kid: 'other', publicKey: raw }])
             })
         ).toThrowError(/NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS/);
     });
 
+    it('rejects internal auth public keys that are not a JSON array', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: 'jobs-2026-09:not-json' })).toThrowError(/Invalid JSON/);
+        expect(() =>
+            parseEnvs(ENVS, {
+                NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: JSON.stringify([
+                    { kid: 'jobs-2026-09', publicKey: 'A'.repeat(43) },
+                    { kid: 'jobs-2026-09', publicKey: 'B'.repeat(43) }
+                ])
+            })
+        ).toThrowError(/repeats kid jobs-2026-09/);
+    });
+
     it('rejects __proto__ as an internal auth key id', () => {
-        expect(() => parseEnvs(ENVS, { NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: `__proto__:${'A'.repeat(43)}` })).toThrowError(
+        expect(() => parseEnvs(ENVS, { NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: JSON.stringify([{ kid: '__proto__', publicKey: 'A'.repeat(43) }]) })).toThrowError(
             /NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS/
         );
     });
@@ -88,7 +100,7 @@ describe('parse', () => {
             parseEnvs(ENVS, {
                 NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: pem,
                 NANGO_INTERNAL_AUTH_JOBS_KEY_ID: 'jobs-2026-09',
-                NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: `jobs-2026-09:${otherRaw}`
+                NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: JSON.stringify([{ kid: 'jobs-2026-09', publicKey: otherRaw }])
             })
         ).toThrowError(/does not match/);
     });
@@ -102,9 +114,16 @@ describe('parse', () => {
         const res = parseEnvs(ENVS, {
             NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: pem,
             NANGO_INTERNAL_AUTH_JOBS_KEY_ID: 'jobs-2026-09',
-            NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: `jobs-2026-09:${raw}`
+            NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: JSON.stringify([
+                { kid: 'jobs-2026-09', publicKey: raw },
+                { kid: 'jobs-2026-10', publicKey: raw }
+            ])
         });
         expect(res.NANGO_INTERNAL_AUTH_JOBS_KEY_ID).toBe('jobs-2026-09');
+        expect(res.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS).toEqual([
+            { kid: 'jobs-2026-09', publicKey: raw },
+            { kid: 'jobs-2026-10', publicKey: raw }
+        ]);
     });
 
     it('defaults NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY to false', () => {

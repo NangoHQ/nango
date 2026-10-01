@@ -79,7 +79,7 @@ export async function mintRunnerAuthEnv(nodeId: number): Promise<Record<string, 
               envs.NANGO_INTERNAL_AUTH_SIGNING_KEY
           );
     const legacyPublicKey = exportRunnerPublicKey(envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
-    const jobsPublicKeys = envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS?.trim();
+    const jobsPublicKeys = envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS ?? [];
 
     // Public keys alone are not a credential jobs can present. Leave the runner env empty so
     // REQUIRED is not turned on while jobs has nothing to mint.
@@ -94,8 +94,8 @@ export async function mintRunnerAuthEnv(nodeId: number): Promise<Record<string, 
     if (legacyPublicKey) {
         env['NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY'] = legacyPublicKey;
     }
-    if (jobsPublicKeys) {
-        env['NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS'] = jobsPublicKeys;
+    if (jobsPublicKeys.length > 0) {
+        env['NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS'] = JSON.stringify(jobsPublicKeys);
     }
     env['NANGO_INTERNAL_AUTH_REQUIRED'] = envs.NANGO_INTERNAL_AUTH_REQUIRED ? 'true' : 'false';
     return env;

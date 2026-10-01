@@ -110,7 +110,7 @@ describe('OrchestratorClient service tokens', () => {
         const header = authorizationHeader(fetchMock);
         expect(header?.startsWith('Bearer ')).toBe(true);
         const token = header?.slice('Bearer '.length) ?? '';
-        const registry = keyRegistryFromPublicKeys(`jobs-2026-09:${jobs.raw}`, INTERNAL_SERVICE_ISSUER_JOBS);
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: jobs.raw }], INTERNAL_SERVICE_ISSUER_JOBS);
         expect((await verify(token, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, registry)).auth).toMatchObject({
             kind: 'jwt',
             sub: INTERNAL_SERVICE_ISSUER_JOBS,
@@ -148,7 +148,7 @@ describe('OrchestratorClient service tokens', () => {
         expect((await client().immediate(immediateProps())).isOk()).toBe(true);
         const refreshed = authorizationHeader(fetchMock, 3);
         expect(refreshed).not.toBe(first);
-        const registry = keyRegistryFromPublicKeys(`jobs-2026-09:${jobs.raw}`, INTERNAL_SERVICE_ISSUER_JOBS);
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: jobs.raw }], INTERNAL_SERVICE_ISSUER_JOBS);
         expect((await verify(refreshed?.slice('Bearer '.length) ?? '', INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, registry)).auth).toMatchObject({
             kind: 'jwt',
             sub: INTERNAL_SERVICE_ISSUER_JOBS
@@ -166,7 +166,7 @@ describe('OrchestratorClient service tokens', () => {
         const res = await client.immediate(immediateProps());
         expect(res.isOk()).toBe(true);
         const token = authorizationHeader(fetchMock)?.slice('Bearer '.length) ?? '';
-        const registry = keyRegistryFromPublicKeys(`server-2026-09:${server.raw}`, INTERNAL_SERVICE_ISSUER_SERVER);
+        const registry = keyRegistryFromPublicKeys([{ kid: 'server-2026-09', publicKey: server.raw }], INTERNAL_SERVICE_ISSUER_SERVER);
         expect((await verify(token, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, registry)).auth).toMatchObject({
             kind: 'jwt',
             sub: INTERNAL_SERVICE_ISSUER_SERVER,

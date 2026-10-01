@@ -209,7 +209,7 @@ describe('runner internal service auth', () => {
         const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
             .subarray(12)
             .toString('base64url');
-        authEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        authEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
             { sub: taskSubject('task-id'), aud: INTERNAL_SERVICE_AUDIENCE_RUNNER, ttlSecs: 60 }
@@ -231,7 +231,7 @@ describe('runner internal service auth', () => {
         const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
             .subarray(12)
             .toString('base64url');
-        authEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        authEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
             { sub: INTERNAL_SERVICE_ISSUER_JOBS, aud: INTERNAL_SERVICE_AUDIENCE_RUNNER, ttlSecs: 60 }

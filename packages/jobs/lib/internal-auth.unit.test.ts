@@ -26,7 +26,7 @@ const { mockEnvs } = vi.hoisted(() => ({
         NANGO_INTERNAL_AUTH_REQUIRED: false,
         NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: undefined as string | undefined,
         NANGO_INTERNAL_AUTH_JOBS_KEY_ID: undefined as string | undefined,
-        NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: undefined as string | undefined
+        NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: undefined as { kid: string; publicKey: string }[] | undefined
     }
 }));
 
@@ -118,7 +118,7 @@ describe('mintRunnerAuthEnv', () => {
     });
 
     it('returns nothing when only jobs public keys are set', async () => {
-        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = 'jobs-2026-09:cHVibGlj';
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: 'cHVibGlj' }];
         mockEnvs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         expect(await mintRunnerAuthEnv(7)).toEqual({});
     });
@@ -153,17 +153,20 @@ describe('mintRunnerAuthEnv', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = pem;
         mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
-        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = `jobs-2026-09:${raw}`;
+        mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
         mockEnvs.NANGO_INTERNAL_AUTH_REQUIRED = true;
 
         const env = await mintRunnerAuthEnv(7);
-        expect(env['NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS']).toBe(`jobs-2026-09:${raw}`);
+        expect(env['NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS']).toBe(JSON.stringify([{ kid: 'jobs-2026-09', publicKey: raw }]));
         expect(env['NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY']).toBe(exportRunnerPublicKey('sign'));
         expect(env).not.toHaveProperty('NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY');
         expect(env).not.toHaveProperty('NANGO_INTERNAL_AUTH_JOBS_KEY_ID');
         expect(env).not.toHaveProperty('NANGO_INTERNAL_AUTH_SIGNING_KEY');
 
-        const registry = keyRegistryFromPublicKeys(env['NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS'], INTERNAL_SERVICE_ISSUER_JOBS);
+        const registry = keyRegistryFromPublicKeys(
+            JSON.parse(env['NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS']!) as { kid: string; publicKey: string }[],
+            INTERNAL_SERVICE_ISSUER_JOBS
+        );
         const auth = await verifyInternalServiceCredential(env['NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN']!, INTERNAL_SERVICE_AUDIENCE_JOBS, { registry });
         expect(auth).toMatchObject({ kind: 'jwt', sub: nodeSubject('7'), issuer: INTERNAL_SERVICE_ISSUER_JOBS });
     });
@@ -192,7 +195,7 @@ describe('unified mint', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         mockEnvs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY = pem;
         mockEnvs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID = 'jobs-2026-09';
-        const registry = keyRegistryFromPublicKeys(`jobs-2026-09:${raw}`, INTERNAL_SERVICE_ISSUER_JOBS);
+        const registry = keyRegistryFromPublicKeys([{ kid: 'jobs-2026-09', publicKey: raw }], INTERNAL_SERVICE_ISSUER_JOBS);
         const issuedAt = Math.floor(Date.now() / 1000);
 
         const taskToken = await mintTaskAuthToken('task-1', {});
