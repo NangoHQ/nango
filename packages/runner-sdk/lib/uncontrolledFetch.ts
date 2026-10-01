@@ -81,7 +81,7 @@ export async function executeUncontrolledFetch(
 
         if (REDIRECT_STATUS_CODES.has(response.status) && options.redirect === 'error') {
             recordTransfer({ bytesSent, bytesReceived });
-            void response.body?.cancel();
+            void response.body?.cancel().catch(() => {});
             throw makeActionError('redirect_error', 'The server responded with a redirect. The request was not followed.');
         }
 
