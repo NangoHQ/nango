@@ -406,7 +406,7 @@ const response = await nango.uncontrolledFetch({
 
         `follow` follows the redirect. A 301 or 302 to a POST, and any 303, is retried as GET and the body is dropped. A 307 or 308 keeps the method and sends the body to the `Location`.
 
-        `error` fails the request with an `ActionError` (`code: 'redirect_error'`) and does not send the body to the `Location`. Use this when a redirect must not receive the payload, such as a file upload.
+        `error` fails the request with an `ActionError` whose `payload.code` is `'redirect_error'`, and does not send the body to the `Location`. Use this when a redirect must not receive the payload, such as a file upload.
       </ResponseField>
     </Expandable>
   </ResponseField>
