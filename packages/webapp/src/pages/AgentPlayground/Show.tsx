@@ -111,13 +111,21 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         void sendMessage({ text: trimmed });
     };
 
+    const [connectedIntegration, setConnectedIntegration] = useState<string | null>(null);
     const onConnected = useCallback(
         (integrationId: string) => {
             void refetchConnections();
-            void sendMessage({ text: `I've connected ${humanize(integrationId)}.`, metadata: { hidden: true } });
+            setConnectedIntegration(integrationId);
         },
-        [refetchConnections, sendMessage]
+        [refetchConnections]
     );
+    // Waits for the current reply to finish, so two turns never stream at the same time.
+    useEffect(() => {
+        if (connectedIntegration && !busy) {
+            setConnectedIntegration(null);
+            void sendMessage({ text: `I've connected ${humanize(connectedIntegration)}.`, metadata: { hidden: true } });
+        }
+    }, [connectedIntegration, busy, sendMessage]);
 
     const scroller = useRef<HTMLDivElement>(null);
     const bottom = useRef<HTMLDivElement>(null);
