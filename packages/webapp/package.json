@@ -23,6 +23,7 @@
         ]
     },
     "devDependencies": {
+        "@ai-sdk/react": "4.0.125",
         "@base-ui/react": "1.3.0",
         "@hookform/resolvers": "5.2.2",
         "@mantine/core": "7.12.1",
@@ -63,6 +64,7 @@
         "@types/stringify-object": "4.0.5",
         "@uidotdev/usehooks": "2.4.1",
         "@vitejs/plugin-react-swc": "4.3.1",
+        "ai": "7.0.122",
         "class-variance-authority": "0.7.1",
         "classnames": "2.5.1",
         "clsx": "2.1.1",
@@ -86,9 +88,11 @@
         "react-dom": "18.3.1",
         "react-helmet": "6.1.0",
         "react-hook-form": "7.63.0",
+        "react-markdown": "10.1.0",
         "react-router-dom": "7.18.2",
         "react-use": "17.6.0",
         "recharts": "2.15.4",
+        "remark-gfm": "4.0.1",
         "sonner": "2.0.7",
         "stringify-object": "5.0.0",
         "tailwind-merge": "2.6.0",
@@ -103,11 +107,5 @@
         "zod": "3.25.76",
         "zustand": "5.0.3"
     },
-    "proxy": "http://localhost:3003",
-    "dependencies": {
-        "@ai-sdk/react": "4.0.125",
-        "ai": "7.0.122",
-        "react-markdown": "10.1.0",
-        "remark-gfm": "4.0.1"
-    }
+    "proxy": "http://localhost:3003"
 }
