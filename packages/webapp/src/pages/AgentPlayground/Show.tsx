@@ -1,16 +1,25 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai';
-import { ArrowUp, Plus, RotateCcw, Square, XCircle } from 'lucide-react';
+import { ArrowUp, CircleAlert, Plus, RotateCcw, Square } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { Button, InputGroup, InputGroupAddon, InputGroupButton, InputGroupTextarea } from '@nangohq/design-system';
+import {
+    Alert,
+    AlertActions,
+    AlertButton,
+    AlertDescription,
+    AlertTitle,
+    Button,
+    InputGroup,
+    InputGroupAddon,
+    InputGroupButton,
+    InputGroupTextarea
+} from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
-import { useConnections } from '@/hooks/useConnections';
 import { useMeta } from '@/hooks/useMeta';
-import { useUser } from '@/hooks/useUser';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
@@ -18,7 +27,7 @@ import { describeChatError } from './chatError';
 import { Markdown } from './components/Markdown';
 import { ToolCallCard } from './components/ToolCallCard';
 import { hideTrailingLink } from './streamingMarkdown';
-import { describeTool, humanize, PLAYGROUND_INTEGRATION_IDS, PLAYGROUND_INTEGRATION_PREFIX, PLAYGROUND_USER_TAG_KEY } from './toolDisplay';
+import { describeTool, humanize } from './toolDisplay';
 
 import type { AgentPlaygroundMessageMetadata } from '@nangohq/types';
 import type { UIMessage } from 'ai';
@@ -54,21 +63,6 @@ export const AgentPlaygroundShow: React.FC = () => {
 };
 
 const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) => {
-    const { user } = useUser();
-    const { data: connectionsData, refetch: refetchConnections } = useConnections({ env, integrationIds: PLAYGROUND_INTEGRATION_IDS });
-    const connections = useMemo(
-        () =>
-            (connectionsData?.pages.flatMap((page) => page.data) ?? []).filter((connection) => user && connection.tags[PLAYGROUND_USER_TAG_KEY] === user.uuid),
-        [connectionsData, user]
-    );
-
-    const providerFor = useCallback(
-        (integrationId: string) =>
-            connections.find((connection) => connection.provider_config_key === integrationId)?.provider ??
-            (integrationId.startsWith(PLAYGROUND_INTEGRATION_PREFIX) ? integrationId.slice(PLAYGROUND_INTEGRATION_PREFIX.length) : integrationId),
-        [connections]
-    );
-
     const sessionId = useRef<string | undefined>(undefined);
     const transport = useMemo(
         () =>
@@ -99,11 +93,15 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
     }, [messages]);
 
     const busy = status === 'submitted' || status === 'streaming';
+    const lastMessage = messages.at(-1);
+    // A new turn would drop the pending tool call, so the change is never approved or denied.
+    const awaitingApproval =
+        lastMessage?.role === 'assistant' && lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-requested');
     const [input, setInput] = useState('');
 
     const send = (text: string) => {
         const trimmed = text.trim();
-        if (!trimmed || busy) {
+        if (!trimmed || busy || awaitingApproval) {
             return;
         }
         setInput('');
@@ -111,21 +109,27 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         void sendMessage({ text: trimmed });
     };
 
-    const [connectedIntegration, setConnectedIntegration] = useState<string | null>(null);
-    const onConnected = useCallback(
-        (integrationId: string) => {
-            void refetchConnections();
-            setConnectedIntegration(integrationId);
-        },
-        [refetchConnections]
-    );
+    const retry = () => {
+        clearError();
+        // Regenerating would replace the assistant message, and with it every tool call that already ran.
+        if (lastMessage?.role === 'assistant') {
+            void sendMessage({ text: 'Continue.', metadata: { hidden: true } });
+        } else {
+            void regenerate();
+        }
+    };
+
+    const [connectedIntegrations, setConnectedIntegrations] = useState<string[]>([]);
+    const onConnected = useCallback((integrationId: string) => {
+        setConnectedIntegrations((ids) => (ids.includes(integrationId) ? ids : [...ids, integrationId]));
+    }, []);
     // Waits for the current reply to finish, so two turns never stream at the same time.
     useEffect(() => {
-        if (connectedIntegration && !busy) {
-            setConnectedIntegration(null);
-            void sendMessage({ text: `I've connected ${humanize(connectedIntegration)}.`, metadata: { hidden: true } });
+        if (connectedIntegrations.length > 0 && !busy && !awaitingApproval) {
+            setConnectedIntegrations([]);
+            void sendMessage({ text: `I've connected ${connectedIntegrations.map(humanize).join(' and ')}.`, metadata: { hidden: true } });
         }
-    }, [connectedIntegration, busy, sendMessage]);
+    }, [connectedIntegrations, busy, awaitingApproval, sendMessage]);
 
     const scroller = useRef<HTMLDivElement>(null);
     const bottom = useRef<HTMLDivElement>(null);
@@ -140,24 +144,24 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         if (pinnedToBottom.current) {
             bottom.current?.scrollIntoView({ block: 'end' });
         }
-    }, [messages]);
+    }, [messages, error]);
 
     const composer = (
         <form
-            className="w-full [&_[data-align=inline-end]]:self-end [&_[data-align=inline-end]]:pb-2 [&_textarea]:max-h-48 [&_textarea]:min-h-20 [&_textarea]:resize-none [&_textarea]:[field-sizing:content]"
+            className="w-full"
             onSubmit={(e) => {
                 e.preventDefault();
                 send(input);
             }}
         >
-            <InputGroup>
+            <InputGroup size="composer">
                 <InputGroupTextarea
                     value={input}
                     rows={1}
-                    placeholder="Ask the agent to do something…"
+                    placeholder={awaitingApproval ? 'Approve or deny the change to continue…' : 'Ask the agent to do something…'}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
+                        if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
                             e.preventDefault();
                             send(input);
                         }
@@ -169,7 +173,7 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                             <Square />
                         </InputGroupButton>
                     ) : (
-                        <InputGroupButton label="Send" type="submit" variant="primary" size="icon-sm" disabled={!input.trim()}>
+                        <InputGroupButton label="Send" type="submit" variant="primary" size="icon-sm" disabled={!input.trim() || awaitingApproval}>
                             <ArrowUp />
                         </InputGroupButton>
                     )}
@@ -212,15 +216,7 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                                     ) : null;
                                 }
                                 if (part.type === 'dynamic-tool') {
-                                    return (
-                                        <ToolCallCard
-                                            key={part.toolCallId}
-                                            part={part}
-                                            providerFor={providerFor}
-                                            onConnected={onConnected}
-                                            onApprove={onApprove}
-                                        />
-                                    );
+                                    return <ToolCallCard key={part.toolCallId} part={part} onConnected={onConnected} onApprove={onApprove} />;
                                 }
                                 return null;
                             })}
@@ -229,16 +225,7 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                 )}
 
                 {busy && <WorkingIndicator messages={messages} />}
-                {error && (
-                    <ErrorNotice
-                        error={error}
-                        onRetry={() => {
-                            clearError();
-                            void regenerate();
-                        }}
-                        onReset={onReset}
-                    />
-                )}
+                {error && <ErrorNotice error={error} onRetry={retry} onReset={onReset} />}
                 <div ref={bottom} />
             </div>
 
@@ -251,23 +238,24 @@ const ErrorNotice: React.FC<{ error: Error; onRetry: () => void; onReset: () => 
     const { title, detail, action } = describeChatError(error);
 
     return (
-        <div className="flex items-center gap-3 rounded-ds-xs border border-border-muted bg-surface-panel px-4 py-3" role="alert">
-            <XCircle className="size-5 shrink-0 text-icon-danger" />
-            <div className="flex min-w-0 flex-1 flex-col">
-                <span className="text-body-medium-medium text-text-strong">{title}</span>
-                {detail && <span className="line-clamp-2 break-words text-body-small-regular text-text-secondary">{detail}</span>}
-            </div>
-            {action === 'retry' && (
-                <Button size="sm" variant="secondary" onClick={onRetry}>
-                    <RotateCcw /> Try again
-                </Button>
+        <Alert variant="danger">
+            <CircleAlert />
+            <AlertTitle>{title}</AlertTitle>
+            {detail && <AlertDescription>{detail}</AlertDescription>}
+            {action !== 'none' && (
+                <AlertActions>
+                    {action === 'retry' ? (
+                        <AlertButton onClick={onRetry}>
+                            <RotateCcw /> Try again
+                        </AlertButton>
+                    ) : (
+                        <AlertButton onClick={onReset}>
+                            <Plus /> New chat
+                        </AlertButton>
+                    )}
+                </AlertActions>
             )}
-            {action === 'new-chat' && (
-                <Button size="sm" variant="secondary" onClick={onReset}>
-                    <Plus /> New chat
-                </Button>
-            )}
-        </div>
+        </Alert>
     );
 };
 

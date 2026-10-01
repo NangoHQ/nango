@@ -9,14 +9,15 @@ export interface ToolDisplay {
     path?: string;
 }
 
-export const PLAYGROUND_INTEGRATION_PREFIX = 'pg-';
-export const PLAYGROUND_USER_TAG_KEY = 'nango/playground_user';
-// Mirrors PLAYGROUND_PROVIDERS in the server's agentPlayground.service.ts.
-export const PLAYGROUND_INTEGRATION_IDS = ['pg-google-calendar', 'pg-github'];
+const PLAYGROUND_INTEGRATION_PREFIX = 'pg-';
+
+// The server names each playground integration `pg-<provider>`.
+export function providerFor(integrationId: string): string {
+    return integrationId.startsWith(PLAYGROUND_INTEGRATION_PREFIX) ? integrationId.slice(PLAYGROUND_INTEGRATION_PREFIX.length) : integrationId;
+}
 
 export function humanize(name: string): string {
-    const bare = name.startsWith(PLAYGROUND_INTEGRATION_PREFIX) ? name.slice(PLAYGROUND_INTEGRATION_PREFIX.length) : name;
-    return bare
+    return providerFor(name)
         .split(/[-_\s]+/)
         .filter(Boolean)
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
