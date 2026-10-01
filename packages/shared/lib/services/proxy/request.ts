@@ -17,7 +17,8 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 const logger = getLogger('proxy:metering');
 
-// Resets whenever bytes arrive, so large responses that keep flowing are unaffected
+// In Node, axios' timeout is a hard limit until the response headers arrive (sending the body included),
+// then a socket inactivity timeout that every chunk resets. Undocumented: https://github.com/axios/axios/issues/5896
 const PROXY_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 
 interface Props {
@@ -30,6 +31,7 @@ interface Props {
     outboundPolicy: OutboundUrlPolicy;
     maxWaitMs: number;
     abortSignal?: AbortSignal | undefined;
+    idleTimeoutMs?: number | undefined;
 }
 
 /**
@@ -94,6 +96,8 @@ export class ProxyRequest {
      */
     abortSignal?: AbortSignal | undefined;
 
+    idleTimeoutMs: number;
+
     constructor(props: Props) {
         this.config = props.proxyConfig;
         this.logger = props.logger;
@@ -104,6 +108,7 @@ export class ProxyRequest {
         this.outboundPolicy = props.outboundPolicy;
         this.maxWaitMs = props.maxWaitMs;
         this.abortSignal = props.abortSignal;
+        this.idleTimeoutMs = props.idleTimeoutMs ?? PROXY_IDLE_TIMEOUT_MS;
     }
 
     /**
@@ -133,7 +138,7 @@ export class ProxyRequest {
                         connection: this.connection,
                         outboundPolicy: this.outboundPolicy
                     });
-                    this.axiosConfig.timeout = PROXY_IDLE_TIMEOUT_MS;
+                    this.axiosConfig.timeout = this.idleTimeoutMs;
                     if (this.abortSignal) {
                         this.axiosConfig.signal = this.abortSignal;
                     }

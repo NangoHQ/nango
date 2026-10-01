@@ -89,11 +89,9 @@ export async function retryFlexible<TReturn>(
 
             lastWait = Math.min(on.wait ?? nextWait, options.maxWaitMs);
             if (options.signal) {
-                try {
-                    await setTimeout(lastWait, undefined, { signal: options.signal });
-                } catch {
+                await setTimeout(lastWait, undefined, { signal: options.signal }).catch(() => {
                     throw err;
-                }
+                });
             } else {
                 await setTimeout(lastWait);
             }

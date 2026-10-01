@@ -99,6 +99,13 @@ describe('getProxyRetryFromErr', () => {
         expect(res).toStrictEqual({ retry: true, reason: 'truncated_response' });
     });
 
+    it.each(['POST', 'PUT', 'PATCH', 'DELETE'] as const)('should not retry a truncated response to a %s', (method) => {
+        const err = getDefaultError({ response: { status: 200 } });
+        err.code = AxiosError.ERR_BAD_RESPONSE;
+        const res = getProxyRetryFromErr({ err, proxyConfig: getDefaultProxy({ method }), maxWaitMs: Infinity });
+        expect(res).toStrictEqual({ retry: false, reason: 'truncated_response_not_idempotent' });
+    });
+
     it('should keep the status code reason for a 5xx reported as ERR_BAD_RESPONSE', () => {
         const err = getDefaultError({ response: { status: 500 } });
         err.code = AxiosError.ERR_BAD_RESPONSE;
