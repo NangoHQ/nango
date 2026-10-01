@@ -16,6 +16,7 @@ on:
                     - replit
                     - charm-sandbox
                     - byoc-gcp-1
+                    - byoc-azure-1
             service:
                 type: choice
                 description: 'Service to deploy, defaults to server'
@@ -123,6 +124,31 @@ jobs:
                   gcloud compute url-maps invalidate-cdn-cache ${{ vars.APP_UI_URL_MAP }} \
                     --path "/*" \
                     --project "${{ vars.GCP_PROJECT_ID }}"
+            - name: Auth to Azure (OIDC)
+              if: inputs.stage == 'byoc-azure-1'
+              uses: azure/login@v2
+              with:
+                  client-id: ${{ vars.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ vars.AZURE_TENANT_ID }}
+                  subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+            - name: Upload to Blob Storage
+              if: inputs.stage == 'byoc-azure-1'
+              run: |
+                  az storage blob upload-batch --account-name ${{ vars.APP_UI_STORAGE_ACCOUNT }} \
+                    --destination '$web' --source packages/webapp/dist/ --overwrite --auth-mode login
+            - name: Set cache-control for index.html
+              if: inputs.stage == 'byoc-azure-1'
+              run: |
+                  az storage blob update --account-name ${{ vars.APP_UI_STORAGE_ACCOUNT }} \
+                    --container-name '$web' --name index.html --auth-mode login \
+                    --content-cache-control "no-store, no-cache, must-revalidate, max-age=0"
+            - name: Purge Front Door cache
+              if: inputs.stage == 'byoc-azure-1'
+              run: |
+                  az afd endpoint purge --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+                    --profile-name ${{ vars.APP_UI_FRONTDOOR_PROFILE }} \
+                    --endpoint-name ${{ vars.APP_UI_FRONTDOOR_ENDPOINT }} \
+                    --content-paths '/*'
     deploy_connect_ui:
         if: inputs.service == 'connect_ui'
         runs-on: ubuntu-latest
@@ -177,6 +203,31 @@ jobs:
                   gcloud compute url-maps invalidate-cdn-cache ${{ vars.CONNECT_UI_URL_MAP }} \
                     --path "/*" \
                     --project "${{ vars.GCP_PROJECT_ID }}"
+            - name: Auth to Azure (OIDC)
+              if: inputs.stage == 'byoc-azure-1'
+              uses: azure/login@v2
+              with:
+                  client-id: ${{ vars.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ vars.AZURE_TENANT_ID }}
+                  subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+            - name: Upload to Blob Storage
+              if: inputs.stage == 'byoc-azure-1'
+              run: |
+                  az storage blob upload-batch --account-name ${{ vars.CONNECT_UI_STORAGE_ACCOUNT }} \
+                    --destination '$web' --source packages/connect-ui/dist/ --overwrite --auth-mode login
+            - name: Set cache-control for index.html
+              if: inputs.stage == 'byoc-azure-1'
+              run: |
+                  az storage blob update --account-name ${{ vars.CONNECT_UI_STORAGE_ACCOUNT }} \
+                    --container-name '$web' --name index.html --auth-mode login \
+                    --content-cache-control "no-store, no-cache, must-revalidate, max-age=0"
+            - name: Purge Front Door cache
+              if: inputs.stage == 'byoc-azure-1'
+              run: |
+                  az afd endpoint purge --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+                    --profile-name ${{ vars.CONNECT_UI_FRONTDOOR_PROFILE }} \
+                    --endpoint-name ${{ vars.CONNECT_UI_FRONTDOOR_ENDPOINT }} \
+                    --content-paths '/*'
     deploy_all_services:
         if: inputs.service == 'deploy_all_services' && (inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production')
         runs-on: ubuntu-latest
