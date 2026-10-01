@@ -23625,6 +23625,42 @@ slack:
     docs: https://nango.dev/docs/api-integrations/slack
     setup_guide_url: https://nango.dev/docs/api-integrations/slack/how-to-register-your-own-slack-api-oauth-app
 
+slack-app-configuration:
+    display_name: Slack (Configuration Token)
+    categories:
+        - dev-tools
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://slack.com/api/tooling.tokens.rotate
+    token_params:
+        refresh_token: ${credentials.refresh_token}
+    refresh_token_params:
+        refresh_token: ${refresh_token}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    token_response:
+        token: token
+        refresh_token: refresh_token
+        token_expiration: exp
+        token_expiration_strategy: expireAt
+    proxy:
+        base_url: https://slack.com/api
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/slack-app-configuration
+    docs_connect: https://nango.dev/docs/api-integrations/slack-app-configuration/connect
+    credentials:
+        refresh_token:
+            type: string
+            title: App configuration refresh token
+            description: Slack app configuration refresh token.
+            secret: true
+            pattern: '^xoxe-1-[A-Za-z0-9_-]+$'
+            example: xoxe-1-A08************************
+            doc_section: '#step-1-generate-an-app-configuration-token'
+
 slack-mcp:
     display_name: Slack (MCP)
     categories:

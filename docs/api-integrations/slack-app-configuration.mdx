@@ -1,0 +1,94 @@
+---
+title: 'Slack (Configuration Token)'
+sidebarTitle: 'Slack (Configuration Token)'
+description: 'Manage Slack apps programmatically with the App Manifest APIs'
+---
+
+## Overview
+
+This integration authenticates with a Slack [app configuration token](https://docs.slack.dev/authentication/tokens/#config) instead of OAuth. Config tokens are used solely to create and configure Slack apps via the [App Manifest APIs](https://docs.slack.dev/app-manifests/configuring-apps-with-app-manifests/) (`apps.manifest.create`, `apps.manifest.update`, etc.).
+
+## Quickstart
+
+Connect to the Slack App Manifest APIs with Nango in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Slack (Configuration Token)_.
+    </Step>
+    <Step title="Authorize Slack (Configuration Token)">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your app configuration refresh token ([how to generate one](/api-integrations/slack-app-configuration/connect)). Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Slack App Manifest API">
+    Let's make your first request to the Slack App Manifest API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/apps.manifest.create" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"manifest": "{\"display_information\":{\"name\":\"My generated app\"}}"}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/apps.manifest.create',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                manifest: JSON.stringify({ display_information: { name: 'My generated app' } })
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## Slack (Configuration Token) Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/slack-app-configuration/connect)
+Generate an app configuration token and connect it using the Connect UI
+
+Official docs: [Slack App Manifest API docs](https://docs.slack.dev/app-manifests/configuring-apps-with-app-manifests/)
+
+## Pre-built syncs & actions for Slack (Configuration Token)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/slack-app-configuration/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- **Config tokens are scoped to one Slack user and workspace, not to an app.** Any app created through this connection is homed in the workspace the user selected when generating the token, and the connection can configure any app that user owns in that workspace.
+- **Config tokens cannot call workspace APIs.** For regular Slack workspace access (sending messages, reading channels), use the standard [Slack integration](/api-integrations/slack). Workspace bot tokens cannot call the Manifest APIs.
+- **Do not rotate the refresh token manually.** Slack invalidates each refresh token every time it is exchanged. After you submit it to Nango, do not reuse it in another tool or call `tooling.tokens.rotate` yourself, or the connection will break.
+
+---

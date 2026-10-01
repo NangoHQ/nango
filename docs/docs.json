@@ -1841,6 +1841,7 @@
               "integrations/all/skio",
               "api-integrations/slab",
               "api-integrations/slack",
+              "api-integrations/slack-app-configuration",
               "api-integrations/slack-mcp",
               "integrations/all/smartlead-ai",
               "integrations/all/smartrecruiters-api-key",
