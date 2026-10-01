@@ -1,8 +1,10 @@
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import { Loader } from 'lucide-react';
+import { CircleX, Loader } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import {
+    Alert,
+    AlertDescription,
     Button,
     Dialog,
     DialogBody,
@@ -115,6 +117,20 @@ export const PaymentMethodDialog: React.FC<{
                             }}
                         />
                     </Elements>
+                ) : collectPaymentStatus === 'error' ? (
+                    <DialogBody>
+                        <div className="flex flex-col gap-4">
+                            <Alert variant="danger">
+                                <CircleX />
+                                <AlertDescription>Couldn&apos;t load the payment form.</AlertDescription>
+                            </Alert>
+                            <div className="flex justify-end">
+                                <Button type="button" onClick={() => collectPayment()}>
+                                    Try again
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogBody>
                 ) : (
                     <DialogBody>
                         <div className="flex flex-col gap-4">
