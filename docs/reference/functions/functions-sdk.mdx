@@ -392,7 +392,7 @@ const response = await nango.uncontrolledFetch({
       <ResponseField name="url" type="URL" required>
         Absolute URL to request.
       </ResponseField>
-      <ResponseField name="method" type="string">
+      <ResponseField name="method" type="'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'PROPFIND' | 'REPORT'">
         HTTP method. Defaults to `GET`.
       </ResponseField>
       <ResponseField name="headers" type="Record<string, string>">
