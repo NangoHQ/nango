@@ -75,6 +75,11 @@ describe('parse', () => {
         expect(() => parseEnvs(ENVS, { NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: 'jobs-2026-09:not-json' })).toThrowError(/Invalid JSON/);
         expect(() =>
             parseEnvs(ENVS, {
+                NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: JSON.stringify({ kid: 'jobs-2026-09', publicKey: 'A'.repeat(43) })
+            })
+        ).toThrowError(/expected array/);
+        expect(() =>
+            parseEnvs(ENVS, {
                 NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: JSON.stringify([
                     { kid: 'jobs-2026-09', publicKey: 'A'.repeat(43) },
                     { kid: 'jobs-2026-09', publicKey: 'B'.repeat(43) }
