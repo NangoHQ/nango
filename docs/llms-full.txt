@@ -16215,6 +16215,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `mixpanel` | Mixpanel | BASIC | [docs](https://nango.dev/docs/integrations/all/mixpanel.md) | [connect](https://nango.dev/docs/integrations/all/mixpanel/connect.md) |  | analytics |
 | `modjo-ai` | Modjo AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/modjo-ai.md) | [connect](https://nango.dev/docs/api-integrations/modjo-ai/connect.md) |  | crm |
 | `modmed` | ModMed | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/modmed.md) | [connect](https://nango.dev/docs/api-integrations/modmed/connect.md) |  | other |
+| `modmed-fhir` | ModMed (FHIR) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/modmed-fhir.md) | [connect](https://nango.dev/docs/api-integrations/modmed-fhir/connect.md) | [setup](https://nango.dev/docs/api-integrations/modmed-fhir/how-to-register-your-own-modmed-fhir-app.md) | other |
 | `mollie` | Mollie | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/mollie.md) |  | [setup](https://nango.dev/docs/api-integrations/mollie/how-to-register-your-own-mollie-oauth-app.md) | payment |
 | `momentum-io` | Momentum.io | API_KEY | [docs](https://nango.dev/docs/integrations/all/momentum-io.md) | [connect](https://nango.dev/docs/integrations/all/momentum-io/connect.md) |  | productivity |
 | `monday` | Monday | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/monday.md) |  | [setup](https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app.md) | productivity, ticketing |
