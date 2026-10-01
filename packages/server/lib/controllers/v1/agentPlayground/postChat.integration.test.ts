@@ -6,6 +6,14 @@ import { seeders } from '@nangohq/shared';
 
 import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
+import type * as ModelService from '../../../services/agentPlaygroundModel.service.js';
+
+// A developer's OPENAI_API_KEY would otherwise send these tests to the real model.
+vi.mock('../../../services/agentPlaygroundModel.service.js', async (importOriginal) => {
+    const original = await importOriginal<typeof ModelService>();
+    return { ...original, createPlaygroundModel: original.createStreamingMockModel };
+});
+
 let api: Awaited<ReturnType<typeof runServer>>;
 
 const userMessage = (text: string) => ({ id: crypto.randomUUID(), role: 'user', parts: [{ type: 'text', text }] });

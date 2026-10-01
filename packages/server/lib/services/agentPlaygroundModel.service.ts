@@ -10,5 +10,9 @@ export function createPlaygroundModel(): LanguageModel {
     if (envs.OPENAI_API_KEY) {
         return createOpenAI({ apiKey: envs.OPENAI_API_KEY })(envs.NANGO_AGENT_PLAYGROUND_MODEL);
     }
+    return createStreamingMockModel();
+}
+
+export function createStreamingMockModel(): LanguageModel {
     return wrapLanguageModel({ model: createMockModel(), middleware: simulateStreamingMiddleware() });
 }
