@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -32,12 +33,17 @@ const components: Components = {
     td: ({ children }) => <td className="border-b border-border-muted px-3 py-2 align-top">{children}</td>
 };
 
-export const Markdown: React.FC<{ children: string; size?: 'medium' | 'small' }> = ({ children, size = 'medium' }) => {
+const remarkPlugins = [remarkGfm];
+// Tool results can steer the model's reply. An image would make the browser request any URL it names, data included.
+const disallowedElements = ['img'];
+
+export const Markdown = memo<{ children: string }>(({ children }) => {
     return (
-        <div className={size === 'small' ? 'text-body-small-regular text-text-default' : 'text-body-medium-regular text-text-default'}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+        <div className="text-body-medium-regular text-text-default">
+            <ReactMarkdown remarkPlugins={remarkPlugins} components={components} disallowedElements={disallowedElements} unwrapDisallowed>
                 {children}
             </ReactMarkdown>
         </div>
     );
-};
+});
+Markdown.displayName = 'Markdown';

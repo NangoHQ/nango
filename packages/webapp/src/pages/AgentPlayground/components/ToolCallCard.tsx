@@ -10,16 +10,15 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/utils/utils';
-import { describeTool, humanize, toolArguments } from '../toolDisplay';
+import { describeTool, humanize, providerFor, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
-import { Markdown } from './Markdown';
 
 import type { ToolDisplay } from '../toolDisplay';
+import type { BadgeProps } from '@nangohq/design-system';
 import type { DynamicToolUIPart } from 'ai';
 
 interface ToolCallCardProps {
     part: DynamicToolUIPart;
-    providerFor: (integrationId: string) => string;
     onConnected: (integrationId: string) => void;
     onApprove: (approvalId: string, approved: boolean) => void;
 }
@@ -61,26 +60,18 @@ function searchSummary(matches: number, related: number): string {
     return 'No tool found';
 }
 
-const METHOD_CLASS: Record<string, string> = {
-    GET: 'border-border-muted text-text-secondary',
-    POST: 'border-icon-success text-icon-success',
-    DELETE: 'border-icon-danger text-icon-danger'
+const METHOD_VARIANT: Record<string, BadgeProps['variant']> = {
+    POST: 'success',
+    PUT: 'warning',
+    PATCH: 'warning',
+    DELETE: 'danger'
 };
 
 const Subtitle: React.FC<{ display: ToolDisplay }> = ({ display }) => {
     if (display.method || display.path) {
         return (
             <span className="flex min-w-0 items-center gap-2">
-                {display.method && (
-                    <span
-                        className={cn(
-                            'shrink-0 rounded-sm border px-1 py-px font-mono text-[11px] font-semibold leading-none',
-                            METHOD_CLASS[display.method] ?? METHOD_CLASS.GET
-                        )}
-                    >
-                        {display.method}
-                    </span>
-                )}
+                {display.method && <Badge variant={METHOD_VARIANT[display.method] ?? 'default'}>{display.method}</Badge>}
                 {display.path && <span className="truncate font-mono text-body-small-regular text-text-secondary">{display.path}</span>}
             </span>
         );
@@ -89,7 +80,7 @@ const Subtitle: React.FC<{ display: ToolDisplay }> = ({ display }) => {
     return text ? <span className="truncate text-body-small-regular text-text-secondary">{text}</span> : null;
 };
 
-const IconBox: React.FC<{ display: ToolDisplay; providerFor: (integrationId: string) => string }> = ({ display, providerFor }) => {
+const IconBox: React.FC<{ display: ToolDisplay }> = ({ display }) => {
     const provider = display.integrationId ? providerFor(display.integrationId) : undefined;
     if (provider) {
         // Keyed so a logo that 404'd on a half-streamed id retries once the full id arrives.
@@ -111,7 +102,7 @@ const NangoBox: React.FC = () => (
     </div>
 );
 
-export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, providerFor, onConnected, onApprove }) => {
+export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, onConnected, onApprove }) => {
     const display = describeTool(part.toolName, part.input);
     const running = part.state === 'input-streaming' || part.state === 'input-available' || part.state === 'approval-responded';
     const awaitingApproval = part.state === 'approval-requested';
@@ -134,7 +125,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, providerFor, o
     }
 
     if (awaitingApproval && !part.approval.isAutomatic) {
-        return <ApprovalCard part={part} display={display} providerFor={providerFor} onApprove={onApprove} approvalId={part.approval.id} />;
+        return <ApprovalCard part={part} display={display} onApprove={onApprove} approvalId={part.approval.id} />;
     }
 
     const searchOutput =
@@ -143,7 +134,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, providerFor, o
     return (
         <Collapsible className="group/card rounded-ds-xs border border-border-muted bg-surface-panel">
             <CollapsibleTrigger className="flex w-full items-center gap-3 px-4 py-3 text-left">
-                <IconBox display={display} providerFor={providerFor} />
+                <IconBox display={display} />
                 <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-body-medium-medium text-text-strong">{display.title}</span>
                     <Subtitle display={display} />
@@ -171,10 +162,9 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, providerFor, o
 const ApprovalCard: React.FC<{
     part: DynamicToolUIPart;
     display: ToolDisplay;
-    providerFor: (integrationId: string) => string;
     onApprove: (approvalId: string, approved: boolean) => void;
     approvalId: string;
-}> = ({ part, display, providerFor, onApprove, approvalId }) => {
+}> = ({ part, display, onApprove, approvalId }) => {
     const [open, setOpen] = useState(false);
     const bottom = useRef<HTMLDivElement>(null);
 
@@ -199,7 +189,7 @@ const ApprovalCard: React.FC<{
                 }}
                 className="flex cursor-pointer items-center gap-3 px-4 py-3 text-left"
             >
-                <IconBox display={display} providerFor={providerFor} />
+                <IconBox display={display} />
                 <div className="flex min-w-0 flex-1 flex-col">
                     <span className="text-body-medium-medium text-text-strong">The agent wants to make a change</span>
                     <Subtitle
@@ -266,7 +256,7 @@ const Value: React.FC<{ value: unknown }> = ({ value }) => {
         return <CollapsibleCode language="json" code={JSON.stringify(value, null, 2)} />;
     }
     if (typeof value === 'string' && value.length > 80) {
-        return <Markdown size="small">{value}</Markdown>;
+        return <p className="whitespace-pre-wrap wrap-anywhere text-body-small-regular text-text-default">{value}</p>;
     }
     return <code className="whitespace-pre-wrap break-all font-mono text-body-small-regular text-text-default">{String(value)}</code>;
 };
