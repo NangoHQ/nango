@@ -58,7 +58,9 @@ export class AzureKmsKeyringNode extends KeyringNode {
     }
 
     override async _onDecrypt(material: NodeDecryptionMaterial, encryptedDataKeys: EncryptedDataKey[]): Promise<NodeDecryptionMaterial> {
-        const edk = encryptedDataKeys.find((candidate) => candidate.providerId === AZURE_KMS_PROVIDER_ID && candidate.providerInfo === this.keyId);
+        // Key Vault identifiers are case-insensitive.
+        const keyId = this.keyId.toLowerCase();
+        const edk = encryptedDataKeys.find((candidate) => candidate.providerId === AZURE_KMS_PROVIDER_ID && candidate.providerInfo.toLowerCase() === keyId);
         if (!edk) {
             return material;
         }

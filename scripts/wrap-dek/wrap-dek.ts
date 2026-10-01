@@ -1,34 +1,6 @@
 /**
  * Wrap (default) or unwrap (--decrypt) the Nango global DEK with a KMS master key, using the AWS Encryption SDK.
- *
- * Supports AWS KMS (--key-arn), GCP Cloud KMS (--gcp-key-name) or Azure Key Vault (--azure-key-id). Pass exactly one.
- *
- * The DEK is read from stdin so it never lands on disk or in shell history.
- *
- * AWS wrap:    echo -n "$NANGO_ENCRYPTION_KEY" | npx tsx wrap-dek.ts --key-arn <kms-key-arn> --context purpose=global_dek --context app=nango > dek-wrapped.b64
- * GCP wrap:    echo -n "$NANGO_ENCRYPTION_KEY" | npx tsx wrap-dek.ts --gcp-key-name <resource> --context purpose=global_dek --context app=nango > dek-wrapped.b64
- * Azure wrap:  echo -n "$NANGO_ENCRYPTION_KEY" | npx tsx wrap-dek.ts --azure-key-id <key-id> --context purpose=global_dek --context app=nango > dek-wrapped.b64
- * AWS verify:  cat dek-wrapped.b64 | npx tsx wrap-dek.ts --decrypt --key-arn <kms-key-arn> --context purpose=global_dek --context app=nango | base64 -d
- * GCP verify:  cat dek-wrapped.b64 | npx tsx wrap-dek.ts --decrypt --gcp-key-name <resource> --context purpose=global_dek --context app=nango | base64 -d
- * Azure verify: cat dek-wrapped.b64 | npx tsx wrap-dek.ts --decrypt --azure-key-id <key-id> --context purpose=global_dek --context app=nango | base64 -d
- *               (output must match $NANGO_ENCRYPTION_KEY byte-for-byte)
- *
- * --gcp-key-name is a Cloud KMS crypto key resource:
- *   projects/PROJECT/locations/LOCATION/keyRings/RING/cryptoKeys/KEY
- * GCP calls use Application Default Credentials. Set GOOGLE_IMPERSONATE_SERVICE_ACCOUNT
- * to impersonate that SA (ADC principal needs roles/iam.serviceAccountTokenCreator;
- * the SA needs roles/cloudkms.cryptoKeyEncrypterDecrypter on the key).
- *
- *   export GOOGLE_IMPERSONATE_SERVICE_ACCOUNT=nango-terraform@PROJECT.iam.gserviceaccount.com
- *
- * --azure-key-id is a versioned Key Vault RSA key identifier:
- *   https://VAULT.vault.azure.net/keys/NAME/VERSION
- * Azure calls use DefaultAzureCredential (e.g. `az login`); the principal needs
- * Key Vault Crypto User on the key.
- *
- * --context is optional and repeatable; pairs are bound to the envelope on wrap and
- * verified against the envelope header on --decrypt.
- *
+ * See README.md for usage.
  */
 import { parseArgs } from 'node:util';
 
@@ -108,14 +80,12 @@ async function resolveKeyring(
     decrypt: boolean | undefined
 ): Promise<KeyringNode> {
     if (gcpKeyName) {
-        // Copied from packages/kms/lib/gcp.ts (`npm run sync-gcp`) so it uses this install's KeyringNode.
-        const { GcpKmsKeyringNode } = await import('./gcp.js');
+        const { GcpKmsKeyringNode } = await import('../../packages/kms/lib/gcp.js');
         const { defaultGcpKmsClient } = await import('./gcp-client.js');
         return new GcpKmsKeyringNode(gcpKeyName, defaultGcpKmsClient());
     }
     if (azureKeyId) {
-        // Copied from packages/kms/lib/azure.ts (`npm run sync-azure`) so it uses this install's KeyringNode.
-        const { AzureKmsKeyringNode } = await import('./azure.js');
+        const { AzureKmsKeyringNode } = await import('../../packages/kms/lib/azure.js');
         return new AzureKmsKeyringNode(azureKeyId);
     }
     if (!keyArn) {

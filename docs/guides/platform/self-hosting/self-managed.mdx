@@ -190,7 +190,7 @@ If you'd rather not manage `NANGO_ENCRYPTION_KEY` as a flat secret, wrap it with
 | GCP Cloud KMS | `NANGO_GCP_KMS_KEY_NAME` | `projects/my-project/locations/global/keyRings/nango/cryptoKeys/dek` |
 | Azure Key Vault | `NANGO_AZURE_KMS_KEY_ID` | `https://my-vault.vault.azure.net/keys/dek/0123456789abcdef0123456789abcdef` |
 
-Credentials come from the environment (IAM role, workload identity or managed identity), and Nango needs permission to decrypt with that key. On Azure, use an RSA key and include its version in the identifier.
+Credentials come from the environment (IAM role, workload identity or managed identity), and Nango needs permission to unwrap with that key. On Azure, use an RSA key and include its version in the identifier.
 
 <Warning>
 `NANGO_ENCRYPTION_KEY` is also required for Connect UI. It is used to generate sessions for [Connect UI](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui). Without this key, Connect UI will not work.

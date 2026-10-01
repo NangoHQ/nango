@@ -47,6 +47,13 @@ describe('AzureKmsKeyringNode', () => {
         await expect(unwrapDek({ wrapped, keyring, expectedContext })).resolves.toBe(testDek);
     });
 
+    it('should unwrap when the configured key id differs only in casing', async () => {
+        const client = stubClient();
+        const wrapped = await wrap(new AzureKmsKeyringNode(testKeyId, client), Buffer.from(testDek, 'base64'));
+        const keyring = new AzureKmsKeyringNode(testKeyId.replace('nango-test', 'NANGO-TEST').replace('/dek/', '/DEK/'), client);
+        await expect(unwrapDek({ wrapped, keyring, expectedContext })).resolves.toBe(testDek);
+    });
+
     it('should throw when the wrapped key was bound to a different encryption context', async () => {
         const keyring = new AzureKmsKeyringNode(testKeyId, stubClient());
         const wrapped = await wrap(keyring, Buffer.from(testDek, 'base64'), { purpose: 'something_else', app: 'nango' });
