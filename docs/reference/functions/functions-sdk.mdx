@@ -370,6 +370,50 @@ Status `401` is retryable so Nango can recover after refreshing the connection w
 
 Between retry attempts Nango waits with **exponential backoff**: first wait **3000ms**, then each wait doubles, capped at **10 minutes**.
 
+## Uncontrolled fetch
+
+`nango.uncontrolledFetch()` sends a request without injecting the connection's credentials and without retries. Use it for a host that is not the current integration.
+
+```ts
+const response = await nango.uncontrolledFetch({
+    url: new URL('https://sandbox.example.com/upload'),
+    method: 'POST',
+    headers: { 'content-type': 'application/octet-stream' },
+    body: fileContents,
+    redirect: 'error'
+});
+```
+
+**Parameters**
+
+<Expandable>
+  <ResponseField name="options" type="object" required>
+    <Expandable title="options" defaultOpen>
+      <ResponseField name="url" type="URL" required>
+        Absolute URL to request.
+      </ResponseField>
+      <ResponseField name="method" type="string">
+        HTTP method. Defaults to `GET`.
+      </ResponseField>
+      <ResponseField name="headers" type="Record<string, string>">
+        Request headers.
+      </ResponseField>
+      <ResponseField name="body" type="string | null">
+        Request body.
+      </ResponseField>
+      <ResponseField name="redirect" type="'follow' | 'error'" default="follow">
+        How to handle a 301, 302, 303, 307, or 308 response.
+
+        `follow` follows the redirect. A 301 or 302 to a POST, and any 303, is retried as GET and the body is dropped. A 307 or 308 keeps the method and sends the body to the `Location`.
+
+        `error` fails the request with an `ActionError` (`code: 'redirect_error'`) and does not send the body to the `Location`. Use this when a redirect must not receive the payload, such as a file upload.
+      </ResponseField>
+    </Expandable>
+  </ResponseField>
+</Expandable>
+
+The response is a [Fetch `Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response).
+
 ## Logging
 
 You can collect logs in integration functions. This is particularly useful when:
