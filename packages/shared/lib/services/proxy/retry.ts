@@ -1,10 +1,11 @@
-import { AxiosError, isAxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import get from 'lodash-es/get.js';
 
 import { networkError } from '@nangohq/utils';
 
 import type { RetryReason } from './utils.js';
 import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
+import type { AxiosError } from 'axios';
 
 function capRetryWait(reason: string, wait: number, maxWaitMs: number): RetryReason {
     if (wait > maxWaitMs) {
@@ -39,15 +40,6 @@ export function getProxyRetryFromErr({
     }
 
     const status = err.response?.status || 0;
-
-    // axios reports a body cut off mid-stream (idle timeout, dropped connection) as ERR_BAD_RESPONSE with the original success status.
-    // The server already handled the request, so only a GET is safe to send again.
-    if (err.code === AxiosError.ERR_BAD_RESPONSE && status >= 200 && status < 300) {
-        if (proxyConfig.method.toUpperCase() === 'GET') {
-            return { retry: true, reason: 'truncated_response' };
-        }
-        return { retry: false, reason: 'truncated_response_not_idempotent' };
-    }
     const customHeaderConf = proxyConfig.provider.proxy?.retry;
     let isRetryable = false;
     let reason: string | undefined;

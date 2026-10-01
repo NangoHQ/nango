@@ -213,15 +213,4 @@ describe('timeouts', () => {
         // the first retry would otherwise wait 3s
         expect(Date.now() - start).toBeLessThan(1000);
     });
-
-    it('should retry a response truncated mid-body', { timeout: 10000 }, async () => {
-        const proxy = getProxy({ retries: 1 });
-        const truncated = makeAxiosError(200);
-        truncated.code = AxiosError.ERR_BAD_RESPONSE;
-        const httpCall = vi.spyOn(proxy, 'httpCall').mockRejectedValueOnce(truncated).mockResolvedValueOnce(okResponse);
-
-        const res = (await proxy.request()).unwrap();
-        expect(res).toMatchObject({ status: 200 });
-        expect(httpCall).toHaveBeenCalledTimes(2);
-    });
 });

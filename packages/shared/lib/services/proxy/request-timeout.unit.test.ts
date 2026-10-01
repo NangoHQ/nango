@@ -1,3 +1,4 @@
+import assert from 'node:assert';
 import http from 'node:http';
 import https from 'node:https';
 
@@ -89,9 +90,13 @@ describe('ProxyRequest idle timeout', () => {
 
             const start = Date.now();
             const result = await getProxy(port, { metered }).request();
+            const elapsed = Date.now() - start;
 
-            expect(result.isErr()).toBe(true);
-            expect(Date.now() - start).toBeLessThan(IDLE_TIMEOUT_MS * 4);
+            // axios reports the aborted body as ERR_BAD_RESPONSE, the server never closes so only the timeout can end it
+            assert(result.isErr());
+            expect(result.error).toMatchObject({ code: 'ERR_BAD_RESPONSE', message: 'stream has been aborted' });
+            expect(elapsed).toBeGreaterThanOrEqual(IDLE_TIMEOUT_MS * 0.9);
+            expect(elapsed).toBeLessThan(IDLE_TIMEOUT_MS * 4);
         });
 
         it('should time out a request that never gets response headers', async () => {
@@ -100,9 +105,12 @@ describe('ProxyRequest idle timeout', () => {
 
             const start = Date.now();
             const result = await getProxy(port, { metered }).request();
+            const elapsed = Date.now() - start;
 
-            expect(result.isErr()).toBe(true);
-            expect(Date.now() - start).toBeLessThan(IDLE_TIMEOUT_MS * 4);
+            assert(result.isErr());
+            expect(result.error).toMatchObject({ code: 'ECONNABORTED', message: `timeout of ${IDLE_TIMEOUT_MS}ms exceeded` });
+            expect(elapsed).toBeGreaterThanOrEqual(IDLE_TIMEOUT_MS * 0.9);
+            expect(elapsed).toBeLessThan(IDLE_TIMEOUT_MS * 4);
         });
     });
 });
