@@ -5,6 +5,7 @@ import { legacyFunctionService } from '@nangohq/shared';
 import { filterJsonSchemaForModels } from '@nangohq/utils';
 
 import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
+import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { trackAgentSessionToolSearch } from './agentSessionAnalytics.service.js';
 
 import type { AgentSessionToolSearchHit } from './agentSessionAnalytics.service.js';
@@ -124,7 +125,8 @@ export async function searchSessionTools({
     await logCtx.enrichOperation({ actor: { kind: 'session', id: session.id } });
 
     try {
-        const ranked = rankSessionTools({ session, query, slugOf });
+        const current = await withConnectionsCreatedInSession(session);
+        const ranked = rankSessionTools({ session: current, query, slugOf });
         const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
 
         // It's possible a tool was removed after the session compiled, so we set input as unavailable.

@@ -2,7 +2,6 @@ import { Ok } from '@nangohq/utils';
 
 import { trackAgentSessionToolSearch } from '../../../../services/agentSessionAnalytics.service.js';
 import { searchSessionTools } from '../../../../services/agentSessionToolSearch.service.js';
-import { withConnectionsCreatedInSession } from '../sessionConnection.js';
 import { defineAgentSessionMcpTool } from '../sessionTool.js';
 import { toolSearchInputSchema, toolSearchOutputSchema } from './schema.js';
 
@@ -21,15 +20,7 @@ export const toolSearchTool = defineAgentSessionMcpTool({
         trackAgentSessionToolSearch({ session, matches: [], related: [], errorCode: 'invalid_input' });
     },
     async handler({ args, account, environment, session, callable }) {
-        return Ok(
-            await searchSessionTools({
-                account,
-                environment,
-                session: await withConnectionsCreatedInSession(session),
-                query: args.query,
-                slugOf: slugLookup(callable)
-            })
-        );
+        return Ok(await searchSessionTools({ account, environment, session, query: args.query, slugOf: slugLookup(callable) }));
     }
 });
 
