@@ -193,6 +193,14 @@ If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in
 
 ## Secure your instance
 
+### Trust model
+
+A self-hosted Nango instance is single-tenant. Everyone who can sign up or log in to the dashboard is trusted with the whole instance: every environment, integration, connection (including end-user OAuth tokens), API key and webhook signing key. Accounts on a self-hosted instance are not an isolation boundary between users.
+
+Signup is enabled by default. If your dashboard is reachable by anyone you don't fully trust, disable signup and protect the dashboard with basic auth (below), or keep it on a private network.
+
+Server-side `NANGO_SECRET_KEY_<ENV>` and `NANGO_PUBLIC_KEY_<ENV>` variables apply to the instance, not to a single account.
+
 ### Secure the dashboard
 
 By default, the dashboard of your Nango instance is open to anyone who can access your instance URL.
