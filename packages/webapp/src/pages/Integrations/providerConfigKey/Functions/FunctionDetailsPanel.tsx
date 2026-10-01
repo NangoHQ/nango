@@ -88,9 +88,9 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                         <span className="truncate type-code-medium-sm text-text-default">{fn.name}</span>
                         <CopyButton text={fn.name} className="size-4 p-0" />
                     </div>
-                    {fn.description && <p className="type-text-regular-xs text-text-default">{fn.description}</p>}
+                    {fn.description && <p className="type-text-regular-xs text-text-secondary">{fn.description}</p>}
                 </div>
-                <div className="flex shrink-0 flex-col items-start gap-3">
+                <div className="flex shrink-0 flex-col items-start gap-2">
                     {canDelete && (
                         <Button
                             variant="link-danger"
