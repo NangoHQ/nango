@@ -195,11 +195,13 @@ If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in
 
 ### Trust model
 
-A self-hosted Nango instance is single-tenant. Everyone who can sign up or log in to the dashboard is trusted with the whole instance: every environment, integration, connection (including end-user OAuth tokens), API key and webhook signing key. Accounts on a self-hosted instance are not an isolation boundary between users.
+Accounts are the isolation boundary. A signup without an invitation creates a new account with its own `dev` and `prod` environments. A dashboard session or API key can only reach that account's environments, integrations, connections (including end-user OAuth tokens), API keys, and webhook signing key.
 
-Signup is enabled by default. If your dashboard is reachable by anyone you don't fully trust, disable signup and protect the dashboard with basic auth (below), or keep it on a private network.
+Free self-hosting does not enforce roles. `FLAG_AUTH_ROLES_ENABLED` defaults to `false`, new users get the `administrator` role, and every member of an account has full access to that account.
 
-Server-side `NANGO_SECRET_KEY_<ENV>` and `NANGO_PUBLIC_KEY_<ENV>` variables apply to the instance, not to a single account.
+Signup is on by default. Set `AUTH_ALLOW_SIGNUP=false` and restart the server to block new self-service signups. Login and invitation signups still work. If the dashboard is reachable by anyone you don't fully trust, also protect it with basic auth (below) or keep it on a private network. Basic auth turns off per-user login and signs the dashboard in as one shared user.
+
+`NANGO_SECRET_KEY_<ENV>` and `NANGO_PUBLIC_KEY_<ENV>` override the key for the first non-deleted environment whose name matches `<ENV>`. When several accounts use the same environment name, the override follows whichever row the database returns first.
 
 ### Secure the dashboard
 
