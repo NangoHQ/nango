@@ -4,7 +4,8 @@ import * as functionConfigService from '../models/functions.js';
 import * as functionInstanceService from '../models/instances.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
-import type { DBConnection, DBFunctionInstance } from '@nangohq/types';
+import type { CurrentFunctionConfig } from '../models/functions.js';
+import type { DBConnection, DBFunctionConfigVersion, DBFunctionInstance, FunctionTriggerDefinition } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
@@ -30,10 +31,13 @@ export async function ensureForConnection(
             return Err(configs.error);
         }
 
-        const scheduled = configs.value.flatMap((config) => {
-            const trigger = config.currentVersion.trigger;
-            return trigger.kind === 'schedule' ? [{ config: config.config, trigger }] : [];
-        });
+        const scheduled = configs.value.filter(
+            (
+                func
+            ): func is CurrentFunctionConfig & {
+                currentVersion: DBFunctionConfigVersion & { trigger: Extract<FunctionTriggerDefinition, { kind: 'schedule' }> };
+            } => func.currentVersion.trigger.kind === 'schedule'
+        );
         if (scheduled.length === 0) {
             return Ok(undefined);
         }
@@ -52,24 +56,26 @@ export async function ensureForConnection(
             return Err(instances.error);
         }
 
-        const triggerByConfigId = new Map(scheduled.map(({ config, trigger }) => [config.id, trigger]));
+        const functionsByConfigId = new Map(scheduled.map((func) => [func.config.id, func]));
         return await orchestrator.scheduleFunctions(
             instances.value.flatMap((instance) => {
                 if (!instance.enabled) {
                     return [];
                 }
-                const trigger = triggerByConfigId.get(instance.function_config_id);
-                return trigger
-                    ? [
-                          {
-                              environmentId: connection.environment_id,
-                              instance,
-                              connection,
-                              frequencyFallback: trigger.frequency,
-                              autoStart: trigger.autoStart ?? true
-                          }
-                      ]
-                    : [];
+                const func = functionsByConfigId.get(instance.function_config_id);
+                if (!func) {
+                    return [];
+                }
+                return [
+                    {
+                        environmentId: connection.environment_id,
+                        instance,
+                        functionUuid: func.config.uuid,
+                        connection,
+                        frequencyFallback: func.currentVersion.trigger.frequency,
+                        autoStart: func.currentVersion.trigger.autoStart ?? true
+                    }
+                ];
             })
         );
     } catch (err) {

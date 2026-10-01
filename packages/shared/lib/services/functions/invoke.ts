@@ -166,8 +166,6 @@ export async function invokeFunction({
         const invocation = await orchestrator.invokeFunction({
             environment,
             connection,
-            functionConfigId: config.id,
-            functionName: config.name,
             functionUuid: config.uuid,
             trigger: trigger.value,
             async: invocationType === 'no_wait',

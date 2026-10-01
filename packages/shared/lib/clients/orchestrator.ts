@@ -101,12 +101,19 @@ export interface OrchestratorClientInterface {
 
 const FunctionScheduleId = {
     get: ({ environmentId, id }: { environmentId: number; id: number }): string => {
-        return `environment:${environmentId}:function:${id}`;
+        return `environment:${environmentId}:functioninstance:${id}`;
     },
     parse: (id: string): Result<{ environmentId: number; id: number }> => {
         const parts = id.split(':');
-        if (parts.length !== 4 || parts[0] !== 'environment' || isNaN(Number(parts[1])) || parts[2] !== 'function' || !parts[3] || isNaN(Number(parts[3]))) {
-            return Err(`Invalid function id: ${id}. expected format: environment:<environmentId>:function:<id>`);
+        if (
+            parts.length !== 4 ||
+            parts[0] !== 'environment' ||
+            isNaN(Number(parts[1])) ||
+            parts[2] !== 'functioninstance' ||
+            !parts[3] ||
+            isNaN(Number(parts[3]))
+        ) {
+            return Err(`Invalid function instance id: ${id}. expected format: environment:<environmentId>:functioninstance:<id>`);
         }
         return Ok({ environmentId: Number(parts[1]), id: Number(parts[3]) });
     }
@@ -154,8 +161,6 @@ export class Orchestrator {
     async invokeFunction({
         environment,
         connection,
-        functionConfigId,
-        functionName,
         functionUuid,
         trigger,
         async,
@@ -165,9 +170,7 @@ export class Orchestrator {
     }: {
         environment: DBEnvironment;
         connection: ConnectionJobs;
-        functionName: string;
         functionUuid: string;
-        functionConfigId: number;
         trigger: FunctionTrigger;
         async: boolean;
         retryMax: number;
@@ -175,11 +178,10 @@ export class Orchestrator {
         logCtx: LogContext;
     }): Promise<Result<AsyncFunctionResponse | { data: JsonValue }, NangoError>> {
         try {
-            const groupKey = `function:environment:${environment.id}:connection:${connection.id}:function:${functionName}`;
+            const groupKey = `function:environment:${environment.id}:connection:${connection.id}:function:${functionUuid}`;
             const executionId = `${groupKey}:at:${new Date().toISOString()}:${uuid()}`;
             const args = {
-                functionName,
-                functionConfigId,
+                functionUuid,
                 connection: {
                     id: connection.id,
                     connection_id: connection.connection_id,
@@ -214,7 +216,7 @@ export class Orchestrator {
 
             if (res.value.kind === 'scheduled') {
                 void logCtx.info('The function was successfully scheduled for asynchronous execution', {
-                    function: functionName,
+                    functionUuid,
                     connection: connection.connection_id,
                     integration: connection.provider_config_key
                 });
@@ -955,6 +957,7 @@ export class Orchestrator {
         functions: {
             environmentId: number;
             instance: DBFunctionInstance;
+            functionUuid: string;
             connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
             frequencyFallback: string;
             autoStart: boolean;
@@ -962,7 +965,7 @@ export class Orchestrator {
     ): Promise<Result<void>> {
         try {
             const schedules: RecurringProps[] = [];
-            for (const { instance, connection, environmentId, frequencyFallback, autoStart } of functions) {
+            for (const { instance, functionUuid, connection, environmentId, frequencyFallback, autoStart } of functions) {
                 const frequencyMs = this.getFrequencyMs(instance.frequency || frequencyFallback);
                 if (frequencyMs.isErr()) {
                     return Err(frequencyMs.error);
@@ -984,8 +987,7 @@ export class Orchestrator {
                     startsAt: new Date(),
                     args: {
                         type: 'function',
-                        functionConfigId: instance.function_config_id,
-                        functionName: instance.name,
+                        functionUuid,
                         connection,
                         variant: instance.variant,
                         trigger: {

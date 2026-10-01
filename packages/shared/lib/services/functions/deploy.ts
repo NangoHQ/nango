@@ -327,7 +327,9 @@ export async function deployBundle({
                         const scheduled = await orchestrator.scheduleFunctions(
                             instances.value.flatMap((instance) => {
                                 const connection = connections.get(instance.nango_connection_id);
-                                return connection ? [{ environmentId, instance, connection, frequencyFallback, autoStart }] : [];
+                                return connection
+                                    ? [{ environmentId, instance, functionUuid: config.config.uuid, connection, frequencyFallback, autoStart }]
+                                    : [];
                             })
                         );
                         if (scheduled.isErr()) {
