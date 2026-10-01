@@ -748,26 +748,8 @@ const ENVS_SHAPE = z.object({
     PLAIN_APP_ID: z.string().optional(),
     PLAIN_HMAC_SECRET: z.string().optional(),
 
-    NANGO_AGENT_PLAYGROUND_PROVIDER: z.enum(['openai', 'mock']).optional().default('mock'),
     NANGO_AGENT_PLAYGROUND_MODEL: z.string().optional().default('gpt-6-luna'),
-    NANGO_AGENT_PLAYGROUND_CACHE: z.enum(['off', 'readwrite', 'readonly']).optional().default('off'),
-    NANGO_AGENT_PLAYGROUND_CACHE_DIR: z.string().optional(),
-    // Replaces Nango's shared OAuth app for each provider listed here.
-    NANGO_AGENT_PLAYGROUND_OAUTH_APPS: z
-        .string()
-        .optional()
-        .transform((s, ctx) => {
-            if (s === undefined || s.trim() === '') {
-                return {};
-            }
-            try {
-                return JSON.parse(s) as unknown;
-            } catch {
-                ctx.addIssue(`Invalid JSON in NANGO_AGENT_PLAYGROUND_OAUTH_APPS`);
-                return z.NEVER;
-            }
-        })
-        .pipe(z.record(z.string(), z.object({ clientId: z.string().min(1), clientSecret: z.string().min(1), scopes: z.string().optional() }))),
+    // Without it the Agent Playground answers from a mock model.
     OPENAI_API_KEY: z.string().optional(),
 
     // Internal API
@@ -1011,14 +993,6 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
             message: 'EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set',
             path: ['EMAIL_HTTP_BODY'],
             input: ctx.value.EMAIL_HTTP_BODY
-        });
-    }
-    if (ctx.value.NANGO_AGENT_PLAYGROUND_PROVIDER === 'openai' && !ctx.value.OPENAI_API_KEY) {
-        ctx.issues.push({
-            code: 'custom',
-            message: 'OPENAI_API_KEY is required when NANGO_AGENT_PLAYGROUND_PROVIDER is openai',
-            path: ['OPENAI_API_KEY'],
-            input: ctx.value.OPENAI_API_KEY
         });
     }
 });

@@ -527,21 +527,6 @@ describe('parse', () => {
             expect(() => parseEnvs(ENVS, { EMAIL_HTTP_BODY: '3' })).toThrow();
         });
 
-        it('should parse NANGO_AGENT_PLAYGROUND_OAUTH_APPS and name it when the JSON is invalid', () => {
-            expect(parseEnvs(ENVS, {}).NANGO_AGENT_PLAYGROUND_OAUTH_APPS).toEqual({});
-            expect(
-                parseEnvs(ENVS, { NANGO_AGENT_PLAYGROUND_OAUTH_APPS: '{"github":{"clientId":"id","clientSecret":"secret"}}' }).NANGO_AGENT_PLAYGROUND_OAUTH_APPS
-            ).toEqual({ github: { clientId: 'id', clientSecret: 'secret' } });
-            expect(() => parseEnvs(ENVS, { NANGO_AGENT_PLAYGROUND_OAUTH_APPS: '{"github":{},}' })).toThrow('NANGO_AGENT_PLAYGROUND_OAUTH_APPS');
-        });
-
-        it('should throw when the playground uses OpenAI without OPENAI_API_KEY', () => {
-            expect(() => parseEnvs(ENVS, { NANGO_AGENT_PLAYGROUND_PROVIDER: 'openai' })).toThrow(
-                'OPENAI_API_KEY is required when NANGO_AGENT_PLAYGROUND_PROVIDER is openai'
-            );
-            expect(parseEnvs(ENVS, { NANGO_AGENT_PLAYGROUND_PROVIDER: 'openai', OPENAI_API_KEY: 'sk-test' }).OPENAI_API_KEY).toBe('sk-test');
-        });
-
         it('should throw when EMAIL_HTTP_URL is set without EMAIL_HTTP_BODY', () => {
             expect(() => {
                 parseEnvs(ENVS, { EMAIL_HTTP_URL: 'https://api.example.com/send' });

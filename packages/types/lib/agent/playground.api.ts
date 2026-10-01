@@ -3,8 +3,6 @@ import type { ApiEndpoint, ApiError } from '../api.js';
 export interface AgentPlaygroundUsage {
     inputTokens: number;
     outputTokens: number;
-    cachedModelCalls: number;
-    modelCalls: number;
 }
 
 export interface AgentPlaygroundMessageMetadata {
