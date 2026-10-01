@@ -8,7 +8,6 @@ import { patchGettingStarted, useGettingStarted } from '../../hooks/useGettingSt
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { track } from '../../utils/analytics';
 import VerticalSteps from './components/VerticalSteps';
 import { FirstStep } from './FirstStep';
 import { SecondStep } from './SecondStep';
@@ -60,10 +59,8 @@ export const GettingStarted: React.FC = () => {
                                 <FirstStep
                                     connection={gettingStarted?.connection ?? null}
                                     integration={gettingStarted?.meta.integration ?? null}
-                                    onConnectClicked={() => track('web:getting_started:connect-clicked', {})}
                                     onConnected={async (connectionId) => {
                                         try {
-                                            track('web:getting_started:connection-created', {});
                                             const { res } = await patchGettingStarted(env, { connection_id: connectionId, step: 1 });
                                             if (!res.ok) {
                                                 throw new Error('Failed to patch getting started');
@@ -75,7 +72,6 @@ export const GettingStarted: React.FC = () => {
                                     }}
                                     onDisconnected={async () => {
                                         try {
-                                            track('web:getting_started:connection-disconnected', {});
                                             await refetch();
                                         } catch {
                                             toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
@@ -93,7 +89,6 @@ export const GettingStarted: React.FC = () => {
                                     providerConfigKey={gettingStarted?.meta.integration?.unique_key}
                                     onExecuted={async () => {
                                         try {
-                                            track('web:getting_started:code-snippet-executed', {});
                                             const { res } = await patchGettingStarted(env, { step: 2 });
                                             if (!res.ok) {
                                                 throw new Error('Failed to patch getting started');
@@ -113,7 +108,7 @@ export const GettingStarted: React.FC = () => {
                                       id: 'go-deeper',
                                       icon: PartyPopper,
                                       branded: true,
-                                      content: <ThirdStep onSetupIntegrationClicked={() => track('web:getting_started:setup-integration-clicked', {})} />
+                                      content: <ThirdStep />
                                   }
                               ]
                             : [])

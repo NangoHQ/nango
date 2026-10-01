@@ -14,7 +14,7 @@
         "directory": "packages/logs"
     },
     "dependencies": {
-        "@elastic/elasticsearch": "8.19.1",
+        "@elastic/elasticsearch": "8.19.2",
         "@nangohq/utils": "file:../utils",
         "@opensearch-project/opensearch": "2.13.0",
         "@opentelemetry/api": "1.9.1",
@@ -24,12 +24,12 @@
         "@opentelemetry/sdk-trace-base": "2.10.0",
         "@opentelemetry/sdk-trace-node": "2.10.0",
         "@opentelemetry/semantic-conventions": "1.43.0",
-        "zod": "4.0.5"
+        "zod": "4.3.6"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "type-fest": "4.41.0",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     },
     "files": [
         "dist/**/*"

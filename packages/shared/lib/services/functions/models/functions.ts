@@ -8,6 +8,7 @@ import type { Knex } from 'knex';
 
 const CONFIG_COLUMNS = {
     id: true,
+    uuid: true,
     nango_config_id: true,
     environment_id: true,
     name: true,
@@ -168,16 +169,25 @@ type Prefixed<T, Prefix extends string> = {
     [K in keyof T as `${Prefix}${Extract<K, string>}`]: T[K];
 };
 
+// `id` and `uuid` fields are mutually exclusive. Only one of them is provided at a time.
+type FunctionIdentity = { id?: number | undefined; uuid?: never } | { uuid?: string | undefined; id?: never };
+
 type SearchFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> &
     Prefixed<DBFunctionConfigVersion, typeof VERSION_PREFIX> &
     Prefixed<FunctionIntegration, typeof INTEGRATION_PREFIX>;
 
-interface FunctionSearchFilter {
-    integrationKey: string;
-    id?: number | undefined;
+type FunctionSearchFilter = {
+    integrationKey?: string | undefined;
+    provider?: string | undefined;
     name?: string | undefined;
     enabled?: boolean | undefined;
-    trigger?: { kind: 'http'; hasSubscriptions: boolean } | { kind: 'event'; event: OnEventType } | undefined;
+    trigger?: { kind: 'http'; hasSubscriptions?: boolean } | { kind: 'event'; event?: OnEventType } | { kind: 'schedule' } | { kind: 'none' };
+} & FunctionIdentity;
+
+export interface FunctionSearchOptions {
+    limit?: number | undefined;
+    afterId?: number | undefined;
+    forShare?: boolean | undefined;
 }
 
 export async function search(
@@ -188,7 +198,8 @@ export async function search(
     }: {
         environmentId: number;
         filter?: FunctionSearchFilter | undefined;
-    }
+    },
+    { limit, afterId, forShare }: FunctionSearchOptions = {}
 ): Promise<Result<CurrentFunctionConfig[]>> {
     try {
         const query = trx
@@ -207,8 +218,14 @@ export async function search(
             .whereNull('config.deleted_at')
             .whereNull('version.deleted_at');
 
-        if (filter) {
+        if (filter?.integrationKey !== undefined) {
             query.where('integration.unique_key', filter.integrationKey);
+        }
+        if (filter?.provider !== undefined) {
+            query.where('integration.provider', filter.provider);
+        }
+        if (filter?.uuid !== undefined) {
+            query.where('config.uuid', filter.uuid);
         }
         if (filter?.name !== undefined) {
             query.where('config.name', filter.name);
@@ -220,22 +237,49 @@ export async function search(
             query.where('config.enabled', filter.enabled);
         }
         if (filter?.trigger) {
-            query.whereRaw("version.trigger->>'kind' = ?", [filter.trigger.kind]);
             switch (filter.trigger.kind) {
                 case 'http': {
-                    // TODO: index subscriptions array length for performance
-                    const subscriptionCount = `CASE
-                        WHEN jsonb_typeof(version.trigger->'subscriptions') = 'array'
-                        THEN jsonb_array_length(version.trigger->'subscriptions')
-                        ELSE 0
-                    END`;
-                    query.whereRaw(`${subscriptionCount} ${filter.trigger.hasSubscriptions ? '>' : '='} 0`);
+                    query.whereRaw("version.trigger->>'kind' = 'http'");
+                    if (filter.trigger.hasSubscriptions !== undefined) {
+                        const subscriptionCount = `CASE
+                            WHEN jsonb_typeof(version.trigger->'subscriptions') = 'array'
+                            THEN jsonb_array_length(version.trigger->'subscriptions')
+                            ELSE 0
+                        END`;
+                        query.whereRaw(`${subscriptionCount} ${filter.trigger.hasSubscriptions ? '>' : '='} 0`);
+                    }
                     break;
                 }
                 case 'event':
-                    query.whereRaw("version.trigger->'events' @> ?::jsonb", [JSON.stringify([filter.trigger.event])]);
+                    query.whereRaw("version.trigger->>'kind' = 'event'");
+                    if (filter.trigger.event !== undefined) {
+                        query.whereRaw("version.trigger->'events' @> ?::jsonb", [JSON.stringify([filter.trigger.event])]);
+                    }
                     break;
+                case 'schedule':
+                    query.whereRaw("version.trigger->>'kind' = 'schedule'");
+                    break;
+                case 'none':
+                    query.whereRaw("version.trigger->>'kind' = 'none'");
+                    break;
+                default: {
+                    const exhaustiveCheck: never = filter.trigger;
+                    throw new Error('unsupported_trigger_kind', { cause: exhaustiveCheck });
+                }
             }
+        }
+
+        if (limit !== undefined || afterId !== undefined) {
+            query.orderBy('config.id', 'asc');
+        }
+        if (afterId !== undefined) {
+            query.where('config.id', '>', afterId);
+        }
+        if (limit !== undefined) {
+            query.limit(limit);
+        }
+        if (forShare) {
+            query.forShare('config');
         }
 
         const rows = await query;
@@ -328,6 +372,25 @@ export async function upsert(db: Knex, inputs: FunctionConfigUpsert[]): Promise<
         return Ok(upserted);
     } catch (err) {
         return Err(new Error('failed_to_upsert_function', { cause: err }));
+    }
+}
+
+type FunctionConfigUpdate = { environmentId: number; fields: Partial<Pick<DBFunctionConfig, 'enabled'>> } & (
+    | { id: number; uuid?: never }
+    | { uuid: string; id?: never }
+);
+
+export async function update(trx: Knex, { environmentId, fields, ...identity }: FunctionConfigUpdate): Promise<Result<DBFunctionConfig | undefined>> {
+    try {
+        const [updated] = await trx
+            .from<DBFunctionConfig>(CONFIGS_TABLE)
+            .where({ environment_id: environmentId, ...(identity.id !== undefined ? { id: identity.id } : { uuid: identity.uuid }) })
+            .whereNull('deleted_at')
+            .update({ ...fields, updated_at: new Date() })
+            .returning<DBFunctionConfig[]>('*');
+        return Ok(updated);
+    } catch (err) {
+        return Err(new Error('failed_to_update_function_config', { cause: err }));
     }
 }
 

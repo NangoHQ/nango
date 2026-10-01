@@ -1,6 +1,7 @@
 import semver from 'semver';
 
 import db, { dbNamespace, schema } from '@nangohq/database';
+import { Err, Ok } from '@nangohq/utils';
 
 import { LogActionEnum } from '../../../models/Telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
@@ -20,6 +21,7 @@ import type {
     SlimSync,
     StandardNangoConfig
 } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 import type { JSONSchema7 } from 'json-schema';
 import type { Knex } from 'knex';
 
@@ -573,25 +575,25 @@ export async function getSyncConfigBySyncId(syncId: string): Promise<DBSyncConfi
     return result;
 }
 
-export function increment(input: number | string): number | string {
+export function increment(input: number | string): Result<string, Error> {
     if (typeof input === 'string') {
         if (input.includes('.')) {
             const valid = semver.valid(input);
             if (!valid) {
-                throw new Error(`Invalid version string: ${input}`);
+                return Err(new Error(`Invalid version string: ${input}`));
             }
-            return semver.inc(input, 'patch') as string;
+            return Ok(semver.inc(input, 'patch') as string);
         } else {
             const num = parseInt(input);
             if (isNaN(num)) {
-                throw new Error(`Invalid version string segment: ${input}`);
+                return Err(new Error(`Invalid version string segment: ${input}`));
             }
-            return (num + 1).toString();
+            return Ok((num + 1).toString());
         }
     } else if (typeof input === 'number') {
-        return input + 1;
+        return Ok((input + 1).toString());
     } else {
-        throw new Error(`Invalid version input: ${input}`);
+        return Err(new Error(`Invalid version input: ${input}`));
     }
 }
 

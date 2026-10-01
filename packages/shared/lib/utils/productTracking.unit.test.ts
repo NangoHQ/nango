@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { productTracking, withProductTrackingContext } from './productTracking.js';
+import { accountGroupProperties, productTracking, withProductTrackingContext } from './productTracking.js';
 
 import type { DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
 
@@ -10,7 +10,10 @@ const user = { id: 3 } as DBUser;
 
 type Capture = (payload: { event: string; distinctId: string; properties: Record<string, unknown>; groups?: Record<string, string> }) => void;
 
+type GroupIdentify = (payload: { groupType: string; groupKey: string; properties: Record<string, unknown> }) => void;
+
 const capture = vi.fn<Capture>();
+const groupIdentify = vi.fn<GroupIdentify>();
 const realClient = productTracking.client;
 
 function lastCapture() {
@@ -19,7 +22,9 @@ function lastCapture() {
 
 beforeEach(() => {
     capture.mockClear();
-    productTracking.client = { capture } as unknown as typeof productTracking.client;
+    groupIdentify.mockClear();
+    productTracking.identifiedAccounts.clear();
+    productTracking.client = { capture, groupIdentify } as unknown as typeof productTracking.client;
 });
 
 afterEach(() => {
@@ -42,10 +47,12 @@ describe('track', () => {
         });
     });
 
-    it('creates no person for an event nobody is behind', () => {
+    it('sends an event nobody is behind as the account, with person processing on so it links to the group', () => {
         productTracking.track({ name: 'account:billing:downgraded', team });
 
-        expect(lastCapture().properties['$process_person_profile']).toBe(false);
+        const { distinctId, properties } = lastCapture();
+        expect(distinctId).toBe('account-42');
+        expect(properties).not.toHaveProperty('$process_person_profile');
     });
 
     it('identifies a person by their user id, and then keeps the profile', () => {
@@ -62,8 +69,8 @@ describe('track', () => {
         expect(lastCapture().properties).not.toHaveProperty('is_production');
     });
 
-    it('sends no personal data', () => {
-        productTracking.track({ name: 'account:billing:downgraded', team, environment, user });
+    it('sends no personal data on the event', () => {
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 43, name: 'Acme' }, environment, user });
 
         const properties = lastCapture().properties;
         for (const forbidden of ['$set', 'email', 'name', 'team-name', 'team_name', 'account_name']) {
@@ -75,6 +82,72 @@ describe('track', () => {
         productTracking.track({ name: 'account:billing:downgraded' });
 
         expect(capture).not.toHaveBeenCalled();
+    });
+
+    it('names the account group once, and again only when the name changes', () => {
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 44, name: 'Acme' } });
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 44, name: 'Acme' } });
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 44, name: 'Acme Inc' } });
+
+        expect(groupIdentify.mock.calls.map(([payload]) => payload)).toStrictEqual([
+            { groupType: 'company', groupKey: '44', properties: { name: 'Acme' } },
+            { groupType: 'company', groupKey: '44', properties: { name: 'Acme Inc' } }
+        ]);
+    });
+
+    it('still sends the event when naming the account group fails', () => {
+        groupIdentify.mockImplementationOnce(() => {
+            throw new Error('boom');
+        });
+
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 45, name: 'Acme' } });
+
+        expect(capture).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves the account group alone when nothing about it is known', () => {
+        productTracking.track({ name: 'account:billing:downgraded', team });
+
+        expect(groupIdentify).not.toHaveBeenCalled();
+    });
+
+    it('sets the plan and created date on the account group', () => {
+        const createdAt = new Date('2024-03-01T10:00:00.000Z');
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 46, name: 'Acme', created_at: createdAt }, plan: { name: 'growth' } });
+
+        expect(groupIdentify).toHaveBeenCalledWith({
+            groupType: 'company',
+            groupKey: '46',
+            properties: { name: 'Acme', plan: 'growth', created_date: '2024-03-01T10:00:00.000Z' }
+        });
+    });
+
+    it('sends only the group properties that changed', () => {
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 47, name: 'Acme' }, plan: { name: 'free' } });
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 47 }, plan: { name: 'free' } });
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 47, name: 'Acme' }, plan: { name: 'growth' } });
+
+        expect(groupIdentify.mock.calls.map(([payload]) => payload.properties)).toStrictEqual([{ name: 'Acme', plan: 'free' }, { plan: 'growth' }]);
+    });
+});
+
+describe('plan: null', () => {
+    it("keeps the request's plan off the account group", () => {
+        withProductTrackingContext(
+            () => ({ team: { id: 48 }, plan: { name: 'free' } }),
+            () => {
+                productTracking.track({ name: 'account:billing:plan_changed', plan: { name: 'growth' } });
+                productTracking.track({ name: 'account:billing:plan_changed:v2', plan: null });
+            }
+        );
+
+        expect(groupIdentify.mock.calls.map(([payload]) => payload.properties)).toStrictEqual([{ plan: 'growth' }]);
+    });
+});
+
+describe('accountGroupProperties', () => {
+    it('leaves out what it does not know', () => {
+        expect(accountGroupProperties({ id: 1 }, null)).toStrictEqual({});
     });
 });
 
@@ -131,7 +204,7 @@ describe('withProductTrackingContext', () => {
         const { distinctId, groups, properties } = lastCapture();
         expect(distinctId).toBe('device-1');
         expect(groups).toBeUndefined();
-        expect(properties).toMatchObject({ surface: 'cli' });
+        expect(properties).toMatchObject({ surface: 'cli', $process_person_profile: false });
         expect(properties).not.toHaveProperty('is_production');
     });
 });

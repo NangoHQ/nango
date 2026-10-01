@@ -2,7 +2,7 @@ import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
-import { getGrowthAddonFlags, getPlanDefinition, PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON, plansList } from '@nangohq/shared';
+import { getGrowthAddonFlags, getPlanDefinition, GROWTH_ADDON_ENVIRONMENTS_MAX, PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON, plansList } from '@nangohq/shared';
 import { flagHasPlan, getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -20,7 +20,7 @@ const lockTtlMs = cronMinutes * 60 * 1000;
 // no downtime when migrating from plans such as growth-v2 and startup-deal - where growth features are
 // already available - into PAYG + add-on. Thus these plans are allowed to have the `has_growth_features`
 // flag enabled if a future change into PAYG is scheduled.
-const PLANS_ALLOWED_TO_TEMPORARILY_HAVE_GROWTH_ADD_ON: PlanDefinition['code'][] = ['growth-v2', 'startup-deal'];
+const PLANS_ALLOWED_TO_TEMPORARILY_HAVE_GROWTH_ADD_ON: PlanDefinition['code'][] = ['growth-v2', 'startup-deal', 'scale-legacy'];
 const PLANS_ALLOWED_TO_ENABLE_GROWTH_ADD_ON = [...new Set([...PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON, ...PLANS_ALLOWED_TO_TEMPORARILY_HAVE_GROWTH_ADD_ON])];
 
 type GrowthAddonSchedulingColumn = keyof Pick<DBPlan, 'growth_features_starts_at' | 'growth_features_ends_at'>;
@@ -129,6 +129,9 @@ async function updateGrowthAddonState(date: Date, operation: GrowthAddonOperatio
     const accountIds = await Promise.all(
         getPlansToFilterBy(operation).map(async (plan) => {
             const addonFlags = getGrowthAddonFlags(plan, hasGrowthFeatures);
+            const environmentsMax = hasGrowthFeatures
+                ? db.knex.raw('GREATEST(environments_max, ?)', [GROWTH_ADDON_ENVIRONMENTS_MAX])
+                : (plan.flags.environments_max as number);
 
             const updated = await db.knex
                 .from<DBPlan>('plans')
@@ -139,6 +142,7 @@ async function updateGrowthAddonState(date: Date, operation: GrowthAddonOperatio
                     has_growth_features: hasGrowthFeatures,
                     [schedulingColumn]: null,
                     ...addonFlags,
+                    environments_max: environmentsMax,
                     updated_at: db.knex.fn.now()
                 })
                 .returning('account_id');

@@ -230,7 +230,8 @@ export async function deploy({
         void logCtx.error('Failed to deploy scripts', { error: err });
         await logCtx.failed();
 
-        throw new NangoError('error_creating_sync_config');
+        const error = err instanceof NangoError ? err : new NangoError('error_creating_sync_config');
+        return { success: false, error, response: null };
     }
 }
 
@@ -279,7 +280,15 @@ async function compileDeployInfo({
 
     if (previousSyncAndActionConfig) {
         if (!userSpecifiedVersion) {
-            bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
+            const incrementResult = increment(previousSyncAndActionConfig.version as string | number);
+            if (incrementResult.isErr()) {
+                const error = new NangoError('invalid_previous_sync_version', {
+                    syncName,
+                    previousVersion: previousSyncAndActionConfig.version
+                });
+                return { success: false, error, response: null };
+            }
+            bumpedVersion = incrementResult.value;
         }
 
         if (debug) {

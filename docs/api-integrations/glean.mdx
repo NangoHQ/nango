@@ -59,7 +59,7 @@ Connect to Glean with Nango using a Glean-issued token. See [Glean (OAuth)](/api
         </Tab>
 
     </Tabs>
-    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
@@ -90,6 +90,6 @@ import PreBuiltUseCases from "/snippets/generated/glean/PreBuiltUseCases.mdx"
 
 ## API gotchas
 
-- **Global tokens require an extra header, added per-request.** This integration assumes a user-scoped token, which only needs the bearer token. If you use a *global* token instead, Glean also requires an `X-Glean-ActAs: user@company.com` header on every request identifying which user to act as. The Connect UI has an optional **Act As** field for storing this email on the connection, but Nango doesn't attach it to requests automatically — read it back from the connection (via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get)) and pass it as `X-Glean-ActAs` via the `headers` option on `nango.proxy()`/`nango.post()` calls.
+- **Global tokens require an extra header, added per-request.** This integration assumes a user-scoped token, which only needs the bearer token. If you use a *global* token instead, Glean also requires an `X-Glean-ActAs: user@company.com` header on every request identifying which user to act as. The Connect UI has an optional **Act As** field for storing this email on the connection, but Nango doesn't attach it to requests automatically — read it back from the connection (via the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get)) and pass it as `X-Glean-ActAs` via the `headers` option on `nango.proxy()`/`nango.post()` calls.
 
 ---

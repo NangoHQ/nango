@@ -35,7 +35,7 @@ Everything runs on your infrastructure, configured by you:
 | Store | Holds |
 | --- | --- |
 | Postgres | Control-plane data, your end users' connection credentials, scheduled tasks, synced records |
-| Object storage (e.g. S3) | Compiled integration code for the Runner |
+| Object storage (S3, GCS, or Azure) | Compiled integration code for the Runner |
 | ElasticSearch / OpenSearch | Execution logs |
 | Redis / Valkey | Cache — socket info, token refresh locks, rate limits |
 
@@ -144,17 +144,25 @@ Everything below is what you configure directly to run a production instance —
 | Secret | Example | Purpose |
 | --- | --- | --- |
 | `NANGO_ENCRYPTION_KEY_WRAPPED` | `AQICAHjK...` (KMS-wrapped, base64) | Your data-encryption key, wrapped |
-| `NANGO_KMS_KEY_ARN` | `arn:aws:kms:us-west-2:123456789012:key/abcd-1234-efgh-5678` | KMS key used to unwrap it |
+| `NANGO_KMS_KEY_ARN` | `arn:aws:kms:us-west-2:123456789012:key/abcd-1234-efgh-5678` | KMS key used to unwrap it (on GCP or Azure, see [Encryption key](#encryption-key)) |
 | `NANGO_INTERNAL_API_KEY` | *(generated, 32+ char random string)* | Internal service-to-service auth |
 | `NANGO_ADMIN_KEY` | *(generated, random string)* | Admin API access |
 | `NANGO_ADMIN_UUID` | `3fa85f64-5717-4562-b3fc-2c963f66afa6` | Matches the env var above |
 | `NANGO_DATABASE_URL` | `postgresql://nango:••••@db.internal:5432/nango` | Postgres connection string |
 | `NANGO_REDIS_URL` | `rediss://:••••@redis.internal:6379` | Redis / Valkey connection string |
 | `NANGO_ADMIN_INVITE_TOKEN` | *(generated, single-use token)* | Token for inviting the first admin |
-| `AWS_BUCKET_NAME` | `my-company-nango-integrations` | Object storage for integration files |
+| `AWS_INTEGRATIONS_BUCKET_NAME` | `my-company-nango-integrations` | S3 bucket for compiled integration files |
+| `GCS_INTEGRATIONS_BUCKET_NAME` | `my-company-nango-integrations` | GCS bucket for compiled integration files |
+| `AZURE_INTEGRATIONS_ACCOUNT_NAME` | `mycompanynango` | Azure storage account for compiled integration files |
+| `AZURE_INTEGRATIONS_CONTAINER_NAME` | `integrations` | Azure blob container for compiled integration files |
+| `AZURE_INTEGRATIONS_ACCOUNT_KEY` | `••••••••` | Optional Azure shared key. Omit to use `DefaultAzureCredential` |
 | `MAILGUN_API_KEY` | `key-••••••••••••••••` | Transactional email |
 | `NANGO_LOGS_ES_USER` | `nango_logs` | OpenSearch/Elasticsearch username |
 | `NANGO_LOGS_ES_PWD` | `••••••••` | OpenSearch/Elasticsearch password |
+
+<Note>
+Set one object store. On AWS, set `AWS_INTEGRATIONS_BUCKET_NAME`. On Google Cloud Storage, set `GCS_INTEGRATIONS_BUCKET_NAME`; Nango authenticates with Application Default Credentials, so the workload needs permission to read and write objects in that bucket. On Azure Blob Storage, set `AZURE_INTEGRATIONS_ACCOUNT_NAME` and `AZURE_INTEGRATIONS_CONTAINER_NAME` together. Set `AZURE_INTEGRATIONS_ACCOUNT_KEY` to authenticate with a shared key, or omit it to use `DefaultAzureCredential`. S3, GCS, and Azure cannot be configured together.
+</Note>
 
 <Tip>
 This is the *minimum* set to get a production instance running. The sections below cover what each optional subsystem (logs, encryption, audit trail, Redis, hardening) additionally needs.
@@ -174,7 +182,15 @@ openssl rand -base64 32
 The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation is not supported yet—changing the key after initial setup will cause decryption failures. Plan your key management accordingly.
 </Note>
 
-If you'd rather not manage `NANGO_ENCRYPTION_KEY` as a flat secret, wrap it with your own KMS and set `NANGO_ENCRYPTION_KEY_WRAPPED` and `NANGO_KMS_KEY_ARN` instead (see the secrets table above).
+If you'd rather not manage `NANGO_ENCRYPTION_KEY` as a flat secret, wrap it with your own KMS and set `NANGO_ENCRYPTION_KEY_WRAPPED` instead, plus exactly one wrapping-key variable:
+
+| Provider | Variable | Example |
+| --- | --- | --- |
+| AWS KMS | `NANGO_KMS_KEY_ARN` | `arn:aws:kms:us-west-2:123456789012:key/abcd-1234-efgh-5678` |
+| GCP Cloud KMS | `NANGO_GCP_KMS_KEY_NAME` | `projects/my-project/locations/global/keyRings/nango/cryptoKeys/dek` |
+| Azure Key Vault | `NANGO_AZURE_KMS_KEY_ID` | `https://my-vault.vault.azure.net/keys/dek/0123456789abcdef0123456789abcdef` |
+
+Credentials come from the environment (IAM role, workload identity or managed identity), and Nango needs permission to unwrap with that key. On Azure, use an RSA key and include its version in the identifier.
 
 <Warning>
 `NANGO_ENCRYPTION_KEY` is also required for Connect UI. It is used to generate sessions for [Connect UI](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui). Without this key, Connect UI will not work.

@@ -2,9 +2,9 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 
 import { PostHog } from 'posthog-node';
 
-import { baseUrl, NANGO_VERSION, report } from '@nangohq/utils';
+import { baseUrl, FixedSizeMap, NANGO_VERSION, report } from '@nangohq/utils';
 
-import type { CliTelemetryEvent, DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
+import type { AccountGroupProperties, CliTelemetryEvent, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
 export type ProductTrackingTypes =
     | CliTelemetryEvent
@@ -18,24 +18,28 @@ export type ProductTrackingTypes =
     | 'agents:proxy_request_complete'
     | 'agents:tool_search_complete';
 
-/**
- * Only ids: no email, no names, and no account name either, which defaults to "<person>'s Team" for
- * anyone who signed up with a personal address. The plan is a group property, not an event one.
- */
+const ACCOUNT_GROUP = 'company';
+
+type TrackedTeam = Pick<DBTeam, 'id'> & Partial<Pick<DBTeam, 'name' | 'created_at'>>;
+
+type TrackedPlan = Pick<DBPlan, 'name'>;
+
+/** No email and no person's name. The account name and plan are group properties, never event ones. */
 export interface TrackingContext {
-    team: Pick<DBTeam, 'id'>;
+    team: TrackedTeam;
     /**
      * Some events are account-wide and have no environment to resolve, so this stays optional.
      */
     environment?: Pick<DBEnvironment, 'is_production'> | null | undefined;
     user?: Pick<DBUser, 'id'> | null | undefined;
+    plan?: TrackedPlan | null | undefined;
 }
 
 /**
  * A context where nothing is guaranteed: the request may not be authenticated, and an event may be
  * emitted with no context at all.
  */
-export type TrackingContextInput = Partial<Omit<TrackingContext, 'team'>> & { team?: Pick<DBTeam, 'id'> | null | undefined };
+export type TrackingContextInput = Partial<Omit<TrackingContext, 'team'>> & { team?: TrackedTeam | null | undefined };
 
 /**
  * Resolved lazily, at emit time: a request enters this context before auth runs, so the account
@@ -71,7 +75,18 @@ function resolveContext(explicit: TrackingContextInput): TrackingContext | null 
     return {
         team,
         environment: explicit.environment ?? ambient?.environment,
-        user: explicit.user ?? ambient?.user
+        user: explicit.user ?? ambient?.user,
+        // Without an explicit plan, an event uses the plan its request loaded during auth.
+        // A plan change later in that request makes it stale, so `plan: null` turns the fallback off.
+        plan: explicit.plan === null ? null : (explicit.plan ?? ambient?.plan)
+    };
+}
+
+export function accountGroupProperties(team: TrackedTeam, plan: TrackedPlan | null | undefined): AccountGroupProperties {
+    return {
+        ...(team.name ? { name: team.name } : {}),
+        ...(plan ? { plan: plan.name } : {}),
+        ...(team.created_at ? { created_date: new Date(team.created_at).toISOString() } : {})
     };
 }
 
@@ -83,29 +98,24 @@ function commonProperties(surface: 'server' | 'cli'): Record<string, unknown> {
     };
 }
 
-function contextProperties({ environment, user }: TrackingContext): Record<string, unknown> {
-    return {
-        ...(environment ? { is_production: environment.is_production } : {}),
-        // An event with no person behind it is attached to the account group instead of inventing one.
-        ...(user ? {} : { $process_person_profile: false })
-    };
+function contextProperties({ environment }: TrackingContext): Record<string, unknown> {
+    return environment ? { is_production: environment.is_production } : {};
 }
 
-/**
- * A person is their user id. An event with no person still needs a distinct id, so it carries the
- * account's, which creates no profile because person processing is off for those events.
- */
+// Keep person processing on for `account-<id>`: PostHog links no personless event to a group.
 function distinctIdFor({ team, user }: TrackingContext): string {
     return user ? String(user.id) : `account-${team.id}`;
 }
 
 /** Counting accounts rather than people is what the group is for, so every event carries it. */
 function groupsFor({ team }: TrackingContext): Record<string, string> {
-    return { company: String(team.id) };
+    return { [ACCOUNT_GROUP]: String(team.id) };
 }
 
 class ProductTracking {
     client: PostHog | undefined;
+    // Each groupIdentify sends its own $groupidentify event. Send one per property change, not one per capture.
+    readonly identifiedAccounts = new FixedSizeMap<number, AccountGroupProperties>(10_000);
 
     constructor() {
         const key = process.env['PUBLIC_POSTHOG_KEY'];
@@ -123,11 +133,30 @@ class ProductTracking {
         }
     }
 
+    /** Use the same account identity, group name and properties for events captured outside `track`. */
+    public getServerEventAttribution(context: TrackingContextInput) {
+        const resolved = resolveContext(context);
+        if (!resolved) {
+            return null;
+        }
+
+        if (this.client) {
+            this.identifyAccount(this.client, resolved);
+        }
+
+        return {
+            distinctId: distinctIdFor(resolved),
+            groups: groupsFor(resolved),
+            properties: { ...commonProperties('server'), ...contextProperties(resolved) }
+        };
+    }
+
     public track({
         name,
         team,
         environment,
         user,
+        plan,
         eventProperties,
         structuredProperties
     }: {
@@ -144,8 +173,8 @@ class ProductTracking {
                 return;
             }
 
-            const context = resolveContext({ team, environment, user });
-            if (!context) {
+            const attribution = this.getServerEventAttribution({ team, environment, user, plan });
+            if (!attribution) {
                 report(new Error(`Product tracking event "${name}" has no account to attach to`));
                 return;
             }
@@ -153,11 +182,27 @@ class ProductTracking {
             const properties = {
                 ...eventProperties,
                 ...structuredProperties,
-                ...commonProperties('server'),
-                ...contextProperties(context)
+                ...attribution.properties
             };
 
-            this.client.capture({ event: name, distinctId: distinctIdFor(context), properties, groups: groupsFor(context) });
+            this.client.capture({ event: name, distinctId: attribution.distinctId, properties, groups: attribution.groups });
+        } catch (err) {
+            report(err);
+        }
+    }
+
+    private identifyAccount(client: PostHog, { team, plan }: TrackingContext) {
+        try {
+            const sent = this.identifiedAccounts.get(team.id) ?? {};
+            const changed = Object.fromEntries(
+                Object.entries(accountGroupProperties(team, plan)).filter(([key, value]) => sent[key as keyof AccountGroupProperties] !== value)
+            );
+            if (Object.keys(changed).length === 0) {
+                return;
+            }
+
+            client.groupIdentify({ groupType: ACCOUNT_GROUP, groupKey: String(team.id), properties: changed });
+            this.identifiedAccounts.set(team.id, { ...sent, ...changed });
         } catch (err) {
             report(err);
         }
@@ -182,24 +227,19 @@ class ProductTracking {
                 return;
             }
 
-            this.client.capture({ event: name, distinctId, properties: { ...eventProperties, ...commonProperties('cli') } });
+            this.client.capture({
+                event: name,
+                distinctId,
+                properties: { ...eventProperties, ...commonProperties('cli'), $process_person_profile: false }
+            });
         } catch (err) {
             report(err);
         }
     }
 
-    /**
-     * Link an anonymous CLI device id to an identified team/user, so anonymous CLI
-     * events (tracked via trackAnonymous) merge into the identified profile in PostHog.
-     * Called from authenticated CLI requests that carry a device id, e.g. deploy.
-     */
-    public alias({ deviceId, team, user }: { deviceId: string; team: Pick<DBTeam, 'id'>; user?: Pick<DBUser, 'id'> | undefined }) {
+    public async shutdown(): Promise<void> {
         try {
-            if (this.client == null) {
-                return;
-            }
-
-            this.client.alias({ distinctId: deviceId, alias: distinctIdFor({ team, user }) });
+            await this.client?.shutdown();
         } catch (err) {
             report(err);
         }

@@ -112,6 +112,8 @@ Affinity's payload does not say which connection it is for, so also add `nangoCo
 
 The secret usually sits in your end user's own webhook config, where their admins can see it. Because it belongs to one connection, it only lets them send events for their own connection.
 
+Salesforce events come from an Apex trigger you install in each connected org, and use the same per-connection secret. See [How to set up webhooks with Salesforce on Nango](/api-integrations/salesforce/webhooks).
+
 ## Retries and debugging
 
 Nango retries forwarded webhooks when your app returns a non-2xx response or has a network failure. Forwarded attempts appear in Nango logs as webhook forwarding operations.

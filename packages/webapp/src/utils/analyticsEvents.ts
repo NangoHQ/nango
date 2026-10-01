@@ -1,6 +1,6 @@
 import type { GrowthAddonState } from '@/pages/Team/Billing/planVisibility';
 import type { AnyBreakdownDimension } from '@/pages/Team/Billing/usageBreakdown';
-import type { PostOnboardingHearAboutUs, UsageMetric } from '@nangohq/types';
+import type { UsageMetric } from '@nangohq/types';
 
 /**
  * The app-wide catalog of product-analytics events and their property shapes. Each key is a
@@ -47,22 +47,8 @@ export interface AnalyticsEvents {
     'web:connection_created:legacy': { provider: string };
     'web:connection_failed': { provider: string; errorType: string };
 
-    // Getting started
-    'web:getting_started:connect-clicked': Record<string, never>;
-    'web:getting_started:connection-created': Record<string, never>;
-    'web:getting_started:connection-disconnected': Record<string, never>;
-    'web:getting_started:code-snippet-executed': Record<string, never>;
-    'web:getting_started:setup-integration-clicked': Record<string, never>;
-    'web:getting_started:video:play': Record<string, never>;
-    'web:getting_started:video:end': Record<string, never>;
-    'web:getting_started:authorize': Record<string, never>;
-    'web:getting_started:read': Record<string, never>;
-    'web:getting_started:perform': Record<string, never>;
-    'web:getting_started:custom': Record<string, never>;
-
     // Account & onboarding
     'web:account_signup': { user_id: number; accountId: number };
-    'web:signup:hear_about': { source: PostOnboardingHearAboutUs['Body']['source'] };
     'web:account_join_request:submitted': Record<string, never>;
 
     // Two-factor authentication

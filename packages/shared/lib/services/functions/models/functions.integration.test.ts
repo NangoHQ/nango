@@ -263,6 +263,66 @@ describe(search, () => {
         expect(emptyIntegrationKey).toStrictEqual([]);
         expect(emptyName).toStrictEqual([]);
     });
+
+    it('filters functions by provider and trigger kind', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        await createConfigSeed(environment, 'github-123', 'github');
+        await createConfigSeed(environment, 'stripe-123', 'stripe');
+        await upsert(db.knex, [
+            {
+                environmentId: environment.id,
+                integrationId: 'github-123',
+                name: 'hooked',
+                version: functionVersion('hooked', { kind: 'http' })
+            },
+            {
+                environmentId: environment.id,
+                integrationId: 'github-123',
+                name: 'timed',
+                version: functionVersion('timed', { kind: 'schedule', frequency: 'every day' })
+            },
+            {
+                environmentId: environment.id,
+                integrationId: 'stripe-123',
+                name: 'stripeHook',
+                version: functionVersion('stripeHook', { kind: 'http' })
+            }
+        ]);
+
+        const stripeFunctions = (await search(db.knex, { environmentId: environment.id, filter: { provider: 'stripe' } })).unwrap();
+        expect(stripeFunctions.map(({ config }) => config.name)).toStrictEqual(['stripeHook']);
+
+        const httpFunctions = (await search(db.knex, { environmentId: environment.id, filter: { trigger: { kind: 'http' } } })).unwrap();
+        expect(httpFunctions.map(({ config }) => config.name).sort()).toStrictEqual(['hooked', 'stripeHook']);
+
+        const scheduledGithub = (
+            await search(db.knex, { environmentId: environment.id, filter: { provider: 'github', trigger: { kind: 'schedule' } } })
+        ).unwrap();
+        expect(scheduledGithub.map(({ config }) => config.name)).toStrictEqual(['timed']);
+    });
+
+    it('returns a deterministic page', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github-123', 'github');
+        const configs = (
+            await upsert(db.knex, [
+                { environmentId: environment.id, integrationId: github.unique_key, name: 'first', version: functionVersion('first') },
+                { environmentId: environment.id, integrationId: github.unique_key, name: 'second', version: functionVersion('second') },
+                { environmentId: environment.id, integrationId: github.unique_key, name: 'third', version: functionVersion('third') }
+            ])
+        ).unwrap();
+
+        const page = (await search(db.knex, { environmentId: environment.id }, { limit: 2 })).unwrap();
+        expect(page.map(({ config }) => config.name)).toStrictEqual(['first', 'second']);
+
+        const next = (await search(db.knex, { environmentId: environment.id }, { limit: 2, afterId: configs[1]!.config.id })).unwrap();
+        expect(next.map(({ config }) => config.name)).toStrictEqual(['third']);
+
+        const pastEnd = (await search(db.knex, { environmentId: environment.id }, { limit: 2, afterId: configs[2]!.config.id })).unwrap();
+        expect(pastEnd).toStrictEqual([]);
+    });
 });
 
 describe('function config retention', () => {

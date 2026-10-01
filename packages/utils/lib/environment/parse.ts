@@ -571,7 +571,6 @@ const ENVS_SHAPE = z.object({
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
     FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
-    FLAG_CATALOG_TOOLS_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
@@ -581,12 +580,13 @@ const ENVS_SHAPE = z.object({
     DD_API_KEY_SECRET_ARN: z.string().optional(),
 
     // Elasticsearch / OpenSearch (logs)
-    NANGO_LOGS_PROVIDER: z.enum(['elasticsearch', 'opensearch']).optional().default('elasticsearch'),
+    NANGO_LOGS_PROVIDER: z.enum(['elasticsearch', 'opensearch', 'ec-serverless']).optional().default('elasticsearch'),
     NANGO_LOGS_ES_URL: z.url().optional(),
     NANGO_LOGS_ES_REQUEST_TIMEOUT_MS: z.coerce.number().optional().default(5000),
     NANGO_LOGS_ES_MAX_RETRIES: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_USER: z.string().optional(),
     NANGO_LOGS_ES_PWD: z.string().optional(),
+    NANGO_LOGS_ES_API_KEY: z.string().optional(),
     NANGO_LOGS_ENABLED: z.stringbool().optional().default(false),
     NANGO_LOGS_ES_PREFIX: z.string().optional(),
     NANGO_LOGS_ES_INDEX_OPERATIONS: z.string().optional(),
@@ -670,6 +670,7 @@ const ENVS_SHAPE = z.object({
     NANGO_ENCRYPTION_KEY_WRAPPED: z.string().optional(),
     NANGO_KMS_KEY_ARN: z.string().optional(),
     NANGO_GCP_KMS_KEY_NAME: z.string().optional(), // GCP-KMS alternative wrapping-key identifier
+    NANGO_AZURE_KMS_KEY_ID: z.string().optional(), // Azure Key Vault alternative: versioned key identifier
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
     NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),

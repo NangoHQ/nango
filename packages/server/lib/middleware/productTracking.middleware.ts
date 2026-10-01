@@ -16,7 +16,8 @@ export function productTrackingMiddleware(_req: Request, res: Response<any, Part
     withProductTrackingContext(
         () => ({
             team: res.locals['account'],
-            environment: res.locals['environment']
+            environment: res.locals['environment'],
+            plan: res.locals['plan']
         }),
         next
     );

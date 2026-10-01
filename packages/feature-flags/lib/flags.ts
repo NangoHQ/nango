@@ -58,6 +58,34 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         allowUnauthorizedGithubAppWebhook(accountUuid: string) {
             return client.isEnabled('allow-unauthorized-github-app-webhook', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether Salesforce webhooks can be processed without the Nango webhook secret for this account.
+         * Escape hatch for Apex triggers installed before the secret was required. Default `false`.
+         */
+        allowUnauthorizedSalesforceWebhook(accountUuid: string) {
+            return client.isEnabled('allow-unauthorized-salesforce-webhook', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether Microsoft Teams webhooks without a valid Bot Framework token can be processed for this account.
+         * Escape hatch while the unverified metric shows who would break. Default `false`.
+         */
+        allowUnauthorizedMicrosoftTeamsWebhook(accountUuid: string) {
+            return client.isEnabled('allow-unauthorized-microsoft-teams-webhook', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether catalog actions are listed as enabled and runnable for this account.
+         * Default `false`.
+         */
+        hasCatalogTools(accountUuid: string) {
+            return client.isEnabled('tools-catalog', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether Airtable webhooks that cannot be verified, because the connection does not store the
+         * webhook's `macSecretBase64`, can be processed for this account. Default `false`.
+         */
+        allowUnauthorizedAirtableWebhook(accountUuid: string) {
+            return client.isEnabled('allow-unauthorized-airtable-webhook', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }

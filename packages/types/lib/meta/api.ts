@@ -3,6 +3,12 @@ import type { DBEnvironment } from '../environment/db.js';
 
 export type ApiEnvironmentSummary = Pick<DBEnvironment, 'id' | 'account_id' | 'name' | 'is_production'>;
 
+export type AccountGroupProperties = {
+    name?: string;
+    plan?: string;
+    created_date?: string;
+};
+
 export type GetMeta = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
@@ -18,6 +24,7 @@ export type GetMeta = ApiEndpoint<{
             gettingStartedClosed: boolean;
             // Whether this account can reach its own trail; gates the dashboard UI.
             auditTrail: boolean;
+            accountGroup: AccountGroupProperties;
         };
     };
 }>;
