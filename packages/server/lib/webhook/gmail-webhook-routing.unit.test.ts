@@ -115,6 +115,28 @@ describe('gmailWebhookRouting', () => {
         });
     });
 
+    it('processes a missing authorization header when the integration allows unverified webhooks', async () => {
+        const integration = getTestConfig({ provider: 'google-mail', unique_key: 'google-mail', allow_unverified_webhooks: true });
+        const { nango, execute } = getNangoMock(integration);
+        const markUnverified = vi.spyOn(nango, 'markUnverified').mockImplementation(() => undefined);
+
+        const result = await GmailWebhookRouting.default(nango, {}, gmailBody() as any, '');
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalled();
+        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'gmail_missing_authorization' }));
+    });
+
+    it('rejects an invalid JWT when the integration allows unverified webhooks', async () => {
+        const integration = getTestConfig({ provider: 'google-mail', unique_key: 'google-mail', allow_unverified_webhooks: true });
+        const { nango, execute } = getNangoMock(integration);
+
+        const result = await GmailWebhookRouting.default(nango, { authorization: 'Bearer not-a-jwt' }, gmailBody() as any, '');
+
+        expect(result.isErr()).toBe(true);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
     it('does not count a signed webhook', async () => {
         const integration = getTestConfig({ provider: 'google-mail', unique_key: 'google-mail' });
         const { token, jwk } = createSignedJwt({ integration });

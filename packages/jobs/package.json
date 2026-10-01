@@ -38,7 +38,7 @@
         "@nangohq/usage": "file:../usage",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
-        "axios": "1.18.0",
+        "axios": "1.20.0",
         "dd-trace": "5.117.0",
         "express": "5.1.0",
         "get-port": "7.1.0",
@@ -51,6 +51,6 @@
         "nodemon": "3.1.10",
         "type-fest": "4.41.0",
         "typescript": "5.8.3",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     }
 }

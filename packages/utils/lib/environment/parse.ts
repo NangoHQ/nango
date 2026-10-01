@@ -260,6 +260,13 @@ const ENVS_SHAPE = z.object({
         .positive()
         .optional()
         .default(10 * 60 * 1000), // 10 minutes
+    // A proxy request fails once no bytes arrive for this long (see ProxyRequest for the exact axios semantics)
+    NANGO_PROXY_IDLE_TIMEOUT_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(5 * 60 * 1000), // 5 minutes
     NANGO_WEBHOOK_MAX_RETRY_WAIT_MS: z.coerce
         .number()
         .int()
@@ -571,7 +578,6 @@ const ENVS_SHAPE = z.object({
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
     FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
-    FLAG_CATALOG_TOOLS_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
@@ -671,6 +677,7 @@ const ENVS_SHAPE = z.object({
     NANGO_ENCRYPTION_KEY_WRAPPED: z.string().optional(),
     NANGO_KMS_KEY_ARN: z.string().optional(),
     NANGO_GCP_KMS_KEY_NAME: z.string().optional(), // GCP-KMS alternative wrapping-key identifier
+    NANGO_AZURE_KMS_KEY_ID: z.string().optional(), // Azure Key Vault alternative: versioned key identifier
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
     NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),

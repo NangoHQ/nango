@@ -1,6 +1,7 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 import { listCatalogTools } from '@nangohq/shared/lib/services/catalog/actions.js';
 
@@ -27,8 +28,10 @@ function githubCatalogToolsNotDeployed(deployedNames: Iterable<string> = []): nu
 describe(`GET ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
+        vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
     });
     afterAll(() => {
+        vi.restoreAllMocks();
         api.server.close();
     });
 

@@ -99,6 +99,7 @@ import type {
     GetPublicIntegrationFunction,
     GetPublicIntegrationFunctions,
     GetPublicProviderTemplates,
+    PatchFunction,
     PostFunctionCompile,
     PostFunctionDeployment,
     PostFunctionDeploymentBundle,
@@ -221,6 +222,7 @@ export type PublicApiEndpoints =
     | PostFunctionCompile
     | GetFunction
     | GetFunctions
+    | PatchFunction
     | PostFunctionDryrun
     | GetFunctionDryrun
     | PostFunctionDryrunResult

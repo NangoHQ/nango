@@ -140,6 +140,18 @@ export async function findConnectionCreatedForSession({
     sessionId: string;
     integrationId: string;
 }): Promise<AgentSessionResolvedConnection | null> {
+    const connections = await findConnectionsCreatedForSession({ environmentId, sessionId });
+
+    return Object.hasOwn(connections, integrationId) ? (connections[integrationId] ?? null) : null;
+}
+
+export async function findConnectionsCreatedForSession({
+    environmentId,
+    sessionId
+}: {
+    environmentId: number;
+    sessionId: string;
+}): Promise<AgentSessionResolvedConnections> {
     const matches = await connectionService.groupConnectionMatchesByIntegration({
         environmentId,
         tagSelectors: [{ [AGENT_SESSION_TAG_KEY]: sessionId }],
@@ -149,13 +161,12 @@ export async function findConnectionCreatedForSession({
         database: db.knex
     });
 
-    const match = matches.find((candidate) => candidate.integration_id === integrationId);
-    const [first] = match?.candidates ?? [];
-    if (!match || !first) {
-        return null;
-    }
-
-    return toResolvedConnection(match.integration_id, match.provider, first);
+    return Object.fromEntries(
+        matches.flatMap((match) => {
+            const [first] = match.candidates;
+            return first ? [[match.integration_id, toResolvedConnection(match.integration_id, match.provider, first)] as const] : [];
+        })
+    );
 }
 
 export function pickConnectionPerIntegration({

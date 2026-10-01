@@ -115,7 +115,7 @@ export const AppSidebar: React.FC = () => {
                 {showOverdueAlert && (
                     <div className="px-2.5 mb-4">
                         <OverdueInvoiceAlert canManageBilling={canManageBilling}>
-                            <AlertButtonLink to="/team/billing" onClick={() => track('web:usage:overdue_alert_clicked', {})}>
+                            <AlertButtonLink to="/team/billing" onClick={() => track('billing:overdue_alert_link_click', {})}>
                                 View billing <ArrowUpRight />
                             </AlertButtonLink>
                         </OverdueInvoiceAlert>
