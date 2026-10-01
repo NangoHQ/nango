@@ -22,8 +22,11 @@ import {
 
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../components/ui/Form';
-import { apiAdminImpersonate } from '../../../hooks/useAdmin';
+import { useAdminImpersonate } from '../../../hooks/useAdmin';
 import { useStore } from '../../../store';
+import { APIError } from '../../../utils/api';
+
+import type { PostImpersonate } from '@nangohq/types';
 
 const ImpersonateFormSchema = z.object({
     account_uuid: z.string().uuid(),
@@ -47,6 +50,7 @@ function timedOut(err: unknown) {
 
 export const ImpersonateForm: React.FC = () => {
     const env = useStore((state) => state.env);
+    const { mutateAsync: impersonate } = useAdminImpersonate(env);
     const [needsEnrollment, setNeedsEnrollment] = useState(false);
     const [challengeOpen, setChallengeOpen] = useState(false);
     const [code, setCode] = useState('');
@@ -79,34 +83,33 @@ export const ImpersonateForm: React.FC = () => {
                   };
 
         try {
-            const result = await apiAdminImpersonate(
-                env,
-                { accountUUID: values.account_uuid, loginReason: values.login_reason, code: mfaCode },
-                AbortSignal.timeout(IMPERSONATE_TIMEOUT_MS)
-            );
-
-            if (result.ok) {
-                window.location.reload();
-                return;
-            }
-
-            if (result.errorCode === 'mfa_code_required') {
-                setChallengeOpen(true);
-                return;
-            }
-            if (result.errorCode === 'mfa_not_enabled') {
-                closeChallenge();
-                form.setError('root', { message: MFA_NOT_ENABLED_MESSAGE });
-                setNeedsEnrollment(true);
-                return;
-            }
-            showError((result.errorCode && errorMessages[result.errorCode]) || 'Could not impersonate this account.');
+            await impersonate({
+                body: { accountUUID: values.account_uuid, loginReason: values.login_reason, code: mfaCode },
+                signal: AbortSignal.timeout(IMPERSONATE_TIMEOUT_MS)
+            });
+            window.location.reload();
         } catch (err) {
             if (timedOut(err)) {
                 window.location.reload();
                 return;
             }
-            showError('Could not reach the server. Try again.');
+            if (!(err instanceof APIError)) {
+                showError('Could not reach the server. Try again.');
+                return;
+            }
+
+            const errorCode = (err.json as Partial<PostImpersonate['Errors']>).error?.code;
+            if (errorCode === 'mfa_code_required') {
+                setChallengeOpen(true);
+                return;
+            }
+            if (errorCode === 'mfa_not_enabled') {
+                closeChallenge();
+                form.setError('root', { message: MFA_NOT_ENABLED_MESSAGE });
+                setNeedsEnrollment(true);
+                return;
+            }
+            showError((errorCode && errorMessages[errorCode]) || 'Could not impersonate this account.');
         }
     };
 

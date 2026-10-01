@@ -26,14 +26,14 @@ import { track } from '@/utils/analytics';
 import { getMFAErrorMessage } from '@/utils/mfaErrors';
 import { useMFA } from '../../hooks/useMFA';
 import { useToast } from '../../hooks/useToast';
-import { apiPatchUser, useUser } from '../../hooks/useUser';
+import { usePatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { APIError } from '../../utils/api';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
 import { RecoveryCodes } from './components/RecoveryCodes';
 
 import type { Theme } from '@/lib/theme';
-import type { MFACredential } from '@nangohq/types';
+import type { MFACredential, PatchUser } from '@nangohq/types';
 
 // Mirrors the backend constraint (PATCH /api/v1/user: z.string().min(3).max(255)).
 const validateDisplayName = (value: string): string | null => {
@@ -53,14 +53,16 @@ export const UserSettings: React.FC = () => {
     const { toast } = useToast();
 
     const { user, loading, error, mutate } = useUser();
+    const { mutateAsync: patchUser } = usePatchUser();
     const theme = useThemeStore((s) => s.theme);
     const setTheme = useThemeStore((s) => s.setTheme);
 
     const onSaveDisplayName = async (name: string) => {
-        const updated = await apiPatchUser({ name });
-
-        if ('error' in updated.json) {
-            toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
+        try {
+            await patchUser({ name });
+        } catch (err) {
+            const message = err instanceof APIError ? (err.json as PatchUser['Errors']).error?.message : undefined;
+            toast({ title: message || 'Failed to update, an error occurred', variant: 'error' });
             // Re-throw so EditableInput keeps the editor open on failure.
             throw new Error('Failed to update profile');
         }

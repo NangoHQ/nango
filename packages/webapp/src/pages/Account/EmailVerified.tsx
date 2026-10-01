@@ -4,16 +4,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
+import { useConfirmEmail } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';
 import { track } from '../../utils/analytics';
-import { apiFetch } from '../../utils/api';
+import { APIError } from '../../utils/api';
 
 import type { ConfirmEmail } from '@nangohq/types';
 
 export const EmailVerified: React.FC = () => {
     const [errorMessage, setErrorMessage] = useState('');
-    const [isConfirming, setIsConfirming] = useState(false);
+    const { mutateAsync: confirm, isPending: isConfirming } = useConfirmEmail();
     const { token } = useParams<{ token: string }>();
     const navigate = useNavigate();
     const { toast } = useToast();
@@ -25,46 +26,39 @@ export const EmailVerified: React.FC = () => {
         }
 
         setErrorMessage('');
-        setIsConfirming(true);
 
+        let confirmation: ConfirmEmail['Success'];
         try {
-            const res = await apiFetch(`/api/v1/account/verify/code`, {
-                method: 'POST',
-                body: JSON.stringify({ token })
-            });
-            const response = await res.json();
-
-            if (res.status !== 200) {
-                const errorResponse: ConfirmEmail['Errors'] = response;
-
-                if (errorResponse.error.code === 'token_expired') {
-                    toast({ title: errorResponse.error.message, variant: 'error' });
-                    navigate(`/verify-email/expired/${token}`);
-                    return;
-                }
-
-                if (errorResponse.error.code == 'invalid_token') {
-                    setErrorMessage('This link is no longer valid. It may have already been used - try signing in.');
-                    return;
-                }
-
-                setErrorMessage(errorResponse.error.message || 'Issue verifying email. Please try again.');
+            confirmation = await confirm({ token });
+        } catch (err) {
+            if (!(err instanceof APIError)) {
+                setErrorMessage('An error occurred while verifying the email. Please try again.');
                 return;
             }
 
-            const confirmation: ConfirmEmail['Success'] = response;
-            track('web:account_signup', { user_id: confirmation.user.id, accountId: confirmation.user.accountId });
-            toast({ title: 'Email verified successfully!', variant: 'success' });
+            const errorResponse = err.json as ConfirmEmail['Errors'];
+            if (errorResponse.error.code === 'token_expired') {
+                toast({ title: errorResponse.error.message, variant: 'error' });
+                navigate(`/verify-email/expired/${token}`);
+                return;
+            }
 
-            navigate(`/signin?next=${encodeURIComponent('/onboarding/account-discovery')}`, {
-                replace: true,
-                state: { email: confirmation.user.email }
-            });
-        } catch {
-            setErrorMessage('An error occurred while verifying the email. Please try again.');
-        } finally {
-            setIsConfirming(false);
+            if (errorResponse.error.code == 'invalid_token') {
+                setErrorMessage('This link is no longer valid. It may have already been used - try signing in.');
+                return;
+            }
+
+            setErrorMessage(errorResponse.error.message || 'Issue verifying email. Please try again.');
+            return;
         }
+
+        track('web:account_signup', { user_id: confirmation.user.id, accountId: confirmation.user.accountId });
+        toast({ title: 'Email verified successfully!', variant: 'success' });
+
+        navigate(`/signin?next=${encodeURIComponent('/onboarding/account-discovery')}`, {
+            replace: true,
+            state: { email: confirmation.user.email }
+        });
     };
 
     return (
