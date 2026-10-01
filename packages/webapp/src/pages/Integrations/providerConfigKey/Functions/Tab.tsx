@@ -8,6 +8,7 @@ import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/d
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { ButtonLink } from '@/components/ui/ButtonLink';
+import { CopyButton } from '@/components/ui/CopyButton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
@@ -60,10 +61,18 @@ function ColumnHead({ className, children }: { className?: string; children: str
 
 function FunctionNameCell({ name, description }: { name: string; description?: string }) {
     return (
-        <TableCell className="max-w-0 px-3 whitespace-normal">
+        <TableCell className="max-w-0 px-3 py-0 whitespace-normal">
             <div className="flex min-w-0 flex-col gap-0.5">
-                <span className="truncate type-code-medium-xs text-text-default">{name}</span>
-                {description && <span className="truncate type-label-xxs text-text-disabled">{description}</span>}
+                <div className="flex min-w-0 items-center gap-1">
+                    <span className="truncate type-code-medium-sm text-text-default">{name}</span>
+                    <CopyButton
+                        text={name}
+                        className="size-4 shrink-0 p-0 opacity-0 transition-opacity group-focus-within/function-row:opacity-100 group-hover/function-row:opacity-100"
+                    />
+                </div>
+                {description && (
+                    <span className="truncate text-ds-xs font-ds-regular leading-ds-normal tracking-ds-tight text-text-disabled">{description}</span>
+                )}
             </div>
         </TableCell>
     );
@@ -108,7 +117,7 @@ function FunctionTemplateRow({
     showSource?: boolean;
 }) {
     return (
-        <TableRow className="h-12 hover:bg-transparent">
+        <TableRow className="group/function-row h-13 hover:bg-transparent">
             <FunctionNameCell name={template.name} description={template.description} />
             {showSource && (
                 <TableCell className="w-35 px-3">
@@ -167,7 +176,13 @@ function FunctionListWithDetails({
 
     return (
         <div className="flex w-full items-stretch overflow-clip">
-            <div className={cn('min-w-0 shrink-0 transition-[width] duration-250 ease-out motion-reduce:transition-none', panelVisible ? 'w-1/2' : 'w-full')}>
+            <div
+                className={cn(
+                    'min-w-0 shrink-0 transition-[width] duration-250 ease-out motion-reduce:transition-none',
+                    panelVisible ? 'w-1/2' : 'w-full',
+                    displayedFunction && '**:data-[slot=table-container]:rounded-r-none'
+                )}
+            >
                 {children}
             </div>
             {displayedFunction && (
@@ -492,7 +507,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                                 key={functionRowKey(fn)}
                                                 aria-selected={selected}
                                                 className={cn(
-                                                    'h-12 cursor-pointer hover:bg-surface-panel-inset',
+                                                    'group/function-row h-13 cursor-pointer hover:bg-surface-panel-inset',
                                                     selected && 'border-l-2 border-l-interactive-selected-fill bg-state-selected'
                                                 )}
                                                 onClick={() => onFunctionClick(fn)}
@@ -552,7 +567,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                                 key={functionRowKey(fn)}
                                                 aria-selected={selected}
                                                 className={cn(
-                                                    'h-12 cursor-pointer hover:bg-surface-panel-inset',
+                                                    'group/function-row h-13 cursor-pointer hover:bg-surface-panel-inset',
                                                     selected && 'border-l-2 border-l-interactive-selected-fill bg-state-selected'
                                                 )}
                                                 onClick={() => onFunctionClick(fn)}
@@ -607,7 +622,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                                 key={functionRowKey(fn)}
                                                 aria-selected={selected}
                                                 className={cn(
-                                                    'h-12 cursor-pointer hover:bg-surface-panel-inset',
+                                                    'group/function-row h-13 cursor-pointer hover:bg-surface-panel-inset',
                                                     selected && 'border-l-2 border-l-interactive-selected-fill bg-state-selected'
                                                 )}
                                                 onClick={() => onFunctionClick(fn)}
@@ -637,7 +652,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     )}
 
                     <div ref={sentinelRef} aria-hidden />
-                    {isFetchingNextPage && <Skeleton className="w-full h-12" />}
+                    {isFetchingNextPage && <Skeleton className="h-13 w-full" />}
                 </>
             )}
         </div>
