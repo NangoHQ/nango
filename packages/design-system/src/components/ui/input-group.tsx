@@ -37,7 +37,8 @@ const inputGroupVariants = cva(
                 // Default control height (matches Input).
                 default: 'h-8',
                 // Hug-content — for in-popover search fields. Pair with `size="auto"` on the inner InputGroupInput.
-                auto: 'h-auto'
+                auto: 'h-auto',
+                composer: 'h-auto items-end [&>textarea]:max-h-48 [&>textarea]:min-h-20 [&>textarea]:[field-sizing:content] [&>[data-align=inline-end]]:pb-2'
             }
         },
         defaultVariants: {

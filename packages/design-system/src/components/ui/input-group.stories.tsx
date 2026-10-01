@@ -1,4 +1,4 @@
-import { Check, Eye, Search, X } from 'lucide-react';
+import { ArrowUp, Check, Eye, Search, X } from 'lucide-react';
 
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, InputGroupTextarea } from './input-group';
 
@@ -72,6 +72,17 @@ export const Addons: Story = {
                     <InputGroupTextarea placeholder="Write a message…" rows={3} />
                     <InputGroupAddon align="block-end">
                         <InputGroupText>0 / 280</InputGroupText>
+                    </InputGroupAddon>
+                </InputGroup>
+            </div>
+            <div className="flex flex-col gap-1">
+                <span className="story-section-heading">Composer (size="composer")</span>
+                <InputGroup size="composer">
+                    <InputGroupTextarea placeholder="Ask the agent to do something…" rows={1} />
+                    <InputGroupAddon align="inline-end">
+                        <InputGroupButton label="Send" variant="primary" size="icon-sm">
+                            <ArrowUp />
+                        </InputGroupButton>
                     </InputGroupAddon>
                 </InputGroup>
             </div>
