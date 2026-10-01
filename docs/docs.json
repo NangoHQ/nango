@@ -1497,6 +1497,7 @@
               "api-integrations/konnektive",
               "integrations/all/kustomer",
               "integrations/all/lagrowthmachine",
+              "api-integrations/lambda-cloud",
               "integrations/all/lastpass",
               "integrations/all/lattice",
               "api-integrations/leadfeeder",
