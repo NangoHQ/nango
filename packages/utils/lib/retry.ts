@@ -62,6 +62,10 @@ export async function retryFlexible<TReturn>(
          * Only called if we still have retries available
          */
         onError: (arg: { err: unknown; nextWait: number; attempt: number; max: number }) => MaybePromise<{ retry: boolean; reason: string; wait?: number }>;
+        /**
+         * Stops waiting between attempts and rethrows the last error once aborted
+         */
+        signal?: AbortSignal | undefined;
     }
 ): Promise<TReturn> {
     let attempt = -1;
@@ -84,7 +88,13 @@ export async function retryFlexible<TReturn>(
             }
 
             lastWait = Math.min(on.wait ?? nextWait, options.maxWaitMs);
-            await setTimeout(lastWait);
+            if (options.signal) {
+                await setTimeout(lastWait, undefined, { signal: options.signal }).catch(() => {
+                    throw err;
+                });
+            } else {
+                await setTimeout(lastWait);
+            }
         }
     }
     throw new Error('unreachable');

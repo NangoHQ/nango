@@ -260,6 +260,13 @@ const ENVS_SHAPE = z.object({
         .positive()
         .optional()
         .default(10 * 60 * 1000), // 10 minutes
+    // A proxy request fails once no bytes arrive for this long (see ProxyRequest for the exact axios semantics)
+    NANGO_PROXY_IDLE_TIMEOUT_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(5 * 60 * 1000), // 5 minutes
     NANGO_WEBHOOK_MAX_RETRY_WAIT_MS: z.coerce
         .number()
         .int()
