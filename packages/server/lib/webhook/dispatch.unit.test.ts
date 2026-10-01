@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import haloPsaRoute from './halo-psa-webhook-routing.js';
 import { InternalNango } from './internal-nango.js';
 
 const mocks = vi.hoisted(() => {
@@ -162,6 +163,36 @@ describe('webhook dispatch', () => {
         mocks.invokeFunction.mockResolvedValue({ isErr: () => false });
         mocks.functionConfigSearch.mockResolvedValue({ isErr: () => false, value: [] });
         mocks.validateFunctionInput.mockImplementation((_version, input) => ({ isErr: () => false, value: input }));
+    });
+
+    it.each([
+        ['new ticket logged', 'new ticket logged', true],
+        ['new ticket logged', 'ticket reassigned', false],
+        ['new ticket logged', '*', true],
+        [undefined, 'new ticket logged', false],
+        [undefined, '*', true]
+    ])('routes Halo event %s to subscription %s: %s', async (event, subscription, matches) => {
+        mocks.envs.WEBHOOK_INGRESS_USE_DISPATCH_QUEUE = false;
+        mocks.getSyncConfigsByConfigIdForWebhook.mockResolvedValue([{ id: 21, sync_name: 'halo-tickets', webhook_subscriptions: [subscription] }]);
+        const nango = makeInternalNango([createLogCtx('halo-log')]);
+        nango.integration.provider = 'halo-psa';
+        const payload = { event, ticket: { id: 123 } };
+        const result = await haloPsaRoute(
+            nango,
+            { authorization: `Basic ${Buffer.from('nango:secret').toString('base64')}` },
+            payload,
+            JSON.stringify(payload),
+            { nangoConnectionId: 'conn-1' }
+        );
+
+        expect(result.isOk()).toBe(true);
+        expect(mocks.getConnectionsByEnvironmentAndConfig).not.toHaveBeenCalled();
+        expect(mocks.triggerWebhook).toHaveBeenCalledTimes(matches ? 1 : 0);
+        if (matches) {
+            expect(mocks.triggerWebhook).toHaveBeenCalledWith(
+                expect.objectContaining({ input: payload, webhookName: subscription, connection: expect.objectContaining({ connection_id: 'conn-1' }) })
+            );
+        }
     });
 
     it('warns on the legacy execution operation when the webhook was unverified', async () => {

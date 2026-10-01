@@ -328,8 +328,8 @@ describe(`POST ${endpoint}`, () => {
         );
     });
 
-    it('should reject event-triggered functions with no configured events', async () => {
-        const { apiKey, connection, integration } = await seedFunction({ kind: 'event', events: [] });
+    it('should reject direct invocation of an event-triggered function', async () => {
+        const { apiKey, connection, integration } = await seedFunction({ kind: 'event', events: ['validate-connection'] });
         const spy = vi.spyOn(Orchestrator.prototype, 'invokeFunction').mockResolvedValue(Ok({ data: null }));
 
         const res = await api.fetch(endpoint, {
@@ -348,7 +348,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'invalid_invocation',
-                message: 'Event-triggered function has no configured events'
+                message: 'Event-triggered functions cannot be invoked directly'
             }
         });
         expect(spy).not.toHaveBeenCalled();

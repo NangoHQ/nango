@@ -14,7 +14,7 @@ import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/She
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Spinner } from '@/components/ui/Spinner';
 import { useStore } from '../../../../store';
-import { apiFetch } from '../../../../utils/api';
+import { APIError, apiFetch } from '../../../../utils/api';
 import { calculateTableSizing } from '../../../../utils/table';
 import { formatQuantity } from '../../../../utils/utils';
 import { columns, defaultLimit } from '../constants';
@@ -69,7 +69,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 signal
             });
             if (res.status !== 200) {
-                throw new Error();
+                throw new APIError({ res, json: (await res.json()) as Record<string, unknown> });
             }
 
             return (await res.json()) as SearchMessages['Success'];

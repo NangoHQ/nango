@@ -95,7 +95,7 @@ export async function validate(
 
 const route: WebhookHandler = async (nango, headers, body) => {
     const authHeader = headers['authorization'];
-    const allowUnauthorized = await getFlags().allowUnauthorizedGmailWebhook(nango.team.uuid);
+    const allowUnauthorized = nango.integration.allow_unverified_webhooks || (await getFlags().allowUnauthorizedGmailWebhook(nango.team.uuid));
 
     // Counted before validation on purpose. With the flag off an unsigned push is rejected below,
     // and those are exactly the accounts still to be migrated, so they have to show up here.

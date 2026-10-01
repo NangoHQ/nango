@@ -17,7 +17,7 @@ export function toListedNangoFunction(row: FunctionRow): Result<ListedNangoFunct
     const availability = {
         id: row.id,
         enabled: row.enabled,
-        last_deployed: row.last_deployed.toISOString(),
+        last_deployed: row.last_deployed ? row.last_deployed.toISOString() : null,
         source: row.source
     };
 

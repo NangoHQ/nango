@@ -206,6 +206,7 @@ const ENVS_SHAPE = z.object({
     // `/` keeps requests on whichever host served the dashboard (same-origin).
     NANGO_DASHBOARD_API_URL: z.url().or(z.literal('/')).optional(),
     NANGO_MANAGEMENT_MCP_SERVER_URL: z.url().optional(),
+    NANGO_OPENAI_APPS_CHALLENGE_TOKEN: z.string().optional(),
     NANGO_OAUTH_SERVER_BASE_URL: z.url().optional(),
     NANGO_OAUTH_SERVER_COOKIE_KEYS: z.string().optional(),
     NANGO_OAUTH_SERVER_JWKS: z.string().optional(),
@@ -259,6 +260,13 @@ const ENVS_SHAPE = z.object({
         .positive()
         .optional()
         .default(10 * 60 * 1000), // 10 minutes
+    // A proxy request fails once no bytes arrive for this long (see ProxyRequest for the exact axios semantics)
+    NANGO_PROXY_IDLE_TIMEOUT_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(5 * 60 * 1000), // 5 minutes
     NANGO_WEBHOOK_MAX_RETRY_WAIT_MS: z.coerce
         .number()
         .int()
@@ -290,6 +298,7 @@ const ENVS_SHAPE = z.object({
     CRON_DELETE_OLD_SYNCS_LIMIT: z.coerce.number().optional().default(25),
     CRON_DELETE_OLD_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_FUNCTION_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
@@ -578,12 +587,13 @@ const ENVS_SHAPE = z.object({
     DD_API_KEY_SECRET_ARN: z.string().optional(),
 
     // Elasticsearch / OpenSearch (logs)
-    NANGO_LOGS_PROVIDER: z.enum(['elasticsearch', 'opensearch']).optional().default('elasticsearch'),
+    NANGO_LOGS_PROVIDER: z.enum(['elasticsearch', 'opensearch', 'ec-serverless']).optional().default('elasticsearch'),
     NANGO_LOGS_ES_URL: z.url().optional(),
     NANGO_LOGS_ES_REQUEST_TIMEOUT_MS: z.coerce.number().optional().default(5000),
     NANGO_LOGS_ES_MAX_RETRIES: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_USER: z.string().optional(),
     NANGO_LOGS_ES_PWD: z.string().optional(),
+    NANGO_LOGS_ES_API_KEY: z.string().optional(),
     NANGO_LOGS_ENABLED: z.stringbool().optional().default(false),
     NANGO_LOGS_ES_PREFIX: z.string().optional(),
     NANGO_LOGS_ES_INDEX_OPERATIONS: z.string().optional(),
@@ -667,6 +677,7 @@ const ENVS_SHAPE = z.object({
     NANGO_ENCRYPTION_KEY_WRAPPED: z.string().optional(),
     NANGO_KMS_KEY_ARN: z.string().optional(),
     NANGO_GCP_KMS_KEY_NAME: z.string().optional(), // GCP-KMS alternative wrapping-key identifier
+    NANGO_AZURE_KMS_KEY_ID: z.string().optional(), // Azure Key Vault alternative: versioned key identifier
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
     NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),

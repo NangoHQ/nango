@@ -100,6 +100,7 @@ export function useDeleteIntegration(env: string, integrationId: string) {
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId] });
             void queryClient.invalidateQueries({ queryKey: ['integrations', env] });
+            void queryClient.invalidateQueries({ queryKey: ['connections'] });
         }
     });
 }

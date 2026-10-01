@@ -87,9 +87,11 @@ import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuil
 import type {
     DeleteIntegrationFunction,
     DeletePublicIntegrationFunction,
+    GetFunction,
     GetFunctionDeployment,
     GetFunctionDryrun,
     GetFunctionInvocation,
+    GetFunctions,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
@@ -97,6 +99,7 @@ import type {
     GetPublicIntegrationFunction,
     GetPublicIntegrationFunctions,
     GetPublicProviderTemplates,
+    PatchFunction,
     PostFunctionCompile,
     PostFunctionDeployment,
     PostFunctionDeploymentBundle,
@@ -217,6 +220,9 @@ export type PublicApiEndpoints =
     | GetPublicV1
     | PostPublicTriggerAction
     | PostFunctionCompile
+    | GetFunction
+    | GetFunctions
+    | PatchFunction
     | PostFunctionDryrun
     | GetFunctionDryrun
     | PostFunctionDryrunResult

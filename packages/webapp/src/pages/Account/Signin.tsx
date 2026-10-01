@@ -49,6 +49,9 @@ export const Signin: React.FC = () => {
         if (error === 'oauth_signup_not_allowed') {
             return 'This Google account does not have a Nango account. Sign up separately, then restart the authorization request.';
         }
+        if (error === 'session_expired') {
+            return 'Your session has expired. Please sign in again.';
+        }
         return '';
     });
     const [showResendEmail, setShowResendEmail] = useState(false);

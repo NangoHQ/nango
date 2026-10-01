@@ -42,6 +42,13 @@ export interface ApiPublicIntegrationInclude {
               private_key: string | null;
           }
         | {
+              type: AuthModes['MCP_OAUTH2_GENERIC'];
+              client_name: string | null;
+              client_uri: string | null;
+              client_logo_uri: string | null;
+          }
+        | { type: 'INTEGRATION_CONFIG'; auth_mode: AuthModeType; integration_config: Record<string, string> }
+        | {
               type: AuthModes['MCP_OAUTH2'];
               client_id: string | null;
               client_secret: string | null;
@@ -312,6 +319,7 @@ export type PatchIntegration = ApiEndpoint<{
               webhookSecret?: string | undefined;
               displayName?: string | undefined;
               forward_webhooks?: boolean | undefined;
+              allow_unverified_webhooks?: boolean | undefined;
               // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic, aws-sigv4).
               integrationConfig?: Record<string, string> | undefined;
           }
@@ -368,6 +376,12 @@ export type ApiPublicIntegrationCredentials =
           app_id: string;
           app_link: string;
           private_key: string;
+      }
+    | {
+          type: Extract<AuthModeType, 'MCP_OAUTH2_GENERIC'>;
+          client_name?: string | undefined;
+          client_uri?: string | undefined;
+          client_logo_uri?: string | undefined;
       }
     | {
           type: Extract<AuthModeType, 'MCP_OAUTH2'>;

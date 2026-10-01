@@ -74,6 +74,14 @@ describe('signinPathWithNext', () => {
         expect(signinPathWithNext(location('/dev/logs', search))).toBe('/signin');
         expect(signinPathWithNext(location('/dev/logs', `?filters=${'a'.repeat(MAX_NEXT_LENGTH - '/dev/logs?filters='.length)}`))).toContain('next=');
     });
+
+    it('flags an expired session alongside the destination', () => {
+        expect(signinPathWithNext(location('/dev/integrations'), { expired: true })).toBe('/signin?next=%2Fdev%2Fintegrations&error=session_expired');
+    });
+
+    it('flags an expired session when there is no destination', () => {
+        expect(signinPathWithNext(location('/'), { expired: true })).toBe('/signin?error=session_expired');
+    });
 });
 
 describe('safeNextPath', () => {

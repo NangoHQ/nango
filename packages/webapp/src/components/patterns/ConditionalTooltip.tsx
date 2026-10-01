@@ -10,7 +10,6 @@ interface ConditionalTooltipProps {
     condition?: boolean;
     children: React.ReactNode;
     content: React.ReactNode;
-    contentClassName?: string;
     asChild?: boolean;
     side?: 'left' | 'right' | 'top' | 'bottom';
 }
@@ -19,15 +18,7 @@ interface ConditionalTooltipProps {
  * Only renders the tooltip wrapper when the condition is true. Useful for nesting tooltips.
  * When rendered, suppresses any nested ConditionalTooltip so only the outermost active tooltip shows.
  */
-export const ConditionalTooltip: React.FC<ConditionalTooltipProps & TooltipProps> = ({
-    condition,
-    content,
-    contentClassName,
-    asChild,
-    side = 'bottom',
-    children,
-    ...props
-}) => {
+export const ConditionalTooltip: React.FC<ConditionalTooltipProps & TooltipProps> = ({ condition, content, asChild, side = 'bottom', children, ...props }) => {
     const suppressed = useContext(TooltipSuppressedContext);
 
     if (!condition || suppressed) {
@@ -38,10 +29,7 @@ export const ConditionalTooltip: React.FC<ConditionalTooltipProps & TooltipProps
         <TooltipSuppressedContext.Provider value={true}>
             <Tooltip {...props}>
                 <TooltipTrigger asChild={asChild}>{children}</TooltipTrigger>
-                {/* eslint-disable-next-line react/forbid-component-props -- content holding a link must stay hoverable; see NAN-5464 */}
-                <TooltipContent side={side} className={contentClassName}>
-                    {content}
-                </TooltipContent>
+                <TooltipContent side={side}>{content}</TooltipContent>
             </Tooltip>
         </TooltipSuppressedContext.Provider>
     );

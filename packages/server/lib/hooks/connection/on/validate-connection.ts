@@ -1,4 +1,5 @@
-import { connectionService, onEventScriptService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { connectionService, functionConfigService, getFunctionMaxConcurrency, onEventScriptService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -14,11 +15,13 @@ export async function validateConnection({
     connection,
     config,
     account,
+    environment,
     logCtx
 }: {
     config: Config;
     connection: DBConnection;
     account: DBTeam;
+    environment: DBEnvironment;
     logCtx: LogContext;
 }): Promise<Result<{ tested: boolean }, NangoError>> {
     if (!config.id) {
@@ -26,11 +29,17 @@ export async function validateConnection({
     }
     const event = 'validate-connection';
 
-    const validateConnectionScripts = await onEventScriptService.getByConfig(config.id, event);
-
-    if (validateConnectionScripts.length === 0) {
-        return Ok({ tested: false });
+    const functions = await functionConfigService.search(db.knex, {
+        environmentId: environment.id,
+        filter: { integrationKey: config.unique_key, enabled: true, trigger: { kind: 'event', event } }
+    });
+    if (functions.isErr()) {
+        // A function lookup failure is a server error, not a failed connection validation.
+        // We let the caller handle it without marking the connection as invalid.
+        throw functions.error;
     }
+
+    const validateConnectionScripts = await onEventScriptService.getByConfig(config.id, event);
 
     for (const script of validateConnectionScripts) {
         const { name, file_location: fileLocation, version } = script;
@@ -58,7 +67,30 @@ export async function validateConnection({
         }
     }
 
-    return Ok({ tested: true });
+    for (const { config: functionConfig, currentVersion } of functions.value) {
+        const res = await getOrchestrator().invokeFunction({
+            environment,
+            connection,
+            functionConfigId: functionConfig.id,
+            functionName: functionConfig.name,
+            trigger: {
+                kind: 'event',
+                input: { event },
+                connection: { connectionId: connection.connection_id, integrationId: config.unique_key }
+            },
+            async: false,
+            retryMax: 0,
+            maxConcurrency: getFunctionMaxConcurrency(currentVersion),
+            logCtx
+        });
+        if (res.isErr()) {
+            await logCtx.error(res.error.message, { error: res.error });
+            await logCtx.failed();
+            return Err(res.error);
+        }
+    }
+
+    return Ok({ tested: validateConnectionScripts.length > 0 || functions.value.length > 0 });
 }
 
 export function getValidateConnectionFailureMessage(error: NangoError): string {

@@ -333,6 +333,128 @@ describe('integrationService', () => {
             expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({ custom: { oauth_client_name: 'My App' } }), provider);
         });
 
+        it('creates a TWO_STEP integration without integration-level credentials', async () => {
+            const provider = providerFixture('Some Two-Step Provider', 'TWO_STEP');
+            const createdIntegration = integrationFixture({ uniqueKey: 'two-step', provider: 'two-step-provider' });
+            vi.spyOn(shared, 'getProvider').mockReturnValue(provider);
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+            const createSpy = vi.spyOn(shared.configService, 'createProviderConfig').mockResolvedValue(createdIntegration);
+
+            const result = await integrationService.create({
+                environmentId: 42,
+                provider: 'two-step-provider',
+                uniqueKey: 'two-step',
+                credentialSource: 'own'
+            });
+
+            expect(result.isOk()).toBe(true);
+            const createdConfig = createSpy.mock.calls[0]?.[0];
+            expect(createdConfig).toMatchObject({ unique_key: 'two-step', shared_credentials_id: null });
+            expect(createdConfig).not.toHaveProperty('oauth_client_id');
+            expect(createdConfig).not.toHaveProperty('oauth_client_secret');
+        });
+
+        it('creates an OAUTH2_CC integration without integration-level credentials', async () => {
+            const provider = providerFixture('Zoom (Server-to-Server OAuth)', 'OAUTH2_CC');
+            const createdIntegration = integrationFixture({ uniqueKey: 'zoom-cc', provider: 'zoom-cc' });
+            vi.spyOn(shared, 'getProvider').mockReturnValue(provider);
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+            const createSpy = vi.spyOn(shared.configService, 'createProviderConfig').mockResolvedValue(createdIntegration);
+
+            const result = await integrationService.create({
+                environmentId: 42,
+                provider: 'zoom-cc',
+                uniqueKey: 'zoom-cc',
+                credentialSource: 'own'
+            });
+
+            expect(result.isOk()).toBe(true);
+            const createdConfig = createSpy.mock.calls[0]?.[0];
+            expect(createdConfig).toMatchObject({ unique_key: 'zoom-cc', shared_credentials_id: null });
+            expect(createdConfig).not.toHaveProperty('oauth_client_id');
+            expect(createdConfig).not.toHaveProperty('oauth_client_secret');
+        });
+
+        it('creates an mcp-generic (MCP_OAUTH2_GENERIC) integration without integration-level credentials', async () => {
+            const provider = shared.getProvider('mcp-generic');
+            if (!provider) {
+                throw new Error('mcp-generic provider not found');
+            }
+            const createdIntegration = integrationFixture({ uniqueKey: 'mcp-generic', provider: 'mcp-generic' });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+            const createSpy = vi.spyOn(shared.configService, 'createProviderConfig').mockResolvedValue(createdIntegration);
+
+            const result = await integrationService.create({
+                environmentId: 42,
+                provider: 'mcp-generic',
+                uniqueKey: 'mcp-generic',
+                credentialSource: 'own'
+            });
+
+            expect(result.isOk()).toBe(true);
+            const createdConfig = createSpy.mock.calls[0]?.[0];
+            expect(createdConfig).toMatchObject({ unique_key: 'mcp-generic', shared_credentials_id: null });
+            expect(createdConfig).not.toHaveProperty('oauth_client_id');
+            expect(createdConfig).not.toHaveProperty('oauth_client_secret');
+        });
+
+        it('creates an mcp-generic integration with optional oauth client branding', async () => {
+            const provider = shared.getProvider('mcp-generic');
+            if (!provider) {
+                throw new Error('mcp-generic provider not found');
+            }
+            const createdIntegration = integrationFixture({ uniqueKey: 'mcp-generic', provider: 'mcp-generic' });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+            const createSpy = vi.spyOn(shared.configService, 'createProviderConfig').mockResolvedValue(createdIntegration);
+
+            const result = await integrationService.create({
+                environmentId: 42,
+                provider: 'mcp-generic',
+                uniqueKey: 'mcp-generic',
+                credentialSource: 'own',
+                credentials: {
+                    type: 'MCP_OAUTH2_GENERIC',
+                    client_name: 'Acme Inc',
+                    client_uri: 'https://acme.com',
+                    client_logo_uri: 'https://acme.com/logo.png'
+                }
+            });
+
+            expect(result.isOk()).toBe(true);
+            const createdConfig = createSpy.mock.calls[0]?.[0];
+            expect(createdConfig).toMatchObject({
+                unique_key: 'mcp-generic',
+                custom: {
+                    oauth_client_name: 'Acme Inc',
+                    oauth_client_uri: 'https://acme.com',
+                    oauth_client_logo_uri: 'https://acme.com/logo.png'
+                }
+            });
+            expect(createdConfig).not.toHaveProperty('oauth_client_id');
+            expect(createdConfig).not.toHaveProperty('oauth_client_secret');
+        });
+
+        it('rejects creation when a required integration_config field is omitted entirely', async () => {
+            vi.spyOn(shared, 'getProvider').mockReturnValue(configurableProviderFixture());
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+            const createSpy = vi.spyOn(shared.configService, 'createProviderConfig');
+
+            const result = await integrationService.create({
+                environmentId: 42,
+                provider: 'github',
+                uniqueKey: 'github',
+                credentialSource: 'own',
+                credentials: { type: 'OAUTH2', client_id: 'client-id', client_secret: 'client-secret' }
+                // no integrationConfig at all -- the required `region` field is never supplied
+            });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error).toMatchObject({ code: 'invalid_integration_config' });
+            }
+            expect(createSpy).not.toHaveBeenCalled();
+        });
+
         it('rejects free-form custom properties for providers with an integration config schema', async () => {
             vi.spyOn(shared, 'getProvider').mockReturnValue(configurableProviderFixture());
             vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
@@ -844,10 +966,52 @@ describe('integrationService', () => {
                     unique_key: 'github-renamed',
                     display_name: 'GitHub Renamed',
                     forward_webhooks: false,
+                    allow_unverified_webhooks: false,
                     oauth_client_id: 'new-client-id',
                     oauth_client_secret: 'new-client-secret',
                     oauth_scopes: 'repo',
                     custom: { existing: 'value', region: 'eu', webhookSecret: 'new-webhook-secret' }
+                }),
+                provider
+            );
+        });
+
+        it('switches aws-sigv4 from builtin to custom STS mode via a partial patch', async () => {
+            const provider = shared.getProvider('aws-sigv4');
+            if (!provider) {
+                throw new Error('aws-sigv4 provider not found');
+            }
+            const integration = integrationFixture({
+                uniqueKey: 'my-aws-integration',
+                provider: 'aws-sigv4',
+                custom: { service: 's3', stsMode: 'builtin', awsAccessKeyId: 'AKIA...', awsSecretAccessKey: 'secret' }
+            });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+            const editSpy = vi.spyOn(shared.configService, 'editProviderConfig').mockResolvedValue(integration as never);
+
+            const result = await integrationService.update({
+                environmentId: 42,
+                integrationId: 'my-aws-integration',
+                integrationConfig: {
+                    stsMode: 'custom',
+                    stsEndpointUrl: 'https://sts.example.com/assume',
+                    stsAuthType: 'none'
+                }
+            });
+
+            expect(result.isOk()).toBe(true);
+            expect(editSpy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    custom: expect.objectContaining({
+                        // untouched, now-invisible builtin fields are left in place, not required or scrubbed
+                        service: 's3',
+                        awsAccessKeyId: 'AKIA...',
+                        awsSecretAccessKey: 'secret',
+                        // newly-visible custom-mode fields are validated and applied
+                        stsMode: 'custom',
+                        stsEndpointUrl: 'https://sts.example.com/assume',
+                        stsAuthType: 'none'
+                    })
                 }),
                 provider
             );
@@ -867,6 +1031,24 @@ describe('integrationService', () => {
             });
 
             expect(editSpy).toHaveBeenCalledWith(expect.objectContaining({ custom: { existing: 'value', region: 'eu' } }), provider);
+        });
+
+        it('updates mcp-generic oauth client branding', async () => {
+            const provider = shared.getProvider('mcp-generic');
+            if (!provider) {
+                throw new Error('mcp-generic provider not found');
+            }
+            const integration = integrationFixture({ uniqueKey: 'mcp-generic', provider: 'mcp-generic', custom: { oauth_client_name: 'Old Name' } });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+            const editSpy = vi.spyOn(shared.configService, 'editProviderConfig').mockResolvedValue(integration as never);
+
+            await integrationService.update({
+                environmentId: 42,
+                integrationId: 'mcp-generic',
+                credentials: { type: 'MCP_OAUTH2_GENERIC', client_name: 'New Name' }
+            });
+
+            expect(editSpy).toHaveBeenCalledWith(expect.objectContaining({ custom: { oauth_client_name: 'New Name' } }), provider);
         });
 
         it('rejects credentials incompatible with the provider auth mode', async () => {
@@ -1266,6 +1448,7 @@ function integrationFixture({ uniqueKey, provider, ...overrides }: { uniqueKey: 
         missing_fields: [],
         display_name: null,
         forward_webhooks: true,
+        allow_unverified_webhooks: false,
         shared_credentials_id: null,
         created_at: createdAt,
         updated_at: updatedAt,

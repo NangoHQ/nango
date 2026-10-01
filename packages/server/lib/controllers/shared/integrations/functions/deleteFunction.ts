@@ -26,7 +26,12 @@ export async function handleDeleteIntegrationFunction({
         return;
     }
 
-    const fnResult = await legacyFunctionService.getFunction({ environmentId: environment.id, providerConfigKey, name, type });
+    const fnResult = await legacyFunctionService.getFunction({
+        environmentId: environment.id,
+        providerConfigKey,
+        name,
+        type
+    });
     if (fnResult.isErr()) {
         report(fnResult.error);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get function' } });
@@ -42,6 +47,17 @@ export async function handleDeleteIntegrationFunction({
         res.status(400).send({
             error: { code: 'function_managed_by_deploy', message: 'repo functions are deleted through `nango deploy`, not this endpoint' }
         });
+        return;
+    }
+    if (fn.source === 'tools-catalog') {
+        res.status(400).send({
+            error: { code: 'invalid_request', message: 'Catalog actions cannot be deleted' }
+        });
+        return;
+    }
+    if (fn.id == null) {
+        report(new Error(`Function '${name}' is missing a sync config id`));
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to enqueue function deletion' } });
         return;
     }
 

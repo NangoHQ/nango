@@ -1,6 +1,7 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTriggerDefinition } from '../function/config.js';
+import type { FunctionSource } from '../syncConfigs/db.js';
 import type { FunctionType, ListedNangoFunction, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 import type { JSONSchema7 } from 'json-schema';
 
@@ -235,6 +236,56 @@ export type PostFunctionDeploymentResult = ApiEndpoint<{
 
 export type FunctionInvocationType = 'wait' | 'no_wait';
 
+export interface GetFunctionResponse {
+    uuid: string;
+    integration_id: string;
+    provider: string;
+    name: string;
+    description: string;
+    state: 'enabled' | 'disabled';
+    source: FunctionSource;
+    trigger: FunctionTriggerDefinition;
+    created_at: string;
+    updated_at: string;
+}
+
+export type GetFunction = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/functions/:uuid';
+    Params: { uuid: string };
+    Success: GetFunctionResponse;
+}>;
+
+export type PatchFunction = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'updated', 'environment'>;
+    Method: 'PATCH';
+    Path: '/functions/:uuid';
+    Params: { uuid: string };
+    Body: { state: 'enabled' | 'disabled' };
+    Success: GetFunctionResponse;
+}>;
+
+export interface GetFunctionsQuery {
+    integration?: string | undefined;
+    provider?: string | undefined;
+    state?: 'enabled' | 'disabled' | undefined;
+    'trigger.kind'?: FunctionTriggerDefinition['kind'] | undefined;
+    cursor?: string | undefined;
+    limit?: number | undefined;
+}
+
+export type GetFunctions = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/functions';
+    Querystring: GetFunctionsQuery;
+    Success: {
+        data: GetFunctionResponse[];
+        next_cursor: string | null;
+    };
+}>;
+
 export type FunctionInvocationErrorCode =
     | 'function_failed'
     | 'server_error'
@@ -325,7 +376,7 @@ export type DeleteIntegrationFunction = ApiEndpoint<{
     /** TODO: support deleting on-event functions */
     Querystring: { env: string; type: RunnableFunctionType };
     Params: { providerConfigKey: string; functionName: string };
-    Error: ApiError<'function_managed_by_deploy'>;
+    Error: ApiError<'function_managed_by_deploy' | 'invalid_request'>;
     Success: FunctionDeletionSuccess;
 }>;
 
@@ -363,7 +414,7 @@ export type DeletePublicIntegrationFunction = ApiEndpoint<{
     /** TODO: support deleting on-event functions */
     Querystring: { type: RunnableFunctionType };
     Params: { uniqueKey: string; name: string };
-    Error: ApiError<'function_managed_by_deploy'>;
+    Error: ApiError<'function_managed_by_deploy' | 'invalid_request'>;
     Success: FunctionDeletionSuccess;
 }>;
 

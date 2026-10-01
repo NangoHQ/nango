@@ -12,10 +12,11 @@ type ParsedGetOperationArguments = Omit<GetLogOperationParams, 'accountId' | 'en
 
 export const getLogOperationTool = defineManagementMcpTool<typeof getOperationArgumentsSchema, GetLogOperationResult>({
     name: 'logs_get_operation',
+    title: 'Get Log Operation',
     description: 'Get one Nango log operation and a page of its message rows for the authenticated environment. Messages are returned newest first.',
     inputSchema: getOperationArgumentsSchema,
     outputSchema: getOperationOutputSchema,
-    annotations: { readOnlyHint: true },
+    annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     requiredScopes: { every: [logsReadScope] },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, account, environment }) {
