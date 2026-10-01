@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { buildInstructions } from './agentPlayground.instructions.js';
 
 describe('buildInstructions', () => {
-    it("states the hour in the user's time zone", () => {
+    it("states the time in the user's time zone", () => {
         const instructions = buildInstructions('Europe/Prague', new Date('2026-09-29T15:42:10Z'));
 
-        expect(instructions).toContain("The user's time zone is Europe/Prague. It is currently Tuesday, 29 September 2026 at 17:00 there.");
+        expect(instructions).toContain("The user's time zone is Europe/Prague. It is currently Tuesday, 29 September 2026 at 17:42 there.");
     });
 
     it('names each integration by its id and says whether it is connected', () => {

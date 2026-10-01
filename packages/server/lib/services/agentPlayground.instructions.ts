@@ -42,10 +42,11 @@ export function buildInstructions(
         month: 'long',
         day: 'numeric',
         hour: '2-digit',
+        minute: '2-digit',
         hourCycle: 'h23'
     }).format(now);
 
-    const session = [`The user's time zone is ${timeZone}. It is currently ${local}:00 there.`];
+    const session = [`The user's time zone is ${timeZone}. It is currently ${local} there.`];
     if (integrations.length > 0) {
         session.push(
             'The integrations in this session, by the id every tool expects:',
