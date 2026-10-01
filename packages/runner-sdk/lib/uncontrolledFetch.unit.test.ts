@@ -393,6 +393,23 @@ describe('uncontrolledFetch', () => {
         expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
+    it('returns a non-redirect response when redirect is error', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response('uploaded', { status: 200 }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+        const res = await action.uncontrolledFetch({
+            url: new URL('https://example.com/upload'),
+            method: 'POST',
+            body: 'forensic-file',
+            redirect: 'error'
+        });
+
+        expect(res.status).toBe(200);
+        expect(await res.text()).toBe('uploaded');
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
     it('still follows redirects when redirect is follow', async () => {
         const fetchMock = vi
             .fn()
