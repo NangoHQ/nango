@@ -105,7 +105,6 @@ export class ProxyRequest {
         this.outboundPolicy = props.outboundPolicy;
         this.maxWaitMs = props.maxWaitMs;
         this.abortSignal = props.abortSignal;
-        // 0 would disable the axios timeout and a negative value throws, so fall back to the default
         this.idleTimeoutMs = props.idleTimeoutMs && props.idleTimeoutMs > 0 ? props.idleTimeoutMs : envs.NANGO_PROXY_IDLE_TIMEOUT_MS;
     }
 
