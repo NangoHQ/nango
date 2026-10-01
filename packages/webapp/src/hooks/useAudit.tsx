@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 import { downloadBlob } from '../utils/download';
@@ -54,15 +54,19 @@ export function useApiGetAuditTrail(filters: AuditTrailFilters, options?: { enab
     });
 }
 
-export async function apiAuditTrailExport(filters: AuditTrailFilters): Promise<{ truncated: boolean }> {
-    const qs = auditFilterParams(filters).toString();
-    const res = await apiFetch(`/api/v1/audit-trail/export${qs ? `?${qs}` : ''}`, { method: 'GET' });
-    if (!res.ok) {
-        const json = (await res.json()) as GetAuditTrailExport['Errors'];
-        throw new APIError({ res, json });
-    }
+export function useAuditTrailExport() {
+    return useMutation<{ truncated: boolean }, APIError, AuditTrailFilters>({
+        mutationFn: async (filters) => {
+            const qs = auditFilterParams(filters).toString();
+            const res = await apiFetch(`/api/v1/audit-trail/export${qs ? `?${qs}` : ''}`, { method: 'GET' });
+            if (!res.ok) {
+                const json = (await res.json()) as GetAuditTrailExport['Errors'];
+                throw new APIError({ res, json });
+            }
 
-    downloadBlob(await res.blob(), 'nango-audit-trail.csv');
+            downloadBlob(await res.blob(), 'nango-audit-trail.csv');
 
-    return { truncated: res.headers.get('x-nango-audit-export-truncated') === 'true' };
+            return { truncated: res.headers.get('x-nango-audit-export-truncated') === 'true' };
+        }
+    });
 }

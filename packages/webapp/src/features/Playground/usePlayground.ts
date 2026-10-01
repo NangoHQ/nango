@@ -1,20 +1,42 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 
-import { fetchSyncByName } from '@/hooks/useSyncs';
+import { syncByNameQueryOptions, useRunSyncCommand } from '@/hooks/useSyncs';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
-import { apiFetch } from '@/utils/api';
+import { APIError, apiFetch } from '@/utils/api';
 import { trackPlaygroundRunCancelled, trackPlaygroundRunClicked, trackPlaygroundRunCompleted } from './analytics';
 import { buildResultData, computeDurationMs, fetchOperation, findOperation, sleepWithAbort, validateAndParseInputs } from './playground.utils';
 
 import type { InputField } from './types';
+import type { PostInternalTriggerFunction } from '@nangohq/types';
 
 const FIND_OP_POLL_INTERVAL_MS = 500;
 const STATUS_POLL_INTERVAL_MS = 1500;
 
+function useTriggerFunction(env: string) {
+    return useMutation<unknown, APIError, { body: PostInternalTriggerFunction['Body']; signal: AbortSignal }>({
+        mutationFn: async ({ body, signal }) => {
+            const res = await apiFetch(`/api/v1/trigger/function?env=${env}`, {
+                method: 'POST',
+                signal,
+                body: JSON.stringify(body)
+            });
+
+            const json: unknown = await res.json().catch(() => null);
+            if (!res.ok) {
+                throw new APIError({ res, json: json as Record<string, unknown> });
+            }
+            return json;
+        }
+    });
+}
+
 export function usePlayground(inputFields: InputField[]) {
     const env = useStore((s) => s.env);
+    const queryClient = useQueryClient();
+    const { mutateAsync: triggerFunction } = useTriggerFunction(env);
+    const { mutateAsync: runSyncCommand } = useRunSyncCommand(env);
     const isOpen = usePlaygroundStore((s) => s.isOpen);
     const playgroundIntegration = usePlaygroundStore((s) => s.integration);
     const playgroundConnection = usePlaygroundStore((s) => s.connection);
@@ -112,8 +134,7 @@ export function usePlayground(inputFields: InputField[]) {
 
         const runStartTime = Date.now();
         try {
-            let response: Response;
-            let triggerData: unknown = null;
+            let body: PostInternalTriggerFunction['Body'];
 
             const triggerStartTime = Date.now();
             if (playgroundFunctionType === 'action') {
@@ -131,40 +152,31 @@ export function usePlayground(inputFields: InputField[]) {
                     setRunning(false);
                     return;
                 }
-                response = await apiFetch(`/api/v1/trigger/function?env=${env}`, {
-                    method: 'POST',
-                    signal: controller.signal,
-                    body: JSON.stringify({
-                        type: 'action',
-                        function_name: playgroundFunction,
-                        provider_config_key: playgroundIntegration,
-                        connection_id: playgroundConnection,
-                        input: parseResult.parsed
-                    })
-                });
+                body = {
+                    type: 'action',
+                    function_name: playgroundFunction,
+                    provider_config_key: playgroundIntegration,
+                    connection_id: playgroundConnection,
+                    input: parseResult.parsed
+                };
             } else {
-                response = await apiFetch(`/api/v1/trigger/function?env=${env}`, {
-                    method: 'POST',
-                    signal: controller.signal,
-                    body: JSON.stringify({
-                        type: 'sync',
-                        function_name: playgroundFunction,
-                        provider_config_key: playgroundIntegration,
-                        connection_id: playgroundConnection
-                    })
-                });
+                body = {
+                    type: 'sync',
+                    function_name: playgroundFunction,
+                    provider_config_key: playgroundIntegration,
+                    connection_id: playgroundConnection
+                };
             }
 
+            let triggerData: unknown;
             try {
-                triggerData = await response.json();
-            } catch {
-                triggerData = null;
-            }
+                triggerData = await triggerFunction({ body, signal: controller.signal });
+            } catch (err) {
+                if (!(err instanceof APIError)) {
+                    throw err;
+                }
 
-            const triggerDurationMs = Date.now() - triggerStartTime;
-
-            // If the trigger failed immediately, surface the error right away.
-            if (!response.ok) {
+                const triggerDurationMs = Date.now() - triggerStartTime;
                 trackPlaygroundRunCompleted({
                     function_type: playgroundFunctionType,
                     integration: playgroundIntegration,
@@ -173,10 +185,12 @@ export function usePlayground(inputFields: InputField[]) {
                     duration_ms: triggerDurationMs
                 });
                 setPendingOperationId(null);
-                setResult({ success: false, data: triggerData, durationMs: triggerDurationMs });
+                setResult({ success: false, data: err.json, durationMs: triggerDurationMs });
                 setRunning(false);
                 return;
             }
+
+            const triggerDurationMs = Date.now() - triggerStartTime;
 
             // For actions, the full output is already in triggerData.
             // Don't block the UI on log discovery.
@@ -258,6 +272,7 @@ export function usePlayground(inputFields: InputField[]) {
         env,
         inputFields,
         inputValues,
+        triggerFunction,
         setResult,
         setPendingOperationId,
         setRunning,
@@ -278,30 +293,40 @@ export function usePlayground(inputFields: InputField[]) {
                 integration: playgroundIntegration
             });
             try {
-                const sync = await fetchSyncByName({
-                    env,
-                    connection_id: playgroundConnection,
-                    provider_config_key: playgroundIntegration,
-                    name: playgroundFunction
-                });
+                const sync = await queryClient.fetchQuery(
+                    syncByNameQueryOptions({
+                        env,
+                        connection_id: playgroundConnection,
+                        provider_config_key: playgroundIntegration,
+                        name: playgroundFunction
+                    })
+                );
                 if (sync) {
-                    await apiFetch(`/api/v1/sync/command?env=${env}`, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            command: 'CANCEL',
-                            nango_connection_id: sync.nango_connection_id,
-                            sync_id: sync.id,
-                            sync_name: sync.name,
-                            sync_variant: sync.variant,
-                            provider: playgroundIntegration
-                        })
+                    await runSyncCommand({
+                        command: 'CANCEL',
+                        nango_connection_id: sync.nango_connection_id,
+                        sync_id: sync.id,
+                        sync_name: sync.name,
+                        sync_variant: sync.variant,
+                        provider: playgroundIntegration
                     });
                 }
             } catch {
                 // Best-effort: local state already cleared
             }
         }
-    }, [env, playgroundIntegration, playgroundConnection, playgroundFunction, playgroundFunctionType, setPendingOperationId, setRunning, setResult]);
+    }, [
+        env,
+        queryClient,
+        runSyncCommand,
+        playgroundIntegration,
+        playgroundConnection,
+        playgroundFunction,
+        playgroundFunctionType,
+        setPendingOperationId,
+        setRunning,
+        setResult
+    ]);
 
     return { handleRun, handleCancel };
 }
