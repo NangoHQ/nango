@@ -18,7 +18,11 @@ Credentials come from your environment:
 
 - **AWS:** the default AWS credential chain. You need `kms:GenerateDataKey` to wrap and `kms:Decrypt` to verify.
 - **GCP:** Application Default Credentials, with `roles/cloudkms.cryptoKeyEncrypterDecrypter` on the key. To act as a service account, also set `GOOGLE_IMPERSONATE_SERVICE_ACCOUNT=SA@PROJECT.iam.gserviceaccount.com`; your own account then needs `roles/iam.serviceAccountTokenCreator` on it.
-- **Azure:** `DefaultAzureCredential` (for example after `az login`), with **Key Vault Crypto User** on the key.
+- **Azure:** `DefaultAzureCredential` (for example after `az login`), with **Key Vault Crypto User** on the key. The key must be RSA and allow `wrapKey` and `unwrapKey`; 3072 bits or more is recommended:
+
+    ```sh
+    az keyvault key create --vault-name VAULT --name NAME --kty RSA --size 3072 --ops wrapKey unwrapKey
+    ```
 
 ## Playbook
 
