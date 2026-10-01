@@ -34,6 +34,7 @@ describe('Config service integration tests', () => {
                     provider: 'aws-sigv4',
                     environment_id: env.id,
                     forward_webhooks: true,
+                    allow_unverified_webhooks: false,
                     custom: { service: 's3', awsSecretAccessKey: 'super-secret-value' }
                 },
                 provider
@@ -86,6 +87,7 @@ describe('Config service integration tests', () => {
                 updated_at: new Date(),
                 missing_fields: [],
                 forward_webhooks: true,
+                allow_unverified_webhooks: false,
                 shared_credentials_id: null
             });
 
@@ -104,6 +106,7 @@ describe('Config service integration tests', () => {
                 updated_at: new Date(),
                 missing_fields: [],
                 forward_webhooks: true,
+                allow_unverified_webhooks: false,
                 shared_credentials_id: null
             });
 
@@ -123,6 +126,7 @@ describe('Config service integration tests', () => {
                 updated_at: new Date(),
                 missing_fields: [],
                 forward_webhooks: true,
+                allow_unverified_webhooks: false,
                 shared_credentials_id: null
             });
 
@@ -142,6 +146,7 @@ describe('Config service integration tests', () => {
                 updated_at: new Date(),
                 missing_fields: [],
                 forward_webhooks: true,
+                allow_unverified_webhooks: false,
                 shared_credentials_id: null
             });
 
@@ -161,6 +166,7 @@ describe('Config service integration tests', () => {
                 updated_at: new Date(),
                 missing_fields: [],
                 forward_webhooks: true,
+                allow_unverified_webhooks: false,
                 shared_credentials_id: null
             });
 
@@ -184,6 +190,7 @@ describe('Config service integration tests', () => {
                     private_key: ''
                 },
                 forward_webhooks: true,
+                allow_unverified_webhooks: false,
                 shared_credentials_id: null
             });
 
