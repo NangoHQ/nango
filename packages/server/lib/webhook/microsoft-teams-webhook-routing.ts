@@ -38,6 +38,9 @@ const UNVERIFIED = {
     }
 } satisfies Record<string, UnverifiedWebhook>;
 
+/** Tokens that are missing or that we cannot check, as opposed to tokens that fail verification. */
+const UNVERIFIABLE: UnverifiedWebhook[] = [UNVERIFIED.missingAuthorization, UNVERIFIED.entraIssuer, UNVERIFIED.unexpectedIssuer];
+
 interface BotFrameworkActivity {
     channelId?: unknown;
     serviceUrl?: unknown;
@@ -125,7 +128,8 @@ const route: WebhookHandler<Record<string, unknown>> = async (nango, headers, bo
     if (unverified) {
         nango.markUnverified(unverified);
 
-        if (!(await getFlags().allowUnauthorizedMicrosoftTeamsWebhook(nango.team.uuid))) {
+        const allowUnverified = nango.integration.allow_unverified_webhooks && UNVERIFIABLE.includes(unverified);
+        if (!allowUnverified && !(await getFlags().allowUnauthorizedMicrosoftTeamsWebhook(nango.team.uuid))) {
             return Err(new NangoError(unverified === UNVERIFIED.missingAuthorization ? 'webhook_missing_signature' : 'webhook_invalid_signature'));
         }
     }

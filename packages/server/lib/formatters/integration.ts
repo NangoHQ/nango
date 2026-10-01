@@ -25,6 +25,7 @@ export function integrationToApi(data: IntegrationConfig, options?: { includeCre
         missing_fields: data.missing_fields,
         display_name: data.display_name,
         forward_webhooks: data.forward_webhooks === undefined ? true : data.forward_webhooks,
+        allow_unverified_webhooks: data.allow_unverified_webhooks === true,
         shared_credentials_id: data.shared_credentials_id
     };
 }

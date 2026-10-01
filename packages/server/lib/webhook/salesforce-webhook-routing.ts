@@ -23,7 +23,7 @@ const route: WebhookHandler = async (nango, headers, body) => {
             remediation: 'Set webhookSecret in the connection metadata and send it from the Apex trigger'
         });
 
-        if (!(await getFlags().allowUnauthorizedSalesforceWebhook(nango.team.uuid))) {
+        if (!nango.integration.allow_unverified_webhooks && !(await getFlags().allowUnauthorizedSalesforceWebhook(nango.team.uuid))) {
             return rejectUnverifiedWebhook(headers);
         }
     }
