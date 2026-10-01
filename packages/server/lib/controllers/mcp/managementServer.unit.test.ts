@@ -86,7 +86,7 @@ describe('createManagementMcpServer', () => {
                 { name: 'connections_list', annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false } },
                 {
                     name: 'connections_get',
-                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
+                    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
                 },
                 {
                     name: 'syncs_set_state',
@@ -533,7 +533,7 @@ describe('createManagementMcpServer', () => {
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'connections_get',
-                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
+                annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
             });
         } finally {
             await client.close();
@@ -561,7 +561,6 @@ describe('createManagementMcpServer', () => {
             connection_id: 'connection-id',
             provider_config_key: 'github',
             provider: 'github',
-            connection_config: {},
             webhook_url_override: null,
             created_at: '2026-01-01T00:00:00.000Z',
             updated_at: '2026-01-02T00:00:00.000Z',

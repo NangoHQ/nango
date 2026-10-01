@@ -935,7 +935,7 @@ describe('POST /mcp management server', () => {
         expect(res.status).toBe(200);
         const scopedTools = withoutUnscopedTools(res.json.result.tools);
         expect(scopedTools).toHaveLength(1);
-        expect(scopedTools[0]).toMatchObject({ name: 'connections_get', annotations: { readOnlyHint: false } });
+        expect(scopedTools[0]).toMatchObject({ name: 'connections_get', annotations: { readOnlyHint: true } });
     });
 
     it('gets a connection without credentials using the read scope', async () => {
@@ -966,37 +966,10 @@ describe('POST /mcp management server', () => {
             provider: 'github'
         });
         expect(res.json.result.structuredContent).not.toHaveProperty('credentials');
+        expect(res.json.result.structuredContent).not.toHaveProperty('connection_config');
     });
 
-    it('rejects credential and refresh options using only the read scope', async () => {
-        const { secret, env } = await createKeyWithScopes(['environment:connections:read']);
-        await seeders.createConfigSeed(env, 'github', 'github');
-        await seeders.createConnectionSeed({
-            env,
-            provider: 'github',
-            connectionId: 'mcp-get-no-refresh-permission',
-            rawCredentials: { type: 'API_KEY', apiKey: 'connection-secret' }
-        });
-
-        const res = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'tools/call',
-                params: {
-                    name: 'connections_get',
-                    arguments: { connection_id: 'mcp-get-no-refresh-permission', integration_id: 'github', force_refresh: true }
-                }
-            }
-        });
-
-        expect(res.status).toBe(200);
-        expect(res.json.result).toMatchObject({ isError: true });
-        expect(res.json.result.content[0].text).toContain('environment:connections:read_credentials');
-    });
-
-    it('gets a connection with credentials using the credential-reading scope', async () => {
+    it('gets a connection without credentials using the credential-reading scope', async () => {
         const { secret, env } = await createKeyWithScopes(['environment:connections:read_credentials']);
         await seeders.createConfigSeed(env, 'github', 'github');
         await seeders.createConnectionSeed({
@@ -1020,79 +993,8 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(res.json.result.structuredContent.credentials).toStrictEqual({ type: 'API_KEY', apiKey: 'connection-secret' });
-    });
-
-    it('only returns provider refresh tokens when explicitly requested', async () => {
-        const { secret, env } = await createKeyWithScopes(['environment:connections:read_credentials']);
-        await seeders.createConfigSeed(env, 'workday-refresh-token', 'workday-refresh-token');
-        await seeders.createConnectionSeed({
-            env,
-            provider: 'workday-refresh-token',
-            connectionId: 'mcp-get-workday-connection',
-            rawCredentials: {
-                type: 'TWO_STEP',
-                token: 'access-token',
-                refreshToken: 'credential-refresh-secret',
-                raw: { access_token: 'raw-access-token' }
-            },
-            connectionConfig: {
-                userCredentials: {
-                    type: 'OAUTH2',
-                    access_token: 'user-access-token',
-                    refresh_token: 'config-refresh-secret',
-                    raw: {}
-                }
-            }
-        });
-
-        const redacted = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'tools/call',
-                params: {
-                    name: 'connections_get',
-                    arguments: { connection_id: 'mcp-get-workday-connection', integration_id: 'workday-refresh-token' }
-                }
-            }
-        });
-
-        expect(redacted.status).toBe(200);
-        expect(redacted.json.result.structuredContent.credentials).toStrictEqual({
-            type: 'TWO_STEP',
-            token: 'access-token',
-            raw: { access_token: 'raw-access-token' }
-        });
-        expect(redacted.json.result.structuredContent.connection_config).toStrictEqual({
-            userCredentials: { type: 'OAUTH2', access_token: 'user-access-token', raw: {} }
-        });
-
-        const withRefreshTokens = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 2,
-                method: 'tools/call',
-                params: {
-                    name: 'connections_get',
-                    arguments: {
-                        connection_id: 'mcp-get-workday-connection',
-                        integration_id: 'workday-refresh-token',
-                        refresh_token: true
-                    }
-                }
-            }
-        });
-
-        expect(withRefreshTokens.status).toBe(200);
-        expect(withRefreshTokens.json.result.structuredContent.credentials).toMatchObject({
-            refreshToken: 'credential-refresh-secret'
-        });
-        expect(withRefreshTokens.json.result.structuredContent.connection_config).toMatchObject({
-            userCredentials: { refresh_token: 'config-refresh-secret' }
-        });
+        expect(res.json.result.structuredContent).not.toHaveProperty('credentials');
+        expect(res.json.result.structuredContent).not.toHaveProperty('connection_config');
     });
 
     it('returns public errors for invalid connection get arguments and missing connections', async () => {
@@ -1486,7 +1388,7 @@ describe('POST /mcp management server', () => {
         });
     });
 
-    it('gets an integration with read scope and omits unauthorized credentials', async () => {
+    it('gets an integration without credentials', async () => {
         const { secret, env } = await createKeyWithScopes(['environment:integrations:read']);
         await seeders.createConfigSeed(env, 'github', 'github', { oauth_client_id: 'client-id', oauth_client_secret: 'client-secret' });
 
@@ -1498,7 +1400,7 @@ describe('POST /mcp management server', () => {
                 method: 'tools/call',
                 params: {
                     name: 'integrations_get',
-                    arguments: { integration_id: 'github', include: ['credentials'] }
+                    arguments: { integration_id: 'github' }
                 }
             }
         });
@@ -1514,7 +1416,7 @@ describe('POST /mcp management server', () => {
         expect(payload.data).not.toHaveProperty('credentials');
     });
 
-    it('gets requested includes with an integration wildcard scope', async () => {
+    it('gets a requested webhook without credentials with an integration wildcard scope', async () => {
         const { secret, env } = await createKeyWithScopes(['environment:integrations:*']);
         await seeders.createConfigSeed(env, 'platform-google', 'google', {
             oauth_client_id: 'client-id',
@@ -1530,7 +1432,7 @@ describe('POST /mcp management server', () => {
                 method: 'tools/call',
                 params: {
                     name: 'integrations_get',
-                    arguments: { integration_id: 'platform-google', include: ['webhook', 'credentials'] }
+                    arguments: { integration_id: 'platform-google', include: ['webhook'] }
                 }
             }
         });
@@ -1540,15 +1442,9 @@ describe('POST /mcp management server', () => {
         expect(payload.data).toMatchObject({
             provider: 'google',
             unique_key: 'platform-google',
-            webhook_url: `${getGlobalWebhookReceiveUrl()}/${env.uuid}/platform-google`,
-            credentials: {
-                type: 'OAUTH2',
-                client_id: 'client-id',
-                client_secret: 'client-secret',
-                scopes: 'openid,email',
-                webhook_secret: null
-            }
+            webhook_url: `${getGlobalWebhookReceiveUrl()}/${env.uuid}/platform-google`
         });
+        expect(payload.data).not.toHaveProperty('credentials');
         expect(res.json.result.structuredContent).toStrictEqual(payload);
     });
 

@@ -44,7 +44,7 @@ const logger = getLogger('Server.ManagementMcpServer');
 const oauthToolSecuritySchemes = [{ type: 'oauth2', scopes: [MANAGEMENT_MCP_OAUTH_SCOPE] }] as const;
 
 const oauthServerInstructions =
-    'Before using an environment-bound tool, always ask the user which Nango environment to use. Call environments_list first when you need to present the available choices. Use only the environment the user selects; do not query every environment unless the user explicitly asks you to.';
+    'Environment-bound tools operate in the Nango environment named in each call. environments_list returns environments available to the authenticated user. The server checks access and permissions for the named environment on every call.';
 
 const managementMcpTools: ManagementMcpTool[] = [
     searchDocsTool,
