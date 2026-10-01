@@ -126,7 +126,11 @@ export const ShowIntegration: React.FC = () => {
                     <FunctionsTab integration={integration.integration} />
                 </TabsContent>
                 <TabsContent value="settings">
-                    <SettingsTab data={integration} environment={environmentAndAccount.environment} />
+                    <SettingsTab
+                        key={`${environmentAndAccount.environment.name}:${integration.integration.unique_key}`}
+                        data={integration}
+                        environment={environmentAndAccount.environment}
+                    />
                 </TabsContent>
             </Tabs>
         </DashboardLayout>

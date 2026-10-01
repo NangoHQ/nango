@@ -242,7 +242,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
         return <CriticalErrorAlert message="Something went wrong while loading the functions" />;
     }
 
-    const hasSearch = Boolean(debouncedSearch);
+    const hasSearch = Boolean(debouncedSearch.trim());
     const syncListHasRows = typeFilter === 'sync' && (functions.length > 0 || visibleSyncTemplates.length > 0);
     const showEmptyNoFilters = countsReady && templatesFetched && !hasSearch && totalAcrossTypes === 0 && undeployedSyncTemplates.length === 0 && !isLoading;
     const showEmptyWithSearch = !isLoading && functions.length === 0 && hasSearch && !syncListHasRows;
