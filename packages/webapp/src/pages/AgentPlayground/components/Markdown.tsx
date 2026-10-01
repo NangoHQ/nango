@@ -18,7 +18,11 @@ const components: Components = {
     h2: ({ children }) => <h3 className="mt-4 font-semibold text-text-strong">{children}</h3>,
     h3: ({ children }) => <h3 className="mt-4 font-semibold text-text-strong">{children}</h3>,
     code: ({ children }) => <code className="rounded-sm bg-surface-panel-inset px-1 py-0.5 font-mono text-[0.9em]">{children}</code>,
-    pre: ({ children }) => <pre className="mt-3 overflow-auto rounded-ds-xs bg-surface-panel-inset p-3 font-mono text-xs">{children}</pre>,
+    pre: ({ children }) => (
+        <pre className="mt-3 overflow-auto rounded-ds-xs bg-surface-panel-inset p-3 font-mono text-xs [&>code]:rounded-none [&>code]:bg-transparent [&>code]:p-0 [&>code]:text-[1em]">
+            {children}
+        </pre>
+    ),
     table: ({ children }) => (
         <div className="mt-3 overflow-auto rounded-ds-xs border border-border-muted">
             <table className="w-full text-sm">{children}</table>
