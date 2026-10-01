@@ -2,7 +2,7 @@
 
 Wraps the Nango global DEK (`NANGO_ENCRYPTION_KEY`) with a KMS master key, producing the value for `NANGO_ENCRYPTION_KEY_WRAPPED`. With `--decrypt`, it unwraps an existing value so you can check it.
 
-It loads the keyrings from `packages/kms`, so run it inside a Nango checkout after `npm install` at the repo root. The commands below run from the repo root.
+It runs the keyrings straight from the `packages/kms` source, so there's nothing to build. Run it inside a Nango checkout after `npm install` at the repo root. The commands below run from the repo root.
 
 ## Pick the master key
 
