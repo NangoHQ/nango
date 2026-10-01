@@ -2,7 +2,7 @@ import Fuse from 'fuse.js';
 
 import { logContextGetter } from '@nangohq/logs';
 import { legacyFunctionService } from '@nangohq/shared';
-import { filterJsonSchemaForModels } from '@nangohq/utils';
+import { filterJsonSchemaForModels, report } from '@nangohq/utils';
 
 import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
 import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
@@ -125,7 +125,11 @@ export async function searchSessionTools({
     await logCtx.enrichOperation({ actor: { kind: 'session', id: session.id } });
 
     try {
-        const current = await withConnectionsCreatedInSession(session);
+        const current = await withConnectionsCreatedInSession(session).catch((err: unknown) => {
+            report(err);
+            void logCtx.warn('Could not look up connections created in this session', { error: err });
+            return session;
+        });
         const ranked = rankSessionTools({ session: current, query, slugOf });
         const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
 
