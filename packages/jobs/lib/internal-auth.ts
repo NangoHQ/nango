@@ -4,13 +4,12 @@ import {
     exportRunnerPublicKey,
     INTERNAL_SERVICE_AUDIENCE_JOBS,
     INTERNAL_SERVICE_AUDIENCE_RUNNER,
-    INTERNAL_SERVICE_ISSUER_JOBS,
     INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS,
     INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS,
     INTERNAL_SERVICE_TOKEN_TTL_SECS,
     mint,
     nodeSubject,
-    signerFromEnv,
+    signerForService,
     taskSubject
 } from '@nangohq/internal-auth';
 
@@ -24,7 +23,7 @@ function taskExpiresInSecs(nangoProps?: Pick<NangoProps, 'lifecycle'>): number {
 }
 
 function jobsSigner() {
-    return signerFromEnv(INTERNAL_SERVICE_ISSUER_JOBS, envs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY, envs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID);
+    return signerForService('jobs', envs);
 }
 
 /**

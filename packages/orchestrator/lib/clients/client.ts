@@ -1,12 +1,4 @@
-import {
-    INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR,
-    INTERNAL_SERVICE_ISSUER_JOBS,
-    INTERNAL_SERVICE_ISSUER_SERVER,
-    INTERNAL_SERVICE_TOKEN_TTL_SECS,
-    internalRouteFetch,
-    mint,
-    signerFromEnv
-} from '@nangohq/internal-auth';
+import { INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, INTERNAL_SERVICE_TOKEN_TTL_SECS, internalRouteFetch, mint, signerForService } from '@nangohq/internal-auth';
 import { Err, getLogger, Ok, retry } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -79,12 +71,7 @@ export class OrchestratorClient {
     }
 
     private async authorizationToken(): Promise<string | null | undefined> {
-        let signer: MintSigner | null = null;
-        if (this.service === 'jobs') {
-            signer = signerFromEnv(INTERNAL_SERVICE_ISSUER_JOBS, envs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY, envs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID);
-        } else if (this.service === 'server') {
-            signer = signerFromEnv(INTERNAL_SERVICE_ISSUER_SERVER, envs.NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY, envs.NANGO_INTERNAL_AUTH_SERVER_KEY_ID);
-        }
+        const signer = this.service ? signerForService(this.service, envs) : null;
         return signer ? this.serviceToken(signer) : envs.NANGO_INTERNAL_AUTH_TOKEN;
     }
 

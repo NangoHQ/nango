@@ -10,7 +10,7 @@ import {
     INTERNAL_SERVICE_ISSUER_SERVER,
     taskSubject
 } from './constants.js';
-import { keyRegistryFromPublicKeys, mint } from './jwt.js';
+import { keyRegistryFromPublicKeys, mint, signerForService } from './jwt.js';
 import { verifyInternalServiceCredential } from './verify.js';
 
 function ed25519Material(): { pem: string; raw: string } {
@@ -21,6 +21,27 @@ function ed25519Material(): { pem: string; raw: string } {
         .toString('base64url');
     return { pem, raw };
 }
+
+describe('signerForService', () => {
+    it('reads the private key and key id for the named service', () => {
+        const jobs = ed25519Material();
+        const server = ed25519Material();
+        const envs = {
+            NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: jobs.pem,
+            NANGO_INTERNAL_AUTH_JOBS_KEY_ID: 'jobs-2026-09',
+            NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY: server.pem,
+            NANGO_INTERNAL_AUTH_SERVER_KEY_ID: 'server-2026-09'
+        };
+
+        expect(signerForService('jobs', envs)).toEqual({ iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: jobs.pem.trim() });
+        expect(signerForService('server', envs)).toEqual({ iss: INTERNAL_SERVICE_ISSUER_SERVER, kid: 'server-2026-09', privateKey: server.pem.trim() });
+    });
+
+    it('returns null when the private key or key id is missing', () => {
+        expect(signerForService('jobs', { NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: 'pem' })).toBeNull();
+        expect(signerForService('server', { NANGO_INTERNAL_AUTH_SERVER_KEY_ID: 'server-2026-09' })).toBeNull();
+    });
+});
 
 describe('unified internal auth JWT', () => {
     it('mints and verifies a service token', async () => {

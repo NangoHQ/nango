@@ -2,6 +2,8 @@ import { decodeProtectedHeader, importJWK, importPKCS8, jwtVerify, SignJWT } fro
 
 import { normalizePem } from '@nangohq/utils';
 
+import { INTERNAL_SERVICE_ISSUER_JOBS, INTERNAL_SERVICE_ISSUER_SERVER } from './constants.js';
+
 import type { InternalServiceAuth, InternalServiceIssuer } from './constants.js';
 import type { InternalAuthPublicKey } from '@nangohq/types';
 import type { CryptoKey } from 'jose';
@@ -28,6 +30,33 @@ export function signerFromEnv(iss: InternalServiceIssuer, privateKey: string | u
         return null;
     }
     return { iss, kid: keyId, privateKey: key };
+}
+
+export interface SignerEnvs {
+    NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY?: string | undefined;
+    NANGO_INTERNAL_AUTH_JOBS_KEY_ID?: string | undefined;
+    NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY?: string | undefined;
+    NANGO_INTERNAL_AUTH_SERVER_KEY_ID?: string | undefined;
+}
+
+const signerMaterial = {
+    jobs: {
+        iss: INTERNAL_SERVICE_ISSUER_JOBS,
+        privateKey: (envs: SignerEnvs) => envs.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY,
+        keyId: (envs: SignerEnvs) => envs.NANGO_INTERNAL_AUTH_JOBS_KEY_ID
+    },
+    server: {
+        iss: INTERNAL_SERVICE_ISSUER_SERVER,
+        privateKey: (envs: SignerEnvs) => envs.NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY,
+        keyId: (envs: SignerEnvs) => envs.NANGO_INTERNAL_AUTH_SERVER_KEY_ID
+    }
+} as const;
+
+export type InternalAuthService = keyof typeof signerMaterial;
+
+export function signerForService(service: InternalAuthService, envs: SignerEnvs): MintSigner | null {
+    const material = signerMaterial[service];
+    return signerFromEnv(material.iss, material.privateKey(envs), material.keyId(envs));
 }
 
 export interface MintClaims {
