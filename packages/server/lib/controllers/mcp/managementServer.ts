@@ -1,4 +1,4 @@
-import { fromJsonSchema, McpServer } from '@modelcontextprotocol/server';
+import { fromJsonSchema, inputRequired, inputResponse, McpServer } from '@modelcontextprotocol/server';
 
 import { authorizeIn, PUBLIC_ENVIRONMENT_SCOPES } from '@nangohq/authz';
 import { environmentService } from '@nangohq/shared';
@@ -37,6 +37,7 @@ import type {
     ManagementMcpRequiredScopes,
     ManagementMcpTool
 } from './managementTool.js';
+import type { ServerContext } from '@modelcontextprotocol/server';
 import type { Principal } from '@nangohq/authz';
 import type { ApiKeyScope, AuditAttribution, AuditPolicy, DBPlan, DBTeam } from '@nangohq/types';
 
@@ -136,8 +137,8 @@ function createApiKeyManagementMcpServer(context: ManagementMcpContext, requestB
     for (const { toolDefinition, apiKeyConfig } of managementMcpToolRegistrations) {
         const callArguments = toolCallArgumentsByName.get(toolDefinition.name) ?? [];
 
-        const registeredTool = server.registerTool(toolDefinition.name, apiKeyConfig, (args: unknown) =>
-            invokeManagementMcpTool(toolDefinition, args, context)
+        const registeredTool = server.registerTool(toolDefinition.name, apiKeyConfig, (args: unknown, sdkContext) =>
+            invokeManagementMcpTool(toolDefinition, args, context, sdkContext)
         );
 
         if (!hasRequiredScopes({ grantedScopes: context.grantedScopes, requiredScopes: toolDefinition.requiredScopes })) {
@@ -165,7 +166,9 @@ async function createOAuthManagementMcpServer(oauthContext: ManagementMcpOAuthCo
 
         const callArguments = toolCallArgumentsByName.get(toolDefinition.name) ?? [];
 
-        server.registerTool(toolDefinition.name, oauthConfig, (args: unknown) => invokeOAuthManagementMcpTool(toolDefinition, args, oauthContext));
+        server.registerTool(toolDefinition.name, oauthConfig, (args: unknown, sdkContext) =>
+            invokeOAuthManagementMcpTool(toolDefinition, args, oauthContext, sdkContext)
+        );
 
         // We don't disable tools in the OAuth path because whether they are available or not can depend on the environment.
         // In theory, we could disable a tool that's unavailable for a user in all environments, but then we'd need 2 paths
@@ -193,8 +196,13 @@ function createBaseManagementMcpServer(instructions?: string): McpServer {
     );
 }
 
-async function invokeManagementMcpTool(tool: ManagementMcpTool, args: unknown, context: ManagementMcpContext) {
+async function invokeManagementMcpTool(tool: ManagementMcpTool, args: unknown, context: ManagementMcpContext, sdkContext: ServerContext) {
     try {
+        const confirmation = requireToolConfirmation(tool, args, context, sdkContext);
+        if (confirmation) {
+            return confirmation;
+        }
+
         const result = await tool.handler(args, context);
         if (result.isErr()) {
             return handleMcpToolError(result.error, tool.name);
@@ -206,7 +214,7 @@ async function invokeManagementMcpTool(tool: ManagementMcpTool, args: unknown, c
     }
 }
 
-async function invokeOAuthManagementMcpTool(tool: ManagementMcpTool, args: unknown, oauthContext: ManagementMcpOAuthContext) {
+async function invokeOAuthManagementMcpTool(tool: ManagementMcpTool, args: unknown, oauthContext: ManagementMcpOAuthContext, sdkContext: ServerContext) {
     try {
         const resolved = await resolveOAuthToolCall(args, oauthContext);
         if (!resolved.ok) {
@@ -222,11 +230,39 @@ async function invokeOAuthManagementMcpTool(tool: ManagementMcpTool, args: unkno
             return mcpToolError('Insufficient permissions for this tool in the selected environment');
         }
 
-        return await invokeManagementMcpTool(tool, resolved.toolArguments, resolved.context);
+        return await invokeManagementMcpTool(tool, resolved.toolArguments, resolved.context, sdkContext);
     } catch (err) {
         recordEarlyOAuthToolError(oauthContext.account.id, tool.name);
         return handleMcpToolError(err, tool.name);
     }
+}
+
+function requireToolConfirmation(tool: ManagementMcpTool, args: unknown, context: ManagementMcpContext, sdkContext: ServerContext) {
+    const message = tool.confirmation?.(args, context);
+    if (!message) {
+        return undefined;
+    }
+
+    const response = inputResponse(sdkContext.mcpReq.inputResponses, 'confirmation');
+    if (response.kind === 'missing') {
+        return inputRequired({
+            inputRequests: {
+                confirmation: inputRequired.elicit({
+                    message,
+                    requestedSchema: {
+                        type: 'object',
+                        properties: {}
+                    }
+                })
+            }
+        });
+    }
+
+    if (response.kind !== 'elicit' || response.action !== 'accept') {
+        return mcpToolError('Operation cancelled; no changes were made.');
+    }
+
+    return undefined;
 }
 
 async function resolveOAuthToolCall(args: unknown, oauthContext: ManagementMcpOAuthContext): Promise<ResolvedOAuthToolCall> {

@@ -39,6 +39,16 @@ export const triggerSyncsTool = defineManagementMcpTool<typeof triggerSyncsArgum
         idempotentHint: false,
         openWorldHint: true
     },
+    confirmation: ({ args, environment }) => {
+        if (!args.reset && !args.empty_cache) {
+            return undefined;
+        }
+
+        const effects = [args.reset ? 'a full reset' : undefined, args.empty_cache ? 'deletion of existing synced records' : undefined]
+            .filter(Boolean)
+            .join(' and ');
+        return `Trigger the requested syncs for integration "${args.integration_id}" in environment "${environment.name}" with ${effects}?`;
+    },
     async handler({ args, environment }) {
         const syncIdentifiers = normalizedSyncParams(args.syncs);
         if (syncIdentifiers.isErr()) {

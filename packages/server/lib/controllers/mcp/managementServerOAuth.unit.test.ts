@@ -1,5 +1,4 @@
 import { Client } from '@modelcontextprotocol/client';
-import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -9,11 +8,11 @@ import { Err, flags, metrics, Ok } from '@nangohq/utils';
 import { audit, auditBackend } from '../../audit.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { listIntegrationsTool } from './integrations/list.js';
-import { ManagementMcpTransport } from './management.js';
+import { withTopLevelToolSecuritySchemes } from './management.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { getProvidersTool } from './providers/get.js';
 
-import type { JSONRPCMessage, McpServer } from '@modelcontextprotocol/server';
+import type { McpServer } from '@modelcontextprotocol/server';
 import type { Principal, ScopeSelector, WhereSelector } from '@nangohq/authz';
 import type { AuditAttribution, DBEnvironment, DBTeam } from '@nangohq/types';
 import type * as Utils from '@nangohq/utils';
@@ -77,9 +76,7 @@ describe('createManagementMcpServer with OAuth', () => {
 
             // The MCP SDK currently strips the top-level securitySchemes extension required
             // by OpenAI, so inspect the raw HTTP message to verify it and its _meta compatibility mirror.
-            const send = vi.spyOn(NodeStreamableHTTPServerTransport.prototype, 'send').mockResolvedValue(undefined);
-            await new ManagementMcpTransport().send({ jsonrpc: '2.0', id: 1, result } as JSONRPCMessage);
-            const serialized = JSON.parse(JSON.stringify(send.mock.calls[0]?.[0])) as {
+            const serialized = withTopLevelToolSecuritySchemes({ jsonrpc: '2.0', id: 1, result }) as {
                 result: { tools: Array<Record<string, unknown>> };
             };
             for (const tool of serialized.result.tools) {

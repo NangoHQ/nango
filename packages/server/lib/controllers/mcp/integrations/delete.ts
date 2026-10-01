@@ -26,6 +26,8 @@ export const deleteIntegrationsTool = defineManagementMcpTool<typeof deleteInteg
         idempotentHint: true,
         openWorldHint: false
     },
+    confirmation: ({ args, environment }) =>
+        `Delete integration "${args.integration_id}" from environment "${environment.name}"? This action cannot be undone.`,
     async handler({ args, environment }) {
         const result = await integrationService.delete({
             environmentId: environment.id,

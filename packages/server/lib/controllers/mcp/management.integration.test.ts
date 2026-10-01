@@ -1,6 +1,7 @@
 import { request } from 'node:http';
 import { Readable } from 'node:stream';
 
+import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getFlags } from '@nangohq/feature-flags';
@@ -13,6 +14,7 @@ import * as actionService from '../../services/action.service.js';
 import { authenticateUser, runServer } from '../../utils/tests.js';
 import { withoutUnscopedTools } from './testUtils.js';
 
+import type { CallToolResult } from '@modelcontextprotocol/client';
 import type { ApiKeyScope } from '@nangohq/types';
 import type { InternalAxiosRequestConfig } from 'axios';
 import type { MockInstance } from 'vitest';
@@ -90,6 +92,50 @@ async function mcpPost({
     return await mcpFetch({ token, method: 'POST', body, host });
 }
 
+async function fetchManagementMcp(input: string | URL | Request, init?: RequestInit): Promise<Response> {
+    const url = new URL(input instanceof Request ? input.url : input);
+    const headers: Record<string, string> = {};
+    new Headers(init?.headers).forEach((value, name) => {
+        headers[name] = value;
+    });
+    headers['host'] = 'mcp-test.nango.dev';
+
+    return await new Promise((resolve, reject) => {
+        const req = request(
+            {
+                hostname: url.hostname,
+                port: url.port,
+                path: `${url.pathname}${url.search}`,
+                method: init?.method,
+                headers
+            },
+            (res) => {
+                const chunks: Buffer[] = [];
+                res.on('data', (chunk: Buffer) => chunks.push(chunk));
+                res.on('end', () => {
+                    const responseHeaders = new Headers();
+                    for (const [name, value] of Object.entries(res.headers)) {
+                        for (const item of Array.isArray(value) ? value : value ? [value] : []) {
+                            responseHeaders.append(name, item);
+                        }
+                    }
+                    resolve(
+                        new Response(Buffer.concat(chunks), {
+                            status: res.statusCode ?? 500,
+                            headers: responseHeaders
+                        })
+                    );
+                });
+            }
+        );
+        req.on('error', reject);
+        if (typeof init?.body === 'string') {
+            req.write(init.body);
+        }
+        req.end();
+    });
+}
+
 function parseMcpResponse(data: string): any {
     const trimmed = data.trim();
     if (!trimmed) {
@@ -136,6 +182,42 @@ async function createKeyWithScopes(scopes: ApiKeyScope[]) {
 
 function parseToolText(res: any) {
     return JSON.parse(res.json.result.content[0].text);
+}
+
+function parseClientToolText(result: CallToolResult): unknown {
+    const content = result.content[0];
+    if (!content || content.type !== 'text') {
+        throw new Error('Expected an MCP text result');
+    }
+    return JSON.parse(content.text);
+}
+
+async function createModernMcpClient({
+    token,
+    elicitationHandler
+}: {
+    token: string;
+    elicitationHandler: (params: { message: string }) => { action: 'accept'; content: Record<string, never> } | { action: 'decline' };
+}): Promise<Client> {
+    const client = new Client(
+        { name: 'management-integration-test', version: '1.0.0' },
+        {
+            capabilities: { elicitation: { form: {} } },
+            versionNegotiation: { mode: { pin: '2026-07-28' } }
+        }
+    );
+    client.setRequestHandler('elicitation/create', (request) => elicitationHandler(request.params));
+
+    const transport = new StreamableHTTPClientTransport(new URL('/mcp', api.url), {
+        fetch: fetchManagementMcp,
+        requestInit: {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    });
+    await client.connect(transport);
+    return client;
 }
 
 describe('POST /mcp management server', () => {
@@ -608,58 +690,51 @@ describe('POST /mcp management server', () => {
         vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
         const { secret, env, account } = await createKeyWithScopes(['environment:deploy']);
         await seeders.createConfigSeed(env, 'airtable', 'airtable');
+        const elicitationHandler = vi.fn(() => ({ action: 'accept' as const, content: {} }));
+        const client = await createModernMcpClient({ token: secret, elicitationHandler });
 
-        const res = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'tools/call',
-                params: { name: 'deploy_template', arguments: { integration_id: 'airtable', template: 'tables' } }
-            }
-        });
-
-        expect(res.status).toBe(200);
-        expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
-        expect(res.json.result.structuredContent).toStrictEqual({
-            id: expect.any(String),
-            status: 'success',
-            created_at: expect.any(String)
-        });
-
-        const status = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 2,
-                method: 'tools/call',
-                params: { name: 'get_deployment_status', arguments: { id: res.json.result.structuredContent.id } }
-            }
-        });
-        expect(parseToolText(status)).toStrictEqual(status.json.result.structuredContent);
-        expect(status.json.result.structuredContent).toMatchObject({
-            id: res.json.result.structuredContent.id,
-            status: 'success',
-            integration_id: 'airtable',
-            function_name: 'tables',
-            function_type: 'sync'
-        });
-
-        await vi.waitFor(() => {
-            const event = auditSpy.mock.calls
-                .map((call) => call[0])
-                .find((candidate) => candidate.accountId === account.id && candidate.resource === 'function' && candidate.action === 'deployed');
-            expect(event).toMatchObject({
-                accountId: account.id,
-                environment: { id: env.uuid, display: env.name },
-                resource: 'function',
-                action: 'deployed',
-                targets: [{ type: 'function', id: 'tables' }],
-                metadata: { providerConfigKey: 'airtable' },
-                context: { interface: 'mcp' },
-                outcome: 'success'
+        try {
+            const result = await client.callTool({
+                name: 'deploy_template',
+                arguments: { integration_id: 'airtable', template: 'tables' }
             });
-        });
+            expect(result.structuredContent).toStrictEqual({
+                id: expect.any(String),
+                status: 'success',
+                created_at: expect.any(String)
+            });
+            expect(parseClientToolText(result)).toStrictEqual(result.structuredContent);
+            expect(elicitationHandler).toHaveBeenCalledOnce();
+
+            const deploymentId = (result.structuredContent as { id: string }).id;
+            const status = await client.callTool({ name: 'get_deployment_status', arguments: { id: deploymentId } });
+            expect(status.structuredContent).toMatchObject({
+                id: deploymentId,
+                status: 'success',
+                integration_id: 'airtable',
+                function_name: 'tables',
+                function_type: 'sync'
+            });
+            expect(parseClientToolText(status)).toStrictEqual(status.structuredContent);
+
+            await vi.waitFor(() => {
+                const event = auditSpy.mock.calls
+                    .map((call) => call[0])
+                    .find((candidate) => candidate.accountId === account.id && candidate.resource === 'function' && candidate.action === 'deployed');
+                expect(event).toMatchObject({
+                    accountId: account.id,
+                    environment: { id: env.uuid, display: env.name },
+                    resource: 'function',
+                    action: 'deployed',
+                    targets: [{ type: 'function', id: 'tables' }],
+                    metadata: { providerConfigKey: 'airtable' },
+                    context: { interface: 'mcp' },
+                    outcome: 'success'
+                });
+            });
+        } finally {
+            await client.close();
+        }
     });
 
     it('returns public errors for invalid deployment arguments and missing integrations', async () => {
@@ -845,30 +920,24 @@ describe('POST /mcp management server', () => {
     it('executes and audits the sync trigger tool with reset and cache options', async () => {
         const { secret, env, account } = await createKeyWithScopes(['environment:syncs:execute']);
         const runSyncCommandSpy = vi.spyOn(syncManager, 'runSyncCommand').mockResolvedValue({ success: true, response: true, error: null });
+        const elicitationHandler = vi.fn(() => ({ action: 'accept' as const, content: {} }));
+        const client = await createModernMcpClient({ token: secret, elicitationHandler });
 
         try {
-            const res = await mcpPost({
-                token: secret,
-                body: {
-                    jsonrpc: '2.0',
-                    id: 1,
-                    method: 'tools/call',
-                    params: {
-                        name: 'syncs_trigger',
-                        arguments: {
-                            integration_id: 'github',
-                            connection_id: 'connection-id',
-                            syncs: ['issues', { name: 'users', variant: 'incremental' }],
-                            reset: true,
-                            empty_cache: true
-                        }
-                    }
+            const result = await client.callTool({
+                name: 'syncs_trigger',
+                arguments: {
+                    integration_id: 'github',
+                    connection_id: 'connection-id',
+                    syncs: ['issues', { name: 'users', variant: 'incremental' }],
+                    reset: true,
+                    empty_cache: true
                 }
             });
 
-            expect(res.status).toBe(200);
-            expect(parseToolText(res)).toStrictEqual({ success: true });
-            expect(res.json.result.structuredContent).toStrictEqual({ success: true });
+            expect(result.structuredContent).toStrictEqual({ success: true });
+            expect(parseClientToolText(result)).toStrictEqual({ success: true });
+            expect(elicitationHandler).toHaveBeenCalledOnce();
             expect(runSyncCommandSpy).toHaveBeenCalledWith(
                 expect.objectContaining({
                     environment: env,
@@ -905,6 +974,34 @@ describe('POST /mcp management server', () => {
                 );
             });
         } finally {
+            await client.close();
+            runSyncCommandSpy.mockRestore();
+        }
+    });
+
+    it('does not run a destructive sync when confirmation is declined', async () => {
+        const { secret } = await createKeyWithScopes(['environment:syncs:execute']);
+        const runSyncCommandSpy = vi.spyOn(syncManager, 'runSyncCommand').mockResolvedValue({ success: true, response: true, error: null });
+        const client = await createModernMcpClient({ token: secret, elicitationHandler: () => ({ action: 'decline' }) });
+
+        try {
+            const result = await client.callTool({
+                name: 'syncs_trigger',
+                arguments: {
+                    integration_id: 'github',
+                    connection_id: 'connection-id',
+                    syncs: ['issues'],
+                    reset: true
+                }
+            });
+
+            expect(result).toMatchObject({
+                content: [{ type: 'text', text: 'Operation cancelled; no changes were made.' }],
+                isError: true
+            });
+            expect(runSyncCommandSpy).not.toHaveBeenCalled();
+        } finally {
+            await client.close();
             runSyncCommandSpy.mockRestore();
         }
     });
@@ -1261,19 +1358,17 @@ describe('POST /mcp management server', () => {
             annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
         });
 
-        const res = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 2,
-                method: 'tools/call',
-                params: { name: 'integrations_delete', arguments: { integration_id: 'github' } }
-            }
-        });
+        const elicitationHandler = vi.fn(() => ({ action: 'accept' as const, content: {} }));
+        const client = await createModernMcpClient({ token: secret, elicitationHandler });
+        try {
+            const result = await client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'github' } });
 
-        expect(res.status).toBe(200);
-        expect(parseToolText(res)).toStrictEqual({ success: true });
-        expect(res.json.result.structuredContent).toStrictEqual({ success: true });
+            expect(result.structuredContent).toStrictEqual({ success: true });
+            expect(parseClientToolText(result)).toStrictEqual({ success: true });
+            expect(elicitationHandler).toHaveBeenCalledOnce();
+        } finally {
+            await client.close();
+        }
 
         const getAfterDelete = await mcpPost({
             token: secret,
@@ -1313,21 +1408,20 @@ describe('POST /mcp management server', () => {
 
     it('returns public errors from the integration delete tool', async () => {
         const { secret } = await createKeyWithScopes(['environment:integrations:delete']);
-        const res = await mcpPost({
+        const client = await createModernMcpClient({
             token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'tools/call',
-                params: { name: 'integrations_delete', arguments: { integration_id: 'missing' } }
-            }
+            elicitationHandler: () => ({ action: 'accept', content: {} })
         });
 
-        expect(res.status).toBe(200);
-        expect(res.json.result).toStrictEqual({
-            content: [{ type: 'text', text: 'Integration "missing" does not exist' }],
-            isError: true
-        });
+        try {
+            const result = await client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'missing' } });
+            expect(result).toMatchObject({
+                content: [{ type: 'text', text: 'Integration "missing" does not exist' }],
+                isError: true
+            });
+        } finally {
+            await client.close();
+        }
     });
 
     it('returns the legacy MCP JSON-RPC error shape for GET requests', async () => {
