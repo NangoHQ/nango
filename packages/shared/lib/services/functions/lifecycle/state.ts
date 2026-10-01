@@ -102,7 +102,16 @@ export async function enable({
                     instances.value.flatMap((instance) => {
                         const connection = connectionsById.get(instance.nango_connection_id);
                         return connection
-                            ? [{ environmentId, instance, connection, frequencyFallback: trigger.frequency, autoStart: trigger.autoStart ?? true }]
+                            ? [
+                                  {
+                                      environmentId,
+                                      instance,
+                                      functionUuid: config.config.uuid,
+                                      connection,
+                                      frequencyFallback: trigger.frequency,
+                                      autoStart: trigger.autoStart ?? true
+                                  }
+                              ]
                             : [];
                     })
                 );

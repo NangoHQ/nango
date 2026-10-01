@@ -76,8 +76,7 @@ export const onEventArgsSchema = z.object({
 
 const functionBaseFields = {
     type: z.literal('function'),
-    functionConfigId: z.number().int().positive(),
-    functionName: z.string().min(1)
+    functionUuid: z.uuid()
 };
 
 const functionTriggerConnectionSchema = z.object({
@@ -300,8 +299,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 name: func.data.name,
                 attempt: func.data.retryCount + 1,
                 attemptMax: func.data.retryMax + 1,
-                functionName: func.data.payload.functionName,
-                functionConfigId: func.data.payload.functionConfigId,
+                functionUuid: func.data.payload.functionUuid,
                 ...(func.data.payload.variant !== undefined && { variant: func.data.payload.variant }),
                 connection: func.data.payload.connection,
                 ...(func.data.payload.activityLogId !== undefined && { activityLogId: func.data.payload.activityLogId }),

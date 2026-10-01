@@ -141,10 +141,14 @@ describe('deployBundle instances', () => {
             });
         }
         expect(await other.instances()).toEqual([]);
+        const [functionConfig] = (
+            await search(db.knex, { environmentId: ctx.environment.id, filter: { integrationKey: 'github', name: scheduled.name } })
+        ).unwrap();
         expect(ctx.orchestrator.scheduleFunctions).toHaveBeenCalledWith(
             rows.map((instance) => ({
                 environmentId: ctx.environment.id,
                 instance,
+                functionUuid: functionConfig!.config.uuid,
                 connection: {
                     id: instance.nango_connection_id,
                     connection_id: [ctx.connection, second].find((connection) => connection.id === instance.nango_connection_id)!.connection_id,

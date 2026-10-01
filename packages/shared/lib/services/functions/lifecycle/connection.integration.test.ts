@@ -71,6 +71,7 @@ describe(ensureForConnection, () => {
             {
                 environmentId: env.id,
                 instance: instances[0],
+                functionUuid: config.uuid,
                 connection,
                 frequencyFallback: 'every hour',
                 autoStart: true
