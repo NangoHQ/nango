@@ -7,11 +7,14 @@ import { jwtHeaderAlg, verifyInternalServiceToken, verifyRunnerDispatchToken } f
 import type { InternalServiceAuth } from './constants.js';
 import type { KeyRegistry } from './jwt.js';
 
-export async function verifyInternalServiceCredential(
-    token: string,
-    audience: string,
-    creds: { signingKey?: string | undefined; staticToken?: string | undefined; runnerPublicKey?: string | undefined; registry?: KeyRegistry | undefined }
-): Promise<InternalServiceAuth | null> {
+export interface InternalServiceCredentials {
+    signingKey?: string | undefined;
+    staticToken?: string | undefined;
+    runnerPublicKey?: string | undefined;
+    registry?: KeyRegistry | undefined;
+}
+
+export async function verifyInternalServiceCredential(token: string, audience: string, creds: InternalServiceCredentials): Promise<InternalServiceAuth | null> {
     const alg = jwtHeaderAlg(token);
     if (alg === 'EdDSA') {
         const unified = await verifyUnifiedToken(token, audience, creds.registry ?? {});
