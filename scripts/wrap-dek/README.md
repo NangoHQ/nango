@@ -45,7 +45,3 @@ Nango rejects a wrapped DEK unless its context includes `purpose=global_dek` and
 **3. Deploy**
 
 Set `NANGO_ENCRYPTION_KEY_WRAPPED` to the contents of `dek-wrapped.b64`, set the runtime variable for your provider, and remove `NANGO_ENCRYPTION_KEY`. Nango refuses to start when both are set. Then delete `dek-wrapped.b64`.
-
-## Troubleshooting
-
-If you ran `npm install` inside `scripts/wrap-dek` before it used the monorepo install, delete `scripts/wrap-dek/node_modules`. A leftover copy of the Encryption SDK there makes the keyring fail.
