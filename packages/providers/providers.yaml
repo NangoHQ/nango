@@ -10071,6 +10071,7 @@ github-app:
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
     token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
     webhook_routing_script: githubAppWebhookRouting
+    webhook_signature_enforced: true
     docs: https://nango.dev/docs/api-integrations/github-app
     setup_guide_url: https://nango.dev/docs/api-integrations/github-app/how-to-register-your-own-github-app-api-app
     connection_config:
@@ -10102,6 +10103,7 @@ github-app-oauth:
         OAUTH2: https://github.com/login/oauth/access_token
         APP: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
     webhook_routing_script: githubAppOauthWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: githubAppOauthPostConnection
     docs: https://nango.dev/docs/api-integrations/github-app-oauth
     setup_guide_url: https://nango.dev/docs/api-integrations/github-app-oauth/how-to-register-your-own-github-app-api-oauth-app
@@ -10686,6 +10688,7 @@ google-mail:
     proxy:
         base_url: https://gmail.googleapis.com
     webhook_routing_script: gmailWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: googleMailPostConnection
     docs: https://nango.dev/docs/api-integrations/google-mail
     setup_guide_url: https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app
@@ -15239,6 +15242,7 @@ microsoft-teams-bot:
         connection_config:
             botHostTenantId: ${connectionConfig.botHostTenantId}
     webhook_routing_script: microsoftTeamsWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: microsoftTeamsBotPostConnection
     docs: https://nango.dev/docs/api-integrations/microsoft-teams-bot
     docs_connect: https://nango.dev/docs/api-integrations/microsoft-teams-bot/connect
@@ -15445,6 +15449,7 @@ microsoft-teams:
         - popular
     alias: microsoft
     webhook_routing_script: microsoftTeamsWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: microsoftTeamsPostConnection
     docs: https://nango.dev/docs/api-integrations/microsoft-teams
     setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-teams/how-to-register-your-own-microsoft-teams-api-oauth-app
@@ -21796,6 +21801,7 @@ salesforce:
     proxy:
         base_url: ${connectionConfig.instance_url}
     webhook_routing_script: salesforceWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: salesforcePostConnection
     docs: https://nango.dev/docs/api-integrations/salesforce
     setup_guide_url: https://nango.dev/docs/api-integrations/salesforce/salesforce-api-oauth-app-setup
