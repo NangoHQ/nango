@@ -50,16 +50,15 @@ export const PaymentMethodDialog: React.FC<{
     );
 
     useEffect(() => {
-        if (open && collectPaymentStatus === 'idle') {
+        if (!open) {
+            resetCollectPayment();
+        } else if (collectPaymentStatus === 'idle') {
             collectPayment();
         }
-    }, [open, collectPaymentStatus, collectPayment]);
+    }, [open, collectPaymentStatus, collectPayment, resetCollectPayment]);
 
     const handleDialogOpenChange = (newOpen: boolean) => {
         setOpen(newOpen);
-        if (newOpen) {
-            resetCollectPayment();
-        }
     };
 
     return (
