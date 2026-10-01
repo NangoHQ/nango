@@ -16143,7 +16143,7 @@ modmed-fhir:
         token_expiration: expires_in
         token_expiration_strategy: expireIn
     proxy:
-        base_url: https://${connectionConfig.fhirBaseUrl}
+        base_url: https://${connectionConfig.fhirHost}
         headers:
             accept: application/fhir+json
     docs: https://nango.dev/docs/api-integrations/modmed-fhir
@@ -16178,14 +16178,14 @@ modmed-fhir:
             description: ''
             automated: true
     connection_config:
-        fhirBaseUrl:
+        fhirHost:
             type: string
             prefix: https://
-            title: FHIR Base URL
-            description: This practice's ModMed Certified FHIR R4 base URL.
-            example: fhirmp.mmi.prod.fhir.ema-api.com/fhir/r4
-            pattern: '^[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\.prod\.fhir\.ema-api\.com/fhir/r4$'
-            doc_section: '#step-1-finding-your-fhir-base-url'
+            title: FHIR Host
+            description: This practice's ModMed Certified FHIR host.
+            example: fhirmp.mmi.prod.fhir.ema-api.com
+            pattern: '^[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\.prod\.fhir\.ema-api\.com$'
+            doc_section: '#step-1-finding-your-fhir-host'
             order: 1
 
 mural:

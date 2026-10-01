@@ -17,15 +17,15 @@ This is ModMed's Certified (ONC) FHIR API. For the EMA Proprietary API, use the 
     In Nango ([free signup](https://app.nango.dev)), go to **Integrations** → _Configure New Integration_ → _ModMed (FHIR)_. Register your Client ID, Key ID, Private Key, and Scope in the **Settings** tab — see the [setup guide](/api-integrations/modmed-fhir/how-to-register-your-own-modmed-fhir-app). These are entered once and reused automatically by every connection.
     </Step>
     <Step id="connect-modmed-practice" title="Connect a practice">
-    Each connection represents one practice. Create it by supplying that practice's **FHIR Base URL** — see the [connect guide](/api-integrations/modmed-fhir/connect) for the exact field.
+    Each connection represents one practice. Create it by supplying that practice's **FHIR Host** — see the [connect guide](/api-integrations/modmed-fhir/connect) for the exact field.
     </Step>
     <Step id="call-modmed-fhir-api" title="Call the ModMed FHIR API">
-    Make your first request. Nango's proxy base URL is the practice's FHIR R4 base, so paths start at the resource name. Replace the placeholders with your API key (from **Environment Settings**), integration ID, and connection ID:
+    Make your first request. Nango's proxy base URL is the practice's FHIR host, so include the FHIR version (`/fhir/r4`) in the path. Replace the placeholders with your API key (from **Environment Settings**), integration ID, and connection ID:
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/Patient?_count=10" \
+            curl "https://api.nango.dev/proxy/fhir/r4/Patient?_count=10" \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -43,7 +43,7 @@ This is ModMed's Certified (ONC) FHIR API. For the EMA Proprietary API, use the 
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/Patient',
+            endpoint: '/fhir/r4/Patient',
             params: { _count: 10 },
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
