@@ -184,6 +184,23 @@ describe('timeouts', () => {
         expect(config.signal).toBeUndefined();
     });
 
+    it.each([0, -1])('should fall back to the default idle timeout when given %d', async (idleTimeoutMs) => {
+        const proxy = new ProxyRequest({
+            logger: vi.fn(),
+            proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200' }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            maxWaitMs: Infinity,
+            idleTimeoutMs,
+            getConnection: () => getTestConnection(),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
+        });
+        const httpCall = vi.spyOn(proxy, 'httpCall').mockResolvedValue(okResponse);
+
+        (await proxy.request()).unwrap();
+
+        expect(httpCall.mock.calls[0]?.[0].timeout).toBe(5 * 60 * 1000);
+    });
+
     it('should abort the in-flight attempt when the caller aborts', async () => {
         const controller = new AbortController();
         const proxy = getProxy({ abortSignal: controller.signal });

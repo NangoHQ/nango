@@ -273,6 +273,15 @@ The same DNS-pinning protection also covers OAuth/token flows (token exchange, r
 NANGO_OUTBOUND_URL_POLICY_OAUTH='{"blockPrivateIps":true}'
 ```
 
+### Proxy timeouts
+
+| Variable | Default | Purpose |
+| - | - | - |
+| `NANGO_PROXY_IDLE_TIMEOUT_MS` | `300000` (5 minutes) | A proxy request fails when the provider takes longer than this to start responding, or stops sending data for this long partway through a response. A response that keeps sending data is never cut off. |
+| `NANGO_PROXY_MAX_RETRY_WAIT_MS` | `600000` (10 minutes) | Longest wait between proxy retries, including waits requested by a provider's retry headers. A retry that would wait longer fails instead. |
+
+Both apply to the API and to runners, and are passed to Kubernetes and Lambda runners automatically.
+
 ### Custom websockets path
 
 The Nango server serves websockets from `/` by default for use by `@nangohq/frontend` during the API auth flow.
