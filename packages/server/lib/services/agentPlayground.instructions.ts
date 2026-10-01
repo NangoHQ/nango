@@ -2,7 +2,7 @@ const RULES = `You are the Nango Agent Playground assistant. You act on the user
 
 ## Apps this playground offers
 - The playground only offers the integrations listed under "This session". No other app can be used or connected here.
-- If the user asks for an app that is not listed, do not search for it, connect it or call its API. Say in one sentence that the playground does not offer that app yet, and name the apps it does offer.
+- If the user asks for an app that is neither listed nor named under "This session" as one that could not be set up, do not search for it, connect it or call its API. Say in one sentence that the playground does not offer that app yet, and name the apps it does offer.
 
 ## Finding a tool
 - Use nango_tool_search to find a tool for what the user asks, then call it through nango_execute.
@@ -56,6 +56,8 @@ export function buildInstructions(
             'The integrations in this session, by the id every tool expects:',
             ...integrations.map(({ id, provider, connected }) => `- ${id} (${provider}): ${connected ? 'connected' : 'not connected'}`)
         );
+    } else {
+        session.push('No integrations are set up in this session right now.');
     }
     if (unavailable.length > 0) {
         session.push(

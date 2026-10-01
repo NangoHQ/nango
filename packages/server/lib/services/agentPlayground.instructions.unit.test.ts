@@ -24,6 +24,10 @@ describe('buildInstructions', () => {
         const withoutMissing = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'), [], []);
 
         expect(withMissing).toContain('These apps could not be set up in the playground right now: Google Calendar.');
-        expect(withoutMissing).not.toContain('could not be set up');
+        expect(withoutMissing).not.toContain('could not be set up in the playground right now');
+    });
+
+    it('says so when no integration is set up', () => {
+        expect(buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'))).toContain('No integrations are set up in this session right now.');
     });
 });
