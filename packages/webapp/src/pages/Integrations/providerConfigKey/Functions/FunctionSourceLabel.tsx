@@ -23,10 +23,14 @@ export function FunctionSourceLabel({ source }: { source: DisplaySource }) {
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <span className="inline-flex items-center gap-1 type-label-sm text-text-default">
+                <button
+                    type="button"
+                    className="focus-default inline-flex cursor-help items-center gap-1 rounded-ds-xs type-label-sm text-text-default"
+                    onClick={(event) => event.stopPropagation()}
+                >
                     <Icon className="size-3 shrink-0" />
                     {label}
-                </span>
+                </button>
             </TooltipTrigger>
             <TooltipContent side="left">{tooltip}</TooltipContent>
         </Tooltip>

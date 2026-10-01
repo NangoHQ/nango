@@ -138,11 +138,13 @@ function FunctionTemplateRow({
 function FunctionListWithDetails({
     selectedFunction,
     integration,
+    repoProvider,
     onDeleted,
     children
 }: {
     selectedFunction: ListedNangoFunction | null;
     integration: ApiIntegration;
+    repoProvider: string;
     onDeleted: () => void;
     children: React.ReactNode;
 }) {
@@ -187,7 +189,13 @@ function FunctionListWithDetails({
                         panelVisible ? 'translate-x-0 opacity-100' : 'pointer-events-none translate-x-full opacity-0'
                     )}
                 >
-                    <FunctionDetailsPanel key={functionRowKey(displayedFunction)} fn={displayedFunction} integration={integration} onDeleted={onDeleted} />
+                    <FunctionDetailsPanel
+                        key={functionRowKey(displayedFunction)}
+                        fn={displayedFunction}
+                        integration={integration}
+                        repoProvider={repoProvider}
+                        onDeleted={onDeleted}
+                    />
                 </div>
             )}
         </div>
@@ -201,9 +209,10 @@ function matchesSearch(template: NangoFunctionTemplate, needle: string): boolean
 
 interface FunctionsTabProps {
     integration: ApiIntegration;
+    repoProvider: string;
 }
 
-export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
+export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoProvider }) => {
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
     const { toast } = useToast();
@@ -475,7 +484,12 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                             <p className="text-text-secondary text-body-medium-regular">{activePill.emptyLabel}</p>
                         </EmptyCard>
                     ) : typeFilter === 'action' ? (
-                        <FunctionListWithDetails selectedFunction={selectedFunction} integration={integration} onDeleted={() => setSelectedFunctionKey(null)}>
+                        <FunctionListWithDetails
+                            selectedFunction={selectedFunction}
+                            integration={integration}
+                            repoProvider={repoProvider}
+                            onDeleted={() => setSelectedFunctionKey(null)}
+                        >
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -529,7 +543,12 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                             </Table>
                         </FunctionListWithDetails>
                     ) : typeFilter === 'sync' ? (
-                        <FunctionListWithDetails selectedFunction={selectedFunction} integration={integration} onDeleted={() => setSelectedFunctionKey(null)}>
+                        <FunctionListWithDetails
+                            selectedFunction={selectedFunction}
+                            integration={integration}
+                            repoProvider={repoProvider}
+                            onDeleted={() => setSelectedFunctionKey(null)}
+                        >
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -583,7 +602,12 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                             </Table>
                         </FunctionListWithDetails>
                     ) : (
-                        <FunctionListWithDetails selectedFunction={selectedFunction} integration={integration} onDeleted={() => setSelectedFunctionKey(null)}>
+                        <FunctionListWithDetails
+                            selectedFunction={selectedFunction}
+                            integration={integration}
+                            repoProvider={repoProvider}
+                            onDeleted={() => setSelectedFunctionKey(null)}
+                        >
                             <Table>
                                 <TableHeader>
                                     <TableRow>
