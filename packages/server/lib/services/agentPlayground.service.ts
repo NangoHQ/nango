@@ -264,7 +264,8 @@ export async function startTurn({
         // Read live: the session's own connection list only fills in once a tool uses a connection.
         [tools, modelMessages, connections] = await Promise.all([
             buildMcpTools(client),
-            convertToModelMessages(messages),
+            // A tool call left unanswered by Stop or an ignored approval would make OpenAI reject every later turn.
+            convertToModelMessages(messages, { ignoreIncompleteToolCalls: true }),
             listUserConnections(ctx, Object.keys(session.value.compiledToolset))
         ]);
         connected = new Set(connections.map(({ connection }) => connection.provider_config_key));
