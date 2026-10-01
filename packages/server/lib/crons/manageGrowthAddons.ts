@@ -20,7 +20,7 @@ const lockTtlMs = cronMinutes * 60 * 1000;
 // no downtime when migrating from plans such as growth-v2 and startup-deal - where growth features are
 // already available - into PAYG + add-on. Thus these plans are allowed to have the `has_growth_features`
 // flag enabled if a future change into PAYG is scheduled.
-const PLANS_ALLOWED_TO_TEMPORARILY_HAVE_GROWTH_ADD_ON: PlanDefinition['code'][] = ['growth-v2', 'startup-deal'];
+const PLANS_ALLOWED_TO_TEMPORARILY_HAVE_GROWTH_ADD_ON: PlanDefinition['code'][] = ['growth-v2', 'startup-deal', 'scale-legacy'];
 const PLANS_ALLOWED_TO_ENABLE_GROWTH_ADD_ON = [...new Set([...PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON, ...PLANS_ALLOWED_TO_TEMPORARILY_HAVE_GROWTH_ADD_ON])];
 
 type GrowthAddonSchedulingColumn = keyof Pick<DBPlan, 'growth_features_starts_at' | 'growth_features_ends_at'>;

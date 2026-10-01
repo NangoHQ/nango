@@ -17649,6 +17649,32 @@ open-hands:
             example: 'aNVlyRBLGWJgnVp1vwXN7TkO1MCYxeIDz'
             doc_section: '#step-1-finding-your-api-key'
 
+openrouter:
+    display_name: OpenRouter
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://openrouter.ai
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/key
+    docs: https://nango.dev/docs/api-integrations/openrouter
+    docs_connect: https://nango.dev/docs/api-integrations/openrouter/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your OpenRouter account.
+            pattern: '^sk-or-v1-[a-f0-9]{64}$'
+            example: sk-or-v1-a3f9**************************************7c2d
+            doc_section: '#step-1-create-your-api-key'
+
 optum-real:
     display_name: Optum Real
     categories:
@@ -27576,6 +27602,31 @@ webinarjam:
             example: b7e2d4f1-8a3c-4e6b-9d5f-1a2b3c4d5e6f
             format: uuid
             doc_section: '#step-1-getting-your-api-key'
+
+weflow:
+    display_name: Weflow
+    categories:
+        - communication
+        - crm
+        - video
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.getweflow.app
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/summary-templates
+    docs: https://nango.dev/docs/api-integrations/weflow
+    docs_connect: https://nango.dev/docs/api-integrations/weflow/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your Weflow workspace.
+            example: wfl_****************************
+            doc_section: '#step-1-create-your-api-key'
 
 wejam:
     display_name: WeJam AI

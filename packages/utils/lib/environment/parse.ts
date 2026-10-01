@@ -670,6 +670,7 @@ const ENVS_SHAPE = z.object({
     NANGO_ENCRYPTION_KEY_WRAPPED: z.string().optional(),
     NANGO_KMS_KEY_ARN: z.string().optional(),
     NANGO_GCP_KMS_KEY_NAME: z.string().optional(), // GCP-KMS alternative wrapping-key identifier
+    NANGO_AZURE_KMS_KEY_ID: z.string().optional(), // Azure Key Vault alternative: versioned key identifier
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
     NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),

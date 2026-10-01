@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.71.10",
+    "version": "0.71.11",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -111,6 +111,7 @@
             "style-dictionary": "5.4.4"
         },
         "@xmldom/xmldom": "0.8.15",
+        "axios": "1.20.0",
         "joi": "17.13.8",
         "valibot": "1.5.0"
     }

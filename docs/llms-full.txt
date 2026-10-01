@@ -8021,7 +8021,7 @@ Everything below is what you configure directly to run a production instance —
 | Secret | Example | Purpose |
 | --- | --- | --- |
 | `NANGO_ENCRYPTION_KEY_WRAPPED` | `AQICAHjK...` (KMS-wrapped, base64) | Your data-encryption key, wrapped |
-| `NANGO_KMS_KEY_ARN` | `arn:aws:kms:us-west-2:123456789012:key/abcd-1234-efgh-5678` | KMS key used to unwrap it |
+| `NANGO_KMS_KEY_ARN` | `arn:aws:kms:us-west-2:123456789012:key/abcd-1234-efgh-5678` | KMS key used to unwrap it (on GCP or Azure, see [Encryption key](#encryption-key)) |
 | `NANGO_INTERNAL_API_KEY` | *(generated, 32+ char random string)* | Internal service-to-service auth |
 | `NANGO_ADMIN_KEY` | *(generated, random string)* | Admin API access |
 | `NANGO_ADMIN_UUID` | `3fa85f64-5717-4562-b3fc-2c963f66afa6` | Matches the env var above |
@@ -8059,7 +8059,15 @@ openssl rand -base64 32
 The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation is not supported yet—changing the key after initial setup will cause decryption failures. Plan your key management accordingly.
 </Note>
 
-If you'd rather not manage `NANGO_ENCRYPTION_KEY` as a flat secret, wrap it with your own KMS and set `NANGO_ENCRYPTION_KEY_WRAPPED` and `NANGO_KMS_KEY_ARN` instead (see the secrets table above).
+If you'd rather not manage `NANGO_ENCRYPTION_KEY` as a flat secret, wrap it with your own KMS and set `NANGO_ENCRYPTION_KEY_WRAPPED` instead, plus exactly one wrapping-key variable:
+
+| Provider | Variable | Example |
+| --- | --- | --- |
+| AWS KMS | `NANGO_KMS_KEY_ARN` | `arn:aws:kms:us-west-2:123456789012:key/abcd-1234-efgh-5678` |
+| GCP Cloud KMS | `NANGO_GCP_KMS_KEY_NAME` | `projects/my-project/locations/global/keyRings/nango/cryptoKeys/dek` |
+| Azure Key Vault | `NANGO_AZURE_KMS_KEY_ID` | `https://my-vault.vault.azure.net/keys/dek/0123456789abcdef0123456789abcdef` |
+
+Credentials come from the environment (IAM role, workload identity or managed identity), and Nango needs permission to unwrap with that key. On Azure, use an RSA key and include its version in the identifier.
 
 <Warning>
 `NANGO_ENCRYPTION_KEY` is also required for Connect UI. It is used to generate sessions for [Connect UI](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui). Without this key, Connect UI will not work.
@@ -16259,6 +16267,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `open-hands` | Open Hands | API_KEY | [docs](https://nango.dev/docs/integrations/all/open-hands.md) | [connect](https://nango.dev/docs/integrations/all/open-hands/connect.md) |  | dev-tools |
 | `openai` | OpenAI | API_KEY | [docs](https://nango.dev/docs/integrations/all/openai.md) | [connect](https://nango.dev/docs/integrations/all/openai/connect.md) |  | productivity, dev-tools, popular |
 | `openai-admin` | OpenAI (Admin) | API_KEY | [docs](https://nango.dev/docs/integrations/all/openai-admin.md) | [connect](https://nango.dev/docs/integrations/all/openai-admin/connect.md) |  | productivity, dev-tools |
+| `openrouter` | OpenRouter | API_KEY | [docs](https://nango.dev/docs/api-integrations/openrouter.md) | [connect](https://nango.dev/docs/api-integrations/openrouter/connect.md) |  | dev-tools, productivity |
 | `optum-real` | Optum Real | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/optum-real.md) | [connect](https://nango.dev/docs/api-integrations/optum-real/connect.md) |  | other |
 | `oracle-cloud-identity` | Oracle Cloud Identity | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/oracle-cloud-identity.md) | [connect](https://nango.dev/docs/api-integrations/oracle-cloud-identity/connect.md) |  | dev-tools, iam |
 | `oracle-hcm` | Oracle Fusion Cloud (HCM) | BASIC | [docs](https://nango.dev/docs/integrations/all/oracle-hcm.md) | [connect](https://nango.dev/docs/integrations/all/oracle-hcm/connect.md) |  | hr |
@@ -16603,6 +16612,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `webex` | Webex | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/webex.md) |  |  | communication |
 | `webflow` | Webflow | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/webflow.md) |  | [setup](https://nango.dev/docs/api-integrations/webflow/how-to-register-your-own-webflow-api-oauth-app.md) | dev-tools, design, cms |
 | `webinarjam` | WebinarJam | API_KEY | [docs](https://nango.dev/docs/api-integrations/webinarjam.md) | [connect](https://nango.dev/docs/api-integrations/webinarjam/connect.md) |  | marketing |
+| `weflow` | Weflow | API_KEY | [docs](https://nango.dev/docs/api-integrations/weflow.md) | [connect](https://nango.dev/docs/api-integrations/weflow/connect.md) |  | communication, crm, video |
 | `wejam` | WeJam AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/wejam.md) | [connect](https://nango.dev/docs/api-integrations/wejam/connect.md) |  | productivity |
 | `whatsapp-business` | WhatsApp Business | API_KEY | [docs](https://nango.dev/docs/api-integrations/whatsapp-business.md) |  | [setup](https://nango.dev/docs/api-integrations/whatsapp-business/how-to-register-your-own-whatsapp-business-api-oauth-app.md) | communication, marketing |
 | `whoop` | Whoop | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/whoop.md) |  |  | sports |
