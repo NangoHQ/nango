@@ -1256,6 +1256,7 @@
               "api-integrations/digits-mcp",
               "api-integrations/discolike",
               "api-integrations/discord",
+              "api-integrations/discord-bot",
               "integrations/all/discourse",
               "integrations/all/dixa",
               "integrations/all/document360",
