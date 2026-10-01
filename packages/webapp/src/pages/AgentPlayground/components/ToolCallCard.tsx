@@ -186,7 +186,19 @@ const ApprovalCard: React.FC<{
 
     return (
         <Collapsible open={open} onOpenChange={setOpen} className="group/card rounded-ds-xs border border-border-muted bg-surface-panel">
-            <div role="button" tabIndex={0} onClick={() => setOpen((o) => !o)} className="flex cursor-pointer items-center gap-3 px-4 py-3 text-left">
+            <div
+                role="button"
+                tabIndex={0}
+                aria-expanded={open}
+                onClick={() => setOpen((o) => !o)}
+                onKeyDown={(e) => {
+                    if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault();
+                        setOpen((o) => !o);
+                    }
+                }}
+                className="flex cursor-pointer items-center gap-3 px-4 py-3 text-left"
+            >
                 <IconBox display={display} providerFor={providerFor} />
                 <div className="flex min-w-0 flex-1 flex-col">
                     <span className="text-body-medium-medium text-text-strong">The agent wants to make a change</span>
