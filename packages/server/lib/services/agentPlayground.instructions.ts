@@ -61,7 +61,7 @@ export function buildInstructions(
     }
     if (unavailable.length > 0) {
         session.push(
-            `These apps could not be set up in the playground right now: ${unavailable.join(', ')}. If the user asks for one, say it is unavailable in the playground at the moment, instead of searching for it.`
+            `These apps could not be set up in the playground right now: ${unavailable.join(', ')}. If the user asks for one, say it is unavailable in the playground at the moment, and do not search for it, connect it or call its API.`
         );
     }
 
