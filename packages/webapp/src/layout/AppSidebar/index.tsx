@@ -50,9 +50,13 @@ export const AppSidebar: React.FC = () => {
             url: `/${env}/getting-started`,
             icon: Sprout,
             onClose: async () => {
-                await patchUser({
-                    gettingStartedClosed: true
-                });
+                try {
+                    await patchUser({
+                        gettingStartedClosed: true
+                    });
+                } catch {
+                    return;
+                }
                 void refetchMeta();
             }
         };
