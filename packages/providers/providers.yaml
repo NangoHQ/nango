@@ -7124,6 +7124,36 @@ discord:
     docs: https://nango.dev/docs/api-integrations/discord
     setup_guide_url: https://nango.dev/docs/api-integrations/discord/how-to-register-your-own-discord-api-oauth-app
 
+discord-bot:
+    display_name: Discord Bot
+    categories:
+        - gaming
+        - social
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://discord.com
+        retry:
+            after:
+                - 'retry-after'
+        headers:
+            authorization: Bot ${apiKey}
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+            endpoints:
+                - /api/v10/applications/@me
+    docs: https://nango.dev/docs/api-integrations/discord-bot
+    docs_connect: https://nango.dev/docs/api-integrations/discord-bot/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Bot Token
+            description: Your Discord bot token from the Discord Developer Portal.
+            example: MTIzNDU2Nzg5MDEyMzQ1Njc4.******.**********************************
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-creating-a-discord-application-and-bot'
+
 discourse:
     display_name: Discourse
     categories:
