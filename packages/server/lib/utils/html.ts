@@ -47,11 +47,11 @@ export function authHtml({ res, error, errorType = 'connection_validation_failed
     const errorDetailsBlock = hasError
         ? `
         <div style="margin-top: 24px; width: 100%; align-self: stretch; box-sizing: border-box; min-width: 0;">
-          <button id="toggleDetails" type="button" style="cursor: pointer; width: 100%; padding: 12px 16px; font-size: 14px; font-weight: 500; border: none; border-radius: 8px; background: #262626; color: #a3a3a3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box;">
+          <button id="toggleDetails" type="button" style="cursor: pointer; width: 100%; padding: 12px 16px; font-size: 14px; font-weight: 500; border: none; border-radius: 8px; background: var(--nango-subtle); color: var(--nango-text-secondary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box;">
             <span id="toggleText">Show error details</span>
-            <span id="chevron" class="nango-chevron nango-chevron-down"><svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="#a3a3a3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M0 0 L5 6 L10 0" /></svg></span>
+            <span id="chevron" class="nango-chevron nango-chevron-down"><svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M0 0 L5 6 L10 0" /></svg></span>
           </button>
-          <div id="errorDetails" style="display: none; margin-top: 0; padding: 14px 16px; background: #1f1f1f; border-radius: 0 0 8px 8px; font-size: 13px; line-height: 1.5; font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; white-space: pre-wrap; word-break: break-word; color: #ef4444; border: 1px solid #262626; border-top: none; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; overflow-x: auto; text-align: left;">${escapeHtml(detailsContent)}</div>
+          <div id="errorDetails" style="display: none; margin-top: 0; padding: 14px 16px; background: var(--nango-elevated); border-radius: 0 0 8px 8px; font-size: 13px; line-height: 1.5; font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; white-space: pre-wrap; word-break: break-word; color: var(--nango-error); border: 1px solid var(--nango-subtle); border-top: none; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; overflow-x: auto; text-align: left;">${escapeHtml(detailsContent)}</div>
         </div>
         `
         : '';
@@ -59,19 +59,19 @@ export function authHtml({ res, error, errorType = 'connection_validation_failed
     const successContent = `
       <noscript>JavaScript is required to proceed with the authentication.</noscript>
       <div style="text-align: center;">
-        <p style="color: #fff; font-size: 18px; margin: 0 0 40px 0; font-weight: 600;">Successful connection <span style="color: #22c55e;">✅</span></p>
-        <p style="color: #6b7280; font-size: 14px; margin: 0;">You can close this window.</p>
+        <p style="color: var(--nango-text-primary); font-size: 18px; margin: 0 0 40px 0; font-weight: 600;">Successful connection <span style="color: var(--nango-success);">✅</span></p>
+        <p style="color: var(--nango-text-tertiary); font-size: 14px; margin: 0;">You can close this window.</p>
       </div>`;
 
     const errorContent = `
       <noscript>JavaScript is required to proceed with the authentication.</noscript>
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; text-align: center; width: 100%; max-width: 480px; box-sizing: border-box;">
-        <h2 style="color: #ffffff; font-size: 24px; font-weight: 600; margin: 0 0 8px 0; letter-spacing: -0.025em; line-height: 1.3;">Connection failed <span style="color: #ef4444;">✕</span></h2>
-        <p style="color: #a3a3a3; font-size: 15px; margin: 0 0 4px 0; line-height: 1.5;">An error occurred during authorization.</p>
-        <p style="color: #a3a3a3; font-size: 15px; margin: 0 0 0 0; line-height: 1.5;">Please reach out to our support team.</p>
+        <h2 style="color: var(--nango-text-primary); font-size: 24px; font-weight: 600; margin: 0 0 8px 0; letter-spacing: -0.025em; line-height: 1.3;">Connection failed <span style="color: var(--nango-error);">✕</span></h2>
+        <p style="color: var(--nango-text-secondary); font-size: 15px; margin: 0 0 4px 0; line-height: 1.5;">An error occurred during authorization.</p>
+        <p style="color: var(--nango-text-secondary); font-size: 15px; margin: 0 0 0 0; line-height: 1.5;">Please reach out to our support team.</p>
         ${errorDetailsBlock}
-        <p style="color: #6b7280; font-size: 14px; margin: 28px 0 0 0; line-height: 1.4;">You can close this window.</p>
-        <div id="nangoDebug" style="display: none; margin-top: 24px; padding: 16px; background: #2d2d2d; border-radius: 8px; text-align: left; max-width: 100%; font-size: 12px; font-family: monospace; color: #e5e7eb;">
+        <p style="color: var(--nango-text-tertiary); font-size: 14px; margin: 28px 0 0 0; line-height: 1.4;">You can close this window.</p>
+        <div id="nangoDebug" style="display: none; margin-top: 24px; padding: 16px; background: var(--nango-elevated); border-radius: 8px; text-align: left; max-width: 100%; font-size: 12px; font-family: monospace; color: var(--nango-text-secondary);">
           <p style="margin: 0 0 8px; font-weight: bold;">Debug (add ?nango_debug=1 to callback URL to show):</p>
           <p id="nangoDebugSteps" style="margin: 0 0 8px;"></p>
           <p id="nangoDebugOpener" style="margin: 0 0 8px;"></p>
@@ -83,7 +83,7 @@ export function authHtml({ res, error, errorType = 'connection_validation_failed
       </div>`;
 
     const bodyStyle =
-        'font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; background: #0a0a0a; min-height: 100vh; display: flex; align-items: center; justify-content: center;';
+        'font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; background: var(--nango-surface); min-height: 100vh; display: flex; align-items: center; justify-content: center;';
 
     const resultHTML = `
 <!--
@@ -92,8 +92,15 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="color-scheme" content="light dark" />
     <title>Authorization callback</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root { --nango-surface: #ffffff; --nango-elevated: #fafafa; --nango-subtle: #f0f0f0; --nango-text-primary: #18191b; --nango-text-secondary: #35363a; --nango-text-tertiary: #626366; --nango-error: #e81818; --nango-success: #1e9e3e; }
+      @media (prefers-color-scheme: dark) {
+        :root { --nango-surface: #0b0b0c; --nango-elevated: #18191b; --nango-subtle: #2a2b2f; --nango-text-primary: #ffffff; --nango-text-secondary: #c4c5c7; --nango-text-tertiary: #8b8c8f; --nango-error: #ee4242; --nango-success: #4cd964; }
+      }
+    </style>
     <style>.nango-chevron { display: inline-flex; align-items: center; vertical-align: middle; } .nango-chevron.nango-chevron-up svg { transform: rotate(180deg); }</style>
   </head>
   <body style="${bodyStyle}">
