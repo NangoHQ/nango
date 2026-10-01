@@ -3,6 +3,8 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { safeCompare } from './signature.js';
 
+import type { InternalNango } from './internal-nango.js';
+import type { UnverifiedWebhook } from './missing-secret.js';
 import type { WebhookResponse } from './types.js';
 import type { Metadata } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -56,6 +58,52 @@ export function connectionsWithValidSecret<T extends { metadata: Metadata | null
     query?: Record<string, string>
 ): T[] {
     return connections.filter((connection) => verifyNangoWebhookSecret({ secret: connection.metadata?.['webhookSecret'], headers, query }).isOk());
+}
+
+/**
+ * The connections to route to. A connection whose secret the caller got wrong or did not send is
+ * dropped. One without a usable secret of its own cannot be verified, so it is only kept when the
+ * integration allows unverified webhooks.
+ */
+export async function connectionsToRoute<T extends { metadata: Metadata | null }>({
+    nango,
+    connections,
+    headers,
+    query,
+    unverified
+}: {
+    nango: InternalNango;
+    connections: T[];
+    headers: Record<string, string>;
+    query?: Record<string, string> | undefined;
+    unverified: UnverifiedWebhook;
+}): Promise<T[]> {
+    const verified: T[] = [];
+    const unverifiable: T[] = [];
+    for (const connection of connections) {
+        const result = verifyNangoWebhookSecret({ secret: connection.metadata?.['webhookSecret'], headers, query });
+        if (result.isOk()) {
+            verified.push(connection);
+        } else if (result.error.type === 'webhook_invalid_secret') {
+            unverifiable.push(connection);
+        }
+    }
+
+    if (unverifiable.length === 0) {
+        return verified;
+    }
+
+    const outcome = await nango.unverifiedOutcome();
+    if (outcome === 'rejected') {
+        // Only counted when nothing goes through, otherwise the forwards to verified ones would be flagged too.
+        if (verified.length === 0) {
+            nango.markUnverified(unverified, outcome);
+        }
+        return verified;
+    }
+
+    nango.markUnverified(unverified, outcome);
+    return [...verified, ...unverifiable];
 }
 
 /**

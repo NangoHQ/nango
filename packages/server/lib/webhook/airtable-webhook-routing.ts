@@ -76,9 +76,10 @@ const route: WebhookHandler<AirtableWebhookReference> = async (nango, headers, b
         }
     }
 
-    // An unknown webhook id is unverifiable too. Flagged accounts keep getting it forwarded without a connection, as before.
+    // An unknown webhook id is unverifiable too. When unverified webhooks are allowed it is still forwarded without a connection, as before.
     const needsFlag = !(hasSecret && verified.length === 0) && (secretless.length > 0 || connections.length === 0);
-    const allowUnverified = needsFlag && (await getFlags().allowUnauthorizedAirtableWebhook(nango.team.uuid));
+    const outcome = needsFlag ? await nango.unverifiedOutcome((accountUuid) => getFlags().allowUnauthorizedAirtableWebhook(accountUuid)) : 'rejected';
+    const allowUnverified = outcome !== 'rejected';
     const routed = allowUnverified ? [...verified, ...secretless] : verified;
 
     if (routed.length === 0 && !(allowUnverified && connections.length === 0)) {
@@ -87,13 +88,13 @@ const route: WebhookHandler<AirtableWebhookReference> = async (nango, headers, b
         }
 
         // An unknown webhook id and a connection without a secret get the same response.
-        nango.markUnverified(MISSING_SECRET);
+        nango.markUnverified(MISSING_SECRET, 'rejected');
         return Err(new NangoError('webhook_invalid_secret', { reason: 'No webhook secret configured to validate this request' }));
     }
 
     // Only when unverified connections are kept, otherwise the forwards to verified ones would be flagged too.
     if (allowUnverified) {
-        nango.markUnverified(MISSING_SECRET);
+        nango.markUnverified(MISSING_SECRET, outcome);
     }
 
     // airtable webhooks have a catch-all type so we inject the catch all to be

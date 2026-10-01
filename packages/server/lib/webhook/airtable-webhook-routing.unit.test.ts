@@ -29,12 +29,12 @@ function connectionWith(metadata: Record<string, unknown> | null, connectionId =
     return { connection_id: connectionId, metadata } as unknown as DBConnectionDecrypted;
 }
 
-function makeNango(connections: DBConnectionDecrypted[] | null) {
+function makeNango(connections: DBConnectionDecrypted[] | null, { allowUnverifiedWebhooks = false }: { allowUnverifiedWebhooks?: boolean } = {}) {
     const nango = new InternalNango({
         team: seeders.getTestTeam(),
         environment: seeders.getTestEnvironment(),
         plan: seeders.getTestPlan(),
-        integration: getTestConfig({ provider: 'airtable' }),
+        integration: getTestConfig({ provider: 'airtable', allow_unverified_webhooks: allowUnverifiedWebhooks }),
         request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
         logContextGetter
     });
@@ -125,7 +125,7 @@ describe('airtable-webhook-routing', () => {
 
         expect(errType(result)).toBe('webhook_invalid_secret');
         expect(execute).not.toHaveBeenCalled();
-        expect(markUnverified).toHaveBeenCalledWith({ reason: 'airtable_missing_mac_secret', remediation: REMEDIATION });
+        expect(markUnverified).toHaveBeenCalledWith({ reason: 'airtable_missing_mac_secret', remediation: REMEDIATION }, 'rejected');
     });
 
     it('counts and processes a connection without a stored secret when the account is opted out', async () => {
@@ -136,7 +136,7 @@ describe('airtable-webhook-routing', () => {
 
         expect(result.isOk()).toBe(true);
         expect(execute).toHaveBeenCalledOnce();
-        expect(markUnverified).toHaveBeenCalledWith({ reason: 'airtable_missing_mac_secret', remediation: REMEDIATION });
+        expect(markUnverified).toHaveBeenCalledWith({ reason: 'airtable_missing_mac_secret', remediation: REMEDIATION }, 'flag');
     });
 
     it('rejects an unknown webhook id the same way as a missing secret', async () => {
@@ -166,6 +166,25 @@ describe('airtable-webhook-routing', () => {
         expect(markUnverified).not.toHaveBeenCalled();
     });
 
+    it('keeps the connection without a secret when the integration allows unverified webhooks, without asking the flag', async () => {
+        const { nango, markUnverified } = makeNango([secretOf('verified'), secretlessOf('secretless')], { allowUnverifiedWebhooks: true });
+
+        const result = await AirtableWebhookRouting.default(nango, sign(rawBody), body, rawBody);
+
+        expect(routedTo(result)).toEqual(['verified', 'secretless']);
+        expect(markUnverified).toHaveBeenCalledWith({ reason: 'airtable_missing_mac_secret', remediation: REMEDIATION }, 'setting');
+        expect(flagMocks.allowUnauthorizedAirtableWebhook).not.toHaveBeenCalled();
+    });
+
+    it('still rejects a mac that fails the stored secret when the integration allows unverified webhooks', async () => {
+        const { nango, execute } = makeNango([secretOf('verified'), secretlessOf('secretless')], { allowUnverifiedWebhooks: true });
+
+        const result = await AirtableWebhookRouting.default(nango, sign(rawBody, crypto.randomBytes(32)), body, rawBody);
+
+        expect(errType(result)).toBe('webhook_invalid_signature');
+        expect(execute).not.toHaveBeenCalled();
+    });
+
     it('keeps the connection without a secret when the account is opted out', async () => {
         flagMocks.allowUnauthorizedAirtableWebhook.mockResolvedValue(true);
         const { nango, markUnverified } = makeNango([secretOf('verified'), secretlessOf('secretless')]);
@@ -173,7 +192,7 @@ describe('airtable-webhook-routing', () => {
         const result = await AirtableWebhookRouting.default(nango, sign(rawBody), body, rawBody);
 
         expect(routedTo(result)).toEqual(['verified', 'secretless']);
-        expect(markUnverified).toHaveBeenCalledWith({ reason: 'airtable_missing_mac_secret', remediation: REMEDIATION });
+        expect(markUnverified).toHaveBeenCalledWith({ reason: 'airtable_missing_mac_secret', remediation: REMEDIATION }, 'flag');
     });
 
     it('drops the connection whose mac does not match and routes the one that does', async () => {

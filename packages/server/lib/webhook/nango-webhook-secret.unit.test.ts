@@ -29,12 +29,12 @@ function dbConnection(connectionId: string, webhookSecret?: string) {
     return { connection_id: connectionId, metadata: webhookSecret ? { webhookSecret } : null } as unknown as DBConnectionDecrypted;
 }
 
-function makeNango(provider: string) {
+function makeNango(provider: string, { allowUnverifiedWebhooks = false }: { allowUnverifiedWebhooks?: boolean } = {}) {
     const nango = new InternalNango({
         team: seeders.getTestTeam(),
         environment: seeders.getTestEnvironment(),
         plan: seeders.getTestPlan(),
-        integration: getTestConfig({ provider, custom: { webhookSecret: SECRET } }),
+        integration: getTestConfig({ provider, custom: { webhookSecret: SECRET }, allow_unverified_webhooks: allowUnverifiedWebhooks }),
         request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
         logContextGetter
     });
@@ -244,5 +244,76 @@ describe('shipstation webhook routing', () => {
             'webhook_invalid_signature'
         );
         expect(execute).not.toHaveBeenCalled();
+    });
+});
+
+describe('allow unverified webhooks setting', () => {
+    const affinityBody = { type: 'list_entry.created', body: {}, sent_at: 1 } as affinityWebhookResponse;
+
+    it('routes an affinity connection without a secret and records it as allowed by the setting', async () => {
+        const { nango, execute } = makeNango('affinity', { allowUnverifiedWebhooks: true });
+        withConnection(nango);
+        const markUnverified = vi.spyOn(nango, 'markUnverified');
+
+        const result = await AffinityWebhookRouting.default(nango, {}, affinityBody, '{}', { nangoConnectionId: 'conn-1' });
+
+        expect(routedTo(result)).toEqual(['conn-1']);
+        expect(execute).toHaveBeenCalledOnce();
+        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'affinity_missing_webhook_secret' }), 'setting');
+    });
+
+    it('records a connection without a secret as rejected when the setting is off', async () => {
+        const { nango, execute } = makeNango('affinity');
+        withConnection(nango);
+        const markUnverified = vi.spyOn(nango, 'markUnverified');
+
+        const result = await AffinityWebhookRouting.default(nango, {}, affinityBody, '{}', { nangoConnectionId: 'conn-1' });
+
+        expect(errType(result)).toBe('webhook_missing_signature');
+        expect(execute).not.toHaveBeenCalled();
+        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'affinity_missing_webhook_secret' }), 'rejected');
+    });
+
+    it('still rejects a wrong secret for a connection that has one', async () => {
+        const { nango, execute } = makeNango('affinity', { allowUnverifiedWebhooks: true });
+        withConnection(nango, OTHER_SECRET);
+
+        const result = await AffinityWebhookRouting.default(nango, {}, affinityBody, '{}', { nangoConnectionId: 'conn-1', nangoWebhookSecret: SECRET });
+
+        expect(errType(result)).toBe('webhook_invalid_signature');
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('still rejects a missing secret for a connection that has one', async () => {
+        const { nango, execute } = makeNango('affinity', { allowUnverifiedWebhooks: true });
+        withConnection(nango, SECRET);
+
+        const result = await AffinityWebhookRouting.default(nango, {}, affinityBody, '{}', { nangoConnectionId: 'conn-1' });
+
+        expect(errType(result)).toBe('webhook_missing_signature');
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('routes fillout connections without a secret next to verified ones', async () => {
+        const { nango } = makeNango('fillout', { allowUnverifiedWebhooks: true });
+        vi.spyOn(connectionService, 'findConnectionsByMetadataValue').mockResolvedValue([
+            dbConnection('mine', SECRET),
+            dbConnection('other', OTHER_SECRET),
+            dbConnection('secretless')
+        ]);
+
+        const result = await FilloutWebhookRouting.default(nango, { 'x-nango-webhook-secret': SECRET }, { type: 'submission', formId: 'form-1' }, '{}', {});
+
+        expect(routedTo(result)).toEqual(['mine', 'secretless']);
+    });
+
+    it('routes a shipstation store id connection without a secret', async () => {
+        const { nango } = makeNango('shipstation', { allowUnverifiedWebhooks: true });
+        vi.spyOn(connectionService, 'findConnectionsByMetadataValue').mockResolvedValue([dbConnection('secretless')]);
+        const body = { resource_type: 'ORDER_NOTIFY', resource_url: 'https://ssapi.shipstation.com/orders?storeID=123' };
+
+        const result = await ShipstationWebhookRouting.default(nango, {}, body, JSON.stringify(body), {});
+
+        expect(routedTo(result)).toEqual(['secretless']);
     });
 });
