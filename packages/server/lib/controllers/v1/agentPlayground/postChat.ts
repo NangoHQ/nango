@@ -10,13 +10,19 @@ import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import type { PlaygroundUIMessage } from '../../../services/agentPlayground.service.js';
 import type { PostAgentPlaygroundChat } from '@nangohq/types';
 
+export function isTimeZone(timeZone: string): boolean {
+    try {
+        new Intl.DateTimeFormat('en', { timeZone });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 const bodySchema = z.object({
     sessionId: z.uuid().optional(),
     messages: z.array(z.unknown()).min(1).max(200),
-    timeZone: z
-        .string()
-        .refine((tz) => Intl.supportedValuesOf('timeZone').includes(tz) || tz === 'UTC', { message: 'Unknown IANA time zone' })
-        .optional()
+    timeZone: z.string().refine(isTimeZone, { message: 'Unknown IANA time zone' }).optional()
 });
 
 export const postAgentPlaygroundChat = asyncWrapperWithEnvironment<PostAgentPlaygroundChat>(async (req, res) => {
@@ -52,11 +58,19 @@ export const postAgentPlaygroundChat = asyncWrapperWithEnvironment<PostAgentPlay
         return;
     }
 
+    const aborted = new AbortController();
+    res.on('close', () => {
+        if (!res.writableFinished) {
+            aborted.abort();
+        }
+    });
+
     const stream = await startTurn({
         ctx: { account, environment, plan, user },
         sessionId: body.data.sessionId,
         messages,
-        timeZone: body.data.timeZone ?? 'UTC'
+        timeZone: body.data.timeZone ?? 'UTC',
+        abortSignal: aborted.signal
     });
 
     if (stream.isErr()) {

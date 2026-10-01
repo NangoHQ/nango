@@ -1,7 +1,6 @@
 import { Client } from '@modelcontextprotocol/client';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { convertToModelMessages, dynamicTool, jsonSchema, stepCountIs, streamText, toUIMessageStream } from 'ai';
-import { z } from 'zod';
 
 import db from '@nangohq/database';
 import { configService, connectionService, getProvider, sharedCredentialsService } from '@nangohq/shared';
@@ -9,6 +8,7 @@ import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { createAgentSessionMcpServer, TOOL_NAME_SEPARATOR } from '../controllers/agent/mcp/sessionServer.js';
 import { envs } from '../env.js';
+import { getOrchestrator } from '../utils/utils.js';
 import { createPlaygroundModel } from './agentPlaygroundModel.service.js';
 import * as agentSessionService from './agentSession.service.js';
 import * as agentSessionCreationService from './agentSessionCreation.service.js';
@@ -22,6 +22,7 @@ import type {
     DBPlan,
     DBTeam,
     DBUser,
+    IntegrationConfig,
     Provider
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -40,7 +41,7 @@ export const PLAYGROUND_PROVIDERS: { provider: string; sharedCredentialsName?: s
 export const PLAYGROUND_USER_TAG_KEY = 'nango/playground_user';
 
 const INSTRUCTIONS = `You are the Nango Agent Playground assistant. You act on the user's connected apps through the Nango tools you are given.
-Use nango_tool_search to find a tool for what the user asks, then call it (directly, or through nango_execute).
+Use nango_tool_search to find a tool for what the user asks, then call it through nango_execute.
 Search with a few keywords, such as "list calendar events", not a full sentence.
 Before searching again, always say in one short sentence what the last search found and what you will look for instead. When one of the related tools fits, search for it by its exact tool name. If you already have a tool's input schema from earlier in this conversation, reuse it instead of searching again.
 If no tool fits but the app is connected, call its API directly with nango_proxy.
@@ -117,74 +118,77 @@ export function playgroundIntegrationId(provider: string): string {
     return `${PLAYGROUND_INTEGRATION_PREFIX}${provider}`;
 }
 
-const oauthAppsSchema = z.record(z.string(), z.object({ clientId: z.string().min(1), clientSecret: z.string().min(1), scopes: z.string().optional() }));
-
-export function parseOAuthApps(raw: string | undefined): z.infer<typeof oauthAppsSchema> {
-    if (!raw) {
-        return {};
-    }
-    const parsed = oauthAppsSchema.safeParse(JSON.parse(raw));
-    if (!parsed.success) {
-        throw new Error(`NANGO_AGENT_PLAYGROUND_OAUTH_APPS is invalid: ${parsed.error.message}`);
-    }
-    return parsed.data;
-}
-
-const oauthApps = parseOAuthApps(envs.NANGO_AGENT_PLAYGROUND_OAUTH_APPS);
+type OAuthApp = (typeof envs.NANGO_AGENT_PLAYGROUND_OAUTH_APPS)[string];
 
 export async function ensurePlaygroundIntegrations(environment: DBEnvironment): Promise<string[]> {
-    const available: string[] = [];
+    const ensured = await Promise.all(PLAYGROUND_PROVIDERS.map((entry) => ensurePlaygroundIntegration(environment, entry)));
+    return ensured.filter((integrationId): integrationId is string => integrationId !== null);
+}
 
-    for (const { provider: providerName, sharedCredentialsName } of PLAYGROUND_PROVIDERS) {
-        const integrationId = playgroundIntegrationId(providerName);
-        const provider = getProvider(providerName);
-        if (!provider) {
-            logger.error(`Agent Playground provider ${providerName} does not exist`);
-            continue;
-        }
-
-        const ownApp = oauthApps[providerName];
-        const existing = await configService.getProviderConfig(integrationId, environment.id);
-        if (existing) {
-            if (ownApp && existing.shared_credentials_id) {
-                await configService.editProviderConfig(
-                    {
-                        ...existing,
-                        shared_credentials_id: null,
-                        oauth_client_id: ownApp.clientId,
-                        oauth_client_secret: ownApp.clientSecret,
-                        oauth_scopes: ownApp.scopes ?? existing.oauth_scopes
-                    },
-                    provider
-                );
-            }
-            available.push(integrationId);
-            continue;
-        }
-
-        const created = ownApp
-            ? await createWithOwnApp({ environment, integrationId, providerName, provider, app: ownApp })
-            : await sharedCredentialsService.createPreprovisionedProvider({
-                  providerName,
-                  ...(sharedCredentialsName ? { shared_credentials_name: sharedCredentialsName } : {}),
-                  environment_id: environment.id,
-                  provider,
-                  unique_key: integrationId,
-                  display_name: provider.display_name
-              });
-        if (created.isErr()) {
-            // A concurrent request may have created it first.
-            if (await configService.getIdByProviderConfigKey(environment.id, integrationId)) {
-                available.push(integrationId);
-                continue;
-            }
-            logger.error(`Agent Playground could not create ${integrationId}: ${created.error.message}`);
-            continue;
-        }
-        available.push(integrationId);
+async function ensurePlaygroundIntegration(
+    environment: DBEnvironment,
+    { provider: providerName, sharedCredentialsName }: (typeof PLAYGROUND_PROVIDERS)[number]
+): Promise<string | null> {
+    const integrationId = playgroundIntegrationId(providerName);
+    const provider = getProvider(providerName);
+    if (!provider) {
+        logger.error(`Agent Playground provider ${providerName} does not exist`);
+        return null;
     }
 
-    return available;
+    const ownApp = envs.NANGO_AGENT_PLAYGROUND_OAUTH_APPS[providerName];
+    // Read the primary: on a stale replica read, the create below adds a suffixed duplicate.
+    const existing = await configService.getProviderConfig(integrationId, environment.id, db.knex);
+    if (existing) {
+        if (ownApp && !usesOwnApp(existing, ownApp)) {
+            await configService.editProviderConfig(
+                {
+                    ...existing,
+                    shared_credentials_id: null,
+                    oauth_client_id: ownApp.clientId,
+                    oauth_client_secret: ownApp.clientSecret,
+                    oauth_scopes: ownApp.scopes ?? existing.oauth_scopes
+                },
+                provider
+            );
+        }
+        return integrationId;
+    }
+
+    const created = ownApp
+        ? await createWithOwnApp({ environment, integrationId, providerName, provider, app: ownApp })
+        : await sharedCredentialsService.createPreprovisionedProvider({
+              providerName,
+              ...(sharedCredentialsName ? { shared_credentials_name: sharedCredentialsName } : {}),
+              environment_id: environment.id,
+              provider,
+              unique_key: integrationId,
+              display_name: provider.display_name
+          });
+    if (created.isErr()) {
+        logger.error(`Agent Playground could not create ${integrationId}: ${created.error.message}`);
+        return null;
+    }
+
+    // A concurrent request created it first, so this one got a suffixed key.
+    if (created.value.unique_key !== integrationId && created.value.id) {
+        await configService.deleteProviderConfig({
+            id: created.value.id,
+            environmentId: environment.id,
+            providerConfigKey: created.value.unique_key,
+            orchestrator: getOrchestrator()
+        });
+    }
+    return integrationId;
+}
+
+function usesOwnApp(config: NonNullable<Awaited<ReturnType<typeof configService.getProviderConfig>>>, app: OAuthApp): boolean {
+    return (
+        !config.shared_credentials_id &&
+        config.oauth_client_id === app.clientId &&
+        config.oauth_client_secret === app.clientSecret &&
+        (app.scopes === undefined || config.oauth_scopes === app.scopes)
+    );
 }
 
 async function createWithOwnApp({
@@ -198,8 +202,8 @@ async function createWithOwnApp({
     integrationId: string;
     providerName: string;
     provider: Provider;
-    app: z.infer<typeof oauthAppsSchema>[string];
-}): Promise<Result<unknown>> {
+    app: OAuthApp;
+}): Promise<Result<IntegrationConfig>> {
     try {
         const created = await configService.createProviderConfig(
             {
@@ -221,10 +225,28 @@ async function createWithOwnApp({
     }
 }
 
+// Read live: the session's own connection list only fills in once a tool uses a connection.
+async function connectedIntegrations(ctx: PlaygroundContext, integrationIds: string[]): Promise<Set<string>> {
+    if (integrationIds.length === 0) {
+        return new Set();
+    }
+    const rows = await connectionService.listConnections({
+        environmentId: ctx.environment.id,
+        integrationIds,
+        tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid }
+    });
+    return new Set(rows.map(({ connection }) => connection.provider_config_key));
+}
+
+// The owner is read from the create-connection tags, so those tags must stay per user.
+export function sessionOwner(session: Pick<AgentSession, 'metaTools'>): string | undefined {
+    return session.metaTools.nangoCreateConnection.tags[PLAYGROUND_USER_TAG_KEY];
+}
+
 async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | undefined): Promise<Result<AgentSession, AgentPlaygroundError>> {
     if (sessionId) {
         const existing = await agentSessionService.getAgentSession(db.knex, { id: sessionId, accountId: ctx.account.id, environmentId: ctx.environment.id });
-        if (existing.isOk() && !existing.value.endedAt && existing.value.expiresAt > new Date()) {
+        if (existing.isOk() && !existing.value.endedAt && existing.value.expiresAt > new Date() && sessionOwner(existing.value) === ctx.user.uuid) {
             return Ok(existing.value);
         }
     }
@@ -251,7 +273,13 @@ async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | un
 }
 
 export async function buildMcpTools(client: Client): Promise<ToolSet> {
-    const { tools } = await client.listTools();
+    const tools: Awaited<ReturnType<Client['listTools']>>['tools'] = [];
+    let cursor: string | undefined;
+    do {
+        const page = await client.listTools(cursor ? { cursor } : undefined);
+        tools.push(...page.tools);
+        cursor = page.nextCursor;
+    } while (cursor);
 
     return Object.fromEntries(
         tools.map((mcpTool) => {
@@ -313,12 +341,14 @@ export async function startTurn({
     sessionId,
     messages,
     timeZone,
+    abortSignal,
     model
 }: {
     ctx: PlaygroundContext;
     sessionId: string | undefined;
     messages: PlaygroundUIMessage[];
     timeZone: string;
+    abortSignal?: AbortSignal;
     model?: (stats: ModelCallStats) => LanguageModel;
 }): Promise<Result<ReadableStream<UIMessageChunk<AgentPlaygroundMessageMetadata>>, AgentPlaygroundError>> {
     const session = await getOrCreateSession(ctx, sessionId);
@@ -329,8 +359,6 @@ export async function startTurn({
     const server = createAgentSessionMcpServer({ account: ctx.account, environment: ctx.environment, plan: ctx.plan, session: session.value });
     const client = new Client({ name: 'nango-agent-playground', version: '1.0.0' });
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    await server.connect(serverTransport);
-    await client.connect(clientTransport);
 
     let closed = false;
     const close = async () => {
@@ -342,6 +370,22 @@ export async function startTurn({
         await server.close();
     };
 
+    let tools: ToolSet;
+    let modelMessages: Awaited<ReturnType<typeof convertToModelMessages>>;
+    let connected: Set<string>;
+    try {
+        await server.connect(serverTransport);
+        await client.connect(clientTransport);
+        [tools, modelMessages, connected] = await Promise.all([
+            buildMcpTools(client),
+            convertToModelMessages(messages),
+            connectedIntegrations(ctx, Object.keys(session.value.compiledToolset))
+        ]);
+    } catch (err) {
+        await close();
+        return Err(new AgentPlaygroundError('model_error', err instanceof Error ? err.message : 'The agent could not start', { cause: err }));
+    }
+
     const stats: ModelCallStats = { modelCalls: 0, cachedModelCalls: 0 };
 
     const result = streamText({
@@ -349,18 +393,15 @@ export async function startTurn({
         instructions: buildInstructions(
             timeZone,
             new Date(),
-            Object.entries(session.value.compiledToolset).map(([id, integration]) => ({
-                id,
-                provider: integration.provider,
-                connected: Object.hasOwn(session.value.resolvedConnections, id)
-            })),
+            Object.entries(session.value.compiledToolset).map(([id, integration]) => ({ id, provider: integration.provider, connected: connected.has(id) })),
             PLAYGROUND_PROVIDERS.filter(({ provider }) => !Object.hasOwn(session.value.compiledToolset, playgroundIntegrationId(provider))).map(
                 ({ provider }) => getProvider(provider)?.display_name ?? provider
             )
         ),
-        messages: await convertToModelMessages(messages),
-        tools: await buildMcpTools(client),
+        messages: modelMessages,
+        tools,
         stopWhen: stepCountIs(MAX_STEPS),
+        ...(abortSignal ? { abortSignal } : {}),
         toolApproval: ({ toolCall }) => (toolNeedsApproval(toolCall.toolName, toolCall.input) ? 'user-approval' : undefined),
         onEnd: close,
         onAbort: close,

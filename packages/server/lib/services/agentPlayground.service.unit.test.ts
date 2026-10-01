@@ -8,7 +8,7 @@ import { seeders } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionServer.js';
-import { buildInstructions, buildMcpTools, pinNewestConnectionPerIntegration, toolNeedsApproval } from './agentPlayground.service.js';
+import { buildInstructions, buildMcpTools, pinNewestConnectionPerIntegration, sessionOwner, toolNeedsApproval } from './agentPlayground.service.js';
 
 import type { AgentSession } from '@nangohq/types';
 
@@ -65,6 +65,18 @@ describe('buildInstructions', () => {
 
     it('is identical for two times within the same hour', () => {
         expect(buildInstructions('UTC', new Date('2026-09-29T15:01:00Z'))).toBe(buildInstructions('UTC', new Date('2026-09-29T15:59:00Z')));
+    });
+});
+
+describe('sessionOwner', () => {
+    it('reads the user the session was created for', () => {
+        const metaTools = { ...session().metaTools, nangoCreateConnection: { enabled: true, tags: { 'nango/playground_user': 'user-a' } } };
+
+        expect(sessionOwner({ metaTools })).toBe('user-a');
+    });
+
+    it('has no owner for a session the playground did not create', () => {
+        expect(sessionOwner({ metaTools: { ...session().metaTools, nangoCreateConnection: { enabled: false, tags: {} } } })).toBeUndefined();
     });
 });
 

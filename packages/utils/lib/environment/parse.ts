@@ -752,8 +752,22 @@ const ENVS_SHAPE = z.object({
     NANGO_AGENT_PLAYGROUND_MODEL: z.string().optional().default('gpt-6-luna'),
     NANGO_AGENT_PLAYGROUND_CACHE: z.enum(['off', 'readwrite', 'readonly']).optional().default('off'),
     NANGO_AGENT_PLAYGROUND_CACHE_DIR: z.string().optional(),
-    // JSON of provider -> { clientId, clientSecret, scopes? }, used instead of Nango's shared OAuth apps.
-    NANGO_AGENT_PLAYGROUND_OAUTH_APPS: z.string().optional(),
+    // Replaces Nango's shared OAuth app for each provider listed here.
+    NANGO_AGENT_PLAYGROUND_OAUTH_APPS: z
+        .string()
+        .optional()
+        .transform((s, ctx) => {
+            if (s === undefined || s.trim() === '') {
+                return {};
+            }
+            try {
+                return JSON.parse(s) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in NANGO_AGENT_PLAYGROUND_OAUTH_APPS`);
+                return z.NEVER;
+            }
+        })
+        .pipe(z.record(z.string(), z.object({ clientId: z.string().min(1), clientSecret: z.string().min(1), scopes: z.string().optional() }))),
     OPENAI_API_KEY: z.string().optional(),
 
     // Internal API
