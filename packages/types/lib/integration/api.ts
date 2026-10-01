@@ -302,6 +302,7 @@ export type GetIntegration = ApiEndpoint<{
                 connectionsCount: number;
                 webhookUrl: string | null;
                 webhookSecret: string | null;
+                canAllowUnverifiedWebhooks: boolean;
             };
         };
     };

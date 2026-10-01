@@ -11,6 +11,7 @@ import { integrationToApi } from '../../../../formatters/integration.js';
 import { providerConfigKeySchema } from '../../../../helpers/validation.js';
 import flowService from '../../../../services/flow.service.js';
 import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
+import { canAllowUnverifiedWebhooks } from '../../../../webhook/allow-unverified.js';
 
 import type { GetIntegration } from '@nangohq/types';
 
@@ -82,6 +83,7 @@ export const getIntegration = asyncWrapperWithEnvironment<GetIntegration>(async 
             meta: {
                 connectionsCount: count,
                 webhookSecret,
+                canAllowUnverifiedWebhooks: canAllowUnverifiedWebhooks(provider),
                 webhookUrl: provider.webhook_routing_script ? `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${integration.unique_key}` : null
             }
         }

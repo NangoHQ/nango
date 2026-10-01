@@ -155,28 +155,30 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                             )}
                         </PermissionGate>
                     </div>
-                    <div className="flex gap-5 items-center">
-                        <div className="flex gap-2 items-center">
-                            <FieldLabel htmlFor="allow_unverified_webhooks">Allow unverified webhooks</FieldLabel>
-                            <InfoTooltip>
-                                Process webhooks that are missing a signature or that Nango cannot verify. Webhooks with an invalid signature are always
-                                rejected.
-                            </InfoTooltip>
+                    {meta.canAllowUnverifiedWebhooks && (
+                        <div className="flex gap-5 items-center">
+                            <div className="flex gap-2 items-center">
+                                <FieldLabel htmlFor="allow_unverified_webhooks">Allow unverified webhooks</FieldLabel>
+                                <InfoTooltip>
+                                    Process webhooks that are missing a signature or that Nango cannot verify. Webhooks with an invalid signature are always
+                                    rejected.
+                                </InfoTooltip>
+                            </div>
+                            <PermissionGate asChild condition={canEdit}>
+                                {(allowed) => (
+                                    <div className="flex items-center">
+                                        <Switch
+                                            id="allow_unverified_webhooks"
+                                            name="allow_unverified_webhooks"
+                                            checked={allowUnverifiedWebhooks}
+                                            onCheckedChange={handleAllowUnverifiedWebhooksChange}
+                                            disabled={!allowed}
+                                        />
+                                    </div>
+                                )}
+                            </PermissionGate>
                         </div>
-                        <PermissionGate asChild condition={canEdit}>
-                            {(allowed) => (
-                                <div className="flex items-center">
-                                    <Switch
-                                        id="allow_unverified_webhooks"
-                                        name="allow_unverified_webhooks"
-                                        checked={allowUnverifiedWebhooks}
-                                        onCheckedChange={handleAllowUnverifiedWebhooksChange}
-                                        disabled={!allowed}
-                                    />
-                                </div>
-                            )}
-                        </PermissionGate>
-                    </div>
+                    )}
                     {/* Webhook URL */}
                     <div className="flex flex-col gap-2">
                         <div className="flex gap-2 items-center">

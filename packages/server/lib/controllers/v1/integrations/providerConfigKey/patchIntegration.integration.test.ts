@@ -155,6 +155,7 @@ describe(`PATCH ${endpoint}`, () => {
 
         isSuccess(resGet.json);
         expect(resGet.json.data.integration.allow_unverified_webhooks).toBe(true);
+        expect(resGet.json.data.meta.canAllowUnverifiedWebhooks).toBe(true);
     });
 
     it('rejects invalid integration_config values', async () => {
