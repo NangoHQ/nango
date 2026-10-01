@@ -131,8 +131,10 @@ describe('listFunctionsTool', () => {
     });
 });
 
+const accountUuid = '8d49e079-aa61-44ae-b0cf-823662523527';
+
 const context = {
-    account: {},
+    account: { uuid: accountUuid },
     environment: { id: 42 },
     grantedScopes: ['environment:functions:list']
 } as ManagementMcpContext;

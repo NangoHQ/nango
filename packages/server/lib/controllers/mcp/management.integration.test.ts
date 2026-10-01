@@ -3,6 +3,7 @@ import { Readable } from 'node:stream';
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { logContextGetter } from '@nangohq/logs';
 import { getGlobalWebhookReceiveUrl, productTracking, ProxyRequest, remoteFileService, seeders, syncManager } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
@@ -182,11 +183,11 @@ describe('POST /mcp management server', () => {
                 mcp_auth_type: 'apiKey',
                 surface: 'server',
                 is_production: env.is_production,
-                $process_person_profile: false,
                 $mcp_server_name: 'Nango Management MCP server',
                 $mcp_tool_name: 'providers_get',
                 $mcp_is_error: false
             });
+            expect(event?.properties).not.toHaveProperty('$process_person_profile');
             expect(event?.properties).not.toHaveProperty('$mcp_parameters');
             expect(event?.properties).not.toHaveProperty('$mcp_response');
 
@@ -485,6 +486,7 @@ describe('POST /mcp management server', () => {
     });
 
     it('lists filtered functions for an integration', async () => {
+        vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
         const { secret, env } = await createKeyWithScopes(['environment:functions:list']);
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });

@@ -5,7 +5,7 @@ import { gettingStartedService } from '../index.js';
 import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
-import * as functionLifecycle from './functions/lifecycle.js';
+import * as functionLifecycle from './functions/lifecycle/index.js';
 import { getProvider } from './providers.js';
 import syncManager from './sync/manager.service.js';
 

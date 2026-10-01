@@ -29,7 +29,7 @@
         "@mantine/prism": "5.10.5",
         "@nangohq/authz": "file:../authz",
         "@nangohq/design-system": "file:../design-system",
-        "@nangohq/frontend": "0.71.10",
+        "@nangohq/frontend": "0.71.11",
         "@nangohq/types": "file:../types",
         "@radix-ui/react-accordion": "1.2.2",
         "@radix-ui/react-avatar": "1.1.2",
@@ -98,7 +98,7 @@
         "vite": "8.0.16",
         "vite-plugin-checker": "0.14.1",
         "vite-plugin-svgr": "5.2.0",
-        "vitest": "4.1.9",
+        "vitest": "4.1.11",
         "web-vitals": "2.1.4",
         "zod": "3.25.76",
         "zustand": "5.0.3"

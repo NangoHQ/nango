@@ -2,7 +2,7 @@ import posthog from 'posthog-js';
 import { usePostHog } from 'posthog-js/react';
 
 import type { AnalyticsEvents } from './analyticsEvents';
-import type { ApiUser } from '@nangohq/types';
+import type { AccountGroupProperties, ApiUser } from '@nangohq/types';
 
 /**
  * Typed, catalog-checked event tracking. Uses the `posthog` singleton so it works inside and
@@ -10,13 +10,16 @@ import type { ApiUser } from '@nangohq/types';
  * {@link AnalyticsEvents} at compile time.
  */
 export function track<E extends keyof AnalyticsEvents>(event: E, properties: AnalyticsEvents[E]) {
-    posthog?.capture(event, properties);
+    posthog?.capture(event, { ...properties, surface: 'web' });
 }
+
+// Every group() call with properties sends a $groupidentify event, and PrivateRoute identifies on each render.
+let sentAccountGroup: string | undefined;
 
 export function useAnalyticsIdentify() {
     const posthog = usePostHog();
 
-    return (user: ApiUser) => {
+    return (user: ApiUser, accountGroup?: AccountGroupProperties) => {
         posthog?.identify(user.email, {
             email: user.email,
             name: user.name,
@@ -24,10 +27,16 @@ export function useAnalyticsIdentify() {
             accountId: user.accountId
         });
 
-        posthog?.group('company', `${user.accountId}`);
+        const group = JSON.stringify([user.accountId, accountGroup]);
+        const isNewGroup = accountGroup !== undefined && group !== sentAccountGroup;
+        posthog?.group('company', `${user.accountId}`, isNewGroup ? accountGroup : undefined);
+        if (isNewGroup) {
+            sentAccountGroup = group;
+        }
     };
 }
 
 export function resetAnalytics() {
+    sentAccountGroup = undefined;
     posthog?.reset();
 }

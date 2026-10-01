@@ -48,6 +48,11 @@ export interface FunctionUpgradedMetadata {
     upgradeVersion?: string;
 }
 
+export interface FunctionUpdatedMetadata {
+    // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
+    state?: string;
+}
+
 export interface FunctionDeletedMetadata {
     // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
     type?: string;

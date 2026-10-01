@@ -18,6 +18,8 @@ const { getInternalTlsEnvMock, k8sMock, mockEnvs, defaultRunnerEnvs } = vi.hoist
         NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED: false,
         NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: [] as string[],
         NANGO_OUTBOUND_URL_POLICY: null as { blockPrivateIps?: boolean; blockLinkLocal?: boolean } | null,
+        NANGO_PROXY_IDLE_TIMEOUT_MS: 300_000,
+        NANGO_PROXY_MAX_RETRY_WAIT_MS: 600_000,
         RUNNER_EGRESS_NANGO_POD_SELECTOR: {
             matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In', values: ['persist', 'jobs', 'server'] }]
         } as { matchLabels?: Record<string, string>; matchExpressions?: { key: string; operator: string; values?: string[] }[] },
@@ -534,6 +536,28 @@ describe('runner NetworkPolicy egress', () => {
         expect(internetRule.to[0].ipBlock.except).not.toContain('10.0.0.0/8');
         expect(internetRule.to[0].ipBlock.except).toContain('169.254.169.254/32');
         expect(internetRule.to[0].ipBlock.except).toContain('169.254.0.0/16');
+    });
+});
+
+describe('runner proxy env', () => {
+    beforeEach(() => {
+        k8sMock.calls = [];
+        k8sMock.errors.clear();
+        k8sMock.failLink = false;
+        Object.assign(mockEnvs, defaultRunnerEnvs);
+        getInternalTlsEnvMock.mockReturnValue({});
+    });
+
+    it('should pass the proxy timeouts to the runner', async () => {
+        mockEnvs.NANGO_PROXY_IDLE_TIMEOUT_MS = 120_000;
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+
+        const deployment = k8sMock.calls.find((call) => call.method === 'createNamespacedDeployment')?.body;
+        const env = deployment.spec.template.spec.containers[0].env as { name: string; value?: string }[];
+        expect(env).toContainEqual({ name: 'NANGO_PROXY_IDLE_TIMEOUT_MS', value: '120000' });
+        expect(env).toContainEqual({ name: 'NANGO_PROXY_MAX_RETRY_WAIT_MS', value: '600000' });
     });
 });
 

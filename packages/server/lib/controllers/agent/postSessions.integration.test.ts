@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
 
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import * as keystore from '@nangohq/keystore';
 import { customerKeyService, listCatalogTools, seeders } from '@nangohq/shared';
 import { baseUrl } from '@nangohq/utils';
@@ -97,9 +98,11 @@ describe(`POST ${endpoint}`, () => {
     beforeAll(async () => {
         api = await runServer();
         await keystore.migrate(db.knex);
+        vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
     });
 
     afterAll(() => {
+        vi.restoreAllMocks();
         api.server.close();
     });
 

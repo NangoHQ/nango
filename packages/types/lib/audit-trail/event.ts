@@ -15,6 +15,7 @@ import type {
     EnvironmentWebhookMetadata,
     FunctionDeletedMetadata,
     FunctionDeployedMetadata,
+    FunctionUpdatedMetadata,
     FunctionUpgradedMetadata,
     IntegrationProviderMetadata,
     IntegrationUpdatedMetadata,
@@ -62,6 +63,7 @@ interface AuditEventTable {
     function: {
         deployed: FunctionDeployedMetadata;
         upgraded: FunctionUpgradedMetadata;
+        updated: FunctionUpdatedMetadata;
         deleted: FunctionDeletedMetadata;
     };
     integration: {

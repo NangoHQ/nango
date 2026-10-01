@@ -7694,6 +7694,14 @@ Nango uses emails for account verification, password reset, and sending invitati
 
 A limited free self-hosting option is available for hobby projects, separate from BYOC and Self-Managed. It is intended for lightweight deployments that need Auth and Proxy, without the managed features and support included with Enterprise self-hosting (BYOC or Self-Managed) or Nango Cloud.
 
+### Trust model
+
+A self-hosted Nango instance is intended for a single organization. Accounts on the same instance keep their own data separate in normal use, but they are not designed or hardened as a security boundary between users who don't trust each other. Only give dashboard access to people you trust.
+
+Instance-level configuration is shared across all accounts. In particular, `NANGO_SECRET_KEY_<ENV>` and `NANGO_PUBLIC_KEY_<ENV>` apply to environments by name, in any account on the instance.
+
+Signup is enabled by default. If your dashboard is reachable by anyone you don't fully trust, disable signup and protect the dashboard with basic auth (below), or keep it on a private network.
+
 For more details, see the [pricing page](https://nango.dev/pricing) or [schedule a call](https://nango.dev/contact) to discuss BYOC or Self-Managed.
 
 ### Feature availability
@@ -8021,7 +8029,7 @@ Everything below is what you configure directly to run a production instance —
 | Secret | Example | Purpose |
 | --- | --- | --- |
 | `NANGO_ENCRYPTION_KEY_WRAPPED` | `AQICAHjK...` (KMS-wrapped, base64) | Your data-encryption key, wrapped |
-| `NANGO_KMS_KEY_ARN` | `arn:aws:kms:us-west-2:123456789012:key/abcd-1234-efgh-5678` | KMS key used to unwrap it |
+| `NANGO_KMS_KEY_ARN` | `arn:aws:kms:us-west-2:123456789012:key/abcd-1234-efgh-5678` | KMS key used to unwrap it (on GCP or Azure, see [Encryption key](#encryption-key)) |
 | `NANGO_INTERNAL_API_KEY` | *(generated, 32+ char random string)* | Internal service-to-service auth |
 | `NANGO_ADMIN_KEY` | *(generated, random string)* | Admin API access |
 | `NANGO_ADMIN_UUID` | `3fa85f64-5717-4562-b3fc-2c963f66afa6` | Matches the env var above |
@@ -8059,7 +8067,15 @@ openssl rand -base64 32
 The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation is not supported yet—changing the key after initial setup will cause decryption failures. Plan your key management accordingly.
 </Note>
 
-If you'd rather not manage `NANGO_ENCRYPTION_KEY` as a flat secret, wrap it with your own KMS and set `NANGO_ENCRYPTION_KEY_WRAPPED` and `NANGO_KMS_KEY_ARN` instead (see the secrets table above).
+If you'd rather not manage `NANGO_ENCRYPTION_KEY` as a flat secret, wrap it with your own KMS and set `NANGO_ENCRYPTION_KEY_WRAPPED` instead, plus exactly one wrapping-key variable:
+
+| Provider | Variable | Example |
+| --- | --- | --- |
+| AWS KMS | `NANGO_KMS_KEY_ARN` | `arn:aws:kms:us-west-2:123456789012:key/abcd-1234-efgh-5678` |
+| GCP Cloud KMS | `NANGO_GCP_KMS_KEY_NAME` | `projects/my-project/locations/global/keyRings/nango/cryptoKeys/dek` |
+| Azure Key Vault | `NANGO_AZURE_KMS_KEY_ID` | `https://my-vault.vault.azure.net/keys/dek/0123456789abcdef0123456789abcdef` |
+
+Credentials come from the environment (IAM role, workload identity or managed identity), and Nango needs permission to unwrap with that key. On Azure, use an RSA key and include its version in the identifier.
 
 <Warning>
 `NANGO_ENCRYPTION_KEY` is also required for Connect UI. It is used to generate sessions for [Connect UI](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui). Without this key, Connect UI will not work.
@@ -8433,6 +8449,15 @@ let nango = new Nango({ host: 'https://<YOUR-NANGO-INSTANCE>', websocketsPath: '
 ```
 
 Connect UI discovers the custom path on its own (from the connect session), so `websocketsPath` only needs to be configured for direct `nango.auth()` calls. If Nango is served behind a reverse proxy under a sub-path, direct `nango.auth()` needs the full public path in `websocketsPath` (e.g. `/<API-BASE-PATH></YOUR-WEBSOCKETS-PATH>`) because the SDK resolves it from the origin, while Connect UI composes the public path automatically from the `apiURL` base path and `NANGO_SERVER_WEBSOCKETS_PATH`.
+
+### Proxy timeouts
+
+| Variable | Default | Purpose |
+| - | - | - |
+| `NANGO_PROXY_IDLE_TIMEOUT_MS` | `300000` (5 minutes) | A proxy request fails when the provider takes longer than this to start responding, or stops sending data for this long partway through a response. A response that keeps sending data is never cut off. |
+| `NANGO_PROXY_MAX_RETRY_WAIT_MS` | `600000` (10 minutes) | Longest wait between proxy retries, including waits requested by a provider's retry headers. A retry that would wait longer fails instead. |
+
+Both apply to the API and to runners, and are passed to Kubernetes and Lambda runners automatically.
 
 ### Telemetry
 
@@ -16057,6 +16082,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `highlevel` | HighLevel | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highlevel.md) |  | [setup](https://nango.dev/docs/api-integrations/highlevel/how-to-register-your-own-highlevel-api-oauth-app.md) | marketing |
 | `highlevel-white-label` | HighLevel (LeadConnector) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highlevel-white-label.md) |  | [setup](https://nango.dev/docs/api-integrations/highlevel-white-label/how-to-register-your-own-highlevel-white-label-api-oauth-app.md) | crm |
 | `highq` | HighQ | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/highq.md) | [connect](https://nango.dev/docs/api-integrations/highq/connect.md) | [setup](https://nango.dev/docs/api-integrations/highq/how-to-register-your-own-highq-api-oauth-app.md) | legal |
+| `hitpay` | HitPay App | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/hitpay.md) | [connect](https://nango.dev/docs/api-integrations/hitpay/connect.md) | [setup](https://nango.dev/docs/api-integrations/hitpay/how-to-register-your-own-hitpay-oauth-app.md) | payment, e-commerce |
 | `holded` | Holded | API_KEY | [docs](https://nango.dev/docs/integrations/all/holded.md) |  |  | accounting, crm, invoicing |
 | `holded-v2` | Holded (v2) | API_KEY | [docs](https://nango.dev/docs/api-integrations/holded-v2.md) | [connect](https://nango.dev/docs/api-integrations/holded-v2/connect.md) |  | accounting, crm, invoicing |
 | `hover` | Hover | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/hover.md) |  |  | productivity |
@@ -16259,6 +16285,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `open-hands` | Open Hands | API_KEY | [docs](https://nango.dev/docs/integrations/all/open-hands.md) | [connect](https://nango.dev/docs/integrations/all/open-hands/connect.md) |  | dev-tools |
 | `openai` | OpenAI | API_KEY | [docs](https://nango.dev/docs/integrations/all/openai.md) | [connect](https://nango.dev/docs/integrations/all/openai/connect.md) |  | productivity, dev-tools, popular |
 | `openai-admin` | OpenAI (Admin) | API_KEY | [docs](https://nango.dev/docs/integrations/all/openai-admin.md) | [connect](https://nango.dev/docs/integrations/all/openai-admin/connect.md) |  | productivity, dev-tools |
+| `openrouter` | OpenRouter | API_KEY | [docs](https://nango.dev/docs/api-integrations/openrouter.md) | [connect](https://nango.dev/docs/api-integrations/openrouter/connect.md) |  | dev-tools, productivity |
 | `optum-real` | Optum Real | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/optum-real.md) | [connect](https://nango.dev/docs/api-integrations/optum-real/connect.md) |  | other |
 | `oracle-cloud-identity` | Oracle Cloud Identity | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/oracle-cloud-identity.md) | [connect](https://nango.dev/docs/api-integrations/oracle-cloud-identity/connect.md) |  | dev-tools, iam |
 | `oracle-hcm` | Oracle Fusion Cloud (HCM) | BASIC | [docs](https://nango.dev/docs/integrations/all/oracle-hcm.md) | [connect](https://nango.dev/docs/integrations/all/oracle-hcm/connect.md) |  | hr |
@@ -16603,6 +16630,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `webex` | Webex | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/webex.md) |  |  | communication |
 | `webflow` | Webflow | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/webflow.md) |  | [setup](https://nango.dev/docs/api-integrations/webflow/how-to-register-your-own-webflow-api-oauth-app.md) | dev-tools, design, cms |
 | `webinarjam` | WebinarJam | API_KEY | [docs](https://nango.dev/docs/api-integrations/webinarjam.md) | [connect](https://nango.dev/docs/api-integrations/webinarjam/connect.md) |  | marketing |
+| `weflow` | Weflow | API_KEY | [docs](https://nango.dev/docs/api-integrations/weflow.md) | [connect](https://nango.dev/docs/api-integrations/weflow/connect.md) |  | communication, crm, video |
 | `wejam` | WeJam AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/wejam.md) | [connect](https://nango.dev/docs/api-integrations/wejam/connect.md) |  | productivity |
 | `whatsapp-business` | WhatsApp Business | API_KEY | [docs](https://nango.dev/docs/api-integrations/whatsapp-business.md) |  | [setup](https://nango.dev/docs/api-integrations/whatsapp-business/how-to-register-your-own-whatsapp-business-api-oauth-app.md) | communication, marketing |
 | `whoop` | Whoop | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/whoop.md) |  |  | sports |

@@ -44,7 +44,7 @@
         "ajv": "8.18.0",
         "ajv-formats": "3.0.1",
         "archiver": "7.0.1",
-        "axios": "1.18.0",
+        "axios": "1.20.0",
         "braintree": "3.15.0",
         "dayjs": "1.11.19",
         "dd-trace": "5.117.0",
@@ -61,13 +61,13 @@
         "otpauth": "9.5.1",
         "parse-link-header": "2.0.0",
         "posthog-node": "5.53.0",
-        "qs": "6.15.3",
+        "qs": "6.16.0",
         "semver": "7.5.4",
         "simple-oauth2": "5.1.0",
-        "undici": "6.28.0",
+        "undici": "6.29.0",
         "uuid": "14.0.0",
         "xml-crypto": "6.1.2",
-        "zod": "4.0.5"
+        "zod": "4.3.6"
     },
     "devDependencies": {
         "@nangohq/logs": "file:../logs",
@@ -87,7 +87,7 @@
         "knex": "3.1.0",
         "type-fest": "4.41.0",
         "typescript": "5.8.3",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     },
     "files": [
         "dist/**/*",

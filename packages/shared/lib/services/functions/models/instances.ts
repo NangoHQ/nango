@@ -8,7 +8,7 @@ import type { Knex } from 'knex';
 
 export type FunctionInstanceUpsert = Pick<DBFunctionInstance, 'nango_connection_id' | 'function_config_id' | 'name' | 'variant' | 'frequency'>;
 export type FunctionInstanceFilter = { functionConfigIds: number[] } | { connectionIds: number[] } | { instanceIds: number[] };
-export type FunctionInstanceSearchOptions = { includeDeleted?: boolean; afterId?: number; limit?: number };
+export type FunctionInstanceSearchOptions = { includeDeleted?: boolean; enabled?: boolean; afterId?: number; limit?: number };
 
 const UPSERT_BATCH_SIZE = 1000;
 const SOFT_DELETE_BATCH_SIZE = 1000;
@@ -67,7 +67,7 @@ export async function upsert(db: Knex, instances: FunctionInstanceUpsert[]): Pro
 export async function search(
     trx: Knex,
     filter: FunctionInstanceFilter,
-    { includeDeleted = false, afterId, limit }: FunctionInstanceSearchOptions = {}
+    { includeDeleted = false, enabled, afterId, limit }: FunctionInstanceSearchOptions = {}
 ): Promise<Result<DBFunctionInstance[]>> {
     const [field, ids] = resolveFilter(filter);
     if (ids.length === 0) {
@@ -79,6 +79,9 @@ export async function search(
         query.whereIn(field, ids);
         if (!includeDeleted) {
             query.whereNull('deleted_at');
+        }
+        if (enabled !== undefined) {
+            query.where({ enabled });
         }
         if (afterId !== undefined) {
             query.where('id', '>', afterId);
@@ -123,6 +126,31 @@ export async function softDelete(
         return Ok(deleted);
     } catch (err) {
         return Err(new Error('failed_to_soft_delete_function_instances', { cause: err }));
+    }
+}
+
+export async function setEnabled(
+    db: Knex,
+    filter: FunctionInstanceFilter,
+    { environmentId, enabled, variant }: { environmentId: number; enabled: boolean; variant?: string | undefined }
+): Promise<Result<DBFunctionInstance[]>> {
+    try {
+        const [field, ids] = resolveFilter(filter);
+        if (ids.length === 0) {
+            return Ok([]);
+        }
+        const query = db
+            .from<DBFunctionInstance>(INSTANCES_TABLE)
+            .whereIn('function_config_id', db.from<DBFunctionConfig>(CONFIGS_TABLE).select('id').where({ environment_id: environmentId }))
+            .whereIn(field, ids)
+            .whereNull('deleted_at');
+        if (variant !== undefined) {
+            query.where({ variant });
+        }
+        const updated = await query.update({ enabled, updated_at: new Date() }).returning<DBFunctionInstance[]>('*');
+        return Ok(updated);
+    } catch (err) {
+        return Err(new Error('failed_to_set_function_instances_enabled', { cause: err }));
     }
 }
 
