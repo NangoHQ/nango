@@ -47,12 +47,12 @@ function sign(claims: Record<string, unknown> = {}, { key = privateKey, kid = KI
     return jwt.sign({ iss: 'https://api.botframework.com', aud: APP_ID, serviceurl: SERVICE_URL, exp, ...claims }, key, { algorithm: 'RS256', keyid: kid });
 }
 
-async function route(headers: Record<string, string>, body: unknown = activity) {
+async function route(headers: Record<string, string>, body: unknown = activity, { allowUnverified = false }: { allowUnverified?: boolean } = {}) {
     const nango = new InternalNango({
         team: seeders.getTestTeam(),
         environment: seeders.getTestEnvironment(),
         plan: seeders.getTestPlan(),
-        integration: getTestConfig({ provider: 'microsoft-teams-bot', oauth_client_id: APP_ID }),
+        integration: getTestConfig({ provider: 'microsoft-teams-bot', oauth_client_id: APP_ID, allow_unverified_webhooks: allowUnverified }),
         request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
         logContextGetter
     });
@@ -179,5 +179,36 @@ describe('microsoft-teams-webhook-routing', () => {
         expect(execute).toHaveBeenCalledOnce();
         expect(countedReason()).toBe('microsoft_teams_audience_mismatch');
         expect(nango.unverified?.reason).toBe('microsoft_teams_audience_mismatch');
+    });
+
+    it.each([
+        ['a missing authorization header', () => ({}), 'microsoft_teams_missing_authorization'],
+        [
+            'an Entra issuer',
+            () => ({ authorization: `Bearer ${sign({ iss: 'https://sts.windows.net/d6d49420-f39b-4df7-a1dc-d59a935871db/' })}` }),
+            'microsoft_teams_entra_issuer'
+        ],
+        ['an unexpected issuer', () => ({ authorization: `Bearer ${sign({ iss: 'https://api.botframework.us' })}` }), 'microsoft_teams_unexpected_issuer']
+    ])('routes %s when the integration allows unverified webhooks', async (_name, headers, reason) => {
+        const { result, execute } = await route(headers(), activity, { allowUnverified: true });
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledOnce();
+        expect(countedReason()).toBe(reason);
+    });
+
+    it.each([
+        ['a malformed token', () => 'Bearer not-a-jwt', 'webhook_invalid_signature'],
+        [
+            'a token signed with another key',
+            () => `Bearer ${sign({}, { key: crypto.generateKeyPairSync('rsa', { modulusLength: 2048 }).privateKey })}`,
+            'webhook_invalid_signature'
+        ],
+        ['a token for another bot', () => `Bearer ${sign({ aud: 'other-app-id' })}`, 'webhook_invalid_signature']
+    ])('rejects %s when the integration allows unverified webhooks', async (_name, authorization, error) => {
+        const { result, execute } = await route({ authorization: authorization() }, activity, { allowUnverified: true });
+
+        expect(errType(result)).toBe(error);
+        expect(execute).not.toHaveBeenCalled();
     });
 });

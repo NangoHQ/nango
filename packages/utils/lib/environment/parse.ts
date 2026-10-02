@@ -260,6 +260,13 @@ const ENVS_SHAPE = z.object({
         .positive()
         .optional()
         .default(10 * 60 * 1000), // 10 minutes
+    // A proxy request fails once no bytes arrive for this long (see ProxyRequest for the exact axios semantics)
+    NANGO_PROXY_IDLE_TIMEOUT_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(5 * 60 * 1000), // 5 minutes
     NANGO_WEBHOOK_MAX_RETRY_WAIT_MS: z.coerce
         .number()
         .int()
@@ -748,6 +755,10 @@ const ENVS_SHAPE = z.object({
     // Plain (in-app support chat)
     PLAIN_APP_ID: z.string().optional(),
     PLAIN_HMAC_SECRET: z.string().optional(),
+
+    NANGO_AGENT_PLAYGROUND_MODEL: z.string().optional().default('gpt-6-luna'),
+    // Without it the Agent Playground answers from a mock model.
+    OPENAI_API_KEY: z.string().optional(),
 
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),

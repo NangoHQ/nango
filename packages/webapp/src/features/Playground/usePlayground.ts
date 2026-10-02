@@ -82,9 +82,9 @@ export function usePlayground(inputFields: InputField[]) {
             trackPlaygroundRunCompleted({
                 function_type: playgroundFunctionType,
                 integration: playgroundIntegration,
-                success,
-                state,
-                duration_ms: durationMs
+                is_success: success,
+                run_state: state,
+                run_duration_ms: durationMs
             });
         }
 
@@ -123,9 +123,9 @@ export function usePlayground(inputFields: InputField[]) {
                     trackPlaygroundRunCompleted({
                         function_type: playgroundFunctionType,
                         integration: playgroundIntegration,
-                        success: false,
-                        state: 'invalid_input',
-                        duration_ms: 0
+                        is_success: false,
+                        run_state: 'invalid_input',
+                        run_duration_ms: 0
                     });
                     setResult({ success: false, state: 'invalid_input', data: { error: 'Invalid input', fields: parseResult.errors }, durationMs: 0 });
                     setRunning(false);
@@ -168,9 +168,9 @@ export function usePlayground(inputFields: InputField[]) {
                 trackPlaygroundRunCompleted({
                     function_type: playgroundFunctionType,
                     integration: playgroundIntegration,
-                    success: false,
-                    state: 'trigger_failed',
-                    duration_ms: triggerDurationMs
+                    is_success: false,
+                    run_state: 'trigger_failed',
+                    run_duration_ms: triggerDurationMs
                 });
                 setPendingOperationId(null);
                 setResult({ success: false, data: triggerData, durationMs: triggerDurationMs });
@@ -184,9 +184,9 @@ export function usePlayground(inputFields: InputField[]) {
                 trackPlaygroundRunCompleted({
                     function_type: playgroundFunctionType,
                     integration: playgroundIntegration,
-                    success: true,
-                    state: 'success',
-                    duration_ms: triggerDurationMs
+                    is_success: true,
+                    run_state: 'success',
+                    run_duration_ms: triggerDurationMs
                 });
                 setPendingOperationId(null);
                 setResult({ success: true, data: triggerData, durationMs: triggerDurationMs });
@@ -218,9 +218,9 @@ export function usePlayground(inputFields: InputField[]) {
                 trackPlaygroundRunCompleted({
                     function_type: playgroundFunctionType,
                     integration: playgroundIntegration,
-                    success: true,
-                    state: 'operation_not_found',
-                    duration_ms: triggerDurationMs
+                    is_success: true,
+                    run_state: 'operation_not_found',
+                    run_duration_ms: triggerDurationMs
                 });
                 setPendingOperationId(null);
                 setResult({ success: true, state: 'operation_not_found', data: triggerData, durationMs: triggerDurationMs });
@@ -239,9 +239,9 @@ export function usePlayground(inputFields: InputField[]) {
                 trackPlaygroundRunCompleted({
                     function_type: playgroundFunctionType,
                     integration: playgroundIntegration,
-                    success: false,
-                    state: 'network_error',
-                    duration_ms: Date.now() - runStartTime
+                    is_success: false,
+                    run_state: 'network_error',
+                    run_duration_ms: Date.now() - runStartTime
                 });
                 setPendingOperationId(null);
                 setResult({ success: false, data: { error: 'Network error' }, durationMs: Date.now() - runStartTime });

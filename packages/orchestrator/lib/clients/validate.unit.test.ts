@@ -80,7 +80,13 @@ describe('validateTask', () => {
                 trigger: {
                     kind: 'http',
                     input: { value: 42 },
-                    request: { method: 'POST', path: '/functions/invocations', headers: {}, query: {}, body: { value: 42 } },
+                    request: {
+                        method: 'POST',
+                        path: '/connections/22222222-2222-4222-8222-222222222222/functions/11111111-1111-4111-8111-111111111111/invocations',
+                        headers: {},
+                        query: {},
+                        body: { value: 42 }
+                    },
                     subscriptions: ['issues'],
                     connection: { connectionId: 'connection-id', integrationId: 'integration-id' }
                 },

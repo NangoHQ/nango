@@ -1,4 +1,4 @@
-import type { PlanDefinition } from '@nangohq/types';
+import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
 export const freePlan: PlanDefinition = {
     code: 'free',
@@ -405,6 +405,25 @@ export const GROWTH_FEATURE_FLAGS = {
 } satisfies Record<GrowthFeatureFlag, boolean>;
 
 export const GROWTH_ADDON_ENVIRONMENTS_MAX = 10;
+export const GROWTH_ADDON_RATE_LIMIT_SIZE: DBPlan['api_rate_limit_size'] = 'xl';
+
+export const API_RATE_LIMIT_SIZES: DBPlan['api_rate_limit_size'][] = [
+    's',
+    'm',
+    'l',
+    'xl',
+    '2xl',
+    '3xl',
+    '4xl',
+    '5xl',
+    '6xl',
+    '7xl',
+    '8xl',
+    '9xl',
+    '10xl',
+    '11xl',
+    '12xl'
+];
 
 export const PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON: PlanDefinition['code'][] = ['pay-as-you-go'];
 
