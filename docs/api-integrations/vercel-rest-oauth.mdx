@@ -18,7 +18,12 @@ Nango handles state and the form-encoded authorization-code exchange.
 
 The token response supplies `installation_id` and, for team installations, `team_id`.
 These non-secret values are saved in connection configuration. Include the team ID as
-`teamId` on REST API requests when present. Use Nango Proxy for requests to `https://api.vercel.com`.
+`teamId` on REST API requests when present. Use `installation_id` to identify the
+integration configuration that owns a resource. For example, a deployment-protection
+bypass with scope `integration-automation-bypass` must have a `configurationId`
+matching this installation before the application uses it. Do not select another
+installation's bypass or a general automation bypass for an OAuth connection.
+Use Nango Proxy for requests to `https://api.vercel.com`.
 The integration access token is long-lived; this provider does not advertise refresh-token support.
 
 ## Verification
