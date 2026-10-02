@@ -17192,6 +17192,35 @@ notion-scim:
             description: The API key for your Notion scim account
             doc_section: '#step-1-finding-your-scim-api-key-token'
 
+nuvemshop:
+    display_name: Nuvemshop
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://www.nuvemshop.com.br/apps/${connectionConfig.appId}/authorize
+    token_url: https://www.nuvemshop.com.br/apps/authorize/token
+    disable_pkce: true
+    token_response_metadata:
+        - user_id
+    proxy:
+        base_url: https://api.nuvemshop.com.br/v1/${connectionConfig.user_id}
+        headers:
+            authentication: bearer ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/nuvemshop
+    setup_guide_url: https://nango.dev/docs/api-integrations/nuvemshop/how-to-register-your-own-nuvemshop-api-oauth-app
+    connection_config:
+        appId:
+            type: string
+            title: App ID
+            description: The App ID of your Nuvemshop app, shown in the Partners Portal (same as the Client ID)
+            pattern: '^[0-9]+$'
+            example: '12345'
+        user_id:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 nyne-ai:
     display_name: Nyne AI
     categories:
