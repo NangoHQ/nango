@@ -4,14 +4,12 @@ import { PostHog } from 'posthog-node';
 
 import { baseUrl, FixedSizeMap, NANGO_VERSION, report } from '@nangohq/utils';
 
-import type { AccountGroupProperties, CliTelemetryEvent, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type { AccountGroupProperties, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
 export type ProductTrackingTypes =
-    | CliTelemetryEvent
-    | 'account:billing:plan_changed'
-    | 'account:billing:plan_changed:v2'
-    | 'account:billing:downgraded'
-    | 'account:billing:upgraded'
+    | 'functions:command_start'
+    | 'billing:plan_submit'
+    | 'billing:plan_update'
     | 'agents:session_start'
     | 'agents:session_end'
     | 'agents:tool_call_complete'
