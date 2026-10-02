@@ -1590,6 +1590,7 @@
               "integrations/all/mixpanel",
               "api-integrations/modjo-ai",
               "api-integrations/modmed",
+              "api-integrations/modmed-fhir",
               "api-integrations/mollie",
               "integrations/all/momentum-io",
               "api-integrations/monday",

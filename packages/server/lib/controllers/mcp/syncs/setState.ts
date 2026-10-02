@@ -17,7 +17,7 @@ const orchestrator = getOrchestrator();
 export const setSyncsStateTool = defineManagementMcpTool<typeof setSyncsStateArgumentsSchema, SetSyncsStateOutput>({
     name: 'syncs_set_state',
     title: 'Set Sync State',
-    description: 'Set one or more syncs to the started or paused state, optionally limited to one connection.',
+    description: 'Sets one or more syncs to the started or paused state, optionally limited to one connection.',
     inputSchema: setSyncsStateArgumentsSchema,
     outputSchema: setSyncsStateOutputSchema,
     requiredScopes: { every: ['environment:syncs:execute'] },

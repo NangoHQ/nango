@@ -303,11 +303,9 @@ type FunctionInvocationSuccess = any;
 export type PostFunctionInvocation = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
-    Path: '/functions/invocations';
+    Path: '/connections/:connectionId/functions/:functionUuid/invocations';
+    Params: { connectionId: string; functionUuid: string };
     Body: {
-        connection_id: string;
-        integration_id: string;
-        name: string;
         input?: unknown | undefined;
         invocation_type: FunctionInvocationType;
         options?: Record<string, unknown> | undefined;
@@ -319,9 +317,9 @@ export type PostFunctionInvocation = ApiEndpoint<{
 export type GetFunctionInvocation = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
-    Path: '/functions/invocations/:id';
-    Params: { id: string };
-    Error: ApiError<'invalid_uri_params' | 'not_found' | 'function_failed' | 'server_error'>;
+    Path: '/connections/:connectionId/functions/:functionUuid/invocations/:id';
+    Params: { connectionId: string; functionUuid: string; id: string };
+    Error: ApiError<'invalid_uri_params' | 'not_found' | 'function_not_found' | 'connection_not_found' | 'function_failed' | 'server_error'>;
     Success: FunctionInvocationSuccess;
 }>;
 

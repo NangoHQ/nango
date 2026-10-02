@@ -16195,6 +16195,84 @@ modmed:
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-request-access-to-modmed-sandbox'
 
+modmed-fhir:
+    display_name: ModMed (FHIR)
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://sso.ema.md/auth/realms/fhir/protocol/openid-connect/token
+    token_params:
+        grant_type: client_credentials
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+        scope: ${credentials.scope}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    assertion:
+        type: jwt
+        singleUse: true
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 300
+        header:
+            alg: ES384
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://sso.ema.md/auth/realms/fhir/protocol/openid-connect/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.fhirHost}
+        headers:
+            accept: application/fhir+json
+    docs: https://nango.dev/docs/api-integrations/modmed-fhir
+    setup_guide_url: https://nango.dev/docs/api-integrations/modmed-fhir/how-to-register-your-own-modmed-fhir-app
+    docs_connect: https://nango.dev/docs/api-integrations/modmed-fhir/connect
+    integration_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Bulk FHIR application's Client ID from the ModMed FHIR vendor dashboard.
+            order: 1
+        keyId:
+            type: string
+            title: Key ID
+            description: The kid of the EC (P-384) key registered in your hosted JWKS file.
+            order: 2
+        privateKey:
+            type: string
+            title: Private Key
+            description: The EC (P-384) private key (PEM) matching your published JWKS public key. Signed with ES384.
+            secret: true
+            order: 3
+        scope:
+            type: string
+            title: Scope
+            description: The space-separated system/*.rs scopes granted to your Bulk FHIR application.
+            order: 4
+    credentials:
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    connection_config:
+        fhirHost:
+            type: string
+            prefix: https://
+            title: FHIR Host
+            description: This practice's ModMed Certified FHIR host.
+            example: fhirmp.mmi.prod.fhir.ema-api.com
+            pattern: '^[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\.prod\.fhir\.ema-api\.com$'
+            doc_section: '#step-1-finding-your-fhir-host'
+            order: 1
+
 mural:
     display_name: Mural
     categories:
