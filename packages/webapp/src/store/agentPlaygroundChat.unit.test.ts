@@ -36,6 +36,22 @@ describe('agent playground chat storage', () => {
         expect(loadAgentPlaygroundChat('prod', now)).toBeUndefined();
     });
 
+    it('asks again for an approval that was answered but never sent', () => {
+        const toolPart = {
+            type: 'dynamic-tool' as const,
+            toolName: 'nango_execute',
+            toolCallId: 'call',
+            state: 'approval-responded' as const,
+            input: {},
+            approval: { id: 'approval', approved: true }
+        };
+        saveAgentPlaygroundChat('dev', [{ ...message('2026-10-01T12:30:00Z'), parts: [toolPart] }]);
+
+        const [restored] = loadAgentPlaygroundChat('dev', now) ?? [];
+        expect(restored?.parts[0]).toMatchObject({ state: 'approval-requested', approval: { id: 'approval' } });
+        expect(restored?.parts[0]).not.toHaveProperty('approval.approved');
+    });
+
     it('drops a chat with no session yet', () => {
         saveAgentPlaygroundChat('dev', [message()]);
 
