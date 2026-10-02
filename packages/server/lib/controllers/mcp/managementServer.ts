@@ -37,7 +37,7 @@ import type {
     ManagementMcpRequiredScopes,
     ManagementMcpTool
 } from './managementTool.js';
-import type { ServerContext } from '@modelcontextprotocol/server';
+import type { ProtocolEra, ServerContext } from '@modelcontextprotocol/server';
 import type { Principal } from '@nangohq/authz';
 import type { ApiKeyScope, AuditAttribution, AuditPolicy, DBPlan, DBTeam } from '@nangohq/types';
 
@@ -124,21 +124,25 @@ type ResolvedOAuthToolCall =
           deniedContext?: { environment: ManagementMcpEnvironment; toolArguments: Record<string, unknown> } | undefined;
       };
 
-export async function createManagementMcpServer(authentication: ManagementMcpServerAuthentication, requestBody?: unknown): Promise<McpServer> {
+export async function createManagementMcpServer(
+    authentication: ManagementMcpServerAuthentication,
+    requestBody?: unknown,
+    protocolEra: ProtocolEra = 'modern'
+): Promise<McpServer> {
     if (authentication.type === 'oauth') {
-        return await createOAuthManagementMcpServer(authentication.context, requestBody);
+        return await createOAuthManagementMcpServer(authentication.context, requestBody, protocolEra);
     }
-    return createApiKeyManagementMcpServer(authentication.context, requestBody);
+    return createApiKeyManagementMcpServer(authentication.context, requestBody, protocolEra);
 }
 
-function createApiKeyManagementMcpServer(context: ManagementMcpContext, requestBody: unknown): McpServer {
+function createApiKeyManagementMcpServer(context: ManagementMcpContext, requestBody: unknown, protocolEra: ProtocolEra): McpServer {
     const server = createBaseManagementMcpServer();
     const toolCallArgumentsByName = parseToolCallArguments(requestBody);
     for (const { toolDefinition, apiKeyConfig } of managementMcpToolRegistrations) {
         const callArguments = toolCallArgumentsByName.get(toolDefinition.name) ?? [];
 
         const registeredTool = server.registerTool(toolDefinition.name, apiKeyConfig, (args: unknown, sdkContext) =>
-            invokeManagementMcpTool(toolDefinition, args, context, sdkContext)
+            invokeManagementMcpTool(toolDefinition, args, context, sdkContext, protocolEra)
         );
 
         if (!hasRequiredScopes({ grantedScopes: context.grantedScopes, requiredScopes: toolDefinition.requiredScopes })) {
@@ -154,7 +158,7 @@ function createApiKeyManagementMcpServer(context: ManagementMcpContext, requestB
     return server;
 }
 
-async function createOAuthManagementMcpServer(oauthContext: ManagementMcpOAuthContext, requestBody: unknown): Promise<McpServer> {
+async function createOAuthManagementMcpServer(oauthContext: ManagementMcpOAuthContext, requestBody: unknown, protocolEra: ProtocolEra): Promise<McpServer> {
     const server = createBaseManagementMcpServer(oauthServerInstructions);
     registerEnvironmentsListTool(server, oauthContext);
     const toolCallArgumentsByName = parseToolCallArguments(requestBody);
@@ -167,7 +171,7 @@ async function createOAuthManagementMcpServer(oauthContext: ManagementMcpOAuthCo
         const callArguments = toolCallArgumentsByName.get(toolDefinition.name) ?? [];
 
         server.registerTool(toolDefinition.name, oauthConfig, (args: unknown, sdkContext) =>
-            invokeOAuthManagementMcpTool(toolDefinition, args, oauthContext, sdkContext)
+            invokeOAuthManagementMcpTool(toolDefinition, args, oauthContext, sdkContext, protocolEra)
         );
 
         // We don't disable tools in the OAuth path because whether they are available or not can depend on the environment.
@@ -196,9 +200,15 @@ function createBaseManagementMcpServer(instructions?: string): McpServer {
     );
 }
 
-async function invokeManagementMcpTool(tool: ManagementMcpTool, args: unknown, context: ManagementMcpContext, sdkContext: ServerContext) {
+async function invokeManagementMcpTool(
+    tool: ManagementMcpTool,
+    args: unknown,
+    context: ManagementMcpContext,
+    sdkContext: ServerContext,
+    protocolEra: ProtocolEra
+) {
     try {
-        const confirmation = requireToolConfirmation(tool, args, context, sdkContext);
+        const confirmation = requireToolConfirmation(tool, args, context, sdkContext, protocolEra);
         if (confirmation) {
             return confirmation;
         }
@@ -214,7 +224,13 @@ async function invokeManagementMcpTool(tool: ManagementMcpTool, args: unknown, c
     }
 }
 
-async function invokeOAuthManagementMcpTool(tool: ManagementMcpTool, args: unknown, oauthContext: ManagementMcpOAuthContext, sdkContext: ServerContext) {
+async function invokeOAuthManagementMcpTool(
+    tool: ManagementMcpTool,
+    args: unknown,
+    oauthContext: ManagementMcpOAuthContext,
+    sdkContext: ServerContext,
+    protocolEra: ProtocolEra
+) {
     try {
         const resolved = await resolveOAuthToolCall(args, oauthContext);
         if (!resolved.ok) {
@@ -230,14 +246,18 @@ async function invokeOAuthManagementMcpTool(tool: ManagementMcpTool, args: unkno
             return mcpToolError('Insufficient permissions for this tool in the selected environment');
         }
 
-        return await invokeManagementMcpTool(tool, resolved.toolArguments, resolved.context, sdkContext);
+        return await invokeManagementMcpTool(tool, resolved.toolArguments, resolved.context, sdkContext, protocolEra);
     } catch (err) {
         recordEarlyOAuthToolError(oauthContext.account.id, tool.name);
         return handleMcpToolError(err, tool.name);
     }
 }
 
-function requireToolConfirmation(tool: ManagementMcpTool, args: unknown, context: ManagementMcpContext, sdkContext: ServerContext) {
+function requireToolConfirmation(tool: ManagementMcpTool, args: unknown, context: ManagementMcpContext, sdkContext: ServerContext, protocolEra: ProtocolEra) {
+    if (protocolEra === 'legacy') {
+        return undefined;
+    }
+
     const message = tool.confirmation?.(args, context);
     if (!message) {
         return undefined;

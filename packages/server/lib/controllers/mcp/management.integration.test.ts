@@ -220,6 +220,26 @@ async function createModernMcpClient({
     return client;
 }
 
+async function createLegacyMcpClient(token: string): Promise<Client> {
+    const client = new Client(
+        { name: 'management-integration-test', version: '1.0.0' },
+        {
+            versionNegotiation: { mode: 'legacy' }
+        }
+    );
+
+    const transport = new StreamableHTTPClientTransport(new URL('/mcp', api.url), {
+        fetch: fetchManagementMcp,
+        requestInit: {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    });
+    await client.connect(transport);
+    return client;
+}
+
 describe('POST /mcp management server', () => {
     beforeAll(async () => {
         api = await runServer();
@@ -1385,6 +1405,21 @@ describe('POST /mcp management server', () => {
             content: [{ type: 'text', text: 'Integration "github" does not exist' }],
             isError: true
         });
+    });
+
+    it('does not require confirmation from a legacy client', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:integrations:delete']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const client = await createLegacyMcpClient(secret);
+
+        try {
+            expect(client.getNegotiatedProtocolVersion()).toBe('2025-11-25');
+            const result = await client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'github' } });
+            expect(result.structuredContent).toStrictEqual({ success: true });
+            expect(parseClientToolText(result)).toStrictEqual({ success: true });
+        } finally {
+            await client.close();
+        }
     });
 
     it('rejects invalid integration delete arguments', async () => {

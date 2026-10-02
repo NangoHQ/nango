@@ -38,8 +38,8 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
                       audit: resolveAuditAttribution(req, res.locals)
                   }
               } as const);
-    const handler = createMcpHandler(async () => {
-        const server = await createManagementMcpServer(authentication, req.body);
+    const handler = createMcpHandler(async ({ era }) => {
+        const server = await createManagementMcpServer(authentication, req.body, era);
         trackMcpServer({
             server,
             mcpType: 'management',
