@@ -54,6 +54,7 @@ class ProviderClient {
             case 'followupboss':
             case 'instagram':
             case 'jobber':
+            case 'linear-mcp':
             case 'microsoft-admin':
             case 'microsoft-teams-bot':
             case 'one-drive':
@@ -134,6 +135,8 @@ class ProviderClient {
                 return this.createFollowupbossToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, state);
             case 'jobber':
                 return this.createJobberToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
+            case 'linear-mcp':
+                return this.createLinearMcpToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
             case 'facebook':
             case 'meta-mcp':
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
@@ -273,6 +276,8 @@ class ProviderClient {
                 return this.refreshFollowupbossToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'jobber':
                 return this.refreshJobberToken(provider.token_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
+            case 'linear-mcp':
+                return this.refreshLinearMcpToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
             case 'facebook':
             case 'meta-mcp':
                 return this.refreshFacebookToken(provider.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
@@ -2388,6 +2393,67 @@ class ProviderClient {
             throw new NangoError('scrollstash_mcp_refresh_token_request_error');
         } catch (err: any) {
             throw new NangoError('scrollstash_mcp_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    // TODO: move to oauth.controller.ts for all MCP_OAUTH2 providers once confirmed none expect an empty client_secret in the body
+    private async createLinearMcpToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        redirectUri: string,
+        codeVerifier: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'authorization_code',
+                code,
+                client_id: clientId,
+                redirect_uri: redirectUri,
+                code_verifier: codeVerifier
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('linear_mcp_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('linear_mcp_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshLinearMcpToken(tokenUrl: string, refreshToken: string, clientId: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                client_id: clientId,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('linear_mcp_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('linear_mcp_refresh_token_request_error', stringifyError(err));
         }
     }
 }
