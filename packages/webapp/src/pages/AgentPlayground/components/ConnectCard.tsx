@@ -19,6 +19,7 @@ interface ConnectCardProps {
     provider: string;
     connectUrl: string;
     expiresAt: string | undefined;
+    connected: boolean;
     onConnected: (integrationId: string) => void;
     onRequestNewLink: (integrationId: string) => void;
 }
@@ -27,11 +28,19 @@ function hasExpired(expiresAt: string | undefined): boolean {
     return expiresAt !== undefined && Date.parse(expiresAt) <= Date.now();
 }
 
-export const ConnectCard: React.FC<ConnectCardProps> = ({ integrationId, provider, connectUrl, expiresAt, onConnected, onRequestNewLink }) => {
+export const ConnectCard: React.FC<ConnectCardProps> = ({
+    integrationId,
+    provider,
+    connectUrl,
+    expiresAt,
+    connected: alreadyConnected,
+    onConnected,
+    onRequestNewLink
+}) => {
     const env = useStore((state) => state.env);
     const { data: environmentData } = useEnvironment(env);
     const isDarkMode = useThemeStore(darkModeSelector);
-    const [status, setStatus] = useState<'idle' | 'waiting' | 'connected'>('idle');
+    const [status, setStatus] = useState<'idle' | 'waiting' | 'connected'>(alreadyConnected ? 'connected' : 'idle');
     const [failure, setFailure] = useState<string | null>(null);
     const [expired, setExpired] = useState(() => hasExpired(expiresAt));
     const [newLinkRequested, setNewLinkRequested] = useState(false);

@@ -144,17 +144,24 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         }
     };
 
-    const [connectedIntegrations, setConnectedIntegrations] = useState<string[]>([]);
+    const [pendingConnections, setPendingConnections] = useState<string[]>([]);
     const onConnected = useCallback((integrationId: string) => {
-        setConnectedIntegrations((ids) => (ids.includes(integrationId) ? ids : [...ids, integrationId]));
+        setPendingConnections((ids) => (ids.includes(integrationId) ? ids : [...ids, integrationId]));
     }, []);
     // Waits for the current reply to finish, so two turns never stream at the same time.
     useEffect(() => {
-        if (connectedIntegrations.length > 0 && !busy && !awaitingApproval) {
-            setConnectedIntegrations([]);
-            void sendMessage({ text: `I've connected ${connectedIntegrations.map(humanize).join(' and ')}.`, metadata: { hidden: true } });
+        if (pendingConnections.length > 0 && !busy && !awaitingApproval) {
+            setPendingConnections([]);
+            void sendMessage({
+                text: `I've connected ${pendingConnections.map(humanize).join(' and ')}.`,
+                metadata: { hidden: true, connectedIntegrations: pendingConnections }
+            });
         }
-    }, [connectedIntegrations, busy, awaitingApproval, sendMessage]);
+    }, [pendingConnections, busy, awaitingApproval, sendMessage]);
+    const connectedIntegrations = useMemo(
+        () => new Set([...pendingConnections, ...messages.flatMap((message) => message.metadata?.connectedIntegrations ?? [])]),
+        [pendingConnections, messages]
+    );
 
     const [newLinkRequests, setNewLinkRequests] = useState<string[]>([]);
     const onRequestNewLink = useCallback((integrationId: string) => {
@@ -260,6 +267,7 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                                             key={part.toolCallId}
                                             part={part}
                                             chatActive={busy}
+                                            connectedIntegrations={connectedIntegrations}
                                             onConnected={onConnected}
                                             onRequestNewLink={onRequestNewLink}
                                             onApprove={onApprove}

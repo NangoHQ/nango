@@ -20,6 +20,7 @@ import type { DynamicToolUIPart } from 'ai';
 interface ToolCallCardProps {
     part: DynamicToolUIPart;
     chatActive: boolean;
+    connectedIntegrations: ReadonlySet<string>;
     onConnected: (integrationId: string) => void;
     onRequestNewLink: (integrationId: string) => void;
     onApprove: (approvalId: string, approved: boolean) => void;
@@ -104,7 +105,7 @@ const NangoBox: React.FC = () => (
     </div>
 );
 
-export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, chatActive, onConnected, onRequestNewLink, onApprove }) => {
+export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, chatActive, connectedIntegrations, onConnected, onRequestNewLink, onApprove }) => {
     const display = describeTool(part.toolName, part.input);
     const awaitingApproval = part.state === 'approval-requested' && !part.approval.isAutomatic;
     const unfinished =
@@ -128,6 +129,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, chatActive, on
                     provider={output.provider ?? providerFor(output.integration)}
                     connectUrl={output.connect_url}
                     expiresAt={output.expires_at}
+                    connected={connectedIntegrations.has(output.integration)}
                     onConnected={onConnected}
                     onRequestNewLink={onRequestNewLink}
                 />
