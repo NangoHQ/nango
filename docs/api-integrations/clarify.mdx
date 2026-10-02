@@ -21,7 +21,7 @@ Connect to Clarify with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl --globoff "https://api.nango.dev/proxy/lists?page[limit]=1" \
+            curl --globoff "https://api.nango.dev/proxy/v1/workspaces/<WORKSPACE-SLUG>/lists?page[limit]=1" \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to Clarify with Nango and see data flow in 2 minutes.
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/lists?page[limit]=1',
+            endpoint: '/v1/workspaces/<WORKSPACE-SLUG>/lists?page[limit]=1',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });

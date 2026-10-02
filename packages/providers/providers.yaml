@@ -5307,13 +5307,13 @@ clarify:
         - crm
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.clarify.ai/v1/workspaces/${connectionConfig.workspaceSlug}
+        base_url: https://api.clarify.ai
         headers:
             authorization: api-key ${apiKey}
         verification:
             method: GET
             endpoints:
-                - /lists?page[limit]=1
+                - /v1/workspaces/${connectionConfig.workspaceSlug}/lists?page[limit]=1
     docs: https://nango.dev/docs/api-integrations/clarify
     docs_connect: https://nango.dev/docs/api-integrations/clarify/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/clarify/connect
