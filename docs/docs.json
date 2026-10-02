@@ -1538,6 +1538,7 @@
               "api-integrations/mailerlite",
               "integrations/all/mailgun",
               "api-integrations/mailjet",
+              "api-integrations/mailtrap",
               "integrations/all/make",
               "integrations/all/malwarebytes",
               "integrations/all/manatal",
