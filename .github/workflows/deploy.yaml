@@ -84,18 +84,18 @@ jobs:
               run: |
                   sed -E -i 's#(<meta name="nango-api-origin" content=")[^"]*(")#\1${{ vars.API_DOMAIN }}\2#' packages/webapp/dist/index.html
             - name: configure aws credentials
-              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production'
+              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production' || inputs.stage == 'charm-sandbox'
               uses: aws-actions/configure-aws-credentials@v4
               with:
                   role-to-assume: ${{ vars.DEPLOY_APP_UI_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   aws-region: ${{ vars.AWS_REGION }}
             - name: Deploy Webapp to S3
-              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production'
+              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production' || inputs.stage == 'charm-sandbox'
               run: |
                   aws s3 sync packages/webapp/dist/ s3://${{ vars.APP_UI_BUCKET }} --delete
             - name: Create invalidation
-              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production'
+              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production' || inputs.stage == 'charm-sandbox'
               run: |
                   aws cloudfront create-invalidation --distribution-id ${{ vars.APP_UI_DISTRIBUTION_ID }} --paths "/*"
             - name: Auth to GCP (OIDC)
@@ -138,18 +138,18 @@ jobs:
             - name: Build Connect UI
               run: npm run ts-build && npm run -w @nangohq/connect-ui build
             - name: configure aws credentials
-              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production'
+              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production' || inputs.stage == 'charm-sandbox'
               uses: aws-actions/configure-aws-credentials@v4
               with:
                   role-to-assume: ${{ vars.DEPLOY_CONNECT_UI_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
                   aws-region: ${{ vars.AWS_REGION }}
             - name: Deploy Connect UI to S3
-              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production'
+              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production' || inputs.stage == 'charm-sandbox'
               run: |
                   aws s3 sync packages/connect-ui/dist/ s3://${{ vars.CONNECT_UI_BUCKET }} --delete
             - name: Create invalidation
-              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production'
+              if: inputs.stage == 'development' || inputs.stage == 'staging' || inputs.stage == 'production' || inputs.stage == 'charm-sandbox'
               run: |
                   aws cloudfront create-invalidation --distribution-id ${{ vars.CONNECT_UI_DISTRIBUTION_ID }} --paths "/*"
             - name: Auth to GCP (OIDC)
