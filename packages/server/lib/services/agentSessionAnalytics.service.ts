@@ -1,19 +1,6 @@
 import { productTracking } from '@nangohq/shared';
 
-import type { ProductTrackingTypes } from '@nangohq/shared';
-import type { AgentSession, HTTP_METHOD } from '@nangohq/types';
-
-/** Nango's own tools, as opposed to the integration tools an account deploys. */
-export type AgentSessionMetaTool = 'nango_execute' | 'nango_proxy' | 'nango_tool_search' | 'nango_create_connection';
-
-/** One ranked tool, as the search returned it. Confidence runs from 0, nothing matched, to 1. */
-export type AgentSessionToolSearchHit = {
-    tool_name: string;
-    /** The name the agent was given for it, which collisions make impossible to derive afterwards. */
-    tool_slug: string;
-    integration_id: string;
-    confidence: number;
-};
+import type { AgentSession, AgentSessionMetaTool, AgentSessionToolSearchHit, AnalyticsEventProperties, HTTP_METHOD } from '@nangohq/types';
 
 interface Outcome {
     logOperationId?: string | undefined;
@@ -116,13 +103,19 @@ export function trackAgentSessionToolSearch({ session, query, matches, related, 
     });
 }
 
+type SessionEventName = 'agents:session_start' | 'agents:session_end' | 'agents:tool_call_complete' | 'agents:proxy_request_complete';
+
 /** Every session event carries the session it belongs to. */
-function trackSessionEvent(name: ProductTrackingTypes, session: AgentSession, properties: Record<string, string | number | boolean>): void {
-    productTracking.track({ name, eventProperties: { agent_session_id: session.id, ...properties } });
+function trackSessionEvent<E extends SessionEventName>(
+    name: E,
+    session: AgentSession,
+    properties: Omit<AnalyticsEventProperties<E>, 'agent_session_id'>
+): void {
+    productTracking.track<E>({ name, eventProperties: { agent_session_id: session.id, ...properties } as AnalyticsEventProperties<E> });
 }
 
 /** One event per call, so whether it worked is a property and the code says why it did not. */
-function outcomeProperties({ logOperationId, errorCode }: Outcome): Record<string, string | boolean> {
+function outcomeProperties({ logOperationId, errorCode }: Outcome): { is_success: boolean; log_operation_id?: string; error_code?: string } {
     return {
         is_success: !errorCode,
         ...(logOperationId ? { log_operation_id: logOperationId } : {}),

@@ -4,19 +4,16 @@ import { PostHog } from 'posthog-node';
 
 import { baseUrl, FixedSizeMap, NANGO_VERSION, report } from '@nangohq/utils';
 
-import type { AccountGroupProperties, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
-
-export type ProductTrackingTypes =
-    | 'auth:account_create'
-    | 'auth:user_create'
-    | 'functions:command_start'
-    | 'billing:plan_submit'
-    | 'billing:plan_update'
-    | 'agents:session_start'
-    | 'agents:session_end'
-    | 'agents:tool_call_complete'
-    | 'agents:proxy_request_complete'
-    | 'agents:tool_search_complete';
+import type {
+    AccountGroupProperties,
+    AnalyticsEventNameFor,
+    AnalyticsEventProperties,
+    AnalyticsEventStructuredProperties,
+    DBEnvironment,
+    DBPlan,
+    DBTeam,
+    DBUser
+} from '@nangohq/types';
 
 const ACCOUNT_GROUP = 'company';
 
@@ -165,7 +162,7 @@ class ProductTracking {
         };
     }
 
-    public track({
+    public track<E extends AnalyticsEventNameFor<'server'>>({
         name,
         team,
         environment,
@@ -174,13 +171,9 @@ class ProductTracking {
         eventProperties,
         structuredProperties
     }: {
-        name: ProductTrackingTypes;
-        eventProperties?: Record<string, string | number | boolean | null | undefined>;
-        /**
-         * Values the taxonomy's primitives-only rule does not allow, carried by the exception granted
-         * to tool search so a query can be read next to the results it returned.
-         */
-        structuredProperties?: Record<string, ReadonlyArray<Record<string, string | number | boolean>>>;
+        name: E;
+        eventProperties: AnalyticsEventProperties<E>;
+        structuredProperties?: AnalyticsEventStructuredProperties<E>;
     } & TrackingContextInput) {
         try {
             if (this.client == null) {
@@ -197,11 +190,7 @@ class ProductTracking {
             }
             const attribution = this.attribute(resolved);
 
-            const properties = {
-                ...eventProperties,
-                ...structuredProperties,
-                ...attribution.properties
-            };
+            const properties: Record<string, unknown> = { ...eventProperties, ...(structuredProperties as object | undefined), ...attribution.properties };
 
             this.client.capture({ event: name, distinctId: attribution.distinctId, properties, groups: attribution.groups });
         } catch (err) {
@@ -239,14 +228,14 @@ class ProductTracking {
      * The distinctId is a client-generated device id, and the event keeps the surface it came from
      * rather than the one relaying it.
      */
-    public trackAnonymous({
+    public trackAnonymous<E extends AnalyticsEventNameFor<'cli'>>({
         name,
         distinctId,
         eventProperties
     }: {
-        name: ProductTrackingTypes;
+        name: E;
         distinctId: string;
-        eventProperties?: Record<string, string | number | boolean | null | undefined>;
+        eventProperties: AnalyticsEventProperties<E>;
     }) {
         try {
             if (this.client == null) {
