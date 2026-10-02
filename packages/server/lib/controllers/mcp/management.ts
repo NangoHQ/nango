@@ -61,23 +61,35 @@ export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res
     }
 });
 
-async function withTopLevelToolSecuritySchemesResponse(response: Response): Promise<Response> {
-    if (!response.headers.get('content-type')?.includes('application/json')) {
-        return response;
-    }
-
-    const message = (await response.clone().json()) as unknown;
-    const transformed = withTopLevelToolSecuritySchemes(message);
+export async function withTopLevelToolSecuritySchemesResponse(response: Response): Promise<Response> {
+    const contentType = response.headers.get('content-type');
     const headers = new Headers(response.headers);
     headers.delete('content-length');
-    return new Response(JSON.stringify(transformed), { status: response.status, statusText: response.statusText, headers });
+
+    if (contentType?.includes('application/json')) {
+        const message = (await response.clone().json()) as unknown;
+        return new Response(JSON.stringify(withTopLevelToolSecuritySchemes(message)), {
+            status: response.status,
+            statusText: response.statusText,
+            headers
+        });
+    }
+    if (contentType?.includes('text/event-stream') && response.body) {
+        return new Response(response.body.pipeThrough(createSecuritySchemesSseTransform()), {
+            status: response.status,
+            statusText: response.statusText,
+            headers
+        });
+    }
+
+    return response;
 }
 
 /**
  * @modelcontextprotocol/server currently emits only the compatibility mirror in
  * `_meta.securitySchemes`. OpenAI also expects the top-level tool descriptor field.
  */
-export function withTopLevelToolSecuritySchemes(message: unknown): unknown {
+function withTopLevelToolSecuritySchemes(message: unknown): unknown {
     if (Array.isArray(message)) {
         return message.map(withTopLevelToolSecuritySchemes);
     }
@@ -94,6 +106,45 @@ export function withTopLevelToolSecuritySchemes(message: unknown): unknown {
     });
 
     return { ...message, result: { ...message['result'], tools } };
+}
+
+function createSecuritySchemesSseTransform(): TransformStream<Uint8Array, Uint8Array> {
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+    let buffered = '';
+
+    return new TransformStream({
+        transform(chunk, controller) {
+            buffered += decoder.decode(chunk, { stream: true });
+            let newline = buffered.indexOf('\n');
+            while (newline >= 0) {
+                controller.enqueue(encoder.encode(withTopLevelToolSecuritySchemesSseLine(buffered.slice(0, newline + 1))));
+                buffered = buffered.slice(newline + 1);
+                newline = buffered.indexOf('\n');
+            }
+        },
+        flush(controller) {
+            buffered += decoder.decode();
+            if (buffered) {
+                controller.enqueue(encoder.encode(withTopLevelToolSecuritySchemesSseLine(buffered)));
+            }
+        }
+    });
+}
+
+function withTopLevelToolSecuritySchemesSseLine(line: string): string {
+    const match = /^(data:\s?)(.*?)(\r?\n)?$/.exec(line);
+    if (!match?.[2]) {
+        return line;
+    }
+
+    try {
+        const message = JSON.parse(match[2]) as unknown;
+        const transformed = withTopLevelToolSecuritySchemes(message);
+        return transformed === message ? line : `${match[1]}${JSON.stringify(transformed)}${match[3] ?? ''}`;
+    } catch {
+        return line;
+    }
 }
 
 // We have to be explicit about not supporting SSE

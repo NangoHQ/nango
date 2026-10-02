@@ -919,7 +919,7 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.callTool({
                 name: 'syncs_trigger',
-                arguments: { integration_id: 'github', syncs: ['issues'], empty_cache: true }
+                arguments: { integration_id: 'github', syncs: ['issues'], reset: true, empty_cache: true }
             });
 
             expect(result).toStrictEqual({
@@ -929,7 +929,8 @@ describe('createManagementMcpServer', () => {
             expect(handlerSpy).toHaveBeenCalledOnce();
             expect(elicitationHandler).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    message: 'Trigger the requested syncs for integration "github" in environment "dev" with deletion of existing synced records?'
+                    message:
+                        'Trigger the requested syncs for integration "github" in environment "dev" with a full reset and deletion of existing synced records?'
                 })
             );
         } finally {
@@ -939,7 +940,7 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it('does not elicit confirmation for an incremental sync trigger', async () => {
+    it('does not elicit confirmation when empty_cache is ignored without reset', async () => {
         const response = { success: true as const };
         const handlerSpy = vi.spyOn(triggerSyncsTool, 'handler').mockResolvedValueOnce(Ok(response));
         const { client, server } = await createTestClient(['environment:syncs:execute']);
@@ -947,7 +948,7 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.callTool({
                 name: 'syncs_trigger',
-                arguments: { integration_id: 'github', syncs: ['issues'] }
+                arguments: { integration_id: 'github', syncs: ['issues'], empty_cache: true }
             });
 
             expect(result).toStrictEqual({

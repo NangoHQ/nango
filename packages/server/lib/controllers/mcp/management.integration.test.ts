@@ -107,11 +107,14 @@ async function fetchManagementMcp(input: string | URL | Request, init?: RequestI
                 port: url.port,
                 path: `${url.pathname}${url.search}`,
                 method: init?.method,
-                headers
+                headers,
+                signal: init?.signal ?? undefined
             },
             (res) => {
                 const chunks: Buffer[] = [];
                 res.on('data', (chunk: Buffer) => chunks.push(chunk));
+                res.on('error', reject);
+                res.on('aborted', () => reject(new Error('MCP response aborted')));
                 res.on('end', () => {
                     const responseHeaders = new Headers();
                     for (const [name, value] of Object.entries(res.headers)) {

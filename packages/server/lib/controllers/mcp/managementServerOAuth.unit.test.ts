@@ -8,7 +8,7 @@ import { Err, flags, metrics, Ok } from '@nangohq/utils';
 import { audit, auditBackend } from '../../audit.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { listIntegrationsTool } from './integrations/list.js';
-import { withTopLevelToolSecuritySchemes } from './management.js';
+import { withTopLevelToolSecuritySchemesResponse } from './management.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { getProvidersTool } from './providers/get.js';
 
@@ -75,8 +75,23 @@ describe('createManagementMcpServer with OAuth', () => {
             }
 
             // The MCP SDK currently strips the top-level securitySchemes extension required
-            // by OpenAI, so inspect the raw HTTP message to verify it and its _meta compatibility mirror.
-            const serialized = withTopLevelToolSecuritySchemes({ jsonrpc: '2.0', id: 1, result }) as {
+            // by OpenAI, so inspect the SSE response transformation and its _meta compatibility mirror.
+            const message = JSON.stringify({ jsonrpc: '2.0', id: 1, result });
+            const encoded = new TextEncoder().encode(`event: message\ndata: ${message}\n\n`);
+            const body = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    const split = Math.floor(encoded.length / 2);
+                    controller.enqueue(encoded.slice(0, split));
+                    controller.enqueue(encoded.slice(split));
+                    controller.close();
+                }
+            });
+            const response = await withTopLevelToolSecuritySchemesResponse(new Response(body, { headers: { 'content-type': 'text/event-stream' } }));
+            const data = (await response.text()).split('\n').find((line) => line.startsWith('data: '));
+            if (!data) {
+                throw new Error('Expected an SSE data line');
+            }
+            const serialized = JSON.parse(data.slice('data: '.length)) as {
                 result: { tools: Array<Record<string, unknown>> };
             };
             for (const tool of serialized.result.tools) {
