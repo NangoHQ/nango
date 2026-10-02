@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { accountGroupProperties, productTracking, withProductTrackingContext } from './productTracking.js';
+import { accountGroupProperties, isInternalAccount, productTracking, withProductTrackingContext } from './productTracking.js';
 
 import type { DBEnvironment, DBTeam, DBUser } from '@nangohq/types';
 
@@ -151,6 +151,28 @@ describe('accountGroupProperties', () => {
     });
 });
 
+describe('isInternalAccount', () => {
+    it('is internal only when every user has a @nango.dev email', () => {
+        expect(isInternalAccount([{ email: 'a@nango.dev' }, { email: 'B@Nango.dev' }])).toBe(true);
+        expect(isInternalAccount([{ email: 'a@nango.dev' }, { email: 'kelvin@customer.com' }])).toBe(false);
+        expect(isInternalAccount([{ email: 'a@nango.dev.example.com' }])).toBe(false);
+        expect(isInternalAccount([])).toBe(false);
+    });
+});
+
+describe('identifyAccountGroup', () => {
+    it('sends a property the request context does not carry, once per change, and keeps it out of later diffs', () => {
+        productTracking.identifyAccountGroup(48, { is_internal: true });
+        productTracking.identifyAccountGroup(48, { is_internal: true });
+        productTracking.track({ name: 'account:billing:downgraded', team: { id: 48, name: 'Acme' } });
+
+        expect(groupIdentify.mock.calls.map(([payload]) => payload)).toStrictEqual([
+            { groupType: 'company', groupKey: '48', properties: { is_internal: true } },
+            { groupType: 'company', groupKey: '48', properties: { name: 'Acme' } }
+        ]);
+    });
+});
+
 describe('withProductTrackingContext', () => {
     it('stamps the context on an event that passes nothing', () => {
         withProductTrackingContext(
@@ -191,6 +213,19 @@ describe('withProductTrackingContext', () => {
         );
 
         expect(lastCapture().properties['is_production']).toBe(false);
+    });
+
+    it('sends nothing while a Nango admin is impersonating the account, even for an event that names it', () => {
+        withProductTrackingContext(
+            () => ({ team, environment, impersonated: true }),
+            () => {
+                productTracking.track({ name: 'account:billing:downgraded', team: { id: 47, name: 'Acme' } });
+                expect(productTracking.getServerEventAttribution({ team })).toBeNull();
+            }
+        );
+
+        expect(capture).not.toHaveBeenCalled();
+        expect(groupIdentify).not.toHaveBeenCalled();
     });
 
     it('leaves an anonymous CLI event on its own surface, with no account', () => {
