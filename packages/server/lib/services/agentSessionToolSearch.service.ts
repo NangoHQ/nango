@@ -8,13 +8,13 @@ import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuida
 import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { trackAgentSessionToolSearch } from './agentSessionAnalytics.service.js';
 
-import type { AgentSessionToolSearchHit } from './agentSessionAnalytics.service.js';
 import type { ActionInputSchemaRow } from '@nangohq/shared';
 import type {
     AgentSession,
     AgentSessionToolConnectionState,
     AgentSessionToolInput,
     AgentSessionToolMatch,
+    AgentSessionToolSearchHit,
     AgentSessionToolSearchResult,
     DBEnvironment,
     DBTeam
