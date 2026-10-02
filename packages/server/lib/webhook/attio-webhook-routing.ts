@@ -7,10 +7,19 @@ import { Err, getLogger, metrics, Ok } from '@nangohq/utils';
 
 import { validateHmacSignature } from './signature.js';
 
+import type { WebhookObjectFilter } from './object-filter.js';
 import type { AttioWebhook, WebhookHandler } from './types.js';
 
 const logger = getLogger('Webhook.Attio');
 const ATTIO_WEBHOOK_DEDUPE_WINDOW_MS = 7_000;
+// Temporary, goes away with routing functions. Skips the sync whose cached object id does not match the event.
+const OBJECT_FILTER: WebhookObjectFilter = {
+    path: 'id.object_id',
+    metadataKeyBySyncName: {
+        contacts: 'attioPeopleObjectId',
+        companies: 'attioCompaniesObjectId'
+    }
+};
 
 function recordEventClass(eventType: string): 'fetch' | 'delete' | 'merged' | null {
     switch (eventType) {
@@ -98,6 +107,7 @@ const route: WebhookHandler<AttioWebhook> = async (nango, headers, body, rawBody
                 webhookType: 'event_type',
                 connectionIdentifier: 'id.workspace_id',
                 propName: 'workspace_id',
+                objectFilter: OBJECT_FILTER,
                 ...(dedupeClaim ? { delaySeconds: ATTIO_WEBHOOK_DEDUPE_WINDOW_MS / 1000 } : {})
             });
             if (response && response.connectionIds?.length > 0) {

@@ -139,6 +139,21 @@ describe('Attio webhook routing', () => {
         expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.dedupe.suppressed', 1, { provider: 'attio', enforced: 'false' });
     });
 
+    it('declares the object filter for the cached object id keys', async () => {
+        const nango = makeNango();
+
+        await route(nango as never, {}, { webhook_id: 'webhook-1', events: [event('record.updated')] }, '');
+
+        expect(nango.executeScriptForWebhooks).toHaveBeenCalledWith(
+            expect.objectContaining({
+                objectFilter: {
+                    path: 'id.object_id',
+                    metadataKeyBySyncName: { contacts: 'attioPeopleObjectId', companies: 'attioCompaniesObjectId' }
+                }
+            })
+        );
+    });
+
     it('preserves connection routing when an event is suppressed', async () => {
         mocks.set.mockRejectedValue(new Error('set_key_already_exists'));
         const nango = makeNango();
