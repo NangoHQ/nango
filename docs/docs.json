@@ -1325,6 +1325,7 @@
               "integrations/all/fillout-api-key",
               "integrations/all/findymail",
               "api-integrations/finta",
+              "api-integrations/firecrawl",
               "integrations/all/firefish",
               "integrations/all/fireflies",
               "api-integrations/firstbase",

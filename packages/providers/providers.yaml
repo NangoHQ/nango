@@ -9139,6 +9139,32 @@ finta:
             example: finta_ZdzcJWJv********************fVsY
             doc_section: '#step-1-finding-your-api-key'
 
+firecrawl:
+    display_name: Firecrawl
+    categories:
+        - dev-tools
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.firecrawl.dev
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/team/queue-status
+                - /v2/team/credit-usage
+    docs: https://nango.dev/docs/api-integrations/firecrawl
+    docs_connect: https://nango.dev/docs/api-integrations/firecrawl/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Firecrawl API key.
+            example: fc-1a2b************************3c4d
+            pattern: '^(fc-[0-9a-fA-F]{32}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$'
+            doc_section: '#step-1-generating-your-firecrawl-api-key'
+
 firefish:
     display_name: Firefish
     scope_separator: ' '
