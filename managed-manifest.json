@@ -1,7 +1,7 @@
 {
   "latest": {
     "imageVersion": "1.6.19",
-    "appVersion": "0.71.12",
+    "appVersion": "0.71.11",
     "commitHash": "75a6224d421049ae0ec40cbb7b50221ed0500b0d",
     "releaseDate": "2026-10-02T18:40:02.032Z",
     "comparisonUrl": "https://github.com/NangoHQ/nango/compare/fe85242b81ab9d3ac808a72ca7bdd2788c8e86fb...75a6224d421049ae0ec40cbb7b50221ed0500b0d"
