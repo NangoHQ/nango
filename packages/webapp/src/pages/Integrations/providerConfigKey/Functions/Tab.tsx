@@ -128,7 +128,7 @@ function FunctionTemplateRow({
     onDeploy: (template: NangoFunctionTemplate) => void;
 }) {
     return (
-        <TableRow className="h-12 hover:bg-transparent">
+        <TableRow className="h-12 hover:bg-surface-panel-inset">
             <FunctionNameCell name={template.name} description={template.description} />
             <TableCell className="w-35 px-3">
                 <FunctionSourceLabel source="template" />
