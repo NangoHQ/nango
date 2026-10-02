@@ -5301,6 +5301,37 @@ clari-copilot:
             title: API Key
             description: The API key for your Clari Copilot account
 
+clarify:
+    display_name: Clarify
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.clarify.ai
+        headers:
+            authorization: api-key ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/workspaces/${connectionConfig.workspaceSlug}/lists?page[limit]=1
+    docs: https://nango.dev/docs/api-integrations/clarify
+    docs_connect: https://nango.dev/docs/api-integrations/clarify/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/clarify/connect
+    connection_config:
+        workspaceSlug:
+            type: string
+            title: Workspace slug
+            description: The workspace segment from your Clarify URL (e.g. acme from app.clarify.ai/workspaces/acme). Enter the slug only, not the full URL.
+            example: acme
+            doc_section: '#step-1-finding-your-workspace-slug'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API key
+            description: A Clarify API key from Settings, then API Keys. Keys are issued per workspace.
+            doc_section: '#step-2-creating-an-api-key'
+
 clay:
     display_name: Clay
     categories:

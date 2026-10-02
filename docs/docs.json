@@ -1187,6 +1187,7 @@
               "api-integrations/circleback-mcp",
               "api-integrations/cisco-duo-admin",
               "integrations/all/clari-copilot",
+              "api-integrations/clarify",
               "api-integrations/clay",
               "api-integrations/clay-mcp",
               "integrations/all/clerk",
