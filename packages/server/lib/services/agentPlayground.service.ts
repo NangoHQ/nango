@@ -112,17 +112,6 @@ async function ensurePlaygroundIntegration(
     return integrationId;
 }
 
-async function listUserConnections(ctx: PlaygroundContext, integrationIds: string[]) {
-    if (integrationIds.length === 0) {
-        return [];
-    }
-    return await connectionService.listConnections({
-        environmentId: ctx.environment.id,
-        integrationIds,
-        tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid }
-    });
-}
-
 // The owner is read from the create-connection tags, so those tags must stay per user.
 export function sessionOwner(session: Pick<AgentSession, 'metaTools'>): string | undefined {
     return session.metaTools.nangoCreateConnection.tags[PLAYGROUND_USER_TAG_KEY];
@@ -137,7 +126,11 @@ async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | un
     }
 
     const integrationIds = await ensurePlaygroundIntegrations(ctx.environment);
-    const connections = await listUserConnections(ctx, integrationIds);
+    const connections = await connectionService.listConnections({
+        environmentId: ctx.environment.id,
+        integrationIds,
+        tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid }
+    });
 
     const created = await agentSessionCreationService.createAgentSession({
         account: ctx.account,
@@ -260,13 +253,17 @@ export async function startTurn({
     try {
         await server.connect(serverTransport);
         await client.connect(clientTransport);
-        let connections: Awaited<ReturnType<typeof listUserConnections>>;
+        let connections: Awaited<ReturnType<typeof connectionService.listConnections>>;
         // Read live: the session's own connection list only fills in once a tool uses a connection.
         [tools, modelMessages, connections] = await Promise.all([
             buildMcpTools(client),
             // A tool call left unanswered by Stop or an ignored approval would make OpenAI reject every later turn.
             convertToModelMessages(messages, { ignoreIncompleteToolCalls: true }),
-            listUserConnections(ctx, Object.keys(session.value.compiledToolset))
+            connectionService.listConnections({
+                environmentId: ctx.environment.id,
+                integrationIds: Object.keys(session.value.compiledToolset),
+                tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid }
+            })
         ]);
         connected = new Set(connections.map(({ connection }) => connection.provider_config_key));
     } catch (err) {
