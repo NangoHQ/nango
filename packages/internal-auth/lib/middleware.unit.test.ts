@@ -1,7 +1,10 @@
+import { generateKeyPairSync } from 'node:crypto';
+
 import express from 'express';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR } from './constants.js';
+import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, INTERNAL_SERVICE_ISSUER_JOBS, nodeSubject, taskSubject } from './constants.js';
+import { mint } from './jwt.js';
 import { internalServiceAuthMiddleware, requireFleetAuth, requireTaskBoundAuth } from './middleware.js';
 import { createInternalServiceToken } from './token.js';
 
@@ -64,11 +67,22 @@ async function listen(server: ReturnType<typeof express>) {
     });
 }
 
+function ed25519Material(): { pem: string; raw: string } {
+    const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+    const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+    const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
+        .subarray(12)
+        .toString('base64url');
+    return { pem, raw };
+}
+
 afterEach(() => {
     envs.NANGO_INTERNAL_AUTH_REQUIRED = false;
     envs.NANGO_INTERNAL_AUTH_TOKEN = undefined;
     envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
     envs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY = undefined;
+    envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = undefined;
+    envs.NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS = undefined;
 });
 
 describe('internalServiceAuthMiddleware', () => {
@@ -340,6 +354,156 @@ describe('jobs route policy', () => {
         const { url, close } = await listen(jobsMountedApp());
         try {
             const res = await fetch(`${url}/runners/1/idle`, { method: 'POST', headers: { Authorization: 'Bearer secret' } });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('accepts a workload task JWT on putTask when REQUIRED', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { pem, raw } = ed25519Material();
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
+        const taskId = '11111111-1111-4111-8111-111111111111';
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
+        );
+        const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
+        try {
+            const res = await fetch(`${url}/tasks/${taskId}`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(204);
+        } finally {
+            await close();
+        }
+    });
+
+    it('accepts a workload task JWT on heartbeat when REQUIRED', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { pem, raw } = ed25519Material();
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
+        const taskId = '11111111-1111-4111-8111-111111111111';
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
+        );
+        const { url, close } = await listen(jobsMountedApp());
+        try {
+            const res = await fetch(`${url}/tasks/${taskId}/heartbeat`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(201);
+        } finally {
+            await close();
+        }
+    });
+
+    it('accepts a workload node JWT on register when REQUIRED', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { pem, raw } = ed25519Material();
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: nodeSubject('1'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
+        );
+        const { url, close } = await listen(jobsMountedApp());
+        try {
+            const res = await fetch(`${url}/runners/1/register`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+            expect(res.status).toBe(200);
+        } finally {
+            await close();
+        }
+    });
+
+    it('accepts a workload node JWT on idle when REQUIRED', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { pem, raw } = ed25519Material();
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: nodeSubject('1'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
+        );
+        const { url, close } = await listen(jobsMountedApp());
+        try {
+            const res = await fetch(`${url}/runners/1/idle`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+            expect(res.status).toBe(200);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a workload task JWT for a different task on putTask when REQUIRED', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { pem, raw } = ed25519Material();
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: taskSubject('22222222-2222-4222-8222-222222222222'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
+        );
+        const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
+        try {
+            const res = await fetch(`${url}/tasks/11111111-1111-4111-8111-111111111111`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a workload task JWT for a different task on heartbeat when REQUIRED', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { pem, raw } = ed25519Material();
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: taskSubject('22222222-2222-4222-8222-222222222222'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
+        );
+        const { url, close } = await listen(jobsMountedApp());
+        try {
+            const res = await fetch(`${url}/tasks/11111111-1111-4111-8111-111111111111/heartbeat`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a workload node JWT for a different node on register when REQUIRED', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { pem, raw } = ed25519Material();
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: nodeSubject('2'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
+        );
+        const { url, close } = await listen(jobsMountedApp());
+        try {
+            const res = await fetch(`${url}/runners/1/register`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a workload node JWT for a different node on idle when REQUIRED', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { pem, raw } = ed25519Material();
+        envs.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS = [{ kid: 'jobs-2026-09', publicKey: raw }];
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
+            { sub: nodeSubject('2'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
+        );
+        const { url, close } = await listen(jobsMountedApp());
+        try {
+            const res = await fetch(`${url}/runners/1/idle`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
             expect(res.status).toBe(401);
         } finally {
             await close();

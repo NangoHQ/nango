@@ -9,7 +9,7 @@ export const bigQueryClient = await BigQueryClient.createInstance({
     tableName: `${env}_script_runs`
 });
 
-export const orchestratorClient = new OrchestratorClient({ baseUrl: getOrchestratorUrl() });
+export const orchestratorClient = new OrchestratorClient({ baseUrl: getOrchestratorUrl(), service: 'jobs' });
 
 export const slackService = new SlackService({
     logContextGetter: logContextGetter
