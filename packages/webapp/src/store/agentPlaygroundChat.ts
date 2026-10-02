@@ -28,10 +28,24 @@ export function loadAgentPlaygroundChat(env: string, now = Date.now()): Playgrou
             clearAgentPlaygroundChat();
             return undefined;
         }
-        return stored.messages;
+        return stored.messages.map(reopenAnsweredApprovals);
     } catch {
         return undefined;
     }
+}
+
+// An answer saved just before a reload is never sent, and a restored chat doesn't send it again.
+function reopenAnsweredApprovals(message: PlaygroundMessage): PlaygroundMessage {
+    return {
+        ...message,
+        parts: message.parts.map((part) => {
+            if (part.type !== 'dynamic-tool' || part.state !== 'approval-responded') {
+                return part;
+            }
+            const { approved: _approved, reason: _reason, ...approval } = part.approval;
+            return { ...part, state: 'approval-requested', approval };
+        })
+    };
 }
 
 export function saveAgentPlaygroundChat(env: string, messages: PlaygroundMessage[]): void {
@@ -50,7 +64,5 @@ export function saveAgentPlaygroundChat(env: string, messages: PlaygroundMessage
 export function clearAgentPlaygroundChat(): void {
     try {
         sessionStorage.removeItem(LocalStorageKeys.AgentPlaygroundChat);
-    } catch {
-        // Blocked storage holds nothing to clear.
-    }
+    } catch {}
 }
