@@ -6,6 +6,7 @@ import { McpGenericSettings } from './McpGenericSettings';
 import { McpOAuthSettings } from './McpOAuthSettings';
 import { OAuth2CCSettings } from './OAuth2CCSettings';
 import { OAuthSettings } from './OAuthSettings';
+import { isOAuthCredentials, SettingsSection } from './SettingsLayout';
 
 import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
@@ -43,10 +44,28 @@ export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['d
     const hasCustomIntegrationConfig =
         data.template.integration_config && Object.keys(data.template.integration_config).length > 0 && !data.integration.shared_credentials_id;
 
+    const showCredentials =
+        hasCustomIntegrationConfig ||
+        data.template.auth_mode === 'OAUTH1' ||
+        data.template.auth_mode === 'OAUTH2' ||
+        data.template.auth_mode === 'TBA' ||
+        data.template.auth_mode === 'OAUTH2_CC' ||
+        data.template.auth_mode === 'APP' ||
+        data.template.auth_mode === 'CUSTOM' ||
+        data.template.auth_mode === 'MCP_OAUTH2' ||
+        data.template.auth_mode === 'MCP_OAUTH2_GENERIC' ||
+        data.template.auth_mode === 'INSTALL_PLUGIN';
+
+    if (!showCredentials) {
+        return null;
+    }
+
+    const title = isOAuthCredentials(data.template.auth_mode) ? 'OAuth credentials' : 'Credentials';
+
     return (
-        <>
+        <SettingsSection title={title}>
             <AuthModeSettings data={data} environment={environment} />
             {hasCustomIntegrationConfig && <CustomIntegrationSettings data={data} />}
-        </>
+        </SettingsSection>
     );
 };
