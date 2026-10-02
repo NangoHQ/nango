@@ -21,7 +21,7 @@ function handleRequest(resolve: (locals: Partial<RequestLocals>) => void): void 
     const res = { locals: {} } as Response<any, Partial<RequestLocals>>;
     const next: NextFunction = () => {
         resolve(res.locals);
-        productTracking.track({ name: 'billing:plan_submit' });
+        productTracking.track({ name: 'agents:session_end', eventProperties: { agent_session_id: 'session-1', session_duration_ms: 1 } });
     };
 
     productTrackingMiddleware({} as Request, res, next);
