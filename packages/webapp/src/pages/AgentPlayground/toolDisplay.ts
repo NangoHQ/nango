@@ -70,7 +70,7 @@ export function describeTool(toolName: string, input: unknown): ToolDisplay {
 
 export function toolArguments(toolName: string, input: unknown): unknown {
     if (toolName === 'nango_execute' && input && typeof input === 'object') {
-        return (input as { input?: unknown }).input ?? {};
+        return 'input' in input ? input.input : {};
     }
     return input;
 }
