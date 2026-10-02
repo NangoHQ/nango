@@ -25,6 +25,7 @@ export type GetMeta = ApiEndpoint<{
             // Whether this account can reach its own trail; gates the dashboard UI.
             auditTrail: boolean;
             accountGroup: AccountGroupProperties;
+            agentPlayground: boolean;
         };
     };
 }>;
