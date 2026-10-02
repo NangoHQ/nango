@@ -1,13 +1,14 @@
-import { Anchor, BookOpen, Code, GitBranch, LayoutTemplate, LibraryBig, Plus, Search } from 'lucide-react';
+import { Code, LibraryBig, Plus, Search } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button, InputGroup, InputGroupAddon, InputGroupInput, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { ButtonLink } from '@/components/ui/ButtonLink';
+import { CopyButton } from '@/components/ui/CopyButton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
@@ -24,8 +25,10 @@ import { APIError } from '@/utils/api';
 import { isSyncOrAction } from '@/utils/scripts';
 import { cn } from '@/utils/utils';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
+import { FunctionDetailsPanel } from './FunctionDetailsPanel';
+import { FunctionSourceLabel } from './FunctionSourceLabel';
 
-import type { ApiError, ApiIntegration, FunctionListSource, ListedNangoFunction, NangoFunctionTemplate } from '@nangohq/types';
+import type { ApiError, ApiIntegration, ListedNangoFunction, NangoFunctionTemplate } from '@nangohq/types';
 
 const TYPE_FILTER_VALUES = ['action', 'sync', 'on-event'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
@@ -35,18 +38,6 @@ const TYPE_PILLS: { value: TypeFilterValue; label: string; emptyLabel: string }[
     { value: 'sync', label: 'Syncs', emptyLabel: 'No syncs' },
     { value: 'on-event', label: 'Triggers', emptyLabel: 'No triggers' }
 ];
-
-const SOURCE_LABEL: Record<FunctionListSource | 'template', { label: string; icon: typeof BookOpen; tooltip: string }> = {
-    catalog: { label: 'Standalone', icon: Anchor, tooltip: 'Deployed function, the source-code lives in Nango.' },
-    standalone: { label: 'Standalone', icon: Anchor, tooltip: 'Deployed function, the source-code lives in Nango.' },
-    repo: { label: 'Your repo', icon: GitBranch, tooltip: 'Deployed from the Nango CLI. You own the source-code.' },
-    'tools-catalog': {
-        label: 'Nango catalog',
-        icon: BookOpen,
-        tooltip: 'Written and maintained by Nango. Always on the latest version (auto-updates).'
-    },
-    template: { label: 'Template', icon: LayoutTemplate, tooltip: 'A template you can deploy or customize.' }
-};
 
 function functionRowKey(fn: ListedNangoFunction): string {
     const event = fn.type === 'on-event' ? fn.event : '';
@@ -67,27 +58,20 @@ function ColumnHead({ className, children }: { className?: string; children: str
     );
 }
 
-function FunctionSourceLabel({ source }: { source: FunctionListSource | 'template' }) {
-    const { label, icon: Icon, tooltip } = SOURCE_LABEL[source];
-    return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <span className="inline-flex items-center gap-1 type-label-sm text-text-default">
-                    <Icon className="size-3 shrink-0" />
-                    {label}
-                </span>
-            </TooltipTrigger>
-            <TooltipContent side="left">{tooltip}</TooltipContent>
-        </Tooltip>
-    );
-}
-
 function FunctionNameCell({ name, description }: { name: string; description?: string }) {
     return (
-        <TableCell className="max-w-0 px-3 whitespace-normal">
+        <TableCell className="max-w-0 px-3 py-0 whitespace-normal">
             <div className="flex min-w-0 flex-col gap-0.5">
-                <span className="truncate type-code-medium-xs text-text-default">{name}</span>
-                {description && <span className="truncate type-label-xxs text-text-disabled">{description}</span>}
+                <div className="flex min-w-0 items-center gap-1">
+                    <span className="truncate type-code-medium-sm text-text-default">{name}</span>
+                    <CopyButton
+                        text={name}
+                        className="size-4 shrink-0 p-0 opacity-0 transition-opacity group-focus-within/function-row:opacity-100 group-hover/function-row:opacity-100"
+                    />
+                </div>
+                {description && (
+                    <span className="truncate text-ds-xs font-ds-regular leading-ds-normal tracking-ds-tight text-text-disabled">{description}</span>
+                )}
             </div>
         </TableCell>
     );
@@ -97,7 +81,7 @@ function FunctionStatus({ fn, integration }: { fn: ListedNangoFunction; integrat
     if (fn.source === 'tools-catalog') {
         return (
             <div className="flex items-center gap-1">
-                <span className="type-label-sm !leading-none text-text-link-success">Enabled</span>
+                <span className="type-label-sm leading-none! text-text-link-success">Enabled</span>
                 <span
                     className="inline-flex -translate-y-px"
                     onClick={(event) => {
@@ -121,18 +105,22 @@ function FunctionStatus({ fn, integration }: { fn: ListedNangoFunction; integrat
 function FunctionTemplateRow({
     template,
     isDeploying,
-    onDeploy
+    onDeploy,
+    showSource = true
 }: {
     template: NangoFunctionTemplate;
     isDeploying: boolean;
     onDeploy: (template: NangoFunctionTemplate) => void;
+    showSource?: boolean;
 }) {
     return (
-        <TableRow className="h-12 hover:bg-surface-panel-inset">
+        <TableRow className="group/function-row h-13 hover:bg-surface-panel-inset">
             <FunctionNameCell name={template.name} description={template.description} />
-            <TableCell className="w-35 px-3">
-                <FunctionSourceLabel source="template" />
-            </TableCell>
+            {showSource && (
+                <TableCell className="w-35 px-3">
+                    <FunctionSourceLabel source="template" />
+                </TableCell>
+            )}
             <TableCell className="w-35 px-3">
                 <button
                     type="button"
@@ -147,6 +135,73 @@ function FunctionTemplateRow({
     );
 }
 
+function FunctionListWithDetails({
+    selectedFunction,
+    integration,
+    repoProvider,
+    onDeleted,
+    children
+}: {
+    selectedFunction: ListedNangoFunction | null;
+    integration: ApiIntegration;
+    repoProvider: string;
+    onDeleted: () => void;
+    children: React.ReactNode;
+}) {
+    const [displayedFunction, setDisplayedFunction] = useState(selectedFunction);
+    const [panelVisible, setPanelVisible] = useState(Boolean(selectedFunction));
+
+    useEffect(() => {
+        let animationFrame: number | undefined;
+        let closeTimer: ReturnType<typeof setTimeout> | undefined;
+
+        if (selectedFunction) {
+            setDisplayedFunction(selectedFunction);
+            animationFrame = requestAnimationFrame(() => {
+                animationFrame = requestAnimationFrame(() => setPanelVisible(true));
+            });
+        } else {
+            setPanelVisible(false);
+            closeTimer = setTimeout(() => setDisplayedFunction(null), 250);
+        }
+
+        return () => {
+            if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
+            if (closeTimer !== undefined) clearTimeout(closeTimer);
+        };
+    }, [selectedFunction]);
+
+    return (
+        <div className="flex w-full items-stretch overflow-clip">
+            <div
+                className={cn(
+                    'min-w-0 shrink-0 transition-[width] duration-250 ease-out motion-reduce:transition-none',
+                    panelVisible ? 'w-1/2' : 'w-full',
+                    displayedFunction && '**:data-[slot=table-container]:rounded-r-none'
+                )}
+            >
+                {children}
+            </div>
+            {displayedFunction && (
+                <div
+                    className={cn(
+                        'w-1/2 shrink-0 border-y border-r border-border-muted bg-surface-panel transition-[translate,opacity] duration-250 ease-out motion-reduce:transition-none',
+                        panelVisible ? 'translate-x-0 opacity-100' : 'pointer-events-none translate-x-full opacity-0'
+                    )}
+                >
+                    <FunctionDetailsPanel
+                        key={functionRowKey(displayedFunction)}
+                        fn={displayedFunction}
+                        integration={integration}
+                        repoProvider={repoProvider}
+                        onDeleted={onDeleted}
+                    />
+                </div>
+            )}
+        </div>
+    );
+}
+
 function matchesSearch(template: NangoFunctionTemplate, needle: string): boolean {
     if (!needle) return true;
     return `${template.name} ${template.description ?? ''}`.toLowerCase().includes(needle);
@@ -154,14 +209,16 @@ function matchesSearch(template: NangoFunctionTemplate, needle: string): boolean
 
 interface FunctionsTabProps {
     integration: ApiIntegration;
+    repoProvider: string;
 }
 
-export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
+export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoProvider }) => {
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
     const [deployingName, setDeployingName] = useState<string | null>(null);
+    const [selectedFunctionKey, setSelectedFunctionKey] = useState<string | null>(null);
 
     const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
     const debouncedSearch = useDebouncedValue(search);
@@ -169,15 +226,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const [rawType, setType] = useQueryState('type', parseAsString.withDefault(''));
     const typeFilter: TypeFilterValue = rawType && isTypeFilterValue(rawType) ? rawType : 'action';
 
-    const {
-        data,
-        isLoading,
-        error,
-        fetchNextPage,
-        hasNextPage = false,
-        isFetchingNextPage,
-        isPlaceholderData
-    } = useGetIntegrationFunctions({
+    const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, isPlaceholderData } = useGetIntegrationFunctions({
         env,
         providerConfigKey: integration.unique_key,
         search: debouncedSearch || undefined,
@@ -200,15 +249,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const { mutateAsync: deployFlow } = usePreBuiltDeployFlow(env, integration.unique_key);
 
     const onBrowseTemplates = useCallback(() => {
-        navigate(`/${env}/integrations/${integration.unique_key}/templates`);
+        void navigate(`/${env}/integrations/${integration.unique_key}/templates`);
     }, [env, integration.unique_key, navigate]);
 
-    const onFunctionClick = useCallback(
-        (fn: ListedNangoFunction) => {
-            navigate(`/${env}/integrations/${integration.unique_key}/functions/${encodeURIComponent(fn.name)}?type=${fn.type}`);
-        },
-        [env, integration.unique_key, navigate]
-    );
+    const onFunctionClick = useCallback((fn: ListedNangoFunction) => {
+        const key = functionRowKey(fn);
+        setSelectedFunctionKey((current) => (current === key ? null : key));
+    }, []);
 
     const deployTemplate = useCallback(
         async (template: NangoFunctionTemplate) => {
@@ -250,6 +297,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
 
     const functions: ListedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
     const total = data?.pages[0]?.pagination.total ?? 0;
+    const selectedFunction = functions.find((fn) => functionRowKey(fn) === selectedFunctionKey) ?? null;
 
     const searchNeedle = debouncedSearch.trim().toLowerCase();
     const undeployedActionTemplates = useMemo(
@@ -331,17 +379,30 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                         {TYPE_PILLS.map((pill) => {
                             const selected = pill.value === typeFilter;
                             const count = counts[pill.value];
+                            const hasTemplates =
+                                pill.value === 'action'
+                                    ? undeployedActionTemplates.length > 0
+                                    : pill.value === 'sync'
+                                      ? undeployedSyncTemplates.length > 0
+                                      : false;
+                            const disabled = count === 0 && !hasTemplates;
                             return (
                                 <button
                                     key={pill.value}
                                     type="button"
                                     aria-pressed={selected}
-                                    onClick={() => void setType(pill.value)}
+                                    disabled={disabled}
+                                    onClick={() => {
+                                        setSelectedFunctionKey(null);
+                                        void setType(pill.value);
+                                    }}
                                     className={cn(
-                                        'inline-flex items-center justify-center gap-1 rounded-full border-ds-hairline px-2 py-0.5 cursor-pointer',
-                                        selected
-                                            ? 'bg-status-info-bg border-status-info-border text-status-info-text'
-                                            : 'bg-surface-panel border-border-default text-text-default'
+                                        'inline-flex cursor-pointer items-center justify-center gap-1 rounded-full border-ds-hairline px-2 py-0.5 disabled:cursor-not-allowed',
+                                        disabled
+                                            ? 'border-transparent bg-surface-panel-inset text-text-disabled'
+                                            : selected
+                                              ? 'border-status-info-border bg-status-info-bg text-status-info-text'
+                                              : 'border-border-default bg-surface-panel text-text-default'
                                     )}
                                 >
                                     <span className="text-ds-xs font-ds-medium leading-ds-normal">{pill.label}</span>
@@ -357,7 +418,10 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                 type="text"
                                 placeholder="Search functions"
                                 value={search || ''}
-                                onChange={(e) => setSearch(e.target.value || null)}
+                                onChange={(e) => {
+                                    setSelectedFunctionKey(null);
+                                    void setSearch(e.target.value || null);
+                                }}
                             />
                             <InputGroupAddon>
                                 <Search />
@@ -420,127 +484,177 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                             <p className="text-text-secondary text-body-medium-regular">{activePill.emptyLabel}</p>
                         </EmptyCard>
                     ) : typeFilter === 'action' ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <ColumnHead>Function name</ColumnHead>
-                                    <ColumnHead className="w-35">Source</ColumnHead>
-                                    <ColumnHead className="w-35">Status</ColumnHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {functions.map((fn) => (
-                                    <TableRow
-                                        key={functionRowKey(fn)}
-                                        className="h-12 cursor-pointer hover:bg-surface-panel-inset"
-                                        onClick={() => onFunctionClick(fn)}
-                                    >
-                                        <FunctionNameCell name={fn.name} description={fn.description} />
-                                        <TableCell className="w-35 px-3">
-                                            <FunctionSourceLabel source={fn.source} />
-                                        </TableCell>
-                                        <TableCell className="w-35 px-3">
-                                            <FunctionStatus fn={fn} integration={integration} />
+                        <FunctionListWithDetails
+                            selectedFunction={selectedFunction}
+                            integration={integration}
+                            repoProvider={repoProvider}
+                            onDeleted={() => setSelectedFunctionKey(null)}
+                        >
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <ColumnHead>Function name</ColumnHead>
+                                        {!selectedFunction && <ColumnHead className="w-35">Source</ColumnHead>}
+                                        <ColumnHead className="w-35">Status</ColumnHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {functions.map((fn) => {
+                                        const selected = functionRowKey(fn) === selectedFunctionKey;
+                                        return (
+                                            <TableRow
+                                                key={functionRowKey(fn)}
+                                                aria-selected={selected}
+                                                className={cn(
+                                                    'group/function-row h-13 cursor-pointer hover:bg-surface-panel-inset',
+                                                    selected && 'border-l-2 border-l-interactive-selected-fill bg-state-selected'
+                                                )}
+                                                onClick={() => onFunctionClick(fn)}
+                                            >
+                                                <FunctionNameCell name={fn.name} description={fn.description} />
+                                                {!selectedFunction && (
+                                                    <TableCell className="w-35 px-3">
+                                                        <FunctionSourceLabel source={fn.source} />
+                                                    </TableCell>
+                                                )}
+                                                <TableCell className="w-35 px-3">
+                                                    <FunctionStatus fn={fn} integration={integration} />
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                    {visibleActionTemplates.map((template) => (
+                                        <FunctionTemplateRow
+                                            key={`template:${template.type}:${template.name}`}
+                                            template={template}
+                                            isDeploying={deployingName === template.name}
+                                            onDeploy={onDeployTemplate}
+                                            showSource={!selectedFunction}
+                                        />
+                                    ))}
+                                </TableBody>
+                                <TableFooter className="bg-transparent font-ds-regular">
+                                    <TableRow className="h-8 hover:bg-transparent">
+                                        <TableCell colSpan={selectedFunction ? 2 : 3} className="px-3 type-label-xs text-text-disabled">
+                                            Showing {functions.length + visibleActionTemplates.length} of {total + visibleActionTemplates.length} actions
                                         </TableCell>
                                     </TableRow>
-                                ))}
-                                {visibleActionTemplates.map((template) => (
-                                    <FunctionTemplateRow
-                                        key={`template:${template.type}:${template.name}`}
-                                        template={template}
-                                        isDeploying={deployingName === template.name}
-                                        onDeploy={onDeployTemplate}
-                                    />
-                                ))}
-                            </TableBody>
-                            <TableFooter className="bg-transparent font-ds-regular">
-                                <TableRow className="h-8 hover:bg-transparent">
-                                    <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
-                                        Showing {functions.length + visibleActionTemplates.length} of {total + visibleActionTemplates.length} actions
-                                    </TableCell>
-                                </TableRow>
-                            </TableFooter>
-                        </Table>
+                                </TableFooter>
+                            </Table>
+                        </FunctionListWithDetails>
                     ) : typeFilter === 'sync' ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <ColumnHead>Function name</ColumnHead>
-                                    <ColumnHead className="w-35">Source</ColumnHead>
-                                    <ColumnHead className="w-35">Status</ColumnHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {functions.map((fn) => (
-                                    <TableRow
-                                        key={functionRowKey(fn)}
-                                        className="h-12 cursor-pointer hover:bg-surface-panel-inset"
-                                        onClick={() => onFunctionClick(fn)}
-                                    >
-                                        <FunctionNameCell name={fn.name} description={fn.description} />
-                                        <TableCell className="w-35 px-3">
-                                            <FunctionSourceLabel source={fn.source} />
-                                        </TableCell>
-                                        <TableCell className="w-35 px-3">
-                                            <FunctionStatus fn={fn} integration={integration} />
+                        <FunctionListWithDetails
+                            selectedFunction={selectedFunction}
+                            integration={integration}
+                            repoProvider={repoProvider}
+                            onDeleted={() => setSelectedFunctionKey(null)}
+                        >
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <ColumnHead>Function name</ColumnHead>
+                                        {!selectedFunction && <ColumnHead className="w-35">Source</ColumnHead>}
+                                        <ColumnHead className="w-35">Status</ColumnHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {functions.map((fn) => {
+                                        const selected = functionRowKey(fn) === selectedFunctionKey;
+                                        return (
+                                            <TableRow
+                                                key={functionRowKey(fn)}
+                                                aria-selected={selected}
+                                                className={cn(
+                                                    'group/function-row h-13 cursor-pointer hover:bg-surface-panel-inset',
+                                                    selected && 'border-l-2 border-l-interactive-selected-fill bg-state-selected'
+                                                )}
+                                                onClick={() => onFunctionClick(fn)}
+                                            >
+                                                <FunctionNameCell name={fn.name} description={fn.description} />
+                                                {!selectedFunction && (
+                                                    <TableCell className="w-35 px-3">
+                                                        <FunctionSourceLabel source={fn.source} />
+                                                    </TableCell>
+                                                )}
+                                                <TableCell className="w-35 px-3">
+                                                    <FunctionStatus fn={fn} integration={integration} />
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                    {visibleSyncTemplates.map((template) => (
+                                        <FunctionTemplateRow
+                                            key={`template:${template.type}:${template.name}`}
+                                            template={template}
+                                            isDeploying={deployingName === template.name}
+                                            onDeploy={onDeployTemplate}
+                                            showSource={!selectedFunction}
+                                        />
+                                    ))}
+                                </TableBody>
+                                <TableFooter className="bg-transparent font-ds-regular">
+                                    <TableRow className="h-8 hover:bg-transparent">
+                                        <TableCell colSpan={selectedFunction ? 2 : 3} className="px-3 type-label-xs text-text-disabled">
+                                            Showing {functions.length + visibleSyncTemplates.length} of {total + matchingSyncTemplates.length} sync functions
                                         </TableCell>
                                     </TableRow>
-                                ))}
-                                {visibleSyncTemplates.map((template) => (
-                                    <FunctionTemplateRow
-                                        key={`template:${template.type}:${template.name}`}
-                                        template={template}
-                                        isDeploying={deployingName === template.name}
-                                        onDeploy={onDeployTemplate}
-                                    />
-                                ))}
-                            </TableBody>
-                            <TableFooter className="bg-transparent font-ds-regular">
-                                <TableRow className="h-8 hover:bg-transparent">
-                                    <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
-                                        Showing {functions.length + visibleSyncTemplates.length} of {total + matchingSyncTemplates.length} sync functions
-                                    </TableCell>
-                                </TableRow>
-                            </TableFooter>
-                        </Table>
+                                </TableFooter>
+                            </Table>
+                        </FunctionListWithDetails>
                     ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <ColumnHead>Function name</ColumnHead>
-                                    <ColumnHead className="w-35">Source</ColumnHead>
-                                    <ColumnHead className="w-35">Status</ColumnHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {functions.map((fn) => (
-                                    <TableRow
-                                        key={functionRowKey(fn)}
-                                        className="h-12 cursor-pointer hover:bg-surface-panel-inset"
-                                        onClick={() => onFunctionClick(fn)}
-                                    >
-                                        <FunctionNameCell name={fn.name} description={fn.description} />
-                                        <TableCell className="w-35 px-3">
-                                            <FunctionSourceLabel source={fn.source} />
-                                        </TableCell>
-                                        <TableCell className="w-35 px-3">
-                                            <FunctionStatus fn={fn} integration={integration} />
+                        <FunctionListWithDetails
+                            selectedFunction={selectedFunction}
+                            integration={integration}
+                            repoProvider={repoProvider}
+                            onDeleted={() => setSelectedFunctionKey(null)}
+                        >
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <ColumnHead>Function name</ColumnHead>
+                                        {!selectedFunction && <ColumnHead className="w-35">Source</ColumnHead>}
+                                        <ColumnHead className="w-35">Status</ColumnHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {functions.map((fn) => {
+                                        const selected = functionRowKey(fn) === selectedFunctionKey;
+                                        return (
+                                            <TableRow
+                                                key={functionRowKey(fn)}
+                                                aria-selected={selected}
+                                                className={cn(
+                                                    'group/function-row h-13 cursor-pointer hover:bg-surface-panel-inset',
+                                                    selected && 'border-l-2 border-l-interactive-selected-fill bg-state-selected'
+                                                )}
+                                                onClick={() => onFunctionClick(fn)}
+                                            >
+                                                <FunctionNameCell name={fn.name} description={fn.description} />
+                                                {!selectedFunction && (
+                                                    <TableCell className="w-35 px-3">
+                                                        <FunctionSourceLabel source={fn.source} />
+                                                    </TableCell>
+                                                )}
+                                                <TableCell className="w-35 px-3">
+                                                    <FunctionStatus fn={fn} integration={integration} />
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                                <TableFooter className="bg-transparent font-ds-regular">
+                                    <TableRow className="h-8 hover:bg-transparent">
+                                        <TableCell colSpan={selectedFunction ? 2 : 3} className="px-3 type-label-xs text-text-disabled">
+                                            Showing {functions.length} of {total} triggers
                                         </TableCell>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                            <TableFooter className="bg-transparent font-ds-regular">
-                                <TableRow className="h-8 hover:bg-transparent">
-                                    <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
-                                        Showing {functions.length} of {total} triggers
-                                    </TableCell>
-                                </TableRow>
-                            </TableFooter>
-                        </Table>
+                                </TableFooter>
+                            </Table>
+                        </FunctionListWithDetails>
                     )}
 
                     <div ref={sentinelRef} aria-hidden />
-                    {isFetchingNextPage && <Skeleton className="w-full h-12" />}
+                    {isFetchingNextPage && <Skeleton className="h-13 w-full" />}
                 </>
             )}
         </div>
