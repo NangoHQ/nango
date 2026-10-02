@@ -383,7 +383,7 @@ web.route('/user/password').put(webAuth, auditAppAuthPasswordChanged, putUserPas
 
 // Plain (in-app support chat)
 web.route('/plain').get(webAuth, getPlainHmac);
-web.route('/agent-playground/chat').post(webAuth, can('environment:agent_sessions:write'), postAgentPlaygroundChat);
+web.route('/agent-playground/chat').post(webAuth, postAgentPlaygroundChat);
 
 // Sync / Flows
 web.route('/sync').get(webAuth, can('environment:syncs:read'), getConnectionSyncs);
