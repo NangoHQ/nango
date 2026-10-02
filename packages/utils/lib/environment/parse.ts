@@ -756,6 +756,10 @@ const ENVS_SHAPE = z.object({
     PLAIN_APP_ID: z.string().optional(),
     PLAIN_HMAC_SECRET: z.string().optional(),
 
+    NANGO_AGENT_PLAYGROUND_MODEL: z.string().optional().default('gpt-6-luna'),
+    // Without it the Agent Playground answers from a mock model.
+    OPENAI_API_KEY: z.string().optional(),
+
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
 
