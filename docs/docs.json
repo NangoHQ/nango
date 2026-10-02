@@ -1282,6 +1282,7 @@
               "api-integrations/ecu360",
               "api-integrations/ecu360-production",
               "integrations/all/egnyte",
+              "api-integrations/elasticsearch",
               "integrations/all/elevenlabs",
               "api-integrations/elevio",
               "integrations/all/emarsys",

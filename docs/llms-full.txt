@@ -15928,6 +15928,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `ecu360` | ECU360 (Test) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/ecu360.md) | [connect](https://nango.dev/docs/api-integrations/ecu360/connect.md) |  | other |
 | `ecu360-production` | ECU360 (Production) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/ecu360-production.md) | [connect](https://nango.dev/docs/api-integrations/ecu360-production/connect.md) |  | other |
 | `egnyte` | Egnyte | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/egnyte.md) |  |  | storage |
+| `elasticsearch` | Elasticsearch | API_KEY | [docs](https://nango.dev/docs/api-integrations/elasticsearch.md) | [connect](https://nango.dev/docs/api-integrations/elasticsearch/connect.md) |  | search |
 | `elevenlabs` | Eleven Labs | API_KEY | [docs](https://nango.dev/docs/integrations/all/elevenlabs.md) |  |  | dev-tools |
 | `elevio` | Elevio | API_KEY | [docs](https://nango.dev/docs/api-integrations/elevio.md) | [connect](https://nango.dev/docs/api-integrations/elevio/connect.md) |  | knowledge-base, support |
 | `emarsys` | Emarsys Core API (WSSE) | SIGNATURE | [docs](https://nango.dev/docs/integrations/all/emarsys.md) |  |  | marketing |
