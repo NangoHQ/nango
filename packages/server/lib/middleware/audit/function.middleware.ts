@@ -1,18 +1,22 @@
 import { makeAuditTarget as makeTarget } from '../../audit.js';
 import { Audit, auditable, maybeAuditable } from './auditable.js';
-import { nonEmptyString, omitUndefined } from './input.js';
+import { bodyField, nonEmptyString, omitUndefined, param } from './input.js';
+import { functionTarget } from './lookups.js';
 
 import type { AuditTarget } from '@nangohq/audit';
 import type {
+    DeleteFunctionVariant,
     DeleteIntegrationFunction,
     DeletePublicIntegrationFunction,
     FunctionDeployedMetadata,
     FunctionSource,
     FunctionUpdatedMetadata,
+    FunctionVariantMetadata,
     PatchFunction,
     PostDeploy,
     PostFunctionDeployment,
     PostFunctionDeploymentBundle,
+    PostFunctionVariant,
     PostPreBuiltDeploy,
     PutUpgradePreBuiltFlow
 } from '@nangohq/types';
@@ -73,6 +77,26 @@ export const auditPublicFunctionDeleted = auditable<DeletePublicIntegrationFunct
     policy: Audit.auditable({ resource: 'function', action: 'deleted', scope: 'environment' }),
     target: (req) => makeTarget('function', functionTargetId(req.params.uniqueKey, req.params.name)),
     metadata: (req) => functionDeletedMeta(req.query.type)
+});
+
+export const auditFunctionVariantCreated = auditable<PostFunctionVariant>({
+    policy: Audit.auditable({ resource: 'function', action: 'variant_created', scope: 'environment' }),
+    target: (req, locals) => functionTarget(param(req, 'functionUuid'), locals),
+    metadata: (req) =>
+        omitUndefined<FunctionVariantMetadata>({
+            connectionId: nonEmptyString(param(req, 'connectionId')),
+            variant: nonEmptyString(bodyField(req, 'variant'))
+        })
+});
+
+export const auditFunctionVariantDeleted = auditable<DeleteFunctionVariant>({
+    policy: Audit.auditable({ resource: 'function', action: 'variant_deleted', scope: 'environment' }),
+    target: (req, locals) => functionTarget(param(req, 'functionUuid'), locals),
+    metadata: (req) =>
+        omitUndefined<FunctionVariantMetadata>({
+            connectionId: nonEmptyString(param(req, 'connectionId')),
+            variant: nonEmptyString(param(req, 'variant'))
+        })
 });
 
 function functionDeletedMeta(type: unknown): Record<string, unknown> | undefined {

@@ -960,19 +960,18 @@ export class Orchestrator {
             functionUuid: string;
             connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
             frequencyFallback: string;
-            autoStart: boolean;
         }[]
     ): Promise<Result<void>> {
         try {
             const schedules: RecurringProps[] = [];
-            for (const { instance, functionUuid, connection, environmentId, frequencyFallback, autoStart } of functions) {
+            for (const { instance, functionUuid, connection, environmentId, frequencyFallback } of functions) {
                 const frequencyMs = this.getFrequencyMs(instance.frequency || frequencyFallback);
                 if (frequencyMs.isErr()) {
                     return Err(frequencyMs.error);
                 }
                 schedules.push({
                     name: FunctionScheduleId.get({ environmentId, id: instance.id }),
-                    state: autoStart ? 'STARTED' : 'PAUSED',
+                    state: 'STARTED',
                     frequencyMs: frequencyMs.value,
                     group: {
                         key: `function:scheduled:environment:${environmentId}`,
@@ -988,7 +987,12 @@ export class Orchestrator {
                     args: {
                         type: 'function',
                         functionUuid,
-                        connection,
+                        connection: {
+                            id: connection.id,
+                            connection_id: connection.connection_id,
+                            provider_config_key: connection.provider_config_key,
+                            environment_id: connection.environment_id
+                        },
                         variant: instance.variant,
                         trigger: {
                             kind: 'schedule',

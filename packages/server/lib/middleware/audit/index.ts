@@ -54,6 +54,8 @@ export {
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
     auditFunctionUpdated,
+    auditFunctionVariantCreated,
+    auditFunctionVariantDeleted,
     auditFunctionUpgraded,
     auditPreBuiltDeployed,
     auditPublicFunctionDeleted

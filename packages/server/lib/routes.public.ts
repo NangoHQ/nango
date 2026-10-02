@@ -35,6 +35,8 @@ import connectionController from './controllers/connection.controller.js';
 import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
 import { getFunctionInvocation } from './controllers/connection/connectionId/functions/functionUuid/invocations/id/getInvocation.js';
 import { postFunctionInvocation } from './controllers/connection/connectionId/functions/functionUuid/invocations/postInvocation.js';
+import { deleteFunctionVariant } from './controllers/connection/connectionId/functions/functionUuid/variants/deleteVariant.js';
+import { postFunctionVariant } from './controllers/connection/connectionId/functions/functionUuid/variants/postVariant.js';
 import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
 import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
@@ -101,6 +103,8 @@ import {
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
     auditFunctionUpdated,
+    auditFunctionVariantCreated,
+    auditFunctionVariantDeleted,
     auditPublicApiKeyCreated,
     auditPublicApiKeyDeleted,
     auditPublicConnectionDeleted,
@@ -452,6 +456,12 @@ publicAPI.route('/functions/deployments/bundle').post(envAuth, auditFunctionDepl
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid/invocations')
     .post(envAuth, can('environment:functions:invocations'), postFunctionInvocation);
+publicAPI
+    .route('/connections/:connectionId/functions/:functionUuid/variants')
+    .post(envAuth, auditFunctionVariantCreated, can('environment:functions:update'), postFunctionVariant);
+publicAPI
+    .route('/connections/:connectionId/functions/:functionUuid/variants/:variant')
+    .delete(envAuth, auditFunctionVariantDeleted, can('environment:functions:update'), deleteFunctionVariant);
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid/invocations/:id')
     .get(envAuth, can('environment:functions:invocations'), getFunctionInvocation);

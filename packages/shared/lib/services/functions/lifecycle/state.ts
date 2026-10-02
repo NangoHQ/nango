@@ -4,10 +4,10 @@ import { Err, Ok } from '@nangohq/utils';
 import connectionService from '../../connection.service.js';
 import * as functionConfigService from '../models/functions.js';
 import * as functionInstanceService from '../models/instances.js';
+import { scheduleInstances } from './schedule.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { CurrentFunctionConfig } from '../models/functions.js';
-import type { DBConnection } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 /**
@@ -48,15 +48,17 @@ export async function enable({
                 return config;
             }
 
-            // Re-enable base variant instances that were disabled by a previous disable call.
-            // Variants are not restored, we don't want to re-enable a variant that was explicitely disabled by the user.
-            const reenabled = await functionInstanceService.setEnabled(
-                trx,
-                { functionConfigIds: [config.config.id] },
-                { environmentId, enabled: true, variant: 'base' }
-            );
-            if (reenabled.isErr()) {
-                throw reenabled.error;
+            // Re-enable base instances only for auto-starting functions.
+            // After disable(), autoStart:false instances must be started manually again; variants are not restored either.
+            if (trigger.autoStart ?? true) {
+                const reenabled = await functionInstanceService.setEnabled(
+                    trx,
+                    { functionConfigIds: [config.config.id] },
+                    { environmentId, enabled: true, variant: 'base' }
+                );
+                if (reenabled.isErr()) {
+                    throw reenabled.error;
+                }
             }
 
             const connections = await connectionService.getConnectionsByEnvironmentAndConfigId(trx, { environmentId, configId: config.integration.id });
@@ -71,14 +73,15 @@ export async function enable({
                     nango_connection_id: connection.id,
                     name: config.config.name,
                     variant: 'base',
-                    frequency: null
+                    frequency: null,
+                    enabled: trigger.autoStart ?? true
                 }))
             );
             if (upserted.isErr()) {
                 throw upserted.error;
             }
 
-            const connectionsById = new Map<number, Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>>(
+            const connectionsById = new Map(
                 connections.value.map((connection) => [
                     connection.id,
                     {
@@ -91,28 +94,22 @@ export async function enable({
             );
             let afterId = 0;
             while (true) {
-                const instances = await functionInstanceService.search(trx, { functionConfigIds: [config.config.id] }, { enabled: true, afterId, limit: 1000 });
+                const instances = await functionInstanceService.search(
+                    trx,
+                    { functionConfigIds: [config.config.id] },
+                    { enabled: true, afterId, limit: 1000, forShare: true }
+                );
                 if (instances.isErr()) {
                     throw instances.error;
                 }
                 if (instances.value.length === 0) {
                     break;
                 }
-                const scheduled = await orchestrator.scheduleFunctions(
+                const scheduled = await scheduleInstances(
+                    orchestrator,
                     instances.value.flatMap((instance) => {
                         const connection = connectionsById.get(instance.nango_connection_id);
-                        return connection
-                            ? [
-                                  {
-                                      environmentId,
-                                      instance,
-                                      functionUuid: config.config.uuid,
-                                      connection,
-                                      frequencyFallback: trigger.frequency,
-                                      autoStart: trigger.autoStart ?? true
-                                  }
-                              ]
-                            : [];
+                        return connection ? [{ instance, config, connection }] : [];
                     })
                 );
                 if (scheduled.isErr()) {

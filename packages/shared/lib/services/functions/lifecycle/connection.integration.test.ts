@@ -73,8 +73,7 @@ describe(ensureForConnection, () => {
                 instance: instances[0],
                 functionUuid: config.uuid,
                 connection,
-                frequencyFallback: 'every hour',
-                autoStart: true
+                frequencyFallback: 'every hour'
             }
         ]);
     });

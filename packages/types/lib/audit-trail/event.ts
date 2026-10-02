@@ -17,6 +17,7 @@ import type {
     FunctionDeployedMetadata,
     FunctionUpdatedMetadata,
     FunctionUpgradedMetadata,
+    FunctionVariantMetadata,
     IntegrationProviderMetadata,
     IntegrationUpdatedMetadata,
     MemberInvitedMetadata,
@@ -65,6 +66,8 @@ interface AuditEventTable {
         upgraded: FunctionUpgradedMetadata;
         updated: FunctionUpdatedMetadata;
         deleted: FunctionDeletedMetadata;
+        variant_created: FunctionVariantMetadata;
+        variant_deleted: FunctionVariantMetadata;
     };
     integration: {
         created: IntegrationProviderMetadata;
