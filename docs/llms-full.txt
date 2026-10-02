@@ -16312,6 +16312,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `notion` | Notion | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/notion.md) |  | [setup](https://nango.dev/docs/api-integrations/notion/how-to-register-your-own-notion-api-oauth-app.md) | knowledge-base, popular, productivity |
 | `notion-mcp` | Notion (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/notion-mcp.md) |  |  | knowledge-base, productivity, mcp |
 | `notion-scim` | Notion (SCIM API) | API_KEY | [docs](https://nango.dev/docs/integrations/all/notion-scim.md) | [connect](https://nango.dev/docs/integrations/all/notion-scim/connect.md) |  | knowledge-base, productivity |
+| `nuvemshop` | Nuvemshop | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/nuvemshop.md) |  | [setup](https://nango.dev/docs/api-integrations/nuvemshop/how-to-register-your-own-nuvemshop-api-oauth-app.md) | e-commerce |
 | `nyne-ai` | Nyne AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/nyne-ai.md) | [connect](https://nango.dev/docs/api-integrations/nyne-ai/connect.md) |  | analytics |
 | `ocean-io` | Ocean.io | API_KEY | [docs](https://nango.dev/docs/api-integrations/ocean-io.md) | [connect](https://nango.dev/docs/api-integrations/ocean-io/connect.md) |  | crm |
 | `odoo` | Odoo (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/odoo.md) |  |  | erp |

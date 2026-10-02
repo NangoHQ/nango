@@ -1,0 +1,47 @@
+---
+title: 'Set up Nuvemshop with Nango'
+sidebarTitle: 'Nuvemshop setup'
+description: 'Register an app with Nuvemshop and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Nuvemshop to obtain your OAuth credentials (App ID and Client Secret). These are required to let your users grant your app access to their Nuvemshop stores.
+
+<Steps>
+    <Step title="Create a Nuvemshop Partners account">
+    If you don't already have one, sign up at the [Nuvemshop Partners Portal](https://partners.nuvemshop.com.br).
+    </Step>
+    <Step title="Create a new app">
+    1. In the Partners Portal, go to **Aplicativos** and click **Criar aplicativo**.
+    2. Give your app a name and finish the creation flow.
+    </Step>
+    <Step title="Configure the redirect URL and permissions">
+    1. Open your app, go to the **Configuração** tab and click **Editar dados** under **Dados básicos**.
+    2. Set **URL de redirecionamento após instalação** to `https://api.nango.dev/oauth/callback`.
+    3. Under **Permissões**, select the scopes your integration requires (for example **Read products** or **Write orders**).
+    4. Click **Salvar**.
+    <Warning>Nuvemshop compares the redirect URL sent by Nango with this field and rejects the authorization with `redirect_uri_mismatch` if they differ. It must match exactly.</Warning>
+    </Step>
+    <Step title="Obtain API credentials">
+    1. Go to the **Visão geral** tab of your app.
+    2. Under **Chaves de acesso**, copy the **App ID** and the **Client Secret**. Use the App ID as the Client ID when configuring your integration in Nango.
+    </Step>
+    <Step title="Create a demo store for testing (optional)">
+    On the **Visão geral** tab, under **Loja demo**, choose or create a demo store to install and test your app.
+    </Step>
+</Steps>
+
+## Step 1: Finding your App ID
+
+The App ID is shown in the **Chaves de acesso** section of your app's **Visão geral** tab in the Partners Portal. It is the same value as the Client ID, and it is also part of the authorization URL (`https://www.nuvemshop.com.br/apps/<app-id>/authorize`), which is why Nango asks for it when a connection is created.
+
+## API considerations
+
+-   **Store-specific base URL**: Every API path is scoped to a store (`https://api.nuvemshop.com.br/v1/<store-id>/...`). Nango stores the store ID returned with the access token and adds it to the base URL, so proxy calls use paths such as `/products` or `/orders`.
+-   **Tokens do not expire**: Access tokens stay valid until the merchant uninstalls the app or a new token is issued for the same store. There is no refresh token.
+-   **Scopes are set on the app**: Permissions are chosen in the Partners Portal, not in the authorization URL. You can leave scopes empty in Nango.
+-   **User-Agent**: Nuvemshop asks apps to identify themselves with a `User-Agent` header in the form `AppName (contact email)`. Send it from your app with the `Nango-Proxy-User-Agent` header.
+-   **Empty lists return 404**: List endpoints answer `404` with `"Last page is 0"` when there are no results.
+
+For more details, see [Nuvemshop's authentication documentation](https://tiendanube.github.io/api-documentation/authentication).
+
+---
