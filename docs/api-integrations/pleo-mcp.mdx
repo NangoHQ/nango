@@ -82,21 +82,12 @@ Connect to Pleo (MCP) with Nango and see data flow in 2 minutes.
     </Step>
 
     <Step title="Implement Nango in your app">
-        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
-
-        To obtain your own production credentials, follow the setup guide linked below.
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
     </Step>
 </Steps>
 
-## 📚 Pleo (MCP) Integration Guides
+## 📚 Pleo (MCP) guides
 
-Nango-maintained guides for Pleo MCP.
-
-- [How to register your own Pleo MCP OAuth app](/api-integrations/pleo-mcp/how-to-register-your-own-pleo-mcp-oauth-app)  
-Register an OAuth client with Pleo for MCP and obtain credentials to connect it to Nango.
-
-<Note>
-The connection acts with the authorizing user's Pleo role. Company-wide data, such as all expenses or employees, needs an owner or bookkeeper.
-</Note>
+Nango uses **dynamic client registration** with Pleo's MCP OAuth server. You do not need to register an MCP application — just create the integration in Nango and authorize with your Pleo account. The connection acts with the authorizing user's Pleo role, so company-wide data such as all expenses or employees requires an owner or bookkeeper.
 
 ---
