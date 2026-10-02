@@ -176,38 +176,41 @@ const ApprovalCard: React.FC<{
 
     return (
         <Collapsible open={open} onOpenChange={setOpen} className="group/card rounded-ds-xs border border-border-muted bg-surface-panel">
-            <div
-                role="button"
-                tabIndex={0}
-                aria-expanded={open}
-                onClick={() => setOpen((o) => !o)}
-                onKeyDown={(e) => {
-                    if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-                        e.preventDefault();
-                        setOpen((o) => !o);
-                    }
-                }}
-                className="flex cursor-pointer items-center gap-3 px-4 py-3 text-left"
-            >
-                <IconBox display={display} />
-                <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-body-medium-medium text-text-strong">The agent wants to make a change</span>
-                    <Subtitle
-                        display={
-                            display.kind === 'integration' && display.integrationId
-                                ? { ...display, subtitle: `${display.title} · ${humanize(display.integrationId)}` }
-                                : display
-                        }
-                    />
-                </div>
-                <div className="flex shrink-0 items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3 px-4 py-3">
+                <button
+                    type="button"
+                    aria-expanded={open}
+                    onClick={() => setOpen((o) => !o)}
+                    className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
+                >
+                    <IconBox display={display} />
+                    <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="text-body-medium-medium text-text-strong">The agent wants to make a change</span>
+                        <Subtitle
+                            display={
+                                display.kind === 'integration' && display.integrationId
+                                    ? { ...display, subtitle: `${display.title} · ${humanize(display.integrationId)}` }
+                                    : display
+                            }
+                        />
+                    </span>
+                </button>
+                <div className="flex shrink-0 items-center gap-2">
                     <Button size="sm" variant="secondary" onClick={() => onApprove(approvalId, false)}>
                         Deny
                     </Button>
                     <Button size="sm" onClick={() => onApprove(approvalId, true)}>
                         Approve
                     </Button>
-                    <ChevronDown className="size-4 text-text-secondary transition-transform group-data-[state=open]/card:rotate-180" />
+                    <button
+                        type="button"
+                        aria-label={open ? 'Hide details' : 'Show details'}
+                        aria-expanded={open}
+                        onClick={() => setOpen((o) => !o)}
+                        className="cursor-pointer text-text-secondary"
+                    >
+                        <ChevronDown className="size-4 transition-transform group-data-[state=open]/card:rotate-180" />
+                    </button>
                 </div>
             </div>
             <CollapsibleContent className="border-t border-border-muted">
