@@ -281,3 +281,5 @@ export type PostPlanChange = ApiEndpoint<{
         data: { success: true } | { paymentIntent: any };
     };
 }>;
+
+export type GrowthAddonState = 'none' | 'active' | 'pending-removal' | 'pending-activation';
