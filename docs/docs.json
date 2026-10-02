@@ -1064,6 +1064,7 @@
               "integrations/all/anthropic",
               "integrations/all/anthropic-admin",
               "api-integrations/anvil",
+              "api-integrations/anymailfinder",
               "integrations/all/apaleo",
               "integrations/all/apify",
               "api-integrations/apollo",

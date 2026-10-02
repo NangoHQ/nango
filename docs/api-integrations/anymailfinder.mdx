@@ -1,0 +1,93 @@
+---
+title: 'Anymail Finder'
+sidebarTitle: 'Anymail Finder'
+description: 'Integrate your application with the Anymail Finder API to find and verify B2B work emails'
+---
+
+## 🚀 Quickstart
+
+Connect to Anymail Finder with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Anymail Finder_.
+    </Step>
+    <Step id="authorize-anymailfinder" title="Authorize Anymail Finder">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Anymail Finder API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-anymailfinder-api" title="Call the Anymail Finder API">
+    Let's find a person's verified work email from their name and company domain. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/v5.1/find-email/person" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"full_name": "Satya Nadella", "domain": "microsoft.com"}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/v5.1/find-email/person',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                full_name: 'Satya Nadella',
+                domain: 'microsoft.com'
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Anymail Finder integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my Anymail Finder account?](/api-integrations/anymailfinder/connect)  
+Learn how to obtain your Anymail Finder API key and link your account
+
+
+Official docs: [Anymail Finder API docs](https://anymailfinder.com/email-finder-api/docs)
+
+## 🧩 Pre-built syncs & actions for Anymail Finder
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/anymailfinder/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- A find answers HTTP 200 with `email_status: not_found` when nothing is found, not a 404. Only `email_status: valid` is a verified, deliverable address, returned in `valid_email`; it is also the only outcome that is charged.
+- Searches can take up to 3 minutes when the target mail server is slow. Wait for the response rather than retrying; a repeat of the same search within 30 days is free.
+- The key is sent as the raw value of the `Authorization` header, with no `Bearer` prefix.
+
