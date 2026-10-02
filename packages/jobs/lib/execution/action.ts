@@ -22,6 +22,7 @@ import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, slackService } from '../clients.js';
+import { envs } from '../env.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { pubsub } from '../utils/pubsub.js';
@@ -134,7 +135,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
 
         void logCtx.info(`Starting action '${task.actionName}'${formatAttempts(task)}`, {
-            input: task.input,
+            ...(envs.NANGO_LOG_ACTION_INPUT ? { input: task.input } : {}),
             action: task.actionName,
             connection: task.connection.connection_id,
             integration: task.connection.provider_config_key
