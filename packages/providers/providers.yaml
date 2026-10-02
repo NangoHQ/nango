@@ -22550,6 +22550,30 @@ semble:
             secret: true
             doc_section: '#step-1-authenticating-with-email-and-password'
 
+sendcloud:
+    display_name: Sendcloud
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    token_url: https://account.sendcloud.com/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+        scope: api
+    proxy:
+        base_url: https://panel.sendcloud.sc
+    docs: https://sendcloud.dev/docs/getting-started/how-to-create-your-api-keys
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID of your Sendcloud API integration.
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret of your Sendcloud API integration.
+            secret: true
+
 sendgrid:
     display_name: SendGrid
     categories:
