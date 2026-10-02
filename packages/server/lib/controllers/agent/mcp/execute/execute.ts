@@ -11,9 +11,8 @@ import { defineAgentSessionMcpTool } from '../sessionTool.js';
 import { actionExecutionErrorToMcp } from './errors.js';
 import { executeInputSchema } from './schema.js';
 
-import type { AgentSessionMetaTool } from '../../../../services/agentSessionAnalytics.service.js';
 import type { AgentSessionMcpContext } from '../sessionTool.js';
-import type { AgentSession } from '@nangohq/types';
+import type { AgentSession, AgentSessionMetaTool } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
