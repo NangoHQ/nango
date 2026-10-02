@@ -199,10 +199,9 @@ describe('validateFunction', () => {
         expect(res.error.message).toContain('debounce.windowMs');
     });
 
-    it('rejects a schedule trigger', () => {
+    it('accepts a schedule trigger', () => {
         const res = validateFunction({ ...base, params: { trigger: { kind: 'schedule', frequency: 'every hour' } } });
-        assert(res.isErr());
-        expect(res.error.message).toContain("unsupported trigger kind 'schedule'");
+        expect(res.isOk()).toBe(true);
     });
 
     it('allows declaring metadata and checkpoint', () => {

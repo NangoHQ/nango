@@ -1,43 +1,30 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { SandboxUnavailableError } from '../providers/errors.js';
 import { buildAsyncDryrunScript, prepareAsyncDryrun } from './dryrun-client.js';
 import { executionEnvironmentUnavailableMessage } from './sandbox.js';
 
 import type { FunctionError } from './helpers.js';
 
 const mocks = vi.hoisted(() => {
-    class RateLimitError extends Error {}
-
-    const run = vi.fn();
-    const write = vi.fn();
-    const kill = vi.fn();
+    const writeFiles = vi.fn();
+    const startCommand = vi.fn();
+    const stop = vi.fn();
     const sandbox = {
-        sandboxId: 'sandbox-id',
-        commands: { run },
-        files: { write },
-        kill
+        id: 'sandbox-id',
+        provider: 'agentcore' as const,
+        writeFiles,
+        readTextFile: vi.fn(),
+        runCommand: vi.fn(),
+        startCommand,
+        stop
     };
     const create = vi.fn();
-    const envs = { E2B_API_KEY: 'e2b-key' as string | undefined };
 
-    return { RateLimitError, create, envs, kill, run, sandbox, write };
+    return { create, sandbox, startCommand, stop, writeFiles };
 });
 
-vi.mock('e2b', () => ({
-    RateLimitError: mocks.RateLimitError,
-    Sandbox: { create: mocks.create }
-}));
-
-vi.mock('@nangohq/utils', async (importOriginal) => {
-    const actual = await importOriginal();
-
-    if (!actual || typeof actual !== 'object') {
-        throw new Error('Invalid @nangohq/utils mock');
-    }
-
-    return { ...actual, isLocal: false };
-});
-vi.mock('../env.js', () => ({ envs: mocks.envs }));
+vi.mock('../sandbox-service.js', () => ({ sandboxService: { create: mocks.create } }));
 
 const request = {
     integration_id: 'github',
@@ -56,10 +43,10 @@ const dryrunCheckpointPath = '.nango/runtime/nango-dryrun-checkpoint.json';
 
 describe('sandboxed function dryrun client', () => {
     beforeEach(() => {
-        mocks.envs.E2B_API_KEY = 'e2b-key';
         mocks.create.mockResolvedValue(mocks.sandbox);
-        mocks.write.mockResolvedValue(undefined);
-        mocks.kill.mockResolvedValue(undefined);
+        mocks.writeFiles.mockResolvedValue(undefined);
+        mocks.startCommand.mockResolvedValue(undefined);
+        mocks.stop.mockResolvedValue(undefined);
     });
 
     afterEach(() => {
@@ -76,22 +63,20 @@ describe('sandboxed function dryrun client', () => {
             checkpoint: { cursor: 'abc' }
         });
 
-        expect(prepared.sandboxId).toBe(mocks.sandbox.sandboxId);
-        expect(mocks.write).toHaveBeenCalledWith('/home/user/nango-integrations/github/actions/listRepos.ts', 'export default {}');
-        expect(mocks.write).toHaveBeenCalledWith('/home/user/nango-integrations/index.ts', "import './github/actions/listRepos.js';\n");
-        expect(mocks.write).toHaveBeenCalledWith(`/home/user/nango-integrations/${dryrunInputPath}`, JSON.stringify({ ok: true }));
-        expect(mocks.write).toHaveBeenCalledWith(`/home/user/nango-integrations/${dryrunMetadataPath}`, JSON.stringify({ source: 'test' }));
-        expect(mocks.write).toHaveBeenCalledWith(`/home/user/nango-integrations/${dryrunCheckpointPath}`, JSON.stringify({ cursor: 'abc' }));
-        expect(mocks.write).toHaveBeenCalledWith(
-            `/home/user/nango-integrations/${asyncDryrunScriptPath}`,
-            expect.stringContaining('NANGO_DRYRUN_CALLBACK_URL')
-        );
+        expect(prepared.sandboxId).toBe(mocks.sandbox.id);
+        expect(mocks.writeFiles).toHaveBeenCalledWith([
+            { path: 'github/actions/listRepos.ts', contents: 'export default {}' },
+            { path: 'index.ts', contents: "import './github/actions/listRepos.js';\n" },
+            { path: asyncDryrunScriptPath, contents: expect.stringContaining('NANGO_DRYRUN_CALLBACK_URL') },
+            { path: dryrunInputPath, contents: JSON.stringify({ ok: true }) },
+            { path: dryrunMetadataPath, contents: JSON.stringify({ source: 'test' }) },
+            { path: dryrunCheckpointPath, contents: JSON.stringify({ cursor: 'abc' }) }
+        ]);
 
         await prepared.start();
 
-        expect(mocks.run).toHaveBeenCalledWith(`node ${asyncDryrunScriptPath}`, {
-            cwd: '/home/user/nango-integrations',
-            background: true,
+        expect(mocks.startCommand).toHaveBeenCalledWith({
+            command: `node ${asyncDryrunScriptPath}`,
             timeoutMs: 0,
             envs: expect.objectContaining({
                 NANGO_DRYRUN_CALLBACK_URL: 'https://api.example.test/functions/dryruns/7b539769-6d39-4442-89fc-33fbac96ea66/result',
@@ -117,7 +102,7 @@ describe('sandboxed function dryrun client', () => {
     });
 
     it('returns execution_environment_unavailable when the async dryrun sandbox cannot be created', async () => {
-        mocks.create.mockRejectedValueOnce(new mocks.RateLimitError('Rate limit exceeded - too many sandboxes'));
+        mocks.create.mockRejectedValueOnce(new SandboxUnavailableError('Function execution environment unavailable'));
 
         await expect(
             prepareAsyncDryrun({
@@ -131,8 +116,8 @@ describe('sandboxed function dryrun client', () => {
             status: 503
         } satisfies Partial<FunctionError>);
 
-        expect(mocks.write).not.toHaveBeenCalled();
-        expect(mocks.kill).not.toHaveBeenCalled();
+        expect(mocks.writeFiles).not.toHaveBeenCalled();
+        expect(mocks.stop).not.toHaveBeenCalled();
     });
 
     it('builds a callback script that reports dryrun compile exit codes as compilation errors', () => {

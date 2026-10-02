@@ -861,7 +861,7 @@ describe('proxy 401 invalid credentials', () => {
 });
 
 describe('createFunctionFacade', () => {
-    const blockedProperties = ['nango', 'persistClient', 'telemetryRecorder', 'locking', 'checkpointing', 'checkpointKey'] as const;
+    const blockedProperties = ['nango', 'persistClient', 'telemetryRecorder', 'locking', 'checkpointing', 'checkpointKey', 'functionVariant'] as const;
 
     beforeEach(async () => {
         const nodeClient = (await import('@nangohq/node')).Nango;
@@ -917,17 +917,22 @@ describe('createFunctionFacade', () => {
 
         it('hides blocked properties from "in", Object.keys and ownKeys', () => {
             const { facade } = buildActionFacade();
+            const enumerableKeys = Object.keys(facade);
+            const ownKeys = Reflect.ownKeys(facade);
             for (const prop of blockedProperties) {
                 expect(prop in facade).toBe(false);
+                expect(enumerableKeys).not.toContain(prop);
+                expect(ownKeys).not.toContain(prop);
             }
-            expect(Object.keys(facade)).not.toContain('nango');
-            expect(Reflect.ownKeys(facade)).not.toContain('nango');
         });
 
         it('throws when writing to a blocked property', () => {
             const { facade } = buildActionFacade();
             expect(() => {
                 (facade as any).nango = {};
+            }).toThrowError(/is not allowed/);
+            expect(() => {
+                (facade as any).functionVariant = 'other';
             }).toThrowError(/is not allowed/);
         });
 
@@ -1066,6 +1071,7 @@ describe('createFunctionFacade', () => {
             const { facade } = buildActionFacade();
             expect(facade.connectionId).toBe(nangoProps.connectionId);
             expect(facade.providerConfigKey).toBe(nangoProps.providerConfigKey);
+            expect(facade.getVariant()).toBe('base');
         });
 
         it('runs proxy() through the facade', async () => {

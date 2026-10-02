@@ -136,8 +136,9 @@ export const deleteMFA = asyncWrapper<DeleteMFA>(async (req, res) => {
         return;
     }
 
-    const code = validateCode(req, res);
-    if (!code) {
+    const val = mfaCredentialSchema.safeParse(req.body);
+    if (!val.success) {
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) } });
         return;
     }
 
@@ -146,7 +147,13 @@ export const deleteMFA = asyncWrapper<DeleteMFA>(async (req, res) => {
         res.status(400).send({ error: { code: 'mfa_not_enabled' } });
         return;
     }
-    const verified = await mfaService.verifyTotp(user.id, code, { context: 'disable' });
+    const credential = val.data;
+    // Checked rather than consumed: the disable below deletes every recovery code, so spending one first
+    // would only cost the user a code on an attempt that fails afterwards.
+    const verified =
+        credential.type === 'recoveryCode'
+            ? await mfaService.verifyRecoveryCode(user.id, credential.recoveryCode, { context: 'disable' })
+            : await mfaService.verifyTotp(user.id, credential.code, { context: 'disable' });
     if (verified.isErr()) {
         throw verified.error;
     }

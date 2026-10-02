@@ -252,7 +252,7 @@ export class SyncManagerService {
         await deleteSyncConfig(syncConfigId);
     }
 
-    public async softDeleteSync(syncId: string, environmentId: number, orchestrator: Orchestrator) {
+    public async softDeleteSync(syncId: string, environmentId: number, orchestrator: Pick<Orchestrator, 'deleteSync'>) {
         // Unschedule first so no new run can start against a sync we're about to soft-delete.
         await orchestrator.deleteSync({ syncId, environmentId });
 
@@ -265,7 +265,7 @@ export class SyncManagerService {
         });
     }
 
-    public async softDeleteSyncsByConnection(connection: Pick<DBConnection, 'id' | 'environment_id'>, orchestrator: Orchestrator) {
+    public async softDeleteSyncsByConnection(connection: Pick<DBConnection, 'id' | 'environment_id'>, orchestrator: Pick<Orchestrator, 'deleteSync'>) {
         const syncs = await getSyncsByConnectionId({ connectionId: connection.id });
 
         if (!syncs) {
@@ -277,7 +277,7 @@ export class SyncManagerService {
         }
     }
 
-    public async deleteSyncsByProviderConfig(environmentId: number, providerConfigKey: string, orchestrator: Orchestrator) {
+    public async deleteSyncsByProviderConfig(environmentId: number, providerConfigKey: string, orchestrator: Pick<Orchestrator, 'deleteSync'>) {
         const syncs = await getSyncsByProviderConfigKey({ environmentId, providerConfigKey });
 
         if (!syncs) {

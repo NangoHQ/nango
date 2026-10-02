@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/nango-yaml",
-    "version": "0.71.6",
+    "version": "0.71.11",
     "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -13,12 +13,12 @@
         "directory": "packages/nango-yaml"
     },
     "dependencies": {
-        "js-yaml": "4.3.1",
+        "js-yaml": "4.3.2",
         "ms": "3.0.0-canary.1"
     },
     "devDependencies": {
-        "@nangohq/types": "0.71.6",
-        "vitest": "4.1.9"
+        "@nangohq/types": "0.71.11",
+        "vitest": "4.1.11"
     },
     "files": [
         "dist/**/*"

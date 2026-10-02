@@ -8,8 +8,9 @@ import type { DeploymentCreateOutput } from './schema.js';
 
 export const deployFunctionTool = defineManagementMcpTool<typeof deployFunctionArgumentsSchema, DeploymentCreateOutput>({
     name: 'deploy_function',
+    title: 'Deploy Function',
     description:
-        'Start a code function deployment and return its initial job status. This tool does not wait for completion; use get_deployment_status to retrieve the final status.',
+        'Starts a code function deployment and returns its initial job status. The tool does not wait for completion; get_deployment_status returns the final status.',
     inputSchema: deployFunctionArgumentsSchema,
     outputSchema: deploymentCreateOutputSchema,
     requiredScopes: { every: ['environment:deploy'] },
@@ -25,7 +26,7 @@ export const deployFunctionTool = defineManagementMcpTool<typeof deployFunctionA
         readOnlyHint: false,
         destructiveHint: true,
         idempotentHint: false,
-        openWorldHint: false
+        openWorldHint: true
     },
     async handler({ args, environment, customerApiKeyId }) {
         return (

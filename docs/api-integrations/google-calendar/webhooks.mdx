@@ -35,6 +35,10 @@ Google Calendar push notifications have no HMAC. The `token` you set on the chan
 
 Once a secret is saved, Nango rejects notifications that omit `X-Goog-Channel-Token` or send a different value. Existing channels created without `token` must be recreated.
 
+<Warning>
+With no secret saved, Nango has nothing to check the channel token against and forwards every notification that reaches the webhook URL unverified. Set the secret before you create any channel.
+</Warning>
+
 ### 3. Create a notification channel (watch a resource)
 
 Create a notification channel for the calendar you want to watch by sending a `POST` request to the appropriate `watch` endpoint. See the [API reference](https://developers.google.com/workspace/calendar/api/guides/push#create-notification-channels) for the exact URI.

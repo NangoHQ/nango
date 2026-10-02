@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { envs, modelMessages, modelOperations } from '@nangohq/logs';
+import { envs, modelMessages, modelOperations, searchOperationsTypes } from '@nangohq/logs';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
@@ -16,43 +16,11 @@ const validation = z
             .max(10)
             .optional()
             .default(['all']),
-        types: z
-            .array(
-                z.enum([
-                    'all',
-                    'action',
-                    'sync',
-                    'events',
-                    'sync:init',
-                    'sync:cancel',
-                    'sync:pause',
-                    'sync:unpause',
-                    'sync:run',
-                    'sync:request_run',
-                    'sync:request_run_full',
-                    'sync:create_variant',
-                    'sync:delete_variant',
-                    'proxy',
-                    'deploy',
-                    'auth',
-                    'auth:create_connection',
-                    'auth:refresh_token',
-                    'admin',
-                    'webhook',
-                    'webhook:incoming',
-                    'webhook:forward',
-                    'webhook:sync',
-                    'webhook:connection_create',
-                    'webhook:connection_refresh',
-                    'webhook:connection_delete'
-                ])
-            )
-            .max(20)
-            .optional()
-            .default(['all']),
+        types: z.array(z.enum(searchOperationsTypes)).max(searchOperationsTypes.length).optional().default(['all']),
         integrations: z.array(z.string()).max(20).optional().default(['all']),
         connections: z.array(z.string()).max(20).optional().default(['all']),
         syncs: z.array(z.string()).max(20).optional().default(['all']),
+        agentSessions: z.array(z.string()).max(20).optional().default(['all']),
         period: z.object({ from: z.string().datetime(), to: z.string().datetime() }).optional(),
         cursor: z.string().or(z.null()).optional()
     })
@@ -90,6 +58,7 @@ export const searchOperations = asyncWrapperWithEnvironment<SearchOperations>(as
         integrations: body.integrations,
         connections: body.connections,
         syncs: body.syncs,
+        agentSessions: body.agentSessions,
         period: body.period,
         cursor: body.cursor
     });

@@ -2,7 +2,7 @@ import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
-import { connectionService } from '@nangohq/shared';
+import { connectionService, isBillableDataTransfer } from '@nangohq/shared';
 import { Err, metrics, Ok, report, stringifyError } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -196,9 +196,14 @@ export class UsageProcessor {
                     return this.clickhouse.add([event]);
                 }
                 case 'usage.data_transfer': {
-                    const { package: pkg, callsite, ingressedBytes, egressedBytes } = event.payload.properties;
+                    const { accountId, package: pkg, callsite, ingressedBytes, egressedBytes } = event.payload.properties;
                     metrics.increment(metrics.Types.DATA_TRANSFER, ingressedBytes, { package: pkg, callsite, direction: 'ingress' });
                     metrics.increment(metrics.Types.DATA_TRANSFER, egressedBytes, { package: pkg, callsite, direction: 'egress' });
+                    if (isBillableDataTransfer(pkg, callsite)) {
+                        const incrDataTransfer = await this.usageTracker.incr({ accountId, metric: 'data_transfer', delta: egressedBytes });
+                        this.logIncrError('data_transfer', accountId, incrDataTransfer);
+                        // TODO: track metric on DataDog.
+                    }
                     return this.clickhouse.add([event]);
                 }
                 default:

@@ -11,11 +11,20 @@ import connectionService, {
     getPreconfiguredTwoStepFields
 } from './connection.service.js';
 import { refreshOrTestCredentials } from './connections/credentials/refresh.js';
-import { REFRESH_MARGIN_MS } from './connections/utils.js';
+import { DEFAULT_OAUTHCC_EXPIRES_AT_MS, REFRESH_MARGIN_MS } from './connections/utils.js';
 
 import type { Config } from '../models/index.js';
 import type { ConnectionWithDetails } from './connection.service.js';
-import type { AllAuthCredentials, ConnectionConfig, DBConnectionDecrypted, DBEnvironment, DBTeam, ProviderTwoStep, TwoStepCredentials } from '@nangohq/types';
+import type {
+    AllAuthCredentials,
+    ConnectionConfig,
+    DBConnectionDecrypted,
+    DBEnvironment,
+    DBTeam,
+    OAuth2ClientCredentials,
+    ProviderTwoStep,
+    TwoStepCredentials
+} from '@nangohq/types';
 
 const twoStepRefreshTokenCases = [
     {
@@ -694,6 +703,42 @@ describe('connection.service parseRawCredentials', () => {
             expect(result.expires_at!.getTime()).toBeCloseTo(accessTokenExp * 1000, -3);
         });
     });
+
+    describe('OAUTH2_CC token JWT exp introspection', () => {
+        it('no expires_at/expires_in but token is a JWT with exp => uses decoded token expiry', () => {
+            const tokenExp = Math.floor(Date.now() / 1000) + 1800; // 30min from now
+            const rawCreds = { access_token: makeJwt({ exp: tokenExp }) };
+
+            const result = connectionService.parseRawCredentials(rawCreds, 'OAUTH2_CC') as OAuth2ClientCredentials;
+
+            expect(result.expires_at).toEqual(new Date(tokenExp * 1000 - REFRESH_MARGIN_MS));
+        });
+
+        it('expires_in is present => takes precedence over the token exp claim', () => {
+            const tokenExp = Math.floor(Date.now() / 1000) + 1800;
+            const rawCreds = { access_token: makeJwt({ exp: tokenExp }), expires_in: 3600 };
+
+            const result = connectionService.parseRawCredentials(rawCreds, 'OAUTH2_CC') as OAuth2ClientCredentials;
+
+            expect(result.expires_at!.getTime()).toBeCloseTo(Date.now() + 3600 * 1000, -3);
+        });
+
+        it('token is not a JWT => falls back to the default OAUTH2_CC expiry window', () => {
+            const rawCreds = { access_token: 'opaque-token' };
+
+            const result = connectionService.parseRawCredentials(rawCreds, 'OAUTH2_CC') as OAuth2ClientCredentials;
+
+            expect(result.expires_at!.getTime()).toBeCloseTo(Date.now() + DEFAULT_OAUTHCC_EXPIRES_AT_MS, -3);
+        });
+
+        it('token JWT has no exp claim => falls back to the default OAUTH2_CC expiry window', () => {
+            const rawCreds = { access_token: makeJwt({ sub: 'service-account' }) };
+
+            const result = connectionService.parseRawCredentials(rawCreds, 'OAUTH2_CC') as OAuth2ClientCredentials;
+
+            expect(result.expires_at!.getTime()).toBeCloseTo(Date.now() + DEFAULT_OAUTHCC_EXPIRES_AT_MS, -3);
+        });
+    });
 });
 
 describe('extractResponseHeaderValues', () => {
@@ -802,6 +847,7 @@ function retrievalIntegrationFixture(provider: string = 'github'): Config {
         display_name: null,
         missing_fields: [],
         forward_webhooks: true,
+        allow_unverified_webhooks: false,
         shared_credentials_id: null,
         created_at: new Date('2026-01-01T00:00:00.000Z'),
         updated_at: new Date('2026-01-02T00:00:00.000Z')

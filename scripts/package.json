@@ -3,6 +3,8 @@
     "type": "module",
     "devDependencies": {
         "@apidevtools/swagger-cli": "4.0.4",
+        "@aws-crypto/client-node": "5.0.0",
+        "@google-cloud/kms": "5.7.0",
         "@isaacs/brace-expansion": "5.0.1",
         "@opencode-ai/sdk": "1.2.6",
         "@redocly/cli": "2.34.0",
@@ -12,9 +14,10 @@
         "dotenv": "17.3.1",
         "figures": "6.1.0",
         "git-cliff": "2.10.0",
-        "js-yaml": "4.3.1",
+        "google-auth-library": "10.5.0",
+        "js-yaml": "4.3.2",
         "semver": "7.7.2",
-        "vitest": "4.1.9",
+        "vitest": "4.1.11",
         "zx": "8.8.5"
     }
 }

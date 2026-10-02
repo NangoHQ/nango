@@ -7,6 +7,7 @@ import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { customerKeyService, seeders } from '@nangohq/shared';
 
+import { AGENT_SESSION_TAG_KEY } from '../../../services/agentSessionConnections.service.js';
 import { runServer } from '../../../utils/tests.js';
 import { toolSearchOutputSchema } from './toolSearch/schema.js';
 
@@ -175,6 +176,13 @@ async function createSession(apiKey: string, body: Partial<PostAgentSessionsBody
     return { sessionId: res.json.data.session_id, token: res.json.data.session_token, mcpPath: new URL(res.json.data.mcp_url).pathname };
 }
 
+async function expireSession(sessionId: string): Promise<void> {
+    await db.knex
+        .from('agent_sessions')
+        .where({ id: sessionId })
+        .update({ expires_at: new Date(Date.now() - 60_000) });
+}
+
 async function disableAction({ environmentId, name }: { environmentId: number; name: string }): Promise<void> {
     await db.knex.from<DBSyncConfig>('_nango_sync_configs').where({ environment_id: environmentId, sync_name: name }).update({ enabled: false });
 }
@@ -227,6 +235,18 @@ describe('/session/:sessionId/mcp', () => {
         const res = await listTools({ token: apiKey, mcpPath });
 
         expect(res.status).toBe(401);
+    });
+
+    it('rejects a session token once the session has expired', async () => {
+        const { apiKey } = await seedTenant();
+        const { sessionId, token, mcpPath } = await createSession(apiKey);
+
+        await expireSession(sessionId);
+
+        const res = await listTools({ token, mcpPath });
+
+        expect(res.status).toBe(401);
+        expect(res.json.error.code).toBe('agent_session_ended');
     });
 
     it('rejects a session token pointed at another session url', async () => {
@@ -294,6 +314,7 @@ describe('/session/:sessionId/mcp', () => {
         expect(res.json.result.content[0].text).toBe(
             "Tool 'zendesk__get_ticket' is not one of this session's tools. Use nango_tool_search to find one, or call a tool by the name it is listed under."
         );
+        expect(res.json.result._meta['nango/error_code']).toBe('tool_not_in_session');
     });
 
     it('rejects the integration plus tool shape the tool no longer takes', async () => {
@@ -304,6 +325,7 @@ describe('/session/:sessionId/mcp', () => {
 
         expect(res.json.result.isError).toBe(true);
         expect(res.json.result.content[0].text).toContain('Invalid nango_execute arguments');
+        expect(res.json.result._meta['nango/error_code']).toBe('invalid_input');
     });
 
     it('rejects arguments that name no tool', async () => {
@@ -324,7 +346,10 @@ describe('/session/:sessionId/mcp', () => {
 
         const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { tool: 'notion__upsert_doc' } });
 
-        expect(res.json.result.content[0].text).toBe("Tool 'upsert_doc' is disabled on integration 'notion'.");
+        expect(res.json.result.content[0].text).toBe(
+            "Tool 'upsert_doc' is not available on integration 'notion'. Use another tool for the task, or tell the user it cannot be done."
+        );
+        expect(res.json.result._meta).toStrictEqual({ 'nango/error_code': 'tool_not_in_session', 'nango/integration_id': 'notion' });
     });
 
     it('refuses a tool on an integration the tenant never connected', async () => {
@@ -334,7 +359,10 @@ describe('/session/:sessionId/mcp', () => {
         const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { tool: 'zendesk__create_ticket' } });
 
         expect(res.json.result.isError).toBe(true);
-        expect(res.json.result.content[0].text).toBe("Integration 'zendesk' has no connection in this session.");
+        expect(res.json.result.content[0].text).toBe(
+            "Integration 'zendesk' has no connection in this session, so none of its tools can run. Tell the user they need to connect it, and carry on with the tools you do have."
+        );
+        expect(res.json.result._meta).toStrictEqual({ 'nango/error_code': 'integration_not_connected', 'nango/integration_id': 'zendesk' });
     });
 
     it('runs a searchable tool called by its own name, though it is never listed', async () => {
@@ -346,7 +374,9 @@ describe('/session/:sessionId/mcp', () => {
         expect(listed.json.result.tools.map((tool: { name: string }) => tool.name)).not.toContain('notion__upsert_doc');
 
         const res = await callTool({ token, mcpPath, name: 'notion__upsert_doc', args: {} });
-        expect(res.json.result.content[0].text).toBe("Tool 'upsert_doc' is disabled on integration 'notion'.");
+        expect(res.json.result.content[0].text).toBe(
+            "Tool 'upsert_doc' is not available on integration 'notion'. Use another tool for the task, or tell the user it cannot be done."
+        );
     });
 
     // arguments is optional in MCP, and a tool that takes none is often called without it.
@@ -362,7 +392,9 @@ describe('/session/:sessionId/mcp', () => {
             body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'notion__read_doc' } }
         });
 
-        expect(res.json.result.content[0].text).toBe("Tool 'read_doc' is disabled on integration 'notion'.");
+        expect(res.json.result.content[0].text).toBe(
+            "Tool 'read_doc' is not available on integration 'notion'. Use another tool for the task, or tell the user it cannot be done."
+        );
     });
 
     it('runs a pinned tool called by its own name', async () => {
@@ -372,7 +404,9 @@ describe('/session/:sessionId/mcp', () => {
 
         const res = await callTool({ token, mcpPath, name: 'notion__read_doc', args: { id: '1' } });
 
-        expect(res.json.result.content[0].text).toBe("Tool 'read_doc' is disabled on integration 'notion'.");
+        expect(res.json.result.content[0].text).toBe(
+            "Tool 'read_doc' is not available on integration 'notion'. Use another tool for the task, or tell the user it cannot be done."
+        );
     });
 
     it('finds a searchable tool that is deliberately not listed', async () => {
@@ -474,7 +508,7 @@ describe('/session/:sessionId/mcp', () => {
         expect(result.guidance).toContain('also in your tool list');
     });
 
-    it('lists a tool on an unconnected integration and says it will fail', async () => {
+    it('lists a tool on an unconnected integration and says what to do about it', async () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {} });
 
@@ -483,7 +517,34 @@ describe('/session/:sessionId/mcp', () => {
         const match = [...result.matches, ...result.related].find((match) => match.action === 'create_ticket');
 
         expect(match?.connection).toStrictEqual({ status: 'not_connected' });
-        expect(result.guidance).toContain('no connection in this session');
+        expect(result.guidance).toContain(
+            "'zendesk' has no connection in this session. Their tools are listed for completeness and will fail if you call them. Tell the user they need to connect it, and carry on with the tools you do have."
+        );
+    });
+
+    it('points an unconnected integration at nango_create_connection when the session can connect', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {}, meta_tools: { nango_create_connection: true } });
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket' } });
+
+        expect(searchResult(res).guidance).toContain(
+            "'zendesk' has no connection in this session. Their tools are listed for completeness and will fail if you call them. Call nango_create_connection with integration 'zendesk' to get a link the user can follow, then try again once they tell you they are done."
+        );
+    });
+
+    it('reports an integration the agent connected mid-session as connected', async () => {
+        const { env, apiKey } = await seedTenant();
+        const { sessionId, token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {}, meta_tools: { nango_create_connection: true } });
+
+        await seeders.createConnectionSeed({ env, provider: 'zendesk', connectionId: 'zendesk-acme', tags: { [AGENT_SESSION_TAG_KEY]: sessionId } });
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket' } });
+        const result = searchResult(res);
+        const match = [...result.matches, ...result.related].find((match) => match.action === 'create_ticket');
+
+        expect(match?.connection).toStrictEqual({ status: 'connected', connection_id: 'zendesk-acme' });
+        expect(result.guidance).not.toContain('nango_create_connection');
     });
 
     it('answers a query nothing matches without pretending otherwise', async () => {

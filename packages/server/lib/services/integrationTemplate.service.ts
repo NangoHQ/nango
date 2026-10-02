@@ -1,11 +1,11 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, deployTemplate, productTracking, startTrial, syncManager } from '@nangohq/shared';
+import { configService, deployTemplate, startTrial, syncManager } from '@nangohq/shared';
 
 import { getOrchestrator } from '../utils/utils.js';
 import flowService from './flow.service.js';
 
-import type { DBEnvironment, DBPlan, DBTeam, DBUser, RunnableFunctionType, ScriptTypeLiteral, SyncDeploymentResult } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam, RunnableFunctionType, ScriptTypeLiteral, SyncDeploymentResult } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -30,7 +30,6 @@ export async function deployIntegrationTemplate({
     environment,
     account,
     plan,
-    user,
     providerConfigKey,
     name,
     type
@@ -38,7 +37,6 @@ export async function deployIntegrationTemplate({
     environment: DBEnvironment;
     account: DBTeam;
     plan: DBPlan | null;
-    user?: Pick<DBUser, 'id' | 'email' | 'name'> | undefined;
     providerConfigKey: string;
     name: string;
     type?: ScriptTypeLiteral | undefined;
@@ -53,7 +51,6 @@ export async function deployIntegrationTemplate({
     }
     if (plan && !plan.trial_end_at && plan.auto_idle) {
         await startTrial(db.knex, plan);
-        productTracking.track({ name: 'account:trial:started', team: account, user });
     }
 
     // When `type` is omitted, infer it from the catalog: a template name is almost always unique

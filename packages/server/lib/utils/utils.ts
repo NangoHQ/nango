@@ -49,6 +49,21 @@ export function dirname() {
     return path.dirname(fileURLToPath(import.meta.url));
 }
 
+export function mergeIntegrationConfigIntoConnectionConfig(
+    provider: Provider,
+    custom: Record<string, string> | null | undefined,
+    connectionConfig: Record<string, string>
+): void {
+    if (!provider.integration_config || !provider.connection_config || !custom) {
+        return;
+    }
+    for (const [key, value] of Object.entries(custom)) {
+        if (Object.hasOwn(provider.integration_config, key) && Object.hasOwn(provider.connection_config, key) && !connectionConfig[key]) {
+            connectionConfig[key] = value;
+        }
+    }
+}
+
 /**
  * A helper function to check if replacers contains all necessary params to interpolate string.
  * interpolateString('Hello ${name} of ${age} years", {name: 'Tester'}) -> returns false

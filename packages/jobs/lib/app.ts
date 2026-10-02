@@ -6,7 +6,7 @@ import { generateImage } from '@nangohq/fleet';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp } from '@nangohq/logs';
 import { getOtlpRoutes } from '@nangohq/shared';
-import { getLogger, once, report, stringifyError } from '@nangohq/utils';
+import { getLogger, metrics, once, report, stringifyError } from '@nangohq/utils';
 
 import { orchestratorClient } from './clients.js';
 import { envs } from './env.js';
@@ -125,6 +125,7 @@ try {
             await pubsub.disconnect();
             console.info('Closed');
 
+            await metrics.flush();
             process.exit();
         })();
     });

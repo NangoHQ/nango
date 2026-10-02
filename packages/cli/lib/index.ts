@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 
 import chalk from 'chalk';
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import * as dotenv from 'dotenv';
 import figlet from 'figlet';
 
@@ -21,9 +21,10 @@ import { Ensure } from './services/ensure.service.js';
 import { create } from './services/function-create.service.js';
 import { inferIntegrationsFromConnectionId } from './services/interactive.service.js';
 import { pullFromCatalog, pullFunction } from './services/pull.service.js';
-import { trackCliEvent } from './services/telemetry.service.js';
+import { trackCliCommand } from './services/telemetry.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
+import { SOURCEMAP_OPTIONS } from './types.js';
 import { getNangoRootPath, isCI, printDebug, upgradeAction } from './utils.js';
 import { MissingArgumentError } from './utils/errors.js';
 import { checkAndSyncPackageJson } from './zeroYaml/check.js';
@@ -35,21 +36,25 @@ import { initZero } from './zeroYaml/init.js';
 import { ReadableError } from './zeroYaml/utils.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
-import type { CliTelemetryEvent, NangoYamlParsed, ScriptTypeLiteral } from '@nangohq/types';
+import type { CliTelemetryCommand, NangoYamlParsed, ScriptTypeLiteral } from '@nangohq/types';
 
-const commandTelemetryEvents: Record<string, CliTelemetryEvent> = {
-    init: 'cli:init',
-    create: 'cli:create',
-    compile: 'cli:compile',
-    dev: 'cli:dev',
-    dryrun: 'cli:dryrun',
-    'generate:docs': 'cli:generate:docs',
-    'generate:tests': 'cli:generate:tests',
-    clone: 'cli:clone',
-    'migrate-to-zero-yaml': 'cli:migrate_to_zero_yaml',
-    deploy: 'cli:deploy',
-    pull: 'cli:pull'
-};
+const telemetryCommands = new Set<string>([
+    'init',
+    'create',
+    'compile',
+    'dev',
+    'dryrun',
+    'generate:docs',
+    'generate:tests',
+    'clone',
+    'migrate-to-zero-yaml',
+    'deploy',
+    'pull'
+] satisfies CliTelemetryCommand[]);
+
+function isTelemetryCommand(name: string): name is CliTelemetryCommand {
+    return telemetryCommands.has(name);
+}
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -100,9 +105,9 @@ class NangoCommand extends Command {
                 process.env['NANGO_CLI_DEBUG'] = 'true';
             }
 
-            const telemetryEvent = commandTelemetryEvents[actionCommand.name()];
-            if (telemetryEvent) {
-                trackCliEvent(telemetryEvent);
+            const commandName = actionCommand.name();
+            if (isTelemetryCommand(commandName)) {
+                trackCliCommand(commandName);
             }
 
             if (opts.debug && fs.existsSync('.env')) {
@@ -257,8 +262,9 @@ program
     .description(
         'Compile the integration files to JavaScript and update the .nango directory. This is useful for one off changes instead of watching for changes continuously.'
     )
+    .addOption(new Option('--sourcemap <mode>', 'Source map mode for compiled function bundles.').choices(SOURCEMAP_OPTIONS).default('inline'))
     .action(async function (this: Command) {
-        const { debug, interactive, dependencyUpdate } = this.opts<GlobalOptions>();
+        const { debug, interactive, dependencyUpdate, sourcemap } = this.opts<GlobalOptions>();
         const fullPath = process.cwd();
 
         const precheck = await verificationService.ensureZeroYaml({ fullPath, debug });
@@ -271,7 +277,7 @@ program
             return;
         }
 
-        const res = await compileAllFunctions({ fullPath, debug, interactive });
+        const res = await compileAllFunctions({ fullPath, debug, interactive, sourcemap });
         if (res.isErr()) {
             process.exitCode = NangoCliExitCode.CompileError;
         }
@@ -310,6 +316,7 @@ program
     .option('--validate, --validation', 'Optional: Enforce input, output and records validation', false)
     .option('--save, --save-responses', 'Optional: Save all dry run responses to <integration>/tests/<name>.test.json for unit tests', false)
     .option('--diagnostics', 'Optional: Display performance diagnostics including memory usage and CPU metrics', false)
+    .addOption(new Option('--sourcemap <mode>', 'Source map mode for compiled function bundles.').choices(SOURCEMAP_OPTIONS).default('inline'))
     .action(async function (this: Command) {
         const {
             autoConfirm,
@@ -324,7 +331,8 @@ program
             variant,
             metadata,
             checkpoint,
-            diagnostics
+            diagnostics,
+            sourcemap
         } = this.opts();
         const shouldValidate = validation || saveResponses;
         const fullPath = process.cwd();
@@ -424,7 +432,7 @@ program
             return;
         }
 
-        const res = await compileAllFunctions({ fullPath, debug, interactive });
+        const res = await compileAllFunctions({ fullPath, debug, interactive, sourcemap });
         if (res.isErr()) {
             process.exitCode = NangoCliExitCode.CompileError;
             return;
@@ -483,9 +491,10 @@ program
     .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('-i, --integration [integrationId]', 'Optional: Deploy all scripts related to a specific integration.')
     .option('--allow-destructive', 'Allow destructive changes to be deployed without confirmation', false)
+    .addOption(new Option('--sourcemap <mode>', 'Source map mode for compiled function bundles.').choices(SOURCEMAP_OPTIONS).default('inline'))
     .action(async function (this: Command, environment?: string) {
         const options = this.opts<DeployOptions>();
-        const { debug, interactive, dependencyUpdate } = options;
+        const { debug, interactive, dependencyUpdate, sourcemap } = options;
         const fullPath = process.cwd();
 
         try {
@@ -510,7 +519,7 @@ program
             return;
         }
 
-        const resCompile = await compileAllFunctions({ fullPath, debug, interactive });
+        const resCompile = await compileAllFunctions({ fullPath, debug, interactive, sourcemap });
         if (resCompile.isErr()) {
             process.exitCode = NangoCliExitCode.CompileError;
             return;

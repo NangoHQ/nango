@@ -610,8 +610,14 @@ export class UsageTracker implements IUsageTracker {
     }
 
     private async getRecordsUsage(accountId: number): Promise<Result<number>> {
-        const envs = await environmentService.getEnvironmentsByAccountId(accountId);
+        const environments = await environmentService.getEnvironmentsByAccountId(accountId);
+        if (environments.isErr()) {
+            logger.warning('Failed to retrieve environments for account.', { err: environments.error, accountId });
+            return Ok(0);
+        }
+
         let count = 0;
+        const envs = environments.value;
         if (envs.length > 0) {
             const envIds = envs.map((e) => e.id);
             for await (const recordCounts of records.paginateCounts({ environmentIds: envIds })) {

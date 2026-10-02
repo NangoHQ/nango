@@ -343,6 +343,67 @@ describe('Webhooks: forward notification tests', () => {
         ]);
     });
 
+    it('flags an unverified webhook in the wrapped body and headers', async () => {
+        await forwardWebhook({
+            connectionIds: ['conn1'],
+            webhookUrlOverrideByConnectionId: new Map(),
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings,
+            logContextGetter,
+            integration,
+            payload: { some: 'data' },
+            webhookOriginalHeaders: {},
+            unverified: { reason: 'hubspot_missing_webhook_secret', message: 'This webhook was not verified.' }
+        });
+
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        const args = deliverMock.mock.calls[0]![0];
+        expect(args.body).toMatchObject({ connectionId: 'conn1', unverified: true });
+        expect(args.extraHeaders).toEqual({ 'X-Nango-Webhook-Unverified': 'true' });
+    });
+
+    it('flags an unverified webhook in the headers when forwarding the raw payload', async () => {
+        await forwardWebhook({
+            connectionIds: [],
+            webhookUrlOverrideByConnectionId: new Map(),
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings,
+            logContextGetter,
+            integration,
+            payload: { some: 'data' },
+            webhookOriginalHeaders: {},
+            unverified: { reason: 'hubspot_missing_webhook_secret', message: 'This webhook was not verified.' }
+        });
+
+        expect(deliverMock).toHaveBeenCalledTimes(1);
+        const args = deliverMock.mock.calls[0]![0];
+        expect(args.body).toEqual({ some: 'data' });
+        expect(args.extraHeaders).toEqual({ 'X-Nango-Webhook-Unverified': 'true' });
+    });
+
+    it('does not flag a verified webhook', async () => {
+        await forwardWebhook({
+            connectionIds: ['conn1'],
+            webhookUrlOverrideByConnectionId: new Map(),
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings,
+            logContextGetter,
+            integration,
+            payload: { some: 'data' },
+            webhookOriginalHeaders: {}
+        });
+
+        const args = deliverMock.mock.calls[0]![0];
+        expect(args.body).not.toHaveProperty('unverified');
+        expect(args.extraHeaders).toBeUndefined();
+    });
+
     it('forwards to the per-connection webhook URL override (env secondary is dropped)', async () => {
         const overrideUrl = 'https://override.example.com/hook';
         await forwardWebhook({

@@ -9,6 +9,9 @@ import { expectAccessibleInBothThemes } from '@/test/a11y';
 import {
     apiKeyProvider,
     authResultFixture,
+    dualConfigIntegrationFixture,
+    dualConfigIntegrationFixtureNoPreconfig,
+    dualConfigProvider,
     integrationFixture,
     twoStepIntegrationFixture,
     twoStepIntegrationFixtureNoPreconfig,
@@ -158,6 +161,22 @@ describe('Go', () => {
             await expect.element(page.getByPlaceholder('Username')).toBeInTheDocument();
         });
     });
+    describe('preconfigured connection_config', () => {
+        it('does not show a connection_config field already set at the integration level', async () => {
+            await renderApp({ route: '/go', seedStore: { provider: dualConfigProvider, integration: dualConfigIntegrationFixture } });
+            await expect.element(page.getByRole('heading', { name: 'Link Stripe App (Sandbox) Account' })).toBeInTheDocument();
+
+            expect(page.getByPlaceholder('App Domain').query()).toBeNull();
+        });
+
+        it('asks for the field when nothing is preconfigured at the integration level', async () => {
+            await renderApp({ route: '/go', seedStore: { provider: dualConfigProvider, integration: dualConfigIntegrationFixtureNoPreconfig } });
+            await expect.element(page.getByRole('heading', { name: 'Link Stripe App (Sandbox) Account' })).toBeInTheDocument();
+
+            await expect.element(page.getByPlaceholder('App Domain')).toBeInTheDocument();
+        });
+    });
+
     describe('cross-provider TWO_STEP schema isolation', () => {
         it('renders Sage Intacct with its own clientId fallback field', async () => {
             await renderApp({ route: '/go', seedStore: { provider: twoStepProvider, integration: twoStepIntegrationFixtureNoPreconfig } });

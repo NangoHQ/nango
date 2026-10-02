@@ -4,6 +4,7 @@ import { accountService, handlePlanChanged, updatePlanByTeam } from '@nangohq/sh
 import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
+import { trackPlanUpdate } from '../../../services/planChange.service.js';
 import { clearSpendAlertOnPlanChange, notifySpendAlert } from '../../../services/spendAlertNotification.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
@@ -124,8 +125,11 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
             if (changed.isErr()) {
                 return Err(changed.error);
             }
-            if (changed.value) {
+
+            const planChange = changed.value;
+            if (planChange) {
                 await clearSpendAlertOnPlanChange({ accountId: team.id, subscriptionId: body.subscription.id });
+                trackPlanUpdate({ team, planChange, isScheduled: true });
             }
 
             return Ok(undefined);

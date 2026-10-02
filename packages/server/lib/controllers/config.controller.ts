@@ -11,7 +11,7 @@ import {
 } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
-import { hasAuthorizedScope } from '../middleware/scope.middleware.js';
+import { principalCan } from '../authz/principal.js';
 import { requireEnvironment } from '../utils/asyncWrapper.js';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -94,14 +94,13 @@ class ConfigController {
 
             if (!usesSharedCredentials && authMode === 'APP' && client_secret) {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
-                const hash = `${config.oauth_client_id}${config.oauth_client_secret}${config.app_link}`;
+                const hash = `${config.oauth_client_id}${client_secret}${config.app_link}`;
                 webhook_secret = crypto.createHash('sha256').update(hash).digest('hex');
             }
 
-            if (!usesSharedCredentials && authMode === 'CUSTOM' && custom) {
-                const { private_key } = custom;
+            if (!usesSharedCredentials && authMode === 'CUSTOM' && custom?.['private_key'] && custom['app_id']) {
                 custom['private_key'] = Buffer.from(custom['private_key'] as string, 'base64').toString('ascii');
-                const hash = `${custom['app_id']}${private_key}${config.app_link}`;
+                const hash = `${custom['app_id']}${custom['private_key']}${config.app_link}`;
                 webhook_secret = crypto.createHash('sha256').update(hash).digest('hex');
             }
 
@@ -112,7 +111,7 @@ class ConfigController {
             }
 
             let configRes: ProviderIntegration | IntegrationWithCreds;
-            if (includeCreds && !hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:integrations:read_credentials' })) {
+            if (includeCreds && !principalCan(res.locals, 'environment:integrations:read_credentials')) {
                 res.status(403).json({ error: { code: 'forbidden', message: 'Insufficient scope. Required: environment:integrations:read_credentials' } });
                 return;
             }

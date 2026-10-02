@@ -19,6 +19,13 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007, ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: 0 });
     });
 
+    it('parses the local Nango user id as a non-negative integer', () => {
+        expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '0' }).LOCAL_NANGO_USER_ID).toBe(0);
+        expect(parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '1e2' }).LOCAL_NANGO_USER_ID).toBe(100);
+        expect(() => parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '1.5' })).toThrowError(/LOCAL_NANGO_USER_ID/);
+        expect(() => parseEnvs(ENVS, { LOCAL_NANGO_USER_ID: '-1' })).toThrowError(/LOCAL_NANGO_USER_ID/);
+    });
+
     it('should parse the throttled immediate limit', () => {
         expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '123' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(123);
         // 0 disables throttling
@@ -52,14 +59,25 @@ describe('parse', () => {
         expect(parseEnvs(ENVS, { NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: 'false' }).NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(false);
     });
 
-    it('should parse the sandbox compiler template', () => {
-        const res = parseEnvs(ENVS, { E2B_SANDBOX_COMPILER_TEMPLATE: 'blank-workspace:dev' });
-        expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
-    });
-
     it('should parse the management MCP server URL', () => {
         const res = parseEnvs(ENVS, { NANGO_MANAGEMENT_MCP_SERVER_URL: 'https://mcp-development.nango.dev' });
         expect(res.NANGO_MANAGEMENT_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
+    });
+
+    it('should parse the OpenAI Apps challenge token', () => {
+        const res = parseEnvs(ENVS, { NANGO_OPENAI_APPS_CHALLENGE_TOKEN: 'challenge-token' });
+        expect(res.NANGO_OPENAI_APPS_CHALLENGE_TOKEN).toBe('challenge-token');
+    });
+
+    it('parses OAuth server settings', () => {
+        const res = parseEnvs(ENVS, {
+            NANGO_OAUTH_SERVER_BASE_URL: 'https://api.example.com',
+            NANGO_OAUTH_SERVER_COOKIE_KEYS: '["first","second"]',
+            NANGO_OAUTH_SERVER_JWKS: '{"keys":[]}'
+        });
+        expect(res).toMatchObject({
+            NANGO_OAUTH_SERVER_BASE_URL: 'https://api.example.com'
+        });
     });
 
     it('should accept `/` as NANGO_DASHBOARD_API_URL', () => {
@@ -71,15 +89,6 @@ describe('parse', () => {
         expect(() => {
             parseEnvs(ENVS, { NANGO_DASHBOARD_API_URL: '/nango-api' });
         }).toThrow();
-    });
-
-    it('should parse E2B sandbox metric settings', () => {
-        const res = parseEnvs(ENVS, {
-            E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: '120000',
-            E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS: '5000'
-        });
-        expect(res.E2B_SANDBOX_METRICS_POLL_INTERVAL_MS).toBe(120_000);
-        expect(res.E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS).toBe(5_000);
     });
 
     it('should parse the sandbox provider', () => {
@@ -398,6 +407,15 @@ describe('parse', () => {
     it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
+    });
+
+    it('should accept ec-serverless as NANGO_LOGS_PROVIDER', () => {
+        const res = parseEnvs(ENVS, { NANGO_LOGS_PROVIDER: 'ec-serverless' });
+        expect(res.NANGO_LOGS_PROVIDER).toBe('ec-serverless');
+    });
+
+    it('should throw on an unknown NANGO_LOGS_PROVIDER', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_PROVIDER: 'not-a-provider' })).toThrow();
     });
 
     it('should default NANGO_LOGS_ES_RETENTION_DAYS to 15', () => {

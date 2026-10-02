@@ -8,7 +8,7 @@ import { nonEmptyString, omitUndefined, positiveInt, uuid } from './input.js';
 import type { RequestLocals } from '../../utils/express.js';
 import type { AuditTarget, AuditTargetType } from '@nangohq/audit';
 import type { ApiKeyRef } from '@nangohq/shared';
-import type { IntegrationProviderMetadata } from '@nangohq/types';
+import type { DBCustomerKey, IntegrationProviderMetadata } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Request } from 'express';
 
@@ -65,13 +65,14 @@ export async function integrationProviderMeta(value: unknown, locals: Partial<Re
     }
 }
 
-async function apiKeyRef(lookup: () => Promise<Result<ApiKeyRef | undefined>>): Promise<ApiKeyRef | undefined> {
+async function apiKeyRef(lookup: () => Promise<Result<DBCustomerKey[]>>): Promise<ApiKeyRef | undefined> {
     try {
         const result = await lookup();
         if (result.isErr()) {
             throw result.error;
         }
-        return result.value;
+        const key = result.value[0];
+        return key ? { uuid: key.uuid, display_name: key.display_name } : undefined;
     } catch (err) {
         auditEnrichmentFailed('display', 'api_key', err);
         return undefined;
@@ -90,7 +91,7 @@ export async function apiKeyTarget(value: unknown, locals: Partial<RequestLocals
     }
     const environmentId = locals.environment.id;
     const accountId = locals.account.id;
-    return apiKeyTargetFrom(await apiKeyRef(() => customerKeyService.getApiKeyById(db.knex, numericId, environmentId, accountId)));
+    return apiKeyTargetFrom(await apiKeyRef(() => customerKeyService.search(db.knex, { type: 'environment', environmentId, accountId, keyId: numericId })));
 }
 
 export async function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
@@ -101,7 +102,7 @@ export async function accountApiKeyTarget(value: unknown, locals: Partial<Reques
         return undefined;
     }
     const accountId = locals.account.id;
-    return apiKeyTargetFrom(await apiKeyRef(() => customerKeyService.getAccountApiKeyById(db.knex, numericId, accountId)));
+    return apiKeyTargetFrom(await apiKeyRef(() => customerKeyService.search(db.knex, { type: 'account', accountId, keyId: numericId })));
 }
 
 export function publicEnvApiKeyTarget(keyUuid: unknown, environmentUuid: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
@@ -117,11 +118,11 @@ export function publicEnvApiKeyTarget(keyUuid: unknown, environmentUuid: unknown
         if (!environment) {
             return undefined;
         }
-        const result = await customerKeyService.getApiKeyByUuidWithoutSecrets(db.knex, id, environment.id, account.id);
+        const result = await customerKeyService.search(db.knex, { type: 'environment', environmentId: environment.id, accountId: account.id, keyUuid: id });
         if (result.isErr()) {
             throw result.error;
         }
-        return result.value?.display_name;
+        return result.value[0]?.display_name;
     });
 }
 

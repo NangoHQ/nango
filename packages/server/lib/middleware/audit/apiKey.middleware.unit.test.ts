@@ -4,10 +4,9 @@ import { metrics, Ok } from '@nangohq/utils';
 
 import { auditAccountApiKeyCreated, auditApiKeyCreated, auditApiKeyDeleted, auditPublicApiKeyCreated, auditPublicApiKeyDeleted } from './apiKey.middleware.js';
 import {
+    customerKeySearchMock,
     fakeReq,
     fakeRes,
-    getApiKeyByIdMock,
-    getApiKeyByUuidWithoutSecretsMock,
     getEnvironmentByIdMock,
     getEnvironmentByUuidMock,
     installAuditMockDefaults,
@@ -18,6 +17,8 @@ import {
     secretKeyLocals
 } from './testing.js';
 
+import type { CustomerKeySearch } from '@nangohq/shared';
+
 vi.mock('../../audit.js', async (importOriginal) => (await import('./testing.js')).auditModuleMock(importOriginal as never));
 vi.mock('@nangohq/shared', async (importOriginal) => (await import('./testing.js')).sharedModuleMock(importOriginal as never));
 
@@ -26,8 +27,15 @@ describe('apiKey audit middleware (unit)', () => {
         installAuditMockDefaults();
         getEnvironmentByIdMock.mockReset().mockResolvedValue({ id: 12, name: 'prod' });
         getEnvironmentByUuidMock.mockReset().mockResolvedValue({ id: 12, uuid: '00000000-0000-4000-8000-000000000012', name: 'prod' });
-        getApiKeyByIdMock.mockReset().mockResolvedValue(Ok({ uuid: 'a2f1c0de-0000-4000-8000-000000000001', display_name: 'ci-key' }));
-        getApiKeyByUuidWithoutSecretsMock.mockReset().mockResolvedValue(Ok({ id: 2551, display_name: 'ci-key' }));
+        customerKeySearchMock.mockReset().mockImplementation((_trx: unknown, filter: CustomerKeySearch) => {
+            if (filter.type === 'environment' && filter.keyId !== undefined) {
+                return Ok([{ uuid: 'a2f1c0de-0000-4000-8000-000000000001', display_name: 'ci-key' }]);
+            }
+            if (filter.type === 'environment' && filter.keyUuid !== undefined) {
+                return Ok([{ id: 2551, display_name: 'ci-key' }]);
+            }
+            return Ok([]);
+        });
     });
 
     afterEach(() => {
@@ -44,13 +52,13 @@ describe('apiKey audit middleware (unit)', () => {
             targets: [{ type: 'api_key', id: 'a2f1c0de-0000-4000-8000-000000000001', display: 'ci-key' }]
         });
         // Scoped by account and environment, so one customer's key id can never name another's key.
-        expect(getApiKeyByIdMock).toHaveBeenCalledWith(expect.anything(), 2551, 9, 42);
+        expect(customerKeySearchMock).toHaveBeenCalledWith(expect.anything(), { type: 'environment', environmentId: 9, accountId: 42, keyId: 2551 });
     });
 
     it('api key delete: a malformed key id records the attempt without a lookup', async () => {
         const event = await runAudit(auditApiKeyDeleted, fakeReq({ params: { keyId: '-1' } }), fakeRes(locals));
         expect(event).toMatchObject({ resource: 'api_key', action: 'deleted', accountId: 42 });
-        expect(getApiKeyByIdMock).not.toHaveBeenCalled();
+        expect(customerKeySearchMock).not.toHaveBeenCalled();
     });
 
     it('public api key create: names the environment the key was made in, not the one it authenticated against', async () => {
@@ -88,7 +96,12 @@ describe('apiKey audit middleware (unit)', () => {
             environment: { id: '00000000-0000-4000-8000-000000000012', display: 'prod' },
             targets: [{ type: 'api_key', id: '00000000-0000-4000-8000-000000002551', display: 'ci-key' }]
         });
-        expect(getApiKeyByUuidWithoutSecretsMock).toHaveBeenCalledWith(expect.anything(), '00000000-0000-4000-8000-000000002551', 12, 42);
+        expect(customerKeySearchMock).toHaveBeenCalledWith(expect.anything(), {
+            type: 'environment',
+            environmentId: 12,
+            accountId: 42,
+            keyUuid: '00000000-0000-4000-8000-000000002551'
+        });
         expect(accountKey?.environment).toBeNull();
     });
 
@@ -153,7 +166,7 @@ describe('apiKey audit middleware (unit)', () => {
         );
         expect(event).toMatchObject({ resource: 'api_key', action: 'deleted', accountId: 42, environment: null, targets: [] });
         expect(getEnvironmentByUuidMock).not.toHaveBeenCalled();
-        expect(getApiKeyByUuidWithoutSecretsMock).not.toHaveBeenCalled();
+        expect(customerKeySearchMock).not.toHaveBeenCalled();
     });
 
     it("public api key create: another account's environment is never named", async () => {

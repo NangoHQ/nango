@@ -42,9 +42,8 @@ export class FunctionInvokeError extends Error {
 export async function invokeFunction({
     account,
     environment,
-    integrationId,
     connectionId,
-    functionName,
+    functionUuid,
     input,
     request,
     invocationType,
@@ -53,9 +52,8 @@ export async function invokeFunction({
 }: {
     account: DBTeam;
     environment: DBEnvironment;
-    integrationId: string;
     connectionId: string;
-    functionName: string;
+    functionUuid: string;
     input?: unknown | undefined;
     request: Omit<Extract<FunctionTrigger, { kind: 'http' }>['request'], 'body'>;
     invocationType: FunctionInvocationType;
@@ -66,26 +64,14 @@ export async function invokeFunction({
         span.addTags({
             accountId: account.id,
             environmentId: environment.id,
-            integrationId,
             connectionId,
-            functionName,
+            functionUuid,
             invocationType
         });
 
-        const connectionRes = await connectionService.getConnection(connectionId, integrationId, environment.id);
-
-        if (!connectionRes.success) {
-            return Err(
-                new FunctionInvokeError({
-                    code: 'connection_not_found',
-                    message: `Connection '${connectionId}' was not found for integration '${integrationId}'`
-                })
-            );
-        }
-
         const functionRes = await functionConfigService.search(db.knex, {
             environmentId: environment.id,
-            filter: { integrationKey: integrationId, name: functionName }
+            filter: { uuid: functionUuid }
         });
 
         if (functionRes.isErr()) {
@@ -102,7 +88,7 @@ export async function invokeFunction({
             return Err(
                 new FunctionInvokeError({
                     code: 'function_not_found',
-                    message: `Function '${functionName}' was not found`
+                    message: `Function '${functionUuid}' was not found`
                 })
             );
         }
@@ -111,20 +97,23 @@ export async function invokeFunction({
             return Err(
                 new FunctionInvokeError({
                     code: 'function_disabled',
-                    message: `Function '${functionName}' is disabled`
+                    message: `Function '${functionUuid}' is disabled`
                 })
             );
         }
 
         const { currentVersion, integration, config } = functionRes.value[0];
+        const integrationId = integration.unique_key;
+        span.addTags({ integrationId });
+        const connectionRes = await connectionService.getConnection(connectionId, integrationId, environment.id);
+        const connection = connectionRes.response;
+        if (!connection) {
+            return Err(new FunctionInvokeError({ code: 'connection_not_found', message: `Connection '${connectionId}' was not found` }));
+        }
 
-        if (!supportInvocation(currentVersion, invocationType)) {
-            return Err(
-                new FunctionInvokeError({
-                    code: 'invalid_invocation',
-                    message: `Function '${functionName}' is not invokable with ${invocationType}`
-                })
-            );
+        const canInvokeRes = canInvoke(currentVersion, invocationType);
+        if (canInvokeRes.isErr()) {
+            return Err(canInvokeRes.error);
         }
 
         const validation = validateFunctionInput(currentVersion, input);
@@ -139,8 +128,7 @@ export async function invokeFunction({
             );
         }
 
-        const connection = connectionRes.response!;
-        const triggerRes = buildRuntimeTrigger({
+        const trigger = buildInvokeTrigger({
             version: currentVersion,
             input: validation.value,
             request,
@@ -149,10 +137,9 @@ export async function invokeFunction({
                 integrationId
             }
         });
-        if (triggerRes.isErr()) {
-            return Err(triggerRes.error);
+        if (trigger.isErr()) {
+            return Err(trigger.error);
         }
-        const trigger = triggerRes.value;
         const timeoutMs = executionTimeoutMs(invocationType);
 
         const logCtx = await logContextGetter.create(
@@ -178,8 +165,10 @@ export async function invokeFunction({
         const invocation = await orchestrator.invokeFunction({
             environment,
             connection,
-            functionName,
-            trigger,
+            functionConfigId: config.id,
+            functionName: config.name,
+            functionUuid: config.uuid,
+            trigger: trigger.value,
             async: invocationType === 'no_wait',
             retryMax: 0,
             maxConcurrency,
@@ -210,7 +199,7 @@ export function getFunctionMaxConcurrency(version: DBFunctionConfigVersion): num
     return version.limits?.concurrency?.perConnection === 1 ? 1 : 0;
 }
 
-function buildRuntimeTrigger({
+function buildInvokeTrigger({
     version,
     input,
     request,
@@ -232,13 +221,8 @@ function buildRuntimeTrigger({
         }
         case 'schedule':
             return Ok({ kind: 'schedule', input: null, connection });
-        case 'event': {
-            const event = version.trigger.events[0];
-            if (!event) {
-                return Err(new FunctionInvokeError({ code: 'invalid_invocation', message: 'Event-triggered function has no configured events' }));
-            }
-            return Ok({ kind: 'event', input: { event }, connection });
-        }
+        case 'event':
+            return Err(new FunctionInvokeError({ code: 'invalid_invocation', message: 'Event-triggered functions cannot be invoked directly' }));
         case 'none':
             return Ok({ kind: 'invoke', input, connection });
     }
@@ -250,12 +234,19 @@ function executionTimeoutMs(invocationType: FunctionInvocationType): number {
         : 24 * 60 * 60 * 1000; // 24 hours for asynchronous invocations
 }
 
-function supportInvocation(version: DBFunctionConfigVersion, invocationType: FunctionInvocationType): boolean {
-    const supported: Record<DBFunctionConfigVersion['trigger']['kind'], FunctionInvocationType[]> = {
-        http: ['wait', 'no_wait'],
-        schedule: ['no_wait'],
-        event: ['no_wait'],
-        none: []
-    };
-    return supported[version.trigger.kind]?.includes(invocationType) ?? false;
+function canInvoke(version: DBFunctionConfigVersion, invocationType: FunctionInvocationType): Result<void, FunctionInvokeError> {
+    const reject = (message: string): Result<void, FunctionInvokeError> => Err(new FunctionInvokeError({ code: 'invalid_invocation', message }));
+    const allowOnly = (allowed: FunctionInvocationType[]): Result<void, FunctionInvokeError> =>
+        allowed.includes(invocationType) ? Ok(undefined) : reject(`Function is not invokable with '${invocationType}'`);
+
+    switch (version.trigger.kind) {
+        case 'http':
+            return allowOnly(['wait', 'no_wait']);
+        case 'schedule':
+            return allowOnly(['no_wait']);
+        case 'event':
+            return reject('Event-triggered functions cannot be invoked directly');
+        case 'none':
+            return reject('Functions with no trigger cannot be invoked directly');
+    }
 }

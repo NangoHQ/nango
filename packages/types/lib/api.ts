@@ -39,7 +39,7 @@ export type ResDefaultErrors =
     | ApiError<'invalid_connect_session_token_format'>
     | ApiError<'request_too_large'>;
 
-export type EndpointMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+export type EndpointMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'PROPFIND' | 'REPORT';
 /**
  * API Request/Response type
  */

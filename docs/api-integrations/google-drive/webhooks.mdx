@@ -38,6 +38,10 @@ Google Drive push notifications have no HMAC. The `token` you set on the channel
 
 Once a secret is saved, Nango rejects notifications that omit `X-Goog-Channel-Token` or send a different value. Existing channels created without `token` must be recreated.
 
+<Warning>
+With no secret saved, Nango has nothing to check the channel token against and forwards every notification that reaches the webhook URL unverified. Set the secret before you create any channel.
+</Warning>
+
 ### 3. Create a notification channel (watch the Drive)
 
 You can automate creating the channel for new connections with a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler):

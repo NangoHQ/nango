@@ -116,6 +116,19 @@ ORCHESTRATOR_SERVICE_URL="http://localhost:3008"
 
 `NANGO_ENCRYPTION_KEY` is **required** for the persist service and Connect UI to start (generate with `openssl rand -base64 32` and add to `.env`).
 
+### Feature flags locally
+
+Unset flags use the default declared at each call site. A default-off feature can therefore show its pre-flag UI and look like your branch didn't take effect, while other flags remain enabled by default:
+
+```ini
+NANGO_FLAG_PROVIDER=env
+NANGO_FEATURE_FLAG_OAUTH_STATE_COOKIE_ENFORCEMENT=true
+```
+
+The env var is the flag key uppercased with dashes as underscores. Keys live in `packages/feature-flags/lib/flags.ts`. Restart the server after changing one.
+
+**`NANGO_CLOUD=true` silently disables all of this** — `buildProvider` falls back to noop, so every flag reads its default. The only sign is one startup line: `NANGO_FLAG_PROVIDER=env is not supported on cloud; using noop provider`. Leave `NANGO_CLOUD` unset locally (it defaults to false); setting it true also flips CORS, admin routes, secret-key lookup, file storage and log format. The unset default shows the classic getting-started dashboard ([NAN-6919](https://linear.app/nango/issue/NAN-6919)).
+
 ## Browser Testing Workflow
 
 ### Capturing Server Logs for Verification URLs
@@ -268,6 +281,8 @@ _No flows documented yet — add the first one!_
 
 | Issue | Symptom | Fix |
 |-------|---------|-----|
+| **Migration missing from checkout** | Server dies on startup: `The migration directory is corrupt, the following files are missing: <file>.cjs`. Webapp still serves 3000, so only API calls fail | See **Migration mismatch** below |
+| Feature looks unchanged | Your branch's UI never appears, no errors anywhere | The feature may be using its declared flag default — see **Feature flags locally** |
 | Docker not running | `Cannot connect to the Docker daemon` | Start Docker Desktop |
 | Port already in use | `EADDRINUSE` on startup | Kill the process on that port: `lsof -ti:PORT \| xargs kill` |
 | DB connection refused | Server crashes on startup | Check `npm run dev:docker` — wait for postgres to be ready |
@@ -278,3 +293,22 @@ _No flows documented yet — add the first one!_
 | Connect UI not working | 500 errors or session failures | Set `NANGO_ENCRYPTION_KEY` in `.env` |
 | Can't log in on fresh DB | No account exists yet | Sign up first at http://localhost:3000/signup, then check server logs for the verification callback URL |
 | Elasticsearch errors in logs | Logs-related warnings | Safe to ignore if `NANGO_LOGS_ENABLED="false"` — logs go to stdout instead |
+
+### Migration mismatch
+
+The database remembers every migration it ran, so knex refuses to start when your checkout lacks one of those files. This happens after switching to a branch without it, or when another worktree sharing `nango-db` ran it:
+
+```
+The migration directory is corrupt, the following files are missing: <file>.cjs
+```
+
+Check where that file lives, because the fix differs:
+
+```bash
+git fetch origin master -q && git ls-tree -r origin/master --name-only | grep <migration-filename>
+```
+
+- **On master** — your branch is behind; bring it up to date with `origin/master` and the file comes along.
+- **Not on master** — it came from an unmerged branch. For a verification run, skip boot-time migrations with `NANGO_MIGRATE_AT_START=false npm run dev:watch:apps` (your branch's own pending migrations won't run either), or use a throwaway database as in `ui-visual-debugging`. To fix the database instead, inspect the migration on its branch; if its `up` is safe to rerun with no data side effects, remove its ledger row: `delete from nango._nango_auth_migrations where name = '<migration-filename>';`. Otherwise reset the database.
+
+It happens in the other direction too: once you run a branch that adds a migration, any checkout without that file won't start until it has it.

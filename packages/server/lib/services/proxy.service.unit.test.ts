@@ -100,6 +100,7 @@ describe('proxyService', () => {
         expect(logCtx.failed).not.toHaveBeenCalled();
         expect(metrics.increment).toHaveBeenCalledWith(metrics.Types.PROXY, 1, { accountId: 1, providerConfigKey: 'github' });
         expect(metrics.increment).toHaveBeenCalledWith(metrics.Types.PROXY_SUCCESS, 1, { providerConfigKey: 'github' });
+        expect(capping.getStatus).toHaveBeenCalledWith(null, 'proxy', 'data_transfer');
     });
 
     it('returns a domain error when the integration does not exist', async () => {

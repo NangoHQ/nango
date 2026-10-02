@@ -364,6 +364,14 @@ describe('egress safe lookup pinning', () => {
         await expect(lookupVia(lookupFn, 'rebind.example')).rejects.toThrow(OutboundUrlError);
     });
 
+    it('supports DNS pinning for an HTTPS-only policy', async () => {
+        vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '8.8.8.8', family: 4 }] as never);
+        const httpsOnly = { ...policy, allowedSchemes: new Set(['https:']) };
+        const lookupFn = createSafeHttpAgents(httpsOnly).httpsAgent.options.lookup!;
+
+        await expect(lookupVia(lookupFn, 'client.example.com')).resolves.toBe('8.8.8.8');
+    });
+
     it('uses a single DNS lookup for pinning and reuses it within TTL', async () => {
         vi.useFakeTimers();
         const lookupSpy = vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '8.8.8.8', family: 4 }] as never);

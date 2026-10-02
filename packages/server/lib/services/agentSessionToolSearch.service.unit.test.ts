@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { rankSessionTools, toolInputOf } from './agentSessionToolSearch.service.js';
+import { rankSessionTools, searchOperationMeta, toolInputOf } from './agentSessionToolSearch.service.js';
 
 import type { ToolSlugLookup } from './agentSessionToolSearch.service.js';
-import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections } from '@nangohq/types';
+import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, AgentSessionToolMatch } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 function session({
@@ -19,7 +19,7 @@ function session({
         accountId: 1,
         resolvedConnections,
         compiledToolset,
-        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
+        metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } },
         expiresAt: new Date(),
         endedAt: null,
         endedReason: null,
@@ -112,6 +112,15 @@ describe('rankSessionTools', () => {
 
         expect(best).toStrictEqual([]);
         expect(related).toStrictEqual([]);
+    });
+
+    it('carries the score each result was ranked on, so a search can be measured afterwards', () => {
+        const { best, related } = rank({ compiledToolset: mailbox, query: 'send a message to a customer' });
+
+        expect(best.length).toBeGreaterThan(0);
+        expect(related.length).toBeGreaterThan(0);
+        expect(best[0]?.score).toBeGreaterThanOrEqual(0);
+        expect(best.at(-1)!.score).toBeLessThan(related[0]!.score);
     });
 
     it('demotes a weak match to related rather than dropping it', () => {
@@ -266,5 +275,28 @@ describe('toolInputOf', () => {
 
     it('does not read an inherited property as a definition', () => {
         expect(toolInputOf(row('constructor', { UpsertDocInput: { type: 'object' } }))).toStrictEqual({ kind: 'unavailable' });
+    });
+});
+
+describe('searchOperationMeta', () => {
+    function match(tool: string): AgentSessionToolMatch {
+        return {
+            tool,
+            integration: 'gmail',
+            action: 'send_email',
+            provider: 'google-mail',
+            description: 'Send an email message to one or more recipients.',
+            listed: false,
+            connection: { status: 'connected', connection_id: 'conn-1' },
+            input: { kind: 'schema', schema: { definitions: { SendEmailInput: { type: 'object' } }, $ref: '#/definitions/SendEmailInput' } }
+        };
+    }
+
+    it('logs the query and the tool names, without their descriptions or input', () => {
+        expect(searchOperationMeta({ query: 'send an email', matches: [match('gmail__send_email')], related: [match('gmail__list_labels')] })).toStrictEqual({
+            query: 'send an email',
+            matches: ['gmail__send_email'],
+            related: ['gmail__list_labels']
+        });
     });
 });

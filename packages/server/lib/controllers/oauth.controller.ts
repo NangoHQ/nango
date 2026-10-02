@@ -58,6 +58,7 @@ import { authHtml } from '../utils/html.js';
 import {
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
+    mergeIntegrationConfigIntoConnectionConfig,
     missesInterpolationParam,
     missesInterpolationParamInObject
 } from '../utils/utils.js';
@@ -235,6 +236,8 @@ class OAuthController {
                     Object.assign(connectionConfig, defaults.connectionConfig);
                 }
             }
+
+            mergeIntegrationConfigIntoConnectionConfig(provider, config.custom, connectionConfig);
 
             const session: OAuthSession = {
                 providerConfigKey: providerConfigKey,
@@ -566,6 +569,7 @@ class OAuthController {
                 connection: updatedConnection.connection,
                 config,
                 account,
+                environment,
                 logCtx
             });
 
@@ -1063,6 +1067,7 @@ class OAuthController {
     }
 
     private async mcpGenericRequest({
+        provider,
         config,
         session,
         req,
@@ -1087,7 +1092,7 @@ class OAuthController {
         const connectionId = session.connectionId;
 
         try {
-            const mcpServerUrl = connectionConfig['mcp_server_url'];
+            const mcpServerUrl = provider.mcp_server_url || connectionConfig['mcp_server_url'];
             if (!mcpServerUrl) {
                 const error = WSErrBuilder.InvalidConnectionConfig('mcp_server_url', JSON.stringify(connectionConfig));
                 void logCtx.error(error.message);
@@ -1105,7 +1110,17 @@ class OAuthController {
                 return;
             }
 
-            const { metadata, resourceMetadata, scopes } = discoveryResult;
+            const { metadata, resourceMetadata, scopes: discoveredScopes } = discoveryResult;
+
+            const scopeSeparator = provider.scope_separator || ' ';
+            const scopes =
+                config.oauth_scopes === null || config.oauth_scopes === undefined
+                    ? discoveredScopes?.join(scopeSeparator)
+                    : config.oauth_scopes
+                          .split(',')
+                          .map((s) => s.trim())
+                          .filter(Boolean)
+                          .join(scopeSeparator);
 
             const clientMetadata: OAuthClientMetadata = {
                 redirect_uris: [callbackUrl],
@@ -2002,6 +2017,7 @@ class OAuthController {
                 connection: updatedConnection.connection,
                 config,
                 account,
+                environment,
                 logCtx
             });
 
@@ -2258,6 +2274,7 @@ class OAuthController {
             connection: updatedConnection.connection,
             config,
             account,
+            environment,
             logCtx
         });
 
@@ -2444,6 +2461,7 @@ class OAuthController {
                     connection: updatedConnection.connection,
                     config,
                     account,
+                    environment,
                     logCtx
                 });
 

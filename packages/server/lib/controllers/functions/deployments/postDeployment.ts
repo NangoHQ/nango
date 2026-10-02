@@ -20,12 +20,11 @@ type DeploymentResponse = Response<PostFunctionDeployment['Reply'], RequestLocal
 const logger = getLogger('Server.PostFunctionDeployment');
 
 async function handleDeployTemplate(res: DeploymentResponse, body: FunctionDeploymentTemplateBody): Promise<void> {
-    const { environment, account, plan, user } = res.locals;
+    const { environment, account, plan } = res.locals;
     const result = await functionDeploymentService.deployTemplate({
         environment,
         account,
         plan,
-        user,
         body
     });
     if (result.isErr()) {

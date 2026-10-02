@@ -156,4 +156,36 @@ describe(`GET ${endpoint}`, () => {
             webhook_secret: null
         });
     });
+
+    it('should mask secret integration_config fields and echo non-secret ones in cleartext', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'my-aws-integration', 'aws-sigv4', {
+            custom: {
+                service: 's3',
+                stsMode: 'builtin',
+                awsAccessKeyId: 'AKIAIOSFODNN7EXAMPLE',
+                awsSecretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
+            }
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey: 'my-aws-integration' },
+            query: { include: ['credentials'] }
+        });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+        expect(res.json.data.credentials).toStrictEqual({
+            type: 'INTEGRATION_CONFIG',
+            auth_mode: 'AWS_SIGV4',
+            integration_config: {
+                service: 's3',
+                stsMode: 'builtin',
+                awsAccessKeyId: '***',
+                awsSecretAccessKey: '***'
+            }
+        });
+    });
 });

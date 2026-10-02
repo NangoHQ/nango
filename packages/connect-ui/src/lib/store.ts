@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import type Nango from '@nangohq/frontend';
-import type { ConnectSessionOutput, GetPublicIntegration, GetPublicProvider } from '@nangohq/types';
+import type { ConnectSessionOutput, ConnectUISettings, GetPublicIntegration, GetPublicProvider, Theme } from '@nangohq/types';
 
 interface State {
     sessionToken: string | null;
@@ -16,18 +16,20 @@ interface State {
     isEmbedded: boolean;
     isAuthLink: boolean;
     isPreview: boolean;
-    showWatermark: boolean;
+    theme: Theme | null;
+    settings: ConnectUISettings | null;
     setApiURL: (value: string) => void;
     setAuthLink: (value: boolean) => void;
     setDetectClosedAuthWindow: (value: boolean) => void;
     setIsEmbedded: (value: boolean) => void;
     setIsPreview: (value: boolean) => void;
+    setTheme: (value: Theme) => void;
+    setSettings: (value: ConnectUISettings) => void;
     setSessionToken: (value: string) => void;
     setSession: (value: ConnectSessionOutput) => void;
     setNango: (value: Nango) => void;
     setIsDirty: (value: boolean) => void;
     setIsSingleIntegration: (value: boolean) => void;
-    setShowWatermark: (value: boolean) => void;
     set: (provider: GetPublicProvider['Success']['data'], integration: GetPublicIntegration['Success']['data']) => void;
     reset: () => void;
 }
@@ -45,18 +47,20 @@ export const useGlobal = create<State>((set) => ({
     isAuthLink: false,
     detectClosedAuthWindow: false,
     isPreview: false,
-    showWatermark: false,
+    theme: null,
+    settings: null,
     setApiURL: (value) => set({ apiURL: value }),
     setAuthLink: (value) => set({ isAuthLink: value }),
     setIsEmbedded: (value) => set({ isEmbedded: value }),
     setDetectClosedAuthWindow: (value) => set({ detectClosedAuthWindow: value }),
     setIsPreview: (value) => set({ isPreview: value }),
+    setTheme: (value) => set({ theme: value }),
+    setSettings: (value) => set({ settings: value }),
     setSessionToken: (value) => set({ sessionToken: value }),
     setSession: (value) => set({ session: value }),
     setNango: (value) => set({ nango: value }),
     setIsDirty: (value) => set({ isDirty: value }),
     setIsSingleIntegration: (value) => set({ isSingleIntegration: value }),
-    setShowWatermark: (value) => set({ showWatermark: value }),
     set: (provider, integration) => {
         set({ provider, integration });
     },

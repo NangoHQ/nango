@@ -416,3 +416,14 @@ export interface GranolaWebhookPayload {
         changed_fields: string[];
     };
 }
+
+export interface ZoomWebhookPayload {
+    event: string;
+    event_ts: number;
+    payload: {
+        account_id?: string;
+        // Only present on the `endpoint.url_validation` handshake.
+        plainToken?: string;
+        object?: Record<string, any>;
+    };
+}

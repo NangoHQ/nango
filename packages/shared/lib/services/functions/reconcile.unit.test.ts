@@ -40,6 +40,7 @@ function deployedFunction({
         integration: { id: nangoConfigId, unique_key: artifact.integrationId, provider: 'github' },
         config: {
             id,
+            uuid: `00000000-0000-4000-8000-${String(id).padStart(12, '0')}`,
             nango_config_id: nangoConfigId,
             environment_id: 1,
             name: artifact.name,
@@ -99,7 +100,7 @@ describe(reconcile, () => {
         expect(result.isOk()).toBe(true);
         if (result.isErr()) return;
         expect(result.value.created.map(({ name }) => name)).toStrictEqual([createdArtifact.name]);
-        expect(result.value.updated.map(({ name }) => name)).toStrictEqual([updatedArtifact.name]);
+        expect(result.value.updated.map(({ after: { name } }) => name)).toStrictEqual([updatedArtifact.name]);
         expect(result.value.unchanged.map(({ name }) => name)).toStrictEqual([artifact.name]);
         expect(result.value.deleted.map(({ config }) => config.name)).toStrictEqual([deletedArtifact.name]);
     });

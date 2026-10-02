@@ -14,15 +14,16 @@ type ParsedListOperationsArguments = Omit<ListLogOperationsParams, 'accountId' |
 
 export const listLogOperationsTool = defineManagementMcpTool<typeof listOperationsArgumentsSchema, ListLogOperationsResult>({
     name: 'logs_list_operations',
+    title: 'List Log Operations',
     description: [
-        'List Nango log operations.',
+        'Lists Nango log operations.',
         'Log operations are top-level execution records for syncs, actions, auth, webhooks, proxy calls, and other Nango activity; each operation contains its related log messages.',
         'Results are newest first and can be filtered by status, operation, integration, connection, script, date range, and message search.',
         'When message search is used, limit is the maximum number of operations inspected for one call, so the response can contain fewer or zero matching operations while still returning a pagination cursor for the next page.'
     ].join(' '),
     inputSchema: listOperationsArgumentsSchema,
     outputSchema: listOperationsOutputSchema,
-    annotations: { readOnlyHint: true },
+    annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     requiredScopes: { every: [logsReadScope] },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, account, environment }) {

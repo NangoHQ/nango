@@ -3,6 +3,7 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import {
     configService,
+    connectionService,
     customerKeyService,
     errorNotificationService,
     externalWebhookService,
@@ -114,6 +115,11 @@ export const connectionCreated = async (
 
     if (options.initiateSync === true && !isHosted) {
         await syncManager.createSyncForConnection({ connectionId: connection.id, syncVariant: 'base', logContextGetter, orchestrator });
+
+        const result = await connectionService.ensureFunctionInstances({ connection, orchestrator });
+        if (result.isErr()) {
+            report(new Error('connection_scheduled_functions_initialization_failed', { cause: result.error }), { id: connection.id });
+        }
     }
 
     const webhookSettings = await externalWebhookService.get(environment.id);

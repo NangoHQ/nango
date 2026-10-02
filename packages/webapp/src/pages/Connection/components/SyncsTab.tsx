@@ -279,7 +279,7 @@ const SyncRow = memo(function SyncRow({
     return (
         <TableRow className={cn(rowLayout, 'absolute')} style={{ height: `${ROW_HEIGHT_PX}px`, transform: `translateY(${offsetY}px)` }}>
             <TableCell className={cn(cellLayout, col.name, 'gap-2')}>
-                <span className="text-body-small-semi text-text-strong truncate min-w-0 flex-1">{sync.name}</span>
+                <span className="text-body-small-semi text-text-strong truncate min-w-0">{sync.name}</span>
                 {sync.variant !== 'base' && (
                     <Tooltip>
                         <TooltipTrigger className="shrink-0">

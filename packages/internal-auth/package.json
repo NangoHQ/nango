@@ -21,7 +21,7 @@
         "@nangohq/types": "file:../types",
         "@types/express": "5.0.2",
         "express": "5.1.0",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     },
     "files": [
         "dist/**/*"

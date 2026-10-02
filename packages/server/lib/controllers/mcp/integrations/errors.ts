@@ -17,7 +17,7 @@ export function createIntegrationServiceErrorToMcp(error: CreateIntegrationServi
         case 'invalid_provider':
             return new PublicMcpError('Invalid provider');
         case 'incompatible_credentials':
-            return incompatibleCredentialsError();
+            return new PublicMcpError(error.message);
         case 'missing_credentials':
             return new PublicMcpError('Credentials are required for this provider');
         case 'nango_credentials_unsupported':
@@ -59,9 +59,8 @@ export function updateIntegrationsServiceErrorToMcp(error: UpdateIntegrationsSer
         case 'invalid_integration_config':
         case 'integration_has_connections':
         case 'custom_not_allowed':
-            return new PublicMcpError(error.message);
         case 'incompatible_credentials':
-            return incompatibleCredentialsError();
+            return new PublicMcpError(error.message);
         case 'integration_exists':
             return integrationExistsError();
         case 'update_failed':
@@ -85,10 +84,6 @@ export function deleteIntegrationsServiceErrorToMcp(error: DeleteIntegrationsSer
             return unexpectedServiceError('deleting', exhaustiveCheck);
         }
     }
-}
-
-function incompatibleCredentialsError(): PublicMcpError {
-    return new PublicMcpError('Credentials are incompatible with the provider auth mode');
 }
 
 function integrationExistsError(): PublicMcpError {

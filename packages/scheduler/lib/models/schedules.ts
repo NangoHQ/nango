@@ -117,28 +117,64 @@ export const DbSchedule = {
     })
 };
 
+/** Return a live schedule unchanged, or create/resurrect it when missing/deleted. */
 export async function create(db: knex.Knex, props: ScheduleProps): Promise<Result<Schedule>> {
+    return (await createBatch(db, [props])).map((rows) => rows[0]!);
+}
+
+/** Atomically create missing schedules, resurrect deleted schedules, and leave live schedules untouched. */
+export async function createBatch(db: knex.Knex, props: ScheduleProps[]): Promise<Result<Schedule[]>> {
+    if (props.length === 0) {
+        return Ok([]);
+    }
     const now = new Date();
-    const newSchedule: Schedule = {
-        ...props,
-        id: uuidv7(),
-        payload: props.payload,
-        startsAt: now,
-        frequencyMs: props.frequencyMs,
-        createdAt: now,
-        updatedAt: now,
-        deletedAt: null,
-        lastScheduledTaskId: null,
-        nextExecutionAt: now
-    };
+    const values = props.map((entry) =>
+        DbSchedule.to({
+            ...entry,
+            id: uuidv7(),
+            startsAt: now,
+            createdAt: now,
+            updatedAt: now,
+            deletedAt: null,
+            lastScheduledTaskId: null,
+            lastScheduledTaskState: null,
+            nextExecutionAt: now
+        })
+    );
     try {
-        const inserted = await db.from<DbSchedule>(SCHEDULES_TABLE).insert(DbSchedule.to(newSchedule)).returning('*');
-        if (!inserted?.[0]) {
-            return Err(new Error(`Error: no schedule '${props.name}' created`));
-        }
-        return Ok(DbSchedule.from(inserted[0]));
+        const rows = await db.transaction(async (trx) => {
+            await trx
+                .from<DbSchedule>(SCHEDULES_TABLE)
+                .insert(values)
+                .onConflict('name')
+                .merge([
+                    'state',
+                    'starts_at',
+                    'frequency',
+                    'payload',
+                    'group_key',
+                    'retry_max',
+                    'created_to_started_timeout_secs',
+                    'started_to_completed_timeout_secs',
+                    'heartbeat_timeout_secs',
+                    'updated_at',
+                    'deleted_at',
+                    'last_scheduled_task_id',
+                    'last_scheduled_task_state',
+                    'next_execution_at'
+                ])
+                .where(`${SCHEDULES_TABLE}.state`, 'DELETED');
+            // Live duplicates are skipped by the insert, so RETURNING would omit their IDs.
+            // Therefore all requested schedules are fetched afterward to include both new and existing rows.
+            const existing = await trx.from<DbSchedule>(SCHEDULES_TABLE).whereIn(
+                'name',
+                props.map((entry) => entry.name)
+            );
+            return existing.map(DbSchedule.from);
+        });
+        return Ok(rows);
     } catch (err) {
-        return Err(new Error(`Error creating schedule '${props.name}': ${stringifyError(err)}`));
+        return Err(new Error(`Error creating schedules: ${stringifyError(err)}`));
     }
 }
 
@@ -180,32 +216,53 @@ export async function transitionState(db: knex.Knex, scheduleId: string, to: Sch
     }
 }
 
-export async function update(db: knex.Knex, props: Partial<Pick<ScheduleProps, 'frequencyMs' | 'payload'>> & { id: string }): Promise<Result<Schedule>> {
+type ScheduleUpdate = Partial<Pick<ScheduleProps, 'frequencyMs' | 'payload'>> & { id: string };
+
+export async function update(db: knex.Knex, entries: ScheduleUpdate[]): Promise<Result<Schedule[]>> {
+    if (entries.length === 0) {
+        return Ok([]);
+    }
+    if (new Set(entries.map((entry) => entry.id)).size !== entries.length) {
+        return Err(new Error('Duplicate schedule IDs in update'));
+    }
+
     try {
-        const newValues = {
-            ...(props.frequencyMs ? { frequency: `${props.frequencyMs} milliseconds` } : {}),
-            ...(props.payload ? { payload: props.payload } : {}),
-            ...(props.frequencyMs
-                ? {
-                      next_execution_at: db.raw(
-                          `starts_at + (
-                                CEILING(
-                                    EXTRACT(EPOCH FROM (NOW() - starts_at)) / (? / 1000.0)
-                                ) * INTERVAL '1 millisecond' * ?
-                          )`,
-                          [props.frequencyMs, props.frequencyMs]
-                      )
-                  }
-                : {}),
-            updated_at: new Date()
-        };
-        const updated = await db.from<DbSchedule>(SCHEDULES_TABLE).where('id', props.id).update(newValues).returning('*');
-        if (!updated?.[0]) {
-            return Err(new Error(`Error: no schedule '${props.id}' updated`));
-        }
-        return Ok(DbSchedule.from(updated[0]));
+        const updated = await db.transaction(async (trx) => {
+            const values = entries.map(() => '(?::uuid, ?::double precision, ?::json)').join(', ');
+            const bindings = entries.flatMap((entry) => [entry.id, entry.frequencyMs ?? null, entry.payload ?? null]);
+            const { rows } = await trx.raw<{ rows: DbSchedule[] }>(
+                `UPDATE ${SCHEDULES_TABLE} AS schedule
+                 SET frequency = CASE
+                         WHEN input.frequencyMs IS NOT NULL
+                         THEN input.frequencyMs * INTERVAL '1 millisecond'
+                         ELSE schedule.frequency
+                     END,
+                     payload = COALESCE(input.payload, schedule.payload),
+                     next_execution_at = CASE
+                         WHEN input.frequencyMs IS NOT NULL
+                         THEN schedule.starts_at + (
+                             CEILING(
+                                 EXTRACT(EPOCH FROM (NOW() - schedule.starts_at))
+                                 / (input.frequencyMs / 1000.0)
+                             ) * INTERVAL '1 millisecond' * input.frequencyMs
+                         )
+                         ELSE schedule.next_execution_at
+                     END,
+                     updated_at = NOW()
+                 FROM (VALUES ${values}) AS input(id, frequencyMs, payload)
+                 WHERE schedule.id = input.id
+                 RETURNING schedule.*`,
+                bindings
+            );
+
+            if (rows.length !== entries.length) {
+                throw new Error('Some schedules were not found during update');
+            }
+            return rows.map(DbSchedule.from);
+        });
+        return Ok(updated);
     } catch (err) {
-        return Err(new Error(`Error updating schedule '${props.id}': ${stringifyError(err)}`));
+        return Err(new Error(`Error updating schedules: ${stringifyError(err)}`));
     }
 }
 

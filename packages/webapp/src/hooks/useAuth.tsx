@@ -3,6 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { APIError, apiFetch } from '@/utils/api';
 
 import type {
+    GetEmailByExpiredToken,
     GetEmailByUuid,
     GetManagedEmailVerification,
     GetOnboardingAccountDiscovery,
@@ -171,21 +172,6 @@ export function useMFALoginVerification() {
     });
 }
 
-export function useLogoutAPI() {
-    return useMutation<undefined, APIError>({
-        mutationFn: async () => {
-            const res = await apiFetch('/api/v1/account/logout', { method: 'POST' });
-
-            if (res.status === 200) {
-                return undefined;
-            }
-
-            const json = (await res.json()) as Record<string, unknown>;
-            throw new APIError({ res, json });
-        }
-    });
-}
-
 export function useSignupAPI() {
     return useMutation<
         | {
@@ -320,6 +306,26 @@ export function useEmailByUuid(uuid: string | undefined) {
     });
 }
 
+export function useEmailByExpiredToken(token: string | undefined) {
+    return useQuery<GetEmailByExpiredToken['Success'], APIError>({
+        queryKey: ['account', 'email', 'expired-token', token],
+        queryFn: async () => {
+            const res = await apiFetch(`/api/v1/account/email/expired-token/${token}`);
+
+            if (res.status === 200) {
+                return (await res.json()) as GetEmailByExpiredToken['Success'];
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        },
+        enabled: !!token,
+        // The request swaps the token for a new one and emails it, so a refetch fails with the old token.
+        staleTime: Infinity,
+        refetchOnReconnect: false
+    });
+}
+
 export function useOnboardingHearAboutUs() {
     return useQuery<GetOnboardingHearAboutUs['Success'], APIError>({
         queryKey: ['account', 'onboarding', 'hear-about-us'],
@@ -374,7 +380,7 @@ export function usePostOnboardingHearAboutUs() {
               json: PostOnboardingHearAboutUs['Success'];
           }
         | {
-              status: 401 | 403;
+              status: 403;
               json: PostOnboardingHearAboutUs['Errors'];
           },
         APIError,
@@ -393,7 +399,8 @@ export function usePostOnboardingHearAboutUs() {
                 };
             }
 
-            if (res.status === 401 || res.status === 403) {
+            // Resolving a 401 would skip MutationCache.onError, so an expired session never signs out here.
+            if (res.status === 403) {
                 return {
                     status: res.status,
                     json: (await res.json()) as PostOnboardingHearAboutUs['Errors']

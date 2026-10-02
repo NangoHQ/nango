@@ -6,7 +6,7 @@ import flowService from '../../../../../services/flow.service.js';
 import { asyncWrapperWithEnvironment } from '../../../../../utils/asyncWrapper.js';
 import { validationParams } from '../getIntegration.js';
 
-import type { DeployedMeta, GetIntegrationTemplates, NangoFunctionTemplate } from '@nangohq/types';
+import type { FunctionAvailability, GetIntegrationTemplates, NangoFunctionTemplate } from '@nangohq/types';
 
 export const getIntegrationTemplates = asyncWrapperWithEnvironment<GetIntegrationTemplates>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -33,9 +33,9 @@ export const getIntegrationTemplates = asyncWrapperWithEnvironment<GetIntegratio
     const all = flowService.getAllAvailableFlowsAsStandardConfig();
     const entry = all.find((value) => value.providerConfigKey === integration.provider);
 
-    const deployedRows = await legacyFunctionService.findActiveDeployedMeta({ environmentId: environment.id, providerConfigKey });
-    const deployedByKey = new Map<string, DeployedMeta>(
-        deployedRows.map((row) => [
+    const availabilityRows = await legacyFunctionService.findActiveFunctionAvailability({ environmentId: environment.id, providerConfigKey });
+    const availabilityByKey = new Map<string, FunctionAvailability>(
+        availabilityRows.map((row) => [
             `${row.type}:${row.name}`,
             { id: row.id, enabled: row.enabled, last_deployed: row.last_deployed.toISOString(), source: row.source }
         ])
@@ -47,7 +47,7 @@ export const getIntegrationTemplates = asyncWrapperWithEnvironment<GetIntegratio
               if (!fn) {
                   return [];
               }
-              const deployed = deployedByKey.get(`${fn.type}:${fn.name}`);
+              const deployed = availabilityByKey.get(`${fn.type}:${fn.name}`);
               return [deployed ? { ...fn, deployed } : fn];
           })
         : [];

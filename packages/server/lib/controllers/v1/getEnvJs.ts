@@ -22,6 +22,7 @@ export const getEnvJs: RequestHandler = (_, res) => {
     const configObject: WindowEnv = {
         apiUrl: baseUrl,
         dashboardApiUrl,
+        oauthServerUrl: envs.NANGO_OAUTH_SERVER_BASE_URL,
         publicUrl: basePublicUrl,
         connectUrl: connectUrl,
         gitHash: envs.GIT_HASH,

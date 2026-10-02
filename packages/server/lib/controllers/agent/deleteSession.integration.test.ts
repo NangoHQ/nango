@@ -42,7 +42,7 @@ async function seedSession({ account, env }: { account: DBTeam; env: DBEnvironme
             environmentId: env.id,
             resolvedConnections: {},
             compiledToolset: {},
-            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false },
+            metaTools: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } },
             expiresAt: new Date(Date.now() + 60 * 60 * 1000)
         })
     ).unwrap();

@@ -76,9 +76,51 @@ describe('MFA settings', () => {
         await api.fetch(`${mfaRoute}/activate`, { method: 'POST', session: cookie, body: { code: totp.generate() } });
 
         const code = totp.generate({ timestamp: Date.now() + 30_000 });
-        const disable = await api.fetch(mfaRoute, { method: 'DELETE', session: cookie, body: { code } });
+        const disable = await api.fetch(mfaRoute, { method: 'DELETE', session: cookie, body: { type: 'code', code } });
         expect(disable.res.status).toBe(200);
         isSuccess(disable.json);
         expect(disable.json.success).toBe(true);
+    });
+
+    it('disables MFA with a recovery code', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const cookie = await authenticateUser(api, user);
+
+        const enrollment = await api.fetch(`${mfaRoute}/enroll`, { method: 'POST', session: cookie });
+        isSuccess(enrollment.json);
+        const totp = OTPAuth.URI.parse(enrollment.json.data.otpauthUri) as OTPAuth.TOTP;
+        const activation = await api.fetch(`${mfaRoute}/activate`, { method: 'POST', session: cookie, body: { code: totp.generate() } });
+        isSuccess(activation.json);
+
+        const disable = await api.fetch(mfaRoute, {
+            method: 'DELETE',
+            session: cookie,
+            body: { type: 'recoveryCode', recoveryCode: activation.json.data.recoveryCodes[0]! }
+        });
+        expect(disable.res.status).toBe(200);
+        isSuccess(disable.json);
+
+        const status = await api.fetch(mfaRoute, { method: 'GET', session: cookie });
+        isSuccess(status.json);
+        expect(status.json.data.enabled).toBe(false);
+    });
+
+    it('refuses to disable MFA with an unknown recovery code', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const cookie = await authenticateUser(api, user);
+
+        const enrollment = await api.fetch(`${mfaRoute}/enroll`, { method: 'POST', session: cookie });
+        isSuccess(enrollment.json);
+        const totp = OTPAuth.URI.parse(enrollment.json.data.otpauthUri) as OTPAuth.TOTP;
+        await api.fetch(`${mfaRoute}/activate`, { method: 'POST', session: cookie, body: { code: totp.generate() } });
+
+        const disable = await api.fetch(mfaRoute, { method: 'DELETE', session: cookie, body: { type: 'recoveryCode', recoveryCode: 'nope' } });
+        expect(disable.res.status).toBe(400);
+        isError(disable.json);
+        expect(disable.json.error.code).toBe('invalid_mfa_code');
+
+        const status = await api.fetch(mfaRoute, { method: 'GET', session: cookie });
+        isSuccess(status.json);
+        expect(status.json.data.enabled).toBe(true);
     });
 });

@@ -69,13 +69,16 @@ export function chooseMcpClientIdMethod(
 }
 
 /**
- * Discovers OAuth scopes from server metadata, with preference for resource metadata scopes
+ * Discovers OAuth scopes from server metadata, with preference for resource metadata scopes.
+ * Used as a fallback only when the customer hasn't configured scopes explicitly -- a server's
+ * advertised scopes_supported can include scopes this client isn't entitled to (e.g. admin-only
+ * ones), so a customer-configured value always takes precedence over this.
  */
-function discoverScopes(resourceMetadata?: OAuthProtectedResourceMetadata, metadata?: OAuthMetadata): string | undefined {
+function discoverScopes(resourceMetadata?: OAuthProtectedResourceMetadata, metadata?: OAuthMetadata): string[] | undefined {
     const resourceScopes = resourceMetadata?.scopes_supported;
     const oauthScopes = metadata?.scopes_supported;
     const scopes = (resourceScopes?.length ? resourceScopes : oauthScopes) || [];
-    return scopes.length > 0 ? scopes.join(' ') : undefined;
+    return scopes.length > 0 ? scopes : undefined;
 }
 
 /**
@@ -85,7 +88,7 @@ function discoverScopes(resourceMetadata?: OAuthProtectedResourceMetadata, metad
 export async function discoverMcpMetadata(
     mcpServerUrl: string,
     logCtx: LogContext
-): Promise<{ success: boolean; metadata?: OAuthMetadata; resourceMetadata?: OAuthProtectedResourceMetadata; scopes?: string; error?: string }> {
+): Promise<{ success: boolean; metadata?: OAuthMetadata; resourceMetadata?: OAuthProtectedResourceMetadata; scopes?: string[]; error?: string }> {
     try {
         // Validate MCP server URL for security
         validateUrl(mcpServerUrl);

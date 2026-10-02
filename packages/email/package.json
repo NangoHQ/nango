@@ -15,12 +15,12 @@
         "dd-trace": "5.117.0",
         "form-data": "4.0.6",
         "mailgun.js": "13.2.0",
-        "nodemailer": "9.0.1",
+        "nodemailer": "10.0.13",
         "ws": "8.21.0"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "@types/ws": "8.18.1",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     }
 }

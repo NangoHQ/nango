@@ -1,8 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { configService, getSyncAndActionConfigsBySyncNameAndConfigId, localFileService, onEventScriptService, remoteFileService } from '@nangohq/shared';
-import { report, useS3 } from '@nangohq/utils';
+import {
+    configService,
+    getSyncAndActionConfigsBySyncNameAndConfigId,
+    localFileService,
+    onEventScriptService,
+    remoteFileService,
+    resolveRunnableTool
+} from '@nangohq/shared';
+import { report, useRemoteStorage } from '@nangohq/utils';
 
 import type { RequestLocalsWithEnvironment } from '../../../../utils/express.js';
 import type { DBEnvironment, GetFunctionCode, ScriptTypeLiteral } from '@nangohq/types';
@@ -21,7 +28,7 @@ interface FunctionMatch {
 }
 
 async function getFunctionTsCode({ match, providerConfigKey }: { match: FunctionMatch; providerConfigKey: string }): Promise<string | null> {
-    if (!useS3) {
+    if (!useRemoteStorage) {
         const fileName = `${providerConfigKey}/${scriptTypeToFolder[match.type]}/${match.name}.ts`;
         const check = localFileService.checkForIntegrationSourceFile(fileName);
         if (!check.result) {
@@ -70,20 +77,41 @@ export async function handleGetFunctionCode({
     const filtered = type ? matches.filter((m) => m.type === type) : matches;
 
     if (filtered.length > 1) {
-        res.status(409).send({
-            error: {
-                code: 'ambiguous_function',
-                message: `Multiple functions named '${name}' found for integration '${providerConfigKey}'. Specify a type to disambiguate.`,
-                payload: { matches: filtered.map((m) => ({ type: m.type, name: m.name })) }
-            }
-        });
+        sendAmbiguous(res, providerConfigKey, name, filtered);
         return;
     }
 
     const match = filtered[0];
     if (!match) {
+        if (type === undefined || type === 'action') {
+            const resolved = await resolveRunnableTool({
+                accountUuid: res.locals.account.uuid,
+                environmentId: environment.id,
+                integration: providerConfig,
+                name
+            });
+            if (resolved.kind === 'catalog') {
+                try {
+                    const code = await remoteFileService.getFile(resolved.tool.sourceLocation);
+                    res.status(200).send({ type: 'action', code });
+                    return;
+                } catch (err) {
+                    report(err, { providerConfigKey, scriptName: name, scriptType: 'action' });
+                    res.status(404).send({ error: { code: 'not_found', message: `Source file for '${name}' not found` } });
+                    return;
+                }
+            }
+        }
         res.status(404).send({ error: { code: 'not_found', message: `Function '${name}' not found for integration '${providerConfigKey}'` } });
         return;
+    }
+
+    if (!type && match.type !== 'action') {
+        const resolved = await resolveRunnableTool({ accountUuid: res.locals.account.uuid, environmentId: environment.id, integration: providerConfig, name });
+        if (resolved.kind === 'catalog') {
+            sendAmbiguous(res, providerConfigKey, name, [match, { type: 'action', name, fileLocation: resolved.tool.fileLocation }]);
+            return;
+        }
     }
 
     const code = await getFunctionTsCode({ match, providerConfigKey });
@@ -93,4 +121,19 @@ export async function handleGetFunctionCode({
     }
 
     res.status(200).send({ type: match.type, code });
+}
+
+function sendAmbiguous(
+    res: Response<GetFunctionCode['Reply'], RequestLocalsWithEnvironment>,
+    providerConfigKey: string,
+    name: string,
+    matches: FunctionMatch[]
+): void {
+    res.status(409).send({
+        error: {
+            code: 'ambiguous_function',
+            message: `Multiple functions named '${name}' found for integration '${providerConfigKey}'. Specify a type to disambiguate.`,
+            payload: { matches: matches.map((m) => ({ type: m.type, name: m.name })) }
+        }
+    });
 }

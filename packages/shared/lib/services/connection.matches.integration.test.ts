@@ -86,6 +86,24 @@ describe('connection matching by tag selectors', () => {
             expect(notion?.candidates).toHaveLength(1);
         });
 
+        it('samples the newest candidate by default and the oldest on request', async () => {
+            const sample = async (candidateOrder?: 'newest_first' | 'oldest_first') => {
+                const groups = await connectionService.groupConnectionMatchesByIntegration({
+                    environmentId: env.id,
+                    tagSelectors: [{ tenant: 'acme' }],
+                    pinnedConnections: [],
+                    candidateSampleSize: 1,
+                    ...(candidateOrder ? { candidateOrder } : {})
+                });
+
+                return groups.find((match) => match.integration_id === 'notion')?.candidates[0]?.connection_id;
+            };
+
+            await expect(sample()).resolves.toBe('notion-eng');
+            await expect(sample('newest_first')).resolves.toBe('notion-eng');
+            await expect(sample('oldest_first')).resolves.toBe('notion-marketing');
+        });
+
         it('ORs the selectors together and matches all tags within one selector', async () => {
             const unionGroups = await connectionService.groupConnectionMatchesByIntegration({
                 environmentId: env.id,

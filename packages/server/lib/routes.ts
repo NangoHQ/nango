@@ -6,11 +6,13 @@ import { errorManager } from '@nangohq/shared';
 
 import { getEnvJs } from './controllers/v1/getEnvJs.js';
 import { getProvidersJSON } from './controllers/v1/getProvidersJSON.js';
+import { productTrackingMiddleware } from './middleware/productTracking.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { securityMiddlewares } from './middleware/security.js';
 import { getReady } from './ready.js';
 import { internalApi } from './routes.internal.js';
 import { managementMcpAPI } from './routes.management-mcp.js';
+import { oauthServerAPI } from './routes.oauth.js';
 import { privateApi } from './routes.private.js';
 import { publicAPI } from './routes.public.js';
 import { dirname } from './utils/utils.js';
@@ -28,6 +30,7 @@ function formatByteLimit(bytes: number): string {
 export const router = express.Router();
 
 router.use(...securityMiddlewares());
+router.use(productTrackingMiddleware);
 
 // -------
 // No auth routes
@@ -40,6 +43,7 @@ router.get('/providers.json', rateLimiterMiddleware, getProvidersJSON);
 
 // Import main routers
 // Order is important because public API has no prefix
+router.use(oauthServerAPI);
 router.use(managementMcpAPI);
 router.use('/api/v1', privateApi);
 router.use('/internal', internalApi);
@@ -59,7 +63,7 @@ router.use(staticSite);
 
 // -------
 // Error handling.
-router.use((err: any, req: Request, res: Response<ApiError<'invalid_json'> | ApiError<'request_too_large'>>, _: any) => {
+router.use((err: any, req: Request, res: Response<ApiError<'invalid_json'> | ApiError<'request_too_large'> | ApiError<'unsupported_content_type'>>, _: any) => {
     if (err instanceof SyntaxError && 'body' in err && 'type' in err && err.type === 'entity.parse.failed') {
         res.status(400).send({ error: { code: 'invalid_json', message: err.message } });
         return;
@@ -68,6 +72,16 @@ router.use((err: any, req: Request, res: Response<ApiError<'invalid_json'> | Api
     if (err instanceof Error && 'type' in err && err.type === 'entity.too.large') {
         const limit = 'limit' in err && typeof err.limit === 'number' ? formatByteLimit(err.limit) : undefined;
         res.status(413).send({ error: { code: 'request_too_large', message: `Request entity too large${limit ? ` (limit: ${limit})` : ''}` } });
+        return;
+    }
+
+    if (err instanceof Error && err.message.startsWith('Unsupported content type:') && req.path.startsWith('/proxy')) {
+        res.status(400).send({
+            error: {
+                code: 'unsupported_content_type',
+                message: `${err.message}. The "Content-Type" header on a request to the Nango proxy must be "multipart/form-data" or omitted. To send this Content-Type to the destination API, set it via the "nango-proxy-Content-Type" header instead (see https://docs.nango.dev/guides/platform/proxy-requests).`
+            }
+        });
         return;
     }
 

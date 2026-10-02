@@ -1,0 +1,127 @@
+---
+title: 'BYOC'
+sidebarTitle: 'BYOC'
+description: 'Nango-managed, in your cloud.'
+---
+
+With BYOC, Nango's team deploys and operates your instance, but every resource — the database, cache, compute, load balancers, encryption keys — lives inside your own AWS account or GCP project, under your own IAM controls. You keep infrastructure ownership and data residency; we keep the on-call pager.
+
+See [Self-Hosting overview](/guides/platform/self-hosting) for the architecture, and [Self-Managed](/guides/platform/self-hosting/self-managed) if you'd rather deploy and operate Nango yourselves.
+
+## How access works
+
+Nango never receives a long-lived credential to your account. Instead, you create a role or service account that Nango can temporarily act as, and Nango authenticates with a short-lived session every time it needs to deploy or manage your instance.
+
+<Tabs>
+  <Tab title="AWS">
+    You create an IAM role from a CloudFormation template Nango provides. Nango assumes that role using a shared **external ID**, which protects against the [confused deputy problem](https://docs.aws.amazon.com/IAM/latest/UserGuide/confused-deputy.html) — the role can only be assumed by presenting a secret only you and Nango know.
+
+    | | |
+    | --- | --- |
+    | Trusted identity | One specific Nango IAM role you name (`NangoPrincipalArn`), not the whole Nango AWS account |
+    | Session length | Up to 4 hours per assumed-role session (a first deploy provisions EKS and Aurora and can exceed one hour) |
+    | Region-locked | Denied outside your chosen deployment region, plus `us-east-1` (required only for CloudFront/ACM, which are global services) |
+    | Resource-scoped | S3 and CloudTrail access limited to resources whose names start with an agreed prefix |
+    | Can't self-escalate | Explicit deny on modifying its own role/policies, creating IAM users or access keys, and touching AWS Organizations or billing |
+
+    You review the CloudFormation template before creating the stack, and can revoke Nango's access at any time by removing the trust relationship — this cuts Nango off immediately, while anything already deployed keeps running.
+  </Tab>
+  <Tab title="GCP">
+    You create a `nango-terraform` service account in your project and grant one named Nango identity permission to impersonate it (`roles/iam.serviceAccountTokenCreator`). Nango never receives a JSON key for this account.
+
+    | | |
+    | --- | --- |
+    | Trusted identity | One Nango service account you name (`NANGO_PRINCIPAL`), not a Nango Workspace domain or group |
+    | No standing keys | Compatible with, and we recommend enforcing, the `constraints/iam.disableServiceAccountKeyCreation` organization policy |
+    | Project-scoped | IAM bindings stay on this project — no organization, folder or billing admin |
+    | Can't enable APIs | `roles/serviceusage.serviceUsageAdmin` is deliberately omitted; Nango can't turn services on or off |
+
+    You can revoke impersonation at any time — this cuts Nango off immediately, while anything already deployed keeps running. The install runs entirely within your GCP project.
+  </Tab>
+  <Tab title="Azure">
+    **Coming soon.** BYOC on Azure isn't generally available yet — the access model will follow the same pattern as AWS and GCP: a role you create, one named Nango identity, short-lived sessions, no standing credentials. If you need it now, [talk to us](https://nango.dev/contact).
+  </Tab>
+</Tabs>
+
+That access provisions the underlying infrastructure only — the VPC, database, cache, and Kubernetes cluster. Nango then installs [FluxCD](https://fluxcd.io/) into your cluster, which deploys and keeps the Nango application itself current via GitOps, independent of any further Terraform runs.
+
+The full IAM policy, CloudFormation template or Terraform configuration, and exact resource list are shared and reviewed with your security team during onboarding — this page describes the model, not the runbook.
+
+## What leaves your account
+
+**Only operational telemetry — nothing else.** Nango's team monitors your instance's health via Datadog, so we can catch and respond to issues before you have to file a ticket. That's the only data that leaves your AWS account or GCP project.
+
+Nothing else leaves your account.
+
+## Where your data lives
+
+Everything else — all of it — stays inside your account:
+
+| Store | Holds |
+| --- | --- |
+| Postgres | Control-plane data, your end users' connection credentials, scheduled tasks, synced records |
+| Object storage (S3 / GCS) | Compiled integration code for the Runner |
+| ElasticSearch / OpenSearch | [Nango Logs](/guides/platform/security#nango-logs) |
+| Redis / Valkey | Cache — socket info, token refresh locks, rate limits |
+
+Nango does not keep a separate copy of any of this anywhere. See [Encryption & credentials](#encryption-credentials) below for how it's protected at rest, and [Security](/guides/platform/security) for the full model.
+
+## Who's responsible for what
+
+| Area | Nango | You |
+| --- | --- | --- |
+| Infrastructure provisioning (VPC, database, cache, cluster) | Provisions it, via Terraform, using the access you grant | Own the underlying cloud bill |
+| Application deployment & updates | Deploys and updates it, via GitOps (FluxCD) | — |
+| Scaling | Handles it | — |
+| Incident response / on-call | Handles it | — |
+| Granting & maintaining access | — | Create and maintain the IAM role or service account; revoke it whenever you want |
+| DNS & custom domains | Returns load-balancer IPs | Create the DNS records that point at them |
+| Application configuration (integrations, syncs, auth settings) | — | Configure it, same as on Cloud |
+
+In short: with BYOC, your team's ongoing workload is reviewing what Nango proposes and owning the cloud account it runs in — not running the platform day to day.
+
+## Encryption & credentials
+
+Nango provisions a KMS Customer Master Key (CMK) in your account. The deployment identity Nango uses only has **encrypt** permissions on that CMK — it cannot decrypt anything with it. That CMK wraps the data-encryption key (DEK) that actually encrypts your credentials and synced records; only the running application's workload identity inside your cluster can unwrap it.
+
+The most sensitive thing Nango stores is your end users' connection credentials (OAuth tokens, API keys) for the integrations you connect — encrypted at rest using that DEK, inside your own Postgres. See [Security](/guides/platform/security) for the full encryption model.
+
+## Observability & support
+
+You keep full visibility into your own instance: the dashboard, the audit trail, your own logs (ElasticSearch/OpenSearch, which you own), and your cloud provider's monitoring and audit logs (CloudWatch/Cloud Monitoring, CloudTrail/Cloud Audit Logs) for anything the deployment identity does.
+
+Nango additionally watches instance health via Datadog — see [What leaves your account](#what-leaves-your-account) — so we can catch problems on our end too. Reach us through your dedicated Slack channel; response times follow your contract's SLA.
+
+## Updates
+
+Nango applies updates for you, delivered via GitOps once your infrastructure is provisioned — you don't need to pull or apply anything yourself. Managed image updates are published on a **two-month cadence**, with occasional **hotfixes** as needed; see the full [changelog](/updates/changelog).
+
+## Cloud provider support
+
+BYOC supports **AWS and GCP** today. Azure isn't generally available yet, but we've deployed it for customers who needed it — [talk to us](https://nango.dev/contact) if that's you.
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="What would it look like to have you manage it within our environment? That feels challenging from a compliance perspective." defaultOpen="true">
+    It's the model described above: a role or service account you create, one Nango identity we name (never our whole org), short-lived sessions, and guardrails that stop us from widening our own access. You keep the ability to revoke access instantly, full audit logging in your own CloudTrail / Cloud Audit Logs, and sign-off on the Terraform plan before every apply. We'll walk your security team through the exact IAM policy before you commit to anything.
+  </Accordion>
+  <Accordion title="What stops Nango from doing more than intended?">
+    Deny-by-default guardrails on the role or service account itself: it cannot modify its own permissions, create IAM users or long-lived keys, or touch organization/billing settings. On AWS these are explicit `Deny` statements (`DenySelfModification`, `DenyIamUsersAndFederationChanges`, `DenyAccountAndOrganizationControl`); on GCP they're the roles we deliberately don't request.
+  </Accordion>
+  <Accordion title="Can we audit what Nango does?">
+    Yes — every action taken through the assumed role or impersonated identity is attributable in your own AWS CloudTrail or GCP Cloud Audit Logs. Many customers alert on sensitive calls (`SetIamPolicy`, `CreateServiceAccount`) made by the Nango identity specifically.
+  </Accordion>
+  <Accordion title="Can we leave BYOC later?">
+    Yes. Revoking Nango's access cuts us off immediately. The infrastructure itself is ordinary Terraform-provisioned resources in your account, not a black box, so you keep it either way.
+  </Accordion>
+  <Accordion title="Do you hold any compliance certifications?">
+    Yes — Nango is SOC 2 compliant.
+  </Accordion>
+  <Accordion title="Which clouds does BYOC support today?">
+    AWS and GCP. Azure isn't generally available yet, but we've deployed it for customers who needed it — [talk to us](https://nango.dev/contact) if that's you.
+  </Accordion>
+  <Accordion title="Does Nango deploy the whole stack with Terraform?">
+    No — Terraform provisions the infrastructure only (VPC, database, cache, cluster). The Nango application itself is deployed and kept up to date separately, via GitOps (FluxCD, installed into your cluster during setup).
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,41 @@
+---
+title: 'Microsoft Dataverse - How do I link my account?'
+sidebarTitle: 'Microsoft Dataverse Connect'
+---
+
+## Overview
+
+To connect Microsoft Dataverse in Nango, you need to provide:
+
+1. **Tenant ID** — The unique identifier for your organization's Microsoft Entra ID tenant.
+2. **Environment URL** — The domain of your Dataverse environment.
+
+This guide walks you through finding both values, then authorizing through Microsoft Entra ID.
+
+### Prerequisites
+
+- You must have an active Microsoft Entra ID (Azure AD) account with access to a Dataverse environment.
+
+### Step 1: Finding your Tenant ID
+
+1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com).
+2. Browse to **Entra ID** → **Overview** → **Properties**, then scroll down to the **Tenant ID** field.
+
+### Step 2: Finding your Environment URL
+
+Nango needs your Dataverse **Web API** host, which is not the URL shown in the browser address bar when you're signed into the app.
+
+1. Sign in to [Power Apps](https://make.powerapps.com) and select your environment in the top-right corner.
+2. Select **Settings** (top-right), then **Developer resources**.
+3. Copy the domain from the **Web API endpoint** field — everything after `https://` and before `/api` (for example, `contoso.api.crm.dynamics.com`).
+
+### Step 3: Authorize the connection
+
+1. Open the form where you need to authenticate with Microsoft Dataverse.
+2. Enter the **Tenant ID** and **Environment URL** in their designated fields.
+3. Submit the form, then log in with your Microsoft account and grant the requested permissions.
+
+<img src="/api-integrations/microsoft-dataverse/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Microsoft Dataverse.

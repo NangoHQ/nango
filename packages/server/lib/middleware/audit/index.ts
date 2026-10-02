@@ -1,3 +1,4 @@
+export { auditAgentSessionCreated, auditAgentSessionTerminated } from './agentSession.middleware.js';
 export {
     auditAccountApiKeyCreated,
     auditAccountApiKeyDeleted,
@@ -52,6 +53,7 @@ export {
     auditFunctionDeployedCli,
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
+    auditFunctionUpdated,
     auditFunctionUpgraded,
     auditPreBuiltDeployed,
     auditPublicFunctionDeleted

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { agentSessionPinnedToolsSchema, agentSessionToolsetSchema, compileToolsetFromCatalog } from './agentSessionToolset.service.js';
+import { agentSessionPinnedToolsSchema, agentSessionToolsetSchema, compileToolsetFromFunctions } from './agentSessionToolset.service.js';
 
 import type { AgentSessionToolsetCompilationError } from './agentSessionToolset.service.js';
-import type { IntegrationFunctionCatalogRow } from '@nangohq/shared';
+import type { IntegrationFunctionRow } from '@nangohq/shared';
 import type {
     AgentSessionCompiledIntegration,
     AgentSessionCompiledTool,
@@ -13,7 +13,7 @@ import type {
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-function action(integrationId: string, name: string, overrides: Partial<IntegrationFunctionCatalogRow> = {}): IntegrationFunctionCatalogRow {
+function action(integrationId: string, name: string, overrides: Partial<IntegrationFunctionRow> = {}): IntegrationFunctionRow {
     return {
         integration_id: integrationId,
         provider: integrationId,
@@ -25,11 +25,11 @@ function action(integrationId: string, name: string, overrides: Partial<Integrat
     };
 }
 
-function emptyIntegration(integrationId: string): IntegrationFunctionCatalogRow {
+function emptyIntegration(integrationId: string): IntegrationFunctionRow {
     return { integration_id: integrationId, provider: integrationId, name: null, type: null, description: null, enabled: null };
 }
 
-const catalog: IntegrationFunctionCatalogRow[] = [
+const functions: IntegrationFunctionRow[] = [
     action('notion', 'read_doc'),
     action('notion', 'upsert_doc'),
     action('notion', 'delete_doc'),
@@ -49,7 +49,7 @@ function compile({
     pinnedTools?: AgentSessionPinnedTools | undefined;
     connectedIntegrations?: string[];
 }) {
-    return compileToolsetFromCatalog({ toolset, pinnedTools, connectedIntegrations, catalog });
+    return compileToolsetFromFunctions({ toolset, pinnedTools, connectedIntegrations, functions });
 }
 
 function parseToolset(input: unknown): AgentSessionToolsetPolicy {
@@ -264,11 +264,11 @@ describe('compileToolset', () => {
 
     it('does not let a prototype integration id fall out of the result', () => {
         const proto = '__proto__';
-        const compiled = compileToolsetFromCatalog({
+        const compiled = compileToolsetFromFunctions({
             toolset: undefined,
             pinnedTools: undefined,
             connectedIntegrations: [proto],
-            catalog: [action(proto, 'read_doc')]
+            functions: [action(proto, 'read_doc')]
         });
 
         expect(Object.keys(compiled.unwrap())).toEqual([proto]);

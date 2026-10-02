@@ -1,10 +1,24 @@
 import Fuse from 'fuse.js';
 
+import { logContextGetter } from '@nangohq/logs';
 import { legacyFunctionService } from '@nangohq/shared';
-import { filterJsonSchemaForModels } from '@nangohq/utils';
+import { filterJsonSchemaForModels, report } from '@nangohq/utils';
 
+import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
+import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
+import { trackAgentSessionToolSearch } from './agentSessionAnalytics.service.js';
+
+import type { AgentSessionToolSearchHit } from './agentSessionAnalytics.service.js';
 import type { ActionInputSchemaRow } from '@nangohq/shared';
-import type { AgentSession, AgentSessionToolConnectionState, AgentSessionToolInput, AgentSessionToolMatch, AgentSessionToolSearchResult } from '@nangohq/types';
+import type {
+    AgentSession,
+    AgentSessionToolConnectionState,
+    AgentSessionToolInput,
+    AgentSessionToolMatch,
+    AgentSessionToolSearchResult,
+    DBEnvironment,
+    DBTeam
+} from '@nangohq/types';
 
 const DEFINITIONS_POINTER = '#/definitions/';
 
@@ -85,6 +99,9 @@ interface SearchCandidate {
     listed: boolean;
 }
 
+/** A candidate with the score it was ranked on, so how well a search did outlives the ranking. */
+type ScoredCandidate = SearchCandidate & { score: number };
+
 /**
  * The name nango_execute takes for a tool. It cannot be derived from the integration and action,
  * since sanitising and clipping can collide and the loser gets numbered.
@@ -92,39 +109,72 @@ interface SearchCandidate {
 export type ToolSlugLookup = (tool: { integration: string; action: string }) => string | undefined;
 
 export async function searchSessionTools({
+    account,
+    environment,
     session,
     query,
     slugOf
 }: {
+    account: DBTeam;
+    environment: DBEnvironment;
     session: AgentSession;
     query: string;
     slugOf: ToolSlugLookup;
 }): Promise<AgentSessionToolSearchResult> {
-    const ranked = rankSessionTools({ session, query, slugOf });
-    const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
+    const logCtx = await logContextGetter.create({ operation: { type: 'agent_session', action: 'tool_search' } }, { account, environment, meta: { query } });
+    await logCtx.enrichOperation({ actor: { kind: 'session', id: session.id } });
 
-    // It's possible a tool was removed after the session compiled, so we set input as unavailable.
-    const matches = ranked.best.map((candidate) => toMatch(candidate, inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' }));
-    const related = ranked.related.map((candidate) => toMatch(candidate, undefined));
+    try {
+        const current = await withConnectionsCreatedInSession(session).catch((err: unknown) => {
+            report(err);
+            void logCtx.warn('Could not look up connections created in this session', { error: err });
+            return session;
+        });
+        const ranked = rankSessionTools({ session: current, query, slugOf });
+        const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
 
-    return { guidance: guidanceFor({ query, matches, related }), matches, related };
+        // It's possible a tool was removed after the session compiled, so we set input as unavailable.
+        const matches = ranked.best.map((candidate) => toMatch(candidate, inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' }));
+        const related = ranked.related.map((candidate) => toMatch(candidate, undefined));
+
+        await logCtx.enrichOperation({ meta: searchOperationMeta({ query, matches, related }) });
+        void logCtx.info(`Tool search for '${query}' returned ${matches.length} ${matches.length === 1 ? 'match' : 'matches'}`);
+        await logCtx.success();
+
+        trackAgentSessionToolSearch({
+            session,
+            query,
+            matches: searchHits(ranked.best),
+            related: searchHits(ranked.related),
+            logOperationId: logCtx.id
+        });
+
+        return { guidance: guidanceFor({ session, query, matches, related }), matches, related };
+    } catch (err) {
+        void logCtx.error('Failed to search the session tools', { error: err });
+        await logCtx.failed();
+
+        trackAgentSessionToolSearch({ session, query, matches: [], related: [], logOperationId: logCtx.id, errorCode: 'search_failed' });
+
+        throw err;
+    }
 }
 
 export function rankSessionTools({ session, query, slugOf }: { session: AgentSession; query: string; slugOf: ToolSlugLookup }): {
-    best: SearchCandidate[];
-    related: SearchCandidate[];
+    best: ScoredCandidate[];
+    related: ScoredCandidate[];
 } {
     const candidates = buildSearchCandidateList({ session, slugOf });
     const scored = scoreCandidates({ candidates, query });
 
-    const best: SearchCandidate[] = [];
-    const related: SearchCandidate[] = [];
+    const best: ScoredCandidate[] = [];
+    const related: ScoredCandidate[] = [];
 
     for (const { candidate, score } of scored) {
         if (score <= BEST_MATCH_SCORE && best.length < MAX_BEST_MATCHES) {
-            best.push(candidate);
+            best.push({ ...candidate, score });
         } else if (related.length < MAX_RELATED_MATCHES) {
-            related.push(candidate);
+            related.push({ ...candidate, score });
         }
     }
 
@@ -268,6 +318,15 @@ export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
     return { kind: 'schema', schema: { ...filtered.value, $ref: `${DEFINITIONS_POINTER}${row.input}` } };
 }
 
+/** Only what identifies a tool, since a full match carries a description and an input schema. */
+export function searchOperationMeta({ query, matches, related }: { query: string; matches: AgentSessionToolMatch[]; related: AgentSessionToolMatch[] }): {
+    query: string;
+    matches: string[];
+    related: string[];
+} {
+    return { query, matches: matches.map((match) => match.tool), related: related.map((match) => match.tool) };
+}
+
 function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | undefined): AgentSessionToolMatch {
     return {
         tool: candidate.slug,
@@ -281,7 +340,17 @@ function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | unde
     };
 }
 
-function guidanceFor({ query, matches, related }: { query: string; matches: AgentSessionToolMatch[]; related: AgentSessionToolMatch[] }): string {
+function guidanceFor({
+    session,
+    query,
+    matches,
+    related
+}: {
+    session: AgentSession;
+    query: string;
+    matches: AgentSessionToolMatch[];
+    related: AgentSessionToolMatch[];
+}): string {
     if (matches.length === 0 && related.length === 0) {
         return `No tool in this session matches '${query}'. Try a shorter query, or words describing the operation rather than the product, and note that this session may simply not carry a tool for it.`;
     }
@@ -324,7 +393,8 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
     const unconnected = [...new Set([...matches, ...related].filter((match) => match.connection.status === 'not_connected').map((match) => match.integration))];
     if (unconnected.length > 0) {
         lines.push(
-            `${unconnected.map((integration) => `'${integration}'`).join(', ')} ${unconnected.length === 1 ? 'has' : 'have'} no connection in this session. Their tools are listed for completeness and will fail if you call them.`
+            `${unconnected.map((integration) => `'${integration}'`).join(', ')} ${unconnected.length === 1 ? 'has no connection' : 'have no connections'} in this session. Their tools are listed for completeness and will fail if you call them.`,
+            ...new Set(unconnected.map((integration) => notConnectedGuidance(integration, session)))
         );
     }
 
@@ -333,4 +403,14 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
 
 function toolNames(matches: AgentSessionToolMatch[]): string {
     return matches.map((match) => `'${match.tool}'`).join(', ');
+}
+
+/** Scores run from 0, everything matched, to 1, nothing matched, and the event reports the other way round. */
+function searchHits(candidates: ScoredCandidate[]): AgentSessionToolSearchHit[] {
+    return candidates.map((candidate) => ({
+        tool_name: candidate.action,
+        tool_slug: candidate.slug,
+        integration_id: candidate.integration,
+        confidence: Math.round((1 - candidate.score) * 100) / 100
+    }));
 }

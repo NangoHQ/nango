@@ -5,6 +5,7 @@ import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { clearSpendAlertOnPlanChange } from './spendAlertNotification.service.js';
 
+import type { AppliedPlanChange } from '@nangohq/shared';
 import type { BillingSubscription, DBPlan, DBTeam, PlanDefinition, Result } from '@nangohq/types';
 import type Stripe from 'stripe';
 
@@ -19,6 +20,7 @@ export interface PlanChangeContext {
     team: DBTeam;
     currentPlan: DBPlan;
     currentPlanDefinition: PlanDefinition;
+    requestedPlanDefinition: PlanDefinition;
     subscriptionId: string;
     requested: {
         /** Orb external plan id. */
@@ -66,7 +68,8 @@ export function getPlanChangeContext(
     withGrowthFeatures: boolean
 ): Result<PlanChangeContext, PlanChangeError> {
     const definition = currentPlan ? getPlanDefinition(currentPlan.name) : null;
-    if (!currentPlan || !definition) {
+    const requestedDefinition = getPlanDefinition(newPlanCode as DBPlan['name']);
+    if (!currentPlan || !definition || !requestedDefinition) {
         return Err(new PlanChangeError('invalid_plan'));
     }
     if (!currentPlan.orb_subscription_id) {
@@ -80,6 +83,7 @@ export function getPlanChangeContext(
         team,
         currentPlan: currentPlan,
         currentPlanDefinition: definition,
+        requestedPlanDefinition: requestedDefinition,
         subscriptionId: currentPlan.orb_subscription_id,
         requested: {
             newPlanCode: newPlanCode,
@@ -93,7 +97,7 @@ function isAddonDisablingScheduled(subscription: BillingSubscription): boolean {
 }
 
 export function resolvePlanChange(context: PlanChangeContext, subscription: BillingSubscription): Result<PlanChanges, PlanChangeError> {
-    const { currentPlan, currentPlanDefinition, subscriptionId, requested } = context;
+    const { currentPlan, currentPlanDefinition, requestedPlanDefinition, subscriptionId, requested } = context;
 
     // Our record is a mirror of Orb's, so if it drifts, fail loudly rather than attempting the change
     if (
@@ -113,13 +117,17 @@ export function resolvePlanChange(context: PlanChangeContext, subscription: Bill
 
     // The Growth add-on is only available for a subset of the available plans; reject any request to
     // add it to a plan outside of that set.
-    if (requested.withGrowthFeatures && !canHaveGrowthAddon(requested.newPlanCode as DBPlan['name'])) {
+    if (requested.withGrowthFeatures && !canHaveGrowthAddon(requestedPlanDefinition.code)) {
         return Err(new PlanChangeError('growth_features_unavailable'));
     }
 
     // Resolve the plan change direction: to upgrade, downgrade or do nothing.
     let planChange: PlanChange | null = null;
     if (requested.newPlanCode !== currentPlanDefinition.code) {
+        // Staying on a retired plan is not a transition, so the lockout only applies to a real move
+        if (requestedPlanDefinition.retired) {
+            return Err(new PlanChangeError('transition_not_allowed'));
+        }
         if (currentPlanDefinition.nextPlan?.includes(requested.newPlanCode)) {
             planChange = 'upgrade';
         } else if (currentPlanDefinition.prevPlan?.includes(requested.newPlanCode)) {
@@ -187,14 +195,33 @@ export async function applyPendingPlanChange({
         return Err(new Error('failed_to_sync_applied_plan_change', { cause: resChanged.error }));
     }
 
-    const planChanged = resChanged.value;
+    const planChange = resChanged.value;
 
-    if (planChanged) {
+    if (planChange) {
         logger.info(`Plan updated for account ${team.id} to ${resApply.value.planExternalId}`);
         await clearSpendAlertOnPlanChange({ accountId: team.id, subscriptionId: resApply.value.id });
+        trackPlanUpdate({ team, planChange, isScheduled: false });
     }
 
     return Ok(undefined);
+}
+
+/** Billing Bot alerts on `plan_submit` and on scheduled non-downgrade updates. Pass `isScheduled: true` for a change applied right after its request and it alerts twice. */
+export function trackPlanUpdate({ team, planChange, isScheduled }: { team: DBTeam; planChange: AppliedPlanChange; isScheduled: boolean }): void {
+    const { previousPlan, updatedPlan, isDowngrade } = planChange;
+    productTracking.track({
+        name: 'billing:plan_update',
+        team,
+        plan: updatedPlan,
+        eventProperties: {
+            previous_plan: previousPlan.name,
+            plan: updatedPlan.name,
+            previous_has_growth_addon: previousPlan.has_growth_features,
+            has_growth_addon: updatedPlan.has_growth_features,
+            is_downgrade: isDowngrade,
+            is_scheduled: isScheduled
+        }
+    });
 }
 
 /**
@@ -268,19 +295,16 @@ export async function downgradePlan(context: PlanChangeContext): Promise<Result<
 export function trackPlanChange(context: PlanChangeContext, change: PlanChanges): void {
     const { team, currentPlan, requested } = context;
 
-    if (change.plan !== 'downgrade' && change.addon !== 'disable') {
-        return;
-    }
-
     productTracking.track({
-        name: 'account:billing:downgraded',
+        name: 'billing:plan_submit',
         team,
+        plan: null,
         eventProperties: {
-            previousPlan: currentPlan.name,
-            newPlan: requested.newPlanCode,
-            previousGrowthFeatures: currentPlan.has_growth_features,
-            newGrowthFeatures: requested.withGrowthFeatures,
-            orbCustomerId: currentPlan.orb_customer_id
+            previous_plan: currentPlan.name,
+            plan: requested.newPlanCode,
+            previous_has_growth_addon: currentPlan.has_growth_features,
+            has_growth_addon: requested.withGrowthFeatures,
+            is_downgrade: change.plan === 'downgrade'
         }
     });
 }

@@ -43,16 +43,17 @@ export const deletePublicEnvironmentApiKey = asyncWrapper<DeletePublicApiKey>(as
         return;
     }
 
-    const key = await customerKeyService.getApiKeyByUuidWithoutSecrets(db.knex, keyUuid, environment.id, account.id);
+    const key = await customerKeyService.search(db.knex, { type: 'environment', environmentId: environment.id, accountId: account.id, keyUuid });
     if (key.isErr()) {
         report(key.error, { accountId: account.id, environmentId: environment.id });
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to delete API key' } });
         return;
     }
-    if (!key.value) {
+    const found = key.value[0];
+    if (!found) {
         res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });
         return;
     }
 
-    await handleDeleteApiKey({ res, environmentId: environment.id, keyId: key.value.id });
+    await handleDeleteApiKey({ res, environmentId: environment.id, keyId: found.id });
 });

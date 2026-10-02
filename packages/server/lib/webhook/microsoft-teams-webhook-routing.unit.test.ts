@@ -1,0 +1,214 @@
+import crypto from 'node:crypto';
+
+import jwt from 'jsonwebtoken';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { logContextGetter } from '@nangohq/logs';
+import { seeders } from '@nangohq/shared';
+import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
+
+import { InternalNango } from './internal-nango.js';
+import * as MicrosoftTeamsWebhookRouting from './microsoft-teams-webhook-routing.js';
+
+import type { BotFrameworkJWK } from './cache.js';
+import type { NangoError } from '@nangohq/shared';
+
+const flagMocks = vi.hoisted(() => ({ allowUnauthorizedMicrosoftTeamsWebhook: vi.fn() }));
+
+vi.mock('@nangohq/feature-flags', () => ({
+    getFlags: () => ({ allowUnauthorizedMicrosoftTeamsWebhook: flagMocks.allowUnauthorizedMicrosoftTeamsWebhook })
+}));
+
+vi.mock('./cache.js', () => ({
+    getBotFrameworkJWK: vi.fn()
+}));
+
+vi.mock('./missing-secret.js', () => ({
+    countUnverifiedWebhook: vi.fn()
+}));
+
+const { getBotFrameworkJWK } = await import('./cache.js');
+const getBotFrameworkJWKMock = vi.mocked(getBotFrameworkJWK);
+const { countUnverifiedWebhook } = await import('./missing-secret.js');
+const countUnverifiedWebhookMock = vi.mocked(countUnverifiedWebhook);
+
+const APP_ID = '00000000-0000-0000-0000-000000000001';
+const SERVICE_URL = 'https://smba.trafficmanager.net/amer/';
+const KID = 'test-kid';
+
+const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+const jwk = { ...publicKey.export({ format: 'jwk' }), kid: KID, endorsements: ['msteams'] } as BotFrameworkJWK;
+
+const activity = { type: 'message', channelId: 'msteams', serviceUrl: SERVICE_URL, channelData: { tenant: { id: 'tenant-1' } } };
+
+function sign(claims: Record<string, unknown> = {}, { key = privateKey, kid = KID }: { key?: crypto.KeyObject; kid?: string } = {}) {
+    const exp = Math.floor(Date.now() / 1000) + 60 * 60;
+
+    return jwt.sign({ iss: 'https://api.botframework.com', aud: APP_ID, serviceurl: SERVICE_URL, exp, ...claims }, key, { algorithm: 'RS256', keyid: kid });
+}
+
+async function route(headers: Record<string, string>, body: unknown = activity, { allowUnverified = false }: { allowUnverified?: boolean } = {}) {
+    const nango = new InternalNango({
+        team: seeders.getTestTeam(),
+        environment: seeders.getTestEnvironment(),
+        plan: seeders.getTestPlan(),
+        integration: getTestConfig({ provider: 'microsoft-teams-bot', oauth_client_id: APP_ID, allow_unverified_webhooks: allowUnverified }),
+        request: { method: 'POST', path: '/webhook', headers: {}, query: {}, body: null },
+        logContextGetter
+    });
+    const execute = vi.fn().mockResolvedValue({ connectionIds: ['conn-1'], connectionMetadata: {} });
+    nango.executeScriptForWebhooks = execute;
+
+    const result = await MicrosoftTeamsWebhookRouting.default(nango, headers, body as never, JSON.stringify(body));
+
+    return { result, execute, nango };
+}
+
+function countedReason() {
+    expect(countUnverifiedWebhookMock).toHaveBeenCalledOnce();
+    return countUnverifiedWebhookMock.mock.calls[0]?.[0].reason;
+}
+
+function errType(result: unknown) {
+    return (result as { error: NangoError }).error.type;
+}
+
+describe('microsoft-teams-webhook-routing', () => {
+    beforeEach(() => {
+        getBotFrameworkJWKMock.mockReset();
+        getBotFrameworkJWKMock.mockImplementation((kid) => Promise.resolve(kid === KID ? jwk : undefined));
+        countUnverifiedWebhookMock.mockReset();
+        flagMocks.allowUnauthorizedMicrosoftTeamsWebhook.mockReset();
+        flagMocks.allowUnauthorizedMicrosoftTeamsWebhook.mockResolvedValue(false);
+    });
+
+    it('routes an activity with a valid Bot Framework token', async () => {
+        const { result, execute, nango } = await route({ authorization: `Bearer ${sign()}` });
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledWith(expect.objectContaining({ connectionIdentifier: 'channelData.tenant.id', propName: 'tenantId' }));
+        expect(nango.unverified).toBeUndefined();
+        expect(countUnverifiedWebhookMock).not.toHaveBeenCalled();
+    });
+
+    it('rejects a missing authorization header', async () => {
+        const { result, execute } = await route({});
+
+        expect(errType(result)).toBe('webhook_missing_signature');
+        expect(execute).not.toHaveBeenCalled();
+        expect(countedReason()).toBe('microsoft_teams_missing_authorization');
+    });
+
+    it.each([
+        ['a non bearer scheme', () => `Basic ${sign()}`],
+        ['a malformed token', () => 'Bearer not-a-jwt'],
+        ['a token signed with another key', () => `Bearer ${sign({}, { key: crypto.generateKeyPairSync('rsa', { modulusLength: 2048 }).privateKey })}`],
+        ['an unknown kid', () => `Bearer ${sign({}, { kid: 'other-kid' })}`],
+        ['an expired token', () => `Bearer ${sign({ exp: Math.floor(Date.now() / 1000) - 10 * 60 })}`],
+        ['a token for another service url', () => `Bearer ${sign({ serviceurl: 'https://attacker.example.com/' })}`]
+    ])('rejects %s', async (_name, authorization) => {
+        const { result, execute } = await route({ authorization: authorization() });
+
+        expect(errType(result)).toBe('webhook_invalid_signature');
+        expect(execute).not.toHaveBeenCalled();
+        expect(countedReason()).toBe('microsoft_teams_invalid_token');
+    });
+
+    it.each([
+        ['an Entra v1 issuer', 'https://sts.windows.net/d6d49420-f39b-4df7-a1dc-d59a935871db/', 'microsoft_teams_entra_issuer'],
+        ['an Entra v2 issuer', 'https://login.microsoftonline.com/d6d49420-f39b-4df7-a1dc-d59a935871db/v2.0', 'microsoft_teams_entra_issuer'],
+        ['the government issuer', 'https://api.botframework.us', 'microsoft_teams_unexpected_issuer'],
+        ['an Entra lookalike without a tenant', 'https://sts.windows.net/tenant/', 'microsoft_teams_unexpected_issuer'],
+        ['no issuer', undefined, 'microsoft_teams_unexpected_issuer']
+    ])('rejects a token with %s before looking up its key', async (_name, iss, reason) => {
+        const { result } = await route({ authorization: `Bearer ${sign({ iss })}` });
+
+        expect(errType(result)).toBe('webhook_invalid_signature');
+        expect(countedReason()).toBe(reason);
+        expect(getBotFrameworkJWKMock).not.toHaveBeenCalled();
+    });
+
+    it('accepts a token expired within the clock tolerance', async () => {
+        const { result } = await route({ authorization: `Bearer ${sign({ exp: Math.floor(Date.now() / 1000) - 60 })}` });
+
+        expect(result.isOk()).toBe(true);
+        expect(countUnverifiedWebhookMock).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        ['another channel', { ...activity, channelId: 'slack' }],
+        ['no channel', { type: activity.type, serviceUrl: activity.serviceUrl, channelData: activity.channelData }]
+    ])('rejects an endorsed key used for an activity from %s', async (_name, body) => {
+        const { result } = await route({ authorization: `Bearer ${sign()}` }, body);
+
+        expect(errType(result)).toBe('webhook_invalid_signature');
+        expect(countedReason()).toBe('microsoft_teams_invalid_token');
+    });
+
+    it('rejects a token for another bot as an audience mismatch', async () => {
+        const { result, execute } = await route({ authorization: `Bearer ${sign({ aud: 'other-app-id' })}` });
+
+        expect(errType(result)).toBe('webhook_invalid_signature');
+        expect(execute).not.toHaveBeenCalled();
+        expect(countedReason()).toBe('microsoft_teams_audience_mismatch');
+    });
+
+    it('rejects a body without a service url', async () => {
+        const { result } = await route(
+            { authorization: `Bearer ${sign()}` },
+            { type: activity.type, channelId: activity.channelId, channelData: activity.channelData }
+        );
+
+        expect(errType(result)).toBe('webhook_invalid_signature');
+        expect(countedReason()).toBe('microsoft_teams_invalid_token');
+    });
+
+    it('treats a key set fetch failure as an invalid token', async () => {
+        getBotFrameworkJWKMock.mockRejectedValue(new Error('network down'));
+        const { result } = await route({ authorization: `Bearer ${sign()}` });
+
+        expect(errType(result)).toBe('webhook_invalid_signature');
+        expect(countedReason()).toBe('microsoft_teams_invalid_token');
+    });
+
+    it('counts and still routes unverified activities when the account is opted out', async () => {
+        flagMocks.allowUnauthorizedMicrosoftTeamsWebhook.mockResolvedValue(true);
+        const { result, execute, nango } = await route({ authorization: `Bearer ${sign({ aud: 'other-app-id' })}` });
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledOnce();
+        expect(countedReason()).toBe('microsoft_teams_audience_mismatch');
+        expect(nango.unverified?.reason).toBe('microsoft_teams_audience_mismatch');
+    });
+
+    it.each([
+        ['a missing authorization header', () => ({}), 'microsoft_teams_missing_authorization'],
+        [
+            'an Entra issuer',
+            () => ({ authorization: `Bearer ${sign({ iss: 'https://sts.windows.net/d6d49420-f39b-4df7-a1dc-d59a935871db/' })}` }),
+            'microsoft_teams_entra_issuer'
+        ],
+        ['an unexpected issuer', () => ({ authorization: `Bearer ${sign({ iss: 'https://api.botframework.us' })}` }), 'microsoft_teams_unexpected_issuer']
+    ])('routes %s when the integration allows unverified webhooks', async (_name, headers, reason) => {
+        const { result, execute } = await route(headers(), activity, { allowUnverified: true });
+
+        expect(result.isOk()).toBe(true);
+        expect(execute).toHaveBeenCalledOnce();
+        expect(countedReason()).toBe(reason);
+    });
+
+    it.each([
+        ['a malformed token', () => 'Bearer not-a-jwt', 'webhook_invalid_signature'],
+        [
+            'a token signed with another key',
+            () => `Bearer ${sign({}, { key: crypto.generateKeyPairSync('rsa', { modulusLength: 2048 }).privateKey })}`,
+            'webhook_invalid_signature'
+        ],
+        ['a token for another bot', () => `Bearer ${sign({ aud: 'other-app-id' })}`, 'webhook_invalid_signature']
+    ])('rejects %s when the integration allows unverified webhooks', async (_name, authorization, error) => {
+        const { result, execute } = await route({ authorization: authorization() }, activity, { allowUnverified: true });
+
+        expect(errType(result)).toBe(error);
+        expect(execute).not.toHaveBeenCalled();
+    });
+});

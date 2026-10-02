@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '@/utils/api';
 
-import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFARecoveryCodes } from '@nangohq/types';
+import type { DeleteMFA, GetMFAStatus, MFACredential, PostMFAActivation, PostMFAEnrollment, PostMFARecoveryCodes } from '@nangohq/types';
 
 export const mfaQueryKey = ['mfa'] as const;
 
@@ -54,7 +54,7 @@ export function useMFA() {
         }
     });
 
-    const disable = useMutation<DeleteMFA['Success'], APIError, { code: string }>({
+    const disable = useMutation<DeleteMFA['Success'], APIError, MFACredential>({
         mutationFn: async (body) => {
             const res = await apiFetch('/api/v1/account/mfa', { method: 'DELETE', body: JSON.stringify(body) });
             const json = (await res.json()) as DeleteMFA['Reply'];

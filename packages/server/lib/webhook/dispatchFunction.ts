@@ -61,6 +61,7 @@ export async function prepareFunctionDispatchExecution({
             environment_id: preparedExecution.connection.environment_id
         },
         functionName: preparedExecution.config.name,
+        functionConfigId: preparedExecution.config.id,
         trigger: {
             kind: 'http',
             input: preparedExecution.trigger.input,
@@ -194,6 +195,8 @@ async function executeFunctionDirect({ context, execution }: { context: Dispatch
             environment: context.environment,
             connection: execution.connection,
             functionName: execution.config.name,
+            functionUuid: execution.config.uuid,
+            functionConfigId: execution.config.id,
             trigger: execution.trigger,
             async: true,
             retryMax: 0,

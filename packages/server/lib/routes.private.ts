@@ -44,6 +44,7 @@ import { postForgotPassword } from './controllers/v1/account/postForgotPassword.
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
+import { postAgentPlaygroundChat } from './controllers/v1/agentPlayground/postChat.js';
 import { getAuditTrail } from './controllers/v1/audit-trail/getAuditTrail.js';
 import { getAuditTrailExport } from './controllers/v1/audit-trail/getAuditTrailExport.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
@@ -382,6 +383,7 @@ web.route('/user/password').put(webAuth, auditAppAuthPasswordChanged, putUserPas
 
 // Plain (in-app support chat)
 web.route('/plain').get(webAuth, getPlainHmac);
+web.route('/agent-playground/chat').post(webAuth, can('environment:agent_sessions:write'), postAgentPlaygroundChat);
 
 // Sync / Flows
 web.route('/sync').get(webAuth, can('environment:syncs:read'), getConnectionSyncs);

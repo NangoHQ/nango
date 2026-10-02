@@ -20,7 +20,7 @@ const createIntegrationBaseArguments = {
 export const createIntegrationArgumentsSchema = z
     .object({
         ...createIntegrationBaseArguments,
-        credential_source: z.enum(['nango', 'own']).describe('Use nango for Nango-provided credentials or own for caller-supplied credentials.'),
+        credential_source: z.enum(['nango', 'own']).describe("Nango-provided credentials are selected by 'nango'; caller-supplied credentials by 'own'."),
         credentials: integrationCredentialsSchema.optional().describe('Only applicable when credential_source is own.'),
         integration_config: z.record(z.string(), z.string().max(8192)).optional().describe('Only applicable when credential_source is own.')
     })
@@ -63,10 +63,7 @@ export const createIntegrationArgumentsSchema = z
 export const getIntegrationArgumentsSchema = z
     .object({
         integration_id: providerConfigKeySchema,
-        include: z
-            .array(z.enum(['webhook', 'credentials']))
-            .max(2)
-            .optional()
+        include: z.array(z.literal('webhook')).max(1).optional().default([])
     })
     .strict();
 
@@ -89,36 +86,6 @@ export const deleteIntegrationsArgumentsSchema = z
         integration_id: providerConfigKeySchema
     })
     .strict();
-
-const mcpIntegrationCredentialsSchema = z.discriminatedUnion('type', [
-    z
-        .object({
-            type: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
-            client_id: z.string().nullable(),
-            client_secret: z.string().nullable(),
-            scopes: z.string().nullable(),
-            webhook_secret: z.string().nullable()
-        })
-        .strict(),
-    z
-        .object({
-            type: z.literal('APP'),
-            app_id: z.string().nullable(),
-            private_key: z.string().nullable(),
-            app_link: z.string().nullable()
-        })
-        .strict(),
-    z
-        .object({
-            type: z.literal('CUSTOM'),
-            client_id: z.string().nullable(),
-            client_secret: z.string().nullable(),
-            app_id: z.string().nullable(),
-            app_link: z.string().nullable(),
-            private_key: z.string().nullable()
-        })
-        .strict()
-]);
 
 export const mcpIntegrationSchema = z
     .object({
@@ -143,8 +110,7 @@ export const listIntegrationsOutputSchema = z
 export const getIntegrationOutputSchema = z
     .object({
         data: mcpIntegrationSchema.extend({
-            webhook_url: z.string().nullable().optional(),
-            credentials: mcpIntegrationCredentialsSchema.nullable().optional()
+            webhook_url: z.string().nullable().optional()
         })
     })
     .strict();

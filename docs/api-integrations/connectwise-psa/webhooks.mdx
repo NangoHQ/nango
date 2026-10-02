@@ -9,7 +9,7 @@ This guide explains how Nango receives and routes ConnectWise PSA webhooks.
 ## How it works
 
 1. ConnectWise sends a signed POST request to your Nango webhook URL when a subscribed event occurs.
-2. Nango verifies the signature using the signing key referenced in the payload's `Metadata.key_url` (only trusted `*.myconnectwise.net` subdomains are accepted).
+2. Nango verifies the signature using the signing key referenced in the payload's `Metadata.key_url` (trusted ConnectWise cloud subdomains are accepted by default; self-hosted origins require connection metadata).
 3. Nango routes the webhook to the matching connection(s), then either forwards it to your app or runs a sync (`onWebhook`).
 
 ## Connection routing
@@ -40,6 +40,19 @@ curl -X PATCH "https://api.nango.dev/connections/metadata" \
 `PATCH` merges the key into existing metadata; use `POST` if you want to replace all metadata.
 
 You can also set it from a [post-connection-creation event function](/getting-started/use-cases/implement-event-handler) with `nango.updateMetadata({ productInstanceId })` once you have the Product Instance ID for the connection.
+
+For a self-hosted instance, also set `metadata.connectwiseWebhookKeyOrigin` to the exact HTTPS origin that serves its callback signing keys:
+
+```json
+{
+    "productInstanceId": "<CONNECTWISE-PRODUCT-INSTANCE-ID>",
+    "connectwiseWebhookKeyOrigin": "https://cw.example.com"
+}
+```
+
+Set this value from trusted backend configuration, not an incoming webhook. Use an HTTPS origin with no path, query, fragment, or credentials. The host and port must match exactly. Cloud connections need no new setting.
+
+Custom-origin events reach only connections with a matching Product Instance ID and configured origin, after signature verification. All signing-key requests, including cloud requests, block redirects and private network addresses and validate DNS results at connection time. They use a direct HTTPS connection, a 10-second timeout, and a 64 KiB response limit. Deployments that require an outbound proxy or a redirecting key endpoint need a compatible direct endpoint before using this handler.
 
 ## Handle the webhook
 

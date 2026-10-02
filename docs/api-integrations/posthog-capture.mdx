@@ -1,0 +1,83 @@
+---
+title: 'PostHog (Capture API)'
+sidebarTitle: 'PostHog (Capture API)'
+description: 'Send events to PostHog using the public capture API and a project token'
+---
+
+## 🚀 Quickstart
+
+Connect to PostHog's Capture API with Nango and send your first event in 2 minutes. This uses a **Project Token** (`phc_...`), not a personal API key — the capture API is a public, write-only endpoint with no identity validation, so no user login is required.
+
+<Steps>
+    <Step title="Create an integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _PostHog (Capture API)_.
+    </Step>
+    <Step title="Authorize PostHog">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your **Hostname** (e.g. `us.i.posthog.com`) and **Project Token**. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Send your first event">
+    Let's send a test event via the capture API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/i/v0/e/" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"event": "test-event", "distinct_id": "test-user-123"}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/i/v0/e/',
+            data: { event: 'test-event', distinct_id: 'test-user-123' },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Nango automatically adds your stored **Project Token** as the `api_key` field in the request body — you only need to supply `event` and `distinct_id` (plus any `properties` you want).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 PostHog (Capture API) Integration Guides
+
+- [How do I link my PostHog account?](/api-integrations/posthog-capture/connect)  
+  Connect your PostHog account using the Connect UI (hostname and Project Token)
+
+<Note>
+Need PostHog's general analytics/query API instead (reading data, not sending events)? Use the [PostHog](/api-integrations/posthog) integration, which authenticates with a personal API key.
+</Note>
+
+Official docs: [PostHog Capture API reference](https://posthog.com/docs/api/capture)
+
+## 🧩 Pre-built syncs & actions for PostHog (Capture API)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/posthog-capture/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />

@@ -99,6 +99,74 @@ describe('OrchestratorClient immediate', () => {
     });
 });
 
+describe('OrchestratorClient recurring', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+    });
+
+    it('returns the schedule ID for successful creation or an existing schedule', async () => {
+        const fetchMock = vi.fn().mockImplementation(
+            () =>
+                new Response(JSON.stringify({ scheduleId: 'existing-schedule' }), {
+                    status: 200,
+                    headers: { 'content-type': 'application/json' }
+                })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.recurring({
+            name: 'schedule-1',
+            state: 'STARTED',
+            startsAt: new Date(),
+            frequencyMs: 300_000,
+            group: { key: 'function:environment:1', maxConcurrency: 0 },
+            retry: { max: 0 },
+            timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+            args: {
+                type: 'function',
+                functionName: 'my-function',
+                functionConfigId: 123,
+                connection: {
+                    id: 123,
+                    connection_id: 'connection-1',
+                    provider_config_key: 'provider-config-key-1',
+                    environment_id: 456
+                },
+                trigger: { kind: 'schedule', input: null, connection: { connectionId: 'connection-1', integrationId: 'provider-config-key-1' } },
+                async: true
+            }
+        });
+
+        expect(res.unwrap()).toEqual({ scheduleId: 'existing-schedule' });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+
+        const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
+        expect(url).toBe('http://orchestrator.test/v1/recurring');
+        expect(JSON.parse(init.body).args).toEqual({
+            type: 'function',
+            functionName: 'my-function',
+            functionConfigId: 123,
+            connection: {
+                id: 123,
+                connection_id: 'connection-1',
+                provider_config_key: 'provider-config-key-1',
+                environment_id: 456
+            },
+            trigger: {
+                kind: 'schedule',
+                input: null,
+                connection: {
+                    connectionId: 'connection-1',
+                    integrationId: 'provider-config-key-1'
+                }
+            },
+            async: true
+        });
+    });
+});
+
 function buildWebhookProps(name: string): ExecuteWebhookProps {
     return {
         name,
@@ -125,6 +193,7 @@ function buildFunctionProps(async: boolean): ExecuteFunctionProps {
         retry: { count: 0, max: 2 },
         args: {
             functionName: 'my-function',
+            functionConfigId: 123,
             connection: {
                 id: 123,
                 connection_id: 'connection-1',
@@ -135,7 +204,13 @@ function buildFunctionProps(async: boolean): ExecuteFunctionProps {
             trigger: {
                 kind: 'http',
                 input: { foo: 'bar' },
-                request: { method: 'POST', path: '/functions/invocations', headers: {}, query: {}, body: { foo: 'bar' } },
+                request: {
+                    method: 'POST',
+                    path: '/connections/22222222-2222-4222-8222-222222222222/functions/11111111-1111-4111-8111-111111111111/invocations',
+                    headers: {},
+                    query: {},
+                    body: { foo: 'bar' }
+                },
                 connection: { connectionId: 'connection-1', integrationId: 'provider-config-key-1' }
             },
             async

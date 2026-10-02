@@ -3,15 +3,26 @@ import * as z from 'zod/v4';
 import { getLogger } from '@nangohq/utils';
 
 import type { CallToolResult, JsonSchemaType, Tool } from '@modelcontextprotocol/server';
+import type { NangoError } from '@nangohq/shared';
 
 const logger = getLogger('Server.MCP');
 
 const jsonSchema202012 = 'https://json-schema.org/draft/2020-12/schema';
 
+export interface McpErrorContext {
+    code?: string | undefined;
+    integrationId?: string | undefined;
+}
+
 export class PublicMcpError extends Error {
-    constructor(message: string) {
+    public readonly code: string | undefined;
+    public readonly integrationId: string | undefined;
+
+    constructor(message: string, context: McpErrorContext = {}) {
         super(message);
         this.name = 'PublicMcpError';
+        this.code = context.code;
+        this.integrationId = context.integrationId;
     }
 }
 
@@ -22,6 +33,36 @@ export class InternalMcpError extends Error {
         super('Internal error');
         this.name = 'InternalMcpError';
     }
+}
+
+const MAX_FAILURE_DETAIL_LENGTH = 500;
+
+export function safeFailureDetail(error: NangoError): string {
+    const reason = failureReason(error.payload);
+
+    if (!reason || error.message.includes(reason)) {
+        return error.message;
+    }
+
+    return `${error.message}: ${reason.slice(0, MAX_FAILURE_DETAIL_LENGTH)}`;
+}
+
+function failureReason(payload: NangoError['payload']): string | undefined {
+    if (!payload || typeof payload !== 'object') {
+        return undefined;
+    }
+
+    const detail = payload['error'];
+
+    if (typeof detail === 'string') {
+        return detail;
+    }
+
+    if (detail && typeof detail === 'object' && 'message' in detail && typeof detail.message === 'string') {
+        return detail.message;
+    }
+
+    return undefined;
 }
 
 export function jsonContent(data: unknown): CallToolResult {
@@ -42,10 +83,18 @@ export function jsonStructuredContent(data: object): CallToolResult {
     };
 }
 
-export function mcpToolError(message: string): CallToolResult {
+export function mcpToolError(message: string, context: McpErrorContext = {}): CallToolResult {
+    const { code, integrationId } = context;
+
+    const meta = {
+        ...(code ? { 'nango/error_code': code } : {}),
+        ...(integrationId ? { 'nango/integration_id': integrationId } : {})
+    };
+
     return {
         content: [{ type: 'text', text: message }],
-        isError: true
+        isError: true,
+        ...(Object.keys(meta).length > 0 ? { _meta: meta } : {})
     };
 }
 

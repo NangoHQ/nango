@@ -5,9 +5,10 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { InternalMcpError, PublicMcpError } from '../utils.js';
 import { listFunctionsTool } from './list.js';
+import { listFunctionsOutputSchema } from './schema.js';
 
 import type { ManagementMcpContext } from '../managementTool.js';
-import type { DeployedNangoFunction } from '@nangohq/types';
+import type { ListedNangoFunction } from '@nangohq/types';
 
 describe('listFunctionsTool', () => {
     afterEach(() => {
@@ -42,6 +43,18 @@ describe('listFunctionsTool', () => {
                 data: [functionFixture],
                 pagination: { total: 25, page: 2, limit: 10 }
             });
+        }
+    });
+
+    it('accepts catalog actions with a null id and tools-catalog source', async () => {
+        const catalog = catalogFunctionFixture;
+        vi.spyOn(legacyFunctionService, 'listFunctions').mockResolvedValue(Ok({ rows: [catalog], total: 1 }));
+
+        const result = await listFunctionsTool.handler({ integration_id: 'github' }, context);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(listFunctionsOutputSchema.parse(result.value).data).toStrictEqual([catalog]);
         }
     });
 
@@ -118,13 +131,15 @@ describe('listFunctionsTool', () => {
     });
 });
 
+const accountUuid = '8d49e079-aa61-44ae-b0cf-823662523527';
+
 const context = {
-    account: {},
+    account: { uuid: accountUuid },
     environment: { id: 42 },
     grantedScopes: ['environment:functions:list']
 } as ManagementMcpContext;
 
-const functionFixture: DeployedNangoFunction = {
+const functionFixture: ListedNangoFunction = {
     id: 1,
     name: 'create-issue',
     type: 'action',
@@ -135,4 +150,17 @@ const functionFixture: DeployedNangoFunction = {
     enabled: true,
     last_deployed: '2026-01-01T00:00:00.000Z',
     source: 'repo'
+};
+
+const catalogFunctionFixture: ListedNangoFunction = {
+    id: null,
+    name: 'create-issue',
+    type: 'action',
+    description: 'Create an issue',
+    scopes: ['repo'],
+    returns: ['Issue'],
+    json_schema: null,
+    enabled: true,
+    last_deployed: null,
+    source: 'tools-catalog'
 };

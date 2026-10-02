@@ -20,6 +20,7 @@ export type SearchOperations = ApiEndpoint<{
         integrations?: SearchOperationsIntegration[] | undefined;
         connections?: SearchOperationsConnection[] | undefined;
         syncs?: SearchOperationsSync[] | undefined;
+        agentSessions?: SearchOperationsAgentSession[] | undefined;
         period?: SearchPeriod | undefined;
         cursor?: string | null | undefined;
     };
@@ -33,6 +34,7 @@ export type SearchOperationsType = 'all' | ConcatOperationListWithGroup;
 export type SearchOperationsIntegration = 'all' | string;
 export type SearchOperationsConnection = 'all' | string;
 export type SearchOperationsSync = 'all' | string;
+export type SearchOperationsAgentSession = 'all' | string;
 export interface SearchPeriod {
     from: string;
     to: string;
@@ -76,11 +78,12 @@ export type SearchFilters = ApiEndpoint<{
     Method: 'POST';
     Path: '/api/v1/logs/filters';
     Querystring: { env: string };
-    Body: { category: 'integration' | 'syncConfig' | 'connection'; search?: string | undefined };
+    Body: { category: SearchFiltersCategory; search?: string | undefined };
     Success: {
         data: { key: string; doc_count: number }[];
     };
 }>;
+export type SearchFiltersCategory = 'integration' | 'syncConfig' | 'connection' | 'agentSession';
 export type SearchFiltersData = SearchMessages['Success']['data'][0];
 
 export type PostInsights = ApiEndpoint<{

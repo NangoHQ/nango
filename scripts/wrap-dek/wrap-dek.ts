@@ -1,24 +1,6 @@
 /**
  * Wrap (default) or unwrap (--decrypt) the Nango global DEK with a KMS master key, using the AWS Encryption SDK.
- *
- * Supports AWS KMS (--key-arn) or GCP Cloud KMS (--gcp-key-name). Pass exactly one.
- *
- * The DEK is read from stdin so it never lands on disk or in shell history.
- *
- * AWS wrap:    echo -n "$NANGO_ENCRYPTION_KEY" | npx tsx wrap-dek.ts --key-arn <kms-key-arn> --context purpose=global_dek --context app=nango > dek-wrapped.b64
- * GCP wrap:    echo -n "$NANGO_ENCRYPTION_KEY" | npx tsx wrap-dek.ts --gcp-key-name <resource> --context purpose=global_dek --context app=nango > dek-wrapped.b64
- * AWS verify:  cat dek-wrapped.b64 | npx tsx wrap-dek.ts --decrypt --key-arn <kms-key-arn> --context purpose=global_dek --context app=nango | base64 -d
- * GCP verify:  cat dek-wrapped.b64 | npx tsx wrap-dek.ts --decrypt --gcp-key-name <resource> --context purpose=global_dek --context app=nango | base64 -d
- *               (output must match $NANGO_ENCRYPTION_KEY byte-for-byte)
- *
- * --gcp-key-name is a Cloud KMS crypto key resource:
- *   projects/PROJECT/locations/LOCATION/keyRings/RING/cryptoKeys/KEY
- * GCP calls use Application Default Credentials on the host (workload identity or a service
- * account) with roles/cloudkms.cryptoKeyEncrypterDecrypter scoped to that key.
- *
- * --context is optional and repeatable; pairs are bound to the envelope on wrap and
- * verified against the envelope header on --decrypt.
- *
+ * See README.md for usage.
  */
 import { parseArgs } from 'node:util';
 
@@ -26,12 +8,14 @@ import { buildClient, CommitmentPolicy, KmsKeyringNode } from '@aws-crypto/clien
 
 import type { KeyringNode } from '@aws-crypto/client-node';
 
-const USAGE = 'Usage: echo -n "$DEK_B64" | tsx wrap-dek.ts (--key-arn <kms-key-arn> | --gcp-key-name <resource>) [--decrypt] [--context key=value ...]';
+const USAGE =
+    'Usage: echo -n "$DEK_B64" | tsx wrap-dek.ts (--key-arn <kms-key-arn> | --gcp-key-name <resource> | --azure-key-id <key-id>) [--decrypt] [--context key=value ...]';
 
 const { values } = parseArgs({
     options: {
         'key-arn': { type: 'string' },
         'gcp-key-name': { type: 'string' },
+        'azure-key-id': { type: 'string' },
         decrypt: { type: 'boolean', default: false },
         // Repeatable key=value pairs, e.g. --context purpose=dek --context app=nango.
         // Bound to the envelope on wrap; verified against the envelope header on --decrypt.
@@ -41,14 +25,15 @@ const { values } = parseArgs({
 
 const keyArn = values['key-arn'];
 const gcpKeyName = values['gcp-key-name'];
-if (keyArn && gcpKeyName) {
-    console.error('--key-arn and --gcp-key-name are mutually exclusive: pass only one');
+const azureKeyId = values['azure-key-id'];
+if ([keyArn, gcpKeyName, azureKeyId].filter(Boolean).length > 1) {
+    console.error('--key-arn, --gcp-key-name and --azure-key-id are mutually exclusive: pass only one');
     console.error(USAGE);
     process.exit(1);
 }
 
-const keyring = await resolveKeyring(keyArn, gcpKeyName, values.decrypt);
-const wrappingKey = gcpKeyName ?? keyArn;
+const keyring = await resolveKeyring(keyArn, gcpKeyName, azureKeyId, values.decrypt);
+const wrappingKey = gcpKeyName ?? azureKeyId ?? keyArn;
 
 const encryptionContext: Record<string, string> = {};
 for (const pair of values.context ?? []) {
@@ -88,14 +73,23 @@ if (values.decrypt) {
     writeOut(result.toString('base64'));
 }
 
-async function resolveKeyring(keyArn: string | undefined, gcpKeyName: string | undefined, decrypt: boolean | undefined): Promise<KeyringNode> {
+async function resolveKeyring(
+    keyArn: string | undefined,
+    gcpKeyName: string | undefined,
+    azureKeyId: string | undefined,
+    decrypt: boolean | undefined
+): Promise<KeyringNode> {
     if (gcpKeyName) {
-        // Loaded only for --gcp-key-name so a standalone wrap-dek install (AWS-only deps) still runs --key-arn.
         const { GcpKmsKeyringNode } = await import('../../packages/kms/lib/gcp.js');
-        return new GcpKmsKeyringNode(gcpKeyName);
+        const { defaultGcpKmsClient } = await import('./gcp-client.js');
+        return new GcpKmsKeyringNode(gcpKeyName, defaultGcpKmsClient());
+    }
+    if (azureKeyId) {
+        const { AzureKmsKeyringNode } = await import('../../packages/kms/lib/azure.js');
+        return new AzureKmsKeyringNode(azureKeyId);
     }
     if (!keyArn) {
-        console.error('Missing wrapping key. Pass --key-arn <arn> or --gcp-key-name <resource>');
+        console.error('Missing wrapping key. Pass --key-arn <arn>, --gcp-key-name <resource> or --azure-key-id <key-id>');
         console.error(USAGE);
         process.exit(1);
     }

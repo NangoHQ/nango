@@ -39,6 +39,7 @@ describe('defineManagementMcpTool', () => {
     it('passes parsed arguments to the tool handler', async () => {
         const tool = defineManagementMcpTool({
             name: 'test_tool',
+            title: 'Test Tool',
             description: 'Test tool',
             inputSchema: z.object({ limit: z.number().default(10) }).strict(),
             requiredScopes: { every: ['environment:mcp'] },
@@ -59,6 +60,7 @@ describe('defineManagementMcpTool', () => {
     it('returns a public error for invalid arguments', async () => {
         const tool = defineManagementMcpTool({
             name: 'test_tool',
+            title: 'Test Tool',
             description: 'Test tool',
             inputSchema: z.object({ limit: z.number().min(1) }).strict(),
             requiredScopes: { every: ['environment:mcp'] },
@@ -218,6 +220,7 @@ describe('defineManagementMcpTool', () => {
         const auditSpy = vi.spyOn(audit, 'record');
         const tool = defineManagementMcpTool({
             name: 'test_read_tool',
+            title: 'Test Read Tool',
             description: 'Test read-only tool',
             inputSchema: z.object({}).strict(),
             requiredScopes: { every: ['environment:mcp'] },
@@ -253,6 +256,7 @@ function enableAudit() {
 function dynamicAuditedTool() {
     return defineManagementMcpTool({
         name: 'test_dynamic_audit_tool',
+        title: 'Test Dynamic Audit Tool',
         description: 'Test dynamic audit tool',
         inputSchema: z.object({ state: z.enum(['started', 'paused']), label: z.string() }).strict(),
         requiredScopes: { every: ['environment:mcp'] },
@@ -274,6 +278,7 @@ function dynamicAuditedTool() {
 function auditedTool(handler: () => Result<AuditedToolOutput>) {
     return defineManagementMcpTool<typeof auditedToolArgumentsSchema, AuditedToolOutput>({
         name: 'test_create_tool',
+        title: 'Test Create Tool',
         description: 'Test audited tool',
         inputSchema: auditedToolArgumentsSchema,
         requiredScopes: { every: ['environment:mcp'] },

@@ -3,10 +3,12 @@ import crypto from 'node:crypto';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
+import { revokeOAuthUserInTransaction } from '@nangohq/oauth-server';
 import { pbkdf2, userService } from '@nangohq/shared';
 import { PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { deleteUserSessions } from '../../../../clients/auth.client.js';
+import { dek } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { hasRecentMfa } from '../../account/mfa/elevation.js';
 import { isStepUpRefused, isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from '../../account/mfa/stepUp.js';
@@ -57,7 +59,6 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
 
     const salt = crypto.randomBytes(16).toString('base64');
     const hashedPassword = (await pbkdf2(body.newPassword, salt, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
-
     const outcome = await db.knex.transaction(async (trx) => {
         const stepUp = await verifyStepUpMfa(user, body.mfa, trx, { recentlyVerified });
         if (isStepUpRefused(stepUp)) {
@@ -66,6 +67,10 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
 
         await userService.update({ id: user.id, hashed_password: hashedPassword, salt }, trx);
         await deleteUserSessions(user.id, { trx });
+        const encryptionKey = dek.get();
+        if (encryptionKey) {
+            await revokeOAuthUserInTransaction({ trx, encryptionKey, userId: String(user.id) });
+        }
         return 'changed' as const;
     });
 

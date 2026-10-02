@@ -1,8 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import db from '@nangohq/database';
 import * as kvstore from '@nangohq/kvstore';
 import { envs } from '@nangohq/logs';
-import { getSyncConfigsAsStandardConfig, seeders } from '@nangohq/shared';
+import { getPlan, getSyncConfigsAsStandardConfig, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -59,6 +60,37 @@ describe(`POST ${endpoint}`, () => {
             }
         });
         expect(res.res.status).toBe(400);
+    });
+
+    it('should reject a deploy carrying a nango.yaml body with a migration guide link', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                debug: false,
+                flowConfigs: [],
+                nangoYamlBody: 'integrations:\n  google:\n    syncs: {}',
+                reconcile: false,
+                deployMode: 'all'
+            }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_body',
+                errors: [
+                    {
+                        code: 'custom',
+                        message:
+                            'The `nango.yaml` configuration file is no longer supported. See the migration guide to Zero YAML: https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml',
+                        path: ['nangoYamlBody']
+                    }
+                ]
+            }
+        });
     });
 
     it('should reject models_json_schema missing definitions for declared models', async () => {
@@ -464,6 +496,49 @@ describe(`POST ${endpoint}`, () => {
                     // Unrelated is absent
                 }
             });
+        });
+    });
+
+    describe('trial start on failed deploy', () => {
+        it('does not start the trial when the deploy fails', async () => {
+            const { env, apiKey, plan } = await seeders.seedAccountEnvAndUser({ plan: { trial_end_at: null, auto_idle: true } });
+            expect(plan.trial_end_at).toBeNull();
+
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: {
+                    debug: false,
+                    flowConfigs: [
+                        {
+                            syncName: 'test',
+                            fileBody: { js: 'js file', ts: 'ts file' },
+                            providerConfigKey: 'does-not-exist',
+                            endpoints: [{ method: 'GET', path: '/path' }],
+                            runs: 'every day',
+                            type: 'sync',
+                            attributes: {},
+                            auto_start: false,
+                            metadata: { description: 'a' },
+                            sync_type: 'full',
+                            track_deletes: false,
+                            input: 'Input',
+                            models: ['Output']
+                        }
+                    ],
+                    nangoYamlBody: '',
+                    onEventScriptsByProvider: [],
+                    reconcile: false,
+                    deployMode: 'all',
+                    sdkVersion: '0.61.3-yaml'
+                }
+            });
+
+            isError(res.json);
+            expect(res.res.status).not.toBe(200);
+
+            const updatedPlan = (await getPlan(db.knex, { accountId: env.account_id })).unwrap();
+            expect(updatedPlan.trial_end_at).toBeNull();
         });
     });
 });

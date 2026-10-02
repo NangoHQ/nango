@@ -34,7 +34,7 @@ export interface SimplifiedJSONSchema {
     prefix?: string;
     suffix?: string;
     doc_section?: string;
-    secret?: string;
+    secret?: boolean;
     automated: boolean;
     enum?: string[];
     // Maps a field value to a warning shown when that value is selected (e.g. discouraged enum options).
@@ -160,6 +160,7 @@ export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
 
 export interface ProviderMcpOAuth2Generic extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'MCP_OAUTH2_GENERIC';
+    mcp_server_url?: string;
 }
 
 export interface ProviderJwt extends BaseProvider {

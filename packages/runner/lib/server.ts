@@ -168,7 +168,7 @@ function startProcedure() {
                     const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
                     telemetryBag.durationMs = Date.now() - startTime;
                     const checkpoints = execRes.isErr() ? execRes.error.checkpoints : execRes.value.checkpoints;
-                    await jobsClient.putTask({
+                    const putRes = await jobsClient.putTask({
                         taskId,
                         nangoProps,
                         ...(execRes.isErr() ? { error: execRes.error.toJSON(), telemetryBag } : { output: execRes.value.output as any, telemetryBag }),
@@ -176,6 +176,9 @@ function startProcedure() {
                         checkpoints,
                         internalAuthToken
                     });
+                    if (putRes.isErr()) {
+                        logger.error('Failed to report task result, task will be left to expire', { error: putRes.error, taskId });
+                    }
                 } finally {
                     clearInterval(heartbeat);
                     if (abortPoll) {

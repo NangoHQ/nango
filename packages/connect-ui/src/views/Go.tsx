@@ -252,6 +252,10 @@ export const Go: React.FC = () => {
                 continue;
             }
 
+            if (integration?.preconfigured_connection_config?.includes(name)) {
+                continue;
+            }
+
             additionalFields[name] = jsonSchemaToZod(schema);
 
             if (schema.order) {

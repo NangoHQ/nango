@@ -37,6 +37,12 @@ declare global {
             email: string;
             name: string;
             account_id: number;
+            /**
+             * When this dashboard session was created, in Unix seconds. OAuth uses it so a
+             * password reset can reject sessions that were authenticated before the reset.
+             * Optional because sessions created before this field was added may still exist.
+             */
+            authenticated_at?: number;
         }
     }
 }

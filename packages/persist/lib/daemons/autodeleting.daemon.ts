@@ -57,6 +57,8 @@ export function autoDeletingDaemon(): Awaited<ReturnType<typeof cancellableDaemo
                         connectionId: candidate.value.connectionId,
                         model: candidate.value.model,
                         mode: 'hard',
+                        // TODO: remove limit once deleteRecords does a commit per page
+                        limit: envs.PERSIST_AUTO_DELETING_LIMIT,
                         plan
                     });
                     if (res.isErr()) {

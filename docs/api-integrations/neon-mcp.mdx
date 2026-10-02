@@ -1,0 +1,94 @@
+---
+title: 'Neon (MCP)'
+sidebarTitle: 'Neon (MCP)'
+description: 'Connect AI tools to Neon via the Model Context Protocol (MCP) to manage projects, branches, schemas, and databases'
+---
+
+## 🚀 Quickstart
+
+Connect to the Neon MCP server with Nango and call MCP tools in minutes. Neon MCP uses OAuth 2.0 with **dynamic client registration**, so no app registration is required.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+        In Nango ([free signup](https://app.nango.dev)), open **Integrations**, select **Configure New Integration**, and choose **Neon (MCP)**.
+    </Step>
+    <Step id="authorize-neon" title="Authorize Neon">
+        Open **Connections**, select **Add Test Connection**, and authorize access to your Neon account. Neon asks whether to grant read and write access. Later, you'll let your users authorize directly from your app.
+    </Step>
+    <Step id="call-neon-mcp" title="Call the Neon MCP API">
+        Make your first MCP request with the initialize handshake. Replace the placeholders below with your Nango Environment API key, integration ID, and connection ID:
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/mcp" \
+                  -X POST \
+                  -H "Authorization: Bearer <NANGO-ENVIRONMENT-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "initialize",
+                    "params": {
+                        "protocolVersion": "2024-11-05",
+                        "capabilities": {},
+                        "clientInfo": {
+                            "name": "nango-client",
+                            "version": "1.0.0"
+                        }
+                    }
+                }'
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+                Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ apiKey: '<NANGO-ENVIRONMENT-API-KEY>' });
+
+                const res = await nango.post({
+                    endpoint: '/mcp',
+                    providerConfigKey: '<INTEGRATION-ID>',
+                    connectionId: '<CONNECTION-ID>',
+                    body: {
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'initialize',
+                        params: {
+                            protocolVersion: '2024-11-05',
+                            capabilities: {},
+                            clientInfo: {
+                                name: 'nango-client',
+                                version: '1.0.0'
+                            }
+                        }
+                    }
+                });
+
+                console.log(res.data);
+                ```
+            </Tab>
+
+        </Tabs>
+        ✅ You're connected! Open **Logs** in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow the [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Neon (MCP) guides
+
+Nango uses **dynamic client registration** with Neon's MCP OAuth server. You do not need to register an MCP application.
+
+Official resources: [Neon MCP server](https://neon.com/docs/ai/neon-mcp-server)
+
+---

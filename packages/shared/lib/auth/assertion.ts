@@ -6,9 +6,10 @@ import { SignedXml } from 'xml-crypto';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import { jwtExpiresAt } from '../services/connections/utils.js';
 import { AuthCredentialsError } from '../utils/error.js';
 import { formatPem, interpolateObject, interpolateString, isTokenExpired, parseTokenExpirationDate } from '../utils/utils.js';
-import { decode, signJWT } from './jwt.js';
+import { signJWT } from './jwt.js';
 
 import type { ProviderTwoStep } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -322,15 +323,11 @@ export function generateSamlAssertion({
 }
 
 export function isJwtAssertionExpired(assertion: string): boolean {
-    try {
-        const decoded = decode(assertion);
-        if (!decoded || typeof decoded['exp'] !== 'number') {
-            return true;
-        }
-        return isTokenExpired(new Date(decoded['exp'] * 1000), ASSERTION_REFRESH_MARGIN_SECONDS);
-    } catch {
+    const expiresAt = jwtExpiresAt(assertion, 0);
+    if (!expiresAt) {
         return true;
     }
+    return isTokenExpired(expiresAt, ASSERTION_REFRESH_MARGIN_SECONDS);
 }
 
 export function isSamlAssertionExpired(assertion: string): boolean {

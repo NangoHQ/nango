@@ -47,6 +47,7 @@ function buildFunctionMessage(overrides: Partial<FunctionDispatchMessage> = {}):
         activityLogId: 'function-log-1',
         connection: { id: 42, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2 },
         functionName: 'native-webhook',
+        functionConfigId: 123,
         trigger: {
             kind: 'http',
             input: { hello: 'world' },
@@ -228,6 +229,7 @@ describe('DispatchQueueConsumer', () => {
                 ownerKey: 'environment:2',
                 args: expect.objectContaining({
                     functionName: 'native-webhook',
+                    functionConfigId: 123,
                     connection: func.connection,
                     trigger: func.trigger,
                     async: true

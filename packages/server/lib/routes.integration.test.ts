@@ -62,6 +62,22 @@ describe('route', () => {
         });
     });
 
+    describe('OAuth server', () => {
+        it.each(['/oauth/authorize', '/.well-known/oauth-authorization-server'])('does not expose %s when the issuer is disabled', async (path) => {
+            const res = await fetch(`${api.url}${path}`);
+
+            expect(res.status).toBe(404);
+            expect((await res.json()) as unknown).toStrictEqual({ error: { code: 'not_found', message: 'Not found' } });
+        });
+
+        it("does not intercept Nango's existing OAuth routes", async () => {
+            const res = await fetch(`${api.url}/oauth/client-metadata/not-a-uuid/provider`);
+
+            expect(res.status).toBe(400);
+            expect((await res.json()) as { error: { code: string } }).toMatchObject({ error: { code: 'invalid_uri_params' } });
+        });
+    });
+
     describe('GET /api/v1/environment/callback', () => {
         it('should handle invalid json', async () => {
             const { apiKey } = await seeders.seedAccountEnvAndUser();
@@ -114,6 +130,30 @@ describe('route', () => {
                 error: {
                     code: 'request_too_large',
                     message: 'Request entity too large (limit: 100kb)'
+                }
+            });
+        });
+    });
+
+    describe('POST /proxy', () => {
+        it('should return a clear 400 instead of a generic 500 for an unsupported multipart Content-Type', async () => {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await fetch(`${api.url}/proxy/some/path`, {
+                method: 'POST',
+                body: '--boundary123\r\nContent-Type: application/json\r\n\r\n{}\r\n--boundary123--',
+                headers: {
+                    Authorization: `Bearer ${apiKey.secret}`,
+                    'Provider-Config-Key': 'does-not-matter',
+                    'Connection-Id': 'does-not-matter',
+                    'Content-Type': 'multipart/related; boundary=boundary123'
+                }
+            });
+
+            expect(res.status).toBe(400);
+            expect(await res.json()).toStrictEqual({
+                error: {
+                    code: 'unsupported_content_type',
+                    message: expect.stringContaining('Unsupported content type: multipart/related')
                 }
             });
         });

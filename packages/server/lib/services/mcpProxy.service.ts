@@ -1,6 +1,5 @@
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
-import { InternalMcpError, PublicMcpError } from '../controllers/mcp/utils.js';
 import { egressTelemetryRecorder } from '../utils/egressTelemetry.js';
 import { proxyResponseToMcp } from './mcpProxyFormatter.js';
 import { ProxyResponseFormatError, readProxyResponseBody } from './mcpProxyResponse.js';
@@ -8,10 +7,13 @@ import proxyService from './proxy.service.js';
 
 import type { ProxyQueryParams, ProxyRequestOutput } from './mcpProxySchema.js';
 import type { ProxyServiceError, ProxyServiceResponse } from './proxy.service.js';
+import type { LogContext } from '@nangohq/logs';
 import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, OperationActor } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Server.MCP.Proxy');
+
+export type McpProxyError = ProxyServiceError | ProxyResponseFormatError;
 
 export interface McpProxyRequest {
     account: DBTeam;
@@ -32,11 +34,24 @@ export interface McpProxyRequest {
     actor?: OperationActor | undefined;
 }
 
+export interface McpProxyExecution {
+    /** Created once the request is attributable, so callers can correlate the call with its operation. */
+    logCtx: LogContext | undefined;
+    /** The provider's own status, set only when the provider answered. A failure's status is Nango's, not theirs. */
+    status: number | undefined;
+    /**
+     * `upstream_error` when the provider answered with a 4xx or 5xx. The tool still returns that as a
+     * result, so a caller reading only `result` cannot tell the provider call failed.
+     */
+    outcome: ProxyServiceResponse['outcome'] | undefined;
+    result: Result<ProxyRequestOutput, McpProxyError>;
+}
+
 /**
  * The single path every MCP proxy caller goes through, so credential handling, the outbound URL
  * policy, plan capping and the response size limit are enforced once rather than per tool.
  */
-export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<Result<ProxyRequestOutput>> {
+export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<McpProxyExecution> {
     const { account, environment, integrationId, connectionId } = params;
 
     const body = serializeJsonBody(params.body);
@@ -60,7 +75,7 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<R
     });
 
     if (execution.result.isErr()) {
-        return Err(proxyServiceErrorToMcp(execution.result.error));
+        return { logCtx: execution.logCtx, status: undefined, outcome: undefined, result: Err(execution.result.error) };
     }
 
     const response = execution.result.value;
@@ -78,13 +93,13 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<R
             count: 1
         });
         completeProxyResponse(response);
-        return Ok(output);
+        return { logCtx: execution.logCtx, status: response.status, outcome: response.outcome, result: Ok(output) };
     } catch (err) {
         const error = err instanceof Error ? err : new Error('Failed to format the provider response');
         void execution.logCtx?.error('Failed to format provider response for MCP', { error });
         completeProxyResponse(response, error);
         if (err instanceof ProxyResponseFormatError) {
-            return Err(new PublicMcpError(err.message));
+            return { logCtx: execution.logCtx, status: response.status, outcome: response.outcome, result: Err(err) };
         }
         throw err;
     }
@@ -128,26 +143,4 @@ function appendQueryParams(path: string, queryParams: ProxyQueryParams | undefin
         }
     }
     return `${path}${separator}${searchParams.toString()}`;
-}
-
-function proxyServiceErrorToMcp(error: ProxyServiceError): Error {
-    const code = error.code;
-    switch (code) {
-        case 'base_url_override_disabled':
-        case 'base_url_override_not_allowed':
-        case 'plan_limit':
-        case 'unknown_integration':
-        case 'connection_not_found':
-        case 'connection_refresh_backoff':
-        case 'credentials_refresh_failed':
-        case 'proxy_request_failed':
-            return new PublicMcpError(error.message);
-        case 'internal_error':
-            return error;
-        default: {
-            const exhaustiveCheck: never = code;
-            logger.error('Unexpected ProxyService error code while proxying request', { code: exhaustiveCheck });
-            return new InternalMcpError();
-        }
-    }
 }

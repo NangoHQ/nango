@@ -89,7 +89,7 @@ export const ConnectionCreate: React.FC = () => {
     }, [provider, form]);
 
     useEffect(() => {
-        track('web:create_connection:viewed', {});
+        track('connections:create_page_view', {});
     }, []);
 
     useEffect(() => {

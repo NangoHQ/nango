@@ -67,6 +67,31 @@ describe('MFA service', () => {
         expect((await mfaService.consumeRecoveryCode(user.id, activated.recoveryCodes[0]!)).unwrap()).toBe(false);
     });
 
+    it('checks a recovery code without spending it', async () => {
+        const account = await createAccount();
+        const user = await seedUser(account.id);
+        const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+        const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+        const activated = (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
+
+        const code = activated.recoveryCodes[0]!;
+        expect((await mfaService.verifyRecoveryCode(user.id, code, { context: 'disable' })).unwrap()).toBe(true);
+        expect((await mfaService.verifyRecoveryCode(user.id, code, { context: 'disable' })).unwrap()).toBe(true);
+        // Still spendable afterwards, which is what separates this from consumeRecoveryCode.
+        expect((await mfaService.consumeRecoveryCode(user.id, code)).unwrap()).toBe(true);
+        expect((await mfaService.verifyRecoveryCode(user.id, code, { context: 'disable' })).unwrap()).toBe(false);
+    });
+
+    it('rejects an unknown recovery code', async () => {
+        const account = await createAccount();
+        const user = await seedUser(account.id);
+        const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+        const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+        (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
+
+        expect((await mfaService.verifyRecoveryCode(user.id, 'not-a-real-code', { context: 'disable' })).unwrap()).toBe(false);
+    });
+
     it('replaces recovery codes and disables the factor', async () => {
         const account = await createAccount();
         const user = await seedUser(account.id);

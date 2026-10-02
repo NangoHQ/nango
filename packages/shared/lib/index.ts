@@ -20,7 +20,8 @@ import userService from './services/user.service.js';
 import { getEncryptionManager, pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
-export { productTracking } from './utils/productTracking.js';
+export { accountGroupProperties, isInternalAccount, productTracking, withProductTrackingContext } from './utils/productTracking.js';
+export type { ProductTrackingTypes } from './utils/productTracking.js';
 export * as billClient from './auth/bill.js';
 export * as githubAppClient from './auth/githubApp.js';
 export * as jwtClient from './auth/jwt.js';
@@ -43,7 +44,7 @@ export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
 export { MFAError, recordMFALoginRefused, recordMFAVerifyFailure, recordMFAVerifySuccess } from './services/mfa.service.js';
 export { CustomerKeyError, MAX_API_KEYS_PER_ACCOUNT } from './services/customerKey.service.js';
-export type { ApiKeyRef } from './services/customerKey.service.js';
+export type { ApiKeyRef, CustomerKeySearch } from './services/customerKey.service.js';
 export {
     GetConnectionError,
     type ConnectionIntegrationMatchRow,
@@ -59,7 +60,7 @@ export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
 export * from './services/proxy/outbound-policy.js';
 export { type MeteredBytes, createMeteringTransport } from './services/proxy/byte-metering-transport.js';
-export { makeDataTransferEvent } from './services/proxy/data-transfer-event.js';
+export { isBillableDataTransfer, makeDataTransferEvent } from './services/proxy/data-transfer-event.js';
 export * from './services/plans/plans.js';
 export * from './services/plans/definitions.js';
 export * from './services/plans/spendAlertNotifications.js';
@@ -67,6 +68,10 @@ export * from './services/checkpoints/checkpoints.js';
 export * from './services/shared-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
+export { listCatalogTools, getCatalogTool, isTemplatesZeroPath } from './services/catalog/actions.js';
+export type { CatalogTool } from './services/catalog/actions.js';
+export { resolveRunnableTool } from './services/catalog/resolveTool.js';
+export type { ResolveRunnableToolResult } from './services/catalog/resolveTool.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 export * as mcpClient from './clients/mcp.client.js';

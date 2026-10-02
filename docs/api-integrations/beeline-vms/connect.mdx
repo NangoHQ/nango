@@ -1,0 +1,59 @@
+---
+title: 'Beeline VMS - How do I link my account?'
+sidebarTitle: 'Beeline VMS'
+---
+
+## Overview
+
+To authenticate with Beeline VMS, you will need:
+
+1. **Client ID** – identifies your app to Beeline's authorization server
+2. **Client Secret** – authenticates your app when requesting an access token
+3. **Authorization Server Region** and **Audience** – which Beeline API product and region your credentials were granted access to
+4. **Client Site ID** – issued alongside your Client ID and Client Secret
+
+This guide walks you through obtaining these values.
+
+### Prerequisites
+
+- Your organization must be registered with Beeline.
+
+### Instructions
+
+#### Step 1: Getting your credentials from Beeline
+
+Beeline API access isn't self-service. Contact your Beeline Customer Operations Manager (COM) to open a change request scoping your needs — Beeline uses this to determine which API solution applies to you. Once scoped, Beeline's Integrations team creates your credentials and securely transmits your **Client ID**, **Client Secret**, and **Client Site ID** to you.
+
+<Warning>Store your Client ID and Client Secret securely — they are private credentials.</Warning>
+
+Confirm with your COM which Beeline API product your Client ID was granted access to (Client APIs, Bulk Data Client Onboarding, Bulk Data Worker, or Bulk Data Reporting) and whether it's on the US or EU region — you'll need both for the next step.
+
+#### Step 2: Choosing your Region and Audience
+
+Beeline authenticates with Auth0-style `client_credentials`: the **Audience** you request determines which API product your access token is valid for, and it's also the base URL you call that API at. The **Authorization Server Region** is separate — it's always one of two values, matching whichever region your Audience is on.
+
+| Region | Authorization Server Region |
+| ------ | ---------------------------- |
+| US     | `auth`                        |
+| EU     | `eu-auth`                     |
+
+Select the **Audience** matching your API product and region:
+
+| API product | US Audience | EU Audience |
+| ----------- | ----------- | ----------- |
+| Client APIs (general VMS resources — Worker, Assignment, Invoice, SOW, etc.) | `https://client.beeline.com/api` | `https://client-eu.beeline.com/api` |
+| Bulk Data Client Onboarding API | `https://edge.beeline.com/client-onboarding` | `https://edge-eu.beeline.com/client-onboarding` |
+| Bulk Data Worker API | `https://edge.beeline.com/worker` | `https://edge-eu.beeline.com/worker` |
+| Bulk Data Reporting API | not published | `https://edge-eu.beeline.com/reporting` |
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Client ID**, **Client Secret**, and **Client Site ID**:
+
+1. Open the form where you need to connect Beeline VMS.
+2. Enter your **Client ID** and **Client Secret** in their respective fields.
+3. Select **Authorization Server Region** and **Audience** from the tables above.
+4. Enter your **Client Site ID**.
+5. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Beeline VMS.

@@ -1257,6 +1257,13 @@ export class Nango {
                 ...options,
                 ...(config.data ? { data: config.data } : {})
             });
+        } else if (method?.toUpperCase() === 'PROPFIND' || method?.toUpperCase() === 'REPORT') {
+            return this.http.request({
+                ...options,
+                url,
+                method: method.toUpperCase(),
+                ...(config.data ? { data: config.data } : {})
+            });
         } else {
             return this.http.get(url, options);
         }

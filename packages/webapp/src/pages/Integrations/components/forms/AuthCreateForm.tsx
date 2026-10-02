@@ -16,8 +16,9 @@ interface Props {
 
 export const AuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
     const authMode = provider.authMode;
+    const hasIntegrationConfig = provider.integration_config && Object.keys(provider.integration_config).length > 0;
 
-    if (provider.integration_config && Object.keys(provider.integration_config).length > 0) {
+    if (hasIntegrationConfig && authMode !== 'OAUTH1' && authMode !== 'OAUTH2' && authMode !== 'TBA') {
         return <CustomIntegrationCreateForm provider={provider} onSubmit={onSubmit} />;
     }
 

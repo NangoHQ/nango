@@ -1,0 +1,31 @@
+---
+title: 'How to register your own Infor OAuth app'
+sidebarTitle: 'Infor setup'
+description: 'Register an OAuth app in Infor OS and connect it to Nango'
+---
+
+This guide shows you how to register your own app in Infor OS to obtain your OAuth credentials (Client ID & Client Secret). These are required to let your users grant your app access to their Infor tenant through the ION API gateway.
+
+<Steps>
+    <Step id="open-authorized-apps" title="Open Authorized Apps">
+    Log in to your Infor OS Portal as a user with the **ION API Administrator** role, open **API Gateway**, then select **Authorized Apps**.
+    </Step>
+    <Step id="add-application" title="Add a new authorized app">
+    Click **Add** (the `+` icon). Enter a **Name** and **Description** for the app, then set **Type** to **Web**.
+    </Step>
+    <Step id="add-redirect-uri" title="Add the redirect URI">
+    Set **Redirect URL** to `https://api.nango.dev/oauth/callback` for Nango Cloud, then save the app.
+    </Step>
+    <Step id="download-credentials" title="Download your credentials">
+    Open the authorized app you just created and click **Download Credentials**. This downloads a `.ionapi` file containing your app's OAuth credentials as JSON.
+    </Step>
+</Steps>
+
+## API gotchas
+
+- The downloaded `.ionapi` file's `ci` and `cs` fields are your **Client ID** and **Client Secret**. Its `ti`, `pu`, and `iu` fields are the **Tenant**, **Authorization Server URL**, and **ION API Gateway URL** Nango needs — see the [connect guide](/api-integrations/infor/connect) for where to enter them.
+- Infor OS may require an administrator to also grant the app one or more **scopes** if your tenant has scope enforcement turned on. If your connection fails with a permissions error after authorizing, check with your Infor OS administrator.
+
+For more details, see [Creating an authorized app](https://docs.infor.com/inforos/2024.x/en-us/useradminlib_cloud/idmceag_cloud_osm/chm1587721540048.html).
+
+---

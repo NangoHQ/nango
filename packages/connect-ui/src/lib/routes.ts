@@ -2,9 +2,18 @@ import { createRootRoute, createRoute, createRouter } from '@tanstack/react-rout
 
 import { ErrorFallbackGlobal } from '@/components/ErrorFallback';
 import { Layout } from '@/components/Layout';
+import { useGlobal } from '@/lib/store';
 import { Go } from '@/views/Go';
 import { Home } from '@/views/Home';
 import { IntegrationsList } from '@/views/IntegrationsList';
+
+// Only `Home` fetches the connect session, so on any other route nothing will deliver a theme.
+function resolveThemeWithoutSession() {
+    const { theme, setTheme } = useGlobal.getState();
+    if (!theme) {
+        setTheme('system');
+    }
+}
 
 const rootRoute = createRootRoute({
     component: Layout,
@@ -20,12 +29,14 @@ export const indexRoute = createRoute({
 export const integrationsRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/integrations',
+    beforeLoad: resolveThemeWithoutSession,
     component: IntegrationsList
 });
 
 export const goRouter = createRoute({
     getParentRoute: () => rootRoute,
     path: '/go',
+    beforeLoad: resolveThemeWithoutSession,
     component: Go
 });
 

@@ -44,7 +44,7 @@ describe('POST /logs/filters', () => {
                 errors: [
                     {
                         code: 'invalid_value',
-                        message: 'Invalid option: expected one of "integration"|"connection"|"syncConfig"',
+                        message: 'Invalid option: expected one of "integration"|"connection"|"syncConfig"|"agentSession"',
                         path: ['category']
                     },
                     {

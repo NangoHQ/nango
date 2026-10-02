@@ -192,6 +192,7 @@ export const postPublicTwoStepAuthorization = asyncWrapperWithEnvironment<PostPu
             connection: updatedConnection.connection,
             config,
             account,
+            environment,
             logCtx
         });
 

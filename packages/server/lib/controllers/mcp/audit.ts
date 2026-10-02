@@ -19,7 +19,7 @@ export function recordManagementMcpAudit({
     metadata
 }: {
     account: DBTeam;
-    environment: DBEnvironment;
+    environment: Pick<DBEnvironment, 'uuid' | 'name'>;
     plan: DBPlan | null;
     auditContext: AuditAttribution;
     policy: AuditPolicy;

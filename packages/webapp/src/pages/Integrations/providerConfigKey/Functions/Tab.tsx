@@ -22,7 +22,7 @@ import { isSyncOrAction } from '@/utils/scripts';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 
 import type { ComboboxOption } from '@/components/ui/Combobox';
-import type { ApiIntegration, DeployedNangoFunction, FunctionType } from '@nangohq/types';
+import type { ApiIntegration, FunctionType, ListedNangoFunction } from '@nangohq/types';
 
 const TYPE_FILTER_VALUES = ['sync', 'action', 'on-event'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
@@ -38,6 +38,11 @@ const TYPE_BADGE_LABEL: Record<FunctionType, string> = {
     action: 'action',
     'on-event': 'on event'
 };
+
+function functionRowKey(fn: ListedNangoFunction): string {
+    const event = fn.type === 'on-event' ? fn.event : '';
+    return `${fn.type}:${fn.name}:${event}`;
+}
 
 function isTypeFilterValue(value: string): value is TypeFilterValue {
     return (TYPE_FILTER_VALUES as readonly string[]).includes(value);
@@ -82,13 +87,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     }, [env, integration.unique_key, navigate]);
 
     const onFunctionClick = useCallback(
-        (fn: DeployedNangoFunction) => {
+        (fn: ListedNangoFunction) => {
             navigate(`/${env}/integrations/${integration.unique_key}/functions/${encodeURIComponent(fn.name)}?type=${fn.type}`);
         },
         [env, integration.unique_key, navigate]
     );
 
-    const functions: DeployedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
+    const functions: ListedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
     const total = data?.pages[0]?.pagination.total ?? 0;
 
     if (error) {
@@ -203,7 +208,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                             <TableBody>
                                 {functions.map((fn) => (
                                     <TableRow
-                                        key={`${fn.type}:${fn.id}`}
+                                        key={functionRowKey(fn)}
                                         className="cursor-pointer hover:bg-surface-panel-inset"
                                         onClick={() => onFunctionClick(fn)}
                                     >

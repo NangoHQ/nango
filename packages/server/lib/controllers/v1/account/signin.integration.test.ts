@@ -117,6 +117,19 @@ describe(`POST ${signinRoute}`, () => {
         expect(json).toMatchObject({ url: '/integrations' });
     });
 
+    it('logs the user in with an over-long returnTo instead of rejecting the body', async () => {
+        const { email, password } = await signupUser({ emailVerified: true });
+
+        const { res, json } = await api.fetch(signinRoute, {
+            method: 'POST',
+            body: { email, password, returnTo: `/dev/logs?filters=${'a'.repeat(1024)}` }
+        });
+
+        expect(res.status).toBe(200);
+        isSuccess(json);
+        expect(json).toMatchObject({ user: { email: email.toLowerCase() }, url: '/' });
+    });
+
     it('requires MFA verification before issuing an authenticated session', async () => {
         const { email, password, user, totp } = await enrollMfaUser();
         expect(await mfaService.hasActiveFactor(user.id)).toBe(true);

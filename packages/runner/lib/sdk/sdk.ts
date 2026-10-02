@@ -176,6 +176,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
             }).unwrap(),
             outboundPolicy: runnerOutboundPolicy,
             maxWaitMs: envs.NANGO_PROXY_MAX_RETRY_WAIT_MS,
+            abortSignal: this.abortSignal,
             logger: async (log) => {
                 // We only sample successful HTTP logs because they are the most common and the most noisy.
                 if (HTTP_LOG_SAMPLE_PCT && this.scriptType === 'sync' && log.type === 'http' && log.level === 'info') {
@@ -997,6 +998,7 @@ const FUNCTION_BLOCKED_PROPERTIES = new Set<string | symbol>([
     'memoizedConnections',
     'memoizedIntegration',
     'attributes',
+    'functionVariant',
     'telemetryBag',
     'abortSignal',
     'lifecycle',

@@ -1,7 +1,8 @@
 import { getProvider } from '@nangohq/shared';
 import { basePublicUrl } from '@nangohq/utils';
 
-import { getPreconfiguredCredentials } from '../utils/integrations.js';
+import { REGISTRATION_ACCESS_TOKEN_KEY, REGISTRATION_CLIENT_URI_KEY } from '../services/mcpClientRegistration.js';
+import { getPreconfiguredConnectionConfig, getPreconfiguredCredentials, integrationCredentialsToWire } from '../utils/integrations.js';
 
 import type { IntegrationCredentials } from '../utils/integrations.js';
 import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude, IntegrationConfig, Provider } from '@nangohq/types';
@@ -18,12 +19,13 @@ export function integrationToApi(data: IntegrationConfig, options?: { includeCre
         oauth_scopes: data.oauth_scopes,
         environment_id: data.environment_id,
         app_link: hideCredentials ? null : data.app_link,
-        custom: hideCredentials ? null : maskSecretConfigFields(data.custom, provider),
+        custom: hideCredentials ? null : stripInternalCustomFields(maskSecretConfigFields(data.custom, provider)),
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString(),
         missing_fields: data.missing_fields,
         display_name: data.display_name,
         forward_webhooks: data.forward_webhooks === undefined ? true : data.forward_webhooks,
+        allow_unverified_webhooks: data.allow_unverified_webhooks === true,
         shared_credentials_id: data.shared_credentials_id
     };
 }
@@ -50,6 +52,17 @@ function maskSecretConfigFields(custom: IntegrationConfig['custom'], provider: P
     return masked ?? custom;
 }
 
+function stripInternalCustomFields(custom: IntegrationConfig['custom']): IntegrationConfig['custom'] {
+    if (!custom || (!(REGISTRATION_CLIENT_URI_KEY in custom) && !(REGISTRATION_ACCESS_TOKEN_KEY in custom))) {
+        return custom;
+    }
+
+    const stripped = { ...custom };
+    delete stripped[REGISTRATION_CLIENT_URI_KEY];
+    delete stripped[REGISTRATION_ACCESS_TOKEN_KEY];
+    return stripped;
+}
+
 export function integrationToPublicApi({
     integration,
     include,
@@ -60,6 +73,7 @@ export function integrationToPublicApi({
     include?: ApiPublicIntegrationInclude;
 }): ApiPublicIntegration {
     const preconfiguredCredentials = getPreconfiguredCredentials(integration.custom, provider);
+    const preconfiguredConnectionConfig = getPreconfiguredConnectionConfig(integration.custom, provider);
     return {
         unique_key: integration.unique_key,
         provider: integration.provider,
@@ -69,6 +83,7 @@ export function integrationToPublicApi({
         // Only providers that declare `integration_config`, never expose the whole `custom` object.
         ...(provider.integration_config && integration.custom?.['keyLabel'] ? { credentials_label: { apiKey: integration.custom['keyLabel'] } } : {}),
         ...(preconfiguredCredentials.length > 0 ? { preconfigured_credentials: preconfiguredCredentials } : {}),
+        ...(preconfiguredConnectionConfig.length > 0 ? { preconfigured_connection_config: preconfiguredConnectionConfig } : {}),
         ...include,
         forward_webhooks: integration.forward_webhooks === undefined ? true : integration.forward_webhooks,
         created_at: integration.created_at.toISOString(),
@@ -77,36 +92,5 @@ export function integrationToPublicApi({
 }
 
 export function integrationCredentialsToPublicApi(credentials: IntegrationCredentials): Exclude<ApiPublicIntegrationInclude['credentials'], undefined> {
-    if (!credentials) {
-        return null;
-    }
-
-    switch (credentials.type) {
-        case 'OAUTH1':
-        case 'OAUTH2':
-        case 'TBA':
-            return {
-                type: credentials.type,
-                client_id: credentials.clientId,
-                client_secret: credentials.clientSecret,
-                scopes: credentials.scopes,
-                webhook_secret: credentials.webhookSecret
-            };
-        case 'APP':
-            return {
-                type: credentials.type,
-                app_id: credentials.appId,
-                private_key: credentials.privateKey,
-                app_link: credentials.appLink
-            };
-        case 'CUSTOM':
-            return {
-                type: credentials.type,
-                client_id: credentials.clientId,
-                client_secret: credentials.clientSecret,
-                app_id: credentials.appId,
-                app_link: credentials.appLink,
-                private_key: credentials.privateKey
-            };
-    }
+    return integrationCredentialsToWire(credentials);
 }

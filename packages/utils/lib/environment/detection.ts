@@ -22,7 +22,10 @@ export const env = isStaging ? NodeEnv.Staging : isProd ? NodeEnv.Prod : NodeEnv
 export const useS3 = Boolean(
     (process.env['AWS_INTEGRATIONS_REGION'] && process.env['AWS_INTEGRATIONS_BUCKET_NAME']) || (process.env['AWS_REGION'] && process.env['AWS_BUCKET_NAME'])
 );
-export const integrationFilesAreRemote = isEnterprise && useS3;
+export const useGcs = Boolean(process.env['GCS_INTEGRATIONS_BUCKET_NAME']);
+export const useAzure = Boolean(process.env['AZURE_INTEGRATIONS_ACCOUNT_NAME'] && process.env['AZURE_INTEGRATIONS_CONTAINER_NAME']);
+export const useRemoteStorage = useS3 || useGcs || useAzure;
+export const integrationFilesAreRemote = isEnterprise && useRemoteStorage;
 
 export const flagHasScripts = isLocal || isEnterprise || isCloud || isTest;
 export const flagHasAuth = process.env['FLAG_AUTH_ENABLED'] !== 'false';

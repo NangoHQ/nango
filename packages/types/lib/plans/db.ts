@@ -31,6 +31,7 @@ export interface DBPlan extends Timestamps {
     orb_future_plan_at: Date | null;
     orb_subscribed_at: Date | null;
     has_growth_features: boolean;
+    growth_features_starts_at: Date | null;
     growth_features_ends_at: Date | null;
 
     // Trial
@@ -91,6 +92,12 @@ export interface DBPlan extends Timestamps {
      * @default null
      */
     function_logs_max: number | null;
+
+    /** Limit the amount of billable data transfer (in bytes) that can be used in a month
+     * Set to null to remove limit
+     * @default null
+     */
+    data_transfer_max: number | null;
 
     /**
      * Limit the number of environments that can be created
