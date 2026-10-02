@@ -13,6 +13,65 @@ export type RulesAcceptValid = AssertNoProblems<
         'billing:plan_update': Valid & { properties: { previous_plan: string; plan: string; previous_has_growth_addon: boolean; is_downgrade: boolean } };
         'connections:create_button_click': Valid & { properties: None };
         'playground:run_complete': Valid & { properties: { is_success: true } | { is_success: false; error_code: string } };
+        'functions:command_start': Valid & { properties: { command: string; is_device_ephemeral?: boolean } };
+        'web:account_signup': Valid & { properties: { accountId: number } };
+    }>
+>;
+
+export type RulesRejectHyphenInName = AssertNoProblems<
+    // @ts-expect-error a hyphen slips through the UI element wildcard
+    AnalyticsCatalogueProblems<{ 'connections:create-button_button_click': Valid & { properties: None } }>
+>;
+
+export type RulesRejectUppercaseName = AssertNoProblems<
+    // @ts-expect-error an uppercase name
+    AnalyticsCatalogueProblems<{ 'connections:Create_button_click': Valid & { properties: None } }>
+>;
+
+export type RulesRejectDottedProperty = AssertNoProblems<
+    // @ts-expect-error a dot in a property name
+    AnalyticsCatalogueProblems<{ 'billing:plan_update': Valid & { properties: { 'plan.name': string } } }>
+>;
+
+export type RulesRejectDoubleUnderscore = AssertNoProblems<
+    // @ts-expect-error a double underscore in a property name
+    AnalyticsCatalogueProblems<{ 'billing:plan_update': Valid & { properties: { plan__name: string } } }>
+>;
+
+export type RulesRejectNullableBoolean = AssertNoProblems<
+    // @ts-expect-error null is not a primitive the taxonomy allows
+    AnalyticsCatalogueProblems<{ 'billing:plan_update': Valid & { properties: { is_downgrade: boolean | null } } }>
+>;
+
+export type RulesRejectIsProductionProperty = AssertNoProblems<
+    // @ts-expect-error the sender adds `is_production`
+    AnalyticsCatalogueProblems<{ 'billing:plan_update': Valid & { properties: { is_production: boolean } } }>
+>;
+
+export type RulesRejectOpenObject = AssertNoProblems<
+    // @ts-expect-error properties with no named fields
+    AnalyticsCatalogueProblems<{ 'billing:plan_update': Valid & { properties: object } }>
+>;
+
+export type RulesRejectStringRecord = AssertNoProblems<
+    // @ts-expect-error a string index instead of named fields
+    AnalyticsCatalogueProblems<{ 'billing:plan_update': Valid & { properties: Record<string, string> } }>
+>;
+
+export type RulesRejectOptionalSuccess = AssertNoProblems<
+    // @ts-expect-error a complete event whose is_success is optional
+    AnalyticsCatalogueProblems<{ 'playground:run_complete': Valid & { properties: { is_success?: boolean } } }>
+>;
+
+export type RulesRejectMissingFires = AssertNoProblems<
+    // @ts-expect-error an entry without fires
+    AnalyticsCatalogueProblems<{ 'billing:plan_update': { surface: 'server'; insight: 'An insight'; properties: None } }>
+>;
+
+export type RulesRejectPrimitiveStructured = AssertNoProblems<
+    // @ts-expect-error structured properties that are not an object
+    AnalyticsCatalogueProblems<{
+        'agents:tool_search_complete': Valid & { properties: { is_success: boolean }; structured_properties: string; structured_reason: 'A reason' };
     }>
 >;
 
