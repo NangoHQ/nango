@@ -7,6 +7,7 @@ import { countUnverifiedWebhook } from './missing-secret.js';
 
 import type { DispatchContext } from './dispatch.js';
 import type { UnverifiedWebhook } from './missing-secret.js';
+import type { WebhookObjectFilter } from './object-filter.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { ConnectionInternal, DBConnectionDecrypted, DBEnvironment, DBIntegrationDecrypted, DBPlan, DBTeam, HttpRequest, Metadata } from '@nangohq/types';
 
@@ -72,7 +73,8 @@ export class InternalNango {
         connectionIdentifier,
         connectionIdentifierValue,
         propName,
-        delaySeconds
+        delaySeconds,
+        objectFilter
     }: {
         payload: Record<string, any>;
         webhookType?: string;
@@ -82,6 +84,7 @@ export class InternalNango {
         connectionIdentifierValue?: string;
         propName?: string;
         delaySeconds?: number;
+        objectFilter?: WebhookObjectFilter;
     }): Promise<{ connectionIds: string[]; connectionMetadata: Record<string, Metadata | null> }> {
         let connections: DBConnectionDecrypted[] | null | ConnectionInternal[] = null;
 
@@ -131,7 +134,8 @@ export class InternalNango {
             type,
             webhookHeaderValue,
             payload,
-            ...(delaySeconds === undefined ? {} : { delaySeconds })
+            ...(delaySeconds === undefined ? {} : { delaySeconds }),
+            ...(objectFilter ? { objectFilter } : {})
         });
 
         return connectionResult(connections);

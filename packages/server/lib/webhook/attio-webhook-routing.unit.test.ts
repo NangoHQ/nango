@@ -8,6 +8,7 @@ import type * as NangoUtils from '@nangohq/utils';
 
 const mocks = vi.hoisted(() => ({
     isAttioWebhookDedupeEnabled: vi.fn(),
+    isAttioWebhookObjectFilterEnabled: vi.fn(),
     set: vi.fn(),
     deleteIfValueEquals: vi.fn(),
     findConnectionsByConnectionConfigValue: vi.fn(),
@@ -17,7 +18,10 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@nangohq/feature-flags', () => ({
-    getFlags: () => ({ isAttioWebhookDedupeEnabled: mocks.isAttioWebhookDedupeEnabled })
+    getFlags: () => ({
+        isAttioWebhookDedupeEnabled: mocks.isAttioWebhookDedupeEnabled,
+        isAttioWebhookObjectFilterEnabled: mocks.isAttioWebhookObjectFilterEnabled
+    })
 }));
 vi.mock('@nangohq/kvstore', () => ({ getKVStore: () => ({ set: mocks.set, deleteIfValueEquals: mocks.deleteIfValueEquals }) }));
 vi.mock('@nangohq/shared', async (importOriginal) => {
@@ -66,6 +70,7 @@ describe('Attio webhook routing', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mocks.isAttioWebhookDedupeEnabled.mockResolvedValue(true);
+        mocks.isAttioWebhookObjectFilterEnabled.mockResolvedValue(true);
         mocks.set.mockResolvedValue(undefined);
         mocks.deleteIfValueEquals.mockResolvedValue(true);
         mocks.findConnectionsByConnectionConfigValue.mockResolvedValue([{ connection_id: 'conn-1' }]);
@@ -137,6 +142,24 @@ describe('Attio webhook routing', () => {
         expect(nango.executeScriptForWebhooks).toHaveBeenCalledOnce();
         expect(nango.executeScriptForWebhooks).toHaveBeenCalledWith(expect.not.objectContaining({ delaySeconds: expect.anything() }));
         expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.dedupe.suppressed', 1, { provider: 'attio', enforced: 'false' });
+    });
+
+    it.each([true, false])('declares the object filter with enforce %s from the account flag', async (enabled) => {
+        mocks.isAttioWebhookObjectFilterEnabled.mockResolvedValue(enabled);
+        const nango = makeNango();
+
+        await route(nango as never, {}, { webhook_id: 'webhook-1', events: [event('record.updated')] }, '');
+
+        expect(mocks.isAttioWebhookObjectFilterEnabled).toHaveBeenCalledWith('account-uuid');
+        expect(nango.executeScriptForWebhooks).toHaveBeenCalledWith(
+            expect.objectContaining({
+                objectFilter: {
+                    path: 'id.object_id',
+                    enforce: enabled,
+                    metadataKeyAliases: { contacts: 'attioPeopleObjectId', companies: 'attioCompaniesObjectId' }
+                }
+            })
+        );
     });
 
     it('preserves connection routing when an event is suppressed', async () => {

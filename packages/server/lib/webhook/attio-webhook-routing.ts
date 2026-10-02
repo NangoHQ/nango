@@ -7,10 +7,16 @@ import { Err, getLogger, metrics, Ok } from '@nangohq/utils';
 
 import { validateHmacSignature } from './signature.js';
 
+import type { WebhookObjectFilter } from './object-filter.js';
 import type { AttioWebhook, WebhookHandler } from './types.js';
 
 const logger = getLogger('Webhook.Attio');
 const ATTIO_WEBHOOK_DEDUPE_WINDOW_MS = 7_000;
+// TODO: remove once the remaining users of these keys move to nango:webhookObjectId:<syncName>.
+const LEGACY_OBJECT_ID_METADATA_KEYS: Record<string, string> = {
+    contacts: 'attioPeopleObjectId',
+    companies: 'attioCompaniesObjectId'
+};
 
 function recordEventClass(eventType: string): 'fetch' | 'delete' | 'merged' | null {
     switch (eventType) {
@@ -52,7 +58,15 @@ const route: WebhookHandler<AttioWebhook> = async (nango, headers, body, rawBody
         return Ok({ content: { status: 'success' }, statusCode: 200 });
     }
 
-    const enforceDedupe = await getFlags().isAttioWebhookDedupeEnabled(nango.team.uuid);
+    const [enforceDedupe, enforceObjectFilter] = await Promise.all([
+        getFlags().isAttioWebhookDedupeEnabled(nango.team.uuid),
+        getFlags().isAttioWebhookObjectFilterEnabled(nango.team.uuid)
+    ]);
+    const objectFilter: WebhookObjectFilter = {
+        path: 'id.object_id',
+        enforce: enforceObjectFilter,
+        metadataKeyAliases: LEGACY_OBJECT_ID_METADATA_KEYS
+    };
 
     let connectionIds: string[] = [];
     for (const event of parsedBody.events) {
@@ -98,6 +112,7 @@ const route: WebhookHandler<AttioWebhook> = async (nango, headers, body, rawBody
                 webhookType: 'event_type',
                 connectionIdentifier: 'id.workspace_id',
                 propName: 'workspace_id',
+                objectFilter,
                 ...(dedupeClaim ? { delaySeconds: ATTIO_WEBHOOK_DEDUPE_WINDOW_MS / 1000 } : {})
             });
             if (response && response.connectionIds?.length > 0) {

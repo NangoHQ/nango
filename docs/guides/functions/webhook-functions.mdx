@@ -33,6 +33,8 @@ When the provider has a webhook routing script, Nango reads the incoming payload
 
 If Nango can map the webhook to a connection, the webhook function runs in that connection context. If Nango cannot map the event, the event cannot safely run connection-scoped function logic; use provider-specific setup or webhook forwarding for that case.
 
+Nango starts every function on the integration that subscribes to the event type. Some providers let you narrow this further per connection, for example by the object the event belongs to. See [Attio webhooks](/api-integrations/attio/webhooks).
+
 Some providers require one global webhook registration. Others require one webhook subscription per connected account, which you can automate with an [event function](/guides/functions/event-functions).
 
 <Accordion title="For agents">
