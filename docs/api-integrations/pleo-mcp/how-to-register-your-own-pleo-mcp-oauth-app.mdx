@@ -1,0 +1,30 @@
+---
+title: 'How to register your own Pleo MCP OAuth app'
+sidebarTitle: 'Pleo MCP Setup'
+description: 'Register an OAuth client with Pleo for MCP and connect it to Nango'
+---
+
+Pleo's MCP server (`https://mcp.pleo.io/mcp`) supports dynamic client registration. Registering your own confidential client once, instead of letting each connection register itself, gives you a stable client ID and secret to configure in Nango.
+
+<Steps>
+  <Step title="Register a client">
+    ```bash
+    curl -X POST https://mcp.pleo.io/oauth/register \
+      -H "Content-Type: application/json" \
+      -d '{
+        "client_name": "<YOUR-APP-NAME>",
+        "redirect_uris": ["https://api.nango.dev/oauth/callback"],
+        "grant_types": ["authorization_code", "refresh_token"],
+        "response_types": ["code"],
+        "token_endpoint_auth_method": "client_secret_post",
+        "scope": "authenticated"
+      }'
+    ```
+    The response contains your **Client ID** and **Client secret**. Store the secret securely; it is shown only once.
+  </Step>
+  <Step title="Next">
+    Enter your **Client ID** and **Client secret** in the integration settings in Nango, then follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+The connection acts with the authorizing user's Pleo role. Access tokens last 7 days; refresh tokens rotate on every refresh.
