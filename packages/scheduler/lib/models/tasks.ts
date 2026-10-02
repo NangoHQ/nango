@@ -401,64 +401,62 @@ export async function dequeue(db: knex.Knex, { groupKeyPattern, limit }: { group
             }
             return (
                 trx
-                    // 1. select created tasks that are ready to be started
+                    // 1. select created tasks that are ready to be started alongside their group
+                    // Note: tasks and groups are locked for update, preventing concurrent queries
+                    // to dequeue the same tasks and/or groups
                     .with('candidates', (qb) => {
-                        qb.select('id', 'group_key', 'starts_after', 'group_max_concurrency')
+                        qb.select('id', 'group_key', 'created_at', 'group_max_concurrency')
                             .from(TASKS_TABLE)
                             .where('state', 'CREATED')
                             .whereLike('group_key', groupKeyLikePattern)
-                            .where('starts_after', '<=', trx.fn.now());
+                            .where('starts_after', '<=', db.fn.now())
+                            .forUpdate()
+                            .skipLocked();
                     })
                     // 2. count the number of running tasks
                     .with('running', (qb) => {
-                        qb.select(trx.raw('count(id) as running_count'), 'group_key')
+                        qb.select(db.raw('count(id) as running_count'), 'group_key')
                             .from(TASKS_TABLE)
                             .where('state', 'STARTED')
                             .whereLike('group_key', groupKeyLikePattern)
                             .groupBy('group_key');
                     })
-                    // 3. rank the candidate tasks by starts_after for each group
+                    // 3. rank the candidate tasks by created_at for each group
                     .with('with_rank', (qb) => {
                         qb.select(
                             'c.*',
-                            trx.raw('ROW_NUMBER() OVER (PARTITION BY c.group_key ORDER BY c.starts_after, c.id) as rank'),
-                            trx.raw('COALESCE(r.running_count, 0) as current_running')
+                            db.raw('ROW_NUMBER() OVER (PARTITION BY c.group_key ORDER BY c.created_at ASC) as rank'),
+                            db.raw('COALESCE(r.running_count, 0) as current_running')
                         )
                             .from('candidates as c')
                             .leftJoin('running as r', 'c.group_key', 'r.group_key');
                     })
-                    // 4. select the tasks that can be started based on max concurrency
+                    // 4. select the tasks that can be started based on the max_concurrency
                     .with('to_start', (qb) => {
-                        qb.select('id').from('with_rank').whereRaw('(group_max_concurrency = 0 OR (rank + current_running <= group_max_concurrency))');
+                        qb.select('id', 'group_key', 'created_at')
+                            .from('with_rank')
+                            .whereRaw('group_max_concurrency = 0 OR (rank + current_running <= group_max_concurrency)')
+
+                            .orderBy('created_at', 'asc')
+                            .limit(limit);
                     })
-                    // 5. lock up to `limit` tasks, oldest ready first, skipping any task held by another transaction
-                    .with('locked', (qb) => {
-                        qb.select('id')
-                            .from(TASKS_TABLE)
-                            .whereIn('id', trx.select('id').from('to_start'))
-                            .where('state', 'CREATED')
-                            .orderBy(['starts_after', 'id'])
-                            .limit(limit)
-                            .forNoKeyUpdate()
-                            .skipLocked();
-                    })
-                    // 6. starts the tasks
+                    // 5. starts the tasks
                     .with(
                         'updated_tasks',
-                        trx
+                        db
                             .from<DBTask>(TASKS_TABLE)
                             .update({
                                 state: 'STARTED',
-                                last_heartbeat_at: trx.fn.now(),
-                                last_state_transition_at: trx.fn.now()
+                                last_heartbeat_at: new Date(),
+                                last_state_transition_at: new Date()
                             })
-                            .whereIn('id', trx.select('id').from('locked'))
+                            .whereIn('id', db.select('id').from('to_start'))
                             .returning('*')
                     )
-                    // 7. return the updated tasks
+                    // 6. return the updated tasks
                     .select('*')
                     .from<DBTask>('updated_tasks')
-                    .orderBy(['starts_after', 'id'])
+                    .orderBy('id')
             );
         });
 
