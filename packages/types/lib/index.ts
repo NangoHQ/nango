@@ -4,6 +4,8 @@ export type * from './api.endpoints.js';
 export type * from './audit-trail/api.js';
 export type * from './audit-trail/event.js';
 export type * from './audit-trail/metadata.js';
+export type * from './analytics/catalogue.js';
+export type * from './analytics/taxonomy.js';
 
 export type * from './gettingStarted/db.js';
 export type * from './gettingStarted/dto.js';
