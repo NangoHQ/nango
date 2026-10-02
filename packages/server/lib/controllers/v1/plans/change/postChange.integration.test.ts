@@ -723,13 +723,14 @@ describe(`POST ${route}`, () => {
 
             expect(productTrackingSpy).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    name: 'account:billing:downgraded',
-                    eventProperties: expect.objectContaining({
-                        previousPlan: 'pay-as-you-go',
-                        newPlan: 'pay-as-you-go',
-                        previousGrowthFeatures: true,
-                        newGrowthFeatures: false
-                    })
+                    name: 'billing:plan_submit',
+                    eventProperties: {
+                        previous_plan: 'pay-as-you-go',
+                        plan: 'pay-as-you-go',
+                        previous_has_growth_addon: true,
+                        has_growth_addon: false,
+                        is_downgrade: false
+                    }
                 })
             );
         });

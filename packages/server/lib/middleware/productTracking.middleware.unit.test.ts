@@ -21,7 +21,7 @@ function handleRequest(resolve: (locals: Partial<RequestLocals>) => void): void 
     const res = { locals: {} } as Response<any, Partial<RequestLocals>>;
     const next: NextFunction = () => {
         resolve(res.locals);
-        productTracking.track({ name: 'account:billing:downgraded' });
+        productTracking.track({ name: 'billing:plan_submit' });
     };
 
     productTrackingMiddleware({} as Request, res, next);
