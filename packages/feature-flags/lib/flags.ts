@@ -26,13 +26,6 @@ export function buildFlags(client: FeatureFlagsClient) {
             return client.isEnabled('attio-webhook-dedupe', { targetingKey: accountUuid, accountUuid }, false);
         },
         /**
-         * Whether Attio webhooks skip syncs whose cached object id does not match the event's object.
-         * When off, the filter is only measured. Default `false`.
-         */
-        isAttioWebhookObjectFilterEnabled(accountUuid: string) {
-            return client.isEnabled('attio-webhook-object-filter', { targetingKey: accountUuid, accountUuid }, false);
-        },
-        /**
          * Sets Datadog manual.keep on action execution traces for this environment,
          * raising ingestion priority during stall investigations. Default `false`.
          */

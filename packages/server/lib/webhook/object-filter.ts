@@ -4,15 +4,11 @@ import { metrics } from '@nangohq/utils';
 
 import type { DispatchContext, WebhookConnection } from './dispatch.js';
 
-export const WEBHOOK_OBJECT_ID_METADATA_PREFIX = 'nango:webhookObjectId:';
-
 export interface WebhookObjectFilter {
     /** Path in the payload holding the id of the object the event belongs to. */
     path: string;
-    /** When false, results are only measured and every execution is dispatched. */
-    enforce: boolean;
-    /** Sync name to metadata key, read when the documented key is absent. */
-    metadataKeyAliases?: Record<string, string>;
+    /** Sync name to the connection metadata key holding the id of the object that sync tracks. */
+    metadataKeyBySyncName: Record<string, string>;
 }
 
 export type ObjectFilterResult = 'skipped' | 'no_sync_mapping' | 'no_payload_value' | 'no_metadata' | 'matched';
@@ -32,14 +28,15 @@ export function evaluateObjectFilter({
     connection: WebhookConnection;
     payload: Record<string, unknown>;
 }): ObjectFilterResult {
-    const metadata = 'metadata' in connection ? connection.metadata : null;
-    if (!metadata || Object.keys(metadata).length === 0) {
-        return 'no_metadata';
+    const metadataKey = filter.metadataKeyBySyncName[syncName];
+    if (!metadataKey) {
+        return 'no_sync_mapping';
     }
 
-    const expected = metadata[`${WEBHOOK_OBJECT_ID_METADATA_PREFIX}${syncName}`] ?? aliasedValue(metadata, filter.metadataKeyAliases?.[syncName]);
+    const metadata = 'metadata' in connection ? connection.metadata : null;
+    const expected = metadata?.[metadataKey];
     if (!isComparable(expected)) {
-        return 'no_sync_mapping';
+        return 'no_metadata';
     }
 
     const actual: unknown = get(payload, filter.path);
@@ -71,15 +68,10 @@ export function shouldDispatchForObject({
     metrics.increment(metrics.Types.WEBHOOK_DISPATCH_OBJECT_FILTER, 1, {
         provider: context.integration.provider,
         accountId: context.team.id,
-        result,
-        enforced: String(filter.enforce)
+        result
     });
 
-    return !(filter.enforce && result === 'skipped');
-}
-
-function aliasedValue(metadata: Record<string, unknown>, key: string | undefined): unknown {
-    return key ? metadata[key] : undefined;
+    return result !== 'skipped';
 }
 
 function isComparable(value: unknown): value is string | number {

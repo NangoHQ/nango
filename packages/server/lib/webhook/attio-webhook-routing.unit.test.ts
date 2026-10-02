@@ -8,7 +8,6 @@ import type * as NangoUtils from '@nangohq/utils';
 
 const mocks = vi.hoisted(() => ({
     isAttioWebhookDedupeEnabled: vi.fn(),
-    isAttioWebhookObjectFilterEnabled: vi.fn(),
     set: vi.fn(),
     deleteIfValueEquals: vi.fn(),
     findConnectionsByConnectionConfigValue: vi.fn(),
@@ -18,10 +17,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@nangohq/feature-flags', () => ({
-    getFlags: () => ({
-        isAttioWebhookDedupeEnabled: mocks.isAttioWebhookDedupeEnabled,
-        isAttioWebhookObjectFilterEnabled: mocks.isAttioWebhookObjectFilterEnabled
-    })
+    getFlags: () => ({ isAttioWebhookDedupeEnabled: mocks.isAttioWebhookDedupeEnabled })
 }));
 vi.mock('@nangohq/kvstore', () => ({ getKVStore: () => ({ set: mocks.set, deleteIfValueEquals: mocks.deleteIfValueEquals }) }));
 vi.mock('@nangohq/shared', async (importOriginal) => {
@@ -70,7 +66,6 @@ describe('Attio webhook routing', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mocks.isAttioWebhookDedupeEnabled.mockResolvedValue(true);
-        mocks.isAttioWebhookObjectFilterEnabled.mockResolvedValue(true);
         mocks.set.mockResolvedValue(undefined);
         mocks.deleteIfValueEquals.mockResolvedValue(true);
         mocks.findConnectionsByConnectionConfigValue.mockResolvedValue([{ connection_id: 'conn-1' }]);
@@ -144,19 +139,16 @@ describe('Attio webhook routing', () => {
         expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.dedupe.suppressed', 1, { provider: 'attio', enforced: 'false' });
     });
 
-    it.each([true, false])('declares the object filter with enforce %s from the account flag', async (enabled) => {
-        mocks.isAttioWebhookObjectFilterEnabled.mockResolvedValue(enabled);
+    it('declares the object filter for the cached object id keys', async () => {
         const nango = makeNango();
 
         await route(nango as never, {}, { webhook_id: 'webhook-1', events: [event('record.updated')] }, '');
 
-        expect(mocks.isAttioWebhookObjectFilterEnabled).toHaveBeenCalledWith('account-uuid');
         expect(nango.executeScriptForWebhooks).toHaveBeenCalledWith(
             expect.objectContaining({
                 objectFilter: {
                     path: 'id.object_id',
-                    enforce: enabled,
-                    metadataKeyAliases: { contacts: 'attioPeopleObjectId', companies: 'attioCompaniesObjectId' }
+                    metadataKeyBySyncName: { contacts: 'attioPeopleObjectId', companies: 'attioCompaniesObjectId' }
                 }
             })
         );

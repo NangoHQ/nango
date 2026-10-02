@@ -323,7 +323,10 @@ describe('webhook dispatch', () => {
     });
 
     describe('object filter', () => {
-        const objectFilter = { path: 'id.object_id', enforce: true };
+        const objectFilter = {
+            path: 'id.object_id',
+            metadataKeyBySyncName: { people: 'peopleObjectId', companies: 'companiesObjectId', 'native-webhook': 'peopleObjectId' }
+        };
         const payload = { id: { object_id: 'people-object' } };
 
         beforeEach(() => {
@@ -336,11 +339,7 @@ describe('webhook dispatch', () => {
 
         it('decides per connection, so a connection without the key still receives every sync', async () => {
             mocks.getConnectionsByEnvironmentAndConfig.mockResolvedValue([
-                {
-                    id: 11,
-                    connection_id: 'conn-1',
-                    metadata: { 'nango:webhookObjectId:people': 'people-object', 'nango:webhookObjectId:companies': 'companies-object' }
-                },
+                { id: 11, connection_id: 'conn-1', metadata: { peopleObjectId: 'people-object', companiesObjectId: 'companies-object' } },
                 { id: 12, connection_id: 'conn-2', metadata: { unrelated: true } }
             ]);
             const nango = makeInternalNango([createLogCtx('log-1'), createLogCtx('log-2'), createLogCtx('log-3')]);
@@ -350,34 +349,11 @@ describe('webhook dispatch', () => {
             expect(result.connectionIds).toEqual(['conn-1', 'conn-2']);
             const dispatched = mocks.triggerWebhook.mock.calls.map(([args]) => `${args.syncConfig.sync_name}:${args.connection.connection_id}`);
             expect(dispatched).toEqual(['people:conn-1', 'people:conn-2', 'companies:conn-2']);
+            expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.dispatch.object_filter', 1, { provider: 'github', accountId: 1, result: 'skipped' });
             expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.dispatch.object_filter', 1, {
                 provider: 'github',
                 accountId: 1,
-                result: 'skipped',
-                enforced: 'true'
-            });
-            expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.dispatch.object_filter', 1, {
-                provider: 'github',
-                accountId: 1,
-                result: 'no_sync_mapping',
-                enforced: 'true'
-            });
-        });
-
-        it('only measures when not enforced', async () => {
-            mocks.getConnectionsByEnvironmentAndConfig.mockResolvedValue([
-                { id: 11, connection_id: 'conn-1', metadata: { 'nango:webhookObjectId:companies': 'companies-object' } }
-            ]);
-            const nango = makeInternalNango([createLogCtx('log-1'), createLogCtx('log-2')]);
-
-            await nango.executeScriptForWebhooks({ payload, webhookTypeValue: 'push', objectFilter: { ...objectFilter, enforce: false } });
-
-            expect(mocks.triggerWebhook).toHaveBeenCalledTimes(2);
-            expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.dispatch.object_filter', 1, {
-                provider: 'github',
-                accountId: 1,
-                result: 'skipped',
-                enforced: 'false'
+                result: 'no_metadata'
             });
         });
 
@@ -385,8 +361,8 @@ describe('webhook dispatch', () => {
             mocks.getSyncConfigsByConfigIdForWebhook.mockResolvedValue([]);
             mocks.functionConfigSearch.mockResolvedValue({ isErr: () => false, value: [nativeFunction()] });
             mocks.getConnectionsByEnvironmentAndConfig.mockResolvedValue([
-                { id: 11, connection_id: 'conn-1', metadata: { 'nango:webhookObjectId:native-webhook': 'people-object' } },
-                { id: 12, connection_id: 'conn-2', metadata: { 'nango:webhookObjectId:native-webhook': 'companies-object' } }
+                { id: 11, connection_id: 'conn-1', metadata: { peopleObjectId: 'people-object' } },
+                { id: 12, connection_id: 'conn-2', metadata: { peopleObjectId: 'companies-object' } }
             ]);
             const nango = makeInternalNango([createLogCtx('log-1')]);
 

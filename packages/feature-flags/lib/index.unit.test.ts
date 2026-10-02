@@ -215,28 +215,6 @@ describe('getFeatureFlagsClient', () => {
         );
     });
 
-    it('isAttioWebhookObjectFilterEnabled evaluates per account', async () => {
-        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
-        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
-        vi.resetModules();
-        const { initialize, getFlags } = await import('./index.js');
-        await initialize();
-        const [unleash] = unleashInstances;
-        if (!unleash) {
-            throw new Error('Expected Unleash provider to initialize');
-        }
-        unleash.isEnabled.mockReturnValue(true);
-        await expect(getFlags().isAttioWebhookObjectFilterEnabled('uuid1')).resolves.toBe(true);
-        expect(unleash.isEnabled).toHaveBeenCalledWith(
-            'attio-webhook-object-filter',
-            {
-                userId: 'uuid1',
-                properties: { accountUuid: 'uuid1' }
-            },
-            false
-        );
-    });
-
     it('hasCatalogTools evaluates per account', async () => {
         mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
         mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
