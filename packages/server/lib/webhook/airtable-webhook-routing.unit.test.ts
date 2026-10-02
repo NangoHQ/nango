@@ -157,13 +157,13 @@ describe('airtable-webhook-routing', () => {
         expect(execute).not.toHaveBeenCalled();
     });
 
-    it('routes only to the verified connection when another one has no secret', async () => {
+    it('routes only to the verified connection when another one has no secret, and counts the one turned away', async () => {
         const { nango, markUnverified } = makeNango([secretOf('verified'), secretlessOf('secretless')]);
 
         const result = await AirtableWebhookRouting.default(nango, sign(rawBody), body, rawBody);
 
         expect(routedTo(result)).toEqual(['verified']);
-        expect(markUnverified).not.toHaveBeenCalled();
+        expect(markUnverified).toHaveBeenCalledWith({ reason: 'airtable_missing_mac_secret', remediation: REMEDIATION }, 'rejected');
     });
 
     it('keeps the connection without a secret when the integration allows unverified webhooks, without asking the flag', async () => {

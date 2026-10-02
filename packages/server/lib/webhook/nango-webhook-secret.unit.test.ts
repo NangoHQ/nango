@@ -307,6 +307,46 @@ describe('allow unverified webhooks setting', () => {
         expect(routedTo(result)).toEqual(['mine', 'secretless']);
     });
 
+    it('rejects a wrong secret instead of falling back to a connection without one', async () => {
+        const { nango, execute } = makeNango('fillout', { allowUnverifiedWebhooks: true });
+        vi.spyOn(connectionService, 'findConnectionsByMetadataValue').mockResolvedValue([dbConnection('mine', SECRET), dbConnection('secretless')]);
+        const markUnverified = vi.spyOn(nango, 'markUnverified');
+
+        const result = await FilloutWebhookRouting.default(
+            nango,
+            { 'x-nango-webhook-secret': OTHER_SECRET },
+            { type: 'submission', formId: 'form-1' },
+            '{}',
+            {}
+        );
+
+        expect(errType(result)).toBe('webhook_invalid_signature');
+        expect(execute).not.toHaveBeenCalled();
+        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'fillout_missing_webhook_secret' }), 'rejected');
+    });
+
+    it('still routes a request without a secret to the connection without one when another has a secret', async () => {
+        const { nango } = makeNango('shipstation', { allowUnverifiedWebhooks: true });
+        vi.spyOn(connectionService, 'findConnectionsByMetadataValue').mockResolvedValue([dbConnection('mine', SECRET), dbConnection('secretless')]);
+        const body = { resource_type: 'ORDER_NOTIFY', resource_url: 'https://ssapi.shipstation.com/orders?storeID=123' };
+
+        const result = await ShipstationWebhookRouting.default(nango, {}, body, JSON.stringify(body), {});
+
+        expect(routedTo(result)).toEqual(['secretless']);
+    });
+
+    it('counts a connection without a secret turned away while another one verifies', async () => {
+        const { nango } = makeNango('fillout');
+        vi.spyOn(connectionService, 'findConnectionsByMetadataValue').mockResolvedValue([dbConnection('mine', SECRET), dbConnection('secretless')]);
+        const markUnverified = vi.spyOn(nango, 'markUnverified');
+
+        const result = await FilloutWebhookRouting.default(nango, { 'x-nango-webhook-secret': SECRET }, { type: 'submission', formId: 'form-1' }, '{}', {});
+
+        expect(routedTo(result)).toEqual(['mine']);
+        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'fillout_missing_webhook_secret' }), 'rejected');
+        expect(nango.unverified).toBeUndefined();
+    });
+
     it('routes a shipstation store id connection without a secret', async () => {
         const { nango } = makeNango('shipstation', { allowUnverifiedWebhooks: true });
         vi.spyOn(connectionService, 'findConnectionsByMetadataValue').mockResolvedValue([dbConnection('secretless')]);

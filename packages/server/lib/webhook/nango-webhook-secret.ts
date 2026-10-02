@@ -63,7 +63,7 @@ export function connectionsWithValidSecret<T extends { metadata: Metadata | null
 /**
  * The connections to route to. A connection whose secret the caller got wrong or did not send is
  * dropped. One without a usable secret of its own cannot be verified, so it is only kept when the
- * integration allows unverified webhooks.
+ * integration allows unverified webhooks and the caller did not send a secret that failed every check.
  */
 export async function connectionsToRoute<T extends { metadata: Metadata | null }>({
     nango,
@@ -80,12 +80,15 @@ export async function connectionsToRoute<T extends { metadata: Metadata | null }
 }): Promise<T[]> {
     const verified: T[] = [];
     const unverifiable: T[] = [];
+    let wrongSecret = false;
     for (const connection of connections) {
         const result = verifyNangoWebhookSecret({ secret: connection.metadata?.['webhookSecret'], headers, query });
         if (result.isOk()) {
             verified.push(connection);
         } else if (result.error.type === 'webhook_invalid_secret') {
             unverifiable.push(connection);
+        } else if (result.error.type === 'webhook_invalid_signature') {
+            wrongSecret = true;
         }
     }
 
@@ -93,17 +96,9 @@ export async function connectionsToRoute<T extends { metadata: Metadata | null }
         return verified;
     }
 
-    const outcome = await nango.unverifiedOutcome();
-    if (outcome === 'rejected') {
-        // Only counted when nothing goes through, otherwise the forwards to verified ones would be flagged too.
-        if (verified.length === 0) {
-            nango.markUnverified(unverified, outcome);
-        }
-        return verified;
-    }
-
+    const outcome = verified.length === 0 && wrongSecret ? 'rejected' : await nango.unverifiedOutcome();
     nango.markUnverified(unverified, outcome);
-    return [...verified, ...unverifiable];
+    return outcome === 'rejected' ? verified : [...verified, ...unverifiable];
 }
 
 /**
