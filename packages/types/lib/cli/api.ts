@@ -35,6 +35,6 @@ export type PostCliTelemetry = ApiEndpoint<{
         deviceId: string;
         // True when deviceId is a throwaway id that couldn't be persisted, so it shouldn't be treated as a stable device.
         ephemeral?: boolean;
-    } & ({ command: CliTelemetryCommand } | { event: LegacyCliTelemetryEvent });
+    } & ({ command: CliTelemetryCommand; event?: never } | { event: LegacyCliTelemetryEvent; command?: never });
     Success: never;
 }>;
