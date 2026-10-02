@@ -104,8 +104,12 @@ const NangoBox: React.FC = () => (
 
 export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, onConnected, onApprove }) => {
     const display = describeTool(part.toolName, part.input);
-    const running = part.state === 'input-streaming' || part.state === 'input-available' || part.state === 'approval-responded';
-    const awaitingApproval = part.state === 'approval-requested';
+    const awaitingApproval = part.state === 'approval-requested' && !part.approval.isAutomatic;
+    const running =
+        part.state === 'input-streaming' ||
+        part.state === 'input-available' ||
+        part.state === 'approval-responded' ||
+        (part.state === 'approval-requested' && !awaitingApproval);
     const done = part.state === 'output-available' || part.state === 'output-error' || part.state === 'output-denied';
     const failed = part.state === 'output-error' || part.state === 'output-denied';
     const duration = useRunDuration(running, awaitingApproval, done);
@@ -124,7 +128,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, onConnected, o
         }
     }
 
-    if (awaitingApproval && !part.approval.isAutomatic) {
+    if (awaitingApproval && part.state === 'approval-requested') {
         return <ApprovalCard part={part} display={display} onApprove={onApprove} approvalId={part.approval.id} />;
     }
 
@@ -304,7 +308,7 @@ const Section: React.FC<{ title: string; value: unknown; view: PayloadView }> = 
             ) : (
                 <CollapsibleCode
                     language={typeof value === 'string' ? 'bash' : 'json'}
-                    code={typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
+                    code={typeof value === 'string' ? value : JSON.stringify(value ?? {}, null, 2)}
                 />
             )}
         </div>
