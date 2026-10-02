@@ -2217,7 +2217,7 @@ class ProviderClient {
                 client_id: clientId,
                 client_secret: clientSecret,
                 grant_type: 'client_credentials',
-                scope: encodeURIComponent(scope)
+                scope
             };
 
             const response = await axios.post(tokenUrl, body, { headers });
@@ -2254,7 +2254,7 @@ class ProviderClient {
                 client_id: clientId,
                 client_secret: clientSecret,
                 grant_type: 'client_credentials',
-                scope: encodeURIComponent(scope)
+                scope
             };
 
             const response = await axios.post(tokenUrl, body, { headers });
