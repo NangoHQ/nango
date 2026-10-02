@@ -164,7 +164,7 @@ describe('identifyAccountGroup', () => {
     it('sends a property the request context does not carry, once per change, and keeps it out of later diffs', () => {
         productTracking.identifyAccountGroup(48, { is_internal: true });
         productTracking.identifyAccountGroup(48, { is_internal: true });
-        productTracking.track({ name: 'account:billing:downgraded', team: { id: 48, name: 'Acme' } });
+        productTracking.track({ name: 'billing:plan_submit', team: { id: 48, name: 'Acme' } });
 
         expect(groupIdentify.mock.calls.map(([payload]) => payload)).toStrictEqual([
             { groupType: 'company', groupKey: '48', properties: { is_internal: true } },
@@ -219,7 +219,7 @@ describe('withProductTrackingContext', () => {
         withProductTrackingContext(
             () => ({ team, environment, impersonated: true }),
             () => {
-                productTracking.track({ name: 'account:billing:downgraded', team: { id: 47, name: 'Acme' } });
+                productTracking.track({ name: 'billing:plan_submit', team: { id: 47, name: 'Acme' } });
                 expect(productTracking.getServerEventAttribution({ team })).toBeNull();
             }
         );
