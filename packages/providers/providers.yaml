@@ -1734,8 +1734,8 @@ anymailfinder:
             title: API Key
             description: The API key for your Anymail Finder account
             doc_section: '#step-1-find-your-api-key'
-            example: Xk7Qp2Lm9Rt4****************
-            pattern: '^[A-Za-z0-9]{24}$'
+            example: Xk7Qp2Lm9Rt4************
+            pattern: '^[A-Za-z0-9]+$'
 
 apaleo:
     display_name: Apaleo
