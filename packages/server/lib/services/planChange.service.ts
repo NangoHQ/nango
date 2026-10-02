@@ -206,7 +206,7 @@ export async function applyPendingPlanChange({
     return Ok(undefined);
 }
 
-/** Billing Bot alerts on `plan_submit` and on scheduled updates. Pass `isScheduled: true` for a change applied right after its request and it alerts twice. */
+/** Billing Bot alerts on `plan_submit` and on scheduled non-downgrade updates. Pass `isScheduled: true` for a change applied right after its request and it alerts twice. */
 export function trackPlanUpdate({ team, planChange, isScheduled }: { team: DBTeam; planChange: AppliedPlanChange; isScheduled: boolean }): void {
     const { previousPlan, updatedPlan, isDowngrade } = planChange;
     productTracking.track({
