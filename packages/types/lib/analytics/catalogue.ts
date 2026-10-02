@@ -9,7 +9,7 @@ import type { AnalyticsCatalogueProblems, AssertNoProblems } from './rules.js';
 type None = Record<string, never>;
 type BreakdownDimension = BreakdownDimensions[UsageMetric];
 
-/** Senders add `surface` and `is_production`, so `properties` lists only what the event adds. */
+/** Senders add `surface`, and the server adds `is_production` when it knows the environment. `properties` lists the rest. */
 export interface AnalyticsEventCatalogue {
     'billing:usage_view': {
         surface: 'web';
