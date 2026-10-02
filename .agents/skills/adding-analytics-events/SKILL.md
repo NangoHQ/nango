@@ -11,8 +11,9 @@ event's surface, the insight it serves, when it fires, and its properties. The s
 so an event that isn't in the catalogue doesn't compile.
 
 The allowed categories, objects and actions are the unions in `packages/types/lib/analytics/taxonomy.ts`.
-`packages/types/lib/analytics/rules.ts` checks every entry against the rules below, and `npm run ts-build`
-fails with the event and the broken rule.
+`packages/types/lib/analytics/rules.ts` checks names, snake*case properties, `is*`/`has\_`booleans, primitive
+values,`is_success`on`complete`events and`structured_reason`. `npm run ts-build` fails with the event
+and the broken rule. The other rules below are yours and the reviewer's to check.
 
 **No insight, no event.** If you can't name the chart or funnel step an event feeds, don't add it. The
 questions we want answered are on the [product insights page](https://app.notion.com/p/3e4ce298312181d7a9c7d8efd1a96c1a).
@@ -57,7 +58,8 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
       our API's error code, such as `resource_capped`, never the error message.
     - A server `create`, `update` or `delete` sent when the attempt finishes also carries `is_success`.
     - An HTTP call carries `http_status`. A session-scoped event carries `agent_session_id`.
-    - Don't list `surface` or `is_production`. The senders add them.
+    - Don't list `surface` or `is_production`. Every sender adds `surface`, and the server adds
+      `is_production` when it knows the environment.
     - An array or object is allowed only when an insight can't be answered without it and it has a fixed
       maximum size. Put it in `structured_properties`, say why in `structured_reason`, and send primitive
       summaries next to it, such as a count or the top value.
@@ -69,7 +71,7 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
         surface: 'web';
         insight: 'How many accounts use the API Playground each week?';
         fires: 'When a Playground run returns a result or an error';
-        properties: { function_type: string; integration: string; is_success: boolean; run_duration_ms: number };
+        properties: { function_type: string; integration: string; is_success: boolean; run_state: string; run_duration_ms: number };
     };
     ```
 
@@ -78,7 +80,8 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
 7. **Send it.**
     - Web: `track()` from `packages/webapp/src/utils/analytics.tsx`.
     - Server: `productTracking.track()` from `@nangohq/shared`. The request's tracking context adds the
-      account, the user and `is_production`.
+      account and, when there is one, `is_production`. It never adds the user, so a server event is sent as
+      the account unless the call passes `user` itself.
     - CLI: the CLI posts to `/cli/telemetry`, and the server relays the event with `productTracking.trackAnonymous()`.
       Released CLIs keep sending what they sent when they shipped, so the endpoint has to keep accepting
       old bodies.
