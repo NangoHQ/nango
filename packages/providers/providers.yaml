@@ -8031,6 +8031,39 @@ egnyte:
             suffix: .egnyte.com
             prefix: https://
 
+elasticsearch:
+    display_name: Elasticsearch
+    categories:
+        - search
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.instanceUrl}
+        headers:
+            authorization: ApiKey ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /_security/_authenticate
+    docs: https://nango.dev/docs/api-integrations/elasticsearch
+    docs_connect: https://nango.dev/docs/api-integrations/elasticsearch/connect
+    connection_config:
+        instanceUrl:
+            type: string
+            title: Elasticsearch Endpoint
+            description: The endpoint URL of your Elasticsearch deployment or project.
+            example: https://my-deployment-a1b2c3.es.us-central1.gcp.elastic-cloud.com
+            pattern: '^https?://.+[^/]$'
+            order: 1
+            doc_section: '#step-1-find-your-elasticsearch-endpoint'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The encoded Elasticsearch API key.
+            pattern: '^[A-Za-z0-9+/]+={0,2}$'
+            secret: true
+            doc_section: '#step-2-create-an-api-key'
+
 elevenlabs:
     display_name: Eleven Labs
     categories:

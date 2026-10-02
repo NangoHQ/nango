@@ -1,0 +1,76 @@
+---
+title: Elasticsearch - How do I link my account?
+sidebarTitle: Elasticsearch
+---
+
+## Overview
+
+To authenticate with Elasticsearch, you will need:
+1. **Elasticsearch Endpoint** - The URL of your Elasticsearch deployment, project, or cluster
+2. **API Key** - An Elasticsearch API key in the **Encoded** format
+
+This guide walks you through finding each of these values.
+
+### Prerequisites
+
+- An [Elastic Cloud](https://cloud.elastic.co) deployment or Serverless project, or a self-managed Elasticsearch cluster with security enabled
+- A user allowed to create API keys (the `manage_own_api_key` cluster privilege or higher)
+
+### Instructions
+
+#### Step 1: Find your Elasticsearch endpoint
+
+**Elastic Cloud**
+
+1. Sign in to the [Elastic Cloud Console](https://cloud.elastic.co).
+2. Open your hosted deployment, or select **Manage** on your Serverless project.
+3. Under **Application endpoints, cluster and component IDs**, select **Elasticsearch** and copy the **Endpoint**, e.g. `https://my-deployment-a1b2c3.es.us-central1.gcp.elastic-cloud.com`.
+
+You can also open Kibana, select **Connection details** from the help menu, and copy the endpoint from the **Endpoints** tab.
+
+**Self-managed**
+
+Use the URL your cluster listens on, including the scheme and port, e.g. `https://es.example.com:9200`. The cluster must be reachable from Nango. Do not add a trailing slash.
+
+#### Step 2: Create an API key
+
+**From Kibana**
+
+1. Open Kibana and select **Connection details** from the help menu.
+2. Open the **API key** tab, enter a name, and select **Create API key**.
+3. Select the **Encoded** format and copy the key. It is not shown again.
+
+<Note>
+Keys created this way expire after 90 days and carry the privileges of the user who created them.
+</Note>
+
+**With restricted privileges**
+
+To limit what Nango can access, create the key through the [create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key) with `role_descriptors`. For example, a key that can only read `logs-*` indices:
+
+```bash
+curl -X POST "<ELASTICSEARCH-ENDPOINT>/_security/api_key" \
+  -H "Authorization: ApiKey <YOUR-OWN-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "nango",
+    "role_descriptors": {
+      "nango": {
+        "cluster": [],
+        "indices": [{ "names": ["logs-*"], "privileges": ["read"] }]
+      }
+    }
+  }'
+```
+
+Copy the `encoded` value from the response.
+
+<Tip>
+Nango verifies the connection with `GET /_security/_authenticate`, which needs no privileges, so a restricted key still connects.
+</Tip>
+
+#### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Elasticsearch.
+2. Enter your **Elasticsearch Endpoint** and **API Key** in their respective fields.
+3. Submit the form to connect your cluster.

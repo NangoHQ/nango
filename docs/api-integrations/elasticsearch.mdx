@@ -1,0 +1,90 @@
+---
+title: 'Elasticsearch'
+sidebarTitle: 'Elasticsearch'
+description: 'Integrate your application with the Elasticsearch API'
+---
+
+## 🚀 Quickstart
+
+Connect to Elasticsearch with Nango and see data flow in 2 minutes. Elasticsearch uses an API key created in Kibana or through the Elasticsearch API, for Elastic Cloud and self-managed clusters alike.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Elasticsearch_.
+    </Step>
+    <Step title="Connect your Elasticsearch cluster">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your Elasticsearch endpoint and API key, then save.
+    </Step>
+    <Step title="Call the Elasticsearch API">
+    Make your first request. Replace the placeholders with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/_security/_authenticate" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/_security/_authenticate',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain an API key, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Elasticsearch integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to connect your Elasticsearch cluster](/api-integrations/elasticsearch/connect)  
+Find your Elasticsearch endpoint, create an API key, and connect it to Nango
+
+Official docs: [Elasticsearch API reference](https://www.elastic.co/docs/api/doc/elasticsearch/)
+
+## 🧩 Pre-built syncs & actions for Elasticsearch
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/elasticsearch/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
+
+## Common gotchas
+
+- Use the **Encoded** API key format. Elasticsearch expects it in an `Authorization: ApiKey <key>` header; a `Bearer` header is rejected.
+- Nango verifies the connection with `GET /_security/_authenticate`, which any valid API key can call, so a key restricted to a few indices still connects. Requests outside the key's privileges return `403`.
+- API keys created from Kibana's **Connection details** panel expire after 90 days and carry the privileges of the user who created them. Create a key with `role_descriptors` through the [create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key) to limit access.
+- The endpoint must include the scheme and have no trailing slash. Include the port when it is not the default, e.g. `https://es.example.com:9200` for a self-managed cluster.
+
+---
