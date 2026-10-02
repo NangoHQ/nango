@@ -154,6 +154,46 @@ describe('listConnections', () => {
     });
 });
 
+describe('connection ids containing slashes', () => {
+    const nango = new Nango({ secretKey: 'test', host: 'https://example.com' });
+    const mockHttp = {
+        get: vi.fn(),
+        delete: vi.fn(),
+        patch: vi.fn()
+    };
+
+    // @ts-expect-error - we're mocking the http instance
+    nango.http = mockHttp;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockHttp.get.mockResolvedValue({ data: {} });
+        mockHttp.delete.mockResolvedValue({ data: undefined });
+        mockHttp.patch.mockResolvedValue({ data: { success: true } });
+    });
+
+    it('should encode slashes in connection ids for getConnection', async () => {
+        await nango.getConnection('test-provider', 'acme/prod');
+
+        const calledUrl = mockHttp.get.mock.calls[0]?.[0] as string;
+        expect(new URL(calledUrl).pathname).toBe('/connections/acme%2Fprod');
+    });
+
+    it('should encode slashes in connection ids for deleteConnection', async () => {
+        await nango.deleteConnection('test-provider', 'acme/prod');
+
+        const calledUrl = mockHttp.delete.mock.calls[0]?.[0] as string;
+        expect(new URL(calledUrl).pathname).toBe('/connections/acme%2Fprod');
+    });
+
+    it('should encode slashes in connection ids for patchConnection', async () => {
+        await nango.patchConnection({ provider_config_key: 'test-provider', connectionId: 'acme/prod' }, {});
+
+        const calledUrl = mockHttp.patch.mock.calls[0]?.[0] as string;
+        expect(new URL(calledUrl).pathname).toBe('/connections/acme%2Fprod');
+    });
+});
+
 describe('verifySignature', () => {
     it('should verify an untampered payload', () => {
         const secretKey = 'test-secret-key';
