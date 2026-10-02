@@ -7,6 +7,10 @@ Linting uses **oxlint** — `npm run lint` (and `npm run lint:fix`), configured 
 
 For inline editor diagnostics, install the oxlint extension: VS Code / Cursor → `oxc.oxc-vscode`; JetBrains → the `oxc` plugin; Neovim/Emacs/Helix/Sublime → any LSP client via `oxlint --lsp`. The ESLint extension will no longer show diagnostics.
 
+## Product analytics
+
+Every PostHog event the webapp, server or CLI sends is defined in `packages/types/lib/analytics/catalogue.ts`. To add, rename or remove one, use the `adding-analytics-events` skill.
+
 ## Running Nango locally
 
 For full local dev setup (Docker, service URLs, auth flows, troubleshooting), use the `running-and-testing-locally` skill.
