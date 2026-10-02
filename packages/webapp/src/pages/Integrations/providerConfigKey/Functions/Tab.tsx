@@ -118,6 +118,35 @@ function FunctionStatus({ fn, integration }: { fn: ListedNangoFunction; integrat
     );
 }
 
+function FunctionTemplateRow({
+    template,
+    isDeploying,
+    onDeploy
+}: {
+    template: NangoFunctionTemplate;
+    isDeploying: boolean;
+    onDeploy: (template: NangoFunctionTemplate) => void;
+}) {
+    return (
+        <TableRow className="h-12 hover:bg-transparent">
+            <FunctionNameCell name={template.name} description={template.description} />
+            <TableCell className="w-35 px-3">
+                <FunctionSourceLabel source="template" />
+            </TableCell>
+            <TableCell className="w-35 px-3">
+                <button
+                    type="button"
+                    disabled={isDeploying}
+                    onClick={() => onDeploy(template)}
+                    className="inline-flex h-6 w-21 items-center justify-center rounded-ds-sm border-ds-hairline border-border-strong px-3 type-label-sm text-text-secondary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    Deploy
+                </button>
+            </TableCell>
+        </TableRow>
+    );
+}
+
 function matchesSearch(template: NangoFunctionTemplate, needle: string): boolean {
     if (!needle) return true;
     return `${template.name} ${template.description ?? ''}`.toLowerCase().includes(needle);
@@ -203,6 +232,11 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
 
     const onDeployTemplate = useCallback(
         (template: NangoFunctionTemplate) => {
+            if (template.type === 'action') {
+                void deployTemplate(template);
+                return;
+            }
+
             void confirm({
                 title: 'Deploy sync?',
                 description: 'It will start syncing potentially for multiple connections. This will impact your billing.',
@@ -218,15 +252,28 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const total = data?.pages[0]?.pagination.total ?? 0;
 
     const searchNeedle = debouncedSearch.trim().toLowerCase();
+    const undeployedActionTemplates = useMemo(
+        () => (templatesResponse?.data ?? []).filter((template) => template.type === 'action' && !template.deployed),
+        [templatesResponse]
+    );
     const undeployedSyncTemplates = useMemo(
         () => (templatesResponse?.data ?? []).filter((template) => template.type === 'sync' && !template.deployed),
         [templatesResponse]
+    );
+    const matchingActionTemplates = useMemo(
+        () => undeployedActionTemplates.filter((template) => matchesSearch(template, searchNeedle)),
+        [undeployedActionTemplates, searchNeedle]
     );
     const matchingSyncTemplates = useMemo(
         () => undeployedSyncTemplates.filter((template) => matchesSearch(template, searchNeedle)),
         [undeployedSyncTemplates, searchNeedle]
     );
     // Templates append only after every deployed page is loaded.
+    const listedFunctionKeys = new Set(functions.map((fn) => `${fn.type}:${fn.name}`));
+    const visibleActionTemplates =
+        typeFilter === 'action' && !hasNextPage && !isPlaceholderData
+            ? matchingActionTemplates.filter((template) => !listedFunctionKeys.has(`${template.type}:${template.name}`))
+            : [];
     const visibleSyncTemplates = typeFilter === 'sync' && !hasNextPage && !isPlaceholderData ? matchingSyncTemplates : [];
 
     const counts: Record<TypeFilterValue, number | undefined> = {
@@ -243,10 +290,18 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     }
 
     const hasSearch = Boolean(debouncedSearch.trim());
-    const syncListHasRows = typeFilter === 'sync' && (functions.length > 0 || visibleSyncTemplates.length > 0);
-    const showEmptyNoFilters = countsReady && templatesFetched && !hasSearch && totalAcrossTypes === 0 && undeployedSyncTemplates.length === 0 && !isLoading;
-    const showEmptyWithSearch = !isLoading && functions.length === 0 && hasSearch && !syncListHasRows;
-    const showEmptyType = countsSettled && !hasSearch && functions.length === 0 && !showEmptyNoFilters && !isLoading && !syncListHasRows;
+    const templateRows = typeFilter === 'action' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : [];
+    const activeListHasRows = functions.length > 0 || templateRows.length > 0;
+    const showEmptyNoFilters =
+        countsReady &&
+        templatesFetched &&
+        !hasSearch &&
+        totalAcrossTypes === 0 &&
+        undeployedActionTemplates.length === 0 &&
+        undeployedSyncTemplates.length === 0 &&
+        !isLoading;
+    const showEmptyWithSearch = !isLoading && hasSearch && !activeListHasRows;
+    const showEmptyType = countsSettled && !hasSearch && !showEmptyNoFilters && !isLoading && !activeListHasRows;
     const waitingForEmptyDecision = !hasSearch && functions.length === 0 && (!countsSettled || !templatesFetched);
     const activePill = TYPE_PILLS.find((pill) => pill.value === typeFilter) ?? TYPE_PILLS[0];
 
@@ -275,7 +330,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     <div className="flex items-center gap-2">
                         {TYPE_PILLS.map((pill) => {
                             const selected = pill.value === typeFilter;
-                            const count = pill.value === 'sync' && counts.sync != null ? counts.sync + undeployedSyncTemplates.length : counts[pill.value];
+                            const count = counts[pill.value];
                             return (
                                 <button
                                     key={pill.value}
@@ -389,11 +444,19 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                         </TableCell>
                                     </TableRow>
                                 ))}
+                                {visibleActionTemplates.map((template) => (
+                                    <FunctionTemplateRow
+                                        key={`template:${template.type}:${template.name}`}
+                                        template={template}
+                                        isDeploying={deployingName === template.name}
+                                        onDeploy={onDeployTemplate}
+                                    />
+                                ))}
                             </TableBody>
                             <TableFooter className="bg-transparent font-ds-regular">
                                 <TableRow className="h-8 hover:bg-transparent">
                                     <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
-                                        Showing {functions.length} of {total} actions
+                                        Showing {functions.length + visibleActionTemplates.length} of {total + visibleActionTemplates.length} actions
                                     </TableCell>
                                 </TableRow>
                             </TableFooter>
@@ -424,22 +487,12 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                     </TableRow>
                                 ))}
                                 {visibleSyncTemplates.map((template) => (
-                                    <TableRow key={`template:${template.name}`} className="h-12 hover:bg-transparent">
-                                        <FunctionNameCell name={template.name} description={template.description} />
-                                        <TableCell className="w-35 px-3">
-                                            <FunctionSourceLabel source="template" />
-                                        </TableCell>
-                                        <TableCell className="w-35 px-3">
-                                            <button
-                                                type="button"
-                                                disabled={deployingName === template.name}
-                                                onClick={() => onDeployTemplate(template)}
-                                                className="inline-flex h-6 w-21 items-center justify-center rounded-ds-sm border-ds-hairline border-border-strong px-3 type-label-sm text-text-secondary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                                            >
-                                                Deploy
-                                            </button>
-                                        </TableCell>
-                                    </TableRow>
+                                    <FunctionTemplateRow
+                                        key={`template:${template.type}:${template.name}`}
+                                        template={template}
+                                        isDeploying={deployingName === template.name}
+                                        onDeploy={onDeployTemplate}
+                                    />
                                 ))}
                             </TableBody>
                             <TableFooter className="bg-transparent font-ds-regular">
