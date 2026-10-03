@@ -1,4 +1,5 @@
 import * as crypto from 'node:crypto';
+import https from 'node:https';
 
 import FormData from 'form-data';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -1811,6 +1812,38 @@ describe('buildProxyURL', () => {
 });
 
 describe('getAxiosConfiguration', () => {
+    it('verifies the server certificate when sending an mTLS client certificate', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'OAUTH2_CC',
+                require_client_certificate: true,
+                proxy: { base_url: 'https://api.adp.com' }
+            }
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({
+                credentials: {
+                    type: 'OAUTH2_CC',
+                    token: 'token',
+                    client_id: 'client-id',
+                    client_secret: 'client-secret',
+                    client_certificate: '-----BEGIN CERTIFICATE-----\nMIIBclientcert\n-----END CERTIFICATE-----',
+                    client_private_key: '-----BEGIN PRIVATE KEY-----\nMIIBclientkey\n-----END PRIVATE KEY-----',
+                    raw: {}
+                }
+            })
+        });
+
+        const agent = axiosConfig.httpsAgent as https.Agent;
+        expect(agent).toBeInstanceOf(https.Agent);
+        expect(axiosConfig.httpAgent).toBe(agent);
+        expect(agent.options.cert).toContain('BEGIN CERTIFICATE');
+        expect(agent.options.key).toContain('BEGIN PRIVATE KEY');
+        expect(agent.options.rejectUnauthorized).not.toBe(false);
+    });
+
     it.each(['PROPFIND', 'REPORT'] as const)('forwards the request body for WebDAV/CalDAV method %s (e.g. Apple Calendar)', (method) => {
         const config = getDefaultProxy({
             method,

@@ -2020,7 +2020,7 @@ export class ConnectionService {
                     throw new NangoError('invalid_certificate_or_key_format');
                 }
 
-                agent = getOAuthSafeUndiciDispatcher({ cert, key, rejectUnauthorized: false });
+                agent = getOAuthSafeUndiciDispatcher({ cert, key });
             } catch (err) {
                 throw new NangoError('invalid_certificate_or_key_format', { err });
             }
