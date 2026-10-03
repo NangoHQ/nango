@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { buildPaymentMethodOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
@@ -28,15 +28,20 @@ export function useStripePaymentMethods(env: string) {
     });
 }
 
-export async function apiPostStripeCollectPayment(env: string) {
-    const res = await apiFetch(`/api/v1/stripe/payment_methods?env=${env}`, {
-        method: 'POST'
-    });
+export function usePostStripeCollectPayment(env: string) {
+    return useMutation<PostStripeCollectPayment['Success'], APIError>({
+        mutationFn: async () => {
+            const res = await apiFetch(`/api/v1/stripe/payment_methods?env=${env}`, {
+                method: 'POST'
+            });
 
-    return {
-        res,
-        json: (await res.json()) as PostStripeCollectPayment['Reply']
-    };
+            const json = (await res.json()) as PostStripeCollectPayment['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        }
+    });
 }
 
 export async function apiDeleteStripePayment(env: string, paymentId: string) {
