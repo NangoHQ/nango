@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="62" height="62" viewBox="0 0 62 62" version="1.1">
+  <defs>
+    <style>
+      .chameleon-bg { fill: #0066CC; }
+      .chameleon-icon { fill: white; }
+    </style>
+  </defs>
+  <!-- Circle background with official Chameleon-I brand color -->
+  <circle class="chameleon-bg" cx="31" cy="31" r="31"/>
+  <!-- Info icon "i" -->
+  <g class="chameleon-icon">
+    <!-- Dot/period -->
+    <circle cx="31" cy="18" r="3"/>
+    <!-- Vertical stem -->
+    <path d="M 30 26 L 30 44 Q 30 46 32 46 L 32 46 Q 34 46 34 44 L 34 26 Q 34 24 32 24 L 30 24 Q 30 24 30 26" stroke="none"/>
+  </g>
+</svg>
