@@ -37,4 +37,5 @@ export interface AWSAuthHeaderParams {
     accessKeyId: string;
     secretAccessKey: string;
     region: string;
+    host: string;
 }
