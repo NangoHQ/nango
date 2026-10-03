@@ -18,14 +18,15 @@ interface ConnectCardProps {
     integrationId: string;
     provider: string;
     connectUrl: string;
+    connected: boolean;
     onConnected: (integrationId: string) => void;
 }
 
-export const ConnectCard: React.FC<ConnectCardProps> = ({ integrationId, provider, connectUrl, onConnected }) => {
+export const ConnectCard: React.FC<ConnectCardProps> = ({ integrationId, provider, connectUrl, connected: alreadyConnected, onConnected }) => {
     const env = useStore((state) => state.env);
     const { data: environmentData } = useEnvironment(env);
     const isDarkMode = useThemeStore(darkModeSelector);
-    const [status, setStatus] = useState<'idle' | 'waiting' | 'connected'>('idle');
+    const [status, setStatus] = useState<'idle' | 'waiting' | 'connected'>(alreadyConnected ? 'connected' : 'idle');
     const [failure, setFailure] = useState<string | null>(null);
     const connectUI = useRef<ConnectUI | null>(null);
 

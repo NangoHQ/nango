@@ -22,6 +22,7 @@ import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { useMeta } from '@/hooks/useMeta';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { clearAgentPlaygroundChat, loadAgentPlaygroundChat, saveAgentPlaygroundChat } from '@/store/agentPlaygroundChat';
 import { globalEnv } from '@/utils/env';
 import { describeChatError } from './chatError';
 import { Markdown } from './components/Markdown';
@@ -57,7 +58,14 @@ export const AgentPlaygroundShow: React.FC = () => {
             <Helmet>
                 <title>Agent Playground - Nango</title>
             </Helmet>
-            <Chat key={`${env}-${chatKey}`} env={env} onReset={() => setChatKey((key) => key + 1)} />
+            <Chat
+                key={`${env}-${chatKey}`}
+                env={env}
+                onReset={() => {
+                    clearAgentPlaygroundChat();
+                    setChatKey((key) => key + 1);
+                }}
+            />
         </DashboardLayout>
     );
 };
@@ -76,8 +84,10 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         [env]
     );
 
+    const [storedMessages] = useState(() => loadAgentPlaygroundChat(env));
     const { messages, sendMessage, regenerate, status, stop, error, clearError, addToolApprovalResponse } = useChat<PlaygroundMessage>({
         transport,
+        ...(storedMessages ? { messages: storedMessages } : {}),
         sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses
     });
     const onApprove = useCallback(
@@ -93,6 +103,12 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
     }, [messages]);
 
     const busy = status === 'submitted' || status === 'streaming';
+    useEffect(() => {
+        if (!busy) {
+            saveAgentPlaygroundChat(env, messages);
+        }
+    }, [env, messages, busy]);
+
     const lastMessage = messages.at(-1);
     // A new turn would drop the pending tool call, so the change is never approved or denied.
     const awaitingApproval =
@@ -119,17 +135,24 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         }
     };
 
-    const [connectedIntegrations, setConnectedIntegrations] = useState<string[]>([]);
+    const [pendingConnections, setPendingConnections] = useState<string[]>([]);
     const onConnected = useCallback((integrationId: string) => {
-        setConnectedIntegrations((ids) => (ids.includes(integrationId) ? ids : [...ids, integrationId]));
+        setPendingConnections((ids) => (ids.includes(integrationId) ? ids : [...ids, integrationId]));
     }, []);
     // Waits for the current reply to finish, so two turns never stream at the same time.
     useEffect(() => {
-        if (connectedIntegrations.length > 0 && !busy && !awaitingApproval) {
-            setConnectedIntegrations([]);
-            void sendMessage({ text: `I've connected ${connectedIntegrations.map(humanize).join(' and ')}.`, metadata: { hidden: true } });
+        if (pendingConnections.length > 0 && !busy && !awaitingApproval) {
+            setPendingConnections([]);
+            void sendMessage({
+                text: `I've connected ${pendingConnections.map(humanize).join(' and ')}.`,
+                metadata: { hidden: true, connectedIntegrations: pendingConnections }
+            });
         }
-    }, [connectedIntegrations, busy, awaitingApproval, sendMessage]);
+    }, [pendingConnections, busy, awaitingApproval, sendMessage]);
+    const connectedIntegrations = useMemo(
+        () => new Set([...pendingConnections, ...messages.flatMap((message) => message.metadata?.connectedIntegrations ?? [])]),
+        [pendingConnections, messages]
+    );
 
     const scroller = useRef<HTMLDivElement>(null);
     const bottom = useRef<HTMLDivElement>(null);
@@ -216,7 +239,15 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                                     ) : null;
                                 }
                                 if (part.type === 'dynamic-tool') {
-                                    return <ToolCallCard key={part.toolCallId} part={part} onConnected={onConnected} onApprove={onApprove} />;
+                                    return (
+                                        <ToolCallCard
+                                            key={part.toolCallId}
+                                            part={part}
+                                            connectedIntegrations={connectedIntegrations}
+                                            onConnected={onConnected}
+                                            onApprove={onApprove}
+                                        />
+                                    );
                                 }
                                 return null;
                             })}
