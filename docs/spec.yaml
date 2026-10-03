@@ -479,8 +479,8 @@ paths:
                   required: true
                   schema:
                       type: string
-                      enum: [sync, action]
-                  description: Required to disambiguate a sync and an action that share a name. On-event functions are not yet supported.
+                      enum: [sync, action, on-event]
+                  description: Required to disambiguate a sync and an action that share a name. On-event functions are accepted but always rejected with `function_managed_by_deploy`, since they are only ever created by `nango deploy`.
             responses:
                 '200':
                     description: Successfully enqueued the function deletion

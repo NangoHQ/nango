@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { deletableFunctionTypeSchema, envSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
+import { envSchema, functionTypeSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../../../../utils/asyncWrapper.js';
 import { handleDeleteIntegrationFunction } from '../../../../shared/integrations/functions/deleteFunction.js';
 
@@ -12,7 +12,7 @@ const querystringValidation = z
     .object({
         env: envSchema,
         // Required (unlike GET) to disambiguate a sync and an action that share a name.
-        type: deletableFunctionTypeSchema
+        type: functionTypeSchema
     })
     .strict();
 
