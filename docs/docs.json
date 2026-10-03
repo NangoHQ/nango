@@ -1812,6 +1812,7 @@
               "integrations/all/sellsy-oauth2-cc",
               "api-integrations/semble",
               "integrations/all/semrush",
+              "api-integrations/sendcloud",
               "integrations/all/sendgrid",
               "api-integrations/sentinelone",
               "integrations/all/sentry",

@@ -1,0 +1,83 @@
+---
+title: 'Sendcloud'
+sidebarTitle: 'Sendcloud'
+description: 'Integrate your application with the Sendcloud API'
+---
+
+## 🚀 Quickstart
+
+Connect to Sendcloud with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Sendcloud_.
+    </Step>
+    <Step id="authorize-sendcloud" title="Authorize Sendcloud">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter the Public Key and Secret Key of your Sendcloud API integration as the Client ID and Client Secret. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-the-api" title="Call the Sendcloud API">
+    Make your first request. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v3/user/auth/metadata" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v3/user/auth/metadata',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Sendcloud integration guides
+
+- [How do I link my account?](/api-integrations/sendcloud/connect)  
+Create a Sendcloud API integration and connect it using the Connect UI
+
+Official docs: [Sendcloud API authentication](https://sendcloud.dev/docs/getting-started/authentication)
+
+## API gotchas
+
+- Nango authenticates with Sendcloud's OAuth2 client credentials flow: it exchanges the integration's Public Key and Secret Key for an access token at `https://account.sendcloud.com/oauth2/token` and requests a new one automatically when it expires (Sendcloud access tokens are valid for 1 hour).
+- Sendcloud recommends API v3 for all new integrations; API v2 is in maintenance mode. The proxy base URL is `https://panel.sendcloud.sc`, so include the version in the endpoint path (e.g. `/api/v3/...`).
+- Sendcloud's default [rate limits](https://sendcloud.dev/docs/getting-started/rate-limits) are 1,000 requests per minute for `GET` and 100 requests per minute for `POST`, `PATCH`, `PUT` and `DELETE` (burst allowance of 15 requests per second). Exceeding them returns `HTTP 429`.
+
+## 🧩 Pre-built syncs & actions for Sendcloud
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/sendcloud/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

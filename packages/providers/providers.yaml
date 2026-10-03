@@ -22562,17 +22562,20 @@ sendcloud:
         scope: api
     proxy:
         base_url: https://panel.sendcloud.sc
-    docs: https://sendcloud.dev/docs/getting-started/how-to-create-your-api-keys
+    docs: https://nango.dev/docs/api-integrations/sendcloud
+    docs_connect: https://nango.dev/docs/api-integrations/sendcloud/connect
     credentials:
         client_id:
             type: string
             title: Client ID
-            description: The Client ID of your Sendcloud API integration.
+            description: The Public Key of your Sendcloud API integration.
+            doc_section: '#step-1-create-your-sendcloud-api-integration'
         client_secret:
             type: string
             title: Client Secret
-            description: The Client Secret of your Sendcloud API integration.
+            description: The Secret Key of your Sendcloud API integration.
             secret: true
+            doc_section: '#step-1-create-your-sendcloud-api-integration'
 
 sendgrid:
     display_name: SendGrid
