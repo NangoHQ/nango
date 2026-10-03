@@ -261,6 +261,11 @@ All `operation` values are:
 - `refresh`: an OAuth connection's access token has failed to refresh, or has recovered after a previous failure
 - `deletion`: a connection has been deleted
 
+<Note>
+  The `override` webhook has its own webhook setting in _Environment Settings_, separate from the
+  other auth webhooks.
+</Note>
+
 Payload received following a refresh token error:
 
 ```json

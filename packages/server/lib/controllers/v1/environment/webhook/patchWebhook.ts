@@ -18,7 +18,8 @@ const validation = z
         on_auth_refresh_error: z.boolean().optional(),
         on_sync_error: z.boolean().optional(),
         on_async_action_completion: z.boolean().optional(),
-        on_connection_deletion: z.boolean().optional()
+        on_connection_deletion: z.boolean().optional(),
+        on_auth_override: z.boolean().optional()
     })
     .strict();
 
@@ -63,6 +64,9 @@ export const patchWebhook = asyncWrapperWithEnvironment<PatchWebhook>(async (req
     }
     if (typeof body.on_connection_deletion !== 'undefined') {
         data.on_connection_deletion = body.on_connection_deletion;
+    }
+    if (typeof body.on_auth_override !== 'undefined') {
+        data.on_auth_override = body.on_auth_override;
     }
 
     if (Object.keys(data).length <= 0) {

@@ -46,6 +46,11 @@ const checkboxesConfig: CheckboxConfig[] = [
         label: 'Auth: connection deletion webhooks',
         tooltip: 'If checked, a webhook will be sent when a connection is deleted.',
         stateKey: 'on_connection_deletion'
+    },
+    {
+        label: 'Auth: connection re-authorization webhooks',
+        tooltip: 'If checked, a webhook will be sent when a connection is re-authorized with new credentials.',
+        stateKey: 'on_auth_override'
     }
 ];
 
@@ -77,6 +82,7 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
                 on_sync_error: checkboxState['on_sync_error'],
                 on_async_action_completion: checkboxState['on_async_action_completion'],
                 on_connection_deletion: checkboxState['on_connection_deletion'],
+                on_auth_override: checkboxState['on_auth_override'],
                 [name]: checked
             });
         } catch {
