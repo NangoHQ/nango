@@ -149,6 +149,35 @@ describe('handleResponse', () => {
         expect(onEgressedBytes).toHaveBeenCalledWith(0);
     });
 
+    it.each([200, 201, 202, 206])('should send the buffered response with the provider status %i', async (status) => {
+        const body = '{"id": 123}';
+        const mockRes = createMockResponse();
+        const mockResponseStream = createMockResponseStream(body, { status });
+        const onEgressedBytes = vi.fn();
+
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, onEgressedBytes });
+        await mockRes.waitForSend();
+
+        expect(mockRes.getStatusCode()).toBe(status);
+        expect(mockRes.getSentData()?.toString()).toBe(body);
+        expect(mockResponseStream.complete).toHaveBeenCalledOnce();
+        expect(onEgressedBytes).toHaveBeenCalledWith(Buffer.byteLength(body));
+    });
+
+    it('should handle 304 Not Modified response', async () => {
+        const mockRes = createMockResponse();
+        const mockResponseStream = createMockResponseStream('', { status: 304 });
+        const onEgressedBytes = vi.fn();
+
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, onEgressedBytes });
+        await mockRes.waitForSend();
+
+        expect(mockRes.getStatusCode()).toBe(304);
+        expect(mockRes.getSentData()?.length).toBe(0);
+        expect(mockResponseStream.complete).toHaveBeenCalledOnce();
+        expect(onEgressedBytes).toHaveBeenCalledWith(0);
+    });
+
     it('should validate that response is valid JSON', async () => {
         const validJson = '{"id": 123, "name": "test"}';
         const mockRes = createMockResponse();
