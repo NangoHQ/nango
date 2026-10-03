@@ -10,14 +10,13 @@ import Nango, { AuthError } from '@nangohq/frontend';
 
 import { SecretInput } from '@/components/patterns/SecretInput';
 import { ScopesInput } from '../../components/patterns/ScopesInput';
-import { useEnvironment } from '../../hooks/useEnvironment';
+import { useConnectionHmac, useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { darkModeSelector, useThemeStore } from '../../lib/theme.js';
 import { useStore } from '../../store';
 import { track } from '../../utils/analytics';
-import { useGetHmacAPI } from '../../utils/api';
 import { isCloudProd } from '../../utils/cloud.js';
 import { globalEnv } from '../../utils/env';
 
@@ -50,7 +49,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const [hostUrl, setHostUrl] = useState('');
     const [websocketsPath, setWebsocketsPath] = useState<string>('');
     const [isHmacEnabled, setIsHmacEnabled] = useState(false);
-    const [hmacDigest, setHmacDigest] = useState('');
+    const { data: hmacDigest = '' } = useConnectionHmac(env, integration?.unique_key, connectionId, isHmacEnabled);
     const [apiKey, setApiKey] = useState('');
     const [apiAuthUsername, setApiAuthUsername] = useState('');
     const [apiAuthPassword, setApiAuthPassword] = useState('');
@@ -64,7 +63,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const [clientPrivateKey, setClientPrivateKey] = useState('');
     const [credentialsState, setCredentialsState] = useState<Record<string, string>>({});
     const [assertionOptionState, setAssertionOptionState] = useState<Record<string, string>>({});
-    const getHmacAPI = useGetHmacAPI(env);
     const { toast } = useToast();
     const providerConfigKey = useSearchParam('providerConfigKey');
     const { data } = useEnvironment(env);
@@ -73,20 +71,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
     useEffect(() => {
         setLoaded(false);
     }, [env]);
-
-    useEffect(() => {
-        const getHmac = async () => {
-            const res = await getHmacAPI(integration!.unique_key, connectionId);
-
-            if (res?.status === 200) {
-                const hmacDigest = (await res.json())['hmac_digest'];
-                setHmacDigest(hmacDigest);
-            }
-        };
-        if (isHmacEnabled && integration?.unique_key && connectionId) {
-            void getHmac();
-        }
-    }, [isHmacEnabled, integration?.unique_key, connectionId]);
 
     useEffect(() => {
         if (environmentAndAccount) {
