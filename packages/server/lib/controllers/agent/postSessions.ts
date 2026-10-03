@@ -2,9 +2,10 @@ import { z } from 'zod';
 
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { createdAgentSessionToPublicApi } from '../../formatters/agentSession.js';
+import * as agentSessionService from '../../services/agentSession.service.js';
 import { trackAgentSessionCreated } from '../../services/agentSessionAnalytics.service.js';
 import * as agentSessionConnectionsService from '../../services/agentSessionConnections.service.js';
-import * as agentSessionCreationService from '../../services/agentSessionCreation.service.js';
 import * as agentSessionToolsetService from '../../services/agentSessionToolset.service.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
@@ -16,8 +17,8 @@ const bodySchema = z.strictObject({
     }),
     toolset: agentSessionToolsetService.agentSessionToolsetSchema.optional(),
     pinned_tools: agentSessionToolsetService.agentSessionPinnedToolsSchema.optional(),
-    meta_tools: agentSessionCreationService.agentSessionMetaToolsSchema.optional(),
-    expires_in: agentSessionCreationService.agentSessionExpiresInSchema.optional()
+    meta_tools: agentSessionService.agentSessionMetaToolsSchema.optional(),
+    expires_in: agentSessionService.agentSessionExpiresInSchema.optional()
 });
 
 export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(async (req, res) => {
@@ -34,7 +35,7 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
     }
 
     const { account, environment } = res.locals;
-    const created = await agentSessionCreationService.createAgentSession({
+    const created = await agentSessionService.createAgentSession({
         account,
         environment,
         connections: body.data.tenant.connections,
@@ -62,14 +63,5 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
 
     trackAgentSessionCreated(created.value.session);
 
-    res.status(201).send({
-        data: {
-            session_id: created.value.session.id,
-            session_token: created.value.token,
-            mcp_url: created.value.mcpUrl,
-            expires_at: created.value.session.expiresAt.toISOString(),
-            toolset: created.value.toolset,
-            meta_tools: created.value.metaTools
-        }
-    });
+    res.status(201).send({ data: createdAgentSessionToPublicApi(created.value) });
 });
