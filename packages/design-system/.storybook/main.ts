@@ -10,6 +10,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const config: StorybookConfig = {
     stories: ['../tokens/**/*.stories.@(ts|tsx)', '../src/**/*.stories.@(ts|tsx)', '../stories/**/*.stories.@(ts|tsx)', '../stories/**/*.mdx'],
+    // Dropping this leaves every app-component story with broken images: they load webapp assets by absolute path.
+    staticDirs: ['../../webapp/public'],
     addons: ['@storybook/addon-a11y', '@storybook/addon-docs', '@storybook/addon-mcp', '@storybook/addon-themes'],
     framework: {
         name: '@storybook/react-vite',

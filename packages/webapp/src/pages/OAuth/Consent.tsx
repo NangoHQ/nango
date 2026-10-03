@@ -15,7 +15,7 @@ type LoginResumeResponse = Extract<GetOAuthConsentInteraction['Reply'], { status
 type LoginResponse = Extract<PostOAuthConsentLogin['Reply'], { status: 200 }>['body'];
 type DecisionResponse = Extract<PostOAuthConsentDecision['Reply'], { status: 200 }>['body'];
 
-type PageState =
+export type PageState =
     | { kind: 'loading' }
     | { kind: 'ready'; interaction: OAuthConsentInteraction }
     | { kind: 'submitting'; interaction: OAuthConsentInteraction; decision: 'approve' | 'deny' }
@@ -140,6 +140,16 @@ export function OAuthConsent() {
         }
     };
 
+    return <OAuthConsentView state={state} onRetry={() => void loadInteraction()} onDecide={(decision, target) => void decide(decision, target)} />;
+}
+
+export interface OAuthConsentViewProps {
+    state: PageState;
+    onRetry: () => void;
+    onDecide: (decision: 'approve' | 'deny', interaction: OAuthConsentInteraction) => void;
+}
+
+export function OAuthConsentView({ state, onRetry, onDecide }: OAuthConsentViewProps) {
     const interaction = state.kind === 'ready' || state.kind === 'submitting' ? state.interaction : state.kind === 'error' ? state.interaction : undefined;
 
     return (
@@ -172,7 +182,7 @@ export function OAuthConsent() {
                                 <AlertTitle>Couldn&apos;t load the request</AlertTitle>
                                 <AlertDescription>No access was granted. Check your connection and try again.</AlertDescription>
                             </Alert>
-                            <Button type="button" onClick={() => void loadInteraction()}>
+                            <Button type="button" onClick={onRetry}>
                                 Try again
                             </Button>
                         </div>
@@ -250,7 +260,7 @@ export function OAuthConsent() {
                                         variant="outline"
                                         size="lg"
                                         disabled={state.kind === 'submitting'}
-                                        onClick={() => void decide('deny', interaction)}
+                                        onClick={() => onDecide('deny', interaction)}
                                     >
                                         {state.kind === 'submitting' && state.decision === 'deny' ? 'Denying…' : 'Deny'}
                                     </Button>
@@ -259,7 +269,7 @@ export function OAuthConsent() {
                                         size="lg"
                                         disabled={state.kind === 'submitting'}
                                         loading={state.kind === 'submitting' && state.decision === 'approve'}
-                                        onClick={() => void decide('approve', interaction)}
+                                        onClick={() => onDecide('approve', interaction)}
                                     >
                                         {state.kind === 'submitting' && state.decision === 'approve' ? 'Approving…' : 'Approve access'}
                                     </Button>
