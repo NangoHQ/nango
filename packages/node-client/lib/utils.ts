@@ -29,7 +29,7 @@ export const validateSyncRecordConfiguration = (config: ListRecordsRequestConfig
 
     requiredParams.forEach((param) => {
         if (typeof config[param] === 'undefined') {
-            throw new Error(`${param} is missing and is required to make a proxy call!`);
+            throw new Error(`${param} is missing and is required to fetch sync records!`);
         }
     });
 };
@@ -50,7 +50,7 @@ export function addQueryParams(url: URL, queries?: Record<string, any>) {
     Object.entries(queries).forEach(([name, value]) => {
         if (Array.isArray(value)) {
             for (const el of value) {
-                url.searchParams.set(name, el);
+                url.searchParams.append(name, el);
             }
         } else if (value !== null && value !== undefined) {
             url.searchParams.set(name, value);
