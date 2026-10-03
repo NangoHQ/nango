@@ -60,6 +60,7 @@ export const ConnectionCreate: React.FC = () => {
         },
         mode: 'onChange'
     });
+    const { isValid } = form.formState;
 
     const formValues = form.watch();
 
@@ -146,7 +147,7 @@ export const ConnectionCreate: React.FC = () => {
                             overrideDocUrl={formValues.overrideDocUrl}
                             overrideWebhookUrl={formValues.overrideWebhookUrl}
                             defaultDocUrl={provider?.data.docs_connect}
-                            isFormValid={form.formState.isValid}
+                            isFormValid={isValid}
                         />
                         <Form {...form}>
                             <ConnectionAdvancedConfig isOauth2={isOauth2} />
