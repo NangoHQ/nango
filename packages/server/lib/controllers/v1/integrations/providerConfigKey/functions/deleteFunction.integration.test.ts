@@ -60,21 +60,24 @@ describe(`DELETE ${route}`, () => {
         expect(res.json.error.code).toBe('invalid_query_params');
     });
 
-    it('should reject the on-event type', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+    it('should accept the on-event type and report it as managed by deploy', async () => {
+        const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
+        const onEventScript = await seeders.createOnEventScript({ account, environment: env, providerConfigKey: 'github', sdkVersion: undefined });
 
         const res = await api.fetch(route, {
             method: 'DELETE',
-            // @ts-expect-error on-event is not deletable through this endpoint
             query: { env: 'dev', type: 'on-event' },
-            params: { providerConfigKey: 'github', functionName: 'my-on-event' },
+            params: { providerConfigKey: 'github', functionName: onEventScript.name },
             token: apiKey.secret
         });
 
+        // On-event functions are always deployed via `nango deploy` today (no standalone
+        // variant exists), so accepting the type now surfaces the correct, specific error
+        // instead of rejecting the query param itself.
         isError(res.json);
         expect(res.res.status).toBe(400);
-        expect(res.json.error.code).toBe('invalid_query_params');
+        expect(res.json.error.code).toBe('function_managed_by_deploy');
     });
 
     it('should 404 when integration does not exist', async () => {

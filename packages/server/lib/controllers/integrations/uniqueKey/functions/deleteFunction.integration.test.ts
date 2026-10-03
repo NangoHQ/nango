@@ -66,6 +66,26 @@ describe(`DELETE ${route}`, () => {
         expect(res.json.error.code).toBe('invalid_query_params');
     });
 
+    it('should accept the on-event type and report it as managed by deploy', async () => {
+        const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const onEventScript = await seeders.createOnEventScript({ account, environment: env, providerConfigKey: 'github', sdkVersion: undefined });
+
+        const res = await api.fetch(route, {
+            method: 'DELETE',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github', name: onEventScript.name },
+            query: { type: 'on-event' }
+        });
+
+        // On-event functions are always deployed via `nango deploy` today (no standalone
+        // variant exists), so accepting the type now surfaces the correct, specific error
+        // instead of rejecting the query param itself.
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json.error.code).toBe('function_managed_by_deploy');
+    });
+
     it('should reject repo functions (managed by nango deploy)', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
