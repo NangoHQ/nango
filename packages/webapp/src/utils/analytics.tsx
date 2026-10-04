@@ -20,7 +20,8 @@ export function useAnalyticsIdentify() {
     const posthog = usePostHog();
 
     return (user: ApiUser, accountGroup?: AccountGroupProperties) => {
-        posthog?.identify(user.email, {
+        // Must match the distinct id the server sends for this user, or PostHog counts one person twice.
+        posthog?.identify(String(user.id), {
             email: user.email,
             name: user.name,
             userId: user.id,
@@ -34,6 +35,19 @@ export function useAnalyticsIdentify() {
             sentAccountGroup = group;
         }
     };
+}
+
+// Opt-out persists in the browser. That keeps capturing off through the reload that starts an impersonation.
+export function stopAnalytics() {
+    posthog?.opt_out_capturing();
+    posthog?.stopSessionRecording();
+}
+
+export function resumeAnalytics() {
+    if (posthog?.has_opted_out_capturing()) {
+        posthog.opt_in_capturing({ captureEventName: false });
+        posthog.startSessionRecording();
+    }
 }
 
 export function resetAnalytics() {
