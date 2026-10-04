@@ -1,0 +1,95 @@
+---
+title: 'Serval'
+sidebarTitle: 'Serval'
+description: 'Integrate your application with the Serval API'
+---
+
+## Quickstart
+
+Connect to Serval with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration" id="create-integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Serval_.
+    </Step>
+    <Step title="Authorize Serval" id="authorize-serval">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then pick your organization's API domain and enter the Client ID and Client Secret of a Serval API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Serval API" id="call-serval-api">
+    Let's make your first request to the Serval API (list workflows). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/workflows?pageSize=1" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/workflows',
+            params: { pageSize: 1 },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app" id="implement-nango">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## Serval integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my Serval account?](/api-integrations/serval/connect)
+Connect your Serval account using the Connect UI
+
+Official docs:
+- [Serval API reference](https://docs.serval.com/sections/api-reference/authorization)
+- [Create Token](https://docs.serval.com/api-reference/auth-api/create-token)
+- [Data residency](https://docs.serval.com/sections/documentation/platform/data-residency)
+
+## Pre-built syncs & actions for Serval
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/serval/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- The API host depends on the region the Serval organization was created in: `public.api.serval.com` (United States) or `public.eu1.serval.com` (European Union). The region is fixed at organization creation, and a request to the other region's host does not reach the organization's data.
+- Access tokens come from `POST /v2/auth/token` with the API key's Client ID and Client Secret sent as HTTP Basic and `grant_type=client_credentials` in a form-encoded body. User OAuth tokens are not accepted on that endpoint.
+- Every Serval API key expires (the longest option is one year). When the key expires, the token request starts failing with `401 {"code":"unauthenticated","message":"invalid client credentials"}`, and the connection needs a new key.
+- An API key can be limited to permission bundles such as `workflows:read` or `tickets:read`, and a team-scoped key can only reach the teams it allows. A key with no bundles has full access. A call outside the key's bundles is rejected even though the token request succeeds.
+- Some endpoints accept only user OAuth tokens and reject API keys, even full-access ones. Each endpoint's reference page lists the credentials it accepts.
+- List endpoints page with `pageSize` and `pageToken`, and return `nextPageToken` until the last page.
+- `GET /v2/workflows?pageSize=1` needs only the `workflows:read` bundle and works with both organization and team keys, so it is a cheap call for checking a connection.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/serval.mdx)</Note>

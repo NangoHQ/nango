@@ -22857,6 +22857,46 @@ sellsy-oauth2-cc:
             title: Secret shopper
             description: Your Secret shopper
 
+serval:
+    display_name: Serval
+    categories:
+        - ticketing
+        - iam
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.domain}/v2/auth/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.domain}
+    docs: https://nango.dev/docs/api-integrations/serval
+    docs_connect: https://nango.dev/docs/api-integrations/serval/connect
+    connection_config:
+        domain:
+            type: string
+            title: API Domain
+            description: The public API domain for the region your Serval organization is hosted in. Choose public.api.serval.com for the United States.
+            enum:
+                - public.api.serval.com
+                - public.eu1.serval.com
+            order: 1
+            doc_section: '#step-2-find-your-region'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID of your Serval API key.
+            pattern: '^\S+$'
+            doc_section: '#step-1-create-an-api-key'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret of your Serval API key.
+            pattern: '^\S+$'
+            example: svl_secret_pk_********************************************
+            secret: true
+            doc_section: '#step-1-create-an-api-key'
+
 servicem8:
     display_name: ServiceM8
     categories:

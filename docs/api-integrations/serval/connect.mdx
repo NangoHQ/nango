@@ -1,0 +1,48 @@
+---
+title: Serval - How do I link my account?
+sidebarTitle: Serval
+---
+
+## Overview
+
+To authenticate with Serval, you will need:
+1. **Client ID** - The Client ID of a Serval API key.
+2. **Client Secret** - The Client Secret issued with that API key.
+3. **API Domain** - The public API domain for the region your Serval organization is hosted in.
+
+### Prerequisites
+
+- You must be an organization admin in Serval to create an organization-wide API key. Team Managers can create team-scoped keys from **Team Settings** > **API Keys**; those keys only reach the teams they allow.
+
+### Instructions
+
+#### Step 1: Create an API key
+
+1. Log in to Serval as an organization admin.
+2. Go to **Org Settings** > **API Keys** and create a new key.
+3. Give the key a name and pick an expiration. Every Serval API key expires; the longest option is one year.
+4. Optionally limit the key to the permission bundles your integration needs, for example `workflows:read`. A key with no bundles has full access.
+5. Copy the **Client ID** and **Client Secret**. The Client Secret starts with `svl_secret_`.
+
+#### Step 2: Find your region
+
+Pick the API domain that matches the address you use to sign in to Serval:
+
+| Serval app address | API Domain |
+|--------------------|------------|
+| `app.serval.com` | `public.api.serval.com` (United States) |
+| `app.eu1.serval.com` | `public.eu1.serval.com` (European Union) |
+
+Nango sends both the token request and all API calls to the domain you pick, so a wrong value points the connection at the other region and authentication fails.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Client ID**, **Client Secret**, and **API Domain**:
+
+1. Open the form where you need to authenticate with Serval.
+2. Select your **API Domain** from Step 2.
+3. Enter your **Client ID** in the **Client ID** field.
+4. Enter your **Client Secret** in the **Client Secret** field.
+5. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Serval.

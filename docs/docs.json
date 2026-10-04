@@ -1816,6 +1816,7 @@
               "api-integrations/sentinelone",
               "integrations/all/sentry",
               "integrations/all/sentry-oauth",
+              "api-integrations/serval",
               "integrations/all/servicem8",
               "api-integrations/servicenow",
               "api-integrations/servicenow-jwt",
