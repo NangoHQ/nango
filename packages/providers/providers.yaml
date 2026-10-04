@@ -21782,6 +21782,7 @@ salesforce:
             pattern: '^(?!(?:.*\.)?[Ll][Ii][Gg][Hh][Tt][Nn][Ii][Nn][Gg]\.([Ff][Oo][Rr][Cc][Ee]|[Ss][Aa][Ll][Ee][Ss][Ff][Oo][Rr][Cc][Ee])\.[Cc][Oo][Mm]$)[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$'
             example: acme.my.salesforce.com
             prefix: https://
+            normalize: hostname
             optional: true
             doc_section: '#step-1-finding-your-hostname'
 
@@ -21813,6 +21814,7 @@ salesforce-cc:
             pattern: '^(?!(?:.*\.)?[Ll][Ii][Gg][Hh][Tt][Nn][Ii][Nn][Gg]\.([Ff][Oo][Rr][Cc][Ee]|[Ss][Aa][Ll][Ee][Ss][Ff][Oo][Rr][Cc][Ee])\.[Cc][Oo][Mm]$)[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$'
             example: acme.my.salesforce.com
             prefix: https://
+            normalize: hostname
 
 salesforce-jwt:
     display_name: Salesforce (JWT)
@@ -21912,6 +21914,7 @@ salesforce-sandbox:
             pattern: '^(?!(?:.*\.)?[Ll][Ii][Gg][Hh][Tt][Nn][Ii][Nn][Gg]\.([Ff][Oo][Rr][Cc][Ee]|[Ss][Aa][Ll][Ee][Ss][Ff][Oo][Rr][Cc][Ee])\.[Cc][Oo][Mm]$)[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$'
             example: acme--sandboxname.sandbox.my.salesforce.com
             prefix: https://
+            normalize: hostname
             optional: true
             doc_section: '#step-1-finding-your-hostname'
 

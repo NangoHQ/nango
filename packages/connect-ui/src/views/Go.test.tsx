@@ -13,6 +13,8 @@ import {
     dualConfigIntegrationFixtureNoPreconfig,
     dualConfigProvider,
     integrationFixture,
+    salesforceIntegrationFixture,
+    salesforceProvider,
     twoStepIntegrationFixture,
     twoStepIntegrationFixtureNoPreconfig,
     twoStepOtherIntegrationFixture,
@@ -189,6 +191,52 @@ describe('Go', () => {
             await expect.element(page.getByRole('heading', { name: 'Link Tableau Account' })).toBeInTheDocument();
             await expect.element(page.getByPlaceholder('Personal App Token', { exact: true })).toBeInTheDocument();
             expect(page.getByPlaceholder('Client ID').query()).toBeNull();
+        });
+    });
+
+    describe('normalize: hostname', () => {
+        // `userEvent.paste()` takes no argument and pastes the system clipboard into whatever has focus.
+        async function pasteInto(locator: ReturnType<typeof page.getByPlaceholder>, text: string) {
+            await userEvent.click(locator);
+            await navigator.clipboard.writeText(text);
+            await userEvent.paste();
+        }
+
+        it('reduces a pasted Instance URL to the bare host the field expects', async () => {
+            await renderApp({ route: '/go', seedStore: { provider: salesforceProvider, integration: salesforceIntegrationFixture } });
+            await expect.element(page.getByRole('heading', { name: 'Link Salesforce Account' })).toBeInTheDocument();
+
+            const input = page.getByPlaceholder('acme.my.salesforce.com');
+            await pasteInto(input, 'https://acme.my.salesforce.com/');
+
+            await expect.element(input).toHaveValue('acme.my.salesforce.com');
+            expect(page.getByText('Incorrect Hostname').query()).toBeNull();
+        });
+
+        it('submits the bare host, so the prefix is not doubled', async () => {
+            await renderApp({ route: '/go', seedStore: { provider: salesforceProvider, integration: salesforceIntegrationFixture } });
+            await expect.element(page.getByRole('heading', { name: 'Link Salesforce Account' })).toBeInTheDocument();
+
+            await pasteInto(page.getByPlaceholder('acme.my.salesforce.com'), 'https://acme.my.salesforce.com/');
+            await userEvent.click(page.getByRole('button', { name: 'Connect' }));
+
+            await vi.waitFor(() =>
+                expect(auth).toHaveBeenCalledWith('salesforce', expect.objectContaining({ params: { hostname: 'acme.my.salesforce.com' } }))
+            );
+        });
+
+        it('leaves the value alone on a field without the opt-in', async () => {
+            const plainProvider = {
+                ...salesforceProvider,
+                connection_config: { hostname: { ...salesforceProvider.connection_config.hostname, normalize: undefined, pattern: '^.*$' } }
+            };
+            await renderApp({ route: '/go', seedStore: { provider: plainProvider, integration: salesforceIntegrationFixture } });
+            await expect.element(page.getByRole('heading', { name: 'Link Salesforce Account' })).toBeInTheDocument();
+
+            const input = page.getByPlaceholder('acme.my.salesforce.com');
+            await pasteInto(input, 'https://acme.my.salesforce.com/');
+
+            await expect.element(input).toHaveValue('https://acme.my.salesforce.com/');
         });
     });
 });

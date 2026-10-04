@@ -33,6 +33,7 @@ export interface SimplifiedJSONSchema {
     hidden?: string;
     prefix?: string;
     suffix?: string;
+    normalize?: 'hostname';
     doc_section?: string;
     secret?: boolean;
     automated: boolean;

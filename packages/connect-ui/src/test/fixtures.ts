@@ -124,3 +124,35 @@ export const authResultFixture = {
     providerConfigKey: 'github',
     connectionId: 'conn_test_123'
 } satisfies AuthResult;
+
+// Mirrors `salesforce` in providers.yaml: the only visible field is an optional `hostname` rendered
+// behind a `https://` prefix, which users fill by pasting the Instance URL their org shows them.
+export const salesforceProvider = {
+    auth_mode: 'OAUTH2',
+    display_name: 'Salesforce',
+    docs: 'https://docs.example.com/salesforce',
+    docs_connect: 'https://docs.example.com/salesforce/connect',
+    name: 'salesforce',
+    logo_url: 'https://app.nango.dev/images/template-logos/salesforce.svg',
+    connection_config: {
+        hostname: {
+            type: 'string',
+            title: 'Hostname',
+            description: 'The hostname to your Salesforce instance',
+            automated: false,
+            optional: true,
+            order: 1,
+            example: 'acme.my.salesforce.com',
+            prefix: 'https://',
+            normalize: 'hostname',
+            pattern: '^[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?)*$'
+        }
+    }
+} satisfies GetPublicProvider['Success']['data'];
+
+export const salesforceIntegrationFixture: GetPublicIntegration['Success']['data'] = {
+    ...integrationFixture,
+    unique_key: 'salesforce',
+    provider: 'salesforce',
+    display_name: 'Salesforce'
+};
