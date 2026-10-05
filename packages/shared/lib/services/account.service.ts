@@ -316,7 +316,7 @@ class AccountService {
 
         // After the transaction, so a rolled-back account is never counted.
         if (account && isSignup) {
-            productTracking.track({ name: 'auth:account_create', team: account });
+            productTracking.track({ name: 'auth:account_create', team: account, eventProperties: {} });
         }
 
         return account;
