@@ -210,7 +210,7 @@ describe('Account service', () => {
 
         const account = await accountService.createAccount({ name: uuid() });
 
-        expect(track).toHaveBeenCalledWith({ name: 'auth:account_create', team: account, eventProperties: {} });
+        expect(track).toHaveBeenCalledWith({ name: 'auth:account_create', team: account });
     });
 
     it('does not track an account that is not a signup', async () => {
