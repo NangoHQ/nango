@@ -332,6 +332,14 @@ export type AnalyticsEventNameFor<S extends AnalyticsEventCatalogue[keyof Analyt
 
 export type AnalyticsEventProperties<E extends keyof AnalyticsEventCatalogue> = AnalyticsEventCatalogue[E]['properties'];
 
+type HasNoRequiredProperties<E extends keyof AnalyticsEventCatalogue> = Record<never, never> extends AnalyticsEventProperties<E> ? true : false;
+
+export type AnalyticsEventPropertiesInput<E extends keyof AnalyticsEventCatalogue> =
+    HasNoRequiredProperties<E> extends true ? { eventProperties?: AnalyticsEventProperties<E> } : { eventProperties: AnalyticsEventProperties<E> };
+
+export type AnalyticsEventPropertiesArgs<E extends keyof AnalyticsEventCatalogue> =
+    HasNoRequiredProperties<E> extends true ? [properties?: AnalyticsEventProperties<E>] : [properties: AnalyticsEventProperties<E>];
+
 export type AnalyticsEventStructuredProperties<E extends keyof AnalyticsEventCatalogue> = AnalyticsEventCatalogue[E] extends { structured_properties: infer S }
     ? S
     : never;
