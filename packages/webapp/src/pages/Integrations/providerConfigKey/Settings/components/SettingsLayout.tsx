@@ -1,7 +1,17 @@
 import { FieldLabel } from '@nangohq/design-system';
 
-/** Label column from the settings frame (Figma Field label, 237px). */
-const LABEL_COLUMN = 'w-[237px]';
+import type { GetIntegration } from '@nangohq/types';
+
+const LABEL_COLUMN = 'w-60';
+
+const CREDENTIALS_AUTH_MODES = new Set<string>(['OAUTH1', 'OAUTH2', 'TBA', 'OAUTH2_CC', 'APP', 'CUSTOM', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC', 'INSTALL_PLUGIN']);
+
+export function showsCredentialsSection(data: GetIntegration['Success']['data']): boolean {
+    const hasCustomIntegrationConfig =
+        data.template.integration_config && Object.keys(data.template.integration_config).length > 0 && !data.integration.shared_credentials_id;
+
+    return Boolean(hasCustomIntegrationConfig) || CREDENTIALS_AUTH_MODES.has(data.template.auth_mode);
+}
 
 export function isOAuthCredentials(authMode: string): boolean {
     return authMode === 'TBA' || authMode.startsWith('OAUTH') || authMode.startsWith('MCP_OAUTH');
