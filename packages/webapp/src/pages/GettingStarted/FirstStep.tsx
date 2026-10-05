@@ -7,7 +7,7 @@ import { Button } from '@nangohq/design-system';
 import Nango from '@nangohq/frontend';
 
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
-import { apiConnectSessions } from '../../hooks/useConnect';
+import { useCreateConnectSession } from '../../hooks/useConnect';
 import { useDeleteConnection } from '../../hooks/useConnections';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { GetUsageQueryKey } from '../../hooks/usePlan';
@@ -34,6 +34,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
 
     const { toast } = useToast();
     const { mutateAsync: deleteConnection, isPending: isDeletingConnection } = useDeleteConnection();
+    const { mutateAsync: createSession } = useCreateConnectSession(env);
     const connectUI = useRef<ConnectUI>();
     const isDarkMode = useThemeStore(darkModeSelector);
 
@@ -58,7 +59,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
         //   instead of blocking the main loop and no visual clue for the end user
         setTimeout(async () => {
             try {
-                const res = await apiConnectSessions(env, {
+                const { data } = await createSession({
                     allowed_integrations: integration ? [integration.unique_key] : undefined,
                     end_user: {
                         id: user.id.toString(),
@@ -67,11 +68,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                     },
                     organization: undefined
                 });
-                if ('error' in res.json) {
-                    connectUI.current?.close();
-                    return;
-                }
-                connectUI.current!.setSessionToken(res.json.data.token);
+                connectUI.current!.setSessionToken(data.token);
             } catch {
                 connectUI.current?.close();
             }

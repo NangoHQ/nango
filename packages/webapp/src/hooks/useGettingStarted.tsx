@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 
@@ -30,13 +30,17 @@ export function useGettingStarted(env: string) {
     };
 }
 
-export async function patchGettingStarted(env: string, body: PatchGettingStarted['Body']) {
-    const res = await apiFetch(`/api/v1/getting-started?env=${env}`, {
-        method: 'PATCH',
-        body: JSON.stringify(body)
-    });
+export function usePatchGettingStarted(env: string) {
+    return useMutation<void, APIError, PatchGettingStarted['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch(`/api/v1/getting-started?env=${env}`, {
+                method: 'PATCH',
+                body: JSON.stringify(body)
+            });
 
-    return {
-        res
-    };
+            if (!res.ok) {
+                throw new APIError({ res, json: (await res.json()) as PatchGettingStarted['Errors'] });
+            }
+        }
+    });
 }
