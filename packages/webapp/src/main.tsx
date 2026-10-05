@@ -6,7 +6,7 @@ import App from './app/App';
 import { Providers } from './app/providers';
 import { INVITE_PREFILL_PARAM } from './pages/Team/components/inviteForm';
 import { globalEnv } from './utils/env';
-import { redactSensitiveProperties, redactSensitiveText } from './utils/sensitive-url';
+import { maskCapturedNetworkRequest, redactSensitiveProperties } from './utils/sensitive-url';
 
 if (globalEnv.publicPosthogKey) {
     posthog.init(globalEnv.publicPosthogKey, {
@@ -26,7 +26,7 @@ if (globalEnv.publicPosthogKey) {
             if (!event) {
                 return event;
             }
-            // Skipped for cost: $snapshot payloads are large and their urls go through maskNetworkRequestFn.
+            // Skipped for cost: $snapshot payloads are large and their urls go through maskCapturedNetworkRequestFn.
             if (event.event === '$snapshot') {
                 return event;
             }
@@ -47,9 +47,7 @@ if (globalEnv.publicPosthogKey) {
             // never apply (body always matches). Mask everything, unmask via maskTextFn.
             maskTextSelector: '*',
             maskTextFn: (text, element) => (element?.closest('[data-ph-unmask]') ? text : text.replace(/\S/g, '*')),
-            // Masks the recording's own url. Deprecated, but the only key posthog-js 1.212 reads
-            // here; newer versions prefer maskCapturedNetworkRequestFn, whose payload is `name`.
-            maskNetworkRequestFn: (data) => ({ ...data, url: redactSensitiveText(data.url) })
+            maskCapturedNetworkRequestFn: maskCapturedNetworkRequest
         }
     });
 }
