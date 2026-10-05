@@ -30,7 +30,7 @@ import type {
 } from '@nangohq/types';
 import type { InfiniteData, QueryKey } from '@tanstack/react-query';
 
-export async function fetchCurrentPlan(env: string): Promise<GetPlan['Success']> {
+async function fetchCurrentPlan(env: string): Promise<GetPlan['Success']> {
     const res = await apiFetch(`/api/v1/plans/current?env=${env}`, { method: 'GET' });
     const json = (await res.json()) as GetPlan['Reply'];
     if (res.status !== 200 || 'error' in json) {
@@ -90,15 +90,20 @@ export function planHasRbac(plan?: ApiPlan | null): boolean {
     return plan.has_rbac;
 }
 
-export async function apiPostPlanExtendTrial(env: string) {
-    const res = await apiFetch(`/api/v1/plans/trial/extension?env=${env}`, {
-        method: 'POST'
-    });
+export function useApiPostPlanExtendTrial(env: string) {
+    return useMutation<PostPlanExtendTrial['Success'], APIError>({
+        mutationFn: async () => {
+            const res = await apiFetch(`/api/v1/plans/trial/extension?env=${env}`, {
+                method: 'POST'
+            });
 
-    return {
-        res,
-        json: (await res.json()) as PostPlanExtendTrial['Reply']
-    };
+            const json = (await res.json()) as PostPlanExtendTrial['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        }
+    });
 }
 
 export function useApiGetPlans(env: string, options?: { enabled?: boolean }) {

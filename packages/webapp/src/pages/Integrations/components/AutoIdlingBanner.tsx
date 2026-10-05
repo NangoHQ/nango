@@ -1,12 +1,11 @@
 import { Clock, Loader2, TriangleAlert } from 'lucide-react';
-import { useState } from 'react';
 
 import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { usePermissions } from '@/hooks/usePermissions';
-import { apiPostPlanExtendTrial, useCurrentPlan, useTrial } from '../../../hooks/usePlan';
+import { useApiPostPlanExtendTrial, useCurrentPlan, useTrial } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 
@@ -21,14 +20,12 @@ export const AutoIdlingBanner: React.FC = () => {
     const { can } = usePermissions();
     const canExtendTrial = can('account:plan:update');
 
-    const [trialLoading, setTrialLoading] = useState(false);
+    const { mutateAsync: extendTrial, isPending: trialLoading } = useApiPostPlanExtendTrial(env);
 
     const onClickExtend = async () => {
-        setTrialLoading(true);
-        const res = await apiPostPlanExtendTrial(env);
-        setTrialLoading(false);
-
-        if ('error' in res.json) {
+        try {
+            await extendTrial();
+        } catch {
             toast({ title: 'There was an issue extending auto idling', variant: 'error' });
             return;
         }

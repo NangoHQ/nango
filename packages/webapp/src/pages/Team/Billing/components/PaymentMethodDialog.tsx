@@ -1,8 +1,10 @@
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import { Loader } from 'lucide-react';
+import { CircleX, Loader } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import {
+    Alert,
+    AlertDescription,
     Button,
     Dialog,
     DialogBody,
@@ -17,13 +19,11 @@ import {
 
 import { Skeleton } from '@/components/ui/Skeleton';
 import { GetOverdueInvoicesQueryKey } from '@/hooks/usePlan';
-import { apiPostStripeCollectPayment } from '@/hooks/useStripe';
+import { usePostStripeCollectPayment } from '@/hooks/useStripe';
 import { useToast } from '@/hooks/useToast';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe';
-
-import type { PostStripeCollectPayment } from '@nangohq/types';
 
 export const PaymentMethodDialog: React.FC<{
     replace?: boolean;
@@ -35,7 +35,8 @@ export const PaymentMethodDialog: React.FC<{
     const env = useStore((state) => state.env);
     const darkMode = useThemeStore(darkModeSelector);
 
-    const [clientSecret, setClientSecret] = useState<string | null>(null);
+    const { mutate: collectPayment, data: collectPaymentData, status: collectPaymentStatus, reset: resetCollectPayment } = usePostStripeCollectPayment(env);
+    const clientSecret = collectPaymentData?.data.secret ?? null;
 
     const [internalOpen, setInternalOpen] = useState(false);
     const isControlled = openProp !== undefined;
@@ -51,21 +52,15 @@ export const PaymentMethodDialog: React.FC<{
     );
 
     useEffect(() => {
-        if (open && !clientSecret) {
-            const fetchClientSecret = async () => {
-                const secret = ((await apiPostStripeCollectPayment(env)).json as PostStripeCollectPayment['Success']).data.secret;
-                setClientSecret(secret);
-            };
-            void fetchClientSecret();
+        if (!open) {
+            resetCollectPayment();
+        } else if (collectPaymentStatus === 'idle') {
+            collectPayment();
         }
-    }, [open, clientSecret, env]);
+    }, [open, collectPaymentStatus, collectPayment, resetCollectPayment]);
 
     const handleDialogOpenChange = (newOpen: boolean) => {
         setOpen(newOpen);
-        if (newOpen) {
-            // Reset client secret when opening dialog
-            setClientSecret(null);
-        }
     };
 
     return (
@@ -122,6 +117,20 @@ export const PaymentMethodDialog: React.FC<{
                             }}
                         />
                     </Elements>
+                ) : collectPaymentStatus === 'error' ? (
+                    <DialogBody>
+                        <div className="flex flex-col gap-4">
+                            <Alert variant="danger">
+                                <CircleX />
+                                <AlertDescription>Couldn&apos;t load the payment form.</AlertDescription>
+                            </Alert>
+                            <div className="flex justify-end">
+                                <Button type="button" onClick={() => collectPayment()}>
+                                    Try again
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogBody>
                 ) : (
                     <DialogBody>
                         <div className="flex flex-col gap-4">
