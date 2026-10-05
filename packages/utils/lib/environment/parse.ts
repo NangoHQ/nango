@@ -372,6 +372,8 @@ const ENVS_SHAPE = z.object({
     TASKS_DB_POOL_MAX: z.coerce.number().optional().default(10),
 
     // Jobs
+    // When false, action start logs omit the action input. The start message itself is still written.
+    NANGO_LOG_ACTION_INPUT: z.stringbool().optional().default(true),
     JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
     JOBS_NAMESPACE: z.string().optional().default('nango'),
     NANGO_JOBS_PORT: z.coerce.number().optional().default(3005),
