@@ -2184,7 +2184,7 @@ export class ConnectionService {
             const requestOptions = {
                 headers,
                 ...getOAuthAxiosRequestConfig(),
-                ...(httpsAgent && { httpAgent: httpsAgent, httpsAgent })
+                ...(httpsAgent && { httpsAgent })
             };
 
             const bodyContent =
