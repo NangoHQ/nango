@@ -3782,12 +3782,14 @@ billit-oauth:
     proxy:
         base_url: https://api.${connectionConfig.domain}
     docs: https://nango.dev/docs/api-integrations/billit-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/billit-oauth/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/billit-oauth/how-to-register-your-own-billit-oauth-app
     connection_config:
         domain:
             type: string
             title: Environment
             description: Choose the environment matching this integration's OAuth client.
+            doc_section: '#step-1-choose-your-environment'
             enum:
                 - sandbox.billit.be
                 - billit.be

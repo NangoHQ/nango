@@ -7,6 +7,7 @@ import OAuth from 'oauth-1.0a';
 import { assertSafeOutboundUrlSync, getSafeHttpAgents, getSafeLookup } from '@nangohq/egress';
 import { Err, isBaseUrlOverrideDenied, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
+import { validateBillitOAuthConnectionConfig } from '../../utils/billit.js';
 import {
     connectionCopyWithParsedConnectionConfig,
     formatPem,
@@ -419,6 +420,8 @@ export function enforceProxyOutboundUrlPolicy({
  * Construct URL
  */
 export function buildProxyURL({ config, connection }: { config: ApplicationConstructedProxyConfiguration; connection: ConnectionForProxy }) {
+    validateBillitOAuthConnectionConfig(config.providerName, connection.connection_config);
+
     const { provider: { proxy: { base_url: templateApiBase } = {} } = {}, endpoint: apiEndpoint } = config;
 
     let apiBase = config.baseUrlOverride || templateApiBase;

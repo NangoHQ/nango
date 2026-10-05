@@ -51,18 +51,27 @@ Connect to the general Billit API with Nango using OAuth2. For API key authentic
         </Tab>
     </Tabs>
 
-    For company-specific API requests, pass that company's `partyid` header. Nango adds the OAuth bearer token automatically.
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
     </Step>
     <Step id="implement-nango" title="Implement Nango in your app">
-    Follow the [Auth implementation guide](/guides/auth/auth-guide) to add the connection flow to your application.
+    Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+    To obtain your own production credentials, follow the setup guide linked below.
     </Step>
 </Steps>
 
 ## Billit integration guides
 
 - [How to register your own Billit OAuth app](/api-integrations/billit-oauth/how-to-register-your-own-billit-oauth-app): Request OAuth credentials and configure Nango.
+- [How to connect your Billit account](/api-integrations/billit-oauth/connect): Select your environment and authorize access.
 
 Official docs: [Billit OAuth](https://docs.billit.be/docs/how-do-i-get-started-with-oauth) and [account information](https://docs.billit.be/reference/account_getaccountinformation-1).
+
+## Gotchas
+
+For company-specific API requests, pass that company's `partyid` header. Nango adds the OAuth bearer token automatically.
 
 ## Pre-built syncs & actions for Billit
 

@@ -6,6 +6,7 @@ import { redactHeaders } from '@nangohq/utils';
 import { LogActionEnum } from '../models/Telemetry.js';
 import connectionsManager from '../services/connection.service.js';
 import { assertSafeOAuthUrl, getOAuthSafeHttpAgents } from '../services/proxy/outbound-policy.js';
+import { validateBillitOAuthConnectionConfig } from '../utils/billit.js';
 import { NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { makeUrl } from '../utils/utils.js';
@@ -37,6 +38,8 @@ export function getSimpleOAuth2ClientConfig(
     provider: Provider,
     connectionConfig: Record<string, string>
 ): Merge<ModuleOptions, { http: WreckHttpOptions }> {
+    validateBillitOAuthConnectionConfig(providerConfig.provider, connectionConfig);
+
     const templateTokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url!['OAUTH2'] as string);
 
     let tokenUrl: URL;

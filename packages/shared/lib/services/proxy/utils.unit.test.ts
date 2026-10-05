@@ -1,7 +1,7 @@
 import * as crypto from 'node:crypto';
 
 import FormData from 'form-data';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getProvider } from '@nangohq/providers';
 
@@ -1291,6 +1291,41 @@ describe('buildProxyURL', () => {
             'y-custom-header': 'custom values',
             'my-token': 'sweet-secret-token'
         });
+    });
+
+    it.each(['billit.be', 'sandbox.billit.be'])('builds the Billit proxy URL for %s', (domain) => {
+        const provider = getProvider('billit-oauth');
+        assert(provider);
+        const config = getDefaultProxy({ providerName: 'billit-oauth', provider, endpoint: '/v1/orders' });
+        const connection = getTestConnection({ connection_config: { domain } });
+
+        expect(buildProxyURL({ config, connection })).toBe(`https://api.${domain}/v1/orders`);
+    });
+
+    it.each([
+        'attacker.example',
+        'billit.be.attacker.example',
+        'billit.be@attacker.example',
+        'billit.be/attacker',
+        'billit.be%2fattacker',
+        'billit.be:443',
+        ''
+    ])('rejects untrusted Billit proxy domain %j', (domain) => {
+        const provider = getProvider('billit-oauth');
+        assert(provider);
+        const config = getDefaultProxy({ providerName: 'billit-oauth', provider });
+        const connection = getTestConnection({ connection_config: { domain } });
+
+        expect(() => buildProxyURL({ config, connection })).toThrow('Billit OAuth domain must be billit.be or sandbox.billit.be');
+    });
+
+    it('rejects a missing Billit proxy environment', () => {
+        const provider = getProvider('billit-oauth');
+        assert(provider);
+        const config = getDefaultProxy({ providerName: 'billit-oauth', provider });
+        const connection = getTestConnection({ connection_config: {} });
+
+        expect(() => buildProxyURL({ config, connection })).toThrow('Billit OAuth domain must be billit.be or sandbox.billit.be');
     });
 
     it('should handle Proxy base URL interpolation with connection configuration param', () => {

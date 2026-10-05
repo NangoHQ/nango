@@ -1,9 +1,10 @@
 import http from 'node:http';
 
 import { AuthorizationCode } from 'simple-oauth2';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, assert, describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
+import { getProvider } from '@nangohq/providers';
 
 import { assertSafeOAuthUrl, getOAuthSafeHttpAgents } from '../services/proxy/outbound-policy.js';
 import { getFreshOAuth2Credentials, getSimpleOAuth2ClientConfig } from './oauth2.client.js';
@@ -86,6 +87,44 @@ function tokenServer(tokenByGrant: Record<string, Record<string, unknown>>): htt
 }
 
 describe('getSimpleOAuth2ClientConfig', () => {
+    it.each(['billit.be', 'sandbox.billit.be'])('uses the supported Billit environment %s', (domain) => {
+        const provider = getProvider('billit-oauth');
+        assert(provider);
+        const cfg = getSimpleOAuth2ClientConfig(makeConfig({ provider: 'billit-oauth' }), provider, { domain });
+
+        expect(cfg.auth).toEqual({
+            authorizeHost: `https://my.${domain}`,
+            authorizePath: '/Account/Logon',
+            tokenHost: `https://api.${domain}`,
+            tokenPath: '/OAuth2/token'
+        });
+        expect(cfg.options).toMatchObject({ authorizationMethod: 'body', bodyFormat: 'json' });
+    });
+
+    it.each([
+        'attacker.example',
+        'billit.be.attacker.example',
+        'billit.be@attacker.example',
+        'billit.be/attacker',
+        'billit.be%2fattacker',
+        'billit.be:443',
+        ''
+    ])('rejects untrusted Billit domain %j before building authorization or token URLs', (domain) => {
+        const provider = getProvider('billit-oauth');
+        assert(provider);
+        expect(() => getSimpleOAuth2ClientConfig(makeConfig({ provider: 'billit-oauth' }), provider, { domain })).toThrow(
+            'Billit OAuth domain must be billit.be or sandbox.billit.be'
+        );
+    });
+
+    it('rejects a missing Billit environment instead of falling back to a token URL', () => {
+        const provider = getProvider('billit-oauth');
+        assert(provider);
+        expect(() => getSimpleOAuth2ClientConfig(makeConfig({ provider: 'billit-oauth' }), provider, {})).toThrow(
+            'Billit OAuth domain must be billit.be or sandbox.billit.be'
+        );
+    });
+
     it('wires the OAuth-safe agents into the simple-oauth2 http config', () => {
         const provider = makeProvider({ token_url: 'https://api.example.com/token', authorization_url: 'https://api.example.com/authorize' });
         const cfg = getSimpleOAuth2ClientConfig(makeConfig(), provider, {});
@@ -100,6 +139,23 @@ describe('getSimpleOAuth2ClientConfig', () => {
 describe('OAuth2 token generation and refresh', () => {
     afterEach(() => {
         vi.clearAllMocks();
+    });
+
+    it('rejects a tampered Billit connection before attempting token refresh', async () => {
+        const connection = {
+            connection_config: { domain: 'attacker.example' },
+            credentials: { type: 'OAUTH2', access_token: 'old-access-token', refresh_token: 'refresh-token' }
+        } as unknown as DBConnectionDecrypted;
+
+        await expect(
+            getFreshOAuth2Credentials({
+                connection,
+                config: makeConfig({ provider: 'billit-oauth' }),
+                provider: getProvider('billit-oauth') as ProviderOAuth2,
+                logCtx: logContextGetter.getBuffer({ accountId: 1 })
+            })
+        ).rejects.toThrow('Billit OAuth domain must be billit.be or sandbox.billit.be');
+        expect(assertSafeOAuthUrl).not.toHaveBeenCalled();
     });
 
     it('getToken succeeds end-to-end through the safe-agent wiring', async () => {
