@@ -11,9 +11,9 @@ event's surface, the insight it serves, when it fires, and its properties. The s
 so an event that isn't in the catalogue doesn't compile.
 
 The allowed categories, objects and actions are the unions in `packages/types/lib/analytics/taxonomy.ts`.
-`packages/types/lib/analytics/rules.ts` checks names, snake*case properties, `is*`/`has\_`booleans, primitive
-values,`is_success`on`complete`events and`structured_reason`. `npm run ts-build` fails with the event
-and the broken rule. The other rules below are yours and the reviewer's to check.
+`packages/types/lib/analytics/rules.ts` checks names, `snake_case` properties, `is_` and `has_` booleans,
+primitive values, `is_success` on `complete` events, and `structured_reason`. `npm run ts-build` fails with
+the event and the broken rule. The other rules below are yours and the reviewer's to check.
 
 **No insight, no event.** If you can't name the chart or funnel step an event feeds, don't add it. The
 questions we want answered are on the [product insights page](https://app.notion.com/p/3e4ce298312181d7a9c7d8efd1a96c1a).
