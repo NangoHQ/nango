@@ -47,4 +47,4 @@ All React component files in the webapp use **PascalCase** (`Button.tsx`, `Dropd
 
 ## Product analytics (PostHog)
 
-Webapp events are defined in the shared catalogue, `packages/types/lib/analytics/catalogue.ts`, and sent with `track()` from `utils/analytics.tsx`. To add, rename or remove one, use the `adding-analytics-events` skill.
+Webapp events are defined in the shared catalogue, `packages/types/lib/analytics/catalogue.ts`, and sent with `track()` from `utils/analytics.tsx`. To add, rename or remove one, use the `managing-analytics-events` skill.
