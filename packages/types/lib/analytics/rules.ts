@@ -1,4 +1,4 @@
-import type { AnalyticsEventName, AnalyticsSurface, LegacyAnalyticsEventName } from './taxonomy.js';
+import type { AnalyticsEventName, AnalyticsSurface } from './taxonomy.js';
 
 type Primitive = string | number | boolean;
 
@@ -35,7 +35,7 @@ type PropertiesProblems<P> = P extends unknown
 type HasSuccess<P> = P extends unknown ? (P extends { is_success: boolean } ? true : false) : never;
 
 type EventProblems<N extends string, E> =
-    | (N extends AnalyticsEventName | LegacyAnalyticsEventName
+    | (N extends AnalyticsEventName
           ? IsSnakeCase<N> extends true
               ? never
               : `${N}: name is not lowercase snake_case`
@@ -43,7 +43,7 @@ type EventProblems<N extends string, E> =
     | (E extends { surface: infer S } ? ([S] extends [AnalyticsSurface] ? never : `${N}: unknown surface`) : `${N}: missing surface`)
     | (E extends { insight: infer I } ? (IsNonEmptyLiteral<I> extends true ? never : `${N}: insight must be a sentence`) : `${N}: missing insight`)
     | (E extends { fires: infer F } ? (IsNonEmptyLiteral<F> extends true ? never : `${N}: fires must be a sentence`) : `${N}: missing fires`)
-    | (E extends { properties: infer P } ? (N extends LegacyAnalyticsEventName ? never : `${N}: ${PropertiesProblems<P>}`) : `${N}: missing properties`)
+    | (E extends { properties: infer P } ? `${N}: ${PropertiesProblems<P>}` : `${N}: missing properties`)
     | (N extends `${string}_complete`
           ? E extends { properties: infer P }
               ? false extends HasSuccess<P>
