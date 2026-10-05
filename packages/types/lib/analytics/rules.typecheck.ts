@@ -14,7 +14,6 @@ export type RulesAcceptValid = AssertNoProblems<
         'connections:create_button_click': Valid & { properties: None };
         'playground:run_complete': Valid & { properties: { is_success: true } | { is_success: false; error_code: string } };
         'functions:command_start': Valid & { properties: { command: string; is_device_ephemeral?: boolean } };
-        'web:account_signup': Valid & { properties: { accountId: number } };
     }>
 >;
 

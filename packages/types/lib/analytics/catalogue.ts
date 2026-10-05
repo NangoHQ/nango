@@ -153,11 +153,17 @@ export interface AnalyticsEventCatalogue {
             | { provider: string; is_legacy_flow: boolean; is_success: false; error_code: string };
     };
 
-    'web:account_signup': {
-        surface: 'web';
+    'auth:account_create': {
+        surface: 'server';
         insight: 'How many accounts sign up each week, and is that growing?';
-        fires: 'When a new user lands on the page after verifying their email';
-        properties: { user_id: number; accountId: number };
+        fires: 'After a signup creates a new account, whichever way the person signed up';
+        properties: None;
+    };
+    'auth:user_create': {
+        surface: 'server';
+        insight: 'How many accounts sign up each week, and is that growing?';
+        fires: 'After a user is created, including users who join through an invite';
+        properties: { method: 'password' | 'google' };
     };
     'auth:join_request_submit': {
         surface: 'web';
