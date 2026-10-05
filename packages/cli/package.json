@@ -55,7 +55,7 @@
         "ajv-errors": "3.0.0",
         "axios": "1.20.0",
         "chalk": "5.4.1",
-        "chokidar": "5.0.0",
+        "chokidar": "3.5.3",
         "columnify": "1.6.0",
         "commander": "10.0.1",
         "conf": "12.0.0",
