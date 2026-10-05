@@ -47,6 +47,9 @@ if (globalEnv.publicPosthogKey) {
             // never apply (body always matches). Mask everything, unmask via maskTextFn.
             maskTextSelector: '*',
             maskTextFn: (text, element) => (element?.closest('[data-ph-unmask]') ? text : text.replace(/\S/g, '*')),
+            // Third-party iframe srcs embed the page url, tokens included (Stripe's `referrer=`).
+            // Setting this replaces the project's "Privacy and masking" selector, so keep `img` from it.
+            blockSelector: 'img, iframe',
             maskCapturedNetworkRequestFn: maskCapturedNetworkRequest
         }
     });
