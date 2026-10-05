@@ -186,7 +186,8 @@ export async function finalizeManagedAuthentication({
                 return;
             }
 
-            account = resAccount;
+            account = resAccount.account;
+            isNewTeam = resAccount.created;
             await expirePreviousInvitations({ accountId: account.id, email: authorizedUser.email, trx: db.knex });
         } else {
             if (!envs.AUTH_ALLOW_SIGNUP) {
