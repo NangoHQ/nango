@@ -16040,8 +16040,10 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `freepik` | Freepik | API_KEY | [docs](https://nango.dev/docs/api-integrations/freepik.md) | [connect](https://nango.dev/docs/api-integrations/freepik/connect.md) |  | other |
 | `freshbooks` | FreshBooks | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/freshbooks.md) |  |  | accounting |
 | `freshdesk` | FreshDesk | BASIC | [docs](https://nango.dev/docs/api-integrations/freshdesk.md) | [connect](https://nango.dev/docs/api-integrations/freshdesk/connect.md) |  | support |
+| `freshdesk-mcp` | FreshDesk (MCP) | API_KEY | [docs](https://nango.dev/docs/api-integrations/freshdesk-mcp.md) | [connect](https://nango.dev/docs/api-integrations/freshdesk-mcp/connect.md) |  | support, mcp |
 | `freshsales` | Freshsales | API_KEY | [docs](https://nango.dev/docs/api-integrations/freshsales.md) | [connect](https://nango.dev/docs/api-integrations/freshsales/connect.md) |  | crm |
 | `freshservice` | Freshservice | BASIC | [docs](https://nango.dev/docs/integrations/all/freshservice.md) | [connect](https://nango.dev/docs/integrations/all/freshservice/connect.md) |  | support |
+| `freshservice-mcp` | Freshservice (MCP) | API_KEY | [docs](https://nango.dev/docs/api-integrations/freshservice-mcp.md) | [connect](https://nango.dev/docs/api-integrations/freshservice-mcp/connect.md) |  | support, mcp |
 | `freshteam` | Freshteam | API_KEY | [docs](https://nango.dev/docs/integrations/all/freshteam.md) | [connect](https://nango.dev/docs/integrations/all/freshteam/connect.md) |  | hr, ats |
 | `freshworks` | Freshworks | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/freshworks.md) | [connect](https://nango.dev/docs/api-integrations/freshworks/connect.md) | [setup](https://nango.dev/docs/api-integrations/freshworks/how-to-register-your-own-freshworks-api-oauth-app.md) | crm, support |
 | `front` | Front | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/front.md) |  |  | support, ticketing |

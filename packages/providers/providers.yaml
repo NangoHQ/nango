@@ -9467,6 +9467,52 @@ freshdesk:
             prefix: https://
             doc_section: '#step-2-finding-your-freshdesk-domain'
 
+freshdesk-mcp:
+    display_name: FreshDesk (MCP)
+    categories:
+        - support
+        - mcp
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshdesk.com
+        headers:
+            # No "Bearer" prefix and no "Basic" scheme — see freshservice-mcp.
+            content-type: application/json
+            authorization: ${apiKey}
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+                accept: application/json,text/event-stream
+            endpoints:
+                - /mcp
+            data:
+                {
+                    'jsonrpc': '2.0',
+                    'id': 1,
+                    'method': 'initialize',
+                    'params': { 'protocolVersion': '2024-11-05', 'capabilities': {}, 'clientInfo': { 'name': 'nango-client', 'version': '1.0.0' } }
+                }
+    docs: https://nango.dev/docs/api-integrations/freshdesk-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/freshdesk-mcp/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: FreshDesk Domain
+            description: The subdomain of your FreshDesk account
+            pattern: '^[a-z0-9_-]+$'
+            example: domain
+            suffix: .freshdesk.com
+            prefix: https://
+            doc_section: '#step-2-finding-your-freshdesk-domain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key of your FreshDesk account
+            secret: true
+            doc_section: '#step-1-finding-your-freshdesk-api-key'
+
 freshsales:
     display_name: Freshsales
     categories:
@@ -9553,6 +9599,57 @@ freshservice:
             # FreshService is using basic auth with an api key, the basic username/password was deprecated
             default_value: 'X'
             hidden: true
+
+freshservice-mcp:
+    display_name: Freshservice (MCP)
+    categories:
+        - support
+        - mcp
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshservice.com
+        headers:
+            # Observed, not documented by Freshworks (their MCP auth-server
+            # metadata advertises OAuth2/DCR, not a static key). "Basic" is
+            # rejected outright (401, any payload); "Bearer <key>" passes the
+            # handshake but real tool calls still 403 — only the bare key
+            # authorizes end-to-end. See the PR description for how this was
+            # verified.
+            content-type: application/json
+            authorization: ${apiKey}
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+                accept: application/json,text/event-stream
+            endpoints:
+                - /mcp
+            data:
+                {
+                    'jsonrpc': '2.0',
+                    'id': 1,
+                    'method': 'initialize',
+                    'params': { 'protocolVersion': '2024-11-05', 'capabilities': {}, 'clientInfo': { 'name': 'nango-client', 'version': '1.0.0' } }
+                }
+    docs: https://nango.dev/docs/api-integrations/freshservice-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/freshservice-mcp/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Freshservice subdomain
+            description: The subdomain of your Freshservice account
+            pattern: '^[a-z0-9_-]+$'
+            example: subdomain
+            suffix: .freshservice.com
+            prefix: https://
+            doc_section: '#step-2-finding-your-freshservice-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key of your Freshservice account
+            secret: true
+            doc_section: '#step-1-finding-your-freshservice-api-key'
 
 freshteam:
     display_name: Freshteam
