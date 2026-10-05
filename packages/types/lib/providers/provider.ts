@@ -103,6 +103,7 @@ export interface BaseProvider {
     authorization_url_fragment?: string;
     body_format?: OAuthBodyFormatType;
     require_client_certificate?: boolean;
+    allow_unverified_https?: boolean;
     token_request_auth_method?: 'basic' | 'custom' | 'private_key_jwt';
     available_scopes?: string[];
 }
