@@ -7782,7 +7782,7 @@ Nango never receives a long-lived credential to your account. Instead, you creat
     | Resource-scoped | S3 and CloudTrail access limited to resources whose names start with an agreed prefix |
     | Can't self-escalate | Explicit deny on modifying its own role/policies, creating IAM users or access keys, and touching AWS Organizations or billing |
 
-    You review the CloudFormation template before creating the stack, and can revoke Nango's access at any time by removing the trust relationship — this cuts Nango off immediately, while anything already deployed keeps running.
+    You review the CloudFormation template before creating the stack, and can revoke Nango's access at any time by removing the trust relationship. That stops new sessions being issued; credentials already issued stay valid until they expire, and anything already deployed keeps running.
   </Tab>
   <Tab title="GCP">
     You create a `nango-terraform` service account in your project and grant one named Nango identity permission to impersonate it (`roles/iam.serviceAccountTokenCreator`). Nango never receives a JSON key for this account.
@@ -7794,7 +7794,7 @@ Nango never receives a long-lived credential to your account. Instead, you creat
     | Project-scoped | IAM bindings stay on this project — no organization, folder or billing admin |
     | Can't enable APIs | `roles/serviceusage.serviceUsageAdmin` is deliberately omitted; Nango can't turn services on or off |
 
-    You can revoke impersonation at any time — this cuts Nango off immediately, while anything already deployed keeps running. The install runs entirely within your GCP project.
+    You can revoke impersonation at any time. That stops new tokens being issued; tokens already issued stay valid until they expire, and anything already deployed keeps running. The install runs entirely within your GCP project.
   </Tab>
   <Tab title="Azure">
     You create a service principal in your own directory for `Nango Deployment`, a multi-tenant application registered in Nango's tenant, and assign it `Contributor` plus a constrained `Role Based Access Control Administrator` on the subscription. Nango authenticates by exchanging a federated credential for a short-lived Azure token — it never receives a client secret or certificate.
@@ -7804,10 +7804,10 @@ Nango never receives a long-lived credential to your account. Instead, you creat
     | Trusted identity | One Nango application you name (`NANGO_APP_ID`), for which you create the service principal in your own directory |
     | No standing keys | A federated credential exchanged per session; there is no secret or certificate to leak, expire or rotate |
     | Subscription-scoped | `Contributor` on the one subscription — no management group, tenant or billing access |
-    | Can't grant itself more | The `Role Based Access Control Administrator` assignment carries a condition denying `Owner`, `Contributor` and `User Access Administrator` |
-    | Can't touch your directory | The application requests no Microsoft Graph permissions, so there is no consent screen and Nango cannot read or modify identities in your tenant |
+    | Can't grant privileged roles | Azure's built-in condition on the `Role Based Access Control Administrator` assignment denies granting or removing `Owner`, `User Access Administrator` and `Role Based Access Control Administrator`, including to itself. It can still grant the data-plane roles the installation needs |
+    | No directory permissions | The application requests no Microsoft Graph permissions, so there is no consent screen and Nango cannot read or modify your users, groups or app registrations. It does create managed identities in the subscription, which is how the deployed services authenticate |
 
-    You can revoke access at any time by deleting the service principal — this cuts Nango off immediately, while anything already deployed keeps running.
+    You can revoke access at any time by deleting the service principal. That stops new tokens being issued; tokens already issued stay valid until they expire, and anything already deployed keeps running.
   </Tab>
 </Tabs>
 
@@ -7872,13 +7872,13 @@ BYOC supports **AWS, GCP and Azure**.
 
 <AccordionGroup>
   <Accordion title="What would it look like to have you manage it within our environment? That feels challenging from a compliance perspective." defaultOpen="true">
-    It's the model described above: a role or service account you create, one Nango identity we name (never our whole org), short-lived sessions, and guardrails that stop us from widening our own access. You keep the ability to revoke access instantly, full audit logging in your own CloudTrail / Cloud Audit Logs, and sign-off on the Terraform plan before every apply. We'll walk your security team through the exact IAM policy before you commit to anything.
+    It's the model described above: a role or service account you create, one Nango identity we name (never our whole org), short-lived sessions, and guardrails that stop us from widening our own access. You keep the ability to revoke access at any time, full audit logging in your own CloudTrail / Cloud Audit Logs, and sign-off on the Terraform plan before every apply. We'll walk your security team through the exact IAM policy before you commit to anything.
   </Accordion>
   <Accordion title="What stops Nango from doing more than intended?">
-    Deny-by-default guardrails on the role or service account itself: it cannot modify its own permissions, create IAM users or long-lived keys, or touch organization/billing settings. On AWS these are explicit `Deny` statements (`DenySelfModification`, `DenyIamUsersAndFederationChanges`, `DenyAccountAndOrganizationControl`); on GCP they're the roles we deliberately don't request; on Azure it's a condition attached to the role-granting permission, plus the complete absence of directory access.
+    Deny-by-default guardrails on the role or service account itself: it cannot modify its own permissions, create IAM users or long-lived keys, or touch organization/billing settings. On AWS these are explicit `Deny` statements (`DenySelfModification`, `DenyIamUsersAndFederationChanges`, `DenyAccountAndOrganizationControl`); on GCP they're the roles we deliberately don't request. On Azure the guardrail is narrower and worth stating precisely: a condition stops the identity granting itself `Owner`, `User Access Administrator` or `Role Based Access Control Administrator`, and it holds no directory permissions at all, but it can assign the other roles its own deployments need.
   </Accordion>
   <Accordion title="Can we audit what Nango does?">
-    Yes — every action taken through the assumed role, impersonated identity or service principal is attributable in your own AWS CloudTrail, GCP Cloud Audit Logs or Azure Activity Log. Many customers alert on sensitive calls (`SetIamPolicy`, `CreateServiceAccount`) made by the Nango identity specifically.
+    Yes — every action taken through the assumed role, impersonated identity or service principal is attributable in your own AWS CloudTrail, GCP Cloud Audit Logs or Azure Activity Log. Many customers alert on sensitive calls (`SetIamPolicy`, `CreateServiceAccount`) made by the Nango identity specifically. Note that the Azure Activity Log records control-plane operations; data-plane calls such as reading a Key Vault secret are captured only if you enable diagnostic settings on the resource.
   </Accordion>
   <Accordion title="Can we leave BYOC later?">
     Yes. Revoking Nango's access cuts us off immediately. The infrastructure itself is ordinary Terraform-provisioned resources in your account, not a black box, so you keep it either way.
