@@ -180,7 +180,7 @@ export async function finalizeManagedAuthentication({
         } else if (organizationId) {
             const organization = await workos.organizations.getOrganization(organizationId);
 
-            const resAccount = await accountService.getOrCreateAccount(organization.name);
+            const resAccount = await accountService.getOrCreateAccountForWorkOSOrganization({ workosOrganizationId: organization.id, name: organization.name });
             if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;

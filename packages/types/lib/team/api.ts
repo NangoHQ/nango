@@ -26,7 +26,7 @@ export interface ApiTeamUser extends ApiUser {
 }
 
 export type ApiInvitation = Merge<Omit<DBInvitation, 'token'>, ApiTimestamps>;
-export type ApiTeam = Merge<DBTeam, ApiTimestamps>;
+export type ApiTeam = Merge<Omit<DBTeam, 'workos_organization_id'>, ApiTimestamps>;
 
 export type PutTeam = ApiEndpoint<{
     Audit: AuditPolicy<'team', 'updated', 'account'>;

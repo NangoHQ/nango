@@ -258,26 +258,60 @@ class AccountService {
         return account[0].uuid;
     }
 
-    async getOrCreateAccount(name: string): Promise<{ account: DBTeam; created: boolean } | null> {
-        const account = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ name });
+    async getAccountByWorkOSOrganizationId(workosOrganizationId: string): Promise<DBTeam | null> {
+        const account = await db.knex.select('*').from<DBTeam>(`_nango_accounts`).where({ workos_organization_id: workosOrganizationId }).first();
+        return account ?? null;
+    }
 
-        if (account == null || account.length == 0 || !account[0]) {
-            const created = await this.createAccount({ name });
-            return created ? { account: created, created: true } : null;
+    async getOrCreateAccountForWorkOSOrganization({
+        workosOrganizationId,
+        name
+    }: {
+        workosOrganizationId: string;
+        name: string;
+    }): Promise<{ account: DBTeam; created: boolean } | null> {
+        const existing = await this.getAccountByWorkOSOrganizationId(workosOrganizationId);
+        if (existing) {
+            return { account: existing, created: false };
         }
 
-        return { account: account[0], created: false };
+        try {
+            const created = await this.createAccount({ name, workosOrganizationId });
+            return created ? { account: created, created: true } : null;
+        } catch (err) {
+            // Concurrent first sign-ins for one organization race on the unique index; the loser joins the winner
+            if (isWorkOSOrganizationIdViolation(err)) {
+                const winner = await this.getAccountByWorkOSOrganizationId(workosOrganizationId);
+                if (winner) {
+                    return { account: winner, created: false };
+                }
+            }
+            throw err;
+        }
     }
 
     /**
      * Create Account
      * @desc create a new account and assign to the default environments
      */
-    async createAccount({ name, email, foundUs = '' }: { name: string; email?: string | undefined; foundUs?: string | undefined }): Promise<DBTeam | null> {
+    async createAccount({
+        name,
+        email,
+        foundUs = '',
+        workosOrganizationId = null
+    }: {
+        name: string;
+        email?: string | undefined;
+        foundUs?: string | undefined;
+        workosOrganizationId?: string | null;
+    }): Promise<DBTeam | null> {
         return db.knex.transaction(async (trx) => {
             const emailTeamName = emailToTeamName({ email });
             const teamName = `${emailTeamName || name}'s Team`;
-            const result = await trx.from<DBTeam>(`_nango_accounts`).insert({ name: teamName, found_us: foundUs }).returning('*');
+            const result = await trx
+                .from<DBTeam>(`_nango_accounts`)
+                .insert({ name: teamName, found_us: foundUs, workos_organization_id: workosOrganizationId })
+                .returning('*');
 
             if (!result[0]) {
                 trx.rollback();
@@ -1100,6 +1134,15 @@ function emailToTeamName({ email }: { email?: string | undefined }): string | fa
     }
 
     return domainName.charAt(0).toUpperCase() + domainName.slice(1);
+}
+
+function isWorkOSOrganizationIdViolation(err: unknown): boolean {
+    if (!err || typeof err !== 'object') {
+        return false;
+    }
+
+    const error = err as { code?: string; constraint?: string };
+    return error.code === '23505' && error.constraint === 'accounts_workos_organization_id_unique';
 }
 
 export { emailToTeamName };
