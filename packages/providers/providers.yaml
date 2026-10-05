@@ -9476,12 +9476,8 @@ freshdesk-mcp:
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshdesk.com
         headers:
-            # The MCP server's edge rejects a "Basic" scheme outright (401
-            # Unsupported authorization scheme) even with valid credentials,
-            # and a "Bearer" prefix passes the handshake but fails real tool
-            # calls with 403 — only the bare key works end-to-end. Modeled on
-            # freshservice-mcp's confirmed behavior; both share Freshworks'
-            # platform-mcp-server implementation.
+            # No "Bearer" prefix and no "Basic" scheme — see freshservice-mcp.
+            content-type: application/json
             authorization: ${apiKey}
         verification:
             method: POST
@@ -9613,13 +9609,13 @@ freshservice-mcp:
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshservice.com
         headers:
-            # The MCP server's edge rejects a "Basic" scheme outright (401
-            # Unsupported authorization scheme) even with valid credentials —
-            # confirmed live, independent of what follows it (raw key, a
-            # correctly-encoded Basic pair, or an empty password all get the
-            # same rejection). A "Bearer" prefix passes the handshake
-            # (initialize, tools/list) but real tool calls still come back
-            # 403 — only the bare key authorizes end-to-end.
+            # Observed, not documented by Freshworks (their MCP auth-server
+            # metadata advertises OAuth2/DCR, not a static key). "Basic" is
+            # rejected outright (401, any payload); "Bearer <key>" passes the
+            # handshake but real tool calls still 403 — only the bare key
+            # authorizes end-to-end. See the PR description for how this was
+            # verified.
+            content-type: application/json
             authorization: ${apiKey}
         verification:
             method: POST
