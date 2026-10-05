@@ -9,7 +9,7 @@ For inline editor diagnostics, install the oxlint extension: VS Code / Cursor â†
 
 ## Product analytics
 
-Every PostHog event the webapp, server or CLI sends is defined in `packages/types/lib/analytics/catalogue.ts`. To add, rename or remove one, use the `adding-analytics-events` skill.
+Every analytics event the webapp, server or CLI sends is defined in `packages/types/lib/analytics/catalogue.ts`. To add, rename or remove one, use the `managing-analytics-events` skill.
 
 ## Running Nango locally
 
