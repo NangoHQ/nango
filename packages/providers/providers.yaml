@@ -8107,7 +8107,8 @@ elasticsearch:
             title: Elasticsearch Endpoint
             description: The endpoint URL of your Elasticsearch deployment or project.
             example: https://my-deployment-a1b2c3.es.us-central1.gcp.elastic-cloud.com
-            pattern: '^https?://.+[^/]$'
+            format: uri
+            pattern: '^https?://[^\s]+[^/\s]$'
             order: 1
             doc_section: '#step-1-find-your-elasticsearch-endpoint'
     credentials:
