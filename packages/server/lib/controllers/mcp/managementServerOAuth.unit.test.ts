@@ -577,6 +577,7 @@ function fakeAccount(): DBTeam {
         name: 'Test Account',
         uuid: 'test-account',
         found_us: null,
+        workos_organization_id: null,
         created_at: now,
         updated_at: now
     };

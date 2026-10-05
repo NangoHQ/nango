@@ -1,6 +1,7 @@
 import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import db from '@nangohq/database';
 import { mfaService, seeders, userService } from '@nangohq/shared';
 import { nanoid, normalizeEmail, Ok } from '@nangohq/utils';
 
@@ -66,38 +67,53 @@ describe(`POST ${route}`, () => {
         billingMocks.linkBillingFreeSubscription.mockResolvedValue(Ok({ id: 'orb_subscription' }));
     });
 
-    it('should not set up billing when a WorkOS organization member joins an existing account', async () => {
-        const { account } = await seeders.seedAccountEnvAndUser();
+    async function signInThroughOrganization(organization: { id: string; name: string }) {
         const email = `${nanoid()}@example.com`;
-
-        workosMocks.getOrganization.mockResolvedValue({ name: account.name });
+        workosMocks.getOrganization.mockResolvedValue(organization);
         workosMocks.authenticateWithCode.mockResolvedValue({
             user: { email, firstName: 'Managed', lastName: 'User' },
-            organizationId: 'org_123'
+            organizationId: organization.id
         });
 
         const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { redirect: 'manual' });
-
         expect(callbackRes.status).toBe(302);
-        expect((await userService.getUserByEmail(email))?.account_id).toBe(account.id);
+
+        const user = await userService.getUserByEmail(email);
+        if (!user) throw new Error('Managed callback did not create a user');
+        return user;
+    }
+
+    it('should put members of the same WorkOS organization in one account', async () => {
+        const organization = { id: `org_${nanoid()}`, name: `org-${nanoid()}` };
+
+        const first = await signInThroughOrganization(organization);
+        expect(billingMocks.linkBillingCustomer).toHaveBeenCalledTimes(1);
+        expect(billingMocks.linkBillingFreeSubscription).toHaveBeenCalledTimes(1);
+
+        vi.clearAllMocks();
+        const second = await signInThroughOrganization(organization);
+        expect(second.account_id).toBe(first.account_id);
         expect(billingMocks.linkBillingCustomer).not.toHaveBeenCalled();
         expect(billingMocks.linkBillingFreeSubscription).not.toHaveBeenCalled();
     });
 
-    it('should set up billing when a WorkOS organization sign-in creates the account', async () => {
-        const email = `${nanoid()}@example.com`;
+    it('should join the account linked to the WorkOS organization even after a rename', async () => {
+        const { account } = await seeders.seedAccountEnvAndUser();
+        const organizationId = `org_${nanoid()}`;
+        await db.knex.from('_nango_accounts').where({ id: account.id }).update({ workos_organization_id: organizationId });
 
-        workosMocks.getOrganization.mockResolvedValue({ name: `org-${nanoid()}` });
-        workosMocks.authenticateWithCode.mockResolvedValue({
-            user: { email, firstName: 'Managed', lastName: 'User' },
-            organizationId: 'org_123'
-        });
+        const user = await signInThroughOrganization({ id: organizationId, name: `renamed-${nanoid()}` });
 
-        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { redirect: 'manual' });
+        expect(user.account_id).toBe(account.id);
+        expect(billingMocks.linkBillingFreeSubscription).not.toHaveBeenCalled();
+    });
 
-        expect(callbackRes.status).toBe(302);
-        expect(billingMocks.linkBillingCustomer).toHaveBeenCalledTimes(1);
-        expect(billingMocks.linkBillingFreeSubscription).toHaveBeenCalledTimes(1);
+    it('should not join an unlinked account that shares the WorkOS organization name', async () => {
+        const { account } = await seeders.seedAccountEnvAndUser();
+
+        const user = await signInThroughOrganization({ id: `org_${nanoid()}`, name: account.name });
+
+        expect(user.account_id).not.toBe(account.id);
     });
 
     it('should redirect invalid WorkOS callback payloads to signin', async () => {
