@@ -1,0 +1,112 @@
+---
+title: 'Anakin (MCP)'
+sidebarTitle: 'Anakin (MCP)'
+description: 'Connect AI tools to Anakin via the Model Context Protocol (MCP) to scrape, search, crawl the web and run pre-built site automations'
+---
+
+## 🚀 Quickstart
+
+Connect to the Anakin MCP server with Nango and call MCP tools in minutes. Anakin MCP uses OAuth 2.0 with **dynamic client registration**, so no app registration is required.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+        In Nango ([free signup](https://app.nango.dev)), open **Integrations**, select **Configure New Integration**, and choose **Anakin (MCP)**.
+    </Step>
+    <Step id="authorize-anakin" title="Authorize Anakin">
+        Open **Connections**, select **Add Test Connection**, and authorize access to your Anakin account. Anakin asks you to sign in and grant the `anakin:tools` scope. Later, you'll let your users authorize directly from your app.
+    </Step>
+    <Step id="call-anakin-mcp" title="Call the Anakin MCP API">
+        Make your first MCP request with the initialize handshake. Replace the placeholders below with your Nango Environment API key, integration ID, and connection ID:
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/mcp" \
+                  -X POST \
+                  -H "Authorization: Bearer <NANGO-ENVIRONMENT-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "initialize",
+                    "params": {
+                        "protocolVersion": "2024-11-05",
+                        "capabilities": {},
+                        "clientInfo": {
+                            "name": "nango-client",
+                            "version": "1.0.0"
+                        }
+                    }
+                }'
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+                Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ apiKey: '<NANGO-ENVIRONMENT-API-KEY>' });
+
+                const res = await nango.post({
+                    endpoint: '/mcp',
+                    providerConfigKey: '<INTEGRATION-ID>',
+                    connectionId: '<CONNECTION-ID>',
+                    body: {
+                        jsonrpc: '2.0',
+                        id: 1,
+                        method: 'initialize',
+                        params: {
+                            protocolVersion: '2024-11-05',
+                            capabilities: {},
+                            clientInfo: {
+                                name: 'nango-client',
+                                version: '1.0.0'
+                            }
+                        }
+                    }
+                });
+
+                console.log(res.data);
+                ```
+            </Tab>
+
+        </Tabs>
+        ✅ You're connected! Open **Logs** in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow the [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Anakin (MCP) guides
+
+Nango uses **dynamic client registration** with Anakin's OAuth server, so you do not need to register an MCP application.
+
+## API gotchas
+
+-   The MCP endpoint answers `initialize` and `tools/list` **without** credentials, so a successful
+    handshake does not prove the connection is authorized. Unauthenticated callers get a reduced
+    tool set and a shared "keyless free tier" that returns
+    `The keyless free tier is at capacity right now` once it is saturated. Authorize the connection
+    to get the full tool set and your own credit balance.
+-   Responses are served as `text/event-stream`, not plain JSON, which is why the provider sends
+    `accept: application/json,text/event-stream`. Parse the SSE `data:` frame rather than the raw
+    body.
+-   Tool results arrive as a JSON string inside `result.content[0].text`, so the payload needs a
+    second parse after the SSE frame is decoded.
+-   Tool failures are reported with `isError: true` and HTTP `200`, not an HTTP error status. Check
+    the body, not the status code.
+-   The MCP server and the [REST API](/api-integrations/anakin) share one account and credit
+    balance but are separate integrations in Nango. Use `anakin` for direct REST calls and
+    `anakin-mcp` for agent tool calling.
+
+Official resources: [Anakin MCP server](https://anakin.io/docs)
+
+---

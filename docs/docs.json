@@ -1060,6 +1060,7 @@
               "api-integrations/amplitude-mcp",
               "api-integrations/amplitude-mcp-eu",
               "api-integrations/anakin",
+              "api-integrations/anakin-mcp",
               "api-integrations/anarlog-mcp",
               "integrations/all/anrok",
               "integrations/all/anthropic",
