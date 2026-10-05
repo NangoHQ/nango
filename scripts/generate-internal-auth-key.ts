@@ -42,7 +42,13 @@ function parseArgs(argv: string[]): { service: Service; kid: string } {
     for (let i = 0; i < rest.length; i++) {
         const arg = rest[i];
         if (arg === '--kid') {
-            kid = rest[i + 1];
+            const value = rest[i + 1];
+            if (value === undefined || value.startsWith('-')) {
+                console.error('--kid requires a key id');
+                usage();
+                process.exit(1);
+            }
+            kid = value;
             i++;
             continue;
         }
