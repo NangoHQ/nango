@@ -20,6 +20,7 @@ import {
 import { LogoInverted } from '@/assets/LogoInverted';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { useMeta } from '@/hooks/useMeta';
+import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
@@ -42,12 +43,20 @@ const STARTER_PROMPTS: { prompt: string; icon: React.ReactNode }[] = [
 export const AgentPlaygroundShow: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data: meta } = useMeta();
+    const { can } = usePermissions();
     const [chatKey, setChatKey] = useState(0);
 
     if (meta && !meta.data.agentPlayground) {
         return (
             <DashboardLayout title="Agent Playground">
                 <p className="text-text-secondary">The Agent Playground is not enabled for this account.</p>
+            </DashboardLayout>
+        );
+    }
+    if (meta && !can('environment:agent_sessions:write')) {
+        return (
+            <DashboardLayout title="Agent Playground">
+                <p className="text-text-secondary">{`Your role can't use the Agent Playground in this environment.`}</p>
             </DashboardLayout>
         );
     }
