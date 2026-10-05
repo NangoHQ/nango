@@ -9,10 +9,12 @@ import { dispatchQueuePublisher } from './dispatch-queue/client.js';
 import { SQS_BATCH_MAX_BYTES } from './dispatch-queue/publisher.js';
 import { prepareFunctionDispatchExecution } from './dispatchFunction.js';
 import { prepareLegacyDispatchExecution } from './dispatchLegacy.js';
+import { shouldDispatchForObject } from './object-filter.js';
 
 import type { DispatchQueuePublisher, PreparedDispatchMessage } from './dispatch-queue/publisher.js';
 import type { MatchedFunctionExecution } from './dispatchFunction.js';
 import type { UnverifiedWebhook } from './missing-secret.js';
+import type { WebhookObjectFilter } from './object-filter.js';
 import type { LogContextGetter } from '@nangohq/logs';
 import type {
     ConnectionInternal,
@@ -62,7 +64,8 @@ export async function dispatchWebhookExecutions({
     payload,
     type,
     webhookHeaderValue,
-    delaySeconds
+    delaySeconds,
+    objectFilter
 }: {
     context: DispatchContext;
     connections: WebhookConnection[];
@@ -70,6 +73,7 @@ export async function dispatchWebhookExecutions({
     webhookHeaderValue: string | undefined;
     payload: Record<string, any>;
     delaySeconds?: number;
+    objectFilter?: WebhookObjectFilter | undefined;
 }): Promise<void> {
     const [legacyFunctions, functions] = await Promise.all([
         getSyncConfigsByConfigIdForWebhook(context.environment.id, context.integration.id!),
@@ -78,7 +82,12 @@ export async function dispatchWebhookExecutions({
 
     const matchedLegacyExecutions = legacyFunctions.flatMap((syncConfig) => {
         const webhook = findMatchingSubscription({ subscriptions: syncConfig.webhook_subscriptions, type, headerValue: webhookHeaderValue });
-        return webhook ? connections.map((connection) => ({ syncConfig, webhook, connection })) : [];
+        if (!webhook) {
+            return [];
+        }
+        return connections
+            .filter((connection) => shouldDispatchForObject({ context, filter: objectFilter, syncName: syncConfig.sync_name, connection, payload }))
+            .map((connection) => ({ syncConfig, webhook, connection }));
     });
 
     const matchedFunctionExecutions: MatchedFunctionExecution[] = functions.flatMap((func) => {
@@ -88,7 +97,12 @@ export async function dispatchWebhookExecutions({
         }
 
         const subscription = findMatchingSubscription({ subscriptions: trigger.subscriptions, type, headerValue: webhookHeaderValue });
-        return subscription ? connections.map((connection) => ({ config: func.config, version: func.currentVersion, subscription, connection })) : [];
+        if (!subscription) {
+            return [];
+        }
+        return connections
+            .filter((connection) => shouldDispatchForObject({ context, filter: objectFilter, syncName: func.config.name, connection, payload }))
+            .map((connection) => ({ config: func.config, version: func.currentVersion, subscription, connection }));
     });
 
     const preparationTasks: (() => Promise<PreparedDispatchExecution | null>)[] = [
