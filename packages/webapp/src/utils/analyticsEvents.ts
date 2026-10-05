@@ -36,7 +36,6 @@ export interface AnalyticsEvents {
         | { provider: string; is_legacy_flow: boolean; is_success: false; error_code: string };
 
     // Account & onboarding
-    'web:account_signup': { user_id: number; accountId: number };
     'auth:join_request_submit': Record<string, never>;
 
     // Two-factor authentication
