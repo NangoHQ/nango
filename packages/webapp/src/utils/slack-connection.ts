@@ -1,35 +1,38 @@
 import Nango from '@nangohq/frontend';
 
-import { APIError, apiFetch } from './api.js';
+export interface SlackAdminAuth {
+    hmac_digest: string;
+    public_key: string;
+    integration_key: string;
+}
 
 export const connectSlack = async ({
     accountUUID,
     envId,
-    env,
     hostUrl,
+    getAdminAuth,
+    enableNotifications,
     onFinish,
     onFailure
 }: {
     accountUUID: string;
     envId: number;
-    env: string;
     hostUrl: string;
+    getAdminAuth: (connectionId: string) => Promise<SlackAdminAuth>;
+    enableNotifications: () => Promise<unknown>;
     onFinish: () => void;
     onFailure: () => void;
 }) => {
     const connectionId = `account-${accountUUID}-${envId}`;
 
-    const res = await apiFetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}&env=${env}`, {
-        method: 'GET'
-    });
-
-    if (res.status !== 200) {
+    let adminAuth: SlackAdminAuth;
+    try {
+        adminAuth = await getAdminAuth(connectionId);
+    } catch {
         onFailure();
         return;
     }
-
-    const authResponse = await res.json();
-    const { hmac_digest: hmacDigest, public_key: publicKey, integration_key: integrationKey } = authResponse;
+    const { hmac_digest: hmacDigest, public_key: publicKey, integration_key: integrationKey } = adminAuth;
 
     const nango = new Nango({
         host: hostUrl,
@@ -47,10 +50,7 @@ export const connectSlack = async ({
             detectClosedAuthWindow: true
         })
         .then(async () => {
-            const res = await apiFetch(`/api/v1/environments?env=${env}`, { method: 'PATCH', body: JSON.stringify({ slack_notifications: true }) });
-            if (!res.ok) {
-                throw new APIError({ res, json: await res.json() });
-            }
+            await enableNotifications();
             onFinish();
         })
         .catch((err: unknown) => {
