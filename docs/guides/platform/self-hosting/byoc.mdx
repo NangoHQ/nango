@@ -46,7 +46,7 @@ Nango never receives a long-lived credential to your account. Instead, you creat
     | Trusted identity | One Nango application you name (`NANGO_APP_ID`), for which you create the service principal in your own directory |
     | No standing keys | A federated credential exchanged per session; there is no secret or certificate to leak, expire or rotate |
     | Subscription-scoped | `Contributor` on the one subscription — no management group, tenant or billing access |
-    | Can't grant itself more | The `Role Based Access Control Administrator` assignment carries a condition denying `Owner`, `Contributor` and `User Access Administrator` |
+    | Can't grant privileged roles | Azure's built-in condition on the `Role Based Access Control Administrator` assignment denies granting or removing `Owner`, `User Access Administrator` and `Role Based Access Control Administrator`, including to itself. It can still grant the data-plane roles the installation needs |
     | Can't touch your directory | The application requests no Microsoft Graph permissions, so there is no consent screen and Nango cannot read or modify identities in your tenant |
 
     You can revoke access at any time by deleting the service principal — this cuts Nango off immediately, while anything already deployed keeps running.
@@ -117,10 +117,10 @@ BYOC supports **AWS, GCP and Azure**.
     It's the model described above: a role or service account you create, one Nango identity we name (never our whole org), short-lived sessions, and guardrails that stop us from widening our own access. You keep the ability to revoke access instantly, full audit logging in your own CloudTrail / Cloud Audit Logs, and sign-off on the Terraform plan before every apply. We'll walk your security team through the exact IAM policy before you commit to anything.
   </Accordion>
   <Accordion title="What stops Nango from doing more than intended?">
-    Deny-by-default guardrails on the role or service account itself: it cannot modify its own permissions, create IAM users or long-lived keys, or touch organization/billing settings. On AWS these are explicit `Deny` statements (`DenySelfModification`, `DenyIamUsersAndFederationChanges`, `DenyAccountAndOrganizationControl`); on GCP they're the roles we deliberately don't request; on Azure it's a condition attached to the role-granting permission, plus the complete absence of directory access.
+    Deny-by-default guardrails on the role or service account itself: it cannot modify its own permissions, create IAM users or long-lived keys, or touch organization/billing settings. On AWS these are explicit `Deny` statements (`DenySelfModification`, `DenyIamUsersAndFederationChanges`, `DenyAccountAndOrganizationControl`); on GCP they're the roles we deliberately don't request. On Azure the guardrail is narrower and worth stating precisely: a condition stops the identity granting itself `Owner`, `User Access Administrator` or `Role Based Access Control Administrator`, and it holds no directory permissions at all, but it can assign the other roles its own deployments need.
   </Accordion>
   <Accordion title="Can we audit what Nango does?">
-    Yes — every action taken through the assumed role, impersonated identity or service principal is attributable in your own AWS CloudTrail, GCP Cloud Audit Logs or Azure Activity Log. Many customers alert on sensitive calls (`SetIamPolicy`, `CreateServiceAccount`) made by the Nango identity specifically.
+    Yes — every action taken through the assumed role, impersonated identity or service principal is attributable in your own AWS CloudTrail, GCP Cloud Audit Logs or Azure Activity Log. Many customers alert on sensitive calls (`SetIamPolicy`, `CreateServiceAccount`) made by the Nango identity specifically. Note that the Azure Activity Log records control-plane operations; data-plane calls such as reading a Key Vault secret are captured only if you enable diagnostic settings on the resource.
   </Accordion>
   <Accordion title="Can we leave BYOC later?">
     Yes. Revoking Nango's access cuts us off immediately. The infrastructure itself is ordinary Terraform-provisioned resources in your account, not a black box, so you keep it either way.
