@@ -1,0 +1,90 @@
+---
+title: 'Firecrawl'
+sidebarTitle: 'Firecrawl'
+description: 'Integrate your application with the Firecrawl API'
+---
+
+Firecrawl ([firecrawl.dev](https://www.firecrawl.dev/?utm_source=nango&utm_medium=integration)) is an API to search, scrape, and interact with the web. It returns clean Markdown and structured data for AI systems.
+
+## 🚀 Quickstart
+
+Connect to Firecrawl with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Firecrawl_.
+    </Step>
+    <Step id="authorize-firecrawl" title="Authorize Firecrawl">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Firecrawl_ -> enter your API key and click _Authorize_. See the [connect guide](/api-integrations/firecrawl/connect) for how to obtain a key.
+    </Step>
+    <Step id="call-firecrawl-api" title="Call the Firecrawl API">
+    Let's make your first request to the Firecrawl API (search the web). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/v2/search" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"query": "firecrawl", "limit": 3}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/v2/search',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                query: 'firecrawl',
+                limit: 3
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Firecrawl integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my Firecrawl account?](/api-integrations/firecrawl/connect)  
+Connect your Firecrawl account using your API key.
+
+Official docs: [Firecrawl API reference](https://docs.firecrawl.dev/api-reference/introduction?utm_source=nango&utm_medium=integration)
+
+## 🧩 Pre-built syncs & actions for Firecrawl
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/firecrawl/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
