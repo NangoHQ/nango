@@ -5,7 +5,7 @@ import { productTracking } from '@nangohq/shared';
 import { productTrackingMiddleware } from './productTracking.middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 type Capture = (payload: { event: string; distinctId: string; properties: Record<string, unknown>; groups?: Record<string, string> }) => void;
@@ -67,6 +67,40 @@ describe('productTrackingMiddleware', () => {
         });
 
         expect(groupIdentify).toHaveBeenCalledWith({ groupType: 'company', groupKey: '42', properties: { plan: 'growth' } });
+    });
+
+    it('sends an event from a session request as its user', () => {
+        handleRequest((locals) => {
+            locals.authType = 'session';
+            locals.account = { id: 42 } as DBTeam;
+            locals.user = { id: 3 } as DBUser;
+        });
+
+        const { distinctId, groups } = capture.mock.calls[0]![0];
+        expect(distinctId).toBe('3');
+        expect(groups).toStrictEqual({ company: '42' });
+    });
+
+    it('sends an event from a request without a session as the account, even when a user is set', () => {
+        handleRequest((locals) => {
+            locals.authType = 'mcpOAuth';
+            locals.account = { id: 42 } as DBTeam;
+            locals.user = { id: 3 } as DBUser;
+        });
+
+        expect(capture.mock.calls[0]![0].distinctId).toBe('account-42');
+    });
+
+    it('sends nothing from an impersonated session', () => {
+        const res = { locals: {} } as Response<any, Partial<RequestLocals>>;
+        productTrackingMiddleware({ session: { debugMode: true } } as unknown as Request, res, () => {
+            res.locals.authType = 'session';
+            res.locals.account = { id: 42 } as DBTeam;
+            res.locals.user = { id: 3 } as DBUser;
+            productTracking.track({ name: 'billing:plan_submit' });
+        });
+
+        expect(capture).not.toHaveBeenCalled();
     });
 
     it('drops an event from a request that resolved no account', () => {
