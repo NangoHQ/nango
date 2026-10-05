@@ -1,10 +1,10 @@
 import posthog from 'posthog-js';
 import { usePostHog } from 'posthog-js/react';
 
-import type { AccountGroupProperties, AnalyticsEventNameFor, AnalyticsEventProperties, ApiUser } from '@nangohq/types';
+import type { AccountGroupProperties, AnalyticsEventNameFor, AnalyticsEventPropertiesArgs, ApiUser } from '@nangohq/types';
 
 /** Uses the `posthog` singleton so it works outside React components too. */
-export function track<E extends AnalyticsEventNameFor<'web'>>(event: E, properties: AnalyticsEventProperties<E>) {
+export function track<E extends AnalyticsEventNameFor<'web'>>(event: E, ...[properties]: AnalyticsEventPropertiesArgs<E>) {
     posthog?.capture(event, { ...properties, surface: 'web' });
 }
 

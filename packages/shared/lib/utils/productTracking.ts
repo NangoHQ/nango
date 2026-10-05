@@ -7,7 +7,7 @@ import { baseUrl, FixedSizeMap, NANGO_VERSION, report } from '@nangohq/utils';
 import type {
     AccountGroupProperties,
     AnalyticsEventNameFor,
-    AnalyticsEventProperties,
+    AnalyticsEventPropertiesInput,
     AnalyticsEventStructuredProperties,
     DBEnvironment,
     DBPlan,
@@ -172,9 +172,9 @@ class ProductTracking {
         structuredProperties
     }: {
         name: E;
-        eventProperties: AnalyticsEventProperties<E>;
         structuredProperties?: AnalyticsEventStructuredProperties<E>;
-    } & TrackingContextInput) {
+    } & AnalyticsEventPropertiesInput<E> &
+        TrackingContextInput) {
         try {
             if (this.client == null) {
                 return;
@@ -235,8 +235,7 @@ class ProductTracking {
     }: {
         name: E;
         distinctId: string;
-        eventProperties: AnalyticsEventProperties<E>;
-    }) {
+    } & AnalyticsEventPropertiesInput<E>) {
         try {
             if (this.client == null) {
                 return;
