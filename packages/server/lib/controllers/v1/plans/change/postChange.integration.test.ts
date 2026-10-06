@@ -1067,6 +1067,35 @@ describe(`POST ${route}`, () => {
             expect(updated.orb_future_plan_at).toEqual(changeAt);
         });
 
+        it('should leave the scheduled downgrade to the webhook when Orb returns no change date', async () => {
+            const { account, plan, user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
+            await setupPlan({
+                id: plan.id,
+                name: 'starter-v2',
+                orb_subscription_id: 'sub_123'
+            });
+
+            getSubscriptionSpy.mockResolvedValue(
+                Ok({ id: 'sub_123', planExternalId: 'starter-v2', hasGrowthFeatures: false, growthFeaturesEndsAt: null, growthFeaturesPriceIntervalId: null })
+            );
+            downgradeSpy.mockResolvedValue(Ok({ changeAt: null }));
+
+            const res = await api.fetch(route, {
+                method: 'POST',
+                query: { env: 'dev' },
+                session,
+                body: { orbId: 'free', withGrowthFeatures: false }
+            });
+
+            isSuccess(res.json);
+            expect(res.res.status).toBe(200);
+
+            const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
+            expect(updated.orb_future_plan).toBeNull();
+            expect(updated.orb_future_plan_at).toBeNull();
+        });
+
         it('should handle downgrade billing service errors', async () => {
             const { plan, user } = await seeders.seedAccountEnvAndUser();
             const session = await authenticateUser(api, user);
