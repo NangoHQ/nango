@@ -23,9 +23,11 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
 
 ## Workflow
 
-1. **Name the insight.** Copy the question the event answers from the product insights page, word for
-   word, into the entry's `insight`. Several events can share one question. If no question fits, write
-   your own sentence, and ask whether the question belongs on the page.
+1. **Name the insight.** Find the question on the product insights page that the event helps answer. In
+   the entry's `insight`, say what this event lets you see within that question: "How often accounts open
+   their invoices from Billing & Usage", not the whole Billing & Usage question. Two events with the same
+   `insight` are probably one event. If no question fits, write the sentence anyway, and ask whether a
+   question belongs on the page.
 
 2. **Look for an existing event first.** If a new event would carry the same properties as an existing
    one, differ only by a label and be charted next to it, add the label as a property instead.
