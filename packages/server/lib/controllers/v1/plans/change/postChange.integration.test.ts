@@ -64,7 +64,7 @@ describe(`POST ${route}`, () => {
         // Reset spies to default implementations
         getSubscriptionSpy.mockResolvedValue(Ok(null));
         upgradeSpy.mockResolvedValue(Ok({ pendingChangeId: 'pending_123', amountInCents: 5000 }));
-        downgradeSpy.mockResolvedValue(Ok(undefined));
+        downgradeSpy.mockResolvedValue(Ok({ changeAt: null }));
         startGrowthAddonSpy.mockResolvedValue(Ok({ priceIntervalId: 'pi_growth' }));
         endGrowthAddonSpy.mockResolvedValue(Ok({ growthFeaturesEndsAt: new Date('2026-10-01T00:00:00Z') }));
         cancelPendingChangesSpy.mockResolvedValue(Ok(undefined));
@@ -947,7 +947,6 @@ describe(`POST ${route}`, () => {
             };
 
             getSubscriptionSpy.mockResolvedValue(Ok(mockSubscription));
-            downgradeSpy.mockResolvedValue(Ok(undefined));
 
             const res = await api.fetch(route, {
                 method: 'POST',
@@ -1030,8 +1029,8 @@ describe(`POST ${route}`, () => {
             });
         });
 
-        it('should successfully downgrade', async () => {
-            const { plan, user } = await seeders.seedAccountEnvAndUser();
+        it('should successfully downgrade and record it without waiting for the webhook', async () => {
+            const { account, plan, user } = await seeders.seedAccountEnvAndUser();
             const session = await authenticateUser(api, user);
             await setupPlan({
                 id: plan.id,
@@ -1047,8 +1046,9 @@ describe(`POST ${route}`, () => {
                 growthFeaturesPriceIntervalId: null
             };
 
+            const changeAt = new Date('2026-11-01T00:00:00Z');
             getSubscriptionSpy.mockResolvedValue(Ok(mockSubscription));
-            downgradeSpy.mockResolvedValue(Ok(undefined));
+            downgradeSpy.mockResolvedValue(Ok({ changeAt }));
 
             const res = await api.fetch(route, {
                 method: 'POST',
@@ -1060,6 +1060,11 @@ describe(`POST ${route}`, () => {
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
             expect(res.json.data).toStrictEqual({ success: true });
+
+            const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
+            expect(updated.name).toBe('starter-v2');
+            expect(updated.orb_future_plan).toBe('free');
+            expect(updated.orb_future_plan_at).toEqual(changeAt);
         });
 
         it('should handle downgrade billing service errors', async () => {
