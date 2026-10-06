@@ -1142,6 +1142,7 @@
               "integrations/all/braintree",
               "integrations/all/braintree-sandbox",
               "integrations/all/braze",
+              "api-integrations/breathehr",
               "integrations/all/breezy-hr",
               "integrations/all/brevo-api-key",
               "api-integrations/brex",
