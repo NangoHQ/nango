@@ -830,6 +830,7 @@
                       "guides/platform/migrations/migrate-to-checkpoints",
                       "guides/platform/migrations/migrate-from-end-user",
                       "guides/platform/migrations/migrate-from-public-key",
+                      "guides/platform/migrations/migrate-from-connection-mcp",
                       "guides/platform/migrations/migrate-to-zero-yaml"
                     ]
                   },

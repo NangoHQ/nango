@@ -8981,6 +8981,105 @@ Finally, remove all usage of the **public key and HMAC** from your frontend.
 - [Customize Connect UI](/guides/auth/customize-connect-ui) - migrate custom authorization UIs or customize the pre-built UI.
 - [Connection tags, configuration, and metadata](/guides/auth/connection-tags-configuration-metadata) - add ownership attribution during migration.
 
+## Migrate from Connection MCP to agent sessions
+
+Source: https://nango.dev/docs/guides/platform/migrations/migrate-from-connection-mcp.md
+Description: Replace the Connection MCP with a scoped agent session
+
+The Connection MCP is deprecated. Agent sessions are its replacement for giving an agent access to Nango integrations.
+
+The main change is that your backend creates a scoped, expiring session for the agent. The session defines which connections and action functions the agent can use.
+
+## Main differences
+
+- Connection MCP uses an Environment API key and connection headers. Agent sessions use a session token.
+- Connection MCP selects one connection for a request. Agent sessions define their connection scope when created and can include multiple integrations.
+- Agent sessions use an explicit toolset to control which action functions are available.
+- Action functions are searchable by default instead of appearing directly in `tools/list`.
+- Agent sessions expire and cannot be extended.
+
+## Create an agent session
+
+Create the session from your backend with an Environment API key that has the `environment:agent_sessions:write` scope.
+
+Pin the connection previously used by your Connection MCP integration and allow the action functions your agent needs:
+
+```bash
+curl --request POST \
+  --url https://api.nango.dev/sessions \
+  --header "Authorization: Bearer <NANGO-API-KEY>" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "tenant": {
+      "connections": {
+        "pinned": [
+          {
+            "integration_id": "<INTEGRATION-ID>",
+            "connection_id": "<CONNECTION-ID>"
+          }
+        ]
+      }
+    },
+    "toolset": {
+      "<INTEGRATION-ID>": {
+        "allow": {
+          "tools": ["<ACTION-NAME>"]
+        }
+      }
+    },
+    "expires_in": "1h"
+  }'
+```
+
+The response includes a `session_token` and `mcp_url`.
+
+To allow every action for an integration, replace the integration policy with `"*"`:
+
+```json
+{
+  "toolset": {
+    "<INTEGRATION-ID>": "*"
+  }
+}
+```
+
+The actions remain searchable by default; add them to `pinned_tools` if they must appear directly in `tools/list`.
+
+<Note>
+  You can select connections with tags instead of pinning a specific connection. See [Tenant](/guides/agent-sessions#tenant) in the agent sessions guide.
+</Note>
+
+## Connect your agent to the session MCP
+
+Configure your MCP client with the returned `mcp_url` and `session_token`:
+
+```text
+URL: mcp_url
+Authorization: Bearer session_token
+```
+
+You no longer need to send the Connection MCP headers:
+
+- `connection-id`
+- `provider-config-key`
+
+Keep the Environment API key in your backend. Do not pass it to the agent.
+
+## Discover and call tools
+
+Allowed action functions are searchable by default. Agents can use:
+
+- `nango_tool_search` to find a relevant action function
+- `nango_execute` to run the selected action function
+
+If an action function must appear directly in the MCP client's `tools/list` response, add it to `pinned_tools` when creating the session. See [Toolsets & tools](/guides/agent-sessions#toolsets--tools) for details.
+
+## Handle session expiry
+
+Agent sessions expire according to `expires_in`. Create a new session when the current one expires. You can also terminate a session early when the agent task ends.
+
+See the [agent sessions guide](/guides/agent-sessions) for connection selectors, toolsets, meta tools, session lifecycle, and MCP client examples.
+
 ## Migrating to Zero YAML
 
 Source: https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml.md
