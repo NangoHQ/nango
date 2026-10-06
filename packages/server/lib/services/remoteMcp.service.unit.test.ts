@@ -75,7 +75,7 @@ function tool(name: string) {
 }
 
 async function list() {
-    return await withRemoteMcpSession(TARGET, async (client) => await listRemoteTools(client, { maxTools: 3, integrationId: 'linear-mcp' }));
+    return await withRemoteMcpSession(TARGET, async (client) => await listRemoteTools(client, { maxTools: 3 }));
 }
 
 function sentRequests(): ProxyServiceRequest[] {

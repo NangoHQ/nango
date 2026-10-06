@@ -98,7 +98,6 @@ interface SearchCandidate {
     description: string;
     connection: AgentSessionToolConnectionState;
     listed: boolean;
-    /** Set for an MCP server tool, whose schema came with the session rather than from a deployment. */
     input?: AgentSessionToolInput;
 }
 

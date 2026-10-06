@@ -105,7 +105,7 @@ export async function executeMcpProxyRequest(params: McpProxyRequest): Promise<M
     }
 }
 
-function completeProxyResponse(response: Pick<ProxyServiceResponse, 'complete'>, error?: Error): void {
+export function completeProxyResponse(response: Pick<ProxyServiceResponse, 'complete'>, error?: Error): void {
     void response.complete(error).catch((err: unknown) => {
         const completionError = err instanceof Error ? err : new Error('Failed to complete MCP proxy response');
         logger.error('Failed to complete MCP proxy response', { error: completionError });
