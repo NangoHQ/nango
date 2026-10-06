@@ -149,6 +149,86 @@ describe('OAuth2 token generation and refresh', () => {
         );
     });
 
+    it('getFreshOAuth2Credentials interpolates connection_config placeholders in refresh_params before refreshing', async () => {
+        let receivedResource: string | null = null;
+        await withServer(
+            (req, res) => {
+                let body = '';
+                req.on('data', (chunk) => (body += chunk));
+                req.on('end', () => {
+                    receivedResource = new URLSearchParams(body).get('resource');
+                    res.writeHead(200, { 'content-type': 'application/json' });
+                    res.end(JSON.stringify({ access_token: 'refreshed-access-token', token_type: 'bearer', expires_in: 3600 }));
+                });
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({
+                    token_url: `${baseUrl}/token`,
+                    refresh_params: { grant_type: 'refresh_token', resource: 'https://${connectionConfig.environmentUrl}' } as NonNullable<
+                        ProviderOAuth2['refresh_params']
+                    >
+                });
+                const config = makeConfig();
+                const connection = {
+                    id: 1,
+                    environment_id: 1,
+                    connection_config: { environmentUrl: 'contoso.crm.dynamics.com' },
+                    credentials: {
+                        type: 'OAUTH2',
+                        access_token: 'stale-access-token',
+                        refresh_token: 'the-refresh-token',
+                        expires_at: new Date(Date.now() - 60_000)
+                    }
+                } as unknown as DBConnectionDecrypted;
+
+                const buffer = logContextGetter.getBuffer({ accountId: 1 });
+                const result = await getFreshOAuth2Credentials({ connection, config, provider, logCtx: buffer });
+
+                expect(result.success).toBe(true);
+                expect(receivedResource).toBe('https://contoso.crm.dynamics.com');
+            }
+        );
+    });
+
+    it('getFreshOAuth2Credentials interpolates connection_config placeholders in token_params when refresh_params is absent', async () => {
+        let receivedContext: string | null = null;
+        await withServer(
+            (req, res) => {
+                let body = '';
+                req.on('data', (chunk) => (body += chunk));
+                req.on('end', () => {
+                    receivedContext = new URLSearchParams(body).get('context');
+                    res.writeHead(200, { 'content-type': 'application/json' });
+                    res.end(JSON.stringify({ access_token: 'refreshed-access-token', token_type: 'bearer', expires_in: 3600 }));
+                });
+            },
+            async (baseUrl) => {
+                const provider = makeProvider({
+                    token_url: `${baseUrl}/token`,
+                    token_params: { context: 'stores/${connectionConfig.storeHash}' } as NonNullable<ProviderOAuth2['token_params']>
+                });
+                const config = makeConfig();
+                const connection = {
+                    id: 1,
+                    environment_id: 1,
+                    connection_config: { storeHash: 'abc123' },
+                    credentials: {
+                        type: 'OAUTH2',
+                        access_token: 'stale-access-token',
+                        refresh_token: 'the-refresh-token',
+                        expires_at: new Date(Date.now() - 60_000)
+                    }
+                } as unknown as DBConnectionDecrypted;
+
+                const buffer = logContextGetter.getBuffer({ accountId: 1 });
+                const result = await getFreshOAuth2Credentials({ connection, config, provider, logCtx: buffer });
+
+                expect(result.success).toBe(true);
+                expect(receivedContext).toBe('stores/abc123');
+            }
+        );
+    });
+
     it('getFreshOAuth2Credentials fails without issuing the refresh when the token URL is blocked by policy', async () => {
         vi.mocked(assertSafeOAuthUrl).mockRejectedValueOnce(new Error('URL resolves to a blocked address'));
         let serverHit = false;
