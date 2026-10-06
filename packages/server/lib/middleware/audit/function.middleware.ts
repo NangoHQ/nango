@@ -13,6 +13,7 @@ import type {
     FunctionUpdatedMetadata,
     FunctionVariantMetadata,
     FunctionVariantSettingsMetadata,
+    PatchConnectionFunction,
     PatchFunction,
     PatchFunctionVariant,
     PostDeploy,
@@ -101,7 +102,7 @@ export const auditFunctionVariantDeleted = auditable<DeleteFunctionVariant>({
         })
 });
 
-export const auditFunctionVariantUpdated = auditable<PatchFunctionVariant>({
+export const auditFunctionVariantUpdated = auditable<PatchFunctionVariant | PatchConnectionFunction>({
     policy: Audit.auditable({ resource: 'function', action: 'variant_updated', scope: 'environment' }),
     target: (req, locals) => functionTarget(param(req, 'functionUuid'), locals),
     metadata: (req) => {
@@ -109,7 +110,7 @@ export const auditFunctionVariantUpdated = auditable<PatchFunctionVariant>({
         const frequency = bodyField(req, 'frequency');
         return omitUndefined<FunctionVariantSettingsMetadata>({
             connectionId: nonEmptyString(param(req, 'connectionId')),
-            variant: nonEmptyString(param(req, 'variant')),
+            variant: nonEmptyString(param(req, 'variant')) ?? 'base',
             enabled: typeof enabled === 'boolean' ? enabled : undefined,
             frequency: frequency === null ? null : nonEmptyString(frequency)
         });

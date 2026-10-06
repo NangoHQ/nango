@@ -35,6 +35,7 @@ import connectionController from './controllers/connection.controller.js';
 import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
 import { getFunctionInvocation } from './controllers/connection/connectionId/functions/functionUuid/invocations/id/getInvocation.js';
 import { postFunctionInvocation } from './controllers/connection/connectionId/functions/functionUuid/invocations/postInvocation.js';
+import { patchConnectionFunction } from './controllers/connection/connectionId/functions/functionUuid/patchFunction.js';
 import { deleteFunctionVariant } from './controllers/connection/connectionId/functions/functionUuid/variants/deleteVariant.js';
 import { patchFunctionVariant } from './controllers/connection/connectionId/functions/functionUuid/variants/patchVariant.js';
 import { postFunctionVariant } from './controllers/connection/connectionId/functions/functionUuid/variants/postVariant.js';
@@ -458,6 +459,9 @@ publicAPI.route('/functions/deployments/bundle').post(envAuth, auditFunctionDepl
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid/invocations')
     .post(envAuth, can('environment:functions:invocations'), postFunctionInvocation);
+publicAPI
+    .route('/connections/:connectionId/functions/:functionUuid')
+    .patch(envAuth, auditFunctionVariantUpdated, can('environment:functions:update'), patchConnectionFunction);
 publicAPI
     .route('/connections/:connectionId/functions/:functionUuid/variants')
     .post(envAuth, auditFunctionVariantCreated, can('environment:functions:update'), postFunctionVariant);

@@ -168,7 +168,7 @@ export async function deleteVariant({
 
 export async function updateVariant(
     orchestrator: Pick<Orchestrator, 'scheduleFunctions' | 'deleteFunctionSchedules'>,
-    args: VariantArgs & { enabled?: boolean | undefined; frequency?: string | null | undefined }
+    args: VariantArgs & { enabled?: boolean | undefined; frequency?: string | null | undefined; allowBase?: boolean }
 ): Promise<Result<PatchFunctionVariant['Success'], FunctionVariantError>> {
     try {
         const frequencyValidation = validateFrequency(args.frequency);
@@ -181,7 +181,7 @@ export async function updateVariant(
             if (locked.isErr()) {
                 throw locked.error;
             }
-            const validation = await validateArgs(trx, args);
+            const validation = await validateArgs(trx, args, { allowBase: args.allowBase ?? false });
             if (validation.isErr()) {
                 throw validation.error;
             }
@@ -224,7 +224,7 @@ export async function updateVariant(
                 if (locked.isErr()) {
                     throw locked.error;
                 }
-                const validation = await validateArgs(trx, args);
+                const validation = await validateArgs(trx, args, { allowBase: args.allowBase ?? false });
                 if (validation.isErr()) {
                     throw validation.error;
                 }
@@ -255,9 +255,13 @@ export async function updateVariant(
     }
 }
 
-async function validateArgs(trx: Knex, { environmentId, connectionId, functionUuid, variant }: VariantArgs): Promise<Result<ValidatedVariantArgs>> {
+async function validateArgs(
+    trx: Knex,
+    { environmentId, connectionId, functionUuid, variant }: VariantArgs,
+    { allowBase = false }: { allowBase?: boolean } = {}
+): Promise<Result<ValidatedVariantArgs>> {
     try {
-        if (variant.toLowerCase() === 'base') {
+        if (!allowBase && variant.toLowerCase() === 'base') {
             return Err(new FunctionVariantError('invalid_variant', 400, `Variant name "${variant}" is protected.`));
         }
         const configs = await functionConfigService.search(trx, { environmentId, filter: { uuid: functionUuid } }, { forShare: true });

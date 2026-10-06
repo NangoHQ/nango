@@ -69,6 +69,25 @@ describe('function audit middleware (unit)', () => {
     });
 
     it.each([
+        [200, 'success'],
+        [403, 'denied'],
+        [500, 'failure']
+    ] as const)('base variant update records settings on %s', async (status, outcome) => {
+        const req = fakeReq({ params: { functionUuid, connectionId: 'connection' }, body: { enabled: false, frequency: null } });
+        const event = await runAudit(auditFunctionVariantUpdated, req, fakeRes(secretKeyLocals, status));
+        expect(event).toMatchObject({
+            resource: 'function',
+            action: 'variant_updated',
+            outcome,
+            accountId: 42,
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
+            actor: { type: 'api_key', id: 'c0000000-0000-4000-8000-000000000005', display: 'ci-key' },
+            targets: [{ type: 'function', id: functionUuid, display: 'fetchIssues' }],
+            metadata: { connectionId: 'connection', variant: 'base', enabled: false, frequency: null }
+        });
+    });
+
+    it.each([
         ['private', auditFunctionDeleted, { providerConfigKey: 'algolia', functionName: 'contacts' }],
         ['public', auditPublicFunctionDeleted, { uniqueKey: 'algolia', name: 'contacts' }]
     ])('%s function delete: the target matches what a deploy recorded', async (_name, handler, params) => {

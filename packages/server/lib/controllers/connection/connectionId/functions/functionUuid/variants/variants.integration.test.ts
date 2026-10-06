@@ -13,6 +13,7 @@ import type { FunctionTriggerDefinition } from '@nangohq/types';
 const endpoint = '/connections/:connectionId/functions/:functionUuid/variants';
 const deleteEndpoint = `${endpoint}/:variant`;
 const patchEndpoint = `${endpoint}/:variant`;
+const baseEndpoint = '/connections/:connectionId/functions/:functionUuid';
 let api: Awaited<ReturnType<typeof runServer>>;
 
 async function seed(trigger: FunctionTriggerDefinition = { kind: 'schedule', frequency: 'every hour', autoStart: false }, maxVariants = 100) {
@@ -114,17 +115,23 @@ describe('function variant endpoints', () => {
         shouldBeProtected(await request);
     });
 
-    it.each(['POST', 'DELETE'] as const)('%s requires the functions update scope', async (method) => {
+    it.each(['POST', 'DELETE', 'PATCH'] as const)('%s requires the functions update scope', async (method) => {
         const seeded = await seed();
         await db
             .knex('customer_keys')
             .where('id', seeded.apiKey.id)
             .update({ scopes: ['environment:functions:read'] });
         const request = { token: seeded.apiKey.secret, params: { ...seeded.params, variant: 'custom' } };
-        const res =
-            method === 'POST'
-                ? await api.fetch(endpoint, { ...request, method: 'POST', body: { variant: 'custom' } })
-                : await api.fetch(deleteEndpoint, { ...request, method: 'DELETE' });
+        const res = await (() => {
+            switch (method) {
+                case 'POST':
+                    return api.fetch(endpoint, { ...request, method: 'POST', body: { variant: 'custom' } });
+                case 'DELETE':
+                    return api.fetch(deleteEndpoint, { ...request, method: 'DELETE' });
+                case 'PATCH':
+                    return api.fetch(patchEndpoint, { ...request, method: 'PATCH', body: { enabled: true } });
+            }
+        })();
         expect(res.res.status).toBe(403);
     });
 
@@ -294,6 +301,38 @@ describe('function variant endpoints', () => {
             enabled: false,
             frequency: null
         });
+    });
+
+    it('updates base variant through the function instance alias', async () => {
+        const seeded = await seedVariant();
+        const request = { method: 'PATCH' as const, token: seeded.apiKey.secret, params: seeded.params };
+        const schedule = vi.spyOn(Orchestrator.prototype, 'scheduleFunctions').mockResolvedValue(Ok(undefined));
+        const unschedule = vi.spyOn(Orchestrator.prototype, 'deleteFunctionSchedules').mockResolvedValue(Ok(undefined));
+
+        const enabled = await api.fetch(baseEndpoint, { ...request, body: { enabled: true, frequency: 'every 30s' } });
+        expect(enabled.res.status).toBe(200);
+        expect(enabled.json).toEqual({
+            function: { uuid: seeded.func.config.uuid, name: 'fetchIssues' },
+            variant: 'base',
+            state: 'enabled',
+            frequency: 'every 30s'
+        });
+        expect(schedule).toHaveBeenLastCalledWith([
+            expect.objectContaining({ instance: expect.objectContaining({ id: seeded.base.id, enabled: true, frequency: 'every 30s' }) })
+        ]);
+        const reset = await api.fetch(baseEndpoint, { ...request, body: { frequency: null } });
+        expect(reset.res.status).toBe(200);
+        expect(reset.json).toMatchObject({ variant: 'base', state: 'enabled', frequency: 'every hour' });
+        expect(schedule).toHaveBeenLastCalledWith([
+            expect.objectContaining({ instance: expect.objectContaining({ id: seeded.base.id, frequency: null }), frequencyFallback: 'every hour' })
+        ]);
+        const disabled = await api.fetch(baseEndpoint, { ...request, body: { enabled: false } });
+        expect(disabled.res.status).toBe(200);
+        expect(disabled.json).toMatchObject({ variant: 'base', state: 'disabled' });
+        expect(unschedule).toHaveBeenCalledWith({ environmentId: seeded.env.id, instanceIds: [seeded.base.id] });
+        const instances = (await functionInstanceService.search(db.knex, { instanceIds: [seeded.base.id, seeded.instance.id] })).unwrap();
+        expect(instances.find((instance) => instance.id === seeded.base.id)).toMatchObject({ enabled: false, frequency: null });
+        expect(instances.find((instance) => instance.id === seeded.instance.id)).toMatchObject({ enabled: true, frequency: null });
     });
 
     it('rejects frequencies that are too short', async () => {
