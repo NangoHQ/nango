@@ -49,7 +49,11 @@ describe('agent playground chat storage', () => {
 
     it('marks an approved call that never finished as interrupted, and a denied one as denied', () => {
         saveAgentPlaygroundChat('dev', 'user', [{ ...message('2026-10-01T12:30:00Z'), parts: [answeredApproval(true)] }]);
-        expect(loadAgentPlaygroundChat('dev', 'user', now)?.[0]?.parts[0]).toMatchObject({ state: 'output-error', errorText: INTERRUPTED_CALL });
+        expect(loadAgentPlaygroundChat('dev', 'user', now)?.[0]?.parts[0]).toMatchObject({
+            state: 'output-error',
+            toolCallId: 'call',
+            errorText: INTERRUPTED_CALL
+        });
 
         saveAgentPlaygroundChat('dev', 'user', [{ ...message('2026-10-01T12:30:00Z'), parts: [answeredApproval(false)] }]);
         expect(loadAgentPlaygroundChat('dev', 'user', now)?.[0]?.parts[0]).toMatchObject({ state: 'output-denied' });
