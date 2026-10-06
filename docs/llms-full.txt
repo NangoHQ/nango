@@ -7406,6 +7406,8 @@ The flag is only set when the integration's webhook handling knows verification 
 
 The Nango signature on flagged requests only proves the webhook came through Nango, not that the provider sent it. Anyone who knows the integration's webhook URL can send one. Treat the payload as untrusted, and set the webhook secret on the integration to enable verification. The forward operation in the Nango logs also shows a warning with the reason.
 
+Some providers reject webhooks Nango cannot verify, such as GitHub App, Gmail, Microsoft Teams, Salesforce, Airtable, Affinity, Fillout and ShipStation. For these, **Allow unverified webhooks** in **Integrations > [Integration] > Settings** lets webhooks with a missing or unverifiable signature through, flagged as above. It is off by default, and is meant for prototyping or while you set up verification. It never lets through a webhook with an invalid signature.
+
 ## When to use forwarding
 
 Use forwarding when:
@@ -7447,7 +7449,7 @@ Use [webhook functions](/guides/functions/webhook-functions) when Nango should u
 
 ## Providers that do not sign webhooks
 
-Affinity, Fillout and ShipStation do not sign their webhooks, so Nango checks a secret you choose for each connection instead. Nango rejects a webhook unless it carries the secret of the connection it is routed to.
+Affinity, Fillout and ShipStation do not sign their webhooks, so Nango checks a secret you choose for each connection instead. Nango rejects a webhook unless it carries the secret of the connection it is routed to, or the connection has no secret and the integration [allows unverified webhooks](#unverified-webhooks).
 
 1. Generate a random secret of at least 16 characters per connection and store it as `webhookSecret` in that connection's [metadata](/reference/backend/http-api/connections/update-metadata).
 2. Send that connection's secret with every webhook registered for it, in the `X-Nango-Webhook-Secret` header or, when the provider only lets you set a URL, as a `nangoWebhookSecret` query param on the Nango webhook URL.
@@ -16149,6 +16151,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `huntress` | Huntress | BASIC | [docs](https://nango.dev/docs/api-integrations/huntress.md) | [connect](https://nango.dev/docs/api-integrations/huntress/connect.md) |  | other |
 | `icypeas` | Icypeas | API_KEY | [docs](https://nango.dev/docs/integrations/all/icypeas.md) | [connect](https://nango.dev/docs/integrations/all/icypeas/connect.md) |  | marketing, crm |
 | `ids-fulfillment` | IDS Fulfillment | API_KEY | [docs](https://nango.dev/docs/api-integrations/ids-fulfillment.md) | [connect](https://nango.dev/docs/api-integrations/ids-fulfillment/connect.md) |  | e-commerce |
+| `imanage` | iManage Work | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/imanage.md) | [connect](https://nango.dev/docs/api-integrations/imanage/connect.md) | [setup](https://nango.dev/docs/api-integrations/imanage/how-to-register-your-own-imanage-oauth-app.md) | legal, storage |
 | `immybot` | ImmyBot | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/immybot.md) | [connect](https://nango.dev/docs/api-integrations/immybot/connect.md) |  | dev-tools, support |
 | `incident-io` | Incident.io | API_KEY | [docs](https://nango.dev/docs/integrations/all/incident-io.md) | [connect](https://nango.dev/docs/integrations/all/incident-io/connect.md) |  | ticketing |
 | `infor` | Infor (ION API) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/infor.md) | [connect](https://nango.dev/docs/api-integrations/infor/connect.md) | [setup](https://nango.dev/docs/api-integrations/infor/how-to-register-your-own-infor-api-oauth-app.md) | erp |

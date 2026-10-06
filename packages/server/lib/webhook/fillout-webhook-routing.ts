@@ -1,9 +1,11 @@
 import { connectionService } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
-import { connectionsWithValidSecret, rejectUnverifiedWebhook } from './nango-webhook-secret.js';
+import { connectionsToRoute, rejectUnverifiedWebhook } from './nango-webhook-secret.js';
 
 import type { WebhookHandler } from './types.js';
+
+const MISSING_SECRET = { reason: 'fillout_missing_webhook_secret', remediation: 'Set webhookSecret in the connection metadata' };
 
 // Fillout does not sign webhooks. It lets you add a custom header, which carries the Nango webhook
 // secret of the connection that owns the form.
@@ -11,7 +13,7 @@ import type { WebhookHandler } from './types.js';
 const route: WebhookHandler = async (nango, headers, body, _rawBody, query) => {
     const events: Record<string, unknown>[] = Array.isArray(body) ? body : [body];
     const connectionIds = new Set<string>();
-    const verifiedEvents: Record<string, unknown>[] = [];
+    const routedEvents: Record<string, unknown>[] = [];
 
     for (const event of events) {
         const formId = event?.['formId'];
@@ -27,13 +29,12 @@ const route: WebhookHandler = async (nango, headers, body, _rawBody, query) => {
                 environmentId: nango.environment.id
             })) || [];
 
-        // Each connection is checked against its own secret, so only the ones it matches are routed.
-        const verified = connectionsWithValidSecret(connections, headers, query);
-        if (verified.length > 0) {
-            verifiedEvents.push(event);
+        const routed = await connectionsToRoute({ nango, connections, headers, query, unverified: MISSING_SECRET });
+        if (routed.length > 0) {
+            routedEvents.push(event);
         }
 
-        for (const connection of verified) {
+        for (const connection of routed) {
             const response = await nango.executeScriptForWebhooks({
                 payload: event,
                 webhookType: 'type',
@@ -54,8 +55,8 @@ const route: WebhookHandler = async (nango, headers, body, _rawBody, query) => {
         content: { status: 'success' },
         statusCode: 200,
         connectionIds: Array.from(connectionIds),
-        // Events for forms the secret did not verify must not reach the verified connections.
-        toForward: Array.isArray(body) ? verifiedEvents : body
+        // Events no connection accepted must not reach the ones that did.
+        toForward: Array.isArray(body) ? routedEvents : body
     });
 };
 

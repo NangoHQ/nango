@@ -126,10 +126,12 @@ const route: WebhookHandler<Record<string, unknown>> = async (nango, headers, bo
     });
 
     if (unverified) {
-        nango.markUnverified(unverified);
+        // The setting only covers tokens Nango cannot verify. The legacy flag also lets invalid ones through.
+        const flag = (accountUuid: string) => getFlags().allowUnauthorizedMicrosoftTeamsWebhook(accountUuid);
+        const outcome = UNVERIFIABLE.includes(unverified) ? await nango.unverifiedOutcome(flag) : (await flag(nango.team.uuid)) ? 'flag' : 'rejected';
+        nango.markUnverified(unverified, outcome);
 
-        const allowUnverified = nango.integration.allow_unverified_webhooks && UNVERIFIABLE.includes(unverified);
-        if (!allowUnverified && !(await getFlags().allowUnauthorizedMicrosoftTeamsWebhook(nango.team.uuid))) {
+        if (outcome === 'rejected') {
             return Err(new NangoError(unverified === UNVERIFIED.missingAuthorization ? 'webhook_missing_signature' : 'webhook_invalid_signature'));
         }
     }
