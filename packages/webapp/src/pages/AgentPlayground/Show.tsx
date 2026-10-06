@@ -177,6 +177,20 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         }
     }, [newLinkRequests, busy, awaitingApproval, sendMessage]);
 
+    const [retryRequests, setRetryRequests] = useState<string[]>([]);
+    const onRetryInterrupted = useCallback((title: string) => {
+        setRetryRequests((titles) => (titles.includes(title) ? titles : [...titles, title]));
+    }, []);
+    useEffect(() => {
+        if (retryRequests.length > 0 && !busy && !awaitingApproval) {
+            setRetryRequests([]);
+            void sendMessage({
+                text: `A page reload interrupted ${retryRequests.join(' and ')} after I approved it. Check whether the change already happened. If it did, tell me; if not, make it again.`,
+                metadata: { hidden: true }
+            });
+        }
+    }, [retryRequests, busy, awaitingApproval, sendMessage]);
+
     const scroller = useRef<HTMLDivElement>(null);
     const bottom = useRef<HTMLDivElement>(null);
     const pinnedToBottom = useRef(true);
@@ -271,6 +285,7 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                                             onConnected={onConnected}
                                             onRequestNewLink={onRequestNewLink}
                                             onApprove={onApprove}
+                                            onRetryInterrupted={message === lastMessage ? onRetryInterrupted : undefined}
                                         />
                                     );
                                 }

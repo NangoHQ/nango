@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { clearAgentPlaygroundChat, loadAgentPlaygroundChat, saveAgentPlaygroundChat } from './agentPlaygroundChat';
+import { clearAgentPlaygroundChat, INTERRUPTED_BY_RELOAD, loadAgentPlaygroundChat, saveAgentPlaygroundChat } from './agentPlaygroundChat';
 
 const store = new Map<string, string>();
 vi.stubGlobal('sessionStorage', {
@@ -36,7 +36,7 @@ describe('agent playground chat storage', () => {
         expect(loadAgentPlaygroundChat('prod', now)).toBeUndefined();
     });
 
-    it('asks again for an approval that was answered but never sent', () => {
+    it('marks an approved call that never finished as interrupted', () => {
         const toolPart = {
             type: 'dynamic-tool' as const,
             toolName: 'nango_execute',
@@ -48,8 +48,7 @@ describe('agent playground chat storage', () => {
         saveAgentPlaygroundChat('dev', [{ ...message('2026-10-01T12:30:00Z'), parts: [toolPart] }]);
 
         const [restored] = loadAgentPlaygroundChat('dev', now) ?? [];
-        expect(restored?.parts[0]).toMatchObject({ state: 'approval-requested', approval: { id: 'approval' } });
-        expect(restored?.parts[0]).not.toHaveProperty('approval.approved');
+        expect(restored?.parts[0]).toMatchObject({ state: 'output-error', toolCallId: 'call', errorText: INTERRUPTED_BY_RELOAD });
     });
 
     it('drops a chat with no session yet', () => {

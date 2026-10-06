@@ -28,22 +28,30 @@ export function loadAgentPlaygroundChat(env: string, now = Date.now()): Playgrou
             clearAgentPlaygroundChat();
             return undefined;
         }
-        return stored.messages.map(reopenAnsweredApprovals);
+        return stored.messages.map(markInterruptedCalls);
     } catch {
         return undefined;
     }
 }
 
-// An answer saved just before a reload is never sent, and a restored chat doesn't send it again.
-function reopenAnsweredApprovals(message: PlaygroundMessage): PlaygroundMessage {
+export const INTERRUPTED_BY_RELOAD = 'Interrupted by a page reload. It may or may not have run.';
+
+// The approved request may already have run, so asking again could make the change twice.
+function markInterruptedCalls(message: PlaygroundMessage): PlaygroundMessage {
     return {
         ...message,
         parts: message.parts.map((part) => {
             if (part.type !== 'dynamic-tool' || part.state !== 'approval-responded') {
                 return part;
             }
-            const { approved: _approved, reason: _reason, ...approval } = part.approval;
-            return { ...part, state: 'approval-requested', approval };
+            return {
+                type: 'dynamic-tool',
+                toolName: part.toolName,
+                toolCallId: part.toolCallId,
+                state: 'output-error',
+                input: part.input,
+                errorText: INTERRUPTED_BY_RELOAD
+            };
         })
     };
 }
