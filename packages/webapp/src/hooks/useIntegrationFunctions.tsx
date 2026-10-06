@@ -58,9 +58,10 @@ interface UseGetIntegrationFunctionArgs {
     providerConfigKey: string;
     name: string;
     type?: GetIntegrationFunction['Querystring']['type'];
+    enabled?: boolean;
 }
 
-export function useGetIntegrationFunction({ env, providerConfigKey, name, type }: UseGetIntegrationFunctionArgs) {
+export function useGetIntegrationFunction({ env, providerConfigKey, name, type, enabled = true }: UseGetIntegrationFunctionArgs) {
     return useQuery<GetIntegrationFunction['Success'], APIError>({
         queryKey: ['integrations', env, providerConfigKey, 'functions', name, { type }],
         queryFn: async (): Promise<GetIntegrationFunction['Success']> => {
@@ -82,7 +83,7 @@ export function useGetIntegrationFunction({ env, providerConfigKey, name, type }
 
             return json;
         },
-        enabled: Boolean(env && providerConfigKey && name)
+        enabled: enabled && Boolean(env && providerConfigKey && name)
     });
 }
 

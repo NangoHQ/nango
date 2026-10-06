@@ -18,7 +18,7 @@ import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { usePreBuiltDeployFlow } from '@/hooks/useFlow';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
+import { useGetIntegrationFunction, useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
 import { useMeta } from '@/hooks/useMeta';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
@@ -242,13 +242,14 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
     const [deployingName, setDeployingName] = useState<string | null>(null);
-    const [selectedFunctionKey, setSelectedFunctionKey] = useState<string | null>(null);
 
     const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
     const debouncedSearch = useDebouncedValue(search);
 
     const [rawType, setType] = useQueryState('type', parseAsString.withDefault(''));
     const typeFilter: TypeFilterValue = rawType && isTypeFilterValue(rawType) ? rawType : 'action';
+    // The open panel is the URL, so a reload or a shared link restores it. Old `/functions/:name` links redirect here.
+    const [selectedFunctionName, setSelectedFunctionName] = useQueryState('function', parseAsString);
 
     const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, isPlaceholderData } = useGetIntegrationFunctions({
         env,
@@ -276,9 +277,12 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
         void navigate(`/${env}/integrations/${integration.unique_key}/templates`);
     }, [env, integration.unique_key, navigate]);
 
-    const onRowClick = useCallback((key: string) => {
-        setSelectedFunctionKey((current) => (current === key ? null : key));
-    }, []);
+    const onRowClick = useCallback(
+        (name: string) => {
+            void setSelectedFunctionName(selectedFunctionName === name ? null : name);
+        },
+        [selectedFunctionName, setSelectedFunctionName]
+    );
 
     const deployTemplate = useCallback(
         async (template: NangoFunctionTemplate) => {
@@ -320,6 +324,18 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
 
     const functions: ListedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
     const total = data?.pages[0]?.pagination.total ?? 0;
+    const listedMatch = selectedFunctionName ? functions.find((fn) => fn.name === selectedFunctionName) : undefined;
+    const templateMatch = selectedFunctionName
+        ? (templatesResponse?.data ?? []).find((template) => !template.deployed && template.type === typeFilter && template.name === selectedFunctionName)
+        : undefined;
+    // A linked function can sit past the first page. Fetch it directly so the panel opens without scrolling the list.
+    const { data: linkedFunction } = useGetIntegrationFunction({
+        env,
+        providerConfigKey: integration.unique_key,
+        name: selectedFunctionName ?? '',
+        type: typeFilter,
+        enabled: Boolean(selectedFunctionName) && templatesFetched && !listedMatch && !templateMatch
+    });
 
     const searchNeedle = debouncedSearch.trim().toLowerCase();
     const undeployedActionTemplates = useMemo(
@@ -345,10 +361,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
             ? matchingActionTemplates.filter((template) => !listedFunctionKeys.has(`${template.type}:${template.name}`))
             : [];
     const visibleSyncTemplates = typeFilter === 'sync' && !hasNextPage && !isPlaceholderData ? matchingSyncTemplates : [];
-    const selectedFunction =
-        functions.find((fn) => functionRowKey(fn) === selectedFunctionKey) ??
-        [...visibleActionTemplates, ...visibleSyncTemplates].find((template) => templateRowKey(template) === selectedFunctionKey) ??
-        null;
+    const selectedFunction = listedMatch ?? templateMatch ?? linkedFunction?.data ?? null;
 
     const counts: Record<TypeFilterValue, number | undefined> = {
         action: pillCount(actionCounts.data?.pages[0]?.pagination.total, templatesFetched, undeployedActionTemplates.length),
@@ -419,7 +432,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                     aria-pressed={selected}
                                     disabled={disabled}
                                     onClick={() => {
-                                        setSelectedFunctionKey(null);
+                                        void setSelectedFunctionName(null);
                                         void setType(pill.value);
                                     }}
                                     className={cn(
@@ -445,7 +458,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                 placeholder="Search functions"
                                 value={search || ''}
                                 onChange={(e) => {
-                                    setSelectedFunctionKey(null);
+                                    void setSelectedFunctionName(null);
                                     void setSearch(e.target.value || null);
                                 }}
                             />
@@ -514,7 +527,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                             selectedFunction={selectedFunction}
                             integration={integration}
                             repoProvider={repoProvider}
-                            onDeleted={() => setSelectedFunctionKey(null)}
+                            onDeleted={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
                                 <TableHeader>
@@ -526,13 +539,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                 </TableHeader>
                                 <TableBody>
                                     {functions.map((fn) => {
-                                        const selected = functionRowKey(fn) === selectedFunctionKey;
+                                        const selected = fn.name === selectedFunctionName;
                                         return (
                                             <TableRow
                                                 key={functionRowKey(fn)}
                                                 aria-selected={selected}
                                                 className={cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS)}
-                                                onClick={() => onRowClick(functionRowKey(fn))}
+                                                onClick={() => onRowClick(fn.name)}
                                             >
                                                 <FunctionNameCell name={fn.name} description={fn.description} />
                                                 {!selectedFunction && (
@@ -553,8 +566,8 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                             key={`template:${template.type}:${template.name}`}
                                             template={template}
                                             isDeploying={deployingName === template.name}
-                                            selected={templateRowKey(template) === selectedFunctionKey}
-                                            onSelect={() => onRowClick(templateRowKey(template))}
+                                            selected={template.name === selectedFunctionName}
+                                            onSelect={() => onRowClick(template.name)}
                                             onDeploy={onDeployTemplate}
                                             showSource={!selectedFunction}
                                         />
@@ -577,7 +590,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                             selectedFunction={selectedFunction}
                             integration={integration}
                             repoProvider={repoProvider}
-                            onDeleted={() => setSelectedFunctionKey(null)}
+                            onDeleted={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
                                 <TableHeader>
@@ -589,13 +602,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                 </TableHeader>
                                 <TableBody>
                                     {functions.map((fn) => {
-                                        const selected = functionRowKey(fn) === selectedFunctionKey;
+                                        const selected = fn.name === selectedFunctionName;
                                         return (
                                             <TableRow
                                                 key={functionRowKey(fn)}
                                                 aria-selected={selected}
                                                 className={cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS)}
-                                                onClick={() => onRowClick(functionRowKey(fn))}
+                                                onClick={() => onRowClick(fn.name)}
                                             >
                                                 <FunctionNameCell name={fn.name} description={fn.description} />
                                                 {!selectedFunction && (
@@ -614,8 +627,8 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                             key={`template:${template.type}:${template.name}`}
                                             template={template}
                                             isDeploying={deployingName === template.name}
-                                            selected={templateRowKey(template) === selectedFunctionKey}
-                                            onSelect={() => onRowClick(templateRowKey(template))}
+                                            selected={template.name === selectedFunctionName}
+                                            onSelect={() => onRowClick(template.name)}
                                             onDeploy={onDeployTemplate}
                                             showSource={!selectedFunction}
                                         />
@@ -635,7 +648,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                             selectedFunction={selectedFunction}
                             integration={integration}
                             repoProvider={repoProvider}
-                            onDeleted={() => setSelectedFunctionKey(null)}
+                            onDeleted={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
                                 <TableHeader>
@@ -647,13 +660,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                 </TableHeader>
                                 <TableBody>
                                     {functions.map((fn) => {
-                                        const selected = functionRowKey(fn) === selectedFunctionKey;
+                                        const selected = fn.name === selectedFunctionName;
                                         return (
                                             <TableRow
                                                 key={functionRowKey(fn)}
                                                 aria-selected={selected}
                                                 className={cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS)}
-                                                onClick={() => onRowClick(functionRowKey(fn))}
+                                                onClick={() => onRowClick(fn.name)}
                                             >
                                                 <FunctionNameCell name={fn.name} description={fn.description} />
                                                 {!selectedFunction && (

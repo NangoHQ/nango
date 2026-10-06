@@ -104,7 +104,7 @@ export const Templates: React.FC = () => {
                 scriptName: selected.name,
                 type: selected.type
             });
-            const functionPath = `/${env}/integrations/${integrationData.integration.unique_key}/functions/${encodeURIComponent(selected.name)}?type=${selected.type}`;
+            const functionPath = `/${env}/integrations/${integrationData.integration.unique_key}?function=${encodeURIComponent(selected.name)}&type=${selected.type}`;
             toast({
                 title: `${selected.name} deployed successfully`,
                 variant: 'success',

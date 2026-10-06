@@ -30,7 +30,6 @@ import { GettingStarted } from '@/pages/GettingStarted/Show';
 import { Homepage } from '@/pages/Homepage/Show';
 import { CreateIntegration } from '@/pages/Integrations/Create';
 import { CreateIntegrationList } from '@/pages/Integrations/CreateList';
-import { FunctionsOne } from '@/pages/Integrations/providerConfigKey/Functions/One';
 import { ShowIntegration } from '@/pages/Integrations/providerConfigKey/Show';
 import { Templates } from '@/pages/Integrations/providerConfigKey/Templates';
 import { IntegrationsList } from '@/pages/Integrations/Show';
@@ -83,6 +82,24 @@ const legacyConnectionTabByHash = {
     '#records': 'records',
     '#settings': 'settings'
 } as const;
+
+const LEGACY_FUNCTION_TYPES = new Set(['sync', 'action', 'on-event']);
+
+const RedirectLegacyFunctionPage = () => {
+    const { env, providerConfigKey, functionName } = useParams();
+    const location = useLocation();
+    const next = new URLSearchParams();
+    if (functionName) {
+        next.set('function', functionName);
+    }
+    const type = new URLSearchParams(location.search).get('type');
+    if (type && LEGACY_FUNCTION_TYPES.has(type)) {
+        next.set('type', type);
+    }
+
+    const search = next.toString();
+    return <Navigate to={{ pathname: `/${env}/integrations/${providerConfigKey}`, search: search ? `?${search}` : '' }} replace />;
+};
 
 const ConnectionIndexRedirect = () => {
     const location = useLocation();
@@ -258,10 +275,7 @@ export const router = sentryCreateBrowserRouter([
                                     },
                                     {
                                         path: 'functions/:functionName',
-                                        element: <FunctionsOne />,
-                                        handle: {
-                                            breadcrumb: (params) => params.functionName || 'Function'
-                                        } as BreadcrumbHandle
+                                        element: <RedirectLegacyFunctionPage />
                                     },
                                     {
                                         path: 'templates',
