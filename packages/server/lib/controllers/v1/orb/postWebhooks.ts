@@ -29,7 +29,7 @@ export const postOrbWebhooks = asyncWrapper<PostOrbWebhooks>(async (req, res) =>
         res.status(400).send({ error: { code: 'invalid_headers', message: 'invalid signature' } });
         return;
     }
-    const handled = await handleWebhook(req.body as Webhooks);
+    const handled = await handleWebhook(req.body as BaseWebhookEvent);
     if (handled.isErr()) {
         report(handled.error, { body: req.body });
         res.status(500).send({ error: { code: 'server_error', message: handled.error.message } });
@@ -51,10 +51,6 @@ interface SubscriptionEvent extends BaseWebhookEvent {
         customer: { id: string; external_customer_id: string };
         plan: { id: string; external_plan_id: string };
     };
-}
-
-interface SubscriptionCreatedEvent extends SubscriptionEvent {
-    type: 'subscription.created';
 }
 
 interface SubscriptionStartedEvent extends SubscriptionEvent {
@@ -84,14 +80,20 @@ interface SubscriptionPlanChangedScheduledEvent extends SubscriptionEvent {
     };
 }
 
-type Webhooks =
-    | SubscriptionCreatedEvent
-    | SubscriptionStartedEvent
-    | SubscriptionPlanChangedEvent
-    | SubscriptionPlanChangedScheduledEvent
-    | SubscriptionCostExceededEvent;
+type Webhooks = SubscriptionStartedEvent | SubscriptionPlanChangedEvent | SubscriptionPlanChangedScheduledEvent | SubscriptionCostExceededEvent;
 
-async function handleWebhook(body: Webhooks): Promise<Result<void>> {
+const handledTypes = new Set<string>(['subscription.started', 'subscription.plan_changed', 'subscription.plan_change_scheduled', 'subscription.cost_exceeded']);
+
+function isHandled(body: BaseWebhookEvent): body is Webhooks {
+    return handledTypes.has(body.type);
+}
+
+export async function handleWebhook(body: BaseWebhookEvent): Promise<Result<void>> {
+    if (!isHandled(body)) {
+        logger.info('[orb-hook] ignored', { id: body.id, createdAt: body.created_at, type: body.type });
+        return Ok(undefined);
+    }
+
     logger.info('[orb-hook]', {
         id: body.id,
         createdAt: body.created_at,
@@ -198,8 +200,5 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 }
             });
         }
-
-        default:
-            return Ok(undefined);
     }
 }
