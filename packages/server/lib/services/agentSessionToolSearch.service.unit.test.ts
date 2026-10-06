@@ -146,6 +146,25 @@ describe('rankSessionTools', () => {
      * A slug cannot be derived from the integration and action, so a tool the listing has no address
      * for cannot be called and is left out rather than returned uncallable.
      */
+    it('carries the schema an MCP server gave for its tool', () => {
+        const schema: JSONSchema7 = { type: 'object', properties: { query: { type: 'string' } } };
+        const ranked = rank({
+            compiledToolset: {
+                'linear-mcp': {
+                    provider: 'linear-mcp',
+                    pinned: [],
+                    searchable: [
+                        { name: 'list_issues', description: 'List the issues in a Linear team.', mcp: { inputSchema: schema as Record<string, unknown> } }
+                    ],
+                    mcpServer: 'available'
+                }
+            },
+            query: 'list issues'
+        });
+
+        expect(ranked.best.map((candidate) => candidate.input)).toEqual([{ kind: 'schema', schema }]);
+    });
+
     it('leaves out a tool the listing has no address for', () => {
         const { best, related } = rank({
             compiledToolset: {

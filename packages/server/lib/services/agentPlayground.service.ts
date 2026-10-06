@@ -134,6 +134,7 @@ async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | un
     const created = await agentSessionService.createAgentSession({
         account: ctx.account,
         environment: ctx.environment,
+        plan: ctx.plan,
         connections: { any: [], pinned: newestConnectionPerIntegration(connections) },
         // Every playground integration, connected or not, so the agent can offer to connect a missing app.
         toolset: Object.fromEntries(integrationIds.map((integrationId) => [integrationId, { allow: '*', deny: [] }])),

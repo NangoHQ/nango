@@ -1481,6 +1481,7 @@ anarlog-mcp:
         - mcp
     auth_mode: MCP_OAUTH2_GENERIC
     mcp_server_url: https://api.anarlog.so/mcp
+    mcp_endpoint: /
     proxy:
         base_url: https://api.anarlog.so/mcp
         headers:
@@ -5780,6 +5781,7 @@ cloudflare-mcp:
         - dev-tools
         - mcp
     auth_mode: MCP_OAUTH2_GENERIC
+    mcp_endpoint: /
     proxy:
         base_url: ${connectionConfig.mcp_server_url}
         headers:
@@ -14347,6 +14349,11 @@ linear-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    mcp_endpoint: /mcp
+    proxy:
+        base_url: https://mcp.linear.app
+        headers:
+            accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/linear-mcp
 
 linkedin:
@@ -15040,6 +15047,11 @@ mcp-generic:
     categories:
         - mcp
     auth_mode: MCP_OAUTH2_GENERIC
+    mcp_endpoint: /
+    proxy:
+        base_url: ${connectionConfig.mcp_server_url}
+        headers:
+            accept: application/json,text/event-stream
     connection_config:
         mcp_server_url:
             type: string

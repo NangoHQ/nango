@@ -501,6 +501,10 @@
                 "mcp_server_url": {
                     "type": "string"
                 },
+                "mcp_endpoint": {
+                    "type": "string",
+                    "pattern": "^/"
+                },
                 "registration_params": {
                     "type": "object",
                     "additionalProperties": {

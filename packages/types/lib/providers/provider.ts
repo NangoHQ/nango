@@ -86,6 +86,8 @@ export interface BaseProvider {
     authorization_code_param_in_webhook?: string;
     docs: string;
     docs_connect?: string;
+    /** Path of the provider's MCP server under `proxy.base_url`. Agent sessions pass through the tools of providers that set it. */
+    mcp_endpoint?: string;
     setup_guide_url?: string;
     token_expiration_buffer?: number; // In seconds.
     webhook_routing_script?: string;
