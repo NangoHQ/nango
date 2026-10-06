@@ -1,5 +1,4 @@
-import { SUPPORTED_PROTOCOL_VERSIONS } from '@modelcontextprotocol/server';
-import { z } from 'zod';
+import { Client, ProtocolError, SdkError, SdkHttpError, StreamableHTTPClientTransport, UnauthorizedError } from '@modelcontextprotocol/client';
 
 import { getProvider } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
@@ -7,53 +6,57 @@ import { Err, getLogger, Ok } from '@nangohq/utils';
 import { readProxyResponseBody } from './mcpProxyResponse.js';
 import proxyService from './proxy.service.js';
 
-import type { ProxyServiceResponse } from './proxy.service.js';
+import type { ProxyServiceError, ProxyServiceResponse } from './proxy.service.js';
+import type { FetchLike, Tool } from '@modelcontextprotocol/client';
 import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, OperationActor } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('Server.RemoteMcp');
 
-const PROTOCOL_VERSION = '2025-06-18';
 const CLIENT_INFO = { name: 'nango-agent-session', version: '1.0.0' };
+
+// The transport insists on a URL, but every request goes through the proxy, which ignores it.
+const PROXY_PLACEHOLDER_URL = new URL('https://nango-proxy.invalid/');
 
 const MAX_TOOL_LIST_PAGES = 20;
 
-const jsonRpcMessageSchema = z.looseObject({
-    jsonrpc: z.literal('2.0'),
-    id: z.union([z.string(), z.number(), z.null()]).optional(),
-    result: z.unknown().optional(),
-    error: z.looseObject({ code: z.number(), message: z.string() }).optional()
-});
-
-const initializeResultSchema = z.looseObject({ protocolVersion: z.string() });
-
-const remoteToolSchema = z.looseObject({
-    name: z.string().min(1),
-    description: z.string().optional(),
-    inputSchema: z.looseObject({ type: z.literal('object') }),
-    annotations: z.record(z.string(), z.unknown()).optional()
-});
-
-const toolsListResultSchema = z.looseObject({
-    tools: z.array(z.unknown()),
-    nextCursor: z.string().optional()
-});
-
-export type RemoteMcpTool = z.infer<typeof remoteToolSchema>;
-
-type JsonRpcMessage = z.infer<typeof jsonRpcMessageSchema>;
+export interface RemoteMcpTool {
+    name: string;
+    description?: string | undefined;
+    inputSchema: Record<string, unknown>;
+    annotations?: Record<string, unknown> | undefined;
+}
 
 export type RemoteMcpErrorCode = 'proxy_failed' | 'http_error' | 'invalid_response' | 'rpc_error';
 
 export class RemoteMcpError extends Error {
     public readonly code: RemoteMcpErrorCode;
     public readonly status: number | undefined;
+    /** The JSON-RPC method that failed. */
+    public readonly method: string | undefined;
 
-    constructor({ code, message, status, cause }: { code: RemoteMcpErrorCode; message: string; status?: number | undefined; cause?: unknown }) {
+    constructor({
+        code,
+        message,
+        status,
+        method,
+        cause
+    }: {
+        code: RemoteMcpErrorCode;
+        message: string;
+        status?: number | undefined;
+        method?: string | undefined;
+        cause?: unknown;
+    }) {
         super(message, { cause });
         this.name = 'RemoteMcpError';
         this.code = code;
         this.status = status;
+        this.method = method;
+    }
+
+    get proxyError(): ProxyServiceError | undefined {
+        return this.code === 'proxy_failed' ? (this.cause as ProxyServiceError) : undefined;
     }
 }
 
@@ -67,39 +70,22 @@ export interface RemoteMcpTarget {
     actor?: OperationActor | undefined;
 }
 
-export interface RemoteMcpSession {
-    request: (method: string, params?: Record<string, unknown>) => Promise<Result<unknown, RemoteMcpError>>;
-}
-
 export interface RemoteMcpRun<T> {
     /** Every request of one MCP session is logged under a single proxy operation. */
     logOperationId: string | undefined;
     result: Result<T, RemoteMcpError>;
 }
 
-interface SessionState {
-    target: RemoteMcpTarget;
-    endpoint: string;
-    protocolVersion: string;
-    sessionId: string | undefined;
-    nextId: number;
-    logOperationId: string | undefined;
-}
-
-/** The path a provider's MCP server answers on, or undefined when its tools cannot be passed through. */
 export function mcpEndpointOf(provider: string): string | undefined {
     return getProvider(provider)?.mcp_endpoint;
 }
 
 /**
- * Opens an MCP session on the integration's server through the Nango proxy, so the connection's
- * credentials are applied and refreshed the way any proxy call has them, runs `fn` in it, and
- * closes it.
+ * Opens an MCP session on the integration's server, runs `fn` in it, and closes it. The MCP SDK
+ * speaks the protocol, and its requests are sent through the Nango proxy, so the connection's
+ * credentials are applied and refreshed the way any proxy call has them.
  */
-export async function withRemoteMcpSession<T>(
-    target: RemoteMcpTarget,
-    fn: (session: RemoteMcpSession) => Promise<Result<T, RemoteMcpError>>
-): Promise<RemoteMcpRun<T>> {
+export async function withRemoteMcpSession<T>(target: RemoteMcpTarget, fn: (client: Client) => Promise<Result<T, RemoteMcpError>>): Promise<RemoteMcpRun<T>> {
     const endpoint = mcpEndpointOf(target.provider);
     if (!endpoint) {
         return {
@@ -108,57 +94,49 @@ export async function withRemoteMcpSession<T>(
         };
     }
 
-    const state: SessionState = { target, endpoint, protocolVersion: PROTOCOL_VERSION, sessionId: undefined, nextId: 1, logOperationId: undefined };
+    const log: { operationId: string | undefined } = { operationId: undefined };
+    const transport = new StreamableHTTPClientTransport(PROXY_PLACEHOLDER_URL, { fetch: proxyFetch({ target, endpoint, log }) });
+    const client = new Client(CLIENT_INFO, { capabilities: {} });
 
     try {
-        const initialized = await initialize(state);
-        if (initialized.isErr()) {
-            return { logOperationId: state.logOperationId, result: Err(initialized.error) };
+        try {
+            await client.connect(transport);
+        } catch (err) {
+            return { logOperationId: log.operationId, result: Err(toRemoteMcpError(err, 'initialize')) };
         }
 
-        const result = await fn({ request: async (method, params) => await rpc(state, method, params) });
-        return { logOperationId: state.logOperationId, result };
+        const result = await fn(client);
+        return { logOperationId: log.operationId, result };
     } finally {
-        if (state.sessionId) {
-            const closed = await send(state, 'DELETE');
-            if (closed.isErr()) {
-                logger.info('Could not close the remote MCP session', { integrationId: target.integrationId, error: closed.error.message });
-            }
-        }
+        await transport.terminateSession().catch((err: unknown) => {
+            logger.info('Could not close the remote MCP session', { integrationId: target.integrationId, error: err instanceof Error ? err.message : err });
+        });
+        await client.close().catch(() => undefined);
     }
 }
 
 /**
  * Pages through `tools/list` until the server stops handing back a cursor, `maxTools` is reached, or
  * the page guard trips, which stops a server that keeps handing out cursors from paging forever.
- * A tool the server describes in a shape MCP does not allow is dropped rather than failing the list.
  */
 export async function listRemoteTools(
-    session: RemoteMcpSession,
+    client: Client,
     { maxTools, integrationId }: { maxTools: number; integrationId: string }
 ): Promise<Result<RemoteMcpTool[], RemoteMcpError>> {
     const tools: RemoteMcpTool[] = [];
     let cursor: string | undefined;
 
     for (let page = 0; page < MAX_TOOL_LIST_PAGES && tools.length < maxTools; page++) {
-        const response = await session.request('tools/list', cursor ? { cursor } : undefined);
-        if (response.isErr()) {
-            return Err(response.error);
+        let listed: { tools: Tool[]; nextCursor?: string | undefined };
+        try {
+            listed = await client.listTools(cursor ? { cursor } : undefined);
+        } catch (err) {
+            return Err(toRemoteMcpError(err, 'tools/list'));
         }
 
-        const parsed = toolsListResultSchema.safeParse(response.value);
-        if (!parsed.success) {
-            return Err(new RemoteMcpError({ code: 'invalid_response', message: 'The MCP server returned an invalid tools/list result' }));
-        }
+        tools.push(...listed.tools.map(toRemoteTool));
 
-        for (const tool of parsed.data.tools) {
-            const valid = remoteToolSchema.safeParse(tool);
-            if (valid.success) {
-                tools.push(valid.data);
-            }
-        }
-
-        cursor = parsed.data.nextCursor;
+        cursor = listed.nextCursor;
         if (!cursor) {
             break;
         }
@@ -171,146 +149,108 @@ export async function listRemoteTools(
     return Ok(tools.slice(0, maxTools));
 }
 
-async function initialize(state: SessionState): Promise<Result<void, RemoteMcpError>> {
-    const result = await rpc(state, 'initialize', { protocolVersion: PROTOCOL_VERSION, capabilities: {}, clientInfo: CLIENT_INFO });
-    if (result.isErr()) {
-        return Err(result.error);
+export function toRemoteMcpError(err: unknown, method: string): RemoteMcpError {
+    if (err instanceof RemoteMcpError) {
+        return err;
     }
 
-    const parsed = initializeResultSchema.safeParse(result.value);
-    if (!parsed.success) {
-        return Err(new RemoteMcpError({ code: 'invalid_response', message: 'The MCP server returned an invalid initialize result' }));
+    if (err instanceof UnauthorizedError) {
+        return new RemoteMcpError({ code: 'http_error', message: 'The MCP server refused the credentials', status: 401, method, cause: err });
     }
-    // The server picks the version, and one this client does not know could change what the transport expects.
-    if (!SUPPORTED_PROTOCOL_VERSIONS.includes(parsed.data.protocolVersion)) {
-        return Err(
-            new RemoteMcpError({ code: 'invalid_response', message: `The MCP server chose unsupported protocol version '${parsed.data.protocolVersion}'` })
-        );
-    }
-    state.protocolVersion = parsed.data.protocolVersion;
 
-    const initialized = await send(state, 'POST', { jsonrpc: '2.0', method: 'notifications/initialized' });
-    return initialized.isErr() ? Err(initialized.error) : Ok(undefined);
+    if (err instanceof SdkHttpError) {
+        return new RemoteMcpError({ code: 'http_error', message: `The MCP server answered with HTTP ${err.status}`, status: err.status, method, cause: err });
+    }
+
+    if (err instanceof ProtocolError) {
+        return new RemoteMcpError({ code: 'rpc_error', message: `The MCP server rejected ${method}: ${err.message}`, method, cause: err });
+    }
+
+    if (err instanceof SdkError) {
+        return new RemoteMcpError({ code: 'invalid_response', message: err.message, method, cause: err });
+    }
+
+    throw err;
 }
 
-async function rpc(state: SessionState, method: string, params?: Record<string, unknown>): Promise<Result<unknown, RemoteMcpError>> {
-    const id = state.nextId++;
-    const response = await send(state, 'POST', { jsonrpc: '2.0', id, method, ...(params ? { params } : {}) });
-    if (response.isErr()) {
-        return Err(response.error);
-    }
-
-    const message = response.value.find((candidate) => candidate.id === id);
-    if (!message) {
-        return Err(new RemoteMcpError({ code: 'invalid_response', message: `The MCP server sent no response to ${method}` }));
-    }
-
-    if (message.error) {
-        return Err(new RemoteMcpError({ code: 'rpc_error', message: `The MCP server rejected ${method}: ${message.error.message}` }));
-    }
-
-    return Ok(message.result);
+function toRemoteTool(tool: Tool): RemoteMcpTool {
+    return {
+        name: tool.name,
+        description: tool.description,
+        inputSchema: tool.inputSchema,
+        ...(tool.annotations ? { annotations: tool.annotations } : {})
+    };
 }
 
-async function send(state: SessionState, method: HTTP_METHOD, body?: unknown): Promise<Result<JsonRpcMessage[], RemoteMcpError>> {
-    const { target } = state;
+/**
+ * Hands the SDK's requests to the Nango proxy and gives back what the server answered. The proxy
+ * cannot hold a server-initiated event stream open, so the GET that would start one is answered
+ * with 405 here, which tells the SDK the server offers none.
+ */
+function proxyFetch({ target, endpoint, log }: { target: RemoteMcpTarget; endpoint: string; log: { operationId: string | undefined } }): FetchLike {
+    return async (_url, init) => {
+        const method = (init?.method ?? 'GET').toUpperCase() as HTTP_METHOD;
+        if (method === 'GET') {
+            return new Response(null, { status: 405 });
+        }
 
-    const execution = await proxyService.request({
-        account: target.account,
-        environment: target.environment,
-        plan: target.plan,
-        method,
-        endpoint: state.endpoint,
-        integrationId: target.integrationId,
-        connectionId: target.connectionId,
-        headers: {
-            'content-type': 'application/json',
-            accept: 'application/json, text/event-stream',
-            'mcp-protocol-version': state.protocolVersion,
-            ...(state.sessionId ? { 'mcp-session-id': state.sessionId } : {})
-        },
-        body,
-        retries: 0,
-        actor: target.actor,
-        activityLogId: state.logOperationId
+        const execution = await proxyService.request({
+            account: target.account,
+            environment: target.environment,
+            plan: target.plan,
+            method,
+            endpoint,
+            integrationId: target.integrationId,
+            connectionId: target.connectionId,
+            headers: toRecord(new Headers(init?.headers)),
+            body: typeof init?.body === 'string' ? init.body : undefined,
+            retries: 0,
+            actor: target.actor,
+            activityLogId: log.operationId
+        });
+        log.operationId ??= execution.logCtx?.id;
+
+        if (execution.result.isErr()) {
+            throw new RemoteMcpError({ code: 'proxy_failed', message: execution.result.error.message, cause: execution.result.error });
+        }
+
+        const response = execution.result.value;
+
+        let body: Buffer;
+        try {
+            body = await readProxyResponseBody(response);
+        } catch (err) {
+            complete(response, err instanceof Error ? err : new Error('Failed to read the MCP server response'));
+            throw new RemoteMcpError({ code: 'invalid_response', message: 'The MCP server response could not be read', status: response.status, cause: err });
+        }
+        complete(response);
+
+        return new Response(body.length > 0 ? new Uint8Array(body) : null, { status: response.status, headers: toHeaders(response.headers) });
+    };
+}
+
+function toRecord(headers: Headers): Record<string, string> {
+    const result: Record<string, string> = {};
+    headers.forEach((value, name) => {
+        result[name] = value;
     });
-    state.logOperationId ??= execution.logCtx?.id;
+    return result;
+}
 
-    if (execution.result.isErr()) {
-        return Err(new RemoteMcpError({ code: 'proxy_failed', message: execution.result.error.message, cause: execution.result.error }));
+function toHeaders(headers: Record<string, unknown>): Headers {
+    const result = new Headers();
+    for (const [name, value] of Object.entries(headers)) {
+        if (typeof value === 'string') {
+            result.set(name, value);
+        } else if (Array.isArray(value)) {
+            result.set(name, value.join(', '));
+        }
     }
-
-    const response = execution.result.value;
-
-    let text: string;
-    try {
-        text = (await readProxyResponseBody(response)).toString('utf8');
-    } catch (err) {
-        complete(response, err instanceof Error ? err : new Error('Failed to read the MCP server response'));
-        return Err(new RemoteMcpError({ code: 'invalid_response', message: 'The MCP server response could not be read', status: response.status, cause: err }));
-    }
-    complete(response);
-
-    if (response.outcome === 'upstream_error') {
-        return Err(new RemoteMcpError({ code: 'http_error', message: `The MCP server answered with HTTP ${response.status}`, status: response.status }));
-    }
-
-    const sessionId = response.headers['mcp-session-id'];
-    if (typeof sessionId === 'string' && sessionId) {
-        state.sessionId = sessionId;
-    }
-
-    const messages = parseMessages({ contentType: response.headers['content-type'], text });
-    if (!messages) {
-        return Err(new RemoteMcpError({ code: 'invalid_response', message: 'The MCP server returned a body that is not JSON-RPC', status: response.status }));
-    }
-
-    return Ok(messages);
+    return result;
 }
 
 function complete(response: ProxyServiceResponse, error?: Error): void {
     void response.complete(error).catch((err: unknown) => {
         logger.error('Failed to complete the remote MCP proxy response', { error: err });
     });
-}
-
-/** A streamable HTTP server answers either with JSON or with an event stream whose events carry the messages. */
-export function parseMessages({ contentType, text }: { contentType: unknown; text: string }): JsonRpcMessage[] | null {
-    if (text.trim() === '') {
-        return [];
-    }
-
-    const payloads =
-        typeof contentType === 'string' && contentType.includes('text/event-stream')
-            ? text
-                  .split(/\r?\n\r?\n/)
-                  .map((event) =>
-                      event
-                          .split(/\r?\n/)
-                          .filter((line) => line.startsWith('data:'))
-                          .map((line) => line.slice(5).trimStart())
-                          .join('\n')
-                  )
-                  .filter(Boolean)
-            : [text];
-
-    const messages: JsonRpcMessage[] = [];
-    for (const payload of payloads) {
-        let parsed: unknown;
-        try {
-            parsed = JSON.parse(payload);
-        } catch {
-            return null;
-        }
-
-        for (const candidate of Array.isArray(parsed) ? parsed : [parsed]) {
-            const message = jsonRpcMessageSchema.safeParse(candidate);
-            if (!message.success) {
-                return null;
-            }
-            messages.push(message.data);
-        }
-    }
-
-    return messages;
 }
