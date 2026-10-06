@@ -1623,6 +1623,7 @@
               "api-integrations/notion",
               "api-integrations/notion-mcp",
               "integrations/all/notion-scim",
+              "api-integrations/nuvemshop",
               "api-integrations/nyne-ai",
               "api-integrations/ocean-io",
               "integrations/all/odoo",

@@ -80,6 +80,7 @@ class ProviderClient {
             case 'scrollstash-mcp':
             case 'shopline-oauth':
             case 'threads':
+            case 'nuvemshop':
                 return true;
             default:
                 return false;
@@ -129,6 +130,8 @@ class ProviderClient {
             case 'coros':
             case 'coros-sandbox':
                 return this.createCorosToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
+            case 'nuvemshop':
+                return this.createNuvemshopToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'figma':
             case 'figjam':
                 return this.createFigmaToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
@@ -632,6 +635,51 @@ class ProviderClient {
         } catch (err: any) {
             throw new NangoError('shopline_refresh_token_request_error', stringifyError(err));
         }
+    }
+
+    /**
+     * Nuvemshop answers the token request with a JSON body but a `text/html` content type,
+     * which the default OAuth2 client rejects, and with a 200 status even when the request failed.
+     * It also returns the store id (`user_id`) as a number, while token_response_metadata only keeps
+     * string or boolean values — and the store id is required in the API base URL.
+     * Tokens do not expire and there is no refresh token.
+     */
+    private async createNuvemshopToken(tokenUrl: string, code: string, clientId: string, clientSecret: string): Promise<object> {
+        const body = {
+            client_id: clientId,
+            client_secret: clientSecret,
+            grant_type: 'authorization_code',
+            code
+        };
+        const response = await axios.post(tokenUrl, body, {
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' }
+        });
+
+        let data: unknown = response.data;
+        if (typeof data === 'string') {
+            try {
+                data = JSON.parse(data);
+            } catch {
+                throw new NangoError('request_token_external_error', { message: 'The token response is not valid JSON' });
+            }
+        }
+        if (!data || typeof data !== 'object') {
+            throw new NangoError('request_token_external_error', { message: 'The token response is empty' });
+        }
+
+        const raw = data as Record<string, unknown>;
+        if (raw['error'] || !raw['access_token']) {
+            throw new NangoError('request_token_external_error', {
+                error: raw['error'] ?? 'missing_access_token',
+                error_description: raw['error_description']
+            });
+        }
+
+        const storeId = raw['user_id'] ?? raw['store_id'];
+        return {
+            ...raw,
+            ...(typeof storeId === 'number' || typeof storeId === 'string' ? { user_id: String(storeId) } : {})
+        };
     }
 
     private async createFigmaToken(
