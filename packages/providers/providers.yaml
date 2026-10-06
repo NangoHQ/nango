@@ -19446,6 +19446,39 @@ pleo:
                 - external
                 - external.staging
 
+pleo-mcp:
+    display_name: Pleo (MCP)
+    categories:
+        - payment
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.pleo.io/oauth/authorize
+    token_url: https://mcp.pleo.io/oauth/token
+    registration_url: https://mcp.pleo.io/oauth/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.pleo.io/
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+        resource: https://mcp.pleo.io/
+    refresh_params:
+        grant_type: refresh_token
+        resource: https://mcp.pleo.io/
+    default_scopes:
+        - authenticated
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.pleo.io
+    docs: https://nango.dev/docs/api-integrations/pleo-mcp
+
 pleo-api-key:
     display_name: Pleo (API Key)
     categories:
