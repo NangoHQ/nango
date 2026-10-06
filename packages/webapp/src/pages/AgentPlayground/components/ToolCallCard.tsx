@@ -9,7 +9,7 @@ import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Spinner } from '@/components/ui/Spinner';
-import { INTERRUPTED_BY_RELOAD } from '@/store/agentPlaygroundChat';
+import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
 import { cn } from '@/utils/utils';
 import { describeTool, humanize, providerFor, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
@@ -147,7 +147,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
         }
     }
 
-    if (part.state === 'output-error' && part.errorText === INTERRUPTED_BY_RELOAD) {
+    if (part.state === 'output-error' && part.errorText === INTERRUPTED_CALL) {
         return <InterruptedCard display={display} onRetry={onRetryInterrupted} />;
     }
 
@@ -205,7 +205,7 @@ const InterruptedCard: React.FC<{ display: ToolDisplay; onRetry: ((title: string
                 <span className="truncate text-body-medium-medium text-text-strong">{display.title}</span>
                 <span className="flex items-center gap-1 text-body-small-regular text-text-warning">
                     <CircleSlash className="size-3.5 shrink-0 text-icon-warning" />
-                    Interrupted by a page reload.
+                    Interrupted before it finished.
                 </span>
             </div>
             {onRetry && (

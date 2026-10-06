@@ -34,7 +34,7 @@ export function loadAgentPlaygroundChat(env: string, now = Date.now()): Playgrou
     }
 }
 
-export const INTERRUPTED_BY_RELOAD = 'Interrupted by a page reload. It may or may not have run.';
+export const INTERRUPTED_CALL = 'Interrupted before it finished. It may or may not have run.';
 
 // The approved request may already have run, so asking again could make the change twice.
 function markInterruptedCalls(message: PlaygroundMessage): PlaygroundMessage {
@@ -50,7 +50,7 @@ function markInterruptedCalls(message: PlaygroundMessage): PlaygroundMessage {
                 toolCallId: part.toolCallId,
                 state: 'output-error',
                 input: part.input,
-                errorText: INTERRUPTED_BY_RELOAD
+                errorText: INTERRUPTED_CALL
             };
         })
     };

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { clearAgentPlaygroundChat, INTERRUPTED_BY_RELOAD, loadAgentPlaygroundChat, saveAgentPlaygroundChat } from './agentPlaygroundChat';
+import { clearAgentPlaygroundChat, INTERRUPTED_CALL, loadAgentPlaygroundChat, saveAgentPlaygroundChat } from './agentPlaygroundChat';
 
 const store = new Map<string, string>();
 vi.stubGlobal('sessionStorage', {
@@ -48,7 +48,7 @@ describe('agent playground chat storage', () => {
         saveAgentPlaygroundChat('dev', [{ ...message('2026-10-01T12:30:00Z'), parts: [toolPart] }]);
 
         const [restored] = loadAgentPlaygroundChat('dev', now) ?? [];
-        expect(restored?.parts[0]).toMatchObject({ state: 'output-error', toolCallId: 'call', errorText: INTERRUPTED_BY_RELOAD });
+        expect(restored?.parts[0]).toMatchObject({ state: 'output-error', toolCallId: 'call', errorText: INTERRUPTED_CALL });
     });
 
     it('drops a chat with no session yet', () => {

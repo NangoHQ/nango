@@ -185,7 +185,7 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         if (retryRequests.length > 0 && !busy && !awaitingApproval) {
             setRetryRequests([]);
             void sendMessage({
-                text: `A page reload interrupted ${retryRequests.join(' and ')} after I approved it. Check whether the change already happened. If it did, tell me; if not, make it again.`,
+                text: `${retryRequests.join(' and ')} was interrupted after I approved it. Check whether the change already happened. If it did, tell me; if not, make it again.`,
                 metadata: { hidden: true }
             });
         }
