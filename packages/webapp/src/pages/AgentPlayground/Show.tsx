@@ -406,7 +406,7 @@ const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string)
                         key={prompt}
                         type="button"
                         onClick={() => onPick(prompt)}
-                        className="flex items-center gap-3 rounded-ds-xs border-ds-hairline border-border-input bg-surface-panel px-3 py-2.5 text-left text-body-medium-regular text-text-default transition-colors hover:border-border-input-hover"
+                        className="flex items-center gap-3 rounded-ds-xs border-ds-hairline border-border-muted bg-surface-panel px-3 py-2.5 text-left text-body-medium-regular text-text-default transition-colors hover:border-border-strong"
                     >
                         <IntegrationLogo provider={provider} className="size-8 shrink-0" />
                         {prompt}
