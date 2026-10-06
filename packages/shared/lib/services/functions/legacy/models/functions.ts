@@ -41,11 +41,22 @@ const listingOrderBy = [
     { column: 'id', order: 'asc' as const }
 ];
 
-async function catalogTools(accountUuid: string | undefined, provider: string | undefined, type: FunctionType | undefined): Promise<CatalogTool[]> {
-    if (!accountUuid || !provider || !(await getFlags().hasCatalogTools(accountUuid)) || (type !== undefined && type !== 'action')) {
+async function catalogToolsEnabled(accountUuid: string | undefined): Promise<boolean> {
+    if (!accountUuid) {
+        return false;
+    }
+    return getFlags().hasCatalogTools(accountUuid);
+}
+
+function catalogTools(provider: string | undefined, type: FunctionType | undefined, enabled: boolean): CatalogTool[] {
+    if (!enabled || !provider || (type !== undefined && type !== 'action')) {
         return [];
     }
     return listCatalogTools(provider);
+}
+
+function markActionsEnabled<T extends { type: string | null; enabled: boolean | null }>(rows: T[]): T[] {
+    return rows.map((row) => (row.type === 'action' && row.enabled !== true ? { ...row, enabled: true } : row));
 }
 
 async function providerForConfig(environmentId: number, providerConfigKey: string): Promise<{ provider: string; accountUuid: string } | undefined> {
@@ -90,7 +101,8 @@ export async function findActiveByEnvironment({
     offset: number;
 }): Promise<{ rows: FunctionRow[]; total: number }> {
     const config = await providerForConfig(environmentId, providerConfigKey);
-    const catalog = await catalogTools(config?.accountUuid, config?.provider, type);
+    const toolsCatalogEnabled = await catalogToolsEnabled(config?.accountUuid);
+    const catalog = catalogTools(config?.provider, type, toolsCatalogEnabled);
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search, catalog });
     const [pageRows, countRow] = await Promise.all([
         db.knex.from(listing).select<FunctionRow[]>('*').orderBy(listingOrderBy).limit(limit).offset(offset),
@@ -99,7 +111,7 @@ export async function findActiveByEnvironment({
 
     const total = countRow ? Number(countRow.total) : 0;
     hydrateCatalogJsonSchemas(pageRows, catalog);
-    return { rows: pageRows, total };
+    return { rows: toolsCatalogEnabled ? markActionsEnabled(pageRows) : pageRows, total };
 }
 
 export async function findActiveActions({
@@ -112,11 +124,12 @@ export async function findActiveActions({
     limit: number;
 }): Promise<FunctionRow[]> {
     const config = await providerForConfig(environmentId, providerConfigKey);
-    const catalog = await catalogTools(config?.accountUuid, config?.provider, 'action');
+    const toolsCatalogEnabled = await catalogToolsEnabled(config?.accountUuid);
+    const catalog = catalogTools(config?.provider, 'action', toolsCatalogEnabled);
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type: 'action', search: undefined, catalog });
     const rows = await db.knex.from(listing).select<FunctionRow[]>('*').orderBy(listingOrderBy).limit(limit);
     hydrateCatalogJsonSchemas(rows, catalog);
-    return rows;
+    return toolsCatalogEnabled ? markActionsEnabled(rows) : rows;
 }
 
 /**
@@ -134,7 +147,7 @@ export async function findActiveFunctionAvailability({
     environmentId: number;
     providerConfigKey: string;
 }): Promise<FunctionAvailabilityRow[]> {
-    return activeSyncConfigBase({ environmentId, providerConfigKey }).select<FunctionAvailabilityRow[]>(
+    const rows = await activeSyncConfigBase({ environmentId, providerConfigKey }).select<FunctionAvailabilityRow[]>(
         'sc.id',
         'sc.sync_name AS name',
         'sc.type',
@@ -142,6 +155,10 @@ export async function findActiveFunctionAvailability({
         'sc.created_at AS last_deployed',
         'sc.source'
     );
+    if (await catalogToolsEnabled(await accountUuidForEnvironment(environmentId))) {
+        return markActionsEnabled(rows);
+    }
+    return rows;
 }
 
 export interface IntegrationFunctionRow {
@@ -205,7 +222,7 @@ type DeployedFunctionRow = IntegrationFunctionRow;
 async function appendCatalogActions(environmentId: number, deployedRows: DeployedFunctionRow[]): Promise<IntegrationFunctionRow[]> {
     const accountUuid = await accountUuidForEnvironment(environmentId);
     if (!accountUuid || !(await getFlags().hasCatalogTools(accountUuid))) {
-        return deployedRows.map(toFunctionRow);
+        return deployedRows.map((row) => toFunctionRow(row, false));
     }
 
     const byIntegration = new Map<string, DeployedFunctionRow[]>();
@@ -223,7 +240,7 @@ async function appendCatalogActions(environmentId: number, deployedRows: Deploye
         }
 
         const deployedActionNames = new Set(group.filter((row) => row.type === 'action' && row.name).map((row) => row.name as string));
-        const deployed = group.filter((row) => row.name !== null).map(toFunctionRow);
+        const deployed = group.filter((row) => row.name !== null).map((row) => toFunctionRow(row, true));
         const catalog = listCatalogTools(sample.provider)
             .filter((action) => !deployedActionNames.has(action.name))
             .map((action) => ({
@@ -260,14 +277,14 @@ async function appendCatalogActions(environmentId: number, deployedRows: Deploye
     return merged;
 }
 
-function toFunctionRow(row: DeployedFunctionRow): IntegrationFunctionRow {
+function toFunctionRow(row: DeployedFunctionRow, forceActionsEnabled: boolean): IntegrationFunctionRow {
     return {
         integration_id: row.integration_id,
         provider: row.provider,
         name: row.name,
         type: row.type,
         description: row.description,
-        enabled: row.enabled
+        enabled: forceActionsEnabled && row.type === 'action' ? true : row.enabled
     };
 }
 
@@ -282,9 +299,10 @@ export interface ActionInputSchemaRow {
  * Returns the input model name and schema definitions for named actions, across as many
  * integrations as the caller asks for in one query.
  *
- * An active deployed action occupies the name even when it is disabled: the catalog is
- * not used as a fallback, and a disabled deployed row contributes no schema. Catalog schemas
- * are returned only for unoccupied names.
+ * An active deployed action occupies the name. When tools-catalog is on, that row contributes
+ * its schema even if `_nango_sync_configs.enabled` is false. When the flag is off, a disabled
+ * deployed row contributes no schema. The catalog is never a fallback for an occupied name,
+ * and catalog schemas are returned only for unoccupied names.
  */
 export async function findActionInputSchemas({
     environmentId,
@@ -319,9 +337,10 @@ export async function findActionInputSchemas({
         );
 
     const occupied = new Set(activeRows.map((row) => `${row.integration_id}:${row.name}`));
+    const forceActionsEnabled = activeRows.some((row) => !row.enabled) && (await catalogToolsEnabled(await accountUuidForEnvironment(environmentId)));
     const deployed: ActionInputSchemaRow[] = [];
     for (const row of activeRows) {
-        if (!row.enabled) {
+        if (!row.enabled && !forceActionsEnabled) {
             continue;
         }
         deployed.push({
@@ -392,14 +411,16 @@ export async function findActiveByName({
     type: FunctionType | undefined;
 }): Promise<FunctionRow | undefined> {
     const config = await providerForConfig(environmentId, providerConfigKey);
-    const catalog = await catalogTools(config?.accountUuid, config?.provider, type);
+    const toolsCatalogEnabled = await catalogToolsEnabled(config?.accountUuid);
+    const catalog = catalogTools(config?.provider, type, toolsCatalogEnabled);
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search: undefined, catalog });
 
     const row = await db.knex.from(listing).select<FunctionRow[]>('*').where('name', name).orderBy(listingOrderBy).first();
-    if (row) {
-        hydrateCatalogJsonSchemas([row], catalog);
+    if (!row) {
+        return undefined;
     }
-    return row;
+    hydrateCatalogJsonSchemas([row], catalog);
+    return toolsCatalogEnabled ? markActionsEnabled([row])[0] : row;
 }
 
 function buildListingSubquery({
