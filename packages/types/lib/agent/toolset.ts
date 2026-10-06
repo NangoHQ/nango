@@ -30,7 +30,6 @@ export interface AgentSessionCompiledIntegration {
     readonly provider: string;
     readonly pinned: AgentSessionCompiledTool[];
     readonly searchable: AgentSessionCompiledTool[];
-    /** Set only for an integration whose MCP server the session tried to list. */
     readonly mcpServer?: AgentSessionMcpServerStatus;
 }
 
