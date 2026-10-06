@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { configService, disableScriptConfig, errorNotificationService, getSyncConfigById, syncManager } from '@nangohq/shared';
+import { configService, disableScriptConfig, errorNotificationService, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
@@ -52,12 +52,6 @@ export const patchFlowDisable = asyncWrapperWithEnvironment<PatchFlowDisable>(as
     const body: PatchFlowDisable['Body'] = val.data;
     const { environment } = res.locals;
 
-    const syncConfig = await getSyncConfigById(environment.id, valParams.data.id);
-    if (!syncConfig) {
-        res.status(400).send({ error: { code: 'unknown_sync_config' } });
-        return;
-    }
-
     const config = await configService.getIdByProviderConfigKey(environment.id, body.providerConfigKey);
     if (!config) {
         res.status(400).send({ error: { code: 'unknown_provider' } });
@@ -65,12 +59,12 @@ export const patchFlowDisable = asyncWrapperWithEnvironment<PatchFlowDisable>(as
     }
 
     const updated = await disableScriptConfig({ id: valParams.data.id, environmentId: environment.id });
-    await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: valParams.data.id, environment_id: environment.id });
-
-    if (updated > 0) {
-        await syncManager.pauseSyncs({ syncConfigId: valParams.data.id, environmentId: environment.id, orchestrator });
-        res.status(200).send({ data: { success: true } });
-    } else {
-        res.status(400).send({ data: { success: false } });
+    if (updated === 0) {
+        res.status(400).send({ error: { code: 'unknown_sync_config' } });
+        return;
     }
+
+    await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: valParams.data.id, environment_id: environment.id });
+    await syncManager.pauseSyncs({ syncConfigId: valParams.data.id, environmentId: environment.id, orchestrator });
+    res.status(200).send({ data: { success: true } });
 });
