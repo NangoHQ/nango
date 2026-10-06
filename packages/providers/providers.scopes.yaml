@@ -8474,6 +8474,16 @@ nationbuilder:
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 nerdio: []
 
+# source: https://github.com/microsoft/PowerPlatformConnectors/blob/dev/certified-connectors/NetDocuments/apiDefinition.swagger.json (certified NetDocuments connector, securityDefinitions.oauth2_auth.scopes)
+netdocuments:
+    - admin
+    - delete_container
+    - delete_doc
+    - edit
+    - lookup
+    - organize
+    - read
+
 # source: providers.yaml default_scopes
 netsuite:
     - rest_webservices
