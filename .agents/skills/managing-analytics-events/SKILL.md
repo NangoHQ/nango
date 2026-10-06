@@ -32,6 +32,11 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
    CLI commands are one `functions:command_start` with `command`. Usage page changes are one
    `billing:usage_update` with `change`.
 
+    Page views come from `$pageview`, filtered by path. Add a `_view` event only for UI that isn't its own
+    page, such as a panel, modal or tab, or when the view needs properties a page view can't carry. Until
+    NAN-7433 ships, `$pageview` misses navigation inside the dashboard, so don't build a page insight on it
+    yet.
+
 3. **Choose where it fires.**
 
     | You need                                                  | Source                     |
