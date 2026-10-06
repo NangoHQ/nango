@@ -69,16 +69,17 @@ Most Work API endpoints include the customer ID and library ID in the path, for 
 const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
 const { customerId, libraryId } = connection.connection_config;
 
-// Search the default library's workspaces by name
+// The default library is optional, so fall back to one your app chooses
+const library = libraryId || '<YOUR-LIBRARY-ID>';
+
+// Search the library's workspaces by name
 const res = await nango.get({
-    endpoint: `/work/api/v2/customers/${customerId}/libraries/${libraryId}/workspaces`,
+    endpoint: `/work/api/v2/customers/${customerId}/libraries/${library}/workspaces`,
     params: { name: 'Acme' },
     providerConfigKey: '<INTEGRATION-ID>',
     connectionId: '<CONNECTION-ID>'
 });
 ```
-
-The default library is optional, so `libraryId` can be undefined. Fall back to a library your app chooses when it isn't set.
 
 ## 📚 iManage Work integration guides
 
