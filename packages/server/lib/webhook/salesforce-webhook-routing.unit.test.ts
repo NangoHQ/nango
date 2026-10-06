@@ -153,7 +153,7 @@ describe('salesforce-webhook-routing', () => {
         const result = await SalesforceWebhookRouting.default(nango, {}, body, rawBody);
 
         expect(result.isOk()).toBe(true);
-        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'salesforce_missing_webhook_secret' }));
+        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'salesforce_missing_webhook_secret' }), 'flag');
         expect(execute).toHaveBeenCalledOnce();
     });
 
@@ -163,7 +163,7 @@ describe('salesforce-webhook-routing', () => {
         const result = await SalesforceWebhookRouting.default(nango, {}, body, rawBody);
 
         expect(result.isOk()).toBe(true);
-        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'salesforce_missing_webhook_secret' }));
+        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'salesforce_missing_webhook_secret' }), 'setting');
         expect(execute).toHaveBeenCalledOnce();
     });
 

@@ -767,6 +767,7 @@ affinity:
                 - 'x-ratelimit-limit-user'
                 - 'x-ratelimit-limit-org-reset'
     webhook_routing_script: affinityWebhookRouting
+    webhook_signature_enforced: true
     webhook_allowed_query_params:
         - nangoConnectionId
         - nangoWebhookSecret
@@ -1049,6 +1050,7 @@ airtable:
     proxy:
         base_url: https://api.airtable.com
     webhook_routing_script: airtableWebhookRouting
+    webhook_signature_enforced: true
     docs: https://nango.dev/docs/api-integrations/airtable
     setup_guide_url: https://nango.dev/docs/api-integrations/airtable/how-to-register-your-own-airtable-api-oauth-app
 
@@ -2255,7 +2257,7 @@ atlassian-admin:
             title: Atlassian Organization Id
             optional: true
             description: The organization ID of your Atlassian account
-            pattern: '^[a-f0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$'
+            pattern: '^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$'
             example: '9fa3d2b7-k9l3-4bq1-z3d8-7x1m0a9e2b76'
             doc_section: '#step-1-generating-your-api-key'
 
@@ -9271,6 +9273,7 @@ fillout-api-key:
             endpoints:
                 - /v1/api/forms
     webhook_routing_script: filloutWebhookRouting
+    webhook_signature_enforced: true
     webhook_allowed_query_params:
         - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/fillout-api-key
@@ -9305,6 +9308,7 @@ fillout:
     token_response_metadata:
         - base_url
     webhook_routing_script: filloutWebhookRouting
+    webhook_signature_enforced: true
     webhook_allowed_query_params:
         - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/fillout
@@ -10071,6 +10075,7 @@ github-app:
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
     token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
     webhook_routing_script: githubAppWebhookRouting
+    webhook_signature_enforced: true
     docs: https://nango.dev/docs/api-integrations/github-app
     setup_guide_url: https://nango.dev/docs/api-integrations/github-app/how-to-register-your-own-github-app-api-app
     connection_config:
@@ -10102,6 +10107,7 @@ github-app-oauth:
         OAUTH2: https://github.com/login/oauth/access_token
         APP: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
     webhook_routing_script: githubAppOauthWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: githubAppOauthPostConnection
     docs: https://nango.dev/docs/api-integrations/github-app-oauth
     setup_guide_url: https://nango.dev/docs/api-integrations/github-app-oauth/how-to-register-your-own-github-app-api-oauth-app
@@ -10686,6 +10692,7 @@ google-mail:
     proxy:
         base_url: https://gmail.googleapis.com
     webhook_routing_script: gmailWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: googleMailPostConnection
     docs: https://nango.dev/docs/api-integrations/google-mail
     setup_guide_url: https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app
@@ -15289,6 +15296,7 @@ microsoft-teams-bot:
         connection_config:
             botHostTenantId: ${connectionConfig.botHostTenantId}
     webhook_routing_script: microsoftTeamsWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: microsoftTeamsBotPostConnection
     docs: https://nango.dev/docs/api-integrations/microsoft-teams-bot
     docs_connect: https://nango.dev/docs/api-integrations/microsoft-teams-bot/connect
@@ -15495,6 +15503,7 @@ microsoft-teams:
         - popular
     alias: microsoft
     webhook_routing_script: microsoftTeamsWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: microsoftTeamsPostConnection
     docs: https://nango.dev/docs/api-integrations/microsoft-teams
     setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-teams/how-to-register-your-own-microsoft-teams-api-oauth-app
@@ -19496,6 +19505,39 @@ pleo:
                 - external
                 - external.staging
 
+pleo-mcp:
+    display_name: Pleo (MCP)
+    categories:
+        - payment
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.pleo.io/oauth/authorize
+    token_url: https://mcp.pleo.io/oauth/token
+    registration_url: https://mcp.pleo.io/oauth/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.pleo.io/
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+        resource: https://mcp.pleo.io/
+    refresh_params:
+        grant_type: refresh_token
+        resource: https://mcp.pleo.io/
+    default_scopes:
+        - authenticated
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.pleo.io
+    docs: https://nango.dev/docs/api-integrations/pleo-mcp
+
 pleo-api-key:
     display_name: Pleo (API Key)
     categories:
@@ -21813,6 +21855,7 @@ salesforce:
     proxy:
         base_url: ${connectionConfig.instance_url}
     webhook_routing_script: salesforceWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: salesforcePostConnection
     docs: https://nango.dev/docs/api-integrations/salesforce
     setup_guide_url: https://nango.dev/docs/api-integrations/salesforce/salesforce-api-oauth-app-setup
@@ -23303,6 +23346,7 @@ shipstation:
             endpoints:
                 - /users
     webhook_routing_script: shipstationWebhookRouting
+    webhook_signature_enforced: true
     webhook_allowed_query_params:
         - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/shipstation
@@ -23342,6 +23386,7 @@ shipstation-v2:
             endpoints:
                 - /v2/users?page_size=1
     webhook_routing_script: shipstationWebhookRouting
+    webhook_signature_enforced: true
     webhook_allowed_query_params:
         - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/shipstation-v2

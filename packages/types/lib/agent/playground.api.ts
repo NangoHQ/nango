@@ -7,7 +7,9 @@ export interface AgentPlaygroundUsage {
 
 export interface AgentPlaygroundMessageMetadata {
     sessionId?: string;
+    sessionExpiresAt?: string;
     hidden?: boolean;
+    connectedIntegrations?: string[];
     usage?: AgentPlaygroundUsage;
 }
 

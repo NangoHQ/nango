@@ -7406,6 +7406,8 @@ The flag is only set when the integration's webhook handling knows verification 
 
 The Nango signature on flagged requests only proves the webhook came through Nango, not that the provider sent it. Anyone who knows the integration's webhook URL can send one. Treat the payload as untrusted, and set the webhook secret on the integration to enable verification. The forward operation in the Nango logs also shows a warning with the reason.
 
+Some providers reject webhooks Nango cannot verify, such as GitHub App, Gmail, Microsoft Teams, Salesforce, Airtable, Affinity, Fillout and ShipStation. For these, **Allow unverified webhooks** in **Integrations > [Integration] > Settings** lets webhooks with a missing or unverifiable signature through, flagged as above. It is off by default, and is meant for prototyping or while you set up verification. It never lets through a webhook with an invalid signature.
+
 ## When to use forwarding
 
 Use forwarding when:
@@ -7447,7 +7449,7 @@ Use [webhook functions](/guides/functions/webhook-functions) when Nango should u
 
 ## Providers that do not sign webhooks
 
-Affinity, Fillout and ShipStation do not sign their webhooks, so Nango checks a secret you choose for each connection instead. Nango rejects a webhook unless it carries the secret of the connection it is routed to.
+Affinity, Fillout and ShipStation do not sign their webhooks, so Nango checks a secret you choose for each connection instead. Nango rejects a webhook unless it carries the secret of the connection it is routed to, or the connection has no secret and the integration [allows unverified webhooks](#unverified-webhooks).
 
 1. Generate a random secret of at least 16 characters per connection and store it as `webhookSecret` in that connection's [metadata](/reference/backend/http-api/connections/update-metadata).
 2. Send that connection's secret with every webhook registered for it, in the `X-Nango-Webhook-Secret` header or, when the provider only lets you set a URL, as a `nangoWebhookSecret` query param on the Nango webhook URL.
@@ -7597,7 +7599,7 @@ Description: Run Nango outside our cloud: BYOC or Self-Managed.
 
 Nango offers two ways to run outside of Nango Cloud, both on the Enterprise plan:
 
-- **[BYOC](/guides/platform/self-hosting/byoc)** — Nango deploys and operates your instance inside your own AWS account or GCP project. Recommended for most Enterprise self-hosting customers.
+- **[BYOC](/guides/platform/self-hosting/byoc)** — Nango deploys and operates your instance inside your own AWS account, GCP project or Azure subscription. Recommended for most Enterprise self-hosting customers.
 - **[Self-Managed](/guides/platform/self-hosting/self-managed)** — you deploy and operate Nango yourself, on your own infrastructure, using our Helm chart.
 
 Both run the same Nango codebase you get on Cloud, with all paid Cloud features included.
@@ -7606,11 +7608,11 @@ Both run the same Nango codebase you get on Cloud, with all paid Cloud features 
 
 | | **BYOC** (recommended) | **Self-Managed** |
 | --- | --- | --- |
-| Runs in | Your AWS account or GCP project | Your infrastructure — any cloud or on-prem |
+| Runs in | Your AWS account, GCP project or Azure subscription | Your infrastructure — any cloud or on-prem |
 | Deployed by | Nango, via Terraform + GitOps | You, via the [Helm chart](https://github.com/NangoHQ/nango-helm-charts) |
 | Operated day-to-day by | Nango — upgrades, scaling, incident response | You |
 | What leaves your account | Only Datadog telemetry, for Nango to monitor instance health | Nothing |
-| Clouds supported today | AWS, GCP (Azure coming soon) | AWS, GCP, Azure, on-prem Kubernetes |
+| Clouds supported today | AWS, GCP, Azure | AWS, GCP, Azure, on-prem Kubernetes |
 | Operational overhead | Low | High |
 | Best fit | Teams that want infrastructure ownership and data residency without operating Nango themselves | Teams with the platform capacity to run it, or infrastructure constraints BYOC doesn't fit yet |
 
@@ -16402,6 +16404,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `planning-center-online-pat` | Planning Center Online (Personal Access Token) | BASIC | [docs](https://nango.dev/docs/api-integrations/planning-center-online-pat.md) | [connect](https://nango.dev/docs/api-integrations/planning-center-online-pat/connect.md) |  | crm, productivity |
 | `pleo` | Pleo | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/pleo.md) | [connect](https://nango.dev/docs/api-integrations/pleo/connect.md) | [setup](https://nango.dev/docs/api-integrations/pleo/how-to-register-your-own-pleo-api-oauth-app.md) | payment, invoicing |
 | `pleo-api-key` | Pleo (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/pleo-api-key.md) | [connect](https://nango.dev/docs/api-integrations/pleo-api-key/connect.md) |  | payment, invoicing |
+| `pleo-mcp` | Pleo (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/pleo-mcp.md) |  |  | payment, mcp |
 | `podium` | Podium | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/podium.md) |  |  | communication, marketing |
 | `podscribe` | Podscribe | API_KEY | [docs](https://nango.dev/docs/api-integrations/podscribe.md) | [connect](https://nango.dev/docs/api-integrations/podscribe/connect.md) |  | marketing, analytics |
 | `posthog` | PostHog | API_KEY | [docs](https://nango.dev/docs/api-integrations/posthog.md) | [connect](https://nango.dev/docs/api-integrations/posthog/connect.md) |  | dev-tools |
