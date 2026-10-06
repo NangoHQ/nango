@@ -450,6 +450,10 @@ export function tsToJsPath(filePath: string) {
     return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace(/\.js$/, '.cjs');
 }
 
+const FEATURE_NANGO_METHODS: Record<Feature, string[]> = {
+    checkpoints: ['getCheckpoint', 'saveCheckpoint', 'clearCheckpoint']
+};
+
 /**
  * Detects which features are used in function code
  * */
@@ -457,18 +461,17 @@ export function detectFeatures({ entryPoint }: { entryPoint: string }): Result<F
     try {
         fs.readFileSync(entryPoint, { encoding: 'utf8' });
 
-        const features: Feature[] = [];
-        if (usesCheckpointApi(entryPoint, new Set())) {
-            features.push('checkpoints');
-        }
+        const features = (Object.keys(FEATURE_NANGO_METHODS) as Feature[]).filter((feature) =>
+            usesNangoMethod(entryPoint, new Set(), FEATURE_NANGO_METHODS[feature])
+        );
         return Ok(features);
     } catch (err) {
         return Err(new Error('failed_to_detect_features', { cause: err }));
     }
 }
 
-// Scans filePath and its local helper imports for checkpoint API calls.
-function usesCheckpointApi(filePath: string, visited: Set<string>): boolean {
+// Scans filePath and its local helper imports for nango calls matching methodNames.
+function usesNangoMethod(filePath: string, visited: Set<string>, methodNames: string[]): boolean {
     const resolved = path.resolve(filePath);
     if (visited.has(resolved)) {
         return false;
@@ -482,7 +485,7 @@ function usesCheckpointApi(filePath: string, visited: Set<string>): boolean {
         return false;
     }
 
-    const checkpointsLines: number[] = [];
+    let foundMatch = false;
     const localImportSources: string[] = [];
 
     babel.transformSync(source, {
@@ -506,8 +509,8 @@ function usesCheckpointApi(filePath: string, visited: Set<string>): boolean {
                         if (callee.object.type !== 'Identifier' || callee.object.name !== 'nango' || callee.property?.type !== 'Identifier') {
                             return;
                         }
-                        if (['getCheckpoint', 'saveCheckpoint', 'clearCheckpoint'].includes(callee.property.name)) {
-                            checkpointsLines.push(astPath.node.loc?.start.line || 0);
+                        if (methodNames.includes(callee.property.name)) {
+                            foundMatch = true;
                         }
                     }
                 }
@@ -515,13 +518,13 @@ function usesCheckpointApi(filePath: string, visited: Set<string>): boolean {
         ]
     });
 
-    if (checkpointsLines.length > 0) {
+    if (foundMatch) {
         return true;
     }
 
     return localImportSources.some((importSource) => {
         const resolvedImport = resolveLocalImport(path.dirname(resolved), importSource);
-        return resolvedImport && usesCheckpointApi(resolvedImport, visited);
+        return resolvedImport && usesNangoMethod(resolvedImport, visited, methodNames);
     });
 }
 
