@@ -232,7 +232,10 @@ describe('compileToolsetFromFunctions with MCP servers', () => {
     function compileMcp({
         toolset,
         pinnedTools,
-        discovery = { status: 'available', tools: [mcpTool('list_issues'), mcpTool('create_issue'), mcpTool('deployed_action')] }
+        discovery = {
+            status: 'available',
+            tools: [{ ...mcpTool('list_issues'), annotations: { readOnlyHint: true } }, mcpTool('create_issue'), mcpTool('deployed_action')]
+        }
     }: {
         toolset?: AgentSessionToolsetPolicy | undefined;
         pinnedTools?: AgentSessionPinnedTools | undefined;
@@ -252,7 +255,8 @@ describe('compileToolsetFromFunctions with MCP servers', () => {
 
         expect(linear.mcpServer).toBe('available');
         expect(names(linear.searchable)).toEqual(['deployed_action', 'list_issues', 'create_issue']);
-        expect(linear.searchable.find((tool) => tool.name === 'list_issues')?.mcp).toEqual({ inputSchema });
+        expect(linear.searchable.find((tool) => tool.name === 'list_issues')?.mcp).toEqual({ inputSchema, annotations: { readOnlyHint: true } });
+        expect(linear.searchable.find((tool) => tool.name === 'create_issue')?.mcp).toEqual({ inputSchema });
         expect(linear.searchable.find((tool) => tool.name === 'deployed_action')?.mcp).toBeUndefined();
     });
 
@@ -274,6 +278,18 @@ describe('compileToolsetFromFunctions with MCP servers', () => {
 
         expect(compiled.code).toBe('unknown_tool');
         expect(compiled.payload).toEqual({ tools: [{ integration_id: 'linear-mcp', tool: 'delete_issues' }] });
+    });
+
+    it('still rejects a pinned name the toolset denies when the server could not be listed', () => {
+        const compiled = expectError(
+            compileMcp({
+                toolset: { 'linear-mcp': { allow: '*', deny: ['list_issues'] } },
+                pinnedTools: { 'linear-mcp': ['list_issues'] },
+                discovery: { status: 'unavailable' }
+            })
+        );
+
+        expect(compiled.code).toBe('tool_not_in_toolset');
     });
 
     it('still compiles when the server could not be listed, and marks it unavailable', () => {

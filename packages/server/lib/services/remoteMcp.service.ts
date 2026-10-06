@@ -1,3 +1,4 @@
+import { SUPPORTED_PROTOCOL_VERSIONS } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 
 import { getProvider } from '@nangohq/shared';
@@ -109,12 +110,12 @@ export async function withRemoteMcpSession<T>(
 
     const state: SessionState = { target, endpoint, protocolVersion: PROTOCOL_VERSION, sessionId: undefined, nextId: 1, logOperationId: undefined };
 
-    const initialized = await initialize(state);
-    if (initialized.isErr()) {
-        return { logOperationId: state.logOperationId, result: Err(initialized.error) };
-    }
-
     try {
+        const initialized = await initialize(state);
+        if (initialized.isErr()) {
+            return { logOperationId: state.logOperationId, result: Err(initialized.error) };
+        }
+
         const result = await fn({ request: async (method, params) => await rpc(state, method, params) });
         return { logOperationId: state.logOperationId, result };
     } finally {
@@ -128,10 +129,14 @@ export async function withRemoteMcpSession<T>(
 }
 
 /**
- * Pages through `tools/list` until the server stops handing back a cursor or `maxTools` is reached.
+ * Pages through `tools/list` until the server stops handing back a cursor, `maxTools` is reached, or
+ * the page guard trips, which stops a server that keeps handing out cursors from paging forever.
  * A tool the server describes in a shape MCP does not allow is dropped rather than failing the list.
  */
-export async function listRemoteTools(session: RemoteMcpSession, { maxTools }: { maxTools: number }): Promise<Result<RemoteMcpTool[], RemoteMcpError>> {
+export async function listRemoteTools(
+    session: RemoteMcpSession,
+    { maxTools, integrationId }: { maxTools: number; integrationId: string }
+): Promise<Result<RemoteMcpTool[], RemoteMcpError>> {
     const tools: RemoteMcpTool[] = [];
     let cursor: string | undefined;
 
@@ -159,6 +164,10 @@ export async function listRemoteTools(session: RemoteMcpSession, { maxTools }: {
         }
     }
 
+    if (cursor || tools.length > maxTools) {
+        logger.warning('MCP server listed more tools than a session takes, keeping the first ones', { integrationId, kept: Math.min(tools.length, maxTools) });
+    }
+
     return Ok(tools.slice(0, maxTools));
 }
 
@@ -171,6 +180,12 @@ async function initialize(state: SessionState): Promise<Result<void, RemoteMcpEr
     const parsed = initializeResultSchema.safeParse(result.value);
     if (!parsed.success) {
         return Err(new RemoteMcpError({ code: 'invalid_response', message: 'The MCP server returned an invalid initialize result' }));
+    }
+    // The server picks the version, and one this client does not know could change what the transport expects.
+    if (!SUPPORTED_PROTOCOL_VERSIONS.includes(parsed.data.protocolVersion)) {
+        return Err(
+            new RemoteMcpError({ code: 'invalid_response', message: `The MCP server chose unsupported protocol version '${parsed.data.protocolVersion}'` })
+        );
     }
     state.protocolVersion = parsed.data.protocolVersion;
 
