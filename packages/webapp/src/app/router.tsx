@@ -31,7 +31,6 @@ import { Homepage } from '@/pages/Homepage/Show';
 import { CreateIntegration } from '@/pages/Integrations/Create';
 import { CreateIntegrationList } from '@/pages/Integrations/CreateList';
 import { ShowIntegration } from '@/pages/Integrations/providerConfigKey/Show';
-import { Templates } from '@/pages/Integrations/providerConfigKey/Templates';
 import { IntegrationsList } from '@/pages/Integrations/Show';
 import { LogsShow } from '@/pages/Logs/Show';
 import { NotFound } from '@/pages/NotFound';
@@ -279,8 +278,7 @@ export const router = sentryCreateBrowserRouter([
                                     },
                                     {
                                         path: 'templates',
-                                        element: <Templates />,
-                                        handle: { breadcrumb: 'Templates' } as BreadcrumbHandle
+                                        element: <Navigate to=".." replace />
                                     },
                                     {
                                         path: '*',
