@@ -114,7 +114,8 @@ export function usePlanChangeRequest(env: string) {
 async function waitFor(check: () => Promise<boolean>, abandoned: { current: boolean }, onWait: (waiting: boolean) => void): Promise<void> {
     const deadline = Date.now() + POLL_DEADLINE_MS;
     while (!abandoned.current && Date.now() < deadline) {
-        if (await check().catch(() => false)) {
+        const timeLeft = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), deadline - Date.now()));
+        if (await Promise.race([check().catch(() => false), timeLeft])) {
             return;
         }
         onWait(true);
