@@ -31,7 +31,7 @@ const outcome = {
     error_code: z.string().optional()
 };
 
-function defineCatalogue<const C extends Record<string, AnalyticsEventDefinition>>(catalogue: C): C {
+function defineCatalogue<const C extends Record<string, AnalyticsEventDefinition>>(catalogue: C & Record<Exclude<keyof C, AnalyticsEventName>, never>): C {
     return catalogue;
 }
 
@@ -369,9 +369,6 @@ export const analyticsEventCatalogue = defineCatalogue({
 
 type AnalyticsEventCatalogue = typeof analyticsEventCatalogue;
 type AnalyticsEventKey = keyof AnalyticsEventCatalogue;
-
-type AssertNever<T extends never> = T;
-export type AnalyticsEventNamesAreValid = AssertNever<Exclude<AnalyticsEventKey, AnalyticsEventName>>;
 
 export type AnalyticsEventNameFor<S extends AnalyticsSurface> = {
     [E in AnalyticsEventKey]: S extends AnalyticsEventCatalogue[E]['surface'] ? E : never;
