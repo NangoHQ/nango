@@ -18,6 +18,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { usePreBuiltDeployFlow } from '@/hooks/useFlow';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
+import { useMeta } from '@/hooks/useMeta';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
@@ -159,6 +160,8 @@ interface FunctionsTabProps {
 export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
+    const { data: metaData } = useMeta();
+    const showActionStatus = metaData?.data.toolsCatalog !== true;
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
     const [deployingName, setDeployingName] = useState<string | null>(null);
@@ -425,7 +428,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                 <TableRow>
                                     <ColumnHead>Function name</ColumnHead>
                                     <ColumnHead className="w-35">Source</ColumnHead>
-                                    <ColumnHead className="w-35">Status</ColumnHead>
+                                    {showActionStatus && <ColumnHead className="w-35">Status</ColumnHead>}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -439,9 +442,11 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                         <TableCell className="w-35 px-3">
                                             <FunctionSourceLabel source={fn.source} />
                                         </TableCell>
-                                        <TableCell className="w-35 px-3">
-                                            <FunctionStatus fn={fn} integration={integration} />
-                                        </TableCell>
+                                        {showActionStatus && (
+                                            <TableCell className="w-35 px-3">
+                                                <FunctionStatus fn={fn} integration={integration} />
+                                            </TableCell>
+                                        )}
                                     </TableRow>
                                 ))}
                                 {visibleActionTemplates.map((template) => (
@@ -455,7 +460,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                             </TableBody>
                             <TableFooter className="bg-transparent font-ds-regular">
                                 <TableRow className="h-8 hover:bg-transparent">
-                                    <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
+                                    <TableCell colSpan={showActionStatus ? 3 : 2} className="px-3 type-label-xs text-text-disabled">
                                         Showing {functions.length + visibleActionTemplates.length} of {total + visibleActionTemplates.length} actions
                                     </TableCell>
                                 </TableRow>
