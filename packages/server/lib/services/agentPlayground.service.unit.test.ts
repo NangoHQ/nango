@@ -65,6 +65,13 @@ describe('toolNeedsApproval', () => {
         { toolName: 'nango_execute', input: {}, expected: true },
         { toolName: 'pg-google-calendar__delete-event', input: {}, expected: true },
         { toolName: 'pg-google-calendar__search-events', input: {}, expected: false },
+        { toolName: 'pg-slack__lookup-user-by-email', input: {}, expected: false },
+        { toolName: 'pg-notion__query-database', input: {}, expected: false },
+        { toolName: 'pg-notion__search', input: {}, expected: false },
+        { toolName: 'pg-hubspot__whoami', input: {}, expected: false },
+        { toolName: 'pg-google-docs__export-document', input: {}, expected: false },
+        { toolName: 'pg-slack__post-message', input: {}, expected: true },
+        { toolName: 'pg-slack__open-dm', input: {}, expected: true },
         { toolName: 'nango_tool_search', input: { query: 'delete event' }, expected: false },
         { toolName: 'nango_create_connection', input: {}, expected: false }
     ])('$toolName $input → $expected', ({ toolName, input, expected }) => {
