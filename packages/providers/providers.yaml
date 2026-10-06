@@ -25076,7 +25076,7 @@ supabase-mcp:
         - dev-tools
         - mcp
     auth_mode: API_KEY
-    mcp_endpoint: /mcp
+    mcp_endpoint: /mcp?project_ref=${connectionConfig.projectRef}
     proxy:
         base_url: https://mcp.supabase.com
         headers:
@@ -25131,7 +25131,7 @@ supabase-mcp-oauth:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    mcp_endpoint: /mcp
+    mcp_endpoint: /mcp?project_ref=${connectionConfig.projectRef}
     proxy:
         base_url: https://mcp.supabase.com
         headers:

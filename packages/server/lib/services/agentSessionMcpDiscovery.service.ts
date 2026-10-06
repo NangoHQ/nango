@@ -50,7 +50,7 @@ async function discoverServer({
 }): Promise<McpServerDiscovery> {
     const listing = withRemoteMcpSession(
         { account, environment, plan, integrationId: connection.integrationId, connectionId: connection.connectionId, provider: connection.provider },
-        async (session) => await listRemoteTools(session, { maxTools: MAX_TOOLS_PER_SERVER })
+        async (session) => await listRemoteTools(session, { maxTools: MAX_TOOLS_PER_SERVER, integrationId: connection.integrationId })
     ).then(({ result }): McpServerDiscovery => {
         if (result.isErr()) {
             logger.info('MCP server could not be listed', { integrationId: connection.integrationId, code: result.error.code, error: result.error.message });

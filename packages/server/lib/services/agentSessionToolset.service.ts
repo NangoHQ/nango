@@ -146,7 +146,7 @@ export function compileToolsetFromFunctions({
         const pinnedNames = new Set(pinned.get(integrationId) ?? []);
 
         for (const name of pinnedNames) {
-            if (!allowed.some((action) => action.name === name) && !isUnlistedMcpTool(integration, name)) {
+            if (!allowed.some((action) => action.name === name) && !(isUnlistedMcpTool(integration, name) && isAllowed(name, policy))) {
                 notInToolset.push({ integration_id: integrationId, tool: name });
             }
         }

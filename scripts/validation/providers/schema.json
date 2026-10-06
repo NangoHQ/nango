@@ -90,6 +90,8 @@
             "type": "object",
             "additionalProperties": false,
             "required": ["display_name", "docs"],
+            "if": { "required": ["mcp_endpoint"] },
+            "then": { "required": ["proxy"], "properties": { "proxy": { "type": "object", "required": ["base_url"] } } },
             "properties": {
                 "alias": {
                     "type": "string"
