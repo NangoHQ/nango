@@ -20,6 +20,7 @@ interface PlanChangeRequest {
 }
 
 const POLL_INTERVAL_MS = 500;
+const POLL_DEADLINE_MS = 20_000;
 
 /** A `card_error` carries a message worth showing; anything else is noise to the customer. */
 function stripeCardError(error: StripeError): string {
@@ -91,11 +92,10 @@ export function usePlanChangeRequest(env: string) {
                 }
             }
 
-            // The plan row lags the response wherever a webhook applies the change — Orb's for a
-            // downgrade, Stripe's for a paid upgrade. NAN-6840 covers giving this wait a deadline.
+            // The server already accepted the change: a webhook that misses the deadline is still a success.
             if (settled) {
-                const caughtUp = await waitFor(() => fetchCurrentPlan(env).then((current) => settled(current.data)), abandoned, setLongWait);
-                if (!caughtUp || abandoned.current) {
+                await waitFor(() => fetchCurrentPlan(env).then((current) => settled(current.data)), abandoned, setLongWait);
+                if (abandoned.current) {
                     return false;
                 }
             }
@@ -111,15 +111,15 @@ export function usePlanChangeRequest(env: string) {
     return { submit, reset, loading, longWait, error };
 }
 
-async function waitFor(check: () => Promise<boolean>, abandoned: { current: boolean }, onWait: (waiting: boolean) => void): Promise<boolean> {
-    while (!abandoned.current) {
+async function waitFor(check: () => Promise<boolean>, abandoned: { current: boolean }, onWait: (waiting: boolean) => void): Promise<void> {
+    const deadline = Date.now() + POLL_DEADLINE_MS;
+    while (!abandoned.current && Date.now() < deadline) {
         if (await check().catch(() => false)) {
-            return true;
+            return;
         }
         onWait(true);
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
     }
-    return false;
 }
 
 export interface PlanChangeError {

@@ -384,7 +384,6 @@ const PlanChangeDialog: React.FC<{
             : await submit({
                   orbId: code,
                   withGrowthFeatures: false,
-                  settled: (plan) => plan.orb_future_plan === code,
                   successTitle: `Downgraded successfully to ${selectedPlan.plan.title}`
               });
 
