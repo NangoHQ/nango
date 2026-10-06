@@ -140,6 +140,20 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         }
     }, [connectedIntegrations, busy, awaitingApproval, sendMessage]);
 
+    const [newLinkRequests, setNewLinkRequests] = useState<string[]>([]);
+    const onRequestNewLink = useCallback((integrationId: string) => {
+        setNewLinkRequests((ids) => (ids.includes(integrationId) ? ids : [...ids, integrationId]));
+    }, []);
+    useEffect(() => {
+        if (newLinkRequests.length > 0 && !busy && !awaitingApproval) {
+            setNewLinkRequests([]);
+            void sendMessage({
+                text: `My link to connect ${newLinkRequests.map(humanize).join(' and ')} expired. Give me a new Connect button, and don't put the link in your reply.`,
+                metadata: { hidden: true }
+            });
+        }
+    }, [newLinkRequests, busy, awaitingApproval, sendMessage]);
+
     const scroller = useRef<HTMLDivElement>(null);
     const bottom = useRef<HTMLDivElement>(null);
     const pinnedToBottom = useRef(true);
@@ -225,7 +239,16 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                                     ) : null;
                                 }
                                 if (part.type === 'dynamic-tool') {
-                                    return <ToolCallCard key={part.toolCallId} part={part} onConnected={onConnected} onApprove={onApprove} />;
+                                    return (
+                                        <ToolCallCard
+                                            key={part.toolCallId}
+                                            part={part}
+                                            chatActive={busy}
+                                            onConnected={onConnected}
+                                            onRequestNewLink={onRequestNewLink}
+                                            onApprove={onApprove}
+                                        />
+                                    );
                                 }
                                 return null;
                             })}

@@ -1,4 +1,4 @@
-import { Braces, CheckCircle2, ChevronDown, ChevronUp, Table2, Wrench, XCircle } from 'lucide-react';
+import { Braces, CheckCircle2, ChevronDown, ChevronUp, CircleSlash, Table2, Wrench, XCircle } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Badge, Button } from '@nangohq/design-system';
@@ -19,7 +19,9 @@ import type { DynamicToolUIPart } from 'ai';
 
 interface ToolCallCardProps {
     part: DynamicToolUIPart;
+    chatActive: boolean;
     onConnected: (integrationId: string) => void;
+    onRequestNewLink: (integrationId: string) => void;
     onApprove: (approvalId: string, approved: boolean) => void;
 }
 
@@ -102,27 +104,32 @@ const NangoBox: React.FC = () => (
     </div>
 );
 
-export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, onConnected, onApprove }) => {
+export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, chatActive, onConnected, onRequestNewLink, onApprove }) => {
     const display = describeTool(part.toolName, part.input);
     const awaitingApproval = part.state === 'approval-requested' && !part.approval.isAutomatic;
-    const running =
+    const unfinished =
         part.state === 'input-streaming' ||
         part.state === 'input-available' ||
         part.state === 'approval-responded' ||
         (part.state === 'approval-requested' && !awaitingApproval);
+    // An approved call waits a moment for its request to start, so the chat being idle doesn't mean it stopped.
+    const stopped = unfinished && !chatActive && part.state !== 'approval-responded';
+    const running = unfinished && !stopped;
     const done = part.state === 'output-available' || part.state === 'output-error' || part.state === 'output-denied';
     const failed = part.state === 'output-error' || part.state === 'output-denied';
     const duration = useRunDuration(running, awaitingApproval, done);
 
     if (display.kind === 'connect' && part.state === 'output-available') {
-        const output = part.output as { connect_url?: string; integration?: string; provider?: string };
+        const output = part.output as { connect_url?: string; expires_at?: string; integration?: string; provider?: string };
         if (output.connect_url && output.integration) {
             return (
                 <ConnectCard
                     integrationId={output.integration}
                     provider={output.provider ?? providerFor(output.integration)}
                     connectUrl={output.connect_url}
+                    expiresAt={output.expires_at}
                     onConnected={onConnected}
+                    onRequestNewLink={onRequestNewLink}
                 />
             );
         }
@@ -146,7 +153,16 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, onConnected, o
                 <div className="flex shrink-0 items-center gap-2 text-body-small-regular text-text-secondary">
                     {searchOutput && <span>{searchSummary(searchOutput.matches?.length ?? 0, searchOutput.related?.length ?? 0)}</span>}
                     {duration !== null && part.state !== 'output-denied' && <span className="font-mono">{formatDuration(duration)}</span>}
-                    {running ? <Spinner /> : failed ? <XCircle className="size-4 text-icon-danger" /> : <CheckCircle2 className="size-4 text-icon-success" />}
+                    {stopped && <span>Stopped</span>}
+                    {running ? (
+                        <Spinner />
+                    ) : stopped ? (
+                        <CircleSlash className="size-4 text-icon-secondary" />
+                    ) : failed ? (
+                        <XCircle className="size-4 text-icon-danger" />
+                    ) : (
+                        <CheckCircle2 className="size-4 text-icon-success" />
+                    )}
                     <ChevronDown className="size-4 transition-transform group-data-[state=open]/card:rotate-180" />
                 </div>
             </CollapsibleTrigger>

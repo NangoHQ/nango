@@ -1,5 +1,5 @@
-import { ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { ArrowRight, CheckCircle2, Clock, RotateCcw, XCircle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useUnmount } from 'react-use';
 
 import { Button } from '@nangohq/design-system';
@@ -18,22 +18,42 @@ interface ConnectCardProps {
     integrationId: string;
     provider: string;
     connectUrl: string;
+    expiresAt: string | undefined;
     onConnected: (integrationId: string) => void;
+    onRequestNewLink: (integrationId: string) => void;
 }
 
-export const ConnectCard: React.FC<ConnectCardProps> = ({ integrationId, provider, connectUrl, onConnected }) => {
+function hasExpired(expiresAt: string | undefined): boolean {
+    return expiresAt !== undefined && Date.parse(expiresAt) <= Date.now();
+}
+
+export const ConnectCard: React.FC<ConnectCardProps> = ({ integrationId, provider, connectUrl, expiresAt, onConnected, onRequestNewLink }) => {
     const env = useStore((state) => state.env);
     const { data: environmentData } = useEnvironment(env);
     const isDarkMode = useThemeStore(darkModeSelector);
     const [status, setStatus] = useState<'idle' | 'waiting' | 'connected'>('idle');
     const [failure, setFailure] = useState<string | null>(null);
+    const [expired, setExpired] = useState(() => hasExpired(expiresAt));
+    const [newLinkRequested, setNewLinkRequested] = useState(false);
     const connectUI = useRef<ConnectUI | null>(null);
 
     useUnmount(() => connectUI.current?.close());
 
+    useEffect(() => {
+        if (expired || expiresAt === undefined) {
+            return;
+        }
+        const timer = setTimeout(() => setExpired(true), Math.max(0, Date.parse(expiresAt) - Date.now()));
+        return () => clearTimeout(timer);
+    }, [expired, expiresAt]);
+
     const name = humanize(integrationId);
 
     const connect = () => {
+        if (hasExpired(expiresAt)) {
+            setExpired(true);
+            return;
+        }
         const sessionToken = new URL(connectUrl).searchParams.get('session_token');
         if (!sessionToken) {
             return;
@@ -72,7 +92,12 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({ integrationId, provide
             <IntegrationLogo provider={provider} className="size-8" />
             <div className="flex min-w-0 flex-1 flex-col">
                 <span className="text-body-medium-medium text-text-strong">Connect {name}</span>
-                {failure && status === 'idle' ? (
+                {expired && status === 'idle' ? (
+                    <span className="flex items-center gap-1 text-body-small-regular text-text-warning">
+                        <Clock className="size-3.5 shrink-0 text-icon-warning" />
+                        This link has expired.
+                    </span>
+                ) : failure && status === 'idle' ? (
                     <span className="flex items-center gap-1 text-body-small-regular text-text-danger">
                         <XCircle className="size-3.5 shrink-0 text-icon-danger" />
                         <span className="line-clamp-2">{`Couldn't connect: ${failure}`}</span>
@@ -85,6 +110,18 @@ export const ConnectCard: React.FC<ConnectCardProps> = ({ integrationId, provide
             </div>
             {status === 'connected' ? (
                 <CheckCircle2 className="size-4 text-icon-success" />
+            ) : expired && status === 'idle' ? (
+                <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={newLinkRequested}
+                    onClick={() => {
+                        setNewLinkRequested(true);
+                        onRequestNewLink(integrationId);
+                    }}
+                >
+                    <RotateCcw /> {newLinkRequested ? 'New link requested' : 'Get a new link'}
+                </Button>
             ) : (
                 <Button size="sm" onClick={connect} loading={status === 'waiting'}>
                     {failure && status === 'idle' ? 'Try again' : `Connect ${name}`} <ArrowRight />
