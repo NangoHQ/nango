@@ -1,0 +1,44 @@
+---
+title: 'Sendcloud - How do I link my account?'
+sidebarTitle: 'Sendcloud'
+---
+
+## Overview
+
+To authenticate with Sendcloud, you need:
+1. **Client ID** — the **Public Key** of a Sendcloud API integration.
+2. **Client Secret** — the **Secret Key** of the same Sendcloud API integration.
+
+Nango exchanges these keys for an OAuth2 access token on your behalf. This guide will walk you through creating a Sendcloud API integration and finding its keys.
+
+### Prerequisites
+
+- A Sendcloud account. If you don't have one, [register a Sendcloud account](https://sendcloud.dev/docs/getting-started).
+
+### Step 1: Create your Sendcloud API integration
+
+1. Log in to your Sendcloud account and go to [Integrations](https://app.sendcloud.com/v2/settings/integrations/manage).
+2. Find **Sendcloud API** in the list of integrations and click **Connect**.
+3. Enter a name for the API integration and click **Save**.
+4. Sendcloud automatically generates a **Public Key** and a **Secret Key** for the integration. Copy both.
+
+<Tip>
+When you add the API integration, Sendcloud offers a **Use OAuth2 authentication** setting. It enforces OAuth2 authentication instead of Basic authentication for that integration. Nango authenticates with OAuth2, so you can turn it on.
+</Tip>
+
+<Note>
+Do not share your Secret Key in publicly accessible areas such as GitHub or client-side code.
+</Note>
+
+### Step 2: Enter your credentials in the Connect UI
+
+Once you have your **Public Key** and **Secret Key**:
+
+1. Open the form where you need to authenticate with Sendcloud.
+2. Enter your **Public Key** in the **Client ID** field.
+3. Enter your **Secret Key** in the **Client Secret** field.
+4. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Sendcloud.
+
+For more details, see Sendcloud's [authentication guide](https://sendcloud.dev/docs/getting-started/authentication) and [how to create your API keys](https://sendcloud.dev/docs/getting-started/how-to-create-your-api-keys).
