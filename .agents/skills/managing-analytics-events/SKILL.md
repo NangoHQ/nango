@@ -82,6 +82,13 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
     string typed as a union defined elsewhere, such as `UsageMetric`, use `stringOf<UsageMetric>()`, not
     `z.custom`, so the test still sees a string.
 
+    The catalogue lives in `@nangohq/types`, so it can only import types from there. When a property's
+    type lives in one service, don't move it into `@nangohq/types` by default:
+    - If the values exist mainly for tracking, list them with `z.enum([...])` in the catalogue, and have the
+      service take the type from `AnalyticsEventProperties<'category:object_action'>['property']`.
+    - If nothing depends on the narrow type, use `z.string()`.
+    - Move the type into `@nangohq/types` only when it is small and other services can use it too.
+
 7. **Send it.**
     - Web: `track()` from `packages/webapp/src/utils/analytics.tsx`.
     - Server: `productTracking.track()` from `@nangohq/shared`. The request's tracking context adds the
