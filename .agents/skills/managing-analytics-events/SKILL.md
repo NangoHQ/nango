@@ -57,7 +57,7 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
     - Values are mostly strings, numbers or booleans. The one exception is `structured_properties`, below.
     - A `complete` event always carries `is_success`. When `is_success` is false, add `error_code` with
       our API's error code, such as `resource_capped`, never the error message.
-    - A server `create`, `update` or `delete` sent when the attempt finishes also carries `is_success`.
+    - A `create`, `update` or `delete` that also reports failed attempts carries `is_success`.
     - An HTTP call carries `http_status` when the response provides one. A session-scoped event carries
       `agent_session_id`.
     - Don't list `surface` or `is_production`. Every sender adds `surface`, and the server adds
