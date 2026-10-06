@@ -21,6 +21,7 @@ interface PlanChangeRequest {
 
 const POLL_INTERVAL_MS = 500;
 const POLL_DEADLINE_MS = 20_000;
+const REFRESH_DEADLINE_MS = 5_000;
 
 /** A `card_error` carries a message worth showing; anything else is noise to the customer. */
 function stripeCardError(error: StripeError): string {
@@ -56,10 +57,11 @@ export function usePlanChangeRequest(env: string) {
 
     const finish = useCallback(
         async (successTitle: string) => {
-            await Promise.all([
+            const refreshed = Promise.all([
                 queryClient.invalidateQueries({ exact: false, queryKey: ['plans'], type: 'all' }),
                 queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) })
             ]);
+            await raceDeadline(refreshed, Date.now() + REFRESH_DEADLINE_MS, undefined);
             setLongWait(false);
             setLoading(false);
             toast({ title: successTitle, variant: 'success' });
@@ -114,12 +116,29 @@ export function usePlanChangeRequest(env: string) {
 async function waitFor(check: () => Promise<boolean>, abandoned: { current: boolean }, onWait: (waiting: boolean) => void): Promise<void> {
     const deadline = Date.now() + POLL_DEADLINE_MS;
     while (!abandoned.current && Date.now() < deadline) {
-        const timeLeft = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), deadline - Date.now()));
-        if (await Promise.race([check().catch(() => false), timeLeft])) {
+        if (
+            await raceDeadline(
+                check().catch(() => false),
+                deadline,
+                false
+            )
+        ) {
             return;
         }
         onWait(true);
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+    }
+}
+
+async function raceDeadline<T>(promise: Promise<T>, deadline: number, fallback: T): Promise<T> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const expired = new Promise<T>((resolve) => {
+        timer = setTimeout(() => resolve(fallback), Math.max(0, deadline - Date.now()));
+    });
+    try {
+        return await Promise.race([promise, expired]);
+    } finally {
+        clearTimeout(timer);
     }
 }
 
