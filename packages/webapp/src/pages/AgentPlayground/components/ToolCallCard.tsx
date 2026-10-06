@@ -1,4 +1,4 @@
-import { Braces, CheckCircle2, ChevronDown, ChevronUp, CircleSlash, Table2, Wrench, XCircle } from 'lucide-react';
+import { Braces, CheckCircle2, ChevronDown, ChevronUp, CircleSlash, RotateCcw, Table2, Wrench, XCircle } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Badge, Button } from '@nangohq/design-system';
@@ -9,6 +9,7 @@ import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Spinner } from '@/components/ui/Spinner';
+import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
 import { cn } from '@/utils/utils';
 import { describeTool, humanize, providerFor, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
@@ -20,9 +21,12 @@ import type { DynamicToolUIPart } from 'ai';
 interface ToolCallCardProps {
     part: DynamicToolUIPart;
     chatActive: boolean;
+    approvalSending: boolean;
+    connectedIntegrations: ReadonlySet<string>;
     onConnected: (integrationId: string) => void;
     onRequestNewLink: (integrationId: string) => void;
     onApprove: (approvalId: string, approved: boolean) => void;
+    onRetryInterrupted: ((title: string) => void) | undefined;
 }
 
 type PayloadView = 'table' | 'json';
@@ -104,7 +108,16 @@ const NangoBox: React.FC = () => (
     </div>
 );
 
-export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, chatActive, onConnected, onRequestNewLink, onApprove }) => {
+export const ToolCallCard: React.FC<ToolCallCardProps> = ({
+    part,
+    chatActive,
+    approvalSending,
+    connectedIntegrations,
+    onConnected,
+    onRequestNewLink,
+    onApprove,
+    onRetryInterrupted
+}) => {
     const display = describeTool(part.toolName, part.input);
     const awaitingApproval = part.state === 'approval-requested' && !part.approval.isAutomatic;
     const unfinished =
@@ -113,7 +126,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, chatActive, on
         part.state === 'approval-responded' ||
         (part.state === 'approval-requested' && !awaitingApproval);
     // An approved call waits a moment for its request to start, so the chat being idle doesn't mean it stopped.
-    const stopped = unfinished && !chatActive && part.state !== 'approval-responded';
+    const stopped = unfinished && !chatActive && !(part.state === 'approval-responded' && approvalSending);
     const running = unfinished && !stopped;
     const done = part.state === 'output-available' || part.state === 'output-error' || part.state === 'output-denied';
     const failed = part.state === 'output-error' || part.state === 'output-denied';
@@ -128,11 +141,16 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, chatActive, on
                     provider={output.provider ?? providerFor(output.integration)}
                     connectUrl={output.connect_url}
                     expiresAt={output.expires_at}
+                    connected={connectedIntegrations.has(output.integration)}
                     onConnected={onConnected}
                     onRequestNewLink={onRequestNewLink}
                 />
             );
         }
+    }
+
+    if (part.state === 'output-error' && part.errorText === INTERRUPTED_CALL) {
+        return <InterruptedCard display={display} onRetry={onRetryInterrupted} />;
     }
 
     if (awaitingApproval && part.state === 'approval-requested') {
@@ -176,6 +194,37 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({ part, chatActive, on
                 </div>
             </CollapsibleContent>
         </Collapsible>
+    );
+};
+
+const InterruptedCard: React.FC<{ display: ToolDisplay; onRetry: ((title: string) => void) | undefined }> = ({ display, onRetry }) => {
+    const [retried, setRetried] = useState(false);
+
+    return (
+        <div className="flex items-center gap-3 rounded-ds-xs border border-border-muted bg-surface-panel px-4 py-3">
+            <IconBox display={display} />
+            <div className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-body-medium-medium text-text-strong">{display.title}</span>
+                {(display.method || display.path) && <Subtitle display={display} />}
+                <span className="flex items-center gap-1 text-body-small-regular text-text-warning">
+                    <CircleSlash className="size-3.5 shrink-0 text-icon-warning" />
+                    Interrupted before it finished.
+                </span>
+            </div>
+            {onRetry && (
+                <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={retried}
+                    onClick={() => {
+                        setRetried(true);
+                        onRetry(display.title);
+                    }}
+                >
+                    <RotateCcw /> Check and try again
+                </Button>
+            )}
+        </div>
     );
 };
 
