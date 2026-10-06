@@ -22,26 +22,30 @@ const PLAYGROUND_SESSION_EXPIRES_IN_MS = 60 * 60 * 1000;
 const MAX_STEPS = 10;
 
 export const PLAYGROUND_INTEGRATION_PREFIX = 'pg-';
-export const PLAYGROUND_PROVIDERS: { provider: string; sharedCredentialsName?: string }[] = [
+export const PLAYGROUND_PROVIDERS: { provider: string; sharedCredentialsName?: string; displayName?: string }[] = [
     { provider: 'google-calendar' },
     { provider: 'google-mail' },
     { provider: 'google-drive' },
     { provider: 'google-sheet' },
     { provider: 'google-docs' },
     // The full GitHub app asks for nearly every scope, delete_repo and admin:org included.
-    { provider: 'github', sharedCredentialsName: 'github-getting-started' },
+    { provider: 'github', sharedCredentialsName: 'github-getting-started', displayName: 'GitHub' },
     { provider: 'slack' },
     { provider: 'notion' },
     { provider: 'linear' },
     { provider: 'hubspot' },
     { provider: 'outlook' },
-    { provider: 'jira' },
+    { provider: 'jira', displayName: 'Jira' },
     { provider: 'asana' },
     { provider: 'airtable' }
 ];
 
+function playgroundDisplayName({ provider, displayName }: (typeof PLAYGROUND_PROVIDERS)[number]): string {
+    return displayName ?? getProvider(provider)?.display_name ?? provider;
+}
+
 export function playgroundProviderSummaries(): { provider: string; displayName: string }[] {
-    return PLAYGROUND_PROVIDERS.map(({ provider }) => ({ provider, displayName: getProvider(provider)?.display_name ?? provider }));
+    return PLAYGROUND_PROVIDERS.map((entry) => ({ provider: entry.provider, displayName: playgroundDisplayName(entry) }));
 }
 
 export const PLAYGROUND_USER_TAG_KEY = 'nango/playground_user';
@@ -88,10 +92,8 @@ export async function ensurePlaygroundIntegrations(environment: DBEnvironment): 
     return ensured.filter((integrationId): integrationId is string => integrationId !== null);
 }
 
-async function ensurePlaygroundIntegration(
-    environment: DBEnvironment,
-    { provider: providerName, sharedCredentialsName }: (typeof PLAYGROUND_PROVIDERS)[number]
-): Promise<string | null> {
+async function ensurePlaygroundIntegration(environment: DBEnvironment, entry: (typeof PLAYGROUND_PROVIDERS)[number]): Promise<string | null> {
+    const { provider: providerName, sharedCredentialsName } = entry;
     const integrationId = playgroundIntegrationId(providerName);
     const provider = getProvider(providerName);
     if (!provider) {
@@ -110,7 +112,7 @@ async function ensurePlaygroundIntegration(
         environment_id: environment.id,
         provider,
         unique_key: integrationId,
-        display_name: provider.display_name
+        display_name: playgroundDisplayName(entry)
     });
     if (created.isErr()) {
         logger.error(`Agent Playground could not create ${integrationId}: ${created.error.message}`);
@@ -295,7 +297,7 @@ export async function startTurn({
             new Date(),
             Object.entries(session.value.compiledToolset).map(([id, integration]) => ({ id, provider: integration.provider, connected: connected.has(id) })),
             PLAYGROUND_PROVIDERS.filter(({ provider }) => !Object.hasOwn(session.value.compiledToolset, playgroundIntegrationId(provider))).map(
-                ({ provider }) => getProvider(provider)?.display_name ?? provider
+                playgroundDisplayName
             )
         ),
         messages: modelMessages,
