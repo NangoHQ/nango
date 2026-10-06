@@ -5,16 +5,17 @@ description: Use when adding, renaming, changing or removing a product analytics
 
 # Managing Analytics Events
 
-`AnalyticsEventCatalogue` in `packages/types/lib/analytics/catalogue.ts` is the source of truth for every
+`analyticsEventCatalogue` in `packages/types/lib/analytics/catalogue.ts` is the source of truth for every
 product analytics event, whether the webapp, the server or the CLI sends it. Each entry records the
-event's surface, the insight it serves, when it fires, and its properties. The senders are typed from it,
-so an event that isn't in the catalogue doesn't compile.
+event's surface, the insight it serves, when it fires, and its properties as a zod schema. The senders take
+their types from those schemas, so an event that isn't in the catalogue doesn't compile. Nothing is
+validated at runtime.
 
 The allowed categories, objects and actions, each with its meaning, are the interfaces in
-`packages/types/lib/analytics/taxonomy.ts`. `packages/types/lib/analytics/rules.ts` checks names,
-`snake_case` properties, `is_` and `has_` booleans, primitive values, `is_success` on `complete` events,
-and `structured_reason`. `npm run ts-build` fails with the event and the broken rule. The other rules below
-are yours and the reviewer's to check.
+`packages/types/lib/analytics/taxonomy.ts`. A name built from anything else fails `npm run ts-build`.
+`catalogue.unit.test.ts` checks the rest with `rules.ts`: `snake_case` names and properties, `is_` and `has_`
+booleans, primitive values, `is_success` on `complete` events, and `structured_reason`. The other rules
+below are yours and the reviewer's to check.
 
 **No insight, no event.** If you can't name the chart or funnel step an event feeds, don't add it. The
 questions we want answered are on the [product insights page](https://app.notion.com/p/3e4ce298312181d7a9c7d8efd1a96c1a).
@@ -70,14 +71,16 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
 
     ```ts
     'playground:run_complete': {
-        surface: 'web';
-        insight: 'How many accounts use the API Playground each week?';
-        fires: 'When a Playground run returns a result or an error';
-        properties: { function_type: string; integration: string; is_success: boolean; run_state: string; run_duration_ms: number };
-    };
+        surface: 'web',
+        insight: 'How many accounts use the API Playground each week?',
+        fires: 'When a Playground run returns a result or an error',
+        properties: z.object({ function_type: z.string(), integration: z.string(), is_success: z.boolean(), run_state: z.string(), run_duration_ms: z.number() })
+    },
     ```
 
-    `fires` is one sentence. The code shows where it fires.
+    `fires` is one sentence. The code shows where it fires. An event with no properties uses `none`. For a
+    string typed as a union defined elsewhere, such as `UsageMetric`, use `stringOf<UsageMetric>()`, not
+    `z.custom`, so the test still sees a string.
 
 7. **Send it.**
     - Web: `track()` from `packages/webapp/src/utils/analytics.tsx`.
@@ -88,7 +91,7 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
       Released CLIs keep sending what they sent when they shipped, so the endpoint has to keep accepting
       old bodies.
 
-8. **Run `npm run ts-build`.**
+8. **Run `npm run ts-build` and `npx vitest run packages/types/lib/analytics`.**
 
 ## Personal data
 
@@ -126,4 +129,4 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
 - [ ] It fires from the right surface: server for business facts, web for interaction
 - [ ] No personal data beyond what the insight needs
 - [ ] For a rename or removal, the PR description names the events, so dashboards and alerts get updated
-- [ ] `npm run ts-build` passes
+- [ ] `npm run ts-build` and the catalogue test pass
