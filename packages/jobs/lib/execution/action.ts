@@ -135,7 +135,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
 
         void logCtx.info(`Starting action '${task.actionName}'${formatAttempts(task)}`, {
-            ...(envs.NANGO_LOG_ACTION_INPUT ? { input: task.input } : {}),
+            input: envs.NANGO_LOG_ACTION_INPUT ? task.input : 'REDACTED',
             action: task.actionName,
             connection: task.connection.connection_id,
             integration: task.connection.provider_config_key
