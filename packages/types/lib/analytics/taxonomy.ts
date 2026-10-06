@@ -47,7 +47,7 @@ export interface AnalyticsUiElements {
 export interface AnalyticsActions {
     click: 'A UI element was clicked';
     submit: 'A form or request was sent';
-    create: 'Something new now exists. Sent by the server when the attempt finishes, it carries `is_success`, so failed attempts count too';
+    create: 'A new thing was created, or a creation attempt finished. Include `is_success` when failures are tracked';
     view: 'A page or item was seen';
     add: 'Something was added to an existing thing';
     invite: 'Someone was invited';
