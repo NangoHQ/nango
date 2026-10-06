@@ -168,7 +168,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             return;
         }
 
-        track('web:create_connection_button:clicked', {
+        track('connections:create_button_click', {
             provider: integration?.provider || 'unknown'
         });
 
@@ -200,7 +200,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             return;
         }
 
-        track('web:share_connection_link_button:clicked', {
+        track('connections:share_link_button_click', {
             provider: integration?.provider || 'unknown'
         });
 
@@ -243,11 +243,13 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                 queryClient.invalidateQueries({ queryKey: ['integrations', env] });
                 queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
                 hasConnected.current = event.payload;
-                track('web:connection_created', { provider: integration?.provider || 'unknown' });
+                track('connections:connection_create', { provider: integration?.provider || 'unknown', is_legacy_flow: false, is_success: true });
             } else if (event.type === 'error') {
-                track('web:connection_failed', {
+                track('connections:connection_create', {
                     provider: integration?.provider || 'unknown',
-                    errorType: event.payload.errorType
+                    is_legacy_flow: false,
+                    is_success: false,
+                    error_code: event.payload.errorType
                 });
             }
         },

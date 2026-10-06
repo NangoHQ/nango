@@ -12,11 +12,13 @@ import type { NextFunction, Request, Response } from 'express';
  * The request's user is deliberately left out: only session auth resolves one, so stamping it would
  * attribute the same event to a person or to the account depending on how the caller authenticated.
  */
-export function productTrackingMiddleware(_req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
+export function productTrackingMiddleware(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
     withProductTrackingContext(
         () => ({
             team: res.locals['account'],
-            environment: res.locals['environment']
+            environment: res.locals['environment'],
+            plan: res.locals['plan'],
+            impersonated: req.session?.debugMode === true
         }),
         next
     );

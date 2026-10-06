@@ -1,9 +1,10 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { accountService, handlePlanChanged, productTracking, updatePlanByTeam } from '@nangohq/shared';
+import { accountService, handlePlanChanged, updatePlanByTeam } from '@nangohq/shared';
 import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
+import { trackPlanUpdate } from '../../../services/planChange.service.js';
 import { clearSpendAlertOnPlanChange, notifySpendAlert } from '../../../services/spendAlertNotification.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
@@ -128,31 +129,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
             const planChange = changed.value;
             if (planChange) {
                 await clearSpendAlertOnPlanChange({ accountId: team.id, subscriptionId: body.subscription.id });
-                productTracking.track({
-                    name: 'account:billing:plan_changed',
-                    team,
-                    eventProperties: {
-                        previousPlan: planChange.previousPlan.name,
-                        newPlan: planChange.updatedPlan.name,
-                        isDowngrade: planChange.isDowngrade,
-                        orbCustomerId: planChange.previousPlan.orb_customer_id
-                    }
-                });
-
-                if (!planChange.isDowngrade) {
-                    // Tracking all scheduled plan changes except for downgrade events; these are tracked
-                    // at the moment the customer schedules the downgrade.
-                    productTracking.track({
-                        name: 'account:billing:plan_changed:v2',
-                        team,
-                        eventProperties: {
-                            type: 'scheduled',
-                            previousPlan: planChange.previousPlan.name + (planChange.previousPlan.has_growth_features ? ' + growth add-on' : ''),
-                            newPlan: planChange.updatedPlan.name + (planChange.updatedPlan.has_growth_features ? ' + growth add-on' : ''),
-                            orbCustomerId: planChange.previousPlan.orb_customer_id
-                        }
-                    });
-                }
+                trackPlanUpdate({ team, planChange, isScheduled: true });
             }
 
             return Ok(undefined);

@@ -8,7 +8,7 @@ export const queryDocsFilesystemTool = defineManagementMcpTool<typeof queryDocsF
     name: 'docs_query_filesystem',
     title: 'Query Nango Documentation Filesystem',
     description:
-        "Run a read-only shell-like command against Mintlify's virtual Nango documentation filesystem. Use this to read full pages, browse the documentation structure, or perform exact text searches. Supported commands include rg, grep, find, tree, ls, cat, head, tail, sed, awk, and jq. The filesystem is an isolated documentation sandbox, not the Nango server or the caller's computer.",
+        "Runs a read-only shell-like command against Mintlify's virtual Nango documentation filesystem to read pages, browse its structure, or search exact text. Supported commands include rg, grep, find, tree, ls, cat, head, tail, sed, awk, and jq. The filesystem is an isolated documentation sandbox, separate from the Nango server and the caller's computer.",
     inputSchema: queryDocsFilesystemInputSchema,
     outputSchema: queryDocsFilesystemOutputSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },

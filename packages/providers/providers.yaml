@@ -2110,6 +2110,37 @@ aspire:
             example: 7hLp************************nHa5
             doc_section: '#step-2-generate-your-client-id-and-secret'
 
+astro-mcp:
+    display_name: Astro (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://api.astronomer.io/v1alpha1/astro/mcp/authorize
+    token_url: https://api.astronomer.io/v1alpha1/astro/mcp/token
+    registration_url: https://api.astronomer.io/v1alpha1/astro/mcp/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+        resource: https://api.astronomer.io/v1alpha1/astro/mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.astronomer.io
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/astro-mcp
+
 atlas-so:
     display_name: Atlas.so
     categories:
@@ -2224,7 +2255,7 @@ atlassian-admin:
             title: Atlassian Organization Id
             optional: true
             description: The organization ID of your Atlassian account
-            pattern: '^[a-f0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$'
+            pattern: '^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$'
             example: '9fa3d2b7-k9l3-4bq1-z3d8-7x1m0a9e2b76'
             doc_section: '#step-1-generating-your-api-key'
 
@@ -7051,6 +7082,61 @@ digits-mcp:
         base_url: https://api.digits.com
     docs: https://nango.dev/docs/api-integrations/digits-mcp
 
+discogs:
+    display_name: Discogs
+    categories:
+        - e-commerce
+        - other
+    auth_mode: OAUTH1
+    request_url: https://api.discogs.com/oauth/request_token
+    authorization_url: https://www.discogs.com/oauth/authorize
+    token_url: https://api.discogs.com/oauth/access_token
+    signature_method: 'PLAINTEXT'
+    proxy:
+        base_url: https://api.discogs.com
+        headers:
+            user-agent: ${connectionConfig.userAgent} || NangoDiscogsIntegration/1.0 (+https://nango.dev; support@nango.dev)
+    docs: https://nango.dev/docs/api-integrations/discogs
+    setup_guide_url: https://nango.dev/docs/api-integrations/discogs/how-to-register-your-own-discogs-api-oauth-app
+    connection_config:
+        userAgent:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
+discogs-token:
+    display_name: Discogs (Personal Access Token)
+    categories:
+        - e-commerce
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.discogs.com
+        headers:
+            authorization: Discogs token=${apiKey}
+            user-agent: ${connectionConfig.userAgent} || NangoDiscogsIntegration/1.0 (+https://nango.dev; support@nango.dev)
+        verification:
+            method: GET
+            endpoints:
+                - /oauth/identity
+    docs: https://nango.dev/docs/api-integrations/discogs-token
+    docs_connect: https://nango.dev/docs/api-integrations/discogs-token/connect
+    connection_config:
+        userAgent:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: The personal access token for your Discogs account
+            example: hpJEgq**********UPY
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-personal-access-token'
+
 discolike:
     display_name: DiscoLike
     categories:
@@ -7092,6 +7178,36 @@ discord:
                 - 'retry-after'
     docs: https://nango.dev/docs/api-integrations/discord
     setup_guide_url: https://nango.dev/docs/api-integrations/discord/how-to-register-your-own-discord-api-oauth-app
+
+discord-bot:
+    display_name: Discord Bot
+    categories:
+        - gaming
+        - social
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://discord.com
+        retry:
+            after:
+                - 'retry-after'
+        headers:
+            authorization: Bot ${apiKey}
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+            endpoints:
+                - /api/v10/applications/@me
+    docs: https://nango.dev/docs/api-integrations/discord-bot
+    docs_connect: https://nango.dev/docs/api-integrations/discord-bot/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Bot Token
+            description: Your Discord bot token from the Discord Developer Portal.
+            example: MTIzNDU2Nzg5MDEyMzQ1Njc4.******.**********************************
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-creating-a-discord-application-and-bot'
 
 discourse:
     display_name: Discourse
@@ -8080,6 +8196,93 @@ epc-gov-uk:
             example: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2'
             doc_section: '#step-2-finding-your-api-key'
 
+eclinicalworks:
+    display_name: eClinicalWorks (FHIR)
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.oauthServerUrl}/oauth/oauth2/token
+    token_params:
+        grant_type: client_credentials
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+        scope: ${credentials.scope}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    assertion:
+        type: jwt
+        singleUse: true
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 300
+        header:
+            alg: RS384
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://${connectionConfig.oauthServerUrl}/oauth/oauth2/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.fhirBaseUrl}
+        headers:
+            accept: application/fhir+json
+    docs: https://nango.dev/docs/api-integrations/eclinicalworks
+    setup_guide_url: https://nango.dev/docs/api-integrations/eclinicalworks/how-to-register-your-own-eclinicalworks-app
+    docs_connect: https://nango.dev/docs/api-integrations/eclinicalworks/connect
+    connection_config:
+        fhirBaseUrl:
+            type: string
+            prefix: https://
+            title: FHIR Base URL
+            description: This practice's eClinicalWorks FHIR R4 base URL.
+            example: fhir4.eclinicalworks.com/fhir/r4/SANDBOX
+            doc_section: '#step-1-finding-your-fhir-base-url'
+            order: 1
+        oauthServerUrl:
+            type: string
+            prefix: https://
+            title: OAuth Server URL
+            description: This practice's eClinicalWorks OAuth issuer URL.
+            example: oauthserver.eclinicalworks.com
+            doc_section: '#step-2-finding-your-oauth-server-url'
+            order: 2
+    integration_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your registered application's Client ID from the eClinicalWorks Dev Portal.
+            order: 1
+        keyId:
+            type: string
+            title: Key ID
+            description: The kid of the RSA key registered in your hosted JWKS file.
+            order: 2
+        privateKey:
+            type: string
+            title: Private Key
+            description: The RSA private key (PEM) matching your published JWKS public key. Signed with RS384.
+            secret: true
+            order: 3
+        scope:
+            type: string
+            title: Scope
+            description: >-
+                The SMART Backend Services scope(s) granted to this Client ID (e.g. system/Patient.read).
+                Include system/Group.read only for bulk Group/$export requests, and omit it for single-patient backend access.
+            order: 4
+    credentials:
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 epic:
     display_name: Epic (FHIR)
     categories:
@@ -8305,6 +8508,7 @@ eway-crm:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.serviceUrl}/auth/connect/authorize
     token_url: https://${connectionConfig.serviceUrl}/auth/connect/token
+    disable_pkce: true
     scope_separator: ' '
     default_scopes:
         - offline_access
@@ -11773,6 +11977,36 @@ highq:
             example: acme.highq.com/main
             doc_section: '#step-1-find-your-hostname'
 
+hitpay:
+    display_name: HitPay App
+    categories:
+        - payment
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://dashboard.${connectionConfig.environment}/oauth/authorize
+    token_url: https://api.${connectionConfig.environment}/v1/open/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.${connectionConfig.environment}
+    docs: https://nango.dev/docs/api-integrations/hitpay
+    setup_guide_url: https://nango.dev/docs/api-integrations/hitpay/how-to-register-your-own-hitpay-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/hitpay/connect
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The HitPay environment to connect to. Use sandbox.hit-pay.com with sandbox app credentials.
+            doc_section: '#step-1-choose-your-environment'
+            enum:
+                - hit-pay.com
+                - sandbox.hit-pay.com
+                - staging.hit-pay.com
+
 holded:
     display_name: Holded
     categories:
@@ -14539,6 +14773,38 @@ mailjet:
             example: 'f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1'
             doc_section: '#step-1-getting-your-credentials'
 
+mailtrap:
+    display_name: Mailtrap
+    categories:
+        - communication
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.api.mailtrap.io
+        headers:
+            api-token: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/mailtrap
+    docs_connect: https://nango.dev/docs/api-integrations/mailtrap/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Mailtrap API token.
+            example: a1b2c3d4********************e5f6
+            pattern: '^[a-f0-9]{32}$'
+            secret: true
+            doc_section: '#step-2-getting-your-api-token'
+    connection_config:
+        subdomain:
+            type: string
+            title: API Environment
+            description: The Mailtrap API environment to connect to. Use 'send' for live or 'sandbox' for sandbox.
+            order: 1
+            enum:
+                - send
+                - sandbox
+            doc_section: '#step-1-choose-your-environment'
+
 mandrill:
     display_name: Mandrill
     categories:
@@ -15960,6 +16226,84 @@ modmed:
             secret: true
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-request-access-to-modmed-sandbox'
+
+modmed-fhir:
+    display_name: ModMed (FHIR)
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://sso.ema.md/auth/realms/fhir/protocol/openid-connect/token
+    token_params:
+        grant_type: client_credentials
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+        scope: ${credentials.scope}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    assertion:
+        type: jwt
+        singleUse: true
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 300
+        header:
+            alg: ES384
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://sso.ema.md/auth/realms/fhir/protocol/openid-connect/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.fhirHost}
+        headers:
+            accept: application/fhir+json
+    docs: https://nango.dev/docs/api-integrations/modmed-fhir
+    setup_guide_url: https://nango.dev/docs/api-integrations/modmed-fhir/how-to-register-your-own-modmed-fhir-app
+    docs_connect: https://nango.dev/docs/api-integrations/modmed-fhir/connect
+    integration_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Bulk FHIR application's Client ID from the ModMed FHIR vendor dashboard.
+            order: 1
+        keyId:
+            type: string
+            title: Key ID
+            description: The kid of the EC (P-384) key registered in your hosted JWKS file.
+            order: 2
+        privateKey:
+            type: string
+            title: Private Key
+            description: The EC (P-384) private key (PEM) matching your published JWKS public key. Signed with ES384.
+            secret: true
+            order: 3
+        scope:
+            type: string
+            title: Scope
+            description: The space-separated system/*.rs scopes granted to your Bulk FHIR application.
+            order: 4
+    credentials:
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    connection_config:
+        fhirHost:
+            type: string
+            prefix: https://
+            title: FHIR Host
+            description: This practice's ModMed Certified FHIR host.
+            example: fhirmp.mmi.prod.fhir.ema-api.com
+            pattern: '^[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\.prod\.fhir\.ema-api\.com$'
+            doc_section: '#step-1-finding-your-fhir-host'
+            order: 1
 
 mural:
     display_name: Mural
@@ -17499,6 +17843,32 @@ open-hands:
             pattern: '^[A-Za-z0-9]{32}$'
             example: 'aNVlyRBLGWJgnVp1vwXN7TkO1MCYxeIDz'
             doc_section: '#step-1-finding-your-api-key'
+
+openrouter:
+    display_name: OpenRouter
+    categories:
+        - dev-tools
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://openrouter.ai
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/key
+    docs: https://nango.dev/docs/api-integrations/openrouter
+    docs_connect: https://nango.dev/docs/api-integrations/openrouter/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your OpenRouter account.
+            pattern: '^sk-or-v1-[a-f0-9]{64}$'
+            example: sk-or-v1-a3f9**************************************7c2d
+            doc_section: '#step-1-create-your-api-key'
 
 optum-real:
     display_name: Optum Real
@@ -23420,6 +23790,42 @@ slack:
     docs: https://nango.dev/docs/api-integrations/slack
     setup_guide_url: https://nango.dev/docs/api-integrations/slack/how-to-register-your-own-slack-api-oauth-app
 
+slack-app-configuration:
+    display_name: Slack (Configuration Token)
+    categories:
+        - dev-tools
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://slack.com/api/tooling.tokens.rotate
+    token_params:
+        refresh_token: ${credentials.refresh_token}
+    refresh_token_params:
+        refresh_token: ${refresh_token}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    token_response:
+        token: token
+        refresh_token: refresh_token
+        token_expiration: exp
+        token_expiration_strategy: expireAt
+    proxy:
+        base_url: https://slack.com/api
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/slack-app-configuration
+    docs_connect: https://nango.dev/docs/api-integrations/slack-app-configuration/connect
+    credentials:
+        refresh_token:
+            type: string
+            title: App configuration refresh token
+            description: Slack app configuration refresh token.
+            secret: true
+            pattern: '^xoxe-1-[A-Za-z0-9_-]+$'
+            example: xoxe-1-A08************************
+            doc_section: '#step-1-generate-an-app-configuration-token'
+
 slack-mcp:
     display_name: Slack (MCP)
     categories:
@@ -27378,7 +27784,8 @@ webflow:
         grant_type: authorization_code
     proxy:
         base_url: https://api.webflow.com
-    docs: https://nango.dev/docs/integrations/all/webflow
+    docs: https://nango.dev/docs/api-integrations/webflow
+    setup_guide_url: https://nango.dev/docs/api-integrations/webflow/how-to-register-your-own-webflow-api-oauth-app
 
 webex:
     display_name: Webex
@@ -27426,6 +27833,31 @@ webinarjam:
             example: b7e2d4f1-8a3c-4e6b-9d5f-1a2b3c4d5e6f
             format: uuid
             doc_section: '#step-1-getting-your-api-key'
+
+weflow:
+    display_name: Weflow
+    categories:
+        - communication
+        - crm
+        - video
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.getweflow.app
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/summary-templates
+    docs: https://nango.dev/docs/api-integrations/weflow
+    docs_connect: https://nango.dev/docs/api-integrations/weflow/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key from your Weflow workspace.
+            example: wfl_****************************
+            doc_section: '#step-1-create-your-api-key'
 
 wejam:
     display_name: WeJam AI

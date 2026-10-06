@@ -21,6 +21,7 @@ import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, Po
 import type { PostImpersonate } from './admin/http.api.js';
 import type { DeleteAgentSession, PostAgentSessions } from './agent/api.js';
 import type { GetAgentSessionMcp, PostAgentSessionMcp } from './agent/mcp.api.js';
+import type { PostAgentPlaygroundChat } from './agent/playground.api.js';
 import type { EndpointMethod } from './api.js';
 import type { GetAuditTrail, GetAuditTrailExport } from './audit-trail/api.js';
 import type {
@@ -87,9 +88,11 @@ import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuil
 import type {
     DeleteIntegrationFunction,
     DeletePublicIntegrationFunction,
+    GetFunction,
     GetFunctionDeployment,
     GetFunctionDryrun,
     GetFunctionInvocation,
+    GetFunctions,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
@@ -97,6 +100,7 @@ import type {
     GetPublicIntegrationFunction,
     GetPublicIntegrationFunctions,
     GetPublicProviderTemplates,
+    PatchFunction,
     PostFunctionCompile,
     PostFunctionDeployment,
     PostFunctionDeploymentBundle,
@@ -217,6 +221,9 @@ export type PublicApiEndpoints =
     | GetPublicV1
     | PostPublicTriggerAction
     | PostFunctionCompile
+    | GetFunction
+    | GetFunctions
+    | PatchFunction
     | PostFunctionDryrun
     | GetFunctionDryrun
     | PostFunctionDryrunResult
@@ -346,7 +353,8 @@ export type PrivateApiEndpoints =
     | PostMFARecoveryCodes
     | PostMFALoginVerification
     | DeleteMFA
-    | GetPlainHmac;
+    | GetPlainHmac
+    | PostAgentPlaygroundChat;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 

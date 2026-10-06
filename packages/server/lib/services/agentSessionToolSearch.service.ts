@@ -2,8 +2,10 @@ import Fuse from 'fuse.js';
 
 import { logContextGetter } from '@nangohq/logs';
 import { legacyFunctionService } from '@nangohq/shared';
-import { filterJsonSchemaForModels } from '@nangohq/utils';
+import { filterJsonSchemaForModels, report } from '@nangohq/utils';
 
+import { notConnectedGuidance } from '../controllers/agent/mcp/notConnectedGuidance.js';
+import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { trackAgentSessionToolSearch } from './agentSessionAnalytics.service.js';
 
 import type { AgentSessionToolSearchHit } from './agentSessionAnalytics.service.js';
@@ -123,7 +125,12 @@ export async function searchSessionTools({
     await logCtx.enrichOperation({ actor: { kind: 'session', id: session.id } });
 
     try {
-        const ranked = rankSessionTools({ session, query, slugOf });
+        const current = await withConnectionsCreatedInSession(session).catch((err: unknown) => {
+            report(err);
+            void logCtx.warn('Could not look up connections created in this session', { error: err });
+            return session;
+        });
+        const ranked = rankSessionTools({ session: current, query, slugOf });
         const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
 
         // It's possible a tool was removed after the session compiled, so we set input as unavailable.
@@ -142,7 +149,7 @@ export async function searchSessionTools({
             logOperationId: logCtx.id
         });
 
-        return { guidance: guidanceFor({ query, matches, related }), matches, related };
+        return { guidance: guidanceFor({ session, query, matches, related }), matches, related };
     } catch (err) {
         void logCtx.error('Failed to search the session tools', { error: err });
         await logCtx.failed();
@@ -333,7 +340,17 @@ function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | unde
     };
 }
 
-function guidanceFor({ query, matches, related }: { query: string; matches: AgentSessionToolMatch[]; related: AgentSessionToolMatch[] }): string {
+function guidanceFor({
+    session,
+    query,
+    matches,
+    related
+}: {
+    session: AgentSession;
+    query: string;
+    matches: AgentSessionToolMatch[];
+    related: AgentSessionToolMatch[];
+}): string {
     if (matches.length === 0 && related.length === 0) {
         return `No tool in this session matches '${query}'. Try a shorter query, or words describing the operation rather than the product, and note that this session may simply not carry a tool for it.`;
     }
@@ -376,7 +393,8 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
     const unconnected = [...new Set([...matches, ...related].filter((match) => match.connection.status === 'not_connected').map((match) => match.integration))];
     if (unconnected.length > 0) {
         lines.push(
-            `${unconnected.map((integration) => `'${integration}'`).join(', ')} ${unconnected.length === 1 ? 'has' : 'have'} no connection in this session. Their tools are listed for completeness and will fail if you call them.`
+            `${unconnected.map((integration) => `'${integration}'`).join(', ')} ${unconnected.length === 1 ? 'has no connection' : 'have no connections'} in this session. Their tools are listed for completeness and will fail if you call them.`,
+            ...new Set(unconnected.map((integration) => notConnectedGuidance(integration, session)))
         );
     }
 

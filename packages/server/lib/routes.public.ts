@@ -33,6 +33,8 @@ import { postConnectSessions } from './controllers/connect/postSessions.js';
 import { postConnectTelemetry } from './controllers/connect/postTelemetry.js';
 import connectionController from './controllers/connection.controller.js';
 import { deletePublicConnection } from './controllers/connection/connectionId/deleteConnection.js';
+import { getFunctionInvocation } from './controllers/connection/connectionId/functions/functionUuid/invocations/id/getInvocation.js';
+import { postFunctionInvocation } from './controllers/connection/connectionId/functions/functionUuid/invocations/postInvocation.js';
 import { getPublicConnection } from './controllers/connection/connectionId/getConnection.js';
 import { patchPublicMetadata } from './controllers/connection/connectionId/metadata/patchMetadata.js';
 import { postPublicMetadata } from './controllers/connection/connectionId/metadata/postMetadata.js';
@@ -57,8 +59,9 @@ import { postFunctionDeploymentResult } from './controllers/functions/deployment
 import { getFunctionDryrun } from './controllers/functions/dryrun/getDryrun.js';
 import { postFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDryrunResult.js';
-import { getFunctionInvocation } from './controllers/functions/getInvocation.js';
-import { postFunctionInvocation } from './controllers/functions/postInvocation.js';
+import { getFunction } from './controllers/functions/getFunction.js';
+import { getFunctions } from './controllers/functions/getFunctions.js';
+import { patchFunction } from './controllers/functions/patchFunction.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
@@ -97,6 +100,7 @@ import {
     auditFunctionDeployedCli,
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
+    auditFunctionUpdated,
     auditPublicApiKeyCreated,
     auditPublicApiKeyDeleted,
     auditPublicConnectionDeleted,
@@ -213,7 +217,8 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fieldNestingD
 
 const publicAPICorsHandler = cors({
     maxAge: 600,
-    exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, X-Nango-Signature, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset',
+    exposedHeaders:
+        'Authorization, Etag, Content-Type, Content-Length, X-Nango-Signature, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-Nango-Invocation-Id',
     allowedHeaders:
         'Authorization, Content-Type, Accept, Origin, X-Requested-With, Nango-Activity-Log-Id, Nango-Is-Dry-Run, Nango-Is-Sync, Provider-Config-Key, Connection-Id, Sentry-Trace, Baggage',
     origin: '*'
@@ -431,6 +436,8 @@ publicAPI.route('/scripts/config').get(envAuth, can('environment:integrations:li
 // Functions
 publicAPI.use('/functions', jsonContentTypeMiddleware);
 
+publicAPI.route('/functions').get(envAuth, can('environment:functions:list'), getFunctions);
+
 publicAPI.route('/functions/compile').post(functionCompileAuth, postFunctionCompile);
 publicAPI.route('/functions/dryruns').post(functionDryrunAuth, postFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id').get(functionDryrunAuth, getFunctionDryrun);
@@ -442,8 +449,16 @@ publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResu
 publicAPI.route('/functions/deployments/bundle/preview').post(envAuth, can('environment:deploy'), postFunctionDeploymentBundlePreview);
 publicAPI.route('/functions/deployments/bundle').post(envAuth, auditFunctionDeploymentBundle, can('environment:deploy'), postFunctionDeploymentBundle);
 
-publicAPI.route('/functions/invocations').post(envAuth, can('environment:functions:invocations'), postFunctionInvocation);
-publicAPI.route('/functions/invocations/:id').get(envAuth, can('environment:functions:invocations'), getFunctionInvocation);
+publicAPI
+    .route('/connections/:connectionId/functions/:functionUuid/invocations')
+    .post(envAuth, can('environment:functions:invocations'), postFunctionInvocation);
+publicAPI
+    .route('/connections/:connectionId/functions/:functionUuid/invocations/:id')
+    .get(envAuth, can('environment:functions:invocations'), getFunctionInvocation);
+publicAPI
+    .route('/functions/:uuid')
+    .get(envAuth, can('environment:functions:read'), getFunction)
+    .patch(envAuth, auditFunctionUpdated, can('environment:functions:update'), patchFunction);
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);

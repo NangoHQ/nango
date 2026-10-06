@@ -44,7 +44,7 @@ import {
     MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
     REFRESH_MARGIN_MS
 } from './connections/utils.js';
-import * as functionLifecycle from './functions/lifecycle.js';
+import * as functionLifecycle from './functions/lifecycle/index.js';
 import {
     assertSafeOAuthUrl,
     findOutboundUrlError,

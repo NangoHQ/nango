@@ -65,6 +65,30 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         allowUnauthorizedSalesforceWebhook(accountUuid: string) {
             return client.isEnabled('allow-unauthorized-salesforce-webhook', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether Microsoft Teams webhooks without a valid Bot Framework token can be processed for this account.
+         * Escape hatch while the unverified metric shows who would break. Default `false`.
+         */
+        allowUnauthorizedMicrosoftTeamsWebhook(accountUuid: string) {
+            return client.isEnabled('allow-unauthorized-microsoft-teams-webhook', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether catalog actions are listed as enabled and runnable for this account.
+         * Default `false`.
+         */
+        hasCatalogTools(accountUuid: string) {
+            return client.isEnabled('tools-catalog', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether Airtable webhooks that cannot be verified, because the connection does not store the
+         * webhook's `macSecretBase64`, can be processed for this account. Default `false`.
+         */
+        allowUnauthorizedAirtableWebhook(accountUuid: string) {
+            return client.isEnabled('allow-unauthorized-airtable-webhook', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        isAgentPlaygroundEnabled(accountUuid: string) {
+            return client.isEnabled('agent-playground', { targetingKey: accountUuid, accountUuid }, false);
         }
     };
 }

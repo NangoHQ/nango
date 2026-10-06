@@ -23,7 +23,7 @@ export const AccountDiscovery: React.FC = () => {
         setRequestError(null);
         try {
             await requestInvite();
-            track('web:account_join_request:submitted', {});
+            track('auth:join_request_submit', {});
             setRequestSent(true);
         } catch (err) {
             setRequestError(err instanceof APIError && err.json.error?.code === 'email_delivery_failed' ? 'retry' : 'contact_admin');

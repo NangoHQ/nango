@@ -251,7 +251,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
         getConnection
             .then(() => {
                 toast({ variant: 'success', title: 'Connection created!' });
-                track('web:connection_created:legacy', { provider: integration?.provider || 'unknown' });
+                track('connections:connection_create', { provider: integration?.provider || 'unknown', is_legacy_flow: true, is_success: true });
                 void queryClient.invalidateQueries({ queryKey: ['connections'] });
                 navigate(`/${env}/connections`, { replace: true });
             })
