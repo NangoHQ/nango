@@ -16604,6 +16604,40 @@ nerdio:
             secret: true
             doc_section: '#step-2-getting-your-azure-credentials'
 
+netdocuments:
+    display_name: NetDocuments
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/neWeb2/OAuth.aspx
+    token_url: https://api.${connectionConfig.hostname}/v1/OAuth
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/netdocuments
+    docs_connect: https://nango.dev/docs/api-integrations/netdocuments/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/netdocuments/how-to-register-your-own-netdocuments-oauth-app
+    connection_config:
+        hostname:
+            type: string
+            title: Data center hostname
+            description: The NetDocuments data center your repository lives in.
+            example: vault.netvoyage.com
+            prefix: https://
+            enum:
+                - vault.netvoyage.com
+                - eu.netdocuments.com
+                - au.netdocuments.com
+                - de.netdocuments.com
+                - can.netdocuments.com
+            doc_section: '#step-1-find-your-data-center'
+
 netsapiens:
     display_name: NetSapiens
     categories:
