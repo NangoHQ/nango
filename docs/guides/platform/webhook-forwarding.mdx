@@ -60,7 +60,7 @@ The flag is only set when the integration's webhook handling knows verification 
 
 The Nango signature on flagged requests only proves the webhook came through Nango, not that the provider sent it. Anyone who knows the integration's webhook URL can send one. Treat the payload as untrusted, and set the webhook secret on the integration to enable verification. The forward operation in the Nango logs also shows a warning with the reason.
 
-Some providers reject webhooks Nango cannot verify, such as GitHub App, Gmail, Microsoft Teams, Salesforce, Airtable, Affinity, Fillout and ShipStation. For these, **Allow unverified webhooks** in **Integrations > [Integration] > Settings** lets webhooks with a missing or unverifiable signature through, flagged as above. It is off by default, and is meant for prototyping or while you set up verification. A webhook with an invalid signature is always rejected.
+Some providers reject webhooks Nango cannot verify, such as GitHub App, Gmail, Microsoft Teams, Salesforce, Airtable, Affinity, Fillout and ShipStation. For these, **Allow unverified webhooks** in **Integrations > [Integration] > Settings** lets webhooks with a missing or unverifiable signature through, flagged as above. It is off by default, and is meant for prototyping or while you set up verification. It never lets through a webhook with an invalid signature.
 
 ## When to use forwarding
 
