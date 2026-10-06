@@ -1450,6 +1450,7 @@
               "integrations/all/icypeas",
               "api-integrations/ids-fulfillment",
               "api-integrations/immybot",
+              "api-integrations/imanage",
               "integrations/all/incident-io",
               "api-integrations/infor",
               "api-integrations/infor-cc",
