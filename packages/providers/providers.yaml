@@ -1613,6 +1613,65 @@ amplitude-mcp-eu:
             accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/amplitude-mcp-eu
 
+anakin:
+    display_name: Anakin
+    categories:
+        - dev-tools
+        - search
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.anakin.io
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/monitors
+    docs: https://nango.dev/docs/api-integrations/anakin
+    docs_connect: https://nango.dev/docs/api-integrations/anakin/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Anakin account
+            example: ask_0123456789ab************************************************cdef
+            pattern: '^ask_[0-9a-f]{64}$'
+            doc_section: '#step-1-finding-your-api-key'
+
+anakin-mcp:
+    display_name: Anakin (MCP)
+    categories:
+        - dev-tools
+        - search
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://anakin.io/oauth/auth
+    token_url: https://anakin.io/oauth/token
+    registration_url: https://anakin.io/oauth/reg
+    default_scopes:
+        - openid
+        - offline_access
+        - anakin:tools
+    authorization_params:
+        response_type: code
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.anakin.io
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/anakin-mcp
+
 anthropic:
     display_name: Anthropic
     categories:

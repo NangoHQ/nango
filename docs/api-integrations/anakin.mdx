@@ -1,0 +1,112 @@
+---
+title: 'Anakin'
+sidebarTitle: 'Anakin'
+description: 'Integrate your application with the Anakin web data API'
+---
+
+## 🚀 Quickstart
+
+Connect to Anakin with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Anakin_.
+    </Step>
+    <Step id="authorize-anakin" title="Authorize Anakin">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API Key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-anakin-api" title="Call the Anakin API">
+    Let's make your first request to the Anakin API (an AI web search). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/v1/search" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"prompt": "best espresso machines 2026", "limit": 5}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/v1/search',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: { prompt: 'best espresso machines 2026', limit: 5 }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Anakin integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/anakin/connect)
+  Find your Anakin API key and connect it to Nango
+
+Official docs: [Anakin](https://anakin.io/docs)
+
+## API gotchas
+
+-   Only `POST /v1/search` is synchronous. `scrape`, `map`, `crawl` and `agentic-search` are
+    submit-then-poll: the `POST` returns `{ "jobId": "..." }` with no result, and you poll a
+    **per-endpoint** status URL until `status` is `completed` or `failed`. There is no shared
+    `/v1/jobs/{id}` route — the poll path mirrors the submit path:
+    | Submit | Poll |
+    | - | - |
+    | `POST /v1/url-scraper` | `GET /v1/url-scraper/{jobId}` |
+    | `POST /v1/map` | `GET /v1/map/{jobId}` |
+    | `POST /v1/crawl` | `GET /v1/crawl/{jobId}` |
+    | `POST /v1/agentic-search` | `GET /v1/agentic-search/{jobId}` |
+-   Single-page scraping lives at `POST /v1/url-scraper`, **not** `/v1/scrape`. Deriving the path
+    from the product name returns a 404.
+-   `GET /v1/countries` is public and answers `200` even with a missing or invalid key, so it is
+    not a usable credential check. Nango verifies connections against `GET /v1/monitors`, which
+    returns `401` unless the key is valid.
+-   Rate-limited requests return `429` **without** a `Retry-After` header on the API-key-authenticated
+    path (only the unauthenticated trial path sets it). Nango's proxy falls back to exponential
+    backoff, so no `retry` configuration is declared for this provider.
+-   Anakin is billed in **credits**, not requests, and costs differ per endpoint — `agentic-search`
+    and browser-backed calls (`useBrowser: true`) cost considerably more than a plain scrape. Check
+    the per-endpoint cost in the [docs](https://anakin.io/docs) before running a large sync.
+-   Wire (pre-built site automations) is namespaced under `/v1/wire/*` on the same host and the same
+    key, so it is reachable through the same Nango connection. Its discovery endpoints
+    (`/v1/wire/resolve`, `/v1/wire/catalog`) also accept unauthenticated calls, but return richer,
+    account-scoped results when the key is sent.
+
+## 🧩 Pre-built syncs & actions for Anakin
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/anakin/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
