@@ -206,11 +206,8 @@ export function getAxiosConfiguration({
         !axiosConfig.httpsAgent &&
         outboundPolicy
     ) {
-        const agent = buildUnverifiedHttpsAgent({ policy: outboundPolicy, allowSelfSignedCert: true });
-        if (agent) {
-            axiosConfig.httpsAgent = agent;
-            axiosConfig.httpAgent = getSafeHttpAgents(outboundPolicy).httpAgent;
-        }
+        axiosConfig.httpsAgent = buildUnverifiedHttpsAgent({ policy: outboundPolicy, allowSelfSignedCert: true });
+        axiosConfig.httpAgent = getSafeHttpAgents(outboundPolicy).httpAgent;
     }
 
     if (outboundPolicy) {

@@ -76,6 +76,8 @@ export function getOAuthSafeHttpAgents(): { httpAgent: http.Agent; httpsAgent: h
     return getSafeHttpAgents(getOAuthOutboundUrlPolicy());
 }
 
+const unverifiedHttpsAgentCache = new WeakMap<OutboundUrlPolicy, https.Agent>();
+
 export function buildUnverifiedHttpsAgent({
     policy,
     allowSelfSignedCert
@@ -87,10 +89,18 @@ export function buildUnverifiedHttpsAgent({
         return undefined;
     }
 
-    return new https.Agent({
+    const cached = unverifiedHttpsAgentCache.get(policy);
+    if (cached) {
+        return cached;
+    }
+
+    const agent = new https.Agent({
         rejectUnauthorized: false,
-        lookup: getSafeLookup(policy)
+        lookup: getSafeLookup(policy),
+        keepAlive: true
     });
+    unverifiedHttpsAgentCache.set(policy, agent);
+    return agent;
 }
 
 /** Headers that may be retained on OAuth token redirects; everything else is treated as credential material. */
