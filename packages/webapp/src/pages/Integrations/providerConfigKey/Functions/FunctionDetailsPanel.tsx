@@ -24,11 +24,17 @@ import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 import { FunctionSourceLabel } from './FunctionSourceLabel';
 
-import type { ApiIntegration, ListedNangoFunction } from '@nangohq/types';
+import type { ApiIntegration, ListedNangoFunction, NangoFunctionTemplate } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
+type DetailsFunction = ListedNangoFunction | NangoFunctionTemplate;
+
+function isListedFunction(fn: DetailsFunction): fn is ListedNangoFunction {
+    return 'enabled' in fn;
+}
+
 interface FunctionDetailsPanelProps {
-    fn: ListedNangoFunction;
+    fn: DetailsFunction;
     integration: ApiIntegration;
     repoProvider: string;
     onDeleted: () => void;
@@ -71,15 +77,17 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
         }
     }, [deleteFunction, fn.name, onDeleted, toast]);
 
+    const listed = isListedFunction(fn);
+    const source = listed ? fn.source : 'template';
     const pullCommand = buildPullCommand({
         integration: integration.unique_key,
         name: fn.name,
         type: fn.type,
-        source: { env }
+        source: listed ? { env } : { catalog: true }
     });
     const gitUrl = `${githubRepo}/tree/main/${functionRepoPath({ provider: repoProvider, name: fn.name, type: fn.type })}`;
-    const canDelete = fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn);
-    const canUsePlayground = fn.enabled && isSyncOrAction(fn);
+    const canDelete = listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn);
+    const canUsePlayground = listed && fn.enabled && isSyncOrAction(fn);
 
     return (
         <aside className="sticky top-0 flex max-h-[calc(100dvh-7rem)] min-h-[min(606px,calc(100dvh-7rem))] w-full flex-col overflow-y-auto overscroll-y-contain bg-surface-panel">
@@ -113,14 +121,19 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                             Delete function <Trash2 />
                         </Button>
                     )}
-                    <ConditionalTooltip condition={!canUsePlayground} content="Enable this function to use it in the Playground." side="left" asChild>
+                    <ConditionalTooltip
+                        condition={!canUsePlayground}
+                        content={listed ? 'Enable this function to use it in the Playground.' : 'Deploy this template to use it in the Playground.'}
+                        side="left"
+                        asChild
+                    >
                         <span className="inline-flex">
                             <Button
                                 variant="link-accent"
                                 size="xs"
                                 disabled={!canUsePlayground}
                                 onClick={() => {
-                                    if (!isSyncOrAction(fn)) return;
+                                    if (!isListedFunction(fn) || !isSyncOrAction(fn)) return;
                                     openPlaygroundWithContext({
                                         source: 'function',
                                         integration: integration.unique_key,
@@ -143,7 +156,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                     </Metadata>
                     {fn.type === 'sync' && fn.runs && <Metadata label="Frequency">{fn.runs}</Metadata>}
                     <Metadata label="Source">
-                        <FunctionSourceLabel source={fn.source} />
+                        <FunctionSourceLabel source={source} />
                     </Metadata>
                     {fn.scopes && fn.scopes.length > 0 && (
                         <Metadata label="Required scopes" className="col-span-2">
@@ -162,7 +175,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                     <div className="flex flex-col gap-1 bg-surface-panel-muted p-3">
                         <div className="flex h-[18px] items-center justify-between">
                             <span className="type-text-medium-xs text-text-default">Customize this function</span>
-                            {(fn.source === 'catalog' || fn.source === 'tools-catalog') && (
+                            {(source === 'catalog' || source === 'tools-catalog' || source === 'template') && (
                                 <Button asChild variant="link-accent" size="xs">
                                     <Link to={gitUrl} target="_blank">
                                         View in GitHub <ExternalLink />
@@ -244,14 +257,14 @@ const CompactEmptyState: React.FC<{ children: React.ReactNode }> = ({ children }
     </EmptyCard>
 );
 
-function getInputSchema(fn: ListedNangoFunction): JSONSchema7 | null {
+function getInputSchema(fn: DetailsFunction): JSONSchema7 | null {
     if (fn.type === 'on-event' || !fn.input || !fn.json_schema) return null;
     const schema = fn.json_schema.definitions?.[fn.input] ?? null;
     if (!schema || isNullSchema(schema as JSONSchema7) || isObjectWithNoProperties(schema as JSONSchema7)) return null;
     return schema as JSONSchema7;
 }
 
-function getOutputSchemas(fn: ListedNangoFunction): { name: string; schema: JSONSchema7 }[] {
+function getOutputSchemas(fn: DetailsFunction): { name: string; schema: JSONSchema7 }[] {
     if (fn.type === 'on-event' || !fn.returns || !fn.json_schema) return [];
     return fn.returns.flatMap((name) => {
         const schema = fn.json_schema?.definitions?.[name] ?? null;
