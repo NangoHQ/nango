@@ -56,6 +56,7 @@ export {
     auditFunctionUpdated,
     auditFunctionVariantCreated,
     auditFunctionVariantDeleted,
+    auditFunctionVariantUpdated,
     auditFunctionUpgraded,
     auditPreBuiltDeployed,
     auditPublicFunctionDeleted

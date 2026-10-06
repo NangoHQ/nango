@@ -81,6 +81,11 @@ export interface FunctionVariantMetadata {
     variant?: string;
 }
 
+export interface FunctionVariantSettingsMetadata extends FunctionVariantMetadata {
+    enabled?: boolean;
+    frequency?: string | null;
+}
+
 export interface SyncTriggeredMetadata extends SyncBaseMetadata {
     // The options the caller asked for, not what the run did with them.
     reset?: boolean;

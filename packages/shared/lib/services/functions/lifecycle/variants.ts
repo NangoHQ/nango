@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, getFrequencyMs, MIN_SYNC_FREQUENCY_MS, Ok } from '@nangohq/utils';
 
 import connectionService from '../../connection.service.js';
 import * as functionConfigService from '../models/functions.js';
@@ -7,7 +7,7 @@ import * as functionInstanceService from '../models/instances.js';
 import { scheduleInstances } from './schedule.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
-import type { DBConnection, FunctionTriggerDefinition, FunctionVariantErrorCode, PostFunctionVariant } from '@nangohq/types';
+import type { DBConnection, FunctionTriggerDefinition, FunctionVariantErrorCode, PatchFunctionVariant, PostFunctionVariant } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
@@ -166,6 +166,95 @@ export async function deleteVariant({
     }
 }
 
+export async function updateVariant(
+    orchestrator: Pick<Orchestrator, 'scheduleFunctions' | 'deleteFunctionSchedules'>,
+    args: VariantArgs & { enabled?: boolean | undefined; frequency?: string | null | undefined }
+): Promise<Result<PatchFunctionVariant['Success'], FunctionVariantError>> {
+    try {
+        const frequencyValidation = validateFrequency(args.frequency);
+        if (frequencyValidation.isErr()) {
+            throw frequencyValidation.error;
+        }
+
+        let { validated, instance } = await db.knex.transaction(async (trx) => {
+            const locked = await functionInstanceService.lockFunctionInstance(trx, args);
+            if (locked.isErr()) {
+                throw locked.error;
+            }
+            const validation = await validateArgs(trx, args);
+            if (validation.isErr()) {
+                throw validation.error;
+            }
+            const { validated, connection } = validation.value;
+
+            if (args.enabled === true && !validated.config.enabled) {
+                throw new FunctionVariantError('function_disabled', 400, `Function '${args.functionUuid}' is disabled`);
+            }
+
+            const updated = await functionInstanceService.update(trx, {
+                connectionId: connection.id,
+                functionConfigId: validated.config.id,
+                variant: args.variant,
+                enabled: args.enabled,
+                frequency: frequencyValidation.value
+            });
+            if (updated.isErr()) {
+                throw updated.error;
+            }
+            if (!updated.value) {
+                throw new FunctionVariantError('function_variant_not_found', 404, `Variant '${args.variant}' was not found`);
+            }
+
+            // Delete before committing so a failed deletion leaves the instance discoverable for retry.
+            if (!updated.value.enabled || !validated.config.enabled) {
+                const unscheduled = await orchestrator.deleteFunctionSchedules({ environmentId: args.environmentId, instanceIds: [updated.value.id] });
+                if (unscheduled.isErr()) {
+                    throw unscheduled.error;
+                }
+            }
+
+            return { validated, instance: updated.value };
+        });
+        if (instance.enabled && validated.config.enabled) {
+            const instanceId = instance.id;
+            // Commit the enabled state and frequency before scheduling. A scheduling failure leaves
+            // a committed instance that PATCH can retry, rather than a schedule for rolled-back state.
+            ({ validated, instance } = await db.knex.transaction(async (trx) => {
+                const locked = await functionInstanceService.lockFunctionInstance(trx, args);
+                if (locked.isErr()) {
+                    throw locked.error;
+                }
+                const validation = await validateArgs(trx, args);
+                if (validation.isErr()) {
+                    throw validation.error;
+                }
+                const { validated, connection } = validation.value;
+                const current = await functionInstanceService.search(trx, { instanceIds: [instanceId] }, { forShare: true });
+                if (current.isErr()) {
+                    throw current.error;
+                }
+                const freshInstance = current.value[0];
+                if (!freshInstance) {
+                    throw new FunctionVariantError('function_variant_not_found', 404, `Variant '${args.variant}' was deleted before scheduling`);
+                }
+                const scheduled = await scheduleInstances(orchestrator, [{ instance: freshInstance, config: validated, connection }]);
+                if (scheduled.isErr()) {
+                    throw scheduled.error;
+                }
+                return { validated, instance: freshInstance };
+            }));
+        }
+        return Ok({
+            function: { uuid: validated.config.uuid, name: validated.config.name },
+            variant: instance.variant,
+            state: instance.enabled ? 'enabled' : 'disabled',
+            frequency: instance.frequency || validated.currentVersion.trigger.frequency
+        });
+    } catch (err) {
+        return Err(err instanceof FunctionVariantError ? err : new FunctionVariantError('server_error', 500, 'Failed to update function variant', err));
+    }
+}
+
 async function validateArgs(trx: Knex, { environmentId, connectionId, functionUuid, variant }: VariantArgs): Promise<Result<ValidatedVariantArgs>> {
     try {
         if (variant.toLowerCase() === 'base') {
@@ -195,4 +284,15 @@ async function validateArgs(trx: Knex, { environmentId, connectionId, functionUu
     } catch (err) {
         return Err(new Error('Failed to validate function variant', { cause: err }));
     }
+}
+
+function validateFrequency(frequency: string | null | undefined): Result<string | undefined | null> {
+    if (frequency === undefined || frequency === null) {
+        return Ok(frequency);
+    }
+    const res = getFrequencyMs(frequency);
+    if (res.isErr() || res.value < MIN_SYNC_FREQUENCY_MS) {
+        return Err(new FunctionVariantError('invalid_frequency', 400, 'Frequency is invalid'));
+    }
+    return Ok(frequency);
 }

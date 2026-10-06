@@ -102,6 +102,7 @@ import type {
     GetPublicIntegrationFunctions,
     GetPublicProviderTemplates,
     PatchFunction,
+    PatchFunctionVariant,
     PostFunctionCompile,
     PostFunctionDeployment,
     PostFunctionDeploymentBundle,
@@ -234,6 +235,7 @@ export type PublicApiEndpoints =
     | PostFunctionDeploymentResult
     | PostFunctionInvocation
     | PostFunctionVariant
+    | PatchFunctionVariant
     | DeleteFunctionVariant
     | GetFunctionInvocation
     | PostFunctionDeploymentBundle

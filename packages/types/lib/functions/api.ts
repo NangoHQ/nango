@@ -320,8 +320,16 @@ export type FunctionVariantErrorCode =
     | 'connection_not_found'
     | 'function_disabled'
     | 'function_variant_not_found'
+    | 'invalid_frequency'
     | 'resource_capped'
     | 'server_error';
+
+export type FunctionVariantSuccess = {
+    function: { uuid: string; name: string };
+    variant: string;
+    frequency: string;
+    state: 'enabled' | 'disabled';
+};
 
 export type PostFunctionVariant = ApiEndpoint<{
     Audit: AuditPolicy<'function', 'variant_created', 'environment'>;
@@ -330,12 +338,7 @@ export type PostFunctionVariant = ApiEndpoint<{
     Params: { connectionId: string; functionUuid: string };
     Body: { variant: string };
     Error: ApiError<FunctionVariantErrorCode>;
-    Success: {
-        function: { uuid: string; name: string };
-        variant: string;
-        frequency: string;
-        state: 'enabled' | 'disabled';
-    };
+    Success: FunctionVariantSuccess;
 }>;
 
 export type DeleteFunctionVariant = ApiEndpoint<{
@@ -345,6 +348,16 @@ export type DeleteFunctionVariant = ApiEndpoint<{
     Params: { connectionId: string; functionUuid: string; variant: string };
     Error: ApiError<FunctionVariantErrorCode>;
     Success: { success: boolean };
+}>;
+
+export type PatchFunctionVariant = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'variant_updated', 'environment'>;
+    Method: 'PATCH';
+    Path: '/connections/:connectionId/functions/:functionUuid/variants/:variant';
+    Params: { connectionId: string; functionUuid: string; variant: string };
+    Body: { enabled?: boolean; frequency?: string | null };
+    Error: ApiError<FunctionVariantErrorCode>;
+    Success: FunctionVariantSuccess;
 }>;
 
 export type GetFunctionInvocation = ApiEndpoint<{

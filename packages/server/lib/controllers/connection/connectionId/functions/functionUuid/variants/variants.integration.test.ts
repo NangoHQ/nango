@@ -12,6 +12,7 @@ import type { FunctionTriggerDefinition } from '@nangohq/types';
 
 const endpoint = '/connections/:connectionId/functions/:functionUuid/variants';
 const deleteEndpoint = `${endpoint}/:variant`;
+const patchEndpoint = `${endpoint}/:variant`;
 let api: Awaited<ReturnType<typeof runServer>>;
 
 async function seed(trigger: FunctionTriggerDefinition = { kind: 'schedule', frequency: 'every hour', autoStart: false }, maxVariants = 100) {
@@ -68,6 +69,26 @@ async function seed(trigger: FunctionTriggerDefinition = { kind: 'schedule', fre
 }
 
 describe('function variant endpoints', () => {
+    async function seedVariant() {
+        const seeded = await seed();
+        const instance = (
+            await functionInstanceService.upsert(db.knex, [
+                {
+                    nango_connection_id: seeded.connection.id,
+                    function_config_id: seeded.func.config.id,
+                    name: seeded.func.config.name,
+                    variant: 'custom',
+                    frequency: null,
+                    enabled: true
+                }
+            ])
+        ).unwrap()[0]!;
+        return {
+            ...seeded,
+            instance
+        };
+    }
+
     beforeAll(async () => {
         api = await runServer();
     });
@@ -78,13 +99,19 @@ describe('function variant endpoints', () => {
         vi.restoreAllMocks();
     });
 
-    it.each(['POST', 'DELETE'] as const)('%s requires authentication', async (method) => {
+    it.each(['POST', 'DELETE', 'PATCH'] as const)('%s requires authentication', async (method) => {
         const params = { connectionId: 'connection', functionUuid: randomUUID(), variant: 'custom' };
-        const res =
-            method === 'POST'
-                ? await api.fetch(endpoint, { method: 'POST', params, body: { variant: 'custom' } })
-                : await api.fetch(deleteEndpoint, { method: 'DELETE', params });
-        shouldBeProtected(res);
+        const request = (() => {
+            switch (method) {
+                case 'POST':
+                    return api.fetch(endpoint, { method: 'POST', params, body: { variant: 'custom' } });
+                case 'DELETE':
+                    return api.fetch(deleteEndpoint, { method: 'DELETE', params });
+                case 'PATCH':
+                    return api.fetch(patchEndpoint, { method: 'PATCH', params, body: { enabled: true } });
+            }
+        })();
+        shouldBeProtected(await request);
     });
 
     it.each(['POST', 'DELETE'] as const)('%s requires the functions update scope', async (method) => {
@@ -225,6 +252,92 @@ describe('function variant endpoints', () => {
         expect(capped.json).toMatchObject({ error: { code: 'resource_capped' } });
         expect(schedule).toHaveBeenCalledTimes(1);
         expect(schedule).toHaveBeenCalledWith([expect.objectContaining({ instance: expect.objectContaining({ variant: 'first', enabled: true }) })]);
+    });
+
+    it('enables, changes frequency, resets the override and disables a variant', async () => {
+        const seeded = await seedVariant();
+        const request = {
+            method: 'PATCH' as const,
+            token: seeded.apiKey.secret,
+            params: {
+                connectionId: seeded.connection.connection_id,
+                functionUuid: seeded.func.config.uuid,
+                variant: seeded.instance.variant
+            }
+        };
+
+        const schedule = vi.spyOn(Orchestrator.prototype, 'scheduleFunctions').mockResolvedValue(Ok(undefined));
+        const unschedule = vi.spyOn(Orchestrator.prototype, 'deleteFunctionSchedules').mockResolvedValue(Ok(undefined));
+        const enabled = await api.fetch(patchEndpoint, { ...request, body: { enabled: true, frequency: 'every 30s' } });
+        expect(enabled.res.status).toBe(200);
+        expect(enabled.json).toMatchObject({ state: 'enabled', frequency: 'every 30s' });
+        expect(schedule).toHaveBeenLastCalledWith([
+            expect.objectContaining({ instance: expect.objectContaining({ id: seeded.instance.id, enabled: true, frequency: 'every 30s' }) })
+        ]);
+        const changed = await api.fetch(patchEndpoint, { ...request, body: { frequency: 'every 2 hours' } });
+        expect(changed.res.status).toBe(200);
+        expect(changed.json).toMatchObject({ state: 'enabled', frequency: 'every 2 hours' });
+        expect(schedule).toHaveBeenLastCalledWith([
+            expect.objectContaining({ instance: expect.objectContaining({ enabled: true, frequency: 'every 2 hours' }) })
+        ]);
+        const reset = await api.fetch(patchEndpoint, { ...request, body: { frequency: null } });
+        expect(reset.res.status).toBe(200);
+        expect(reset.json).toMatchObject({ state: 'enabled', frequency: 'every hour' });
+        expect(schedule).toHaveBeenLastCalledWith([
+            expect.objectContaining({ instance: expect.objectContaining({ frequency: null }), frequencyFallback: 'every hour' })
+        ]);
+        const disabled = await api.fetch(patchEndpoint, { ...request, body: { enabled: false } });
+        expect(disabled.res.status).toBe(200);
+        expect(disabled.json).toMatchObject({ state: 'disabled', frequency: 'every hour' });
+        expect(unschedule).toHaveBeenCalledWith({ environmentId: seeded.env.id, instanceIds: [seeded.instance.id] });
+        expect((await functionInstanceService.search(db.knex, { instanceIds: [seeded.instance.id] })).unwrap()[0]).toMatchObject({
+            enabled: false,
+            frequency: null
+        });
+    });
+
+    it('rejects frequencies that are too short', async () => {
+        const seeded = await seedVariant();
+        const request = {
+            method: 'PATCH' as const,
+            token: seeded.apiKey.secret,
+            params: {
+                connectionId: seeded.connection.connection_id,
+                functionUuid: seeded.func.config.uuid,
+                variant: seeded.instance.variant
+            }
+        };
+
+        const schedule = vi.spyOn(Orchestrator.prototype, 'scheduleFunctions').mockResolvedValue(Ok(undefined));
+        const unschedule = vi.spyOn(Orchestrator.prototype, 'deleteFunctionSchedules').mockResolvedValue(Ok(undefined));
+        for (const frequency of ['1s', 'every 20s']) {
+            const res = await api.fetch(patchEndpoint, { ...request, body: { frequency } });
+            expect(res.res.status).toBe(400);
+            expect(res.json).toMatchObject({ error: { code: 'invalid_frequency' } });
+        }
+        expect((await functionInstanceService.search(db.knex, { instanceIds: [seeded.instance.id] })).unwrap()[0]).toMatchObject({
+            enabled: true,
+            frequency: null
+        });
+        expect(schedule).not.toHaveBeenCalled();
+        expect(unschedule).not.toHaveBeenCalled();
+    });
+
+    it('returns errors for missing and protected variants', async () => {
+        const seeded = await seed();
+        for (const [variant, status, code] of [
+            ['missing', 404, 'function_variant_not_found'],
+            ['base', 400, 'invalid_variant']
+        ] as const) {
+            const res = await api.fetch(patchEndpoint, {
+                method: 'PATCH',
+                token: seeded.apiKey.secret,
+                params: { ...seeded.params, variant },
+                body: { enabled: true }
+            });
+            expect(res.res.status).toBe(status);
+            expect(res.json).toMatchObject({ error: { code } });
+        }
     });
 
     it('returns 404 when the variant does not exist', async () => {

@@ -11,6 +11,7 @@ import {
     auditFunctionUpgraded,
     auditFunctionVariantCreated,
     auditFunctionVariantDeleted,
+    auditFunctionVariantUpdated,
     auditPreBuiltDeployed,
     auditPublicFunctionDeleted
 } from './function.middleware.js';
@@ -39,7 +40,8 @@ describe('function audit middleware (unit)', () => {
 
     it.each([
         ['variant_created', auditFunctionVariantCreated],
-        ['variant_deleted', auditFunctionVariantDeleted]
+        ['variant_deleted', auditFunctionVariantDeleted],
+        ['variant_updated', auditFunctionVariantUpdated]
     ] as const)('%s records the function, connection and variant for success, denial and failure', async (action, handler) => {
         for (const [status, outcome] of [
             [200, 'success'],
@@ -48,7 +50,7 @@ describe('function audit middleware (unit)', () => {
         ] as const) {
             recordMock.mockClear();
             const req = fakeReq({
-                params: { functionUuid, connectionId: 'connection', variant: action === 'variant_deleted' ? 'custom' : 'wrong-param-variant' },
+                params: { functionUuid, connectionId: 'connection', variant: action === 'variant_created' ? 'wrong-param-variant' : 'custom' },
                 body: { variant: action === 'variant_created' ? 'custom' : 'wrong-body-variant' }
             });
             const event = await runAudit(handler, req, fakeRes(secretKeyLocals, status));

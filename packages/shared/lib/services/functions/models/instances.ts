@@ -8,6 +8,13 @@ import type { Knex } from 'knex';
 
 export type FunctionInstanceUpsert = Pick<DBFunctionInstance, 'nango_connection_id' | 'function_config_id' | 'name' | 'variant' | 'frequency'> &
     Partial<Pick<DBFunctionInstance, 'enabled'>>;
+export type FunctionInstanceUpdate = {
+    connectionId: DBFunctionInstance['nango_connection_id'];
+    functionConfigId: DBFunctionInstance['function_config_id'];
+    variant: DBFunctionInstance['variant'];
+    enabled: DBFunctionInstance['enabled'] | undefined;
+    frequency: DBFunctionInstance['frequency'] | undefined;
+};
 export type FunctionInstanceFilter = { functionConfigIds: number[] } | { connectionIds: number[] } | { instanceIds: number[] };
 export type FunctionInstanceSearchOptions = { includeDeleted?: boolean; enabled?: boolean; afterId?: number; limit?: number; forShare?: boolean };
 
@@ -63,6 +70,28 @@ export async function upsert(db: Knex, instances: FunctionInstanceUpsert[]): Pro
         return Ok(results);
     } catch (err) {
         return Err(new Error('failed_to_upsert_function_instance', { cause: err }));
+    }
+}
+
+export async function update(trx: Knex, update: FunctionInstanceUpdate): Promise<Result<DBFunctionInstance | undefined>> {
+    try {
+        const [updated] = await trx<DBFunctionInstance>(INSTANCES_TABLE)
+            .where({
+                nango_connection_id: update.connectionId,
+                function_config_id: update.functionConfigId,
+                variant: update.variant,
+                deleted_at: null
+            })
+            .update({
+                updated_at: trx.fn.now(),
+                ...(update.frequency === undefined ? {} : { frequency: update.frequency }),
+                ...(update.enabled === undefined ? {} : { enabled: update.enabled })
+            })
+            .returning('*');
+
+        return Ok(updated);
+    } catch (err) {
+        return Err(new Error('failed_to_update_function_instance', { cause: err }));
     }
 }
 

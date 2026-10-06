@@ -1,12 +1,11 @@
 import tracer from 'dd-trace';
 import ddtags from 'dd-trace/ext/tags.js';
-import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
 import { maxScheduleNamesPerSearch } from '@nangohq/nango-orchestrator';
-import { Err, errorToObject, getCheckpointKey, getFrequencyMs, Ok, stringifyError } from '@nangohq/utils';
+import { Err, errorToObject, getCheckpointKey, getFrequencyMs, MIN_SYNC_FREQUENCY_MS, Ok, stringifyError } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { hardDeleteCheckpoints } from '../index.js';
@@ -1027,7 +1026,7 @@ export class Orchestrator {
             return Err(new NangoError('sync_interval_invalid'));
         }
 
-        if (res.value < ms('30s')) {
+        if (res.value < MIN_SYNC_FREQUENCY_MS) {
             const error = new NangoError('sync_interval_too_short');
             return Err(error);
         }

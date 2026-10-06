@@ -12,7 +12,9 @@ import type {
     FunctionSource,
     FunctionUpdatedMetadata,
     FunctionVariantMetadata,
+    FunctionVariantSettingsMetadata,
     PatchFunction,
+    PatchFunctionVariant,
     PostDeploy,
     PostFunctionDeployment,
     PostFunctionDeploymentBundle,
@@ -97,6 +99,21 @@ export const auditFunctionVariantDeleted = auditable<DeleteFunctionVariant>({
             connectionId: nonEmptyString(param(req, 'connectionId')),
             variant: nonEmptyString(param(req, 'variant'))
         })
+});
+
+export const auditFunctionVariantUpdated = auditable<PatchFunctionVariant>({
+    policy: Audit.auditable({ resource: 'function', action: 'variant_updated', scope: 'environment' }),
+    target: (req, locals) => functionTarget(param(req, 'functionUuid'), locals),
+    metadata: (req) => {
+        const enabled = bodyField(req, 'enabled');
+        const frequency = bodyField(req, 'frequency');
+        return omitUndefined<FunctionVariantSettingsMetadata>({
+            connectionId: nonEmptyString(param(req, 'connectionId')),
+            variant: nonEmptyString(param(req, 'variant')),
+            enabled: typeof enabled === 'boolean' ? enabled : undefined,
+            frequency: frequency === null ? null : nonEmptyString(frequency)
+        });
+    }
 });
 
 function functionDeletedMeta(type: unknown): Record<string, unknown> | undefined {
