@@ -14,7 +14,10 @@ import {
     InputGroup,
     InputGroupAddon,
     InputGroupButton,
-    InputGroupTextarea
+    InputGroupTextarea,
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger
 } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
@@ -37,9 +40,14 @@ import type { UIMessage } from 'ai';
 
 type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
 
-const STARTER_PROMPTS: { prompt: string; icon: React.ReactNode }[] = [
-    { prompt: "What's on my calendar today?", icon: <IntegrationLogo provider="google-calendar" className="size-8" /> },
-    { prompt: "Star Nango's GitHub repo", icon: <IntegrationLogo provider="github" className="size-8" /> }
+// Each prompt names its app. Without it, the agent asks which app to use, such as Gmail or Outlook.
+const STARTER_PROMPTS: { prompt: string; provider: string }[] = [
+    { prompt: "What's on my Google Calendar today?", provider: 'google-calendar' },
+    { prompt: 'Summarize my latest unread emails in Gmail', provider: 'google-mail' },
+    { prompt: "Star Nango's GitHub repo", provider: 'github' },
+    { prompt: 'Send me a Slack message saying Hello world', provider: 'slack' },
+    { prompt: 'What Linear issues are assigned to me?', provider: 'linear' },
+    { prompt: 'Show my 5 newest HubSpot contacts', provider: 'hubspot' }
 ];
 
 export const AgentPlaygroundShow: React.FC = () => {
@@ -393,18 +401,47 @@ const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string)
             </div>
             {composer}
             <div className="grid w-full grid-cols-2 gap-3">
-                {STARTER_PROMPTS.map(({ prompt, icon }) => (
+                {STARTER_PROMPTS.map(({ prompt, provider }) => (
                     <button
                         key={prompt}
                         type="button"
                         onClick={() => onPick(prompt)}
                         className="flex items-center gap-3 rounded-ds-xs border-ds-hairline border-border-input bg-surface-panel px-3 py-2.5 text-left text-body-medium-regular text-text-default transition-colors hover:border-border-input-hover"
                     >
-                        {icon}
+                        <IntegrationLogo provider={provider} className="size-8 shrink-0" />
                         {prompt}
                     </button>
                 ))}
             </div>
+            <OfferedIntegrations />
+        </div>
+    );
+};
+
+const OfferedIntegrations: React.FC = () => {
+    const { data: meta } = useMeta();
+    const integrations = meta?.data.agentPlaygroundIntegrations ?? [];
+    if (integrations.length === 0) {
+        return null;
+    }
+
+    return (
+        <div className="flex flex-col items-center gap-3">
+            <p className="text-body-small-regular text-text-secondary">Or ask about any of these apps</p>
+            <ul className="flex flex-wrap justify-center gap-2">
+                {integrations.map(({ provider, displayName }) => (
+                    <li key={provider}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span tabIndex={0} aria-label={displayName} className="block rounded-sm">
+                                    <IntegrationLogo provider={provider} className="size-7" />
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">{displayName}</TooltipContent>
+                        </Tooltip>
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 };
