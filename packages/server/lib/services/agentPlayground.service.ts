@@ -182,7 +182,7 @@ export async function buildMcpTools(client: Client): Promise<ToolSet> {
 }
 
 // Actions carry no read-only flag, so anything not named like a read waits for the user.
-const READ_ACTION = /^(list|get|search|fetch|find|read)-/;
+const READ_ACTION = /^(list|get|search|fetch|find|read)([-_]|$)/;
 
 export function toolNeedsApproval(toolName: string, input: unknown): boolean {
     const args = (input ?? {}) as { method?: unknown; tool?: unknown };

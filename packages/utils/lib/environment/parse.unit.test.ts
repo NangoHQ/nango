@@ -49,6 +49,12 @@ describe('parse', () => {
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_AUDIENCE');
     });
 
+    it('defaults NANGO_LOG_ACTION_INPUT to true and parses false', () => {
+        expect(parseEnvs(ENVS, {}).NANGO_LOG_ACTION_INPUT).toBe(true);
+        expect(parseEnvs(ENVS, { NANGO_LOG_ACTION_INPUT: 'false' }).NANGO_LOG_ACTION_INPUT).toBe(false);
+        expect(parseEnvs(ENVS, { NANGO_LOG_ACTION_INPUT: 'true' }).NANGO_LOG_ACTION_INPUT).toBe(true);
+    });
+
     it('defaults NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY to false', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(false);
