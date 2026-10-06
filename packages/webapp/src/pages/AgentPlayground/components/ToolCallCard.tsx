@@ -21,6 +21,7 @@ import type { DynamicToolUIPart } from 'ai';
 interface ToolCallCardProps {
     part: DynamicToolUIPart;
     chatActive: boolean;
+    approvalSending: boolean;
     connectedIntegrations: ReadonlySet<string>;
     onConnected: (integrationId: string) => void;
     onRequestNewLink: (integrationId: string) => void;
@@ -110,6 +111,7 @@ const NangoBox: React.FC = () => (
 export const ToolCallCard: React.FC<ToolCallCardProps> = ({
     part,
     chatActive,
+    approvalSending,
     connectedIntegrations,
     onConnected,
     onRequestNewLink,
@@ -124,7 +126,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
         part.state === 'approval-responded' ||
         (part.state === 'approval-requested' && !awaitingApproval);
     // An approved call waits a moment for its request to start, so the chat being idle doesn't mean it stopped.
-    const stopped = unfinished && !chatActive && part.state !== 'approval-responded';
+    const stopped = unfinished && !chatActive && !(part.state === 'approval-responded' && approvalSending);
     const running = unfinished && !stopped;
     const done = part.state === 'output-available' || part.state === 'output-error' || part.state === 'output-denied';
     const failed = part.state === 'output-error' || part.state === 'output-denied';
@@ -203,6 +205,7 @@ const InterruptedCard: React.FC<{ display: ToolDisplay; onRetry: ((title: string
             <IconBox display={display} />
             <div className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-body-medium-medium text-text-strong">{display.title}</span>
+                {(display.method || display.path) && <Subtitle display={display} />}
                 <span className="flex items-center gap-1 text-body-small-regular text-text-warning">
                     <CircleSlash className="size-3.5 shrink-0 text-icon-warning" />
                     Interrupted before it finished.

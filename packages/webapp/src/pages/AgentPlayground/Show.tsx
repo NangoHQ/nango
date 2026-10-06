@@ -21,6 +21,7 @@ import { LogoInverted } from '@/assets/LogoInverted';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useUser } from '@/hooks/useUser';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { clearAgentPlaygroundChat, loadAgentPlaygroundChat, saveAgentPlaygroundChat } from '@/store/agentPlaygroundChat';
@@ -93,7 +94,9 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         [env]
     );
 
-    const [storedMessages] = useState(() => loadAgentPlaygroundChat(env));
+    const { user } = useUser();
+    const userId = user?.uuid;
+    const [storedMessages] = useState(() => (userId ? loadAgentPlaygroundChat(env, userId) : undefined));
     const { messages, sendMessage, regenerate, status, stop, error, clearError, addToolApprovalResponse } = useChat<PlaygroundMessage>({
         transport,
         ...(storedMessages ? { messages: storedMessages } : {}),
@@ -113,15 +116,18 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
 
     const busy = status === 'submitted' || status === 'streaming';
     useEffect(() => {
-        if (!busy) {
-            saveAgentPlaygroundChat(env, messages);
+        if (!busy && userId) {
+            saveAgentPlaygroundChat(env, userId, messages);
         }
-    }, [env, messages, busy]);
+    }, [env, userId, messages, busy]);
 
     const lastMessage = messages.at(-1);
     // A new turn would drop the pending tool call, so the change is never approved or denied.
     const awaitingApproval =
-        lastMessage?.role === 'assistant' && lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-requested');
+        lastMessage?.role === 'assistant' &&
+        lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-requested' && !part.approval.isAutomatic);
+    const answeredApprovalPending =
+        lastMessage?.role === 'assistant' && lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-responded');
     const [input, setInput] = useState('');
 
     const send = (text: string) => {
@@ -136,6 +142,14 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
 
     const retry = () => {
         clearError();
+        if (awaitingApproval) {
+            return;
+        }
+        // The SDK only sends an answered approval when the last message is still the assistant's.
+        if (answeredApprovalPending) {
+            void sendMessage();
+            return;
+        }
         // Regenerating would replace the assistant message, and with it every tool call that already ran.
         if (lastMessage?.role === 'assistant') {
             void sendMessage({ text: 'Continue.', metadata: { hidden: true } });
@@ -280,7 +294,8 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                                         <ToolCallCard
                                             key={part.toolCallId}
                                             part={part}
-                                            chatActive={busy}
+                                            chatActive={message === lastMessage && busy}
+                                            approvalSending={message === lastMessage && status === 'ready'}
                                             connectedIntegrations={connectedIntegrations}
                                             onConnected={onConnected}
                                             onRequestNewLink={onRequestNewLink}
