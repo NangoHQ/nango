@@ -24,8 +24,26 @@ const MAX_STEPS = 10;
 export const PLAYGROUND_INTEGRATION_PREFIX = 'pg-';
 export const PLAYGROUND_PROVIDERS: { provider: string; sharedCredentialsName?: string }[] = [
     { provider: 'google-calendar' },
-    { provider: 'github', sharedCredentialsName: 'github-getting-started' }
+    { provider: 'google-mail' },
+    { provider: 'google-drive' },
+    { provider: 'google-sheet' },
+    { provider: 'google-docs' },
+    // The full GitHub app asks for nearly every scope, delete_repo and admin:org included.
+    { provider: 'github', sharedCredentialsName: 'github-getting-started' },
+    { provider: 'slack' },
+    { provider: 'notion' },
+    { provider: 'linear' },
+    { provider: 'hubspot' },
+    { provider: 'outlook' },
+    { provider: 'jira' },
+    { provider: 'asana' },
+    { provider: 'airtable' }
 ];
+
+export function playgroundProviderSummaries(): { provider: string; displayName: string }[] {
+    return PLAYGROUND_PROVIDERS.map(({ provider }) => ({ provider, displayName: getProvider(provider)?.display_name ?? provider }));
+}
+
 export const PLAYGROUND_USER_TAG_KEY = 'nango/playground_user';
 
 export type PlaygroundUIMessage = UIMessage<AgentPlaygroundMessageMetadata>;
