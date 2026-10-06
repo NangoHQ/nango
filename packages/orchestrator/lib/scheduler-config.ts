@@ -12,6 +12,11 @@ export const GROUP_PREFIX_SEPARATOR = ':';
 export function buildSchedulerConfig(envs: Envs): SchedulerConfig {
     return {
         daemons: {
+            metering: {
+                schema: envs.ORCHESTRATOR_DATABASE_SCHEMA,
+                partitioningTickIntervalMs: envs.ORCHESTRATOR_CONCURRENCY_PARTITIONING_TICK_INTERVAL_MS,
+                retentionDays: envs.ORCHESTRATOR_CONCURRENCY_RETENTION_DAYS
+            },
             schedulingTickIntervalMs: envs.ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS,
             expiringTickIntervalMs: envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS,
             cleaningTickIntervalMs: envs.ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS,
