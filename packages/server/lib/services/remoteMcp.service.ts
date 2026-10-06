@@ -1,17 +1,16 @@
 import { Client, ProtocolError, SdkError, SdkHttpError, StreamableHTTPClientTransport, UnauthorizedError } from '@modelcontextprotocol/client';
 
 import { getProvider } from '@nangohq/shared';
-import { Err, getLogger, Ok } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
+import { completeProxyResponse } from './mcpProxy.service.js';
 import { readProxyResponseBody } from './mcpProxyResponse.js';
 import proxyService from './proxy.service.js';
 
-import type { ProxyServiceError, ProxyServiceResponse } from './proxy.service.js';
+import type { ProxyServiceError } from './proxy.service.js';
 import type { FetchLike, Tool } from '@modelcontextprotocol/client';
 import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, OperationActor } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
-
-const logger = getLogger('Server.RemoteMcp');
 
 const CLIENT_INFO = { name: 'nango-agent-session', version: '1.0.0' };
 
@@ -108,9 +107,7 @@ export async function withRemoteMcpSession<T>(target: RemoteMcpTarget, fn: (clie
         const result = await fn(client);
         return { logOperationId: log.operationId, result };
     } finally {
-        await transport.terminateSession().catch((err: unknown) => {
-            logger.info('Could not close the remote MCP session', { integrationId: target.integrationId, error: err instanceof Error ? err.message : err });
-        });
+        await transport.terminateSession().catch(() => undefined);
         await client.close().catch(() => undefined);
     }
 }
@@ -119,10 +116,7 @@ export async function withRemoteMcpSession<T>(target: RemoteMcpTarget, fn: (clie
  * Pages through `tools/list` until the server stops handing back a cursor, `maxTools` is reached, or
  * the page guard trips, which stops a server that keeps handing out cursors from paging forever.
  */
-export async function listRemoteTools(
-    client: Client,
-    { maxTools, integrationId }: { maxTools: number; integrationId: string }
-): Promise<Result<RemoteMcpTool[], RemoteMcpError>> {
+export async function listRemoteTools(client: Client, { maxTools }: { maxTools: number }): Promise<Result<RemoteMcpTool[], RemoteMcpError>> {
     const tools: RemoteMcpTool[] = [];
     let cursor: string | undefined;
 
@@ -140,10 +134,6 @@ export async function listRemoteTools(
         if (!cursor) {
             break;
         }
-    }
-
-    if (cursor || tools.length > maxTools) {
-        logger.warning('MCP server listed more tools than a session takes, keeping the first ones', { integrationId, kept: Math.min(tools.length, maxTools) });
     }
 
     return Ok(tools.slice(0, maxTools));
@@ -220,10 +210,10 @@ function proxyFetch({ target, endpoint, log }: { target: RemoteMcpTarget; endpoi
         try {
             body = await readProxyResponseBody(response);
         } catch (err) {
-            complete(response, err instanceof Error ? err : new Error('Failed to read the MCP server response'));
+            completeProxyResponse(response, err instanceof Error ? err : new Error('Failed to read the MCP server response'));
             throw new RemoteMcpError({ code: 'invalid_response', message: 'The MCP server response could not be read', status: response.status, cause: err });
         }
-        complete(response);
+        completeProxyResponse(response);
 
         return new Response(body.length > 0 ? new Uint8Array(body) : null, { status: response.status, headers: toHeaders(response.headers) });
     };
@@ -247,10 +237,4 @@ function toHeaders(headers: Record<string, unknown>): Headers {
         }
     }
     return result;
-}
-
-function complete(response: ProxyServiceResponse, error?: Error): void {
-    void response.complete(error).catch((err: unknown) => {
-        logger.error('Failed to complete the remote MCP proxy response', { error: err });
-    });
 }

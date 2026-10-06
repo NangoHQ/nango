@@ -1,11 +1,10 @@
-import { getLogger } from '@nangohq/utils';
+import tracer from 'dd-trace';
 
 import { listRemoteTools, mcpEndpointOf, withRemoteMcpSession } from './remoteMcp.service.js';
 
 import type { RemoteMcpTool } from './remoteMcp.service.js';
 import type { AgentSessionResolvedConnection, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
-
-const logger = getLogger('Server.AgentSession.McpDiscovery');
+import type { Span } from 'dd-trace';
 
 const DISCOVERY_TIMEOUT_MS = 10_000;
 const MAX_TOOLS_PER_SERVER = 200;
@@ -48,32 +47,36 @@ async function discoverServer({
     plan: DBPlan | null;
     connection: AgentSessionResolvedConnection;
 }): Promise<McpServerDiscovery> {
-    const listing = withRemoteMcpSession(
-        { account, environment, plan, integrationId: connection.integrationId, connectionId: connection.connectionId, provider: connection.provider },
-        async (session) => await listRemoteTools(session, { maxTools: MAX_TOOLS_PER_SERVER, integrationId: connection.integrationId })
-    ).then(({ result }): McpServerDiscovery => {
-        if (result.isErr()) {
-            logger.info('MCP server could not be listed', { integrationId: connection.integrationId, code: result.error.code, error: result.error.message });
+    return await tracer.trace<Promise<McpServerDiscovery>>('server.agentSession.mcpDiscovery', async (span: Span) => {
+        span.setTag('nango.integrationId', connection.integrationId);
+
+        const listing = withRemoteMcpSession(
+            { account, environment, plan, integrationId: connection.integrationId, connectionId: connection.connectionId, provider: connection.provider },
+            async (session) => await listRemoteTools(session, { maxTools: MAX_TOOLS_PER_SERVER })
+        ).then(({ result }): McpServerDiscovery => {
+            if (result.isErr()) {
+                span.setTag('nango.error', result.error);
+                return { status: 'unavailable' };
+            }
+
+            return { status: 'available', tools: result.value };
+        });
+
+        let timer: NodeJS.Timeout | undefined;
+        const timeout = new Promise<McpServerDiscovery>((resolve) => {
+            timer = setTimeout(() => {
+                span.setTag('nango.error', new Error('MCP server listing timed out'));
+                resolve({ status: 'unavailable' });
+            }, DISCOVERY_TIMEOUT_MS);
+        });
+
+        try {
+            return await Promise.race([listing, timeout]);
+        } catch (err) {
+            span.setTag('nango.error', err);
             return { status: 'unavailable' };
+        } finally {
+            clearTimeout(timer);
         }
-
-        return { status: 'available', tools: result.value };
     });
-
-    let timer: NodeJS.Timeout | undefined;
-    const timeout = new Promise<McpServerDiscovery>((resolve) => {
-        timer = setTimeout(() => {
-            logger.info('MCP server listing timed out', { integrationId: connection.integrationId });
-            resolve({ status: 'unavailable' });
-        }, DISCOVERY_TIMEOUT_MS);
-    });
-
-    try {
-        return await Promise.race([listing, timeout]);
-    } catch (err) {
-        logger.error('MCP server listing failed', { integrationId: connection.integrationId, error: err });
-        return { status: 'unavailable' };
-    } finally {
-        clearTimeout(timer);
-    }
 }
