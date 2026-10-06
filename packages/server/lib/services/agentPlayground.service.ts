@@ -211,6 +211,7 @@ async function getOrCreateSession(
     const created = await agentSessionService.createAgentSession({
         account: ctx.account,
         environment: ctx.environment,
+        plan: ctx.plan,
         // A tag selector fails as ambiguous when a user has two connections to one integration.
         connections: { any: [], pinned },
         // Connected or not, so the agent can offer to connect a missing app.

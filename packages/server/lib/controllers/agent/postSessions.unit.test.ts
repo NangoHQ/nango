@@ -105,6 +105,12 @@ describe('agentSessionToolsetSchema', () => {
         expect(agentSessionToolsetSchema.parse('*')).toBe('*');
     });
 
+    it('accepts dotted tool names, which MCP server tools can carry', () => {
+        expect(agentSessionToolsetSchema.parse({ 'linear-mcp': { allow: { tools: ['issues.list'] } } })).toEqual({
+            'linear-mcp': { allow: ['issues.list'], deny: [] }
+        });
+    });
+
     it('rejects an empty toolset', () => {
         expect(agentSessionToolsetSchema.safeParse({}).success).toBe(false);
     });

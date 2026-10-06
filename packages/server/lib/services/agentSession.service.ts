@@ -4,6 +4,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { baseUrl, Err, Ok, report } from '@nangohq/utils';
 
 import * as agentSessionConnectionsService from './agentSessionConnections.service.js';
+import * as agentSessionMcpDiscoveryService from './agentSessionMcpDiscovery.service.js';
 import * as agentSessionToolsetService from './agentSessionToolset.service.js';
 
 import type { Knex } from '@nangohq/database';
@@ -22,6 +23,7 @@ import type {
     AgentSessionToolNames,
     AgentSessionToolsetPolicy,
     DBEnvironment,
+    DBPlan,
     DBTeam
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -58,6 +60,7 @@ export interface DBAgentSession {
 export interface CreateAgentSessionParams {
     account: DBTeam;
     environment: DBEnvironment;
+    plan: DBPlan | null;
     connections: AgentSessionTenantConnections;
     toolset: AgentSessionToolsetPolicy | undefined;
     pinnedTools: AgentSessionPinnedTools | undefined;
@@ -465,11 +468,22 @@ async function runCreation(params: CreateAgentSessionParams): Promise<Result<Cre
         return Err(rejected(resolvedConnections.error));
     }
 
+    const connectedIntegrations = Object.keys(resolvedConnections.value);
+    const mcpServers = await agentSessionMcpDiscoveryService.discoverMcpTools({
+        account,
+        environment,
+        plan: params.plan,
+        connections: agentSessionToolsetService
+            .integrationsInScope({ toolset: params.toolset, pinnedTools: params.pinnedTools, connectedIntegrations })
+            .flatMap((integrationId) => (resolvedConnections.value[integrationId] ? [resolvedConnections.value[integrationId]] : []))
+    });
+
     const compiledToolset = await agentSessionToolsetService.compileToolset({
         environmentId: environment.id,
         toolset: params.toolset,
         pinnedTools: params.pinnedTools,
-        connectedIntegrations: Object.keys(resolvedConnections.value)
+        connectedIntegrations,
+        mcpServers
     });
     if (compiledToolset.isErr()) {
         return Err(rejected(compiledToolset.error));
