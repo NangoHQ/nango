@@ -123,7 +123,7 @@ export const ShowIntegration: React.FC = () => {
                     </TabsTrigger>
                 </TabsList>
                 <TabsContent value="functions">
-                    <FunctionsTab integration={integration.integration} repoProvider={integration.symLinkTargetName ?? integration.integration.provider} />
+                    <FunctionsTab integration={integration.integration} />
                 </TabsContent>
                 <TabsContent value="settings">
                     <SettingsTab

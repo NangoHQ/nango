@@ -1,6 +1,5 @@
 import { ArrowRight, ExternalLink, Trash2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import { Badge, Button } from '@nangohq/design-system';
 
@@ -17,9 +16,8 @@ import { useGetIntegrationFunctionCode } from '@/hooks/useIntegrationFunctions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
-import { githubRepo } from '@/utils/cloud';
 import { openPlaygroundWithContext } from '@/utils/playground';
-import { buildPullCommand, functionRepoPath, isSyncOrAction } from '@/utils/scripts';
+import { buildPullCommand, isSyncOrAction } from '@/utils/scripts';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 import { FunctionSourceLabel } from './FunctionSourceLabel';
@@ -36,11 +34,10 @@ function isListedFunction(fn: DetailsFunction): fn is ListedNangoFunction {
 interface FunctionDetailsPanelProps {
     fn: DetailsFunction;
     integration: ApiIntegration;
-    repoProvider: string;
     onDeleted: () => void;
 }
 
-export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, integration, repoProvider, onDeleted }) => {
+export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, integration, onDeleted }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
@@ -85,7 +82,6 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
         type: fn.type,
         source: listed ? { env } : { catalog: true }
     });
-    const gitUrl = `${githubRepo}/tree/main/${functionRepoPath({ provider: repoProvider, name: fn.name, type: fn.type })}`;
     const canDelete = listed && fn.source !== 'repo' && fn.id != null && isSyncOrAction(fn);
     const canUsePlayground = listed && fn.enabled && isSyncOrAction(fn);
 
@@ -173,13 +169,17 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
 
                 <div className="border-b-[0.5px] border-border-default p-3">
                     <div className="flex flex-col gap-1 bg-surface-panel-muted p-3">
-                        <div className="flex h-[18px] items-center justify-between">
+                        <div className="flex min-h-4.5 flex-wrap items-center justify-between gap-x-2 gap-y-1">
                             <span className="type-text-medium-xs text-text-default">Customize this function</span>
                             {(source === 'catalog' || source === 'tools-catalog' || source === 'template') && (
                                 <Button asChild variant="link-accent" size="xs">
-                                    <Link to={gitUrl} target="_blank">
-                                        View in GitHub <ExternalLink />
-                                    </Link>
+                                    <a
+                                        href="https://nango.dev/docs/guides/functions/functions-guide#option-2-build-locally-with-the-cli"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        Learn about custom functions <ExternalLink />
+                                    </a>
                                 </Button>
                             )}
                         </div>
