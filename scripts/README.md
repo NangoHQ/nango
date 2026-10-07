@@ -12,6 +12,7 @@ Maintenance and developer scripts for the monorepo. Run them from the **repo roo
 | `npm run changelog:integrations` | `pre-built-integrations-changelog.ts` | Generate the pre-built-integrations changelog |
 | `npm run update:providers:scopes:all` / `:new` | `validation/providers/sync-scopes.ts` | Sync OAuth2 provider scopes |
 | `npm run test:providers` | `validation/providers/validate.ts` | Validate `providers.yaml` |
+| `npm run internal-auth:key` | `generate-internal-auth-key.ts` | Print an Ed25519 key id, private key, and public-key list for jobs or server |
 
 One-off migrations live under `scripts/one-off/`, each with its own README.
 

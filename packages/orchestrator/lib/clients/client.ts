@@ -1,4 +1,4 @@
-import { internalRouteFetch } from '@nangohq/internal-auth';
+import { INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, INTERNAL_SERVICE_TOKEN_TTL_SECS, internalRouteFetch, mint, signerForService } from '@nangohq/internal-auth';
 import { Err, getLogger, Ok, retry } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -37,17 +37,58 @@ import type {
     SchedulesReturn,
     VoidReturn
 } from './types.js';
+import type { MintSigner } from '@nangohq/internal-auth';
 import type { Endpoint } from '@nangohq/types';
 import type { Result, RetryConfig, Route } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
 const logger = getLogger('orchestrator.client');
 
+/** Re-mint this long before `exp` so an in-flight request does not present a token that expires mid-flight. */
+const SERVICE_TOKEN_REFRESH_SKEW_SECS = 60;
+
+export type OrchestratorCaller = 'server' | 'jobs';
+
+interface CachedServiceToken {
+    token: string;
+    refreshAtMs: number;
+}
+
+/** Shared across client instances. The server constructs a new client for many calls. */
+const serviceTokenCache = new Map<string, CachedServiceToken>();
+
+function serviceTokenCacheKey(signer: MintSigner): string {
+    return `${signer.iss}\0${signer.kid}\0${signer.privateKey}`;
+}
+
 export class OrchestratorClient {
     private baseUrl: string;
+    private service: OrchestratorCaller | undefined;
 
-    constructor({ baseUrl }: { baseUrl: string }) {
+    constructor({ baseUrl, service }: { baseUrl: string; service?: OrchestratorCaller }) {
         this.baseUrl = baseUrl;
+        this.service = service;
+    }
+
+    private async authorizationToken(): Promise<string | null | undefined> {
+        const signer = this.service ? signerForService(this.service, envs) : null;
+        return signer ? this.serviceToken(signer) : envs.NANGO_INTERNAL_AUTH_TOKEN;
+    }
+
+    private async serviceToken(signer: MintSigner): Promise<string> {
+        const now = Date.now();
+        const cacheKey = serviceTokenCacheKey(signer);
+        const cached = serviceTokenCache.get(cacheKey);
+        if (cached && now < cached.refreshAtMs) {
+            return cached.token;
+        }
+        const token = await mint(signer, {
+            sub: signer.iss,
+            aud: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR,
+            ttlSecs: INTERNAL_SERVICE_TOKEN_TTL_SECS
+        });
+        serviceTokenCache.set(cacheKey, { token, refreshAtMs: now + (INTERNAL_SERVICE_TOKEN_TTL_SECS - SERVICE_TOKEN_REFRESH_SKEW_SECS) * 1000 });
+        return token;
     }
 
     private routeFetch<E extends Endpoint<any>>(
@@ -59,7 +100,7 @@ export class OrchestratorClient {
     ): (props: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }) => Promise<E['Reply']> {
         return (props) => {
             const fetch = async () => {
-                return await internalRouteFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs, token: envs.NANGO_INTERNAL_AUTH_TOKEN })(props);
+                return await internalRouteFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs, token: await this.authorizationToken() })(props);
             };
             const retryConfig: RetryConfig<E['Reply']> = config?.retryConfig || {
                 maxAttempts: 3,

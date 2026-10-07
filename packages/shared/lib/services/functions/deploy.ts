@@ -4,6 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import remoteFileService from '../file/remote.service.js';
+import { scheduleInstances } from './lifecycle/schedule.js';
 import * as functionConfigService from './models/functions.js';
 import * as functionInstanceService from './models/instances.js';
 import { reconcile } from './reconcile.js';
@@ -200,7 +201,8 @@ export async function deployBundle({
             const instancesToUpsert: FunctionInstanceUpsert[] = [];
             const instancesToDelete: { functionConfigId: number }[] = reconciliation.deleted.map((f) => ({ functionConfigId: f.config.id }));
             for (const { before, artifact } of prepared) {
-                var upsertCandidate: { functionConfigId: number; integrationId: number; artifact: FunctionDeploymentArtifact } | undefined = undefined;
+                var upsertCandidate: { functionConfigId: number; integrationId: number; artifact: FunctionDeploymentArtifact; autoStart: boolean } | undefined =
+                    undefined;
 
                 // If the after trigger is a schedule and there is no before store, create a new instance
                 if (artifact.trigger.kind === 'schedule' && !before) {
@@ -209,7 +211,8 @@ export async function deployBundle({
                         upsertCandidate = {
                             functionConfigId: functionConfig.config.id,
                             integrationId: functionConfig.integration.id,
-                            artifact
+                            artifact,
+                            autoStart: artifact.trigger.autoStart ?? true
                         };
                     }
                 }
@@ -220,7 +223,8 @@ export async function deployBundle({
                         upsertCandidate = {
                             functionConfigId: functionConfig.config.id,
                             integrationId: functionConfig.integration.id,
-                            artifact
+                            artifact,
+                            autoStart: artifact.trigger.autoStart ?? true
                         };
                     }
                 }
@@ -233,7 +237,8 @@ export async function deployBundle({
                             nango_connection_id: connection.id,
                             name: upsertCandidate.artifact.name,
                             variant: 'base',
-                            frequency: null
+                            frequency: null,
+                            enabled: upsertCandidate.autoStart
                         });
                     }
                 }
@@ -314,7 +319,7 @@ export async function deployBundle({
                         const instances = await functionInstanceService.search(
                             trx,
                             { functionConfigIds: [config.config.id] },
-                            { enabled: true, afterId, limit: 1000 }
+                            { enabled: true, afterId, limit: 1000, forShare: true }
                         );
                         if (instances.isErr()) {
                             throw instances.error;
@@ -322,12 +327,11 @@ export async function deployBundle({
                         if (instances.value.length === 0) {
                             break;
                         }
-                        const frequencyFallback = artifact.trigger.frequency;
-                        const autoStart = artifact.trigger.autoStart ?? true;
-                        const scheduled = await orchestrator.scheduleFunctions(
+                        const scheduled = await scheduleInstances(
+                            orchestrator,
                             instances.value.flatMap((instance) => {
                                 const connection = connections.get(instance.nango_connection_id);
-                                return connection ? [{ environmentId, instance, connection, frequencyFallback, autoStart }] : [];
+                                return connection ? [{ instance, config, connection }] : [];
                             })
                         );
                         if (scheduled.isErr()) {

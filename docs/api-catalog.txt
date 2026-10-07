@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1040
+Provider count: 1041
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -390,7 +390,7 @@ URL patterns:
 | `google-play` | Google Play | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/google-play.md) |  |  | dev-tools |
 | `google-search-console` | Google Search Console | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-search-console.md) |  | [setup](https://nango.dev/docs/api-integrations/google-search-console/how-to-register-your-own-google-search-console-oauth-app.md) | productivity |
 | `google-service-account` | Google Service Account | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/google-service-account.md) | [connect](https://nango.dev/docs/integrations/all/google-service-account/connect.md) |  | dev-tools |
-| `google-sheet` | Google Sheet | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-sheet.md) |  | [setup](https://nango.dev/docs/api-integrations/google-sheet/how-to-register-your-own-google-sheet-api-oauth-app.md) | productivity |
+| `google-sheet` | Google Sheets | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-sheet.md) |  | [setup](https://nango.dev/docs/api-integrations/google-sheet/how-to-register-your-own-google-sheet-api-oauth-app.md) | productivity |
 | `google-slides` | Google Slides | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-slides.md) |  | [setup](https://nango.dev/docs/api-integrations/google-slides/how-to-register-your-own-google-slides-api-oauth-app.md) | productivity |
 | `google-tasks` | Google Tasks | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-tasks.md) |  | [setup](https://nango.dev/docs/api-integrations/google-tasks/how-to-register-your-own-google-tasks-api-oauth-app.md) | productivity |
 | `google-workspace-admin` | Google Workspace Admin | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-workspace-admin.md) |  | [setup](https://nango.dev/docs/api-integrations/google-workspace-admin/how-to-register-your-own-google-workspace-admin-api-oauth-app.md) | productivity |
@@ -450,6 +450,7 @@ URL patterns:
 | `huntress` | Huntress | BASIC | [docs](https://nango.dev/docs/api-integrations/huntress.md) | [connect](https://nango.dev/docs/api-integrations/huntress/connect.md) |  | other |
 | `icypeas` | Icypeas | API_KEY | [docs](https://nango.dev/docs/integrations/all/icypeas.md) | [connect](https://nango.dev/docs/integrations/all/icypeas/connect.md) |  | marketing, crm |
 | `ids-fulfillment` | IDS Fulfillment | API_KEY | [docs](https://nango.dev/docs/api-integrations/ids-fulfillment.md) | [connect](https://nango.dev/docs/api-integrations/ids-fulfillment/connect.md) |  | e-commerce |
+| `imanage` | iManage Work | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/imanage.md) | [connect](https://nango.dev/docs/api-integrations/imanage/connect.md) | [setup](https://nango.dev/docs/api-integrations/imanage/how-to-register-your-own-imanage-oauth-app.md) | legal, storage |
 | `immybot` | ImmyBot | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/immybot.md) | [connect](https://nango.dev/docs/api-integrations/immybot/connect.md) |  | dev-tools, support |
 | `incident-io` | Incident.io | API_KEY | [docs](https://nango.dev/docs/integrations/all/incident-io.md) | [connect](https://nango.dev/docs/integrations/all/incident-io/connect.md) |  | ticketing |
 | `infor` | Infor (ION API) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/infor.md) | [connect](https://nango.dev/docs/api-integrations/infor/connect.md) | [setup](https://nango.dev/docs/api-integrations/infor/how-to-register-your-own-infor-api-oauth-app.md) | erp |
@@ -606,6 +607,7 @@ URL patterns:
 | `neon` | Neon | API_KEY | [docs](https://nango.dev/docs/api-integrations/neon.md) | [connect](https://nango.dev/docs/api-integrations/neon/connect.md) |  | dev-tools |
 | `neon-mcp` | Neon (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/neon-mcp.md) |  |  | dev-tools, mcp |
 | `nerdio` | Nerdio | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/nerdio.md) | [connect](https://nango.dev/docs/api-integrations/nerdio/connect.md) |  | other |
+| `netdocuments` | NetDocuments | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/netdocuments.md) | [connect](https://nango.dev/docs/api-integrations/netdocuments/connect.md) | [setup](https://nango.dev/docs/api-integrations/netdocuments/how-to-register-your-own-netdocuments-oauth-app.md) | legal |
 | `netsapiens` | NetSapiens | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/netsapiens.md) | [connect](https://nango.dev/docs/api-integrations/netsapiens/connect.md) |  | communication |
 | `netsuite` | NetSuite (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/netsuite.md) |  |  | accounting, erp |
 | `netsuite-client-credentials` | NetSuite (Client Credentials) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/netsuite-client-credentials.md) | [connect](https://nango.dev/docs/api-integrations/netsuite-client-credentials/connect.md) |  | accounting, erp |
