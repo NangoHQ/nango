@@ -27,7 +27,6 @@ export type GetMeta = ApiEndpoint<{
             auditTrail: boolean;
             accountGroup: AccountGroupProperties;
             agentPlayground: boolean;
-            agentPlaygroundIntegrations: { provider: string; displayName: string }[];
         };
     };
 }>;

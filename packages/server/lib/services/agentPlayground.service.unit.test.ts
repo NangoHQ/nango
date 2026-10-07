@@ -8,7 +8,7 @@ import { seeders } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionServer.js';
-import { buildMcpTools, newestConnectionPerIntegration, sessionOwner, toolNeedsApproval } from './agentPlayground.service.js';
+import { buildMcpTools, existingIntegrationFor, newestConnectionPerIntegration, sessionOwner, toolNeedsApproval } from './agentPlayground.service.js';
 
 import type { AgentSession } from '@nangohq/types';
 
@@ -76,6 +76,21 @@ describe('toolNeedsApproval', () => {
         { toolName: 'nango_create_connection', input: {}, expected: false }
     ])('$toolName $input → $expected', ({ toolName, input, expected }) => {
         expect(toolNeedsApproval(toolName, input)).toBe(expected);
+    });
+});
+
+describe('existingIntegrationFor', () => {
+    it('prefers the integration keyed by the provider name, then the oldest', () => {
+        const integrations = [
+            { unique_key: 'old-calendar', provider: 'google-calendar' },
+            { unique_key: 'google-calendar', provider: 'google-calendar' },
+            { unique_key: 'new-github', provider: 'github' },
+            { unique_key: 'newer-github', provider: 'github' }
+        ];
+
+        expect(existingIntegrationFor(integrations, 'google-calendar')).toBe('google-calendar');
+        expect(existingIntegrationFor(integrations, 'github')).toBe('new-github');
+        expect(existingIntegrationFor(integrations, 'slack')).toBeUndefined();
     });
 });
 

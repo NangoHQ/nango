@@ -21,32 +21,7 @@ const logger = getLogger('AgentPlayground');
 const PLAYGROUND_SESSION_EXPIRES_IN_MS = 60 * 60 * 1000;
 const MAX_STEPS = 10;
 
-export const PLAYGROUND_INTEGRATION_PREFIX = 'pg-';
-export const PLAYGROUND_PROVIDERS: { provider: string; sharedCredentialsName?: string; displayName?: string }[] = [
-    { provider: 'google-calendar' },
-    { provider: 'google-mail' },
-    { provider: 'google-drive' },
-    { provider: 'google-sheet' },
-    { provider: 'google-docs' },
-    // The full GitHub app asks for nearly every scope, delete_repo and admin:org included.
-    { provider: 'github', sharedCredentialsName: 'github-getting-started', displayName: 'GitHub' },
-    { provider: 'slack' },
-    { provider: 'notion' },
-    { provider: 'linear' },
-    { provider: 'hubspot' },
-    { provider: 'outlook' },
-    { provider: 'jira', displayName: 'Jira' },
-    { provider: 'asana' },
-    { provider: 'airtable' }
-];
-
-function playgroundDisplayName({ provider, displayName }: (typeof PLAYGROUND_PROVIDERS)[number]): string {
-    return displayName ?? getProvider(provider)?.display_name ?? provider;
-}
-
-export function playgroundProviderSummaries(): { provider: string; displayName: string }[] {
-    return PLAYGROUND_PROVIDERS.map((entry) => ({ provider: entry.provider, displayName: playgroundDisplayName(entry) }));
-}
+export const PLAYGROUND_PROVIDERS = ['google-calendar', 'google-mail', 'github', 'slack', 'linear', 'hubspot'];
 
 export const PLAYGROUND_USER_TAG_KEY = 'nango/playground_user';
 
@@ -83,52 +58,52 @@ export function newestConnectionPerIntegration(
     return [...pinned.values()];
 }
 
-export function playgroundIntegrationId(provider: string): string {
-    return `${PLAYGROUND_INTEGRATION_PREFIX}${provider}`;
+// Expects `integrations` oldest first, as listProviderConfigs returns them.
+export function existingIntegrationFor(integrations: { unique_key: string; provider: string }[], provider: string): string | undefined {
+    const matching = integrations.filter((integration) => integration.provider === provider);
+    return (matching.find((integration) => integration.unique_key === provider) ?? matching[0])?.unique_key;
 }
 
 export async function ensurePlaygroundIntegrations(environment: DBEnvironment): Promise<string[]> {
-    const ensured = await Promise.all(PLAYGROUND_PROVIDERS.map((entry) => ensurePlaygroundIntegration(environment, entry)));
+    // Read the primary: on a stale replica read, the create below adds a duplicate.
+    const existing = await configService.listProviderConfigs(db.knex, environment.id);
+    const ensured = await Promise.all(
+        PLAYGROUND_PROVIDERS.map(async (provider) => existingIntegrationFor(existing, provider) ?? (await createPlaygroundIntegration(environment, provider)))
+    );
     return ensured.filter((integrationId): integrationId is string => integrationId !== null);
 }
 
-async function ensurePlaygroundIntegration(environment: DBEnvironment, entry: (typeof PLAYGROUND_PROVIDERS)[number]): Promise<string | null> {
-    const { provider: providerName, sharedCredentialsName } = entry;
-    const integrationId = playgroundIntegrationId(providerName);
+async function createPlaygroundIntegration(environment: DBEnvironment, providerName: string): Promise<string | null> {
     const provider = getProvider(providerName);
     if (!provider) {
         logger.error(`Agent Playground provider ${providerName} does not exist`);
         return null;
     }
 
-    // Read the primary: on a stale replica read, the create below adds a suffixed duplicate.
-    if (await configService.getProviderConfig(integrationId, environment.id, db.knex)) {
-        return integrationId;
-    }
-
-    const created = await sharedCredentialsService.createPreprovisionedProvider({
-        providerName,
-        ...(sharedCredentialsName ? { shared_credentials_name: sharedCredentialsName } : {}),
-        environment_id: environment.id,
-        provider,
-        unique_key: integrationId,
-        display_name: playgroundDisplayName(entry)
-    });
+    const created = await sharedCredentialsService.createPreprovisionedProvider({ providerName, environment_id: environment.id, provider });
     if (created.isErr()) {
-        logger.error(`Agent Playground could not create ${integrationId}: ${created.error.message}`);
+        logger.error(`Agent Playground could not create ${providerName}: ${created.error.message}`);
         return null;
     }
-
-    // A concurrent request created it first, so this one got a suffixed key.
-    if (created.value.unique_key !== integrationId && created.value.id) {
-        await configService.deleteProviderConfig({
-            id: created.value.id,
-            environmentId: environment.id,
-            providerConfigKey: created.value.unique_key,
-            orchestrator: getOrchestrator()
-        });
+    if (created.value.unique_key === providerName || !created.value.id) {
+        return created.value.unique_key;
     }
-    return integrationId;
+
+    // A suffixed key can mean a concurrent request created this provider's integration first.
+    const winner = existingIntegrationFor(
+        (await configService.listProviderConfigs(db.knex, environment.id)).filter((integration) => integration.id !== created.value.id),
+        providerName
+    );
+    if (!winner) {
+        return created.value.unique_key;
+    }
+    await configService.deleteProviderConfig({
+        id: created.value.id,
+        environmentId: environment.id,
+        providerConfigKey: created.value.unique_key,
+        orchestrator: getOrchestrator()
+    });
+    return winner;
 }
 
 // The owner is read from the create-connection tags, so those tags must stay per user.
@@ -296,9 +271,9 @@ export async function startTurn({
             timeZone,
             new Date(),
             Object.entries(session.value.compiledToolset).map(([id, integration]) => ({ id, provider: integration.provider, connected: connected.has(id) })),
-            PLAYGROUND_PROVIDERS.filter(({ provider }) => !Object.hasOwn(session.value.compiledToolset, playgroundIntegrationId(provider))).map(
-                playgroundDisplayName
-            )
+            PLAYGROUND_PROVIDERS.filter(
+                (provider) => !Object.values(session.value.compiledToolset).some((integration) => integration.provider === provider)
+            ).map((provider) => getProvider(provider)?.display_name ?? provider)
         ),
         messages: modelMessages,
         tools,

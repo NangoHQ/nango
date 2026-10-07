@@ -36,8 +36,9 @@ async function chat(session: string, body: Record<string, unknown>): Promise<{ s
 describe('POST /api/v1/agent-playground/chat', () => {
     beforeAll(async () => {
         api = await runServer();
-        await seeders.createSharedCredentialsSeed('google-calendar');
-        await seeders.createSharedCredentialsSeed('github-getting-started');
+        for (const provider of ['google-calendar', 'google-mail', 'github', 'slack', 'linear', 'hubspot']) {
+            await seeders.createSharedCredentialsSeed(provider);
+        }
     });
 
     afterEach(() => {
@@ -100,7 +101,21 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(turn.sessionId).toBeUUID();
         expect(turn.text).toContain('Mock reply');
         const integrations = await db.knex.from('_nango_configs').where({ environment_id: env.id, deleted: false }).pluck('unique_key');
-        expect(integrations.sort()).toEqual(['pg-github', 'pg-google-calendar']);
+        expect(integrations.sort()).toEqual(['github', 'google-calendar', 'google-mail', 'hubspot', 'linear', 'slack']);
+    });
+
+    it("uses the environment's own integration for a provider instead of creating one", async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user, env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'my-calendar', 'google-calendar');
+        const session = await authenticateUser(api, user);
+
+        const turn = await chat(session, { messages: [userMessage('hi')] });
+
+        expect(turn.status).toBe(200);
+        const integrations = (await db.knex.from('_nango_configs').where({ environment_id: env.id, deleted: false }).pluck('unique_key')) as string[];
+        expect(integrations).toContain('my-calendar');
+        expect(integrations).not.toContain('google-calendar');
     });
 
     it("reuses a user's own session but not another member's", async () => {
