@@ -161,7 +161,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
     const { data: metaData } = useMeta();
-    const showActionStatus = metaData?.data.toolsCatalog !== true;
+    const showActionStatus = metaData?.data.toolsCatalog === false;
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
     const [deployingName, setDeployingName] = useState<string | null>(null);
