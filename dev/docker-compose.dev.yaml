@@ -64,7 +64,7 @@ services:
             - CLICKHOUSE_USER=default
             - CLICKHOUSE_PASSWORD=
         volumes:
-            - clickhouse_data:/usr/share/clickhouse/data
+            - clickhouse_data:/var/lib/clickhouse
         configs:
             - source: clickhouse_users
               target: /etc/clickhouse-server/users.d/default-user.xml
