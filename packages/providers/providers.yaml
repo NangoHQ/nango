@@ -4123,6 +4123,40 @@ braze:
             description: The API key to your Braze account
             doc_section: '#step-2-finding-your-api-key'
 
+breathehr:
+    display_name: Breathe HR
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/account
+    docs: https://nango.dev/docs/api-integrations/breathehr
+    docs_connect: https://nango.dev/docs/api-integrations/breathehr/connect
+    connection_config:
+        apiHost:
+            type: string
+            title: Environment
+            description: The Breathe HR environment to connect to.
+            enum:
+                - api.breathehr.com
+                - api.sandbox.breathehr.info
+            order: 1
+            doc_section: '#step-1-choose-your-environment'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Breathe HR API key.
+            pattern: '^(prod|sandbox)-\S+$'
+            example: prod-1OcT****************************************
+            doc_section: '#step-2-find-your-api-key'
+
 brevo-api-key:
     display_name: Brevo
     categories:
