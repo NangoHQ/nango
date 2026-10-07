@@ -23,10 +23,10 @@ description: "Important developer & product updates, including deprecations & br
 <Update label="Webhook verification for more providers" description="October 1, 2026">
   A second round of changes to how Nango verifies the webhooks it receives, following [last month's](/updates/changelog#webhook-verification):
 
+  - **Allow unverified webhooks:** A new per-integration setting lets webhooks with a missing or unverifiable signature through (invalid signatures are always rejected). Available for providers that reject unverified webhooks, such as GitHub App, Gmail, Microsoft Teams, and Salesforce. It's off by default.
   - **Unverified flag:** When Nango forwards a webhook it could not verify, the request carries an `X-Nango-Webhook-Unverified: true` header and the Nango wrapper includes `"unverified": true`. Treat those payloads as untrusted. See [unverified webhooks](/guides/platform/webhook-forwarding#unverified-webhooks).
   - **Providers that do not sign webhooks:** Affinity, Fillout, ShipStation, and Salesforce now require a secret you set per connection, sent in the `X-Nango-Webhook-Secret` header or a `nangoWebhookSecret` query parameter. Webhooks without a matching secret are rejected. See [providers that do not sign webhooks](/guides/platform/webhook-forwarding#providers-that-do-not-sign-webhooks).
   - **More signatures checked:** Airtable notifications are verified against each webhook's MAC secret, Microsoft Teams activities must carry a valid Bot Framework token, and Halo PSA webhooks route to a connection with Basic auth.
-  - **Allow unverified webhooks:** A new per-integration setting lets webhooks with a missing or unverifiable signature through. Available for providers that reject unverified webhooks, such as GitHub App, Gmail, Microsoft Teams, and Salesforce. It's off by default.
 </Update>
 ---
 
