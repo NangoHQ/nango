@@ -155,8 +155,7 @@ describe('deployBundle instances', () => {
                     provider_config_key: 'github',
                     environment_id: ctx.environment.id
                 },
-                frequencyFallback: 'every 5 minutes',
-                autoStart: true
+                frequencyFallback: 'every 5 minutes'
             }))
         );
         expect(other.orchestrator.scheduleFunctions).not.toHaveBeenCalled();
@@ -261,10 +260,11 @@ describe('deployBundle instances', () => {
         expect((await ctx.instances())[0]?.deleted_at).toBeInstanceOf(Date);
     });
 
-    it('respects autoStart when creating schedules', async () => {
+    it('creates disabled instances without schedules when autoStart is false', async () => {
         const ctx = await setup();
         (await ctx.deploy([{ ...scheduled, trigger: { kind: 'schedule', frequency: 'every 5 minutes', autoStart: false } }])).unwrap();
-        expect(ctx.orchestrator.scheduleFunctions.mock.calls[0]?.[0][0]?.autoStart).toBe(false);
+        expect((await ctx.instances()).map((instance) => instance.enabled)).toEqual([false]);
+        expect(ctx.orchestrator.scheduleFunctions).not.toHaveBeenCalled();
     });
 
     it('does not create instances or schedules when a disabled function becomes scheduled', async () => {

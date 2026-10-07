@@ -1,12 +1,11 @@
 import tracer from 'dd-trace';
 import ddtags from 'dd-trace/ext/tags.js';
-import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
 import { maxScheduleNamesPerSearch } from '@nangohq/nango-orchestrator';
-import { Err, errorToObject, getCheckpointKey, getFrequencyMs, Ok, stringifyError } from '@nangohq/utils';
+import { Err, errorToObject, getCheckpointKey, getFrequencyMs, MIN_SYNC_FREQUENCY_MS, Ok, stringifyError } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { hardDeleteCheckpoints } from '../index.js';
@@ -960,19 +959,18 @@ export class Orchestrator {
             functionUuid: string;
             connection: Pick<DBConnection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
             frequencyFallback: string;
-            autoStart: boolean;
         }[]
     ): Promise<Result<void>> {
         try {
             const schedules: RecurringProps[] = [];
-            for (const { instance, functionUuid, connection, environmentId, frequencyFallback, autoStart } of functions) {
+            for (const { instance, functionUuid, connection, environmentId, frequencyFallback } of functions) {
                 const frequencyMs = this.getFrequencyMs(instance.frequency || frequencyFallback);
                 if (frequencyMs.isErr()) {
                     return Err(frequencyMs.error);
                 }
                 schedules.push({
                     name: FunctionScheduleId.get({ environmentId, id: instance.id }),
-                    state: autoStart ? 'STARTED' : 'PAUSED',
+                    state: 'STARTED',
                     frequencyMs: frequencyMs.value,
                     group: {
                         key: `function:scheduled:environment:${environmentId}`,
@@ -988,7 +986,12 @@ export class Orchestrator {
                     args: {
                         type: 'function',
                         functionUuid,
-                        connection,
+                        connection: {
+                            id: connection.id,
+                            connection_id: connection.connection_id,
+                            provider_config_key: connection.provider_config_key,
+                            environment_id: connection.environment_id
+                        },
                         variant: instance.variant,
                         trigger: {
                             kind: 'schedule',
@@ -1023,7 +1026,7 @@ export class Orchestrator {
             return Err(new NangoError('sync_interval_invalid'));
         }
 
-        if (res.value < ms('30s')) {
+        if (res.value < MIN_SYNC_FREQUENCY_MS) {
             const error = new NangoError('sync_interval_too_short');
             return Err(error);
         }
