@@ -1,0 +1,83 @@
+---
+title: 'TeamLogger'
+sidebarTitle: 'TeamLogger'
+description: 'Integrate your application with the TeamLogger API'
+---
+
+## 🚀 Quickstart
+
+Connect to TeamLogger with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _TeamLogger_.
+    </Step>
+    <Step id="authorize-teamlogger" title="Authorize TeamLogger">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API Key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-the-api" title="Call the TeamLogger API">
+    Make your first request. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/integration/list_users" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/integration/list_users',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 TeamLogger integration guides
+
+- [How do I link my account?](/api-integrations/teamlogger/connect)  
+Connect your TeamLogger account using the Connect UI and get your API Key
+
+## 🧩 Pre-built syncs & actions for TeamLogger
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/teamlogger/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- TeamLogger uses a single, account-wide API key (not scoped per-user). Any request made with it acts on behalf of the whole company account.
+- The API base URL is `https://api2.teamlogger.com`. Endpoints live under `/api/integration/*` (users, projects, tasks), `/api/zapier/*` (task reassignment), and `/api` (reports, timesheet data, punch-in/out data).
+- Timestamps for report endpoints (`startTime`/`endTime`) are expected in Unix milliseconds, not seconds.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/teamlogger.mdx)</Note>
+
+---

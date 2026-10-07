@@ -25388,6 +25388,30 @@ teamleader:
         base_url: https://api.focus.teamleader.eu
     docs: https://nango.dev/docs/integrations/all/teamleader
 
+teamlogger:
+    display_name: TeamLogger
+    categories:
+        - hr
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api2.teamlogger.com
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /api/integration/list_users
+    docs: https://nango.dev/docs/api-integrations/teamlogger
+    docs_connect: https://nango.dev/docs/api-integrations/teamlogger/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your TeamLogger account.
+            doc_section: '#step-1-generate-your-api-key'
+
 teamwork:
     display_name: Teamwork
     categories:

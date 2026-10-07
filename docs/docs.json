@@ -1903,6 +1903,7 @@
               "api-integrations/tanium",
               "integrations/all/tapclicks",
               "integrations/all/teamleader",
+              "api-integrations/teamlogger",
               "integrations/all/teamtailor",
               "integrations/all/teamwork",
               "api-integrations/telegram",
