@@ -1,3 +1,5 @@
+import { generateKeyPairSync } from 'node:crypto';
+
 import { describe, expect, it } from 'vitest';
 
 import { ENVS, parseEnvs } from './parse.js';
@@ -47,12 +49,98 @@ describe('parse', () => {
         expect(res.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY).toBeUndefined();
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT');
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_AUDIENCE');
+        expect(res.NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY).toBeUndefined();
+        expect(res.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS).toEqual([]);
+        expect(res.NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY).toBeUndefined();
+        expect(res.NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS).toEqual([]);
     });
 
-    it('defaults NANGO_LOG_ACTION_INPUT to true and parses false', () => {
-        expect(parseEnvs(ENVS, {}).NANGO_LOG_ACTION_INPUT).toBe(true);
-        expect(parseEnvs(ENVS, { NANGO_LOG_ACTION_INPUT: 'false' }).NANGO_LOG_ACTION_INPUT).toBe(false);
-        expect(parseEnvs(ENVS, { NANGO_LOG_ACTION_INPUT: 'true' }).NANGO_LOG_ACTION_INPUT).toBe(true);
+    it('rejects a jobs private key that is not paired with its public key', () => {
+        const { privateKey, publicKey } = generateKeyPairSync('ed25519');
+        const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+        const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
+            .subarray(12)
+            .toString('base64url');
+        expect(() => parseEnvs(ENVS, { NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: pem })).toThrowError(/NANGO_INTERNAL_AUTH_JOBS_KEY_ID/);
+        expect(() =>
+            parseEnvs(ENVS, {
+                NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: pem,
+                NANGO_INTERNAL_AUTH_JOBS_KEY_ID: 'jobs-2026-09',
+                NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: JSON.stringify([{ kid: 'other', publicKey: raw }])
+            })
+        ).toThrowError(/NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS/);
+    });
+
+    it('rejects internal auth public keys that are not a JSON array', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: 'jobs-2026-09:not-json' })).toThrowError(/Invalid JSON/);
+        expect(() =>
+            parseEnvs(ENVS, {
+                NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: JSON.stringify({ kid: 'jobs-2026-09', publicKey: 'A'.repeat(43) })
+            })
+        ).toThrowError(/expected array/);
+        expect(() =>
+            parseEnvs(ENVS, {
+                NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: JSON.stringify([
+                    { kid: 'jobs-2026-09', publicKey: 'A'.repeat(43) },
+                    { kid: 'jobs-2026-09', publicKey: 'B'.repeat(43) }
+                ])
+            })
+        ).toThrowError(/repeats kid jobs-2026-09/);
+    });
+
+    it('rejects __proto__ as an internal auth key id', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: JSON.stringify([{ kid: '__proto__', publicKey: 'A'.repeat(43) }]) })).toThrowError(
+            /NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS/
+        );
+    });
+
+    it('rejects a jobs public key that does not match the private key', () => {
+        const { privateKey } = generateKeyPairSync('ed25519');
+        const { publicKey: otherPublicKey } = generateKeyPairSync('ed25519');
+        const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+        const otherRaw = Buffer.from(otherPublicKey.export({ format: 'der', type: 'spki' }))
+            .subarray(12)
+            .toString('base64url');
+        expect(() =>
+            parseEnvs(ENVS, {
+                NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: pem,
+                NANGO_INTERNAL_AUTH_JOBS_KEY_ID: 'jobs-2026-09',
+                NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: JSON.stringify([{ kid: 'jobs-2026-09', publicKey: otherRaw }])
+            })
+        ).toThrowError(/does not match/);
+    });
+
+    it('accepts a jobs key pair whose kid is in the public key list', () => {
+        const { privateKey, publicKey } = generateKeyPairSync('ed25519');
+        const pem = privateKey.export({ format: 'pem', type: 'pkcs8' }).toString();
+        const raw = Buffer.from(publicKey.export({ format: 'der', type: 'spki' }))
+            .subarray(12)
+            .toString('base64url');
+        const res = parseEnvs(ENVS, {
+            NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY: pem,
+            NANGO_INTERNAL_AUTH_JOBS_KEY_ID: 'jobs-2026-09',
+            NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: JSON.stringify([
+                { kid: 'jobs-2026-09', publicKey: raw },
+                { kid: 'jobs-2026-10', publicKey: raw }
+            ])
+        });
+        expect(res.NANGO_INTERNAL_AUTH_JOBS_KEY_ID).toBe('jobs-2026-09');
+        expect(res.NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS).toEqual([
+            { kid: 'jobs-2026-09', publicKey: raw },
+            { kid: 'jobs-2026-10', publicKey: raw }
+        ]);
+    });
+
+    it('defaults NANGO_LOG_FUNCTION_INPUT to true and parses false', () => {
+        expect(parseEnvs(ENVS, {}).NANGO_LOG_FUNCTION_INPUT).toBe(true);
+        expect(parseEnvs(ENVS, { NANGO_LOG_FUNCTION_INPUT: 'false' }).NANGO_LOG_FUNCTION_INPUT).toBe(false);
+        expect(parseEnvs(ENVS, { NANGO_LOG_FUNCTION_INPUT: 'true' }).NANGO_LOG_FUNCTION_INPUT).toBe(true);
+    });
+
+    it('defaults NANGO_LOG_FUNCTION_OUTPUT to true and parses false', () => {
+        expect(parseEnvs(ENVS, {}).NANGO_LOG_FUNCTION_OUTPUT).toBe(true);
+        expect(parseEnvs(ENVS, { NANGO_LOG_FUNCTION_OUTPUT: 'false' }).NANGO_LOG_FUNCTION_OUTPUT).toBe(false);
+        expect(parseEnvs(ENVS, { NANGO_LOG_FUNCTION_OUTPUT: 'true' }).NANGO_LOG_FUNCTION_OUTPUT).toBe(true);
     });
 
     it('defaults NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY to false', () => {

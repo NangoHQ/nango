@@ -47,7 +47,7 @@ export async function abortTaskWithId({ taskId, teamId, environmentId }: { taskI
             logger.error('Error setting abort flag for task, continuing to broadcast to runners', { err: abortFlag.error, taskId });
         }
         // Broadcast abort to all runners as a task might still be running on a different active runner during/after rollouts (e.g. deploying a new runner version).
-        const token = mintRunnerDispatchToken({ taskId });
+        const token = await mintRunnerDispatchToken({ taskId });
         const runners = await getRunners(teamId, { token });
         if (runners.isErr()) {
             return Err(runners.error);

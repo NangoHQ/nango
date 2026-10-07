@@ -93,10 +93,13 @@ describe('gmailWebhookRouting', () => {
 
         expect(result.isErr()).toBe(true);
         expect(execute).not.toHaveBeenCalled();
-        expect(markUnverified).toHaveBeenCalledWith({
-            reason: 'gmail_missing_authorization',
-            remediation: 'Recreate the Pub/Sub push subscription with an OIDC token'
-        });
+        expect(markUnverified).toHaveBeenCalledWith(
+            {
+                reason: 'gmail_missing_authorization',
+                remediation: 'Recreate the Pub/Sub push subscription with an OIDC token'
+            },
+            'rejected'
+        );
     });
 
     it('counts and processes a missing authorization header when the account is opted out', async () => {
@@ -109,10 +112,13 @@ describe('gmailWebhookRouting', () => {
 
         expect(result.isOk()).toBe(true);
         expect(execute).toHaveBeenCalled();
-        expect(markUnverified).toHaveBeenCalledWith({
-            reason: 'gmail_missing_authorization',
-            remediation: 'Recreate the Pub/Sub push subscription with an OIDC token'
-        });
+        expect(markUnverified).toHaveBeenCalledWith(
+            {
+                reason: 'gmail_missing_authorization',
+                remediation: 'Recreate the Pub/Sub push subscription with an OIDC token'
+            },
+            'flag'
+        );
     });
 
     it('processes a missing authorization header when the integration allows unverified webhooks', async () => {
@@ -124,7 +130,7 @@ describe('gmailWebhookRouting', () => {
 
         expect(result.isOk()).toBe(true);
         expect(execute).toHaveBeenCalled();
-        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'gmail_missing_authorization' }));
+        expect(markUnverified).toHaveBeenCalledWith(expect.objectContaining({ reason: 'gmail_missing_authorization' }), 'setting');
     });
 
     it('rejects an invalid JWT when the integration allows unverified webhooks', async () => {
