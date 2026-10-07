@@ -10,7 +10,6 @@ import * as agentSessionConnectionsService from './agentSessionConnections.servi
 import * as agentSessionToolsetService from './agentSessionToolset.service.js';
 
 import type { Knex } from '@nangohq/database';
-import type { LogContextOrigin } from '@nangohq/logs';
 import type {
     AgentSession,
     AgentSessionCompiledToolset,
@@ -217,7 +216,7 @@ export async function createAgentSession(params: CreateAgentSessionParams): Prom
     );
 
     try {
-        const created = await runCreation(params, logCtx);
+        const created = await runCreation(params);
         if (created.isErr()) {
             void logCtx.error(created.error.message, { code: created.error.code, payload: created.error.payload });
             await logCtx.failed();
@@ -548,7 +547,7 @@ export function toolsetToolNames(toolset: AgentSessionCompiledToolset): Record<s
     );
 }
 
-async function runCreation(params: CreateAgentSessionParams, logCtx: LogContextOrigin): Promise<Result<CreatedAgentSession, AgentSessionCreationError>> {
+async function runCreation(params: CreateAgentSessionParams): Promise<Result<CreatedAgentSession, AgentSessionCreationError>> {
     const { account, environment } = params;
 
     const metaTools = parseMetaTools(params.metaTools);
@@ -580,41 +579,27 @@ async function runCreation(params: CreateAgentSessionParams, logCtx: LogContextO
         return Err(rejected(compiledToolset.error));
     }
 
-    const session = await insertAgentSession(db.knex, {
-        accountId: account.id,
-        environmentId: environment.id,
-        resolvedConnections: resolvedConnections.value,
-        compiledToolset: compiledToolset.value,
-        metaTools: metaTools.applied,
-        expiresAt: new Date(Date.now() + (params.expiresInMs ?? DEFAULT_EXPIRES_IN_MS))
-    });
-    if (session.isErr()) {
-        report(session.error);
-        return Err(new AgentSessionCreationError({ code: 'server_error', message: 'Failed to create agent session', cause: session.error }));
-    }
+    // A session no token can reach is unusable, so a failed mint rolls back the insert with it.
+    try {
+        return await db.knex.transaction(async (trx) => {
+            const session = (
+                await insertAgentSession(trx, {
+                    accountId: account.id,
+                    environmentId: environment.id,
+                    resolvedConnections: resolvedConnections.value,
+                    compiledToolset: compiledToolset.value,
+                    metaTools: metaTools.applied,
+                    expiresAt: new Date(Date.now() + (params.expiresInMs ?? DEFAULT_EXPIRES_IN_MS))
+                })
+            ).unwrap();
+            const { token } = (await createAgentSessionToken(trx, session)).unwrap();
 
-    const token = await createAgentSessionToken(db.knex, session.value);
-    if (token.isErr()) {
-        // A session no token can reach is unusable, so it is ended rather than left to expire.
-        const ended = await endAgentSession(db.knex, {
-            id: session.value.id,
-            accountId: account.id,
-            environmentId: environment.id,
-            reason: 'terminated'
+            return Ok({ session, token, mcpUrl: `${baseUrl}/session/${session.id}/mcp` });
         });
-        if (ended.isErr()) {
-            void logCtx.error('Failed to end the agent session left behind by the token failure', { error: ended.error, sessionId: session.value.id });
-        }
-
-        report(token.error);
-        return Err(new AgentSessionCreationError({ code: 'server_error', message: 'Failed to create agent session token', cause: token.error }));
+    } catch (err) {
+        report(err);
+        return Err(new AgentSessionCreationError({ code: 'server_error', message: 'Failed to create agent session', cause: err }));
     }
-
-    return Ok({
-        session: session.value,
-        token: token.value.token,
-        mcpUrl: `${baseUrl}/session/${session.value.id}/mcp`
-    });
 }
 
 async function getAgentSessionById(trx: Knex, id: string): Promise<Result<AgentSession, AgentSessionError>> {

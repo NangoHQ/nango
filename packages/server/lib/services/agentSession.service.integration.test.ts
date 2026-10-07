@@ -6,8 +6,10 @@ import db, { multipleMigrations } from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
+import { Err } from '@nangohq/utils';
 
 import {
+    createAgentSession,
     createAgentSessionToken,
     endAgentSession,
     expireAgentSessions,
@@ -278,6 +280,33 @@ describe('agentSession service', () => {
         if (result.isErr()) {
             expect(result.error.code).toBe('token_creation_failed');
         }
+    });
+
+    it('leaves no session behind when the token cannot be minted', async () => {
+        vi.spyOn(logContextGetter, 'create').mockResolvedValue({
+            enrichOperation: vi.fn(),
+            info: vi.fn(),
+            error: vi.fn(),
+            success: vi.fn(),
+            failed: vi.fn()
+        } as unknown as LogContextOrigin);
+        vi.spyOn(keystore, 'createPrivateKey').mockResolvedValue(Err(new Error('keystore failed')) as any);
+
+        const result = await createAgentSession({
+            account,
+            environment,
+            connections: { any: [], pinned: [] },
+            toolset: undefined,
+            pinnedTools: undefined,
+            metaTools: undefined,
+            expiresInMs: undefined
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.code).toBe('server_error');
+        }
+        expect(await db.knex(table).where({ environment_id: environment.id })).toHaveLength(0);
     });
 
     it('stops resolving the token once it expires', async () => {
