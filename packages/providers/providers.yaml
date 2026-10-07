@@ -4942,6 +4942,38 @@ chargebee:
             default_value: ''
             hidden: true
 
+charliehr:
+    display_name: CharlieHR
+    categories:
+        - hr
+    auth_mode: BASIC
+    proxy:
+        base_url: https://charliehr.com
+        headers:
+            authorization: Token token=${credentials.username}:${credentials.password}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/company
+    docs: https://nango.dev/docs/api-integrations/charliehr
+    docs_connect: https://nango.dev/docs/api-integrations/charliehr/connect
+    credentials:
+        username:
+            type: string
+            title: Client ID
+            description: Your CharlieHR API client ID.
+            pattern: '^[0-9a-f]{20}$'
+            example: a1b2************c3d4
+            doc_section: '#step-1-get-your-api-credentials'
+        password:
+            type: string
+            title: Client Secret
+            description: Your CharlieHR API client secret.
+            pattern: '^[0-9a-f]{64}$'
+            example: e5f6********************************************************7a8b
+            secret: true
+            doc_section: '#step-1-get-your-api-credentials'
+
 chartboost:
     display_name: Chartboost
     categories:

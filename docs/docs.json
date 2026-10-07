@@ -1172,6 +1172,7 @@
               "integrations/all/certn",
               "integrations/all/certn-partner",
               "integrations/all/chargebee",
+              "api-integrations/charliehr",
               "api-integrations/chartboost",
               "api-integrations/chatarmin",
               "api-integrations/chatgpt-enterprise",
