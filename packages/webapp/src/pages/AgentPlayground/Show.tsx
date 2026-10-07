@@ -21,8 +21,10 @@ import { LogoInverted } from '@/assets/LogoInverted';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useUser } from '@/hooks/useUser';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { clearAgentPlaygroundChat, loadAgentPlaygroundChat, saveAgentPlaygroundChat } from '@/store/agentPlaygroundChat';
 import { globalEnv } from '@/utils/env';
 import { describeChatError } from './chatError';
 import { Markdown } from './components/Markdown';
@@ -66,7 +68,14 @@ export const AgentPlaygroundShow: React.FC = () => {
             <Helmet>
                 <title>Agent Playground - Nango</title>
             </Helmet>
-            <Chat key={`${env}-${chatKey}`} env={env} onReset={() => setChatKey((key) => key + 1)} />
+            <Chat
+                key={`${env}-${chatKey}`}
+                env={env}
+                onReset={() => {
+                    clearAgentPlaygroundChat();
+                    setChatKey((key) => key + 1);
+                }}
+            />
         </DashboardLayout>
     );
 };
@@ -85,8 +94,12 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         [env]
     );
 
+    const { user } = useUser();
+    const userId = user?.uuid;
+    const [storedMessages] = useState(() => (userId ? loadAgentPlaygroundChat(env, userId) : undefined));
     const { messages, sendMessage, regenerate, status, stop, error, clearError, addToolApprovalResponse } = useChat<PlaygroundMessage>({
         transport,
+        ...(storedMessages ? { messages: storedMessages } : {}),
         sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses
     });
     const onApprove = useCallback(
@@ -102,10 +115,19 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
     }, [messages]);
 
     const busy = status === 'submitted' || status === 'streaming';
+    useEffect(() => {
+        if (!busy && userId) {
+            saveAgentPlaygroundChat(env, userId, messages);
+        }
+    }, [env, userId, messages, busy]);
+
     const lastMessage = messages.at(-1);
     // A new turn would drop the pending tool call, so the change is never approved or denied.
     const awaitingApproval =
-        lastMessage?.role === 'assistant' && lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-requested');
+        lastMessage?.role === 'assistant' &&
+        lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-requested' && !part.approval.isAutomatic);
+    const answeredApprovalPending =
+        lastMessage?.role === 'assistant' && lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-responded');
     const [input, setInput] = useState('');
 
     const send = (text: string) => {
@@ -120,6 +142,14 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
 
     const retry = () => {
         clearError();
+        if (awaitingApproval) {
+            return;
+        }
+        // The SDK only sends an answered approval when the last message is still the assistant's.
+        if (answeredApprovalPending) {
+            void sendMessage();
+            return;
+        }
         // Regenerating would replace the assistant message, and with it every tool call that already ran.
         if (lastMessage?.role === 'assistant') {
             void sendMessage({ text: 'Continue.', metadata: { hidden: true } });
@@ -128,17 +158,24 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         }
     };
 
-    const [connectedIntegrations, setConnectedIntegrations] = useState<string[]>([]);
+    const [pendingConnections, setPendingConnections] = useState<string[]>([]);
     const onConnected = useCallback((integrationId: string) => {
-        setConnectedIntegrations((ids) => (ids.includes(integrationId) ? ids : [...ids, integrationId]));
+        setPendingConnections((ids) => (ids.includes(integrationId) ? ids : [...ids, integrationId]));
     }, []);
     // Waits for the current reply to finish, so two turns never stream at the same time.
     useEffect(() => {
-        if (connectedIntegrations.length > 0 && !busy && !awaitingApproval) {
-            setConnectedIntegrations([]);
-            void sendMessage({ text: `I've connected ${connectedIntegrations.map(humanize).join(' and ')}.`, metadata: { hidden: true } });
+        if (pendingConnections.length > 0 && !busy && !awaitingApproval) {
+            setPendingConnections([]);
+            void sendMessage({
+                text: `I've connected ${pendingConnections.map(humanize).join(' and ')}.`,
+                metadata: { hidden: true, connectedIntegrations: pendingConnections }
+            });
         }
-    }, [connectedIntegrations, busy, awaitingApproval, sendMessage]);
+    }, [pendingConnections, busy, awaitingApproval, sendMessage]);
+    const connectedIntegrations = useMemo(
+        () => new Set([...pendingConnections, ...messages.flatMap((message) => message.metadata?.connectedIntegrations ?? [])]),
+        [pendingConnections, messages]
+    );
 
     const [newLinkRequests, setNewLinkRequests] = useState<string[]>([]);
     const onRequestNewLink = useCallback((integrationId: string) => {
@@ -153,6 +190,20 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
             });
         }
     }, [newLinkRequests, busy, awaitingApproval, sendMessage]);
+
+    const [retryRequests, setRetryRequests] = useState<string[]>([]);
+    const onRetryInterrupted = useCallback((title: string) => {
+        setRetryRequests((titles) => (titles.includes(title) ? titles : [...titles, title]));
+    }, []);
+    useEffect(() => {
+        if (retryRequests.length > 0 && !busy && !awaitingApproval) {
+            setRetryRequests([]);
+            void sendMessage({
+                text: `${retryRequests.join(' and ')} was interrupted after I approved it. Check whether the change already happened. If it did, tell me; if not, make it again.`,
+                metadata: { hidden: true }
+            });
+        }
+    }, [retryRequests, busy, awaitingApproval, sendMessage]);
 
     const scroller = useRef<HTMLDivElement>(null);
     const bottom = useRef<HTMLDivElement>(null);
@@ -243,10 +294,13 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                                         <ToolCallCard
                                             key={part.toolCallId}
                                             part={part}
-                                            chatActive={busy}
+                                            chatActive={message === lastMessage && busy}
+                                            approvalSending={message === lastMessage && status === 'ready'}
+                                            connectedIntegrations={connectedIntegrations}
                                             onConnected={onConnected}
                                             onRequestNewLink={onRequestNewLink}
                                             onApprove={onApprove}
+                                            onRetryInterrupted={message === lastMessage ? onRetryInterrupted : undefined}
                                         />
                                     );
                                 }

@@ -4,6 +4,7 @@ import db from '@nangohq/database';
 import { logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { Err, Ok, truncateJson } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
 import connectionService from '../connection.service.js';
 import * as functionConfigService from './models/functions.js';
 import { validateFunctionInput } from './models/validate.js';
@@ -153,7 +154,7 @@ export async function invokeFunction({
                 meta: {
                     invocation_type: invocationType,
                     ...(options ? { options } : {}),
-                    ...(input !== undefined ? truncateJson({ input }) : {})
+                    ...(input !== undefined ? truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' }) : {})
                 }
             }
         );
@@ -165,8 +166,6 @@ export async function invokeFunction({
         const invocation = await orchestrator.invokeFunction({
             environment,
             connection,
-            functionConfigId: config.id,
-            functionName: config.name,
             functionUuid: config.uuid,
             trigger: trigger.value,
             async: invocationType === 'no_wait',
