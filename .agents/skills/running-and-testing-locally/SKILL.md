@@ -129,6 +129,19 @@ The env var is the flag key uppercased with dashes as underscores. Keys live in 
 
 **`NANGO_CLOUD=true` silently disables all of this** — `buildProvider` falls back to noop, so every flag reads its default. The only sign is one startup line: `NANGO_FLAG_PROVIDER=env is not supported on cloud; using noop provider`. Leave `NANGO_CLOUD` unset locally (it defaults to false); setting it true also flips CORS, admin routes, secret-key lookup, file storage and log format. The unset default shows the classic getting-started dashboard ([NAN-6919](https://linear.app/nango/issue/NAN-6919)).
 
+### PostHog locally
+
+A local stack sends no analytics. To test an event, point the server and dashboard at the **Nango Dev** PostHog project and restart the server:
+
+```ini
+PUBLIC_POSTHOG_KEY=<Nango Dev project token>   # us.posthog.com/project/649640/settings/project
+PUBLIC_POSTHOG_HOST=https://app.posthog.com
+```
+
+- **Never use the production key.** Local account ids overlap real ones, so local events overwrite real accounts' groups in Nango Prod.
+- Local ids also overlap the development environment's, which sends to Nango Dev too. Treat group properties from a local run as unreliable.
+- PostHog drops events from automated browsers (Playwright, `agent-browser`) at ingestion. Check dashboard events from a browser you opened by hand.
+
 ## Browser Testing Workflow
 
 ### Capturing Server Logs for Verification URLs
