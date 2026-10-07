@@ -147,13 +147,11 @@ function FunctionTemplateRow({
 function FunctionListWithDetails({
     selectedFunction,
     integration,
-    repoProvider,
     onDeleted,
     children
 }: {
     selectedFunction: ListedNangoFunction | NangoFunctionTemplate | null;
     integration: ApiIntegration;
-    repoProvider: string;
     onDeleted: () => void;
     children: React.ReactNode;
 }) {
@@ -202,7 +200,6 @@ function FunctionListWithDetails({
                         key={'enabled' in displayedFunction ? functionRowKey(displayedFunction) : templateRowKey(displayedFunction)}
                         fn={displayedFunction}
                         integration={integration}
-                        repoProvider={repoProvider}
                         onDeleted={onDeleted}
                     />
                 </div>
@@ -225,10 +222,9 @@ function pillCount(deployed: number | undefined, templatesFetched: boolean, unde
 
 interface FunctionsTabProps {
     integration: ApiIntegration;
-    repoProvider: string;
 }
 
-export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoProvider }) => {
+export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const env = useStore((state) => state.env);
     const { data: metaData } = useMeta();
     const showActionStatus = metaData?.data.toolsCatalog === false;
@@ -487,7 +483,6 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
                             integration={integration}
-                            repoProvider={repoProvider}
                             onDeleted={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
@@ -544,7 +539,6 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
                             integration={integration}
-                            repoProvider={repoProvider}
                             onDeleted={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
@@ -599,7 +593,6 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                         <FunctionListWithDetails
                             selectedFunction={selectedFunction}
                             integration={integration}
-                            repoProvider={repoProvider}
                             onDeleted={() => void setSelectedFunctionName(null)}
                         >
                             <Table>
