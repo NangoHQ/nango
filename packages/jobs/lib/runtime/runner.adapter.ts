@@ -12,7 +12,7 @@ const logger = getLogger('RunnerRuntimeAdapter');
 export class RunnerRuntimeAdapter implements RuntimeAdapter {
     async cancel(params: { taskId: string; nangoProps: NangoProps }): Promise<Result<boolean>> {
         try {
-            const token = mintRunnerDispatchToken({ taskId: params.taskId, nangoProps: params.nangoProps });
+            const token = await mintRunnerDispatchToken({ taskId: params.taskId, nangoProps: params.nangoProps });
             const runners = await getRunners(params.nangoProps.team.id, { token });
             if (runners.isErr()) {
                 return Err(runners.error);
@@ -29,14 +29,14 @@ export class RunnerRuntimeAdapter implements RuntimeAdapter {
     }
 
     async invoke(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<boolean>> {
-        const token = mintRunnerDispatchToken({ taskId: params.taskId, nangoProps: params.nangoProps });
+        const token = await mintRunnerDispatchToken({ taskId: params.taskId, nangoProps: params.nangoProps });
         const runner = await getRunner(params.nangoProps.team.id, { token });
         if (runner.isErr()) {
             return Err(runner.error);
         }
 
         try {
-            const internalAuthToken = mintTaskAuthToken(params.taskId, params.nangoProps);
+            const internalAuthToken = await mintTaskAuthToken(params.taskId, params.nangoProps);
             const res = await runner.value.client.start.mutate({
                 taskId: params.taskId,
                 nangoProps: params.nangoProps,

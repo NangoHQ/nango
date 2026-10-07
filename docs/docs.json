@@ -830,6 +830,7 @@
                       "guides/platform/migrations/migrate-to-checkpoints",
                       "guides/platform/migrations/migrate-from-end-user",
                       "guides/platform/migrations/migrate-from-public-key",
+                      "guides/platform/migrations/migrate-from-connection-mcp",
                       "guides/platform/migrations/migrate-to-zero-yaml"
                     ]
                   },
@@ -1142,6 +1143,7 @@
               "integrations/all/braintree",
               "integrations/all/braintree-sandbox",
               "integrations/all/braze",
+              "api-integrations/breathehr",
               "integrations/all/breezy-hr",
               "integrations/all/brevo-api-key",
               "api-integrations/brex",
@@ -1451,6 +1453,7 @@
               "integrations/all/icypeas",
               "api-integrations/ids-fulfillment",
               "api-integrations/immybot",
+              "api-integrations/imanage",
               "integrations/all/incident-io",
               "api-integrations/infor",
               "api-integrations/infor-cc",
@@ -1607,6 +1610,7 @@
               "api-integrations/neon",
               "api-integrations/neon-mcp",
               "api-integrations/nerdio",
+              "api-integrations/netdocuments",
               "api-integrations/netsapiens",
               "integrations/all/netsuite",
               "api-integrations/netsuite-client-credentials",

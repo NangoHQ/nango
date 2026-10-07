@@ -748,6 +748,7 @@ export async function getSyncConfigsByConfigIdForWebhook(environment_id: number,
             environment_id,
             nango_config_id,
             active: true,
+            enabled: true,
             deleted: false
         })
         .whereRaw('webhook_subscriptions IS NOT NULL and array_length(webhook_subscriptions, 1) > 0');
