@@ -2,6 +2,16 @@ import os from 'node:os';
 
 import { NANGO_VERSION } from './version.js';
 
+function parseCommaSeparatedEnvList(raw: string | undefined): string[] {
+    if (!raw) {
+        return [];
+    }
+    return raw
+        .split(',')
+        .map((part) => part.trim().toLocaleLowerCase())
+        .filter((part) => part.length > 0);
+}
+
 // Headers that are never relevant to the outcome of the call
 const IGNORED_HEADERS = new Set([
     'access-control-allow-credentials',
@@ -41,7 +51,8 @@ const IGNORED_HEADERS = new Set([
     'x-hubspot-correlation-id',
     'x-powered-by',
     'x-server',
-    'x-xss-protection'
+    'x-xss-protection',
+    ...parseCommaSeparatedEnvList(process.env['NANGO_IGNORED_HEADERS'])
 ]);
 
 export function redactHeaders({
