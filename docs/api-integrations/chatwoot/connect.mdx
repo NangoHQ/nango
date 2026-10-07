@@ -1,0 +1,46 @@
+---
+title: Chatwoot - How do I link my account?
+sidebarTitle: Chatwoot
+---
+
+## Overview
+
+To authenticate with Chatwoot, you need the following:
+1. **Hostname** - The hostname of your Chatwoot instance (`app.chatwoot.com` for Chatwoot Cloud, or your own domain if self-hosted).
+2. **Account ID** - The numeric ID of the Chatwoot account you want to connect.
+3. **Access Token** - The personal access token of a Chatwoot user.
+
+This guide will walk you through finding these values in Chatwoot.
+
+
+## Prerequisites
+- You must have access to a Chatwoot account, either on Chatwoot Cloud or on a self-hosted instance.
+- The API calls will run with the permissions of the user whose access token you use. An administrator token gives access to the whole account; an agent token is limited to the inboxes that agent can see.
+
+
+## Step 1: Finding your hostname and account ID
+Log in to Chatwoot and look at your browser's address bar. It looks like this:
+
+https://app.chatwoot.com/app/accounts/12345/dashboard
+
+- Your hostname is the domain: **`app.chatwoot.com`**.
+- Your account ID is the number after `/accounts/`: **`12345`**.
+
+
+## Step 2: Generating an access token
+1. Log in to your **Chatwoot** account.
+2. Click on your **avatar** in the bottom-left corner and select **Profile settings**.
+3. Scroll down to the **Access Token** section.
+4. **Copy the access token** and store it securely.
+
+---
+
+## Step 3: Enter credentials in the Connect UI
+
+Once you have your credentials:
+
+1. Open the form where you need to authenticate with Chatwoot.
+2. Enter the **Hostname**, **Account ID** and **Access Token** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Chatwoot.

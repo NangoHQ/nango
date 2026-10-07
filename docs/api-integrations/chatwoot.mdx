@@ -1,0 +1,80 @@
+---
+title: 'Chatwoot'
+sidebarTitle: 'Chatwoot'
+description: 'Integrate your application with the Chatwoot API'
+---
+
+## 🚀 Quickstart
+
+Connect to Chatwoot with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Chatwoot_.
+    </Step>
+    <Step title="Authorize Chatwoot">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Chatwoot hostname, account ID and access token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Chatwoot API">
+    Let's make your first request to the Chatwoot API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/inboxes" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/inboxes',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Chatwoot Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my Chatwoot account?](/api-integrations/chatwoot/connect)  
+Learn how to find your Chatwoot hostname and account ID, and generate an access token
+
+Official docs: [Chatwoot API docs](https://developers.chatwoot.com/api-reference/introduction)
+
+## 🧩 Pre-built syncs & actions for Chatwoot
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/chatwoot/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
