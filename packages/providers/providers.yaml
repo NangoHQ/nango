@@ -20472,6 +20472,8 @@ quickbooks:
         connection_config:
             realmId: ${connectionConfig.realmId}
         base_url: https://quickbooks.api.intuit.com
+    webhook_routing_script: quickbooksWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/quickbooks
     setup_guide_url: https://nango.dev/docs/api-integrations/quickbooks/how-to-register-your-own-quickbooks-api-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/quickbooks/connect
