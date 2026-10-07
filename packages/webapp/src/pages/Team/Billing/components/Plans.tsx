@@ -349,7 +349,7 @@ const PlanChangeDialog: React.FC<{
     children?: React.ReactNode;
 }> = ({ activePlan, selectedPlan, newPricing, open: openProp, onOpenChange, children }) => {
     const env = useStore((state) => state.env);
-    const { submit, reset, loading, longWait, error } = usePlanChangeRequest(env);
+    const { submit, reset, loading, error } = usePlanChangeRequest(env);
 
     const offersAddon = Boolean(newPricing && selectedPlan.isUpgrade && selectedPlan.plan.code === 'pay-as-you-go');
     const [withAddon, setWithAddon] = useState(false);
@@ -378,7 +378,6 @@ const PlanChangeDialog: React.FC<{
             ? await submit({
                   orbId: code,
                   withGrowthFeatures: wantsAddon,
-                  settled: (plan) => plan.name === code && plan.has_growth_features === wantsAddon,
                   successTitle: `Upgraded successfully to ${selectedPlan.plan.title}`
               })
             : await submit({
@@ -427,7 +426,6 @@ const PlanChangeDialog: React.FC<{
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-1 text-text-secondary text-sm">
                             <p>{description}</p>
-                            {longWait && <p className="text-s text-text-muted text-right">Payment is processing...</p>}
                         </div>
                         {offersAddon && (
                             <>
@@ -495,7 +493,6 @@ const GrowthAddonDialog: React.FC<{
                 ? await submit({
                       orbId: planCode,
                       withGrowthFeatures: true,
-                      settled: (plan) => plan.has_growth_features,
                       successTitle: `${GROWTH_ADDON_COPY.title} added`
                   })
                 : await submit({
