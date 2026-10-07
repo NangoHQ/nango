@@ -3,18 +3,15 @@ import { z } from 'zod';
 import { invokeFunction } from '@nangohq/shared';
 import { getHeaders, redactHeaders, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionIdSchema, providerConfigKeySchema, scriptNameSchema } from '../../helpers/validation.js';
-import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
-import { getOrchestrator } from '../../utils/utils.js';
-import { sendFunctionFailure } from './errors.js';
+import { connectionIdSchema } from '../../../../../../helpers/validation.js';
+import { asyncWrapperWithEnvironment } from '../../../../../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../../../../../utils/utils.js';
+import { sendFunctionFailure } from '../../../../../functions/errors.js';
 
 import type { FunctionInvocationType, PostFunctionInvocation } from '@nangohq/types';
 
 const bodyValidation = z
     .object({
-        connection_id: connectionIdSchema,
-        integration_id: providerConfigKeySchema,
-        name: scriptNameSchema,
         input: z.unknown().optional(),
         invocation_type: z.enum(['wait', 'no_wait'] satisfies FunctionInvocationType[]),
         // TODO: Validate options based on function config
@@ -37,12 +34,17 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
         return;
     }
 
+    const params = z.object({ connectionId: connectionIdSchema, functionUuid: z.uuid() }).safeParse(req.params);
+    if (!params.success) {
+        res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(params.error) } });
+        return;
+    }
+
     const invoke = await invokeFunction({
         account: res.locals.account,
         environment: res.locals.environment,
-        integrationId: body.data.integration_id,
-        connectionId: body.data.connection_id,
-        functionName: body.data.name,
+        connectionId: params.data.connectionId,
+        functionUuid: params.data.functionUuid,
         input: body.data.input,
         request: {
             method: 'POST',
@@ -57,6 +59,7 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
 
     if (invoke.isOk()) {
         if ('statusUrl' in invoke.value) {
+            res.setHeader('X-Nango-Invocation-Id', invoke.value.id);
             res.status(202).location(invoke.value.statusUrl).json(invoke.value);
             return;
         }

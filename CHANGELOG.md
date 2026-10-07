@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.71.12] - 2026-10-02
+
+### Added
+
+- *(webapp)* Show startup-deal accounts the new billing metrics (#7566) by @macko911
+- *(kms)* Add Azure Key Vault as a DEK wrapping provider (#7717) by @pfreixes
+- *(sanity-sync)* Add integration templates sync (#7554) by @hassan254-prog
+- *(webhooks)* Add allow unverified webhooks integration option (NAN-7312) (#7726) by @agusayerza
+- *(integrations)* Add support for Discord Bot (#7678) by @arctic-char
+- *(integrations)* Add support for Slack app configuration tokens (#7669) by @arctic-char
+- *(server)* Add the Agent Playground chat API (#7697) by @macko911
+- *(integrations)* Add support for modmed-fhir (#7745) by @hassan254-prog
+- *(integrations)* Add Discogs OAuth1 and personal token providers (#7340) by @aquarazorda
+- *(integrations)* Add support for Mailtrap (#7150) by @mazu-rok
+- *(runner-sdk)* Support redirect error in nango.uncontrolledfetch (#7758) by @rbwest
+
+### Changed
+
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/e1f139a2b33d2e976c811c95a38c2dd2a413fe47 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/6d0f6e4e575cdf9f2f89e16086d2e2069fefbb1c by Victor Lang'at by @github-actions[bot]
+- Update version in manifest by @actions-user
+- *(webapp)* Rename the remaining webapp events to the taxonomy (#7720) by @macko911
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/73b6621f698206dbb7561601f031ab3af02c10e5 by Victor Lang'at by @github-actions[bot]
+- Update version in manifest by @actions-user
+- *(docs)* Free self-hosted should be single tenant (#7751) by @rossmcewan
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/900eb400acae4023ff10903315905207bc3a5dc7 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/fec2851c5d727f250db62f8b275603cd65c96996 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/3fce1c855f03b768a4a256cb6bac745b8296c3b6 by Victor Lang'at by @github-actions[bot]
+- Function invocation endpoint (#7724) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/5e38e8f0dfa1ea031ee2230f8d8d3204514667d4 by Victor Lang'at by @github-actions[bot]
+- Rename the server and CLI events to the taxonomy (#7753) by @macko911
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/23df553a789b6e30ba1640d4605cf5bfa7ca7cae by Victor Lang'at by @github-actions[bot]
+
+### Fixed
+
+- Allow cronjob to enable growth add-on for scale-legacy (#7731) by @ErickRDev
+- *(server)* Fix the dark OAuth success page in light mode (#7742) by @macko911
+- Upgrade @grpc/grpc-js (#7747) by @rossmcewan
+- *(plans)* Give Growth add-on customers the xl API rate limit (#7691) by @macko911
+- *(file)* Copy templates remotely whenever remote storage is on (#7752) by @pfreixes
+- *(server)* Fix tool search reporting a just-connected app as not connected (#7748) by @macko911
+- *(proxy)* Time out stalled requests and abort them on cancel (#7709) by @agusayerza
+- Dequeue query tweaks (#7743) by @TBonnin
+- *(microsoft-admin)* Stop double-encoding the client_credentials scope (#7712) by @arhaikal
+- *(mcp)* Protect credentials and confirm destructive actions (#7750) by @marcindobry
+- *(posthog)* Fix duplicate persons and internal filters in PostHog (#7716) by @macko911
+
 ## [v0.71.11] - 2026-09-30
 
 ### Added
@@ -8240,6 +8287,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.71.12]: https://github.com/NangoHQ/nango/compare/v0.71.11..v0.71.12
 [v0.71.11]: https://github.com/NangoHQ/nango/compare/v0.71.10..v0.71.11
 [v0.71.10]: https://github.com/NangoHQ/nango/compare/v0.71.9..v0.71.10
 [v0.71.9]: https://github.com/NangoHQ/nango/compare/v0.71.8..v0.71.9

@@ -36,6 +36,70 @@ describe('shouldRefreshCredentials', () => {
         });
     });
 
+    describe('microsoft-teams', () => {
+        it('should return true if the dev portal access token is expired', async () => {
+            const connection = getTestConnection({
+                connection_config: {
+                    devPortalAccessToken: { access_token: 'dev-portal-token', expires_at: new Date(Date.now() - 10000).toISOString() }
+                }
+            });
+            const res = await shouldRefreshCredentials({
+                connection,
+                credentials: { type: 'OAUTH2', access_token: '', refresh_token: 'hello', raw: {}, expires_at: new Date(Date.now() + 100000000) },
+                instantRefresh: false,
+                provider: { auth_mode: 'OAUTH2' } as ProviderOAuth2,
+                providerConfig: { provider: 'microsoft-teams' } as Config
+            });
+
+            expect(res).toStrictEqual({ should: true, reason: 'expired_dev_portal_access_token' });
+        });
+
+        it('should return false if the dev portal access token is fresh', async () => {
+            const connection = getTestConnection({
+                connection_config: {
+                    devPortalAccessToken: {
+                        access_token: 'dev-portal-token',
+                        expires_at: new Date(Date.now() + REFRESH_MARGIN_MS + 100000).toISOString()
+                    }
+                }
+            });
+            const res = await shouldRefreshCredentials({
+                connection,
+                credentials: {
+                    type: 'OAUTH2',
+                    access_token: '',
+                    refresh_token: 'hello',
+                    raw: {},
+                    expires_at: new Date(Date.now() + REFRESH_MARGIN_MS + 100000)
+                },
+                instantRefresh: false,
+                provider: { auth_mode: 'OAUTH2' } as ProviderOAuth2,
+                providerConfig: { provider: 'microsoft-teams' } as Config
+            });
+
+            expect(res).toStrictEqual({ should: false, reason: 'fresh' });
+        });
+
+        it('should ignore connections without a dev portal access token', async () => {
+            const connection = getTestConnection();
+            const res = await shouldRefreshCredentials({
+                connection,
+                credentials: {
+                    type: 'OAUTH2',
+                    access_token: '',
+                    refresh_token: 'hello',
+                    raw: {},
+                    expires_at: new Date(Date.now() + REFRESH_MARGIN_MS + 100000)
+                },
+                instantRefresh: false,
+                provider: { auth_mode: 'OAUTH2' } as ProviderOAuth2,
+                providerConfig: { provider: 'microsoft-teams' } as Config
+            });
+
+            expect(res).toStrictEqual({ should: false, reason: 'fresh' });
+        });
+    });
+
     describe('refresh token', () => {
         it('should return false if instant refresh but no refresh token', async () => {
             const connection = getTestConnection();

@@ -1,5 +1,4 @@
 import { Client } from '@modelcontextprotocol/client';
-import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -9,11 +8,11 @@ import { Err, flags, metrics, Ok } from '@nangohq/utils';
 import { audit, auditBackend } from '../../audit.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { listIntegrationsTool } from './integrations/list.js';
-import { ManagementMcpTransport } from './management.js';
+import { withTopLevelToolSecuritySchemesResponse } from './management.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { getProvidersTool } from './providers/get.js';
 
-import type { JSONRPCMessage, McpServer } from '@modelcontextprotocol/server';
+import type { McpServer } from '@modelcontextprotocol/server';
 import type { Principal, ScopeSelector, WhereSelector } from '@nangohq/authz';
 import type { AuditAttribution, DBEnvironment, DBTeam } from '@nangohq/types';
 import type * as Utils from '@nangohq/utils';
@@ -61,7 +60,7 @@ describe('createManagementMcpServer with OAuth', () => {
 
         try {
             expect(client.getInstructions()).toBe(
-                'Before using an environment-bound tool, always ask the user which Nango environment to use. Call environments_list first when you need to present the available choices. Use only the environment the user selects; do not query every environment unless the user explicitly asks you to.'
+                'Environment-bound tools operate in the Nango environment named in each call. environments_list returns environments available to the authenticated user. The server checks access and permissions for the named environment on every call.'
             );
 
             const result = await client.listTools();
@@ -76,10 +75,23 @@ describe('createManagementMcpServer with OAuth', () => {
             }
 
             // The MCP SDK currently strips the top-level securitySchemes extension required
-            // by OpenAI, so inspect the raw HTTP message to verify it and its _meta compatibility mirror.
-            const send = vi.spyOn(NodeStreamableHTTPServerTransport.prototype, 'send').mockResolvedValue(undefined);
-            await new ManagementMcpTransport().send({ jsonrpc: '2.0', id: 1, result } as JSONRPCMessage);
-            const serialized = JSON.parse(JSON.stringify(send.mock.calls[0]?.[0])) as {
+            // by OpenAI, so inspect the SSE response transformation and its _meta compatibility mirror.
+            const message = JSON.stringify({ jsonrpc: '2.0', id: 1, result });
+            const encoded = new TextEncoder().encode(`event: message\ndata: ${message}\n\n`);
+            const body = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    const split = Math.floor(encoded.length / 2);
+                    controller.enqueue(encoded.slice(0, split));
+                    controller.enqueue(encoded.slice(split));
+                    controller.close();
+                }
+            });
+            const response = await withTopLevelToolSecuritySchemesResponse(new Response(body, { headers: { 'content-type': 'text/event-stream' } }));
+            const data = (await response.text()).split('\n').find((line) => line.startsWith('data: '));
+            if (!data) {
+                throw new Error('Expected an SSE data line');
+            }
+            const serialized = JSON.parse(data.slice('data: '.length)) as {
                 result: { tools: Array<Record<string, unknown>> };
             };
             for (const tool of serialized.result.tools) {
@@ -94,8 +106,7 @@ describe('createManagementMcpServer with OAuth', () => {
             expect(result.tools[0]).toMatchObject({
                 name: 'environments_list',
                 title: 'List Environments',
-                description:
-                    'List the Nango environments currently available to your user. Call this first, then ask the user to choose an environment before using environment-bound tools. Do not automatically query every returned environment.',
+                description: 'Lists the Nango environments available to the authenticated user and whether each is a production environment.',
                 annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
                 inputSchema: {
                     type: 'object',

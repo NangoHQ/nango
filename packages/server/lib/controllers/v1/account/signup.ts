@@ -8,6 +8,7 @@ import { flagHasUsage, PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToH
 
 import { envs } from '../../../env.js';
 import { sendVerificationEmail } from '../../../helpers/email.js';
+import { identifyAccountMembership } from '../../../services/accountAnalytics.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
 
@@ -118,6 +119,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });
         return;
     }
+    void identifyAccountMembership(account.id);
 
     if (!token && flagHasUsage) {
         const linkOrbCustomerRes = await linkBillingCustomer(account, user);

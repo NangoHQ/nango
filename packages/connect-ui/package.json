@@ -10,9 +10,6 @@
         "serve:unsafe": "serve -s dist -p ${NANGO_CONNECT_UI_PORT:-3009}",
         "test": "vitest run"
     },
-    "dependencies": {
-        "serve": "14.2.6"
-    },
     "devDependencies": {
         "@hookform/resolvers": "5.1.1",
         "@nangohq/frontend": "file:../frontend",
@@ -51,5 +48,8 @@
         "vitest-browser-react": "2.2.0",
         "zod": "4.3.6",
         "zustand": "5.0.3"
+    },
+    "dependencies": {
+        "serve": "14.2.6"
     }
 }

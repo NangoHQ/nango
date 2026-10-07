@@ -204,7 +204,13 @@ function buildFunctionProps(async: boolean): ExecuteFunctionProps {
             trigger: {
                 kind: 'http',
                 input: { foo: 'bar' },
-                request: { method: 'POST', path: '/functions/invocations', headers: {}, query: {}, body: { foo: 'bar' } },
+                request: {
+                    method: 'POST',
+                    path: '/connections/22222222-2222-4222-8222-222222222222/functions/11111111-1111-4111-8111-111111111111/invocations',
+                    headers: {},
+                    query: {},
+                    body: { foo: 'bar' }
+                },
                 connection: { connectionId: 'connection-1', integrationId: 'provider-config-key-1' }
             },
             async

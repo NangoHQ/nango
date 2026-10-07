@@ -767,6 +767,7 @@ affinity:
                 - 'x-ratelimit-limit-user'
                 - 'x-ratelimit-limit-org-reset'
     webhook_routing_script: affinityWebhookRouting
+    webhook_signature_enforced: true
     webhook_allowed_query_params:
         - nangoConnectionId
         - nangoWebhookSecret
@@ -1049,6 +1050,7 @@ airtable:
     proxy:
         base_url: https://api.airtable.com
     webhook_routing_script: airtableWebhookRouting
+    webhook_signature_enforced: true
     docs: https://nango.dev/docs/api-integrations/airtable
     setup_guide_url: https://nango.dev/docs/api-integrations/airtable/how-to-register-your-own-airtable-api-oauth-app
 
@@ -2280,7 +2282,7 @@ atlassian-admin:
             title: Atlassian Organization Id
             optional: true
             description: The organization ID of your Atlassian account
-            pattern: '^[a-f0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$'
+            pattern: '^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$'
             example: '9fa3d2b7-k9l3-4bq1-z3d8-7x1m0a9e2b76'
             doc_section: '#step-1-generating-your-api-key'
 
@@ -7107,6 +7109,61 @@ digits-mcp:
         base_url: https://api.digits.com
     docs: https://nango.dev/docs/api-integrations/digits-mcp
 
+discogs:
+    display_name: Discogs
+    categories:
+        - e-commerce
+        - other
+    auth_mode: OAUTH1
+    request_url: https://api.discogs.com/oauth/request_token
+    authorization_url: https://www.discogs.com/oauth/authorize
+    token_url: https://api.discogs.com/oauth/access_token
+    signature_method: 'PLAINTEXT'
+    proxy:
+        base_url: https://api.discogs.com
+        headers:
+            user-agent: ${connectionConfig.userAgent} || NangoDiscogsIntegration/1.0 (+https://nango.dev; support@nango.dev)
+    docs: https://nango.dev/docs/api-integrations/discogs
+    setup_guide_url: https://nango.dev/docs/api-integrations/discogs/how-to-register-your-own-discogs-api-oauth-app
+    connection_config:
+        userAgent:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
+discogs-token:
+    display_name: Discogs (Personal Access Token)
+    categories:
+        - e-commerce
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.discogs.com
+        headers:
+            authorization: Discogs token=${apiKey}
+            user-agent: ${connectionConfig.userAgent} || NangoDiscogsIntegration/1.0 (+https://nango.dev; support@nango.dev)
+        verification:
+            method: GET
+            endpoints:
+                - /oauth/identity
+    docs: https://nango.dev/docs/api-integrations/discogs-token
+    docs_connect: https://nango.dev/docs/api-integrations/discogs-token/connect
+    connection_config:
+        userAgent:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: The personal access token for your Discogs account
+            example: hpJEgq**********UPY
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-generating-your-personal-access-token'
+
 discolike:
     display_name: DiscoLike
     categories:
@@ -9241,6 +9298,7 @@ fillout-api-key:
             endpoints:
                 - /v1/api/forms
     webhook_routing_script: filloutWebhookRouting
+    webhook_signature_enforced: true
     webhook_allowed_query_params:
         - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/fillout-api-key
@@ -9275,6 +9333,7 @@ fillout:
     token_response_metadata:
         - base_url
     webhook_routing_script: filloutWebhookRouting
+    webhook_signature_enforced: true
     webhook_allowed_query_params:
         - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/fillout
@@ -10041,6 +10100,7 @@ github-app:
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
     token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
     webhook_routing_script: githubAppWebhookRouting
+    webhook_signature_enforced: true
     docs: https://nango.dev/docs/api-integrations/github-app
     setup_guide_url: https://nango.dev/docs/api-integrations/github-app/how-to-register-your-own-github-app-api-app
     connection_config:
@@ -10072,6 +10132,7 @@ github-app-oauth:
         OAUTH2: https://github.com/login/oauth/access_token
         APP: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
     webhook_routing_script: githubAppOauthWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: githubAppOauthPostConnection
     docs: https://nango.dev/docs/api-integrations/github-app-oauth
     setup_guide_url: https://nango.dev/docs/api-integrations/github-app-oauth/how-to-register-your-own-github-app-api-oauth-app
@@ -10656,6 +10717,7 @@ google-mail:
     proxy:
         base_url: https://gmail.googleapis.com
     webhook_routing_script: gmailWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: googleMailPostConnection
     docs: https://nango.dev/docs/api-integrations/google-mail
     setup_guide_url: https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app
@@ -12167,6 +12229,56 @@ hubstaff:
                 - 'x-rate-limit-reset'
     docs: https://nango.dev/docs/api-integrations/hubstaff
     setup_guide_url: https://nango.dev/docs/api-integrations/hubstaff/how-to-register-your-own-hubstaff-oauth-app
+
+imanage:
+    display_name: iManage Work
+    categories:
+        - legal
+        - storage
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/auth/oauth2/authorize
+    token_url: https://${connectionConfig.hostname}/auth/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - user
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            x-auth-token: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/imanage
+    docs_connect: https://nango.dev/docs/api-integrations/imanage/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/imanage/how-to-register-your-own-imanage-oauth-app
+    connection_config:
+        hostname:
+            type: string
+            title: Server Hostname
+            description: Your iManage Work server hostname.
+            format: hostname
+            prefix: https://
+            example: cloudimanage.com
+            doc_section: '#step-1-find-your-server-hostname'
+            order: 1
+        customerId:
+            type: string
+            title: Customer ID
+            description: Your iManage customer ID.
+            example: '1234'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-2-find-your-customer-id'
+            order: 2
+        libraryId:
+            type: string
+            title: Default Library
+            description: The default iManage library to use.
+            optional: true
+            example: ACTIVE_US
+            doc_section: '#step-3-choose-a-default-library-optional'
+            order: 3
 
 incident-io:
     display_name: Incident.io
@@ -14743,6 +14855,38 @@ mailjet:
             example: 'f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1'
             doc_section: '#step-1-getting-your-credentials'
 
+mailtrap:
+    display_name: Mailtrap
+    categories:
+        - communication
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.api.mailtrap.io
+        headers:
+            api-token: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/mailtrap
+    docs_connect: https://nango.dev/docs/api-integrations/mailtrap/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Mailtrap API token.
+            example: a1b2c3d4********************e5f6
+            pattern: '^[a-f0-9]{32}$'
+            secret: true
+            doc_section: '#step-2-getting-your-api-token'
+    connection_config:
+        subdomain:
+            type: string
+            title: API Environment
+            description: The Mailtrap API environment to connect to. Use 'send' for live or 'sandbox' for sandbox.
+            order: 1
+            enum:
+                - send
+                - sandbox
+            doc_section: '#step-1-choose-your-environment'
+
 mandrill:
     display_name: Mandrill
     categories:
@@ -15177,6 +15321,7 @@ microsoft-teams-bot:
         connection_config:
             botHostTenantId: ${connectionConfig.botHostTenantId}
     webhook_routing_script: microsoftTeamsWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: microsoftTeamsBotPostConnection
     docs: https://nango.dev/docs/api-integrations/microsoft-teams-bot
     docs_connect: https://nango.dev/docs/api-integrations/microsoft-teams-bot/connect
@@ -15383,6 +15528,7 @@ microsoft-teams:
         - popular
     alias: microsoft
     webhook_routing_script: microsoftTeamsWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: microsoftTeamsPostConnection
     docs: https://nango.dev/docs/api-integrations/microsoft-teams
     setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-teams/how-to-register-your-own-microsoft-teams-api-oauth-app
@@ -16541,6 +16687,40 @@ nerdio:
             description: The client secret from your Azure App Registration
             secret: true
             doc_section: '#step-2-getting-your-azure-credentials'
+
+netdocuments:
+    display_name: NetDocuments
+    categories:
+        - legal
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/neWeb2/OAuth.aspx
+    token_url: https://api.${connectionConfig.hostname}/v1/OAuth
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/netdocuments
+    docs_connect: https://nango.dev/docs/api-integrations/netdocuments/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/netdocuments/how-to-register-your-own-netdocuments-oauth-app
+    connection_config:
+        hostname:
+            type: string
+            title: Data center hostname
+            description: The NetDocuments data center your repository lives in.
+            example: vault.netvoyage.com
+            prefix: https://
+            enum:
+                - vault.netvoyage.com
+                - eu.netdocuments.com
+                - au.netdocuments.com
+                - de.netdocuments.com
+                - can.netdocuments.com
+            doc_section: '#step-1-find-your-data-center'
 
 netsapiens:
     display_name: NetSapiens
@@ -19384,6 +19564,39 @@ pleo:
                 - external
                 - external.staging
 
+pleo-mcp:
+    display_name: Pleo (MCP)
+    categories:
+        - payment
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.pleo.io/oauth/authorize
+    token_url: https://mcp.pleo.io/oauth/token
+    registration_url: https://mcp.pleo.io/oauth/register
+    authorization_params:
+        response_type: code
+        resource: https://mcp.pleo.io/
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+        resource: https://mcp.pleo.io/
+    refresh_params:
+        grant_type: refresh_token
+        resource: https://mcp.pleo.io/
+    default_scopes:
+        - authenticated
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.pleo.io
+    docs: https://nango.dev/docs/api-integrations/pleo-mcp
+
 pleo-api-key:
     display_name: Pleo (API Key)
     categories:
@@ -21701,6 +21914,7 @@ salesforce:
     proxy:
         base_url: ${connectionConfig.instance_url}
     webhook_routing_script: salesforceWebhookRouting
+    webhook_signature_enforced: true
     post_connection_script: salesforcePostConnection
     docs: https://nango.dev/docs/api-integrations/salesforce
     setup_guide_url: https://nango.dev/docs/api-integrations/salesforce/salesforce-api-oauth-app-setup
@@ -23191,6 +23405,7 @@ shipstation:
             endpoints:
                 - /users
     webhook_routing_script: shipstationWebhookRouting
+    webhook_signature_enforced: true
     webhook_allowed_query_params:
         - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/shipstation
@@ -23230,6 +23445,7 @@ shipstation-v2:
             endpoints:
                 - /v2/users?page_size=1
     webhook_routing_script: shipstationWebhookRouting
+    webhook_signature_enforced: true
     webhook_allowed_query_params:
         - nangoWebhookSecret
     docs: https://nango.dev/docs/integrations/all/shipstation-v2

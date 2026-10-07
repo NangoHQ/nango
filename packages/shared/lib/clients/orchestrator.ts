@@ -8,6 +8,7 @@ import { getFlags } from '@nangohq/feature-flags';
 import { maxScheduleNamesPerSearch } from '@nangohq/nango-orchestrator';
 import { Err, errorToObject, getCheckpointKey, getFrequencyMs, Ok, stringifyError } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { hardDeleteCheckpoints } from '../index.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
@@ -155,6 +156,7 @@ export class Orchestrator {
         connection,
         functionConfigId,
         functionName,
+        functionUuid,
         trigger,
         async,
         retryMax,
@@ -164,6 +166,7 @@ export class Orchestrator {
         environment: DBEnvironment;
         connection: ConnectionJobs;
         functionName: string;
+        functionUuid: string;
         functionConfigId: number;
         trigger: FunctionTrigger;
         async: boolean;
@@ -215,11 +218,14 @@ export class Orchestrator {
                     connection: connection.connection_id,
                     integration: connection.provider_config_key
                 });
-                return Ok({ id: res.value.retryKey, statusUrl: `/functions/invocations/${res.value.retryKey}` });
+                return Ok({
+                    id: res.value.retryKey,
+                    statusUrl: `/connections/${encodeURIComponent(connection.connection_id)}/functions/${functionUuid}/invocations/${res.value.retryKey}`
+                });
             }
 
             void logCtx.enrichOperation({
-                meta: { truncated_response: JSON.stringify(res.value.output)?.slice(0, 100) }
+                meta: { truncated_response: envs.NANGO_LOG_FUNCTION_OUTPUT ? JSON.stringify(res.value.output)?.slice(0, 100) : 'REDACTED' }
             });
 
             return Ok({ data: res.value.output });
@@ -339,7 +345,7 @@ export class Orchestrator {
             }
 
             void logCtx.enrichOperation({
-                meta: { truncated_response: JSON.stringify(res.value)?.slice(0, 100) }
+                meta: { truncated_response: envs.NANGO_LOG_FUNCTION_OUTPUT ? JSON.stringify(res.value)?.slice(0, 100) : 'REDACTED' }
             });
 
             return Ok({ data: res.value as T });

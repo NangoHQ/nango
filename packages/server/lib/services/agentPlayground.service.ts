@@ -182,7 +182,7 @@ export async function buildMcpTools(client: Client): Promise<ToolSet> {
 }
 
 // Actions carry no read-only flag, so anything not named like a read waits for the user.
-const READ_ACTION = /^(list|get|search|fetch|find|read)-/;
+const READ_ACTION = /^(list|get|search|fetch|find|read)([-_]|$)/;
 
 export function toolNeedsApproval(toolName: string, input: unknown): boolean {
     const args = (input ?? {}) as { method?: unknown; tool?: unknown };
@@ -300,13 +300,14 @@ export async function startTurn({
             originalMessages: messages,
             onError: (error) => (error instanceof Error ? error.message : 'The agent failed to answer'),
             messageMetadata: ({ part }): AgentPlaygroundMessageMetadata | undefined => {
+                const sessionMetadata = { sessionId: session.value.id, sessionExpiresAt: session.value.expiresAt.toISOString() };
                 if (part.type === 'start') {
-                    return { sessionId: session.value.id };
+                    return sessionMetadata;
                 }
                 if (part.type === 'finish') {
                     const usage = { inputTokens: part.totalUsage.inputTokens ?? 0, outputTokens: part.totalUsage.outputTokens ?? 0 };
                     logger.info(`Agent Playground turn: ${usage.inputTokens} in / ${usage.outputTokens} out tokens`);
-                    return { sessionId: session.value.id, usage };
+                    return { ...sessionMetadata, usage };
                 }
                 return undefined;
             }
