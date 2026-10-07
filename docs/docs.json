@@ -1595,6 +1595,7 @@
               "api-integrations/mollie",
               "integrations/all/momentum-io",
               "api-integrations/monday",
+              "api-integrations/monday-api-key",
               "api-integrations/moneybird",
               "integrations/all/mural",
               "api-integrations/myob",
