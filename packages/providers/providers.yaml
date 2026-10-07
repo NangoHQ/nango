@@ -1714,6 +1714,31 @@ anvil:
             default_value: ''
             hidden: true
 
+anymailfinder:
+    display_name: Anymail Finder
+    categories:
+        - marketing
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.anymailfinder.com
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v5.1/account
+    docs: https://nango.dev/docs/api-integrations/anymailfinder
+    docs_connect: https://nango.dev/docs/api-integrations/anymailfinder/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Anymail Finder account
+            doc_section: '#step-1-find-your-api-key'
+            example: Xk7Qp2Lm9Rt4************
+            pattern: '^[A-Za-z0-9]+$'
+
 apaleo:
     display_name: Apaleo
     categories:

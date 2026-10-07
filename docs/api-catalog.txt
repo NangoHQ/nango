@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1041
+Provider count: 1042
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -64,6 +64,7 @@ URL patterns:
 | `anthropic` | Anthropic | API_KEY | [docs](https://nango.dev/docs/integrations/all/anthropic.md) |  |  | productivity, dev-tools, popular |
 | `anthropic-admin` | Anthropic Administrator | API_KEY | [docs](https://nango.dev/docs/integrations/all/anthropic-admin.md) |  |  | productivity, dev-tools |
 | `anvil` | Anvil | BASIC | [docs](https://nango.dev/docs/api-integrations/anvil.md) | [connect](https://nango.dev/docs/api-integrations/anvil/connect.md) |  | legal, productivity |
+| `anymailfinder` | Anymail Finder | API_KEY | [docs](https://nango.dev/docs/api-integrations/anymailfinder.md) | [connect](https://nango.dev/docs/api-integrations/anymailfinder/connect.md) |  | marketing, crm |
 | `apaleo` | Apaleo | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/apaleo.md) |  |  | erp |
 | `apify` | Apify | API_KEY | [docs](https://nango.dev/docs/integrations/all/apify.md) | [connect](https://nango.dev/docs/integrations/all/apify/connect.md) |  | dev-tools, analytics, productivity |
 | `apollo` | Apollo (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/apollo.md) | [connect](https://nango.dev/docs/api-integrations/apollo/connect.md) |  | marketing |
