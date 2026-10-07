@@ -5321,7 +5321,7 @@ clarify:
         workspaceSlug:
             type: string
             title: Workspace slug
-            description: The workspace segment from your Clarify URL (e.g. acme from app.clarify.ai/workspaces/acme). Enter the slug only, not the full URL.
+            description: The workspace segment from your Clarify URL.
             example: acme
             doc_section: '#step-1-finding-your-workspace-slug'
             order: 1
@@ -5329,7 +5329,10 @@ clarify:
         apiKey:
             type: string
             title: API key
-            description: A Clarify API key from Settings, then API Keys. Keys are issued per workspace.
+            description: Your Clarify API key.
+            example: bbb9****************0086
+            pattern: '^[A-Za-z0-9+/=_-]+$'
+            secret: true
             doc_section: '#step-2-creating-an-api-key'
 
 clay:
