@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 1044
+Provider count: 1045
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -176,6 +176,7 @@ URL patterns:
 | `chatarmin` | Chatarmin | API_KEY | [docs](https://nango.dev/docs/api-integrations/chatarmin.md) | [connect](https://nango.dev/docs/api-integrations/chatarmin/connect.md) |  | communication |
 | `chatgpt-enterprise` | ChatGPT Enterprise (SCIM API) | API_KEY | [docs](https://nango.dev/docs/api-integrations/chatgpt-enterprise.md) | [connect](https://nango.dev/docs/api-integrations/chatgpt-enterprise/connect.md) |  | productivity, dev-tools |
 | `chattermill` | Chattermill | API_KEY | [docs](https://nango.dev/docs/integrations/all/chattermill.md) |  |  | support, analytics |
+| `checkbox` | Checkbox | API_KEY | [docs](https://nango.dev/docs/api-integrations/checkbox.md) | [connect](https://nango.dev/docs/api-integrations/checkbox/connect.md) |  | legal, ticketing |
 | `checkhq` | Check | API_KEY | [docs](https://nango.dev/docs/integrations/all/checkhq.md) | [connect](https://nango.dev/docs/integrations/all/checkhq/connect.md) |  | accounting |
 | `checkout-com` | Checkout.com | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/checkout-com.md) | [connect](https://nango.dev/docs/integrations/all/checkout-com/connect.md) |  | payment |
 | `checkout-com-sandbox` | Checkout.com (Sandbox) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/checkout-com-sandbox.md) | [connect](https://nango.dev/docs/integrations/all/checkout-com-sandbox/connect.md) |  | payment |

@@ -1177,6 +1177,7 @@
               "api-integrations/chatarmin",
               "api-integrations/chatgpt-enterprise",
               "integrations/all/chattermill",
+              "api-integrations/checkbox",
               "integrations/all/checkhq",
               "integrations/all/checkout-com",
               "integrations/all/checkout-com-sandbox",
