@@ -31,30 +31,33 @@ Checkbox serves production and sandbox accounts from different addresses. Pick t
 
 API keys only work in the environment where they were created, so create your key in the same environment in Step 2.
 
-#### Step 2: Create a Partner API key
+#### Step 2: Create an API key
 
 1. Log in to your Checkbox account as an admin, at [app.checkbox.ai](https://app.checkbox.ai) for production or [sandbox.checkbox-app.com](https://sandbox.checkbox-app.com) for sandbox.
-2. Go to **Settings** > **Partner API Keys**.
+2. Go to **Account Settings** > **API Keys**.
+<img src="/integrations/all/checkbox/checkbox-api-keys.png" />
 3. Create a new API key.
 4. Copy the key and store it somewhere safe. Treat it like a password: anyone with the key can read and update matters in your Checkbox account.
 
-#### Step 3: Find your Create Assessment account ID and base URL
+#### Step 3: Find your Create Assessment account ID
 
 Skip this step if you only need matter management.
 
-Checkbox provides both values during onboarding for the Create Assessment API:
+**Account ID**  A number, for example `12345`.
 
-- **Account ID** – A number, for example `12345`.
-- **Create Assessment Base URL** – The address of your Checkbox environment, starting with `https://`.
-
-If you don't have them, contact your Checkbox account team or [support@checkbox.ai](mailto:support@checkbox.ai).
+1. Log in to your Checkbox account.
+2. Go to **Account Settings** > **User Management**
+3. Find your user and click on your name.
+4. Copy your user account ID in the browser's address bar:
+<img src="/integrations/all/checkbox/checkbox-user-management.png" />
 
 #### Step 4: Enter credentials in the Connect UI
 
 1. Open the form where you need to authenticate with Checkbox.
 2. Select your **Environment**.
-3. Enter your **Partner API Key** in the Partner API Key field.
-4. If you completed Step 3, enter your **Account ID** and **Create Assessment Base URL**.
+3. Enter your **API Key** in the API Key field.
+4. If you completed Step 3, enter your **Account ID**.
 5. Submit the form to complete authentication.
+<img src="/integrations/all/checkbox/nango-connection-form.png" />
 
 You are now connected to Checkbox.
