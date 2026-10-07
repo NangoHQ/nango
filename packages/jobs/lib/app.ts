@@ -10,6 +10,7 @@ import { getLogger, metrics, once, report, stringifyError } from '@nangohq/utils
 
 import { orchestratorClient } from './clients.js';
 import { envs } from './env.js';
+import { assertRunnerAuthMaterial } from './internal-auth.js';
 import { LambdaInvocationsProcessor } from './invocations/lambda.processor.js';
 import { Processor } from './processor/processor.js';
 import { LambdaKeepWarmProcessor } from './processors/lambdaKeepWarm.processor.js';
@@ -36,6 +37,7 @@ process.on('uncaughtException', (err) => {
 try {
     await initializeFeatureFlags();
     assertInternalTlsCompatibleWithLambda();
+    assertRunnerAuthMaterial();
 
     const port = envs.NANGO_JOBS_PORT;
     const orchestratorUrl = envs.ORCHESTRATOR_SERVICE_URL;
