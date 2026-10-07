@@ -74,7 +74,7 @@ Official docs: [Checkbox](https://www.checkbox.ai) (API documentation is provide
 
 ## 🔌 Calling the Create Assessment API
 
-Checkbox has two APIs, one API Key and one Nango connection covers both:
+Checkbox has two APIs, and one API key and one Nango connection cover both:
 
 - **Matter Management (Partner API)** is served under `/partner/api/v1/ticketing` from the connection's environment: `https://app.checkbox.ai` for production or `https://sandbox.checkbox-app.com` for sandbox. Nango uses this base URL by default, so no extra setup is needed.
 - **Create Assessment** (`POST /restapi/v1/assessments`) is served from the same base URL that Checkbox assigns to each environment. Nango adds the `X-Consumer-Custom-Id` header automatically when the connection's **Account ID** is set.
