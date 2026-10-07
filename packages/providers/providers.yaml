@@ -5119,7 +5119,7 @@ checkbox:
             example: 'abZnZk********liDQ'
             pattern: '^[A-Za-z0-9]+$'
             description: A Checkbox API key.
-            doc_section: '#step-2-create-a-partner-api-key'
+            doc_section: '#step-2-create-an-api-key'
     connection_config:
         hostname:
             type: string
@@ -5139,7 +5139,7 @@ checkbox:
             pattern: '^[0-9]+$'
             optional: true
             order: 2
-            doc_section: '#step-3-find-your-create-assessment-account-id-and-base-url'
+            doc_section: '#step-3-find-your-create-assessment-account-id'
 
 checkhq:
     display_name: Check
