@@ -1,9 +1,6 @@
-import { z } from 'zod';
-
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { logContextGetter } from '@nangohq/logs';
-import { connectionTagsSchema, TAG_MAX_COUNT } from '@nangohq/shared';
 import { baseUrl, Err, Ok, report } from '@nangohq/utils';
 
 import * as agentSessionConnectionsService from './agentSessionConnections.service.js';
@@ -17,7 +14,6 @@ import type {
     AgentSessionCreationErrorCode,
     AgentSessionEndedReason,
     AgentSessionMetaTools,
-    AgentSessionMetaToolsSummary,
     AgentSessionPinnedTools,
     AgentSessionResolvedConnection,
     AgentSessionResolvedConnections,
@@ -33,72 +29,17 @@ import type { Result } from '@nangohq/utils';
 const AGENT_SESSIONS_TABLE = 'agent_sessions';
 const ENVIRONMENTS_TABLE = '_nango_environments';
 
-const MIN_EXPIRES_IN_MS = 60 * 1000;
-const MAX_EXPIRES_IN_MS = 15 * 24 * 60 * 60 * 1000;
-const DEFAULT_EXPIRES_IN_MS = MAX_EXPIRES_IN_MS;
-
-const EXPIRES_IN_PATTERN = /^([1-9]\d*)([smhd])$/;
-
-const EXPIRES_IN_UNITS_IN_MS: Record<string, number> = {
-    s: 1000,
-    m: 60 * 1000,
-    h: 60 * 60 * 1000,
-    d: 24 * 60 * 60 * 1000
-};
-
-/** One slot is spent on the tag binding the connection back to the session, so the caller gets the rest. */
-const MAX_CONFIGURED_TAGS = TAG_MAX_COUNT - 1;
+const DEFAULT_EXPIRES_IN_MS = 15 * 24 * 60 * 60 * 1000;
 
 export const DEFAULT_CREATE_CONNECTION_CONFIG: AgentSessionCreateConnectionConfig = { enabled: false, tags: {} };
 
-const asMetaToolConfig = (value: unknown) => (typeof value === 'boolean' ? { enabled: value } : value);
-
-const metaToolSchema = z.preprocess(asMetaToolConfig, z.strictObject({ enabled: z.boolean() }));
-
-const createConnectionMetaToolSchema = z.preprocess(
-    asMetaToolConfig,
-    z.strictObject({
-        enabled: z.boolean(),
-        tags: connectionTagsSchema
-            .refine((tags) => Object.keys(tags).length <= MAX_CONFIGURED_TAGS, {
-                message: `Cannot configure more than ${MAX_CONFIGURED_TAGS} tags`
-            })
-            .optional()
-    })
-);
-
-const META_TOOLS = {
-    nangoToolSearch: { name: 'nango_tool_search', enabledByDefault: true, schema: metaToolSchema },
-    nangoExecute: { name: 'nango_execute', enabledByDefault: true, schema: metaToolSchema },
+const DEFAULT_META_TOOLS: AgentSessionMetaTools = {
+    nangoToolSearch: true,
+    nangoExecute: true,
     // Off by default: it reaches any endpoint of a connected integration, not only the toolset's tools.
-    nangoProxy: { name: 'nango_proxy', enabledByDefault: false, schema: metaToolSchema },
-    nangoCreateConnection: { name: 'nango_create_connection', enabledByDefault: false, schema: createConnectionMetaToolSchema }
-} as const satisfies Record<keyof AgentSessionMetaTools, { name: keyof AgentSessionMetaToolsSummary; enabledByDefault: boolean; schema: z.ZodType }>;
-
-const META_TOOL_NAMES: string[] = Object.values(META_TOOLS).map((metaTool) => metaTool.name);
-
-export const agentSessionMetaToolsSchema = z.looseObject({
-    nango_tool_search: META_TOOLS.nangoToolSearch.schema.optional(),
-    nango_execute: META_TOOLS.nangoExecute.schema.optional(),
-    nango_proxy: META_TOOLS.nangoProxy.schema.optional(),
-    nango_create_connection: META_TOOLS.nangoCreateConnection.schema.optional()
-} satisfies Record<keyof AgentSessionMetaToolsSummary, z.ZodType>);
-
-export type AgentSessionMetaToolsRequest = z.output<typeof agentSessionMetaToolsSchema>;
-
-export const agentSessionExpiresInSchema = z
-    .string()
-    .transform((value, ctx) => {
-        const ms = expiresInToMs(value);
-        if (ms === null) {
-            ctx.addIssue({ code: 'custom', message: 'expires_in must be a positive integer followed by s, m, h or d, for example 1h' });
-            return z.NEVER;
-        }
-
-        return ms;
-    })
-    .refine((ms) => ms >= MIN_EXPIRES_IN_MS, { message: 'expires_in cannot be shorter than 60s' })
-    .refine((ms) => ms <= MAX_EXPIRES_IN_MS, { message: 'expires_in cannot exceed 15d' });
+    nangoProxy: false,
+    nangoCreateConnection: DEFAULT_CREATE_CONNECTION_CONFIG
+};
 
 export interface DBAgentSession {
     readonly id: string;
@@ -120,7 +61,7 @@ export interface CreateAgentSessionParams {
     connections: AgentSessionTenantConnections;
     toolset: AgentSessionToolsetPolicy | undefined;
     pinnedTools: AgentSessionPinnedTools | undefined;
-    metaTools: AgentSessionMetaToolsRequest | undefined;
+    metaTools: Partial<AgentSessionMetaTools> | undefined;
     expiresInMs: number | undefined;
 }
 
@@ -491,40 +432,6 @@ export async function expireAgentSessions(trx: Knex, { limit }: { limit: number 
     return expired;
 }
 
-export function expiresInToMs(expiresIn: string): number | null {
-    const match = EXPIRES_IN_PATTERN.exec(expiresIn);
-    if (!match) {
-        return null;
-    }
-
-    const [, amount, unit] = match;
-    const unitInMs = unit ? EXPIRES_IN_UNITS_IN_MS[unit] : undefined;
-
-    return unitInMs ? Number(amount) * unitInMs : null;
-}
-
-export function parseMetaTools(requested: AgentSessionMetaToolsRequest | undefined): { applied: AgentSessionMetaTools; unknown: string[] } {
-    const unknown = Object.keys(requested ?? {}).filter((key) => !META_TOOL_NAMES.includes(key));
-
-    return {
-        applied: {
-            nangoToolSearch: requested?.nango_tool_search?.enabled ?? META_TOOLS.nangoToolSearch.enabledByDefault,
-            nangoExecute: requested?.nango_execute?.enabled ?? META_TOOLS.nangoExecute.enabledByDefault,
-            nangoProxy: requested?.nango_proxy?.enabled ?? META_TOOLS.nangoProxy.enabledByDefault,
-            nangoCreateConnection: parseCreateConnection(requested?.nango_create_connection)
-        },
-        unknown
-    };
-}
-
-export function parseCreateConnection(requested: AgentSessionMetaToolsRequest['nango_create_connection']): AgentSessionCreateConnectionConfig {
-    if (requested === undefined) {
-        return { enabled: META_TOOLS.nangoCreateConnection.enabledByDefault, tags: {} };
-    }
-
-    return { enabled: requested.enabled, tags: requested.tags ?? {} };
-}
-
 export function resolvedConnectionsSummary(connections: AgentSessionResolvedConnections): Record<string, AgentSessionResolvedConnectionSummary> {
     return Object.fromEntries(
         Object.entries(connections).map(([integrationId, connection]) => [
@@ -549,17 +456,6 @@ export function toolsetToolNames(toolset: AgentSessionCompiledToolset): Record<s
 
 async function runCreation(params: CreateAgentSessionParams): Promise<Result<CreatedAgentSession, AgentSessionCreationError>> {
     const { account, environment } = params;
-
-    const metaTools = parseMetaTools(params.metaTools);
-    if (metaTools.unknown.length > 0) {
-        return Err(
-            new AgentSessionCreationError({
-                code: 'unknown_meta_tool',
-                message: `${metaTools.unknown.length} ${metaTools.unknown.length === 1 ? 'key is' : 'keys are'} not a meta tool Nango ships. Supported meta tools are ${META_TOOL_NAMES.join(', ')}.`,
-                payload: { meta_tools: metaTools.unknown }
-            })
-        );
-    }
 
     const resolvedConnections = await agentSessionConnectionsService.resolveTenantConnections({
         environmentId: environment.id,
@@ -588,7 +484,7 @@ async function runCreation(params: CreateAgentSessionParams): Promise<Result<Cre
                     environmentId: environment.id,
                     resolvedConnections: resolvedConnections.value,
                     compiledToolset: compiledToolset.value,
-                    metaTools: metaTools.applied,
+                    metaTools: { ...DEFAULT_META_TOOLS, ...params.metaTools },
                     expiresAt: new Date(Date.now() + (params.expiresInMs ?? DEFAULT_EXPIRES_IN_MS))
                 })
             ).unwrap();

@@ -138,7 +138,7 @@ async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | un
         // Every playground integration, connected or not, so the agent can offer to connect a missing app.
         toolset: Object.fromEntries(integrationIds.map((integrationId) => [integrationId, { allow: '*', deny: [] }])),
         pinnedTools: undefined,
-        metaTools: { nango_create_connection: { enabled: true, tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid } }, nango_proxy: { enabled: true } },
+        metaTools: { nangoCreateConnection: { enabled: true, tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid } }, nangoProxy: true },
         expiresInMs: PLAYGROUND_SESSION_EXPIRES_IN_MS
     });
 
