@@ -64,10 +64,12 @@ services:
             - CLICKHOUSE_USER=default
             - CLICKHOUSE_PASSWORD=
         volumes:
-            - clickhouse_data:/usr/share/clickhouse/data
+            - clickhouse_data:/var/lib/clickhouse
         configs:
             - source: clickhouse_users
               target: /etc/clickhouse-server/users.d/default-user.xml
+            - source: clickhouse_system_logs
+              target: /etc/clickhouse-server/config.d/system-logs.xml
 
 networks:
     nango:
@@ -92,4 +94,21 @@ configs:
                         <quota>default</quota>
                     </default>
                 </users>
+            </clickhouse>
+    clickhouse_system_logs:
+        content: |
+            <clickhouse>
+                <logger>
+                    <level>warning</level>
+                </logger>
+                <asynchronous_metric_log remove="1" />
+                <background_schedule_pool_log remove="1" />
+                <metric_log remove="1" />
+                <opentelemetry_span_log remove="1" />
+                <part_log remove="1" />
+                <processors_profile_log remove="1" />
+                <query_metric_log remove="1" />
+                <query_views_log remove="1" />
+                <text_log remove="1" />
+                <trace_log remove="1" />
             </clickhouse>

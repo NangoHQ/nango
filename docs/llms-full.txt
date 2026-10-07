@@ -6783,7 +6783,7 @@ The audit trail covers the main control-plane operations related to connections,
 |----------|---------|
 | `connection` | `created`, `updated`, `metadata_updated`, `refreshed`, `deleted` |
 | `integration` | `created`, `updated`, `deleted` |
-| `function` | `deployed`, `upgraded`, `deleted` |
+| `function` | `deployed`, `upgraded`, `updated`, `deleted`, `variant_created`, `variant_deleted`, `variant_updated` |
 | `sync` | `enabled`, `disabled`, `paused`, `started`, `triggered`, `cancelled`, `frequency_changed`, `variant_created`, `variant_deleted` |
 | `api_key` | `created`, `updated`, `deleted` |
 | `environment` | `created`, `updated`, `variables_changed`, `webhook_urls_changed`, `webhook_signing_key_rotated`, `deleted` |
@@ -6796,6 +6796,8 @@ The audit trail covers the main control-plane operations related to connections,
 | `audit_trail` | `queried`, `exported` |
 
 `connection.metadata_updated` and `sync.triggered` are recorded for actions taken in the dashboard. The equivalent API endpoints — `POST` / `PATCH /connection/metadata` and `POST /sync/trigger` — are data plane operations and are not recorded; see [Limitations](#limitations).
+
+`function.variant_updated` records the requested `enabled` and `frequency` settings in its metadata. A `frequency` of `null` means the frequency override was reset. Omitted settings are not included.
 
 Secrets, such as API keys and passwords, are stripped from audit log entries.
 
@@ -8433,17 +8435,48 @@ NANGO_CLI_TLS_KEY_PASSPHRASE=
 
 Orchestrator, jobs, and runner HTTP APIs accept an `Authorization: Bearer` credential except `GET /health`, which stays open for probes. Enforcement is off until you set `NANGO_INTERNAL_AUTH_REQUIRED=true`. Shipping the image with no new variables is a no-op.
 
-There are three credential kinds:
+New tokens are EdDSA JWTs with the same shape on every hop. The `kid` header selects the verifying key. Service tokens are minted by the caller (`iss` and `sub` are `service:jobs` or `service:server`) and last 5 minutes. Jobs mints `sub: task:<id>` or `node:<id>` for two hops: jobs → runner uses `aud: runner` and lasts 5 minutes; the runner carries `aud: jobs` back, where a task token lasts 25 hours by default, or the task lifetime, and a node token lasts a year. Runners never receive a private key.
 
-- **Control plane** (server, jobs, orchestrator): a static shared secret. Used for server and jobs calling orchestrator.
-- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call body. The runner presents it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour).
-- **Runner dispatch JWT**: jobs mints an EdDSA token (`aud: runner`, `task_id` or `node_id`) and sends it as `Authorization: Bearer` on `start`, `abort`, and `notifyWhenIdle`. The Ed25519 private key is derived from `NANGO_INTERNAL_AUTH_SIGNING_KEY` and never leaves jobs. Jobs injects only the matching public key onto the runner at node start, so a runner process cannot mint dispatch tokens. A start call without a valid jobs identity is rejected when `REQUIRED=true`.
+Until you set a private key, callers keep minting the previous credentials, and every receiver still accepts them:
+
+- **Static bearer** (`NANGO_INTERNAL_AUTH_TOKEN`): server and jobs calling orchestrator.
+- **Task and node HMAC JWTs** (`NANGO_INTERNAL_AUTH_SIGNING_KEY`): runner calls back to jobs. Task tokens last 25 hours by default, or the task lifetime. Node tokens last a year.
+- **Derived Ed25519 dispatch JWTs**: jobs calls the runner. The private key is derived from the HMAC signing key and never leaves jobs.
+
+Set the new keys in this order so a rolling deploy keeps accepting in-flight tokens:
+
+1. Deploy server, jobs, and orchestrator. Runners pick up the new image the next time jobs starts them.
+2. Set the public keys, and do not set private keys yet. Set `NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS` on orchestrator and jobs, and `NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS` on the server and orchestrator. Jobs copies the jobs public keys onto new runners and still injects the legacy derived public key.
+3. Recycle runners so every live runner can verify both shapes.
+4. Set the server private key, then the jobs private key. Jobs then mints service and workload JWTs. In-flight HMAC task tokens (up to 25 hours) and node tokens on runners that have not been recycled still verify.
+
+To rotate a key, append the new entry to the public-key JSON array and deploy the verifiers before you switch the minter's key id and private key.
+
+```yaml
+NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: |
+  [
+    {
+      "kid": "jobs-2026-09",
+      "publicKey": "<base64url of the raw 32-byte key>"
+    },
+    {
+      "kid": "jobs-2026-10",
+      "publicKey": "<base64url of the next key>"
+    }
+  ]
+```
 
 | Variable | Where | Purpose |
 | - | - | - |
-| `NANGO_INTERNAL_AUTH_TOKEN` | server, jobs, orchestrator | Static Bearer. Never the runner service. |
-| `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only. Never set on runners. | HMAC key for task JWTs (`aud: jobs`). Also the seed for the Ed25519 runner-dispatch keypair. |
-| `NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY` | runners (injected by jobs at node start) | Ed25519 public key. Verify-only; cannot mint dispatch tokens. |
+| `NANGO_INTERNAL_AUTH_TOKEN` | server, jobs, orchestrator | Legacy static Bearer. Used until that service's private key is set. Never the runner service. |
+| `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only. Never set on runners. | Legacy HMAC key and seed for the derived runner-dispatch keypair. |
+| `NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY` | runners (injected by jobs at node start) | Legacy Ed25519 public key. Verify-only. |
+| `NANGO_INTERNAL_AUTH_JOBS_KEY_ID` | jobs | `kid` for the jobs private key, for example `jobs-2026-09`. |
+| `NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY` | jobs only. Never set on runners. | Unencrypted Ed25519 PKCS8 PEM. Mints service and workload tokens. |
+| `NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS` | orchestrator, jobs, runners | JSON array of `{"kid","publicKey"}`. `publicKey` is the base64url raw 32-byte Ed25519 key. Must include the jobs key id before the private key is set. |
+| `NANGO_INTERNAL_AUTH_SERVER_KEY_ID` | server | `kid` for the server private key, for example `server-2026-09`. |
+| `NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY` | server only | Unencrypted Ed25519 PKCS8 PEM. Mints tokens for orchestrator. |
+| `NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS` | server, orchestrator | Same JSON array. Must include the server key id on the server process before the private key is set. |
 | `NANGO_INTERNAL_AUTH_REQUIRED` | orchestrator, jobs, runners | Fail closed. Default `false`. Flip independently on orchestrator, then jobs. Runners inherit `REQUIRED` at node start. |
 
 #### Custom websockets path
@@ -8984,6 +9017,124 @@ Finally, remove all usage of the **public key and HMAC** from your frontend.
 - [Auth guide](/guides/auth/auth-guide) - implement Connect sessions.
 - [Customize Connect UI](/guides/auth/customize-connect-ui) - migrate custom authorization UIs or customize the pre-built UI.
 - [Connection tags, configuration, and metadata](/guides/auth/connection-tags-configuration-metadata) - add ownership attribution during migration.
+
+## Migrate from Connection MCP to agent sessions
+
+Source: https://nango.dev/docs/guides/platform/migrations/migrate-from-connection-mcp.md
+Description: Replace the Connection MCP with a scoped agent session
+
+The Connection MCP is deprecated. Agent sessions are its replacement for giving an agent access to Nango integrations.
+
+The main change is that your backend creates a scoped, expiring session for the agent. The session defines which connections and action functions the agent can use.
+
+## Main differences
+
+- Connection MCP uses an Environment API key and connection headers. Agent sessions use a session token.
+- Connection MCP selects one connection for a request. Agent sessions define their connection scope when created and can include multiple integrations.
+- Agent sessions use an explicit toolset to control which action functions are available.
+- Action functions are searchable by default instead of appearing directly in `tools/list`.
+- Session tool names include the integration ID, such as `notion__read_doc` instead of `read_doc`.
+- Agent sessions expire and cannot be extended.
+
+## Create an agent session
+
+Create the session from your backend with an Environment API key that has the `environment:agent_sessions:write` scope.
+
+Pin the connection previously used by your Connection MCP integration and allow the action functions your agent needs:
+
+```bash
+curl --request POST \
+  --url https://api.nango.dev/sessions \
+  --header "Authorization: Bearer <NANGO-API-KEY>" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "tenant": {
+      "connections": {
+        "pinned": [
+          {
+            "integration_id": "<INTEGRATION-ID>",
+            "connection_id": "<CONNECTION-ID>"
+          }
+        ]
+      }
+    },
+    "toolset": {
+      "<INTEGRATION-ID>": {
+        "allow": {
+          "tools": ["<ACTION-NAME>"]
+        }
+      }
+    },
+    "expires_in": "1h"
+  }'
+```
+
+The response includes a `session_token` and `mcp_url`.
+
+You can select connections by tags instead of hardcoding a connection ID:
+
+```json
+{
+  "tenant": {
+    "connections": {
+      "any": [
+        {
+          "tags": {
+            "user_id": "<USER-ID>"
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+Selectors must resolve to exactly one connection per integration. A session can include connections from multiple integrations. See [Tenant](/guides/agent-sessions#tenant) for more selector options.
+
+To allow every action for an integration, replace the integration policy with `"*"`:
+
+```json
+{
+  "toolset": {
+    "<INTEGRATION-ID>": "*"
+  }
+}
+```
+
+The actions remain searchable by default; add them to `pinned_tools` if they must appear directly in `tools/list`.
+
+## Connect your agent to the session MCP
+
+Configure your MCP client with the returned `mcp_url` and `session_token`:
+
+```text
+URL: mcp_url
+Authorization: Bearer session_token
+```
+
+You no longer need to send the Connection MCP headers:
+
+- `connection-id`
+- `provider-config-key`
+
+Keep the Environment API key in your backend. Do not pass it to the agent.
+
+## Discover and call tools
+
+Connection MCP listed available actions directly. To preserve that behavior, add the actions your agent relies on to `pinned_tools` when creating the session. Otherwise, leave them searchable, which is useful when the toolset is large.
+
+Searchable action functions can be used through:
+
+- `nango_tool_search` to find a relevant action function
+- `nango_execute` to run the selected action function
+
+Update any system prompts or client configuration that refer to tools by name. For example, `read_doc` becomes `notion__read_doc` when it is exposed directly by a session. See [Toolsets & tools](/guides/agent-sessions#toolsets-&-tools) for details.
+
+## Handle session expiry
+
+Agent sessions expire according to `expires_in`. Create a new session when the current one expires. You can also terminate a session early when the agent task ends.
+
+See the [agent sessions guide](/guides/agent-sessions) for connection selectors, toolsets, meta tools, session lifecycle, and MCP client examples.
 
 ## Migrating to Zero YAML
 
@@ -15848,6 +15999,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `braintree` | Braintree | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/braintree.md) |  |  | payment |
 | `braintree-sandbox` | Braintree (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/braintree-sandbox.md) |  |  | payment |
 | `braze` | Braze | API_KEY | [docs](https://nango.dev/docs/integrations/all/braze.md) | [connect](https://nango.dev/docs/integrations/all/braze/connect.md) |  | communication |
+| `breathehr` | Breathe HR | API_KEY | [docs](https://nango.dev/docs/api-integrations/breathehr.md) | [connect](https://nango.dev/docs/api-integrations/breathehr/connect.md) |  | hr |
 | `breezy-hr` | Breezy HR | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/breezy-hr.md) | [connect](https://nango.dev/docs/integrations/all/breezy-hr/connect.md) |  | hr, ats |
 | `brevo-api-key` | Brevo | API_KEY | [docs](https://nango.dev/docs/integrations/all/brevo-api-key.md) |  |  | marketing |
 | `brex` | Brex (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/brex.md) |  | [setup](https://nango.dev/docs/api-integrations/brex/how-to-register-your-own-brex-oauth-app.md) | banking |
@@ -15876,6 +16028,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `certn` | Certn | API_KEY | [docs](https://nango.dev/docs/integrations/all/certn.md) | [connect](https://nango.dev/docs/integrations/all/certn/connect.md) |  | legal |
 | `certn-partner` | Certn Partner | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/certn-partner.md) |  |  | legal |
 | `chargebee` | Chargebee | BASIC | [docs](https://nango.dev/docs/integrations/all/chargebee.md) | [connect](https://nango.dev/docs/integrations/all/chargebee/connect.md) |  | payment |
+| `charliehr` | CharlieHR | BASIC | [docs](https://nango.dev/docs/api-integrations/charliehr.md) | [connect](https://nango.dev/docs/api-integrations/charliehr/connect.md) |  | hr |
 | `chartboost` | Chartboost | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/chartboost.md) | [connect](https://nango.dev/docs/api-integrations/chartboost/connect.md) |  | marketing, gaming |
 | `chatarmin` | Chatarmin | API_KEY | [docs](https://nango.dev/docs/api-integrations/chatarmin.md) | [connect](https://nango.dev/docs/api-integrations/chatarmin/connect.md) |  | communication |
 | `chatgpt-enterprise` | ChatGPT Enterprise (SCIM API) | API_KEY | [docs](https://nango.dev/docs/api-integrations/chatgpt-enterprise.md) | [connect](https://nango.dev/docs/api-integrations/chatgpt-enterprise/connect.md) |  | productivity, dev-tools |
@@ -16096,7 +16249,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `google-play` | Google Play | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/google-play.md) |  |  | dev-tools |
 | `google-search-console` | Google Search Console | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-search-console.md) |  | [setup](https://nango.dev/docs/api-integrations/google-search-console/how-to-register-your-own-google-search-console-oauth-app.md) | productivity |
 | `google-service-account` | Google Service Account | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/google-service-account.md) | [connect](https://nango.dev/docs/integrations/all/google-service-account/connect.md) |  | dev-tools |
-| `google-sheet` | Google Sheet | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-sheet.md) |  | [setup](https://nango.dev/docs/api-integrations/google-sheet/how-to-register-your-own-google-sheet-api-oauth-app.md) | productivity |
+| `google-sheet` | Google Sheets | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-sheet.md) |  | [setup](https://nango.dev/docs/api-integrations/google-sheet/how-to-register-your-own-google-sheet-api-oauth-app.md) | productivity |
 | `google-slides` | Google Slides | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-slides.md) |  | [setup](https://nango.dev/docs/api-integrations/google-slides/how-to-register-your-own-google-slides-api-oauth-app.md) | productivity |
 | `google-tasks` | Google Tasks | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-tasks.md) |  | [setup](https://nango.dev/docs/api-integrations/google-tasks/how-to-register-your-own-google-tasks-api-oauth-app.md) | productivity |
 | `google-workspace-admin` | Google Workspace Admin | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/google-workspace-admin.md) |  | [setup](https://nango.dev/docs/api-integrations/google-workspace-admin/how-to-register-your-own-google-workspace-admin-api-oauth-app.md) | productivity |
@@ -16302,6 +16455,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `mollie` | Mollie | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/mollie.md) |  | [setup](https://nango.dev/docs/api-integrations/mollie/how-to-register-your-own-mollie-oauth-app.md) | payment |
 | `momentum-io` | Momentum.io | API_KEY | [docs](https://nango.dev/docs/integrations/all/momentum-io.md) | [connect](https://nango.dev/docs/integrations/all/momentum-io/connect.md) |  | productivity |
 | `monday` | Monday | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/monday.md) |  | [setup](https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app.md) | productivity, ticketing |
+| `monday-api-key` | Monday (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/monday-api-key.md) | [connect](https://nango.dev/docs/api-integrations/monday-api-key/connect.md) |  | productivity, ticketing |
 | `moneybird` | Moneybird | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/moneybird.md) |  | [setup](https://nango.dev/docs/api-integrations/moneybird/how-to-register-your-own-moneybird-oauth-app.md) | accounting, invoicing |
 | `mural` | Mural | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/mural.md) |  |  | design |
 | `myob` | MYOB | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/myob.md) |  | [setup](https://nango.dev/docs/api-integrations/myob/how-to-register-your-own-myob-api-oauth-app.md) | accounting |

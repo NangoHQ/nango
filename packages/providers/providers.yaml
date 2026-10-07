@@ -4123,6 +4123,40 @@ braze:
             description: The API key to your Braze account
             doc_section: '#step-2-finding-your-api-key'
 
+breathehr:
+    display_name: Breathe HR
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/account
+    docs: https://nango.dev/docs/api-integrations/breathehr
+    docs_connect: https://nango.dev/docs/api-integrations/breathehr/connect
+    connection_config:
+        apiHost:
+            type: string
+            title: Environment
+            description: The Breathe HR environment to connect to.
+            enum:
+                - api.breathehr.com
+                - api.sandbox.breathehr.info
+            order: 1
+            doc_section: '#step-1-choose-your-environment'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Breathe HR API key.
+            pattern: '^(prod|sandbox)-\S+$'
+            example: prod-1OcT****************************************
+            doc_section: '#step-2-find-your-api-key'
+
 brevo-api-key:
     display_name: Brevo
     categories:
@@ -4907,6 +4941,38 @@ chargebee:
             # Chargebee is using basic auth with an api key
             default_value: ''
             hidden: true
+
+charliehr:
+    display_name: CharlieHR
+    categories:
+        - hr
+    auth_mode: BASIC
+    proxy:
+        base_url: https://charliehr.com
+        headers:
+            authorization: Token token=${credentials.username}:${credentials.password}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/company
+    docs: https://nango.dev/docs/api-integrations/charliehr
+    docs_connect: https://nango.dev/docs/api-integrations/charliehr/connect
+    credentials:
+        username:
+            type: string
+            title: Client ID
+            description: Your CharlieHR API client ID.
+            pattern: '^[0-9a-f]{20}$'
+            example: a1b2************c3d4
+            doc_section: '#step-1-get-your-api-credentials'
+        password:
+            type: string
+            title: Client Secret
+            description: Your CharlieHR API client secret.
+            pattern: '^[0-9a-f]{64}$'
+            example: e5f6********************************************************7a8b
+            secret: true
+            doc_section: '#step-1-get-your-api-credentials'
 
 chartboost:
     display_name: Chartboost
@@ -10774,7 +10840,7 @@ google-search-console:
     setup_guide_url: https://nango.dev/docs/api-integrations/google-search-console/how-to-register-your-own-google-search-console-oauth-app
 
 google-sheet:
-    display_name: Google Sheet
+    display_name: Google Sheets
     categories:
         - productivity
     alias: google
@@ -16183,6 +16249,34 @@ monday:
         base_url: https://api.monday.com
     docs: https://nango.dev/docs/api-integrations/monday
     setup_guide_url: https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app
+
+monday-api-key:
+    display_name: Monday (API Key)
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.monday.com
+        headers:
+            authorization: ${apiKey}
+            content-type: application/json
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v2
+            data: { 'query': 'query { me { id } }' }
+    docs: https://nango.dev/docs/api-integrations/monday-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/monday-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Personal API Token
+            description: Your monday.com personal V2 API token
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            example: eyJhbGciOiJI*******.eyJ0aWQiOjEy**************************************.FAKESIG*************************
 
 moneybird:
     display_name: Moneybird
