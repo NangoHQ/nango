@@ -89,12 +89,9 @@ async function createPlaygroundIntegration(environment: DBEnvironment, providerN
         return created.value.unique_key;
     }
 
-    // A suffixed key can mean a concurrent request created this provider's integration first.
-    const winner = existingIntegrationFor(
-        (await configService.listProviderConfigs(db.knex, environment.id)).filter((integration) => integration.id !== created.value.id),
-        providerName
-    );
-    if (!winner) {
+    // Keep our own row in the list: concurrent requests must all pick the same winner, or each deletes its own.
+    const winner = existingIntegrationFor(await configService.listProviderConfigs(db.knex, environment.id), providerName);
+    if (!winner || winner === created.value.unique_key) {
         return created.value.unique_key;
     }
     await configService.deleteProviderConfig({
