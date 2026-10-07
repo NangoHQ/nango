@@ -131,7 +131,7 @@ The env var is the flag key uppercased with dashes as underscores. Keys live in 
 
 ### PostHog locally
 
-A local stack sends no analytics. To test an event, point the server and dashboard at the **Nango Dev** PostHog project and restart the server:
+A local stack sends no analytics. To test an event, point the server and dashboard at the **Nango Dev** PostHog project, restart the server, and hard-refresh the dashboard (`/env.js` is cached for an hour):
 
 ```ini
 PUBLIC_POSTHOG_KEY=<Nango Dev project token>   # us.posthog.com/project/649640/settings/project
