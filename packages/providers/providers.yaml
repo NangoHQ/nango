@@ -5334,7 +5334,6 @@ clarify:
             description: Your Clarify API key.
             example: bbb9****************0086
             pattern: '^[A-Za-z0-9+/=_-]+$'
-            secret: true
             doc_section: '#step-2-creating-an-api-key'
 
 clay:
