@@ -153,6 +153,13 @@ function matchesSearch(template: NangoFunctionTemplate, needle: string): boolean
     return `${template.name} ${template.description ?? ''}`.toLowerCase().includes(needle);
 }
 
+function pillCount(deployed: number | undefined, templatesFetched: boolean, undeployedTemplates: number): number | undefined {
+    if (deployed == null || !templatesFetched) {
+        return undefined;
+    }
+    return deployed + undeployedTemplates;
+}
+
 interface FunctionsTabProps {
     integration: ApiIntegration;
 }
@@ -187,7 +194,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
         type: typeFilter
     });
 
-    // Unfiltered totals for the pills. Search only narrows the active table.
+    // Unfiltered totals for the pills, including templates that are not deployed yet. Search only narrows the active table.
     const actionCounts = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'action', limit: 1 });
     const syncCounts = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'sync', limit: 1 });
     const triggerCounts = useGetIntegrationFunctions({ env, providerConfigKey: integration.unique_key, type: 'on-event', limit: 1 });
@@ -280,8 +287,8 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const visibleSyncTemplates = typeFilter === 'sync' && !hasNextPage && !isPlaceholderData ? matchingSyncTemplates : [];
 
     const counts: Record<TypeFilterValue, number | undefined> = {
-        action: actionCounts.data?.pages[0]?.pagination.total,
-        sync: syncCounts.data?.pages[0]?.pagination.total,
+        action: pillCount(actionCounts.data?.pages[0]?.pagination.total, templatesFetched, undeployedActionTemplates.length),
+        sync: pillCount(syncCounts.data?.pages[0]?.pagination.total, templatesFetched, undeployedSyncTemplates.length),
         'on-event': triggerCounts.data?.pages[0]?.pagination.total
     };
     const countsSettled = [actionCounts, syncCounts, triggerCounts].every((query) => query.isSuccess || query.isError);
