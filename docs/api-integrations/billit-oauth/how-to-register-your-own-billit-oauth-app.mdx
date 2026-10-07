@@ -1,0 +1,30 @@
+---
+title: 'How to register your own Billit OAuth app'
+sidebarTitle: 'Billit (OAuth) setup'
+description: 'Request OAuth credentials from Billit and configure them in Nango'
+---
+
+Billit issues OAuth clients through support. A profile API key cannot be used as an OAuth Client ID or Client Secret.
+
+<Steps>
+    <Step id="request-oauth-client" title="Request an OAuth client">
+    Create a [Billit support ticket](https://docs.billit.be/docs/contact-support) with:
+
+    - Your [Billit Party ID](https://docs.billit.be/docs/partyid-and-key).
+    - Your application name.
+    - The requested environment: sandbox first, then production.
+    - The callback URL shown in your Nango integration settings. For Nango Cloud, the default is `https://api.nango.dev/oauth/callback`.
+
+    Billit requires a registered, non-localhost callback URL.
+    </Step>
+    <Step id="configure-credentials" title="Configure the credentials in Nango">
+    After Billit confirms activation, open **Integrations** in Nango and select **Billit (OAuth)**. Enter the issued **Client ID** and **Client Secret**.
+
+    Use separate Nango integrations for sandbox and production credentials. At connection time, select the environment that matches the client. The sample credentials in Billit's documentation are not valid credentials.
+    </Step>
+    <Step id="connect-account" title="Connect an account">
+    Follow the [Billit OAuth quickstart](/api-integrations/billit-oauth) to authorize an account and make your first API request.
+    </Step>
+</Steps>
+
+For details, see [Billit's OAuth client registration guide](https://docs.billit.be/docs/how-do-i-request-oauth-client-id-and-secret).
