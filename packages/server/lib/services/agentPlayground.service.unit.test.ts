@@ -88,8 +88,8 @@ describe('existingIntegrationFor', () => {
             { unique_key: 'newer-github', provider: 'github' }
         ];
 
-        expect(existingIntegrationFor(integrations, 'google-calendar')).toBe('google-calendar');
-        expect(existingIntegrationFor(integrations, 'github')).toBe('new-github');
+        expect(existingIntegrationFor(integrations, 'google-calendar')?.unique_key).toBe('google-calendar');
+        expect(existingIntegrationFor(integrations, 'github')?.unique_key).toBe('new-github');
         expect(existingIntegrationFor(integrations, 'slack')).toBeUndefined();
     });
 });

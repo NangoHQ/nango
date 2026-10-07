@@ -13,15 +13,14 @@ import { createPlaygroundModel } from './agentPlaygroundModel.service.js';
 import * as agentSessionService from './agentSession.service.js';
 
 import type {
+    AgentPlaygroundIntegrationSetup,
     AgentPlaygroundMessageMetadata,
     AgentSession,
     AgentSessionPinnedConnection,
     DBEnvironment,
     DBPlan,
     DBTeam,
-    DBUser,
-    IntegrationConfig,
-    Provider
+    DBUser
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JSONSchema7, LanguageModel, ToolSet, UIMessage, UIMessageChunk } from 'ai';
@@ -69,71 +68,60 @@ export function newestConnectionPerIntegration(
 }
 
 // Expects `integrations` oldest first, as listProviderConfigs returns them.
-export function existingIntegrationFor(integrations: { unique_key: string; provider: string }[], provider: string): string | undefined {
+export function existingIntegrationFor<T extends { unique_key: string; provider: string }>(integrations: T[], provider: string): T | undefined {
     const matching = integrations.filter((integration) => integration.provider === provider);
-    return (matching.find((integration) => integration.unique_key === provider) ?? matching[0])?.unique_key;
+    return matching.find((integration) => integration.unique_key === provider) ?? matching[0];
 }
 
-export async function ensurePlaygroundIntegrations(environment: DBEnvironment): Promise<string[]> {
-    // Read the primary: on a stale replica read, the create below adds a duplicate.
+// Never creates: only a pre-made prompt sets up a missing integration.
+export async function resolvePlaygroundIntegrations(environment: DBEnvironment): Promise<string[]> {
     const existing = await configService.listProviderConfigs(db.knex, environment.id);
-    const ensured = await Promise.all(
-        PLAYGROUND_PROVIDERS.map(async (provider) => existingIntegrationFor(existing, provider) ?? (await createPlaygroundIntegration(environment, provider)))
-    );
-    return ensured.filter((integrationId): integrationId is string => integrationId !== null);
+    return PLAYGROUND_PROVIDERS.flatMap((provider) => existingIntegrationFor(existing, provider)?.unique_key ?? []);
 }
 
-async function createPlaygroundIntegration(environment: DBEnvironment, providerName: string): Promise<string | null> {
+export async function setUpStarterIntegration(environment: DBEnvironment, providerName: string): Promise<AgentPlaygroundIntegrationSetup> {
+    // Read the primary: on a stale replica read, the create below adds a duplicate.
+    const existing = existingIntegrationFor(await configService.listProviderConfigs(db.knex, environment.id), providerName);
+    if (existing) {
+        return {
+            provider: providerName,
+            integrationId: existing.unique_key,
+            outcome: existing.missing_fields.length > 0 ? 'missing_credentials' : 'existing'
+        };
+    }
+
+    const created = await createWithNangoOAuthApp(environment, providerName);
+    return created ? { provider: providerName, integrationId: created, outcome: 'created' } : { provider: providerName, outcome: 'not_created' };
+}
+
+async function createWithNangoOAuthApp(environment: DBEnvironment, providerName: string): Promise<string | null> {
     const provider = getProvider(providerName);
-    if (!provider) {
-        logger.error(`Agent Playground provider ${providerName} does not exist`);
+    const sharedCredentials = await sharedCredentialsService.getLatestSharedCredentialsByName(providerName);
+    if (!provider || sharedCredentials.isErr() || !sharedCredentials.value) {
         return null;
     }
 
-    const created = await createIntegration(environment, providerName, provider);
-    if (!created) {
+    const created = await sharedCredentialsService.createPreprovisionedProvider({ providerName, environment_id: environment.id, provider });
+    if (created.isErr()) {
+        logger.error(`Agent Playground could not create ${providerName}: ${created.error.message}`);
         return null;
     }
-    if (created.unique_key === providerName || !created.id) {
-        return created.unique_key;
+    if (created.value.unique_key === providerName || !created.value.id) {
+        return created.value.unique_key;
     }
 
     // Keep our own row in the list: concurrent requests must all pick the same winner, or each deletes its own.
     const winner = existingIntegrationFor(await configService.listProviderConfigs(db.knex, environment.id), providerName);
-    if (!winner || winner === created.unique_key) {
-        return created.unique_key;
+    if (!winner || winner.unique_key === created.value.unique_key) {
+        return created.value.unique_key;
     }
     await configService.deleteProviderConfig({
-        id: created.id,
+        id: created.value.id,
         environmentId: environment.id,
-        providerConfigKey: created.unique_key,
+        providerConfigKey: created.value.unique_key,
         orchestrator: getOrchestrator()
     });
-    return winner;
-}
-
-async function createIntegration(environment: DBEnvironment, providerName: string, provider: Provider): Promise<IntegrationConfig | null> {
-    const sharedCredentials = await sharedCredentialsService.getLatestSharedCredentialsByName(providerName);
-    if (sharedCredentials.isErr()) {
-        logger.error(`Agent Playground could not load the ${providerName} OAuth app: ${sharedCredentials.error.message}`);
-        return null;
-    }
-
-    if (sharedCredentials.value) {
-        const created = await sharedCredentialsService.createPreprovisionedProvider({ providerName, environment_id: environment.id, provider });
-        if (created.isErr()) {
-            logger.error(`Agent Playground could not create ${providerName}: ${created.error.message}`);
-            return null;
-        }
-        return created.value;
-    }
-
-    try {
-        return await configService.createEmptyProviderConfig(providerName, environment.id, provider);
-    } catch (err) {
-        logger.error(`Agent Playground could not create ${providerName}: ${err instanceof Error ? err.message : String(err)}`);
-        return null;
-    }
+    return winner.unique_key;
 }
 
 // The owner is read from the create-connection tags, so those tags must stay per user.
@@ -149,7 +137,7 @@ async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | un
         }
     }
 
-    const integrationIds = await ensurePlaygroundIntegrations(ctx.environment);
+    const integrationIds = await resolvePlaygroundIntegrations(ctx.environment);
     const connections = await connectionService.listConnections({
         environmentId: ctx.environment.id,
         integrationIds,
@@ -171,6 +159,17 @@ async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | un
         return Err(new AgentPlaygroundError('session_creation_failed', created.error.message, { cause: created.error }));
     }
     return Ok(created.value.session);
+}
+
+// The page tells the user to finish the setup, so the model isn't asked to reply.
+function setupOnlyReply(integrationSetup: AgentPlaygroundIntegrationSetup): ReadableStream<UIMessageChunk<AgentPlaygroundMessageMetadata>> {
+    return new ReadableStream({
+        start(controller) {
+            controller.enqueue({ type: 'start', messageMetadata: { integrationSetup } });
+            controller.enqueue({ type: 'finish', finishReason: 'stop' });
+            controller.close();
+        }
+    });
 }
 
 export async function buildMcpTools(client: Client): Promise<ToolSet> {
@@ -252,7 +251,17 @@ export async function startTurn({
     abortSignal?: AbortSignal;
     model?: () => LanguageModel;
 }): Promise<Result<ReadableStream<UIMessageChunk<AgentPlaygroundMessageMetadata>>, AgentPlaygroundError>> {
-    const session = await getOrCreateSession(ctx, sessionId);
+    const lastMessage = messages.at(-1);
+    // The provider comes from the browser, so only the playground's own providers are set up.
+    const starterProvider = lastMessage?.role === 'user' ? lastMessage.metadata?.starterProvider : undefined;
+    const integrationSetup =
+        starterProvider && PLAYGROUND_PROVIDERS.includes(starterProvider) ? await setUpStarterIntegration(ctx.environment, starterProvider) : undefined;
+    if (integrationSetup && integrationSetup.outcome !== 'created' && integrationSetup.outcome !== 'existing') {
+        return Ok(setupOnlyReply(integrationSetup));
+    }
+
+    // A new integration only reaches a session compiled after it exists.
+    const session = await getOrCreateSession(ctx, integrationSetup ? undefined : sessionId);
     if (session.isErr()) {
         return Err(session.error);
     }
@@ -282,7 +291,11 @@ export async function startTurn({
         [tools, modelMessages, connections] = await Promise.all([
             buildMcpTools(client),
             // A tool call left unanswered by Stop or an ignored approval would make OpenAI reject every later turn.
-            convertToModelMessages(messages, { ignoreIncompleteToolCalls: true }),
+            convertToModelMessages(
+                // A reply that only reported an integration setup has no parts, so it must not reach the model as an empty assistant turn.
+                messages.filter((message) => message.role !== 'assistant' || message.parts.length > 0),
+                { ignoreIncompleteToolCalls: true }
+            ),
             connectionService.listConnections({
                 environmentId: ctx.environment.id,
                 integrationIds: Object.keys(session.value.compiledToolset),
@@ -326,7 +339,7 @@ export async function startTurn({
             messageMetadata: ({ part }): AgentPlaygroundMessageMetadata | undefined => {
                 const sessionMetadata = { sessionId: session.value.id, sessionExpiresAt: session.value.expiresAt.toISOString() };
                 if (part.type === 'start') {
-                    return sessionMetadata;
+                    return { ...sessionMetadata, ...(integrationSetup ? { integrationSetup } : {}) };
                 }
                 if (part.type === 'finish') {
                     const usage = { inputTokens: part.totalUsage.inputTokens ?? 0, outputTokens: part.totalUsage.outputTokens ?? 0 };
