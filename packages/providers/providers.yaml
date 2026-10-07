@@ -10728,7 +10728,7 @@ google-search-console:
     setup_guide_url: https://nango.dev/docs/api-integrations/google-search-console/how-to-register-your-own-google-search-console-oauth-app
 
 google-sheet:
-    display_name: Google Sheet
+    display_name: Google Sheets
     categories:
         - productivity
     alias: google
