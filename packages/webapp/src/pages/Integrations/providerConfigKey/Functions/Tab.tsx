@@ -12,22 +12,18 @@ import { EmptyCard } from '@/components/ui/EmptyCard';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
-import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import { usePreBuiltDeployFlow } from '@/hooks/useFlow';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useGetIntegrationFunction, useGetIntegrationFunctions, useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
 import { useMeta } from '@/hooks/useMeta';
-import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
-import { APIError } from '@/utils/api';
 import { isSyncOrAction } from '@/utils/scripts';
 import { cn } from '@/utils/utils';
 import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 import { FunctionDetailsPanel } from './FunctionDetailsPanel';
 import { FunctionSourceLabel } from './FunctionSourceLabel';
 
-import type { ApiError, ApiIntegration, ListedNangoFunction, NangoFunctionTemplate } from '@nangohq/types';
+import type { ApiIntegration, ListedNangoActionFunction, ListedNangoFunction, ListedNangoSyncFunction, NangoFunctionTemplate } from '@nangohq/types';
 
 const TYPE_FILTER_VALUES = ['action', 'sync', 'on-event'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
@@ -108,20 +104,80 @@ function templateRowKey(template: NangoFunctionTemplate): string {
     return `${template.type}:${template.name}:`;
 }
 
+function templateSectionKey(template: { type: string; name: string }): string {
+    return `${template.type}:${template.name}`;
+}
+
+/** A template has no sync-config row until the first enable, which deploys it. */
+function listedFromTemplate(template: NangoFunctionTemplate): ListedNangoSyncFunction | ListedNangoActionFunction {
+    const availability = template.deployed
+        ? {
+              id: template.deployed.id,
+              enabled: template.deployed.enabled,
+              last_deployed: template.deployed.last_deployed,
+              source: template.deployed.source
+          }
+        : { id: null, enabled: false, last_deployed: null, source: 'catalog' as const };
+
+    if (template.type === 'sync') {
+        return { ...template, ...availability, type: 'sync' };
+    }
+    return { ...template, ...availability, type: 'action' };
+}
+
+type FunctionListRow = { kind: 'function'; fn: ListedNangoFunction } | { kind: 'template'; template: NangoFunctionTemplate };
+
+function mergeTemplateSection(previous: string[], incoming: string[]): string[] {
+    const seen = new Set(previous);
+    const next = [...previous];
+    for (const key of incoming) {
+        if (seen.has(key)) continue;
+        next.push(key);
+        seen.add(key);
+    }
+    return next;
+}
+
+function FunctionTableRow({
+    fn,
+    integration,
+    selected,
+    showStatus,
+    onSelect
+}: {
+    fn: ListedNangoFunction;
+    integration: ApiIntegration;
+    selected: boolean;
+    showStatus: boolean;
+    onSelect: () => void;
+}) {
+    return (
+        <TableRow aria-selected={selected} className={cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS)} onClick={onSelect}>
+            <FunctionNameCell name={fn.name} description={fn.description} />
+            <TableCell className="w-35 px-3">
+                <FunctionSourceLabel source={fn.source} />
+            </TableCell>
+            {showStatus && (
+                <TableCell className="w-35 px-3">
+                    <FunctionStatus fn={fn} integration={integration} />
+                </TableCell>
+            )}
+        </TableRow>
+    );
+}
+
 function FunctionTemplateRow({
     template,
-    isDeploying,
+    integration,
     showStatus,
     selected,
-    onSelect,
-    onDeploy
+    onSelect
 }: {
     template: NangoFunctionTemplate;
-    isDeploying: boolean;
+    integration: ApiIntegration;
     showStatus: boolean;
     selected: boolean;
     onSelect: () => void;
-    onDeploy: (template: NangoFunctionTemplate) => void;
 }) {
     return (
         <TableRow aria-selected={selected} className={cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS)} onClick={onSelect}>
@@ -131,17 +187,7 @@ function FunctionTemplateRow({
             </TableCell>
             {showStatus && (
                 <TableCell className="w-35 px-3">
-                    <button
-                        type="button"
-                        disabled={isDeploying}
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            onDeploy(template);
-                        }}
-                        className="inline-flex h-6 w-21 items-center justify-center rounded-ds-sm border-ds-hairline border-border-strong px-3 type-label-sm text-text-secondary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        Deploy
-                    </button>
+                    <FunctionStatus fn={listedFromTemplate(template)} integration={integration} />
                 </TableCell>
             )}
         </TableRow>
@@ -231,9 +277,7 @@ interface FunctionsTabProps {
 export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const env = useStore((state) => state.env);
     const { data: metaData } = useMeta();
-    const { toast } = useToast();
-    const { confirm, DialogComponent } = useConfirmDialog();
-    const [deployingName, setDeployingName] = useState<string | null>(null);
+    const [templateTail, setTemplateTail] = useState<{ scope: string; keys: string[] }>({ scope: '', keys: [] });
 
     const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
     const debouncedSearch = useDebouncedValue(search);
@@ -261,7 +305,6 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
         env,
         providerConfigKey: integration.unique_key
     });
-    const { mutateAsync: deployFlow } = usePreBuiltDeployFlow(env, integration.unique_key);
 
     const onRowClick = useCallback(
         (name: string) => {
@@ -270,57 +313,20 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
         [selectedFunctionName, setSelectedFunctionName]
     );
 
-    const deployTemplate = useCallback(
-        async (template: NangoFunctionTemplate) => {
-            setDeployingName(template.name);
-            try {
-                await deployFlow({
-                    providerConfigKey: integration.unique_key,
-                    scriptName: template.name,
-                    type: template.type
-                });
-                toast({ title: `${template.name} deployed successfully`, variant: 'success' });
-            } catch (err) {
-                const message = err instanceof APIError ? (err.json as ApiError<string>).error.message : undefined;
-                toast({ title: 'Failed to deploy template', description: message, variant: 'error' });
-            } finally {
-                setDeployingName(null);
-            }
-        },
-        [deployFlow, integration.unique_key, toast]
-    );
-
-    const onDeployTemplate = useCallback(
-        (template: NangoFunctionTemplate) => {
-            if (template.type === 'action') {
-                void deployTemplate(template);
-                return;
-            }
-
-            void confirm({
-                title: 'Deploy sync?',
-                description: 'It will start syncing potentially for multiple connections. This will impact your billing.',
-                confirmButtonText: 'Deploy',
-                confirmVariant: 'primary',
-                onConfirm: () => deployTemplate(template)
-            });
-        },
-        [confirm, deployTemplate]
-    );
-
     const functions: ListedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
     const total = data?.pages[0]?.pagination.total ?? 0;
     const listedMatch = selectedFunctionName ? functions.find((fn) => fn.name === selectedFunctionName) : undefined;
-    const templateMatch = selectedFunctionName
-        ? (templatesResponse?.data ?? []).find((template) => !template.deployed && template.type === typeFilter && template.name === selectedFunctionName)
+    const rawTemplateMatch = selectedFunctionName
+        ? (templatesResponse?.data ?? []).find((template) => template.type === typeFilter && template.name === selectedFunctionName)
         : undefined;
+    const templateMatch = rawTemplateMatch && !rawTemplateMatch.deployed ? rawTemplateMatch : undefined;
     // A linked function can sit past the first page. Fetch it directly so the panel opens without scrolling the list.
     const { data: linkedFunction } = useGetIntegrationFunction({
         env,
         providerConfigKey: integration.unique_key,
         name: selectedFunctionName ?? '',
         type: typeFilter,
-        enabled: Boolean(selectedFunctionName) && templatesFetched && !listedMatch && !templateMatch
+        enabled: Boolean(selectedFunctionName) && templatesFetched && !listedMatch && !rawTemplateMatch
     });
 
     const searchNeedle = debouncedSearch.trim().toLowerCase();
@@ -347,7 +353,42 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
             ? matchingActionTemplates.filter((template) => !listedFunctionKeys.has(`${template.type}:${template.name}`))
             : [];
     const visibleSyncTemplates = typeFilter === 'sync' && !hasNextPage && !isPlaceholderData ? matchingSyncTemplates : [];
-    const selectedFunction = listedMatch ?? templateMatch ?? linkedFunction?.data ?? null;
+    const selectedFunction =
+        listedMatch ?? templateMatch ?? (rawTemplateMatch?.deployed ? listedFromTemplate(rawTemplateMatch) : undefined) ?? linkedFunction?.data ?? null;
+
+    const tailScope = `${integration.unique_key}:${typeFilter}`;
+    const incomingTailKeys = (typeFilter === 'action' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : []).map(templateSectionKey);
+    const incomingTailKey = incomingTailKeys.join('\n');
+    const templateSectionKeys = mergeTemplateSection(templateTail.scope === tailScope ? templateTail.keys : [], incomingTailKeys);
+
+    useEffect(() => {
+        if (typeFilter === 'on-event' || !templatesFetched || hasNextPage || isPlaceholderData) return;
+        const incoming = incomingTailKey ? incomingTailKey.split('\n') : [];
+        setTemplateTail((current) => {
+            const previous = current.scope === tailScope ? current.keys : [];
+            const next = mergeTemplateSection(previous, incoming);
+            if (current.scope === tailScope && next.length === previous.length && next.every((key, index) => key === previous[index])) {
+                return current;
+            }
+            return { scope: tailScope, keys: next };
+        });
+    }, [typeFilter, templatesFetched, hasNextPage, isPlaceholderData, tailScope, incomingTailKey]);
+
+    const functionRows = useMemo(() => {
+        const templatesByKey = new Map((templatesResponse?.data ?? []).map((template) => [templateSectionKey(template), template]));
+        const pinned = new Set(templateSectionKeys);
+        const functionByKey = new Map(functions.map((fn) => [templateSectionKey(fn), fn]));
+        const leading: FunctionListRow[] = functions.filter((fn) => !pinned.has(templateSectionKey(fn))).map((fn) => ({ kind: 'function', fn }));
+        const tail: FunctionListRow[] = templateSectionKeys.flatMap((key): FunctionListRow[] => {
+            const listed = functionByKey.get(key);
+            if (listed) return [{ kind: 'function', fn: listed }];
+            const template = templatesByKey.get(key);
+            if (!template || (searchNeedle && !matchesSearch(template, searchNeedle))) return [];
+            if (template.deployed) return [{ kind: 'function', fn: listedFromTemplate(template) }];
+            return [{ kind: 'template', template }];
+        });
+        return [...leading, ...tail];
+    }, [functions, searchNeedle, templateSectionKeys, templatesResponse?.data]);
 
     const counts: Record<TypeFilterValue, number | undefined> = {
         // Catalog actions are already in the functions total. A failed templates request leaves the response unset, so the pill stays hidden instead of showing a deployed-only number.
@@ -385,10 +426,34 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const showEmptyType = countsSettled && !hasSearch && !showEmptyNoFilters && !isLoading && !activeListHasRows;
     const waitingForEmptyDecision = !hasSearch && functions.length === 0 && (!countsSettled || !templatesFetched);
     const activePill = TYPE_PILLS.find((pill) => pill.value === typeFilter) ?? TYPE_PILLS[0];
+    const listedRows = functionRows.map((row) => {
+        if (row.kind === 'template') {
+            return (
+                <FunctionTemplateRow
+                    key={`template:${row.template.type}:${row.template.name}`}
+                    template={row.template}
+                    integration={integration}
+                    showStatus={showStatus}
+                    selected={row.template.name === selectedFunctionName}
+                    onSelect={() => onRowClick(row.template.name)}
+                />
+            );
+        }
+
+        return (
+            <FunctionTableRow
+                key={functionRowKey(row.fn)}
+                fn={row.fn}
+                integration={integration}
+                selected={row.fn.name === selectedFunctionName}
+                showStatus={showStatus}
+                onSelect={() => onRowClick(row.fn.name)}
+            />
+        );
+    });
 
     return (
         <div className="flex flex-col gap-4 w-full">
-            {DialogComponent}
             {isLoading || waitingForEmptyDecision ? (
                 <Skeleton className="w-full h-50" />
             ) : showEmptyNoFilters ? (
@@ -498,40 +563,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                         {showStatus && <ColumnHead className="w-35">Status</ColumnHead>}
                                     </TableRow>
                                 </TableHeader>
-                                <TableBody>
-                                    {functions.map((fn) => {
-                                        const selected = fn.name === selectedFunctionName;
-                                        return (
-                                            <TableRow
-                                                key={functionRowKey(fn)}
-                                                aria-selected={selected}
-                                                className={cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS)}
-                                                onClick={() => onRowClick(fn.name)}
-                                            >
-                                                <FunctionNameCell name={fn.name} description={fn.description} />
-                                                <TableCell className="w-35 px-3">
-                                                    <FunctionSourceLabel source={fn.source} />
-                                                </TableCell>
-                                                {showStatus && (
-                                                    <TableCell className="w-35 px-3">
-                                                        <FunctionStatus fn={fn} integration={integration} />
-                                                    </TableCell>
-                                                )}
-                                            </TableRow>
-                                        );
-                                    })}
-                                    {visibleActionTemplates.map((template) => (
-                                        <FunctionTemplateRow
-                                            key={`template:${template.type}:${template.name}`}
-                                            template={template}
-                                            isDeploying={deployingName === template.name}
-                                            showStatus={showStatus}
-                                            selected={template.name === selectedFunctionName}
-                                            onSelect={() => onRowClick(template.name)}
-                                            onDeploy={onDeployTemplate}
-                                        />
-                                    ))}
-                                </TableBody>
+                                <TableBody>{listedRows}</TableBody>
                                 <TableFooter className="bg-transparent font-ds-regular">
                                     <TableRow className="h-8 hover:bg-transparent">
                                         <TableCell colSpan={2 + (showStatus ? 1 : 0)} className="px-3 type-label-xs text-text-disabled">
@@ -555,38 +587,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                         <ColumnHead className="w-35">Status</ColumnHead>
                                     </TableRow>
                                 </TableHeader>
-                                <TableBody>
-                                    {functions.map((fn) => {
-                                        const selected = fn.name === selectedFunctionName;
-                                        return (
-                                            <TableRow
-                                                key={functionRowKey(fn)}
-                                                aria-selected={selected}
-                                                className={cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS)}
-                                                onClick={() => onRowClick(fn.name)}
-                                            >
-                                                <FunctionNameCell name={fn.name} description={fn.description} />
-                                                <TableCell className="w-35 px-3">
-                                                    <FunctionSourceLabel source={fn.source} />
-                                                </TableCell>
-                                                <TableCell className="w-35 px-3">
-                                                    <FunctionStatus fn={fn} integration={integration} />
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                    {visibleSyncTemplates.map((template) => (
-                                        <FunctionTemplateRow
-                                            key={`template:${template.type}:${template.name}`}
-                                            template={template}
-                                            isDeploying={deployingName === template.name}
-                                            showStatus
-                                            selected={template.name === selectedFunctionName}
-                                            onSelect={() => onRowClick(template.name)}
-                                            onDeploy={onDeployTemplate}
-                                        />
-                                    ))}
-                                </TableBody>
+                                <TableBody>{listedRows}</TableBody>
                                 <TableFooter className="bg-transparent font-ds-regular">
                                     <TableRow className="h-8 hover:bg-transparent">
                                         <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
@@ -610,27 +611,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                         <ColumnHead className="w-35">Status</ColumnHead>
                                     </TableRow>
                                 </TableHeader>
-                                <TableBody>
-                                    {functions.map((fn) => {
-                                        const selected = fn.name === selectedFunctionName;
-                                        return (
-                                            <TableRow
-                                                key={functionRowKey(fn)}
-                                                aria-selected={selected}
-                                                className={cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS)}
-                                                onClick={() => onRowClick(fn.name)}
-                                            >
-                                                <FunctionNameCell name={fn.name} description={fn.description} />
-                                                <TableCell className="w-35 px-3">
-                                                    <FunctionSourceLabel source={fn.source} />
-                                                </TableCell>
-                                                <TableCell className="w-35 px-3">
-                                                    <FunctionStatus fn={fn} integration={integration} />
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                </TableBody>
+                                <TableBody>{listedRows}</TableBody>
                                 <TableFooter className="bg-transparent font-ds-regular">
                                     <TableRow className="h-8 hover:bg-transparent">
                                         <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
