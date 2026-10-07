@@ -1952,6 +1952,30 @@ appstle-subscriptions:
             example: lBfFAdbxUxyv6jYRgOmrEVNkijCKD10T
             pattern: ^[a-zA-Z0-9]+$
 
+arcmira:
+    display_name: Arcmira
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.arcmira.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/me
+    docs: https://nango.dev/docs/api-integrations/arcmira
+    docs_connect: https://nango.dev/docs/api-integrations/arcmira/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Arcmira account API key
+            secret: true
+            doc_section: '#step-1-get-an-arcmira-api-key'
+
 asana:
     display_name: Asana
     categories:
