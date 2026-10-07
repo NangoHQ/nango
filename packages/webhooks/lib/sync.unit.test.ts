@@ -30,6 +30,7 @@ const account: DBTeam = {
     name: 'team',
     uuid: 'uuid',
     found_us: '',
+    workos_organization_id: null,
     created_at: new Date(),
     updated_at: new Date()
 };
