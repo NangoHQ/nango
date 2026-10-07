@@ -5029,6 +5029,48 @@ chattermill:
                 - api
                 - backend
 
+chatwoot:
+    display_name: Chatwoot
+    categories:
+        - communication
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api/v1/accounts/${connectionConfig.accountId}
+        headers:
+            api_access_token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /inboxes
+    docs: https://nango.dev/docs/api-integrations/chatwoot
+    docs_connect: https://nango.dev/docs/api-integrations/chatwoot/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your Chatwoot instance (app.chatwoot.com for Chatwoot Cloud)
+            example: app.chatwoot.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-hostname-and-account-id'
+        accountId:
+            type: string
+            title: Account ID
+            description: The number after /accounts/ in your Chatwoot dashboard URL
+            example: '1'
+            pattern: '^[0-9]+$'
+            order: 2
+            doc_section: '#step-1-finding-your-hostname-and-account-id'
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: The access token from your Chatwoot profile settings
+            example: aBcD1234eFgH5678iJkL9012
+            doc_section: '#step-2-generating-an-access-token'
+
 checkhq:
     display_name: Check
     categories:
