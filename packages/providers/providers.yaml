@@ -16204,6 +16204,34 @@ monday:
     docs: https://nango.dev/docs/api-integrations/monday
     setup_guide_url: https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app
 
+monday-api-key:
+    display_name: Monday (API Key)
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.monday.com
+        headers:
+            authorization: ${apiKey}
+            content-type: application/json
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v2
+            data: { 'query': 'query { me { id } }' }
+    docs: https://nango.dev/docs/api-integrations/monday-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/monday-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Personal API Token
+            description: Your monday.com personal V2 API token
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            example: eyJhbGciOiJI*******.eyJ0aWQiOjEy**************************************.FAKESIG*************************
+
 moneybird:
     display_name: Moneybird
     categories:
