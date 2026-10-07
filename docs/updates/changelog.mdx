@@ -11,12 +11,11 @@ description: "Important developer & product updates, including deprecations & br
 ---
 
 <Update label="Connection MCP deprecation" description="October 6, 2026">
+  We're deprecating the Connection MCP server in favor of the new and more capable [agent sessions](/guides/agent-sessions).
 
-  We're deprecating the Connection MCP server in favour of the new and more capable [agent sessions](/guides/agent-sessions).
+  **Am I impacted?** Only if you have agents using the Connection MCP with an Environment API key and `connection-id` and `provider-config-key` headers.
 
-  **Am I impacted?** Only if you have agents uisng the Connection MCP with `Environment API key` and `connection-id` and `provider-config-key` headers.
-
-  **What to do:** Migrate from Connection MCP to scoped agent sessions. [migration guide](/guides/platform/migrations/migrate-from-connection-mcp).
+  **What to do:** Follow the [migration guide](/guides/platform/migrations/migrate-from-connection-mcp) to move to scoped agent sessions.
 </Update>
 ---
 
@@ -99,9 +98,9 @@ description: "Important developer & product updates, including deprecations & br
 <Update label="Rotate the webhook signing key" description="September 29, 2026">
   You can now rotate the key that signs the [webhooks Nango sends to your app](/guides/platform/webhooks-from-nango), from Environment Settings > Webhooks.
 
-  For Webhooks already in flight, the old key will still work for up to 5 minutes after rotation.
+  For webhooks already in flight, the old key will still work for up to 5 minutes after rotation.
 
-  You can also rotate the key using API. Use the `environment:webhook_signing_key:rotate` scope for your Environment API key.
+  You can also rotate the key using the API. Use the `environment:webhook_signing_key:rotate` scope for your Environment API key.
 
   ![Rotate key button under Environment Settings > Webhooks](/images/changelog/webhook-signing-key-rotate.png)
 </Update>
