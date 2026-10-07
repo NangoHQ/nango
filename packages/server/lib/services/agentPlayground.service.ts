@@ -97,7 +97,11 @@ export async function setUpStarterIntegration(environment: DBEnvironment, provid
 async function createWithNangoOAuthApp(environment: DBEnvironment, providerName: string): Promise<string | null> {
     const provider = getProvider(providerName);
     const sharedCredentials = await sharedCredentialsService.getLatestSharedCredentialsByName(providerName);
-    if (!provider || sharedCredentials.isErr() || !sharedCredentials.value) {
+    if (sharedCredentials.isErr()) {
+        logger.error(`Agent Playground could not load the ${providerName} OAuth app: ${sharedCredentials.error.message}`);
+        return null;
+    }
+    if (!provider || !sharedCredentials.value) {
         return null;
     }
 
