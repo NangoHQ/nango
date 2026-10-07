@@ -1,8 +1,9 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai';
-import { ArrowUp, CircleAlert, Plus, RotateCcw, Square } from 'lucide-react';
+import { ArrowUp, CircleAlert, CircleCheck, Plus, RotateCcw, Square } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
 
 import {
     Alert,
@@ -32,20 +33,23 @@ import { ToolCallCard } from './components/ToolCallCard';
 import { hideTrailingLink } from './streamingMarkdown';
 import { describeTool, humanize } from './toolDisplay';
 
-import type { AgentPlaygroundMessageMetadata } from '@nangohq/types';
+import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata } from '@nangohq/types';
 import type { UIMessage } from 'ai';
 
 type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
 
-// Each prompt names its app. Without it, the agent asks which app to use, such as Gmail or Outlook.
-const STARTER_PROMPTS: { prompt: string; provider: string }[] = [
-    { prompt: "What's on my Google Calendar today?", provider: 'google-calendar' },
-    { prompt: 'Summarize my latest unread emails in Gmail', provider: 'google-mail' },
-    { prompt: "Star Nango's GitHub repo", provider: 'github' },
-    { prompt: 'Send me a Slack message saying Hello world', provider: 'slack' },
-    { prompt: 'What Linear issues are assigned to me?', provider: 'linear' },
-    { prompt: 'Show my 5 newest HubSpot contacts', provider: 'hubspot' }
+const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
+    { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
+    { prompt: 'Summarize my latest unread emails in Gmail', provider: 'google-mail', name: 'Gmail' },
+    { prompt: "Star Nango's GitHub repo", provider: 'github', name: 'GitHub' },
+    { prompt: 'Send me a Slack message saying Hello world', provider: 'slack', name: 'Slack' },
+    { prompt: 'What Linear issues are assigned to me?', provider: 'linear', name: 'Linear' },
+    { prompt: 'Show my 5 newest HubSpot contacts', provider: 'hubspot', name: 'HubSpot' }
 ];
+
+function providerName(provider: string): string {
+    return STARTER_PROMPTS.find((starter) => starter.provider === provider)?.name ?? humanize(provider);
+}
 
 export const AgentPlaygroundShow: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -135,14 +139,14 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         lastMessage?.role === 'assistant' && lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-responded');
     const [input, setInput] = useState('');
 
-    const send = (text: string) => {
+    const send = (text: string, starterProvider?: string) => {
         const trimmed = text.trim();
         if (!trimmed || busy || awaitingApproval) {
             return;
         }
         setInput('');
         pinnedToBottom.current = true;
-        void sendMessage({ text: trimmed });
+        void sendMessage({ text: trimmed, ...(starterProvider ? { metadata: { starterProvider } } : {}) });
     };
 
     const retry = () => {
@@ -288,6 +292,7 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                         </div>
                     ) : (
                         <div key={message.id} className="flex flex-col gap-5">
+                            {message.metadata?.integrationSetup && <IntegrationSetupNotice env={env} setup={message.metadata.integrationSetup} />}
                             {message.parts.map((part, index) => {
                                 if (part.type === 'text') {
                                     return part.text ? (
@@ -352,6 +357,9 @@ const ErrorNotice: React.FC<{ error: Error; onRetry: () => void; onReset: () => 
 
 function workingLabel(messages: PlaygroundMessage[]): string | null {
     const last = messages.at(-1);
+    if (last?.role === 'user' && last.metadata?.starterProvider) {
+        return `Setting up ${providerName(last.metadata.starterProvider)}…`;
+    }
     const part = last?.role === 'assistant' ? last.parts.at(-1) : undefined;
 
     if (part?.type === 'text') {
@@ -386,7 +394,36 @@ const WorkingIndicator: React.FC<{ messages: PlaygroundMessage[] }> = ({ message
     );
 };
 
-const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string) => void }> = ({ composer, onPick }) => {
+const SETUP_TEXT: Record<AgentPlaygroundIntegrationSetup['outcome'], (name: string) => string> = {
+    created: (name) => `Created the ${name} integration with Nango's OAuth app.`,
+    existing: (name) => `Using your ${name} integration.`,
+    missing_credentials: (name) => `Your ${name} integration is missing its client ID or secret. Finish setting it up, then come back and try again.`,
+    not_created: (name) => `Nango can't set up ${name} for you here. Create the ${name} integration yourself, then come back and try again.`
+};
+
+const IntegrationSetupNotice: React.FC<{ env: string; setup: AgentPlaygroundIntegrationSetup }> = ({ env, setup }) => {
+    const name = providerName(setup.provider);
+    const ready = setup.outcome === 'created' || setup.outcome === 'existing';
+    const href = setup.integrationId ? `/${env}/integrations/${setup.integrationId}` : `/${env}/integrations/create/${setup.provider}`;
+
+    return (
+        <div className="flex items-start gap-2 text-body-small-regular text-text-secondary" role="status">
+            {ready ? (
+                <CircleCheck className="mt-0.5 size-4 shrink-0 text-icon-success" />
+            ) : (
+                <CircleAlert className="mt-0.5 size-4 shrink-0 text-icon-warning" />
+            )}
+            <span>
+                {SETUP_TEXT[setup.outcome](name)}{' '}
+                <Link to={href} className="text-text-default underline underline-offset-2">
+                    {ready ? `Open ${name}` : `Set up ${name} in Integrations`}
+                </Link>
+            </span>
+        </div>
+    );
+};
+
+const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string, provider: string) => void }> = ({ composer, onPick }) => {
     return (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 pb-8 text-center">
             <div className="relative flex w-full justify-center">
@@ -402,7 +439,7 @@ const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string)
                     <button
                         key={prompt}
                         type="button"
-                        onClick={() => onPick(prompt)}
+                        onClick={() => onPick(prompt, provider)}
                         className="flex items-center gap-3 rounded-ds-xs border-ds-hairline border-border-muted bg-surface-panel px-3 py-2.5 text-left text-body-medium-regular text-text-default transition-colors hover:border-border-strong"
                     >
                         <IntegrationLogo provider={provider} className="size-8 shrink-0" />
