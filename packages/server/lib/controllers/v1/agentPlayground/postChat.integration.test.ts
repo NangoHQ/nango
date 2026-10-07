@@ -36,7 +36,7 @@ async function chat(session: string, body: Record<string, unknown>): Promise<{ s
 describe('POST /api/v1/agent-playground/chat', () => {
     beforeAll(async () => {
         api = await runServer();
-        for (const provider of ['google-calendar', 'google-mail', 'github', 'slack', 'linear', 'hubspot']) {
+        for (const provider of ['google-calendar', 'google-mail', 'github', 'slack', 'linear']) {
             await seeders.createSharedCredentialsSeed(provider);
         }
     });
@@ -90,7 +90,7 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(system.json.error.code).toBe('invalid_body');
     });
 
-    it('sets up the playground integrations and streams a reply on an empty environment', async () => {
+    it('sets up the playground integrations, with or without a Nango OAuth app, and streams a reply on an empty environment', async () => {
         vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user, env } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
@@ -102,6 +102,12 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(turn.text).toContain('Mock reply');
         const integrations = await db.knex.from('_nango_configs').where({ environment_id: env.id, deleted: false }).pluck('unique_key');
         expect(integrations.sort()).toEqual(['github', 'google-calendar', 'google-mail', 'hubspot', 'linear', 'slack']);
+        const hubspot = (await db.knex
+            .from('_nango_configs')
+            .where({ environment_id: env.id, unique_key: 'hubspot', deleted: false })
+            .first('shared_credentials_id', 'missing_fields')) as { shared_credentials_id: number | null; missing_fields: string[] };
+        expect(hubspot.shared_credentials_id).toBeNull();
+        expect(hubspot.missing_fields).toEqual(['oauth_client_id', 'oauth_client_secret']);
     });
 
     it("uses the environment's own integration for a provider instead of creating one", async () => {

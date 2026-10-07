@@ -12,7 +12,17 @@ import { buildInstructions } from './agentPlayground.instructions.js';
 import { createPlaygroundModel } from './agentPlaygroundModel.service.js';
 import * as agentSessionService from './agentSession.service.js';
 
-import type { AgentPlaygroundMessageMetadata, AgentSession, AgentSessionPinnedConnection, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
+import type {
+    AgentPlaygroundMessageMetadata,
+    AgentSession,
+    AgentSessionPinnedConnection,
+    DBEnvironment,
+    DBPlan,
+    DBTeam,
+    DBUser,
+    IntegrationConfig,
+    Provider
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JSONSchema7, LanguageModel, ToolSet, UIMessage, UIMessageChunk } from 'ai';
 
@@ -80,27 +90,50 @@ async function createPlaygroundIntegration(environment: DBEnvironment, providerN
         return null;
     }
 
-    const created = await sharedCredentialsService.createPreprovisionedProvider({ providerName, environment_id: environment.id, provider });
-    if (created.isErr()) {
-        logger.error(`Agent Playground could not create ${providerName}: ${created.error.message}`);
+    const created = await createIntegration(environment, providerName, provider);
+    if (!created) {
         return null;
     }
-    if (created.value.unique_key === providerName || !created.value.id) {
-        return created.value.unique_key;
+    if (created.unique_key === providerName || !created.id) {
+        return created.unique_key;
     }
 
     // Keep our own row in the list: concurrent requests must all pick the same winner, or each deletes its own.
     const winner = existingIntegrationFor(await configService.listProviderConfigs(db.knex, environment.id), providerName);
-    if (!winner || winner === created.value.unique_key) {
-        return created.value.unique_key;
+    if (!winner || winner === created.unique_key) {
+        return created.unique_key;
     }
     await configService.deleteProviderConfig({
-        id: created.value.id,
+        id: created.id,
         environmentId: environment.id,
-        providerConfigKey: created.value.unique_key,
+        providerConfigKey: created.unique_key,
         orchestrator: getOrchestrator()
     });
     return winner;
+}
+
+async function createIntegration(environment: DBEnvironment, providerName: string, provider: Provider): Promise<IntegrationConfig | null> {
+    const sharedCredentials = await sharedCredentialsService.getLatestSharedCredentialsByName(providerName);
+    if (sharedCredentials.isErr()) {
+        logger.error(`Agent Playground could not load the ${providerName} OAuth app: ${sharedCredentials.error.message}`);
+        return null;
+    }
+
+    if (sharedCredentials.value) {
+        const created = await sharedCredentialsService.createPreprovisionedProvider({ providerName, environment_id: environment.id, provider });
+        if (created.isErr()) {
+            logger.error(`Agent Playground could not create ${providerName}: ${created.error.message}`);
+            return null;
+        }
+        return created.value;
+    }
+
+    try {
+        return await configService.createEmptyProviderConfig(providerName, environment.id, provider);
+    } catch (err) {
+        logger.error(`Agent Playground could not create ${providerName}: ${err instanceof Error ? err.message : String(err)}`);
+        return null;
+    }
 }
 
 // The owner is read from the create-connection tags, so those tags must stay per user.
