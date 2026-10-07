@@ -114,8 +114,7 @@ function FunctionTemplateRow({
     showStatus,
     selected,
     onSelect,
-    onDeploy,
-    showSource = true
+    onDeploy
 }: {
     template: NangoFunctionTemplate;
     isDeploying: boolean;
@@ -123,16 +122,13 @@ function FunctionTemplateRow({
     selected: boolean;
     onSelect: () => void;
     onDeploy: (template: NangoFunctionTemplate) => void;
-    showSource?: boolean;
 }) {
     return (
         <TableRow aria-selected={selected} className={cn(FUNCTION_ROW_CLASS, selected && FUNCTION_ROW_SELECTED_CLASS)} onClick={onSelect}>
             <FunctionNameCell name={template.name} description={template.description} />
-            {showSource && (
-                <TableCell className="w-35 px-3">
-                    <FunctionSourceLabel source="template" />
-                </TableCell>
-            )}
+            <TableCell className="w-35 px-3">
+                <FunctionSourceLabel source="template" />
+            </TableCell>
             {showStatus && (
                 <TableCell className="w-35 px-3">
                     <button
@@ -503,7 +499,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                 <TableHeader>
                                     <TableRow>
                                         <ColumnHead>Function name</ColumnHead>
-                                        {!selectedFunction && <ColumnHead className="w-35">Source</ColumnHead>}
+                                        <ColumnHead className="w-35">Source</ColumnHead>
                                         {showStatus && <ColumnHead className="w-35">Status</ColumnHead>}
                                     </TableRow>
                                 </TableHeader>
@@ -518,11 +514,9 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                                 onClick={() => onRowClick(fn.name)}
                                             >
                                                 <FunctionNameCell name={fn.name} description={fn.description} />
-                                                {!selectedFunction && (
-                                                    <TableCell className="w-35 px-3">
-                                                        <FunctionSourceLabel source={fn.source} />
-                                                    </TableCell>
-                                                )}
+                                                <TableCell className="w-35 px-3">
+                                                    <FunctionSourceLabel source={fn.source} />
+                                                </TableCell>
                                                 {showStatus && (
                                                     <TableCell className="w-35 px-3">
                                                         <FunctionStatus fn={fn} integration={integration} />
@@ -540,16 +534,12 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                             selected={template.name === selectedFunctionName}
                                             onSelect={() => onRowClick(template.name)}
                                             onDeploy={onDeployTemplate}
-                                            showSource={!selectedFunction}
                                         />
                                     ))}
                                 </TableBody>
                                 <TableFooter className="bg-transparent font-ds-regular">
                                     <TableRow className="h-8 hover:bg-transparent">
-                                        <TableCell
-                                            colSpan={(selectedFunction ? 1 : 2) + (showStatus ? 1 : 0)}
-                                            className="px-3 type-label-xs text-text-disabled"
-                                        >
+                                        <TableCell colSpan={2 + (showStatus ? 1 : 0)} className="px-3 type-label-xs text-text-disabled">
                                             Showing {functions.length + visibleActionTemplates.length} of {total + visibleActionTemplates.length} actions
                                         </TableCell>
                                     </TableRow>
@@ -567,7 +557,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                 <TableHeader>
                                     <TableRow>
                                         <ColumnHead>Function name</ColumnHead>
-                                        {!selectedFunction && <ColumnHead className="w-35">Source</ColumnHead>}
+                                        <ColumnHead className="w-35">Source</ColumnHead>
                                         <ColumnHead className="w-35">Status</ColumnHead>
                                     </TableRow>
                                 </TableHeader>
@@ -582,11 +572,9 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                                 onClick={() => onRowClick(fn.name)}
                                             >
                                                 <FunctionNameCell name={fn.name} description={fn.description} />
-                                                {!selectedFunction && (
-                                                    <TableCell className="w-35 px-3">
-                                                        <FunctionSourceLabel source={fn.source} />
-                                                    </TableCell>
-                                                )}
+                                                <TableCell className="w-35 px-3">
+                                                    <FunctionSourceLabel source={fn.source} />
+                                                </TableCell>
                                                 <TableCell className="w-35 px-3">
                                                     <FunctionStatus fn={fn} integration={integration} />
                                                 </TableCell>
@@ -602,13 +590,12 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                             selected={template.name === selectedFunctionName}
                                             onSelect={() => onRowClick(template.name)}
                                             onDeploy={onDeployTemplate}
-                                            showSource={!selectedFunction}
                                         />
                                     ))}
                                 </TableBody>
                                 <TableFooter className="bg-transparent font-ds-regular">
                                     <TableRow className="h-8 hover:bg-transparent">
-                                        <TableCell colSpan={selectedFunction ? 2 : 3} className="px-3 type-label-xs text-text-disabled">
+                                        <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
                                             Showing {functions.length + visibleSyncTemplates.length} of {total + visibleSyncTemplates.length} sync functions
                                         </TableCell>
                                     </TableRow>
@@ -626,7 +613,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                 <TableHeader>
                                     <TableRow>
                                         <ColumnHead>Function name</ColumnHead>
-                                        {!selectedFunction && <ColumnHead className="w-35">Source</ColumnHead>}
+                                        <ColumnHead className="w-35">Source</ColumnHead>
                                         <ColumnHead className="w-35">Status</ColumnHead>
                                     </TableRow>
                                 </TableHeader>
@@ -641,11 +628,9 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                                 onClick={() => onRowClick(fn.name)}
                                             >
                                                 <FunctionNameCell name={fn.name} description={fn.description} />
-                                                {!selectedFunction && (
-                                                    <TableCell className="w-35 px-3">
-                                                        <FunctionSourceLabel source={fn.source} />
-                                                    </TableCell>
-                                                )}
+                                                <TableCell className="w-35 px-3">
+                                                    <FunctionSourceLabel source={fn.source} />
+                                                </TableCell>
                                                 <TableCell className="w-35 px-3">
                                                     <FunctionStatus fn={fn} integration={integration} />
                                                 </TableCell>
@@ -655,7 +640,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration, repoPro
                                 </TableBody>
                                 <TableFooter className="bg-transparent font-ds-regular">
                                     <TableRow className="h-8 hover:bg-transparent">
-                                        <TableCell colSpan={selectedFunction ? 2 : 3} className="px-3 type-label-xs text-text-disabled">
+                                        <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
                                             Showing {functions.length} of {total} triggers
                                         </TableCell>
                                     </TableRow>
