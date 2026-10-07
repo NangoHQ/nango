@@ -9,15 +9,8 @@ export interface ToolDisplay {
     path?: string;
 }
 
-const PLAYGROUND_INTEGRATION_PREFIX = 'pg-';
-
-// The server names each playground integration `pg-<provider>`.
-export function providerFor(integrationId: string): string {
-    return integrationId.startsWith(PLAYGROUND_INTEGRATION_PREFIX) ? integrationId.slice(PLAYGROUND_INTEGRATION_PREFIX.length) : integrationId;
-}
-
 export function humanize(name: string): string {
-    return providerFor(name)
+    return name
         .split(/[-_\s]+/)
         .filter(Boolean)
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))

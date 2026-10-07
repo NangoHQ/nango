@@ -11,7 +11,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Spinner } from '@/components/ui/Spinner';
 import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
 import { cn } from '@/utils/utils';
-import { describeTool, humanize, providerFor, toolArguments } from '../toolDisplay';
+import { describeTool, humanize, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
 
 import type { ToolDisplay } from '../toolDisplay';
@@ -87,7 +87,7 @@ const Subtitle: React.FC<{ display: ToolDisplay }> = ({ display }) => {
 };
 
 const IconBox: React.FC<{ display: ToolDisplay }> = ({ display }) => {
-    const provider = display.integrationId ? providerFor(display.integrationId) : undefined;
+    const provider = display.integrationId;
     if (provider) {
         // Keyed so a logo that 404'd on a half-streamed id retries once the full id arrives.
         return <IntegrationLogo key={provider} provider={provider} className="size-8" />;
@@ -138,7 +138,7 @@ export const ToolCallCard: React.FC<ToolCallCardProps> = ({
             return (
                 <ConnectCard
                     integrationId={output.integration}
-                    provider={output.provider ?? providerFor(output.integration)}
+                    provider={output.provider ?? output.integration}
                     connectUrl={output.connect_url}
                     expiresAt={output.expires_at}
                     connected={connectedIntegrations.has(output.integration)}

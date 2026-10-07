@@ -14,10 +14,7 @@ import {
     InputGroup,
     InputGroupAddon,
     InputGroupButton,
-    InputGroupTextarea,
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger
+    InputGroupTextarea
 } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
@@ -413,35 +410,6 @@ const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string)
                     </button>
                 ))}
             </div>
-            <OfferedIntegrations />
-        </div>
-    );
-};
-
-const OfferedIntegrations: React.FC = () => {
-    const { data: meta } = useMeta();
-    const integrations = meta?.data.agentPlaygroundIntegrations ?? [];
-    if (integrations.length === 0) {
-        return null;
-    }
-
-    return (
-        <div className="flex flex-col items-center gap-3">
-            <p className="text-body-small-regular text-text-secondary">Or ask about any of these apps</p>
-            <ul className="flex flex-wrap justify-center gap-2">
-                {integrations.map(({ provider, displayName }) => (
-                    <li key={provider}>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span tabIndex={0} aria-label={displayName} className="block rounded-sm">
-                                    <IntegrationLogo provider={provider} className="size-7" />
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom">{displayName}</TooltipContent>
-                        </Tooltip>
-                    </li>
-                ))}
-            </ul>
         </div>
     );
 };
