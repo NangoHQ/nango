@@ -22,16 +22,6 @@ export interface MintSigner {
     privateKey: string;
 }
 
-/** Signer from env. Empty or whitespace-only values are unset. */
-export function signerFromEnv(iss: InternalServiceIssuer, privateKey: string | undefined, kid: string | undefined): MintSigner | null {
-    const key = privateKey?.trim();
-    const keyId = kid?.trim();
-    if (!key || !keyId) {
-        return null;
-    }
-    return { iss, kid: keyId, privateKey: key };
-}
-
 export interface SignerEnvs {
     NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY?: string | undefined;
     NANGO_INTERNAL_AUTH_JOBS_KEY_ID?: string | undefined;
@@ -54,9 +44,15 @@ const signerMaterial = {
 
 export type InternalAuthService = keyof typeof signerMaterial;
 
+/** Signer from env. Empty or whitespace-only values are unset. */
 export function signerForService(service: InternalAuthService, envs: SignerEnvs): MintSigner | null {
     const material = signerMaterial[service];
-    return signerFromEnv(material.iss, material.privateKey(envs), material.keyId(envs));
+    const privateKey = material.privateKey(envs)?.trim();
+    const kid = material.keyId(envs)?.trim();
+    if (!privateKey || !kid) {
+        return null;
+    }
+    return { iss: material.iss, kid, privateKey };
 }
 
 export interface MintClaims {

@@ -3,7 +3,14 @@ import { generateKeyPairSync } from 'node:crypto';
 import express from 'express';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, INTERNAL_SERVICE_ISSUER_JOBS, nodeSubject, taskSubject } from './constants.js';
+import {
+    INTERNAL_SERVICE_AUDIENCE_JOBS,
+    INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR,
+    INTERNAL_SERVICE_ISSUER_JOBS,
+    INTERNAL_SERVICE_ISSUER_SERVER,
+    nodeSubject,
+    taskSubject
+} from './constants.js';
 import { mint } from './jwt.js';
 import { internalServiceAuthMiddleware, requireFleetAuth, requireTaskBoundAuth } from './middleware.js';
 import { createInternalServiceToken } from './token.js';
@@ -483,6 +490,44 @@ describe('jobs route policy', () => {
         const token = await mint(
             { iss: INTERNAL_SERVICE_ISSUER_JOBS, kid: 'jobs-2026-09', privateKey: pem },
             { sub: nodeSubject('2'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
+        );
+        const { url, close } = await listen(jobsMountedApp());
+        try {
+            const res = await fetch(`${url}/runners/1/register`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a server-issued task JWT on putTask when REQUIRED', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { pem, raw } = ed25519Material();
+        envs.NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS = [{ kid: 'server-2026-09', publicKey: raw }];
+        const taskId = '11111111-1111-4111-8111-111111111111';
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_SERVER, kid: 'server-2026-09', privateKey: pem },
+            { sub: taskSubject(taskId), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
+        );
+        const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
+        try {
+            const res = await fetch(`${url}/tasks/${taskId}`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a server-issued node JWT on register when REQUIRED', async () => {
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const { pem, raw } = ed25519Material();
+        envs.NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS = [{ kid: 'server-2026-09', publicKey: raw }];
+        const token = await mint(
+            { iss: INTERNAL_SERVICE_ISSUER_SERVER, kid: 'server-2026-09', privateKey: pem },
+            { sub: nodeSubject('1'), aud: INTERNAL_SERVICE_AUDIENCE_JOBS, ttlSecs: 60 }
         );
         const { url, close } = await listen(jobsMountedApp());
         try {

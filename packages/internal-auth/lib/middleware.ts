@@ -30,7 +30,7 @@ export function isTaskBoundAuth(auth: InternalServiceAuth | undefined, taskId: s
         return false;
     }
     if (auth?.kind === 'jwt') {
-        return auth.sub === taskSubject(taskId);
+        return auth.issuer === INTERNAL_SERVICE_ISSUER_JOBS && auth.sub === taskSubject(taskId);
     }
     return Boolean(isSignedAuth(auth) && auth?.op === 'task' && auth.taskId === taskId);
 }
@@ -40,7 +40,7 @@ export function isNodeBoundAuth(auth: InternalServiceAuth | undefined, nodeId: s
         return false;
     }
     if (auth?.kind === 'jwt') {
-        return auth.sub === nodeSubject(nodeId);
+        return auth.issuer === INTERNAL_SERVICE_ISSUER_JOBS && auth.sub === nodeSubject(nodeId);
     }
     return Boolean(isSignedAuth(auth) && auth?.op === 'node' && auth.nodeId === nodeId);
 }

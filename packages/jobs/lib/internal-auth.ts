@@ -82,7 +82,7 @@ export async function mintRunnerAuthEnv(nodeId: number): Promise<Record<string, 
 
     // Public keys alone are not a credential jobs can present. Leave the runner env empty so
     // REQUIRED is not turned on while jobs has nothing to mint.
-    if (!nodeToken && !legacyPublicKey) {
+    if (!nodeToken) {
         return {};
     }
 
