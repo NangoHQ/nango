@@ -272,7 +272,8 @@ interface FunctionsTabProps {
 
 export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const env = useStore((state) => state.env);
-    const { data: metaData } = useMeta();
+    const { data: metaData, isSuccess: metaLoaded } = useMeta();
+    const toolsCatalog = metaData?.data.toolsCatalog === true;
     const showActionStatus = metaData?.data.toolsCatalog === false;
     const [templateTail, setTemplateTail] = useState<{ scope: string; keys: string[] }>({ scope: '', keys: [] });
 
@@ -388,7 +389,8 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     }, [functions, searchNeedle, templateSectionKeys, templatesResponse?.data]);
 
     const counts: Record<TypeFilterValue, number | undefined> = {
-        action: pillCount(actionCounts.data?.pages[0]?.pagination.total, templatesFetched, undeployedActionTemplates.length),
+        // Catalog actions are already in the functions total, and they are the same names as the action templates.
+        action: pillCount(actionCounts.data?.pages[0]?.pagination.total, templatesFetched && metaLoaded, toolsCatalog ? 0 : undeployedActionTemplates.length),
         sync: pillCount(syncCounts.data?.pages[0]?.pagination.total, templatesFetched, undeployedSyncTemplates.length),
         'on-event': triggerCounts.data?.pages[0]?.pagination.total
     };
