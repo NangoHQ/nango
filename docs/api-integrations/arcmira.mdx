@@ -43,7 +43,7 @@ description: 'Connect to the Arcmira API for timestamped YouTube transcript sear
 ## API gotchas
 
 - Access follows the connected key's scopes and account plan. Inspect `GET /v1/me` before relying on write or commercial research access.
-- A paid read uses credits from your plan, then your on-demand budget. Connection verification does not retrieve transcripts or run research queries.
+- A paid read uses credits from your plan, then any top-up credits, then your on-demand budget. Connection verification does not retrieve transcripts or run research queries.
 - `GET /v1/me` remains available when account usage is exhausted, so a successful connection does not imply that every research request can run.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/NangoHQ/nango/blob/master/docs/api-integrations/arcmira.mdx).</Note>
