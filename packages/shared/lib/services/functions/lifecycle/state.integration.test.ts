@@ -73,12 +73,14 @@ describe(enable, () => {
             expect.arrayContaining([
                 expect.objectContaining({
                     environmentId: env.id,
+                    functionUuid: config.config.uuid,
                     connection: expect.objectContaining({ id: connection.id }),
                     frequencyFallback: 'every hour',
                     autoStart: true
                 }),
                 expect.objectContaining({
                     environmentId: env.id,
+                    functionUuid: config.config.uuid,
                     connection: expect.objectContaining({ id: otherConnection.id }),
                     frequencyFallback: 'every hour',
                     autoStart: true
