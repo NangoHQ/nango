@@ -12723,7 +12723,9 @@ intercom:
     docs: https://nango.dev/docs/api-integrations/intercom
     setup_guide_url: https://nango.dev/docs/api-integrations/intercom/how-to-register-your-own-intercom-api-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/intercom/connect
+    post_connection_script: intercomPostConnection
     pre_connection_deletion_script: intercomPreConnectionDeletion
+    webhook_routing_script: intercomWebhookRouting
     connection_config:
         region:
             type: string
