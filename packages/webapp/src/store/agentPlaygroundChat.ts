@@ -1,0 +1,80 @@
+import { LocalStorageKeys } from '../utils/local-storage';
+
+import type { AgentPlaygroundMessageMetadata } from '@nangohq/types';
+import type { UIMessage } from 'ai';
+
+type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
+
+interface StoredChat {
+    env: string;
+    userId: string;
+    messages: PlaygroundMessage[];
+}
+
+function sessionExpiresAt(messages: PlaygroundMessage[]): number | undefined {
+    const latest = [...messages].reverse().find((message) => message.metadata?.sessionExpiresAt);
+    return latest?.metadata?.sessionExpiresAt ? Date.parse(latest.metadata.sessionExpiresAt) : undefined;
+}
+
+// The chat holds data from the user's connected apps, so it never outlives the session it belongs to.
+export function loadAgentPlaygroundChat(env: string, userId: string, now = Date.now()): PlaygroundMessage[] | undefined {
+    try {
+        const raw = sessionStorage.getItem(LocalStorageKeys.AgentPlaygroundChat);
+        if (!raw) {
+            return undefined;
+        }
+        const stored = JSON.parse(raw) as StoredChat;
+        const expiresAt = sessionExpiresAt(stored.messages);
+        if (stored.env !== env || stored.userId !== userId || !expiresAt || expiresAt <= now) {
+            clearAgentPlaygroundChat();
+            return undefined;
+        }
+        return stored.messages.map(settleAnsweredApprovals);
+    } catch {
+        return undefined;
+    }
+}
+
+export const INTERRUPTED_CALL = 'Interrupted before it finished. It may or may not have run.';
+
+// An approved request may already have run, so asking again could make the change twice.
+function settleAnsweredApprovals(message: PlaygroundMessage): PlaygroundMessage {
+    return {
+        ...message,
+        parts: message.parts.map((part) => {
+            if (part.type !== 'dynamic-tool' || part.state !== 'approval-responded') {
+                return part;
+            }
+            if (!part.approval.approved) {
+                return { ...part, state: 'output-denied', approval: { ...part.approval, approved: false } };
+            }
+            return {
+                type: 'dynamic-tool',
+                toolName: part.toolName,
+                toolCallId: part.toolCallId,
+                state: 'output-error',
+                input: part.input,
+                errorText: INTERRUPTED_CALL
+            };
+        })
+    };
+}
+
+export function saveAgentPlaygroundChat(env: string, userId: string, messages: PlaygroundMessage[]): void {
+    try {
+        if (messages.length === 0) {
+            clearAgentPlaygroundChat();
+            return;
+        }
+        sessionStorage.setItem(LocalStorageKeys.AgentPlaygroundChat, JSON.stringify({ env, userId, messages } satisfies StoredChat));
+    } catch {
+        // Otherwise a reload would restore an older version of the chat.
+        clearAgentPlaygroundChat();
+    }
+}
+
+export function clearAgentPlaygroundChat(): void {
+    try {
+        sessionStorage.removeItem(LocalStorageKeys.AgentPlaygroundChat);
+    } catch {}
+}

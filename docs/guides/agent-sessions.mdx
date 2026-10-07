@@ -384,6 +384,10 @@ You can use the following selectors:
 - `toolset: "*"` at the top level means every integration in the environment
 - Leaving `toolset` out entirely means every integration the tenant resolved a connection for, which is narrower than `"*"`
 
+<Warning>
+`allow` and `deny` limit which tools the agent can call, not which API endpoints it can reach. With [`nango_proxy`](#nango_proxy) on, the agent can call any endpoint of a connected integration in the toolset, including ones your deny list was meant to keep out.
+</Warning>
+
 Only action functions can be tools. Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
 
 ### Pinned tools
@@ -409,7 +413,7 @@ Meta tools are Nango's own tools. They are always pinned to the MCP server's too
 | --- | --- |
 | `nango_tool_search` | Finds tools in the session's toolset from a plain-language description |
 | `nango_execute` | Runs one of the session's tools by name |
-| `nango_proxy` | Makes an authenticated request to a provider API, for when no tool fits |
+| `nango_proxy` | Makes an authenticated request to a provider API, for when no tool fits. Bypasses `allow` and `deny`, [see the warning](#toolsets-%26-tools) |
 | `nango_create_connection` | Returns a connect link for one of the session's integrations that has no connection |
 
 `nango_tool_search` and `nango_execute` default to `true`, `nango_proxy` and `nango_create_connection` to `false`. Set them on session creation with `meta_tools`:

@@ -18,6 +18,7 @@ import {
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 
 import { bigQueryClient, slackService } from '../clients.js';
+import { envs } from '../env.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
 import { pubsub } from '../utils/pubsub.js';
@@ -130,7 +131,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
         }
 
         void logCtx.info(`Starting function '${task.functionName}'${formatAttempts(task)}`, {
-            input: task.trigger.input,
+            input: envs.NANGO_LOG_FUNCTION_INPUT ? task.trigger.input : 'REDACTED',
             function: task.functionName,
             connection: task.connection.connection_id,
             integration: task.connection.provider_config_key

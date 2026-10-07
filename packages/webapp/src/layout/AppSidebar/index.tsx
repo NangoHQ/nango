@@ -1,4 +1,4 @@
-import { ArrowUpRight, BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'lucide-react';
+import { ArrowUpRight, BarChart3, Blocks, Bot, Cog, List, Plug, Sprout, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -42,6 +42,8 @@ export const AppSidebar: React.FC = () => {
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
+    const { can } = usePermissions();
+    const canUseAgentPlayground = can('environment:agent_sessions:write');
 
     const items = useMemo<SidebarItem[]>(() => {
         const gettingStarted = {
@@ -57,6 +59,7 @@ export const AppSidebar: React.FC = () => {
         };
 
         return [
+            meta?.agentPlayground && canUseAgentPlayground ? { title: 'Agent Playground', url: `/${env}/agent-playground`, icon: Bot } : null,
             meta && showGettingStarted && !meta.gettingStartedClosed ? gettingStarted : null,
             { title: 'Integrations', url: `/${env}/integrations`, icon: Blocks },
             { title: 'Connections', url: `/${env}/connections`, icon: Plug },
@@ -64,13 +67,12 @@ export const AppSidebar: React.FC = () => {
             { title: 'Metrics', url: `/${env}`, icon: BarChart3 },
             { title: 'Environment settings', url: `/${env}/environment-settings`, icon: Cog }
         ].filter((item) => item !== null);
-    }, [env, meta, refetchMeta, showGettingStarted]);
+    }, [env, meta, refetchMeta, showGettingStarted, canUseAgentPlayground]);
 
     // Only free accounts see the usage-limit alert. Paid accounts have no enforced caps, so it
     // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).
     const showUsageAlert = plan?.name === 'free';
 
-    const { can } = usePermissions();
     const canManageBilling = can('account:billing:payment_methods:create');
     const { data: overdue } = useApiGetOverdueInvoices(env, plan);
     const showOverdueAlert = Boolean(overdue?.data.hasOverdue);

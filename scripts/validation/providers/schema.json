@@ -716,6 +716,9 @@
                 "webhook_user_defined_secret": {
                     "type": "boolean"
                 },
+                "webhook_signature_enforced": {
+                    "type": "boolean"
+                },
                 "webhook_routing_script": {
                     "type": "string"
                 },

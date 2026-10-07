@@ -58,6 +58,8 @@ describe('toolNeedsApproval', () => {
         { toolName: 'nango_proxy', input: {}, expected: true },
         { toolName: 'nango_execute', input: { tool: 'pg-google-calendar__list-events' }, expected: false },
         { toolName: 'nango_execute', input: { tool: 'pg-google-calendar__get-event' }, expected: false },
+        { toolName: 'nango_execute', input: { tool: 'pg-github__get_issue' }, expected: false },
+        { toolName: 'nango_execute', input: { tool: 'pg-github__listen-for-events' }, expected: true },
         { toolName: 'nango_execute', input: { tool: 'pg-google-calendar__clear-calendar' }, expected: true },
         { toolName: 'nango_execute', input: { tool: 'pg-google-calendar__create-all-day-event' }, expected: true },
         { toolName: 'nango_execute', input: {}, expected: true },

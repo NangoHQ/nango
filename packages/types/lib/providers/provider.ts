@@ -90,6 +90,7 @@ export interface BaseProvider {
     token_expiration_buffer?: number; // In seconds.
     webhook_routing_script?: string;
     webhook_user_defined_secret?: boolean;
+    webhook_signature_enforced?: boolean;
     webhook_allowed_query_params?: string[];
     post_connection_script?: string;
     pre_connection_deletion_script?: string;

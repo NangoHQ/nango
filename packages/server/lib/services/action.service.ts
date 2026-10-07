@@ -98,7 +98,7 @@ export async function executeAction({
                 integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
                 connection: { id: connection.id, name: connection.connection_id },
                 syncConfig: loggedSyncConfig,
-                meta: truncateJson({ input })
+                meta: truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' })
             }
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation));
