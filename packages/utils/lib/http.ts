@@ -8,7 +8,7 @@ function parseCommaSeparatedEnvList(raw: string | undefined): string[] {
     }
     return raw
         .split(',')
-        .map((part) => part.trim())
+        .map((part) => part.trim().toLocaleLowerCase())
         .filter((part) => part.length > 0);
 }
 
