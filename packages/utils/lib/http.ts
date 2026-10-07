@@ -41,7 +41,10 @@ const IGNORED_HEADERS = new Set([
     'x-hubspot-correlation-id',
     'x-powered-by',
     'x-server',
-    'x-xss-protection'
+    'x-xss-protection',
+    'x-goog-authenticated-user-email',
+    'x-goog-iap-jwt-assertion',
+    'x-goog-authenticated-user-id'
 ]);
 
 export function redactHeaders({
