@@ -339,7 +339,7 @@ paths:
     /integrations/{uniqueKey}/functions:
         get:
             summary: List functions
-            description: Returns the functions deployed to an integration. Requires an API key with the `environment:functions:list` scope.
+            description: Returns the functions available to an integration, including Nango catalog actions when available. Requires an API key with the `environment:functions:list` scope.
             parameters:
                 - name: uniqueKey
                   in: path
@@ -417,7 +417,7 @@ paths:
     /integrations/{uniqueKey}/functions/{name}:
         get:
             summary: Get a function
-            description: Returns a single deployed function. Requires an API key with the `environment:functions:read` scope.
+            description: Returns a single function available to an integration. This can be a deployed function or a Nango catalog action. Requires an API key with the `environment:functions:read` scope.
             parameters:
                 - name: uniqueKey
                   in: path
@@ -460,7 +460,7 @@ paths:
                     $ref: '#/components/responses/NotFound'
         delete:
             summary: Delete a function
-            description: Deletes a deployed function and enqueues its async teardown. Functions managed by `nango deploy` (repo source) cannot be deleted through this endpoint. Requires an API key with the `environment:functions:delete` scope.
+            description: Deletes a deployed function and enqueues its async teardown. Functions managed by `nango deploy` (repo source) cannot be deleted through this endpoint. Nango catalog actions cannot be deleted; requests to delete one return `400 invalid_request`. Requires an API key with the `environment:functions:delete` scope.
             parameters:
                 - name: uniqueKey
                   in: path

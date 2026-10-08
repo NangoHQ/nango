@@ -50,12 +50,10 @@ The steps below show the flow end to end. This quickstart uses the GitHub API as
 
   </Step>
 
-  <Step id="enable-function" title="Enable an integration function">
-    The fastest way to enable a function is to use a template.
+  <Step id="enable-function" title="Use an integration function">
+    Open the `github-getting-started` integration and select `get-repository` from the Functions tab. Catalog actions are available out of the box and update automatically, so they are best suited to agentic workflows. For deterministic application code, [pull and deploy the action](/guides/functions/functions-guide#extend-a-template).
 
-    Go to the Integrations tab > open the `github-getting-started` integration > Functions sub-tab. In the functions table, turn on the toggle in the Enable column for `get-repository`.
-
-    This is a Nango Function: it runs provider-specific code with the connected account's credentials, without exposing those credentials to your app or agent.
+    Nango runs the function with the connected account's credentials without exposing them to your app or agent.
 
     <Tip>
       You can also [build a custom function](/guides/functions/functions-guide#build-locally-with-the-cli) in your codebase, or use the [Functions API](/guides/functions/functions-guide#build-with-the-functions-api) to let an agent turn text-defined behavior into deployed function code.
