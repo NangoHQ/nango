@@ -4896,7 +4896,6 @@ chameleon-i:
             type: string
             title: API Key
             description: Your Chameleon-I workspace API key
-            secret: true
             doc_section: '#step-1-generate-an-api-key'
 
 chartboost:
