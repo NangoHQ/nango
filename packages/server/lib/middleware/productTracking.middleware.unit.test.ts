@@ -69,9 +69,9 @@ describe('productTrackingMiddleware', () => {
         expect(groupIdentify).toHaveBeenCalledWith({ groupType: 'company', groupKey: '42', properties: { plan: 'growth' } });
     });
 
-    it('sends an event from a session request as its user', () => {
+    it.each(['session', 'mcpOAuth'] as const)('sends an event from a %s request as its user', (authType) => {
         handleRequest((locals) => {
-            locals.authType = 'session';
+            locals.authType = authType;
             locals.account = { id: 42 } as DBTeam;
             locals.user = { id: 3 } as DBUser;
         });
@@ -81,11 +81,10 @@ describe('productTrackingMiddleware', () => {
         expect(groups).toStrictEqual({ company: '42' });
     });
 
-    it('sends an event from a request without a session as the account, even when a user is set', () => {
+    it('sends an event from a secret-key request as the account', () => {
         handleRequest((locals) => {
-            locals.authType = 'mcpOAuth';
+            locals.authType = 'secretKey';
             locals.account = { id: 42 } as DBTeam;
-            locals.user = { id: 3 } as DBUser;
         });
 
         expect(capture.mock.calls[0]![0].distinctId).toBe('account-42');
