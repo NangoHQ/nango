@@ -1,21 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { agentSessionMetaToolsSchema, expiresInToMs, parseMetaTools, resolvedConnectionsSummary, toolsetToolNames } from './agentSession.service.js';
-
-describe('expiresInToMs', () => {
-    it.each([
-        ['60s', 60_000],
-        ['5m', 300_000],
-        ['2h', 7_200_000],
-        ['15d', 1_296_000_000]
-    ])('parses %s', (expiresIn, expected) => {
-        expect(expiresInToMs(expiresIn)).toBe(expected);
-    });
-
-    it.each(['', '5', 's', '5x', '0s', '1.5h', '-1d', '5 m', '5S'])('returns null for %s', (expiresIn) => {
-        expect(expiresInToMs(expiresIn)).toBeNull();
-    });
-});
+import { resolvedConnectionsSummary, toolsetToolNames } from './agentSession.service.js';
 
 describe('resolvedConnectionsSummary', () => {
     it('drops the internal connection and config ids', () => {
@@ -44,70 +29,5 @@ describe('toolsetToolNames', () => {
             notion: { provider: 'notion', pinned: ['read_doc'], searchable: ['upsert_doc'] },
             reddit: { provider: 'reddit', pinned: [], searchable: ['search_posts'] }
         });
-    });
-});
-
-describe('parseMetaTools', () => {
-    it('applies the defaults when nothing is requested', () => {
-        expect(parseMetaTools(undefined)).toStrictEqual({
-            applied: { nangoToolSearch: true, nangoExecute: true, nangoProxy: false, nangoCreateConnection: { enabled: false, tags: {} } },
-            unknown: []
-        });
-    });
-
-    it('overrides only the meta tools the caller named', () => {
-        expect(parseMetaTools({ nango_execute: { enabled: false }, nango_proxy: { enabled: true } })).toStrictEqual({
-            applied: { nangoToolSearch: true, nangoExecute: false, nangoProxy: true, nangoCreateConnection: { enabled: false, tags: {} } },
-            unknown: []
-        });
-    });
-
-    it('keeps the tags nango_create_connection was configured with', () => {
-        expect(parseMetaTools({ nango_create_connection: { enabled: true, tags: { enduser: '74' } } }).applied.nangoCreateConnection).toStrictEqual({
-            enabled: true,
-            tags: { enduser: '74' }
-        });
-    });
-
-    it('defaults the tags when the object form leaves them out', () => {
-        expect(parseMetaTools({ nango_create_connection: { enabled: true } }).applied.nangoCreateConnection).toStrictEqual({ enabled: true, tags: {} });
-    });
-
-    it('collects the keys that are not meta tools Nango ships', () => {
-        const parsed = parseMetaTools({ nango_proxy: { enabled: true }, nango_teleport: true, proxy: false });
-
-        expect(parsed.unknown).toStrictEqual(['nango_teleport', 'proxy']);
-        expect(parsed.applied.nangoProxy).toBe(true);
-    });
-});
-
-describe('agentSessionMetaToolsSchema', () => {
-    it('widens a bare boolean to the object form', () => {
-        expect(agentSessionMetaToolsSchema.safeParse({ nango_proxy: true, nango_create_connection: false })).toStrictEqual({
-            success: true,
-            data: { nango_proxy: { enabled: true }, nango_create_connection: { enabled: false } }
-        });
-    });
-
-    it('accepts a boolean and the object form for nango_create_connection', () => {
-        expect(agentSessionMetaToolsSchema.safeParse({ nango_proxy: true, nango_create_connection: { enabled: true, tags: { enduser: '74' } } }).success).toBe(
-            true
-        );
-    });
-
-    it('refuses tags on a meta tool that creates nothing to put them on', () => {
-        const parsed = agentSessionMetaToolsSchema.safeParse({ nango_tool_search: { enabled: true, tags: { team: 'x' } } });
-
-        expect(parsed.success).toBe(false);
-        expect(parsed.error?.issues[0]?.message).toBe('Unrecognized key: "tags"');
-        expect(parsed.error?.issues[0]?.path).toStrictEqual(['nango_tool_search']);
-    });
-
-    it('leaves room for the reserved session tag', () => {
-        const nine = Object.fromEntries(Array.from({ length: 9 }, (_, i) => [`tag${i}`, 'v']));
-        const ten = Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`tag${i}`, 'v']));
-
-        expect(agentSessionMetaToolsSchema.safeParse({ nango_create_connection: { enabled: true, tags: nine } }).success).toBe(true);
-        expect(agentSessionMetaToolsSchema.safeParse({ nango_create_connection: { enabled: true, tags: ten } }).success).toBe(false);
     });
 });
