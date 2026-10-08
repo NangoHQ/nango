@@ -19,7 +19,7 @@ export const signupAcquisitionSchema = z
         acquisition_referring_domain: z
             .string()
             .max(253)
-            .regex(/^[a-z0-9.-]+$/i)
+            .regex(/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/i)
             .optional(),
         acquisition_landing_path: z
             .string()

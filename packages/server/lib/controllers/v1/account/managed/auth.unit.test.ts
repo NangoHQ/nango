@@ -1,11 +1,51 @@
 import { describe, expect, it } from 'vitest';
 
+import { signupAcquisitionSchema } from '../../../../utils/signupAcquisition.js';
+import { safeReturnTo } from '../returnTo.js';
 import { encodeManagedAuthState, parseManagedAuthState } from './auth.js';
 
 describe('managed authentication continuation state', () => {
     it('preserves first source through Google signup', () => {
         const acquisition = { acquisition_utm_source: 'facebook', acquisition_landing_path: '/' };
         expect(parseManagedAuthState(encodeManagedAuthState({ acquisition, returnTo: '/onboarding' }))).toEqual({ acquisition, returnTo: '/onboarding' });
+    });
+
+    it('keeps the continuation when accepted Unicode analytics exceed the encoded state limit', () => {
+        // Unpaired surrogates expand to six-byte JSON escapes while satisfying string length limits.
+        const campaign = '\ud800'.repeat(256);
+        const acquisition = signupAcquisitionSchema.parse({
+            acquisition_utm_source: campaign,
+            acquisition_utm_medium: campaign,
+            acquisition_utm_campaign: campaign,
+            acquisition_utm_content: campaign,
+            acquisition_utm_term: campaign,
+            acquisition_landing_path: `/${'\ud800'.repeat(1023)}`
+        });
+        expect(acquisition).toBeDefined();
+        const state = { acquisition, returnTo: '/oauth/consent/interaction-id/review' };
+        expect(Buffer.from(JSON.stringify(state)).toString('base64').length).toBeGreaterThan(16384);
+        const encoded = encodeManagedAuthState(state);
+        expect(encoded.length).toBeLessThanOrEqual(16384);
+        expect(parseManagedAuthState(encoded)).toEqual({ returnTo: state.returnTo });
+        expect(encodeManagedAuthState({ acquisition })).toBe('');
+    });
+
+    it('bounds accepted state when the optional destination needs JSON escaping', () => {
+        const campaign = '界'.repeat(256);
+        const acquisition = signupAcquisitionSchema.parse({
+            acquisition_utm_source: campaign,
+            acquisition_utm_medium: campaign,
+            acquisition_utm_campaign: campaign,
+            acquisition_utm_content: campaign,
+            acquisition_utm_term: campaign,
+            acquisition_landing_path: `/${'界'.repeat(1023)}`
+        });
+        const returnTo = `/${'\u0000'.repeat(1023)}`;
+        const state = { acquisition, returnTo };
+        expect(Buffer.from(JSON.stringify(state)).toString('base64').length).toBeGreaterThan(16384);
+        const encoded = encodeManagedAuthState(state);
+        expect(encoded.length).toBeLessThanOrEqual(16384);
+        expect(parseManagedAuthState(encoded)).toEqual({ returnTo: safeReturnTo(returnTo) });
     });
 
     it('never carries acquisition data into an invitation', () => {

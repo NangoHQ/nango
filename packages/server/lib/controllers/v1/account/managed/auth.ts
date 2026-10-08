@@ -44,18 +44,28 @@ export interface InviteAccountState {
     acquisition?: SignupAcquisition | undefined;
 }
 
+const MAX_MANAGED_AUTH_STATE_LENGTH = 16384;
+
 export function encodeManagedAuthState(state: InviteAccountState): string {
     const value = state.token
         ? { token: state.token }
         : state.returnTo || state.acquisition
           ? { returnTo: state.returnTo, acquisition: state.acquisition }
           : null;
-    return value ? Buffer.from(JSON.stringify(value)).toString('base64') : '';
+    if (!value) return '';
+    const encoded = Buffer.from(JSON.stringify(value)).toString('base64');
+    if (encoded.length <= MAX_MANAGED_AUTH_STATE_LENGTH) return encoded;
+
+    // Optional analytics must not discard the signup continuation when UTF-8 or JSON escaping expands it.
+    const continuation = state.token ? { token: state.token } : state.returnTo ? { returnTo: state.returnTo } : null;
+    if (!continuation) return '';
+    const fallback = Buffer.from(JSON.stringify(continuation)).toString('base64');
+    return fallback.length <= MAX_MANAGED_AUTH_STATE_LENGTH ? fallback : '';
 }
 
 export function parseManagedAuthState(state: string): InviteAccountState | null {
     try {
-        if (state.length > 16384) return null;
+        if (state.length > MAX_MANAGED_AUTH_STATE_LENGTH) return null;
         const res = JSON.parse(Buffer.from(state, 'base64').toString('utf8')) as unknown;
         if (!res || !(typeof res === 'object')) {
             return null;
