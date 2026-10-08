@@ -275,7 +275,8 @@ describe('executeSessionTool', () => {
                                 {
                                     message: 'Invalid scope: `write` or `issues:create` required',
                                     extensions: { code: 'FORBIDDEN', statusCode: 403 }
-                                }
+                                },
+                                { message: 'Entity not found: Issue' }
                             ]
                         }
                     } as never
