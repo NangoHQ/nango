@@ -581,12 +581,13 @@ const ENVS_SHAPE = z.object({
     DD_API_KEY_SECRET_ARN: z.string().optional(),
 
     // Elasticsearch / OpenSearch (logs)
-    NANGO_LOGS_PROVIDER: z.enum(['elasticsearch', 'opensearch']).optional().default('elasticsearch'),
+    NANGO_LOGS_PROVIDER: z.enum(['elasticsearch', 'opensearch', 'ec-serverless']).optional().default('elasticsearch'),
     NANGO_LOGS_ES_URL: z.url().optional(),
     NANGO_LOGS_ES_REQUEST_TIMEOUT_MS: z.coerce.number().optional().default(5000),
     NANGO_LOGS_ES_MAX_RETRIES: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_USER: z.string().optional(),
     NANGO_LOGS_ES_PWD: z.string().optional(),
+    NANGO_LOGS_ES_API_KEY: z.string().optional(),
     NANGO_LOGS_ENABLED: z.stringbool().optional().default(false),
     NANGO_LOGS_ES_PREFIX: z.string().optional(),
     NANGO_LOGS_ES_INDEX_OPERATIONS: z.string().optional(),

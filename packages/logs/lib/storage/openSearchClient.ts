@@ -133,7 +133,11 @@ export class OpenSearchLogsClient implements LogsStorageClient {
     private readonly client: OpenSearchClient;
 
     constructor(config: LogsStorageClientConfig) {
-        this.client = new OpenSearchClient(config);
+        if ('apiKey' in config.auth) {
+            throw new Error('OpenSearch logs storage does not support API key authentication');
+        }
+        const { serverless: _serverless, auth, ...clientConfig } = config;
+        this.client = new OpenSearchClient({ ...clientConfig, auth });
     }
 
     async search<TDocument, TAggregations>(params: LogsSearchParams): Promise<LogsSearchResponse<TDocument, TAggregations>> {

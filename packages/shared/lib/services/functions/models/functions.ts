@@ -8,6 +8,7 @@ import type { Knex } from 'knex';
 
 const CONFIG_COLUMNS = {
     id: true,
+    uuid: true,
     nango_config_id: true,
     environment_id: true,
     name: true,
@@ -172,13 +173,13 @@ type SearchFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> 
     Prefixed<DBFunctionConfigVersion, typeof VERSION_PREFIX> &
     Prefixed<FunctionIntegration, typeof INTEGRATION_PREFIX>;
 
-interface FunctionSearchFilter {
-    integrationKey: string;
-    id?: number | undefined;
+// `id` and `uuid` fields are mutually exclusive. Only one of them can be provided at a time.
+type FunctionSearchFilter = ({ id?: number | undefined; uuid?: undefined } | { uuid?: string | undefined; id?: undefined }) & {
+    integrationKey?: string | undefined;
     name?: string | undefined;
     enabled?: boolean | undefined;
     trigger?: { kind: 'http'; hasSubscriptions: boolean } | { kind: 'event'; event: OnEventType } | undefined;
-}
+};
 
 export async function search(
     trx: Knex,
@@ -207,8 +208,11 @@ export async function search(
             .whereNull('config.deleted_at')
             .whereNull('version.deleted_at');
 
-        if (filter) {
+        if (filter?.integrationKey !== undefined) {
             query.where('integration.unique_key', filter.integrationKey);
+        }
+        if (filter?.uuid !== undefined) {
+            query.where('config.uuid', filter.uuid);
         }
         if (filter?.name !== undefined) {
             query.where('config.name', filter.name);
@@ -220,10 +224,9 @@ export async function search(
             query.where('config.enabled', filter.enabled);
         }
         if (filter?.trigger) {
-            query.whereRaw("version.trigger->>'kind' = ?", [filter.trigger.kind]);
             switch (filter.trigger.kind) {
                 case 'http': {
-                    // TODO: index subscriptions array length for performance
+                    query.whereRaw("version.trigger->>'kind' = 'http'");
                     const subscriptionCount = `CASE
                         WHEN jsonb_typeof(version.trigger->'subscriptions') = 'array'
                         THEN jsonb_array_length(version.trigger->'subscriptions')
@@ -233,6 +236,7 @@ export async function search(
                     break;
                 }
                 case 'event':
+                    query.whereRaw("version.trigger->>'kind' = 'event'");
                     query.whereRaw("version.trigger->'events' @> ?::jsonb", [JSON.stringify([filter.trigger.event])]);
                     break;
             }

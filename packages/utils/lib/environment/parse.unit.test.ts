@@ -409,6 +409,15 @@ describe('parse', () => {
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
     });
 
+    it('should accept ec-serverless as NANGO_LOGS_PROVIDER', () => {
+        const res = parseEnvs(ENVS, { NANGO_LOGS_PROVIDER: 'ec-serverless' });
+        expect(res.NANGO_LOGS_PROVIDER).toBe('ec-serverless');
+    });
+
+    it('should throw on an unknown NANGO_LOGS_PROVIDER', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_PROVIDER: 'not-a-provider' })).toThrow();
+    });
+
     it('should default NANGO_LOGS_ES_RETENTION_DAYS to 15', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_LOGS_ES_RETENTION_DAYS).toBe(15);
