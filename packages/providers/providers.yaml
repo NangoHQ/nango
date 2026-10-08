@@ -28952,6 +28952,31 @@ xero-oauth2-cc:
     docs: https://nango.dev/docs/integrations/all/xero-oauth2-cc
     docs_connect: https://nango.dev/docs/integrations/all/xero-oauth2-cc/connect
 
+xendit:
+    display_name: Xendit
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.xendit.co
+        verification:
+            method: GET
+            endpoints:
+                - /balance
+        retry:
+            remaining: rate-limit-remaining
+            after:
+                - rate-limit-reset
+    docs: https://nango.dev/docs/api-integrations/xendit
+    docs_connect: https://nango.dev/docs/api-integrations/xendit/connect
+    credentials:
+        username:
+            type: string
+            title: Secret API Key
+            description: Your Xendit secret API key from the Xendit Dashboard
+            secret: true
+            doc_section: '#step-1-finding-your-api-key'
+
 yahoo:
     display_name: Yahoo
     categories:
