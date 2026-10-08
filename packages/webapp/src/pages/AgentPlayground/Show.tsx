@@ -34,7 +34,7 @@ import { hideTrailingLink } from './streamingMarkdown';
 import { describeTool, humanize } from './toolDisplay';
 
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata } from '@nangohq/types';
-import type { UIMessage } from 'ai';
+import type { DynamicToolUIPart, UIMessage } from 'ai';
 
 type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
 
@@ -49,6 +49,13 @@ const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
 
 function providerName(provider: string): string {
     return STARTER_PROMPTS.find((starter) => starter.provider === provider)?.name ?? humanize(provider);
+}
+
+function integrationSetupOf(part: DynamicToolUIPart): AgentPlaygroundIntegrationSetup | undefined {
+    if (part.toolName !== 'nango_create_connection' || part.state !== 'output-available') {
+        return undefined;
+    }
+    return (part.output as { integration_setup?: AgentPlaygroundIntegrationSetup } | null)?.integration_setup;
 }
 
 export const AgentPlaygroundShow: React.FC = () => {
@@ -270,6 +277,17 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                                     ) : null;
                                 }
                                 if (part.type === 'dynamic-tool') {
+                                    const setup = integrationSetupOf(part);
+                                    if (setup) {
+                                        return (
+                                            <IntegrationSetupNotice
+                                                key={part.toolCallId}
+                                                env={env}
+                                                setup={setup}
+                                                onTryAgain={message.id === lastMessage?.id && !busy ? () => void regenerate() : undefined}
+                                            />
+                                        );
+                                    }
                                     return (
                                         <ToolCallCard
                                             key={part.toolCallId}
