@@ -1,0 +1,49 @@
+---
+title: 'Arcmira'
+sidebarTitle: 'Arcmira'
+description: 'Connect to the Arcmira API for timestamped YouTube transcript search and research'
+---
+
+## Quickstart
+
+[Arcmira](https://arcmira.com) searches spoken passages across indexed YouTube videos and livestreams. Connect an account API key to access its transcript search and research API through Nango.
+
+<Steps>
+    <Step title="Create the integration" id="create-integration">
+        In Nango, open the **Integrations** tab, select **Configure New Integration**, and choose **Arcmira**.
+    </Step>
+    <Step title="Connect Arcmira" id="connect-arcmira">
+        Open the **Connections** tab and select **Add Test Connection**. Enter your [Arcmira API key](/api-integrations/arcmira/connect).
+
+        Nango verifies the key with `GET /v1/me`, which returns account context without consuming usage credits.
+    </Step>
+    <Step title="Call the Arcmira API" id="call-arcmira-api">
+        Replace the placeholders with your Nango [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+
+        ```bash
+        curl "https://api.nango.dev/proxy/v1/me" \
+          -H "Authorization: Bearer <NANGO-API-KEY>" \
+          -H "Provider-Config-Key: <INTEGRATION-ID>" \
+          -H "Connection-Id: <CONNECTION-ID>"
+        ```
+
+        The response describes the credential, billing account, scopes, and usage. Nango supplies the Arcmira bearer key. Check the **Logs** tab to inspect the request.
+    </Step>
+    <Step title="Implement Nango in your app" id="implement-nango">
+        Follow the [Auth implementation guide](/guides/auth/auth-guide) to let users connect their Arcmira accounts.
+    </Step>
+</Steps>
+
+## Arcmira integration guides
+
+- [Get an Arcmira API key](/api-integrations/arcmira/connect)
+- [Arcmira API docs](https://arcmira.com/docs)
+- [Arcmira OpenAPI schema](https://api.arcmira.com/v1/openapi.json)
+
+## API gotchas
+
+- Access follows the connected key's scopes and account plan. Inspect `GET /v1/me` before relying on write or commercial research access.
+- A paid read uses credits from your plan, then any top-up credits, then your on-demand budget. Connection verification does not retrieve transcripts or run research queries.
+- `GET /v1/me` remains available when account usage is exhausted, so a successful connection does not imply that every research request can run.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/NangoHQ/nango/blob/master/docs/api-integrations/arcmira.mdx).</Note>
