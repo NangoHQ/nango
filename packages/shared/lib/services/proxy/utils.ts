@@ -182,7 +182,6 @@ export function getAxiosConfiguration({
                 const agent = new https.Agent({
                     cert,
                     key,
-                    rejectUnauthorized: false,
                     ...(outboundPolicy ? { lookup: getSafeLookup(outboundPolicy) } : {})
                 });
 
