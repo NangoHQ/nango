@@ -460,7 +460,7 @@ paths:
                     $ref: '#/components/responses/NotFound'
         delete:
             summary: Delete a function
-            description: Deletes a deployed function and enqueues its async teardown. Functions managed by `nango deploy` (repo source) cannot be deleted through this endpoint. Nango catalog actions cannot be deleted; requests to delete one return `400 invalid_request`. Requires an API key with the `environment:functions:delete` scope.
+            description: Deletes a deployed function and enqueues its async teardown. Functions managed by `nango deploy` (repo source) cannot be deleted through this endpoint. Requires an API key with the `environment:functions:delete` scope.
             parameters:
                 - name: uniqueKey
                   in: path
