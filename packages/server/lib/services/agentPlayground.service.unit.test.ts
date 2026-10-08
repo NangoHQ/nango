@@ -80,17 +80,20 @@ describe('toolNeedsApproval', () => {
 });
 
 describe('existingIntegrationFor', () => {
-    it('prefers the integration keyed by the provider name, then the oldest', () => {
+    it('prefers the playground integration, then the one keyed by the provider name, then the oldest', () => {
         const integrations = [
+            { unique_key: 'slack', provider: 'slack' },
+            { unique_key: 'pg-slack', provider: 'slack' },
             { unique_key: 'old-calendar', provider: 'google-calendar' },
             { unique_key: 'google-calendar', provider: 'google-calendar' },
             { unique_key: 'new-github', provider: 'github' },
             { unique_key: 'newer-github', provider: 'github' }
         ];
 
+        expect(existingIntegrationFor(integrations, 'slack')?.unique_key).toBe('pg-slack');
         expect(existingIntegrationFor(integrations, 'google-calendar')?.unique_key).toBe('google-calendar');
         expect(existingIntegrationFor(integrations, 'github')?.unique_key).toBe('new-github');
-        expect(existingIntegrationFor(integrations, 'slack')).toBeUndefined();
+        expect(existingIntegrationFor(integrations, 'linear')).toBeUndefined();
     });
 });
 

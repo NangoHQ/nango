@@ -127,10 +127,10 @@ describe('POST /api/v1/agent-playground/chat', () => {
         const turn = await chat(session, { messages: [userMessage("What's on my Google Calendar today?", { starterProvider: 'google-calendar' })] });
 
         expect(turn.status).toBe(200);
-        expect(turn.integrationSetup).toEqual({ provider: 'google-calendar', integrationId: 'google-calendar', outcome: 'created' });
+        expect(turn.integrationSetup).toEqual({ provider: 'google-calendar', integrationId: 'pg-google-calendar', outcome: 'created' });
         expect(turn.text).toContain('Mock reply');
         const integrations = await integrationsIn(env.id);
-        expect(integrations.map(({ unique_key }) => unique_key)).toEqual(['google-calendar']);
+        expect(integrations.map(({ unique_key }) => unique_key)).toEqual(['pg-google-calendar']);
         expect(integrations[0]?.shared_credentials_id).not.toBeNull();
     });
 

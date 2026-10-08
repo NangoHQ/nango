@@ -31,6 +31,11 @@ const PLAYGROUND_SESSION_EXPIRES_IN_MS = 60 * 60 * 1000;
 const MAX_STEPS = 10;
 
 export const PLAYGROUND_PROVIDERS = ['google-calendar', 'google-mail', 'github', 'slack', 'linear', 'hubspot'];
+export const PLAYGROUND_INTEGRATION_PREFIX = 'pg-';
+
+export function playgroundIntegrationId(provider: string): string {
+    return `${PLAYGROUND_INTEGRATION_PREFIX}${provider}`;
+}
 
 export const PLAYGROUND_USER_TAG_KEY = 'nango/playground_user';
 
@@ -70,7 +75,11 @@ export function newestConnectionPerIntegration(
 // Expects `integrations` oldest first, as listProviderConfigs returns them.
 export function existingIntegrationFor<T extends { unique_key: string; provider: string }>(integrations: T[], provider: string): T | undefined {
     const matching = integrations.filter((integration) => integration.provider === provider);
-    return matching.find((integration) => integration.unique_key === provider) ?? matching[0];
+    return (
+        matching.find((integration) => integration.unique_key === playgroundIntegrationId(provider)) ??
+        matching.find((integration) => integration.unique_key === provider) ??
+        matching[0]
+    );
 }
 
 // Never creates: only a pre-made prompt sets up a missing integration.
@@ -105,12 +114,19 @@ async function createWithNangoOAuthApp(environment: DBEnvironment, providerName:
         return null;
     }
 
-    const created = await sharedCredentialsService.createPreprovisionedProvider({ providerName, environment_id: environment.id, provider });
+    const integrationId = playgroundIntegrationId(providerName);
+    const created = await sharedCredentialsService.createPreprovisionedProvider({
+        providerName,
+        environment_id: environment.id,
+        provider,
+        unique_key: integrationId,
+        display_name: provider.display_name
+    });
     if (created.isErr()) {
-        logger.error(`Agent Playground could not create ${providerName}: ${created.error.message}`);
+        logger.error(`Agent Playground could not create ${integrationId}: ${created.error.message}`);
         return null;
     }
-    if (created.value.unique_key === providerName || !created.value.id) {
+    if (created.value.unique_key === integrationId || !created.value.id) {
         return created.value.unique_key;
     }
 
