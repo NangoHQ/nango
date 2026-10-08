@@ -2025,6 +2025,7 @@
               "integrations/all/xai",
               "api-integrations/xero",
               "integrations/all/xero-oauth2-cc",
+              "api-integrations/xendit",
               "integrations/all/yahoo",
               "integrations/all/yandex",
               "api-integrations/yokoy",
