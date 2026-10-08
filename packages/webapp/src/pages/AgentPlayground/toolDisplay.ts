@@ -9,8 +9,15 @@ export interface ToolDisplay {
     path?: string;
 }
 
+const PLAYGROUND_INTEGRATION_PREFIX = 'pg-';
+
+// The server keys the integrations it creates `pg-<provider>`.
+export function providerFor(integrationId: string): string {
+    return integrationId.startsWith(PLAYGROUND_INTEGRATION_PREFIX) ? integrationId.slice(PLAYGROUND_INTEGRATION_PREFIX.length) : integrationId;
+}
+
 export function humanize(name: string): string {
-    return name
+    return providerFor(name)
         .split(/[-_\s]+/)
         .filter(Boolean)
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
