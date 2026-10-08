@@ -463,7 +463,7 @@ const IntegrationSetupNotice: React.FC<{ env: string; setup: AgentPlaygroundInte
             </AlertTitle>
             <AlertDescription>
                 {setup.outcome === 'missing_credentials'
-                    ? "It's missing its client ID or secret. Add them, then retry the prompt."
+                    ? "It's missing some of its settings. Add them, then retry the prompt."
                     : `This session needs a ${name} integration in this environment.`}
             </AlertDescription>
             <AlertActions>
