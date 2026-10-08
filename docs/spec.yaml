@@ -146,6 +146,10 @@ paths:
                                     description: Whether to forward webhooks received for this integration. Defaults to true.
                                 credentials:
                                     $ref: '#/components/schemas/IntegrationCredentialsInput'
+                                    description: >
+                                        Optional. Developer app credentials for the integration. Omit them to create the
+                                        integration without credentials and provide them later, either with an update
+                                        request or per connection at connection time.
                                 integration_config:
                                     type: object
                                     additionalProperties:
@@ -281,6 +285,9 @@ paths:
                                     description: Whether to forward webhooks received for this integration.
                                 credentials:
                                     $ref: '#/components/schemas/IntegrationCredentialsInput'
+                                    description: >
+                                        Developer app credentials for the integration. Only the fields you pass are
+                                        updated; the ones you leave out keep their current value.
                                 integration_config:
                                     type: object
                                     additionalProperties:
@@ -5339,13 +5346,16 @@ components:
                           description: The provider's `integration_config` values, keyed by the fields it declares.
 
         IntegrationCredentialsInput:
-            description: Integration credentials schema accepted in create/update request bodies. For MCP_OAUTH2, static creation requires both client_id and client_secret; dynamic and CIMD providers reject those fields because Nango manages them. Optional fields may be omitted but must not be null.
+            description: >
+                Integration credentials schema accepted in create/update request bodies. Only `type` is required:
+                developer app credentials can be omitted at creation and supplied later, either with an update request
+                or per connection at connection time. Fields left out of an update are kept as-is rather than cleared.
+                MCP_OAUTH2 is the exception — static creation requires both client_id and client_secret, while dynamic
+                and CIMD providers reject those fields because Nango manages them. Optional fields must not be null.
             oneOf:
                 - type: object
                   required:
                       - type
-                      - client_id
-                      - client_secret
                   properties:
                       type:
                           type: string
@@ -5369,9 +5379,6 @@ components:
                 - type: object
                   required:
                       - type
-                      - app_id
-                      - app_link
-                      - private_key
                   properties:
                       type:
                           type: string
@@ -5390,11 +5397,6 @@ components:
                 - type: object
                   required:
                       - type
-                      - client_id
-                      - client_secret
-                      - app_id
-                      - app_link
-                      - private_key
                   properties:
                       type:
                           type: string
