@@ -27,6 +27,13 @@ describe('buildInstructions', () => {
         expect(instructions).toContain('- my-hubspot (hubspot): not connected, needs setup');
     });
 
+    it('points an app the session does not have to the Integrations tab', () => {
+        const instructions = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'));
+
+        expect(instructions).toContain('they can add it in the Integrations tab if Nango supports it');
+        expect(instructions).not.toContain('does not offer that app');
+    });
+
     it('names the apps that are not set up yet, and says nothing when all are', () => {
         const withMissing = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'), [], ['Google Calendar']);
         const withoutMissing = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'), [], []);
