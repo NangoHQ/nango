@@ -1,4 +1,4 @@
-import { Client, ProtocolError, SdkError, SdkHttpError, StreamableHTTPClientTransport, UnauthorizedError } from '@modelcontextprotocol/client';
+import { Client, ProtocolError, SdkError, SdkErrorCode, SdkHttpError, StreamableHTTPClientTransport, UnauthorizedError } from '@modelcontextprotocol/client';
 import { ZodError } from 'zod';
 
 import { getProvider } from '@nangohq/shared';
@@ -27,7 +27,7 @@ export interface RemoteMcpTool {
     annotations?: Record<string, unknown> | undefined;
 }
 
-export type RemoteMcpErrorCode = 'proxy_failed' | 'http_error' | 'invalid_response' | 'response_too_large' | 'rpc_error';
+export type RemoteMcpErrorCode = 'proxy_failed' | 'http_error' | 'invalid_response' | 'response_too_large' | 'rpc_error' | 'timeout';
 
 export class RemoteMcpError extends Error {
     public readonly code: RemoteMcpErrorCode;
@@ -85,7 +85,11 @@ export function mcpEndpointOf(provider: string): string | undefined {
  * speaks the protocol, and its requests are sent through the Nango proxy, so the connection's
  * credentials are applied and refreshed the way any proxy call has them.
  */
-export async function withRemoteMcpSession<T>(target: RemoteMcpTarget, fn: (client: Client) => Promise<Result<T, RemoteMcpError>>): Promise<RemoteMcpRun<T>> {
+export async function withRemoteMcpSession<T>(
+    target: RemoteMcpTarget,
+    fn: (client: Client) => Promise<Result<T, RemoteMcpError>>,
+    { signal }: { signal?: AbortSignal } = {}
+): Promise<RemoteMcpRun<T>> {
     const endpoint = mcpEndpointOf(target.provider);
     if (!endpoint) {
         return {
@@ -100,7 +104,7 @@ export async function withRemoteMcpSession<T>(target: RemoteMcpTarget, fn: (clie
 
     try {
         try {
-            await client.connect(transport);
+            await client.connect(transport, signal ? { signal } : undefined);
         } catch (err) {
             return { logOperationId: log.operationId, result: Err(toRemoteMcpError(err, 'initialize')) };
         }
@@ -117,14 +121,17 @@ export async function withRemoteMcpSession<T>(target: RemoteMcpTarget, fn: (clie
  * Pages through `tools/list` until the server stops handing back a cursor, `maxTools` is reached, or
  * the page guard trips, which stops a server that keeps handing out cursors from paging forever.
  */
-export async function listRemoteTools(client: Client, { maxTools }: { maxTools: number }): Promise<Result<RemoteMcpTool[], RemoteMcpError>> {
+export async function listRemoteTools(
+    client: Client,
+    { maxTools, signal }: { maxTools: number; signal?: AbortSignal }
+): Promise<Result<RemoteMcpTool[], RemoteMcpError>> {
     const tools: RemoteMcpTool[] = [];
     let cursor: string | undefined;
 
     for (let page = 0; page < MAX_TOOL_LIST_PAGES && tools.length < maxTools; page++) {
         let listed: { tools: Tool[]; nextCursor?: string | undefined };
         try {
-            listed = await client.listTools(cursor ? { cursor } : undefined);
+            listed = await client.listTools(cursor ? { cursor } : undefined, signal ? { signal } : undefined);
         } catch (err) {
             return Err(toRemoteMcpError(err, 'tools/list'));
         }
@@ -149,6 +156,10 @@ export function toRemoteMcpError(err: unknown, method: string): RemoteMcpError {
         return new RemoteMcpError({ code: 'http_error', message: 'The MCP server refused the credentials', status: 401, method, cause: err });
     }
 
+    if (isTimeout(err)) {
+        return new RemoteMcpError({ code: 'timeout', message: `The MCP server did not answer ${method} in time`, method, cause: err });
+    }
+
     if (err instanceof SdkHttpError) {
         return new RemoteMcpError({ code: 'http_error', message: `The MCP server answered with HTTP ${err.status}`, status: err.status, method, cause: err });
     }
@@ -166,6 +177,10 @@ export function toRemoteMcpError(err: unknown, method: string): RemoteMcpError {
     }
 
     throw err;
+}
+
+function isTimeout(err: unknown): boolean {
+    return err instanceof SdkError && err.code === SdkErrorCode.RequestTimeout;
 }
 
 function toRemoteTool(tool: Tool): RemoteMcpTool {
@@ -200,6 +215,7 @@ function proxyFetch({ target, endpoint, log }: { target: RemoteMcpTarget; endpoi
             headers: toRecord(new Headers(init?.headers)),
             body: typeof init?.body === 'string' ? init.body : undefined,
             retries: 0,
+            abortSignal: init?.signal ?? undefined,
             actor: target.actor,
             activityLogId: log.operationId
         });

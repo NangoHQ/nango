@@ -50,33 +50,22 @@ async function discoverServer({
     return await tracer.trace<Promise<McpServerDiscovery>>('server.agentSession.mcpDiscovery', async (span: Span) => {
         span.setTag('nango.integrationId', connection.integrationId);
 
-        const listing = withRemoteMcpSession(
-            { account, environment, plan, integrationId: connection.integrationId, connectionId: connection.connectionId, provider: connection.provider },
-            async (session) => await listRemoteTools(session, { maxTools: MAX_TOOLS_PER_SERVER })
-        ).then(({ result }): McpServerDiscovery => {
+        const signal = AbortSignal.timeout(DISCOVERY_TIMEOUT_MS);
+        try {
+            const { result } = await withRemoteMcpSession(
+                { account, environment, plan, integrationId: connection.integrationId, connectionId: connection.connectionId, provider: connection.provider },
+                async (session) => await listRemoteTools(session, { maxTools: MAX_TOOLS_PER_SERVER, signal }),
+                { signal }
+            );
             if (result.isErr()) {
                 span.setTag('nango.error', result.error);
                 return { status: 'unavailable' };
             }
 
             return { status: 'available', tools: result.value };
-        });
-
-        let timer: NodeJS.Timeout | undefined;
-        const timeout = new Promise<McpServerDiscovery>((resolve) => {
-            timer = setTimeout(() => {
-                span.setTag('nango.error', new Error('MCP server listing timed out'));
-                resolve({ status: 'unavailable' });
-            }, DISCOVERY_TIMEOUT_MS);
-        });
-
-        try {
-            return await Promise.race([listing, timeout]);
         } catch (err) {
             span.setTag('nango.error', err);
             return { status: 'unavailable' };
-        } finally {
-            clearTimeout(timer);
         }
     });
 }

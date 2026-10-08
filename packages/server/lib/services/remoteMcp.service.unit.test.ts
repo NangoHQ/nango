@@ -48,7 +48,7 @@ function rpcResult(id: number | undefined, result: unknown) {
 }
 
 /** Answers the handshake, then hands `onCall` every later JSON-RPC request. */
-function mcpServer(onCall: (message: RpcMessage) => ReturnType<typeof response>) {
+function mcpServer(onCall: (message: RpcMessage, params: ProxyServiceRequest) => ReturnType<typeof response> | Promise<ReturnType<typeof response>>) {
     request.mockImplementation((params: ProxyServiceRequest) => {
         const message = typeof params.body === 'string' ? (JSON.parse(params.body) as RpcMessage) : undefined;
         if (params.method === 'DELETE' || message?.id === undefined) {
@@ -66,7 +66,7 @@ function mcpServer(onCall: (message: RpcMessage) => ReturnType<typeof response>)
                 })
             );
         }
-        return Promise.resolve(onCall(message));
+        return Promise.resolve(onCall(message, params));
     });
 }
 
@@ -161,6 +161,20 @@ describe('listRemoteTools through the proxy', () => {
         const { result } = await list();
 
         expect(result.isErr() && result.error).toMatchObject({ code: 'response_too_large', message: 'The MCP server response exceeds the 5 MB limit' });
+    });
+
+    it('gives up on a server that never answers when the signal fires, and cancels the proxy request', async () => {
+        let hungRequest: ProxyServiceRequest | undefined;
+        mcpServer((_message, params) => {
+            hungRequest = params;
+            return new Promise((_resolve, reject) => params.abortSignal?.addEventListener('abort', () => reject(new Error('aborted'))));
+        });
+
+        const signal = AbortSignal.timeout(50);
+        const { result } = await withRemoteMcpSession(TARGET, async (client) => await listRemoteTools(client, { maxTools: 3, signal }), { signal });
+
+        expect(result.isErr() && result.error).toMatchObject({ code: 'timeout', method: 'tools/list' });
+        expect(hungRequest?.abortSignal?.aborted).toBe(true);
     });
 
     it('carries a proxy failure through untouched', async () => {
