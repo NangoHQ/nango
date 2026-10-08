@@ -1,6 +1,6 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai';
-import { ArrowUp, CircleAlert, CircleCheck, Plus, RotateCcw, Square } from 'lucide-react';
+import { ArrowUp, CircleAlert, CircleCheck, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
@@ -42,7 +42,7 @@ const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
     { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
     { prompt: 'Summarize my latest unread emails in Gmail', provider: 'google-mail', name: 'Gmail' },
     { prompt: "Star Nango's GitHub repo", provider: 'github', name: 'GitHub' },
-    { prompt: 'Send me a Slack message saying Hello world', provider: 'slack', name: 'Slack' },
+    { prompt: 'Send me a Slack message saying "Hello, world!"', provider: 'slack', name: 'Slack' },
     { prompt: 'What Linear issues are assigned to me?', provider: 'linear', name: 'Linear' },
     { prompt: 'Show my 5 newest HubSpot contacts', provider: 'hubspot', name: 'HubSpot' }
 ];
@@ -292,7 +292,13 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                         </div>
                     ) : (
                         <div key={message.id} className="flex flex-col gap-5">
-                            {message.metadata?.integrationSetup && <IntegrationSetupNotice env={env} setup={message.metadata.integrationSetup} />}
+                            {message.metadata?.integrationSetup && (
+                                <IntegrationSetupNotice
+                                    env={env}
+                                    setup={message.metadata.integrationSetup}
+                                    onTryAgain={message.id === lastMessage?.id && !busy ? () => void regenerate() : undefined}
+                                />
+                            )}
                             {message.parts.map((part, index) => {
                                 if (part.type === 'text') {
                                     return part.text ? (
@@ -394,32 +400,60 @@ const WorkingIndicator: React.FC<{ messages: PlaygroundMessage[] }> = ({ message
     );
 };
 
-const SETUP_TEXT: Record<AgentPlaygroundIntegrationSetup['outcome'], (name: string) => string> = {
-    created: (name) => `Created the ${name} integration with Nango's OAuth app.`,
-    existing: (name) => `Using your ${name} integration.`,
-    missing_credentials: (name) => `Your ${name} integration is missing its client ID or secret. Finish setting it up, then come back and try again.`,
-    not_created: (name) => `Nango can't set up ${name} for you here. Create the ${name} integration yourself, then come back and try again.`
-};
-
-const IntegrationSetupNotice: React.FC<{ env: string; setup: AgentPlaygroundIntegrationSetup }> = ({ env, setup }) => {
+const IntegrationSetupNotice: React.FC<{ env: string; setup: AgentPlaygroundIntegrationSetup; onTryAgain?: (() => void) | undefined }> = ({
+    env,
+    setup,
+    onTryAgain
+}) => {
     const name = providerName(setup.provider);
-    const ready = setup.outcome === 'created' || setup.outcome === 'existing';
     const href = setup.integrationId ? `/${env}/integrations/${setup.integrationId}` : `/${env}/integrations/create/${setup.provider}`;
 
+    if (setup.outcome === 'created' || setup.outcome === 'existing') {
+        return (
+            <div className="flex items-center gap-2 text-body-medium-regular text-text-secondary" role="status">
+                <CircleCheck className="size-4 shrink-0 text-icon-success" />
+                <span>
+                    {setup.outcome === 'created' ? `Created the ${name} integration.` : `Using your ${name} integration.`}{' '}
+                    <Link to={href} className="whitespace-nowrap text-text-default underline underline-offset-2">
+                        View integration
+                    </Link>
+                </span>
+            </div>
+        );
+    }
+
     return (
-        <div className="flex items-start gap-2 text-body-small-regular text-text-secondary" role="status">
-            {ready ? (
-                <CircleCheck className="mt-0.5 size-4 shrink-0 text-icon-success" />
-            ) : (
-                <CircleAlert className="mt-0.5 size-4 shrink-0 text-icon-warning" />
-            )}
-            <span>
-                {SETUP_TEXT[setup.outcome](name)}{' '}
-                <Link to={href} className="text-text-default underline underline-offset-2">
-                    {ready ? `Open ${name}` : `Set up ${name} in Integrations`}
-                </Link>
-            </span>
-        </div>
+        <Alert variant="warning">
+            <CircleAlert />
+            <AlertTitle>
+                {setup.outcome === 'missing_credentials' ? `Finish setting up your ${name} integration` : `Create a ${name} integration to continue`}
+            </AlertTitle>
+            <AlertDescription>
+                {setup.outcome === 'missing_credentials'
+                    ? "It's missing its client ID or secret. Add them, then retry the prompt."
+                    : `This session needs a ${name} integration in this environment.`}
+            </AlertDescription>
+            <AlertActions>
+                <AlertButton asChild>
+                    <Link to={href}>
+                        {setup.outcome === 'missing_credentials' ? (
+                            <>
+                                <Settings2 /> Open integration
+                            </>
+                        ) : (
+                            <>
+                                <Plus /> Create integration
+                            </>
+                        )}
+                    </Link>
+                </AlertButton>
+                {onTryAgain && (
+                    <AlertButton onClick={onTryAgain}>
+                        <RotateCcw /> Retry prompt
+                    </AlertButton>
+                )}
+            </AlertActions>
+        </Alert>
     );
 };
 
