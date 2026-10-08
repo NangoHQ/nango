@@ -4845,6 +4845,9 @@ chameleon-i:
             method: GET
             endpoints:
                 - /api/v1/candidate/search
+        retry:
+            after:
+                - 'retry-after'
     docs: https://nango.dev/docs/api-integrations/chameleon-i
     docs_connect: https://nango.dev/docs/api-integrations/chameleon-i/connect
     credentials:
@@ -4853,6 +4856,8 @@ chameleon-i:
             title: API Key
             description: Your Chameleon-I workspace API key
             secret: true
+            pattern: '^\S+$'
+            example: abcd************************
             doc_section: '#step-1-generate-an-api-key'
 
 chartboost:
