@@ -5,10 +5,11 @@ import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 import { envs } from '../../../../env.js';
 import { identifyAccountMembership } from '../../../../services/accountAnalytics.service.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
+import { signupAcquisitionSchema } from '../../../../utils/signupAcquisition.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
 import { isOAuthConsentReturnTo, safeReturnTo } from '../returnTo.js';
 
-import type { DBInvitation, DBTeam } from '@nangohq/types';
+import type { DBInvitation, DBTeam, SignupAcquisition } from '@nangohq/types';
 import type { User, WorkOS } from '@workos-inc/node';
 import type { Request, Response } from 'express';
 
@@ -39,16 +40,22 @@ interface ManagedAuthVerificationRequiredError {
 
 export interface InviteAccountState {
     token?: string;
-    returnTo?: string;
+    returnTo?: string | undefined;
+    acquisition?: SignupAcquisition | undefined;
 }
 
 export function encodeManagedAuthState(state: InviteAccountState): string {
-    const value = state.token ? { token: state.token } : state.returnTo ? { returnTo: state.returnTo } : null;
+    const value = state.token
+        ? { token: state.token }
+        : state.returnTo || state.acquisition
+          ? { returnTo: state.returnTo, acquisition: state.acquisition }
+          : null;
     return value ? Buffer.from(JSON.stringify(value)).toString('base64') : '';
 }
 
 export function parseManagedAuthState(state: string): InviteAccountState | null {
     try {
+        if (state.length > 16384) return null;
         const res = JSON.parse(Buffer.from(state, 'base64').toString('utf8')) as unknown;
         if (!res || !(typeof res === 'object')) {
             return null;
@@ -56,8 +63,10 @@ export function parseManagedAuthState(state: string): InviteAccountState | null 
         const candidate = res as Record<string, unknown>;
         if (candidate['token'] !== undefined && typeof candidate['token'] !== 'string') return null;
         if (candidate['returnTo'] !== undefined && typeof candidate['returnTo'] !== 'string') return null;
-        if (candidate['token'] === undefined && candidate['returnTo'] === undefined) return null;
+        const acquisition = signupAcquisitionSchema.parse(candidate['acquisition']);
+        if (candidate['token'] === undefined && candidate['returnTo'] === undefined && !acquisition) return null;
         return {
+            ...(candidate['token'] === undefined && acquisition ? { acquisition } : {}),
             ...(typeof candidate['token'] === 'string' ? { token: candidate['token'] } : {}),
             ...(typeof candidate['returnTo'] === 'string' ? { returnTo: safeReturnTo(candidate['returnTo']) } : {})
         };
@@ -194,7 +203,7 @@ export async function finalizeManagedAuthentication({
                 return;
             }
 
-            const resAccount = await accountService.createAccount({ name, email: authorizedUser.email });
+            const resAccount = await accountService.createAccount({ name, email: authorizedUser.email, acquisition: state?.acquisition });
             if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;

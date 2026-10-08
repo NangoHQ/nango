@@ -213,6 +213,29 @@ describe('Account service', () => {
         expect(track).toHaveBeenCalledWith({ name: 'auth:account_create', team: account });
     });
 
+    it('attaches the same first source to the account and its single signup event', async () => {
+        const track = vi.spyOn(productTracking, 'track');
+        const group = vi.spyOn(productTracking, 'identifyAccountGroup');
+        const acquisition = { acquisition_utm_source: 'facebook', acquisition_landing_path: '/' };
+
+        const account = await accountService.createAccount({ name: uuid(), acquisition });
+
+        expect(track.mock.calls.filter(([event]) => event.name === 'auth:account_create')).toHaveLength(1);
+        expect(track).toHaveBeenCalledWith({ name: 'auth:account_create', team: account, eventProperties: acquisition });
+        expect(account).not.toBeNull();
+        expect(group).toHaveBeenCalledWith(account?.id, acquisition);
+    });
+
+    it('does not attach acquisition when an account is not a signup', async () => {
+        const track = vi.spyOn(productTracking, 'track');
+        const group = vi.spyOn(productTracking, 'identifyAccountGroup');
+
+        await accountService.createAccount({ name: uuid(), isSignup: false, acquisition: { acquisition_utm_source: 'facebook' } });
+
+        expect(track).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'auth:account_create' }));
+        expect(group).not.toHaveBeenCalled();
+    });
+
     it('does not track an account that is not a signup', async () => {
         const track = vi.spyOn(productTracking, 'track');
 
