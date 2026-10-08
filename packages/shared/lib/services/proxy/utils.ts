@@ -38,6 +38,7 @@ type ProxyErrorCode =
     | 'unsupported_auth'
     | 'unknown_provider'
     | 'unsupported_provider'
+    | 'invalid_proxy_url'
     | 'invalid_query_params'
     | 'unknown_error'
     | 'failed_to_get_connection'
@@ -421,26 +422,42 @@ export function enforceProxyOutboundUrlPolicy({
 export function buildProxyURL({ config, connection }: { config: ApplicationConstructedProxyConfiguration; connection: ConnectionForProxy }) {
     const { provider: { proxy: { base_url: templateApiBase } = {} } = {}, endpoint: apiEndpoint } = config;
 
-    let apiBase = config.baseUrlOverride || templateApiBase;
+    // Endpoints come from proxy callers, including MCP callers. They must never be evaluated as
+    // templates against decrypted connection data, even when the provider base URL is templated.
+    if (apiEndpoint.includes('${')) {
+        throw new ProxyError('invalid_proxy_url', 'Proxy endpoints must not contain template expressions.');
+    }
 
     // AWS SigV4 allows a per-connection base_url override for non-standard endpoints (S3, API Gateway,
     // GovCloud, FIPS). It wins over the provider's templated base_url, but NOT over an explicit
     // config.baseUrlOverride — credential verification sets that to the regional STS URL and must not be
     // redirected to the connection's endpoint.
-    if (!config.baseUrlOverride && connection.credentials.type === 'AWS_SIGV4') {
-        const connectionBaseUrl = connection.connection_config?.['base_url'] as string | undefined;
-        if (connectionBaseUrl) {
-            apiBase = connectionBaseUrl;
+    const connectionBaseUrl = connection.credentials.type === 'AWS_SIGV4' ? (connection.connection_config?.['base_url'] as string | undefined) : undefined;
+    let apiBase = config.baseUrlOverride || connectionBaseUrl || templateApiBase;
+
+    // Only provider templates can interpolate connection data. Explicit and per-connection
+    // overrides are URL data, so neither template expressions nor fallback expressions are evaluated.
+    if (!config.baseUrlOverride && !connectionBaseUrl) {
+        if (apiBase?.includes('${') && apiBase.includes('||')) {
+            const connectionConfig = connection.connection_config;
+            const splitApiBase = apiBase.split(/\s*\|\|\s*/);
+
+            const keyMatch = apiBase.match(/connectionConfig\.(\w+)/);
+            const index = keyMatch && keyMatch[1] && connectionConfig[keyMatch[1]] ? 0 : 1;
+            apiBase = splitApiBase[index]?.trim();
         }
+
+        const baseFormatted = interpolateProxyUrlParts(apiBase);
+        apiBase = baseFormatted
+            ? interpolateIfNeeded(baseFormatted, {
+                  ...(connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>),
+                  ...connection.credentials
+              })
+            : baseFormatted;
     }
 
-    if (apiBase && apiBase?.includes('${') && apiBase?.includes('||')) {
-        const connectionConfig = connection.connection_config;
-        const splitApiBase = apiBase.split(/\s*\|\|\s*/);
-
-        const keyMatch = apiBase.match(/connectionConfig\.(\w+)/);
-        const index = keyMatch && keyMatch[1] && connectionConfig[keyMatch[1]] ? 0 : 1;
-        apiBase = splitApiBase[index]?.trim();
+    if (apiBase?.includes('${')) {
+        throw new ProxyError('invalid_proxy_url', 'Proxy base URLs must not contain unresolved template expressions.');
     }
 
     const normalizedBase = apiBase?.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
@@ -449,21 +466,14 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     // If the endpoint is absolute and starts with the effective base, strip the base to avoid duplicating it.
     // Only strip at a real boundary — end of string, or the next char is a path/query/fragment delimiter — so a
     // different host that merely shares the prefix (e.g. https://api.example.com.evil.com) isn't wrongly rewritten.
-    if (normalizedBase && !normalizedBase.includes('${') && normalizedEndpoint.startsWith(normalizedBase)) {
+    if (normalizedBase && normalizedEndpoint.startsWith(normalizedBase)) {
         const rest = normalizedEndpoint.slice(normalizedBase.length);
         if (rest === '' || rest[0] === '/' || rest[0] === '?' || rest[0] === '#') {
             normalizedEndpoint = rest.replace(/^\/+/, '');
         }
     }
 
-    const baseFormatted = interpolateProxyUrlParts(normalizedBase);
-    const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';
-
-    const combinedUrl = [baseFormatted, endpointFormatted].filter(Boolean).join('/');
-    const fullEndpoint = interpolateIfNeeded(combinedUrl, {
-        ...(connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>),
-        ...connection.credentials
-    });
+    const fullEndpoint = [normalizedBase, normalizedEndpoint].filter(Boolean).join('/');
 
     let url = new URL(fullEndpoint);
     if (config.params) {

