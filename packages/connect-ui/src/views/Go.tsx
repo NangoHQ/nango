@@ -189,14 +189,15 @@ export const Go: React.FC = () => {
         }
     }, [awsExternalId]);
 
-    const { resolver, shouldAutoTrigger, orderedFields } = useMemo<{
+    const { resolver, shouldAutoTrigger, orderedFields, hasInvalidPreconfiguredField } = useMemo<{
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: Resolver<any>;
         shouldAutoTrigger: boolean;
         orderedFields: [string, number][];
+        hasInvalidPreconfiguredField: boolean;
     }>(() => {
         if (!provider) {
-            return { shouldAutoTrigger: false, resolver: () => ({ values: {}, errors: {} }), orderedFields: [] };
+            return { shouldAutoTrigger: false, resolver: () => ({ values: {}, errors: {} }), orderedFields: [], hasInvalidPreconfiguredField: false };
         }
 
         const baseForm = formSchema[provider.auth_mode];
@@ -206,6 +207,7 @@ export const Go: React.FC = () => {
         // It's a lazy algorithm that works most of the time
         const orderedFields: Record<string, number> = {};
         let hiddenFields = 0;
+        let hasInvalidPreconfiguredField = false;
         let order = 99;
 
         // Base credentials are usually the first in the list so we start here
@@ -266,9 +268,16 @@ export const Go: React.FC = () => {
                 order += 1;
                 orderedFields[`params.${name}`] = order;
             }
-            const isPreconfigured = typeof preconfiguredParams[name] !== 'undefined';
+            const preconfiguredValue = preconfiguredParams[name];
+            const isPreconfigured = typeof preconfiguredValue !== 'undefined';
             if (isPreconfigured || schema.hidden) {
                 hiddenFields += 1;
+            }
+
+            // A preconfigured value the end user can't see is also one they can't fix, and the field's own
+            // error message renders inside the hidden container, so flag it for the banner below.
+            if (isPreconfigured && !additionalFields[name].safeParse(preconfiguredValue).success) {
+                hasInvalidPreconfiguredField = true;
             }
         }
 
@@ -313,7 +322,8 @@ export const Go: React.FC = () => {
         return {
             shouldAutoTrigger: fieldCount - hiddenFields <= 0,
             resolver,
-            orderedFields: Object.entries(orderedFields).sort((a, b) => (a[1] < b[1] ? -1 : 1))
+            orderedFields: Object.entries(orderedFields).sort((a, b) => (a[1] < b[1] ? -1 : 1)),
+            hasInvalidPreconfiguredField
         };
     }, [provider, integration, preconfiguredParams, integrationConfigFallbackFields]);
 
@@ -633,7 +643,7 @@ export const Go: React.FC = () => {
                     </p>
                 )}
 
-                {!error && shouldAutoTrigger && !form.formState.isValid && (
+                {!error && (hasInvalidPreconfiguredField || (shouldAutoTrigger && !form.formState.isValid)) && (
                     <p
                         aria-live="assertive"
                         className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700"
