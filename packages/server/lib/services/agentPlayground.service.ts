@@ -165,7 +165,7 @@ async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | un
     return Ok(created.value.session);
 }
 
-// The page tells the user to finish the setup, so the model isn't asked to reply.
+// The page itself asks the user to finish the setup, so this reply has no text.
 function setupOnlyReply(messageMetadata: AgentPlaygroundMessageMetadata): ReadableStream<UIMessageChunk<AgentPlaygroundMessageMetadata>> {
     return new ReadableStream({
         start(controller) {
@@ -295,10 +295,10 @@ export async function startTurn({
         // Read live: the session's own connection list only fills in once a tool uses a connection.
         [tools, modelMessages, connections] = await Promise.all([
             buildMcpTools(client),
-            // A tool call left unanswered by Stop or an ignored approval would make OpenAI reject every later turn.
             convertToModelMessages(
-                // A reply that only reported an integration setup has no parts, so it must not reach the model as an empty assistant turn.
+                // A setup-only reply, or a Stop before the first part, leaves an assistant message with no parts. OpenAI rejects an empty turn.
                 messages.filter((message) => message.role !== 'assistant' || message.parts.length > 0),
+                // A tool call left unanswered by Stop or an ignored approval would make OpenAI reject every later turn.
                 { ignoreIncompleteToolCalls: true }
             ),
             connectionService.listConnections({
