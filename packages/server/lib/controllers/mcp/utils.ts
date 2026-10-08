@@ -62,6 +62,12 @@ function failureReason(payload: NangoError['payload']): string | undefined {
         return detail.message;
     }
 
+    const message = payload['message'];
+    if (typeof message === 'string') {
+        const type = payload['type'];
+        return typeof type === 'string' ? `${type}: ${message}` : message;
+    }
+
     return undefined;
 }
 
