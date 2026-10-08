@@ -7120,6 +7120,12 @@ Verify the signature with the **webhook signing key** from **Environment Setting
 
 Only accept a webhook if the `X-Nango-Hmac-Sha256` header value matches the webhook signature.
 
+### Rotating the webhook signing key
+
+Rotate the key from **Environment Settings > Webhooks > Signing key** with **Rotate key**, or with the [rotate webhook signing key](/reference/backend/http-api/environments/rotate-webhook-signing-key) API.
+
+For up to 5 minutes after a rotation, webhooks are signed with either the old or the new key. Accept both during that window, then drop the old key.
+
 ## Types of Nango webhooks
 
 <Warning>
@@ -10269,6 +10275,30 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/delete-ap
 </Info>
 
 Deletes an Environment API key. `environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create). `keyUuid` is the UUID returned when the key was [created](/reference/backend/http-api/environments/create-api-key).
+
+## Rotate the webhook signing key
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/rotate-webhook-signing-key.md
+
+<Info>
+  Requires an [Environment API key](/reference/backend/http-api/api-keys#environment-api-keys) with the `environment:webhook_signing_key:rotate` scope. It rotates the key of the environment the API key belongs to.
+</Info>
+
+Replaces the key Nango uses to [sign webhooks](/guides/platform/webhooks-from-nango#verifying-webhooks-from-nango). The new key is returned once, and stays readable under **Environment Settings > Webhooks > Signing key**.
+
+<Warning>
+  For up to 5 minutes after a rotation, webhooks are signed with either the old or the new key. Accept both until then.
+</Warning>
+
+<ResponseExample>
+```json Example Response
+{
+  "data": {
+    "webhook_signing_key": "5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f"
+  }
+}
+```
+</ResponseExample>
 
 ## List all integrations
 
