@@ -318,7 +318,7 @@ const Payload: React.FC<{ input: unknown; output: unknown; error: string | undef
 };
 
 const COLLAPSED_LINES = 20;
-// Prism tokenizes the whole block at once, which locks up the page on a large response.
+// Prism highlights the whole block, so a large response freezes the page while it renders.
 const MAX_HIGHLIGHTED_LENGTH = 50_000;
 
 const Value: React.FC<{ value: unknown }> = ({ value }) => {

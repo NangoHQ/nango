@@ -137,16 +137,14 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-requested' && !part.approval.isAutomatic);
     const answeredApprovalPending =
         lastMessage?.role === 'assistant' && lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-responded');
-    const [input, setInput] = useState('');
-
-    const send = (text: string, starterProvider?: string) => {
+    const send = (text: string, starterProvider?: string): boolean => {
         const trimmed = text.trim();
         if (!trimmed || busy || awaitingApproval) {
-            return;
+            return false;
         }
-        setInput('');
         pinnedToBottom.current = true;
         void sendMessage({ text: trimmed, ...(starterProvider ? { metadata: { starterProvider } } : {}) });
+        return true;
     };
 
     const retry = () => {
@@ -229,41 +227,7 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         }
     }, [messages, error]);
 
-    const composer = (
-        <form
-            className="w-full"
-            onSubmit={(e) => {
-                e.preventDefault();
-                send(input);
-            }}
-        >
-            <InputGroup size="composer">
-                <InputGroupTextarea
-                    value={input}
-                    rows={1}
-                    placeholder={awaitingApproval ? 'Approve or deny the change to continue…' : 'Ask the agent to do something…'}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                            e.preventDefault();
-                            send(input);
-                        }
-                    }}
-                />
-                <InputGroupAddon align="inline-end">
-                    {busy ? (
-                        <InputGroupButton label="Stop" variant="secondary" size="icon-sm" onClick={() => void stop()}>
-                            <Square />
-                        </InputGroupButton>
-                    ) : (
-                        <InputGroupButton label="Send" type="submit" variant="primary" size="icon-sm" disabled={!input.trim() || awaitingApproval}>
-                            <ArrowUp />
-                        </InputGroupButton>
-                    )}
-                </InputGroupAddon>
-            </InputGroup>
-        </form>
-    );
+    const composer = <Composer busy={busy} awaitingApproval={awaitingApproval} onSend={send} onStop={() => void stop()} />;
 
     if (messages.length === 0) {
         return (
@@ -333,6 +297,57 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
 
             {composer}
         </div>
+    );
+};
+
+// Holds the draft itself, so typing doesn't re-render the message list.
+const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (text: string) => boolean; onStop: () => void }> = ({
+    busy,
+    awaitingApproval,
+    onSend,
+    onStop
+}) => {
+    const [input, setInput] = useState('');
+    const submit = () => {
+        if (onSend(input)) {
+            setInput('');
+        }
+    };
+
+    return (
+        <form
+            className="w-full"
+            onSubmit={(e) => {
+                e.preventDefault();
+                submit();
+            }}
+        >
+            <InputGroup size="composer">
+                <InputGroupTextarea
+                    value={input}
+                    rows={1}
+                    placeholder={awaitingApproval ? 'Approve or deny the change to continue…' : 'Ask the agent to do something…'}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                            e.preventDefault();
+                            submit();
+                        }
+                    }}
+                />
+                <InputGroupAddon align="inline-end">
+                    {busy ? (
+                        <InputGroupButton label="Stop" variant="secondary" size="icon-sm" onClick={onStop}>
+                            <Square />
+                        </InputGroupButton>
+                    ) : (
+                        <InputGroupButton label="Send" type="submit" variant="primary" size="icon-sm" disabled={!input.trim() || awaitingApproval}>
+                            <ArrowUp />
+                        </InputGroupButton>
+                    )}
+                </InputGroupAddon>
+            </InputGroup>
+        </form>
     );
 };
 
