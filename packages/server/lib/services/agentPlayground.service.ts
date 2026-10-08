@@ -172,7 +172,14 @@ export function sessionOwner(session: Pick<AgentSession, 'metaTools'>): string |
 async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | undefined): Promise<Result<AgentSession, AgentPlaygroundError>> {
     if (sessionId) {
         const existing = await agentSessionService.getAgentSession(db.knex, { id: sessionId, accountId: ctx.account.id, environmentId: ctx.environment.id });
-        if (existing.isOk() && !existing.value.endedAt && existing.value.expiresAt > new Date() && sessionOwner(existing.value) === ctx.user.uuid) {
+        if (
+            existing.isOk() &&
+            !existing.value.endedAt &&
+            existing.value.expiresAt > new Date() &&
+            sessionOwner(existing.value) === ctx.user.uuid &&
+            // Connections a session creates must stay in the user's scope, which follows their current email.
+            existing.value.metaTools.nangoCreateConnection.tags['end_user_email'] === ctx.user.email
+        ) {
             return Ok(existing.value);
         }
     }

@@ -212,4 +212,20 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(borrowed.sessionId).toBeUUID();
         expect(borrowed.sessionId).not.toBe(first.sessionId);
     });
+
+    it("starts a new session once the user's email no longer matches it", async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+
+        const first = await chat(session, { messages: [userMessage('hi')] });
+        await db.knex
+            .from('_nango_users')
+            .where({ id: user.id })
+            .update({ email: `changed-${user.email}` });
+        const again = await chat(session, { sessionId: first.sessionId, messages: [userMessage('hi')] });
+
+        expect(again.sessionId).toBeUUID();
+        expect(again.sessionId).not.toBe(first.sessionId);
+    });
 });
