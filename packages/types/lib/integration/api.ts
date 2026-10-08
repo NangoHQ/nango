@@ -358,24 +358,24 @@ export type GetIntegrationFlows = ApiEndpoint<{
 export type ApiPublicIntegrationCredentials =
     | {
           type: Extract<AuthModeType, 'OAUTH1' | 'OAUTH2' | 'TBA'>;
-          client_id: string;
-          client_secret: string;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
           scopes?: string | undefined;
           webhook_secret?: string | undefined;
       }
     | {
           type: Extract<AuthModeType, 'APP'>;
-          app_id: string;
-          app_link: string;
-          private_key: string;
+          app_id?: string | undefined;
+          app_link?: string | undefined;
+          private_key?: string | undefined;
       }
     | {
           type: Extract<AuthModeType, 'CUSTOM'>;
-          client_id: string;
-          client_secret: string;
-          app_id: string;
-          app_link: string;
-          private_key: string;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
+          app_id?: string | undefined;
+          app_link?: string | undefined;
+          private_key?: string | undefined;
       }
     | {
           type: Extract<AuthModeType, 'MCP_OAUTH2_GENERIC'>;
