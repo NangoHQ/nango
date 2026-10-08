@@ -207,6 +207,10 @@ The **Default - Full access** key that comes with each environment already has a
 | `environment:functions:compile` | Compile function source code |
 | `environment:functions:dryrun` | Dry run function source code |
 
+<Warning>
+    When a key with `environment:functions:dryrun` starts a dryrun, the sandbox token inherits all of the parent key's scopes and additionally grants `environment:connections:read`, `environment:integrations:read`, and `environment:proxy` for the core SDK features to work while running a function.
+</Warning>
+
 #### Records
 
 | Scope | Description |
