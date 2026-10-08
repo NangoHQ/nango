@@ -120,6 +120,49 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
+    it('should create an OAuth integration without credentials', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { provider: 'github', unique_key: 'github' }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.data.unique_key).toBe('github');
+
+        const resGet = await api.fetch(getEndpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github' },
+            query: { include: ['credentials'] }
+        });
+
+        isSuccess(resGet.json);
+        expect(resGet.json.data.credentials).toMatchObject({ type: 'OAUTH2', client_id: null, client_secret: null });
+    });
+
+    it('should create an OAuth integration with only some credential fields', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { provider: 'github', unique_key: 'github', credentials: { type: 'OAUTH2', scopes: 'repo' } }
+        });
+
+        isSuccess(res.json);
+
+        const resGet = await api.fetch(getEndpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github' },
+            query: { include: ['credentials'] }
+        });
+
+        isSuccess(resGet.json);
+        expect(resGet.json.data.credentials).toMatchObject({ type: 'OAUTH2', client_id: null, client_secret: null, scopes: 'repo' });
+    });
+
     it('should add webhookSecret when creds.webhook_secret is present', async () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
