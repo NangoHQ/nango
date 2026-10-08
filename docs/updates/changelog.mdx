@@ -3,6 +3,124 @@ title: "Changelog"
 sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
+<Update label="Nango for Claude" description="October 6, 2026">
+  The [Management MCP server](/reference/backend/management-mcp) is now available in Claude's connector directory. Claude can configure integrations, call APIs, trigger syncs, and deploy functions for you. It also works with Claude Code, Codex, VS Code, and ChatGPT.
+
+  ![The Nango connector in Claude's connector directory](/images/changelog/claude-connector-directory.png)
+</Update>
+---
+
+<Update label="Connection MCP deprecation" description="October 6, 2026">
+  We're deprecating the Connection MCP server in favor of the new and more capable [agent sessions](/guides/agent-sessions).
+
+  **Am I impacted?** Only if you have agents using the Connection MCP with an Environment API key and `connection-id` and `provider-config-key` headers.
+
+  **What to do:** Follow the [migration guide](/guides/platform/migrations/migrate-from-connection-mcp) to move to scoped agent sessions.
+</Update>
+---
+
+<Update label="Webhook verification for more providers" description="October 1, 2026">
+  A second round of changes to how Nango verifies the webhooks it receives, following [last month's](/updates/changelog#webhook-verification):
+
+  - **Allow unverified webhooks:** A new per-integration setting lets webhooks with a missing or unverifiable signature through (invalid signatures are always rejected). Available for providers that reject unverified webhooks, such as GitHub App, Gmail, Microsoft Teams, and Salesforce. It's off by default.
+  - **Unverified flag:** When Nango forwards a webhook it could not verify, the request carries an `X-Nango-Webhook-Unverified: true` header and the Nango wrapper includes `"unverified": true`. Treat those payloads as untrusted. See [unverified webhooks](/guides/platform/webhook-forwarding#unverified-webhooks).
+  - **Providers that do not sign webhooks:** Affinity, Fillout, ShipStation, and Salesforce now require a secret you set per connection, sent in the `X-Nango-Webhook-Secret` header or a `nangoWebhookSecret` query parameter. Webhooks without a matching secret are rejected. See [providers that do not sign webhooks](/guides/platform/webhook-forwarding#providers-that-do-not-sign-webhooks).
+  - **More signatures checked:** Airtable notifications are verified against each webhook's MAC secret, Microsoft Teams activities must carry a valid Bot Framework token, and Halo PSA webhooks route to a connection with Basic auth.
+</Update>
+---
+
+<Update label="49 new APIs in September" description="October 1, 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="49 new APIs in September">
+      - [Airtable (MCP)](/api-integrations/airtable-mcp)
+      - [Amplemarket](/api-integrations/amplemarket)
+      - [Anarlog (MCP)](/api-integrations/anarlog-mcp)
+      - [Apple Calendar](/api-integrations/apple-calendar)
+      - [Astro (MCP)](/api-integrations/astro-mcp)
+      - [Autumn](/api-integrations/autumn)
+      - [Bandwidth](/api-integrations/bandwidth)
+      - [Beeline VMS](/api-integrations/beeline-vms)
+      - [Billit](/api-integrations/billit)
+      - [bol.com](/api-integrations/bol-com)
+      - [Clay (MCP)](/api-integrations/clay-mcp)
+      - [eClinicalWorks (FHIR)](/api-integrations/eclinicalworks)
+      - [Epic (FHIR)](/api-integrations/epic)
+      - [eWay-CRM](/api-integrations/eway-crm)
+      - [Finta](/api-integrations/finta)
+      - [Hex (MCP)](/api-integrations/hex-mcp)
+      - [HighQ](/api-integrations/highq)
+      - [HitPay](/api-integrations/hitpay)
+      - [Infor (ION API)](/api-integrations/infor)
+      - [Infor (ION API, Resource Owner Grant)](/api-integrations/infor-cc)
+      - [Inteliquent](/api-integrations/inteliquent)
+      - [JobNimbus](/api-integrations/jobnimbus)
+      - [Linkly](/api-integrations/linkly)
+      - [LiveSwitch](/api-integrations/liveswitch)
+      - [MailerLite](/api-integrations/mailerlite)
+      - [MEDITECH Greenfield](/api-integrations/greenfield-meditech)
+      - [Meta Ads (MCP)](/api-integrations/meta-mcp)
+      - [Microsoft Dataverse (Dynamics 365 CRM)](/api-integrations/microsoft-dataverse)
+      - [Moneybird](/api-integrations/moneybird)
+      - [Neon (MCP)](/api-integrations/neon-mcp)
+      - [NetSapiens](/api-integrations/netsapiens)
+      - [Nooks (API Key)](/api-integrations/nooks-api-key)
+      - [Nooks (OAuth)](/api-integrations/nooks)
+      - [Omnisend](/api-integrations/omnisend)
+      - [OpenRouter](/api-integrations/openrouter)
+      - [Outline](/api-integrations/outline)
+      - [PandaDoc (MCP)](/api-integrations/pandadoc-mcp)
+      - [PandaDoc (MCP, EU)](/api-integrations/pandadoc-mcp-eu)
+      - [Pleo (API Key)](/api-integrations/pleo-api-key)
+      - [PostHog (Capture API)](/api-integrations/posthog-capture)
+      - [SalesCaptain](/api-integrations/salescaptain)
+      - [Scavio](/api-integrations/scavio)
+      - [ScrollStash (MCP)](/api-integrations/scrollstash-mcp)
+      - [Simpplr](/api-integrations/simpplr)
+      - [symplr CTM (ClearConnect)](/api-integrations/symplr-ctm)
+      - [TextUs](/api-integrations/textus)
+      - [Tracify](/api-integrations/tracify)
+      - [UKG Pro (Workforce Management Client Credentials)](/api-integrations/ukg-pro-wfm-cc)
+      - [Weflow](/api-integrations/weflow)
+    </Accordion>
+  </AccordionGroup>
+
+  ## New blog posts
+
+  New posts from the Nango team in September:
+
+  - [How to build AI agent integrations using the Nango Management MCP](https://nango.dev/blog/how-to-build-ai-agent-integrations-using-the-nango-management-mcp)
+  - [MCP elicitation: how agents ask users for input mid-tool-call](https://nango.dev/blog/mcp-elicitation-explained)
+  - [How to give AI agents access to user accounts without exposing OAuth tokens](https://nango.dev/blog/how-to-give-ai-agents-access-to-user-accounts-without-exposing-oauth-tokens)
+  - [How to test AI-generated API integrations against real APIs](https://nango.dev/blog/test-ai-generated-api-integrations-against-real-apis)
+</Update>
+---
+
+<Update label="Rotating webhook signing keys" description="September 29, 2026">
+  You can now rotate the key that signs the [webhooks Nango sends to your app](/guides/platform/webhooks-from-nango), from Environment Settings > Webhooks.
+
+  For webhooks already in flight, the old key will still work for up to 5 minutes after rotation.
+
+  You can also rotate the key using the API. Use the `environment:webhook_signing_key:rotate` scope for your Environment API key.
+
+  ![Rotate key button under Environment Settings > Webhooks](/images/changelog/webhook-signing-key-rotate.png)
+</Update>
+---
+
+<Update label="Smaller improvements" description="September 25, 2026">
+  - **MCP integrations in the API:** Integrations for generic MCP servers can now be created and updated through the [integrations API](/reference/backend/http-api/integration/create), not just the dashboard. Fetching an integration with `include=credentials` also returns the configuration of providers with a custom config schema, with secret fields masked.
+  - **2FA recovery codes:** A recovery code can now disable two-factor authentication, for users who lost their authenticator app.
+</Update>
+---
+
+<Update label="Agent sessions: connect mid-session" description="September 22, 2026">
+  Agents can now ask the user to connect an integration during a session instead of dead-ending on it.
+
+  - **New `nango_create_connection` meta tool:** When one of the session's integrations has no connection, the agent calls it and gets a connect link to hand to the user. Once the user authorizes, that integration's tools work for the rest of the session. It is off by default. Enable it per session with `meta_tools`, optionally with tags to stamp on the connections it creates so later sessions can select them.
+  - **Clearer guidance:** When an integration is not connected, `nango_tool_search` and `nango_execute` tell the agent what to do next: call `nango_create_connection` if the session allows it, otherwise hand it to the user.
+
+  See [nango_create_connection](/guides/agent-sessions#nango_create_connection) in the agent sessions guide.
+</Update>
+---
 
 <Update label="OAuth for Management MCP" description="September 22, 2026">
   The Management MCP server now connects with OAuth. [Add](/getting-started/coding-agent-setup#management-mcp-server) `https://mcp.nango.dev/mcp` to your MCP client, sign in to Nango in the browser, and approve access.

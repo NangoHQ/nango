@@ -1,10 +1,12 @@
 import { request } from 'node:http';
 import { Readable } from 'node:stream';
 
+import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { logContextGetter } from '@nangohq/logs';
-import { getGlobalWebhookReceiveUrl, ProxyRequest, remoteFileService, seeders, syncManager } from '@nangohq/shared';
+import { getGlobalWebhookReceiveUrl, productTracking, ProxyRequest, remoteFileService, seeders, syncManager } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
@@ -12,6 +14,7 @@ import * as actionService from '../../services/action.service.js';
 import { authenticateUser, runServer } from '../../utils/tests.js';
 import { withoutUnscopedTools } from './testUtils.js';
 
+import type { CallToolResult } from '@modelcontextprotocol/client';
 import type { ApiKeyScope } from '@nangohq/types';
 import type { InternalAxiosRequestConfig } from 'axios';
 import type { MockInstance } from 'vitest';
@@ -89,6 +92,53 @@ async function mcpPost({
     return await mcpFetch({ token, method: 'POST', body, host });
 }
 
+async function fetchManagementMcp(input: string | URL | Request, init?: RequestInit): Promise<Response> {
+    const url = new URL(input instanceof Request ? input.url : input);
+    const headers: Record<string, string> = {};
+    new Headers(init?.headers).forEach((value, name) => {
+        headers[name] = value;
+    });
+    headers['host'] = 'mcp-test.nango.dev';
+
+    return await new Promise((resolve, reject) => {
+        const req = request(
+            {
+                hostname: url.hostname,
+                port: url.port,
+                path: `${url.pathname}${url.search}`,
+                method: init?.method,
+                headers,
+                signal: init?.signal ?? undefined
+            },
+            (res) => {
+                const chunks: Buffer[] = [];
+                res.on('data', (chunk: Buffer) => chunks.push(chunk));
+                res.on('error', reject);
+                res.on('aborted', () => reject(new Error('MCP response aborted')));
+                res.on('end', () => {
+                    const responseHeaders = new Headers();
+                    for (const [name, value] of Object.entries(res.headers)) {
+                        for (const item of Array.isArray(value) ? value : value ? [value] : []) {
+                            responseHeaders.append(name, item);
+                        }
+                    }
+                    resolve(
+                        new Response(Buffer.concat(chunks), {
+                            status: res.statusCode ?? 500,
+                            headers: responseHeaders
+                        })
+                    );
+                });
+            }
+        );
+        req.on('error', reject);
+        if (typeof init?.body === 'string') {
+            req.write(init.body);
+        }
+        req.end();
+    });
+}
+
 function parseMcpResponse(data: string): any {
     const trimmed = data.trim();
     if (!trimmed) {
@@ -137,6 +187,62 @@ function parseToolText(res: any) {
     return JSON.parse(res.json.result.content[0].text);
 }
 
+function parseClientToolText(result: CallToolResult): unknown {
+    const content = result.content[0];
+    if (!content || content.type !== 'text') {
+        throw new Error('Expected an MCP text result');
+    }
+    return JSON.parse(content.text);
+}
+
+async function createModernMcpClient({
+    token,
+    elicitationHandler
+}: {
+    token: string;
+    elicitationHandler: (params: { message: string }) => { action: 'accept'; content: Record<string, never> } | { action: 'decline' };
+}): Promise<Client> {
+    const client = new Client(
+        { name: 'management-integration-test', version: '1.0.0' },
+        {
+            capabilities: { elicitation: { form: {} } },
+            versionNegotiation: { mode: { pin: '2026-07-28' } }
+        }
+    );
+    client.setRequestHandler('elicitation/create', (request) => elicitationHandler(request.params));
+
+    const transport = new StreamableHTTPClientTransport(new URL('/mcp', api.url), {
+        fetch: fetchManagementMcp,
+        requestInit: {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    });
+    await client.connect(transport);
+    return client;
+}
+
+async function createLegacyMcpClient(token: string): Promise<Client> {
+    const client = new Client(
+        { name: 'management-integration-test', version: '1.0.0' },
+        {
+            versionNegotiation: { mode: 'legacy' }
+        }
+    );
+
+    const transport = new StreamableHTTPClientTransport(new URL('/mcp', api.url), {
+        fetch: fetchManagementMcp,
+        requestInit: {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    });
+    await client.connect(transport);
+    return client;
+}
+
 describe('POST /mcp management server', () => {
     beforeAll(async () => {
         api = await runServer();
@@ -150,6 +256,68 @@ describe('POST /mcp management server', () => {
 
     beforeEach(() => {
         auditSpy.mockClear();
+    });
+
+    it('captures management MCP usage through the HTTP endpoint', async () => {
+        const originalClient = productTracking.client;
+        const capture = vi.fn(
+            (_event: { event: string; distinctId: string; groups?: Record<string, string>; properties: Record<string, unknown> }) => undefined
+        );
+        productTracking.client = { capture, groupIdentify: vi.fn() } as unknown as typeof productTracking.client;
+
+        try {
+            const { secret, account, env } = await createKeyWithScopes(['environment:mcp']);
+            const response = await mcpPost({
+                token: secret,
+                body: {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'tools/call',
+                    params: { name: 'providers_get', arguments: { provider: 'github' } }
+                }
+            });
+
+            expect(response.status).toBe(200);
+            expect(response.json.result.structuredContent).toMatchObject({ name: 'github' });
+            await vi.waitFor(() => expect(capture).toHaveBeenCalledWith(expect.objectContaining({ event: '$mcp_tool_call' })));
+            const event = capture.mock.calls.find(([call]) => call.event === '$mcp_tool_call')?.[0];
+            expect(event?.distinctId).toBe(`account-${account.id}`);
+            expect(event?.groups).toStrictEqual({ company: String(account.id) });
+            expect(event?.properties).toMatchObject({
+                mcp_type: 'management',
+                mcp_auth_type: 'apiKey',
+                surface: 'server',
+                is_production: env.is_production,
+                $mcp_server_name: 'Nango Management MCP server',
+                $mcp_tool_name: 'providers_get',
+                $mcp_is_error: false
+            });
+            expect(event?.properties).not.toHaveProperty('$process_person_profile');
+            expect(event?.properties).not.toHaveProperty('$mcp_parameters');
+            expect(event?.properties).not.toHaveProperty('$mcp_response');
+
+            const failedResponse = await mcpPost({
+                token: secret,
+                body: {
+                    jsonrpc: '2.0',
+                    id: 2,
+                    method: 'tools/call',
+                    params: { name: 'providers_get', arguments: { provider: 'customer-secret-provider' } }
+                }
+            });
+            expect(failedResponse.status).toBe(200);
+            expect(failedResponse.json.result.isError).toBe(true);
+            await vi.waitFor(() =>
+                expect(capture).toHaveBeenCalledWith(expect.objectContaining({ properties: expect.objectContaining({ $mcp_is_error: true }) }))
+            );
+            const failedEvent = capture.mock.calls.find(([call]) => call.event === '$mcp_tool_call' && call.properties['$mcp_is_error'] === true)?.[0];
+            expect(failedEvent?.properties).not.toHaveProperty('$mcp_parameters');
+            expect(failedEvent?.properties).not.toHaveProperty('$mcp_response');
+            expect(failedEvent?.properties).not.toHaveProperty('$mcp_error_message');
+            expect(JSON.stringify(capture.mock.calls)).not.toContain('customer-secret-provider');
+        } finally {
+            productTracking.client = originalClient;
+        }
     });
 
     it('lists all tools with environment:* scope', async () => {
@@ -423,6 +591,7 @@ describe('POST /mcp management server', () => {
     });
 
     it('lists filtered functions for an integration', async () => {
+        vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
         const { secret, env } = await createKeyWithScopes(['environment:functions:list']);
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
@@ -544,58 +713,51 @@ describe('POST /mcp management server', () => {
         vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
         const { secret, env, account } = await createKeyWithScopes(['environment:deploy']);
         await seeders.createConfigSeed(env, 'airtable', 'airtable');
+        const elicitationHandler = vi.fn(() => ({ action: 'accept' as const, content: {} }));
+        const client = await createModernMcpClient({ token: secret, elicitationHandler });
 
-        const res = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'tools/call',
-                params: { name: 'deploy_template', arguments: { integration_id: 'airtable', template: 'tables' } }
-            }
-        });
-
-        expect(res.status).toBe(200);
-        expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
-        expect(res.json.result.structuredContent).toStrictEqual({
-            id: expect.any(String),
-            status: 'success',
-            created_at: expect.any(String)
-        });
-
-        const status = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 2,
-                method: 'tools/call',
-                params: { name: 'get_deployment_status', arguments: { id: res.json.result.structuredContent.id } }
-            }
-        });
-        expect(parseToolText(status)).toStrictEqual(status.json.result.structuredContent);
-        expect(status.json.result.structuredContent).toMatchObject({
-            id: res.json.result.structuredContent.id,
-            status: 'success',
-            integration_id: 'airtable',
-            function_name: 'tables',
-            function_type: 'sync'
-        });
-
-        await vi.waitFor(() => {
-            const event = auditSpy.mock.calls
-                .map((call) => call[0])
-                .find((candidate) => candidate.accountId === account.id && candidate.resource === 'function' && candidate.action === 'deployed');
-            expect(event).toMatchObject({
-                accountId: account.id,
-                environment: { id: env.uuid, display: env.name },
-                resource: 'function',
-                action: 'deployed',
-                targets: [{ type: 'function', id: 'tables' }],
-                metadata: { providerConfigKey: 'airtable' },
-                context: { interface: 'mcp' },
-                outcome: 'success'
+        try {
+            const result = await client.callTool({
+                name: 'deploy_template',
+                arguments: { integration_id: 'airtable', template: 'tables' }
             });
-        });
+            expect(result.structuredContent).toStrictEqual({
+                id: expect.any(String),
+                status: 'success',
+                created_at: expect.any(String)
+            });
+            expect(parseClientToolText(result)).toStrictEqual(result.structuredContent);
+            expect(elicitationHandler).toHaveBeenCalledOnce();
+
+            const deploymentId = (result.structuredContent as { id: string }).id;
+            const status = await client.callTool({ name: 'get_deployment_status', arguments: { id: deploymentId } });
+            expect(status.structuredContent).toMatchObject({
+                id: deploymentId,
+                status: 'success',
+                integration_id: 'airtable',
+                function_name: 'tables',
+                function_type: 'sync'
+            });
+            expect(parseClientToolText(status)).toStrictEqual(status.structuredContent);
+
+            await vi.waitFor(() => {
+                const event = auditSpy.mock.calls
+                    .map((call) => call[0])
+                    .find((candidate) => candidate.accountId === account.id && candidate.resource === 'function' && candidate.action === 'deployed');
+                expect(event).toMatchObject({
+                    accountId: account.id,
+                    environment: { id: env.uuid, display: env.name },
+                    resource: 'function',
+                    action: 'deployed',
+                    targets: [{ type: 'function', id: 'tables' }],
+                    metadata: { providerConfigKey: 'airtable' },
+                    context: { interface: 'mcp' },
+                    outcome: 'success'
+                });
+            });
+        } finally {
+            await client.close();
+        }
     });
 
     it('returns public errors for invalid deployment arguments and missing integrations', async () => {
@@ -781,30 +943,24 @@ describe('POST /mcp management server', () => {
     it('executes and audits the sync trigger tool with reset and cache options', async () => {
         const { secret, env, account } = await createKeyWithScopes(['environment:syncs:execute']);
         const runSyncCommandSpy = vi.spyOn(syncManager, 'runSyncCommand').mockResolvedValue({ success: true, response: true, error: null });
+        const elicitationHandler = vi.fn(() => ({ action: 'accept' as const, content: {} }));
+        const client = await createModernMcpClient({ token: secret, elicitationHandler });
 
         try {
-            const res = await mcpPost({
-                token: secret,
-                body: {
-                    jsonrpc: '2.0',
-                    id: 1,
-                    method: 'tools/call',
-                    params: {
-                        name: 'syncs_trigger',
-                        arguments: {
-                            integration_id: 'github',
-                            connection_id: 'connection-id',
-                            syncs: ['issues', { name: 'users', variant: 'incremental' }],
-                            reset: true,
-                            empty_cache: true
-                        }
-                    }
+            const result = await client.callTool({
+                name: 'syncs_trigger',
+                arguments: {
+                    integration_id: 'github',
+                    connection_id: 'connection-id',
+                    syncs: ['issues', { name: 'users', variant: 'incremental' }],
+                    reset: true,
+                    empty_cache: true
                 }
             });
 
-            expect(res.status).toBe(200);
-            expect(parseToolText(res)).toStrictEqual({ success: true });
-            expect(res.json.result.structuredContent).toStrictEqual({ success: true });
+            expect(result.structuredContent).toStrictEqual({ success: true });
+            expect(parseClientToolText(result)).toStrictEqual({ success: true });
+            expect(elicitationHandler).toHaveBeenCalledOnce();
             expect(runSyncCommandSpy).toHaveBeenCalledWith(
                 expect.objectContaining({
                     environment: env,
@@ -841,6 +997,34 @@ describe('POST /mcp management server', () => {
                 );
             });
         } finally {
+            await client.close();
+            runSyncCommandSpy.mockRestore();
+        }
+    });
+
+    it('does not run a destructive sync when confirmation is declined', async () => {
+        const { secret } = await createKeyWithScopes(['environment:syncs:execute']);
+        const runSyncCommandSpy = vi.spyOn(syncManager, 'runSyncCommand').mockResolvedValue({ success: true, response: true, error: null });
+        const client = await createModernMcpClient({ token: secret, elicitationHandler: () => ({ action: 'decline' }) });
+
+        try {
+            const result = await client.callTool({
+                name: 'syncs_trigger',
+                arguments: {
+                    integration_id: 'github',
+                    connection_id: 'connection-id',
+                    syncs: ['issues'],
+                    reset: true
+                }
+            });
+
+            expect(result).toMatchObject({
+                content: [{ type: 'text', text: 'Operation cancelled; no changes were made.' }],
+                isError: true
+            });
+            expect(runSyncCommandSpy).not.toHaveBeenCalled();
+        } finally {
+            await client.close();
             runSyncCommandSpy.mockRestore();
         }
     });
@@ -871,7 +1055,7 @@ describe('POST /mcp management server', () => {
         expect(res.status).toBe(200);
         const scopedTools = withoutUnscopedTools(res.json.result.tools);
         expect(scopedTools).toHaveLength(1);
-        expect(scopedTools[0]).toMatchObject({ name: 'connections_get', annotations: { readOnlyHint: false } });
+        expect(scopedTools[0]).toMatchObject({ name: 'connections_get', annotations: { readOnlyHint: true } });
     });
 
     it('gets a connection without credentials using the read scope', async () => {
@@ -902,37 +1086,10 @@ describe('POST /mcp management server', () => {
             provider: 'github'
         });
         expect(res.json.result.structuredContent).not.toHaveProperty('credentials');
+        expect(res.json.result.structuredContent).not.toHaveProperty('connection_config');
     });
 
-    it('rejects credential and refresh options using only the read scope', async () => {
-        const { secret, env } = await createKeyWithScopes(['environment:connections:read']);
-        await seeders.createConfigSeed(env, 'github', 'github');
-        await seeders.createConnectionSeed({
-            env,
-            provider: 'github',
-            connectionId: 'mcp-get-no-refresh-permission',
-            rawCredentials: { type: 'API_KEY', apiKey: 'connection-secret' }
-        });
-
-        const res = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'tools/call',
-                params: {
-                    name: 'connections_get',
-                    arguments: { connection_id: 'mcp-get-no-refresh-permission', integration_id: 'github', force_refresh: true }
-                }
-            }
-        });
-
-        expect(res.status).toBe(200);
-        expect(res.json.result).toMatchObject({ isError: true });
-        expect(res.json.result.content[0].text).toContain('environment:connections:read_credentials');
-    });
-
-    it('gets a connection with credentials using the credential-reading scope', async () => {
+    it('gets a connection without credentials using the credential-reading scope', async () => {
         const { secret, env } = await createKeyWithScopes(['environment:connections:read_credentials']);
         await seeders.createConfigSeed(env, 'github', 'github');
         await seeders.createConnectionSeed({
@@ -956,79 +1113,8 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(res.json.result.structuredContent.credentials).toStrictEqual({ type: 'API_KEY', apiKey: 'connection-secret' });
-    });
-
-    it('only returns provider refresh tokens when explicitly requested', async () => {
-        const { secret, env } = await createKeyWithScopes(['environment:connections:read_credentials']);
-        await seeders.createConfigSeed(env, 'workday-refresh-token', 'workday-refresh-token');
-        await seeders.createConnectionSeed({
-            env,
-            provider: 'workday-refresh-token',
-            connectionId: 'mcp-get-workday-connection',
-            rawCredentials: {
-                type: 'TWO_STEP',
-                token: 'access-token',
-                refreshToken: 'credential-refresh-secret',
-                raw: { access_token: 'raw-access-token' }
-            },
-            connectionConfig: {
-                userCredentials: {
-                    type: 'OAUTH2',
-                    access_token: 'user-access-token',
-                    refresh_token: 'config-refresh-secret',
-                    raw: {}
-                }
-            }
-        });
-
-        const redacted = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'tools/call',
-                params: {
-                    name: 'connections_get',
-                    arguments: { connection_id: 'mcp-get-workday-connection', integration_id: 'workday-refresh-token' }
-                }
-            }
-        });
-
-        expect(redacted.status).toBe(200);
-        expect(redacted.json.result.structuredContent.credentials).toStrictEqual({
-            type: 'TWO_STEP',
-            token: 'access-token',
-            raw: { access_token: 'raw-access-token' }
-        });
-        expect(redacted.json.result.structuredContent.connection_config).toStrictEqual({
-            userCredentials: { type: 'OAUTH2', access_token: 'user-access-token', raw: {} }
-        });
-
-        const withRefreshTokens = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 2,
-                method: 'tools/call',
-                params: {
-                    name: 'connections_get',
-                    arguments: {
-                        connection_id: 'mcp-get-workday-connection',
-                        integration_id: 'workday-refresh-token',
-                        refresh_token: true
-                    }
-                }
-            }
-        });
-
-        expect(withRefreshTokens.status).toBe(200);
-        expect(withRefreshTokens.json.result.structuredContent.credentials).toMatchObject({
-            refreshToken: 'credential-refresh-secret'
-        });
-        expect(withRefreshTokens.json.result.structuredContent.connection_config).toMatchObject({
-            userCredentials: { refresh_token: 'config-refresh-secret' }
-        });
+        expect(res.json.result.structuredContent).not.toHaveProperty('credentials');
+        expect(res.json.result.structuredContent).not.toHaveProperty('connection_config');
     });
 
     it('returns public errors for invalid connection get arguments and missing connections', async () => {
@@ -1295,19 +1381,17 @@ describe('POST /mcp management server', () => {
             annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
         });
 
-        const res = await mcpPost({
-            token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 2,
-                method: 'tools/call',
-                params: { name: 'integrations_delete', arguments: { integration_id: 'github' } }
-            }
-        });
+        const elicitationHandler = vi.fn(() => ({ action: 'accept' as const, content: {} }));
+        const client = await createModernMcpClient({ token: secret, elicitationHandler });
+        try {
+            const result = await client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'github' } });
 
-        expect(res.status).toBe(200);
-        expect(parseToolText(res)).toStrictEqual({ success: true });
-        expect(res.json.result.structuredContent).toStrictEqual({ success: true });
+            expect(result.structuredContent).toStrictEqual({ success: true });
+            expect(parseClientToolText(result)).toStrictEqual({ success: true });
+            expect(elicitationHandler).toHaveBeenCalledOnce();
+        } finally {
+            await client.close();
+        }
 
         const getAfterDelete = await mcpPost({
             token: secret,
@@ -1324,6 +1408,21 @@ describe('POST /mcp management server', () => {
             content: [{ type: 'text', text: 'Integration "github" does not exist' }],
             isError: true
         });
+    });
+
+    it('does not require confirmation from a legacy client', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:integrations:delete']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const client = await createLegacyMcpClient(secret);
+
+        try {
+            expect(client.getNegotiatedProtocolVersion()).toBe('2025-11-25');
+            const result = await client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'github' } });
+            expect(result.structuredContent).toStrictEqual({ success: true });
+            expect(parseClientToolText(result)).toStrictEqual({ success: true });
+        } finally {
+            await client.close();
+        }
     });
 
     it('rejects invalid integration delete arguments', async () => {
@@ -1347,21 +1446,20 @@ describe('POST /mcp management server', () => {
 
     it('returns public errors from the integration delete tool', async () => {
         const { secret } = await createKeyWithScopes(['environment:integrations:delete']);
-        const res = await mcpPost({
+        const client = await createModernMcpClient({
             token: secret,
-            body: {
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'tools/call',
-                params: { name: 'integrations_delete', arguments: { integration_id: 'missing' } }
-            }
+            elicitationHandler: () => ({ action: 'accept', content: {} })
         });
 
-        expect(res.status).toBe(200);
-        expect(res.json.result).toStrictEqual({
-            content: [{ type: 'text', text: 'Integration "missing" does not exist' }],
-            isError: true
-        });
+        try {
+            const result = await client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'missing' } });
+            expect(result).toMatchObject({
+                content: [{ type: 'text', text: 'Integration "missing" does not exist' }],
+                isError: true
+            });
+        } finally {
+            await client.close();
+        }
     });
 
     it('returns the legacy MCP JSON-RPC error shape for GET requests', async () => {
@@ -1422,7 +1520,7 @@ describe('POST /mcp management server', () => {
         });
     });
 
-    it('gets an integration with read scope and omits unauthorized credentials', async () => {
+    it('gets an integration without credentials', async () => {
         const { secret, env } = await createKeyWithScopes(['environment:integrations:read']);
         await seeders.createConfigSeed(env, 'github', 'github', { oauth_client_id: 'client-id', oauth_client_secret: 'client-secret' });
 
@@ -1434,7 +1532,7 @@ describe('POST /mcp management server', () => {
                 method: 'tools/call',
                 params: {
                     name: 'integrations_get',
-                    arguments: { integration_id: 'github', include: ['credentials'] }
+                    arguments: { integration_id: 'github' }
                 }
             }
         });
@@ -1450,7 +1548,7 @@ describe('POST /mcp management server', () => {
         expect(payload.data).not.toHaveProperty('credentials');
     });
 
-    it('gets requested includes with an integration wildcard scope', async () => {
+    it('gets a requested webhook without credentials with an integration wildcard scope', async () => {
         const { secret, env } = await createKeyWithScopes(['environment:integrations:*']);
         await seeders.createConfigSeed(env, 'platform-google', 'google', {
             oauth_client_id: 'client-id',
@@ -1466,7 +1564,7 @@ describe('POST /mcp management server', () => {
                 method: 'tools/call',
                 params: {
                     name: 'integrations_get',
-                    arguments: { integration_id: 'platform-google', include: ['webhook', 'credentials'] }
+                    arguments: { integration_id: 'platform-google', include: ['webhook'] }
                 }
             }
         });
@@ -1476,15 +1574,9 @@ describe('POST /mcp management server', () => {
         expect(payload.data).toMatchObject({
             provider: 'google',
             unique_key: 'platform-google',
-            webhook_url: `${getGlobalWebhookReceiveUrl()}/${env.uuid}/platform-google`,
-            credentials: {
-                type: 'OAUTH2',
-                client_id: 'client-id',
-                client_secret: 'client-secret',
-                scopes: 'openid,email',
-                webhook_secret: null
-            }
+            webhook_url: `${getGlobalWebhookReceiveUrl()}/${env.uuid}/platform-google`
         });
+        expect(payload.data).not.toHaveProperty('credentials');
         expect(res.json.result.structuredContent).toStrictEqual(payload);
     });
 

@@ -56,6 +56,7 @@ export interface ManagementMcpTool<TResponse extends object = object> {
     annotations?: ToolAnnotations;
     requiredScopes: ManagementMcpRequiredScopes;
     audit: EndpointAudit | DynamicManagementMcpAudit;
+    confirmation?: ((args: unknown, context: ManagementMcpContext) => string | undefined) | undefined;
     handler: (args: unknown, context: ManagementMcpContext) => Promise<Result<TResponse>>;
 }
 
@@ -83,10 +84,11 @@ type ManagementMcpToolAudit<TArgs, TResponse extends object> =
 
 type ManagementMcpToolDefinition<TInputSchema extends z.ZodType, TResponse extends object> = Omit<
     ManagementMcpTool<TResponse>,
-    'audit' | 'handler' | 'inputSchema'
+    'audit' | 'confirmation' | 'handler' | 'inputSchema'
 > & {
     inputSchema: TInputSchema;
     audit: ManagementMcpToolAudit<z.output<TInputSchema>, TResponse>;
+    confirmation?: ((context: ManagementMcpContext & { args: z.output<TInputSchema> }) => string | undefined) | undefined;
     handler: (context: ManagementMcpContext & { args: z.output<TInputSchema> }) => Result<TResponse> | Promise<Result<TResponse>>;
 };
 
@@ -94,6 +96,7 @@ export function defineManagementMcpTool<TInputSchema extends z.ZodType, TRespons
     tool: ManagementMcpToolDefinition<TInputSchema, TResponse>
 ): ManagementMcpTool<TResponse> {
     const audit = tool.audit;
+    const confirmation = tool.confirmation;
     const resolvedAudit: ManagementMcpTool<TResponse>['audit'] =
         audit.kind === 'dynamic-audit'
             ? {
@@ -105,6 +108,14 @@ export function defineManagementMcpTool<TInputSchema extends z.ZodType, TRespons
     return {
         ...tool,
         audit: resolvedAudit,
+        ...(confirmation
+            ? {
+                  confirmation(args, context) {
+                      const parsedArgs = tool.inputSchema.safeParse(args ?? {});
+                      return parsedArgs.success ? confirmation({ ...context, args: parsedArgs.data }) : undefined;
+                  }
+              }
+            : {}),
         async handler(args, context) {
             const parsedArgs = tool.inputSchema.safeParse(args ?? {});
             if (!parsedArgs.success) {

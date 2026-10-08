@@ -6,8 +6,9 @@ import { functionConfigService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { toGetFunctionResponse } from './helpers.js';
 
-import type { GetFunction, GetFunctionResponse } from '@nangohq/types';
+import type { GetFunction } from '@nangohq/types';
 
 const paramsSchema = z.object({ uuid: z.uuid() }).strict();
 
@@ -38,16 +39,5 @@ export const getFunction = asyncWrapperWithEnvironment<GetFunction>(async (req, 
         return;
     }
 
-    const response: GetFunctionResponse = {
-        uuid: fn.config.uuid,
-        integration_id: fn.integration.unique_key,
-        name: fn.config.name,
-        description: fn.currentVersion.description,
-        state: fn.config.enabled ? 'enabled' : 'disabled',
-        source: fn.currentVersion.source,
-        trigger: fn.currentVersion.trigger,
-        created_at: fn.config.created_at.toISOString(),
-        updated_at: fn.config.updated_at.toISOString()
-    };
-    res.status(200).send(response);
+    res.status(200).send(toGetFunctionResponse(fn));
 });

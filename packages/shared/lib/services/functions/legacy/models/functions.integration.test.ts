@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
@@ -10,6 +10,18 @@ import { findActionInputSchemas, findIntegrationFunctions } from './functions.js
 
 import type { DBSyncConfig, IntegrationConfig, NangoConfigMetadata } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+
+const { mockHasCatalogTools } = vi.hoisted(() => {
+    return { mockHasCatalogTools: vi.fn() };
+});
+
+vi.mock('@nangohq/feature-flags', () => ({
+    getFlags: () => ({ hasCatalogTools: mockHasCatalogTools })
+}));
+
+beforeEach(() => {
+    mockHasCatalogTools.mockResolvedValue(true);
+});
 
 async function insertSyncConfig({
     environmentId,
@@ -146,6 +158,18 @@ describe(findIntegrationFunctions, () => {
         expect(functions.map((row) => row.name)).not.toContain('theirs');
     });
 
+    it('does not append catalog actions when tools-catalog is off', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        await createConfigSeed(environment, 'github', 'github');
+
+        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+
+        expect(mockHasCatalogTools).toHaveBeenCalledWith(account.uuid);
+        expect(functions.some((row) => row.name === 'create-issue')).toBe(false);
+    });
+
     it('does not return a function whose environment disagrees with its integration', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
@@ -180,7 +204,10 @@ describe(findActionInputSchemas, () => {
             modelsJsonSchema: objectInput
         });
 
-        const rows = await findActionInputSchemas({ environmentId: environment.id, actions: [{ integrationId: 'gmail', name: 'send_email' }] });
+        const rows = await findActionInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'gmail', name: 'send_email' }]
+        });
 
         expect(rows).toStrictEqual([{ integration_id: 'gmail', name: 'send_email', input: 'SendEmailInput', models_json_schema: objectInput }]);
     });
@@ -215,7 +242,10 @@ describe(findActionInputSchemas, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: gmail, name: 'send_email', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration: outlook, name: 'send_email', type: 'action' });
 
-        const rows = await findActionInputSchemas({ environmentId: environment.id, actions: [{ integrationId: 'gmail', name: 'send_email' }] });
+        const rows = await findActionInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'gmail', name: 'send_email' }]
+        });
 
         expect(rows.map((row) => row.integration_id)).toStrictEqual(['gmail']);
     });
@@ -245,6 +275,20 @@ describe(findActionInputSchemas, () => {
         const github = await createConfigSeed(environment, 'github', 'github');
 
         await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create-issue', type: 'action', enabled: false });
+
+        const rows = await findActionInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'github', name: 'create-issue' }]
+        });
+
+        expect(rows).toStrictEqual([]);
+    });
+
+    it('does not return the catalog schema when tools-catalog is off', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        await createConfigSeed(environment, 'github', 'github');
 
         const rows = await findActionInputSchemas({
             environmentId: environment.id,

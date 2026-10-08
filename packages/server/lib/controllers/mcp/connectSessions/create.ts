@@ -11,7 +11,7 @@ export const createConnectSessionTool = defineManagementMcpTool<typeof createCon
     name: 'connect_session_create',
     title: 'Create Connect Session',
     description:
-        'Create a short-lived Connect session and return its token and authorization link. Send the connect_link to the end user so they can complete OAuth or enter credentials. After authorization, use connections_list to find the resulting connection. At least one of end_user or tags must be provided.',
+        'Creates a short-lived Connect session and returns its token and authorization link. The connect_link lets the end user complete OAuth or enter credentials, and connections_list can find the resulting connection after authorization. Either end_user or tags is required.',
     inputSchema: createConnectSessionArgumentsSchema,
     outputSchema: createConnectSessionOutputSchema,
     requiredScopes: { every: ['environment:connect_sessions:write'] },

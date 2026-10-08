@@ -21,6 +21,7 @@ import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, Po
 import type { PostImpersonate } from './admin/http.api.js';
 import type { DeleteAgentSession, PostAgentSessions } from './agent/api.js';
 import type { GetAgentSessionMcp, PostAgentSessionMcp } from './agent/mcp.api.js';
+import type { PostAgentPlaygroundChat } from './agent/playground.api.js';
 import type { EndpointMethod } from './api.js';
 import type { GetAuditTrail, GetAuditTrailExport } from './audit-trail/api.js';
 import type {
@@ -85,12 +86,14 @@ import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
 import type {
+    DeleteFunctionVariant,
     DeleteIntegrationFunction,
     DeletePublicIntegrationFunction,
     GetFunction,
     GetFunctionDeployment,
     GetFunctionDryrun,
     GetFunctionInvocation,
+    GetFunctions,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
@@ -98,6 +101,9 @@ import type {
     GetPublicIntegrationFunction,
     GetPublicIntegrationFunctions,
     GetPublicProviderTemplates,
+    PatchConnectionFunction,
+    PatchFunction,
+    PatchFunctionVariant,
     PostFunctionCompile,
     PostFunctionDeployment,
     PostFunctionDeploymentBundle,
@@ -105,7 +111,8 @@ import type {
     PostFunctionDeploymentResult,
     PostFunctionDryrun,
     PostFunctionDryrunResult,
-    PostFunctionInvocation
+    PostFunctionInvocation,
+    PostFunctionVariant
 } from './functions/api.js';
 import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
@@ -219,6 +226,8 @@ export type PublicApiEndpoints =
     | PostPublicTriggerAction
     | PostFunctionCompile
     | GetFunction
+    | GetFunctions
+    | PatchFunction
     | PostFunctionDryrun
     | GetFunctionDryrun
     | PostFunctionDryrunResult
@@ -226,6 +235,10 @@ export type PublicApiEndpoints =
     | GetFunctionDeployment
     | PostFunctionDeploymentResult
     | PostFunctionInvocation
+    | PostFunctionVariant
+    | PatchFunctionVariant
+    | PatchConnectionFunction
+    | DeleteFunctionVariant
     | GetFunctionInvocation
     | PostFunctionDeploymentBundle
     | PostFunctionDeploymentBundlePreview
@@ -348,7 +361,8 @@ export type PrivateApiEndpoints =
     | PostMFARecoveryCodes
     | PostMFALoginVerification
     | DeleteMFA
-    | GetPlainHmac;
+    | GetPlainHmac
+    | PostAgentPlaygroundChat;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 

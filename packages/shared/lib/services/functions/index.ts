@@ -6,7 +6,7 @@ export type { ActionInputSchemaRow, IntegrationFunctionRow } from './legacy/mode
 export * as functionConfigService from './models/functions.js';
 export * as functionInstanceService from './models/instances.js';
 export type { FunctionInstanceFilter } from './models/instances.js';
-export * as functionLifecycle from './lifecycle.js';
+export * as functionLifecycle from './lifecycle/index.js';
 export { reconcile } from './reconcile.js';
 export type { DeploymentBundleReconciliation } from './reconcile.js';
 export { functionVersionHash } from './version.js';

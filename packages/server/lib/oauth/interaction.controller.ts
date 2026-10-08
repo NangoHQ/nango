@@ -332,7 +332,7 @@ async function validateInteraction(interaction: Interaction): Promise<
     if (interaction.prompt.name !== 'consent' || !interaction.session) return { status: 404, error: 'interaction_invalid' };
 
     const userId = Number(interaction.session.accountId);
-    if (!Number.isSafeInteger(userId) || userId <= 0) return { status: 404, error: 'interaction_invalid' };
+    if (!Number.isSafeInteger(userId) || userId < 0) return { status: 404, error: 'interaction_invalid' };
     const user = await db.knex<DBUser>('_nango_users').where({ id: userId }).first();
     if (!user || user.suspended) return { status: 403, error: 'user_suspended' };
     const account = await db.knex<DBTeam>('_nango_accounts').where({ id: user.account_id }).first();

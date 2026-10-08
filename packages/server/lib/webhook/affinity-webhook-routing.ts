@@ -1,9 +1,11 @@
 import { NangoError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { connectionsWithValidSecret, rejectUnverifiedWebhook } from './nango-webhook-secret.js';
+import { connectionsToRoute, rejectUnverifiedWebhook } from './nango-webhook-secret.js';
 
 import type { affinityWebhookResponse, WebhookHandler } from './types.js';
+
+const MISSING_SECRET = { reason: 'affinity_missing_webhook_secret', remediation: 'Set webhookSecret in the connection metadata' };
 
 // Affinity does not sign webhooks and its payload does not identify a connection. Each end user's
 // Affinity instance registers its own webhook URL, so the URL carries the connection id and that
@@ -15,7 +17,8 @@ const route: WebhookHandler<affinityWebhookResponse> = async (nango, headers, bo
     }
 
     const connection = await nango.getConnectionForWebhook(connectionId);
-    if (connectionsWithValidSecret(connection ? [connection] : [], headers, query).length === 0) {
+    const routed = await connectionsToRoute({ nango, connections: connection ? [connection] : [], headers, query, unverified: MISSING_SECRET });
+    if (routed.length === 0) {
         return rejectUnverifiedWebhook(headers, query);
     }
 

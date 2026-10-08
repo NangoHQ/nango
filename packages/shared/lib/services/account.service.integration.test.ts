@@ -7,6 +7,7 @@ import { Err, metrics } from '@nangohq/utils';
 import { envs } from '../env.js';
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 import { seedAccountEnvAndUser } from '../seeders/global.seeder.js';
+import { productTracking } from '../utils/productTracking.js';
 import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService, { CreateEnvironmentError, defaultEnvironments } from './environment.service.js';
@@ -202,6 +203,31 @@ describe('Account service', () => {
 
         const account = await db.knex.select('*').from('_nango_accounts').where({ name: teamName }).first();
         expect(account).toBeUndefined();
+    });
+
+    it('tracks a signup account', async () => {
+        const track = vi.spyOn(productTracking, 'track');
+
+        const account = await accountService.createAccount({ name: uuid() });
+
+        expect(track).toHaveBeenCalledWith({ name: 'auth:account_create', team: account });
+    });
+
+    it('does not track an account that is not a signup', async () => {
+        const track = vi.spyOn(productTracking, 'track');
+
+        await accountService.createAccount({ name: uuid(), isSignup: false });
+
+        expect(track).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'auth:account_create' }));
+    });
+
+    it('does not track a rolled-back account', async () => {
+        vi.spyOn(plans, 'createPlan').mockRejectedValueOnce(new Error('PLAN_CREATION_FAILED'));
+        const track = vi.spyOn(productTracking, 'track');
+
+        await expect(accountService.createAccount({ name: uuid() })).rejects.toThrow('PLAN_CREATION_FAILED');
+
+        expect(track).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'auth:account_create' }));
     });
 
     it('should rollback the transaction if creating a default environment fails', async () => {

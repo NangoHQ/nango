@@ -1,0 +1,55 @@
+---
+title: Monday (API Key) - How do I link my account?
+sidebarTitle: Monday (API Key)
+---
+
+## Overview
+
+To authenticate with Monday, you will need:
+1. **Personal API Token** - A personal V2 API token used to authenticate requests and identify you as the user making the call.
+
+This guide will walk you through finding your personal API token.
+
+### Prerequisites:
+
+- A monday.com account. If you don't have one yet, you can create a free developer account to get an API token and start testing.
+
+### Instructions:
+
+#### Step 1: Finding your personal API token
+
+You can access your token in two ways, depending on your user type.
+
+**In the Developer Center (all users):**
+1. In your monday.com account, click on your profile picture in the top right corner.
+2. Select **Developers**. This opens the Developer Center in another tab.
+3. Click **API token** > **Show**.
+4. Copy your personal token.
+
+<img src="/api-integrations/monday-api-key/generate_api_key.png"/>
+
+**In the Administration tab (account admins only):**
+1. In your monday.com account, click on your profile picture in the top right corner.
+2. Select **Administration** > **Connections** > **Personal API token**.
+3. Copy your personal token.
+
+<img src="/api-integrations/monday-api-key/admin_generate_api_key.png"/>
+
+Personal tokens mirror all permission levels set in the monday.com UI, including board, column, item, or account access — if you don't have permission to access a workspace via the UI, you won't have permission using your personal API token either.
+
+<Tip>
+Tokens can be regenerated at any time from the Developer Center or the Administration tab, but this immediately invalidates the previous token — be sure to update your connection if you regenerate it.
+</Tip>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your personal API token:
+1. Open the form where you need to authenticate with Monday.
+2. Enter your **Personal API Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/monday-api-key/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Monday.
+
+

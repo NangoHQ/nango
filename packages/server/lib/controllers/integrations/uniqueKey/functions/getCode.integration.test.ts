@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import { remoteFileService, seeders } from '@nangohq/shared';
-import { flags } from '@nangohq/utils';
 
 import { isError, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
@@ -113,8 +113,7 @@ describe(`GET ${endpoint}`, () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aircall', 'aircall');
 
-        const original = flags.hasCatalogTools;
-        flags.hasCatalogTools = false;
+        const spy = vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(false);
         try {
             const res = await api.fetch(endpoint, {
                 method: 'GET',
@@ -128,7 +127,7 @@ describe(`GET ${endpoint}`, () => {
             expect(res.json.error.code).toBe('not_found');
             expect(res.json.error.message).toContain('Function');
         } finally {
-            flags.hasCatalogTools = original;
+            spy.mockRestore();
         }
     });
 
@@ -136,8 +135,7 @@ describe(`GET ${endpoint}`, () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aircall', 'aircall');
 
-        const original = flags.hasCatalogTools;
-        flags.hasCatalogTools = true;
+        const catalogSpy = vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
         const getFileSpy = vi.spyOn(remoteFileService, 'getFile').mockResolvedValue('catalog source');
         try {
             const res = await api.fetch(endpoint, {
@@ -152,7 +150,7 @@ describe(`GET ${endpoint}`, () => {
             expect(getFileSpy).toHaveBeenCalledWith('templates-zero/aircall/actions/create-contact.ts');
         } finally {
             getFileSpy.mockRestore();
-            flags.hasCatalogTools = original;
+            catalogSpy.mockRestore();
         }
     });
 
@@ -253,8 +251,7 @@ describe(`GET ${endpoint}`, () => {
         const config = await seeders.createConfigSeed(env, 'aircall', 'aircall');
         await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'create-contact', type: 'sync' });
 
-        const original = flags.hasCatalogTools;
-        flags.hasCatalogTools = true;
+        const catalogSpy = vi.spyOn(getFlags(), 'hasCatalogTools').mockResolvedValue(true);
         try {
             const res = await api.fetch(endpoint, {
                 method: 'GET',
@@ -284,7 +281,7 @@ describe(`GET ${endpoint}`, () => {
             expect(syncOnly.json.error.code).toBe('not_found');
             expect(syncOnly.json.error.message).toContain('Source file');
         } finally {
-            flags.hasCatalogTools = original;
+            catalogSpy.mockRestore();
         }
     });
 });

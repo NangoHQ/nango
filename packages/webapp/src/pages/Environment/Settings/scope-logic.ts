@@ -50,6 +50,7 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
         items: [
             { value: 'environment:functions:list', label: 'list' },
             { value: 'environment:functions:read', label: 'read' },
+            { value: 'environment:functions:update', label: 'update' },
             { value: 'environment:functions:delete', label: 'delete' },
             { value: 'environment:functions:compile', label: 'compile' },
             { value: 'environment:functions:dryrun', label: 'dryrun' },
@@ -68,6 +69,7 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
     { group: 'Actions', items: [{ value: 'environment:actions:execute', label: 'execute' }] },
     { group: 'Proxy', items: [{ value: 'environment:proxy', label: 'proxy' }] },
     { group: 'Variables', items: [{ value: 'environment:variables:read', label: 'read' }] },
+    { group: 'Webhooks', items: [{ value: 'environment:webhook_signing_key:rotate', label: 'rotate signing key' }] },
     { group: 'MCP', items: [{ value: 'environment:mcp', label: 'mcp' }] }
 ];
 

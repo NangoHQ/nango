@@ -74,7 +74,7 @@ export async function executeAction({
             return { logCtx, result: Err(new ActionExecutionError({ code: 'unknown_provider', message: 'Failed to find provider' })) };
         }
 
-        const resolved = await resolveRunnableTool({ environmentId: environment.id, integration: provider, name: actionName });
+        const resolved = await resolveRunnableTool({ accountUuid: account.uuid, environmentId: environment.id, integration: provider, name: actionName });
         if (resolved.kind === 'missing') {
             return { logCtx, result: Err(new ActionExecutionError({ code: 'unknown_action', message: 'Action not found' })) };
         }
@@ -98,7 +98,7 @@ export async function executeAction({
                 integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
                 connection: { id: connection.id, name: connection.connection_id },
                 syncConfig: loggedSyncConfig,
-                meta: truncateJson({ input })
+                meta: truncateJson({ input: envs.NANGO_LOG_FUNCTION_INPUT ? input : 'REDACTED' })
             }
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation));

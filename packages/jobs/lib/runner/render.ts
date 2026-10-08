@@ -50,6 +50,7 @@ export const renderNodeProvider: NodeProvider = {
 
         const ownerId = envs.RUNNER_OWNER_ID;
         const name = serviceName(node);
+        const authEnv = await mintRunnerAuthEnv(node.id);
         const res = await withRateLimitHandling<{ service: { id: string; suspended: string } }>('create', () =>
             render.createService({
                 type: 'private_service',
@@ -81,7 +82,7 @@ export const renderNodeProvider: NodeProvider = {
                     { key: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
                     ...(envs.RUNNER_HTTP_LOG_SAMPLE_PCT ? [{ key: 'RUNNER_HTTP_LOG_SAMPLE_PCT', value: envs.RUNNER_HTTP_LOG_SAMPLE_PCT.toString() }] : []),
                     ...Object.entries(getInternalTlsEnv()).map(([key, value]) => ({ key, value })),
-                    ...Object.entries(mintRunnerAuthEnv(node.id)).map(([key, value]) => ({ key, value }))
+                    ...Object.entries(authEnv).map(([key, value]) => ({ key, value }))
                 ]
             })
         );
