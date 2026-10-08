@@ -115,7 +115,8 @@ describe(`POST ${endpoint}`, () => {
                 provider: 'algolia',
                 unique_key: 'foobar',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true
+                forward_webhooks: true,
+                missing_fields: []
             }
         });
     });
@@ -130,6 +131,7 @@ describe(`POST ${endpoint}`, () => {
 
         isSuccess(res.json);
         expect(res.json.data.unique_key).toBe('github');
+        expect(res.json.data.missing_fields).toStrictEqual(['oauth_client_id', 'oauth_client_secret']);
 
         const resGet = await api.fetch(getEndpoint, {
             method: 'GET',
@@ -151,6 +153,7 @@ describe(`POST ${endpoint}`, () => {
         });
 
         isSuccess(res.json);
+        expect(res.json.data.missing_fields).toStrictEqual(['oauth_client_id', 'oauth_client_secret']);
 
         const resGet = await api.fetch(getEndpoint, {
             method: 'GET',
@@ -190,7 +193,8 @@ describe(`POST ${endpoint}`, () => {
                 provider: 'github',
                 unique_key: 'github',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true
+                forward_webhooks: true,
+                missing_fields: []
             }
         });
 
@@ -232,7 +236,8 @@ describe(`POST ${endpoint}`, () => {
                 provider: 'github',
                 unique_key: 'github',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true
+                forward_webhooks: true,
+                missing_fields: []
             }
         });
 

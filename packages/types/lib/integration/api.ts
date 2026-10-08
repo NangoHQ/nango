@@ -8,7 +8,7 @@ import type { IntegrationConfig } from './db.js';
 import type { Merge } from 'type-fest';
 
 export type ApiPublicIntegration = Merge<
-    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks'>,
+    Pick<IntegrationConfig, 'created_at' | 'updated_at' | 'unique_key' | 'provider' | 'display_name' | 'forward_webhooks' | 'missing_fields'>,
     ApiTimestamps
 > & {
     logo: string;

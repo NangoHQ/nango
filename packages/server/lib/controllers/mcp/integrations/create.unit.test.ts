@@ -76,6 +76,7 @@ describe('createIntegrationsTool', () => {
                     display_name: 'GitHub Own',
                     logo: `${basePublicUrl}/images/template-logos/github.svg`,
                     forward_webhooks: false,
+                    missing_fields: [],
                     created_at: createdAt.toISOString(),
                     updated_at: updatedAt.toISOString()
                 }

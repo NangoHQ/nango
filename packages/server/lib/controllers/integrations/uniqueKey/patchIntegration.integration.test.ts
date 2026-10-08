@@ -69,7 +69,8 @@ describe(`PATCH ${endpoint}`, () => {
                 provider: 'github',
                 unique_key: 'github',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true
+                forward_webhooks: true,
+                missing_fields: ['oauth_client_id', 'oauth_client_secret']
             }
         });
     });
@@ -150,7 +151,8 @@ describe(`PATCH ${endpoint}`, () => {
                 provider: 'github',
                 unique_key: 'github',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true
+                forward_webhooks: true,
+                missing_fields: []
             }
         });
 

@@ -10440,6 +10440,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/create.md
     "display_name": "Slack",
     "provider": "slack",
     "logo": "http://localhost:3003/images/template-logos/github.svg",
+    "missing_fields": [],
     "created_at": "2023-10-16T08:45:26.241Z",
     "updated_at": "2023-10-16T08:45:26.241Z",
   }
@@ -11547,12 +11548,15 @@ await nango.getIntegration(<INTEGRATION-ID>);
         "provider": "slack",
         "logo": "http://localhost:3003/images/template-logos/slack.svg",
         "forward_webhooks": true,
+        "missing_fields": [],
         "created_at": "2023-10-16T08:45:26.241Z",
         "updated_at": "2023-10-16T08:45:26.241Z"
     }
 }
 ```
 </Expandable>
+
+`missing_fields` lists the credential fields the integration may need before connections can be created, for example `oauth_client_id`. It is empty once the integration is fully configured, when it uses a Nango-provided developer app, or when the auth mode collects everything at connection time.
 
 ### Create an integration
 

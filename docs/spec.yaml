@@ -4525,6 +4525,15 @@ components:
                 forward_webhooks:
                     type: boolean
                     description: Whether webhooks received from this integration's provider are forwarded to your backend.
+                missing_fields:
+                    type: array
+                    items:
+                        type: string
+                    description: >
+                        Credential fields the integration is missing, e.g.
+                        `oauth_client_id`. Empty when the integration is fully configured, when it uses
+                        Nango-provided credentials, or when the auth mode collects everything at connection time.
+                        Field names only, never values.
         IntegrationFull:
             allOf:
                 - $ref: '#/components/schemas/Integration'

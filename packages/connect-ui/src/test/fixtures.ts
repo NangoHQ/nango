@@ -9,6 +9,7 @@ export const integrationFixtures = [
         provider: 'github',
         display_name: 'GitHub',
         forward_webhooks: false,
+        missing_fields: [],
         logo: 'https://app.nango.dev/images/template-logos/github.svg',
         created_at: TIMESTAMP,
         updated_at: TIMESTAMP
@@ -18,6 +19,7 @@ export const integrationFixtures = [
         provider: 'slack',
         display_name: 'Slack',
         forward_webhooks: false,
+        missing_fields: [],
         logo: 'https://app.nango.dev/images/template-logos/slack.svg',
         created_at: TIMESTAMP,
         updated_at: TIMESTAMP
