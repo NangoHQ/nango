@@ -166,10 +166,10 @@ async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | un
 }
 
 // The page tells the user to finish the setup, so the model isn't asked to reply.
-function setupOnlyReply(integrationSetup: AgentPlaygroundIntegrationSetup): ReadableStream<UIMessageChunk<AgentPlaygroundMessageMetadata>> {
+function setupOnlyReply(messageMetadata: AgentPlaygroundMessageMetadata): ReadableStream<UIMessageChunk<AgentPlaygroundMessageMetadata>> {
     return new ReadableStream({
         start(controller) {
-            controller.enqueue({ type: 'start', messageMetadata: { integrationSetup } });
+            controller.enqueue({ type: 'start', messageMetadata });
             controller.enqueue({ type: 'finish', finishReason: 'stop' });
             controller.close();
         }
@@ -260,14 +260,15 @@ export async function startTurn({
     const starterProvider = lastMessage?.role === 'user' ? lastMessage.metadata?.starterProvider : undefined;
     const integrationSetup =
         starterProvider && PLAYGROUND_PROVIDERS.includes(starterProvider) ? await setUpStarterIntegration(ctx.environment, starterProvider) : undefined;
-    if (integrationSetup && integrationSetup.outcome !== 'created' && integrationSetup.outcome !== 'existing') {
-        return Ok(setupOnlyReply(integrationSetup));
-    }
-
     // A new integration only reaches a session compiled after it exists.
     const session = await getOrCreateSession(ctx, integrationSetup ? undefined : sessionId);
     if (session.isErr()) {
         return Err(session.error);
+    }
+    const sessionMetadata = { sessionId: session.value.id, sessionExpiresAt: session.value.expiresAt.toISOString() };
+
+    if (integrationSetup && integrationSetup.outcome !== 'created' && integrationSetup.outcome !== 'existing') {
+        return Ok(setupOnlyReply({ ...sessionMetadata, integrationSetup }));
     }
 
     const server = createAgentSessionMcpServer({ account: ctx.account, environment: ctx.environment, plan: ctx.plan, session: session.value });
@@ -341,7 +342,6 @@ export async function startTurn({
             originalMessages: messages,
             onError: (error) => (error instanceof Error ? error.message : 'The agent failed to answer'),
             messageMetadata: ({ part }): AgentPlaygroundMessageMetadata | undefined => {
-                const sessionMetadata = { sessionId: session.value.id, sessionExpiresAt: session.value.expiresAt.toISOString() };
                 if (part.type === 'start') {
                     return { ...sessionMetadata, ...(integrationSetup ? { integrationSetup } : {}) };
                 }

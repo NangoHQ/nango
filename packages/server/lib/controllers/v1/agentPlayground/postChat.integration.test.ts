@@ -144,7 +144,7 @@ describe('POST /api/v1/agent-playground/chat', () => {
 
         expect(turn.status).toBe(200);
         expect(turn.integrationSetup).toEqual({ provider: 'google-calendar', integrationId: 'my-calendar', outcome: 'missing_credentials' });
-        expect(turn.sessionId).toBeUndefined();
+        expect(turn.sessionId).toBeUUID();
         expect(turn.text).not.toContain('Mock reply');
         expect((await integrationsIn(env.id)).map(({ unique_key }) => unique_key)).toEqual(['my-calendar']);
     });
@@ -158,6 +158,7 @@ describe('POST /api/v1/agent-playground/chat', () => {
 
         expect(turn.status).toBe(200);
         expect(turn.integrationSetup).toEqual({ provider: 'hubspot', outcome: 'not_created' });
+        expect(turn.sessionId).toBeUUID();
         expect(turn.text).not.toContain('Mock reply');
         expect(await integrationsIn(env.id)).toEqual([]);
     });
