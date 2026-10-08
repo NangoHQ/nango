@@ -82,6 +82,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: Environments: Get an environment API key](https://nango.dev/docs/reference/backend/http-api/environments/get-api-key.md)
 - [Backend: HTTP API: Environments: Create an environment API key](https://nango.dev/docs/reference/backend/http-api/environments/create-api-key.md)
 - [Backend: HTTP API: Environments: Delete an environment API key](https://nango.dev/docs/reference/backend/http-api/environments/delete-api-key.md)
+- [Backend: HTTP API: Environments: Rotate the webhook signing key](https://nango.dev/docs/reference/backend/http-api/environments/rotate-webhook-signing-key.md)
 - [Backend: HTTP API: Integrations: List all integrations](https://nango.dev/docs/reference/backend/http-api/integration/list.md)
 - [Backend: HTTP API: Integrations: Get an integration](https://nango.dev/docs/reference/backend/http-api/integration/get.md)
 - [Backend: HTTP API: Integrations: Create an integration](https://nango.dev/docs/reference/backend/http-api/integration/create.md)

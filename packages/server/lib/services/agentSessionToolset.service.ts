@@ -1,9 +1,5 @@
-import { z } from 'zod';
-
 import { legacyFunctionService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
-
-import { providerConfigKeySchema, scriptNameSchema } from '../helpers/validation.js';
 
 import type { IntegrationFunctionRow } from '@nangohq/shared';
 import type {
@@ -22,37 +18,6 @@ import type {
 import type { Result } from '@nangohq/utils';
 
 const ALLOW_ALL = '*';
-
-const toolListSchema = z.array(scriptNameSchema);
-
-const toolListSelectorSchema = z.strictObject({ tools: toolListSchema });
-
-const integrationPolicySchema = z
-    .union([
-        z.literal(ALLOW_ALL),
-        z.strictObject({
-            allow: z.union([z.literal(ALLOW_ALL), toolListSelectorSchema]).optional(),
-            deny: toolListSelectorSchema.optional()
-        })
-    ])
-    .transform((policy): AgentSessionIntegrationPolicy => {
-        if (policy === ALLOW_ALL) {
-            return { allow: ALLOW_ALL, deny: [] };
-        }
-
-        const allow = policy.allow === undefined || policy.allow === ALLOW_ALL ? ALLOW_ALL : policy.allow.tools;
-
-        return { allow, deny: policy.deny?.tools ?? [] };
-    });
-
-export const agentSessionToolsetSchema = z.union([
-    z.literal(ALLOW_ALL),
-    z
-        .record(providerConfigKeySchema, integrationPolicySchema)
-        .refine((toolset) => Object.keys(toolset).length > 0, { message: 'A toolset must name at least one integration' })
-]);
-
-export const agentSessionPinnedToolsSchema = z.record(providerConfigKeySchema, toolListSchema);
 
 export class AgentSessionToolsetCompilationError extends Error {
     public readonly code: AgentSessionToolsetCompilationErrorCode;
