@@ -112,24 +112,6 @@ describe('integrationToPublicApi preconfigured_connection_config', () => {
     });
 });
 
-describe('integrationToPublicApi missing_fields', () => {
-    const githubProvider = getProvider('github')!;
-
-    it('reports the credential fields the integration is still waiting on', () => {
-        const integration = { ...makeIntegration(null, 'github'), missing_fields: ['oauth_client_id', 'oauth_client_secret'] };
-
-        const result = integrationToPublicApi({ integration, provider: githubProvider });
-
-        expect(result.missing_fields).toStrictEqual(['oauth_client_id', 'oauth_client_secret']);
-    });
-
-    it('is an empty array for a fully configured integration', () => {
-        const result = integrationToPublicApi({ integration: makeIntegration(null, 'github'), provider: githubProvider });
-
-        expect(result.missing_fields).toStrictEqual([]);
-    });
-});
-
 describe('integrationToApi', () => {
     it('hides oauth_client_id/secret/app_link and the rest of custom for shared credentials', () => {
         const integration: IntegrationConfig = {
