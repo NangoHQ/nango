@@ -38,6 +38,7 @@ export type UpdateIntegrationsServiceErrorCode =
     | 'invalid_integration_config'
     | 'integration_has_connections'
     | 'custom_not_allowed'
+    | 'shared_credentials_not_editable'
     | 'update_failed';
 export type DeleteIntegrationsServiceErrorCode = 'not_found' | 'delete_failed';
 export type IntegrationServiceErrorCode =
@@ -445,6 +446,25 @@ export class IntegrationService {
                         message: `Unknown provider ${integration.provider}`
                     })
                 );
+            }
+
+            if (integration.shared_credentials_id) {
+                if (params.credentials) {
+                    return Err(
+                        new IntegrationServiceError({
+                            code: 'shared_credentials_not_editable',
+                            message: "Can't edit credentials on an integration using Nango-provided credentials"
+                        })
+                    );
+                }
+                if (params.integrationConfig) {
+                    return Err(
+                        new IntegrationServiceError({
+                            code: 'shared_credentials_not_editable',
+                            message: 'integrationConfig is not supported with Nango-provided credentials'
+                        })
+                    );
+                }
             }
 
             if (params.credentials && params.credentials.type !== provider.auth_mode) {

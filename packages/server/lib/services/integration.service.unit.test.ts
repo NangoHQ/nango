@@ -1118,6 +1118,45 @@ describe('integrationService', () => {
             expect(editSpy).toHaveBeenCalledWith(expect.objectContaining({ custom: { oauth_client_name: 'New Name' } }), provider);
         });
 
+        it.each([
+            {
+                name: 'credentials',
+                params: { credentials: { type: 'OAUTH2' as const, client_id: 'mine', client_secret: 'mine' } },
+                message: "Can't edit credentials on an integration using Nango-provided credentials"
+            },
+            {
+                name: 'integrationConfig',
+                params: { integrationConfig: { region: 'eu' } },
+                message: 'integrationConfig is not supported with Nango-provided credentials'
+            }
+        ])('rejects $name on an integration using Nango-provided credentials', async ({ params, message }) => {
+            const integration = integrationFixture({ uniqueKey: 'github', provider: 'github', shared_credentials_id: 12 });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+            vi.spyOn(shared, 'getProvider').mockReturnValue(providerFixture('GitHub'));
+            const editSpy = vi.spyOn(shared.configService, 'editProviderConfig');
+
+            const result = await integrationService.update({ environmentId: 42, integrationId: 'github', ...params });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error).toMatchObject({ code: 'shared_credentials_not_editable', message });
+            }
+            expect(editSpy).not.toHaveBeenCalled();
+        });
+
+        it('still allows renaming and display changes on an integration using Nango-provided credentials', async () => {
+            const integration = integrationFixture({ uniqueKey: 'github', provider: 'github', shared_credentials_id: 12 });
+            const provider = providerFixture('GitHub');
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+            vi.spyOn(shared, 'getProvider').mockReturnValue(provider);
+            const editSpy = vi.spyOn(shared.configService, 'editProviderConfig').mockResolvedValue(integration as never);
+
+            const result = await integrationService.update({ environmentId: 42, integrationId: 'github', displayName: 'Renamed' });
+
+            expect(result.isOk()).toBe(true);
+            expect(editSpy).toHaveBeenCalledWith(expect.objectContaining({ display_name: 'Renamed' }), provider);
+        });
+
         it('rejects credentials incompatible with the provider auth mode', async () => {
             const integration = integrationFixture({ uniqueKey: 'github', provider: 'github' });
             vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
