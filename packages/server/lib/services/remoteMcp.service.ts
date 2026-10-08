@@ -9,7 +9,7 @@ import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL, ProxyResponseFormatError, readProxyR
 import proxyService from './proxy.service.js';
 
 import type { ProxyServiceError } from './proxy.service.js';
-import type { FetchLike, Tool } from '@modelcontextprotocol/client';
+import type { CallToolResult, FetchLike, Tool } from '@modelcontextprotocol/client';
 import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, OperationActor } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -126,6 +126,32 @@ export async function listRemoteTools(client: Client, { signal }: { signal?: Abo
     }
 
     return Ok(listed.tools.map(toRemoteTool));
+}
+
+/**
+ * Runs one tool and hands back its result as the server gave it, once the SDK has checked it is a
+ * valid MCP tool result. A result with `isError` set is still a result: the tool ran and said why it
+ * failed.
+ */
+export async function callRemoteTool(
+    client: Client,
+    { name, args }: { name: string; args: Record<string, unknown> }
+): Promise<Result<CallToolResult, RemoteMcpError>> {
+    let result: CallToolResult;
+    try {
+        result = (await client.callTool({ name, arguments: args })) as CallToolResult;
+    } catch (err) {
+        return Err(toRemoteMcpError(err, 'tools/call'));
+    }
+
+    const { content, isError, structuredContent, _meta } = result;
+
+    return Ok({
+        content,
+        ...(isError ? { isError } : {}),
+        ...(structuredContent ? { structuredContent } : {}),
+        ...(_meta ? { _meta } : {})
+    });
 }
 
 export function toRemoteMcpError(err: unknown, method: string): RemoteMcpError {

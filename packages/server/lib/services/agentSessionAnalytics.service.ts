@@ -32,6 +32,8 @@ interface ToolCallParams extends Outcome {
     pinned?: boolean | undefined;
     /** Names the underlying failure when the action ran and failed, rather than being rejected before it ran. */
     underlyingErrorCode?: string | undefined;
+    /** Set when the tool ran on the integration's MCP server rather than as a deployed action. */
+    mcpTool?: boolean | undefined;
 }
 
 interface ToolSearchParams extends Outcome {
@@ -72,14 +74,24 @@ export function trackAgentSessionTerminated(session: AgentSession): void {
     });
 }
 
-export function trackAgentSessionToolCall({ metaTool, session, integrationId, toolName, pinned, underlyingErrorCode, ...outcome }: ToolCallParams): void {
+export function trackAgentSessionToolCall({
+    metaTool,
+    session,
+    integrationId,
+    toolName,
+    pinned,
+    underlyingErrorCode,
+    mcpTool,
+    ...outcome
+}: ToolCallParams): void {
     trackSessionEvent('agents:tool_call_complete', session, {
         ...outcomeProperties(outcome),
         ...(toolName ? { tool_name: toolName } : {}),
         ...(metaTool ? { meta_tool: metaTool } : {}),
         ...(pinned === undefined ? {} : { is_pinned: pinned }),
         ...(integrationId ? { integration_id: integrationId } : {}),
-        ...(underlyingErrorCode ? { underlying_error_code: underlyingErrorCode } : {})
+        ...(underlyingErrorCode ? { underlying_error_code: underlyingErrorCode } : {}),
+        ...(mcpTool ? { is_mcp_tool: true } : {})
     });
 }
 
