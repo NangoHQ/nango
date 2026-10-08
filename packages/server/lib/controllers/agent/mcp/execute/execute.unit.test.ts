@@ -261,6 +261,35 @@ describe('executeSessionTool', () => {
         );
     });
 
+    it('surfaces the first error a GraphQL API returned', async () => {
+        executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(
+                new ActionExecutionError({
+                    code: 'action_failed',
+                    message: 'wrapped',
+                    nangoError: {
+                        message: 'An error occurred during an HTTP call',
+                        payload: {
+                            errors: [
+                                {
+                                    message: 'Invalid scope: `write` or `issues:create` required',
+                                    extensions: { code: 'FORBIDDEN', statusCode: 403 }
+                                }
+                            ]
+                        }
+                    } as never
+                })
+            )
+        });
+
+        const result = await execute('read_doc');
+
+        expect(errorOf(result).message).toBe(
+            "Tool 'read_doc' ran on integration 'notion' and failed: An error occurred during an HTTP call: Invalid scope: `write` or `issues:create` required. Read the failure before deciding whether to call it again with different input or to tell the user."
+        );
+    });
+
     it('does not repeat a reason the error message already carries', async () => {
         executeAction.mockResolvedValue({
             logCtx: undefined,

@@ -62,6 +62,14 @@ function failureReason(payload: NangoError['payload']): string | undefined {
         return detail.message;
     }
 
+    const graphqlErrors = payload['errors'];
+    if (Array.isArray(graphqlErrors)) {
+        const first: unknown = graphqlErrors[0];
+        if (first && typeof first === 'object' && 'message' in first && typeof first.message === 'string') {
+            return first.message;
+        }
+    }
+
     const message = payload['message'];
     if (typeof message === 'string') {
         const type = payload['type'];
