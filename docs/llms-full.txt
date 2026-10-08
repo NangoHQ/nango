@@ -12313,7 +12313,7 @@ await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { typ
 
 ### Delete a function
 
-Deletes a deployed function of an integration. The `type` is required. Nango catalog actions cannot be deleted; deploy a custom function with the same name to take ownership.
+Deletes a deployed function of an integration. The `type` is required.
 
 ```ts
 await nango.deleteFunction({ uniqueKey: 'github', name: 'create-issue' }, { type: 'action' });
