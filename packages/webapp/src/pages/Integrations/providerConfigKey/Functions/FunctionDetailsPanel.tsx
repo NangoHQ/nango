@@ -173,11 +173,7 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                             <span className="type-text-medium-xs text-text-default">Customize this function</span>
                             {(source === 'catalog' || source === 'tools-catalog' || source === 'template') && (
                                 <Button asChild variant="link-accent" size="xs">
-                                    <a
-                                        href="https://nango.dev/docs/guides/functions/functions-guide#option-2-build-locally-with-the-cli"
-                                        target="_blank"
-                                        rel="noreferrer"
-                                    >
+                                    <a href="https://nango.dev/docs/guides/functions/functions-guide#guide" target="_blank" rel="noreferrer">
                                         Learn about custom functions <ExternalLink />
                                     </a>
                                 </Button>
