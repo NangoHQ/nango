@@ -213,6 +213,24 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(borrowed.sessionId).not.toBe(first.sessionId);
     });
 
+    it('starts a new session once an integration is added to the environment', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { account, user, env } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+
+        const first = await chat(session, { messages: [userMessage('hi')] });
+        const unchanged = await chat(session, { sessionId: first.sessionId, messages: [userMessage('hi')] });
+        await seeders.createConfigSeed(env, 'my-notion', 'notion');
+        const added = await chat(session, { sessionId: first.sessionId, messages: [userMessage('hi')] });
+
+        expect(unchanged.sessionId).toBe(first.sessionId);
+        expect(added.sessionId).not.toBe(first.sessionId);
+        const created = (
+            await agentSessionService.getAgentSession(db.knex, { id: added.sessionId ?? '', accountId: account.id, environmentId: env.id })
+        ).unwrap();
+        expect(Object.keys(created.compiledToolset)).toEqual(['my-notion']);
+    });
+
     it("starts a new session once the user's email no longer matches it", async () => {
         vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user } = await seeders.seedAccountEnvAndUser();

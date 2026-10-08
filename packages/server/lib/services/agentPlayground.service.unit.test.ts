@@ -11,6 +11,7 @@ import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionSer
 import {
     buildMcpTools,
     existingIntegrationFor,
+    hasSameIntegrations,
     newestConnectionPerIntegration,
     playgroundConnectionTags,
     sessionOwner,
@@ -74,6 +75,18 @@ describe('playgroundConnectionTags', () => {
         const metaTools = { ...session().metaTools, nangoCreateConnection: { enabled: true, tags } };
 
         expect(sessionOwner({ metaTools })).toBe('user-a');
+    });
+});
+
+describe('hasSameIntegrations', () => {
+    it('matches the integrations the session was compiled with', () => {
+        expect(hasSameIntegrations(session(), [{ unique_key: 'notion' }])).toBe(true);
+    });
+
+    it('does not match once an integration was added or deleted', () => {
+        expect(hasSameIntegrations(session(), [{ unique_key: 'notion' }, { unique_key: 'github' }])).toBe(false);
+        expect(hasSameIntegrations(session(), [])).toBe(false);
+        expect(hasSameIntegrations(session(), [{ unique_key: 'github' }])).toBe(false);
     });
 });
 
