@@ -2,6 +2,7 @@ import { finished, PassThrough } from 'node:stream';
 
 import * as z from 'zod';
 
+import { isRelativeProxyEndpoint } from '@nangohq/shared';
 import { getHeaders, getLogger, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
@@ -92,6 +93,12 @@ export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async 
         return;
     }
     const parsedHeaders = valHeaders.data satisfies AllPublicProxy['Headers'];
+    // contains the path and querystring; validate before loading connection credentials.
+    const endpoint = req.originalUrl.replace(/^\/proxy\/?/, '/');
+    if (!isRelativeProxyEndpoint(endpoint)) {
+        res.status(400).send({ error: { code: 'invalid_proxy_url', message: 'Proxy endpoint must be a relative path without template expressions.' } });
+        return;
+    }
     const { environment, account, plan } = res.locals;
 
     const baseUrlOverride = parsedHeaders['base-url-override'];
@@ -110,9 +117,6 @@ export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async 
     const isDryRun = parsedHeaders['nango-is-dry-run'] === 'true';
     try {
         const method = req.method.toUpperCase() as HTTP_METHOD;
-
-        // contains the path and querystring
-        const endpoint = req.originalUrl.replace(/^\/proxy\/?/, '/');
 
         const headers = parseHeaders(req);
 

@@ -194,6 +194,9 @@ describe('proxyTool', () => {
     it.each([
         { label: 'a path that is not rooted', method: 'GET', path: 'v1/pages', expected: 'must start with "/"' },
         { label: 'a path carrying a URL fragment', method: 'GET', path: '/v1/pages#frag', expected: 'URL fragments are not supported in proxy paths.' },
+        { label: 'a template injection', method: 'GET', path: '/v1/me?x=${nope}||https://attacker.example.com/collect', expected: 'relative path' },
+        { label: 'a credential placeholder', method: 'GET', path: '/v1/me?x=${apiKey}', expected: 'relative path' },
+        { label: 'a network-path reference', method: 'GET', path: '//attacker.example.com/collect', expected: 'relative path' },
         { label: 'a method the proxy does not take', method: 'TRACE', path: '/v1/pages', expected: 'method' },
         { label: 'a connection the agent tried to choose', method: 'GET', path: '/v1/pages', expected: 'connection_id', extra: { connection_id: 'other' } }
     ])('rejects $label before reaching the proxy', async ({ method, path, expected, extra }) => {

@@ -414,19 +414,32 @@ export function enforceProxyOutboundUrlPolicy({
     if (denylist.size > 0 && isBaseUrlOverrideDenied(absoluteUrl, denylist)) {
         throw new ProxyError('base_url_override_not_allowed', 'This base URL override is not allowed by server configuration.');
     }
+
+    assertProxyUrlOrigin({
+        absoluteUrl,
+        config: deriveIntegrationConfigProxy({ proxyConfig, integrationConfig }),
+        connection
+    });
 }
 
 /**
- * Construct URL
+ * Public HTTP and MCP endpoints must be relative paths, not URL templates or alternate destinations.
  */
-export function buildProxyURL({ config, connection }: { config: ApplicationConstructedProxyConfiguration; connection: ConnectionForProxy }) {
-    const { provider: { proxy: { base_url: templateApiBase } = {} } = {}, endpoint: apiEndpoint } = config;
-
-    // Endpoints come from proxy callers, including MCP callers. They must never be evaluated as
-    // templates against decrypted connection data, even when the provider base URL is templated.
-    if (apiEndpoint.includes('${')) {
-        throw new ProxyError('invalid_proxy_url', 'Proxy endpoints must not contain template expressions.');
+export function isRelativeProxyEndpoint(endpoint: string): boolean {
+    for (const char of endpoint) {
+        if (char === '\\' || char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127) {
+            return false;
+        }
     }
+    const path = endpoint.trimStart();
+    return (
+        !endpoint.includes('${') && !endpoint.includes('||') && !path.startsWith('//') && !/^[a-z][a-z0-9+.-]*:\/\//i.test(path.replace(/^\//, '').trimStart())
+    );
+}
+
+/** Resolve only the configured base. Caller-supplied endpoints must never be interpolated. */
+function resolveProxyBaseURL({ config, connection }: { config: ApplicationConstructedProxyConfiguration; connection: ConnectionForProxy }): URL {
+    const templateApiBase = config.provider.proxy?.base_url;
 
     // AWS SigV4 allows a per-connection base_url override for non-standard endpoints (S3, API Gateway,
     // GovCloud, FIPS). It wins over the provider's templated base_url, but NOT over an explicit
@@ -460,28 +473,75 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
         throw new ProxyError('invalid_proxy_url', 'Proxy base URLs must not contain unresolved template expressions.');
     }
 
-    const normalizedBase = apiBase?.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
-    let normalizedEndpoint = apiEndpoint.replace(/^\/+/, '');
+    if (!apiBase) {
+        throw new ProxyError('invalid_proxy_url', 'Proxy base URL is missing.');
+    }
+
+    let url: URL;
+    try {
+        url = new URL(apiBase);
+    } catch {
+        throw new ProxyError('invalid_proxy_url', 'Proxy base URL is invalid.');
+    }
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
+        throw new ProxyError('invalid_proxy_url', 'Proxy base URL must be an HTTP(S) URL without user information.');
+    }
+    return url;
+}
+
+function assertProxyUrlOrigin({
+    absoluteUrl,
+    config,
+    connection
+}: {
+    absoluteUrl: string;
+    config: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+}): void {
+    const base = resolveProxyBaseURL({ config, connection });
+    const url = new URL(absoluteUrl);
+    if (url.origin !== base.origin || url.username || url.password) {
+        throw new ProxyError('invalid_proxy_url', 'Proxy request URL must match the configured base URL origin.');
+    }
+}
+
+function encodeProxyUrlLiteral(value: string): string {
+    return value.replace(/[${}|]/g, (char) => encodeURIComponent(char));
+}
+
+/** Construct a URL under the resolved base, preserving the provider's path prefix. */
+export function buildProxyURL({ config, connection }: { config: ApplicationConstructedProxyConfiguration; connection: ConnectionForProxy }) {
+    // Endpoints come from proxy callers, including MCP callers. They must never be evaluated as
+    // templates against decrypted connection data, even when the provider base URL is templated.
+    if (config.endpoint.includes('${')) {
+        throw new ProxyError('invalid_proxy_url', 'Proxy endpoints must not contain template expressions.');
+    }
+
+    const base = resolveProxyBaseURL({ config, connection });
+    const normalizedBase = base.href.endsWith('/') ? base.href.slice(0, -1) : base.href;
+    let normalizedEndpoint = config.endpoint.replace(/^\/+/, '');
 
     // If the endpoint is absolute and starts with the effective base, strip the base to avoid duplicating it.
     // Only strip at a real boundary — end of string, or the next char is a path/query/fragment delimiter — so a
     // different host that merely shares the prefix (e.g. https://api.example.com.evil.com) isn't wrongly rewritten.
-    if (normalizedBase && normalizedEndpoint.startsWith(normalizedBase)) {
+    if (normalizedEndpoint.startsWith(normalizedBase)) {
         const rest = normalizedEndpoint.slice(normalizedBase.length);
         if (rest === '' || rest[0] === '/' || rest[0] === '?' || rest[0] === '#') {
             normalizedEndpoint = rest.replace(/^\/+/, '');
         }
     }
 
-    const fullEndpoint = [normalizedBase, normalizedEndpoint].filter(Boolean).join('/');
-
-    let url = new URL(fullEndpoint);
+    const relativeBase = new URL(base);
+    relativeBase.pathname = `${relativeBase.pathname.replace(/\/$/, '')}/`;
+    // The ./ prefix keeps schemes and network-path references in the caller's input in the path.
+    let url = normalizedEndpoint ? new URL(`./${encodeProxyUrlLiteral(normalizedEndpoint)}`, relativeBase) : new URL(normalizedBase);
     if (config.params) {
         if (typeof config.params === 'string') {
-            if (fullEndpoint.includes('?')) {
+            if (url.href.includes('?')) {
                 throw new ProxyError('invalid_query_params', 'Can not set query params in endpoint and in params');
             }
-            url = new URL(`${fullEndpoint}${config.params.startsWith('?') ? config.params : `?${config.params}`}`);
+            const params = encodeProxyUrlLiteral(config.params);
+            url = new URL(`${url.href}${params.startsWith('?') ? params : `?${params}`}`);
         } else {
             for (const [k, v] of Object.entries(config.params)) {
                 url.searchParams.set(k, v as string);
@@ -513,6 +573,7 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
             }
         }
     }
+    assertProxyUrlOrigin({ absoluteUrl: url.href, config, connection });
     return url.toString();
 }
 
@@ -682,6 +743,7 @@ export function buildProxyHeaders({
     connection: ConnectionForProxy;
     integrationConfig?: IntegrationConfigForProxy | undefined;
 }): Record<string, string> {
+    assertProxyUrlOrigin({ absoluteUrl: url, config: deriveIntegrationConfigProxy({ proxyConfig: config, integrationConfig }), connection });
     let headers: Record<Lowercase<string>, string> = {};
 
     switch (connection.credentials.type) {

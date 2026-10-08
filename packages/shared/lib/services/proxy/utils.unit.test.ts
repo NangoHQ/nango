@@ -16,6 +16,7 @@ import {
     enforceProxyOutboundUrlPolicy,
     getAxiosConfiguration,
     getProxyConfiguration,
+    isRelativeProxyEndpoint,
     ProxyError,
     proxyUsesConfigurableBaseUrlOverride
 } from './utils.js';
@@ -23,7 +24,45 @@ import { getDefaultProxy } from './utils.test.js';
 
 import type { AllAuthCredentials, InternalProxyConfiguration, TwoStepCredentials, UserProvidedProxyConfiguration } from '@nangohq/types';
 
+describe('isRelativeProxyEndpoint', () => {
+    it.each([
+        '/v1/me?x=${nope}||https://attacker.example.com/collect',
+        '/v1/me?x=${apiKey}',
+        '/v1/me?x=left||right',
+        '//attacker.example.com/collect',
+        'https://attacker.example.com/collect',
+        '/https://attacker.example.com/collect',
+        '/\\attacker.example.com/collect',
+        '/v1/me\n',
+        '/v1/me\u007f'
+    ])('rejects unsafe public endpoint %s', (endpoint) => {
+        expect(isRelativeProxyEndpoint(endpoint)).toBe(false);
+    });
+
+    it.each(['/v1/me', '/v1/me?$select=id', '/v1/me?url=https://example.com', '/v1/me?x=%24%7BapiKey%7D%7C%7Cvalue'])(
+        'allows relative endpoint %s',
+        (endpoint) => {
+            expect(isRelativeProxyEndpoint(endpoint)).toBe(true);
+        }
+    );
+});
+
 describe('buildProxyHeaders', () => {
+    it.each(['https://attacker.example.com/collect', 'http://api.example.com/me', 'https://api.example.com:444/me', 'https://user@api.example.com/me'])(
+        'refuses to attach credentials to a different origin: %s',
+        (url) => {
+            const config = getDefaultProxy({ provider: { proxy: { base_url: 'https://api.example.com' } } });
+            expect(() => buildProxyHeaders({ config, url, connection: getTestConnection() })).toThrow(
+                new ProxyError('invalid_proxy_url', 'Proxy request URL must match the configured base URL origin.')
+            );
+        }
+    );
+
+    it('refuses to attach credentials without a resolved base URL', () => {
+        const config = getDefaultProxy({ provider: { proxy: { base_url: '' } } });
+        expect(() => buildProxyHeaders({ config, url: 'https://attacker.example.com', connection: getTestConnection() })).toThrow(ProxyError);
+    });
+
     it('should correctly construct a header using an api key with multiple headers', () => {
         const config = getDefaultProxy({
             provider: {
@@ -120,7 +159,7 @@ describe('buildProxyHeaders', () => {
         const config = getDefaultProxy({
             provider: {
                 auth_mode: 'BASIC',
-                proxy: { base_url: '' }
+                proxy: { base_url: 'https://api.nangostarter.com' }
             }
         });
 
@@ -141,7 +180,7 @@ describe('buildProxyHeaders', () => {
         const config = getDefaultProxy({
             provider: {
                 auth_mode: 'BASIC',
-                proxy: { base_url: '' }
+                proxy: { base_url: 'https://api.nangostarter.com' }
             }
         });
 
@@ -163,7 +202,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'BASIC',
                 proxy: {
-                    base_url: 'http://example.com',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'x-test': 'test'
                     }
@@ -216,7 +255,7 @@ describe('buildProxyHeaders', () => {
         });
 
         const childHeaders = buildProxyHeaders({
-            config,
+            config: { ...config, baseUrlOverride: 'https://api-child.duosecurity.com' },
             url: 'https://api-child.duosecurity.com/admin/v1/users?account_id=DA123',
             connection
         });
@@ -234,7 +273,8 @@ describe('buildProxyHeaders', () => {
     it('should correctly construct headers with an authorization override', () => {
         const config = getDefaultProxy({
             provider: {
-                auth_mode: 'BASIC'
+                auth_mode: 'BASIC',
+                proxy: { base_url: 'https://api.nangostarter.com' }
             },
             headers: {
                 authorization: 'Bearer testtoken'
@@ -259,7 +299,7 @@ describe('buildProxyHeaders', () => {
             const config = getDefaultProxy({
                 provider: {
                     auth_mode: 'BASIC',
-                    proxy: { base_url: '' }
+                    proxy: { base_url: 'https://api.example.com' }
                 }
             });
             const result = buildProxyHeaders({
@@ -277,7 +317,7 @@ describe('buildProxyHeaders', () => {
                 provider: {
                     auth_mode: 'BASIC',
                     proxy: {
-                        base_url: '',
+                        base_url: 'https://api.example.com',
                         headers: {
                             authorization: 'ApiKey ${credentials.username}'
                         }
@@ -300,7 +340,7 @@ describe('buildProxyHeaders', () => {
                 provider: {
                     auth_mode: 'BASIC',
                     proxy: {
-                        base_url: '',
+                        base_url: 'https://api.example.com',
                         headers: {
                             authorization: 'ApiKey ${credentials.username}'
                         }
@@ -327,7 +367,7 @@ describe('buildProxyHeaders', () => {
                 provider: {
                     auth_mode: 'BASIC',
                     proxy: {
-                        base_url: '',
+                        base_url: 'https://api.example.com',
                         headers: {
                             authorization: 'ApiKey ${credentials.username}'
                         }
@@ -355,7 +395,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'OAUTH2',
                 proxy: {
-                    base_url: '',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'x-access-token': '${accessToken}'
                     }
@@ -382,7 +422,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
-                    base_url: '',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'my-token': '${apiKey}'
                     }
@@ -414,7 +454,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
-                    base_url: '',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'x-api-key': '${apiKey}',
                         'x-api-password': '${connectionConfig.API_PASSWORD}'
@@ -445,7 +485,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
-                    base_url: '',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'x-foo': '${connectionConfig.foo}',
                         'x-bar': '${connectionConfig.bar}'
@@ -476,7 +516,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
-                    base_url: '',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'x-foo': '${connectionConfig.foo}'
                     }
@@ -505,7 +545,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
-                    base_url: '',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'x-foo': '${connectionConfig.foo}'
                     }
@@ -535,7 +575,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'API_KEY',
                 proxy: {
-                    base_url: '',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'x-foo': '${connectionConfig.foo}-${credentials.missingField}'
                     }
@@ -563,7 +603,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'SIGNATURE',
                 proxy: {
-                    base_url: 'http://example.com',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'x-wsse': '${accessToken}'
                     }
@@ -590,7 +630,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'TWO_STEP',
                 proxy: {
-                    base_url: 'http://example.com',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'authorization-token': '${accessToken}'
                     }
@@ -623,7 +663,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'TWO_STEP',
                 proxy: {
-                    base_url: 'http://example.com',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'x-request-path': '${endpoint}'
                     }
@@ -652,7 +692,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'TWO_STEP',
                 proxy: {
-                    base_url: 'http://example.com',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'x-av-req-id': '${random}',
                         'x-av-req-id-copy': '${random}'
@@ -684,7 +724,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'TWO_STEP',
                 proxy: {
-                    base_url: 'http://example.com',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'x-av-date': '${now}',
                         'x-av-date-copy': '${now}'
@@ -716,7 +756,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'TWO_STEP',
                 proxy: {
-                    base_url: 'http://example.com',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         'x-date-formatted': '${now:YYYY-MM-DD}'
                     }
@@ -744,7 +784,7 @@ describe('buildProxyHeaders', () => {
             provider: {
                 auth_mode: 'TWO_STEP',
                 proxy: {
-                    base_url: 'http://example.com',
+                    base_url: 'https://api.nangostarter.com',
                     headers: {
                         authorization: 'Bearer ${accessToken}',
                         'x-av-req-id': '${random}',
@@ -777,6 +817,7 @@ describe('buildProxyHeaders', () => {
     it('should correctly override headers with different casing', () => {
         const config: UserProvidedProxyConfiguration = {
             endpoint: '/top',
+            baseUrlOverride: 'http://example.com',
             method: 'GET',
             providerConfigKey: 'foobar',
             headers: {
@@ -927,7 +968,10 @@ describe('buildProxyHeaders', () => {
         const result = buildProxyHeaders({
             config,
             url: 'https://acme.streamline.ai/api/v0/requests',
-            connection: getTestConnection({ credentials: { type: 'BASIC', username: 'slak_test123', password: 'test-ed25519-key' } })
+            connection: getTestConnection({
+                credentials: { type: 'BASIC', username: 'slak_test123', password: 'test-ed25519-key' },
+                connection_config: { customer: 'acme', domain: 'streamline.ai' }
+            })
         });
 
         expect(result['content-digest']).not.toContain('${');
@@ -1057,6 +1101,19 @@ describe('proxyUsesConfigurableBaseUrlOverride', () => {
 });
 
 describe('enforceProxyOutboundUrlPolicy', () => {
+    it.each([true, false])('blocks a different origin without an override when overrides are enabled=%s', (overrideEnabled) => {
+        const config = getDefaultProxy({ provider: { proxy: { base_url: 'https://api.example.com' } } });
+        expect(() =>
+            enforceProxyOutboundUrlPolicy({
+                absoluteUrl: 'https://attacker.example.com/collect',
+                proxyConfig: config,
+                connection: getTestConnection(),
+                overrideEnabled,
+                denylist: new Set()
+            })
+        ).toThrow(new ProxyError('invalid_proxy_url', 'Proxy request URL must match the configured base URL origin.'));
+    });
+
     it('blocks denylisted resolved URLs from AWS SigV4 connection base_url', () => {
         const config = getDefaultProxy({
             provider: {
@@ -1097,6 +1154,32 @@ describe('enforceProxyOutboundUrlPolicy', () => {
 });
 
 describe('buildProxyURL', () => {
+    it.each([
+        '//attacker.example.com/collect',
+        '/\\attacker.example.com/collect',
+        'https://attacker.example.com/collect',
+        '/https://attacker.example.com/collect',
+        '/v1/me?x=%24%7Bnope%7D%7C%7Chttps://attacker.example.com/collect'
+    ])('keeps caller endpoint %s under the configured origin and provider path prefix', (endpoint) => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({ provider: { proxy: { base_url: 'https://api.example.com/v2' } }, endpoint }),
+            connection: getTestConnection()
+        });
+
+        expect(new URL(url).origin).toBe('https://api.example.com');
+        expect(new URL(url).pathname).toMatch(/^\/v2\//);
+        expect(url).not.toContain('random_token');
+    });
+
+    it.each(['', 'not-a-url', 'ftp://example.com', 'https://user:password@example.com', 'https://${connectionConfig.hostname}'])(
+        'fails closed for an invalid or unresolved provider base URL %s',
+        (base_url) => {
+            expect(() => buildProxyURL({ config: getDefaultProxy({ provider: { proxy: { base_url } } }), connection: getTestConnection() })).toThrow(
+                expect.objectContaining({ code: 'invalid_proxy_url' })
+            );
+        }
+    );
+
     describe('caller-controlled URL templates', () => {
         it.each<{ placeholder: string; credentials: AllAuthCredentials }>([
             { placeholder: 'access_token', credentials: { type: 'OAUTH2', access_token: 'secret-access-token', raw: {} } },
@@ -1191,7 +1274,7 @@ describe('buildProxyURL', () => {
                 })
             });
 
-            expect(url).toBe('https://example.com' + endpoint);
+            expect(decodeURIComponent(url)).toBe(decodeURIComponent('https://example.com' + endpoint));
         });
 
         it('strips a resolved provider base from absolute caller endpoints', () => {
@@ -2404,14 +2487,14 @@ describe('buildProxyHeaders TWO_STEP', () => {
     });
 
     it('adds Bearer by default when no proxy headers are configured', () => {
-        const config = getDefaultProxy({ provider: { ...twoStepBase, proxy: { base_url: '' } } });
+        const config = getDefaultProxy({ provider: { ...twoStepBase, proxy: { base_url: 'https://example.com' } } });
         const headers = buildProxyHeaders({ config, url: 'https://example.com', connection: twoStepConnection });
         expect(headers['authorization']).toBe('Bearer sess-token-123');
     });
 
     it('adds Bearer when proxy headers do not contain ${accessToken} or cookie', () => {
         const config = getDefaultProxy({
-            provider: { ...twoStepBase, proxy: { base_url: '', headers: { 'x-custom': 'value' } } }
+            provider: { ...twoStepBase, proxy: { base_url: 'https://example.com', headers: { 'x-custom': 'value' } } }
         });
         const headers = buildProxyHeaders({ config, url: 'https://example.com', connection: twoStepConnection });
         expect(headers['authorization']).toBe('Bearer sess-token-123');
@@ -2419,7 +2502,7 @@ describe('buildProxyHeaders TWO_STEP', () => {
 
     it('still adds Bearer when cookie header does not reference ${credentials._cookies}', () => {
         const config = getDefaultProxy({
-            provider: { ...twoStepBase, proxy: { base_url: '', headers: { cookie: 'static=value' } } }
+            provider: { ...twoStepBase, proxy: { base_url: 'https://example.com', headers: { cookie: 'static=value' } } }
         });
         const headers = buildProxyHeaders({ config, url: 'https://example.com', connection: twoStepConnection });
         expect(headers['authorization']).toBe('Bearer sess-token-123');
@@ -2427,7 +2510,7 @@ describe('buildProxyHeaders TWO_STEP', () => {
 
     it('suppresses Bearer when a proxy header contains ${accessToken}', () => {
         const config = getDefaultProxy({
-            provider: { ...twoStepBase, proxy: { base_url: '', headers: { 'x-token': '${accessToken}' } } }
+            provider: { ...twoStepBase, proxy: { base_url: 'https://example.com', headers: { 'x-token': '${accessToken}' } } }
         });
         const headers = buildProxyHeaders({ config, url: 'https://example.com', connection: twoStepConnection });
         expect(headers['authorization']).toBeUndefined();
@@ -2438,7 +2521,7 @@ describe('buildProxyHeaders TWO_STEP', () => {
         const config = getDefaultProxy({
             provider: {
                 ...twoStepBase,
-                proxy: { base_url: '', headers: { cookie: '${credentials._cookies}' } }
+                proxy: { base_url: 'https://example.com', headers: { cookie: '${credentials._cookies}' } }
             }
         });
         const connection = getTestConnection({
@@ -2453,7 +2536,7 @@ describe('buildProxyHeaders TWO_STEP', () => {
         const config = getDefaultProxy({
             provider: {
                 ...twoStepBase,
-                proxy: { base_url: '', headers: { cookie: '${credentials._cookies}' } }
+                proxy: { base_url: 'https://example.com', headers: { cookie: '${credentials._cookies}' } }
             }
         });
         const connection = getTestConnection({

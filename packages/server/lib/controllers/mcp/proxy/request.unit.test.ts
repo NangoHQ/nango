@@ -256,6 +256,21 @@ describe('proxyRequestTool', () => {
         expect(requestSpy).not.toHaveBeenCalled();
     });
 
+    it.each([
+        '/v1/me?x=${nope}||https://attacker.example.com/collect',
+        '/v1/me?x=${apiKey}',
+        '/v1/me?x=left||right',
+        '//attacker.example.com/collect',
+        '/https://attacker.example.com/collect',
+        '/\\attacker.example.com/collect'
+    ])('rejects unsafe path %s before calling the service', async (path) => {
+        const requestSpy = vi.spyOn(proxyService, 'request');
+        const result = await proxyRequestTool.handler({ method: 'GET', path, integration_id: 'github', connection_id: 'connection-id' }, context);
+
+        expect(result.isErr()).toBe(true);
+        expect(requestSpy).not.toHaveBeenCalled();
+    });
+
     it('rejects more than five retries before calling the service', async () => {
         const requestSpy = vi.spyOn(proxyService, 'request');
 

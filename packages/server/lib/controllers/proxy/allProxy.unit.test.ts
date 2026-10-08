@@ -4,12 +4,46 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { getLogger } from '@nangohq/utils';
 
-import { ProxyServiceError } from '../../services/proxy.service.js';
-import { handleErrorResponse, handleProxyServiceErrorResponse, handleResponse, parseHeaders, shouldForwardResponseHeader } from './allProxy.js';
+import proxyService, { ProxyServiceError } from '../../services/proxy.service.js';
+import { allPublicProxy, handleErrorResponse, handleProxyServiceErrorResponse, handleResponse, parseHeaders, shouldForwardResponseHeader } from './allProxy.js';
 
 import type { ProxyServiceResponse } from '../../services/proxy.service.js';
 import type { LogContext } from '@nangohq/logs';
 import type { Request, Response } from 'express';
+
+describe('allPublicProxy endpoint validation', () => {
+    it.each([
+        '/proxy/v1/me?x=${nope}||https://attacker.example.com/collect',
+        '/proxy/v1/me?x=${apiKey}',
+        '/proxy/v1/me?x=left||right',
+        '/proxy//attacker.example.com/collect',
+        '/proxy/https://attacker.example.com/collect',
+        '/proxy/\\attacker.example.com/collect'
+    ])('rejects unsafe endpoint %s before loading credentials', async (originalUrl) => {
+        const requestSpy = vi.spyOn(proxyService, 'request');
+        const req = {
+            originalUrl,
+            headers: { 'connection-id': 'test', 'provider-config-key': 'test' }
+        } as unknown as Request;
+        const res = {
+            locals: { environment: { id: 1 } },
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn()
+        } as unknown as Response;
+        const next = vi.fn();
+
+        try {
+            await allPublicProxy(req, res, next);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.send).toHaveBeenCalledWith({ error: { code: 'invalid_proxy_url', message: expect.any(String) } });
+            expect(requestSpy).not.toHaveBeenCalled();
+            expect(next).not.toHaveBeenCalled();
+        } finally {
+            requestSpy.mockRestore();
+        }
+    });
+});
 
 describe('parseHeaders', () => {
     it('should parse headers that starts with Nango-Proxy or nango-proxy', () => {
