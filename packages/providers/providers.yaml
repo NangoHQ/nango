@@ -12245,6 +12245,34 @@ humaans-io:
             example: P9IAs9**********************9oVR
             pattern: '^[A-Za-z0-9]{32}$'
 
+hunter-io:
+    display_name: Hunter
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.hunter.io
+        headers:
+            x-api-key: ${apiKey}
+        retry:
+            error_code:
+                - '403'
+                - '5xx'
+        verification:
+            method: GET
+            endpoints:
+                - /v2/account
+    docs: https://nango.dev/docs/api-integrations/hunter-io
+    docs_connect: https://nango.dev/docs/api-integrations/hunter-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Hunter API key.
+            example: 4f3a9c2e******************************1b7d
+            pattern: '^[a-f0-9]{40}$'
+            doc_section: '#step-1-find-your-hunter-api-key'
+
 huntress:
     display_name: Huntress
     categories:
