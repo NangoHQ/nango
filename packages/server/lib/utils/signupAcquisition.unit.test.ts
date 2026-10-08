@@ -13,8 +13,17 @@ describe('signup acquisition validation', () => {
         { acquisition_utm_source: 'x'.repeat(257) },
         { acquisition_utm_source: 'person@example.com' },
         { acquisition_landing_path: '/signup?token=secret' },
-        { acquisition_referring_domain: 'https://facebook.com/private' }
+        { acquisition_referring_domain: 'https://facebook.com/private' },
+        { acquisition_referring_domain: '..' },
+        { acquisition_referring_domain: 'a..b' },
+        { acquisition_referring_domain: '-facebook.com' },
+        { acquisition_referring_domain: 'facebook-.com' },
+        { acquisition_referring_domain: `${'x'.repeat(64)}.com` }
     ])('drops malformed analytics without rejecting signup: %j', (input) => {
         expect(signupAcquisitionSchema.parse(input)).toBeUndefined();
+    });
+
+    it.each(['facebook.com', 'www.google.com', 'xn--bcher-kva.example', 'sub-domain.example'])('accepts valid domain labels: %s', (domain) => {
+        expect(signupAcquisitionSchema.parse({ acquisition_referring_domain: domain })).toEqual({ acquisition_referring_domain: domain });
     });
 });
