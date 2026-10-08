@@ -13,9 +13,10 @@ jobs:
         runs-on: ubuntu-latest
         outputs:
             should_skip: ${{ steps.check.outputs.should_skip }}
+            can_push: ${{ steps.check.outputs.can_push }}
         steps:
-            - uses: actions/checkout@v4
-            - uses: dorny/paths-filter@v4
+            - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+            - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
               id: filter
               with:
                   predicate-quantifier: 'every'
@@ -46,28 +47,35 @@ jobs:
                   fi
 
                   echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
+                  # Exposed as an output because `secrets` is not available in a job-level `if`.
+                  echo "can_push=${{ secrets.DOCKER_PASSWORD != '' && secrets.DOCKER_USERNAME != '' }}" >> $GITHUB_OUTPUT
     build-image:
         needs: should-run
-        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                # Each platform builds on a runner of its own architecture.
+                include:
+                    - platform: linux/amd64
+                      runner: ubuntu-latest
+                    - platform: linux/arm64
+                      runner: ubuntu-24.04-arm
+        runs-on: ${{ matrix.runner }}
         env:
-            CAN_PUSH: "${{ secrets.DOCKER_PASSWORD != '' && secrets.DOCKER_USERNAME != '' }}"
+            CAN_PUSH: ${{ needs.should-run.outputs.can_push }}
             SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
         steps:
             - name: Check out
               if: needs.should-run.outputs.should_skip != 'true'
-              uses: actions/checkout@v4
-
-            - name: Set up QEMU
-              if: needs.should-run.outputs.should_skip != 'true'
-              uses: docker/setup-qemu-action@v3
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
             - name: Set up Docker Buildx
               if: needs.should-run.outputs.should_skip != 'true'
-              uses: docker/setup-buildx-action@v3
+              uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
             - name: Log in to Docker Hub
-              uses: docker/login-action@v3
+              uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
               if: needs.should-run.outputs.should_skip != 'true' && env.CAN_PUSH == 'true'
               with:
                   username: '${{ secrets.DOCKER_USERNAME }}'
@@ -76,19 +84,71 @@ jobs:
             # Needed for buildx gha cache to work
             - name: Expose GitHub Runtime
               if: needs.should-run.outputs.should_skip != 'true'
-              uses: crazy-max/ghaction-github-runtime@v2
+              uses: crazy-max/ghaction-github-runtime@056b8ec6661ce03a987ab8643a0edc346ae63fe3 # v2.2.0
 
+            # Pushed by digest, not by tag: a tag names one platform, so the two
+            # builds would overwrite each other. merge-image turns the digests
+            # into the single nangohq/nango:$SHA tag.
             - name: Build image
               if: needs.should-run.outputs.should_skip != 'true'
               run: |
-                  ./scripts/build_docker.sh build ${{ env.SHA }}
+                  if [[ "$CAN_PUSH" == 'true' ]]; then
+                    ./scripts/build_docker.sh push "$SHA" '${{ matrix.platform }}'
+                  else
+                    ./scripts/build_docker.sh build "$SHA" '${{ matrix.platform }}'
+                  fi
 
-            - name: Push image
+            - name: Upload digest
               if: needs.should-run.outputs.should_skip != 'true' && env.CAN_PUSH == 'true'
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              with:
+                  name: digest-${{ matrix.runner }}
+                  path: scripts/metadata.json
+                  if-no-files-found: error
+                  retention-days: 1
+
+    # Only runs when there is something to publish, so fork PRs and docs-only
+    # changes never allocate a runner for it.
+    merge-image:
+        needs: [should-run, build-image]
+        if: needs.should-run.outputs.should_skip != 'true' && needs.should-run.outputs.can_push == 'true'
+        runs-on: ubuntu-latest
+        env:
+            SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+        steps:
+            - name: Check out
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+            # The self-hosted image is built for both platforms here, so half of
+            # it runs emulated. It is three `rm -rf`s deep, so that costs nothing.
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+            - name: Log in to Docker Hub
+              uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+              with:
+                  username: '${{ secrets.DOCKER_USERNAME }}'
+                  password: '${{ secrets.DOCKER_PASSWORD }}'
+
+            - name: Expose GitHub Runtime
+              uses: crazy-max/ghaction-github-runtime@056b8ec6661ce03a987ab8643a0edc346ae63fe3 # v2.2.0
+
+            - name: Download digests
+              uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+              with:
+                  path: /tmp/digests
+                  pattern: digest-*
+
+            - name: Push multi-platform tag
               run: |
-                  docker push nangohq/nango:${{ env.SHA }}
+                  jq -r '"nangohq/nango@" + .["containerimage.digest"]' /tmp/digests/*/metadata.json |
+                    xargs docker buildx imagetools create -t "nangohq/nango:$SHA"
 
             - name: (self-hosted) Build and push
-              if: needs.should-run.outputs.should_skip != 'true' && github.event_name != 'pull_request'
+              if: github.event_name != 'pull_request'
               run: |
-                  ./scripts/build_docker_self_hosted.sh ${{ env.SHA }} ${{ env.CAN_PUSH }}
+                  ./scripts/build_docker_self_hosted.sh "$SHA" true
