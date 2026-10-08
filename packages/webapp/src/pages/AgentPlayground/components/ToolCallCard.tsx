@@ -318,6 +318,7 @@ const Payload: React.FC<{ input: unknown; output: unknown; error: string | undef
 };
 
 const COLLAPSED_LINES = 20;
+const COLLAPSED_LENGTH = 2_000;
 // Prism highlights the whole block, so a large response freezes the page while it renders.
 const MAX_HIGHLIGHTED_LENGTH = 50_000;
 
@@ -337,9 +338,10 @@ const Value: React.FC<{ value: unknown }> = ({ value }) => {
 const CollapsibleCode: React.FC<{ code: string; language: 'json' | 'bash'; wrapLines?: boolean }> = ({ code, language, wrapLines = false }) => {
     const [expanded, setExpanded] = useState(false);
     const lines = code.split('\n');
-    const long = lines.length > COLLAPSED_LINES;
+    const long = lines.length > COLLAPSED_LINES || code.length > COLLAPSED_LENGTH;
     // Highlighting runs over every line it is given, so a collapsed block only gets the lines it shows.
-    const shown = long && !expanded ? lines.slice(0, COLLAPSED_LINES).join('\n') : code;
+    const collapsed = lines.slice(0, COLLAPSED_LINES).join('\n');
+    const shown = long && !expanded ? (collapsed.length > COLLAPSED_LENGTH ? `${collapsed.slice(0, COLLAPSED_LENGTH)}…` : collapsed) : code;
 
     return (
         <div className="flex flex-col items-start gap-2">
