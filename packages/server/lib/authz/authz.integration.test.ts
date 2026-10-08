@@ -39,27 +39,27 @@ describe('authz integration', () => {
         return { ...user, role };
     }
 
-    async function seedVictimFlow() {
-        const victim = await seeders.seedAccountEnvAndUser();
-        const victimIntegration = await seeders.createConfigSeed(victim.env, 'victim-github', 'github');
-        const victimConnection = await seeders.createConnectionSeed({ env: victim.env, provider: 'victim-github' });
+    async function seedTargetFlow() {
+        const target = await seeders.seedAccountEnvAndUser();
+        const targetIntegration = await seeders.createConfigSeed(target.env, 'target-github', 'github');
+        const targetConnection = await seeders.createConnectionSeed({ env: target.env, provider: 'target-github' });
         const { syncConfig, sync } = await seeders.createSyncSeeds({
-            connectionId: victimConnection.id,
-            environment_id: victim.env.id,
-            nango_config_id: victimIntegration.id!,
+            connectionId: targetConnection.id,
+            environment_id: target.env.id,
+            nango_config_id: targetIntegration.id!,
             sync_name: 'issues'
         });
         (
             await errorNotificationService.sync.create({
                 type: 'sync',
                 action: 'run',
-                connection_id: victimConnection.id,
-                log_id: 'victim-log',
+                connection_id: targetConnection.id,
+                log_id: 'target-log',
                 active: true,
                 sync_id: sync.id
             })
         ).unwrap();
-        return { victim, syncConfig, sync };
+        return { target, syncConfig, sync };
     }
 
     // ── FLAG_AUTH_ROLES_ENABLED=false bypasses all enforcement ──
@@ -723,7 +723,7 @@ describe('authz integration', () => {
 
     describe('cross-tenant flow ids', () => {
         it('should not disable or clear notifications for a flow owned by another account', async () => {
-            const { syncConfig, sync } = await seedVictimFlow();
+            const { syncConfig, sync } = await seedTargetFlow();
 
             const attacker = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(attacker.env, 'attacker-github', 'github');
@@ -743,22 +743,22 @@ describe('authz integration', () => {
             const activeLogs = await db.knex.from('_nango_active_logs').where({ sync_id: sync.id, active: true });
             expect(activeLogs).toHaveLength(1);
 
-            const victimConfig = await db.knex
+            const targetConfig = await db.knex
                 .select<Pick<DBSyncConfig, 'enabled'>>('enabled')
                 .from('_nango_sync_configs')
                 .where({ id: syncConfig.id })
                 .first();
-            expect(victimConfig?.enabled).toBe(true);
+            expect(targetConfig?.enabled).toBe(true);
         });
 
         it('should only clear notifications in the given environment', async () => {
-            const { victim, syncConfig, sync } = await seedVictimFlow();
+            const { target, syncConfig, sync } = await seedTargetFlow();
             const other = await seeders.seedAccountEnvAndUser();
 
             await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: syncConfig.id, environment_id: other.env.id });
             expect(await db.knex.from('_nango_active_logs').where({ sync_id: sync.id, active: true })).toHaveLength(1);
 
-            await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: syncConfig.id, environment_id: victim.env.id });
+            await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: syncConfig.id, environment_id: target.env.id });
             expect(await db.knex.from('_nango_active_logs').where({ sync_id: sync.id, active: true })).toHaveLength(0);
         });
     });
