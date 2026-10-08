@@ -20,12 +20,12 @@ Connect to Chameleon-I, a UK-based recruitment CRM and ATS, with Nango and make 
     Go to [Connections](https://app.nango.dev/dev/connections) → _Add Test Connection_ → _Authorize_, then enter a Chameleon-I API key. Later, your users can do the same directly from your app.
     </Step>
     <Step title="Call the Chameleon-I API">
-    Make a request to search candidates. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Make a request to list baskets. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/api/v1/candidate/search" \
+            curl "https://api.nango.dev/proxy/basket/list" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -43,7 +43,7 @@ Connect to Chameleon-I, a UK-based recruitment CRM and ATS, with Nango and make 
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/api/v1/candidate/search',
+            endpoint: '/basket/list',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
@@ -91,8 +91,8 @@ Follow the [Chameleon-I connection setup guide](/api-integrations/chameleon-i/co
 
 Chameleon-I provides 36+ REST endpoints for managing recruitment data including:
 
-- Candidate management (`/api/v1/candidate/*`)
-- Requirement management (`/api/v1/requirement/*`)
+- Candidate management (`/candidate/*`)
+- Requirement management (`/requirement/*`)
 - Search and query operations
 - Activity tracking
 - Integration webhooks
@@ -101,9 +101,8 @@ See the [official Jentic API docs](https://jentic.com/apis/chameleoni.com/chamel
 
 ## API gotchas
 
-- **Pagination:** Cursor-based pagination with 50 items per page default
 - **Authentication:** Uses `API-KEY` header (not `Authorization` header)
-- **Base URL:** All requests go to `https://api.chameleoni.com`
+- **Base URL:** All requests go to `https://chiapi.chameleoni.com`
 
 <Note>Contribute API gotchas or improvements by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/chameleon-i.mdx)</Note>
 

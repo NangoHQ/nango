@@ -4838,13 +4838,13 @@ chameleon-i:
         - ats
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.chameleoni.com
+        base_url: https://chiapi.chameleoni.com
         headers:
             api-key: ${apiKey}
         verification:
             method: GET
             endpoints:
-                - /api/v1/candidate/search
+                - /basket/list
         retry:
             after:
                 - 'retry-after'
