@@ -14,6 +14,9 @@ describe('buildSchedulerConfig', () => {
             ORCHESTRATOR_DATABASE_SCHEMA: 'custom_scheduler',
             ORCHESTRATOR_CONCURRENCY_PARTITIONING_TICK_INTERVAL_MS: 60_000,
             ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS: 7,
+            ORCHESTRATOR_CONCURRENCY_SAMPLING_ENABLED: false,
+            ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS: 5000,
+            ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS: 2000,
             ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: 111,
             ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS: 222,
             ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS: 333,
@@ -28,7 +31,10 @@ describe('buildSchedulerConfig', () => {
                 metering: {
                     schema: 'custom_scheduler',
                     partitioningTickIntervalMs: 60_000,
-                    partitionRetentionDays: 7
+                    partitionRetentionDays: 7,
+                    samplingEnabled: false,
+                    samplingTickIntervalMs: 5000,
+                    samplingQueryTimeoutMs: 2000
                 },
                 schedulingTickIntervalMs: 111,
                 expiringTickIntervalMs: 222,

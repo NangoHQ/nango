@@ -8,12 +8,12 @@ import type knex from 'knex';
 
 export abstract class SchedulerDaemon {
     private name: string;
-    private tickIntervalMs: number;
     private abortSignal: AbortSignal;
     private status: 'running' | 'stopped' = 'stopped';
     private onError: (err: Error) => void;
     private continueOnError: boolean;
 
+    protected readonly tickIntervalMs: number;
     protected db: knex.Knex;
 
     constructor({

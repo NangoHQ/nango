@@ -15,6 +15,9 @@ export interface SchedulerConfig {
             readonly schema: string;
             readonly partitioningTickIntervalMs: number;
             readonly partitionRetentionDays: number;
+            readonly samplingEnabled: boolean;
+            readonly samplingTickIntervalMs: number;
+            readonly samplingQueryTimeoutMs: number;
         };
         readonly schedulingTickIntervalMs: number;
         readonly expiringTickIntervalMs: number;

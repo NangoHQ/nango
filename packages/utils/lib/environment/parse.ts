@@ -365,6 +365,9 @@ const ENVS_SHAPE = z.object({
         .default(3_600_000)
         .catch(3_600_000), // monitoring configuration must not prevent Orchestrator startup.
     ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS: z.coerce.number().int().positive().default(60).catch(60),
+    ORCHESTRATOR_CONCURRENCY_SAMPLING_ENABLED: z.stringbool().default(false).catch(false),
+    ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS: z.coerce.number().int().positive().max(1000).default(1000).catch(1000),
+    ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS: z.coerce.number().int().positive().max(1000).default(1000).catch(1000),
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
     ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: z.coerce.number().int().nonnegative().optional().default(0),

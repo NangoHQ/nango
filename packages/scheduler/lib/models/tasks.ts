@@ -9,6 +9,7 @@ import * as groupOverrides from './groupOverrides.js';
 import { SCHEDULES_TABLE } from './schedules.js';
 
 import type { Task, TaskNonTerminalState, TaskState, TaskTerminalState } from '../types.js';
+import type { ConcurrencyMetric } from './concurrencyMetrics.js';
 import type { Result } from '@nangohq/utils';
 import type knex from 'knex';
 import type { JsonObject, JsonValue, SetOptional } from 'type-fest';
@@ -521,6 +522,22 @@ export async function expiresIfTimeout(db: knex.Knex, opts: { batchSize?: number
 export interface GroupBackpressure {
     group_key: string;
     queued: number;
+}
+
+export async function meterConcurrency(db: knex.Knex, { bucketStart }: { bucketStart: Date }): Promise<ConcurrencyMetric[]> {
+    const { rows } = await db.raw<{ rows: { environment_id: number; active_concurrency: number }[] }>(
+        `SELECT COALESCE(substring(group_key FROM 'environment:(\\d+)')::int, -1) AS environment_id,
+                COUNT(*)::int AS active_concurrency
+         FROM ${TASKS_TABLE}
+         WHERE state = 'STARTED'
+         GROUP BY 1`
+    );
+
+    return rows.map((row) => ({
+        environment_id: row.environment_id,
+        bucket_start: bucketStart,
+        active_concurrency: row.active_concurrency
+    }));
 }
 
 export async function getGroupsWithBackpressure(db: knex.Knex, { limit }: { limit: number }): Promise<Result<GroupBackpressure[]>> {
