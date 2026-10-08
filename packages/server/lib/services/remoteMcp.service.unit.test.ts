@@ -144,6 +144,25 @@ describe('listRemoteTools through the proxy', () => {
         expect(result.isErr() && result.error).toMatchObject({ code: 'rpc_error', method: 'tools/list' });
     });
 
+    it.each([
+        ['JSON that is not JSON-RPC', '{"not":"jsonrpc"}'],
+        ['a body that is not JSON', '{not json']
+    ])('reports %s as an invalid response', async (_label, body) => {
+        mcpServer(() => response({ body }));
+
+        const { result } = await list();
+
+        expect(result.isErr() && result.error).toMatchObject({ code: 'invalid_response', method: 'tools/list' });
+    });
+
+    it('reports a response over the size limit as too large', async () => {
+        mcpServer(() => response({ body: 'x'.repeat(5_000_001) }));
+
+        const { result } = await list();
+
+        expect(result.isErr() && result.error).toMatchObject({ code: 'response_too_large', message: 'The MCP server response exceeds the 5 MB limit' });
+    });
+
     it('carries a proxy failure through untouched', async () => {
         const failure = new ProxyServiceError({ code: 'connection_not_found', message: 'Connection not found', status: 404 });
         request.mockResolvedValue({ logCtx: undefined, result: Err(failure) });

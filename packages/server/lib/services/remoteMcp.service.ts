@@ -1,10 +1,11 @@
 import { Client, ProtocolError, SdkError, SdkHttpError, StreamableHTTPClientTransport, UnauthorizedError } from '@modelcontextprotocol/client';
+import { ZodError } from 'zod';
 
 import { getProvider } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { completeProxyResponse } from './mcpProxy.service.js';
-import { readProxyResponseBody } from './mcpProxyResponse.js';
+import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL, ProxyResponseFormatError, readProxyResponseBody } from './mcpProxyResponse.js';
 import proxyService from './proxy.service.js';
 
 import type { ProxyServiceError } from './proxy.service.js';
@@ -26,7 +27,7 @@ export interface RemoteMcpTool {
     annotations?: Record<string, unknown> | undefined;
 }
 
-export type RemoteMcpErrorCode = 'proxy_failed' | 'http_error' | 'invalid_response' | 'rpc_error';
+export type RemoteMcpErrorCode = 'proxy_failed' | 'http_error' | 'invalid_response' | 'response_too_large' | 'rpc_error';
 
 export class RemoteMcpError extends Error {
     public readonly code: RemoteMcpErrorCode;
@@ -160,6 +161,10 @@ export function toRemoteMcpError(err: unknown, method: string): RemoteMcpError {
         return new RemoteMcpError({ code: 'invalid_response', message: err.message, method, cause: err });
     }
 
+    if (err instanceof ZodError || err instanceof SyntaxError) {
+        return new RemoteMcpError({ code: 'invalid_response', message: 'The body is not a JSON-RPC message', method, cause: err });
+    }
+
     throw err;
 }
 
@@ -211,7 +216,7 @@ function proxyFetch({ target, endpoint, log }: { target: RemoteMcpTarget; endpoi
             body = await readProxyResponseBody(response);
         } catch (err) {
             completeProxyResponse(response, err instanceof Error ? err : new Error('Failed to read the MCP server response'));
-            throw new RemoteMcpError({ code: 'invalid_response', message: 'The MCP server response could not be read', status: response.status, cause: err });
+            throw unreadableResponseError(err, response.status);
         }
         completeProxyResponse(response);
 
@@ -237,4 +242,21 @@ function toHeaders(headers: Record<string, unknown>): Headers {
         }
     }
     return result;
+}
+
+function unreadableResponseError(err: unknown, status: number): RemoteMcpError {
+    if (err instanceof ProxyResponseFormatError && err.code === 'response_too_large') {
+        return new RemoteMcpError({
+            code: 'response_too_large',
+            message: `The MCP server response exceeds the ${MAX_MCP_PROXY_RESPONSE_SIZE_LABEL} limit`,
+            status,
+            cause: err
+        });
+    }
+
+    if (err instanceof ProxyResponseFormatError) {
+        return new RemoteMcpError({ code: 'invalid_response', message: 'The body is binary or not UTF-8', status, cause: err });
+    }
+
+    return new RemoteMcpError({ code: 'invalid_response', message: 'The MCP server response could not be read', status, cause: err });
 }

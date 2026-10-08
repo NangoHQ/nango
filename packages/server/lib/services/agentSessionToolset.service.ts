@@ -389,7 +389,7 @@ function unknownToolError(rejected: ToolReference[]): AgentSessionToolsetCompila
 
     return new AgentSessionToolsetCompilationError({
         code: 'unknown_tool',
-        message: `${rejected.length} ${rejected.length === 1 ? 'tool is' : 'tools are'} not a deployed and enabled action on the integration given. Check the tool names, and that the action is enabled.`,
+        message: `${rejected.length} ${rejected.length === 1 ? 'tool is' : 'tools are'} not an enabled action or an MCP server tool on the integration given. Check the tool names, and that the action is enabled.`,
         payload: { ...payload }
     });
 }
