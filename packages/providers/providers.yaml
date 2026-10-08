@@ -4147,6 +4147,40 @@ braze:
             description: The API key to your Braze account
             doc_section: '#step-2-finding-your-api-key'
 
+breathehr:
+    display_name: Breathe HR
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/account
+    docs: https://nango.dev/docs/api-integrations/breathehr
+    docs_connect: https://nango.dev/docs/api-integrations/breathehr/connect
+    connection_config:
+        apiHost:
+            type: string
+            title: Environment
+            description: The Breathe HR environment to connect to.
+            enum:
+                - api.breathehr.com
+                - api.sandbox.breathehr.info
+            order: 1
+            doc_section: '#step-1-choose-your-environment'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Breathe HR API key.
+            pattern: '^(prod|sandbox)-\S+$'
+            example: prod-1OcT****************************************
+            doc_section: '#step-2-find-your-api-key'
+
 brevo-api-key:
     display_name: Brevo
     categories:
@@ -4382,7 +4416,7 @@ buildium:
             type: string
             title: Secret
             description: The Secret for your Buildium account
-            pattern: '^[A-Za-z0-9+/]+$'
+            pattern: '^[A-Za-z0-9+/=]+$'
             example: uOq2p+xlgpFdijfV/HqY+EvYpZKHRwlyhGuAVbJIxXs
             doc_section: '#step-2-finding-your-client-id-and-secret'
 
@@ -4932,6 +4966,38 @@ chargebee:
             default_value: ''
             hidden: true
 
+charliehr:
+    display_name: CharlieHR
+    categories:
+        - hr
+    auth_mode: BASIC
+    proxy:
+        base_url: https://charliehr.com
+        headers:
+            authorization: Token token=${credentials.username}:${credentials.password}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/company
+    docs: https://nango.dev/docs/api-integrations/charliehr
+    docs_connect: https://nango.dev/docs/api-integrations/charliehr/connect
+    credentials:
+        username:
+            type: string
+            title: Client ID
+            description: Your CharlieHR API client ID.
+            pattern: '^[0-9a-f]{20}$'
+            example: a1b2************c3d4
+            doc_section: '#step-1-get-your-api-credentials'
+        password:
+            type: string
+            title: Client Secret
+            description: Your CharlieHR API client secret.
+            pattern: '^[0-9a-f]{64}$'
+            example: e5f6********************************************************7a8b
+            secret: true
+            doc_section: '#step-1-get-your-api-credentials'
+
 chartboost:
     display_name: Chartboost
     categories:
@@ -5052,6 +5118,52 @@ chattermill:
                 - app
                 - api
                 - backend
+
+checkbox:
+    display_name: Checkbox
+    categories:
+        - legal
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            x-api-key: ${apiKey}
+            x-consumer-custom-id: ${connectionConfig.accountId}
+        verification:
+            method: GET
+            endpoints:
+                - /partner/api/v1/ticketing/boards?limit=1
+    docs: https://nango.dev/docs/api-integrations/checkbox
+    docs_connect: https://nango.dev/docs/api-integrations/checkbox/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            example: 'abZnZk********liDQ'
+            pattern: '^[A-Za-z0-9]+$'
+            description: A Checkbox API key.
+            doc_section: '#step-2-create-an-api-key'
+    connection_config:
+        hostname:
+            type: string
+            title: Environment
+            description: The Checkbox environment to connect to. Production or sandbox.
+            format: hostname
+            enum:
+                - app.checkbox.ai
+                - sandbox.checkbox-app.com
+            order: 1
+            doc_section: '#step-1-choose-your-environment'
+        accountId:
+            type: string
+            title: Account ID
+            description: Your Checkbox account ID. Leave blank if you only use Matter Management.
+            example: '123456'
+            pattern: '^[0-9]+$'
+            optional: true
+            order: 2
+            doc_section: '#step-3-find-your-create-assessment-account-id'
 
 checkhq:
     display_name: Check
@@ -5326,6 +5438,39 @@ clari-copilot:
             type: string
             title: API Key
             description: The API key for your Clari Copilot account
+
+clarify:
+    display_name: Clarify
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.clarify.ai
+        headers:
+            authorization: api-key ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/workspaces/${connectionConfig.workspaceSlug}/lists?page[limit]=1
+    docs: https://nango.dev/docs/api-integrations/clarify
+    docs_connect: https://nango.dev/docs/api-integrations/clarify/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/clarify/connect
+    connection_config:
+        workspaceSlug:
+            type: string
+            title: Workspace slug
+            description: The workspace segment from your Clarify URL.
+            example: acme
+            doc_section: '#step-1-finding-your-workspace-slug'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API key
+            description: Your Clarify API key.
+            example: bbb9****************0086
+            pattern: '^[A-Za-z0-9+/=_-]+$'
+            doc_section: '#step-2-creating-an-api-key'
 
 clay:
     display_name: Clay
@@ -8542,6 +8687,8 @@ eway-crm:
         response_type: code
     token_params:
         grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.serviceUrl}/API.svc
     docs: https://nango.dev/docs/api-integrations/eway-crm
@@ -16161,6 +16308,34 @@ monday:
         base_url: https://api.monday.com
     docs: https://nango.dev/docs/api-integrations/monday
     setup_guide_url: https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app
+
+monday-api-key:
+    display_name: Monday (API Key)
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.monday.com
+        headers:
+            authorization: ${apiKey}
+            content-type: application/json
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v2
+            data: { 'query': 'query { me { id } }' }
+    docs: https://nango.dev/docs/api-integrations/monday-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/monday-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Personal API Token
+            description: Your monday.com personal V2 API token
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            example: eyJhbGciOiJI*******.eyJ0aWQiOjEy**************************************.FAKESIG*************************
 
 moneybird:
     display_name: Moneybird

@@ -16000,6 +16000,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `braintree` | Braintree | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/braintree.md) |  |  | payment |
 | `braintree-sandbox` | Braintree (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/braintree-sandbox.md) |  |  | payment |
 | `braze` | Braze | API_KEY | [docs](https://nango.dev/docs/integrations/all/braze.md) | [connect](https://nango.dev/docs/integrations/all/braze/connect.md) |  | communication |
+| `breathehr` | Breathe HR | API_KEY | [docs](https://nango.dev/docs/api-integrations/breathehr.md) | [connect](https://nango.dev/docs/api-integrations/breathehr/connect.md) |  | hr |
 | `breezy-hr` | Breezy HR | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/breezy-hr.md) | [connect](https://nango.dev/docs/integrations/all/breezy-hr/connect.md) |  | hr, ats |
 | `brevo-api-key` | Brevo | API_KEY | [docs](https://nango.dev/docs/integrations/all/brevo-api-key.md) |  |  | marketing |
 | `brex` | Brex (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/brex.md) |  | [setup](https://nango.dev/docs/api-integrations/brex/how-to-register-your-own-brex-oauth-app.md) | banking |
@@ -16028,10 +16029,12 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `certn` | Certn | API_KEY | [docs](https://nango.dev/docs/integrations/all/certn.md) | [connect](https://nango.dev/docs/integrations/all/certn/connect.md) |  | legal |
 | `certn-partner` | Certn Partner | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/certn-partner.md) |  |  | legal |
 | `chargebee` | Chargebee | BASIC | [docs](https://nango.dev/docs/integrations/all/chargebee.md) | [connect](https://nango.dev/docs/integrations/all/chargebee/connect.md) |  | payment |
+| `charliehr` | CharlieHR | BASIC | [docs](https://nango.dev/docs/api-integrations/charliehr.md) | [connect](https://nango.dev/docs/api-integrations/charliehr/connect.md) |  | hr |
 | `chartboost` | Chartboost | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/chartboost.md) | [connect](https://nango.dev/docs/api-integrations/chartboost/connect.md) |  | marketing, gaming |
 | `chatarmin` | Chatarmin | API_KEY | [docs](https://nango.dev/docs/api-integrations/chatarmin.md) | [connect](https://nango.dev/docs/api-integrations/chatarmin/connect.md) |  | communication |
 | `chatgpt-enterprise` | ChatGPT Enterprise (SCIM API) | API_KEY | [docs](https://nango.dev/docs/api-integrations/chatgpt-enterprise.md) | [connect](https://nango.dev/docs/api-integrations/chatgpt-enterprise/connect.md) |  | productivity, dev-tools |
 | `chattermill` | Chattermill | API_KEY | [docs](https://nango.dev/docs/integrations/all/chattermill.md) |  |  | support, analytics |
+| `checkbox` | Checkbox | API_KEY | [docs](https://nango.dev/docs/api-integrations/checkbox.md) | [connect](https://nango.dev/docs/api-integrations/checkbox/connect.md) |  | legal, ticketing |
 | `checkhq` | Check | API_KEY | [docs](https://nango.dev/docs/integrations/all/checkhq.md) | [connect](https://nango.dev/docs/integrations/all/checkhq/connect.md) |  | accounting |
 | `checkout-com` | Checkout.com | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/checkout-com.md) | [connect](https://nango.dev/docs/integrations/all/checkout-com/connect.md) |  | payment |
 | `checkout-com-sandbox` | Checkout.com (Sandbox) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/checkout-com-sandbox.md) | [connect](https://nango.dev/docs/integrations/all/checkout-com-sandbox/connect.md) |  | payment |
@@ -16045,6 +16048,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `circleback-mcp` | Circleback (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/circleback-mcp.md) |  |  | productivity, mcp |
 | `cisco-duo-admin` | Cisco Duo Admin API | BASIC | [docs](https://nango.dev/docs/api-integrations/cisco-duo-admin.md) | [connect](https://nango.dev/docs/api-integrations/cisco-duo-admin/connect.md) |  | iam |
 | `clari-copilot` | Clari Copilot | API_KEY | [docs](https://nango.dev/docs/integrations/all/clari-copilot.md) |  |  | marketing |
+| `clarify` | Clarify | API_KEY | [docs](https://nango.dev/docs/api-integrations/clarify.md) | [connect](https://nango.dev/docs/api-integrations/clarify/connect.md) | [setup](https://nango.dev/docs/api-integrations/clarify/connect.md) | crm |
 | `clay` | Clay | API_KEY | [docs](https://nango.dev/docs/api-integrations/clay.md) | [connect](https://nango.dev/docs/api-integrations/clay/connect.md) |  | crm, marketing |
 | `clay-mcp` | Clay (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/clay-mcp.md) |  |  | crm, marketing, mcp |
 | `clerk` | Clerk | API_KEY | [docs](https://nango.dev/docs/integrations/all/clerk.md) | [connect](https://nango.dev/docs/integrations/all/clerk/connect.md) |  | dev-tools, iam |
@@ -16453,6 +16457,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `mollie` | Mollie | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/mollie.md) |  | [setup](https://nango.dev/docs/api-integrations/mollie/how-to-register-your-own-mollie-oauth-app.md) | payment |
 | `momentum-io` | Momentum.io | API_KEY | [docs](https://nango.dev/docs/integrations/all/momentum-io.md) | [connect](https://nango.dev/docs/integrations/all/momentum-io/connect.md) |  | productivity |
 | `monday` | Monday | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/monday.md) |  | [setup](https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app.md) | productivity, ticketing |
+| `monday-api-key` | Monday (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/monday-api-key.md) | [connect](https://nango.dev/docs/api-integrations/monday-api-key/connect.md) |  | productivity, ticketing |
 | `moneybird` | Moneybird | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/moneybird.md) |  | [setup](https://nango.dev/docs/api-integrations/moneybird/how-to-register-your-own-moneybird-oauth-app.md) | accounting, invoicing |
 | `mural` | Mural | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/mural.md) |  |  | design |
 | `myob` | MYOB | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/myob.md) |  | [setup](https://nango.dev/docs/api-integrations/myob/how-to-register-your-own-myob-api-oauth-app.md) | accounting |
