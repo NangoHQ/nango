@@ -1,5 +1,6 @@
 import { getLogger } from '@nangohq/utils';
 
+import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL } from '../../../../services/mcpProxyResponse.js';
 import { InternalMcpError, PublicMcpError, safeFailureDetail } from '../../../mcp/utils.js';
 import { proxyErrorToMcp } from '../proxy/errors.js';
 
@@ -65,6 +66,11 @@ export function remoteMcpErrorToMcp({ error, integrationId, toolName }: { error:
                     code: 'provider_error',
                     integrationId
                 }
+            );
+        case 'response_too_large':
+            return new PublicMcpError(
+                `Tool '${toolName}' on integration '${integrationId}' returned more than ${MAX_MCP_PROXY_RESPONSE_SIZE_LABEL}, which is over the limit. Call it again with input that narrows the result if it takes any, and otherwise tell the user.`,
+                { code: 'tool_failed', integrationId }
             );
         case 'rpc_error':
             if (error.method !== 'tools/call') {

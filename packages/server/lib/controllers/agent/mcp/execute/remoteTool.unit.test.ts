@@ -201,6 +201,18 @@ describe('executeSessionTool on an MCP server tool', () => {
         expect(codeOf(await execute())).toBe('tool_failed');
     });
 
+    it('reports a result over the size limit as a failed tool', async () => {
+        mcpServer(() => response({ body: 'x'.repeat(5_000_001) }));
+
+        expect(codeOf(await execute())).toBe('tool_failed');
+    });
+
+    it('reports a body that is not JSON-RPC as the server failing', async () => {
+        mcpServer(() => response({ body: '{"not":"jsonrpc"}' }));
+
+        expect(codeOf(await execute())).toBe('provider_error');
+    });
+
     it('asks for a reconnect when the server refuses the credentials', async () => {
         mcpServer(() => response({ status: 401 }));
 
