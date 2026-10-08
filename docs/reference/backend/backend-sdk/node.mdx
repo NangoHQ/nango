@@ -869,7 +869,7 @@ This method polls for a connection every 2 seconds for up to 60 seconds (30 atte
 
 ### List functions
 
-Returns the functions deployed to an integration, with pagination.
+Returns the functions available to an integration, with pagination.
 
 ```ts
 await nango.listFunctions({ uniqueKey: 'github' });
@@ -901,6 +901,8 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
     </ResponseField>
 </Expandable>
 
+Catalog actions have `id: null`, `last_deployed: null`, `enabled: true`, and `source: "tools-catalog"`. A deployed action with the same name takes precedence.
+
 **Example Response**
 
 <Expandable>
@@ -930,10 +932,21 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
             "enabled": true,
             "last_deployed": "2024-03-28T14:00:00.000Z",
             "source": "repo"
+        },
+        {
+            "type": "action",
+            "name": "get-repository",
+            "description": "Get a GitHub repository",
+            "returns": ["GithubRepository"],
+            "json_schema": null,
+            "id": null,
+            "enabled": true,
+            "last_deployed": null,
+            "source": "tools-catalog"
         }
     ],
     "pagination": {
-        "total": 2,
+        "total": 3,
         "page": 0,
         "limit": 20
     }
@@ -943,7 +956,7 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
 
 ### Get a function
 
-Retrieves a deployed function of an integration.
+Retrieves a function available to an integration. This can be a deployed function or a Nango catalog action.
 
 ```ts
 await nango.getFunction({ uniqueKey: 'github', name: 'create-issue' });
@@ -991,7 +1004,7 @@ await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' 
 
 ### Get function code
 
-Retrieves the source code of a deployed function.
+Retrieves the source code of a function. For a Nango catalog action, the response contains the current catalog source even though the action has not been deployed.
 
 ```ts
 await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { type: 'action' });
@@ -1024,7 +1037,7 @@ await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { typ
 
 ### Delete a function
 
-Deletes a deployed function of an integration. The `type` is required.
+Deletes a deployed function of an integration. The `type` is required. Nango catalog actions cannot be deleted; deploy a custom function with the same name to take ownership.
 
 ```ts
 await nango.deleteFunction({ uniqueKey: 'github', name: 'create-issue' }, { type: 'action' });

@@ -10,13 +10,13 @@ description: 'Understand Nango Functions and choose the right way to start using
 
 When you build integrations directly, every provider forces you to solve the same hard problems: OAuth credentials, token refresh, per-customer permissions, retries, rate limits, data freshness, observability, and safe execution. Nango handles that infrastructure, and functions let you write the provider-specific logic that is unique to your product.
 
-You write functions in TypeScript and deploy them to Nango. Your app can call them from any language, framework, backend job, or agent workflow. Each execution runs for a specific integration and connection, so the function has scoped access to the right customer's credentials without exposing those credentials to your app or agent.
+You can use Nango-maintained catalog actions directly, enable sync templates, or write and deploy your own functions. Your app can call functions from any language, framework, backend job, or agent workflow. Each execution runs for a specific integration and connection, so the function has scoped access to the right customer's credentials without exposing those credentials to your app or agent.
 
 ## How functions fit
 
 1. Your user authorizes an external API through [Nango Auth](/guides/auth/auth-guide).
 2. Your app stores the resulting `connectionId`.
-3. You enable or deploy functions for the integration.
+3. You use a catalog action, enable a sync template, or deploy a custom function for the integration.
 4. Nango runs the function on demand, on a schedule, from an external webhook, or after a connection lifecycle event.
 5. Your app receives the function result, sync records, or webhooks from Nango.
 
@@ -29,45 +29,51 @@ Functions are the right layer when you need custom API logic, data syncing, webh
 - **Multiple trigger types** — call functions on demand, run them on a schedule, route external webhooks into them, or react to connection lifecycle events.
 - **Agent-ready tools** — expose selected functions to agents through the API or Nango's MCP server while keeping provider credentials out of the model loop.
 - **Built-in integration infrastructure** — retries, rate-limit handling, logs, OpenTelemetry export, records storage, checkpoints, and per-connection metadata.
-- **Flexible development workflows** — enable a template, build headlessly through the Functions API, or keep function code in a local CLI project.
+- **Flexible development workflows** — use catalog actions directly, enable sync templates, build through the Functions API, or keep function code in a local CLI project.
 
 <a id="guide"></a>
 ## Guide
 
-### Ways to enable functions
+### Ways to use or develop functions
 
-There are three ways to enable or develop Nango functions. Start with the path that matches how much control and dynamism you need.
+There are three ways to use or develop Nango functions. Start with the path that matches how much control and dynamism you need.
 
 | Path | Best for | How it works |
 | --- | --- | --- |
-| [Option 1: Use function templates](#use-function-templates) | Getting started quickly when Nango already has the provider operation in the catalog. | Enable a pre-built function on an integration, then call it from your app, backend job, or agent workflow. |
+| [Option 1: Use the template catalog](#use-function-templates) | Getting started quickly when Nango already has the provider operation in the catalog. | Use catalog actions, or enable a sync template. |
 | [Option 2: Build locally with the CLI](#build-locally-with-the-cli) | Serious production use cases where you want reviewable diffs, tests, CI/CD, and source control. | Write TypeScript functions in your repo, dry run them against real connections, and deploy with the Nango CLI. |
 | [Option 3: Build with the Functions API](#build-with-the-functions-api) | Prototypes, provider operations not covered by templates, and just-in-time integrations where an agent creates behavior dynamically. | Send generated TypeScript source to Nango, compile it, dry run it, and deploy it without a local functions project. |
 
 <a id="start-with-templates"></a>
 <a id="use-function-templates"></a>
 <a id="template-catalog"></a>
-### Option 1: Use function templates
+### Option 1: Use the template catalog
 
-Function templates are pre-built Nango functions for common provider operations. Use them when the catalog already covers what you need and you want the shortest path to a working integration.
+The template catalog contains pre-built Nango functions for common provider operations. Catalog actions are available out of the box and update automatically. Sync templates must be enabled before they run.
+
+<a id="catalog-action-stability"></a>
+<Note>
+  **Catalog actions and stability.** Catalog actions are maintained by Nango and update automatically. Their input schema, output shape, and behavior may change as the catalog evolves. They are best suited to agentic workflows, such as MCP tool calling. If deterministic application code needs a stable contract, [pull the action into your functions project and deploy it](#extend-a-template). The deployed function becomes your owned implementation and no longer follows catalog updates.
+</Note>
 
 You can find templates in the [template catalog](https://www.nango.dev/templates), in the integration page of the Nango dashboard, and in the [Nango integration templates repository](https://github.com/NangoHQ/integration-templates).
 
-When a template matches your use case, enable it on the integration and call it from your app. If it is close but not exact, [pull it into a local functions project and customize it](#extend-a-template).
+When a catalog action matches your use case, call it directly for agentic workflows or quick experiments. For deterministic application code, [pull and deploy it](#extend-a-template) before using it. When a sync template matches your use case, enable it on the integration. If a catalog action or sync template is close but not exact, [pull it into a local functions project and customize it](#extend-a-template).
 
 <a id="extend-a-template"></a>
 #### Extend a template
 
-Use the CLI to pull a template's code into your local functions project from the public catalog:
+Use the CLI to pull a function's code into your local functions project. Pull from the public catalog with `--catalog`, or pull the version currently served by an environment with `--env`:
 
 ```bash
 nango pull github list-repos --catalog
+nango pull github list-repos --env dev
 ```
 
 `nango pull` writes a single function and its dependencies. After pulling, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
 
 <Tip>
-  Pull template code when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to a template function but not identical.
+  Pull a pre-built function when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to the catalog but not identical.
 </Tip>
 
 <a id="build-locally-with-the-cli"></a>
@@ -256,15 +262,18 @@ Resolve these endpoints against `NANGO_SERVER_URL`, or `https://api.nango.dev` b
 The Functions API is powerful, but it intentionally skips a local Git workflow. For production integrations that need code review, tests, ownership, and CI/CD, prefer [local development with the CLI](#build-locally-with-the-cli).
 
 <a id="take-ownership-of-a-deployed-function"></a>
-### Take ownership of a deployed function
+### Take ownership of a function
 
-Pull the source of a function that is already deployed to an environment so you can manage it in your own repository:
+Pull a function into your local functions project so you can manage it in your own repository. Use `--env` to pull the version served by an environment, or `--catalog` to pull the public catalog version:
 
 ```bash
 nango pull github list-repos --env dev
+nango pull github list-repos --catalog
 ```
 
-This works for any deployed function — a template you enabled from the dashboard, or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments-create). The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD.
+`--env` works for any function served by an environment, including a catalog action or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments-create).
+
+The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD. A repo-managed function with the same name becomes the integration's owned implementation instead of following the catalog.
 
 ## Related guides
 

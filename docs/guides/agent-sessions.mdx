@@ -14,6 +14,8 @@ Each session has three parts:
 
 Your backend creates the session and exposes it to the agent as an MCP server. The agent never sees raw credentials, and cannot change the scope of its own session.
 
+The available toolset can include Nango catalog action functions and action functions you manage yourself. Catalog actions are available out of the box and update automatically. [Pull and deploy one](/guides/functions/functions-guide#extend-a-template) to take ownership and customize it.
+
 Example sessions:
 - A sales agent with a user's personal Gmail & Google Calendar, and a read-only org-wide Salesforce connection
 - A finance agent with a few read-only tools on an org's accounting system, and read & write access to a team's Slack
