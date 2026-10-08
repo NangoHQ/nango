@@ -3,7 +3,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { convertToModelMessages, dynamicTool, jsonSchema, stepCountIs, streamText, toUIMessageStream } from 'ai';
 
 import db from '@nangohq/database';
-import { configService, connectionService, getProvider, sharedCredentialsService } from '@nangohq/shared';
+import { buildTagsFromEndUser, configService, connectionService, getProvider, sharedCredentialsService } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { createAgentSessionMcpServer, TOOL_NAME_SEPARATOR } from '../controllers/agent/mcp/sessionServer.js';
@@ -20,7 +20,8 @@ import type {
     DBEnvironment,
     DBPlan,
     DBTeam,
-    DBUser
+    DBUser,
+    Tags
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JSONSchema7, LanguageModel, ToolSet, UIMessage, UIMessageChunk } from 'ai';
@@ -85,10 +86,21 @@ export function existingIntegrationFor<T extends { unique_key: string; provider:
     return pick(matching.filter((integration) => integration.missing_fields.length === 0)) ?? pick(matching);
 }
 
-// Never creates: only a pre-made prompt sets up a missing integration.
-export async function resolvePlaygroundIntegrations(environment: DBEnvironment): Promise<string[]> {
-    const existing = await configService.listProviderConfigs(db.knex, environment.id);
-    return PLAYGROUND_PROVIDERS.flatMap((provider) => existingIntegrationFor(existing, provider)?.unique_key ?? []);
+// The scope matches on `end_user_email`, so connections made here must carry it.
+export function playgroundConnectionTags(user: Pick<DBUser, 'id' | 'uuid' | 'email' | 'name'>): Tags {
+    return buildTagsFromEndUser(
+        {
+            id: String(user.id),
+            email: user.email,
+            display_name: user.name,
+            tags: { origin: 'nango_agent_playground', [PLAYGROUND_USER_TAG_KEY]: user.uuid }
+        },
+        null
+    );
+}
+
+function playgroundConnectionScope(user: Pick<DBUser, 'email'>): Tags {
+    return { end_user_email: user.email };
 }
 
 export async function setUpStarterIntegration(environment: DBEnvironment, providerName: string): Promise<AgentPlaygroundIntegrationSetup> {
@@ -165,21 +177,22 @@ async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | un
         }
     }
 
-    const integrationIds = await resolvePlaygroundIntegrations(ctx.environment);
+    const integrations = await configService.listProviderConfigs(db.knex, ctx.environment.id);
     const connections = await connectionService.listConnections({
         environmentId: ctx.environment.id,
-        integrationIds,
-        tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid }
+        integrationIds: integrations.map((integration) => integration.unique_key),
+        tags: playgroundConnectionScope(ctx.user)
     });
 
     const created = await agentSessionService.createAgentSession({
         account: ctx.account,
         environment: ctx.environment,
+        // A tag selector fails as ambiguous when a user has two connections to one integration.
         connections: { any: [], pinned: newestConnectionPerIntegration(connections) },
-        // Every playground integration, connected or not, so the agent can offer to connect a missing app.
-        toolset: Object.fromEntries(integrationIds.map((integrationId) => [integrationId, { allow: '*', deny: [] }])),
+        // Connected or not, so the agent can offer to connect a missing app.
+        toolset: '*',
         pinnedTools: undefined,
-        metaTools: { nangoCreateConnection: { enabled: true, tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid } }, nangoProxy: true },
+        metaTools: { nangoCreateConnection: { enabled: true, tags: playgroundConnectionTags(ctx.user) }, nangoProxy: true },
         expiresInMs: PLAYGROUND_SESSION_EXPIRES_IN_MS
     });
 
@@ -229,6 +242,35 @@ export async function buildMcpTools(client: Client): Promise<ToolSet> {
             ];
         })
     );
+}
+
+// Connect UI can't finish a connection for these, so the tool returns the setup instead of a link.
+export function withUnfinishedSetups(tools: ToolSet, unfinished: ReadonlyMap<string, string>): ToolSet {
+    const createConnection = tools['nango_create_connection'];
+    const execute = createConnection?.execute;
+    if (!createConnection || !execute) {
+        return tools;
+    }
+
+    return {
+        ...tools,
+        nango_create_connection: {
+            ...createConnection,
+            execute: (input: unknown, options: Parameters<typeof execute>[1]): unknown => {
+                const integrationId = (input as { integration?: unknown } | null)?.integration;
+                const provider = typeof integrationId === 'string' ? unfinished.get(integrationId) : undefined;
+                if (typeof integrationId !== 'string' || !provider) {
+                    return execute(input, options) as unknown;
+                }
+                const integrationSetup: AgentPlaygroundIntegrationSetup = { provider, integrationId, outcome: 'missing_credentials' };
+                return {
+                    guidance:
+                        'This integration is missing its credentials, so it cannot be connected yet. The user is shown how to finish setting it up. Say so in one sentence and stop.',
+                    integration_setup: integrationSetup
+                };
+            }
+        }
+    } as ToolSet;
 }
 
 // Actions carry no read-only flag, so anything not named like a read waits for the user.
@@ -311,12 +353,15 @@ export async function startTurn({
     let tools: ToolSet;
     let modelMessages: Awaited<ReturnType<typeof convertToModelMessages>>;
     let connected: Set<string>;
+    let unfinished: Map<string, string>;
     try {
         await server.connect(serverTransport);
         await client.connect(clientTransport);
+        let mcpTools: ToolSet;
         let connections: Awaited<ReturnType<typeof connectionService.listConnections>>;
+        let integrations: Awaited<ReturnType<typeof configService.listProviderConfigs>>;
         // Read live: the session's own connection list only fills in once a tool uses a connection.
-        [tools, modelMessages, connections] = await Promise.all([
+        [mcpTools, modelMessages, connections, integrations] = await Promise.all([
             buildMcpTools(client),
             convertToModelMessages(
                 // A setup-only reply, or a Stop before the first part, leaves an assistant message with no parts. OpenAI rejects an empty turn.
@@ -327,10 +372,15 @@ export async function startTurn({
             connectionService.listConnections({
                 environmentId: ctx.environment.id,
                 integrationIds: Object.keys(session.value.compiledToolset),
-                tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid }
-            })
+                tags: playgroundConnectionScope(ctx.user)
+            }),
+            configService.listProviderConfigs(db.knex, ctx.environment.id)
         ]);
         connected = new Set(connections.map(({ connection }) => connection.provider_config_key));
+        unfinished = new Map(
+            integrations.filter((integration) => integration.missing_fields.length > 0).map((integration) => [integration.unique_key, integration.provider])
+        );
+        tools = withUnfinishedSetups(mcpTools, unfinished);
     } catch (err) {
         await close();
         return Err(new AgentPlaygroundError('model_error', err instanceof Error ? err.message : 'The agent could not start', { cause: err }));
@@ -341,7 +391,12 @@ export async function startTurn({
         instructions: buildInstructions(
             timeZone,
             new Date(),
-            Object.entries(session.value.compiledToolset).map(([id, integration]) => ({ id, provider: integration.provider, connected: connected.has(id) })),
+            Object.entries(session.value.compiledToolset).map(([id, integration]) => ({
+                id,
+                provider: integration.provider,
+                connected: connected.has(id),
+                needsSetup: unfinished.has(id)
+            })),
             PLAYGROUND_PROVIDERS.filter(
                 (provider) => !Object.values(session.value.compiledToolset).some((integration) => integration.provider === provider)
             ).map((provider) => getProvider(provider)?.display_name ?? provider)

@@ -1,6 +1,6 @@
 import { Client } from '@modelcontextprotocol/client';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
-import { generateText, stepCountIs } from 'ai';
+import { dynamicTool, generateText, jsonSchema, stepCountIs } from 'ai';
 import { MockLanguageModelV4 } from 'ai/test';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -8,7 +8,15 @@ import { seeders } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionServer.js';
-import { buildMcpTools, existingIntegrationFor, newestConnectionPerIntegration, sessionOwner, toolNeedsApproval } from './agentPlayground.service.js';
+import {
+    buildMcpTools,
+    existingIntegrationFor,
+    newestConnectionPerIntegration,
+    playgroundConnectionTags,
+    sessionOwner,
+    toolNeedsApproval,
+    withUnfinishedSetups
+} from './agentPlayground.service.js';
 
 import type { AgentSession } from '@nangohq/types';
 
@@ -47,6 +55,51 @@ describe('sessionOwner', () => {
 
     it('has no owner for a session the playground did not create', () => {
         expect(sessionOwner({ metaTools: { ...session().metaTools, nangoCreateConnection: { enabled: false, tags: {} } } })).toBeUndefined();
+    });
+});
+
+describe('playgroundConnectionTags', () => {
+    it("tags connections with the user as their end user, like the dashboard's", () => {
+        expect(playgroundConnectionTags({ id: 42, uuid: 'user-a', email: 'Jane@Example.com', name: 'Jane Doe' })).toEqual({
+            end_user_id: '42',
+            end_user_email: 'Jane@Example.com',
+            end_user_display_name: 'Jane Doe',
+            origin: 'nango_agent_playground',
+            'nango/playground_user': 'user-a'
+        });
+    });
+
+    it('keeps the owner that sessionOwner reads', () => {
+        const tags = playgroundConnectionTags({ id: 1, uuid: 'user-a', email: 'a@example.com', name: 'A' });
+        const metaTools = { ...session().metaTools, nangoCreateConnection: { enabled: true, tags } };
+
+        expect(sessionOwner({ metaTools })).toBe('user-a');
+    });
+});
+
+describe('withUnfinishedSetups', () => {
+    async function connect(integration: string) {
+        const execute = vi.fn().mockResolvedValue({ connect_url: 'https://connect.example' });
+        const tools = withUnfinishedSetups(
+            { nango_create_connection: dynamicTool({ description: '', inputSchema: jsonSchema({}), execute }) },
+            new Map([['my-hubspot', 'hubspot']])
+        );
+        const output: unknown = await tools['nango_create_connection']?.execute?.({ integration }, { toolCallId: 'call-1', messages: [], context: {} });
+        return { execute, output };
+    }
+
+    it('returns the setup for an integration missing its credentials, without creating a link', async () => {
+        const { execute, output } = await connect('my-hubspot');
+
+        expect(execute).not.toHaveBeenCalled();
+        expect(output).toMatchObject({ integration_setup: { provider: 'hubspot', integrationId: 'my-hubspot', outcome: 'missing_credentials' } });
+    });
+
+    it('creates a link for any other integration', async () => {
+        const { execute, output } = await connect('my-notion');
+
+        expect(execute).toHaveBeenCalledOnce();
+        expect(output).toEqual({ connect_url: 'https://connect.example' });
     });
 });
 

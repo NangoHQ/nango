@@ -4,6 +4,7 @@ import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 
+import * as agentSessionService from '../../../services/agentSession.service.js';
 import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 import type * as ModelService from '../../../services/agentPlaygroundModel.service.js';
@@ -173,6 +174,26 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(turn.status).toBe(200);
         expect(turn.integrationSetup).toBeUndefined();
         expect(await integrationsIn(env.id)).toEqual([]);
+    });
+
+    it("reaches the environment's integrations, but only connections tagged with the user's email", async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { account, user, env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'my-notion', 'notion');
+        await seeders.createConfigSeed(env, 'my-airtable', 'airtable');
+        await seeders.createConnectionSeed({ env, provider: 'my-notion', connectionId: 'mine', tags: { end_user_email: user.email } });
+        await seeders.createConnectionSeed({ env, provider: 'my-airtable', connectionId: 'customer', tags: { end_user_email: 'customer@example.com' } });
+        await seeders.createConnectionSeed({ env, provider: 'my-airtable', connectionId: 'untagged' });
+        const session = await authenticateUser(api, user);
+
+        const turn = await chat(session, { messages: [userMessage('hi')] });
+
+        expect(turn.status).toBe(200);
+        const created = (
+            await agentSessionService.getAgentSession(db.knex, { id: turn.sessionId ?? '', accountId: account.id, environmentId: env.id })
+        ).unwrap();
+        expect(Object.keys(created.compiledToolset).sort()).toEqual(['my-airtable', 'my-notion']);
+        expect(Object.values(created.resolvedConnections).map(({ connectionId }) => connectionId)).toEqual(['mine']);
     });
 
     it("reuses a user's own session but not another member's", async () => {
