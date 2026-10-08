@@ -1,0 +1,91 @@
+---
+title: 'Xendit'
+sidebarTitle: 'Xendit'
+description: 'Integrate your application with the Xendit payment API'
+---
+
+## 🚀 Quickstart
+
+Connect to Xendit with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Xendit_.
+    </Step>
+    <Step title="Authorize Xendit">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your secret API key from the Xendit Dashboard. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Xendit API">
+    Make your first request to the Xendit API (e.g. get your account balance). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/balance" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/balance',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your API key, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Xendit integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/xendit/connect)
+Learn how to obtain your Xendit secret API key and link your account.
+
+Official docs: [Xendit API documentation](https://docs.xendit.co/apidocs)
+
+## API gotchas
+
+- Xendit uses HTTP Basic authentication. The secret API key is sent as the username with an empty password. Nango handles this automatically when you provide your secret API key.
+- Xendit uses the same base URL (`https://api.xendit.co`) for both test and live environments. The environment is determined by which API key you use (test or live).
+- Rate limits differ between environments: 60 requests per minute per endpoint in test mode, 600 in live mode. The API returns `Rate-Limit-Remaining` and `Rate-Limit-Reset` headers.
+- All API requests must be made over HTTPS.
+
+## Pre-built syncs & actions for Xendit
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltTooling from "/snippets/generated/xendit/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/xendit/PreBuiltUseCases.mdx"
+
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+---
