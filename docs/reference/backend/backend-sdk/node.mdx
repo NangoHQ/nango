@@ -171,7 +171,7 @@ await nango.createIntegration({ provider: '<PROVIDER-ID>', unique_key: '<UNIQUE_
     </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
-        The credentials to include depend on the specific integration that you want to create. Optional: you can create an integration without credentials and provide them later, either with an update call or per connection at connection time.
+        For `OAUTH1`, `OAUTH2`, `TBA`, `APP`, and `CUSTOM` credentials, you can create an integration without credentials or with partial credentials, then provide missing credentials with an update call or as per-connection overrides.
     </ResponseField>
 
     <ResponseField name="integration_config" type="Record<string, string>">
