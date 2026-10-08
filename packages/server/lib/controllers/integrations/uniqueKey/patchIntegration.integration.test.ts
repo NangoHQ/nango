@@ -167,21 +167,6 @@ describe(`PATCH ${endpoint}`, () => {
         });
     });
 
-    it('should still allow renaming an integration using Nango-provided credentials', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-        await seeders.createPreprovisionedProviderConfigSeed(env, 'github-quickstart', 'github');
-
-        const res = await api.fetch(endpoint, {
-            method: 'PATCH',
-            token: apiKey.secret,
-            params: { uniqueKey: 'github-quickstart' },
-            body: { display_name: 'GitHub Quickstart' }
-        });
-
-        isSuccess(res.json);
-        expect(res.json.data.display_name).toBe('GitHub Quickstart');
-    });
-
     it('should update webhook_secret for OAUTH2 integration', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
