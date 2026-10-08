@@ -1,6 +1,7 @@
 import { getLogger } from '@nangohq/utils';
 
 import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL } from '../../../../services/mcpProxyResponse.js';
+import { TOOL_CALL_TIMEOUT_MS } from '../../../../services/remoteMcp.service.js';
 import { InternalMcpError, PublicMcpError, safeFailureDetail } from '../../../mcp/utils.js';
 import { proxyErrorToMcp } from '../proxy/errors.js';
 
@@ -70,6 +71,17 @@ export function remoteMcpErrorToMcp({ error, integrationId, toolName }: { error:
         case 'response_too_large':
             return new PublicMcpError(
                 `Tool '${toolName}' on integration '${integrationId}' returned more than ${MAX_MCP_PROXY_RESPONSE_SIZE_LABEL}, which is over the limit. Call it again with input that narrows the result if it takes any, and otherwise tell the user.`,
+                { code: 'tool_failed', integrationId }
+            );
+        case 'timeout':
+            if (error.method !== 'tools/call') {
+                return new PublicMcpError(
+                    `The MCP server for '${integrationId}' did not answer in time. Try once more, and tell the user if it keeps failing.`,
+                    { code: 'provider_error', integrationId }
+                );
+            }
+            return new PublicMcpError(
+                `Tool '${toolName}' on integration '${integrationId}' did not answer within ${TOOL_CALL_TIMEOUT_MS / 1000} seconds. It may still have run, so check its effect before calling it again, and tell the user if it keeps happening.`,
                 { code: 'tool_failed', integrationId }
             );
         case 'rpc_error':
