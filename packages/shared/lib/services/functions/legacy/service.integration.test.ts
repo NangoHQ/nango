@@ -228,17 +228,18 @@ describe('listFunctions with catalog actions', () => {
         ]);
     });
 
-    it('applies the requested action list limit', async () => {
+    it('lists every action without capping the count', async () => {
         const { environment } = await seedIntegration();
-        mockListCatalogTools.mockReturnValue([catalogTool('create-issue'), catalogTool('delete-issue')]);
+        const names = Array.from({ length: 250 }, (_, i) => `action-${String(i).padStart(3, '0')}`);
+        mockListCatalogTools.mockReturnValue(names.map((name) => catalogTool(name)));
 
-        const result = await listActions({ environmentId: environment.id, providerConfigKey: 'github', limit: 1 });
+        const result = await listActions({ environmentId: environment.id, providerConfigKey: 'github' });
 
         expect(result.isOk()).toBe(true);
         if (result.isErr()) {
             return;
         }
-        expect(result.value.map((action) => action.name)).toEqual(['create-issue']);
+        expect(result.value.map((action) => action.name)).toEqual(names);
     });
 });
 
