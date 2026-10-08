@@ -63,7 +63,12 @@ function response({ status = 200, body = '', headers = {} }: { status?: number; 
 }
 
 /** Answers the handshake, then hands `onCall` every later JSON-RPC request. */
-function mcpServer(onCall: (message: { id?: number; method: string; params?: unknown }) => ReturnType<typeof response>) {
+function mcpServer(
+    onCall: (
+        message: { id?: number; method: string; params?: unknown },
+        params: ProxyServiceRequest
+    ) => ReturnType<typeof response> | Promise<ReturnType<typeof response>>
+) {
     request.mockImplementation((params: ProxyServiceRequest) => {
         const message = bodyOf(params) as { id?: number; method: string; params?: unknown } | undefined;
         if (params.method === 'DELETE' || message?.id === undefined) {
@@ -81,7 +86,7 @@ function mcpServer(onCall: (message: { id?: number; method: string; params?: unk
                 })
             );
         }
-        return Promise.resolve(onCall(message));
+        return Promise.resolve(onCall(message, params));
     });
 }
 
@@ -211,6 +216,27 @@ describe('executeSessionTool on an MCP server tool', () => {
         mcpServer(() => response({ body: '{"not":"jsonrpc"}' }));
 
         expect(codeOf(await execute())).toBe('provider_error');
+    });
+
+    it('reports a tool that never answers as possibly having run, and cancels the proxy call', async () => {
+        vi.useFakeTimers();
+        try {
+            let hungRequest: ProxyServiceRequest | undefined;
+            mcpServer((_message, params) => {
+                hungRequest = params;
+                return new Promise((_resolve, reject) => params.abortSignal?.addEventListener('abort', () => reject(new Error('aborted'))));
+            });
+
+            const running = execute();
+            await vi.advanceTimersByTimeAsync(60_000);
+            const result = await running;
+
+            expect(codeOf(result)).toBe('tool_failed');
+            expect(result.isErr() && result.error.message).toContain('may still have run');
+            expect(hungRequest?.abortSignal?.aborted).toBe(true);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it('asks for a reconnect when the server refuses the credentials', async () => {
