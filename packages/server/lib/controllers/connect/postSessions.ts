@@ -201,6 +201,8 @@ function createConnectSessionErrorToHttp(error: connectSessionService.CreateConn
             }));
             return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues }) } } };
         }
+        case 'invalid_connection_config':
+            return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: error.issues || [] }) } } };
         case 'docs_connect_override_forbidden':
             return { status: 403, response: { error: { code: 'forbidden', message: error.message } } };
         case 'token_creation_failed':
