@@ -95,11 +95,11 @@ describe(`GET ${route}`, () => {
         });
     });
 
-    describe('Enterprise accounts', () => {
-        it.each(['enterprise', 'enterprise-cloud-hosted'] as const)('should report nothing overdue on %s without calling Orb', async (name) => {
+    describe('Accounts with the banner turned off', () => {
+        it('should report nothing overdue without calling Orb', async () => {
             const { plan, user } = await seeders.seedAccountEnvAndUser();
             const session = await authenticateUser(api, user);
-            (await updatePlan(db.knex, { id: plan.id, name, orb_customer_id: 'orb_cust_123' })).unwrap();
+            (await updatePlan(db.knex, { id: plan.id, has_overdue_invoices_banner: false, orb_customer_id: 'orb_cust_123' })).unwrap();
             getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: true }));
 
             const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, session });

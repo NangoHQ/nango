@@ -68,6 +68,13 @@ describe('mergeFlags', () => {
         }
     });
 
+    it('should show the overdue invoices banner on every plan but enterprise', () => {
+        const enterprisePlans: PlanDefinition['code'][] = ['enterprise', 'enterprise-cloud-hosted'];
+        for (const plan of plansList) {
+            expect(plan.flags.has_overdue_invoices_banner, plan.code).toBe(!enterprisePlans.includes(plan.code));
+        }
+    });
+
     it('should not grant the audit trail UI on any plan, since it is enabled per account by hand', () => {
         for (const plan of plansList) {
             expect(plan.flags.has_audit_trail_access, plan.code).toBeUndefined();
@@ -336,6 +343,7 @@ function makePlan({
         can_customize_connect_ui_theme: false,
         can_override_docs_connect_url: false,
         can_disable_connect_ui_watermark: false,
+        has_overdue_invoices_banner: true,
         environments_max: 2,
         connections_max: null,
         records_max: null,

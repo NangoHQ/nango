@@ -4,9 +4,7 @@ import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { principalCan } from '../../../../authz/principal.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
-import type { DBPlan, GetOverdueInvoices } from '@nangohq/types';
-
-const ENTERPRISE_PLANS: DBPlan['name'][] = ['enterprise', 'enterprise-cloud-hosted'];
+import type { GetOverdueInvoices } from '@nangohq/types';
 
 export const getOverdueInvoices = asyncWrapper<GetOverdueInvoices>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -21,8 +19,7 @@ export const getOverdueInvoices = asyncWrapper<GetOverdueInvoices>(async (req, r
         return;
     }
 
-    // Enterprise invoices are chased through dunning, and their members can't act on the warning.
-    if (ENTERPRISE_PLANS.includes(plan.name)) {
+    if (!plan.has_overdue_invoices_banner) {
         res.status(200).send({ data: { hasOverdue: false, portalUrl: null } });
         return;
     }
