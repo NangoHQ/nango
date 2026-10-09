@@ -4,6 +4,7 @@ import { AxiosError } from 'axios';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DEFAULT_OUTBOUND_URL_POLICY, OutboundUrlError } from '@nangohq/egress';
+import { metrics } from '@nangohq/utils';
 
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 import { ProxyRequest } from './request.js';
@@ -24,6 +25,38 @@ function makeAxiosError(status: number): AxiosError {
 }
 
 describe('call', () => {
+    it('monitors caller credential interpolation and still sends the request', async () => {
+        const metric = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+        const proxy = new ProxyRequest({
+            logger: vi.fn(),
+            proxyConfig: getDefaultProxy({
+                provider: { proxy: { base_url: 'https://api.example.com', headers: { 'x-api-key': '${apiKey}' } } },
+                endpoint: '/${credentials.apiKey}',
+                monitoringContext: { accountId: 1, environmentId: 2, callsite: 'proxy' }
+            }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            maxWaitMs: Infinity,
+            getConnection: () => getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'stored-token' } }),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
+        });
+        const call = vi
+            .spyOn(proxy, 'httpCall')
+            .mockResolvedValue({ status: 200, data: {}, headers: {}, config: {} as InternalAxiosRequestConfig, statusText: 'OK' });
+        expect((await proxy.request()).isOk()).toBe(true);
+        expect(call).toHaveBeenCalledOnce();
+        expect(proxy.axiosConfig?.url).toBe('https://api.example.com/stored-token');
+        expect(metric).toHaveBeenCalledWith(
+            metrics.Types.PROXY_SECRET_INTERPOLATION,
+            1,
+            expect.objectContaining({ location: 'caller_endpoint', callerSupplied: 'true' })
+        );
+        expect(metric).toHaveBeenCalledWith(
+            metrics.Types.PROXY_SECRET_INTERPOLATION,
+            1,
+            expect.objectContaining({ location: 'provider_header', callerSupplied: 'false' })
+        );
+    });
+
     it('should make a single successful http call', async () => {
         const fn = vi.fn();
         const proxy = new ProxyRequest({

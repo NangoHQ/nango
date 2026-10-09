@@ -57,6 +57,7 @@ export {
 export * from './services/invitations.js';
 export * from './services/providers.js';
 export * from './services/proxy/utils.js';
+export * from './services/proxy/telemetry.js';
 export * from './services/proxy/request.js';
 export * from './services/proxy/outbound-policy.js';
 export { type MeteredBytes, createMeteringTransport } from './services/proxy/byte-metering-transport.js';

@@ -58,7 +58,7 @@ export type ConnectionForProxy = Pick<DBConnectionDecrypted, 'connection_id' | '
 };
 export type IntegrationConfigForProxy = Pick<DBIntegrationDecrypted, 'oauth_client_id' | 'oauth_client_secret' | 'custom'>;
 
-export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
+export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration, InternalProxyConfiguration {
     decompress: boolean;
     method: HTTP_METHOD;
     providerName: string;
@@ -69,6 +69,29 @@ export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text'
 
 export interface InternalProxyConfiguration {
     providerName: string;
+    /** Provider-owned verification URLs are distinct from caller-supplied URLs in monitoring. */
+    urlTemplateSource?: 'verification';
+    monitoringContext?: {
+        accountId: number;
+        environmentId: number;
+        apiKeyId?: number | undefined;
+        callsite: 'proxy' | 'sdk' | 'verification';
+    };
+    onSecretInterpolation?: (event: ProxyInterpolationEvent) => void;
+}
+
+export interface ProxyInterpolationEvent {
+    location:
+        | 'caller_endpoint'
+        | 'caller_base_url_override'
+        | 'provider_base_url'
+        | 'provider_header'
+        | 'provider_query'
+        | 'provider_body'
+        | 'verification_endpoint'
+        | 'verification_base_url_override';
+    credentialType: 'connection_credentials' | 'integration_credentials' | 'connection_config';
+    fields: string[];
 }
 
 export interface RetryHeaderConfig {

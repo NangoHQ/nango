@@ -7,6 +7,7 @@ import { axiosInstance as axios, Err, getLogger, Ok, redactHeaders, redactURL, r
 import { envs } from '../../env.js';
 import { createMeteringTransport } from './byte-metering-transport.js';
 import { getProxyRetryFromErr } from './retry.js';
+import { createProxyInterpolationObserver } from './telemetry.js';
 import { getAxiosConfiguration, ProxyError } from './utils.js';
 
 import type { MeteredBytes } from './byte-metering-transport.js';
@@ -100,6 +101,18 @@ export class ProxyRequest {
         this.logger = props.logger;
         this.onError = props.onError;
         this.onBytes = props.onBytes;
+        if (this.config.monitoringContext) {
+            const monitoringContext = this.config.monitoringContext;
+            this.config.onSecretInterpolation = createProxyInterpolationObserver(() => ({
+                ...monitoringContext,
+                provider: this.config.providerName,
+                integrationId: this.config.providerConfigKey,
+                endpoint: this.config.endpoint,
+                baseUrlOverride: this.config.baseUrlOverride,
+                connection: this.connection!,
+                integrationConfig: this.integrationConfig
+            }));
+        }
         this.getConnection = props.getConnection;
         this.getIntegrationConfig = props.getIntegrationConfig;
         this.outboundPolicy = props.outboundPolicy;

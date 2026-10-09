@@ -259,7 +259,10 @@ export class ProxyService {
                 connectionName: connection.connection_id
             });
 
-            const internalConfig: InternalProxyConfiguration = { providerName: integration.provider };
+            const internalConfig: InternalProxyConfiguration = {
+                providerName: integration.provider,
+                monitoringContext: { accountId: account.id, environmentId: environment.id, callsite: 'proxy' }
+            };
             const proxyConfig = getProxyConfiguration({
                 externalConfig: {
                     endpoint: params.endpoint,
