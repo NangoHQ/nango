@@ -66,6 +66,27 @@ describe('createAgentSessionMcpServer', () => {
         }
     });
 
+    it("sends the session's instructions on initialize", async () => {
+        const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+        const server = createAgentSessionMcpServer({
+            account: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: null,
+            session: session({ compiledToolset: { notion: { provider: 'notion', pinned: [], searchable: [tool('read_doc')] } } })
+        });
+        const client = new Client({ name: 'test-client', version: '1.0.0' });
+
+        await server.connect(serverTransport);
+        await client.connect(clientTransport);
+
+        try {
+            expect(client.getInstructions()).toContain('- notion (notion): not connected');
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
     it.each([
         { requestParams: { name: 'notion__read_doc' }, clientParams: { name: 'notion__read_doc' }, expectedInput: undefined },
         {
