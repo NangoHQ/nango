@@ -57,8 +57,8 @@ function validate(definition: SimplifiedJSONSchema, value: unknown): string | nu
         return `${definition.title} must be a string`;
     }
 
-    if (value === '') {
-        return definition.optional || definition.default_value !== undefined ? null : `${definition.title} cannot be empty`;
+    if (definition.optional && value === '') {
+        return null;
     }
 
     if (definition.enum && definition.enum.length > 0) {
@@ -66,8 +66,13 @@ function validate(definition: SimplifiedJSONSchema, value: unknown): string | nu
     }
 
     const format = definition.format ? formats[definition.format] : undefined;
-    if (format && !format.isValid(value)) {
-        return `${definition.title} must be a valid ${format.label}`;
+    if (format) {
+        if (!format.isValid(value)) {
+            return `${definition.title} must be a valid ${format.label}`;
+        }
+    } else if (value === '' && definition.default_value === undefined) {
+        // A default_value only waives the requiredness, never the checks below.
+        return `${definition.title} cannot be empty`;
     }
 
     if (definition.pattern) {

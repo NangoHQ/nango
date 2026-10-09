@@ -6,7 +6,8 @@ const integrations = [
     { unique_key: 'auth0', provider: 'auth0' },
     { unique_key: 'atlassian', provider: 'atlassian-admin' },
     { unique_key: 'campaign', provider: 'active-campaign' },
-    { unique_key: 'onepassword', provider: '1password-events' }
+    { unique_key: 'onepassword', provider: '1password-events' },
+    { unique_key: 'clio', provider: 'clio' }
 ];
 
 describe('validateConnectionConfigDefaults', () => {
@@ -17,6 +18,7 @@ describe('validateConnectionConfigDefaults', () => {
                 atlassian: { organizationId: '' },
                 campaign: { hostname: 'company.activehosted.com' },
                 onepassword: { domain: 'events.1password.eu' },
+                clio: { hostname: 'eu.app.clio.com' },
                 'not-an-integration': { subdomain: 'Not Valid!' }
             },
             integrations
@@ -51,8 +53,16 @@ describe('validateConnectionConfigDefaults', () => {
     });
 
     it('reports values that are empty or not a string', () => {
-        const issues = validateConnectionConfigDefaults({ auth0: { subdomain: '' }, campaign: { hostname: 42 } }, integrations);
+        const issues = validateConnectionConfigDefaults(
+            { auth0: { subdomain: '' }, campaign: { hostname: '' }, clio: { hostname: '' }, onepassword: { domain: 42 } },
+            integrations
+        );
 
-        expect(issues.map(({ message }) => message)).toEqual(['Auth0 Domain cannot be empty', 'Hostname must be a string']);
+        expect(issues.map(({ message }) => message)).toEqual([
+            'Auth0 Domain cannot be empty',
+            'Hostname must be a valid hostname',
+            'Hostname must be one of: app.clio.com, eu.app.clio.com, ca.app.clio.com, au.app.clio.com',
+            'Events API Domain must be a string'
+        ]);
     });
 });
