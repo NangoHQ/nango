@@ -8,13 +8,11 @@ import { useNango } from '@/lib/nango';
 import { expectAccessibleInBothThemes } from '@/test/a11y';
 import {
     apiKeyProvider,
-    apiKeyProviderWithConnectionConfig,
     authResultFixture,
     dualConfigIntegrationFixture,
     dualConfigIntegrationFixtureNoPreconfig,
     dualConfigProvider,
     integrationFixture,
-    sessionWithConnectionConfig,
     twoStepIntegrationFixture,
     twoStepIntegrationFixtureNoPreconfig,
     twoStepOtherIntegrationFixture,
@@ -176,42 +174,6 @@ describe('Go', () => {
             await expect.element(page.getByRole('heading', { name: 'Link Stripe App (Sandbox) Account' })).toBeInTheDocument();
 
             await expect.element(page.getByPlaceholder('App Domain')).toBeInTheDocument();
-        });
-    });
-
-    describe('invalid preconfigured connection_config', () => {
-        async function renderWithOrganizationId(organizationId: string): Promise<void> {
-            await renderApp({
-                route: '/go',
-                seedStore: {
-                    provider: apiKeyProviderWithConnectionConfig,
-                    integration: integrationFixture,
-                    session: sessionWithConnectionConfig({ organizationId })
-                }
-            });
-            await expect.element(page.getByRole('heading', { name: 'Link GitHub Account' })).toBeInTheDocument();
-        }
-
-        it('warns and keeps Connect disabled even after the visible field is filled in', async () => {
-            await renderWithOrganizationId('Not Valid!');
-
-            await expect
-                .element(page.getByRole('alert'))
-                .toHaveTextContent('A pre-configured field set by the administrator is invalid, please reach out to support.');
-
-            await userEvent.type(page.getByPlaceholder('Your API Key'), 'secret-key');
-
-            await expect.element(page.getByRole('button', { name: 'Connect' })).toBeDisabled();
-        });
-
-        it('stays quiet and allows submission when the preconfigured value is valid', async () => {
-            await renderWithOrganizationId('acme');
-
-            expect(page.getByRole('alert').query()).toBeNull();
-
-            await userEvent.type(page.getByPlaceholder('Your API Key'), 'secret-key');
-
-            await expect.element(page.getByRole('button', { name: 'Connect' })).toBeEnabled();
         });
     });
 

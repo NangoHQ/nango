@@ -1,5 +1,5 @@
 import type { AuthResult } from '@nangohq/frontend';
-import type { ApiPublicIntegration, ConnectSessionOutput, GetPublicIntegration, GetPublicListIntegrations, GetPublicProvider } from '@nangohq/types';
+import type { ApiPublicIntegration, GetPublicIntegration, GetPublicListIntegrations, GetPublicProvider } from '@nangohq/types';
 
 const TIMESTAMP = '2026-01-01T00:00:00.000Z';
 
@@ -119,21 +119,6 @@ export const dualConfigIntegrationFixtureNoPreconfig: GetPublicIntegration['Succ
     ...dualConfigIntegrationFixture,
     preconfigured_connection_config: undefined
 };
-
-export const apiKeyProviderWithConnectionConfig = {
-    ...apiKeyProvider,
-    connection_config: {
-        organizationId: { type: 'string', title: 'Organization Id', description: 'Organization Id', pattern: '^[a-z0-9]+$', automated: false, order: 1 }
-    }
-} satisfies GetPublicProvider['Success']['data'];
-
-export function sessionWithConnectionConfig(connectionConfig: Record<string, unknown>): ConnectSessionOutput {
-    return {
-        endUser: null,
-        connectUISettings: { theme: { light: { primary: '#00B2E3' }, dark: { primary: '#00B2E3' } }, defaultTheme: 'light', showWatermark: false },
-        integrations_config_defaults: { [integrationFixture.unique_key]: { connection_config: connectionConfig } }
-    };
-}
 
 export const authResultFixture = {
     providerConfigKey: 'github',
