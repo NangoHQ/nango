@@ -41,7 +41,7 @@ function step({
 
 beforeEach(() => {
     capture.mockClear();
-    productTracking.client = { capture } as unknown as typeof productTracking.client;
+    productTracking.client = { capture, groupIdentify: vi.fn() } as unknown as typeof productTracking.client;
 });
 
 afterEach(() => {
@@ -59,6 +59,10 @@ describe('stepCostUsd', () => {
         const cost = stepCostUsd(step({ input: 300_000, output: 1_000 }));
 
         expect(cost).toBeCloseTo(300_000 * 0.2e-6 + 1_000 * 0.75e-6, 10);
+    });
+
+    it('prices a dated snapshot like its model', () => {
+        expect(stepCostUsd(step({ modelId: 'gpt-6-luna-2026-09-22', input: 1_000 }))).toBe(stepCostUsd(step({ input: 1_000 })));
     });
 
     it('has no price for an unknown model', () => {

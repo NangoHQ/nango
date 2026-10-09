@@ -44,8 +44,21 @@ export interface PlaygroundTurnUsage {
 
 export type PlaygroundTurnOutcome = 'complete' | 'aborted' | 'error';
 
+const SNAPSHOT_DATE_SUFFIX = /-\d{4}-\d{2}-\d{2}$/;
+
+function ratesFor(modelId: string): Rates | undefined {
+    for (const id of [modelId, modelId.replace(SNAPSHOT_DATE_SUFFIX, '')]) {
+        if (Object.hasOwn(USD_PER_MILLION_TOKENS, id)) {
+            return USD_PER_MILLION_TOKENS[id];
+        }
+    }
+    return undefined;
+}
+
+const unpricedModelsWarned = new Set<string>();
+
 export function stepCostUsd({ model, usage }: PlaygroundStep): number | null {
-    const rates = USD_PER_MILLION_TOKENS[model.modelId];
+    const rates = ratesFor(model.modelId);
     if (!rates) {
         return null;
     }
@@ -100,8 +113,9 @@ export function trackPlaygroundTurn({
     steps: PlaygroundStep[];
 }): void {
     const usage = sumTurnUsage(steps);
-    if (usage.costUsd === null) {
-        logger.warning(`Agent Playground has no price for model ${usage.model}, so the turn is tracked without a cost`);
+    if (usage.costUsd === null && usage.model && !unpricedModelsWarned.has(usage.model)) {
+        unpricedModelsWarned.add(usage.model);
+        logger.warning(`Agent Playground has no price for model ${usage.model}, so its turns are tracked without a cost`);
     }
 
     productTracking.track({
