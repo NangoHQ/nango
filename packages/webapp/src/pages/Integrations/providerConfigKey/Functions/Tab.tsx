@@ -122,10 +122,12 @@ function FunctionStatus({ fn, integration }: { fn: ListedNangoFunction; integrat
 function FunctionTemplateRow({
     template,
     isDeploying,
+    showStatus,
     onDeploy
 }: {
     template: NangoFunctionTemplate;
     isDeploying: boolean;
+    showStatus: boolean;
     onDeploy: (template: NangoFunctionTemplate) => void;
 }) {
     return (
@@ -134,16 +136,18 @@ function FunctionTemplateRow({
             <TableCell className="w-35 px-3">
                 <FunctionSourceLabel source="template" />
             </TableCell>
-            <TableCell className="w-35 px-3">
-                <button
-                    type="button"
-                    disabled={isDeploying}
-                    onClick={() => onDeploy(template)}
-                    className="inline-flex h-6 w-21 items-center justify-center rounded-ds-sm border-ds-hairline border-border-strong px-3 type-label-sm text-text-secondary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    Deploy
-                </button>
-            </TableCell>
+            {showStatus && (
+                <TableCell className="w-35 px-3">
+                    <button
+                        type="button"
+                        disabled={isDeploying}
+                        onClick={() => onDeploy(template)}
+                        className="inline-flex h-6 w-21 items-center justify-center rounded-ds-sm border-ds-hairline border-border-strong px-3 type-label-sm text-text-secondary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        Deploy
+                    </button>
+                </TableCell>
+            )}
         </TableRow>
     );
 }
@@ -168,7 +172,6 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const navigate = useNavigate();
     const env = useStore((state) => state.env);
     const { data: metaData } = useMeta();
-    const showActionStatus = metaData?.data.toolsCatalog === false;
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
     const [deployingName, setDeployingName] = useState<string | null>(null);
@@ -306,6 +309,9 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
 
     const hasSearch = Boolean(debouncedSearch.trim());
     const templateRows = typeFilter === 'action' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : [];
+    // Actions omit this column until the catalog flag is known to be off. Syncs and triggers always show it.
+    const showStatus = typeFilter !== 'action' || metaData?.data.toolsCatalog === false;
+    const footerNoun = typeFilter === 'action' ? 'actions' : typeFilter === 'sync' ? 'sync functions' : 'triggers';
     const activeListHasRows = functions.length > 0 || templateRows.length > 0;
     const showEmptyNoFilters =
         countsReady &&
@@ -346,21 +352,25 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                         {TYPE_PILLS.map((pill) => {
                             const selected = pill.value === typeFilter;
                             const count = counts[pill.value];
+                            const empty = count === 0;
                             return (
                                 <button
                                     key={pill.value}
                                     type="button"
                                     aria-pressed={selected}
+                                    disabled={empty}
                                     onClick={() => void setType(pill.value)}
                                     className={cn(
-                                        'inline-flex items-center justify-center gap-1 rounded-full border-ds-hairline px-2 py-0.5 cursor-pointer',
-                                        selected
-                                            ? 'bg-status-info-bg border-status-info-border text-status-info-text'
-                                            : 'bg-surface-panel border-border-default text-text-default'
+                                        'inline-flex items-center justify-center gap-1 rounded-full border-ds-hairline px-2 py-0.5',
+                                        empty ? 'cursor-not-allowed border-border-default bg-surface-panel text-text-disabled' : 'cursor-pointer',
+                                        !empty &&
+                                            (selected
+                                                ? 'bg-status-info-bg border-status-info-border text-status-info-text'
+                                                : 'bg-surface-panel border-border-default text-text-default')
                                     )}
                                 >
                                     <span className="text-ds-xs font-ds-medium leading-ds-normal">{pill.label}</span>
-                                    {count != null && <span className="text-ds-2xs font-ds-regular tracking-ds-tight">{count}</span>}
+                                    {count != null && count > 0 && <span className="text-ds-2xs font-ds-regular tracking-ds-tight">{count}</span>}
                                 </button>
                             );
                         })}
@@ -434,99 +444,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                         <EmptyCard>
                             <p className="text-text-secondary text-body-medium-regular">{activePill.emptyLabel}</p>
                         </EmptyCard>
-                    ) : typeFilter === 'action' ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <ColumnHead>Function name</ColumnHead>
-                                    <ColumnHead className="w-35">Source</ColumnHead>
-                                    {showActionStatus && <ColumnHead className="w-35">Status</ColumnHead>}
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {functions.map((fn) => (
-                                    <TableRow
-                                        key={functionRowKey(fn)}
-                                        className="h-12 cursor-pointer hover:bg-surface-panel-inset"
-                                        onClick={() => onFunctionClick(fn)}
-                                    >
-                                        <FunctionNameCell name={fn.name} description={fn.description} />
-                                        <TableCell className="w-35 px-3">
-                                            <FunctionSourceLabel source={fn.source} />
-                                        </TableCell>
-                                        {showActionStatus && (
-                                            <TableCell className="w-35 px-3">
-                                                <FunctionStatus fn={fn} integration={integration} />
-                                            </TableCell>
-                                        )}
-                                    </TableRow>
-                                ))}
-                                {visibleActionTemplates.map((template) => (
-                                    <FunctionTemplateRow
-                                        key={`template:${template.type}:${template.name}`}
-                                        template={template}
-                                        isDeploying={deployingName === template.name}
-                                        onDeploy={onDeployTemplate}
-                                    />
-                                ))}
-                            </TableBody>
-                            <TableFooter className="bg-transparent font-ds-regular">
-                                <TableRow className="h-8 hover:bg-transparent">
-                                    <TableCell colSpan={showActionStatus ? 3 : 2} className="px-3 type-label-xs text-text-disabled">
-                                        Showing {functions.length + visibleActionTemplates.length} of {total + visibleActionTemplates.length} actions
-                                    </TableCell>
-                                </TableRow>
-                            </TableFooter>
-                        </Table>
-                    ) : typeFilter === 'sync' ? (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <ColumnHead>Function name</ColumnHead>
-                                    <ColumnHead className="w-35">Source</ColumnHead>
-                                    <ColumnHead className="w-35">Status</ColumnHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {functions.map((fn) => (
-                                    <TableRow
-                                        key={functionRowKey(fn)}
-                                        className="h-12 cursor-pointer hover:bg-surface-panel-inset"
-                                        onClick={() => onFunctionClick(fn)}
-                                    >
-                                        <FunctionNameCell name={fn.name} description={fn.description} />
-                                        <TableCell className="w-35 px-3">
-                                            <FunctionSourceLabel source={fn.source} />
-                                        </TableCell>
-                                        <TableCell className="w-35 px-3">
-                                            <FunctionStatus fn={fn} integration={integration} />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                                {visibleSyncTemplates.map((template) => (
-                                    <FunctionTemplateRow
-                                        key={`template:${template.type}:${template.name}`}
-                                        template={template}
-                                        isDeploying={deployingName === template.name}
-                                        onDeploy={onDeployTemplate}
-                                    />
-                                ))}
-                            </TableBody>
-                            <TableFooter className="bg-transparent font-ds-regular">
-                                <TableRow className="h-8 hover:bg-transparent">
-                                    <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
-                                        Showing {functions.length + visibleSyncTemplates.length} of {total + visibleSyncTemplates.length} sync functions
-                                    </TableCell>
-                                </TableRow>
-                            </TableFooter>
-                        </Table>
                     ) : (
                         <Table>
                             <TableHeader>
                                 <TableRow>
                                     <ColumnHead>Function name</ColumnHead>
                                     <ColumnHead className="w-35">Source</ColumnHead>
-                                    <ColumnHead className="w-35">Status</ColumnHead>
+                                    {showStatus && <ColumnHead className="w-35">Status</ColumnHead>}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -540,16 +464,27 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                         <TableCell className="w-35 px-3">
                                             <FunctionSourceLabel source={fn.source} />
                                         </TableCell>
-                                        <TableCell className="w-35 px-3">
-                                            <FunctionStatus fn={fn} integration={integration} />
-                                        </TableCell>
+                                        {showStatus && (
+                                            <TableCell className="w-35 px-3">
+                                                <FunctionStatus fn={fn} integration={integration} />
+                                            </TableCell>
+                                        )}
                                     </TableRow>
+                                ))}
+                                {templateRows.map((template) => (
+                                    <FunctionTemplateRow
+                                        key={`template:${template.type}:${template.name}`}
+                                        template={template}
+                                        isDeploying={deployingName === template.name}
+                                        showStatus={showStatus}
+                                        onDeploy={onDeployTemplate}
+                                    />
                                 ))}
                             </TableBody>
                             <TableFooter className="bg-transparent font-ds-regular">
                                 <TableRow className="h-8 hover:bg-transparent">
-                                    <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
-                                        Showing {functions.length} of {total} triggers
+                                    <TableCell colSpan={showStatus ? 3 : 2} className="px-3 type-label-xs text-text-disabled">
+                                        Showing {functions.length + templateRows.length} of {total + templateRows.length} {footerNoun}
                                     </TableCell>
                                 </TableRow>
                             </TableFooter>
