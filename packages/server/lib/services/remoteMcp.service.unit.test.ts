@@ -48,9 +48,15 @@ function rpcResult(id: number | undefined, result: unknown) {
 }
 
 /** Answers the handshake, then hands `onCall` every later JSON-RPC request. */
-function mcpServer(onCall: (message: RpcMessage, params: ProxyServiceRequest) => ReturnType<typeof response> | Promise<ReturnType<typeof response>>) {
+function mcpServer(
+    onCall: (message: RpcMessage, params: ProxyServiceRequest) => ReturnType<typeof response> | Promise<ReturnType<typeof response>>,
+    { onDelete }: { onDelete?: (params: ProxyServiceRequest) => Promise<ReturnType<typeof response>> } = {}
+) {
     request.mockImplementation((params: ProxyServiceRequest) => {
         const message = typeof params.body === 'string' ? (JSON.parse(params.body) as RpcMessage) : undefined;
+        if (params.method === 'DELETE' && onDelete) {
+            return onDelete(params);
+        }
         if (params.method === 'DELETE' || message?.id === undefined) {
             return Promise.resolve(response({ status: 202 }));
         }
@@ -183,6 +189,28 @@ describe('listRemoteTools through the proxy', () => {
 
         expect(result.isErr() && result.error).toMatchObject({ code: 'timeout', method: 'tools/list' });
         expect(hungRequest?.abortSignal?.aborted).toBe(true);
+    });
+
+    it('stops waiting on a server that never answers the session close, and cancels that request', async () => {
+        vi.useFakeTimers();
+        try {
+            let hungDelete: ProxyServiceRequest | undefined;
+            mcpServer((message) => rpcResult(message.id, { tools: [tool('list_issues')] }), {
+                onDelete: (params) => {
+                    hungDelete = params;
+                    return new Promise((_resolve, reject) => params.abortSignal?.addEventListener('abort', () => reject(new Error('aborted'))));
+                }
+            });
+
+            const listing = list();
+            await vi.advanceTimersByTimeAsync(2_000);
+            const { result } = await listing;
+
+            expect(result.unwrap().map((listed) => listed.name)).toEqual(['list_issues']);
+            expect(hungDelete?.abortSignal?.aborted).toBe(true);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it('carries a proxy failure through untouched', async () => {

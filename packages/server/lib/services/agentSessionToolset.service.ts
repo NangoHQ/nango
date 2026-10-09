@@ -351,7 +351,7 @@ function addMcpServerTools({
         }
 
         for (const tool of discovery.tools) {
-            if (integration.functionTypesByName.has(tool.name) || integration.actions.some((action) => action.name === tool.name)) {
+            if (integration.actions.some((action) => action.name === tool.name)) {
                 continue;
             }
 
