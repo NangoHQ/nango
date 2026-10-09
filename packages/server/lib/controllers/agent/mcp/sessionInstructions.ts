@@ -70,6 +70,7 @@ function describeIntegrations(session: AgentSession): string {
 
     return [
         'By the integration id every tool expects:',
-        ...integrations.map(([id, { provider }]) => `- ${id} (${provider}): ${Object.hasOwn(session.resolvedConnections, id) ? 'connected' : 'not connected'}`)
+        ...integrations.map(([id, { provider }]) => `- ${id} (${provider}): ${Object.hasOwn(session.resolvedConnections, id) ? 'connected' : 'not connected'}`),
+        `This is each integration's status when you connected. ${session.metaTools.nangoCreateConnection.enabled ? 'After you connect one, or when unsure' : 'When unsure'}, trust ${session.metaTools.nangoToolSearch ? 'nango_tool_search results and ' : ''}tool errors over this list.`
     ].join('\n');
 }
