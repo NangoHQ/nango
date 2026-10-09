@@ -96,10 +96,13 @@ describe('listRemoteTools through the proxy', () => {
 
         const { logOperationId, result } = await list();
 
-        expect(result.unwrap()).toEqual([
-            { name: 'list_issues', description: 'list_issues description', inputSchema: { type: 'object' }, annotations: { readOnlyHint: true } },
-            { name: 'create_issue', description: 'create_issue description', inputSchema: { type: 'object' } }
-        ]);
+        expect(result.unwrap()).toEqual({
+            tools: [
+                { name: 'list_issues', description: 'list_issues description', inputSchema: { type: 'object' }, annotations: { readOnlyHint: true } },
+                { name: 'create_issue', description: 'create_issue description', inputSchema: { type: 'object' } }
+            ],
+            truncated: false
+        });
         expect(logOperationId).toBe('log-1');
         expect(sentRequests().every((params) => params.endpoint === '/mcp' && params.integrationId === 'linear-mcp')).toBe(true);
         expect(
@@ -119,13 +122,25 @@ describe('listRemoteTools through the proxy', () => {
             })
         );
 
-        expect((await list()).result.unwrap().map((listed) => listed.name)).toEqual(['list_issues']);
+        expect((await list()).result.unwrap().tools.map((listed) => listed.name)).toEqual(['list_issues']);
     });
 
     it('keeps the first tools when a server lists more than a session takes', async () => {
         mcpServer((message) => rpcResult(message.id, { tools: ['a', 'b', 'c', 'd'].map(tool) }));
 
-        expect((await list()).result.unwrap().map((listed) => listed.name)).toEqual(['a', 'b', 'c']);
+        const listed = (await list()).result.unwrap();
+
+        expect(listed.tools.map((remote) => remote.name)).toEqual(['a', 'b', 'c']);
+        expect(listed.truncated).toBe(true);
+    });
+
+    it('fails a server whose pagination never ends', async () => {
+        let page = 0;
+        mcpServer((message) => rpcResult(message.id, { tools: [tool(`tool_${page}`)], nextCursor: `page-${++page}` }));
+
+        const { result } = await list();
+
+        expect(result.isErr() && result.error).toMatchObject({ code: 'invalid_response', method: 'tools/list' });
     });
 
     it('reports a server refusing the credentials with its status', async () => {
@@ -165,12 +180,17 @@ describe('listRemoteTools through the proxy', () => {
 
     it('gives up on a server that never answers when the signal fires, and cancels the proxy request', async () => {
         let hungRequest: ProxyServiceRequest | undefined;
+        const timeout = new AbortController();
         mcpServer((_message, params) => {
             hungRequest = params;
-            return new Promise((_resolve, reject) => params.abortSignal?.addEventListener('abort', () => reject(new Error('aborted'))));
+            const hung = new Promise<ReturnType<typeof response>>((_resolve, reject) =>
+                params.abortSignal?.addEventListener('abort', () => reject(new Error('aborted')))
+            );
+            timeout.abort(new DOMException('The operation timed out', 'TimeoutError'));
+            return hung;
         });
 
-        const signal = AbortSignal.timeout(50);
+        const { signal } = timeout;
         const { result } = await withRemoteMcpSession(TARGET, async (client) => await listRemoteTools(client, { maxTools: 3, signal }), { signal });
 
         expect(result.isErr() && result.error).toMatchObject({ code: 'timeout', method: 'tools/list' });

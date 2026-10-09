@@ -18,8 +18,6 @@ const CLIENT_INFO = { name: 'nango-agent-session', version: '1.0.0' };
 // The transport insists on a URL, but every request goes through the proxy, which ignores it.
 const PROXY_PLACEHOLDER_URL = new URL('https://nango-proxy.invalid/');
 
-const MAX_TOOL_LIST_PAGES = 20;
-
 export interface RemoteMcpTool {
     name: string;
     description?: string | undefined;
@@ -118,33 +116,21 @@ export async function withRemoteMcpSession<T>(
 }
 
 /**
- * Pages through `tools/list` until the server stops handing back a cursor, `maxTools` is reached, or
- * the page guard trips, which stops a server that keeps handing out cursors from paging forever.
+ * Lists the server's tools and keeps the first `maxTools`. The SDK walks every page itself and fails
+ * a server whose pagination never ends. `truncated` says the server had more tools than were kept.
  */
 export async function listRemoteTools(
     client: Client,
     { maxTools, signal }: { maxTools: number; signal?: AbortSignal }
-): Promise<Result<RemoteMcpTool[], RemoteMcpError>> {
-    const tools: RemoteMcpTool[] = [];
-    let cursor: string | undefined;
-
-    for (let page = 0; page < MAX_TOOL_LIST_PAGES && tools.length < maxTools; page++) {
-        let listed: { tools: Tool[]; nextCursor?: string | undefined };
-        try {
-            listed = await client.listTools(cursor ? { cursor } : undefined, signal ? { signal } : undefined);
-        } catch (err) {
-            return Err(toRemoteMcpError(err, 'tools/list'));
-        }
-
-        tools.push(...listed.tools.map(toRemoteTool));
-
-        cursor = listed.nextCursor;
-        if (!cursor) {
-            break;
-        }
+): Promise<Result<{ tools: RemoteMcpTool[]; truncated: boolean }, RemoteMcpError>> {
+    let listed: { tools: Tool[] };
+    try {
+        listed = await client.listTools(undefined, signal ? { signal } : undefined);
+    } catch (err) {
+        return Err(toRemoteMcpError(err, 'tools/list'));
     }
 
-    return Ok(tools.slice(0, maxTools));
+    return Ok({ tools: listed.tools.slice(0, maxTools).map(toRemoteTool), truncated: listed.tools.length > maxTools });
 }
 
 export function toRemoteMcpError(err: unknown, method: string): RemoteMcpError {

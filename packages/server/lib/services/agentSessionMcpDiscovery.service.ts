@@ -62,7 +62,11 @@ async function discoverServer({
                 return { status: 'unavailable' };
             }
 
-            return { status: 'available', tools: result.value };
+            if (result.value.truncated) {
+                span.setTag('nango.mcpToolsTruncated', true);
+            }
+
+            return { status: 'available', tools: result.value.tools };
         } catch (err) {
             span.setTag('nango.error', err);
             return { status: 'unavailable' };
