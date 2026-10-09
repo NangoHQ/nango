@@ -38,6 +38,7 @@ type ProxyErrorCode =
     | 'unsupported_auth'
     | 'unknown_provider'
     | 'unsupported_provider'
+    | 'invalid_proxy_url'
     | 'invalid_query_params'
     | 'unknown_error'
     | 'failed_to_get_connection'
@@ -459,13 +460,19 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     const baseFormatted = interpolateProxyUrlParts(normalizedBase);
     const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';
 
-    const combinedUrl = [baseFormatted, endpointFormatted].filter(Boolean).join('/');
-    const fullEndpoint = interpolateIfNeeded(combinedUrl, {
+    const replacers = {
         ...(connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>),
         ...connection.credentials
-    });
+    };
+    // Resolve the base independently: a fallback in the caller's endpoint must never discard it.
+    const resolvedBase = baseFormatted ? interpolateIfNeeded(baseFormatted, replacers) : '';
+    const resolvedEndpoint = endpointFormatted ? interpolateIfNeeded(endpointFormatted, replacers) : '';
+    const fullEndpoint = [resolvedBase, resolvedEndpoint].filter(Boolean).join('/');
 
     let url = new URL(fullEndpoint);
+    if (!resolvedBase || url.origin !== new URL(resolvedBase).origin) {
+        throw new ProxyError('invalid_proxy_url', 'Proxy request URL must match the configured base URL origin.');
+    }
     if (config.params) {
         if (typeof config.params === 'string') {
             if (fullEndpoint.includes('?')) {

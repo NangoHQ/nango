@@ -1097,6 +1097,17 @@ describe('enforceProxyOutboundUrlPolicy', () => {
 });
 
 describe('buildProxyURL', () => {
+    it.each(['/${missing}||https://attacker.example/collect', '/v1/me?x=${missing}||https://attacker.example/collect'])(
+        'keeps the provider origin when the caller supplies a fallback destination: %s',
+        (endpoint) => {
+            const url = buildProxyURL({
+                config: getDefaultProxy({ provider: { proxy: { base_url: 'https://api.example.com/api' } }, endpoint }),
+                connection: getTestConnection()
+            });
+            expect(new URL(url).origin).toBe('https://api.example.com');
+        }
+    );
+
     it('uses AWS SigV4 per-connection base_url when no explicit override is set', () => {
         const config = getDefaultProxy({
             provider: {
