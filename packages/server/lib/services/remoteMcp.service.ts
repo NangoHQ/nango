@@ -116,13 +116,10 @@ export async function withRemoteMcpSession<T>(
 }
 
 /**
- * Lists the server's tools and keeps the first `maxTools`. The SDK walks every page itself and fails
- * a server whose pagination never ends. `truncated` says the server had more tools than were kept.
+ * Lists every tool the server has. The SDK walks the pages itself and fails a server whose pagination
+ * never ends.
  */
-export async function listRemoteTools(
-    client: Client,
-    { maxTools, signal }: { maxTools: number; signal?: AbortSignal }
-): Promise<Result<{ tools: RemoteMcpTool[]; truncated: boolean }, RemoteMcpError>> {
+export async function listRemoteTools(client: Client, { signal }: { signal?: AbortSignal } = {}): Promise<Result<RemoteMcpTool[], RemoteMcpError>> {
     let listed: { tools: Tool[] };
     try {
         listed = await client.listTools(undefined, signal ? { signal } : undefined);
@@ -130,7 +127,7 @@ export async function listRemoteTools(
         return Err(toRemoteMcpError(err, 'tools/list'));
     }
 
-    return Ok({ tools: listed.tools.slice(0, maxTools).map(toRemoteTool), truncated: listed.tools.length > maxTools });
+    return Ok(listed.tools.map(toRemoteTool));
 }
 
 export function toRemoteMcpError(err: unknown, method: string): RemoteMcpError {
