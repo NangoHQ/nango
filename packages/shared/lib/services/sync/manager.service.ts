@@ -17,6 +17,7 @@ import {
     getSyncsByProviderConfigKey,
     getSyncsBySyncConfigId,
     softDeleteSync,
+    softDeleteSyncs,
     undeleteSync
 } from './sync.service.js';
 
@@ -265,28 +266,47 @@ export class SyncManagerService {
         });
     }
 
-    public async softDeleteSyncsByConnection(connection: Pick<DBConnection, 'id' | 'environment_id'>, orchestrator: Pick<Orchestrator, 'deleteSync'>) {
+    public async softDeleteSyncsByConnection(connection: Pick<DBConnection, 'id' | 'environment_id'>, orchestrator: Pick<Orchestrator, 'deleteSyncs'>) {
         const syncs = await getSyncsByConnectionId({ connectionId: connection.id });
 
-        if (!syncs) {
+        if (!syncs || syncs.length === 0) {
             return;
         }
 
-        for (const sync of syncs) {
-            await this.softDeleteSync(sync.id, connection.environment_id, orchestrator);
-        }
+        await this.batchSoftDeleteSyncs(
+            syncs.map((sync) => sync.id),
+            connection.environment_id,
+            orchestrator
+        );
     }
 
-    public async deleteSyncsByProviderConfig(environmentId: number, providerConfigKey: string, orchestrator: Pick<Orchestrator, 'deleteSync'>) {
+    public async deleteSyncsByProviderConfig(environmentId: number, providerConfigKey: string, orchestrator: Pick<Orchestrator, 'deleteSyncs'>) {
         const syncs = await getSyncsByProviderConfigKey({ environmentId, providerConfigKey });
 
-        if (!syncs) {
+        if (!syncs || syncs.length === 0) {
             return;
         }
 
-        for (const sync of syncs) {
-            await this.softDeleteSync(sync.id, environmentId, orchestrator);
+        await this.batchSoftDeleteSyncs(
+            syncs.map((sync) => sync.id),
+            environmentId,
+            orchestrator
+        );
+    }
+
+    private async batchSoftDeleteSyncs(syncIds: string[], environmentId: number, orchestrator: Pick<Orchestrator, 'deleteSyncs'>) {
+        const unscheduled = await orchestrator.deleteSyncs({ syncIds, environmentId });
+        if (unscheduled.isErr()) {
+            throw unscheduled.error;
         }
+
+        await db.knex.transaction(async (trx) => {
+            const deleted = await softDeleteSyncs(syncIds, trx);
+            if (deleted.isErr()) {
+                throw deleted.error;
+            }
+            await errorNotificationService.sync.clearBySyncIds({ sync_ids: syncIds, trx });
+        });
     }
 
     public async runSyncCommand({
