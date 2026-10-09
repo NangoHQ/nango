@@ -627,35 +627,67 @@
     },
     {
       "source": "/reference/api/connection/update-metadata-legacy",
-      "destination": "/reference/backend/http-api/connection/update-metadata-legacy"
+      "destination": "/reference/backend/http-api/connections/update-metadata"
     },
     {
       "source": "/reference/api/connection/update-metadata",
-      "destination": "/reference/backend/http-api/connection/update-metadata"
+      "destination": "/reference/backend/http-api/connections/update-metadata"
     },
     {
       "source": "/reference/api/connection/set-metadata",
-      "destination": "/reference/backend/http-api/connection/set-metadata"
+      "destination": "/reference/backend/http-api/connections/set-metadata"
     },
     {
       "source": "/reference/api/connection/delete",
-      "destination": "/reference/backend/http-api/connection/delete"
+      "destination": "/reference/backend/http-api/connections/delete"
     },
     {
       "source": "/reference/api/connection/get",
-      "destination": "/reference/backend/http-api/connection/get"
+      "destination": "/reference/backend/http-api/connections/get"
     },
     {
       "source": "/reference/api/connection/post",
-      "destination": "/reference/backend/http-api/connection/post"
+      "destination": "/reference/backend/http-api/connections/post"
     },
     {
       "source": "/reference/api/connection/set-metadata-legacy",
-      "destination": "/reference/backend/http-api/connection/set-metadata-legacy"
+      "destination": "/reference/backend/http-api/connections/set-metadata"
     },
     {
       "source": "/reference/api/connection/list",
-      "destination": "/reference/backend/http-api/connection/list"
+      "destination": "/reference/backend/http-api/connections/list"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/update-metadata-legacy",
+      "destination": "/reference/backend/http-api/connections/update-metadata"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/update-metadata",
+      "destination": "/reference/backend/http-api/connections/update-metadata"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/set-metadata",
+      "destination": "/reference/backend/http-api/connections/set-metadata"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/delete",
+      "destination": "/reference/backend/http-api/connections/delete"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/get",
+      "destination": "/reference/backend/http-api/connections/get"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/post",
+      "destination": "/reference/backend/http-api/connections/post"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/set-metadata-legacy",
+      "destination": "/reference/backend/http-api/connections/set-metadata"
+    },
+    {
+      "source": "/reference/backend/http-api/connection/list",
+      "destination": "/reference/backend/http-api/connections/list"
     },
     {
       "source": "/reference/api/proxy/patch",
@@ -954,19 +986,6 @@
                           "reference/backend/http-api/providers/list",
                           "reference/backend/http-api/providers/get",
                           "reference/backend/http-api/providers/templates"
-                        ]
-                      },
-                      {
-                        "group": "Deprecated",
-                        "pages": [
-                          "reference/backend/http-api/connection/list",
-                          "reference/backend/http-api/connection/get",
-                          "reference/backend/http-api/connection/post",
-                          "reference/backend/http-api/connection/set-metadata",
-                          "reference/backend/http-api/connection/set-metadata-legacy",
-                          "reference/backend/http-api/connection/update-metadata",
-                          "reference/backend/http-api/connection/update-metadata-legacy",
-                          "reference/backend/http-api/connection/delete"
                         ]
                       }
                     ]
