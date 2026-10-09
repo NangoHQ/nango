@@ -384,8 +384,12 @@ export async function startTurn({
             },
             // streamText's onEnd never runs when the request throws. Its onError runs before the failing step reports usage.
             onEnd: ({ isAborted, isCancelled, outcome }) => {
-                const turnOutcome: PlaygroundTurnOutcome =
-                    isAborted || isCancelled || outcome.status === 'aborted' ? 'aborted' : failed || outcome.status === 'failed' ? 'error' : 'complete';
+                let turnOutcome: PlaygroundTurnOutcome = 'complete';
+                if (isAborted || isCancelled || outcome.status === 'aborted') {
+                    turnOutcome = 'aborted';
+                } else if (failed || outcome.status === 'failed') {
+                    turnOutcome = 'error';
+                }
                 trackPlaygroundTurn({ ctx, sessionId: session.value.id, outcome: turnOutcome, steps });
             }
         })
