@@ -38,10 +38,9 @@ import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 import { ENTERPRISE_PLAN_DESCRIPTION, GROWTH_ADDON_COPY, GROWTH_ADDON_PRICE, PLAN_CARD_LIMITS, S26_PLAN_CARDS } from './planCardCopy.js';
 
 import type { PlanTransition } from '../planTransition.js';
-import type { GrowthAddonState } from '../planVisibility.js';
 import type { PlanDefinitionList } from '../types.js';
 import type { S26PlanCard } from './planCardCopy.js';
-import type { PlanDefinition, StripePaymentMethod } from '@nangohq/types';
+import type { GrowthAddonState, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
 export const Plans: React.FC = () => {
     const env = useStore((state) => state.env);

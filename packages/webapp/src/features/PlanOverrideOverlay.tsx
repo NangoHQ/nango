@@ -15,8 +15,7 @@ import { cn } from '@/utils/utils';
 import { DEFAULTS, usePlanOverrideStore } from './planOverride';
 
 import type { PeriodCostsOverride, SpendOverride, UsageLimitOverride } from './planOverride';
-import type { GrowthAddonState } from '@/pages/Team/Billing/planVisibility';
-import type { PlanDefinition } from '@nangohq/types';
+import type { GrowthAddonState, PlanDefinition } from '@nangohq/types';
 
 const REAL_PLAN_VALUE = '__real__';
 const NO_SCHEDULED_CHANGE_VALUE = '__none__';

@@ -1,0 +1,146 @@
+---
+name: managing-analytics-events
+description: Use when adding, renaming, changing or removing a product analytics event from the webapp, the server or the CLI - covers the catalogue, the naming rules, properties, where an event fires from, and what a rename means for existing dashboards
+---
+
+# Managing Analytics Events
+
+`analyticsEventCatalogue` in `packages/types/lib/analytics/catalogue.ts` is the source of truth for every
+product analytics event, whether the webapp, the server or the CLI sends it. Each entry records the
+event's surface, the insight it serves, when it fires, and its properties as a zod schema. The senders take
+their types from those schemas, so an event that isn't in the catalogue doesn't compile. Nothing is
+validated at runtime.
+
+The allowed categories, objects and actions, each with its meaning, are the interfaces in
+`packages/types/lib/analytics/taxonomy.ts`. A name built from anything else fails `npm run ts-build`.
+`catalogue.unit.test.ts` checks the rest with `rules.ts`: `snake_case` names and properties, `is_` and `has_`
+booleans, primitive values, `is_success` on `complete` events, and `structured_reason`. The other rules
+below are yours and the reviewer's to check.
+
+**No insight, no event.** If you can't name the chart or funnel step an event feeds, don't add it. The
+questions we want answered are on the [product insights page](https://app.notion.com/p/3e4ce298312181d7a9c7d8efd1a96c1a).
+The reasoning behind the rules below is on the [taxonomy page](https://app.notion.com/p/3e3ce2983121810ea113e896abdfaecf).
+
+## Workflow
+
+1. **Name the insight.** Find the question on the product insights page that the event helps answer. In
+   the entry's `insight`, say what this event lets you see within that question: "How often accounts open
+   their invoices from Billing & Usage", not the whole Billing & Usage question. Two events with the same
+   `insight` are probably one event. If no question fits, write the sentence anyway, and ask whether a
+   question belongs on the page.
+
+2. **Look for an existing event first.** If a new event would carry the same properties as an existing
+   one, differ only by a label and be charted next to it, add the label as a property instead.
+   CLI commands are one `functions:command_start` with `command`. Usage page changes are one
+   `billing:usage_update` with `change`.
+
+    Page views come from `$pageview`, filtered by path. Add a `_view` event only for UI that isn't its own
+    page, such as a panel, modal or tab, or when the view needs properties a page view can't carry. Until
+    NAN-7433 ships, `$pageview` misses navigation inside the dashboard, so don't build a page insight on it
+    yet.
+
+3. **Choose where it fires.**
+
+    | You need                                                  | Source                     |
+    | --------------------------------------------------------- | -------------------------- |
+    | Counts and current state, such as accounts per plan       | Our database. Not an event |
+    | Changes over time and funnel steps, such as a plan change | A server event             |
+    | Interaction, such as clicks, views and abandoned flows    | A web event                |
+
+    Never move a web event to the server to get around ad blockers. Analytics is not for monitoring errors:
+    don't send an event just to report an API error.
+
+4. **Name it `category:object_action`.** Lowercase, `snake_case`, present tense, built only from the values
+   in `taxonomy.ts`. The surface is a property, never part of the name. A UI element object ends in
+   `_button`, `_link`, `_tab`, `_modal` or `_page`.
+
+    To add a value, add it with its meaning to the interface in `taxonomy.ts`. Use the word the product
+    already uses, and check that no existing value means the same thing: `integration`, never `provider`.
+
+5. **Define its properties.**
+    - `object_adjective`, `snake_case`: `integration_id`, `run_duration_ms`.
+    - Booleans start with `is_` or `has_`. Dates end in `_date` or `_timestamp`.
+    - For a change, the old value takes a `previous_` prefix and the new value the plain name:
+      `previous_plan` and `plan`.
+    - Values are mostly strings, numbers or booleans. The one exception is `structured_properties`, below.
+    - A `complete` event always carries `is_success`. When `is_success` is false, add `error_code` with
+      our API's error code, such as `resource_capped`, never the error message.
+    - A `create`, `update` or `delete` that also reports failed attempts carries `is_success`.
+    - An HTTP call carries `http_status` when the response provides one. A session-scoped event carries
+      `agent_session_id`.
+    - Don't list `surface` or `is_production`. Every sender adds `surface`, and the server adds
+      `is_production` when it knows the environment.
+    - An array or object is allowed only when an insight can't be answered without it and it has a fixed
+      maximum size. Put it in `structured_properties`, say why in `structured_reason`, and send primitive
+      summaries next to it, such as a count or the top value.
+
+6. **Add the entry.**
+
+    ```ts
+    'playground:run_complete': {
+        surface: 'web',
+        insight: 'How many accounts use the API Playground each week?',
+        fires: 'When a Playground run returns a result or an error',
+        properties: z.object({ function_type: z.string(), integration: z.string(), is_success: z.boolean(), run_state: z.string(), run_duration_ms: z.number() })
+    },
+    ```
+
+    `fires` is one sentence. The code shows where it fires. An event with no properties uses `none`. For a
+    string typed as a union defined elsewhere, such as `UsageMetric`, use `stringOf<UsageMetric>()`, not
+    `z.custom`, so the test still sees a string.
+
+    The catalogue lives in `@nangohq/types`, so it can only import types from there. When a property's
+    type lives in one service, don't move it into `@nangohq/types` by default:
+    - If the values exist mainly for tracking, list them with `z.enum([...])` in the catalogue, and have the
+      service take the type from `AnalyticsEventProperties<'category:object_action'>['property']`.
+    - If nothing depends on the narrow type, use `z.string()`.
+    - Move the type into `@nangohq/types` only when it is small and other services can use it too.
+
+7. **Send it.**
+    - Web: `track()` from `packages/webapp/src/utils/analytics.tsx`.
+    - Server: `productTracking.track()` from `@nangohq/shared`. The request's tracking context adds the
+      account, the logged-in user when the request has a session, and `is_production` when it knows the
+      environment. Requests without a session, such as secret-key calls and webhooks, send as the account.
+    - CLI: the CLI posts to `/cli/telemetry`, and the server relays the event with `productTracking.trackAnonymous()`.
+      Released CLIs keep sending what they sent when they shipped, so the endpoint has to keep accepting
+      old bodies.
+
+8. **Run `npm run ts-build` and `npx vitest run packages/types/lib/analytics`.**
+
+## Personal data
+
+- A person is identified by user id, with `email` and `name` as person properties. Nothing else personal.
+- The account name is the `company` group's `name`, never an event property.
+- Free text from a user or an agent can contain personal data. Send it only when an insight needs the text.
+- Send a low-cardinality value, such as a filter's dimension, rather than the value someone typed.
+
+## Changing an event
+
+| Change                                    | What to do                                                      |
+| ----------------------------------------- | --------------------------------------------------------------- |
+| Add an optional property                  | Add it to the entry                                             |
+| Change what a property holds, or its type | Add a property with a new name. Never retype one                |
+| Revamp the flow an event belongs to       | Version the category, such as `onboarding_v2:connection_create` |
+| Stop tracking something                   | Delete the entry and its calls. Never reuse the name            |
+| Rename an event                           | See the gotcha below                                            |
+
+## Gotchas
+
+- **Renaming starts the event's history again under the new name.** Dashboards, saved insights and alerts
+  that read the old name go quiet after the deploy. Say in the PR description which events were renamed,
+  so whoever owns those dashboards and alerts makes them read both names before the deploy and drops the
+  old name after it.
+- **The analytics tool's own events keep their names.** `$pageview`, `$mcp_tool_call` and other `$` events
+  stay out of the catalogue, but a property we add to one still follows the property rules.
+- **Most insights count accounts, not people.** Aggregate by the `company` group. CLI events have no
+  group, because the telemetry call carries no key.
+
+## Review Checklist
+
+- [ ] The entry names a real insight, and no existing event already answers it
+- [ ] The name uses only values from `taxonomy.ts`, and any new value is the product's own word
+- [ ] Properties follow the naming rules, and `complete` events carry `is_success`
+- [ ] It fires from the right surface: server for business facts, web for interaction
+- [ ] No personal data beyond what the insight needs
+- [ ] For a rename or removal, the PR description names the events, so dashboards and alerts get updated
+- [ ] `npm run ts-build` and the catalogue test pass
