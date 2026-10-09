@@ -7,4 +7,6 @@ openapi: 'GET /integrations/{uniqueKey}/functions'
   Requires an API key with the `environment:functions:list` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-Returns the functions deployed to an integration.
+Returns the functions available to an integration.
+
+Catalog action entries have `source: "tools-catalog"`, `enabled: true`, `id: null`, and `last_deployed: null`.

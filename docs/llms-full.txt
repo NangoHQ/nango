@@ -140,12 +140,10 @@ The steps below show the flow end to end. This quickstart uses the GitHub API as
 
   </Step>
 
-  <Step id="enable-function" title="Enable an integration function">
-    The fastest way to enable a function is to use a template.
+  <Step id="enable-function" title="Use an integration function">
+    Open the `github-getting-started` integration and select `get-repository` from the Functions tab. Catalog actions are available out of the box and update automatically, so they are best suited to agentic workflows. For deterministic application code, [pull and deploy the action](/guides/functions/functions-guide#extend-a-template).
 
-    Go to the Integrations tab > open the `github-getting-started` integration > Functions sub-tab. In the functions table, turn on the toggle in the Enable column for `get-repository`.
-
-    This is a Nango Function: it runs provider-specific code with the connected account's credentials, without exposing those credentials to your app or agent.
+    Nango runs the function with the connected account's credentials without exposing them to your app or agent.
 
     <Tip>
       You can also [build a custom function](/guides/functions/functions-guide#build-locally-with-the-cli) in your codebase, or use the [Functions API](/guides/functions/functions-guide#build-with-the-functions-api) to let an agent turn text-defined behavior into deployed function code.
@@ -487,7 +485,7 @@ Use Nango for AI tool calling when:
 - Your agent needs to fetch or change data in external APIs.
 - Tool calls must run with each user's own credentials.
 - You want logs, retries, rate-limit handling, and a deployable runtime.
-- You need template action functions now, with room for custom action functions later.
+- You need a catalog of actions for agentic tool calling now, with room for custom action functions later.
 - You want one MCP server URL for Nango-hosted tools.
 
 For RAG-style workflows where data should be replicated before the agent needs it, use [Sync external API data](/getting-started/use-cases/syncs).
@@ -495,12 +493,12 @@ For RAG-style workflows where data should be replicated before the agent needs i
 ## How Nango fits in
 
 1. Your user authorizes an integration with Nango.
-2. You enable template action functions or deploy custom action functions for allowed operations.
+2. You use catalog action functions directly or deploy custom action functions for allowed operations.
 3. Your agent lists or receives those action functions as tools.
 4. The agent asks Nango to execute an action function for the right connection.
 5. Nango runs the external API call with the user's credentials and logs the execution.
 
-This keeps provider credentials in Nango and gives you a stable tool surface across frameworks.
+This keeps provider credentials in Nango and gives you a common tool surface across frameworks.
 
 ## Technical setup
 
@@ -510,7 +508,7 @@ Nango supports both direct action function execution and MCP-based tool discover
 
 - [Tool calling & MCP](/guides/agent-sessions) - connect Nango action functions to agents, LLM SDKs, and MCP clients.
 - [Action functions](/guides/functions/action-functions) - build the action functions agents can call.
-- [Get integration functions config](/reference/backend/http-api/scripts/config) - list enabled action functions programmatically.
+- [List functions](/reference/backend/http-api/functions/list) - list available functions programmatically.
 - [Functions guide](/guides/functions/functions-guide) - create, test, deploy, and trigger functions.
 - [Auth guide](/guides/auth/auth-guide) - let users authorize external APIs.
 
@@ -583,7 +581,7 @@ For continuously replicated data, use [Sync external API data](/getting-started/
 ## How Nango fits in
 
 1. Your user authorizes an integration with Nango.
-2. You enable a template function or deploy your own.
+2. You call a catalog action directly or deploy your own action.
 3. Your app calls the function with an input payload.
 4. Nango executes the provider API calls with the user's credentials.
 5. Your app receives the result, or polls/listens for completion if the function runs asynchronously.
@@ -599,7 +597,7 @@ These functions are the technical foundation behind on-demand API operations, un
 - [Functions SDK reference](/reference/functions/functions-sdk) - runtime methods available inside function code.
 
 <Note>
-  You can enable template functions from the [template catalog](https://www.nango.dev/templates) and skip writing code until you need custom behavior.
+  You can use actions from the [template catalog](https://www.nango.dev/templates) without writing code. See the [Functions guide](/guides/functions/functions-guide#catalog-action-stability) to choose between a catalog action and your own.
 </Note>
 
 ## Process external webhooks
@@ -908,7 +906,7 @@ The sample app uses Slack, Google Drive, OneDrive for Business, and OneDrive Per
     - Go to: [http://localhost:3011](http://localhost:3011)
   </Step>
   <Step id="deploy-custom-functions" title="Bonus: Deploy custom functions">
-    The above sample app uses template functions, but you can also use custom ones.
+    The above sample app uses actions from the Nango catalog, but you can also use custom ones.
 
     - Set up the Nango CLI:
     ```sh
@@ -2409,6 +2407,8 @@ Each session has three parts:
 
 Your backend creates the session and exposes it to the agent as an MCP server. The agent never sees raw credentials, and cannot change the scope of its own session.
 
+The available toolset can include Nango catalog action functions and action functions you manage yourself. Catalog actions are available out of the box and update automatically. [Pull and deploy one](/guides/functions/functions-guide#extend-a-template) to take ownership and customize it.
+
 Example sessions:
 - A sales agent with a user's personal Gmail & Google Calendar, and a read-only org-wide Salesforce connection
 - A finance agent with a few read-only tools on an org's accounting system, and read & write access to a team's Slack
@@ -2890,13 +2890,13 @@ Description: Understand Nango Functions and choose the right way to start using 
 
 When you build integrations directly, every provider forces you to solve the same hard problems: OAuth credentials, token refresh, per-customer permissions, retries, rate limits, data freshness, observability, and safe execution. Nango handles that infrastructure, and functions let you write the provider-specific logic that is unique to your product.
 
-You write functions in TypeScript and deploy them to Nango. Your app can call them from any language, framework, backend job, or agent workflow. Each execution runs for a specific integration and connection, so the function has scoped access to the right customer's credentials without exposing those credentials to your app or agent.
+You can use Nango-maintained catalog actions directly, enable sync templates, or write and deploy your own functions. Your app can call functions from any language, framework, backend job, or agent workflow. Each execution runs for a specific integration and connection, so the function has scoped access to the right customer's credentials without exposing those credentials to your app or agent.
 
 ## How functions fit
 
 1. Your user authorizes an external API through [Nango Auth](/guides/auth/auth-guide).
 2. Your app stores the resulting `connectionId`.
-3. You enable or deploy functions for the integration.
+3. You use a catalog action, enable a sync template, or deploy a custom function for the integration.
 4. Nango runs the function on demand, on a schedule, from an external webhook, or after a connection lifecycle event.
 5. Your app receives the function result, sync records, or webhooks from Nango.
 
@@ -2909,45 +2909,51 @@ Functions are the right layer when you need custom API logic, data syncing, webh
 - **Multiple trigger types** — call functions on demand, run them on a schedule, route external webhooks into them, or react to connection lifecycle events.
 - **Agent-ready tools** — expose selected functions to agents through the API or Nango's MCP server while keeping provider credentials out of the model loop.
 - **Built-in integration infrastructure** — retries, rate-limit handling, logs, OpenTelemetry export, records storage, checkpoints, and per-connection metadata.
-- **Flexible development workflows** — enable a template, build headlessly through the Functions API, or keep function code in a local CLI project.
+- **Flexible development workflows** — use catalog actions directly, enable sync templates, build through the Functions API, or keep function code in a local CLI project.
 
 <a id="guide"></a>
 ## Guide
 
-### Ways to enable functions
+### Ways to use or develop functions
 
-There are three ways to enable or develop Nango functions. Start with the path that matches how much control and dynamism you need.
+There are three ways to use or develop Nango functions. Start with the path that matches how much control and dynamism you need.
 
 | Path | Best for | How it works |
 | --- | --- | --- |
-| [Option 1: Use function templates](#use-function-templates) | Getting started quickly when Nango already has the provider operation in the catalog. | Enable a pre-built function on an integration, then call it from your app, backend job, or agent workflow. |
+| [Option 1: Use the template catalog](#use-function-templates) | Getting started quickly when Nango already has the provider operation in the catalog. | Use catalog actions, or enable a sync template. |
 | [Option 2: Build locally with the CLI](#build-locally-with-the-cli) | Serious production use cases where you want reviewable diffs, tests, CI/CD, and source control. | Write TypeScript functions in your repo, dry run them against real connections, and deploy with the Nango CLI. |
 | [Option 3: Build with the Functions API](#build-with-the-functions-api) | Prototypes, provider operations not covered by templates, and just-in-time integrations where an agent creates behavior dynamically. | Send generated TypeScript source to Nango, compile it, dry run it, and deploy it without a local functions project. |
 
 <a id="start-with-templates"></a>
 <a id="use-function-templates"></a>
 <a id="template-catalog"></a>
-### Option 1: Use function templates
+### Option 1: Use the template catalog
 
-Function templates are pre-built Nango functions for common provider operations. Use them when the catalog already covers what you need and you want the shortest path to a working integration.
+The template catalog contains pre-built Nango functions for common provider operations. Catalog actions are available out of the box and update automatically. Sync templates must be enabled before they run.
+
+<a id="catalog-action-stability"></a>
+<Note>
+  **Catalog actions and stability.** Catalog actions are maintained by Nango and update automatically. Their input schema, output shape, and behavior may change as the catalog evolves. They are best suited to agentic workflows, such as MCP tool calling. If deterministic application code needs a stable contract, [pull the action into your functions project and deploy it](#extend-a-template). The deployed function becomes your owned implementation and no longer follows catalog updates.
+</Note>
 
 You can find templates in the [template catalog](https://www.nango.dev/templates), in the integration page of the Nango dashboard, and in the [Nango integration templates repository](https://github.com/NangoHQ/integration-templates).
 
-When a template matches your use case, enable it on the integration and call it from your app. If it is close but not exact, [pull it into a local functions project and customize it](#extend-a-template).
+When a catalog action matches your use case, call it directly for agentic workflows or quick experiments. For deterministic application code, [pull and deploy it](#extend-a-template) before using it. When a sync template matches your use case, enable it on the integration. If a catalog action or sync template is close but not exact, [pull it into a local functions project and customize it](#extend-a-template).
 
 <a id="extend-a-template"></a>
 #### Extend a template
 
-Use the CLI to pull a template's code into your local functions project from the public catalog:
+Use the CLI to pull a function's code into your local functions project. Pull from the public catalog with `--catalog`, or pull the version currently served by an environment with `--env`:
 
 ```bash
 nango pull github list-repos --catalog
+nango pull github list-repos --env dev
 ```
 
 `nango pull` writes a single function and its dependencies. After pulling, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
 
 <Tip>
-  Pull template code when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to a template function but not identical.
+  Pull a pre-built function when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to the catalog but not identical.
 </Tip>
 
 <a id="build-locally-with-the-cli"></a>
@@ -3136,15 +3142,18 @@ Resolve these endpoints against `NANGO_SERVER_URL`, or `https://api.nango.dev` b
 The Functions API is powerful, but it intentionally skips a local Git workflow. For production integrations that need code review, tests, ownership, and CI/CD, prefer [local development with the CLI](#build-locally-with-the-cli).
 
 <a id="take-ownership-of-a-deployed-function"></a>
-### Take ownership of a deployed function
+### Take ownership of a function
 
-Pull the source of a function that is already deployed to an environment so you can manage it in your own repository:
+Pull a function into your local functions project so you can manage it in your own repository. Use `--env` to pull the version served by an environment, or `--catalog` to pull the public catalog version:
 
 ```bash
 nango pull github list-repos --env dev
+nango pull github list-repos --catalog
 ```
 
-This works for any deployed function — a template you enabled from the dashboard, or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments-create). The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD.
+`--env` works for any function served by an environment, including a catalog action or code deployed through [`POST /functions/deployments`](/reference/backend/http-api/functions/deployments-create).
+
+The CLI writes the function's TypeScript source locally; from there, `nango deploy` redeploys it as a repo-managed function, so it lives in your Git workflow with code review, tests, and CI/CD. A repo-managed function with the same name becomes the integration's owned implementation instead of following the catalog.
 
 ## Related guides
 
@@ -4375,6 +4384,10 @@ Description: Build Action functions that your app, backend jobs, or agents can c
 Action functions run when your app, backend job, or agent explicitly calls them. In SDK and API names, this function type is often called an **action** because it receives an input and returns an output.
 
 Use action functions for reads, writes, multi-step provider workflows, unified API operations, and AI tools.
+
+<Note>
+  Nango provides a catalog of pre-built actions that you can call out of the box. This guide describes writing and deploying your own action function. To customize actions from the catalog, see [Extend a template](/guides/functions/functions-guide#extend-a-template).
+</Note>
 
 ## Create the function
 
@@ -9957,7 +9970,7 @@ The **Default - Full access** key that comes with each environment already has a
 |-------|-------------|
 | `environment:integrations:list` | List integrations (no credentials) |
 | `environment:integrations:list_credentials` | List integrations with client credentials |
-| `environment:integrations:list_functions` | List deployed functions (syncs and actions) |
+| `environment:integrations:list_functions` | List deployed function configuration (syncs and actions) |
 | `environment:integrations:read` | Read a single integration (no credentials) |
 | `environment:integrations:read_credentials` | Read a single integration with client credentials |
 | `environment:integrations:create` | Create integrations |
@@ -10012,8 +10025,8 @@ The **Default - Full access** key that comes with each environment already has a
 
 | Scope | Description |
 |-------|-------------|
-| `environment:functions:list` | List deployed functions |
-| `environment:functions:read` | Read a single deployed function |
+| `environment:functions:list` | List available functions |
+| `environment:functions:read` | Read a single available function |
 | `environment:functions:delete` | Delete a deployed function |
 | `environment:functions:compile` | Compile function source code |
 | `environment:functions:dryrun` | Dry run function source code |
@@ -10680,7 +10693,9 @@ Source: https://nango.dev/docs/reference/backend/http-api/functions/list.md
   Requires an API key with the `environment:functions:list` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-Returns the functions deployed to an integration.
+Returns the functions available to an integration.
+
+Catalog action entries have `source: "tools-catalog"`, `enabled: true`, `id: null`, and `last_deployed: null`.
 
 ## Get a function
 
@@ -10690,7 +10705,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/functions/get.md
   Requires an API key with the `environment:functions:read` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-Returns a single deployed function.
+Returns a single function available to an integration.
 
 ## Get a function's source code
 
@@ -10771,6 +10786,10 @@ Source: https://nango.dev/docs/reference/backend/http-api/scripts/config.md
 </Info>
 
 The `/scripts/config` endpoint returns the configuration for all integration functions. There are two variants of this endpoint:
+
+<Note>
+  This endpoint reads deployed function configuration. It does not include Nango catalog actions that are available out of the box. To list both deployed functions and catalog actions, use [List functions](/reference/backend/http-api/functions/list).
+</Note>
 
 1. `/scripts/config?format=nango` - Returns the standard configuration format
 2. `/scripts/config?format=openai` - Returns the configuration in OpenAI's function calling format
@@ -12311,7 +12330,7 @@ This method polls for a connection every 2 seconds for up to 60 seconds (30 atte
 
 ### List functions
 
-Returns the functions deployed to an integration, with pagination.
+Returns the functions available to an integration, with pagination.
 
 ```ts
 await nango.listFunctions({ uniqueKey: 'github' });
@@ -12343,6 +12362,8 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
     </ResponseField>
 </Expandable>
 
+Catalog actions have `id: null`, `last_deployed: null`, `enabled: true`, and `source: "tools-catalog"`. A deployed action with the same name takes precedence.
+
 **Example Response**
 
 <Expandable>
@@ -12372,10 +12393,21 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
             "enabled": true,
             "last_deployed": "2024-03-28T14:00:00.000Z",
             "source": "repo"
+        },
+        {
+            "type": "action",
+            "name": "get-repository",
+            "description": "Get a GitHub repository",
+            "returns": ["GithubRepository"],
+            "json_schema": null,
+            "id": null,
+            "enabled": true,
+            "last_deployed": null,
+            "source": "tools-catalog"
         }
     ],
     "pagination": {
-        "total": 2,
+        "total": 3,
         "page": 0,
         "limit": 20
     }
@@ -12385,7 +12417,7 @@ await nango.listFunctions({ uniqueKey: 'github' }, { type: 'action', search: 'is
 
 ### Get a function
 
-Retrieves a deployed function of an integration.
+Retrieves a function available to an integration. This can be a deployed function or a Nango catalog action.
 
 ```ts
 await nango.getFunction({ uniqueKey: 'github', name: 'create-issue' });
@@ -12433,7 +12465,7 @@ await nango.getFunction({ uniqueKey: 'github', name: 'issues' }, { type: 'sync' 
 
 ### Get function code
 
-Retrieves the source code of a deployed function.
+Retrieves the source code of a function. For a Nango catalog action, the response contains the current catalog source even though the action has not been deployed.
 
 ```ts
 await nango.getFunctionCode({ uniqueKey: 'github', name: 'create-issue' }, { type: 'action' });
@@ -13942,11 +13974,11 @@ Use the Sync tools to set sync state or trigger syncs for an integration in the 
 
 ### Functions
 
-Use the Functions tools to inspect and deploy template functions in the authenticated Nango environment. Use `get_deployment_status` to check whether a deployment has finished.
+Use the Functions tools to inspect available functions and deploy templates in the authenticated Nango environment. `functions_list` includes deployed functions and Nango catalog actions. Catalog actions are available out of the box; use `deploy_template` when you want to enable a sync template or explicitly deploy a template.
 
 | Tool                    | Description                                                                   | Additional permission        |
 | ----------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
-| `functions_list`        | List and filter deployed syncs, actions, and on-event scripts by integration. | `environment:functions:list` |
+| `functions_list`        | List and filter available functions by integration, including Nango catalog actions. | `environment:functions:list` |
 | `deploy_template`       | Deploy a function template.                                                   | `environment:deploy`         |
 | `get_deployment_status` | Retrieve a deployment's current status and result.                            | `environment:deploy`         |
 
