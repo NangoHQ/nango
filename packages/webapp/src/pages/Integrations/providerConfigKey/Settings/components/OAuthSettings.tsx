@@ -1,7 +1,7 @@
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
-import { Alert, AlertDescription, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { ScopesInput } from '@/components/patterns/ScopesInput';
@@ -14,6 +14,7 @@ import { NangoProvidedInput } from '@/pages/Integrations/components/NangoProvide
 import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/cloud';
+import { SettingsField } from './SettingsLayout';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
@@ -93,21 +94,17 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
     };
 
     return (
-        <div className="flex flex-col gap-10">
-            {/* Callback URL */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="callback_url">Callback URL</FieldLabel>
+        <div className="flex flex-col gap-6">
+            <SettingsField label="Callback URL" htmlFor="callback_url">
                 <InputGroup>
                     <InputGroupInput disabled value={callbackUrl} />
                     <InputGroupAddon align="inline-end">
                         <CopyButton text={callbackUrl} />
                     </InputGroupAddon>
                 </InputGroup>
-            </div>
+            </SettingsField>
 
-            {/* Client ID */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="client_id">Client ID</FieldLabel>
+            <SettingsField label="Client ID" htmlFor="client_id">
                 {isSharedCredentials ? (
                     <NangoProvidedInput fakeValueSize={24} />
                 ) : (
@@ -131,11 +128,9 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
                         )}
                     </>
                 )}
-            </div>
+            </SettingsField>
 
-            {/* Client Secret */}
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="client_secret">Client Secret</FieldLabel>
+            <SettingsField label="Client secret" htmlFor="client_secret">
                 {isSharedCredentials ? (
                     <NangoProvidedInput fakeValueSize={48} />
                 ) : (
@@ -148,12 +143,10 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
                         canRead={canEdit}
                     />
                 )}
-            </div>
+            </SettingsField>
 
-            {/* Scopes */}
             {template.auth_mode !== 'TBA' && template.installation !== 'outbound' && (
-                <div className="flex flex-col gap-2">
-                    <FieldLabel htmlFor="scopes">Scopes</FieldLabel>
+                <SettingsField label="Scopes" htmlFor="scopes">
                     <ScopesInput
                         scopesString={integration.oauth_scopes || ''}
                         onChange={handleScopesChange}
@@ -162,10 +155,9 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
                         availableScopes={template.available_scopes}
                         showAvailableScopesDropdown={true}
                     />
-                </div>
+                </SettingsField>
             )}
 
-            {/* Confirmation Dialog */}
             {DialogComponent}
         </div>
     );
