@@ -74,6 +74,8 @@ Nango matches an incoming webhook to a connection using the workspace ID in the 
 
 Connections created before Intercom webhooks were supported don't have an `appId` yet. Re-authorize them once so Nango stores it.
 
+`appId` identifies the Intercom workspace, not a single connection. If your app lets multiple end users each connect the same workspace (e.g. several teammates at the same company), every matching connection receives its own copy of the event.
+
 <Warning>
 If no connection's `appId` matches the payload's `app_id`, the webhook is not routed to any connection.
 </Warning>
