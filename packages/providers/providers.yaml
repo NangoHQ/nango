@@ -6726,6 +6726,32 @@ datacandy:
             secret: true
     docs: https://nango.dev/docs/integrations/all/datacandy
 
+datacircle:
+    display_name: Datacircle
+    categories:
+        - marketing
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.datacircle.dev
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /balance/
+    docs: https://nango.dev/docs/api-integrations/datacircle
+    docs_connect: https://nango.dev/docs/api-integrations/datacircle/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/datacircle/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API key
+            description: Your Datacircle API key.
+            example: 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
+            pattern: '^[a-f0-9]{40}$'
+            doc_section: '#step-1-finding-your-api-key'
+
 datadog:
     display_name: Datadog
     categories:
