@@ -4,7 +4,9 @@ import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { principalCan } from '../../../../authz/principal.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
-import type { GetOverdueInvoices } from '@nangohq/types';
+import type { DBPlan, GetOverdueInvoices } from '@nangohq/types';
+
+const ENTERPRISE_PLANS: DBPlan['name'][] = ['enterprise', 'enterprise-cloud-hosted'];
 
 export const getOverdueInvoices = asyncWrapper<GetOverdueInvoices>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -19,9 +21,14 @@ export const getOverdueInvoices = asyncWrapper<GetOverdueInvoices>(async (req, r
         return;
     }
 
-    // Keyed on the Orb relationship rather than the plan: an account that downgraded to free can
-    // still owe an issued invoice. Without a customer there is nothing to owe, and this endpoint
-    // reads, so it doesn't create one.
+    // Enterprise invoices are chased through dunning, and their members can't act on the warning.
+    if (ENTERPRISE_PLANS.includes(plan.name)) {
+        res.status(200).send({ data: { hasOverdue: false, portalUrl: null } });
+        return;
+    }
+
+    // Keyed on the Orb customer, not the plan: an account that downgraded to free can still owe.
+    // This endpoint only reads, so it doesn't create a missing customer.
     if (!plan.orb_customer_id) {
         res.status(200).send({ data: { hasOverdue: false, portalUrl: null } });
         return;
