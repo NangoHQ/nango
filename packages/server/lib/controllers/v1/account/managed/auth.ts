@@ -39,47 +39,47 @@ interface ManagedAuthVerificationRequiredError {
 }
 
 export interface InviteAccountState {
-    token?: string;
+    token?: string | undefined;
     returnTo?: string | undefined;
     acquisition?: SignupAcquisition | undefined;
 }
 
 const MAX_MANAGED_AUTH_STATE_LENGTH = 16384;
 
-export function encodeManagedAuthState(state: InviteAccountState): string {
-    const value = state.token
-        ? { token: state.token }
-        : state.returnTo || state.acquisition
-          ? { returnTo: state.returnTo, acquisition: state.acquisition }
-          : null;
-    if (!value) return '';
-    const encoded = Buffer.from(JSON.stringify(value)).toString('base64');
-    if (encoded.length <= MAX_MANAGED_AUTH_STATE_LENGTH) return encoded;
+function encodeBoundedState(state: InviteAccountState): string {
+    if (!Object.keys(state).length) return '';
+    const encoded = Buffer.from(JSON.stringify(state)).toString('base64');
+    return encoded.length <= MAX_MANAGED_AUTH_STATE_LENGTH ? encoded : '';
+}
 
-    // Optional analytics must not discard the signup continuation when UTF-8 or JSON escaping expands it.
-    const continuation = state.token ? { token: state.token } : state.returnTo ? { returnTo: state.returnTo } : null;
-    if (!continuation) return '';
-    const fallback = Buffer.from(JSON.stringify(continuation)).toString('base64');
-    return fallback.length <= MAX_MANAGED_AUTH_STATE_LENGTH ? fallback : '';
+export function encodeManagedAuthState(state: InviteAccountState): string {
+    const continuation: InviteAccountState = {};
+    if (state.token) continuation.token = state.token;
+    else if (state.returnTo) continuation.returnTo = state.returnTo;
+
+    if (state.acquisition) {
+        const withAcquisition = encodeBoundedState({ ...continuation, acquisition: state.acquisition });
+        if (withAcquisition) return withAcquisition;
+    }
+    // Optional analytics must never displace the signup continuation.
+    return encodeBoundedState(continuation);
 }
 
 export function parseManagedAuthState(state: string): InviteAccountState | null {
     try {
         if (state.length > MAX_MANAGED_AUTH_STATE_LENGTH) return null;
-        const res = JSON.parse(Buffer.from(state, 'base64').toString('utf8')) as unknown;
-        if (!res || !(typeof res === 'object')) {
-            return null;
-        }
-        const candidate = res as Record<string, unknown>;
+        const parsed = JSON.parse(Buffer.from(state, 'base64').toString('utf8')) as unknown;
+        if (!parsed || typeof parsed !== 'object') return null;
+        const candidate = parsed as Record<string, unknown>;
         if (candidate['token'] !== undefined && typeof candidate['token'] !== 'string') return null;
         if (candidate['returnTo'] !== undefined && typeof candidate['returnTo'] !== 'string') return null;
+
+        const result: InviteAccountState = {};
+        if (typeof candidate['token'] === 'string') result.token = candidate['token'];
+        else if (typeof candidate['returnTo'] === 'string') result.returnTo = safeReturnTo(candidate['returnTo']);
         const acquisition = signupAcquisitionSchema.parse(candidate['acquisition']);
-        if (candidate['token'] === undefined && candidate['returnTo'] === undefined && !acquisition) return null;
-        return {
-            ...(candidate['token'] === undefined && acquisition ? { acquisition } : {}),
-            ...(typeof candidate['token'] === 'string' ? { token: candidate['token'] } : {}),
-            ...(typeof candidate['returnTo'] === 'string' ? { returnTo: safeReturnTo(candidate['returnTo']) } : {})
-        };
+        if (acquisition) result.acquisition = acquisition;
+        return Object.keys(result).length ? result : null;
     } catch {
         return null;
     }

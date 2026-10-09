@@ -105,13 +105,16 @@ describe('POST /api/v1/account/signup', () => {
         track.mockRestore();
     });
 
-    it('tracks only the user for an invite signup', async () => {
+    it('tracks only the user for an invite signup even when acquisition is sent', async () => {
         const { account, user: inviter } = await seeders.seedAccountEnvAndUser();
         const email = `${nanoid()}@example.com`;
         const invitation = await inviteEmail({ email, name: email, accountId: account.id, invitedByUserId: inviter.id, role: 'administrator', trx: db.knex });
         const track = vi.spyOn(productTracking, 'track');
 
-        const res = await api.fetch(route, { method: 'POST', body: { email, name: 'Foobar', password: 'aZ1-foobar!!', token: invitation!.token } });
+        const res = await api.fetch(route, {
+            method: 'POST',
+            body: { email, name: 'Foobar', password: 'aZ1-foobar!!', token: invitation!.token, acquisition: { acquisition_utm_source: 'facebook' } }
+        });
         expect(res.res.status).toBe(200);
 
         const names = track.mock.calls.map(([event]) => event.name);
