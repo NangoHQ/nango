@@ -239,6 +239,30 @@ describe('executeSessionTool on an MCP server tool', () => {
         }
     });
 
+    it('names the missing permission when the server refuses one tool for insufficient scope', async () => {
+        mcpServer(() => response({ status: 403, headers: { 'www-authenticate': 'Bearer error="insufficient_scope", scope="issues:write"' } }));
+
+        const result = await execute();
+
+        expect(codeOf(result)).toBe('tool_failed');
+        expect(result.isErr() && result.error.message).toContain("missing the permission 'issues:write'");
+    });
+
+    it('reports a plain 403 on one tool as that tool failing, not as a disconnected integration', async () => {
+        mcpServer(() => response({ status: 403 }));
+
+        const result = await execute();
+
+        expect(codeOf(result)).toBe('tool_failed');
+        expect(result.isErr() && result.error.message).toContain('HTTP 403');
+    });
+
+    it('asks for a reconnect when the server refuses the handshake with a 403', async () => {
+        request.mockResolvedValue(response({ status: 403 }));
+
+        expect(codeOf(await execute())).toBe('integration_not_connected');
+    });
+
     it('asks for a reconnect when the server refuses the credentials', async () => {
         mcpServer(() => response({ status: 401 }));
 

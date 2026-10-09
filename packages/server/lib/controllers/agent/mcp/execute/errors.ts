@@ -50,6 +50,9 @@ export function remoteMcpErrorToMcp({ error, integrationId, toolName }: { error:
         case 'proxy_failed':
             return error.proxyError ? proxyErrorToMcp({ error: error.proxyError, integrationId }) : new InternalMcpError();
         case 'http_error':
+            if (error.status === 403 && error.method === 'tools/call') {
+                return forbiddenToolError({ error, integrationId, toolName });
+            }
             if (error.status === 401 || error.status === 403) {
                 return new PublicMcpError(
                     `The MCP server for '${integrationId}' refused the connection's credentials, so none of its tools can run. Tell the user they need to reconnect it.`,
@@ -100,4 +103,20 @@ export function remoteMcpErrorToMcp({ error, integrationId, toolName }: { error:
             return new InternalMcpError();
         }
     }
+}
+
+function forbiddenToolError({ error, integrationId, toolName }: { error: RemoteMcpError; integrationId: string; toolName: string }): Error {
+    const scope = error.insufficientScope;
+    if (scope) {
+        const permission = scope.requiredScope ? `the permission '${scope.requiredScope}'` : 'a permission this tool needs';
+        return new PublicMcpError(
+            `Tool '${toolName}' on integration '${integrationId}' was refused because the connection is missing ${permission}. Tell the user they need to reconnect it and grant that permission, or use another tool.`,
+            { code: 'tool_failed', integrationId }
+        );
+    }
+
+    return new PublicMcpError(
+        `Tool '${toolName}' on integration '${integrationId}' was refused by the MCP server with HTTP 403. The connection may not have access to this tool or the data it asked for. Use another tool if one fits, and otherwise tell the user.`,
+        { code: 'tool_failed', integrationId }
+    );
 }
