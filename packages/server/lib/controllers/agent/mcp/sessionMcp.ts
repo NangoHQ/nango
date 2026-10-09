@@ -1,6 +1,8 @@
 import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 import { isInitializeRequest } from '@modelcontextprotocol/server';
 
+import { report } from '@nangohq/utils';
+
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { withConnectionsCreatedInSession } from './sessionConnection.js';
 import { createAgentSessionMcpServer } from './sessionServer.js';
@@ -16,7 +18,12 @@ export const postAgentSessionMcp = asyncWrapperWithEnvironment<PostAgentSessionM
     }
 
     // Only initialize carries the instructions, which say what is connected, so only it pays for the lookup.
-    const session = isInitializeRequest(req.body) ? await withConnectionsCreatedInSession(agentSession) : agentSession;
+    const session = isInitializeRequest(req.body)
+        ? await withConnectionsCreatedInSession(agentSession).catch((err: unknown) => {
+              report(err);
+              return agentSession;
+          })
+        : agentSession;
     const server = createAgentSessionMcpServer({ account, environment, plan, session }, req.body);
     const transport = new NodeStreamableHTTPServerTransport();
 

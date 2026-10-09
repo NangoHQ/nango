@@ -4,7 +4,7 @@ import { convertToModelMessages, dynamicTool, jsonSchema, stepCountIs, streamTex
 
 import db from '@nangohq/database';
 import { configService, connectionService, getProvider, sharedCredentialsService } from '@nangohq/shared';
-import { Err, getLogger, Ok } from '@nangohq/utils';
+import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { createAgentSessionMcpServer, TOOL_NAME_SEPARATOR } from '../controllers/agent/mcp/sessionServer.js';
@@ -296,7 +296,10 @@ export async function startTurn({
     }
 
     // The server's instructions say what is connected, including what the agent connected in an earlier turn.
-    const current = await withConnectionsCreatedInSession(session.value);
+    const current = await withConnectionsCreatedInSession(session.value).catch((err: unknown) => {
+        report(err);
+        return session.value;
+    });
     const server = createAgentSessionMcpServer({ account: ctx.account, environment: ctx.environment, plan: ctx.plan, session: current });
     const client = new Client({ name: 'nango-agent-playground', version: '1.0.0' });
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
