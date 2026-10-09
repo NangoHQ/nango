@@ -42,4 +42,5 @@ export { default as granolaWebhookRouting } from './granola-webhook-routing.js';
 export { default as zoomWebhookRouting } from './zoom-webhook-routing.js';
 export { default as zoomCcWebhookRouting } from './zoom-cc-webhook-routing.js';
 export { default as haloPsaWebhookRouting } from './halo-psa-webhook-routing.js';
+export { default as intercomWebhookRouting } from './intercom-webhook-routing.js';
 export type * from './types.js';

@@ -1,5 +1,5 @@
 import { ArrowUpRight, ExternalLink } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { Helmet } from 'react-helmet';
 
 import { AlertButton, Button } from '@nangohq/design-system';
@@ -80,10 +80,6 @@ export const TeamBilling: React.FC = () => {
             </PaymentMethodDialog>
         </OverdueInvoiceAlert>
     );
-
-    useEffect(() => {
-        track('billing:usage_view', {});
-    }, []);
 
     const scrollRef = useRef<HTMLDivElement>(null);
     // The banners and summary strip sit above the anchors, `Payment` below all of them, so every

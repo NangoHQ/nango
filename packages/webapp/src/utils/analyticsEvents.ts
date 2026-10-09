@@ -5,7 +5,6 @@ import type { UsageMetric } from '@nangohq/types';
 /** Names follow the analytics taxonomy's `category:object_action`; property values stay primitives PostHog can store. */
 export interface AnalyticsEvents {
     // Usage page (Billing)
-    'billing:usage_view': Record<string, never>;
     'billing:usage_update':
         | { change: 'month'; direction: 'previous' | 'next' }
         | { change: 'group' | 'filter'; metric: UsageMetric; dimension: AnyBreakdownDimension }
@@ -28,7 +27,6 @@ export interface AnalyticsEvents {
     'playground:run_cancel': { function_type: string; integration: string };
 
     // Connection creation
-    'connections:create_page_view': Record<string, never>;
     'connections:create_button_click': { provider: string };
     'connections:share_link_button_click': { provider: string };
     'connections:connection_create':

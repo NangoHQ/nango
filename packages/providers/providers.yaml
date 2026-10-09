@@ -12920,7 +12920,9 @@ intercom:
     docs: https://nango.dev/docs/api-integrations/intercom
     setup_guide_url: https://nango.dev/docs/api-integrations/intercom/how-to-register-your-own-intercom-api-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/intercom/connect
+    post_connection_script: intercomPostConnection
     pre_connection_deletion_script: intercomPreConnectionDeletion
+    webhook_routing_script: intercomWebhookRouting
     connection_config:
         region:
             type: string
@@ -22511,6 +22513,7 @@ sap-business-one:
         - erp
     body_format: json
     auth_mode: TWO_STEP
+    allow_unverified_https: true
     token_url: https://${connectionConfig.domain}/Login
     token_params:
         CompanyDB: ${connectionConfig.companyDb}
@@ -22539,19 +22542,30 @@ sap-business-one:
             order: 1
             description: The base URL for your SAP Business One Service Layer
             doc_section: '#step-3-finding-your-service-layer-url'
+        allowSelfSignedCert:
+            type: string
+            title: Skip certificate verification
+            optional: true
+            order: 2
+            default_value: 'false'
+            enum:
+                - 'false'
+                - 'true'
+            description: Only set to true if your Service Layer uses a self-signed certificate.
+            doc_section: '#step-5-skip-certificate-verification'
         companyDb:
             type: string
             title: Company Database Name
             description: The name of your SAP Business One company database
             example: 10COR0809H
-            order: 2
+            order: 3
             doc_section: '#step-2-identifying-your-company-database'
         dbInstance:
             type: string
             title: Database Instance
             description: The database server instance name
             optional: true
-            order: 3
+            order: 4
             example: C200@10.58.114.200:30013
             doc_section: '#step-4-finding-your-database-instance'
     credentials:
@@ -25980,6 +25994,25 @@ timetastic:
             format: uuid
             example: 6a6b202d-6aee-4a62-a2f1-************
             doc_section: '#step-1-generate-your-api-key'
+
+timocom:
+    display_name: TIMOCOM
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://my.timocom.com/auth/oauth/authorize
+    token_url: https://my.timocom.com/auth/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.timocom.com
+    docs: https://nango.dev/docs/api-integrations/timocom
+    setup_guide_url: https://nango.dev/docs/api-integrations/timocom/how-to-register-your-own-timocom-oauth-app
 
 thrivecart-oauth:
     display_name: ThriveCart (OAuth)
