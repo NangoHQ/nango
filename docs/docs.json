@@ -1825,6 +1825,7 @@
               "integrations/all/sendgrid",
               "api-integrations/sentinelone",
               "integrations/all/sentry",
+              "api-integrations/sentry-mcp",
               "integrations/all/sentry-oauth",
               "integrations/all/servicem8",
               "api-integrations/servicenow",
