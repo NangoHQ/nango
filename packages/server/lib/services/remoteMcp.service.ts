@@ -18,6 +18,8 @@ const CLIENT_INFO = { name: 'nango-agent-session', version: '1.0.0' };
 // The transport insists on a URL, but every request goes through the proxy, which ignores it.
 const PROXY_PLACEHOLDER_URL = new URL('https://nango-proxy.invalid/');
 
+const TERMINATE_SESSION_TIMEOUT_MS = 2_000;
+
 export interface RemoteMcpTool {
     name: string;
     description?: string | undefined;
@@ -30,7 +32,6 @@ export type RemoteMcpErrorCode = 'proxy_failed' | 'http_error' | 'invalid_respon
 export class RemoteMcpError extends Error {
     public readonly code: RemoteMcpErrorCode;
     public readonly status: number | undefined;
-    /** The JSON-RPC method that failed. */
     public readonly method: string | undefined;
 
     constructor({
@@ -69,7 +70,6 @@ export interface RemoteMcpTarget {
 }
 
 export interface RemoteMcpRun<T> {
-    /** Every request of one MCP session is logged under a single proxy operation. */
     logOperationId: string | undefined;
     result: Result<T, RemoteMcpError>;
 }
@@ -110,14 +110,12 @@ export async function withRemoteMcpSession<T>(
         const result = await fn(client);
         return { logOperationId: log.operationId, result };
     } finally {
-        await transport.terminateSession().catch(() => undefined);
-        await client.close().catch(() => undefined);
+        await closeSession(client, transport);
     }
 }
 
 /**
- * Lists every tool the server has. The SDK walks the pages itself and fails a server whose pagination
- * never ends.
+ * Lists every tool the server has.
  */
 export async function listRemoteTools(client: Client, { signal }: { signal?: AbortSignal } = {}): Promise<Result<RemoteMcpTool[], RemoteMcpError>> {
     let listed: { tools: Tool[] };
@@ -258,4 +256,17 @@ function unreadableResponseError(err: unknown, status: number): RemoteMcpError {
     }
 
     return new RemoteMcpError({ code: 'invalid_response', message: 'The MCP server response could not be read', status, cause: err });
+}
+
+/** Closing the client aborts a DELETE still in flight, along with the proxy request behind it. */
+async function closeSession(client: Client, transport: StreamableHTTPClientTransport): Promise<void> {
+    let timer: NodeJS.Timeout | undefined;
+    await Promise.race([
+        transport.terminateSession().catch(() => undefined),
+        new Promise<void>((resolve) => {
+            timer = setTimeout(resolve, TERMINATE_SESSION_TIMEOUT_MS);
+        })
+    ]);
+    clearTimeout(timer);
+    await client.close().catch(() => undefined);
 }

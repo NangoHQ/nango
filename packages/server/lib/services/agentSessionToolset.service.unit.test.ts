@@ -260,6 +260,21 @@ describe('compileToolsetFromFunctions with MCP servers', () => {
         expect(linear.searchable.find((tool) => tool.name === 'deployed_action')?.mcp).toBeUndefined();
     });
 
+    it('keeps a server tool that shares its name with a sync, since a sync cannot be called', () => {
+        const linear = integration(
+            compileToolsetFromFunctions({
+                toolset: { 'linear-mcp': { allow: ['list_issues'], deny: [] } },
+                pinnedTools: undefined,
+                connectedIntegrations: ['linear-mcp'],
+                functions: [...linearFunctions, action('linear-mcp', 'list_issues', { type: 'sync' })],
+                mcpServers: new Map([['linear-mcp', { status: 'available', tools: [mcpTool('list_issues')] }]])
+            }).unwrap(),
+            'linear-mcp'
+        );
+
+        expect(linear.searchable.map((tool) => ({ name: tool.name, mcp: tool.mcp }))).toEqual([{ name: 'list_issues', mcp: { inputSchema } }]);
+    });
+
     it('filters and pins server tools by exact name', () => {
         const linear = integration(
             compileMcp({
