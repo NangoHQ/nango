@@ -317,11 +317,17 @@ export async function startTurn({
     const starterProvider = lastMessage?.role === 'user' ? lastMessage.metadata?.starterProvider : undefined;
     const integrationSetup =
         starterProvider && PLAYGROUND_PROVIDERS.includes(starterProvider) ? await setUpStarterIntegration(ctx.environment, starterProvider) : undefined;
-    // Read after the starter setup, so an integration it creates is part of the list.
-    const integrationIds = await configService.listIntegrationKeys(db.knex, ctx.environment.id);
-    const pinned = newestConnectionPerIntegration(
-        await connectionService.listConnections({ environmentId: ctx.environment.id, integrationIds, tags: playgroundConnectionScope(ctx.user) })
-    );
+    let integrationIds: string[];
+    let pinned: AgentSessionPinnedConnection[];
+    try {
+        // Read after the starter setup, so an integration it creates is part of the list.
+        integrationIds = await configService.listIntegrationKeys(db.knex, ctx.environment.id);
+        pinned = newestConnectionPerIntegration(
+            await connectionService.listConnections({ environmentId: ctx.environment.id, integrationIds, tags: playgroundConnectionScope(ctx.user) })
+        );
+    } catch (err) {
+        return Err(new AgentPlaygroundError('session_creation_failed', 'Could not read the integrations and connections', { cause: err }));
+    }
     const session = await getOrCreateSession(ctx, sessionId, integrationIds, pinned);
     if (session.isErr()) {
         return Err(session.error);
