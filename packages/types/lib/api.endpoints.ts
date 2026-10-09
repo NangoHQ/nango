@@ -132,6 +132,7 @@ import type {
 } from './integration/api.js';
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
+import type { GetConnectionToolsMcp, PostConnectionToolsMcp } from './mcp/api.js';
 import type { GetMeta } from './meta/api.js';
 import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from './mfa/api.js';
 import type { GetPlainHmac } from './plain/api.js';
@@ -192,6 +193,8 @@ export type PublicApiEndpoints =
     | DeleteAgentSession
     | PostAgentSessionMcp
     | GetAgentSessionMcp
+    | PostConnectionToolsMcp
+    | GetConnectionToolsMcp
     | PostPublicConnectSessionsReconnect
     | GetPublicConnections
     | GetPublicConnection
