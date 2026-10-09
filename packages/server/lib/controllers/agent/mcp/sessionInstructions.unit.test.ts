@@ -70,6 +70,7 @@ describe('buildSessionInstructions', () => {
 
         expect(instructions).toContain('use nango_tool_search to find one');
         expect(instructions).toContain('Call a tool through nango_execute');
+        expect(instructions).toContain("nango_proxy calls the app's API directly");
         expect(instructions).toContain('use it only when no tool covers the task, after searching.');
         expect(instructions).toContain('Call nango_create_connection for that integration');
     });
