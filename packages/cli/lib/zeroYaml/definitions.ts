@@ -17,7 +17,8 @@ import {
     EndpointMismatchDefinitionError,
     InvalidIntervalDefinitionError,
     InvalidModelDefinitionError,
-    TrackDeletesDefinitionError
+    TrackDeletesDefinitionError,
+    UnusedCheckpointDefinitionError
 } from './utils.js';
 
 import type {
@@ -163,7 +164,18 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 break;
             }
             case 'action': {
-                integration.actions.push(parseAction({ absoluteFilePath: absoluteRealPath, params: script, integrationIdClean, basename, basenameClean }));
+                const parsedActionRes = parseAction({
+                    filePath: realPath,
+                    absoluteFilePath: absoluteRealPath,
+                    params: script,
+                    integrationIdClean,
+                    basename,
+                    basenameClean
+                });
+                if (parsedActionRes.isErr()) {
+                    return Err(parsedActionRes.error);
+                }
+                integration.actions.push(parsedActionRes.value);
                 break;
             }
             case 'onEvent': {
@@ -280,6 +292,10 @@ export function parseSync({
 
     const features = detectFeatures({ entryPoint: absoluteFilePath });
 
+    if (params.checkpoint !== undefined && features.isOk() && !features.value.includes('checkpoints')) {
+        return Err(new UnusedCheckpointDefinitionError(filePath, ['createSync', 'checkpoint']));
+    }
+
     const sync: ParsedNangoSync = {
         type: 'sync',
         description: params.description,
@@ -304,18 +320,20 @@ export function parseSync({
 }
 
 export function parseAction({
+    filePath,
     absoluteFilePath,
     params,
     integrationIdClean,
     basename,
     basenameClean
 }: {
+    filePath: string;
     absoluteFilePath: string;
     params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>;
     integrationIdClean: string;
     basename: string;
     basenameClean: string;
-}): ParsedNangoAction {
+}): Result<ParsedNangoAction> {
     const inputName = `ActionInput_${integrationIdClean}_${basenameClean}`;
     const outputName = `ActionOutput_${integrationIdClean}_${basenameClean}`;
 
@@ -328,7 +346,11 @@ export function parseAction({
 
     const features = detectFeatures({ entryPoint: absoluteFilePath });
 
-    return {
+    if (params.checkpoint !== undefined && features.isOk() && !features.value.includes('checkpoints')) {
+        return Err(new UnusedCheckpointDefinitionError(filePath, ['createAction', 'checkpoint']));
+    }
+
+    return Ok({
         type: 'action' as const,
         description: params.description,
         endpoint: params.endpoint ?? null,
@@ -341,7 +363,7 @@ export function parseAction({
         json_schema: jsonSchema,
         features: features.isOk() ? features.value : [], // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
         checkpoint: params.checkpoint !== undefined
-    };
+    });
 }
 
 export function validateFunction({
