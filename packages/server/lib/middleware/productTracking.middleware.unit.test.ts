@@ -96,7 +96,7 @@ describe('productTrackingMiddleware', () => {
             res.locals.authType = 'session';
             res.locals.account = { id: 42 } as DBTeam;
             res.locals.user = { id: 3 } as DBUser;
-            productTracking.track({ name: 'billing:plan_submit' });
+            productTracking.track({ name: 'auth:account_create' });
         });
 
         expect(capture).not.toHaveBeenCalled();
