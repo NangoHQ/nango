@@ -412,7 +412,6 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const templateRows = typeFilter === 'action' ? visibleActionTemplates : typeFilter === 'sync' ? visibleSyncTemplates : [];
     // Actions omit this column until the catalog flag is known to be off. Syncs and triggers always show it.
     const showStatus = typeFilter !== 'action' || metaData?.data.toolsCatalog === false;
-    const footerNoun = typeFilter === 'action' ? 'actions' : typeFilter === 'sync' ? 'sync functions' : 'triggers';
     const activeListHasRows = functions.length > 0 || templateRows.length > 0;
     const showEmptyNoFilters =
         countsReady &&
