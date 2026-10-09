@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { signupAcquisitionSchema } from '../../../../utils/signupAcquisition.js';
-import { safeReturnTo } from '../returnTo.js';
 import { encodeManagedAuthState, parseManagedAuthState } from './auth.js';
 
 describe('managed authentication continuation state', () => {
@@ -45,7 +44,7 @@ describe('managed authentication continuation state', () => {
         expect(Buffer.from(JSON.stringify(state)).toString('base64').length).toBeGreaterThan(16384);
         const encoded = encodeManagedAuthState(state);
         expect(encoded.length).toBeLessThanOrEqual(16384);
-        expect(parseManagedAuthState(encoded)).toEqual({ returnTo: safeReturnTo(returnTo) });
+        expect(parseManagedAuthState(encoded)).toEqual({ returnTo: '/' });
     });
 
     it('carries optional analytics without deciding account attribution in OAuth state', () => {

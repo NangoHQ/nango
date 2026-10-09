@@ -6,7 +6,7 @@ const campaign = z
     .min(1)
     .max(256)
     // oxlint-disable-next-line no-control-regex -- Reject control characters in untrusted campaign values.
-    .regex(/^[^\x00-\x1f\x7f@]+$/)
+    .regex(/^[^\x00-\x1f\x7f-\x9f@]+$/)
     .optional()
     .catch(undefined);
 // Analytics input is optional and never makes a valid signup fail.
@@ -27,7 +27,7 @@ export const signupAcquisitionSchema = z
             .string()
             .max(1024)
             // oxlint-disable-next-line no-control-regex -- Only accept a path without control characters or query data.
-            .regex(/^\/[^?#\x00-\x1f\x7f]*$/)
+            .regex(/^\/[^?#\x00-\x1f\x7f-\x9f]*$/)
             .optional()
             .catch(undefined)
     })

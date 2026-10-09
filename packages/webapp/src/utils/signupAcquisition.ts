@@ -8,7 +8,7 @@ function parseInitialPage(value: unknown): URL | undefined {
         const url = new URL(value);
         if (url.protocol !== 'https:') return;
         const isWebsite = /^(www\.)?nango\.dev$|^([a-z0-9-]+\.)?next\.nango\.dev$/.test(url.hostname);
-        const isAppSignup = ['app.nango.dev', 'app-development.nango.dev'].includes(url.hostname) && /^\/signup\/?$/.test(url.pathname);
+        const isAppSignup = /^(?:app|app-development|pr-\d+\.app-development)\.nango\.dev$/.test(url.hostname) && /^\/signup\/?$/.test(url.pathname);
         if (isWebsite || isAppSignup) return url;
     } catch {
         // Missing or malformed first visits stay unknown.
@@ -21,7 +21,7 @@ function readCampaignFields(url: URL): SignupAcquisition {
     for (const suffix of ['source', 'medium', 'campaign', 'content', 'term'] as const) {
         const value = url.searchParams.get(`utm_${suffix}`)?.trim();
         // oxlint-disable-next-line no-control-regex -- Reject control characters before sending campaign values.
-        if (value && value.length <= 256 && !/[\x00-\x1f\x7f@]/.test(value)) result[`acquisition_utm_${suffix}`] = value;
+        if (value && value.length <= 256 && !/[\x00-\x1f\x7f-\x9f@]/.test(value)) result[`acquisition_utm_${suffix}`] = value;
     }
     return result;
 }

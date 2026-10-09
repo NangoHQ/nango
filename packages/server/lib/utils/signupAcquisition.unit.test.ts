@@ -34,6 +34,17 @@ describe('signup acquisition validation', () => {
         ).toEqual({ acquisition_utm_source: 'facebook', acquisition_utm_campaign: 'launch' });
     });
 
+    it.each(['\u0080', '\u0085', '\u009f'])('drops control characters without losing valid fields: %j', (control) => {
+        expect(
+            signupAcquisitionSchema.parse({
+                acquisition_utm_source: `face${control}book`,
+                acquisition_landing_path: `/sign${control}up`,
+                acquisition_utm_campaign: 'café',
+                acquisition_referring_domain: 'github.com'
+            })
+        ).toEqual({ acquisition_utm_campaign: 'café', acquisition_referring_domain: 'github.com' });
+    });
+
     it('keeps a valid referrer and landing page when campaign data is malformed', () => {
         expect(
             signupAcquisitionSchema.parse({
