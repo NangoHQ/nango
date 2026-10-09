@@ -108,4 +108,38 @@ describe('getTwoStepCredentials', () => {
             }
         );
     });
+
+    it('interpolates connection config values into token headers', async () => {
+        let seenHeaders: http.IncomingHttpHeaders = {};
+        await withServer(
+            (req, res) => {
+                seenHeaders = req.headers;
+                res.writeHead(200, { 'content-type': 'application/json' });
+                res.end(JSON.stringify({ access_token: 'header-token' }));
+            },
+            async (baseUrl) => {
+                const provider: ProviderTwoStep = {
+                    display_name: 'Two Step',
+                    docs: 'https://docs.example.com',
+                    auth_mode: 'TWO_STEP',
+                    token_url: `${baseUrl}/token`,
+                    token_params: { username: '${credentials.username}' },
+                    token_headers: { domain: '${connectionConfig.domain}', 'x-user': '${credentials.username}' },
+                    token_response: { token: 'access_token' }
+                };
+
+                const result = await connectionService.getTwoStepCredentials(
+                    'test-two-step',
+                    provider,
+                    { username: 'jane' },
+                    { domain: 'sandbox.demo' },
+                    false
+                );
+
+                expect(result.success).toBe(true);
+                expect(seenHeaders['domain']).toBe('sandbox.demo');
+                expect(seenHeaders['x-user']).toBe('jane');
+            }
+        );
+    });
 });

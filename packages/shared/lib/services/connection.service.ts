@@ -2153,7 +2153,7 @@ export class ConnectionService {
             postBody = interpolateObjectValues(postBody, connectionConfig);
         }
 
-        const headers: Record<string, any> | string = {};
+        let headers: Record<string, any> = {};
 
         if (tokenHeaders) {
             const headerValues = Object.values(tokenHeaders).filter((v): v is string => typeof v === 'string');
@@ -2168,6 +2168,7 @@ export class ConnectionService {
                     headers[key] = strippedValue;
                 }
             }
+            headers = interpolateObjectValues(headers, connectionConfig);
         }
 
         try {
