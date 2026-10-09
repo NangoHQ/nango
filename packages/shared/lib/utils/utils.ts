@@ -303,22 +303,27 @@ function replaceAwsSigV4Expression(str: string, resolveInner: (inner: string) =>
  * @remarks
  * Copied from https://stackoverflow.com/a/1408373/250880
  */
-export function interpolateString(str: string, replacers: Record<string, any>, optionalReplacers?: Record<string, any>): string {
+export function interpolateString(
+    str: string,
+    replacers: Record<string, any>,
+    optionalReplacers?: Record<string, any>,
+    onResolved?: (field: string) => void
+): string {
     const effective = optionalReplacers ? { ...replacers, ...optionalReplacers } : replacers;
 
-    str = replaceHmacSha1HexExpression(str, (inner) => interpolateString(inner, effective));
-    str = replaceAwsSigV4Expression(str, (inner) => interpolateString(inner, effective), effective);
+    str = replaceHmacSha1HexExpression(str, (inner) => interpolateString(inner, effective, undefined, onResolved));
+    str = replaceAwsSigV4Expression(str, (inner) => interpolateString(inner, effective, undefined, onResolved), effective);
 
-    str = replaceBase64Expression(str, (inner) => interpolateString(inner, effective));
+    str = replaceBase64Expression(str, (inner) => interpolateString(inner, effective, undefined, onResolved));
 
     str = str.replace(/\${fingerprint\((.*?)\)}/g, (_, inner) => {
-        const resolvedInner = interpolateString(inner, effective);
+        const resolvedInner = interpolateString(inner, effective, undefined, onResolved);
         return getFingerprint(resolvedInner);
     });
 
-    str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, effective));
-    str = replaceSha256Base64Expression(str, (inner) => interpolateString(inner, effective));
-    str = replaceEd25519SignExpression(str, (inner) => interpolateString(inner, effective));
+    str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, effective, undefined, onResolved));
+    str = replaceSha256Base64Expression(str, (inner) => interpolateString(inner, effective, undefined, onResolved));
+    str = replaceEd25519SignExpression(str, (inner) => interpolateString(inner, effective, undefined, onResolved));
 
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
         const nowValue = resolveNowExpression(b, effective);
@@ -332,10 +337,15 @@ export function interpolateString(str: string, replacers: Record<string, any>, o
             return a;
         }
         if (b in effective && effective[b] != null) {
+            onResolved?.(b);
             return `${effective[b]}`;
         }
         const r = resolveKey(b, effective);
-        return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
+        if (typeof r === 'string' || typeof r === 'number') {
+            onResolved?.(b);
+            return r as string;
+        }
+        return a;
     });
 
     return interpolated;
@@ -358,23 +368,23 @@ function resolveKey(key: string, replacers: Record<string, any>): any {
 
     return value;
 }
-export function interpolateStringFromObject(str: string, replacers: Record<string, any>): string {
-    str = replaceHmacSha1HexExpression(str, (inner) => interpolateStringFromObject(inner, replacers));
-    str = replaceAwsSigV4Expression(str, (inner) => interpolateStringFromObject(inner, replacers), replacers);
-    str = replaceBase64Expression(str, (inner) => interpolateStringFromObject(inner, replacers));
-    str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, replacers));
-    str = replaceSha256Base64Expression(str, (inner) => interpolateStringFromObject(inner, replacers));
-    str = replaceEd25519SignExpression(str, (inner) => interpolateStringFromObject(inner, replacers));
+export function interpolateStringFromObject(str: string, replacers: Record<string, any>, onResolved?: (field: string) => void): string {
+    str = replaceHmacSha1HexExpression(str, (inner) => interpolateStringFromObject(inner, replacers, onResolved));
+    str = replaceAwsSigV4Expression(str, (inner) => interpolateStringFromObject(inner, replacers, onResolved), replacers);
+    str = replaceBase64Expression(str, (inner) => interpolateStringFromObject(inner, replacers, onResolved));
+    str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, replacers, undefined, onResolved));
+    str = replaceSha256Base64Expression(str, (inner) => interpolateStringFromObject(inner, replacers, onResolved));
+    str = replaceEd25519SignExpression(str, (inner) => interpolateStringFromObject(inner, replacers, onResolved));
 
     if (str.includes('||')) {
         const [left, right = ''] = str.split('||').map((part) => part.trim());
 
         if (left) {
-            const interpolated = interpolateStringFromObject(left, replacers);
+            const interpolated = interpolateStringFromObject(left, replacers, onResolved);
             if (interpolated && interpolated !== left) return interpolated;
         }
 
-        return right ? interpolateStringFromObject(right, replacers) : '';
+        return right ? interpolateStringFromObject(right, replacers, onResolved) : '';
     }
 
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
@@ -395,7 +405,11 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
                 .split('.')
                 .reduce((o: Record<string, any> | undefined, i: string) => (o != null ? o[i] : undefined), replacers as Record<string, any> | undefined) ??
             replacers[b];
-        return typeof r === 'string' || typeof r === 'number' ? (r as string) : a;
+        if (typeof r === 'string' || typeof r === 'number') {
+            onResolved?.(b);
+            return r as string;
+        }
+        return a;
     });
     return interpolated;
 }
@@ -516,20 +530,20 @@ export function interpolateProxyUrlParts(proxyUrlPart: string | undefined): stri
     return proxyUrlPart ? proxyUrlPart.replace(/connectionConfig/g, 'connection_config') : proxyUrlPart;
 }
 
-export function interpolateIfNeeded(str: string, replacers: Record<string, any>) {
+export function interpolateIfNeeded(str: string, replacers: Record<string, any>, onResolved?: (field: string) => void) {
     if (str.includes('${')) {
         if (str.includes('||')) {
             const parts = str.split('||').map((part) => part.trim());
-            const left = parts[0] ? interpolateStringFromObject(parts[0], replacers) : undefined;
+            const left = parts[0] ? interpolateStringFromObject(parts[0], replacers, onResolved) : undefined;
 
             if (left && left !== parts[0]) {
                 return left;
             }
 
-            return parts[1] ? interpolateStringFromObject(parts[1], replacers) : '';
+            return parts[1] ? interpolateStringFromObject(parts[1], replacers, onResolved) : '';
         }
 
-        return interpolateStringFromObject(str, replacers);
+        return interpolateStringFromObject(str, replacers, onResolved);
     }
 
     return str;

@@ -103,6 +103,34 @@ describe('proxyService', () => {
         expect(capping.getStatus).toHaveBeenCalledWith(null, 'proxy', 'data_transfer');
     });
 
+    it('observes override scope gaps but sends the request', async () => {
+        const connection = connectionFixture();
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integrationFixture());
+        vi.spyOn(shared.connectionService, 'getConnection').mockResolvedValue({ success: true, error: null, response: connection });
+        vi.spyOn(shared, 'refreshOrTestCredentials').mockResolvedValue(Ok(connection));
+        const call = vi.spyOn(shared.ProxyRequest.prototype, 'httpCall').mockResolvedValue(axiosResponse(200, {}, 'ok'));
+        const execution = await proxyService.request({
+            account: accountFixture(),
+            environment: environmentFixture(),
+            plan: null,
+            method: 'GET',
+            endpoint: '/users',
+            integrationId: 'github',
+            connectionId: 'connection-id',
+            baseUrlOverride: 'https://api.example.com',
+            apiKey: { type: 'api_key', source: 'customer_key', accountId: 1, environmentIds: [2], keyId: 123, scopes: ['environment:proxy'] }
+        });
+        expect(execution.result.isOk()).toBe(true);
+        expect(call).toHaveBeenCalledOnce();
+        expect(call.mock.calls[0]?.[0].url).toBe('https://api.example.com/users');
+        expect(metrics.increment).toHaveBeenCalledWith(metrics.Types.PROXY_BASE_URL_OVERRIDE_MISSING_SCOPES, 1, {
+            provider: 'github',
+            apiKeySource: 'customer_key',
+            missingConnectionCredentials: 'true',
+            missingIntegrationCredentials: 'true'
+        });
+    });
+
     it('returns a domain error when the integration does not exist', async () => {
         vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
         const connectionSpy = vi.spyOn(shared.connectionService, 'getConnection');

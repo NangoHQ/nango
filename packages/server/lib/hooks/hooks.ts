@@ -461,7 +461,9 @@ export async function credentialsTest({
     void logCtx.info(`Running automatic credentials verification`);
 
     const internalConfig: InternalProxyConfiguration = {
-        providerName: config.provider
+        providerName: config.provider,
+        urlTemplateSource: 'verification',
+        monitoringContext: { accountId: logCtx.accountId, environmentId: config.environment_id, callsite: 'verification' }
     };
 
     for (const endpoint of endpoints) {

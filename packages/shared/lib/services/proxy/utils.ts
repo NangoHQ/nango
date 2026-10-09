@@ -7,15 +7,10 @@ import OAuth from 'oauth-1.0a';
 import { assertSafeOutboundUrlSync, getSafeHttpAgents, getSafeLookup } from '@nangohq/egress';
 import { Err, isBaseUrlOverrideDenied, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
-import {
-    connectionCopyWithParsedConnectionConfig,
-    formatPem,
-    getStableInterpolationReplacers,
-    interpolateIfNeeded,
-    interpolateProxyUrlParts
-} from '../../utils/utils.js';
+import { connectionCopyWithParsedConnectionConfig, formatPem, getStableInterpolationReplacers, interpolateProxyUrlParts } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
 import { signAwsSigV4Request } from './aws-sigv4.js';
+import { interpolateProxyTemplate } from './interpolation.js';
 
 import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type {
@@ -38,6 +33,7 @@ type ProxyErrorCode =
     | 'unsupported_auth'
     | 'unknown_provider'
     | 'unsupported_provider'
+    | 'invalid_proxy_url'
     | 'invalid_query_params'
     | 'unknown_error'
     | 'failed_to_get_connection'
@@ -284,6 +280,9 @@ export function getProxyConfiguration({
         provider,
         providerName,
         providerConfigKey,
+        ...(internalConfig.urlTemplateSource ? { urlTemplateSource: internalConfig.urlTemplateSource } : {}),
+        ...(internalConfig.monitoringContext ? { monitoringContext: internalConfig.monitoringContext } : {}),
+        ...(internalConfig.onSecretInterpolation ? { onSecretInterpolation: internalConfig.onSecretInterpolation } : {}),
         headers: headersCleaned,
         data,
         retries: retries || 0,
@@ -459,13 +458,25 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     const baseFormatted = interpolateProxyUrlParts(normalizedBase);
     const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';
 
-    const combinedUrl = [baseFormatted, endpointFormatted].filter(Boolean).join('/');
-    const fullEndpoint = interpolateIfNeeded(combinedUrl, {
+    const replacers = {
         ...(connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>),
         ...connection.credentials
-    });
+    };
+    // Resolve the base independently: a fallback in the caller's endpoint must never discard it.
+    const baseLocation = config.baseUrlOverride
+        ? config.urlTemplateSource === 'verification'
+            ? 'verification_base_url_override'
+            : 'caller_base_url_override'
+        : 'provider_base_url';
+    const endpointLocation = config.urlTemplateSource === 'verification' ? 'verification_endpoint' : 'caller_endpoint';
+    const resolvedBase = baseFormatted ? interpolateProxyTemplate(baseFormatted, replacers, config, connection, baseLocation) : '';
+    const resolvedEndpoint = endpointFormatted ? interpolateProxyTemplate(endpointFormatted, replacers, config, connection, endpointLocation) : '';
+    const fullEndpoint = [resolvedBase, resolvedEndpoint].filter(Boolean).join('/');
 
     let url = new URL(fullEndpoint);
+    if (!resolvedBase || url.origin !== new URL(resolvedBase).origin) {
+        throw new ProxyError('invalid_proxy_url', 'Proxy request URL must match the configured base URL origin.');
+    }
     if (config.params) {
         if (typeof config.params === 'string') {
             if (fullEndpoint.includes('?')) {
@@ -497,7 +508,7 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
             if (typeof value !== 'string') {
                 continue;
             }
-            const interpolated = interpolateIfNeeded(value, replacers);
+            const interpolated = interpolateProxyTemplate(value, replacers, config, connection, 'provider_query');
             if (!interpolated.includes('${')) {
                 url.searchParams.set(key, interpolated);
             }
@@ -527,7 +538,7 @@ export function buildProxyBody({
     // (at any depth) any leaf whose placeholder didn't resolve, and any object left empty as a result.
     const buildValue = (value: unknown): ProxyBodyValue | null => {
         if (typeof value === 'string') {
-            const interpolated = interpolateIfNeeded(value, replacers);
+            const interpolated = interpolateProxyTemplate(value, replacers, config, connection, 'provider_body');
             return interpolated.includes('${') ? null : interpolated;
         }
 
@@ -817,10 +828,12 @@ export function buildProxyHeaders({
             ...(usesReplacer('bodyCanonicalParams') && { bodyCanonicalParams: getRawBody(config.method, config.data) }),
             contentType
         };
+        const interpolateHeader = (template: string, replacers: Record<string, any>) =>
+            interpolateProxyTemplate(template, replacers, config, connection, 'provider_header');
 
         for (const [key, value] of Object.entries(config.provider.proxy.headers) as [Lowercase<string>, string][]) {
             if (value.includes('connectionConfig')) {
-                const interpolated = interpolateIfNeeded(value, {
+                const interpolated = interpolateHeader(value, {
                     connectionConfig: connection.connection_config,
                     credentials: connection.credentials,
                     ...(connection.credentials as Record<string, string>),
@@ -838,7 +851,7 @@ export function buildProxyHeaders({
 
             switch (connection.credentials.type) {
                 case 'OAUTH2': {
-                    headers[key] = interpolateIfNeeded(value, {
+                    headers[key] = interpolateHeader(value, {
                         accessToken: connection.credentials.access_token,
                         clientId: integrationConfig?.oauth_client_id || '',
                         clientSecret: integrationConfig?.oauth_client_secret || ''
@@ -848,11 +861,11 @@ export function buildProxyHeaders({
                 case 'JWT':
                 case 'OAUTH2_CC':
                 case 'SIGNATURE': {
-                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '' });
+                    headers[key] = interpolateHeader(value, { accessToken: connection.credentials.token || '' });
                     break;
                 }
                 case 'TWO_STEP': {
-                    headers[key] = interpolateIfNeeded(value, {
+                    headers[key] = interpolateHeader(value, {
                         accessToken: connection.credentials.token || '',
                         credentials: connection.credentials,
                         ...stableReplacers,
@@ -861,7 +874,7 @@ export function buildProxyHeaders({
                     break;
                 }
                 default:
-                    headers[key] = interpolateIfNeeded(value, {
+                    headers[key] = interpolateHeader(value, {
                         credentials: connection.credentials,
                         ...(connection.credentials as Record<string, string>),
                         method: config.method,

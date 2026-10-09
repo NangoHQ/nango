@@ -53,6 +53,8 @@ export enum Types {
     DATA_TRANSFER = 'nango.dataTransfer',
     PROXY_REDIRECT = 'nango.server.proxy.redirect',
     PROXY_BASE_URL_OVERRIDE_DENIED = 'nango.server.proxy.baseUrlOverrideDenied',
+    PROXY_SECRET_INTERPOLATION = 'nango.proxy.secret_interpolation',
+    PROXY_BASE_URL_OVERRIDE_MISSING_SCOPES = 'nango.proxy.base_url_override.missing_scopes',
 
     CRON_MANAGE_GROWTH_ADDON = 'nango.server.cron.manageGrowthAddon',
     GROWTH_ADDON_CORRUPTED_STATE_COUNT = 'nango.server.growthAddon.corrupted.count',

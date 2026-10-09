@@ -78,7 +78,11 @@ async function execute(
         }
     });
 
-    const internalConfig: InternalProxyConfiguration = { providerName };
+    const internalConfig: InternalProxyConfiguration = {
+        providerName,
+        urlTemplateSource: 'verification',
+        monitoringContext: { accountId, environmentId: config.environment_id, callsite: 'verification' }
+    };
     const externalConfig: UserProvidedProxyConfiguration = {
         endpoint: '',
         providerConfigKey,

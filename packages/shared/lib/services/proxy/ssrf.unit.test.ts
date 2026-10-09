@@ -1,12 +1,18 @@
-import { describe, expect, it } from 'vitest';
+import http from 'node:http';
+import https from 'node:https';
+
+import { describe, expect, it, vi } from 'vitest';
 
 import { DEFAULT_OUTBOUND_URL_POLICY, OutboundUrlError } from '@nangohq/egress';
+import * as egress from '@nangohq/egress';
 
 import { getTestConnection } from '../../seeders/connection.seeder.js';
+import { ProxyRequest } from './request.js';
 import { getAxiosConfiguration } from './utils.js';
-import { getDefaultProxy } from './utils.test.js';
+import { getDefaultProxy, permissiveTestOutboundPolicy } from './utils.test.js';
 
 import type { OutboundUrlPolicy } from '@nangohq/egress';
+import type { AddressInfo } from 'node:net';
 
 const policy: OutboundUrlPolicy = DEFAULT_OUTBOUND_URL_POLICY;
 const connection = getTestConnection();
@@ -20,6 +26,45 @@ function buildConfig({ baseUrl, endpoint = '/', outboundPolicy }: { baseUrl: str
 }
 
 describe('proxy outbound policy wiring', () => {
+    it('keeps credentials on the provider origin when a caller template supplies another host', async () => {
+        const validateSpy = vi.spyOn(egress, 'assertSafeOutboundUrlSync').mockImplementation((url) => new URL(url));
+        const agentsSpy = vi.spyOn(egress, 'getSafeHttpAgents').mockReturnValue({ httpAgent: new http.Agent(), httpsAgent: new https.Agent() });
+        const providerRequest = vi.fn((_req: http.IncomingMessage, res: http.ServerResponse) => res.end('provider'));
+        const attackerRequest = vi.fn((_req: http.IncomingMessage, res: http.ServerResponse) => res.end('attacker'));
+        const provider = http.createServer(providerRequest);
+        const attacker = http.createServer(attackerRequest);
+        await new Promise<void>((resolve) => provider.listen(0, '127.0.0.1', resolve));
+        await new Promise<void>((resolve) => attacker.listen(0, '127.0.0.1', resolve));
+
+        try {
+            const providerBase = `http://127.0.0.1:${(provider.address() as AddressInfo).port}`;
+            const attackerUrl = `http://127.0.0.1:${(attacker.address() as AddressInfo).port}/collect`;
+            const proxy = new ProxyRequest({
+                proxyConfig: getDefaultProxy({
+                    provider: { proxy: { base_url: `${providerBase}/api`, headers: { 'x-api-key': '${apiKey}' } } },
+                    endpoint: '/v1/me?x=${nope}||' + attackerUrl
+                }),
+                getConnection: () => getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'stored-secret' } }),
+                getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+                outboundPolicy: permissiveTestOutboundPolicy,
+                maxWaitMs: Infinity,
+                logger: vi.fn()
+            });
+
+            expect((await proxy.request()).unwrap().data).toBe('provider');
+            expect(providerRequest).toHaveBeenCalledOnce();
+            expect(providerRequest.mock.calls[0]?.[0].headers['x-api-key']).toBe('stored-secret');
+            expect(attackerRequest).not.toHaveBeenCalled();
+        } finally {
+            validateSpy.mockRestore();
+            agentsSpy.mockRestore();
+            await Promise.all([
+                new Promise<void>((resolve) => provider.close(() => resolve())),
+                new Promise<void>((resolve) => attacker.close(() => resolve()))
+            ]);
+        }
+    });
+
     it('attaches DNS-pinning agents and caps redirects when a policy is present', () => {
         const cfg = buildConfig({ baseUrl: 'https://api.example.com', outboundPolicy: policy });
         expect(cfg.httpAgent).toBeDefined();
