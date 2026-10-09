@@ -23,12 +23,21 @@ describe('signup acquisition', () => {
         });
     });
 
-    it.each([undefined, {}, { u: 'invalid' }, { u: 'https://app.nango.dev/signup' }, { u: 'https://other.example/' }])(
-        'ignores unavailable website history: %j',
-        (info) => {
-            expect(acquisitionFromInitialInfo(info)).toBeUndefined();
-        }
-    );
+    it.each(['https://next.nango.dev/pricing', 'https://pr-161.next.nango.dev/pricing'])('accepts preview website hosts: %s', (u) => {
+        expect(acquisitionFromInitialInfo({ u: `${u}?utm_source=t1` })).toEqual({ acquisition_utm_source: 't1', acquisition_landing_path: '/pricing' });
+    });
+
+    it.each([
+        undefined,
+        {},
+        { u: 'invalid' },
+        { u: 'https://app.nango.dev/signup' },
+        { u: 'https://other.example/' },
+        { u: 'https://a.b.next.nango.dev/' },
+        { u: 'https://next.nango.dev.evil.example/' }
+    ])('ignores unavailable website history: %j', (info) => {
+        expect(acquisitionFromInitialInfo(info)).toBeUndefined();
+    });
 
     it('does not invent a referrer for direct visits or use unsafe campaign values', () => {
         expect(acquisitionFromInitialInfo({ u: 'https://nango.dev/?utm_source=person@example.com&utm_term=' + 'x'.repeat(257), r: '$direct' })).toEqual({

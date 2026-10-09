@@ -9,7 +9,7 @@ export function acquisitionFromInitialInfo(info: unknown): SignupAcquisition | u
     if (typeof u !== 'string' || u.length > 8192) return;
     try {
         const url = new URL(u);
-        if (!['https:'].includes(url.protocol) || !['nango.dev', 'www.nango.dev'].includes(url.hostname)) return;
+        if (url.protocol !== 'https:' || !/^(www\.)?nango\.dev$|^([a-z0-9-]+\.)?next\.nango\.dev$/.test(url.hostname)) return;
         const result: SignupAcquisition = {};
         for (const suffix of ['source', 'medium', 'campaign', 'content', 'term'] as const) {
             const value = url.searchParams.get(`utm_${suffix}`)?.trim();
