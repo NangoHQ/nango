@@ -7,7 +7,6 @@ import type { AgentSessionResolvedConnection, DBEnvironment, DBPlan, DBTeam } fr
 import type { Span } from 'dd-trace';
 
 const DISCOVERY_TIMEOUT_MS = 10_000;
-const MAX_TOOLS_PER_SERVER = 200;
 
 export type McpServerDiscovery = { status: 'available'; tools: RemoteMcpTool[] } | { status: 'unavailable' };
 
@@ -54,7 +53,7 @@ async function discoverServer({
         try {
             const { result } = await withRemoteMcpSession(
                 { account, environment, plan, integrationId: connection.integrationId, connectionId: connection.connectionId, provider: connection.provider },
-                async (session) => await listRemoteTools(session, { maxTools: MAX_TOOLS_PER_SERVER, signal }),
+                async (session) => await listRemoteTools(session, { signal }),
                 { signal }
             );
             if (result.isErr()) {
@@ -62,11 +61,7 @@ async function discoverServer({
                 return { status: 'unavailable' };
             }
 
-            if (result.value.truncated) {
-                span.setTag('nango.mcpToolsTruncated', true);
-            }
-
-            return { status: 'available', tools: result.value.tools };
+            return { status: 'available', tools: result.value };
         } catch (err) {
             span.setTag('nango.error', err);
             return { status: 'unavailable' };
