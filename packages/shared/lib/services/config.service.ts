@@ -95,6 +95,11 @@ class ConfigService {
         return getEncryptionManager().decryptProviderConfig(result);
     }
 
+    async listIntegrationKeys(trx: Knex, environment_id: number): Promise<string[]> {
+        const results = await trx.select('unique_key').from<ProviderConfig>(`_nango_configs`).where({ environment_id, deleted: false });
+        return results.map((result: Pick<ProviderConfig, 'unique_key'>) => result.unique_key);
+    }
+
     async listProviderConfigs(trx: Knex, environment_id: number): Promise<ProviderConfig[]> {
         const results = (await trx
             .select('_nango_configs.*', 'providers_shared_credentials.credentials')

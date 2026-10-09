@@ -8,7 +8,15 @@ import { seeders } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionServer.js';
-import { buildMcpTools, existingIntegrationFor, newestConnectionPerIntegration, sessionOwner, toolNeedsApproval } from './agentPlayground.service.js';
+import {
+    buildMcpTools,
+    existingIntegrationFor,
+    isSessionCurrent,
+    newestConnectionPerIntegration,
+    playgroundConnectionTags,
+    sessionOwner,
+    toolNeedsApproval
+} from './agentPlayground.service.js';
 
 import type { AgentSession } from '@nangohq/types';
 
@@ -47,6 +55,44 @@ describe('sessionOwner', () => {
 
     it('has no owner for a session the playground did not create', () => {
         expect(sessionOwner({ metaTools: { ...session().metaTools, nangoCreateConnection: { enabled: false, tags: {} } } })).toBeUndefined();
+    });
+});
+
+describe('playgroundConnectionTags', () => {
+    it("tags connections with the user as their end user, like the dashboard's", () => {
+        expect(playgroundConnectionTags({ id: 42, uuid: 'user-a', email: 'Jane@Example.com', name: 'Jane Doe' })).toEqual({
+            end_user_id: '42',
+            end_user_email: 'Jane@Example.com',
+            end_user_display_name: 'Jane Doe',
+            origin: 'nango_agent_playground',
+            'nango/playground_user': 'user-a'
+        });
+    });
+
+    it('keeps the owner that sessionOwner reads', () => {
+        const tags = playgroundConnectionTags({ id: 1, uuid: 'user-a', email: 'a@example.com', name: 'A' });
+        const metaTools = { ...session().metaTools, nangoCreateConnection: { enabled: true, tags } };
+
+        expect(sessionOwner({ metaTools })).toBe('user-a');
+    });
+});
+
+describe('isSessionCurrent', () => {
+    const pinned = [{ integrationId: 'notion', connectionId: 'notion-acme' }];
+
+    it('matches the integrations and connections the session was created with', () => {
+        expect(isSessionCurrent(session(), ['notion'], pinned)).toBe(true);
+    });
+
+    it('does not match once an integration was added or deleted', () => {
+        expect(isSessionCurrent(session(), ['notion', 'github'], pinned)).toBe(false);
+        expect(isSessionCurrent(session(), ['github'], pinned)).toBe(false);
+    });
+
+    it('does not match once the newest connection changed, was added or was deleted', () => {
+        expect(isSessionCurrent(session(), ['notion'], [{ integrationId: 'notion', connectionId: 'notion-new' }])).toBe(false);
+        expect(isSessionCurrent(session(), ['notion'], [...pinned, { integrationId: 'github', connectionId: 'github-1' }])).toBe(false);
+        expect(isSessionCurrent(session(), ['notion'], [])).toBe(false);
     });
 });
 
