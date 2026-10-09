@@ -5,6 +5,7 @@ import { formatMcpArgumentsError, PublicMcpError } from './utils.js';
 
 import type { ToolAnnotations } from '@modelcontextprotocol/server';
 import type {
+    ApiKeyPrincipal,
     ApiKeyScope,
     AuditActionOf,
     AuditAttribution,
@@ -37,6 +38,7 @@ export interface ManagementMcpAuditContext {
 export interface ManagementMcpContext extends Omit<ManagementMcpAuditContext, 'environment'> {
     environment: DBEnvironment;
     customerApiKeyId?: number | undefined;
+    apiKeyPrincipal?: ApiKeyPrincipal | undefined;
 }
 
 export type ManagementMcpSchema = z.ZodType;

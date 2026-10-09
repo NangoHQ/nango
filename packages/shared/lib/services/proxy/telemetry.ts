@@ -1,6 +1,6 @@
-import { getLogger, metrics } from '@nangohq/utils';
+import { getLogger, hasApiKeyScope, metrics } from '@nangohq/utils';
 
-import type { ConnectionForProxy, IntegrationConfigForProxy, ProxyInterpolationEvent } from '@nangohq/types';
+import type { ApiKeyPrincipal, ApiKeyScope, ConnectionForProxy, IntegrationConfigForProxy, ProxyInterpolationEvent } from '@nangohq/types';
 
 const logger = getLogger('proxy.security.monitoring');
 
@@ -72,4 +72,31 @@ export function createProxyInterpolationObserver(getContext: () => ProxyMonitori
             wouldBlock: callerSupplied
         });
     };
+}
+
+/** Observe the proposed override permission requirement; do not reject requests yet. */
+export function observeProxyBaseUrlOverrideScopes(context: ProxyMonitoringContext, apiKey: ApiKeyPrincipal | undefined): void {
+    if (!context.baseUrlOverride || !apiKey) return;
+    const requiredScopes: ApiKeyScope[] = ['environment:connections:read_credentials', 'environment:integrations:read_credentials'];
+    const missingScopes = requiredScopes.filter((requiredScope) => !hasApiKeyScope({ grantedScopes: apiKey.scopes, requiredScope }));
+    if (missingScopes.length === 0) return;
+
+    try {
+        metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_MISSING_SCOPES, 1, {
+            provider: context.provider,
+            apiKeySource: apiKey.source,
+            missingConnectionCredentials: String(missingScopes.includes('environment:connections:read_credentials')),
+            missingIntegrationCredentials: String(missingScopes.includes('environment:integrations:read_credentials'))
+        });
+        logger.info('Proxy base URL override missing credential read scopes', {
+            event: 'proxy_base_url_override_missing_scopes',
+            ...proxyMonitoringAttributes(context),
+            apiKeyId: apiKey.keyId ?? null,
+            apiKeySource: apiKey.source,
+            missingScopes,
+            wouldBlock: true
+        });
+    } catch {
+        // Monitoring must not interrupt an otherwise valid proxy request.
+    }
 }
