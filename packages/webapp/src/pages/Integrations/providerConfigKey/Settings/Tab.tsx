@@ -28,7 +28,8 @@ export const SettingsTab: React.FC<{ data: GetIntegration['Success']['data']; en
     const guideKey = `${environment.name}:${data.integration.unique_key}`;
     const [dismissedGuides, setDismissedGuides] = useLocalStorage<Record<string, true>>(LocalStorageKeys.IntegrationSetupGuideDismissed, {});
     const guideDismissed = dismissedGuides?.[guideKey] === true;
-    const showGuide = Boolean(docs) && showsCredentialsSection(data) && !guideDismissed;
+    const isSharedCredentials = Boolean(data.integration.shared_credentials_id);
+    const showGuide = Boolean(docs) && showsCredentialsSection(data) && !isSharedCredentials && !guideDismissed;
     const guideDescription = setupGuideDescription(displayName, data.template.auth_mode);
 
     return (
