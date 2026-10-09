@@ -6748,7 +6748,7 @@ datacircle:
             type: string
             title: API key
             description: Your Datacircle API key.
-            example: 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
+            example: 9944b091**************************c6ee4b
             pattern: '^[a-f0-9]{40}$'
             doc_section: '#step-1-finding-your-api-key'
 
