@@ -1,6 +1,6 @@
 import { Client } from '@modelcontextprotocol/client';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
-import { dynamicTool, generateText, jsonSchema, stepCountIs } from 'ai';
+import { generateText, stepCountIs } from 'ai';
 import { MockLanguageModelV4 } from 'ai/test';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -15,8 +15,7 @@ import {
     newestConnectionPerIntegration,
     playgroundConnectionTags,
     sessionOwner,
-    toolNeedsApproval,
-    withUnfinishedSetups
+    toolNeedsApproval
 } from './agentPlayground.service.js';
 
 import type { AgentSession } from '@nangohq/types';
@@ -87,32 +86,6 @@ describe('hasSameIntegrations', () => {
         expect(hasSameIntegrations(session(), [{ unique_key: 'notion' }, { unique_key: 'github' }])).toBe(false);
         expect(hasSameIntegrations(session(), [])).toBe(false);
         expect(hasSameIntegrations(session(), [{ unique_key: 'github' }])).toBe(false);
-    });
-});
-
-describe('withUnfinishedSetups', () => {
-    async function connect(integration: string) {
-        const execute = vi.fn().mockResolvedValue({ connect_url: 'https://connect.example' });
-        const tools = withUnfinishedSetups(
-            { nango_create_connection: dynamicTool({ description: '', inputSchema: jsonSchema({}), execute }) },
-            new Map([['my-hubspot', 'hubspot']])
-        );
-        const output: unknown = await tools['nango_create_connection']?.execute?.({ integration }, { toolCallId: 'call-1', messages: [], context: {} });
-        return { execute, output };
-    }
-
-    it('returns the setup for an integration missing its credentials, without creating a link', async () => {
-        const { execute, output } = await connect('my-hubspot');
-
-        expect(execute).not.toHaveBeenCalled();
-        expect(output).toMatchObject({ integration_setup: { provider: 'hubspot', integrationId: 'my-hubspot', outcome: 'missing_credentials' } });
-    });
-
-    it('creates a link for any other integration', async () => {
-        const { execute, output } = await connect('my-notion');
-
-        expect(execute).toHaveBeenCalledOnce();
-        expect(output).toEqual({ connect_url: 'https://connect.example' });
     });
 });
 

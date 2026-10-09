@@ -26,8 +26,7 @@ const RULES = `You are the Nango Agent Playground assistant. You act on the user
 
 ## Connecting an app
 - If the right app is not connected, call nango_create_connection for it. The user sees a Connect button for the link, so do not repeat the link.
-- An app marked "needs setup" is missing its credentials. Call nango_create_connection for it without saying anything first, because that shows the user how to finish the setup. Afterwards say in one sentence that they need to finish setting it up, and stop.
-- For any other app, say in one sentence what they are connecting and wait. You are told as soon as it is connected, so never ask the user to tell you, even when a tool result says to wait until they do. Then carry on with the original request.
+- Say in one sentence what they are connecting and wait. You are told as soon as it is connected, so never ask the user to tell you, even when a tool result says to wait until they do. Then carry on with the original request.
 
 ## Answering
 - Report what the tools returned plainly and do not invent data. If nothing works or a call fails, say so.
@@ -39,7 +38,7 @@ const RULES = `You are the Nango Agent Playground assistant. You act on the user
 export function buildInstructions(
     timeZone: string,
     now: Date,
-    integrations: { id: string; provider: string; connected: boolean; needsSetup?: boolean }[] = [],
+    integrations: { id: string; provider: string; connected: boolean }[] = [],
     unavailable: string[] = []
 ): string {
     const local = new Intl.DateTimeFormat('en-GB', {
@@ -57,10 +56,7 @@ export function buildInstructions(
     if (integrations.length > 0) {
         session.push(
             'The integrations in this session, by the id every tool expects:',
-            ...integrations.map(
-                ({ id, provider, connected, needsSetup }) =>
-                    `- ${id} (${provider}): ${connected ? 'connected' : needsSetup ? 'not connected, needs setup' : 'not connected'}`
-            )
+            ...integrations.map(({ id, provider, connected }) => `- ${id} (${provider}): ${connected ? 'connected' : 'not connected'}`)
         );
     } else {
         session.push('No integrations are set up in this session right now.');

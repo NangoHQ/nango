@@ -19,14 +19,6 @@ describe('buildInstructions', () => {
         expect(instructions).toContain('- pg-google-calendar (google-calendar): connected');
     });
 
-    it('marks an integration that is missing its credentials', () => {
-        const instructions = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'), [
-            { id: 'my-hubspot', provider: 'hubspot', connected: false, needsSetup: true }
-        ]);
-
-        expect(instructions).toContain('- my-hubspot (hubspot): not connected, needs setup');
-    });
-
     it('points an app the session does not have to the Integrations tab', () => {
         const instructions = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'));
 

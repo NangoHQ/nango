@@ -261,35 +261,6 @@ export async function buildMcpTools(client: Client): Promise<ToolSet> {
     );
 }
 
-// Connect UI can't finish a connection for these, so the tool returns the setup instead of a link.
-export function withUnfinishedSetups(tools: ToolSet, unfinished: ReadonlyMap<string, string>): ToolSet {
-    const createConnection = tools['nango_create_connection'];
-    const execute = createConnection?.execute;
-    if (!createConnection || !execute) {
-        return tools;
-    }
-
-    return {
-        ...tools,
-        nango_create_connection: {
-            ...createConnection,
-            execute: (input: unknown, options: Parameters<typeof execute>[1]): unknown => {
-                const integrationId = (input as { integration?: unknown } | null)?.integration;
-                const provider = typeof integrationId === 'string' ? unfinished.get(integrationId) : undefined;
-                if (typeof integrationId !== 'string' || !provider) {
-                    return execute(input, options) as unknown;
-                }
-                const integrationSetup: AgentPlaygroundIntegrationSetup = { provider, integrationId, outcome: 'missing_credentials' };
-                return {
-                    guidance:
-                        'This integration is missing its credentials, so it cannot be connected yet. The user is shown how to finish setting it up. Say so in one sentence and stop.',
-                    integration_setup: integrationSetup
-                };
-            }
-        }
-    } as ToolSet;
-}
-
 // Actions carry no read-only flag, so anything not named like a read waits for the user.
 const READ_ACTION = /^(list|get|search|fetch|find|read|lookup|query|retrieve|export|download|whoami)([-_]|$)/;
 
@@ -371,14 +342,12 @@ export async function startTurn({
     let tools: ToolSet;
     let modelMessages: Awaited<ReturnType<typeof convertToModelMessages>>;
     let connected: Set<string>;
-    let unfinished: Map<string, string>;
     try {
         await server.connect(serverTransport);
         await client.connect(clientTransport);
-        let mcpTools: ToolSet;
         let connections: Awaited<ReturnType<typeof connectionService.listConnections>>;
         // Read live: the session's own connection list only fills in once a tool uses a connection.
-        [mcpTools, modelMessages, connections] = await Promise.all([
+        [tools, modelMessages, connections] = await Promise.all([
             buildMcpTools(client),
             convertToModelMessages(
                 // A setup-only reply, or a Stop before the first part, leaves an assistant message with no parts. OpenAI rejects an empty turn.
@@ -393,10 +362,6 @@ export async function startTurn({
             })
         ]);
         connected = new Set(connections.map(({ connection }) => connection.provider_config_key));
-        unfinished = new Map(
-            integrations.filter((integration) => integration.missing_fields.length > 0).map((integration) => [integration.unique_key, integration.provider])
-        );
-        tools = withUnfinishedSetups(mcpTools, unfinished);
     } catch (err) {
         await close();
         return Err(new AgentPlaygroundError('model_error', err instanceof Error ? err.message : 'The agent could not start', { cause: err }));
@@ -407,12 +372,7 @@ export async function startTurn({
         instructions: buildInstructions(
             timeZone,
             new Date(),
-            Object.entries(session.value.compiledToolset).map(([id, integration]) => ({
-                id,
-                provider: integration.provider,
-                connected: connected.has(id),
-                needsSetup: unfinished.has(id)
-            })),
+            Object.entries(session.value.compiledToolset).map(([id, integration]) => ({ id, provider: integration.provider, connected: connected.has(id) })),
             PLAYGROUND_PROVIDERS.filter(
                 (provider) => !Object.values(session.value.compiledToolset).some((integration) => integration.provider === provider)
             ).map((provider) => getProvider(provider)?.display_name ?? provider)
