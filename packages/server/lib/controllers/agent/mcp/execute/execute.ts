@@ -170,7 +170,6 @@ interface ToolCallOutcome {
     mcpTool?: boolean | undefined;
 }
 
-/** Sent to the integration's MCP server through the proxy, so the agent never holds its credentials. */
 async function executeRemoteTool({
     integrationId,
     toolName,
