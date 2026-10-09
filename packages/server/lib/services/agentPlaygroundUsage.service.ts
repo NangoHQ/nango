@@ -101,7 +101,7 @@ export function trackPlaygroundTurn({
 }): void {
     const usage = sumTurnUsage(steps);
     if (usage.costUsd === null) {
-        logger.error(`Agent Playground has no price for model ${usage.model}, so the turn is tracked without a cost`);
+        logger.warning(`Agent Playground has no price for model ${usage.model}, so the turn is tracked without a cost`);
     }
 
     productTracking.track({
