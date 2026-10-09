@@ -169,16 +169,26 @@ export function sessionOwner(session: Pick<AgentSession, 'metaTools'>): string |
     return session.metaTools.nangoCreateConnection.tags[PLAYGROUND_USER_TAG_KEY];
 }
 
-// A session's toolset is compiled once, so an integration added or deleted later needs a new session.
-export function hasSameIntegrations(session: Pick<AgentSession, 'compiledToolset'>, integrations: { unique_key: string }[]): boolean {
-    const compiled = Object.keys(session.compiledToolset);
-    return compiled.length === integrations.length && integrations.every((integration) => Object.hasOwn(session.compiledToolset, integration.unique_key));
+// A session fixes its toolset and pinned connections when created, so any change since then needs a new session.
+export function isSessionCurrent(
+    session: Pick<AgentSession, 'compiledToolset' | 'resolvedConnections'>,
+    integrationIds: string[],
+    pinned: AgentSessionPinnedConnection[]
+): boolean {
+    const sameIntegrations =
+        Object.keys(session.compiledToolset).length === integrationIds.length &&
+        integrationIds.every((integrationId) => Object.hasOwn(session.compiledToolset, integrationId));
+    const sameConnections =
+        Object.keys(session.resolvedConnections).length === pinned.length &&
+        pinned.every(({ integrationId, connectionId }) => session.resolvedConnections[integrationId]?.connectionId === connectionId);
+    return sameIntegrations && sameConnections;
 }
 
 async function getOrCreateSession(
     ctx: PlaygroundContext,
     sessionId: string | undefined,
-    integrations: { unique_key: string }[]
+    integrationIds: string[],
+    pinned: AgentSessionPinnedConnection[]
 ): Promise<Result<AgentSession, AgentPlaygroundError>> {
     if (sessionId) {
         const existing = await agentSessionService.getAgentSession(db.knex, { id: sessionId, accountId: ctx.account.id, environmentId: ctx.environment.id });
@@ -189,23 +199,17 @@ async function getOrCreateSession(
             sessionOwner(existing.value) === ctx.user.uuid &&
             // Connections a session creates must stay in the user's scope, which follows their current email.
             existing.value.metaTools.nangoCreateConnection.tags['end_user_email'] === ctx.user.email &&
-            hasSameIntegrations(existing.value, integrations)
+            isSessionCurrent(existing.value, integrationIds, pinned)
         ) {
             return Ok(existing.value);
         }
     }
 
-    const connections = await connectionService.listConnections({
-        environmentId: ctx.environment.id,
-        integrationIds: integrations.map((integration) => integration.unique_key),
-        tags: playgroundConnectionScope(ctx.user)
-    });
-
     const created = await agentSessionService.createAgentSession({
         account: ctx.account,
         environment: ctx.environment,
         // A tag selector fails as ambiguous when a user has two connections to one integration.
-        connections: { any: [], pinned: newestConnectionPerIntegration(connections) },
+        connections: { any: [], pinned },
         // Connected or not, so the agent can offer to connect a missing app.
         toolset: '*',
         pinnedTools: undefined,
@@ -314,8 +318,11 @@ export async function startTurn({
     const integrationSetup =
         starterProvider && PLAYGROUND_PROVIDERS.includes(starterProvider) ? await setUpStarterIntegration(ctx.environment, starterProvider) : undefined;
     // Read after the starter setup, so an integration it creates is part of the list.
-    const integrations = await configService.listProviderConfigs(db.knex, ctx.environment.id);
-    const session = await getOrCreateSession(ctx, sessionId, integrations);
+    const integrationIds = await configService.listIntegrationKeys(db.knex, ctx.environment.id);
+    const pinned = newestConnectionPerIntegration(
+        await connectionService.listConnections({ environmentId: ctx.environment.id, integrationIds, tags: playgroundConnectionScope(ctx.user) })
+    );
+    const session = await getOrCreateSession(ctx, sessionId, integrationIds, pinned);
     if (session.isErr()) {
         return Err(session.error);
     }
@@ -341,32 +348,24 @@ export async function startTurn({
 
     let tools: ToolSet;
     let modelMessages: Awaited<ReturnType<typeof convertToModelMessages>>;
-    let connected: Set<string>;
     try {
         await server.connect(serverTransport);
         await client.connect(clientTransport);
-        let connections: Awaited<ReturnType<typeof connectionService.listConnections>>;
-        // Read live: the session's own connection list only fills in once a tool uses a connection.
-        [tools, modelMessages, connections] = await Promise.all([
+        [tools, modelMessages] = await Promise.all([
             buildMcpTools(client),
             convertToModelMessages(
                 // A setup-only reply, or a Stop before the first part, leaves an assistant message with no parts. OpenAI rejects an empty turn.
                 messages.filter((message) => message.role !== 'assistant' || message.parts.length > 0),
                 // A tool call left unanswered by Stop or an ignored approval would make OpenAI reject every later turn.
                 { ignoreIncompleteToolCalls: true }
-            ),
-            connectionService.listConnections({
-                environmentId: ctx.environment.id,
-                integrationIds: Object.keys(session.value.compiledToolset),
-                tags: playgroundConnectionScope(ctx.user)
-            })
+            )
         ]);
-        connected = new Set(connections.map(({ connection }) => connection.provider_config_key));
     } catch (err) {
         await close();
         return Err(new AgentPlaygroundError('model_error', err instanceof Error ? err.message : 'The agent could not start', { cause: err }));
     }
 
+    const connected = new Set(pinned.map(({ integrationId }) => integrationId));
     const result = streamText({
         model: (model ?? createPlaygroundModel)(),
         instructions: buildInstructions(

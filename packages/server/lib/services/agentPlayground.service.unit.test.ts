@@ -11,7 +11,7 @@ import { createAgentSessionMcpServer } from '../controllers/agent/mcp/sessionSer
 import {
     buildMcpTools,
     existingIntegrationFor,
-    hasSameIntegrations,
+    isSessionCurrent,
     newestConnectionPerIntegration,
     playgroundConnectionTags,
     sessionOwner,
@@ -77,15 +77,22 @@ describe('playgroundConnectionTags', () => {
     });
 });
 
-describe('hasSameIntegrations', () => {
-    it('matches the integrations the session was compiled with', () => {
-        expect(hasSameIntegrations(session(), [{ unique_key: 'notion' }])).toBe(true);
+describe('isSessionCurrent', () => {
+    const pinned = [{ integrationId: 'notion', connectionId: 'notion-acme' }];
+
+    it('matches the integrations and connections the session was created with', () => {
+        expect(isSessionCurrent(session(), ['notion'], pinned)).toBe(true);
     });
 
     it('does not match once an integration was added or deleted', () => {
-        expect(hasSameIntegrations(session(), [{ unique_key: 'notion' }, { unique_key: 'github' }])).toBe(false);
-        expect(hasSameIntegrations(session(), [])).toBe(false);
-        expect(hasSameIntegrations(session(), [{ unique_key: 'github' }])).toBe(false);
+        expect(isSessionCurrent(session(), ['notion', 'github'], pinned)).toBe(false);
+        expect(isSessionCurrent(session(), ['github'], pinned)).toBe(false);
+    });
+
+    it('does not match once the newest connection changed, was added or was deleted', () => {
+        expect(isSessionCurrent(session(), ['notion'], [{ integrationId: 'notion', connectionId: 'notion-new' }])).toBe(false);
+        expect(isSessionCurrent(session(), ['notion'], [...pinned, { integrationId: 'github', connectionId: 'github-1' }])).toBe(false);
+        expect(isSessionCurrent(session(), ['notion'], [])).toBe(false);
     });
 });
 
