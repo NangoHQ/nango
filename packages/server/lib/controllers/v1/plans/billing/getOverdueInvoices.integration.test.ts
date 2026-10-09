@@ -99,7 +99,7 @@ describe(`GET ${route}`, () => {
         it.each(['enterprise', 'enterprise-cloud-hosted'] as const)('should report nothing overdue on %s without calling Orb', async (name) => {
             const { plan, user } = await seeders.seedAccountEnvAndUser();
             const session = await authenticateUser(api, user);
-            await updatePlan(db.knex, { id: plan.id, name, orb_customer_id: 'orb_cust_123' });
+            (await updatePlan(db.knex, { id: plan.id, name, orb_customer_id: 'orb_cust_123' })).unwrap();
             getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: true }));
 
             const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, session });
