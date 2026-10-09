@@ -6,6 +6,7 @@ import db from '@nangohq/database';
 import { configService, connectionService, getProvider, sharedCredentialsService } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
+import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { createAgentSessionMcpServer, TOOL_NAME_SEPARATOR } from '../controllers/agent/mcp/sessionServer.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { buildInstructions } from './agentPlayground.instructions.js';
@@ -294,7 +295,9 @@ export async function startTurn({
         return Ok(setupOnlyReply({ ...sessionMetadata, integrationSetup }));
     }
 
-    const server = createAgentSessionMcpServer({ account: ctx.account, environment: ctx.environment, plan: ctx.plan, session: session.value });
+    // The server's instructions say what is connected, including what the agent connected in an earlier turn.
+    const current = await withConnectionsCreatedInSession(session.value);
+    const server = createAgentSessionMcpServer({ account: ctx.account, environment: ctx.environment, plan: ctx.plan, session: current });
     const client = new Client({ name: 'nango-agent-playground', version: '1.0.0' });
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
 
@@ -310,27 +313,18 @@ export async function startTurn({
 
     let tools: ToolSet;
     let modelMessages: Awaited<ReturnType<typeof convertToModelMessages>>;
-    let connected: Set<string>;
     try {
         await server.connect(serverTransport);
         await client.connect(clientTransport);
-        let connections: Awaited<ReturnType<typeof connectionService.listConnections>>;
-        // Read live: the session's own connection list only fills in once a tool uses a connection.
-        [tools, modelMessages, connections] = await Promise.all([
+        [tools, modelMessages] = await Promise.all([
             buildMcpTools(client),
             convertToModelMessages(
                 // A setup-only reply, or a Stop before the first part, leaves an assistant message with no parts. OpenAI rejects an empty turn.
                 messages.filter((message) => message.role !== 'assistant' || message.parts.length > 0),
                 // A tool call left unanswered by Stop or an ignored approval would make OpenAI reject every later turn.
                 { ignoreIncompleteToolCalls: true }
-            ),
-            connectionService.listConnections({
-                environmentId: ctx.environment.id,
-                integrationIds: Object.keys(session.value.compiledToolset),
-                tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid }
-            })
+            )
         ]);
-        connected = new Set(connections.map(({ connection }) => connection.provider_config_key));
     } catch (err) {
         await close();
         return Err(new AgentPlaygroundError('model_error', err instanceof Error ? err.message : 'The agent could not start', { cause: err }));
@@ -341,7 +335,7 @@ export async function startTurn({
         instructions: buildInstructions(
             timeZone,
             new Date(),
-            Object.entries(session.value.compiledToolset).map(([id, integration]) => ({ id, provider: integration.provider, connected: connected.has(id) })),
+            client.getInstructions(),
             PLAYGROUND_PROVIDERS.filter(
                 (provider) => !Object.values(session.value.compiledToolset).some((integration) => integration.provider === provider)
             ).map((provider) => getProvider(provider)?.display_name ?? provider)
