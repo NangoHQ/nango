@@ -3,6 +3,7 @@ import { acceptInvitation, accountService, expirePreviousInvitations, getInvitat
 import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
+import { identifyAccountMembership } from '../../../../services/accountAnalytics.service.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
 import { isOAuthConsentReturnTo, safeReturnTo } from '../returnTo.js';
@@ -216,6 +217,7 @@ export async function finalizeManagedAuthentication({
             res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });
             return;
         }
+        void identifyAccountMembership(account.id);
 
         if (isNewTeam && flagHasUsage) {
             const linkOrbCustomerRes = await linkBillingCustomer(account, user);

@@ -1,4 +1,4 @@
-import type { PlanDefinition } from '@nangohq/types';
+import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
 export const freePlan: PlanDefinition = {
     code: 'free',
@@ -32,6 +32,7 @@ export const freePlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
+        has_overdue_invoices_banner: true,
         sync_function_runtime: 'lambda',
         action_function_runtime: 'lambda',
         webhook_function_runtime: 'lambda',
@@ -81,6 +82,7 @@ export const starterV1Plan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
+        has_overdue_invoices_banner: true,
         lambda_tenant_isolation: true
     }
 };
@@ -126,6 +128,7 @@ export const growthV1Plan: PlanDefinition = {
         can_override_docs_connect_url: true,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
+        has_overdue_invoices_banner: true,
         lambda_tenant_isolation: true
     }
 };
@@ -220,6 +223,7 @@ export const enterprisePlan: PlanDefinition = {
         can_override_docs_connect_url: true,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
+        has_overdue_invoices_banner: false,
         lambda_tenant_isolation: true
     }
 };
@@ -235,7 +239,8 @@ export const enterpriseCloudHostedPlan: PlanDefinition = {
     basePrice: 5_000,
     flags: {
         ...growthV2Plan.flags,
-        api_rate_limit_size: '2xl'
+        api_rate_limit_size: '2xl',
+        has_overdue_invoices_banner: false
     }
 };
 
@@ -303,6 +308,7 @@ export const starterLegacyPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
+        has_overdue_invoices_banner: true,
         lambda_tenant_isolation: true
     }
 };
@@ -346,6 +352,7 @@ export const scaleLegacyPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
+        has_overdue_invoices_banner: true,
         lambda_tenant_isolation: true
     }
 };
@@ -390,6 +397,7 @@ export const growthLegacyPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
+        has_overdue_invoices_banner: true,
         lambda_tenant_isolation: true
     }
 };
@@ -405,6 +413,25 @@ export const GROWTH_FEATURE_FLAGS = {
 } satisfies Record<GrowthFeatureFlag, boolean>;
 
 export const GROWTH_ADDON_ENVIRONMENTS_MAX = 10;
+export const GROWTH_ADDON_RATE_LIMIT_SIZE: DBPlan['api_rate_limit_size'] = 'xl';
+
+export const API_RATE_LIMIT_SIZES: DBPlan['api_rate_limit_size'][] = [
+    's',
+    'm',
+    'l',
+    'xl',
+    '2xl',
+    '3xl',
+    '4xl',
+    '5xl',
+    '6xl',
+    '7xl',
+    '8xl',
+    '9xl',
+    '10xl',
+    '11xl',
+    '12xl'
+];
 
 export const PLANS_ALLOWED_TO_HAVE_GROWTH_ADDON: PlanDefinition['code'][] = ['pay-as-you-go'];
 

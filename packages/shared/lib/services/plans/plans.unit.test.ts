@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { getPlanDefinition, plansList } from './definitions.js';
-import { getGrowthAddonEnvironmentsMax, getGrowthAddonFlags, mergeFlags } from './plans.js';
+import { getGrowthAddonEnvironmentsMax, getGrowthAddonFlags, getGrowthAddonRateLimitSize, mergeFlags } from './plans.js';
 
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
@@ -24,7 +24,11 @@ describe('mergeFlags', () => {
             can_disable_connect_ui_watermark: false
         });
         expect(getGrowthAddonEnvironmentsMax(definition, true, 3)).toBe(10);
+        expect(getGrowthAddonEnvironmentsMax(definition, true, 50)).toBe(50);
         expect(getGrowthAddonEnvironmentsMax(definition, false, 10)).toBe(3);
+        expect(getGrowthAddonRateLimitSize(definition, true, 'l')).toBe('xl');
+        expect(getGrowthAddonRateLimitSize(definition, true, '2xl')).toBe('2xl');
+        expect(getGrowthAddonRateLimitSize(definition, false, 'xl')).toBe('l');
     });
 
     it('should cap only connections, function runtime and data transfer on the free plan', () => {
@@ -63,6 +67,28 @@ describe('mergeFlags', () => {
             expect(plan.flags.has_audit_trail_control_plane, plan.code).toBe(true);
         }
     });
+
+    it('should show the overdue invoices banner on every plan but enterprise', () => {
+        const enterprisePlans: PlanDefinition['code'][] = ['enterprise', 'enterprise-cloud-hosted'];
+        for (const plan of plansList) {
+            expect(plan.flags.has_overdue_invoices_banner, plan.code).toBe(!enterprisePlans.includes(plan.code));
+        }
+    });
+
+    it.each([
+        { from: 'growth-v2', to: 'enterprise', override: undefined, expected: false },
+        { from: 'pay-as-you-go', to: 'enterprise-cloud-hosted', override: undefined, expected: false },
+        { from: 'enterprise', to: 'growth-v2', override: undefined, expected: true },
+        { from: 'enterprise-cloud-hosted', to: 'pay-as-you-go', override: undefined, expected: true },
+        { from: 'pay-as-you-go', to: 'growth-v2', override: false, expected: false }
+    ] as { from: PlanDefinition['code']; to: PlanDefinition['code']; override: boolean | undefined; expected: boolean }[])(
+        'should set the overdue invoices banner to $expected when moving from $from to $to with override $override',
+        ({ from, to, override, expected }) => {
+            const currentPlan = makePlan({ code: from, flagOverrides: override === undefined ? {} : { has_overdue_invoices_banner: override } });
+            const newFlags = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition(to)! });
+            expect(newFlags.has_overdue_invoices_banner).toBe(expected);
+        }
+    );
 
     it('should not grant the audit trail UI on any plan, since it is enabled per account by hand', () => {
         for (const plan of plansList) {
@@ -187,16 +213,13 @@ describe('mergeFlags', () => {
                 });
             });
 
-            it('should reset the environment cap to the plan default when no add-on is active, override or not', () => {
-                const currentPlan = makePlan({ code: from, flagOverrides: { environments_max: 50 } });
+            it('should reset add-on limits to the plan defaults when no add-on is active, override or not', () => {
+                const currentPlan = makePlan({ code: from, flagOverrides: { environments_max: 50, api_rate_limit_size: '2xl' } });
                 const newFlags = mergeFlags({ currentPlan, newPlanDefinition: payAsYouGo });
-                expect(newFlags.environments_max).toBe(payAsYouGo.flags.environments_max);
-            });
-
-            it('should keep overrides on flags the growth add-on does not gate', () => {
-                const currentPlan = makePlan({ code: from, flagOverrides: { api_rate_limit_size: '2xl' } });
-                const newFlags = mergeFlags({ currentPlan, newPlanDefinition: payAsYouGo });
-                expect(newFlags).toMatchObject({ api_rate_limit_size: '2xl' });
+                expect(newFlags).toMatchObject({
+                    environments_max: payAsYouGo.flags.environments_max,
+                    api_rate_limit_size: payAsYouGo.flags.api_rate_limit_size
+                });
             });
 
             it('should revoke add-on-gated flags when no add-on is active, override or not', () => {
@@ -218,17 +241,18 @@ describe('mergeFlags', () => {
                     can_customize_connect_ui_theme: true,
                     can_override_docs_connect_url: true,
                     can_disable_connect_ui_watermark: true,
-                    environments_max: 10
+                    environments_max: 10,
+                    api_rate_limit_size: 'xl'
                 });
             });
 
-            it('should keep a higher environment cap than the add-on grants', () => {
+            it('should keep higher limits than the add-on grants', () => {
                 const newFlags = mergeFlags({
-                    currentPlan: makePlan({ code: from, flagOverrides: { environments_max: 50 }, hasGrowthFeatures: true }),
+                    currentPlan: makePlan({ code: from, flagOverrides: { environments_max: 50, api_rate_limit_size: '2xl' }, hasGrowthFeatures: true }),
                     newPlanDefinition: payAsYouGo
                 });
 
-                expect(newFlags.environments_max).toBe(50);
+                expect(newFlags).toMatchObject({ environments_max: 50, api_rate_limit_size: '2xl' });
             });
         }
     );
@@ -334,6 +358,7 @@ function makePlan({
         can_customize_connect_ui_theme: false,
         can_override_docs_connect_url: false,
         can_disable_connect_ui_watermark: false,
+        has_overdue_invoices_banner: true,
         environments_max: 2,
         connections_max: null,
         records_max: null,

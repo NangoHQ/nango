@@ -159,6 +159,7 @@ describe('setGrowthAddon', () => {
         expect(updated.has_rbac).toBe(true);
         expect(updated.can_customize_connect_ui_theme).toBe(true);
         expect(updated.environments_max).toBe(10);
+        expect(updated.api_rate_limit_size).toBe('xl');
     });
 
     // Scheduling the removal is not the removal: they keep the features through the term they paid for
@@ -185,7 +186,8 @@ describe('setGrowthAddon', () => {
                 auto_idle: false,
                 has_otel: true,
                 has_rbac: true,
-                environments_max: 10
+                environments_max: 10,
+                api_rate_limit_size: 'xl'
             }
         });
 
@@ -197,6 +199,7 @@ describe('setGrowthAddon', () => {
         expect(updated.has_otel).toBe(false);
         expect(updated.has_rbac).toBe(false);
         expect(updated.environments_max).toBe(3);
+        expect(updated.api_rate_limit_size).toBe('l');
     });
 
     // Flags the add-on does not gate are none of its business, overrides included
@@ -209,12 +212,15 @@ describe('setGrowthAddon', () => {
         expect(updated.connections_max).toBe(50);
     });
 
-    it('keeps a hand-granted environment cap above the add-on one', async () => {
-        const { account } = await seedAccountEnvAndUser({ plan: { name: 'pay-as-you-go', auto_idle: false, environments_max: 50 } });
+    it('keeps hand-granted limits above the add-on ones', async () => {
+        const { account } = await seedAccountEnvAndUser({
+            plan: { name: 'pay-as-you-go', auto_idle: false, environments_max: 50, api_rate_limit_size: '2xl' }
+        });
 
         (await setGrowthAddon(db.knex, account, { hasGrowthFeatures: true })).unwrap();
 
         const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
         expect(updated.environments_max).toBe(50);
+        expect(updated.api_rate_limit_size).toBe('2xl');
     });
 });

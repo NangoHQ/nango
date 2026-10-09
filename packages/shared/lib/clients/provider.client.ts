@@ -54,7 +54,9 @@ class ProviderClient {
             case 'followupboss':
             case 'instagram':
             case 'jobber':
+            case 'linear-mcp':
             case 'microsoft-admin':
+            case 'microsoft-teams':
             case 'microsoft-teams-bot':
             case 'one-drive':
             case 'sharepoint-online':
@@ -134,6 +136,8 @@ class ProviderClient {
                 return this.createFollowupbossToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, state);
             case 'jobber':
                 return this.createJobberToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
+            case 'linear-mcp':
+                return this.createLinearMcpToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
             case 'facebook':
             case 'meta-mcp':
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
@@ -146,6 +150,8 @@ class ProviderClient {
             case 'one-drive':
             case 'sharepoint-online':
                 return this.createSharepointToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
+            case 'microsoft-teams':
+                return this.createMicrosoftTeamsToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'microsoft-teams-bot':
                 return this.createMicrosoftTeamsBotToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'microsoft-admin':
@@ -273,6 +279,8 @@ class ProviderClient {
                 return this.refreshFollowupbossToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'jobber':
                 return this.refreshJobberToken(provider.token_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
+            case 'linear-mcp':
+                return this.refreshLinearMcpToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
             case 'facebook':
             case 'meta-mcp':
                 return this.refreshFacebookToken(provider.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
@@ -294,6 +302,14 @@ class ProviderClient {
             case 'sharepoint-online':
                 return this.refreshSharepointToken(
                     provider.token_url as string,
+                    credentials.refresh_token!,
+                    config.oauth_client_id,
+                    config.oauth_client_secret,
+                    connection.connection_config
+                );
+            case 'microsoft-teams':
+                return this.refreshMicrosoftTeamsToken(
+                    interpolatedTokenUrl.href,
                     credentials.refresh_token!,
                     config.oauth_client_id,
                     config.oauth_client_secret,
@@ -1936,6 +1952,40 @@ class ProviderClient {
         }
     }
 
+    private async createMicrosoftTeamsToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        clientSecret: string,
+        redirectUri: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const body = {
+                client_id: clientId,
+                client_secret: clientSecret,
+                code: code,
+                redirect_uri: redirectUri,
+                grant_type: 'authorization_code'
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('microsoft_teams_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('microsoft_teams_token_request_error', stringifyError(err));
+        }
+    }
+
     private async createMicrosoftTeamsBotToken(
         tokenUrl: string,
         code: string,
@@ -2032,6 +2082,93 @@ class ProviderClient {
             throw new NangoError('sharepoint_refresh_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('sharepoint_refresh_token_request_error', err.message);
+        }
+    }
+
+    private async refreshMicrosoftTeamsToken(
+        tokenUrl: string,
+        refreshToken: string,
+        clientId: string,
+        clientSecret: string,
+        connectionConfig: ConnectionConfig
+    ): Promise<object> {
+        try {
+            let devPortalAccessToken: Record<string, string> | undefined = undefined;
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            if (connectionConfig['devPortalAccessToken'] && connectionConfig['devPortalAccessToken']['refresh_token']) {
+                const tenantId = connectionConfig['tenantId'];
+                if (!tenantId) {
+                    throw new NangoError('microsoft_teams_tenant_id_missing');
+                }
+
+                const devPortalTokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+
+                try {
+                    await assertSafeOAuthUrl(devPortalTokenUrl);
+                } catch (err) {
+                    throw new NangoError('refresh_token_external_error', {
+                        message: err instanceof Error ? err.message : 'Outbound URL blocked by policy'
+                    });
+                }
+
+                const devPortalBody = {
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                    refresh_token: connectionConfig['devPortalAccessToken']['refresh_token'],
+                    grant_type: 'refresh_token',
+                    scope: 'https://dev.teams.microsoft.com/AppDefinitions.ReadWrite'
+                };
+
+                const devPortalResponse = await axios.post(devPortalTokenUrl, devPortalBody, { headers });
+
+                if (devPortalResponse.status === 200 && devPortalResponse.data) {
+                    const expires_at = Date.now() + devPortalResponse.data.expires_in * 1000;
+
+                    devPortalAccessToken = {
+                        ...devPortalResponse.data,
+                        expires_at
+                    };
+                } else {
+                    throw new NangoError('microsoft_teams_refresh_token_request_error', devPortalResponse.data);
+                }
+            }
+
+            const body = {
+                client_id: clientId,
+                client_secret: clientSecret,
+                refresh_token: refreshToken,
+                grant_type: 'refresh_token'
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data,
+                    devPortalAccessToken
+                };
+            }
+
+            throw new NangoError('microsoft_teams_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            // Preserve the provider error body when the failure is an axios error, matching what
+            // `getFreshOAuth2Credentials` surfaces via `logCtx.http({ meta: { body } })` on the
+            // standard OAuth refresh path. Falls back to `err.message` for non-axios failures.
+            const providerBody = err?.response?.data;
+            const providerStatus = err?.response?.status;
+            if (providerBody !== undefined) {
+                logger.warning(
+                    `microsoft-teams refresh token request failed: status=${String(providerStatus)} body=${typeof providerBody === 'string' ? providerBody : JSON.stringify(providerBody)}`
+                );
+                throw new NangoError('microsoft_teams_refresh_token_request_error', {
+                    status: providerStatus,
+                    body: providerBody
+                });
+            }
+            throw new NangoError('microsoft_teams_refresh_token_request_error', err.message);
         }
     }
 
@@ -2217,7 +2354,7 @@ class ProviderClient {
                 client_id: clientId,
                 client_secret: clientSecret,
                 grant_type: 'client_credentials',
-                scope: encodeURIComponent(scope)
+                scope
             };
 
             const response = await axios.post(tokenUrl, body, { headers });
@@ -2254,7 +2391,7 @@ class ProviderClient {
                 client_id: clientId,
                 client_secret: clientSecret,
                 grant_type: 'client_credentials',
-                scope: encodeURIComponent(scope)
+                scope
             };
 
             const response = await axios.post(tokenUrl, body, { headers });
@@ -2388,6 +2525,67 @@ class ProviderClient {
             throw new NangoError('scrollstash_mcp_refresh_token_request_error');
         } catch (err: any) {
             throw new NangoError('scrollstash_mcp_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    // TODO: move to oauth.controller.ts for all MCP_OAUTH2 providers once confirmed none expect an empty client_secret in the body
+    private async createLinearMcpToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        redirectUri: string,
+        codeVerifier: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'authorization_code',
+                code,
+                client_id: clientId,
+                redirect_uri: redirectUri,
+                code_verifier: codeVerifier
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('linear_mcp_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('linear_mcp_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshLinearMcpToken(tokenUrl: string, refreshToken: string, clientId: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                client_id: clientId,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('linear_mcp_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('linear_mcp_refresh_token_request_error', stringifyError(err));
         }
     }
 }

@@ -47,8 +47,10 @@ import {
 import * as functionLifecycle from './functions/lifecycle/index.js';
 import {
     assertSafeOAuthUrl,
+    buildUnverifiedHttpsAgent,
     findOutboundUrlError,
     getOAuthAxiosRequestConfig,
+    getOAuthOutboundUrlPolicy,
     getOAuthRedirectPolicy,
     getOAuthSafeUndiciDispatcher
 } from './proxy/outbound-policy.js';
@@ -101,6 +103,7 @@ import type {
     TwoStepCredentials
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type https from 'node:https';
 import type { Agent } from 'undici';
 
 const logger = getLogger('Connection');
@@ -2170,7 +2173,19 @@ export class ConnectionService {
         try {
             await assertSafeOAuthUrl(url);
 
-            const requestOptions = { headers, ...getOAuthAxiosRequestConfig() };
+            let httpsAgent: https.Agent | undefined;
+            if (provider.allow_unverified_https) {
+                httpsAgent = buildUnverifiedHttpsAgent({
+                    policy: getOAuthOutboundUrlPolicy(),
+                    allowSelfSignedCert: connectionConfig['allowSelfSignedCert'] === 'true'
+                });
+            }
+
+            const requestOptions = {
+                headers,
+                ...getOAuthAxiosRequestConfig(),
+                ...(httpsAgent && { httpsAgent })
+            };
 
             const bodyContent =
                 bodyFormat === 'xml'

@@ -78,7 +78,7 @@ export class Billing {
         return await this.client.upgrade(opts);
     }
 
-    async downgrade(opts: PlanChangeRequest): Promise<Result<void>> {
+    async downgrade(opts: PlanChangeRequest): Promise<Result<{ changeAt: Date | null }>> {
         return await this.client.downgrade(opts);
     }
 
