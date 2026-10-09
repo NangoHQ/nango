@@ -88,16 +88,7 @@ function FunctionNameCell({ name, description }: { name: string; description?: s
         <TableCell className="max-w-0 px-3 whitespace-normal">
             <div className="flex min-w-0 flex-col gap-0.5">
                 <span className="truncate type-code-medium-xs text-text-default">{name}</span>
-                {description && (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span tabIndex={0} className="min-w-0 truncate type-label-xxs text-text-disabled focus-default">
-                                {description}
-                            </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="top">{description}</TooltipContent>
-                    </Tooltip>
-                )}
+                {description && <span className="truncate type-label-xxs text-text-disabled">{description}</span>}
             </div>
         </TableCell>
     );
