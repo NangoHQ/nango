@@ -339,14 +339,7 @@ export async function startTurn({
     }
 
     const steps: PlaygroundStep[] = [];
-    let tracked = false;
-    const trackTurn = (outcome: PlaygroundTurnOutcome) => {
-        if (tracked) {
-            return;
-        }
-        tracked = true;
-        trackPlaygroundTurn({ ctx, sessionId: session.value.id, outcome, steps });
-    };
+    let failed = false;
 
     const result = streamText({
         model: (model ?? createPlaygroundModel)(),
@@ -364,19 +357,13 @@ export async function startTurn({
         ...(abortSignal ? { abortSignal } : {}),
         toolApproval: ({ toolCall }) => (toolNeedsApproval(toolCall.toolName, toolCall.input) ? 'user-approval' : undefined),
         onStepEnd: (step) => {
-            steps.push(step);
+            steps.push({ model: { modelId: step.model.modelId }, usage: step.usage });
         },
-        onEnd: async () => {
-            trackTurn('complete');
-            await close();
-        },
-        onAbort: async () => {
-            trackTurn('aborted');
-            await close();
-        },
+        onEnd: close,
+        onAbort: close,
         onError: async ({ error }) => {
             logger.error(`Agent Playground turn failed: ${error instanceof Error ? error.message : String(error)}`);
-            trackTurn('error');
+            failed = true;
             await close();
         }
     });
@@ -391,11 +378,15 @@ export async function startTurn({
                     return { ...sessionMetadata, ...(integrationSetup ? { integrationSetup } : {}) };
                 }
                 if (part.type === 'finish') {
-                    const usage = { inputTokens: part.totalUsage.inputTokens ?? 0, outputTokens: part.totalUsage.outputTokens ?? 0 };
-                    logger.info(`Agent Playground turn: ${usage.inputTokens} in / ${usage.outputTokens} out tokens`);
-                    return { ...sessionMetadata, usage };
+                    return { ...sessionMetadata, usage: { inputTokens: part.totalUsage.inputTokens ?? 0, outputTokens: part.totalUsage.outputTokens ?? 0 } };
                 }
                 return undefined;
+            },
+            // streamText's onEnd never runs when the request throws. Its onError runs before the failing step reports usage.
+            onEnd: ({ isAborted, isCancelled, outcome }) => {
+                const turnOutcome: PlaygroundTurnOutcome =
+                    isAborted || isCancelled || outcome.status === 'aborted' ? 'aborted' : failed || outcome.status === 'failed' ? 'error' : 'complete';
+                trackPlaygroundTurn({ ctx, sessionId: session.value.id, outcome: turnOutcome, steps });
             }
         })
     );
