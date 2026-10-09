@@ -1,4 +1,13 @@
-import { Client, ProtocolError, SdkError, SdkErrorCode, SdkHttpError, StreamableHTTPClientTransport, UnauthorizedError } from '@modelcontextprotocol/client';
+import {
+    Client,
+    InsufficientScopeError,
+    ProtocolError,
+    SdkError,
+    SdkErrorCode,
+    SdkHttpError,
+    StreamableHTTPClientTransport,
+    UnauthorizedError
+} from '@modelcontextprotocol/client';
 import { ZodError } from 'zod';
 
 import { getProvider } from '@nangohq/shared';
@@ -57,6 +66,10 @@ export class RemoteMcpError extends Error {
 
     get proxyError(): ProxyServiceError | undefined {
         return this.code === 'proxy_failed' ? (this.cause as ProxyServiceError) : undefined;
+    }
+
+    get insufficientScope(): InsufficientScopeError | undefined {
+        return this.cause instanceof InsufficientScopeError ? this.cause : undefined;
     }
 }
 
@@ -158,6 +171,10 @@ export async function callRemoteTool(
 export function toRemoteMcpError(err: unknown, method: string): RemoteMcpError {
     if (err instanceof RemoteMcpError) {
         return err;
+    }
+
+    if (err instanceof InsufficientScopeError) {
+        return new RemoteMcpError({ code: 'http_error', message: err.message, status: 403, method, cause: err });
     }
 
     if (err instanceof UnauthorizedError) {
