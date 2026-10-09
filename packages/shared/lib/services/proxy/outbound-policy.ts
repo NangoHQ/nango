@@ -1,9 +1,12 @@
+import https from 'node:https';
+
 import {
     absoluteUrlFromRedirectRequestOptions,
     assertSafeOutboundUrl,
     createAsyncRedirectValidator,
     createRedirectValidator,
     getSafeHttpAgents,
+    getSafeLookup,
     getSafeUndiciDispatcher,
     resolvePolicyForOAuth,
     resolvePolicyForServer
@@ -14,7 +17,6 @@ import { envs } from '../../env.js';
 import type { OutboundUrlPolicy, ValidateOutboundUrlContext } from '@nangohq/egress';
 import type { AxiosRequestConfig } from 'axios';
 import type http from 'node:http';
-import type https from 'node:https';
 import type { buildConnector, Agent as UndiciAgent } from 'undici';
 
 export {
@@ -72,6 +74,33 @@ export async function assertSafeOAuthUrl(url: string, ctx?: ValidateOutboundUrlC
 
 export function getOAuthSafeHttpAgents(): { httpAgent: http.Agent; httpsAgent: https.Agent } {
     return getSafeHttpAgents(getOAuthOutboundUrlPolicy());
+}
+
+const unverifiedHttpsAgentCache = new WeakMap<OutboundUrlPolicy, https.Agent>();
+
+export function buildUnverifiedHttpsAgent({
+    policy,
+    allowSelfSignedCert
+}: {
+    policy: OutboundUrlPolicy;
+    allowSelfSignedCert?: boolean | undefined;
+}): https.Agent | undefined {
+    if (!allowSelfSignedCert) {
+        return undefined;
+    }
+
+    const cached = unverifiedHttpsAgentCache.get(policy);
+    if (cached) {
+        return cached;
+    }
+
+    const agent = new https.Agent({
+        rejectUnauthorized: false,
+        lookup: getSafeLookup(policy),
+        keepAlive: true
+    });
+    unverifiedHttpsAgentCache.set(policy, agent);
+    return agent;
 }
 
 /** Headers that may be retained on OAuth token redirects; everything else is treated as credential material. */
