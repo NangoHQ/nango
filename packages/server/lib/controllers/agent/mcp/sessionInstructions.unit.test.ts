@@ -61,6 +61,15 @@ describe('buildSessionInstructions', () => {
         expect(instructions).toContain('- pg-github (github): not connected\n- pg-google-calendar (google-calendar): connected');
     });
 
+    it('says the status is from when the client connected, and points at search only when it is on', () => {
+        const compiledToolset = { 'pg-github': { provider: 'github', pinned: [], searchable: [] } };
+
+        expect(buildSessionInstructions(session({ compiledToolset }))).toContain(
+            "This is each integration's status when you connected. After you connect one, or when unsure, trust nango_tool_search results and tool errors over this list."
+        );
+        expect(buildSessionInstructions(session({ compiledToolset, metaTools: NO_META_TOOLS }))).toContain('When unsure, trust tool errors over this list.');
+    });
+
     it('says so when the session has no integration', () => {
         expect(buildSessionInstructions(session())).toContain('This session has no integrations');
     });
