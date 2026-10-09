@@ -71,8 +71,7 @@ export async function validateConnection({
         const res = await getOrchestrator().invokeFunction({
             environment,
             connection,
-            functionConfigId: functionConfig.id,
-            functionName: functionConfig.name,
+            functionUuid: functionConfig.uuid,
             trigger: {
                 kind: 'event',
                 input: { event },

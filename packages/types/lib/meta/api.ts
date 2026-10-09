@@ -7,6 +7,7 @@ export type AccountGroupProperties = {
     name?: string;
     plan?: string;
     created_date?: string;
+    is_internal?: boolean;
 };
 
 export type GetMeta = ApiEndpoint<{
@@ -25,6 +26,7 @@ export type GetMeta = ApiEndpoint<{
             // Whether this account can reach its own trail; gates the dashboard UI.
             auditTrail: boolean;
             accountGroup: AccountGroupProperties;
+            agentPlayground: boolean;
         };
     };
 }>;

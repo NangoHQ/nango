@@ -37,10 +37,9 @@ export interface LegacyDispatchMessage extends DispatchMessageBase {
 
 export interface FunctionDispatchMessage extends DispatchMessageBase {
     kind: 'function';
-    functionConfigId: number;
+    functionUuid: string;
     /** Deterministic key used to deduplicate queue redeliveries. */
     idempotencyKey: string;
-    functionName: string;
     trigger: Omit<Extract<FunctionTrigger, { kind: 'http' }>, 'request' | 'connection'> & {
         request: Extract<FunctionTrigger, { kind: 'http' }>['request'];
         subscriptions: string[];

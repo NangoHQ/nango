@@ -19,7 +19,7 @@
         "zod": "4.3.6"
     },
     "devDependencies": {
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     },
     "files": [
         "dist/**/*"

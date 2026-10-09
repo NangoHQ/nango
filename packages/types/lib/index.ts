@@ -17,6 +17,7 @@ export type * from './action/api.js';
 export type * from './agent/api.js';
 export type * from './agent/connections.js';
 export type * from './agent/mcp.api.js';
+export type * from './agent/playground.api.js';
 export type * from './agent/session.js';
 export type * from './agent/toolSearch.js';
 export type * from './agent/toolset.js';
@@ -114,6 +115,7 @@ export type * from './web/env.js';
 
 export type * from './fleet/api.js';
 export type * from './fleet/index.js';
+export type * from './internal-auth.js';
 
 export type * from './persist/api.js';
 export type * from './jobs/api.js';

@@ -28,7 +28,7 @@
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "type-fest": "4.41.0",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     },
     "engines": {
         "node": ">=22.0.0"

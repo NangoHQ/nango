@@ -144,7 +144,7 @@ Everything below is what you configure directly to run a production instance —
 | Secret | Example | Purpose |
 | --- | --- | --- |
 | `NANGO_ENCRYPTION_KEY_WRAPPED` | `AQICAHjK...` (KMS-wrapped, base64) | Your data-encryption key, wrapped |
-| `NANGO_KMS_KEY_ARN` | `arn:aws:kms:us-west-2:123456789012:key/abcd-1234-efgh-5678` | KMS key used to unwrap it |
+| `NANGO_KMS_KEY_ARN` | `arn:aws:kms:us-west-2:123456789012:key/abcd-1234-efgh-5678` | KMS key used to unwrap it (on GCP or Azure, see [Encryption key](#encryption-key)) |
 | `NANGO_INTERNAL_API_KEY` | *(generated, 32+ char random string)* | Internal service-to-service auth |
 | `NANGO_ADMIN_KEY` | *(generated, random string)* | Admin API access |
 | `NANGO_ADMIN_UUID` | `3fa85f64-5717-4562-b3fc-2c963f66afa6` | Matches the env var above |
@@ -182,7 +182,15 @@ openssl rand -base64 32
 The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation is not supported yet—changing the key after initial setup will cause decryption failures. Plan your key management accordingly.
 </Note>
 
-If you'd rather not manage `NANGO_ENCRYPTION_KEY` as a flat secret, wrap it with your own KMS and set `NANGO_ENCRYPTION_KEY_WRAPPED` and `NANGO_KMS_KEY_ARN` instead (see the secrets table above).
+If you'd rather not manage `NANGO_ENCRYPTION_KEY` as a flat secret, wrap it with your own KMS and set `NANGO_ENCRYPTION_KEY_WRAPPED` instead, plus exactly one wrapping-key variable:
+
+| Provider | Variable | Example |
+| --- | --- | --- |
+| AWS KMS | `NANGO_KMS_KEY_ARN` | `arn:aws:kms:us-west-2:123456789012:key/abcd-1234-efgh-5678` |
+| GCP Cloud KMS | `NANGO_GCP_KMS_KEY_NAME` | `projects/my-project/locations/global/keyRings/nango/cryptoKeys/dek` |
+| Azure Key Vault | `NANGO_AZURE_KMS_KEY_ID` | `https://my-vault.vault.azure.net/keys/dek/0123456789abcdef0123456789abcdef` |
+
+Credentials come from the environment (IAM role, workload identity or managed identity), and Nango needs permission to unwrap with that key. On Azure, use an RSA key and include its version in the identifier.
 
 <Warning>
 `NANGO_ENCRYPTION_KEY` is also required for Connect UI. It is used to generate sessions for [Connect UI](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui). Without this key, Connect UI will not work.
@@ -524,17 +532,48 @@ NANGO_CLI_TLS_KEY_PASSPHRASE=
 
 Orchestrator, jobs, and runner HTTP APIs accept an `Authorization: Bearer` credential except `GET /health`, which stays open for probes. Enforcement is off until you set `NANGO_INTERNAL_AUTH_REQUIRED=true`. Shipping the image with no new variables is a no-op.
 
-There are three credential kinds:
+New tokens are EdDSA JWTs with the same shape on every hop. The `kid` header selects the verifying key. Service tokens are minted by the caller (`iss` and `sub` are `service:jobs` or `service:server`) and last 5 minutes. Jobs mints `sub: task:<id>` or `node:<id>` for two hops: jobs → runner uses `aud: runner` and lasts 5 minutes; the runner carries `aud: jobs` back, where a task token lasts 25 hours by default, or the task lifetime, and a node token lasts a year. Runners never receive a private key.
 
-- **Control plane** (server, jobs, orchestrator): a static shared secret. Used for server and jobs calling orchestrator.
-- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call body. The runner presents it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour).
-- **Runner dispatch JWT**: jobs mints an EdDSA token (`aud: runner`, `task_id` or `node_id`) and sends it as `Authorization: Bearer` on `start`, `abort`, and `notifyWhenIdle`. The Ed25519 private key is derived from `NANGO_INTERNAL_AUTH_SIGNING_KEY` and never leaves jobs. Jobs injects only the matching public key onto the runner at node start, so a runner process cannot mint dispatch tokens. A start call without a valid jobs identity is rejected when `REQUIRED=true`.
+Until you set a private key, callers keep minting the previous credentials, and every receiver still accepts them:
+
+- **Static bearer** (`NANGO_INTERNAL_AUTH_TOKEN`): server and jobs calling orchestrator.
+- **Task and node HMAC JWTs** (`NANGO_INTERNAL_AUTH_SIGNING_KEY`): runner calls back to jobs. Task tokens last 25 hours by default, or the task lifetime. Node tokens last a year.
+- **Derived Ed25519 dispatch JWTs**: jobs calls the runner. The private key is derived from the HMAC signing key and never leaves jobs.
+
+Set the new keys in this order so a rolling deploy keeps accepting in-flight tokens:
+
+1. Deploy server, jobs, and orchestrator. Runners pick up the new image the next time jobs starts them.
+2. Set the public keys, and do not set private keys yet. Set `NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS` on orchestrator and jobs, and `NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS` on the server and orchestrator. Jobs copies the jobs public keys onto new runners and still injects the legacy derived public key.
+3. Recycle runners so every live runner can verify both shapes.
+4. Set the server private key, then the jobs private key. Jobs then mints service and workload JWTs. In-flight HMAC task tokens (up to 25 hours) and node tokens on runners that have not been recycled still verify.
+
+To rotate a key, append the new entry to the public-key JSON array and deploy the verifiers before you switch the minter's key id and private key.
+
+```yaml
+NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS: |
+  [
+    {
+      "kid": "jobs-2026-09",
+      "publicKey": "<base64url of the raw 32-byte key>"
+    },
+    {
+      "kid": "jobs-2026-10",
+      "publicKey": "<base64url of the next key>"
+    }
+  ]
+```
 
 | Variable | Where | Purpose |
 | - | - | - |
-| `NANGO_INTERNAL_AUTH_TOKEN` | server, jobs, orchestrator | Static Bearer. Never the runner service. |
-| `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only. Never set on runners. | HMAC key for task JWTs (`aud: jobs`). Also the seed for the Ed25519 runner-dispatch keypair. |
-| `NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY` | runners (injected by jobs at node start) | Ed25519 public key. Verify-only; cannot mint dispatch tokens. |
+| `NANGO_INTERNAL_AUTH_TOKEN` | server, jobs, orchestrator | Legacy static Bearer. Used until that service's private key is set. Never the runner service. |
+| `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only. Never set on runners. | Legacy HMAC key and seed for the derived runner-dispatch keypair. |
+| `NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY` | runners (injected by jobs at node start) | Legacy Ed25519 public key. Verify-only. |
+| `NANGO_INTERNAL_AUTH_JOBS_KEY_ID` | jobs | `kid` for the jobs private key, for example `jobs-2026-09`. |
+| `NANGO_INTERNAL_AUTH_JOBS_PRIVATE_KEY` | jobs only. Never set on runners. | Unencrypted Ed25519 PKCS8 PEM. Mints service and workload tokens. |
+| `NANGO_INTERNAL_AUTH_JOBS_PUBLIC_KEYS` | orchestrator, jobs, runners | JSON array of `{"kid","publicKey"}`. `publicKey` is the base64url raw 32-byte Ed25519 key. Must include the jobs key id before the private key is set. |
+| `NANGO_INTERNAL_AUTH_SERVER_KEY_ID` | server | `kid` for the server private key, for example `server-2026-09`. |
+| `NANGO_INTERNAL_AUTH_SERVER_PRIVATE_KEY` | server only | Unencrypted Ed25519 PKCS8 PEM. Mints tokens for orchestrator. |
+| `NANGO_INTERNAL_AUTH_SERVER_PUBLIC_KEYS` | server, orchestrator | Same JSON array. Must include the server key id on the server process before the private key is set. |
 | `NANGO_INTERNAL_AUTH_REQUIRED` | orchestrator, jobs, runners | Fail closed. Default `false`. Flip independently on orchestrator, then jobs. Runners inherit `REQUIRED` at node start. |
 
 #### Custom websockets path
@@ -556,6 +595,15 @@ let nango = new Nango({ host: 'https://<YOUR-NANGO-INSTANCE>', websocketsPath: '
 ```
 
 Connect UI discovers the custom path on its own (from the connect session), so `websocketsPath` only needs to be configured for direct `nango.auth()` calls. If Nango is served behind a reverse proxy under a sub-path, direct `nango.auth()` needs the full public path in `websocketsPath` (e.g. `/<API-BASE-PATH></YOUR-WEBSOCKETS-PATH>`) because the SDK resolves it from the origin, while Connect UI composes the public path automatically from the `apiURL` base path and `NANGO_SERVER_WEBSOCKETS_PATH`.
+
+### Proxy timeouts
+
+| Variable | Default | Purpose |
+| - | - | - |
+| `NANGO_PROXY_IDLE_TIMEOUT_MS` | `300000` (5 minutes) | A proxy request fails when the provider takes longer than this to start responding, or stops sending data for this long partway through a response. A response that keeps sending data is never cut off. |
+| `NANGO_PROXY_MAX_RETRY_WAIT_MS` | `600000` (10 minutes) | Longest wait between proxy retries, including waits requested by a provider's retry headers. A retry that would wait longer fails instead. |
+
+Both apply to the API and to runners, and are passed to Kubernetes and Lambda runners automatically.
 
 ### Telemetry
 

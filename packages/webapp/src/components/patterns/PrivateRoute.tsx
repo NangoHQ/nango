@@ -7,7 +7,7 @@ import { useUser } from '../../hooks/useUser';
 import PageEnvironmentUnauthorized from '../../pages/PageEnvironmentUnauthorized';
 import PageNotFound from '../../pages/PageNotFound';
 import { useStore } from '../../store';
-import { useAnalyticsIdentify } from '../../utils/analytics';
+import { resumeAnalytics, stopAnalytics, useAnalyticsIdentify } from '../../utils/analytics';
 import { isNonEnvPath, signinPathWithNext } from '../../utils/routes';
 
 export const PrivateRoute: React.FC = () => {
@@ -88,9 +88,15 @@ export const PrivateRoute: React.FC = () => {
     }, [meta, loadingMeta, env, metaError, setEnv, can, user, location.pathname]);
 
     useEffect(() => {
-        if (user && meta && !meta.debugMode) {
-            identify(user, meta.accountGroup);
+        if (!user || !meta) {
+            return;
         }
+        if (meta.debugMode) {
+            stopAnalytics();
+            return;
+        }
+        resumeAnalytics();
+        identify(user, meta.accountGroup);
     }, [user, meta, identify]);
 
     if (userError || metaError) {

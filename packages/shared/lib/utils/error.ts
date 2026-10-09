@@ -399,6 +399,22 @@ export class NangoError extends NangoInternalError {
                 }
                 break;
 
+            case 'linear_mcp_token_request_error':
+                this.status = 400;
+                this.message = `The Linear MCP API returned an error when trying to request an access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : stringifyError(this.payload)}`;
+                }
+                break;
+
+            case 'linear_mcp_refresh_token_request_error':
+                this.status = 400;
+                this.message = `The Linear MCP API returned an error when trying to refresh the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : stringifyError(this.payload)}`;
+                }
+                break;
+
             case 'slack_token_request_error':
                 this.status = 400;
                 this.message = `The Slack API returned an error when trying to request for an access token. Please try again later.`;
@@ -413,6 +429,27 @@ export class NangoError extends NangoInternalError {
                 if (this.payload) {
                     this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
                 }
+                break;
+
+            case 'microsoft_teams_token_request_error':
+                this.status = 400;
+                this.message = `The Microsoft Teams API returned an error when trying to request an access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
+            case 'microsoft_teams_refresh_token_request_error':
+                this.status = 400;
+                this.message = `The Microsoft Teams API returned an error when trying to refresh the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
+            case 'microsoft_teams_tenant_id_missing':
+                this.status = 400;
+                this.message = `The Microsoft Teams connection is missing a tenant ID. Reconnect the integration to populate it from the authenticated user's JWT.`;
                 break;
 
             case 'refresh_token_external_error':

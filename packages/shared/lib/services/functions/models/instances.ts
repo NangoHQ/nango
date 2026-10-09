@@ -1,4 +1,4 @@
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, stringToHash } from '@nangohq/utils';
 
 import { CONFIGS_TABLE, INSTANCES_TABLE } from './tables.js';
 
@@ -6,9 +6,17 @@ import type { DBFunctionConfig, DBFunctionInstance } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
-export type FunctionInstanceUpsert = Pick<DBFunctionInstance, 'nango_connection_id' | 'function_config_id' | 'name' | 'variant' | 'frequency'>;
+export type FunctionInstanceUpsert = Pick<DBFunctionInstance, 'nango_connection_id' | 'function_config_id' | 'name' | 'variant' | 'frequency'> &
+    Partial<Pick<DBFunctionInstance, 'enabled'>>;
+export type FunctionInstanceUpdate = {
+    connectionId: DBFunctionInstance['nango_connection_id'];
+    functionConfigId: DBFunctionInstance['function_config_id'];
+    variant: DBFunctionInstance['variant'];
+    enabled: DBFunctionInstance['enabled'] | undefined;
+    frequency: DBFunctionInstance['frequency'] | undefined;
+};
 export type FunctionInstanceFilter = { functionConfigIds: number[] } | { connectionIds: number[] } | { instanceIds: number[] };
-export type FunctionInstanceSearchOptions = { includeDeleted?: boolean; enabled?: boolean; afterId?: number; limit?: number };
+export type FunctionInstanceSearchOptions = { includeDeleted?: boolean; enabled?: boolean; afterId?: number; limit?: number; forShare?: boolean };
 
 const UPSERT_BATCH_SIZE = 1000;
 const SOFT_DELETE_BATCH_SIZE = 1000;
@@ -43,11 +51,12 @@ export async function upsert(db: Knex, instances: FunctionInstanceUpsert[]): Pro
                             function_config_id: i.function_config_id,
                             name: i.name,
                             variant: i.variant,
-                            frequency: i.frequency
+                            frequency: i.frequency,
+                            enabled: i.enabled ?? true
                         }))
                     )
                     .onConflict(trx.raw('(nango_connection_id, function_config_id, variant) WHERE deleted_at IS NULL'))
-                    // A deployment must not overwrite a connection-level frequency override.
+                    // A deployment must not overwrite a connection-level frequency override or enabled state.
                     .merge(['name'])
                     .returning<DBFunctionInstance[]>('*');
 
@@ -64,10 +73,32 @@ export async function upsert(db: Knex, instances: FunctionInstanceUpsert[]): Pro
     }
 }
 
+export async function update(trx: Knex, update: FunctionInstanceUpdate): Promise<Result<DBFunctionInstance | undefined>> {
+    try {
+        const [updated] = await trx<DBFunctionInstance>(INSTANCES_TABLE)
+            .where({
+                nango_connection_id: update.connectionId,
+                function_config_id: update.functionConfigId,
+                variant: update.variant,
+                deleted_at: null
+            })
+            .update({
+                updated_at: trx.fn.now(),
+                ...(update.frequency === undefined ? {} : { frequency: update.frequency }),
+                ...(update.enabled === undefined ? {} : { enabled: update.enabled })
+            })
+            .returning('*');
+
+        return Ok(updated);
+    } catch (err) {
+        return Err(new Error('failed_to_update_function_instance', { cause: err }));
+    }
+}
+
 export async function search(
     trx: Knex,
     filter: FunctionInstanceFilter,
-    { includeDeleted = false, enabled, afterId, limit }: FunctionInstanceSearchOptions = {}
+    { includeDeleted = false, enabled, afterId, limit, forShare = false }: FunctionInstanceSearchOptions = {}
 ): Promise<Result<DBFunctionInstance[]>> {
     const [field, ids] = resolveFilter(filter);
     if (ids.length === 0) {
@@ -88,6 +119,9 @@ export async function search(
         }
         if (limit !== undefined) {
             query.limit(limit);
+        }
+        if (forShare) {
+            query.forShare();
         }
         return Ok(await query);
     } catch (err) {
@@ -174,5 +208,18 @@ export async function hardDelete(
         return Ok(deleted);
     } catch (err) {
         return Err(new Error('failed_to_hard_delete_function_instances', { cause: err }));
+    }
+}
+
+export async function lockFunctionInstance(
+    trx: Knex.Transaction,
+    { environmentId, connectionId, functionUuid }: { environmentId: number; connectionId: string; functionUuid: string }
+): Promise<Result<void>> {
+    try {
+        const lockKey = stringToHash(`functioninstance:${environmentId}:${connectionId}:${functionUuid}`);
+        await trx.raw('SELECT pg_advisory_xact_lock(?) as lock_function_instance', [lockKey]);
+        return Ok(undefined);
+    } catch (err) {
+        return Err(new Error('failed_to_lock_function', { cause: err }));
     }
 }

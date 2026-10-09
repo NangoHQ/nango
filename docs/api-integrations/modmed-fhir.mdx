@@ -1,0 +1,87 @@
+---
+title: 'ModMed (FHIR)'
+sidebarTitle: 'ModMed (FHIR)'
+description: 'Integrate your application with the ModMed Certified FHIR API using Bulk FHIR backend services'
+---
+
+## 🚀 Quickstart
+
+Connect to the ModMed Certified FHIR API with Nango and see data flow in a few minutes. This integration uses ModMed's Bulk FHIR flow: machine-to-machine, JWT-signed authentication, with no end-user OAuth redirect.
+
+<Note>
+This is ModMed's Certified (ONC) FHIR API. For the EMA Proprietary API, use the [ModMed](/api-integrations/modmed) integration instead.
+</Note>
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** → _Configure New Integration_ → _ModMed (FHIR)_. Register your Client ID, Key ID, Private Key, and Scope in the **Settings** tab — see the [setup guide](/api-integrations/modmed-fhir/how-to-register-your-own-modmed-fhir-app). These are entered once and reused automatically by every connection.
+    </Step>
+    <Step id="connect-modmed-practice" title="Connect a practice">
+    Each connection represents one practice. Create it by supplying that practice's **FHIR Host** — see the [connect guide](/api-integrations/modmed-fhir/connect) for the exact field.
+    </Step>
+    <Step id="call-modmed-fhir-api" title="Call the ModMed FHIR API">
+    Make your first request. Nango's proxy base URL is the practice's FHIR host, so include the FHIR version (`/fhir/r4`) in the path. Replace the placeholders with your API key (from **Environment Settings**), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/fhir/r4/Patient?_count=10" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/fhir/r4/Patient',
+            params: { _count: 10 },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 ModMed (FHIR) integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own ModMed FHIR app](/api-integrations/modmed-fhir/how-to-register-your-own-modmed-fhir-app)  
+Register a Bulk FHIR app with ModMed, generate a key pair, host your JWKS file, and obtain your Client ID
+
+- [How to connect a practice to ModMed FHIR](/api-integrations/modmed-fhir/connect)  
+Create a connection for a practice once it has added your Client ID
+
+Official docs: [ModMed Certified FHIR API authentication](https://portal.api.modmed.com/reference/authentication-2)
+
+## 🧩 Pre-built syncs & actions for ModMed (FHIR)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/modmed-fhir/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

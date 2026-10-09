@@ -2,7 +2,16 @@ import ms from 'ms';
 
 import { Err, flagHasPlan, Ok } from '@nangohq/utils';
 
-import { canHaveGrowthAddon, freePlan, GROWTH_ADDON_ENVIRONMENTS_MAX, GROWTH_FEATURE_FLAGS, isPotentialDowngrade, plansList } from './definitions.js';
+import {
+    API_RATE_LIMIT_SIZES,
+    canHaveGrowthAddon,
+    freePlan,
+    GROWTH_ADDON_ENVIRONMENTS_MAX,
+    GROWTH_ADDON_RATE_LIMIT_SIZE,
+    GROWTH_FEATURE_FLAGS,
+    isPotentialDowngrade,
+    plansList
+} from './definitions.js';
 
 import type { DBEnvironment, DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -211,6 +220,19 @@ export function getGrowthAddonEnvironmentsMax(definition: PlanDefinition, hasGro
     return hasGrowthFeatures ? Math.max(currentEnvironmentsMax, GROWTH_ADDON_ENVIRONMENTS_MAX) : (definition.flags.environments_max as number);
 }
 
+export function getGrowthAddonRateLimitSize(
+    definition: PlanDefinition,
+    hasGrowthFeatures: boolean,
+    currentRateLimitSize: DBPlan['api_rate_limit_size']
+): DBPlan['api_rate_limit_size'] {
+    if (!hasGrowthFeatures) {
+        return definition.flags.api_rate_limit_size as DBPlan['api_rate_limit_size'];
+    }
+    return API_RATE_LIMIT_SIZES.indexOf(currentRateLimitSize) > API_RATE_LIMIT_SIZES.indexOf(GROWTH_ADDON_RATE_LIMIT_SIZE)
+        ? currentRateLimitSize
+        : GROWTH_ADDON_RATE_LIMIT_SIZE;
+}
+
 export async function setGrowthAddon(
     db: Knex,
     team: DBTeam,
@@ -232,7 +254,8 @@ export async function setGrowthAddon(
         growth_features_starts_at: null,
         growth_features_ends_at: hasGrowthFeatures ? endsAt : null,
         ...getGrowthAddonFlags(definition, hasGrowthFeatures),
-        environments_max: getGrowthAddonEnvironmentsMax(definition, hasGrowthFeatures, plan.value.environments_max)
+        environments_max: getGrowthAddonEnvironmentsMax(definition, hasGrowthFeatures, plan.value.environments_max),
+        api_rate_limit_size: getGrowthAddonRateLimitSize(definition, hasGrowthFeatures, plan.value.api_rate_limit_size)
     });
     if (updated.isErr()) {
         return Err(new Error('Failed to update growth add-on', { cause: updated.error }));
@@ -316,7 +339,8 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
         flags = {
             ...flags,
             ...getGrowthAddonFlags(newPlanDefinition, hasGrowthFeatures),
-            environments_max: getGrowthAddonEnvironmentsMax(newPlanDefinition, hasGrowthFeatures, flags.environments_max ?? 0)
+            environments_max: getGrowthAddonEnvironmentsMax(newPlanDefinition, hasGrowthFeatures, flags.environments_max ?? 0),
+            api_rate_limit_size: getGrowthAddonRateLimitSize(newPlanDefinition, hasGrowthFeatures, flags.api_rate_limit_size ?? 's')
         };
     }
 
@@ -440,25 +464,8 @@ function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPla
             }
             // SPECIAL CASES
             case 'api_rate_limit_size': {
-                const sizeIndex: Record<DBPlan['api_rate_limit_size'], number> = {
-                    s: 1,
-                    m: 2,
-                    l: 3,
-                    xl: 4,
-                    '2xl': 5,
-                    '3xl': 6,
-                    '4xl': 7,
-                    '5xl': 8,
-                    '6xl': 9,
-                    '7xl': 10,
-                    '8xl': 11,
-                    '9xl': 12,
-                    '10xl': 13,
-                    '11xl': 14,
-                    '12xl': 15
-                };
-                const currentIndex = sizeIndex[currentPlan[key]];
-                const newIndex = sizeIndex[newPlanDefinition.flags[key]];
+                const currentIndex = API_RATE_LIMIT_SIZES.indexOf(currentPlan[key]);
+                const newIndex = API_RATE_LIMIT_SIZES.indexOf(newPlanDefinition.flags[key]);
                 if (currentIndex > newIndex) {
                     overrides[key] = currentPlan[key];
                 }
