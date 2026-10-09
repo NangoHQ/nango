@@ -9,7 +9,7 @@ interface InfoTooltipProps {
     side?: 'top' | 'right' | 'bottom' | 'left';
     align?: 'start' | 'center' | 'end';
     icon?: React.ReactNode;
-    /** `md` is 16px. `sm` is 12px, for sitting next to 12px labels. */
+    /** `md` is a 16px icon. `sm` keeps a 12px icon inside a 24px hit area, for sitting next to 12px labels. */
     size?: 'sm' | 'md';
 }
 
@@ -21,8 +21,8 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({ children, side = 'top'
                     type="button"
                     aria-label="More information"
                     className={cn(
-                        '[&>svg]:text-text-muted focus-default inline-flex items-center p-0 cursor-help rounded-ds-xs',
-                        size === 'sm' ? '[&>svg]:size-3' : '[&>svg]:size-4'
+                        '[&>svg]:text-text-muted focus-default inline-flex items-center justify-center p-0 cursor-help rounded-ds-xs',
+                        size === 'sm' ? 'size-6 [&>svg]:size-3' : '[&>svg]:size-4'
                     )}
                 >
                     {icon}

@@ -88,7 +88,16 @@ function FunctionNameCell({ name, description }: { name: string; description?: s
         <TableCell className="max-w-0 px-3 whitespace-normal">
             <div className="flex min-w-0 flex-col gap-0.5">
                 <span className="truncate type-code-medium-xs text-text-default">{name}</span>
-                {description && <span className="truncate type-label-xxs text-text-disabled">{description}</span>}
+                {description && (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span tabIndex={0} className="min-w-0 truncate type-label-xxs text-text-disabled focus-default">
+                                {description}
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">{description}</TooltipContent>
+                    </Tooltip>
+                )}
             </div>
         </TableCell>
     );
@@ -287,8 +296,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const visibleSyncTemplates = typeFilter === 'sync' && !hasNextPage && !isPlaceholderData ? matchingSyncTemplates : [];
 
     const counts: Record<TypeFilterValue, number | undefined> = {
-        action: pillCount(actionCounts.data?.pages[0]?.pagination.total, templatesFetched, undeployedActionTemplates.length),
-        sync: pillCount(syncCounts.data?.pages[0]?.pagination.total, templatesFetched, undeployedSyncTemplates.length),
+        // Catalog actions are already in the functions total. A failed templates request leaves the response unset, so the pill stays hidden instead of showing a deployed-only number.
+        action: pillCount(
+            actionCounts.data?.pages[0]?.pagination.total,
+            templatesResponse !== undefined,
+            metaData?.data.toolsCatalog === false ? undeployedActionTemplates.length : 0
+        ),
+        sync: pillCount(syncCounts.data?.pages[0]?.pagination.total, templatesResponse !== undefined, undeployedSyncTemplates.length),
         'on-event': triggerCounts.data?.pages[0]?.pagination.total
     };
     const countsSettled = [actionCounts, syncCounts, triggerCounts].every((query) => query.isSuccess || query.isError);
@@ -510,7 +524,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                             <TableFooter className="bg-transparent font-ds-regular">
                                 <TableRow className="h-8 hover:bg-transparent">
                                     <TableCell colSpan={3} className="px-3 type-label-xs text-text-disabled">
-                                        Showing {functions.length + visibleSyncTemplates.length} of {total + matchingSyncTemplates.length} sync functions
+                                        Showing {functions.length + visibleSyncTemplates.length} of {total + visibleSyncTemplates.length} sync functions
                                     </TableCell>
                                 </TableRow>
                             </TableFooter>

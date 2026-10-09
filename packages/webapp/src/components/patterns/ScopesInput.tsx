@@ -184,7 +184,21 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                                 </Tooltip>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <IconButton type="button" size="2xs" variant="ghost" label="Delete all scopes" onClick={() => void deleteAllScopes()}>
+                                        <IconButton
+                                            type="button"
+                                            size="2xs"
+                                            variant="ghost"
+                                            label="Delete all scopes"
+                                            onMouseDown={(event) => {
+                                                // The chips container treats a press as focusing the input, which reopens suggestions.
+                                                event.preventDefault();
+                                                event.stopPropagation();
+                                            }}
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                void deleteAllScopes();
+                                            }}
+                                        >
                                             <Trash2 />
                                         </IconButton>
                                     </TooltipTrigger>
