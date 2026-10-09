@@ -1,8 +1,9 @@
 import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
+import { functionRepoPath } from '../utils/scripts';
 
-import type { GetFunctionCode, GetIntegrationFunction, GetIntegrationFunctions, GetIntegrationTemplates } from '@nangohq/types';
+import type { FunctionType, GetFunctionCode, GetIntegrationFunction, GetIntegrationFunctions, GetIntegrationTemplates } from '@nangohq/types';
 
 interface UseGetIntegrationFunctionsArgs {
     env: string;
@@ -118,6 +119,32 @@ export function useGetIntegrationFunctionCode({ env, providerConfigKey, name, ty
             return json;
         },
         enabled: enabled && Boolean(env && providerConfigKey && name)
+    });
+}
+
+/** Public source for undeployed templates, the same files the old templates page loaded. */
+const INTEGRATION_TEMPLATES_RAW_URL = 'https://raw.githubusercontent.com/NangoHQ/integration-templates';
+
+interface UseGetTemplateFunctionCodeArgs {
+    provider: string;
+    name: string;
+    type: FunctionType;
+    enabled?: boolean;
+}
+
+export function useGetTemplateFunctionCode({ provider, name, type, enabled = true }: UseGetTemplateFunctionCodeArgs) {
+    return useQuery<string, Error>({
+        queryKey: ['template-code', provider, type, name],
+        queryFn: async () => {
+            const res = await fetch(`${INTEGRATION_TEMPLATES_RAW_URL}/main/${functionRepoPath({ provider, name, type })}`);
+            if (!res.ok) {
+                throw new Error(`Failed to load template source (${res.status})`);
+            }
+            return res.text();
+        },
+        enabled: enabled && Boolean(provider && name),
+        retry: false,
+        staleTime: 5 * 60 * 1000
     });
 }
 

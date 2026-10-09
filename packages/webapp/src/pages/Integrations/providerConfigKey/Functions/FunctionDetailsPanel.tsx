@@ -11,8 +11,8 @@ import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from
 import { Spinner } from '@/components/ui/Spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { useDeleteIntegrationFunction } from '@/hooks/useIntegration';
-import { useGetIntegrationFunctionCode } from '@/hooks/useIntegrationFunctions';
+import { useDeleteIntegrationFunction, useGetIntegration } from '@/hooks/useIntegration';
+import { useGetIntegrationFunctionCode, useGetTemplateFunctionCode } from '@/hooks/useIntegrationFunctions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
@@ -47,17 +47,33 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
 
     const inputSchema = useMemo(() => getInputSchema(fn), [fn]);
     const outputSchemas = useMemo(() => getOutputSchemas(fn), [fn]);
+    const listed = isListedFunction(fn);
+    const { data: integrationDetails } = useGetIntegration(env, integration.unique_key);
+    const repoProvider = integrationDetails?.data.symLinkTargetName ?? integration.provider;
     const {
         data: codeData,
-        isLoading: codeLoading,
-        error: codeError
+        isPending: deployedCodePending,
+        error: deployedCodeError
     } = useGetIntegrationFunctionCode({
         env,
         providerConfigKey: integration.unique_key,
         name: fn.name,
         type: fn.type,
-        enabled: activeTab === 'code'
+        enabled: listed && activeTab === 'code'
     });
+    const {
+        data: templateCode,
+        isPending: templateCodePending,
+        error: templateCodeError
+    } = useGetTemplateFunctionCode({
+        provider: repoProvider,
+        name: fn.name,
+        type: fn.type,
+        enabled: !listed && activeTab === 'code'
+    });
+    const codePending = listed ? deployedCodePending : templateCodePending;
+    const codeError = listed ? deployedCodeError : templateCodeError;
+    const code = listed ? codeData?.code : templateCode;
 
     const onDelete = useCallback(async () => {
         try {
@@ -74,7 +90,6 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
         }
     }, [deleteFunction, fn.name, onDeleted, toast]);
 
-    const listed = isListedFunction(fn);
     const source = listed ? fn.source : 'template';
     const pullCommand = buildPullCommand({
         integration: integration.unique_key,
@@ -223,14 +238,14 @@ export const FunctionDetailsPanel: React.FC<FunctionDetailsPanelProps> = ({ fn, 
                         )}
                     </TabsContent>
                     <TabsContent value="code">
-                        {codeLoading ? (
+                        {codePending ? (
                             <div className="flex h-48 items-center justify-center">
                                 <Spinner className="size-5 text-text-muted" />
                             </div>
-                        ) : codeError || !codeData ? (
+                        ) : codeError || !code ? (
                             <CompactEmptyState>Failed to load source code.</CompactEmptyState>
                         ) : (
-                            <CodeBlock title={`${fn.name}.ts`} language="typescript" code={codeData.code} />
+                            <CodeBlock title={`${fn.name}.ts`} language="typescript" code={code} />
                         )}
                     </TabsContent>
                 </Tabs>
