@@ -24,8 +24,7 @@ export const getOverdueInvoices = asyncWrapper<GetOverdueInvoices>(async (req, r
         return;
     }
 
-    // Keyed on the Orb customer, not the plan: an account that downgraded to free can still owe.
-    // This endpoint only reads, so it doesn't create a missing customer.
+    // An account that downgraded to free can still owe an invoice from its paid plan.
     if (!plan.orb_customer_id) {
         res.status(200).send({ data: { hasOverdue: false, portalUrl: null } });
         return;
