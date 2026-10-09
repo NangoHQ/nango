@@ -16,7 +16,8 @@ export type ProductTrackingTypes =
     | 'agents:session_end'
     | 'agents:tool_call_complete'
     | 'agents:proxy_request_complete'
-    | 'agents:tool_search_complete';
+    | 'agents:tool_search_complete'
+    | 'playground:agent_turn_complete';
 
 const ACCOUNT_GROUP = 'company';
 

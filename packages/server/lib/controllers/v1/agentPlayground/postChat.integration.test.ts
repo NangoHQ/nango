@@ -2,7 +2,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
-import { seeders } from '@nangohq/shared';
+import { productTracking, seeders } from '@nangohq/shared';
 
 import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -110,6 +110,8 @@ describe('POST /api/v1/agent-playground/chat', () => {
         const { user, env } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
+        const track = vi.spyOn(productTracking, 'track');
+
         const turn = await chat(session, { messages: [userMessage("What's on my calendar today?")], timeZone: 'Europe/Kyiv' });
 
         expect(turn.status).toBe(200);
@@ -117,6 +119,19 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(turn.integrationSetup).toBeUndefined();
         expect(turn.text).toContain('Mock reply');
         expect(await integrationsIn(env.id)).toEqual([]);
+        await vi.waitFor(() => {
+            const turnEvents = track.mock.calls.filter(([event]) => event.name === 'playground:agent_turn_complete');
+            expect(turnEvents).toHaveLength(1);
+            expect(turnEvents[0]?.[0].eventProperties).toMatchObject({
+                agent_session_id: turn.sessionId,
+                environment_id: env.id,
+                is_success: true,
+                is_stopped: false,
+                model: 'mock',
+                step_count: 2,
+                cost_usd: 0
+            });
+        });
     });
 
     it("creates only the pre-made prompt's integration, on Nango's OAuth app", async () => {

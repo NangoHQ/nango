@@ -10,8 +10,10 @@ import { createAgentSessionMcpServer, TOOL_NAME_SEPARATOR } from '../controllers
 import { getOrchestrator } from '../utils/utils.js';
 import { buildInstructions } from './agentPlayground.instructions.js';
 import { createPlaygroundModel } from './agentPlaygroundModel.service.js';
+import { trackPlaygroundTurn } from './agentPlaygroundUsage.service.js';
 import * as agentSessionService from './agentSession.service.js';
 
+import type { PlaygroundStep, PlaygroundTurnOutcome } from './agentPlaygroundUsage.service.js';
 import type {
     AgentPlaygroundIntegrationSetup,
     AgentPlaygroundMessageMetadata,
@@ -336,6 +338,16 @@ export async function startTurn({
         return Err(new AgentPlaygroundError('model_error', err instanceof Error ? err.message : 'The agent could not start', { cause: err }));
     }
 
+    const steps: PlaygroundStep[] = [];
+    let tracked = false;
+    const trackTurn = (outcome: PlaygroundTurnOutcome) => {
+        if (tracked) {
+            return;
+        }
+        tracked = true;
+        trackPlaygroundTurn({ ctx, sessionId: session.value.id, outcome, steps });
+    };
+
     const result = streamText({
         model: (model ?? createPlaygroundModel)(),
         instructions: buildInstructions(
@@ -351,10 +363,20 @@ export async function startTurn({
         stopWhen: stepCountIs(MAX_STEPS),
         ...(abortSignal ? { abortSignal } : {}),
         toolApproval: ({ toolCall }) => (toolNeedsApproval(toolCall.toolName, toolCall.input) ? 'user-approval' : undefined),
-        onEnd: close,
-        onAbort: close,
+        onStepEnd: (step) => {
+            steps.push(step);
+        },
+        onEnd: async () => {
+            trackTurn('complete');
+            await close();
+        },
+        onAbort: async () => {
+            trackTurn('aborted');
+            await close();
+        },
         onError: async ({ error }) => {
             logger.error(`Agent Playground turn failed: ${error instanceof Error ? error.message : String(error)}`);
+            trackTurn('error');
             await close();
         }
     });
