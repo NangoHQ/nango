@@ -11,7 +11,7 @@ export interface ToolDisplay {
 
 const PLAYGROUND_INTEGRATION_PREFIX = 'pg-';
 
-// The server names each playground integration `pg-<provider>`.
+// The server keys the integrations it creates `pg-<provider>`.
 export function providerFor(integrationId: string): string {
     return integrationId.startsWith(PLAYGROUND_INTEGRATION_PREFIX) ? integrationId.slice(PLAYGROUND_INTEGRATION_PREFIX.length) : integrationId;
 }

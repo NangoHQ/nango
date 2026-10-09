@@ -1,8 +1,9 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from 'ai';
-import { ArrowUp, CircleAlert, Plus, RotateCcw, Square } from 'lucide-react';
+import { ArrowUp, CircleAlert, CircleCheck, Plus, RotateCcw, Settings2, Square } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
 
 import {
     Alert,
@@ -32,15 +33,23 @@ import { ToolCallCard } from './components/ToolCallCard';
 import { hideTrailingLink } from './streamingMarkdown';
 import { describeTool, humanize } from './toolDisplay';
 
-import type { AgentPlaygroundMessageMetadata } from '@nangohq/types';
+import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata } from '@nangohq/types';
 import type { UIMessage } from 'ai';
 
 type PlaygroundMessage = UIMessage<AgentPlaygroundMessageMetadata>;
 
-const STARTER_PROMPTS: { prompt: string; icon: React.ReactNode }[] = [
-    { prompt: "What's on my calendar today?", icon: <IntegrationLogo provider="google-calendar" className="size-8" /> },
-    { prompt: "Star Nango's GitHub repo", icon: <IntegrationLogo provider="github" className="size-8" /> }
+const STARTER_PROMPTS: { prompt: string; provider: string; name: string }[] = [
+    { prompt: "What's on my Google Calendar today?", provider: 'google-calendar', name: 'Google Calendar' },
+    { prompt: 'Summarize my latest unread emails in Gmail', provider: 'google-mail', name: 'Gmail' },
+    { prompt: "Star Nango's GitHub repo", provider: 'github', name: 'GitHub' },
+    { prompt: 'Send me a Slack message saying "Hello, world!"', provider: 'slack', name: 'Slack' },
+    { prompt: 'What Linear issues are assigned to me?', provider: 'linear', name: 'Linear' },
+    { prompt: 'Show my 5 newest HubSpot contacts', provider: 'hubspot', name: 'HubSpot' }
 ];
+
+function providerName(provider: string): string {
+    return STARTER_PROMPTS.find((starter) => starter.provider === provider)?.name ?? humanize(provider);
+}
 
 export const AgentPlaygroundShow: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -128,16 +137,14 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-requested' && !part.approval.isAutomatic);
     const answeredApprovalPending =
         lastMessage?.role === 'assistant' && lastMessage.parts.some((part) => part.type === 'dynamic-tool' && part.state === 'approval-responded');
-    const [input, setInput] = useState('');
-
-    const send = (text: string) => {
+    const send = (text: string, starterProvider?: string): boolean => {
         const trimmed = text.trim();
         if (!trimmed || busy || awaitingApproval) {
-            return;
+            return false;
         }
-        setInput('');
         pinnedToBottom.current = true;
-        void sendMessage({ text: trimmed });
+        void sendMessage({ text: trimmed, ...(starterProvider ? { metadata: { starterProvider } } : {}) });
+        return true;
     };
 
     const retry = () => {
@@ -220,41 +227,7 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
         }
     }, [messages, error]);
 
-    const composer = (
-        <form
-            className="w-full"
-            onSubmit={(e) => {
-                e.preventDefault();
-                send(input);
-            }}
-        >
-            <InputGroup size="composer">
-                <InputGroupTextarea
-                    value={input}
-                    rows={1}
-                    placeholder={awaitingApproval ? 'Approve or deny the change to continue…' : 'Ask the agent to do something…'}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                            e.preventDefault();
-                            send(input);
-                        }
-                    }}
-                />
-                <InputGroupAddon align="inline-end">
-                    {busy ? (
-                        <InputGroupButton label="Stop" variant="secondary" size="icon-sm" onClick={() => void stop()}>
-                            <Square />
-                        </InputGroupButton>
-                    ) : (
-                        <InputGroupButton label="Send" type="submit" variant="primary" size="icon-sm" disabled={!input.trim() || awaitingApproval}>
-                            <ArrowUp />
-                        </InputGroupButton>
-                    )}
-                </InputGroupAddon>
-            </InputGroup>
-        </form>
-    );
+    const composer = <Composer busy={busy} awaitingApproval={awaitingApproval} onSend={send} onStop={() => void stop()} />;
 
     if (messages.length === 0) {
         return (
@@ -283,6 +256,13 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
                         </div>
                     ) : (
                         <div key={message.id} className="flex flex-col gap-5">
+                            {message.metadata?.integrationSetup && (
+                                <IntegrationSetupNotice
+                                    env={env}
+                                    setup={message.metadata.integrationSetup}
+                                    onTryAgain={message.id === lastMessage?.id && !busy ? () => void regenerate() : undefined}
+                                />
+                            )}
                             {message.parts.map((part, index) => {
                                 if (part.type === 'text') {
                                     return part.text ? (
@@ -320,6 +300,57 @@ const Chat: React.FC<{ env: string; onReset: () => void }> = ({ env, onReset }) 
     );
 };
 
+// Holds the draft itself, so typing doesn't re-render the message list.
+const Composer: React.FC<{ busy: boolean; awaitingApproval: boolean; onSend: (text: string) => boolean; onStop: () => void }> = ({
+    busy,
+    awaitingApproval,
+    onSend,
+    onStop
+}) => {
+    const [input, setInput] = useState('');
+    const submit = () => {
+        if (onSend(input)) {
+            setInput('');
+        }
+    };
+
+    return (
+        <form
+            className="w-full"
+            onSubmit={(e) => {
+                e.preventDefault();
+                submit();
+            }}
+        >
+            <InputGroup size="composer">
+                <InputGroupTextarea
+                    value={input}
+                    rows={1}
+                    placeholder={awaitingApproval ? 'Approve or deny the change to continue…' : 'Ask the agent to do something…'}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                            e.preventDefault();
+                            submit();
+                        }
+                    }}
+                />
+                <InputGroupAddon align="inline-end">
+                    {busy ? (
+                        <InputGroupButton label="Stop" variant="secondary" size="icon-sm" onClick={onStop}>
+                            <Square />
+                        </InputGroupButton>
+                    ) : (
+                        <InputGroupButton label="Send" type="submit" variant="primary" size="icon-sm" disabled={!input.trim() || awaitingApproval}>
+                            <ArrowUp />
+                        </InputGroupButton>
+                    )}
+                </InputGroupAddon>
+            </InputGroup>
+        </form>
+    );
+};
+
 const ErrorNotice: React.FC<{ error: Error; onRetry: () => void; onReset: () => void }> = ({ error, onRetry, onReset }) => {
     const { title, detail, action } = describeChatError(error);
 
@@ -347,6 +378,9 @@ const ErrorNotice: React.FC<{ error: Error; onRetry: () => void; onReset: () => 
 
 function workingLabel(messages: PlaygroundMessage[]): string | null {
     const last = messages.at(-1);
+    if (last?.role === 'user' && last.metadata?.starterProvider) {
+        return `Setting up ${providerName(last.metadata.starterProvider)}…`;
+    }
     const part = last?.role === 'assistant' ? last.parts.at(-1) : undefined;
 
     if (part?.type === 'text') {
@@ -381,7 +415,64 @@ const WorkingIndicator: React.FC<{ messages: PlaygroundMessage[] }> = ({ message
     );
 };
 
-const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string) => void }> = ({ composer, onPick }) => {
+const IntegrationSetupNotice: React.FC<{ env: string; setup: AgentPlaygroundIntegrationSetup; onTryAgain?: (() => void) | undefined }> = ({
+    env,
+    setup,
+    onTryAgain
+}) => {
+    const name = providerName(setup.provider);
+    const href = setup.integrationId ? `/${env}/integrations/${setup.integrationId}` : `/${env}/integrations/create/${setup.provider}`;
+
+    if (setup.outcome === 'created' || setup.outcome === 'existing') {
+        return (
+            <div className="flex items-center gap-2 text-body-medium-regular text-text-secondary" role="status">
+                <CircleCheck className="size-4 shrink-0 text-icon-success" />
+                <span>
+                    {setup.outcome === 'created' ? `Created the ${name} integration.` : `Using your ${name} integration.`}{' '}
+                    <Link to={href} className="whitespace-nowrap text-text-default underline underline-offset-2">
+                        View integration
+                    </Link>
+                </span>
+            </div>
+        );
+    }
+
+    return (
+        <Alert variant="warning">
+            <CircleAlert />
+            <AlertTitle>
+                {setup.outcome === 'missing_credentials' ? `Finish setting up your ${name} integration` : `Create a ${name} integration to continue`}
+            </AlertTitle>
+            <AlertDescription>
+                {setup.outcome === 'missing_credentials'
+                    ? "It's missing its client ID or secret. Add them, then retry the prompt."
+                    : `This session needs a ${name} integration in this environment.`}
+            </AlertDescription>
+            <AlertActions>
+                <AlertButton asChild>
+                    <Link to={href}>
+                        {setup.outcome === 'missing_credentials' ? (
+                            <>
+                                <Settings2 /> Open integration
+                            </>
+                        ) : (
+                            <>
+                                <Plus /> Create integration
+                            </>
+                        )}
+                    </Link>
+                </AlertButton>
+                {onTryAgain && (
+                    <AlertButton onClick={onTryAgain}>
+                        <RotateCcw /> Retry prompt
+                    </AlertButton>
+                )}
+            </AlertActions>
+        </Alert>
+    );
+};
+
+const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string, provider: string) => void }> = ({ composer, onPick }) => {
     return (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 pb-8 text-center">
             <div className="relative flex w-full justify-center">
@@ -393,14 +484,14 @@ const EmptyState: React.FC<{ composer: React.ReactNode; onPick: (prompt: string)
             </div>
             {composer}
             <div className="grid w-full grid-cols-2 gap-3">
-                {STARTER_PROMPTS.map(({ prompt, icon }) => (
+                {STARTER_PROMPTS.map(({ prompt, provider }) => (
                     <button
                         key={prompt}
                         type="button"
-                        onClick={() => onPick(prompt)}
-                        className="flex items-center gap-3 rounded-ds-xs border-ds-hairline border-border-input bg-surface-panel px-3 py-2.5 text-left text-body-medium-regular text-text-default transition-colors hover:border-border-input-hover"
+                        onClick={() => onPick(prompt, provider)}
+                        className="flex items-center gap-3 rounded-ds-xs border-ds-hairline border-border-muted bg-surface-panel px-3 py-2.5 text-left text-body-medium-regular text-text-default transition-colors hover:border-border-strong"
                     >
-                        {icon}
+                        <IntegrationLogo provider={provider} className="size-8 shrink-0" />
                         {prompt}
                     </button>
                 ))}
