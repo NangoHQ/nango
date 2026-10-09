@@ -73,13 +73,16 @@ export function newestConnectionPerIntegration(
 }
 
 // Expects `integrations` oldest first, as listProviderConfigs returns them.
-export function existingIntegrationFor<T extends { unique_key: string; provider: string }>(integrations: T[], provider: string): T | undefined {
+export function existingIntegrationFor<T extends { unique_key: string; provider: string; missing_fields: string[] }>(
+    integrations: T[],
+    provider: string
+): T | undefined {
     const matching = integrations.filter((integration) => integration.provider === provider);
-    return (
-        matching.find((integration) => integration.unique_key === playgroundIntegrationId(provider)) ??
-        matching.find((integration) => integration.unique_key === provider) ??
-        matching[0]
-    );
+    const pick = (candidates: T[]) =>
+        candidates.find((integration) => integration.unique_key === playgroundIntegrationId(provider)) ??
+        candidates.find((integration) => integration.unique_key === provider) ??
+        candidates[0];
+    return pick(matching.filter((integration) => integration.missing_fields.length === 0)) ?? pick(matching);
 }
 
 // Never creates: only a pre-made prompt sets up a missing integration.
@@ -123,6 +126,11 @@ async function createWithNangoOAuthApp(environment: DBEnvironment, providerName:
         display_name: provider.display_name
     });
     if (created.isErr()) {
+        // A concurrent request that inserted the same key first makes this one fail on the unique constraint.
+        const concurrent = existingIntegrationFor(await configService.listProviderConfigs(db.knex, environment.id), providerName);
+        if (concurrent) {
+            return concurrent.unique_key;
+        }
         logger.error(`Agent Playground could not create ${integrationId}: ${created.error.message}`);
         return null;
     }
@@ -181,7 +189,6 @@ async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | un
     return Ok(created.value.session);
 }
 
-// The page itself asks the user to finish the setup, so this reply has no text.
 function setupOnlyReply(messageMetadata: AgentPlaygroundMessageMetadata): ReadableStream<UIMessageChunk<AgentPlaygroundMessageMetadata>> {
     return new ReadableStream({
         start(controller) {
