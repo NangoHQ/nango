@@ -11,7 +11,6 @@ import { getOrchestrator } from '../utils/utils.js';
 import { buildInstructions } from './agentPlayground.instructions.js';
 import { createPlaygroundModel } from './agentPlaygroundModel.service.js';
 import * as agentSessionService from './agentSession.service.js';
-import * as agentSessionCreationService from './agentSessionCreation.service.js';
 
 import type { AgentPlaygroundMessageMetadata, AgentSession, AgentSessionPinnedConnection, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -132,14 +131,14 @@ async function getOrCreateSession(ctx: PlaygroundContext, sessionId: string | un
         tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid }
     });
 
-    const created = await agentSessionCreationService.createAgentSession({
+    const created = await agentSessionService.createAgentSession({
         account: ctx.account,
         environment: ctx.environment,
         connections: { any: [], pinned: newestConnectionPerIntegration(connections) },
         // Every playground integration, connected or not, so the agent can offer to connect a missing app.
         toolset: Object.fromEntries(integrationIds.map((integrationId) => [integrationId, { allow: '*', deny: [] }])),
         pinnedTools: undefined,
-        metaTools: { nango_create_connection: { enabled: true, tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid } }, nango_proxy: { enabled: true } },
+        metaTools: { nangoCreateConnection: { enabled: true, tags: { [PLAYGROUND_USER_TAG_KEY]: ctx.user.uuid } }, nangoProxy: true },
         expiresInMs: PLAYGROUND_SESSION_EXPIRES_IN_MS
     });
 

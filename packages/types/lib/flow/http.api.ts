@@ -72,7 +72,7 @@ export type PatchFlowDisable = ApiEndpoint<{
         scriptName: string;
         type: ScriptTypeLiteral;
     };
-    Error: ApiError<'unknown_provider'>;
+    Error: ApiError<'unknown_provider'> | ApiError<'unknown_sync_config'>;
     Success: {
         data: {
             success: boolean;

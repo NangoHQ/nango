@@ -1,25 +1,23 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Alert, AlertDescription } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { environmentQueryKey } from '@/hooks/useEnvironment';
-import { fetchCurrentPlan, useApiPostPlanChange } from '@/hooks/usePlan';
+import { useApiPostPlanChange } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient } from '@/store';
 import { stripePromise } from '@/utils/stripe.js';
 
 import type { StripeError } from '@/utils/stripe.js';
-import type { ApiPlan } from '@nangohq/types';
 
 interface PlanChangeRequest {
     orbId: string;
     withGrowthFeatures: boolean;
-    settled?: (plan: ApiPlan) => boolean;
     successTitle: string;
 }
 
-const POLL_INTERVAL_MS = 500;
+const REFRESH_DEADLINE_MS = 5_000;
 
 /** A `card_error` carries a message worth showing; anything else is noise to the customer. */
 function stripeCardError(error: StripeError): string {
@@ -28,38 +26,27 @@ function stripeCardError(error: StripeError): string {
         : 'An error occurred while validating your payment.';
 }
 
-/** Plan moves and add-on moves are one request, so they are one wait once the caller says what "done" is. */
 export function usePlanChangeRequest(env: string) {
     const { mutateAsync: postPlanChange } = useApiPostPlanChange(env);
     const { toast } = useToast();
 
     const [loading, setLoading] = useState(false);
-    const [longWait, setLongWait] = useState(false);
     // `critical` marks the failures retrying never helps: a declined card is the customer's to act on.
     const [error, setError] = useState<{ message: string; critical: boolean } | null>(null);
 
     const fail = useCallback((message: string, critical: boolean) => {
         setLoading(false);
-        setLongWait(false);
         setError({ message, critical });
         return false;
-    }, []);
-    // Set on unmount so an in-flight wait stops rather than setting state on a gone component.
-    const abandoned = useRef(false);
-    useEffect(() => {
-        abandoned.current = false;
-        return () => {
-            abandoned.current = true;
-        };
     }, []);
 
     const finish = useCallback(
         async (successTitle: string) => {
-            await Promise.all([
+            const refreshed = Promise.all([
                 queryClient.invalidateQueries({ exact: false, queryKey: ['plans'], type: 'all' }),
                 queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) })
             ]);
-            setLongWait(false);
+            await raceDeadline(refreshed, Date.now() + REFRESH_DEADLINE_MS);
             setLoading(false);
             toast({ title: successTitle, variant: 'success' });
         },
@@ -67,9 +54,8 @@ export function usePlanChangeRequest(env: string) {
     );
 
     const submit = useCallback(
-        async ({ orbId, withGrowthFeatures, settled, successTitle }: PlanChangeRequest): Promise<boolean> => {
+        async ({ orbId, withGrowthFeatures, successTitle }: PlanChangeRequest): Promise<boolean> => {
             setLoading(true);
-            setLongWait(false);
             setError(null);
 
             let json: Awaited<ReturnType<typeof postPlanChange>>;
@@ -91,35 +77,27 @@ export function usePlanChangeRequest(env: string) {
                 }
             }
 
-            // The plan row lags the response wherever a webhook applies the change — Orb's for a
-            // downgrade, Stripe's for a paid upgrade. NAN-6840 covers giving this wait a deadline.
-            if (settled) {
-                const caughtUp = await waitFor(() => fetchCurrentPlan(env).then((current) => settled(current.data)), abandoned, setLongWait);
-                if (!caughtUp || abandoned.current) {
-                    return false;
-                }
-            }
-
             await finish(successTitle);
             return true;
         },
-        [env, fail, finish, postPlanChange]
+        [fail, finish, postPlanChange]
     );
 
     const reset = useCallback(() => setError(null), []);
 
-    return { submit, reset, loading, longWait, error };
+    return { submit, reset, loading, error };
 }
 
-async function waitFor(check: () => Promise<boolean>, abandoned: { current: boolean }, onWait: (waiting: boolean) => void): Promise<boolean> {
-    while (!abandoned.current) {
-        if (await check().catch(() => false)) {
-            return true;
-        }
-        onWait(true);
-        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+async function raceDeadline(promise: Promise<unknown>, deadline: number): Promise<void> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const expired = new Promise<void>((resolve) => {
+        timer = setTimeout(resolve, Math.max(0, deadline - Date.now()));
+    });
+    try {
+        await Promise.race([promise, expired]);
+    } finally {
+        clearTimeout(timer);
     }
-    return false;
 }
 
 export interface PlanChangeError {
