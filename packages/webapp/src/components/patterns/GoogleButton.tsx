@@ -19,7 +19,7 @@ export default function GoogleButton({ text, setServerErrorMessage, token, retur
                 provider: 'GoogleOAuth',
                 token,
                 returnTo: token ? undefined : returnTo,
-                acquisition: token ? undefined : readSignupAcquisition()
+                acquisition: readSignupAcquisition()
             })
         });
 

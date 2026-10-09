@@ -189,7 +189,7 @@ export function useSignupAPI() {
         mutationFn: async ({ name, email, password, token }) => {
             const res = await apiFetch('/api/v1/account/signup', {
                 method: 'POST',
-                body: JSON.stringify({ name, email, password, token, acquisition: token ? undefined : readSignupAcquisition() })
+                body: JSON.stringify({ name, email, password, token, acquisition: readSignupAcquisition() })
             });
 
             if (res.status === 200) {

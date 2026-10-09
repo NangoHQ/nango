@@ -48,16 +48,21 @@ describe('managed authentication continuation state', () => {
         expect(parseManagedAuthState(encoded)).toEqual({ returnTo: safeReturnTo(returnTo) });
     });
 
-    it('never carries acquisition data into an invitation', () => {
+    it('carries optional analytics without deciding account attribution in OAuth state', () => {
         const state = { token: 'invite', acquisition: { acquisition_utm_source: 'facebook' } };
-        expect(parseManagedAuthState(encodeManagedAuthState(state))).toEqual({ token: 'invite' });
-        expect(parseManagedAuthState(Buffer.from(JSON.stringify(state)).toString('base64'))).toEqual({ token: 'invite' });
+        expect(parseManagedAuthState(encodeManagedAuthState(state))).toEqual(state);
+        expect(parseManagedAuthState(Buffer.from(JSON.stringify(state)).toString('base64'))).toEqual(state);
     });
 
     it('keeps the continuation when optional analytics are malformed', () => {
         const state = { returnTo: '/onboarding', acquisition: { acquisition_utm_source: 42 } };
         expect(parseManagedAuthState(Buffer.from(JSON.stringify(state)).toString('base64'))).toEqual({ returnTo: '/onboarding' });
         expect(parseManagedAuthState('x'.repeat(16385))).toBeNull();
+    });
+
+    it('keeps valid analytics fields through Google state when another is invalid', () => {
+        const state = { acquisition: { acquisition_utm_source: 'facebook', acquisition_referring_domain: 'my_blog.example.com' }, returnTo: '/onboarding' };
+        expect(parseManagedAuthState(encodeManagedAuthState(state))).toEqual({ acquisition: { acquisition_utm_source: 'facebook' }, returnTo: '/onboarding' });
     });
 
     it('preserves a safe OAuth consent continuation', () => {

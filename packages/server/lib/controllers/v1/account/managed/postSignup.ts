@@ -41,7 +41,7 @@ export const postManagedSignup = asyncWrapper<PostManagedSignup>((req, res) => {
         clientId: process.env['WORKOS_CLIENT_ID'] || '',
         provider: body.provider,
         redirectUri: `${baseUrl}/api/v1/login/callback`,
-        state: encodeManagedAuthState(body.token ? { token: body.token } : { returnTo: body.returnTo, acquisition: body.acquisition })
+        state: encodeManagedAuthState({ token: body.token, returnTo: body.returnTo, acquisition: body.acquisition })
     });
 
     res.send({ data: { url: oAuthUrl } });
