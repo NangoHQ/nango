@@ -16819,6 +16819,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `timely` | Timely | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/timely.md) |  |  | productivity |
 | `timetastic` | Timetastic | API_KEY | [docs](https://nango.dev/docs/api-integrations/timetastic.md) | [connect](https://nango.dev/docs/api-integrations/timetastic/connect.md) |  | hr |
 | `timify` | Timify | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/timify.md) | [connect](https://nango.dev/docs/api-integrations/timify/connect.md) |  | productivity |
+| `timocom` | TIMOCOM | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/timocom.md) |  | [setup](https://nango.dev/docs/api-integrations/timocom/how-to-register-your-own-timocom-oauth-app.md) | other |
 | `tldv` | tl;dv | API_KEY | [docs](https://nango.dev/docs/integrations/all/tldv.md) | [connect](https://nango.dev/docs/integrations/all/tldv/connect.md) |  | productivity |
 | `toast` | Toast | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/toast.md) | [connect](https://nango.dev/docs/api-integrations/toast/connect.md) |  | erp |
 | `todoist` | Todoist | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/todoist.md) |  |  | productivity, ticketing |
