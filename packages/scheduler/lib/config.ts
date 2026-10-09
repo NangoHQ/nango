@@ -14,7 +14,7 @@ export interface SchedulerConfig {
         readonly metering?: {
             readonly schema: string;
             readonly partitioningTickIntervalMs: number;
-            readonly retentionDays: number;
+            readonly partitionRetentionDays: number;
         };
         readonly schedulingTickIntervalMs: number;
         readonly expiringTickIntervalMs: number;

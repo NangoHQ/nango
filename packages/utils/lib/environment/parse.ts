@@ -364,7 +364,7 @@ const ENVS_SHAPE = z.object({
         .max(6 * 3_600_000) // max 6 hours to ensure the daily partition for next day is always created ahead of time
         .default(3_600_000)
         .catch(3_600_000), // monitoring configuration must not prevent Orchestrator startup.
-    ORCHESTRATOR_CONCURRENCY_RETENTION_DAYS: z.coerce.number().int().positive().default(30).catch(30),
+    ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS: z.coerce.number().int().positive().default(60).catch(60),
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
     ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: z.coerce.number().int().nonnegative().optional().default(0),

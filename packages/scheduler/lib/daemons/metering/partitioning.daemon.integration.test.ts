@@ -10,7 +10,13 @@ const PG_CHECK_VIOLATION = '23514';
 describe('ConcurrencyPartitioningDaemon.run', () => {
     const schema = 'scheduler_concurrency_partitions';
     const client = getTestDbClient(schema);
-    const daemon = new ConcurrencyPartitioningDaemon({ db: client.db, schema, abortSignal: new AbortController().signal });
+    const daemon = new ConcurrencyPartitioningDaemon({
+        db: client.db,
+        schema,
+        abortSignal: new AbortController().signal,
+        tickIntervalMs: 3_600_000,
+        retentionDays: 60
+    });
 
     async function partitionNames(): Promise<string[]> {
         const { rows } = await client.db.raw<{ rows: { name: string }[] }>(
@@ -45,7 +51,13 @@ describe('ConcurrencyPartitioningDaemon.run', () => {
     });
 
     it('uses a custom retention period', async () => {
-        const shortRetentionDaemon = new ConcurrencyPartitioningDaemon({ db: client.db, schema, abortSignal: new AbortController().signal, retentionDays: 7 });
+        const shortRetentionDaemon = new ConcurrencyPartitioningDaemon({
+            db: client.db,
+            schema,
+            abortSignal: new AbortController().signal,
+            tickIntervalMs: 3_600_000,
+            retentionDays: 7
+        });
         await shortRetentionDaemon.run(new Date('2026-10-01T12:00:00Z'));
         await shortRetentionDaemon.run(new Date('2026-10-09T00:00:00Z'));
         expect(await partitionNames()).toEqual(['concurrency_metrics_20261002', 'concurrency_metrics_20261009', 'concurrency_metrics_20261010']);
@@ -72,21 +84,21 @@ describe('ConcurrencyPartitioningDaemon.run', () => {
         await daemon.run(new Date('2026-10-01T12:00:00Z'));
         await daemon.run(new Date('2026-10-03T12:00:00Z'));
 
-        await daemon.run(new Date('2026-11-02T12:00:00Z'));
+        await daemon.run(new Date('2026-12-02T12:00:00Z'));
         // The cutoff falls within Oct 3: keep that entire day, but drop Oct 1 and Oct 2.
         expect(await partitionNames()).toEqual([
             'concurrency_metrics_20261003',
             'concurrency_metrics_20261004',
-            'concurrency_metrics_20261102',
-            'concurrency_metrics_20261103'
+            'concurrency_metrics_20261202',
+            'concurrency_metrics_20261203'
         ]);
 
-        await daemon.run(new Date('2026-11-03T00:00:00Z'));
+        await daemon.run(new Date('2026-12-03T00:00:00Z'));
         expect(await partitionNames()).toEqual([
             'concurrency_metrics_20261004',
-            'concurrency_metrics_20261102',
-            'concurrency_metrics_20261103',
-            'concurrency_metrics_20261104'
+            'concurrency_metrics_20261202',
+            'concurrency_metrics_20261203',
+            'concurrency_metrics_20261204'
         ]);
     });
 });

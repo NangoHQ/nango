@@ -17,14 +17,14 @@ export class ConcurrencyPartitioningDaemon extends SchedulerDaemon {
         db,
         schema,
         abortSignal,
-        tickIntervalMs = 3_600_000,
-        retentionDays = 30
+        tickIntervalMs,
+        retentionDays
     }: {
         db: Knex;
         schema: string;
         abortSignal: AbortSignal;
-        tickIntervalMs?: number;
-        retentionDays?: number;
+        tickIntervalMs: number;
+        retentionDays: number;
     }) {
         super({
             name: 'ConcurrencyPartitioning',

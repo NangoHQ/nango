@@ -15,7 +15,7 @@ export function buildSchedulerConfig(envs: Envs): SchedulerConfig {
             metering: {
                 schema: envs.ORCHESTRATOR_DATABASE_SCHEMA,
                 partitioningTickIntervalMs: envs.ORCHESTRATOR_CONCURRENCY_PARTITIONING_TICK_INTERVAL_MS,
-                retentionDays: envs.ORCHESTRATOR_CONCURRENCY_RETENTION_DAYS
+                partitionRetentionDays: envs.ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS
             },
             schedulingTickIntervalMs: envs.ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS,
             expiringTickIntervalMs: envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS,

@@ -125,7 +125,7 @@ export class Scheduler {
                 schema: config.daemons.metering.schema,
                 abortSignal: this.ac.signal,
                 tickIntervalMs: config.daemons.metering.partitioningTickIntervalMs,
-                retentionDays: config.daemons.metering.retentionDays
+                retentionDays: config.daemons.metering.partitionRetentionDays
             });
         }
     }

@@ -13,7 +13,7 @@ describe('buildSchedulerConfig', () => {
         const envs = {
             ORCHESTRATOR_DATABASE_SCHEMA: 'custom_scheduler',
             ORCHESTRATOR_CONCURRENCY_PARTITIONING_TICK_INTERVAL_MS: 60_000,
-            ORCHESTRATOR_CONCURRENCY_RETENTION_DAYS: 7,
+            ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS: 7,
             ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: 111,
             ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS: 222,
             ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS: 333,
@@ -28,7 +28,7 @@ describe('buildSchedulerConfig', () => {
                 metering: {
                     schema: 'custom_scheduler',
                     partitioningTickIntervalMs: 60_000,
-                    retentionDays: 7
+                    partitionRetentionDays: 7
                 },
                 schedulingTickIntervalMs: 111,
                 expiringTickIntervalMs: 222,

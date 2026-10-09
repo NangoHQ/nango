@@ -516,14 +516,14 @@ describe('parse', () => {
         });
     });
 
-    describe('ORCHESTRATOR_CONCURRENCY_RETENTION_DAYS', () => {
-        it('defaults to 30 days and accepts an override', () => {
-            expect(parseEnvs(ENVS, {}).ORCHESTRATOR_CONCURRENCY_RETENTION_DAYS).toBe(30);
-            expect(parseEnvs(ENVS, { ORCHESTRATOR_CONCURRENCY_RETENTION_DAYS: '7' }).ORCHESTRATOR_CONCURRENCY_RETENTION_DAYS).toBe(7);
+    describe('ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS', () => {
+        it('defaults to 60 days and accepts an override', () => {
+            expect(parseEnvs(ENVS, {}).ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS).toBe(60);
+            expect(parseEnvs(ENVS, { ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS: '7' }).ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS).toBe(7);
         });
 
         it.each(['invalid', '0', '-1', '0.5', 'Infinity'])('falls back for invalid retention: %s', (value) => {
-            expect(parseEnvs(ENVS, { ORCHESTRATOR_CONCURRENCY_RETENTION_DAYS: value }).ORCHESTRATOR_CONCURRENCY_RETENTION_DAYS).toBe(30);
+            expect(parseEnvs(ENVS, { ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS: value }).ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS).toBe(60);
         });
     });
 
