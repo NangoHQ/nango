@@ -39,7 +39,8 @@ const parsed = {
                     usedModels: [],
                     version: '',
                     json_schema: { definitions: {} },
-                    features: []
+                    features: [],
+                    checkpoint: false
                 }
             ],
             onEventScripts: {

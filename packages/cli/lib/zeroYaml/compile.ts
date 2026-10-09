@@ -110,6 +110,22 @@ export async function compileAllFunctions({
                         )
                     );
                 }
+                if (sync.checkpoint && !sync.features?.includes('checkpoints')) {
+                    console.warn(
+                        chalk.yellow(
+                            `Warning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' declares a 'checkpoint' schema but never calls 'saveCheckpoint()', 'getCheckpoint()', or 'clearCheckpoint()'. The schema only describes the checkpoint's shape -- declaring it does not persist or resume any state on its own.`
+                        )
+                    );
+                }
+            }
+            for (const action of integration.actions) {
+                if (action.checkpoint && !action.features?.includes('checkpoints')) {
+                    console.warn(
+                        chalk.yellow(
+                            `Warning: Action '${action.name}' for integration '${integration.providerConfigKey}' declares a 'checkpoint' schema but never calls 'saveCheckpoint()', 'getCheckpoint()', or 'clearCheckpoint()'. The schema only describes the checkpoint's shape -- declaring it does not persist or resume any state on its own.`
+                        )
+                    );
+                }
             }
         }
 
@@ -434,27 +450,99 @@ export function tsToJsPath(filePath: string) {
     return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace(/\.js$/, '.cjs');
 }
 
+const FEATURE_NANGO_METHODS: Record<Feature, string[]> = {
+    checkpoints: ['getCheckpoint', 'saveCheckpoint', 'clearCheckpoint']
+};
+
 /**
  * Detects which features are used in function code
- */
+ * */
 export function detectFeatures({ entryPoint }: { entryPoint: string }): Result<Feature[]> {
     try {
-        const source = fs.readFileSync(entryPoint, { encoding: 'utf8' });
-        const { plugin, bag } = nangoPlugin({ entryPoint });
-        babel.transformSync(source, {
-            filename: entryPoint,
-            plugins: [plugin],
-            parserOpts: { sourceType: 'module', plugins: ['typescript'] },
-            generatorOpts: { decoratorsBeforeExport: true }
-        });
-        const features: Feature[] = [];
-        if (bag.checkpointsLines.length > 0) {
-            features.push('checkpoints');
-        }
+        fs.readFileSync(entryPoint, { encoding: 'utf8' });
+
+        const features = (Object.keys(FEATURE_NANGO_METHODS) as Feature[]).filter((feature) =>
+            usesNangoMethod(entryPoint, new Set(), FEATURE_NANGO_METHODS[feature])
+        );
         return Ok(features);
     } catch (err) {
         return Err(new Error('failed_to_detect_features', { cause: err }));
     }
+}
+
+// Scans filePath and its local helper imports for nango calls matching methodNames.
+function usesNangoMethod(filePath: string, visited: Set<string>, methodNames: string[]): boolean {
+    const resolved = path.resolve(filePath);
+    if (visited.has(resolved)) {
+        return false;
+    }
+    visited.add(resolved);
+
+    let source: string;
+    try {
+        source = fs.readFileSync(resolved, { encoding: 'utf8' });
+    } catch {
+        return false;
+    }
+
+    let foundMatch = false;
+    const localImportSources: string[] = [];
+
+    babel.transformSync(source, {
+        filename: resolved,
+        parserOpts: { sourceType: 'module', plugins: ['typescript'] },
+        generatorOpts: { decoratorsBeforeExport: true },
+        plugins: [
+            () => ({
+                visitor: {
+                    ImportDeclaration(astPath: babel.NodePath<babel.types.ImportDeclaration>) {
+                        const importSource = astPath.node.source.value;
+                        if (typeof importSource === 'string' && (importSource.startsWith('./') || importSource.startsWith('../'))) {
+                            localImportSources.push(importSource);
+                        }
+                    },
+                    CallExpression(astPath: babel.NodePath<babel.types.CallExpression>) {
+                        const callee = astPath.node.callee;
+                        if (!('object' in callee) || !('property' in callee)) {
+                            return;
+                        }
+                        if (callee.object.type !== 'Identifier' || callee.object.name !== 'nango' || callee.property?.type !== 'Identifier') {
+                            return;
+                        }
+                        if (methodNames.includes(callee.property.name)) {
+                            foundMatch = true;
+                        }
+                    }
+                }
+            })
+        ]
+    });
+
+    if (foundMatch) {
+        return true;
+    }
+
+    return localImportSources.some((importSource) => {
+        const resolvedImport = resolveLocalImport(path.dirname(resolved), importSource);
+        return resolvedImport && usesNangoMethod(resolvedImport, visited, methodNames);
+    });
+}
+
+function resolveLocalImport(baseDir: string, importSource: string): string | null {
+    const base = path.resolve(baseDir, importSource);
+    const candidates = [base];
+    if (base.endsWith('.js')) {
+        candidates.push(`${base.slice(0, -3)}.ts`, `${base.slice(0, -3)}.tsx`);
+    }
+    candidates.push(`${base}.ts`, `${base}.tsx`, `${base}.js`, path.join(base, 'index.ts'), path.join(base, 'index.js'));
+    for (const candidate of candidates) {
+        try {
+            if (fs.statSync(candidate).isFile()) {
+                return candidate;
+            }
+        } catch {}
+    }
+    return null;
 }
 
 type AugmentedExport = babel.types.ExportNamedDeclaration & { __transformedByRemoveCreateWrappers?: boolean };

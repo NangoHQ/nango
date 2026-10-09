@@ -129,6 +129,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
 
         const basename = path.basename(filePath, '.js');
         const realPath = filePath.replace(/\.js$/, '.ts');
+        const absoluteRealPath = sourcePath.absolute.replace(/\.js$/, '.ts');
         const basenameClean = basename.replaceAll(/[^a-zA-Z0-9]/g, '');
         const integrationIdRes = getIntegrationId(filePath);
         if (integrationIdRes.isErr()) {
@@ -150,7 +151,14 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
 
         switch (script.type) {
             case 'sync': {
-                const parsedSyncRes = parseSync({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean });
+                const parsedSyncRes = parseSync({
+                    filePath: realPath,
+                    absoluteFilePath: absoluteRealPath,
+                    params: script,
+                    integrationIdClean,
+                    basename,
+                    basenameClean
+                });
                 if (parsedSyncRes.isErr()) {
                     return Err(parsedSyncRes.error);
                 }
@@ -158,7 +166,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 break;
             }
             case 'action': {
-                integration.actions.push(parseAction({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean }));
+                integration.actions.push(parseAction({ absoluteFilePath: absoluteRealPath, params: script, integrationIdClean, basename, basenameClean }));
                 break;
             }
             case 'onEvent': {
@@ -221,12 +229,14 @@ const regexModelName = /^[A-Z][a-zA-Z0-9_]+$/;
 
 export function parseSync({
     filePath,
+    absoluteFilePath,
     params,
     integrationIdClean,
     basename,
     basenameClean
 }: {
     filePath: string;
+    absoluteFilePath: string;
     params: CreateSyncResponse<Record<string, ZodModel>, ZodMetadata, ZodCheckpoint>;
     integrationIdClean: string;
     basename: string;
@@ -271,7 +281,7 @@ export function parseSync({
     const outputNames = Object.keys(params.models);
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
 
-    const features = detectFeatures({ entryPoint: filePath });
+    const features = detectFeatures({ entryPoint: absoluteFilePath });
 
     const sync: ParsedNangoSync = {
         type: 'sync',
@@ -289,20 +299,21 @@ export function parseSync({
         version: params.version || '',
         webhookSubscriptions: params.webhookSubscriptions || [],
         json_schema: jsonSchema,
-        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
+        features: features.isOk() ? features.value : [], // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
+        checkpoint: params.checkpoint !== undefined
     };
 
     return Ok(sync);
 }
 
 export function parseAction({
-    filePath,
+    absoluteFilePath,
     params,
     integrationIdClean,
     basename,
     basenameClean
 }: {
-    filePath: string;
+    absoluteFilePath: string;
     params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>;
     integrationIdClean: string;
     basename: string;
@@ -318,7 +329,7 @@ export function parseAction({
 
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
 
-    const features = detectFeatures({ entryPoint: filePath });
+    const features = detectFeatures({ entryPoint: absoluteFilePath });
 
     return {
         type: 'action' as const,
@@ -331,7 +342,8 @@ export function parseAction({
         usedModels: [inputName, outputName],
         version: params.version || '',
         json_schema: jsonSchema,
-        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
+        features: features.isOk() ? features.value : [], // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
+        checkpoint: params.checkpoint !== undefined
     };
 }
 

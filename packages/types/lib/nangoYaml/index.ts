@@ -121,6 +121,7 @@ export interface ParsedNangoSync {
     // TODO: make non-optional when nango-yaml is fully removed
     json_schema?: JSONSchema7 | undefined;
     features?: Feature[] | undefined;
+    checkpoint: boolean;
 }
 
 export interface ParsedNangoAction {
@@ -136,6 +137,7 @@ export interface ParsedNangoAction {
     // TODO: make non-optional when nango-yaml is fully removed
     json_schema?: JSONSchema7 | undefined;
     features?: Feature[] | undefined;
+    checkpoint: boolean;
 }
 
 export type LayoutMode = 'root' | 'nested';
