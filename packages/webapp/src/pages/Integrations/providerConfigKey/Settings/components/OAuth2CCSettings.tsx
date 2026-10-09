@@ -1,10 +1,9 @@
-import { FieldLabel } from '@nangohq/design-system';
-
 import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
+import { SettingsField } from './SettingsLayout';
 
 import type { GetIntegration } from '@nangohq/types';
 
@@ -37,18 +36,15 @@ export const OAuth2CCSettings: React.FC<{ data: GetIntegration['Success']['data'
     };
 
     return (
-        <div className="flex flex-col gap-10">
-            <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="scopes">Scopes</FieldLabel>
-                <ScopesInput
-                    scopesString={integration.oauth_scopes || ''}
-                    onChange={handleScopesChange}
-                    isSharedCredentials={isSharedCredentials}
-                    readOnly={!canEdit}
-                    availableScopes={template.available_scopes}
-                    showAvailableScopesDropdown={true}
-                />
-            </div>
-        </div>
+        <SettingsField label="Scopes" htmlFor="scopes">
+            <ScopesInput
+                scopesString={integration.oauth_scopes || ''}
+                onChange={handleScopesChange}
+                isSharedCredentials={isSharedCredentials}
+                readOnly={!canEdit}
+                availableScopes={template.available_scopes}
+                showAvailableScopesDropdown={true}
+            />
+        </SettingsField>
     );
 };
