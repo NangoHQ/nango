@@ -26,6 +26,9 @@ export async function resolveRunnableTool({
 
     const deployed = await getSyncConfigRaw({ environmentId, config_id: configId, name, isAction: true });
     if (deployed) {
+        if (!deployed.enabled && (await getFlags().hasCatalogTools(accountUuid))) {
+            return { kind: 'deployed', config: { ...deployed, enabled: true } };
+        }
         return { kind: 'deployed', config: deployed };
     }
 
