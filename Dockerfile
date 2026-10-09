@@ -9,7 +9,7 @@ RUN jq '. | del(.references[] | select(.path == "packages/cli"))' tsconfig.build
 # ------------------
 # New tmp image
 # ------------------
-FROM node:22.22.2-bookworm-slim AS build
+FROM node:22.23.3-bookworm-slim AS build
 
 
 # Setup the app WORKDIR
