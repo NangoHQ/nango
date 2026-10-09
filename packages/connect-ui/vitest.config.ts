@@ -21,7 +21,7 @@ export default mergeConfig(
                 // without the --browser flag, so the suite would otherwise run in Node.
                 enabled: true,
                 headless: true,
-                provider: playwright(),
+                provider: playwright({ contextOptions: { permissions: ['clipboard-read', 'clipboard-write'] } }),
                 instances: [{ browser: 'chromium' }]
             }
         }
