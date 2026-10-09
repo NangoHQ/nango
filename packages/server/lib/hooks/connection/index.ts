@@ -3,6 +3,7 @@ export { default as googleMailPostConnection } from './providers/google-mail/pos
 export { default as googleCalendarPostConnection } from './providers/google-calendar/post-connection.js';
 export { default as hubspotPostConnection } from './providers/hubspot/post-connection.js';
 export { default as hubspotPreConnectionDeletion } from './providers/hubspot/pre-connection-deletion.js';
+export { default as intercomPostConnection } from './providers/intercom/post-connection.js';
 export { default as intercomPreConnectionDeletion } from './providers/intercom/pre-connection-deletion.js';
 export { default as jiraPostConnection } from './providers/jira/post-connection.js';
 export { default as linearPostConnection } from './providers/linear/post-connection.js';
