@@ -89,6 +89,12 @@ export function buildFlags(client: FeatureFlagsClient) {
         },
         isAgentPlaygroundEnabled(accountUuid: string) {
             return client.isEnabled('agent-playground', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether the legacy Connection MCP server is available for this account.
+         */
+        isConnectionMcpEnabled(accountUuid: string) {
+            return client.isEnabled('connection-mcp', { targetingKey: accountUuid, accountUuid }, true);
         }
     };
 }
