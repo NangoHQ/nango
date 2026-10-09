@@ -1,0 +1,81 @@
+---
+title: 'TIMOCOM'
+sidebarTitle: 'TIMOCOM'
+description: 'Integrate your application with the TIMOCOM API'
+---
+
+## 🚀 Quickstart
+
+Connect to TIMOCOM with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _TIMOCOM_.
+    </Step>
+    <Step id="authorize-timocom" title="Authorize TIMOCOM">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then log in to TIMOCOM. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-timocom-api" title="Call the TIMOCOM API">
+    Let's make your first request to the TIMOCOM Profile API to look up a company by its TIMOCOM ID — for example, your own company's. This requires the `profile:company:read` scope. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, connection ID, and a TIMOCOM ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/profile/1/companies/<TIMOCOM-ID>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/profile/1/companies/<TIMOCOM-ID>',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 TIMOCOM integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own TIMOCOM OAuth app](/api-integrations/timocom/how-to-register-your-own-timocom-oauth-app)  
+Request an OAuth client from TIMOCOM and connect it to Nango
+
+Official docs: [TIMOCOM API documentation](https://developer.timocom.com/)
+
+## 🧩 Pre-built syncs & actions for TIMOCOM
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/timocom/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -11527,6 +11527,12 @@ tiktok-personal: []
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 timely: []
 
+# source: https://api.stoplight.io/projects/cHJqOjIxMTM5NA/branches/v1/export/openapi.yaml (Profile API, securitySchemes.Authorization.flows.authorizationCode.scopes)
+timocom:
+    - profile:company:read
+    - profile:contact:read
+    - profile:document:read
+
 # source: https://todoist.com/.well-known/oauth-authorization-server (scopes_supported)
 todoist:
     - backups:read

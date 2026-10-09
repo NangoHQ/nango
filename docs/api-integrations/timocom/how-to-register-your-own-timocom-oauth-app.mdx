@@ -1,0 +1,40 @@
+---
+title: 'How to register your own TIMOCOM OAuth app'
+sidebarTitle: 'TIMOCOM setup'
+description: 'Request an OAuth client from TIMOCOM and connect it to Nango'
+---
+
+This guide shows you how to obtain your OAuth credentials (Client ID & Client Secret) from TIMOCOM. These are required to let your users grant your app access to their TIMOCOM account.
+
+<Note>
+Each TIMOCOM client can only use a single grant type, decided when TIMOCOM registers it. Nango uses the **authorization code** grant, so request a client registered for that grant type.
+</Note>
+
+<Steps>
+    <Step id="request-test-credentials" title="Request test client credentials">
+    [Contact TIMOCOM](mailto:api@timocom.com) to request API access. In your request:
+    - Name your organization and the APIs you need, for example the Profile API.
+    - Ask for an OAuth client using the **authorization code** grant type.
+    - Give `https://api.nango.dev/oauth/callback` as the redirect URI.
+    - Ask for a test user.
+
+    TIMOCOM sends you test client credentials (**Client ID** and **Client Secret**).
+    </Step>
+    <Step id="add-credentials-to-nango" title="Add your credentials to Nango">
+    In Nango, open your TIMOCOM integration's **Settings** tab, enter your **Client ID** and **Client Secret**, and add the scopes your app needs, for example `profile:company:read`.
+
+    Only request scopes for the products you intend to use. TIMOCOM's launch checklist notes that requesting access to unwanted products causes unnecessary billing events.
+    </Step>
+    <Step id="get-business-approval" title="Get business approval for production">
+    Before production access is activated, TIMOCOM's Product or Partner Management team reviews your integration. Once approved, TIMOCOM provides your production client credentials. Replace the test credentials in Nango with them.
+
+    Items created in the test environment can't be migrated to production. See TIMOCOM's [Launch checklist](https://developer.timocom.com/docs/introduction-1/9x5j9gc051rmt-launch-checklist) and [Business approval](https://developer.timocom.com/docs/introduction-1/142eb2854f77c-business-approval) requirements.
+    </Step>
+    <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account. The users who connect must be TIMOCOM customers with access to TIMOCOM.
+    </Step>
+</Steps>
+
+For more details, see TIMOCOM's [OAuth2 documentation](https://developer.timocom.com/docs/introduction-1/bbf3f610ba4d2-o-auth2).
+
+---

@@ -25417,6 +25417,25 @@ timetastic:
             example: 6a6b202d-6aee-4a62-a2f1-************
             doc_section: '#step-1-generate-your-api-key'
 
+timocom:
+    display_name: TIMOCOM
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://my.timocom.com/auth/oauth/authorize
+    token_url: https://my.timocom.com/auth/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.timocom.com
+    docs: https://nango.dev/docs/api-integrations/timocom
+    setup_guide_url: https://nango.dev/docs/api-integrations/timocom/how-to-register-your-own-timocom-oauth-app
+
 thrivecart-oauth:
     display_name: ThriveCart (OAuth)
     categories:
