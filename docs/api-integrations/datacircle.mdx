@@ -10,13 +10,13 @@ Connect to Datacircle with Nango and see data flow in 2 minutes.
 
 <Steps>
     <Step title="Create the integration">
-    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Datacircle_.
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Datacircle_.
     </Step>
     <Step title="Authorize Datacircle">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Datacircle API key. See the [connect guide](/api-integrations/datacircle/connect) for where to find it. Later, you'll let your users do the same directly from your app.
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Datacircle API key. See the [connect guide](/api-integrations/datacircle/connect) for where to find it. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Datacircle API">
-    Let's make your first request to the Datacircle API (read the account's balance, which costs nothing). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the Datacircle API (read the account's balance, which costs nothing). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), the integration ID (on the **Integrations** tab), and the connection ID (on the **Connections** tab):
     <Tabs>
         <Tab title="cURL">
 
@@ -51,17 +51,17 @@ Connect to Datacircle with Nango and see data flow in 2 minutes.
     </Tabs>
     Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
 
-    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    You're connected! Check the **Logs** tab in Nango to inspect requests.
     </Step>
 
     <Step title="Implement Nango in your app">
-        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
 
         To obtain your own production credentials, follow the connect guide linked below.
     </Step>
 </Steps>
 
-## Datacircle Integration Guides
+## Datacircle integration guides
 
 Nango-maintained guides for common use cases.
 
@@ -80,9 +80,7 @@ Official docs:
 - Provider calls (`POST /v1/profiles/enrich`, `GET /linkedin/profile`) need an `X-Data-Provider` header (`up2data` or `harvestapi`). Send it through the proxy as `Nango-Proxy-X-Data-Provider`.
 - Each provider call is paid from the account's prepaid balance at the provider's own price; with an empty balance, the API answers `402`. `GET /balance/` and `GET /files/` are free.
 
-## Pre-built syncs & actions for Datacircle
-
-Enable them in your dashboard. Extend and customize to fit your needs.
+## Pre-built functions for Datacircle
 
 import PreBuiltUseCases from "/snippets/generated/datacircle/PreBuiltUseCases.mdx"
 
