@@ -43,12 +43,12 @@ describe('buildSessionInstructions', () => {
         const instructions = buildSessionInstructions(
             session({
                 compiledToolset: {
-                    'google-calendar': { provider: 'google-calendar', pinned: [], searchable: [] },
-                    github: { provider: 'github', pinned: [], searchable: [] }
+                    'pg-google-calendar': { provider: 'google-calendar', pinned: [], searchable: [] },
+                    'pg-github': { provider: 'github', pinned: [], searchable: [] }
                 },
                 resolvedConnections: {
-                    'google-calendar': {
-                        integrationId: 'google-calendar',
+                    'pg-google-calendar': {
+                        integrationId: 'pg-google-calendar',
                         provider: 'google-calendar',
                         connectionId: 'conn-1',
                         internalConnectionId: 1,
@@ -58,7 +58,7 @@ describe('buildSessionInstructions', () => {
             })
         );
 
-        expect(instructions).toContain('- github (github): not connected\n- google-calendar (google-calendar): connected');
+        expect(instructions).toContain('- pg-github (github): not connected\n- pg-google-calendar (google-calendar): connected');
     });
 
     it('says so when the session has no integration', () => {
@@ -70,7 +70,7 @@ describe('buildSessionInstructions', () => {
 
         expect(instructions).toContain('use nango_tool_search to find one');
         expect(instructions).toContain('Call a tool through nango_execute');
-        expect(instructions).toContain('with nango_proxy');
+        expect(instructions).toContain('use it only when no tool covers the task, after searching.');
         expect(instructions).toContain('Call nango_create_connection for that integration');
     });
 
@@ -86,6 +86,6 @@ describe('buildSessionInstructions', () => {
         const instructions = buildSessionInstructions(session({ metaTools: { ...ALL_META_TOOLS, nangoToolSearch: false } }));
 
         expect(instructions).toContain('Call a tool through nango_execute with its name exactly as listed, and its input.');
-        expect(instructions).toContain('If no tool fits but the integration is connected');
+        expect(instructions).toContain('use it only when no tool covers the task.');
     });
 });
