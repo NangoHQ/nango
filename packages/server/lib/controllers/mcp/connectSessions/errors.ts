@@ -6,6 +6,7 @@ export function createConnectSessionServiceErrorToMcp(error: CreateConnectSessio
     switch (error.code) {
         case 'resource_capped':
         case 'docs_connect_override_forbidden':
+        case 'invalid_connection_config':
             return new PublicMcpError(error.message);
         case 'integration_not_found': {
             const integrationIds = [...new Set((error.missingIntegrations || []).map(({ integrationId }) => integrationId))];

@@ -7,6 +7,7 @@ import { buildTagsFromEndUser, configService, connectionService, EndUserMapper, 
 import { buildConnectUiSessionLink, flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { validateConnectionConfigDefaults } from '../../services/connectionConfigDefaults.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { mapDeprecatedConnectionConfigWebhookUrl } from './mapDeprecatedConnectionConfigWebhookUrl.js';
@@ -80,19 +81,20 @@ export const postConnectSessionsReconnect = asyncWrapperWithEnvironment<PostPubl
         if (body.integrations_config_defaults || body.overrides) {
             const integrations = await configService.listProviderConfigs(trx, environment.id);
 
-            // Enforce that integrations in `integrations_config_defaults` and `overrides` exist
-            const integrationConfigDefaultsCheck = checkIntegrationsExist(body.integrations_config_defaults, integrations, ['integrations_config_defaults']);
-            const overridesCheck = checkIntegrationsExist(body.overrides, integrations, ['overrides']);
-            if (integrationConfigDefaultsCheck || overridesCheck) {
-                return {
-                    status: 400,
-                    response: {
-                        error: {
-                            code: 'invalid_body',
-                            errors: zodErrorToHTTP({ issues: [...(integrationConfigDefaultsCheck || []), ...(overridesCheck || [])] })
-                        }
-                    }
-                };
+            // Enforce that integrations in `integrations_config_defaults` and `overrides` exist and that
+            // the connection config they preset is valid for the provider
+            const issues = [
+                ...(checkIntegrationsExist(body.integrations_config_defaults, integrations, ['integrations_config_defaults']) || []),
+                ...(checkIntegrationsExist(body.overrides, integrations, ['overrides']) || []),
+                ...validateConnectionConfigDefaults(
+                    Object.fromEntries(
+                        Object.entries(body.integrations_config_defaults || {}).map(([integrationId, value]) => [integrationId, value.connection_config])
+                    ),
+                    integrations
+                )
+            ];
+            if (issues.length > 0) {
+                return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues }) } } };
             }
 
             const canOverrideDocsConnectUrl = (flagHasPlan && plan?.can_override_docs_connect_url) ?? true;
