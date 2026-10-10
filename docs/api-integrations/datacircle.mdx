@@ -77,7 +77,7 @@ Official docs:
 
 ## API gotchas
 
-- Provider calls (`POST /v1/profiles/enrich`, `GET /linkedin/profile`) need an `X-Data-Provider` header (`up2data` or `harvestapi`). Send it through the proxy as `Nango-Proxy-X-Data-Provider`.
+- Provider calls (`POST /v1/profiles/enrich`, `GET /linkedin/profile`, `GET /api/v1/profile`) need an `X-Data-Provider` header (`up2data`, `harvestapi` or `fetchin`). Send it through the proxy as `Nango-Proxy-X-Data-Provider`.
 - Each provider call is paid from the account's prepaid balance at the provider's own price; with an empty balance, the API answers `402`. `GET /balance/` and `GET /files/` are free.
 
 ## Pre-built functions for Datacircle
