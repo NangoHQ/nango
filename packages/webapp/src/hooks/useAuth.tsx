@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '@/utils/api';
+import { readSignupAcquisition } from '@/utils/signupAcquisition';
 
 import type {
     GetEmailByExpiredToken,
@@ -188,7 +189,7 @@ export function useSignupAPI() {
         mutationFn: async ({ name, email, password, token }) => {
             const res = await apiFetch('/api/v1/account/signup', {
                 method: 'POST',
-                body: JSON.stringify({ name, email, password, token })
+                body: JSON.stringify({ name, email, password, token, acquisition: token ? undefined : readSignupAcquisition() })
             });
 
             if (res.status === 200) {

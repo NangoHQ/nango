@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { accountService } from '@nangohq/shared';
+import { accountService, productTracking } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -53,6 +53,7 @@ export const postOnboardingHearAboutUs = asyncWrapper<PostOnboardingHearAboutUs>
     }
 
     await accountService.updateAccount({ id: account.id, foundUs: val.data.source });
+    productTracking.identifyAccountGroup(account.id, { discovery_source: val.data.source });
     res.status(200).send({
         data: {
             success: true
