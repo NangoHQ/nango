@@ -10,8 +10,10 @@ import { createAgentSessionMcpServer, TOOL_NAME_SEPARATOR } from '../controllers
 import { getOrchestrator } from '../utils/utils.js';
 import { buildInstructions } from './agentPlayground.instructions.js';
 import { createPlaygroundModel } from './agentPlaygroundModel.service.js';
+import { trackPlaygroundTurn } from './agentPlaygroundUsage.service.js';
 import * as agentSessionService from './agentSession.service.js';
 
+import type { PlaygroundStep, PlaygroundTurnOutcome } from './agentPlaygroundUsage.service.js';
 import type {
     AgentPlaygroundIntegrationSetup,
     AgentPlaygroundMessageMetadata,
@@ -336,6 +338,9 @@ export async function startTurn({
         return Err(new AgentPlaygroundError('model_error', err instanceof Error ? err.message : 'The agent could not start', { cause: err }));
     }
 
+    const steps: PlaygroundStep[] = [];
+    let failed = false;
+
     const result = streamText({
         model: (model ?? createPlaygroundModel)(),
         instructions: buildInstructions(
@@ -351,10 +356,14 @@ export async function startTurn({
         stopWhen: stepCountIs(MAX_STEPS),
         ...(abortSignal ? { abortSignal } : {}),
         toolApproval: ({ toolCall }) => (toolNeedsApproval(toolCall.toolName, toolCall.input) ? 'user-approval' : undefined),
+        onStepEnd: (step) => {
+            steps.push({ model: { modelId: step.model.modelId }, usage: step.usage });
+        },
         onEnd: close,
         onAbort: close,
         onError: async ({ error }) => {
             logger.error(`Agent Playground turn failed: ${error instanceof Error ? error.message : String(error)}`);
+            failed = true;
             await close();
         }
     });
@@ -369,11 +378,19 @@ export async function startTurn({
                     return { ...sessionMetadata, ...(integrationSetup ? { integrationSetup } : {}) };
                 }
                 if (part.type === 'finish') {
-                    const usage = { inputTokens: part.totalUsage.inputTokens ?? 0, outputTokens: part.totalUsage.outputTokens ?? 0 };
-                    logger.info(`Agent Playground turn: ${usage.inputTokens} in / ${usage.outputTokens} out tokens`);
-                    return { ...sessionMetadata, usage };
+                    return { ...sessionMetadata, usage: { inputTokens: part.totalUsage.inputTokens ?? 0, outputTokens: part.totalUsage.outputTokens ?? 0 } };
                 }
                 return undefined;
+            },
+            // streamText's onEnd never runs when the request throws. Its onError runs before the failing step reports usage.
+            onEnd: ({ isAborted, isCancelled, outcome }) => {
+                let turnOutcome: PlaygroundTurnOutcome = 'complete';
+                if (isAborted || isCancelled || outcome.status === 'aborted') {
+                    turnOutcome = 'aborted';
+                } else if (failed || outcome.status === 'failed') {
+                    turnOutcome = 'error';
+                }
+                trackPlaygroundTurn({ ctx, sessionId: session.value.id, outcome: turnOutcome, steps });
             }
         })
     );
