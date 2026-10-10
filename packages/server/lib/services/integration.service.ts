@@ -38,6 +38,7 @@ export type UpdateIntegrationsServiceErrorCode =
     | 'invalid_integration_config'
     | 'integration_has_connections'
     | 'custom_not_allowed'
+    | 'shared_credentials_not_editable'
     | 'update_failed';
 export type DeleteIntegrationsServiceErrorCode = 'not_found' | 'delete_failed';
 export type IntegrationServiceErrorCode =
@@ -82,24 +83,24 @@ export interface DeletedIntegration {
 export type CreateIntegrationCredentials =
     | {
           type: 'OAUTH1' | 'OAUTH2' | 'TBA';
-          client_id: string;
-          client_secret: string;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
           scopes?: string | undefined;
           webhook_secret?: string | undefined;
       }
     | {
           type: 'APP';
-          app_id: string;
-          app_link: string;
-          private_key: string;
+          app_id?: string | undefined;
+          app_link?: string | undefined;
+          private_key?: string | undefined;
       }
     | {
           type: 'CUSTOM';
-          client_id: string;
-          client_secret: string;
-          app_id: string;
-          app_link: string;
-          private_key: string;
+          client_id?: string | undefined;
+          client_secret?: string | undefined;
+          app_id?: string | undefined;
+          app_link?: string | undefined;
+          private_key?: string | undefined;
       }
     | {
           type: 'MCP_OAUTH2_GENERIC';
@@ -141,7 +142,6 @@ export interface UpdateIntegrationParams {
 }
 
 const nangoCredentialsAuthModes = new Set(['OAUTH1', 'OAUTH2', 'APP']);
-const credentialsRequiredAuthModes = new Set(['OAUTH1', 'OAUTH2', 'APP', 'CUSTOM']);
 const machineErrorCodePattern = /^(?:E[A-Z0-9_]{2,63}|[0-9A-Z]{5})$/;
 const defaultLogger = getLogger('Server.IntegrationService');
 
@@ -280,9 +280,6 @@ export class IntegrationService {
                             message: 'incompatible credentials auth type and provider auth'
                         })
                     );
-                }
-                if (!params.credentials && credentialsRequiredAuthModes.has(provider.auth_mode)) {
-                    return Err(new IntegrationServiceError({ code: 'missing_credentials', message: 'Missing credentials' }));
                 }
                 if (provider.auth_mode === 'MCP_OAUTH2') {
                     const clientRegistration = (provider as ProviderMcpOAUTH2).client_registration;
@@ -449,6 +446,25 @@ export class IntegrationService {
                         message: `Unknown provider ${integration.provider}`
                     })
                 );
+            }
+
+            if (integration.shared_credentials_id) {
+                if (params.credentials) {
+                    return Err(
+                        new IntegrationServiceError({
+                            code: 'shared_credentials_not_editable',
+                            message: "Can't edit credentials on an integration using Nango-provided credentials"
+                        })
+                    );
+                }
+                if (params.integrationConfig) {
+                    return Err(
+                        new IntegrationServiceError({
+                            code: 'shared_credentials_not_editable',
+                            message: 'integrationConfig is not supported with Nango-provided credentials'
+                        })
+                    );
+                }
             }
 
             if (params.credentials && params.credentials.type !== provider.auth_mode) {
@@ -665,9 +681,15 @@ function applyCredentials(integration: DBCreateIntegration, credentials: CreateI
         case 'OAUTH1':
         case 'OAUTH2':
         case 'TBA': {
-            integration.oauth_client_id = credentials.client_id;
-            integration.oauth_client_secret = credentials.client_secret;
-            integration.oauth_scopes = credentials.scopes;
+            if (credentials.client_id !== undefined) {
+                integration.oauth_client_id = credentials.client_id;
+            }
+            if (credentials.client_secret !== undefined) {
+                integration.oauth_client_secret = credentials.client_secret;
+            }
+            if (credentials.scopes !== undefined) {
+                integration.oauth_scopes = credentials.scopes;
+            }
             if (credentials.webhook_secret) {
                 integration.custom = { ...integration.custom, webhookSecret: credentials.webhook_secret };
             }
@@ -675,21 +697,35 @@ function applyCredentials(integration: DBCreateIntegration, credentials: CreateI
         }
 
         case 'APP': {
-            integration.oauth_client_id = credentials.app_id;
-            integration.oauth_client_secret = Buffer.from(credentials.private_key).toString('base64');
-            integration.app_link = credentials.app_link;
+            if (credentials.app_id !== undefined) {
+                integration.oauth_client_id = credentials.app_id;
+            }
+            if (credentials.private_key !== undefined) {
+                integration.oauth_client_secret = Buffer.from(credentials.private_key).toString('base64');
+            }
+            if (credentials.app_link !== undefined) {
+                integration.app_link = credentials.app_link;
+            }
             break;
         }
 
         case 'CUSTOM': {
-            integration.oauth_client_id = credentials.client_id;
-            integration.oauth_client_secret = credentials.client_secret;
-            integration.app_link = credentials.app_link;
-            integration.custom = {
-                ...integration.custom,
-                app_id: credentials.app_id,
-                private_key: Buffer.from(credentials.private_key).toString('base64')
-            };
+            if (credentials.client_id !== undefined) {
+                integration.oauth_client_id = credentials.client_id;
+            }
+            if (credentials.client_secret !== undefined) {
+                integration.oauth_client_secret = credentials.client_secret;
+            }
+            if (credentials.app_link !== undefined) {
+                integration.app_link = credentials.app_link;
+            }
+            if (credentials.app_id !== undefined || credentials.private_key !== undefined) {
+                integration.custom = {
+                    ...integration.custom,
+                    ...(credentials.app_id !== undefined && { app_id: credentials.app_id }),
+                    ...(credentials.private_key !== undefined && { private_key: Buffer.from(credentials.private_key).toString('base64') })
+                };
+            }
             break;
         }
 

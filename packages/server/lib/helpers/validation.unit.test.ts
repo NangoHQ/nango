@@ -39,6 +39,29 @@ describe('webhookUrlSchema', () => {
     });
 });
 
+describe('integrationCredentialsSchema', () => {
+    it.each([{ type: 'OAUTH2' }, { type: 'OAUTH1' }, { type: 'TBA' }, { type: 'APP' }, { type: 'CUSTOM' }])(
+        'accepts $type with no credential fields, so they can be set later or per connection',
+        (credentials) => {
+            const result = integrationCredentialsSchema.safeParse(credentials);
+            expect(result.success).toBe(true);
+        }
+    );
+
+    it('accepts a partial OAUTH2 payload', () => {
+        const result = integrationCredentialsSchema.safeParse({ type: 'OAUTH2', scopes: 'repo' });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data).toStrictEqual({ type: 'OAUTH2', scopes: 'repo' });
+        }
+    });
+
+    it('still rejects empty strings and nulls for credential fields', () => {
+        expect(integrationCredentialsSchema.safeParse({ type: 'OAUTH2', client_id: '' }).success).toBe(false);
+        expect(integrationCredentialsSchema.safeParse({ type: 'OAUTH2', client_secret: null }).success).toBe(false);
+    });
+});
+
 describe('integrationCredentialsSchema (MCP_OAUTH2)', () => {
     it('accepts a fully omitted credentials object (dynamic/cimd client registration)', () => {
         const result = integrationCredentialsSchema.safeParse({ type: 'MCP_OAUTH2' });

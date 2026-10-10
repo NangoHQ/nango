@@ -69,7 +69,8 @@ describe(`PATCH ${endpoint}`, () => {
                 provider: 'github',
                 unique_key: 'github',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true
+                forward_webhooks: true,
+                missing_fields: ['oauth_client_id', 'oauth_client_secret']
             }
         });
     });
@@ -130,6 +131,42 @@ describe(`PATCH ${endpoint}`, () => {
         });
     });
 
+    it('should reject editing credentials on an integration using Nango-provided credentials', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createPreprovisionedProviderConfigSeed(env, 'github-quickstart', 'github');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github-quickstart' },
+            body: { credentials: { type: 'OAUTH2', client_secret: 'my-own-secret' } }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'invalid_body', message: "Can't edit credentials on an integration using Nango-provided credentials" }
+        });
+    });
+
+    it('should reject integration_config on an integration using Nango-provided credentials', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createPreprovisionedProviderConfigSeed(env, 'github-quickstart', 'github');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github-quickstart' },
+            body: { integration_config: { region: 'eu' } }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'invalid_body', message: 'integrationConfig is not supported with Nango-provided credentials' }
+        });
+    });
+
     it('should update webhook_secret for OAUTH2 integration', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
@@ -150,7 +187,8 @@ describe(`PATCH ${endpoint}`, () => {
                 provider: 'github',
                 unique_key: 'github',
                 updated_at: expect.toBeIsoDate(),
-                forward_webhooks: true
+                forward_webhooks: true,
+                missing_fields: []
             }
         });
 

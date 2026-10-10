@@ -10474,6 +10474,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/create.md
     "display_name": "Slack",
     "provider": "slack",
     "logo": "http://localhost:3003/images/template-logos/github.svg",
+    "missing_fields": [],
     "created_at": "2023-10-16T08:45:26.241Z",
     "updated_at": "2023-10-16T08:45:26.241Z",
   }
@@ -11581,12 +11582,15 @@ await nango.getIntegration(<INTEGRATION-ID>);
         "provider": "slack",
         "logo": "http://localhost:3003/images/template-logos/slack.svg",
         "forward_webhooks": true,
+        "missing_fields": [],
         "created_at": "2023-10-16T08:45:26.241Z",
         "updated_at": "2023-10-16T08:45:26.241Z"
     }
 }
 ```
 </Expandable>
+
+`missing_fields` lists the credential fields the integration may need before connections can be created, for example `oauth_client_id`. It is empty once the integration is fully configured, when it uses a Nango-provided developer app, or when the auth mode collects everything at connection time.
 
 ### Create an integration
 
@@ -11612,7 +11616,7 @@ await nango.createIntegration({ provider: '<PROVIDER-ID>', unique_key: '<UNIQUE_
     </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
-        The credentials to include depend on the specific integration that you want to create.
+        For `OAUTH1`, `OAUTH2`, `TBA`, `APP`, and `CUSTOM` credentials, you can create an integration without credentials or with partial credentials, then provide missing credentials with an update call or as per-connection overrides.
     </ResponseField>
 
     <ResponseField name="integration_config" type="Record<string, string>">
@@ -11668,7 +11672,7 @@ await nango.updateIntegration({ uniqueKey: '<UNIQUE_KEY>' }, { display_name: 'Ne
     </ResponseField>
 
     <ResponseField name="credentials" type="Record<string, string>">
-        The credentials to include depend on the specific integration that you want to update.
+        The credentials to include depend on the specific integration that you want to update. Only the fields you pass are updated; the ones you leave out keep their current value.
     </ResponseField>
 
     <ResponseField name="integration_config" type="Record<string, string>">
