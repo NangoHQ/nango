@@ -173,6 +173,32 @@ describe('listSessionTools', () => {
         ]);
     });
 
+    it('lists a pinned MCP server tool with the schema and annotations its server gave', () => {
+        const inputSchema = { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] };
+        const tools = listSessionTools(
+            session({
+                compiledToolset: {
+                    'linear-mcp': {
+                        provider: 'linear-mcp',
+                        pinned: [{ name: 'list_issues', description: 'List issues', mcp: { inputSchema, annotations: { readOnlyHint: true } } }],
+                        searchable: [],
+                        mcpServer: 'available'
+                    }
+                }
+            })
+        );
+
+        expect(tools.slice(2)).toStrictEqual([
+            {
+                name: 'linear-mcp__list_issues',
+                description: 'List issues',
+                inputSchema,
+                annotations: { readOnlyHint: true },
+                _meta: { 'nango/integration': 'linear-mcp', 'nango/tool': 'list_issues' }
+            }
+        ]);
+    });
+
     it('orders integrations by id so a cursor stays valid across list calls', () => {
         const toolset: AgentSessionCompiledToolset = {
             zendesk: { provider: 'zendesk', pinned: [tool('get_ticket')], searchable: [] },

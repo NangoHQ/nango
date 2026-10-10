@@ -19,6 +19,7 @@ import type {
     DBEnvironment,
     DBTeam
 } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 const DEFINITIONS_POINTER = '#/definitions/';
 
@@ -97,6 +98,7 @@ interface SearchCandidate {
     description: string;
     connection: AgentSessionToolConnectionState;
     listed: boolean;
+    input?: AgentSessionToolInput;
 }
 
 /** A candidate with the score it was ranked on, so how well a search did outlives the ranking. */
@@ -134,7 +136,9 @@ export async function searchSessionTools({
         const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
 
         // It's possible a tool was removed after the session compiled, so we set input as unavailable.
-        const matches = ranked.best.map((candidate) => toMatch(candidate, inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' }));
+        const matches = ranked.best.map((candidate) =>
+            toMatch(candidate, candidate.input ?? inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' })
+        );
         const related = ranked.related.map((candidate) => toMatch(candidate, undefined));
 
         await logCtx.enrichOperation({ meta: searchOperationMeta({ query, matches, related }) });
@@ -248,7 +252,8 @@ function buildSearchCandidateList({ session, slugOf }: { session: AgentSession; 
                           provider: compiled.provider,
                           description: tool.description,
                           connection,
-                          listed
+                          listed,
+                          ...(tool.mcp ? { input: { kind: 'schema', schema: tool.mcp.inputSchema as JSONSchema7 } as const } : {})
                       }
                   ]
                 : [];
@@ -278,7 +283,7 @@ async function findToolInputs({
 }): Promise<Map<string, Map<string, AgentSessionToolInput>>> {
     const rows = await legacyFunctionService.findActionInputSchemas({
         environmentId,
-        actions: candidates.map((candidate) => ({ integrationId: candidate.integration, name: candidate.action }))
+        actions: candidates.filter((candidate) => !candidate.input).map((candidate) => ({ integrationId: candidate.integration, name: candidate.action }))
     });
 
     const inputs = new Map<string, Map<string, AgentSessionToolInput>>();
@@ -359,7 +364,7 @@ function guidanceFor({
 
     if (matches.length > 0) {
         lines.push(
-            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the tool of the one you want, exactly as given, and the input its schema describes. A schema is a JSON Schema document rooted at its \`$ref\`.`
+            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the tool of the one you want, exactly as given, and the input its schema describes. A schema is a JSON Schema document, rooted at its \`$ref\` when it has one.`
         );
 
         const takesNothing = matches.filter((match) => match.input?.kind === 'none');

@@ -295,6 +295,7 @@ describe('agentSession service', () => {
         const result = await createAgentSession({
             account,
             environment,
+            plan: null,
             connections: { any: [], pinned: [] },
             toolset: undefined,
             pinnedTools: undefined,

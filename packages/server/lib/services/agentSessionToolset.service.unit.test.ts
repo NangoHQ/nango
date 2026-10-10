@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { compileToolsetFromFunctions } from './agentSessionToolset.service.js';
 
+import type { McpServerDiscovery } from './agentSessionMcpDiscovery.service.js';
 import type { AgentSessionToolsetCompilationError } from './agentSessionToolset.service.js';
 import type { IntegrationFunctionRow } from '@nangohq/shared';
 import type {
@@ -216,5 +217,108 @@ describe('compileToolset', () => {
         });
 
         expect(Object.keys(compiled.unwrap())).toEqual([proto]);
+    });
+});
+
+describe('compileToolsetFromFunctions with MCP servers', () => {
+    const inputSchema = { type: 'object', properties: { query: { type: 'string' } } } as const;
+
+    function mcpTool(name: string) {
+        return { name, description: `${name} description`, inputSchema };
+    }
+
+    const linearFunctions: IntegrationFunctionRow[] = [emptyIntegration('linear-mcp'), action('linear-mcp', 'deployed_action')];
+
+    function compileMcp({
+        toolset,
+        pinnedTools,
+        discovery = {
+            status: 'available',
+            tools: [{ ...mcpTool('list_issues'), annotations: { readOnlyHint: true } }, mcpTool('create_issue'), mcpTool('deployed_action')]
+        }
+    }: {
+        toolset?: AgentSessionToolsetPolicy | undefined;
+        pinnedTools?: AgentSessionPinnedTools | undefined;
+        discovery?: McpServerDiscovery;
+    }) {
+        return compileToolsetFromFunctions({
+            toolset,
+            pinnedTools,
+            connectedIntegrations: ['linear-mcp'],
+            functions: linearFunctions,
+            mcpServers: new Map([['linear-mcp', discovery]])
+        });
+    }
+
+    it('adds the tools the server listed, with their schemas, next to deployed actions', () => {
+        const linear = integration(compileMcp({}).unwrap(), 'linear-mcp');
+
+        expect(linear.mcpServer).toBe('available');
+        expect(names(linear.searchable)).toEqual(['deployed_action', 'list_issues', 'create_issue']);
+        expect(linear.searchable.find((tool) => tool.name === 'list_issues')?.mcp).toEqual({ inputSchema, annotations: { readOnlyHint: true } });
+        expect(linear.searchable.find((tool) => tool.name === 'create_issue')?.mcp).toEqual({ inputSchema });
+        expect(linear.searchable.find((tool) => tool.name === 'deployed_action')?.mcp).toBeUndefined();
+    });
+
+    it('keeps a server tool that shares its name with a sync, since a sync cannot be called', () => {
+        const linear = integration(
+            compileToolsetFromFunctions({
+                toolset: { 'linear-mcp': { allow: ['list_issues'], deny: [] } },
+                pinnedTools: undefined,
+                connectedIntegrations: ['linear-mcp'],
+                functions: [...linearFunctions, action('linear-mcp', 'list_issues', { type: 'sync' })],
+                mcpServers: new Map([['linear-mcp', { status: 'available', tools: [mcpTool('list_issues')] }]])
+            }).unwrap(),
+            'linear-mcp'
+        );
+
+        expect(linear.searchable.map((tool) => ({ name: tool.name, mcp: tool.mcp }))).toEqual([{ name: 'list_issues', mcp: { inputSchema } }]);
+    });
+
+    it('filters and pins server tools by exact name', () => {
+        const linear = integration(
+            compileMcp({
+                toolset: { 'linear-mcp': { allow: ['list_issues', 'create_issue'], deny: ['create_issue'] } },
+                pinnedTools: { 'linear-mcp': ['list_issues'] }
+            }).unwrap(),
+            'linear-mcp'
+        );
+
+        expect(names(linear.pinned)).toEqual(['list_issues']);
+        expect(linear.searchable).toEqual([]);
+    });
+
+    it('rejects a name the server did not list', () => {
+        const compiled = expectError(compileMcp({ toolset: { 'linear-mcp': { allow: '*', deny: ['delete_issues'] } } }));
+
+        expect(compiled.code).toBe('unknown_tool');
+        expect(compiled.payload).toEqual({ tools: [{ integration_id: 'linear-mcp', tool: 'delete_issues' }] });
+    });
+
+    it('still rejects a pinned name the toolset denies when the server could not be listed', () => {
+        const compiled = expectError(
+            compileMcp({
+                toolset: { 'linear-mcp': { allow: '*', deny: ['list_issues'] } },
+                pinnedTools: { 'linear-mcp': ['list_issues'] },
+                discovery: { status: 'unavailable' }
+            })
+        );
+
+        expect(compiled.code).toBe('tool_not_in_toolset');
+    });
+
+    it('still compiles when the server could not be listed, and marks it unavailable', () => {
+        const linear = integration(
+            compileMcp({
+                toolset: { 'linear-mcp': { allow: ['list_issues', 'deployed_action'], deny: [] } },
+                pinnedTools: { 'linear-mcp': ['list_issues'] },
+                discovery: { status: 'unavailable' }
+            }).unwrap(),
+            'linear-mcp'
+        );
+
+        expect(linear.mcpServer).toBe('unavailable');
+        expect(linear.pinned).toEqual([]);
+        expect(names(linear.searchable)).toEqual(['deployed_action']);
     });
 });
