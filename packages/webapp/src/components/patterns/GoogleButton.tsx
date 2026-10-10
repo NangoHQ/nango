@@ -1,4 +1,5 @@
 import { apiFetch } from '../../utils/api';
+import { readSignupAcquisition } from '../../utils/signupAcquisition';
 
 import type { PostManagedSignup } from '@nangohq/types';
 
@@ -14,7 +15,12 @@ export default function GoogleButton({ text, setServerErrorMessage, token, retur
     const googleLogin = async () => {
         const res = await apiFetch(`/api/v1/account/managed/signup`, {
             method: 'POST',
-            body: JSON.stringify({ provider: 'GoogleOAuth', token, returnTo: token ? undefined : returnTo })
+            body: JSON.stringify({
+                provider: 'GoogleOAuth',
+                token,
+                returnTo: token ? undefined : returnTo,
+                acquisition: readSignupAcquisition()
+            })
         });
 
         if (res.status === 200) {

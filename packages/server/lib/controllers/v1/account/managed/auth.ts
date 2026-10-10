@@ -5,10 +5,11 @@ import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 import { envs } from '../../../../env.js';
 import { identifyAccountMembership } from '../../../../services/accountAnalytics.service.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
+import { signupAcquisitionSchema } from '../../../../utils/signupAcquisition.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
 import { isOAuthConsentReturnTo, safeReturnTo } from '../returnTo.js';
 
-import type { DBInvitation, DBTeam } from '@nangohq/types';
+import type { DBInvitation, DBTeam, SignupAcquisition } from '@nangohq/types';
 import type { User, WorkOS } from '@workos-inc/node';
 import type { Request, Response } from 'express';
 
@@ -38,29 +39,47 @@ interface ManagedAuthVerificationRequiredError {
 }
 
 export interface InviteAccountState {
-    token?: string;
-    returnTo?: string;
+    token?: string | undefined;
+    returnTo?: string | undefined;
+    acquisition?: SignupAcquisition | undefined;
+}
+
+const MAX_MANAGED_AUTH_STATE_LENGTH = 16384;
+
+function encodeBoundedState(state: InviteAccountState): string {
+    if (!Object.keys(state).length) return '';
+    const encoded = Buffer.from(JSON.stringify(state)).toString('base64');
+    return encoded.length <= MAX_MANAGED_AUTH_STATE_LENGTH ? encoded : '';
 }
 
 export function encodeManagedAuthState(state: InviteAccountState): string {
-    const value = state.token ? { token: state.token } : state.returnTo ? { returnTo: state.returnTo } : null;
-    return value ? Buffer.from(JSON.stringify(value)).toString('base64') : '';
+    const continuation: InviteAccountState = {};
+    if (state.token) continuation.token = state.token;
+    else if (state.returnTo) continuation.returnTo = state.returnTo;
+
+    if (state.acquisition) {
+        const withAcquisition = encodeBoundedState({ ...continuation, acquisition: state.acquisition });
+        if (withAcquisition) return withAcquisition;
+    }
+    // Optional analytics must never displace the signup continuation.
+    return encodeBoundedState(continuation);
 }
 
 export function parseManagedAuthState(state: string): InviteAccountState | null {
     try {
-        const res = JSON.parse(Buffer.from(state, 'base64').toString('utf8')) as unknown;
-        if (!res || !(typeof res === 'object')) {
-            return null;
-        }
-        const candidate = res as Record<string, unknown>;
+        if (state.length > MAX_MANAGED_AUTH_STATE_LENGTH) return null;
+        const parsed = JSON.parse(Buffer.from(state, 'base64').toString('utf8')) as unknown;
+        if (!parsed || typeof parsed !== 'object') return null;
+        const candidate = parsed as Record<string, unknown>;
         if (candidate['token'] !== undefined && typeof candidate['token'] !== 'string') return null;
         if (candidate['returnTo'] !== undefined && typeof candidate['returnTo'] !== 'string') return null;
-        if (candidate['token'] === undefined && candidate['returnTo'] === undefined) return null;
-        return {
-            ...(typeof candidate['token'] === 'string' ? { token: candidate['token'] } : {}),
-            ...(typeof candidate['returnTo'] === 'string' ? { returnTo: safeReturnTo(candidate['returnTo']) } : {})
-        };
+
+        const result: InviteAccountState = {};
+        if (typeof candidate['token'] === 'string') result.token = candidate['token'];
+        else if (typeof candidate['returnTo'] === 'string') result.returnTo = safeReturnTo(candidate['returnTo']);
+        const acquisition = signupAcquisitionSchema.parse(candidate['acquisition']);
+        if (acquisition) result.acquisition = acquisition;
+        return Object.keys(result).length ? result : null;
     } catch {
         return null;
     }
@@ -194,7 +213,7 @@ export async function finalizeManagedAuthentication({
                 return;
             }
 
-            const resAccount = await accountService.createAccount({ name, email: authorizedUser.email });
+            const resAccount = await accountService.createAccount({ name, email: authorizedUser.email, acquisition: state?.acquisition });
             if (!resAccount) {
                 res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
                 return;
