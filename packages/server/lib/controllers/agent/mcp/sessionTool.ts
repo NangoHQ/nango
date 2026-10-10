@@ -27,6 +27,14 @@ export interface AgentSessionCallableTool {
  */
 export type AgentSessionCallableTools = ReadonlyMap<string, AgentSessionCallableTool>;
 
+/**
+ * What an MCP server tool returned, already a valid tool result, so it reaches the agent as the
+ * server shaped it instead of being serialised again as JSON.
+ */
+export class RemoteToolResult {
+    constructor(public readonly result: CallToolResult) {}
+}
+
 export interface AgentSessionMcpContext {
     account: DBTeam;
     environment: DBEnvironment;
@@ -94,15 +102,20 @@ export async function callAgentSessionTool({
             return handleAgentSessionToolError(err, span);
         }
 
+        const failed = result.isErr() || (result.value instanceof RemoteToolResult && result.value.result.isError === true);
         metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
             accountId,
             mcp_type: 'agent_session',
             tool: metric,
-            outcome: result.isOk() ? 'success' : 'error'
+            outcome: failed ? 'error' : 'success'
         });
 
         if (result.isErr()) {
             return handleAgentSessionToolError(result.error, span);
+        }
+
+        if (result.value instanceof RemoteToolResult) {
+            return result.value.result;
         }
 
         // structuredContent has to be a JSON object, and only a tool that declared an output schema
