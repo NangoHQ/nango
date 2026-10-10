@@ -8,6 +8,7 @@ import { defaultSchedulerConfig, noopLogger } from './config.js';
 import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
 import { ConcurrencyPartitioningDaemon } from './daemons/metering/partitioning.daemon.js';
+import { ConcurrencySamplingDaemon } from './daemons/metering/sampling.daemon.js';
 import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
 import { ScheduleTaskAlreadyRunningError } from './errors.js';
 import * as schedules from './models/schedules.js';
@@ -25,6 +26,7 @@ export class Scheduler {
     private scheduling: SchedulingDaemon;
     private cleaning: CleaningDaemon;
     private concurrencyPartitioning: ConcurrencyPartitioningDaemon | undefined;
+    private concurrencySampling: ConcurrencySamplingDaemon | undefined;
     private ac: AbortController;
     private onCallbacks: Record<TaskState, (task: Task) => void>;
     private db: knex.Knex;
@@ -119,13 +121,24 @@ export class Scheduler {
             onError,
             continueOnError
         });
-        if (config.daemons.metering) {
+
+        const metering = config.daemons.metering;
+        if (metering) {
             this.concurrencyPartitioning = new ConcurrencyPartitioningDaemon({
                 db,
                 schema: config.daemons.metering.schema,
                 abortSignal: this.ac.signal,
                 tickIntervalMs: config.daemons.metering.partitioningTickIntervalMs,
                 retentionDays: config.daemons.metering.partitionRetentionDays
+            });
+        }
+        if (metering?.samplingEnabled) {
+            this.concurrencySampling = new ConcurrencySamplingDaemon({
+                db,
+                schema: metering.schema,
+                abortSignal: this.ac.signal,
+                tickIntervalMs: metering.samplingTickIntervalMs,
+                queryTimeoutMs: metering.samplingQueryTimeoutMs
             });
         }
     }
@@ -136,10 +149,12 @@ export class Scheduler {
         void this.scheduling.start();
         void this.cleaning.start();
         void this.concurrencyPartitioning?.start();
+        void this.concurrencySampling?.start();
     }
 
     async stop(): Promise<void> {
         this.ac.abort();
+        await this.concurrencySampling?.waitUntilStopped();
         await this.concurrencyPartitioning?.waitUntilStopped();
         await this.cleaning.waitUntilStopped();
         await this.expiring.waitUntilStopped();

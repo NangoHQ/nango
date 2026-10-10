@@ -621,6 +621,53 @@ describe('parse', () => {
         });
     });
 
+    describe('ORCHESTRATOR_CONCURRENCY_SAMPLING_*', () => {
+        it('defaults to disabled with one-second ticks and bounded queries', () => {
+            expect(parseEnvs(ENVS, {})).toMatchObject({
+                ORCHESTRATOR_CONCURRENCY_SAMPLING_ENABLED: false,
+                ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS: 1000,
+                ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS: 1000
+            });
+        });
+        it('accepts explicit opt-in and safe overrides', () => {
+            expect(
+                parseEnvs(ENVS, {
+                    ORCHESTRATOR_CONCURRENCY_SAMPLING_ENABLED: 'true',
+                    ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS: '500',
+                    ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS: '250'
+                })
+            ).toMatchObject({
+                ORCHESTRATOR_CONCURRENCY_SAMPLING_ENABLED: true,
+                ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS: 500,
+                ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS: 250
+            });
+        });
+        it('falls back on invalid settings without failing startup', () => {
+            expect(
+                parseEnvs(ENVS, {
+                    ORCHESTRATOR_CONCURRENCY_SAMPLING_ENABLED: 'invalid',
+                    ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS: '0',
+                    ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS: 'NaN'
+                })
+            ).toMatchObject({
+                ORCHESTRATOR_CONCURRENCY_SAMPLING_ENABLED: false,
+                ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS: 1000,
+                ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS: 1000
+            });
+        });
+        it('falls back when settings exceed the one-second maximum', () => {
+            expect(
+                parseEnvs(ENVS, {
+                    ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS: '1001',
+                    ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS: '5000'
+                })
+            ).toMatchObject({
+                ORCHESTRATOR_CONCURRENCY_SAMPLING_TICK_INTERVAL_MS: 1000,
+                ORCHESTRATOR_CONCURRENCY_SAMPLING_QUERY_TIMEOUT_MS: 1000
+            });
+        });
+    });
+
     describe('EMAIL_HTTP_*', () => {
         const body = JSON.stringify({ from: '{{from}}', subject: '{{subject}}' });
 

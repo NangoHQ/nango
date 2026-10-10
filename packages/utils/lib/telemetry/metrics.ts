@@ -111,6 +111,8 @@ export enum Types {
     ORCH_TASKS_EXPIRED = 'nango.orch.tasks.expired',
     ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled',
     ORCH_QUEUE_BACKPRESSURE = 'nango.orch.queue.backpressure',
+    ORCH_CONCURRENCY_SAMPLING_DURATION_MS = 'nango.orch.concurrency.sampling.duration_ms',
+    ORCH_CONCURRENCY_SAMPLING_METRICS_COUNT = 'nango.orch.concurrency.sampling.metrics.count',
     ORCH_TASKS_DEQUEUED = 'nango.orch.tasks.dequeued',
 
     TASKS_ENQUEUED = 'nango.tasks.enqueued',
