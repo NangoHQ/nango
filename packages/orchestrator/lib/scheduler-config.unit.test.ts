@@ -11,6 +11,9 @@ type Envs = ReturnType<typeof parseEnvs<typeof ENVS>>;
 describe('buildSchedulerConfig', () => {
     it('maps every env field to its scheduler config slot', () => {
         const envs = {
+            ORCHESTRATOR_DATABASE_SCHEMA: 'custom_scheduler',
+            ORCHESTRATOR_CONCURRENCY_PARTITIONING_TICK_INTERVAL_MS: 60_000,
+            ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS: 7,
             ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS: 111,
             ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS: 222,
             ORCHESTRATOR_CLEANING_TICK_INTERVAL_MS: 333,
@@ -22,6 +25,11 @@ describe('buildSchedulerConfig', () => {
 
         expect(buildSchedulerConfig(envs)).toEqual({
             daemons: {
+                metering: {
+                    schema: 'custom_scheduler',
+                    partitioningTickIntervalMs: 60_000,
+                    partitionRetentionDays: 7
+                },
                 schedulingTickIntervalMs: 111,
                 expiringTickIntervalMs: 222,
                 cleaningTickIntervalMs: 333,

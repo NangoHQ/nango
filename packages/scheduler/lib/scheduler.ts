@@ -7,6 +7,7 @@ import { Err, Ok, stringifyError } from '@nangohq/utils';
 import { defaultSchedulerConfig, noopLogger } from './config.js';
 import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
+import { ConcurrencyPartitioningDaemon } from './daemons/metering/partitioning.daemon.js';
 import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
 import { ScheduleTaskAlreadyRunningError } from './errors.js';
 import * as schedules from './models/schedules.js';
@@ -23,6 +24,7 @@ export class Scheduler {
     private expiring: ExpiringDaemon;
     private scheduling: SchedulingDaemon;
     private cleaning: CleaningDaemon;
+    private concurrencyPartitioning: ConcurrencyPartitioningDaemon | undefined;
     private ac: AbortController;
     private onCallbacks: Record<TaskState, (task: Task) => void>;
     private db: knex.Knex;
@@ -117,6 +119,15 @@ export class Scheduler {
             onError,
             continueOnError
         });
+        if (config.daemons.metering) {
+            this.concurrencyPartitioning = new ConcurrencyPartitioningDaemon({
+                db,
+                schema: config.daemons.metering.schema,
+                abortSignal: this.ac.signal,
+                tickIntervalMs: config.daemons.metering.partitioningTickIntervalMs,
+                retentionDays: config.daemons.metering.partitionRetentionDays
+            });
+        }
     }
 
     start(): void {
@@ -124,10 +135,12 @@ export class Scheduler {
         void this.expiring.start();
         void this.scheduling.start();
         void this.cleaning.start();
+        void this.concurrencyPartitioning?.start();
     }
 
     async stop(): Promise<void> {
         this.ac.abort();
+        await this.concurrencyPartitioning?.waitUntilStopped();
         await this.cleaning.waitUntilStopped();
         await this.expiring.waitUntilStopped();
         await this.scheduling.waitUntilStopped();

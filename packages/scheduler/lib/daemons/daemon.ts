@@ -68,7 +68,12 @@ export abstract class SchedulerDaemon {
                         break;
                     }
                 }
-                await setTimeout(this.tickIntervalMs);
+
+                try {
+                    await setTimeout(this.tickIntervalMs, undefined, { signal: this.abortSignal });
+                } catch (err) {
+                    if (!this.abortSignal.aborted) throw err;
+                }
             }
         } finally {
             this.status = 'stopped';

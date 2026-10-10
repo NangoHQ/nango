@@ -595,6 +595,32 @@ describe('parse', () => {
         }).toThrow('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST');
     });
 
+    describe('ORCHESTRATOR_CONCURRENCY_PARTITIONING_TICK_INTERVAL_MS', () => {
+        it('defaults to one hour and accepts an override', () => {
+            expect(parseEnvs(ENVS, {}).ORCHESTRATOR_CONCURRENCY_PARTITIONING_TICK_INTERVAL_MS).toBe(3_600_000);
+            expect(
+                parseEnvs(ENVS, { ORCHESTRATOR_CONCURRENCY_PARTITIONING_TICK_INTERVAL_MS: '60000' }).ORCHESTRATOR_CONCURRENCY_PARTITIONING_TICK_INTERVAL_MS
+            ).toBe(60_000);
+        });
+
+        it.each(['invalid', '0', '-1', '0.5', 'Infinity', '21600001'])('falls back for an invalid interval: %s', (value) => {
+            expect(
+                parseEnvs(ENVS, { ORCHESTRATOR_CONCURRENCY_PARTITIONING_TICK_INTERVAL_MS: value }).ORCHESTRATOR_CONCURRENCY_PARTITIONING_TICK_INTERVAL_MS
+            ).toBe(3_600_000);
+        });
+    });
+
+    describe('ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS', () => {
+        it('defaults to 60 days and accepts an override', () => {
+            expect(parseEnvs(ENVS, {}).ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS).toBe(60);
+            expect(parseEnvs(ENVS, { ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS: '7' }).ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS).toBe(7);
+        });
+
+        it.each(['invalid', '0', '-1', '0.5', 'Infinity'])('falls back for invalid retention: %s', (value) => {
+            expect(parseEnvs(ENVS, { ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS: value }).ORCHESTRATOR_CONCURRENCY_PARTITION_RETENTION_DAYS).toBe(60);
+        });
+    });
+
     describe('EMAIL_HTTP_*', () => {
         const body = JSON.stringify({ from: '{{from}}', subject: '{{subject}}' });
 

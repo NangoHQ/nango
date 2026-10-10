@@ -10,6 +10,12 @@ import type { StrictLogger } from '@nangohq/utils';
 
 export interface SchedulerConfig {
     readonly daemons: {
+        /** Omit for consumers that do not collect concurrency metrics. */
+        readonly metering?: {
+            readonly schema: string;
+            readonly partitioningTickIntervalMs: number;
+            readonly partitionRetentionDays: number;
+        };
         readonly schedulingTickIntervalMs: number;
         readonly expiringTickIntervalMs: number;
         readonly cleaningTickIntervalMs: number;
