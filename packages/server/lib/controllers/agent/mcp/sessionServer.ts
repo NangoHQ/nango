@@ -4,6 +4,7 @@ import { toJsonSchema202012 } from '../../mcp/utils.js';
 import { createConnectionTool } from './createConnection/createConnection.js';
 import { executeSessionTool, executeTool } from './execute/execute.js';
 import { proxyTool } from './proxy/proxy.js';
+import { buildSessionInstructions } from './sessionInstructions.js';
 import { callAgentSessionTool, MAX_TOOL_NAME_LENGTH } from './sessionTool.js';
 import { toolSearchTool } from './toolSearch/search.js';
 
@@ -69,7 +70,8 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
         {
             capabilities: {
                 tools: { listChanged: false }
-            }
+            },
+            instructions: buildSessionInstructions(session)
         }
     );
 
