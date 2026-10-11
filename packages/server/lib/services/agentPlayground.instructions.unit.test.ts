@@ -19,12 +19,12 @@ describe('buildInstructions', () => {
         expect(instructions).toContain('- pg-google-calendar (google-calendar): connected');
     });
 
-    it('names the apps that could not be set up, and says nothing when all were', () => {
+    it('names the apps that are not set up yet, and says nothing when all are', () => {
         const withMissing = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'), [], ['Google Calendar']);
         const withoutMissing = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'), [], []);
 
-        expect(withMissing).toContain('These apps could not be set up in the playground right now: Google Calendar.');
-        expect(withoutMissing).not.toContain('could not be set up in the playground right now');
+        expect(withMissing).toContain('These apps are not set up in this environment yet: Google Calendar.');
+        expect(withoutMissing).not.toContain('not set up in this environment yet');
     });
 
     it('says so when no integration is set up', () => {

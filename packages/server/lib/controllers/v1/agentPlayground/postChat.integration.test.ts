@@ -7,6 +7,7 @@ import { seeders } from '@nangohq/shared';
 import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 import type * as ModelService from '../../../services/agentPlaygroundModel.service.js';
+import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata } from '@nangohq/types';
 
 // A developer's OPENAI_API_KEY would otherwise send these tests to the real model.
 vi.mock('../../../services/agentPlaygroundModel.service.js', async (importOriginal) => {
@@ -16,9 +17,17 @@ vi.mock('../../../services/agentPlaygroundModel.service.js', async (importOrigin
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
-const userMessage = (text: string) => ({ id: crypto.randomUUID(), role: 'user', parts: [{ type: 'text', text }] });
+const userMessage = (text: string, metadata?: AgentPlaygroundMessageMetadata) => ({
+    id: crypto.randomUUID(),
+    role: 'user',
+    parts: [{ type: 'text', text }],
+    ...(metadata ? { metadata } : {})
+});
 
-async function chat(session: string, body: Record<string, unknown>): Promise<{ status: number; sessionId: string | undefined; text: string }> {
+async function chat(
+    session: string,
+    body: Record<string, unknown>
+): Promise<{ status: number; sessionId: string | undefined; integrationSetup: AgentPlaygroundIntegrationSetup | undefined; text: string }> {
     const res = await fetch(`${api.url}/api/v1/agent-playground/chat?env=dev`, {
         method: 'POST',
         headers: { cookie: session, 'content-type': 'application/json' },
@@ -28,16 +37,23 @@ async function chat(session: string, body: Record<string, unknown>): Promise<{ s
     const chunks = text
         .split('\n')
         .filter((line) => line.startsWith('data: {'))
-        .map((line) => JSON.parse(line.slice('data: '.length)) as { type: string; messageMetadata?: { sessionId?: string } });
-    const sessionId = chunks.find((chunk) => chunk.type === 'start')?.messageMetadata?.sessionId;
-    return { status: res.status, sessionId, text };
+        .map((line) => JSON.parse(line.slice('data: '.length)) as { type: string; messageMetadata?: AgentPlaygroundMessageMetadata });
+    const start = chunks.find((chunk) => chunk.type === 'start')?.messageMetadata;
+    return { status: res.status, sessionId: start?.sessionId, integrationSetup: start?.integrationSetup, text };
+}
+
+async function integrationsIn(environmentId: number): Promise<{ unique_key: string; shared_credentials_id: number | null }[]> {
+    return (await db.knex
+        .from('_nango_configs')
+        .where({ environment_id: environmentId, deleted: false })
+        .orderBy('unique_key')
+        .select('unique_key', 'shared_credentials_id')) as { unique_key: string; shared_credentials_id: number | null }[];
 }
 
 describe('POST /api/v1/agent-playground/chat', () => {
     beforeAll(async () => {
         api = await runServer();
         await seeders.createSharedCredentialsSeed('google-calendar');
-        await seeders.createSharedCredentialsSeed('github-getting-started');
     });
 
     afterEach(() => {
@@ -89,7 +105,7 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(system.json.error.code).toBe('invalid_body');
     });
 
-    it('sets up the playground integrations and streams a reply on an empty environment', async () => {
+    it('streams a reply to a typed message without creating integrations', async () => {
         vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
         const { user, env } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
@@ -98,9 +114,65 @@ describe('POST /api/v1/agent-playground/chat', () => {
 
         expect(turn.status).toBe(200);
         expect(turn.sessionId).toBeUUID();
+        expect(turn.integrationSetup).toBeUndefined();
         expect(turn.text).toContain('Mock reply');
-        const integrations = await db.knex.from('_nango_configs').where({ environment_id: env.id, deleted: false }).pluck('unique_key');
-        expect(integrations.sort()).toEqual(['pg-github', 'pg-google-calendar']);
+        expect(await integrationsIn(env.id)).toEqual([]);
+    });
+
+    it("creates only the pre-made prompt's integration, on Nango's OAuth app", async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user, env } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+
+        const turn = await chat(session, { messages: [userMessage("What's on my Google Calendar today?", { starterProvider: 'google-calendar' })] });
+
+        expect(turn.status).toBe(200);
+        expect(turn.integrationSetup).toEqual({ provider: 'google-calendar', integrationId: 'pg-google-calendar', outcome: 'created' });
+        expect(turn.text).toContain('Mock reply');
+        const integrations = await integrationsIn(env.id);
+        expect(integrations.map(({ unique_key }) => unique_key)).toEqual(['pg-google-calendar']);
+        expect(integrations[0]?.shared_credentials_id).not.toBeNull();
+    });
+
+    it('reuses an existing integration, and stops for one that is missing credentials', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user, env } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'my-calendar', 'google-calendar');
+        const session = await authenticateUser(api, user);
+
+        const turn = await chat(session, { messages: [userMessage("What's on my Google Calendar today?", { starterProvider: 'google-calendar' })] });
+
+        expect(turn.status).toBe(200);
+        expect(turn.integrationSetup).toEqual({ provider: 'google-calendar', integrationId: 'my-calendar', outcome: 'missing_credentials' });
+        expect(turn.sessionId).toBeUUID();
+        expect(turn.text).not.toContain('Mock reply');
+        expect((await integrationsIn(env.id)).map(({ unique_key }) => unique_key)).toEqual(['my-calendar']);
+    });
+
+    it("stops without creating anything when Nango has no OAuth app for the prompt's provider", async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user, env } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+
+        const turn = await chat(session, { messages: [userMessage('Show my 5 newest HubSpot contacts', { starterProvider: 'hubspot' })] });
+
+        expect(turn.status).toBe(200);
+        expect(turn.integrationSetup).toEqual({ provider: 'hubspot', outcome: 'not_created' });
+        expect(turn.sessionId).toBeUUID();
+        expect(turn.text).not.toContain('Mock reply');
+        expect(await integrationsIn(env.id)).toEqual([]);
+    });
+
+    it('ignores a pre-made prompt provider the playground does not offer', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user, env } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+
+        const turn = await chat(session, { messages: [userMessage('hi', { starterProvider: 'zendesk' })] });
+
+        expect(turn.status).toBe(200);
+        expect(turn.integrationSetup).toBeUndefined();
+        expect(await integrationsIn(env.id)).toEqual([]);
     });
 
     it("reuses a user's own session but not another member's", async () => {
