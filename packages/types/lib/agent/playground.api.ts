@@ -5,11 +5,19 @@ export interface AgentPlaygroundUsage {
     outputTokens: number;
 }
 
+export interface AgentPlaygroundIntegrationSetup {
+    provider: string;
+    integrationId?: string;
+    outcome: 'created' | 'existing' | 'missing_credentials' | 'not_created';
+}
+
 export interface AgentPlaygroundMessageMetadata {
     sessionId?: string;
     sessionExpiresAt?: string;
     hidden?: boolean;
     connectedIntegrations?: string[];
+    starterProvider?: string;
+    integrationSetup?: AgentPlaygroundIntegrationSetup;
     usage?: AgentPlaygroundUsage;
 }
 

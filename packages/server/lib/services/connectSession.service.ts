@@ -94,7 +94,7 @@ export interface ConnectSessionAndEndUser {
 }
 
 export async function insertConnectSession(
-    db: Knex,
+    trx: Knex,
     {
         endUserId,
         accountId,
@@ -152,7 +152,7 @@ export async function insertConnectSession(
         tags: normalizedTags
     };
 
-    const [session] = await db.insert<DBConnectSession>(dbSession).into(CONNECT_SESSIONS_TABLE).returning('*');
+    const [session] = await trx.insert<DBConnectSession>(dbSession).into(CONNECT_SESSIONS_TABLE).returning('*');
     if (!session) {
         return Err(
             new ConnectSessionError({
@@ -371,7 +371,7 @@ function buildTagsFromInternalEndUser(endUser: InternalEndUser | null): Tags {
 }
 
 export async function getConnectSession(
-    db: Knex,
+    trx: Knex,
     {
         id,
         accountId,
@@ -382,9 +382,9 @@ export async function getConnectSession(
         environmentId: number;
     }
 ): Promise<Result<ConnectSessionAndEndUser, ConnectSessionError>> {
-    const session = await db
+    const session = await trx
         .from<DBConnectSession>(CONNECT_SESSIONS_TABLE)
-        .select<{ connect_session: DBConnectSession }>(db.raw(`row_to_json(${CONNECT_SESSIONS_TABLE}.*) as connect_session`))
+        .select<{ connect_session: DBConnectSession }>(trx.raw(`row_to_json(${CONNECT_SESSIONS_TABLE}.*) as connect_session`))
         .where({
             id,
             account_id: accountId,
@@ -397,8 +397,8 @@ export async function getConnectSession(
     return Ok({ connectSession: ConnectSessionMapper.from(session.connect_session) });
 }
 
-export async function getConnectSessionByToken(db: Knex, token: string): Promise<Result<ConnectSessionAndEndUser, ConnectSessionError>> {
-    const getSession = await keystore.getPrivateKey(db, token);
+export async function getConnectSessionByToken(trx: Knex, token: string): Promise<Result<ConnectSessionAndEndUser, ConnectSessionError>> {
+    const getSession = await keystore.getPrivateKey(trx, token);
     if (getSession.isErr()) {
         return Err(new ConnectSessionError({ code: 'not_found', message: `Token not found`, payload: { token: `${token.substring(0, 32)}...` } }));
     }
@@ -408,7 +408,7 @@ export async function getConnectSessionByToken(db: Knex, token: string): Promise
         return Err(new ConnectSessionError({ code: 'not_found', message: `Token not found`, payload: { token: `${token.substring(0, 32)}...` } }));
     }
 
-    const session = await getConnectSession(db, { id: privateKey.entityId, accountId: privateKey.accountId, environmentId: privateKey.environmentId });
+    const session = await getConnectSession(trx, { id: privateKey.entityId, accountId: privateKey.accountId, environmentId: privateKey.environmentId });
     if (session.isErr()) {
         return Err(session.error);
     }
@@ -416,7 +416,7 @@ export async function getConnectSessionByToken(db: Knex, token: string): Promise
 }
 
 export async function deleteConnectSession(
-    db: Knex,
+    trx: Knex,
     {
         id,
         accountId,
@@ -427,18 +427,18 @@ export async function deleteConnectSession(
         environmentId: number;
     }
 ): Promise<Result<void, ConnectSessionError>> {
-    const deleted = await db<DBConnectSession>(CONNECT_SESSIONS_TABLE).where({ id, account_id: accountId, environment_id: environmentId }).delete();
+    const deleted = await trx<DBConnectSession>(CONNECT_SESSIONS_TABLE).where({ id, account_id: accountId, environment_id: environmentId }).delete();
     if (!deleted) {
         return Err(new ConnectSessionError({ code: 'not_found', message: `Connect session '${id}' not found`, payload: { id, accountId, environmentId } }));
     }
     return Ok(undefined);
 }
 
-export async function deleteExpiredConnectSession(db: Knex, { limit, olderThan }: { limit: number; olderThan: number }): Promise<number> {
+export async function deleteExpiredConnectSession(trx: Knex, { limit, olderThan }: { limit: number; olderThan: number }): Promise<number> {
     const dateThreshold = new Date();
     dateThreshold.setDate(dateThreshold.getDate() - olderThan);
 
-    return await db
+    return await trx
         .from<DBConnectSession>(CONNECT_SESSIONS_TABLE)
         .whereIn('id', function (sub) {
             sub.select('id').from<DBConnectSession>(CONNECT_SESSIONS_TABLE).where('created_at', '<=', dateThreshold.toISOString()).limit(limit);

@@ -7,6 +7,8 @@ import { baseUrl, FixedSizeMap, NANGO_VERSION, report } from '@nangohq/utils';
 import type { AccountGroupProperties, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
 export type ProductTrackingTypes =
+    | 'auth:account_create'
+    | 'auth:user_create'
     | 'functions:command_start'
     | 'billing:plan_submit'
     | 'billing:plan_update'

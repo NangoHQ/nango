@@ -867,7 +867,8 @@
                           "reference/backend/http-api/environments/list-api-keys",
                           "reference/backend/http-api/environments/get-api-key",
                           "reference/backend/http-api/environments/create-api-key",
-                          "reference/backend/http-api/environments/delete-api-key"
+                          "reference/backend/http-api/environments/delete-api-key",
+                          "reference/backend/http-api/environments/rotate-webhook-signing-key"
                         ]
                       },
                       {
@@ -1825,6 +1826,7 @@
               "integrations/all/sendgrid",
               "api-integrations/sentinelone",
               "integrations/all/sentry",
+              "api-integrations/sentry-mcp",
               "integrations/all/sentry-oauth",
               "integrations/all/servicem8",
               "api-integrations/servicenow",
@@ -1929,6 +1931,7 @@
               "integrations/all/timely",
               "api-integrations/timetastic",
               "api-integrations/timify",
+              "api-integrations/timocom",
               "integrations/all/tldv",
               "api-integrations/toast",
               "integrations/all/todoist",

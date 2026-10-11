@@ -95,6 +95,22 @@ describe(`GET ${route}`, () => {
         });
     });
 
+    describe('Accounts with the banner turned off', () => {
+        it('should report nothing overdue without calling Orb', async () => {
+            const { plan, user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
+            (await updatePlan(db.knex, { id: plan.id, has_overdue_invoices_banner: false, orb_customer_id: 'orb_cust_123' })).unwrap();
+            getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: true }));
+
+            const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, session });
+
+            isSuccess(res.json);
+            expect(res.res.status).toBe(200);
+            expect(res.json.data).toStrictEqual({ hasOverdue: false, portalUrl: null });
+            expect(getOverdueInvoicesSpy).not.toHaveBeenCalled();
+        });
+    });
+
     describe('Success Cases', () => {
         it('should report an overdue invoice with the portal URL', async () => {
             const { plan, user } = await seeders.seedAccountEnvAndUser();

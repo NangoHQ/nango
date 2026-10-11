@@ -10,7 +10,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Spinner } from '@/components/ui/Spinner';
 import { INTERRUPTED_CALL } from '@/store/agentPlaygroundChat';
-import { cn } from '@/utils/utils';
 import { describeTool, humanize, providerFor, toolArguments } from '../toolDisplay';
 import { ConnectCard } from './ConnectCard';
 
@@ -319,6 +318,9 @@ const Payload: React.FC<{ input: unknown; output: unknown; error: string | undef
 };
 
 const COLLAPSED_LINES = 20;
+const COLLAPSED_LENGTH = 2_000;
+// Prism highlights the whole block, so a large response freezes the page while it renders.
+const MAX_HIGHLIGHTED_LENGTH = 50_000;
 
 const Value: React.FC<{ value: unknown }> = ({ value }) => {
     if (typeof value === 'boolean') {
@@ -333,14 +335,25 @@ const Value: React.FC<{ value: unknown }> = ({ value }) => {
     return <code className="whitespace-pre-wrap break-all font-mono text-body-small-regular text-text-default">{String(value)}</code>;
 };
 
-const CollapsibleCode: React.FC<{ code: string; language: 'json' | 'bash' }> = ({ code, language }) => {
+const CollapsibleCode: React.FC<{ code: string; language: 'json' | 'bash'; wrapLines?: boolean }> = ({ code, language, wrapLines = false }) => {
     const [expanded, setExpanded] = useState(false);
-    const long = code.split('\n').length > COLLAPSED_LINES;
+    const lines = code.split('\n');
+    const long = lines.length > COLLAPSED_LINES || code.length > COLLAPSED_LENGTH;
+    // Highlighting runs over every line it is given, so a collapsed block only gets the lines it shows.
+    const collapsed = lines.slice(0, COLLAPSED_LINES).join('\n');
+    const shown = long && !expanded ? (collapsed.length > COLLAPSED_LENGTH ? `${collapsed.slice(0, COLLAPSED_LENGTH)}…` : collapsed) : code;
 
     return (
         <div className="flex flex-col items-start gap-2">
-            <div className={cn('w-full', long && !expanded && 'max-h-96 overflow-hidden')}>
-                <CodeBlock language={language} code={code} constrainHeight={false} />
+            <div className="w-full">
+                <CodeBlock
+                    language={language}
+                    code={shown}
+                    copyValue={code}
+                    constrainHeight={false}
+                    wrapLines={wrapLines}
+                    syntaxHighlight={shown.length <= MAX_HIGHLIGHTED_LENGTH}
+                />
             </div>
             {long && (
                 <Button size="xs" variant="outline" onClick={() => setExpanded((open) => !open)}>
@@ -374,6 +387,7 @@ const Section: React.FC<{ title: string; value: unknown; view: PayloadView }> = 
                 <CollapsibleCode
                     language={typeof value === 'string' ? 'bash' : 'json'}
                     code={typeof value === 'string' ? value : JSON.stringify(value ?? {}, null, 2)}
+                    wrapLines={typeof value === 'string'}
                 />
             )}
         </div>
