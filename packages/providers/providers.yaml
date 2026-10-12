@@ -9480,7 +9480,6 @@ freshdesk-mcp:
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshdesk.com
         headers:
-            # No "Bearer" prefix and no "Basic" scheme — see freshservice-mcp.
             content-type: application/json
             authorization: ${apiKey}
         verification:
@@ -9514,7 +9513,8 @@ freshdesk-mcp:
             type: string
             title: API Key
             description: The API Key of your FreshDesk account
-            secret: true
+            example: AbCdEfGhIjKlMnOpQrStUvWx_yZ0123456789aBcDeFgHiJkLmNoPqRs
+            pattern: '^[A-Za-z0-9_]+$'
             doc_section: '#step-1-finding-your-freshdesk-api-key'
 
 freshsales:
@@ -9613,12 +9613,6 @@ freshservice-mcp:
     proxy:
         base_url: https://${connectionConfig.subdomain}.freshservice.com
         headers:
-            # Observed, not documented by Freshworks (their MCP auth-server
-            # metadata advertises OAuth2/DCR, not a static key). "Basic" is
-            # rejected outright (401, any payload); "Bearer <key>" passes the
-            # handshake but real tool calls still 403 — only the bare key
-            # authorizes end-to-end. See the PR description for how this was
-            # verified.
             content-type: application/json
             authorization: ${apiKey}
         verification:
@@ -9652,7 +9646,8 @@ freshservice-mcp:
             type: string
             title: API Key
             description: The API Key of your Freshservice account
-            secret: true
+            example: AbCdEfGhIjKlMnOpQrStUvWx_yZ0123456789aBcDeFgHiJkLmNoPqRs
+            pattern: '^[A-Za-z0-9_]+$'
             doc_section: '#step-1-finding-your-freshservice-api-key'
 
 freshteam:
