@@ -25,7 +25,7 @@ describe('describeChatError', () => {
         const error = new Error(JSON.stringify({ error: { code: 'too_many_request', message: 'Too many Agent Playground messages for this user' } }));
 
         expect(describeChatError(error)).toEqual({
-            title: "You've sent a lot of messages in a short time.",
+            title: 'Too many messages in a short time.',
             detail: 'Wait a minute, then try again.',
             action: 'retry'
         });
