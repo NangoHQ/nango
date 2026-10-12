@@ -707,6 +707,9 @@
                 "require_client_certificate": {
                     "type": "boolean"
                 },
+                "allow_unverified_https": {
+                    "type": "boolean"
+                },
                 "token_url_skip_encode": {
                     "type": "array",
                     "items": {
@@ -714,6 +717,9 @@
                     }
                 },
                 "webhook_user_defined_secret": {
+                    "type": "boolean"
+                },
+                "webhook_signature_enforced": {
                     "type": "boolean"
                 },
                 "webhook_routing_script": {

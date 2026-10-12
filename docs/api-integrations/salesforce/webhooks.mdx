@@ -1,0 +1,117 @@
+---
+title: 'How to set up webhooks with Salesforce on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to send Salesforce record changes to Nango from an Apex trigger and verify them'
+---
+
+Salesforce has no outbound webhooks that Nango can subscribe to. Instead, you install an Apex trigger in each connected org that calls your Nango webhook URL when records change. Because the call comes from code you install, not from Salesforce, there is no provider signature. Nango verifies each call with a secret that belongs to the connection instead.
+
+## How it works
+
+1. An Apex trigger in the connected org sends a POST request to your Nango webhook URL when a record changes.
+2. Nango reads the connection id from `nango.connectionId` in the body and checks the `X-Nango-Webhook-Secret` header against that connection's `webhookSecret` metadata.
+3. Nango routes the event to the connection, using `nango.eventType` as the webhook type.
+
+A request without the header, with a wrong secret, or for a connection that has no `webhookSecret` is rejected. Every connection needs its own secret. There is no integration level secret, because it would sit in every org's trigger and any org admin could use it to send events for other connections.
+
+## Payload
+
+The body must be JSON with a `nango` object. Everything else is up to you and is passed through as is.
+
+```json
+{
+  "nango": {
+    "connectionId": "<CONNECTION-ID>",
+    "eventType": "account.updated"
+  },
+  "recordIds": ["001xx000003DGb2AAG"]
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `nango.connectionId` | The Nango connection id of the org the trigger runs in. |
+| `nango.eventType` | The event name. Syncs subscribe to it with `webhookSubscriptions`. |
+
+## Setup
+
+### 1. Give each connection a webhook secret
+
+Generate a random secret of at least 16 characters when the connection is created and store it as `webhookSecret` in the connection metadata. A [post-connection-creation function](/guides/functions/event-functions) does this for every new connection:
+
+```typescript
+import { randomBytes } from 'crypto';
+import { createOnEvent } from 'nango';
+
+export default createOnEvent({
+    event: 'post-connection-creation',
+    description: 'Generate the webhook secret the Apex trigger sends to Nango',
+    exec: async (nango) => {
+        await nango.updateMetadata({ webhookSecret: randomBytes(32).toString('hex') });
+    }
+});
+```
+
+Read it back with [Get connection](/reference/backend/http-api/connections/get) when you install the trigger. To set or rotate it yourself instead:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": { "webhookSecret": "<RANDOM-SECRET>" }
+  }'
+```
+
+See [Update connection metadata](/reference/backend/http-api/connections/update-metadata) for the full reference.
+
+### 2. Install the Apex trigger
+
+Copy the Nango webhook URL from your Salesforce integration's **Webhooks** section in the Nango dashboard, and add its host as a Remote Site Setting in the org so Apex can call it.
+
+Store the webhook URL, the connection id and the secret where the trigger can read them but regular users cannot, for example a protected custom setting in a managed package. The example below uses a `Nango_Settings__c` hierarchy custom setting:
+
+```java
+public class NangoWebhook {
+    @future(callout=true)
+    public static void send(String eventType, List<Id> recordIds) {
+        Nango_Settings__c settings = Nango_Settings__c.getOrgDefaults();
+
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint(settings.Webhook_Url__c);
+        req.setMethod('POST');
+        req.setHeader('Content-Type', 'application/json');
+        req.setHeader('X-Nango-Webhook-Secret', settings.Webhook_Secret__c);
+        req.setBody(JSON.serialize(new Map<String, Object>{
+            'nango' => new Map<String, Object>{
+                'connectionId' => settings.Connection_Id__c,
+                'eventType' => eventType
+            },
+            'recordIds' => recordIds
+        }));
+
+        new Http().send(req);
+    }
+}
+```
+
+```java
+trigger AccountChanged on Account (after insert, after update) {
+    NangoWebhook.send(Trigger.isInsert ? 'account.created' : 'account.updated', new List<Id>(Trigger.newMap.keySet()));
+}
+```
+
+<Warning>
+Admins of the org can read the secret wherever the trigger can. That is why each connection has its own: a leaked secret only lets someone send events for that one connection.
+</Warning>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

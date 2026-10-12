@@ -5,6 +5,7 @@ import type { JSONSchema7 } from 'json-schema';
 
 export interface DBFunctionConfig extends TimestampsAndDeletedAt {
     id: number;
+    uuid: string;
     nango_config_id: number;
     environment_id: number;
     name: string;
@@ -37,6 +38,7 @@ export interface DBFunctionInstance extends TimestampsAndDeletedAt {
     function_config_id: number;
     name: string;
     variant: string;
+    enabled: boolean;
     last_run_at: Date | null;
     frequency: string | null;
 }

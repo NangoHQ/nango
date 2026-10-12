@@ -30,14 +30,14 @@
         "dayjs": "1.11.19",
         "dd-trace": "5.117.0",
         "express": "5.1.0",
-        "qs": "6.15.3",
-        "zod": "4.0.5"
+        "qs": "6.16.0",
+        "zod": "4.3.6"
     },
     "devDependencies": {
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/types": "file:../types",
         "node-fetch": "3.3.2",
         "typescript": "5.8.3",
-        "vitest": "4.1.9"
+        "vitest": "4.1.11"
     }
 }

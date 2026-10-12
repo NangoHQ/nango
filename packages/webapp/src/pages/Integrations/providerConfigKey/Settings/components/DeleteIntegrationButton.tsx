@@ -1,13 +1,11 @@
 import { Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useSWRConfig } from 'swr';
 
 import { Button } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
-import { clearConnectionsCache } from '../../../../../hooks/useConnections.js';
 import { useDeleteIntegration } from '../../../../../hooks/useIntegration.js';
 import { useToast } from '../../../../../hooks/useToast.js';
 
@@ -20,7 +18,6 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
     const { can } = usePermissions();
     const canDeleteIntegration = can('environment:integrations:delete');
 
-    const { mutate, cache } = useSWRConfig();
     const { mutateAsync: deleteIntegration, isPending } = useDeleteIntegration(env, integration.unique_key);
     const { confirm, DialogComponent } = useConfirmDialog();
 
@@ -28,7 +25,6 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
         try {
             await deleteIntegration();
             toast({ title: `Integration "${integration.unique_key}" has been deleted`, variant: 'success' });
-            clearConnectionsCache(cache, mutate);
             navigate(`/${env}/integrations`);
         } catch {
             toast({ title: 'Failed to delete integration', variant: 'error' });

@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { policyMessages, policyOperations } from '../es/schema.js';
 import { CircuitBreaker } from './circuitBreaker.js';
 import { CircuitBreakerLogsClient } from './circuitBreakerLogsClient.js';
-import { createLogsStorageBackend, LogsStorage } from './client.js';
+import { createLogsStorageBackend, LogsStorage, logsStorageClientConfig } from './client.js';
 import { ElasticsearchLogsClient } from './elasticsearchClient.js';
 import { OpenSearchLogsClient } from './openSearchClient.js';
 
@@ -51,12 +52,35 @@ describe('createLogsStorageBackend', () => {
         });
         expect(backend).toBeInstanceOf(ElasticsearchLogsClient);
     });
+
+    it('should create ElasticsearchLogsClient for ec-serverless', () => {
+        const backend = createLogsStorageBackend('ec-serverless', {
+            nodes: 'https://example.es.cloud',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            auth: { apiKey: 'encoded-key' },
+            serverless: true
+        });
+        expect(backend).toBeInstanceOf(ElasticsearchLogsClient);
+    });
+
+    it('should reject API key auth for opensearch', () => {
+        expect(() =>
+            createLogsStorageBackend('opensearch', {
+                nodes: 'http://localhost:9200',
+                requestTimeout: 1000,
+                maxRetries: 0,
+                auth: { apiKey: 'encoded-key' }
+            })
+        ).toThrow(/API key/);
+    });
 });
 
 describe('LogsStorage', () => {
     it('should select provider from constructor', () => {
         expect(new LogsStorage('opensearch').provider).toBe('opensearch');
         expect(new LogsStorage('elasticsearch').provider).toBe('elasticsearch');
+        expect(new LogsStorage('ec-serverless').provider).toBe('ec-serverless');
     });
 });
 
@@ -213,6 +237,130 @@ describe('OpenSearchLogsClient', () => {
 
         const indices = await client.cat.indices({ format: 'json' });
         expect(indices).toEqual([{ index: 'logs.2025-01-01' }]);
+    });
+});
+
+describe('ElasticsearchLogsClient', () => {
+    const policies = { messagesPolicy: policyMessages, operationsPolicy: policyOperations };
+
+    it('should install ILM policies when not serverless', async () => {
+        const raw = { ilm: { putLifecycle: vi.fn().mockResolvedValue({ acknowledged: true }) } };
+        const client = new ElasticsearchLogsClient({
+            nodes: 'http://localhost:9200',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            auth: { username: 'u', password: 'p' }
+        });
+        (client as unknown as { client: typeof raw }).client = raw;
+
+        await client.setupRetentionPolicies(policies);
+
+        expect(raw.ilm.putLifecycle).toHaveBeenCalledTimes(2);
+        expect(raw.ilm.putLifecycle).toHaveBeenCalledWith(policyMessages);
+        expect(raw.ilm.putLifecycle).toHaveBeenCalledWith(policyOperations);
+    });
+
+    it('should skip ILM and update data stream retention when serverless', async () => {
+        const raw = {
+            ilm: { putLifecycle: vi.fn() },
+            indices: { putDataLifecycle: vi.fn().mockResolvedValue({ acknowledged: true }) }
+        };
+        const client = new ElasticsearchLogsClient({
+            nodes: 'https://example.es.cloud',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            auth: { apiKey: 'encoded-key' },
+            serverless: true
+        });
+        (client as unknown as { client: typeof raw }).client = raw;
+
+        await client.setupRetentionPolicies(policies);
+        expect(raw.ilm.putLifecycle).not.toHaveBeenCalled();
+
+        await client.putDataStreamLifecycle({ name: '20240528_messages', data_retention: '15d' });
+        expect(raw.indices.putDataLifecycle).toHaveBeenCalledWith({ name: '20240528_messages', data_retention: '15d' });
+    });
+
+    it('should probe with cluster health when not serverless', async () => {
+        const raw = { cluster: { health: vi.fn().mockResolvedValue({}) }, info: vi.fn() };
+        const client = new ElasticsearchLogsClient({
+            nodes: 'http://localhost:9200',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            auth: { username: 'u', password: 'p' }
+        });
+        (client as unknown as { client: typeof raw }).client = raw;
+
+        await expect(client.healthCheck()).resolves.toBe(true);
+        expect(raw.cluster.health).toHaveBeenCalledOnce();
+        expect(raw.info).not.toHaveBeenCalled();
+    });
+
+    it('should probe with info when serverless', async () => {
+        const raw = { cluster: { health: vi.fn() }, info: vi.fn().mockResolvedValue({}) };
+        const client = new ElasticsearchLogsClient({
+            nodes: 'https://example.es.cloud',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            auth: { apiKey: 'encoded-key' },
+            serverless: true
+        });
+        (client as unknown as { client: typeof raw }).client = raw;
+
+        await expect(client.healthCheck()).resolves.toBe(true);
+        expect(raw.info).toHaveBeenCalledOnce();
+        expect(raw.cluster.health).not.toHaveBeenCalled();
+    });
+
+    it('should follow an explicit ec-serverless provider', async () => {
+        const config = logsStorageClientConfig('ec-serverless', {
+            nodes: 'https://example.es.cloud',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            username: 'u',
+            password: 'p',
+            apiKey: 'encoded-key'
+        });
+        expect(config).toEqual({
+            nodes: 'https://example.es.cloud',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            auth: { apiKey: 'encoded-key' },
+            serverless: true
+        });
+
+        const backend = createLogsStorageBackend('ec-serverless', config);
+        const raw = {
+            ilm: { putLifecycle: vi.fn() },
+            cluster: { health: vi.fn() },
+            info: vi.fn().mockResolvedValue({})
+        };
+        (backend as unknown as { client: typeof raw }).client = raw;
+
+        await backend.setupRetentionPolicies(policies);
+        await expect(backend.healthCheck()).resolves.toBe(true);
+
+        expect(raw.ilm.putLifecycle).not.toHaveBeenCalled();
+        expect(raw.info).toHaveBeenCalledOnce();
+        expect(raw.cluster.health).not.toHaveBeenCalled();
+    });
+
+    it('should map hosted providers to basic auth', () => {
+        const connection = {
+            nodes: 'http://localhost:9200',
+            requestTimeout: 1000,
+            maxRetries: 0,
+            username: 'u',
+            password: 'p',
+            apiKey: 'encoded-key'
+        };
+        expect(logsStorageClientConfig('elasticsearch', connection)).toEqual({
+            nodes: connection.nodes,
+            requestTimeout: connection.requestTimeout,
+            maxRetries: connection.maxRetries,
+            auth: { username: 'u', password: 'p' }
+        });
+        expect(logsStorageClientConfig('opensearch', connection).auth).toEqual({ username: 'u', password: 'p' });
     });
 });
 

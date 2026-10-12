@@ -132,6 +132,31 @@ describe(`PATCH ${endpoint}`, () => {
         });
     });
 
+    it('stores allow_unverified_webhooks', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github-app', 'github-app');
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'github-app' },
+            body: { allow_unverified_webhooks: true }
+        });
+
+        isSuccess(res.json);
+
+        const resGet = await api.fetch(endpoint, {
+            method: 'GET',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'github-app' }
+        });
+
+        isSuccess(resGet.json);
+        expect(resGet.json.data.integration.allow_unverified_webhooks).toBe(true);
+    });
+
     it('rejects invalid integration_config values', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');

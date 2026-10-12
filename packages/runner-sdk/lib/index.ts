@@ -10,7 +10,7 @@ export * from './checkpoint.js';
 export { createFunction, deriveFunctionCapabilities } from './function.js';
 export type { CreateFunctionProps, CreateFunctionResponse, FunctionRequires, FunctionTriggerDefinition } from './function.js';
 export { executeUncontrolledFetch } from './uncontrolledFetch.js';
-export type { UncontrolledFetchOptions } from './uncontrolledFetch.js';
+export type { UncontrolledFetchOptions, UncontrolledFetchRedirect } from './uncontrolledFetch.js';
 export { isBaseUrlOverridePolicyEnabledFromEnv, resolveProxyBaseUrlOverrideDenylist } from './baseUrlOverrideDenylist.js';
 
 export { PaginationService };

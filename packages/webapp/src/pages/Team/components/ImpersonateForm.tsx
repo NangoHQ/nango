@@ -24,6 +24,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../components/ui/Form';
 import { apiAdminImpersonate } from '../../../hooks/useAdmin';
 import { useStore } from '../../../store';
+import { stopAnalytics } from '../../../utils/analytics';
 
 const ImpersonateFormSchema = z.object({
     account_uuid: z.string().uuid(),
@@ -86,6 +87,7 @@ export const ImpersonateForm: React.FC = () => {
             );
 
             if (result.ok) {
+                stopAnalytics();
                 window.location.reload();
                 return;
             }
@@ -103,6 +105,8 @@ export const ImpersonateForm: React.FC = () => {
             showError((result.errorCode && errorMessages[result.errorCode]) || 'Could not impersonate this account.');
         } catch (err) {
             if (timedOut(err)) {
+                // The impersonation may have gone through. If it didn't, PrivateRoute turns capturing back on.
+                stopAnalytics();
                 window.location.reload();
                 return;
             }

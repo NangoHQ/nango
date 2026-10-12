@@ -354,6 +354,83 @@ describe('uncontrolledFetch', () => {
         expect(secondCallInit.method).toBe('GET');
         expect(secondCallInit.body).toBeUndefined();
     });
+
+    it('does not follow a redirect or resend the body when redirect is error', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 307, headers: { Location: 'https://example.org/stolen' } }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        await expect(
+            action.uncontrolledFetch({
+                url: new URL('https://example.com/upload'),
+                method: 'POST',
+                body: 'forensic-file',
+                headers: { 'content-type': 'application/octet-stream' },
+                redirect: 'error'
+            })
+        ).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'redirect_error' }
+        });
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        const firstCallInit = fetchMock.mock.calls[0]![1] as RequestInit;
+        expect(firstCallInit.method).toBe('POST');
+        expect(firstCallInit.body).toBe('forensic-file');
+    });
+
+    it('errors on a redirect status without a Location when redirect is error', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response('diagnostic payload', { status: 302 }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        await expect(action.uncontrolledFetch({ url: new URL('https://example.com/upload'), redirect: 'error' })).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'redirect_error' }
+        });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns a non-redirect response when redirect is error', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response('uploaded', { status: 200 }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+        const res = await action.uncontrolledFetch({
+            url: new URL('https://example.com/upload'),
+            method: 'POST',
+            body: 'forensic-file',
+            redirect: 'error'
+        });
+
+        expect(res.status).toBe(200);
+        expect(await res.text()).toBe('uploaded');
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('still follows redirects when redirect is follow', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce(new Response(null, { status: 307, headers: { Location: 'https://example.com/next' } }))
+            .mockResolvedValueOnce(new Response('ok', { status: 200 }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+        const res = await action.uncontrolledFetch({
+            url: new URL('https://example.com/upload'),
+            method: 'POST',
+            body: 'forensic-file',
+            redirect: 'follow'
+        });
+
+        expect(await res.text()).toBe('ok');
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        const secondCallInit = fetchMock.mock.calls[1]![1] as RequestInit;
+        expect(secondCallInit.method).toBe('POST');
+        expect(secondCallInit.body).toBe('forensic-file');
+    });
 });
 
 describe('uncontrolledFetch byte metering helpers', () => {

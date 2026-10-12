@@ -26,7 +26,12 @@ export const webhookUrlSchema = z
     .refine(
         (url) => {
             if (!url || url.trim() === '') return true;
-            const hostname = new URL(url).hostname.replace(/\.+$/, '');
+            let hostname: string;
+            try {
+                hostname = new URL(url).hostname.replace(/\.+$/, '');
+            } catch {
+                return true;
+            }
             return hostname !== 'nango.dev' && !hostname.endsWith('.nango.dev');
         },
         { message: `Webhook URLs cannot point to Nango's domain (nango.dev).` }
@@ -152,6 +157,14 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
                 app_id: z.string().min(1).max(255),
                 app_link: z.string().min(1),
                 private_key: privateKeySchema
+            })
+            .strict(),
+        z
+            .object({
+                type: z.enum(['MCP_OAUTH2_GENERIC']),
+                client_name: z.string().min(1).max(255).optional(),
+                client_uri: z.url().max(255).or(z.literal('')).optional(),
+                client_logo_uri: z.url().max(255).optional()
             })
             .strict(),
         z

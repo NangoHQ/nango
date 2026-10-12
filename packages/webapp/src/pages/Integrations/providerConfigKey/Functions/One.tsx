@@ -226,7 +226,7 @@ export const FunctionsOne: React.FC = () => {
                                     Playground <ExternalLink />
                                 </Button>
                             </ConditionalTooltip>
-                            {func.source !== 'repo' && isSyncOrAction(func) && (
+                            {func.source !== 'repo' && func.id != null && isSyncOrAction(func) && (
                                 <IconButton
                                     variant="ghost"
                                     size="2xs"

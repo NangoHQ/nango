@@ -8,6 +8,7 @@ import { flagHasPlan, getHeaders, metrics, redactHeaders, zodErrorToHTTP } from 
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { NANGO_WEBHOOK_SECRET_HEADER } from '../../../webhook/nango-webhook-secret.js';
 import { routeWebhook } from '../../../webhook/webhook.manager.js';
 
 import type { WebhookRequest } from '../../../webhook/types.js';
@@ -87,7 +88,7 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
             const request: WebhookRequest = {
                 method: 'POST',
                 path: req.path,
-                headers: redactHeaders({ headers: rawHeaders }),
+                headers: redactHeaders({ headers: rawHeaders, headersToFilter: [NANGO_WEBHOOK_SECRET_HEADER] }),
                 query: queryFiltered,
                 body: req.body,
                 // The raw headers and body are included for signature verification.

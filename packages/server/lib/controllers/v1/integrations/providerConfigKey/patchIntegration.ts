@@ -87,6 +87,10 @@ export const patchIntegration = asyncWrapperWithEnvironment<PatchIntegration>(as
         integration.forward_webhooks = body.forward_webhooks;
     }
 
+    if ('allow_unverified_webhooks' in body && body.allow_unverified_webhooks !== undefined) {
+        integration.allow_unverified_webhooks = body.allow_unverified_webhooks;
+    }
+
     // Credentials
     if ('authType' in body) {
         if (integration.shared_credentials_id) {

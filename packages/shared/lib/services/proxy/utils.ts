@@ -16,6 +16,7 @@ import {
 } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
 import { signAwsSigV4Request } from './aws-sigv4.js';
+import { buildUnverifiedHttpsAgent } from './outbound-policy.js';
 
 import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type {
@@ -195,6 +196,18 @@ export function getAxiosConfiguration({
                 );
             }
         }
+    }
+
+    if (
+        proxyConfig.provider.allow_unverified_https &&
+        // connection_config, not the provider template, so this is opt-in per connection, not for the whole integration
+        connection.connection_config?.['allowSelfSignedCert'] === 'true' &&
+        !axiosConfig.httpAgent &&
+        !axiosConfig.httpsAgent &&
+        outboundPolicy
+    ) {
+        axiosConfig.httpsAgent = buildUnverifiedHttpsAgent({ policy: outboundPolicy, allowSelfSignedCert: true });
+        axiosConfig.httpAgent = getSafeHttpAgents(outboundPolicy).httpAgent;
     }
 
     if (outboundPolicy) {

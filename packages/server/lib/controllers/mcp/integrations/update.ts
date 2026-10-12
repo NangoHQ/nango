@@ -9,7 +9,8 @@ import type { UpdateIntegrationsOutput } from './schema.js';
 
 export const updateIntegrationsTool = defineManagementMcpTool<typeof updateIntegrationsArgumentsSchema, UpdateIntegrationsOutput>({
     name: 'integrations_update',
-    description: "Update an integration's ID, display name, developer-app credentials, webhook forwarding, integration configuration, or custom settings.",
+    title: 'Update Integration',
+    description: "Updates an integration's ID, display name, developer-app credentials, webhook forwarding, integration configuration, or custom settings.",
     inputSchema: updateIntegrationsArgumentsSchema,
     outputSchema: updateIntegrationsOutputSchema,
     requiredScopes: { every: ['environment:integrations:update'] },

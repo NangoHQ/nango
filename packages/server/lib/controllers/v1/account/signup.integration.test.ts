@@ -1,5 +1,7 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import db from '@nangohq/database';
+import { inviteEmail, productTracking, seeders, userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
 import { isSuccess, runServer } from '../../../utils/tests.js';
@@ -72,5 +74,48 @@ describe('POST /api/v1/account/signup', () => {
         isSuccess(res.json);
         expect(res.json.data.verified).toBe(false);
         expect(typeof res.json.data.uuid).toBe('string');
+    });
+
+    it.each([
+        { domain: 'nango.dev', isInternal: true },
+        { domain: 'example.com', isInternal: false }
+    ])('marks the new account internal=$isInternal for a @$domain signup', async ({ domain, isInternal }) => {
+        const identifyAccountGroup = vi.spyOn(productTracking, 'identifyAccountGroup');
+        const email = `${nanoid()}@${domain}`;
+
+        const res = await api.fetch(route, { method: 'POST', body: { email, name: 'Foobar', password: 'aZ1-foobar!!', foundUs: 'the internet' } });
+        expect(res.res.status).toBe(200);
+
+        const user = await userService.getUserByEmail(email);
+        await vi.waitFor(() => expect(identifyAccountGroup).toHaveBeenCalledWith(user!.account_id, { is_internal: isInternal }));
+        identifyAccountGroup.mockRestore();
+    });
+
+    it('tracks a new account and user', async () => {
+        const track = vi.spyOn(productTracking, 'track');
+        const email = `${nanoid()}@example.com`;
+
+        const res = await api.fetch(route, { method: 'POST', body: { email, name: 'Foobar', password: 'aZ1-foobar!!' } });
+        expect(res.res.status).toBe(200);
+
+        const user = await userService.getUserByEmail(email);
+        const names = track.mock.calls.map(([event]) => event.name);
+        expect(names).toStrictEqual(['auth:account_create', 'auth:user_create']);
+        expect(track).toHaveBeenCalledWith(expect.objectContaining({ name: 'auth:user_create', user: expect.objectContaining({ id: user!.id }) }));
+        track.mockRestore();
+    });
+
+    it('tracks only the user for an invite signup', async () => {
+        const { account, user: inviter } = await seeders.seedAccountEnvAndUser();
+        const email = `${nanoid()}@example.com`;
+        const invitation = await inviteEmail({ email, name: email, accountId: account.id, invitedByUserId: inviter.id, role: 'administrator', trx: db.knex });
+        const track = vi.spyOn(productTracking, 'track');
+
+        const res = await api.fetch(route, { method: 'POST', body: { email, name: 'Foobar', password: 'aZ1-foobar!!', token: invitation!.token } });
+        expect(res.res.status).toBe(200);
+
+        const names = track.mock.calls.map(([event]) => event.name);
+        expect(names).toStrictEqual(['auth:user_create']);
+        track.mockRestore();
     });
 });

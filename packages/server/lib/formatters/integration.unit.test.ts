@@ -17,6 +17,7 @@ function makeIntegration(custom: IntegrationConfig['custom'], provider = 'sage-i
         missing_fields: [],
         display_name: null,
         forward_webhooks: true,
+        allow_unverified_webhooks: false,
         shared_credentials_id: null,
         created_at: new Date('2025-01-01'),
         updated_at: new Date('2025-01-01')

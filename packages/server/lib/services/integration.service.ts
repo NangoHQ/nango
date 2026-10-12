@@ -102,6 +102,12 @@ export type CreateIntegrationCredentials =
           private_key: string;
       }
     | {
+          type: 'MCP_OAUTH2_GENERIC';
+          client_name?: string | undefined;
+          client_uri?: string | undefined;
+          client_logo_uri?: string | undefined;
+      }
+    | {
           type: 'MCP_OAUTH2';
           client_id?: string | undefined;
           client_secret?: string | undefined;
@@ -345,19 +351,6 @@ export class IntegrationService {
                 integration.shared_credentials_id = sharedCredentials.value.id;
             } else {
                 applyCredentials(integration, params.credentials);
-                if (params.integrationConfig && Object.keys(params.integrationConfig).length > 0) {
-                    const resolvedConfig = resolveIntegrationConfig(provider, params.integrationConfig);
-                    if (resolvedConfig.isErr()) {
-                        return Err(
-                            new IntegrationServiceError({
-                                code: 'invalid_integration_config',
-                                message: resolvedConfig.error.message,
-                                cause: resolvedConfig.error
-                            })
-                        );
-                    }
-                    integration.custom = { ...integration.custom, ...resolvedConfig.value };
-                }
 
                 if (params.custom && Object.keys(params.custom).length > 0) {
                     if (provider.integration_config) {
@@ -369,6 +362,20 @@ export class IntegrationService {
                         );
                     }
                     integration.custom = { ...integration.custom, ...params.custom };
+                }
+
+                if (provider.integration_config || (params.integrationConfig && Object.keys(params.integrationConfig).length > 0)) {
+                    const resolvedConfig = resolveIntegrationConfig(provider, params.integrationConfig ?? {});
+                    if (resolvedConfig.isErr()) {
+                        return Err(
+                            new IntegrationServiceError({
+                                code: 'invalid_integration_config',
+                                message: resolvedConfig.error.message,
+                                cause: resolvedConfig.error
+                            })
+                        );
+                    }
+                    integration.custom = { ...integration.custom, ...resolvedConfig.value };
                 }
 
                 if (provider.auth_mode === 'MCP_OAUTH2') {
@@ -682,6 +689,16 @@ function applyCredentials(integration: DBCreateIntegration, credentials: CreateI
                 ...integration.custom,
                 app_id: credentials.app_id,
                 private_key: Buffer.from(credentials.private_key).toString('base64')
+            };
+            break;
+        }
+
+        case 'MCP_OAUTH2_GENERIC': {
+            integration.custom = {
+                ...integration.custom,
+                ...(credentials.client_name && { oauth_client_name: credentials.client_name }),
+                ...(credentials.client_uri !== undefined && { oauth_client_uri: credentials.client_uri }),
+                ...(credentials.client_logo_uri && { oauth_client_logo_uri: credentials.client_logo_uri })
             };
             break;
         }

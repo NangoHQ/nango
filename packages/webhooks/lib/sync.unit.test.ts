@@ -46,6 +46,7 @@ const providerConfig: IntegrationConfig = {
     created_at: new Date(),
     updated_at: new Date(),
     forward_webhooks: true,
+    allow_unverified_webhooks: false,
     shared_credentials_id: null
 };
 

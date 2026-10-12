@@ -1,14 +1,27 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
 import { createAccount } from '../../../../seeders/account.seeder.js';
 import { createConfigSeed } from '../../../../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../../../../seeders/environment.seeder.js';
-import { findActionInputSchemas, findIntegrationFunctionCatalog } from './functions.js';
+import { getCatalogTool } from '../../../catalog/actions.js';
+import { findActionInputSchemas, findIntegrationFunctions } from './functions.js';
 
 import type { DBSyncConfig, IntegrationConfig, NangoConfigMetadata } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+
+const { mockHasCatalogTools } = vi.hoisted(() => {
+    return { mockHasCatalogTools: vi.fn() };
+});
+
+vi.mock('@nangohq/feature-flags', () => ({
+    getFlags: () => ({ hasCatalogTools: mockHasCatalogTools })
+}));
+
+beforeEach(() => {
+    mockHasCatalogTools.mockResolvedValue(true);
+});
 
 async function insertSyncConfig({
     environmentId,
@@ -64,7 +77,7 @@ const objectInput: { definitions: Record<string, JSONSchema7> } = {
     definitions: { SendEmailInput: { type: 'object', properties: { to: { type: 'string' } }, required: ['to'] } }
 };
 
-describe(findIntegrationFunctionCatalog, () => {
+describe(findIntegrationFunctions, () => {
     beforeAll(async () => {
         await multipleMigrations();
     });
@@ -80,14 +93,21 @@ describe(findIntegrationFunctionCatalog, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'sync_pages', type: 'sync' });
         await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action', enabled: false });
 
-        const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id });
+        const functions = await findIntegrationFunctions({ environmentId: environment.id });
 
-        expect(catalog).toStrictEqual([
-            { integration_id: 'github', provider: 'github', name: 'create_issue', type: 'action', description: null, enabled: false },
-            { integration_id: 'gmail', provider: 'google', name: null, type: null, description: null, enabled: null },
-            { integration_id: 'notion', provider: 'notion', name: 'sync_pages', type: 'sync', description: null, enabled: true },
-            { integration_id: 'notion', provider: 'notion', name: 'upsert_doc', type: 'action', description: 'Upsert', enabled: true }
+        expect(functions).toEqual(
+            expect.arrayContaining([
+                { integration_id: 'github', provider: 'github', name: 'create_issue', type: 'action', description: null, enabled: false },
+                { integration_id: 'notion', provider: 'notion', name: 'sync_pages', type: 'sync', description: null, enabled: true },
+                { integration_id: 'notion', provider: 'notion', name: 'upsert_doc', type: 'action', description: 'Upsert', enabled: true }
+            ])
+        );
+        expect(functions.filter((row) => row.integration_id === 'gmail')).toEqual([
+            { integration_id: 'gmail', provider: 'google', name: null, type: null, description: null, enabled: null }
         ]);
+        expect(functions).toEqual(
+            expect.arrayContaining([expect.objectContaining({ integration_id: 'github', name: 'create-issue', type: 'action', enabled: true })])
+        );
     });
 
     it('leaves out deleted and superseded function versions', async () => {
@@ -99,9 +119,11 @@ describe(findIntegrationFunctionCatalog, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'removed', type: 'action', deleted: true });
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'kept', type: 'action' });
 
-        const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id });
+        const functions = await findIntegrationFunctions({ environmentId: environment.id });
 
-        expect(catalog.map((row) => row.name)).toStrictEqual(['kept']);
+        expect(functions.map((row) => row.name)).toContain('kept');
+        expect(functions.map((row) => row.name)).not.toContain('old_version');
+        expect(functions.map((row) => row.name)).not.toContain('removed');
     });
 
     it('narrows to the integrations asked for', async () => {
@@ -113,9 +135,11 @@ describe(findIntegrationFunctionCatalog, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'upsert_doc', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create_issue', type: 'action' });
 
-        const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id, providerConfigKeys: ['notion'] });
+        const functions = await findIntegrationFunctions({ environmentId: environment.id, providerConfigKeys: ['notion'] });
 
-        expect(catalog.map((row) => row.integration_id)).toStrictEqual(['notion']);
+        expect(functions.every((row) => row.integration_id === 'notion')).toBe(true);
+        expect(functions.map((row) => row.name)).toContain('upsert_doc');
+        expect(functions.some((row) => row.integration_id === 'github')).toBe(false);
     });
 
     it('does not leak another environment', async () => {
@@ -128,9 +152,22 @@ describe(findIntegrationFunctionCatalog, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: notion, name: 'mine', type: 'action' });
         await insertSyncConfig({ environmentId: other.id, integration: otherNotion, name: 'theirs', type: 'action' });
 
-        const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id });
+        const functions = await findIntegrationFunctions({ environmentId: environment.id });
 
-        expect(catalog.map((row) => row.name)).toStrictEqual(['mine']);
+        expect(functions.map((row) => row.name)).toContain('mine');
+        expect(functions.map((row) => row.name)).not.toContain('theirs');
+    });
+
+    it('does not append catalog actions when tools-catalog is off', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        await createConfigSeed(environment, 'github', 'github');
+
+        const functions = await findIntegrationFunctions({ environmentId: environment.id });
+
+        expect(mockHasCatalogTools).toHaveBeenCalledWith(account.uuid);
+        expect(functions.some((row) => row.name === 'create-issue')).toBe(false);
     });
 
     it('does not return a function whose environment disagrees with its integration', async () => {
@@ -141,9 +178,10 @@ describe(findIntegrationFunctionCatalog, () => {
 
         await insertSyncConfig({ environmentId: other.id, integration: notion, name: 'stray', type: 'action' });
 
-        const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id });
+        const functions = await findIntegrationFunctions({ environmentId: environment.id });
 
-        expect(catalog).toStrictEqual([{ integration_id: 'notion', provider: 'notion', name: null, type: null, description: null, enabled: null }]);
+        expect(functions.every((row) => row.integration_id === 'notion')).toBe(true);
+        expect(functions.map((row) => row.name)).not.toContain('stray');
     });
 });
 
@@ -166,7 +204,10 @@ describe(findActionInputSchemas, () => {
             modelsJsonSchema: objectInput
         });
 
-        const rows = await findActionInputSchemas({ environmentId: environment.id, actions: [{ integrationId: 'gmail', name: 'send_email' }] });
+        const rows = await findActionInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'gmail', name: 'send_email' }]
+        });
 
         expect(rows).toStrictEqual([{ integration_id: 'gmail', name: 'send_email', input: 'SendEmailInput', models_json_schema: objectInput }]);
     });
@@ -201,7 +242,10 @@ describe(findActionInputSchemas, () => {
         await insertSyncConfig({ environmentId: environment.id, integration: gmail, name: 'send_email', type: 'action' });
         await insertSyncConfig({ environmentId: environment.id, integration: outlook, name: 'send_email', type: 'action' });
 
-        const rows = await findActionInputSchemas({ environmentId: environment.id, actions: [{ integrationId: 'gmail', name: 'send_email' }] });
+        const rows = await findActionInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'gmail', name: 'send_email' }]
+        });
 
         expect(rows.map((row) => row.integration_id)).toStrictEqual(['gmail']);
     });
@@ -223,6 +267,52 @@ describe(findActionInputSchemas, () => {
         });
 
         expect(rows.map((row) => row.name)).toStrictEqual(['kept']);
+    });
+
+    it('does not fall back to the catalog when an active deployed action occupies the name', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+
+        await insertSyncConfig({ environmentId: environment.id, integration: github, name: 'create-issue', type: 'action', enabled: false });
+
+        const rows = await findActionInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'github', name: 'create-issue' }]
+        });
+
+        expect(rows).toStrictEqual([]);
+    });
+
+    it('does not return the catalog schema when tools-catalog is off', async () => {
+        mockHasCatalogTools.mockResolvedValue(false);
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        await createConfigSeed(environment, 'github', 'github');
+
+        const rows = await findActionInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'github', name: 'create-issue' }]
+        });
+
+        expect(rows).toStrictEqual([]);
+    });
+
+    it('returns the catalog schema when the name is unoccupied', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        await createConfigSeed(environment, 'github', 'github');
+
+        const catalog = getCatalogTool('github', 'create-issue');
+        const rows = await findActionInputSchemas({
+            environmentId: environment.id,
+            actions: [{ integrationId: 'github', name: 'create-issue' }]
+        });
+
+        expect(rows).toHaveLength(1);
+        expect(rows[0]?.name).toBe('create-issue');
+        expect(rows[0]?.input).toBe(catalog?.input ?? null);
+        expect(rows[0]?.models_json_schema).toEqual(catalog?.jsonSchema);
     });
 
     it('does not leak another environment', async () => {

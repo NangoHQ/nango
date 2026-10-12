@@ -390,7 +390,13 @@ export declare class NangoAction {
      * Uncontrolled fetch is a regular fetch without retry or credentials injection.
      * Only use that method when you want to access resources that are unrelated to the current connection/provider.
      */
-    uncontrolledFetch(options: { url: URL; method?: HTTP_METHOD; headers?: Record<string, string> | undefined; body?: string | null }): Promise<Response>;
+    uncontrolledFetch(options: {
+        url: URL;
+        method?: HTTP_METHOD;
+        headers?: Record<string, string> | undefined;
+        body?: string | null;
+        redirect?: 'follow' | 'error' | undefined;
+    }): Promise<Response>;
     tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean>;
     releaseLock(props: { key: string }): Promise<boolean>;
     private sendLogToPersist;

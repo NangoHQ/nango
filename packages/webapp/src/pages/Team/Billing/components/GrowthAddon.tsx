@@ -16,7 +16,7 @@ export const GrowthAddon: React.FC<{ state: GrowthAddonState; endsAt?: string; o
     lockedReason
 }) => {
     const onActionClicked = () => {
-        track('web:usage:addon_action_clicked', { state });
+        track('billing:addon_button_click', { addon_state: state });
         if (state === 'none') {
             onAdd();
         } else {

@@ -7,6 +7,7 @@ import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { customerKeyService, seeders } from '@nangohq/shared';
 
+import { AGENT_SESSION_TAG_KEY } from '../../../services/agentSessionConnections.service.js';
 import { runServer } from '../../../utils/tests.js';
 import { toolSearchOutputSchema } from './toolSearch/schema.js';
 
@@ -507,7 +508,7 @@ describe('/session/:sessionId/mcp', () => {
         expect(result.guidance).toContain('also in your tool list');
     });
 
-    it('lists a tool on an unconnected integration and says it will fail', async () => {
+    it('lists a tool on an unconnected integration and says what to do about it', async () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {} });
 
@@ -516,7 +517,34 @@ describe('/session/:sessionId/mcp', () => {
         const match = [...result.matches, ...result.related].find((match) => match.action === 'create_ticket');
 
         expect(match?.connection).toStrictEqual({ status: 'not_connected' });
-        expect(result.guidance).toContain('no connection in this session');
+        expect(result.guidance).toContain(
+            "'zendesk' has no connection in this session. Their tools are listed for completeness and will fail if you call them. Tell the user they need to connect it, and carry on with the tools you do have."
+        );
+    });
+
+    it('points an unconnected integration at nango_create_connection when the session can connect', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {}, meta_tools: { nango_create_connection: true } });
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket' } });
+
+        expect(searchResult(res).guidance).toContain(
+            "'zendesk' has no connection in this session. Their tools are listed for completeness and will fail if you call them. Call nango_create_connection with integration 'zendesk' to get a link the user can follow, then try again once they tell you they are done."
+        );
+    });
+
+    it('reports an integration the agent connected mid-session as connected', async () => {
+        const { env, apiKey } = await seedTenant();
+        const { sessionId, token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {}, meta_tools: { nango_create_connection: true } });
+
+        await seeders.createConnectionSeed({ env, provider: 'zendesk', connectionId: 'zendesk-acme', tags: { [AGENT_SESSION_TAG_KEY]: sessionId } });
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket' } });
+        const result = searchResult(res);
+        const match = [...result.matches, ...result.related].find((match) => match.action === 'create_ticket');
+
+        expect(match?.connection).toStrictEqual({ status: 'connected', connection_id: 'zendesk-acme' });
+        expect(result.guidance).not.toContain('nango_create_connection');
     });
 
     it('answers a query nothing matches without pretending otherwise', async () => {

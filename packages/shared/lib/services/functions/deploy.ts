@@ -4,6 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import remoteFileService from '../file/remote.service.js';
+import { scheduleInstances } from './lifecycle/schedule.js';
 import * as functionConfigService from './models/functions.js';
 import * as functionInstanceService from './models/instances.js';
 import { reconcile } from './reconcile.js';
@@ -200,7 +201,8 @@ export async function deployBundle({
             const instancesToUpsert: FunctionInstanceUpsert[] = [];
             const instancesToDelete: { functionConfigId: number }[] = reconciliation.deleted.map((f) => ({ functionConfigId: f.config.id }));
             for (const { before, artifact } of prepared) {
-                var upsertCandidate: { functionConfigId: number; integrationId: number; artifact: FunctionDeploymentArtifact } | undefined = undefined;
+                var upsertCandidate: { functionConfigId: number; integrationId: number; artifact: FunctionDeploymentArtifact; autoStart: boolean } | undefined =
+                    undefined;
 
                 // If the after trigger is a schedule and there is no before store, create a new instance
                 if (artifact.trigger.kind === 'schedule' && !before) {
@@ -209,17 +211,22 @@ export async function deployBundle({
                         upsertCandidate = {
                             functionConfigId: functionConfig.config.id,
                             integrationId: functionConfig.integration.id,
-                            artifact
+                            artifact,
+                            autoStart: artifact.trigger.autoStart ?? true
                         };
                     }
                 }
                 // If the after trigger is a schedule and there is a before state with a non-schedule trigger, create a new instance
-                else if (artifact.trigger.kind === 'schedule' && before?.config.enabled && before.currentVersion.trigger.kind !== 'schedule') {
-                    upsertCandidate = {
-                        functionConfigId: before.config.id,
-                        integrationId: before.integration.id,
-                        artifact
-                    };
+                else if (artifact.trigger.kind === 'schedule' && before && before.currentVersion.trigger.kind !== 'schedule') {
+                    const functionConfig = upserted.value.find((f) => f.config.id === before.config.id);
+                    if (functionConfig?.config.enabled) {
+                        upsertCandidate = {
+                            functionConfigId: functionConfig.config.id,
+                            integrationId: functionConfig.integration.id,
+                            artifact,
+                            autoStart: artifact.trigger.autoStart ?? true
+                        };
+                    }
                 }
 
                 if (upsertCandidate) {
@@ -230,7 +237,8 @@ export async function deployBundle({
                             nango_connection_id: connection.id,
                             name: upsertCandidate.artifact.name,
                             variant: 'base',
-                            frequency: null
+                            frequency: null,
+                            enabled: upsertCandidate.autoStart
                         });
                     }
                 }
@@ -284,43 +292,55 @@ export async function deployBundle({
         );
 
         for (const [integrationId, artifacts] of Map.groupBy(desiredSchedules, (artifact) => artifact.integrationId)) {
-            const configs = (await functionConfigService.search(db.knex, { environmentId, filter: { integrationKey: integrationId } })).unwrap();
-            const byName = new Map(configs.map((config) => [config.config.name, config]));
-            for (const artifact of artifacts) {
-                if (artifact.trigger.kind !== 'schedule') {
-                    continue;
+            await db.knex.transaction(async (trx) => {
+                const configs = await functionConfigService.search(
+                    trx,
+                    { environmentId, filter: { integrationKey: integrationId, trigger: { kind: 'schedule' } } },
+                    { forShare: true }
+                );
+                if (configs.isErr()) {
+                    throw configs.error;
                 }
-                const config = byName.get(artifact.name);
-                if (!config) {
-                    throw new Error(`Deployed function '${integrationId}/${artifact.name}' not found`);
-                }
-                if (!config.config.enabled) {
-                    continue;
-                }
-                const connections = await getConnections(db.knex, config.integration.id);
-                let afterId = 0;
-                while (true) {
-                    const instances = await functionInstanceService.search(db.knex, { functionConfigIds: [config.config.id] }, { afterId, limit: 1000 });
-                    if (instances.isErr()) {
-                        throw instances.error;
+                const byName = new Map(configs.value.map((config) => [config.config.name, config]));
+                for (const artifact of artifacts) {
+                    if (artifact.trigger.kind !== 'schedule') {
+                        continue;
                     }
-                    if (instances.value.length === 0) {
-                        break;
+                    const config = byName.get(artifact.name);
+                    if (!config) {
+                        throw new Error(`Deployed function '${integrationId}/${artifact.name}' not found`);
                     }
-                    const frequencyFallback = artifact.trigger.frequency;
-                    const autoStart = artifact.trigger.autoStart ?? true;
-                    const scheduled = await orchestrator.scheduleFunctions(
-                        instances.value.flatMap((instance) => {
-                            const connection = connections.get(instance.nango_connection_id);
-                            return connection ? [{ environmentId, instance, connection, frequencyFallback, autoStart }] : [];
-                        })
-                    );
-                    if (scheduled.isErr()) {
-                        throw scheduled.error;
+                    if (!config.config.enabled) {
+                        continue;
                     }
-                    afterId = instances.value[instances.value.length - 1]!.id;
+                    const connections = await getConnections(trx, config.integration.id);
+                    let afterId = 0;
+                    while (true) {
+                        const instances = await functionInstanceService.search(
+                            trx,
+                            { functionConfigIds: [config.config.id] },
+                            { enabled: true, afterId, limit: 1000, forShare: true }
+                        );
+                        if (instances.isErr()) {
+                            throw instances.error;
+                        }
+                        if (instances.value.length === 0) {
+                            break;
+                        }
+                        const scheduled = await scheduleInstances(
+                            orchestrator,
+                            instances.value.flatMap((instance) => {
+                                const connection = connections.get(instance.nango_connection_id);
+                                return connection ? [{ instance, config, connection }] : [];
+                            })
+                        );
+                        if (scheduled.isErr()) {
+                            throw scheduled.error;
+                        }
+                        afterId = instances.value[instances.value.length - 1]!.id;
+                    }
                 }
-            }
+            });
         }
         return Ok(undefined);
     } catch (err) {

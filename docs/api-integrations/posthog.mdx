@@ -49,7 +49,7 @@ Connect to PostHog with Nango and see data flow in 2 minutes.
         </Tab>
 
     </Tabs>
-    Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+    Or fetch credentials dynamically via the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connections/get).
 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
@@ -70,6 +70,10 @@ Nango-maintained guides for common use cases.
 
 <Note>
 **Subdomain:** Use the part of your PostHog URL after `https://` and before `.posthog.com` (e.g. `us`, `eu.i` for US/EU Cloud). PostHog enforces different [rate limits](https://posthog.com/docs/api#rate-limiting) per resource.
+</Note>
+
+<Note>
+Only need to send events, not read data? Use the [PostHog (Capture API)](/api-integrations/posthog-capture) integration instead — it authenticates with a public Project Token instead of a personal API key, and doesn't require a logged-in PostHog user (events still need a `distinct_id`).
 </Note>
 
 Official docs: [PostHog API documentation](https://posthog.com/docs/api)

@@ -1,0 +1,121 @@
+---
+title: 'How to set up webhooks with Intercom on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Intercom events in your app using Nango webhooks'
+---
+
+Intercom webhooks notify your app when something changes in a workspace — a contact is created, a conversation receives a reply, a ticket changes state. You subscribe to topics on your Intercom app with the endpoint set to your Nango webhook URL; Nango verifies the request and routes it to the right connection.
+
+Webhook subscriptions belong to your Intercom app, not a single workspace: you receive notifications from every workspace that installed your app.
+
+## How it works
+
+1. You add your Nango webhook URL and the topics you want to your Intercom app in the Developer Hub.
+2. Intercom sends a POST request to that URL when a subscribed event occurs in any workspace that installed your app, signing it with `X-Hub-Signature`.
+3. Nango verifies the signature, matches the workspace ID in the payload's `app_id` to the connection's `appId`, and forwards the event to your app.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Intercom integration and copy the **Webhook URL**.
+
+### 2. Check your app's permissions
+
+In the [Intercom Developer Hub](https://app.intercom.com/a/developer-signup), open your app and go to the **Authentication** page. Make sure the app has:
+
+- The permissions required by each topic you plan to subscribe to — see [Supported events](#supported-events).
+- **Read admins** — Nango uses it to look up the workspace ID when a connection is created.
+
+### 3. Subscribe to topics
+
+In your app, go to **Configure** > **Webhooks**:
+
+1. Paste your Nango webhook URL as the endpoint URL.
+2. Select the topics you want to receive.
+3. Click **Save**.
+
+Use the same Intercom app whose Client ID and Client Secret are configured in Nango — see [Signature verification](#signature-verification).
+
+## Webhook payload
+
+The POST body is a notification object wrapping the resource the event is about. Example for `company.created`:
+
+```json
+{
+  "type": "notification_event",
+  "topic": "company.created",
+  "id": "notif_ccd8a4d0-f965-11e3-a367-c779cae3e1b3",
+  "app_id": "a86dr8yl",
+  "created_at": 1392731331,
+  "delivery_attempts": 1,
+  "first_sent_at": 1392731392,
+  "data": {
+    "item": {
+      "type": "company",
+      "id": "531ee472cce572a6ec000006",
+      "name": "Example Company Inc."
+    }
+  }
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `topic` | The subscribed topic, e.g. `contact.user.created`. |
+| `app_id` | The workspace the event happened in — used for connection matching. |
+| `data.item` | The resource the event is about. Its `type` field identifies the object. |
+| `id` | Unique per notification. Use it to deduplicate — Intercom resends a notification if it doesn't receive an HTTP 200 within 5 seconds, so expect occasional duplicates. |
+| `delivery_attempts` | How many times Intercom has tried to deliver this notification. |
+
+## Connection matching
+
+Nango matches an incoming webhook to a connection using the workspace ID in the payload's `app_id` against the connection's `appId`. Nango stores `appId` automatically when a connection is created, so no extra configuration is needed.
+
+Connections created before Intercom webhooks were supported don't have an `appId` yet. Re-authorize them once so Nango stores it.
+
+`appId` identifies the Intercom workspace, not a single connection. If your app lets multiple end users each connect the same workspace (e.g. several teammates at the same company), every matching connection receives its own copy of the event.
+
+<Warning>
+If no connection's `appId` matches the payload's `app_id`, the webhook is not routed to any connection.
+</Warning>
+
+## Signature verification
+
+Nango verifies `X-Hub-Signature` automatically using your integration's client secret — no extra setup needed. Intercom signs each notification with the client secret of the app it belongs to, so notifications from an app other than the one configured in Nango fail verification.
+
+## Handle the webhook
+
+Once routed to a connection, you have two options:
+
+- **Forward it to your app** — Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync** — run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. Nango matches subscriptions against the notification's `topic`. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+## Supported events
+
+Nango can route any topic Intercom delivers, since routing only depends on the payload's `app_id`. Common topics:
+
+| Topic | Description | Required permission |
+| --- | --- | --- |
+| `contact.user.created` | A user contact was created | Read users and companies |
+| `contact.user.updated` | A user contact was updated | Read users and companies |
+| `contact.lead.created` | A lead contact was created | Read users and companies |
+| `conversation.user.created` | A contact started a conversation | Read conversations |
+| `conversation.user.replied` | A contact replied to a conversation | Read conversations |
+| `conversation.admin.replied` | An admin replied to a conversation | Read conversations |
+| `conversation.admin.closed` | An admin closed a conversation | Read conversations |
+| `company.created` | A company was created | Read users and companies |
+| `ticket.created` | A ticket was created | Read tickets |
+| `ticket.state.updated` | A ticket's state changed | Read tickets |
+
+For the full list, see [Intercom's webhook topics reference](https://developers.intercom.com/docs/references/2.15/webhooks/webhook-models).
+
+## Rollback strategy
+
+To stop webhooks, open your app in the Intercom Developer Hub, go to **Configure** > **Webhooks**, click **Edit**, and delete the topics you no longer want. Removing the permission a topic requires also stops its notifications.
+
+Re-subscribe to the topics with the steps above to resume.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+---

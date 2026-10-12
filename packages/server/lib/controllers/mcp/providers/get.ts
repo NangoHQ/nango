@@ -8,7 +8,8 @@ import type { GetProviderOutput } from './schema.js';
 
 export const getProvidersTool = defineManagementMcpTool<typeof getProviderArgumentsSchema, GetProviderOutput>({
     name: 'providers_get',
-    description: 'Get one provider and optionally include its available function templates.',
+    title: 'Get Provider',
+    description: 'Returns one provider and optionally includes its available function templates.',
     inputSchema: getProviderArgumentsSchema,
     outputSchema: getProviderOutputSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: false },

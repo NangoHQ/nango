@@ -40,6 +40,7 @@ function deployedFunction({
         integration: { id: nangoConfigId, unique_key: artifact.integrationId, provider: 'github' },
         config: {
             id,
+            uuid: `00000000-0000-4000-8000-${String(id).padStart(12, '0')}`,
             nango_config_id: nangoConfigId,
             environment_id: 1,
             name: artifact.name,

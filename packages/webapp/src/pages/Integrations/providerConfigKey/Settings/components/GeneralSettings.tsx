@@ -34,6 +34,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
     const [isEditingIntegrationId, setIsEditingIntegrationId] = useState(false);
 
     const [webhookForwarding, setWebhookForwarding] = useState(integration.forward_webhooks);
+    const [allowUnverifiedWebhooks, setAllowUnverifiedWebhooks] = useState(integration.allow_unverified_webhooks);
 
     const onSave = async (field: PatchIntegration['Body']) => {
         try {
@@ -71,6 +72,27 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
         if (!confirmed) {
             return;
         }
+    };
+
+    const handleAllowUnverifiedWebhooksChange = async (checked: boolean) => {
+        if (!checked) {
+            await onSave({ allow_unverified_webhooks: false });
+            setAllowUnverifiedWebhooks(false);
+            return;
+        }
+
+        await confirm({
+            icon: <AlertTriangle />,
+            title: 'Allow unverified webhooks?',
+            description:
+                'Webhooks without a signature will be processed and forwarded. Anyone who knows your webhook URL could send events that look like they came from the provider. Webhooks with an invalid signature are still rejected.',
+            confirmButtonText: 'Allow',
+            confirmVariant: 'danger',
+            onConfirm: async () => {
+                await onSave({ allow_unverified_webhooks: true });
+                setAllowUnverifiedWebhooks(true);
+            }
+        });
     };
 
     return (
@@ -133,6 +155,30 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                             )}
                         </PermissionGate>
                     </div>
+                    {template.webhook_signature_enforced && (
+                        <div className="flex gap-5 items-center">
+                            <div className="flex gap-2 items-center">
+                                <FieldLabel htmlFor="allow_unverified_webhooks">Allow unverified webhooks</FieldLabel>
+                                <InfoTooltip>
+                                    Process webhooks that are missing a signature or that Nango cannot verify. Webhooks with an invalid signature are always
+                                    rejected.
+                                </InfoTooltip>
+                            </div>
+                            <PermissionGate asChild condition={canEdit}>
+                                {(allowed) => (
+                                    <div className="flex items-center">
+                                        <Switch
+                                            id="allow_unverified_webhooks"
+                                            name="allow_unverified_webhooks"
+                                            checked={allowUnverifiedWebhooks}
+                                            onCheckedChange={handleAllowUnverifiedWebhooksChange}
+                                            disabled={!allowed}
+                                        />
+                                    </div>
+                                )}
+                            </PermissionGate>
+                        </div>
+                    )}
                     {/* Webhook URL */}
                     <div className="flex flex-col gap-2">
                         <div className="flex gap-2 items-center">

@@ -34,6 +34,7 @@ export const PUBLIC_ENVIRONMENT_SCOPES = [
     // Functions
     'environment:functions:list',
     'environment:functions:read',
+    'environment:functions:update',
     'environment:functions:delete',
     'environment:functions:compile',
     'environment:functions:dryrun',

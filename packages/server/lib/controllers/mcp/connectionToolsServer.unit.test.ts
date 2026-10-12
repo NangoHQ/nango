@@ -2,38 +2,45 @@ import { Client } from '@modelcontextprotocol/client';
 import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { logContextGetter } from '@nangohq/logs';
 import * as shared from '@nangohq/shared';
-import { metrics, Ok } from '@nangohq/utils';
+import { Err, metrics, Ok } from '@nangohq/utils';
 
 import { createConnectionToolsMcpServer } from './connectionToolsServer.js';
 
 import type { Server } from '@modelcontextprotocol/server';
-import type { LogContextOrigin } from '@nangohq/logs';
 import type { Config } from '@nangohq/shared';
-import type { DBConnectionDecrypted, DBEnvironment, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { DBConnectionDecrypted, DBEnvironment, DBTeam, ListedNangoActionFunction } from '@nangohq/types';
 
 const mocks = vi.hoisted(() => ({
-    triggerAction: vi.fn()
+    executeAction: vi.fn()
 }));
 
-vi.mock('../../utils/utils.js', () => ({
-    getOrchestrator: () => ({ triggerAction: mocks.triggerAction })
+vi.mock('../../services/action.service.js', () => ({
+    executeAction: mocks.executeAction
 }));
 
 describe('createConnectionToolsMcpServer', () => {
     beforeEach(() => {
         vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(providerConfig);
         vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
-        mocks.triggerAction.mockReset();
+        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(Ok([]));
+        mocks.executeAction.mockReset();
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
     });
 
-    it('does not advertise or execute a disabled action called directly by name', async () => {
-        vi.spyOn(shared, 'getActionsByProviderConfigKey').mockResolvedValue([actionFixture({ enabled: false })]);
+    it('does not advertise a disabled action and reports direct calls as unavailable', async () => {
+        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(Ok([actionFixture({ enabled: false })]));
+        const disabledActionError = Object.assign(new Error('The action is disabled'), {
+            code: 'disabled_action',
+            nangoError: undefined
+        });
+        mocks.executeAction.mockResolvedValue({
+            logCtx: undefined,
+            result: Err(disabledActionError)
+        });
         const { client, server } = await createTestClient();
 
         try {
@@ -50,7 +57,7 @@ describe('createConnectionToolsMcpServer', () => {
             ]);
             expect(result._meta).toStrictEqual({ 'nango/error_code': 'tool_not_available', 'nango/integration_id': 'github' });
 
-            expect(mocks.triggerAction).not.toHaveBeenCalled();
+            expect(mocks.executeAction).toHaveBeenCalled();
             expect(metrics.increment).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {
                 mcp_type: 'legacy_connection_tools',
                 outcome: 'error'
@@ -63,9 +70,8 @@ describe('createConnectionToolsMcpServer', () => {
 
     it('continues to advertise and execute an enabled action', async () => {
         const action = actionFixture({ enabled: true });
-        vi.spyOn(shared, 'getActionsByProviderConfigKey').mockResolvedValue([action]);
-        vi.spyOn(logContextGetter, 'create').mockResolvedValue(logContextFixture());
-        mocks.triggerAction.mockResolvedValue(Ok({ data: { deleted: true } }));
+        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(Ok([action]));
+        mocks.executeAction.mockResolvedValue({ logCtx: undefined, result: Ok({ data: { deleted: true } }) });
         const { client, server } = await createTestClient();
 
         try {
@@ -77,13 +83,49 @@ describe('createConnectionToolsMcpServer', () => {
             expect(result).toStrictEqual({
                 content: [{ type: 'text', text: JSON.stringify({ deleted: true }, null, 2) }]
             });
-            expect(mocks.triggerAction).toHaveBeenCalledWith(
+            expect(mocks.executeAction).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    accountId: account.id,
-                    connection,
-                    actionName: action.sync_name,
+                    account,
+                    environment,
+                    connectionId: connection.connection_id,
+                    providerConfigKey: providerConfig.unique_key,
+                    actionName: action.name,
                     input: { id: 'repo-1' },
-                    async: false,
+                    isAsync: false,
+                    retryMax: 3
+                })
+            );
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('advertises and executes a catalog action', async () => {
+        vi.spyOn(shared.legacyFunctionService, 'listActions').mockResolvedValue(
+            Ok([actionFixture({ enabled: true, name: 'delete-file', source: 'tools-catalog' })])
+        );
+        mocks.executeAction.mockResolvedValue({ logCtx: undefined, result: Ok({ data: { deleted: true } }) });
+        const { client, server } = await createTestClient();
+
+        try {
+            const listed = await client.listTools();
+            expect(listed.tools.map((tool) => tool.name)).toContain('delete-file');
+
+            const result = await client.callTool({ name: 'delete-file', arguments: { id: 'repo-1' } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify({ deleted: true }, null, 2) }]
+            });
+            expect(mocks.executeAction).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    account,
+                    environment,
+                    connectionId: connection.connection_id,
+                    providerConfigKey: providerConfig.unique_key,
+                    actionName: 'delete-file',
+                    input: { id: 'repo-1' },
+                    isAsync: false,
                     retryMax: 3
                 })
             );
@@ -109,23 +151,25 @@ async function createTestClient(): Promise<{ client: Client; server: Server }> {
     return { client, server: result.value };
 }
 
-function actionFixture({ enabled }: { enabled: boolean }): DBSyncConfig {
+function actionFixture({
+    enabled,
+    name = 'delete-repository',
+    source = 'repo'
+}: {
+    enabled: boolean;
+    name?: string;
+    source?: 'repo' | 'tools-catalog';
+}): ListedNangoActionFunction {
     return {
-        id: 30,
-        sync_name: 'delete-repository',
+        id: source === 'tools-catalog' ? null : 30,
+        name,
+        type: 'action',
         enabled,
-        input: null,
-        models_json_schema: null,
-        metadata: { description: 'Delete a repository' }
-    } as DBSyncConfig;
-}
-
-function logContextFixture(): LogContextOrigin {
-    return {
-        operation: { id: 'operation-id' },
-        attachSpan: vi.fn(),
-        failed: vi.fn()
-    } as unknown as LogContextOrigin;
+        returns: [],
+        json_schema: null,
+        last_deployed: source === 'tools-catalog' ? null : new Date().toISOString(),
+        source
+    };
 }
 
 const account = { id: 1 } as DBTeam;

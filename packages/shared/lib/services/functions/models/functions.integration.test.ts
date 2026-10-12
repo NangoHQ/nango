@@ -204,6 +204,46 @@ describe(search, () => {
         expect(disabledSubscribed.map((func) => func.config.name)).toEqual(['disabled']);
     });
 
+    it('filters enabled on-event functions', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+        const configs = (
+            await upsert(db.knex, [
+                {
+                    environmentId: environment.id,
+                    integrationId: github.unique_key,
+                    name: 'setup',
+                    version: functionVersion('setup', { kind: 'event', events: ['post-connection-creation'] })
+                },
+                {
+                    environmentId: environment.id,
+                    integrationId: github.unique_key,
+                    name: 'validation',
+                    version: functionVersion('validation', { kind: 'event', events: ['validate-connection'] })
+                },
+                {
+                    environmentId: environment.id,
+                    integrationId: github.unique_key,
+                    name: 'disabled',
+                    version: functionVersion('disabled-event', { kind: 'event', events: ['validate-connection'] })
+                },
+                { environmentId: environment.id, integrationId: github.unique_key, name: 'http', version: functionVersion('http-event', { kind: 'http' }) }
+            ])
+        ).unwrap();
+        const disabled = configs.find(({ config }) => config.name === 'disabled');
+        await db.knex('function_configs').where({ id: disabled!.config.id }).update({ enabled: false });
+
+        const functions = (
+            await search(db.knex, {
+                environmentId: environment.id,
+                filter: { integrationKey: github.unique_key, enabled: true, trigger: { kind: 'event', event: 'validate-connection' } }
+            })
+        ).unwrap();
+
+        expect(functions.map(({ config }) => config.name)).toEqual(['validation']);
+    });
+
     it('does not ignore empty filter values', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
@@ -222,6 +262,66 @@ describe(search, () => {
 
         expect(emptyIntegrationKey).toStrictEqual([]);
         expect(emptyName).toStrictEqual([]);
+    });
+
+    it('filters functions by provider and trigger kind', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        await createConfigSeed(environment, 'github-123', 'github');
+        await createConfigSeed(environment, 'stripe-123', 'stripe');
+        await upsert(db.knex, [
+            {
+                environmentId: environment.id,
+                integrationId: 'github-123',
+                name: 'hooked',
+                version: functionVersion('hooked', { kind: 'http' })
+            },
+            {
+                environmentId: environment.id,
+                integrationId: 'github-123',
+                name: 'timed',
+                version: functionVersion('timed', { kind: 'schedule', frequency: 'every day' })
+            },
+            {
+                environmentId: environment.id,
+                integrationId: 'stripe-123',
+                name: 'stripeHook',
+                version: functionVersion('stripeHook', { kind: 'http' })
+            }
+        ]);
+
+        const stripeFunctions = (await search(db.knex, { environmentId: environment.id, filter: { provider: 'stripe' } })).unwrap();
+        expect(stripeFunctions.map(({ config }) => config.name)).toStrictEqual(['stripeHook']);
+
+        const httpFunctions = (await search(db.knex, { environmentId: environment.id, filter: { trigger: { kind: 'http' } } })).unwrap();
+        expect(httpFunctions.map(({ config }) => config.name).sort()).toStrictEqual(['hooked', 'stripeHook']);
+
+        const scheduledGithub = (
+            await search(db.knex, { environmentId: environment.id, filter: { provider: 'github', trigger: { kind: 'schedule' } } })
+        ).unwrap();
+        expect(scheduledGithub.map(({ config }) => config.name)).toStrictEqual(['timed']);
+    });
+
+    it('returns a deterministic page', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github-123', 'github');
+        const configs = (
+            await upsert(db.knex, [
+                { environmentId: environment.id, integrationId: github.unique_key, name: 'first', version: functionVersion('first') },
+                { environmentId: environment.id, integrationId: github.unique_key, name: 'second', version: functionVersion('second') },
+                { environmentId: environment.id, integrationId: github.unique_key, name: 'third', version: functionVersion('third') }
+            ])
+        ).unwrap();
+
+        const page = (await search(db.knex, { environmentId: environment.id }, { limit: 2 })).unwrap();
+        expect(page.map(({ config }) => config.name)).toStrictEqual(['first', 'second']);
+
+        const next = (await search(db.knex, { environmentId: environment.id }, { limit: 2, afterId: configs[1]!.config.id })).unwrap();
+        expect(next.map(({ config }) => config.name)).toStrictEqual(['third']);
+
+        const pastEnd = (await search(db.knex, { environmentId: environment.id }, { limit: 2, afterId: configs[2]!.config.id })).unwrap();
+        expect(pastEnd).toStrictEqual([]);
     });
 });
 

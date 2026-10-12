@@ -1,0 +1,72 @@
+---
+title: 'How to set up webhooks with Airtable on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive and verify real-time Airtable webhook notifications with Nango'
+---
+
+Airtable webhooks are created per base through the Airtable API. A notification carries no record data, only the base and webhook ids, so fetch the changes with the [list webhook payloads](https://airtable.com/developers/web/api/list-webhook-payloads) endpoint once you receive one.
+
+## How it works
+
+1. Airtable sends a POST request to your Nango webhook URL when something changes in a base the webhook watches.
+2. Nango finds the connection whose metadata holds the notification's `webhook.id` under `webhooks`.
+3. Nango verifies the `X-Airtable-Content-MAC` header with the `macSecretBase64` stored for that webhook, then routes the notification to the connection.
+
+A notification whose webhook id does not match a connection, or whose connection has no `macSecretBase64` stored for it, is rejected.
+
+## Setup
+
+### 1. Create the webhook and store its secret
+
+Create the webhook through Nango's proxy, using your Nango webhook URL from the integration's **Webhooks** section in the dashboard:
+
+```bash
+curl -X POST "https://api.nango.dev/proxy/v0/bases/<BASE-ID>/webhooks" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "notificationUrl": "<NANGO-WEBHOOK-URL>",
+    "specification": { "options": { "filters": { "dataTypes": ["tableData"] } } }
+  }'
+```
+
+Airtable returns the webhook `id` and a `macSecretBase64`. The secret is only returned once, so store it in the connection's metadata right away as `webhooks.<WEBHOOK-ID>`, with the `macSecretBase64` string as the value.
+
+The [`create-webhook` action template](https://github.com/NangoHQ/integration-templates/blob/main/integrations/airtable/actions/create-webhook.ts) does both steps and keeps the webhooks already stored on the connection. Use it, or copy its approach in your own function.
+
+If you store the secret through the API instead, send the full `webhooks` object:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connections/metadata" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION-ID>",
+    "provider_config_key": "<INTEGRATION-ID>",
+    "metadata": {
+      "webhooks": {
+        "<EXISTING-WEBHOOK-ID>": "<EXISTING-MAC-SECRET-BASE64>",
+        "<WEBHOOK-ID>": "<MAC-SECRET-BASE64>"
+      }
+    }
+  }'
+```
+
+<Warning>
+[Update connection metadata](/reference/backend/http-api/connections/update-metadata) only merges top-level keys. Sending `webhooks` replaces the whole object, so leaving out a webhook you already stored, for example one on another base, removes its secret and Nango starts rejecting its notifications.
+</Warning>
+
+<Note>
+Airtable webhooks expire after 7 days unless refreshed with the [refresh webhook](https://airtable.com/developers/web/api/refresh-a-webhook) endpoint. Refreshing keeps the same id and secret. If you create a new webhook instead, store its id and secret the same way.
+</Note>
+
+## Handle the webhook
+
+Once routed, you have two options:
+
+- **Forward it to your app**: Nango forwards the notification to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync**: run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>

@@ -1,0 +1,31 @@
+---
+title: 'How to register your own eWay-CRM OAuth app'
+sidebarTitle: 'eWay-CRM setup'
+description: 'Get OAuth credentials from eWay-CRM support and connect them to Nango'
+---
+
+This guide shows you how to obtain OAuth credentials (Client ID & Client Secret) for eWay-CRM. These are required to let your users grant your app access to their eWay-CRM account.
+
+<Note>OAuth 2.0 is only available on eWay-CRM instances configured to use Azure Auth (Microsoft Entra ID). Confirm this with your eWay-CRM administrator before continuing.</Note>
+
+<Steps>
+  <Step id="request-client-credentials" title="Request your Client ID and Client Secret">
+    eWay-CRM issues OAuth credentials manually — there's no self-service app registration. Email [support@eway-crm.com](mailto:support@eway-crm.com) and ask them to generate a **Client ID** and **Client Secret** for your OAuth application.
+
+    Include the redirect URL in your request:
+    ```
+    https://api.nango.dev/oauth/callback
+    ```
+
+    eWay-CRM support will reply with your **Client ID** and **Client Secret**.
+  </Step>
+  <Step id="configure-nango" title="Configure the integration in Nango">
+    In Nango, when setting up the eWay-CRM integration, enter your **Client ID** and **Client Secret**.
+
+    Then follow the [connect guide](/api-integrations/eway-crm/connect) to find your Service URL and connect your first account.
+  </Step>
+</Steps>
+
+For more details, see the [eWay-CRM API documentation](https://github.com/eway-crm/api).
+
+---

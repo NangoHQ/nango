@@ -8,23 +8,42 @@ import { Badge, Button, FieldLabel } from '@nangohq/design-system';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { ComboboxSelect } from '@/components/ui/Combobox';
 import { useConnections } from '@/hooks/useConnections';
-import { useGetIntegrationFlows, useListIntegrations } from '@/hooks/useIntegration';
+import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePlaygroundStore } from '@/store/playground';
 
+import type { PlaygroundFunctionRow } from './usePlaygroundFunctions';
 import type { ComboboxOption } from '@/components/ui/Combobox';
-import type { NangoSyncConfig } from '@nangohq/types';
+import type { PlaygroundFunctionType } from '@/store/playground';
+
+function functionOptionValue(type: Exclude<PlaygroundFunctionType, null>, name: string): string {
+    return `${type}:${name}`;
+}
+
+function parseFunctionOptionValue(value: string): { type: Exclude<PlaygroundFunctionType, null>; name: string } | null {
+    const separator = value.indexOf(':');
+    if (separator <= 0) return null;
+    const type = value.slice(0, separator);
+    const name = value.slice(separator + 1);
+    if ((type !== 'action' && type !== 'sync') || !name) return null;
+    return { type, name };
+}
 
 interface Props {
     env: string;
     queryEnv: string;
+    functions: PlaygroundFunctionRow[];
+    functionsReady: boolean;
+    functionsError: string | null;
+    onRetryFunctions: () => void;
 }
 
-export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
+export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv, functions, functionsReady, functionsError, onRetryFunctions }) => {
     const navigate = useNavigate();
 
     const playgroundIntegration = usePlaygroundStore((s) => s.integration);
     const playgroundConnection = usePlaygroundStore((s) => s.connection);
     const playgroundFunction = usePlaygroundStore((s) => s.function);
+    const playgroundFunctionType = usePlaygroundStore((s) => s.functionType);
     const connectionSearch = usePlaygroundStore((s) => s.connectionSearch);
     const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
     const setPlaygroundIntegration = usePlaygroundStore((s) => s.setIntegration);
@@ -41,7 +60,6 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
     useDebounce(() => setDebouncedConnectionSearch(connectionSearch || ''), 250, [connectionSearch]);
 
     const { data: integrations } = useListIntegrations(queryEnv);
-    const { data: flowsData } = useGetIntegrationFlows(queryEnv, playgroundIntegration || '');
     const connectionsQueryEnv = queryEnv && playgroundIntegration ? queryEnv : '';
     const connectionsQuery = useConnections({
         env: connectionsQueryEnv,
@@ -61,25 +79,22 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
         return opts;
     }, [connections, playgroundConnection]);
 
-    const allFlows: (NangoSyncConfig & { resolvedType: 'action' | 'sync' })[] = useMemo(() => {
-        if (!flowsData) return [];
-        return flowsData.data.flows.filter((f) => f.type === 'action' || f.type === 'sync').map((f) => ({ ...f, resolvedType: f.type as 'action' | 'sync' }));
-    }, [flowsData]);
+    const selectedFunctionValue = playgroundFunction && playgroundFunctionType ? functionOptionValue(playgroundFunctionType, playgroundFunction) : '';
 
     const functionOptions = useMemo(() => {
-        const opts: ComboboxOption[] = allFlows
-            .filter((f) => f.enabled === true)
-            .map((f) => ({
-                value: f.name,
-                label: f.name,
-                filterValue: `${f.name} ${f.resolvedType}`,
-                tag: <Badge case="capitalize">{f.resolvedType}</Badge>
+        const opts: ComboboxOption[] = functions
+            .filter((fn) => fn.enabled === true)
+            .map((fn) => ({
+                value: functionOptionValue(fn.type, fn.name),
+                label: fn.name,
+                filterValue: `${fn.name} ${fn.type}`,
+                tag: <Badge case="capitalize">{fn.type}</Badge>
             }));
-        if (playgroundFunction && !opts.some((o) => o.value === playgroundFunction)) {
-            opts.unshift({ value: playgroundFunction, label: playgroundFunction, filterValue: playgroundFunction });
+        if (selectedFunctionValue && playgroundFunction && !opts.some((option) => option.value === selectedFunctionValue)) {
+            opts.unshift({ value: selectedFunctionValue, label: playgroundFunction, filterValue: playgroundFunction });
         }
         return opts;
-    }, [allFlows, playgroundFunction]);
+    }, [functions, playgroundFunction, selectedFunctionValue]);
 
     const integrationOptions = useMemo(() => {
         const list = integrations?.data ?? [];
@@ -118,14 +133,15 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
 
     const handleFunctionChange = useCallback(
         (val: string) => {
-            const flow = allFlows.find((f) => f.name === val);
-            if (flow) setPlaygroundFunction(val, flow.resolvedType);
+            const selected = parseFunctionOptionValue(val);
+            const fn = selected ? functions.find((row) => row.name === selected.name && row.type === selected.type) : undefined;
+            if (fn) setPlaygroundFunction(fn.name, fn.type);
             setPlaygroundInputErrors({});
             setPlaygroundResult(null);
             setPlaygroundPendingOperationId(null);
             setPlaygroundRunning(false);
         },
-        [allFlows, setPlaygroundFunction, setPlaygroundInputErrors, setPlaygroundResult, setPlaygroundPendingOperationId, setPlaygroundRunning]
+        [functions, setPlaygroundFunction, setPlaygroundInputErrors, setPlaygroundResult, setPlaygroundPendingOperationId, setPlaygroundRunning]
     );
 
     return (
@@ -190,10 +206,10 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
 
             <FieldLabel>Function</FieldLabel>
             <ComboboxSelect
-                value={playgroundFunction || ''}
+                value={selectedFunctionValue}
                 onValueChange={handleFunctionChange}
                 placeholder="Select function"
-                disabled={running || !playgroundIntegration}
+                disabled={running || !playgroundIntegration || !functionsReady}
                 options={functionOptions}
                 searchPlaceholder="Search functions"
                 showCheckbox={false}
@@ -217,6 +233,17 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                     ) : undefined
                 }
             />
+            {functionsError ? (
+                <>
+                    <span />
+                    <div className="flex items-center gap-3">
+                        <span className="text-body-small-regular text-text-secondary">{functionsError}</span>
+                        <Button type="button" variant="outline" size="sm" onClick={onRetryFunctions}>
+                            Retry
+                        </Button>
+                    </div>
+                </>
+            ) : null}
         </div>
     );
 };

@@ -10,8 +10,8 @@ import type { Result } from '@nangohq/utils';
 
 export const listEnvironmentsTool = {
     name: 'environments_list',
-    description:
-        'List the Nango environments currently available to your user. Call this first, then ask the user to choose an environment before using environment-bound tools. Do not automatically query every returned environment.',
+    title: 'List Environments',
+    description: 'Lists the Nango environments available to the authenticated user and whether each is a production environment.',
     inputSchema: listEnvironmentsInputSchema,
     outputSchema: listEnvironmentsOutputSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },

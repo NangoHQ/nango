@@ -6,6 +6,7 @@ import { errorManager } from '@nangohq/shared';
 
 import { getEnvJs } from './controllers/v1/getEnvJs.js';
 import { getProvidersJSON } from './controllers/v1/getProvidersJSON.js';
+import { productTrackingMiddleware } from './middleware/productTracking.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { securityMiddlewares } from './middleware/security.js';
 import { getReady } from './ready.js';
@@ -29,6 +30,7 @@ function formatByteLimit(bytes: number): string {
 export const router = express.Router();
 
 router.use(...securityMiddlewares());
+router.use(productTrackingMiddleware);
 
 // -------
 // No auth routes

@@ -150,11 +150,11 @@ export function getLocalOAuthCallbackUrlBaseUrl() {
 }
 
 export function getApiUrl() {
-    if (isEnterprise) {
-        return process.env['NANGO_SERVER_URL'] as string;
-    }
     if (process.env['SERVER_SERVICE_URL']) {
         return process.env['SERVER_SERVICE_URL'];
+    }
+    if (isEnterprise) {
+        return process.env['NANGO_SERVER_URL'] as string;
     }
     return getServerBaseUrl();
 }

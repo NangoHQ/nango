@@ -3,6 +3,7 @@ import tracer from 'dd-trace';
 import { Err, Ok } from '@nangohq/utils';
 
 import { executeAction } from '../../../../services/action.service.js';
+import { trackAgentSessionToolCall } from '../../../../services/agentSessionAnalytics.service.js';
 import { PublicMcpError } from '../../../mcp/utils.js';
 import { notConnectedGuidance } from '../notConnectedGuidance.js';
 import { resolveSessionConnection } from '../sessionConnection.js';
@@ -10,6 +11,7 @@ import { defineAgentSessionMcpTool } from '../sessionTool.js';
 import { actionExecutionErrorToMcp } from './errors.js';
 import { executeInputSchema } from './schema.js';
 
+import type { AgentSessionMetaTool } from '../../../../services/agentSessionAnalytics.service.js';
 import type { AgentSessionMcpContext } from '../sessionTool.js';
 import type { AgentSession } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -30,15 +32,26 @@ export const executeTool = defineAgentSessionMcpTool({
         openWorldHint: true
     },
     isEnabled: (metaTools) => metaTools.nangoExecute,
+    onInvalidArguments: ({ session }) => {
+        trackAgentSessionToolCall({ metaTool: 'nango_execute', session, errorCode: 'invalid_input' });
+    },
     async handler({ args, ...context }) {
         const { session, callable } = context;
 
         const tool = callable.get(args.tool);
         if (!tool) {
+            trackAgentSessionToolCall({ metaTool: 'nango_execute', session, toolName: args.tool, errorCode: 'tool_not_in_session' });
             return Err(new PublicMcpError(unknownToolMessage(args.tool, session), { code: 'tool_not_in_session' }));
         }
 
-        return await executeSessionTool({ integrationId: tool.integrationId, toolName: tool.name, input: args.input, context });
+        return await executeSessionTool({
+            metaTool: 'nango_execute',
+            integrationId: tool.integrationId,
+            toolName: tool.name,
+            pinned: tool.pinned,
+            input: args.input,
+            context
+        });
     }
 });
 
@@ -56,20 +69,29 @@ function unknownToolMessage(name: string, session: AgentSession): string {
 
 /** Synchronous, so a tool is capped at the orchestrator's synchronous limit (NAN-6090, ~120s). */
 export async function executeSessionTool({
+    metaTool,
     integrationId,
     toolName,
+    pinned,
     input,
     context
 }: {
+    metaTool?: AgentSessionMetaTool | undefined;
     integrationId: string;
     toolName: string;
+    pinned: boolean;
     input?: unknown;
     context: AgentSessionMcpContext;
 }): Promise<Result<unknown>> {
     const { account, environment, session } = context;
 
+    const track = (properties: { logOperationId?: string | undefined; errorCode?: string | undefined; underlyingErrorCode?: string | undefined }) => {
+        trackAgentSessionToolCall({ metaTool, session, integrationId, toolName, pinned, ...properties });
+    };
+
     const integration = Object.hasOwn(session.compiledToolset, integrationId) ? session.compiledToolset[integrationId] : undefined;
     if (!integration) {
+        track({ errorCode: 'unknown_integration' });
         return Err(
             new PublicMcpError(`Integration '${integrationId}' is not one of this session's integrations. Use one this session has.`, {
                 code: 'unknown_integration',
@@ -80,6 +102,7 @@ export async function executeSessionTool({
 
     const isInToolset = [...integration.pinned, ...integration.searchable].some((tool) => tool.name === toolName);
     if (!isInToolset) {
+        track({ errorCode: 'tool_not_in_session' });
         return Err(
             new PublicMcpError(
                 `Tool '${toolName}' is not in this session's toolset for integration '${integrationId}'. Use one of the session's own tools instead.`,
@@ -93,6 +116,7 @@ export async function executeSessionTool({
 
     const connection = await resolveSessionConnection({ session, integrationId });
     if (!connection) {
+        track({ errorCode: 'integration_not_connected' });
         return Err(
             new PublicMcpError(
                 `Integration '${integrationId}' has no connection in this session, so none of its tools can run. ${notConnectedGuidance(integrationId, session)}`,
@@ -110,7 +134,7 @@ export async function executeSessionTool({
             .setTag('nango.providerConfigKey', integrationId)
             .setTag('nango.actionName', toolName);
 
-        const { result } = await executeAction({
+        const { logCtx, result } = await executeAction({
             account,
             environment,
             connectionId: connection.connectionId,
@@ -125,9 +149,11 @@ export async function executeSessionTool({
 
         if (result.isErr()) {
             span.setTag('nango.error', result.error);
+            track({ logOperationId: logCtx?.id, errorCode: result.error.code, underlyingErrorCode: result.error.nangoError?.type });
             return Err(actionExecutionErrorToMcp({ error: result.error, integrationId, toolName }));
         }
 
+        track({ logOperationId: logCtx?.id });
         return Ok('data' in result.value ? result.value.data : null);
     });
 }

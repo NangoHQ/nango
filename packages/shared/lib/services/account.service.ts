@@ -5,6 +5,7 @@ import { envs } from '../env.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+import { productTracking } from '../utils/productTracking.js';
 import environmentService from './environment.service.js';
 import { plansList } from './plans/definitions.js';
 import { createPlan } from './plans/plans.js';
@@ -272,8 +273,18 @@ class AccountService {
      * Create Account
      * @desc create a new account and assign to the default environments
      */
-    async createAccount({ name, email, foundUs = '' }: { name: string; email?: string | undefined; foundUs?: string | undefined }): Promise<DBTeam | null> {
-        return db.knex.transaction(async (trx) => {
+    async createAccount({
+        name,
+        email,
+        foundUs = '',
+        isSignup = true
+    }: {
+        name: string;
+        email?: string | undefined;
+        foundUs?: string | undefined;
+        isSignup?: boolean;
+    }): Promise<DBTeam | null> {
+        const account = await db.knex.transaction(async (trx) => {
             const emailTeamName = emailToTeamName({ email });
             const teamName = `${emailTeamName || name}'s Team`;
             const result = await trx.from<DBTeam>(`_nango_accounts`).insert({ name: teamName, found_us: foundUs }).returning('*');
@@ -302,6 +313,13 @@ class AccountService {
             metrics.increment(metrics.Types.ACCOUNT_CREATED, 1, { accountId: result[0].id });
             return result[0];
         });
+
+        // After the transaction, so a rolled-back account is never counted.
+        if (account && isSignup) {
+            productTracking.track({ name: 'auth:account_create', team: account });
+        }
+
+        return account;
     }
 
     /**
