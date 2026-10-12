@@ -12,6 +12,7 @@ if (globalEnv.publicPosthogKey) {
     posthog.init(globalEnv.publicPosthogKey, {
         api_host: globalEnv.publicPosthogHost,
         autocapture: false,
+        capture_pageview: 'history_change',
         mask_personal_data_properties: true,
         // mask_personal_data_properties only covers ad/click params, so name the rest explicitly.
         // invite_email carries a requester's address and the first $pageview fires here, before

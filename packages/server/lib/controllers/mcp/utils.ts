@@ -52,14 +52,15 @@ function failureReason(payload: NangoError['payload']): string | undefined {
         return undefined;
     }
 
-    const detail = payload['error'];
-
-    if (typeof detail === 'string') {
+    const detail = messageOf(payload['error']);
+    if (detail) {
         return detail;
     }
 
-    if (detail && typeof detail === 'object' && 'message' in detail && typeof detail.message === 'string') {
-        return detail.message;
+    const errors: unknown = payload['errors'];
+    const errorsDetail = Array.isArray(errors) ? errors.flatMap((entry) => messageOf(entry) || []).join('; ') : messageOf(errors);
+    if (errorsDetail) {
+        return errorsDetail;
     }
 
     const message = payload['message'];
@@ -68,6 +69,16 @@ function failureReason(payload: NangoError['payload']): string | undefined {
         return typeof type === 'string' ? `${type}: ${message}` : message;
     }
 
+    return undefined;
+}
+
+function messageOf(value: unknown): string | undefined {
+    if (typeof value === 'string') {
+        return value;
+    }
+    if (value && typeof value === 'object' && 'message' in value && typeof value.message === 'string') {
+        return value.message;
+    }
     return undefined;
 }
 
