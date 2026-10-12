@@ -4,7 +4,7 @@ import { convertToModelMessages, dynamicTool, jsonSchema, stepCountIs, streamTex
 
 import db from '@nangohq/database';
 import { buildTagsFromEndUser, configService, connectionService, getProvider, sharedCredentialsService } from '@nangohq/shared';
-import { Err, getLogger, Ok, report } from '@nangohq/utils';
+import { Err, getLogger, metrics, Ok, report, stringifyError } from '@nangohq/utils';
 
 import { withConnectionsCreatedInSession } from '../controllers/agent/mcp/sessionConnection.js';
 import { createAgentSessionMcpServer, TOOL_NAME_SEPARATOR } from '../controllers/agent/mcp/sessionServer.js';
@@ -12,9 +12,11 @@ import { postAgentSessionsBodySchema } from '../controllers/agent/postSessions.j
 import { getOrchestrator } from '../utils/utils.js';
 import { buildInstructions } from './agentPlayground.instructions.js';
 import { createPlaygroundModel } from './agentPlaygroundModel.service.js';
+import { modelErrorCategory, modelUnavailableError } from './agentPlaygroundModelError.js';
 import { trackPlaygroundTurn } from './agentPlaygroundUsage.service.js';
 import * as agentSessionService from './agentSession.service.js';
 
+import type { ModelErrorCategory } from './agentPlaygroundModelError.js';
 import type { PlaygroundStep, PlaygroundTurnOutcome } from './agentPlaygroundUsage.service.js';
 import type {
     AgentPlaygroundIntegrationSetup,
@@ -428,6 +430,7 @@ export async function startTurn({
 
     const steps: PlaygroundStep[] = [];
     let failed = false;
+    let failedCategory: ModelErrorCategory | null = null;
 
     const result = streamText({
         model: createPlaygroundModel(),
@@ -450,8 +453,12 @@ export async function startTurn({
         onEnd: close,
         onAbort: close,
         onError: async ({ error }) => {
-            logger.error(`Agent Playground turn failed: ${error instanceof Error ? error.message : String(error)}`);
             failed = true;
+            failedCategory = modelErrorCategory(error);
+            if (failedCategory) {
+                metrics.increment(metrics.Types.AGENT_PLAYGROUND_MODEL_ERROR, 1, { category: failedCategory });
+            }
+            logger.error(`Agent Playground turn failed (${failedCategory ?? 'not a provider error'}): ${stringifyError(error)}`);
             await close();
         }
     });
@@ -460,7 +467,13 @@ export async function startTurn({
         toUIMessageStream({
             stream: result.stream,
             originalMessages: messages,
-            onError: (error) => (error instanceof Error ? error.message : 'The agent failed to answer'),
+            onError: (error) => {
+                const category = modelErrorCategory(error);
+                if (category) {
+                    return JSON.stringify(modelUnavailableError(category));
+                }
+                return error instanceof Error ? error.message : 'The agent failed to answer';
+            },
             messageMetadata: ({ part }): AgentPlaygroundMessageMetadata | undefined => {
                 if (part.type === 'start') {
                     return startMetadata;
@@ -478,7 +491,7 @@ export async function startTurn({
                 } else if (failed || outcome.status === 'failed') {
                     turnOutcome = 'error';
                 }
-                trackPlaygroundTurn({ ctx, sessionId: session.id, outcome: turnOutcome, steps });
+                trackPlaygroundTurn({ ctx, sessionId: session.id, outcome: turnOutcome, steps, errorCategory: failedCategory });
             }
         })
     );

@@ -146,4 +146,17 @@ describe('trackPlaygroundTurn', () => {
         expect(payload?.properties).toMatchObject({ is_success: false, error_code: 'model_error', is_stopped: false, input_tokens: 1_000 });
         expect(payload?.properties).not.toHaveProperty('cost_usd');
     });
+
+    it('names the provider failure behind a failed turn', () => {
+        trackPlaygroundTurn({
+            ctx: { account: { id: 42 } as DBTeam, environment: { id: 7 } as DBEnvironment, plan: null, user: { id: 3 } as DBUser },
+            sessionId: 'session-1',
+            outcome: 'error',
+            steps: [],
+            errorCategory: 'quota'
+        });
+
+        const [payload] = capture.mock.calls[0] ?? [];
+        expect(payload?.properties).toMatchObject({ is_success: false, error_code: 'model_error', error_category: 'quota' });
+    });
 });

@@ -1,4 +1,4 @@
-import { simulateReadableStream } from 'ai';
+import { APICallError, simulateReadableStream } from 'ai';
 import { MockLanguageModelV4 } from 'ai/test';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -26,7 +26,7 @@ vi.mock('../../../services/agentPlaygroundModel.service.js', async (importOrigin
 
 const stepUsage = { inputTokens: { total: 1_000, noCache: 1_000, cacheRead: 0, cacheWrite: 0 }, outputTokens: { total: 10, text: 10, reasoning: 0 } };
 
-function twoStepModel(secondStep: LanguageModelV4StreamPart[] | 'until-aborted' | 'throws'): LanguageModel {
+function twoStepModel(secondStep: LanguageModelV4StreamPart[] | 'until-aborted' | 'throws' | Error): LanguageModel {
     let calls = 0;
     return new MockLanguageModelV4({
         modelId: 'gpt-6-luna',
@@ -44,6 +44,9 @@ function twoStepModel(secondStep: LanguageModelV4StreamPart[] | 'until-aborted' 
             }
             if (secondStep === 'throws') {
                 return Promise.reject(new Error('429 Too Many Requests'));
+            }
+            if (secondStep instanceof Error) {
+                return Promise.reject(secondStep);
             }
             if (secondStep === 'until-aborted') {
                 return Promise.resolve({
@@ -222,6 +225,39 @@ describe('POST /api/v1/agent-playground/chat', () => {
             expect(playgroundTurnEvents(track)).toEqual([
                 expect.objectContaining({ is_success: false, error_code: 'model_error', step_count: 1, input_tokens: 1_000 })
             ]);
+        });
+    });
+
+    it('tells the client the model is unavailable when the credit is spent, and tracks why', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        modelOverride.current = () =>
+            twoStepModel(
+                new APICallError({
+                    message: 'You exceeded your current quota',
+                    url: 'https://api.openai.com/v1/responses',
+                    requestBodyValues: {},
+                    statusCode: 429,
+                    responseBody: JSON.stringify({
+                        error: { message: 'You exceeded your current quota', type: 'insufficient_quota', code: 'insufficient_quota' }
+                    }),
+                    isRetryable: false
+                })
+            );
+        const track = vi.spyOn(productTracking, 'track');
+
+        const turn = await chat(session, { messages: [userMessage("What's on my calendar today?")] });
+
+        const errorChunk = turn.text
+            .split('\n')
+            .filter((line) => line.startsWith('data: {'))
+            .map((line) => JSON.parse(line.slice('data: '.length)) as { type: string; errorText?: string })
+            .find((chunk) => chunk.type === 'error');
+        expect(JSON.parse(errorChunk?.errorText ?? '{}')).toEqual({ error: { code: 'model_unavailable', retryable: false } });
+        expect(turn.text).not.toContain('You exceeded your current quota');
+        await vi.waitFor(() => {
+            expect(playgroundTurnEvents(track)).toEqual([expect.objectContaining({ is_success: false, error_code: 'model_error', error_category: 'quota' })]);
         });
     });
 
