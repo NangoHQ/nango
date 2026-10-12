@@ -60,8 +60,8 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
     - For a change, the old value takes a `previous_` prefix and the new value the plain name:
       `previous_plan` and `plan`.
     - Values are mostly strings, numbers or booleans. Arrays and objects are the exception, below.
-    - A `complete` event always carries `is_success`. When `is_success` is false, add `error_code` with
-      our API's error code, such as `resource_capped`, never the error message.
+    - A `complete` event always carries `is_success`. When `is_success` is false and the failure has an
+      error code, add `error_code` with it, such as `resource_capped`. Never send the error message.
     - A `create`, `update` or `delete` that also reports failed attempts carries `is_success`.
     - An HTTP call carries `http_status` when the response provides one. A session-scoped event carries
       `agent_session_id`.
@@ -76,7 +76,7 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
     ```ts
     'playground:run_complete': {
         surface: 'web',
-        insight: 'How many accounts use the API Playground each week?',
+        insight: 'How often Playground runs succeed, and how long they take',
         fires: 'When a Playground run returns a result or an error',
         properties: z.object({ function_type: z.string(), integration: z.string(), is_success: z.boolean(), run_state: z.string(), run_duration_ms: z.number() })
     },
@@ -115,7 +115,7 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
 
 | Change                                    | What to do                                                      |
 | ----------------------------------------- | --------------------------------------------------------------- |
-| Add an optional property                  | Add it to the entry                                             |
+| Add an optional property                  | Add it to the entry with `.optional()`                          |
 | Change what a property holds, or its type | Add a property with a new name. Never retype one                |
 | Revamp the flow an event belongs to       | Version the category, such as `onboarding_v2:connection_create` |
 | Stop tracking something                   | Delete the entry and its calls. Never reuse the name            |
