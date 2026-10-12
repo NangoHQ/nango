@@ -494,6 +494,7 @@ export interface FunctionDeploymentArtifact {
     name: string;
     integrationId: string;
     description: string;
+    tags?: FunctionTags | undefined;
     trigger: FunctionTriggerDefinition;
     requires: FunctionRequires;
     capabilities: FunctionCapabilities;
