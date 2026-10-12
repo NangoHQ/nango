@@ -1242,6 +1242,7 @@
               "integrations/all/databricks-account",
               "integrations/all/databricks-workspace",
               "integrations/all/datacandy",
+              "api-integrations/datacircle",
               "api-integrations/datadog",
               "api-integrations/datadog-oauth",
               "integrations/all/datev",
