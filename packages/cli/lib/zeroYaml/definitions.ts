@@ -293,9 +293,10 @@ export function parseSync({
     const outputNames = Object.keys(params.models);
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
 
-    const features = detectFeatures({ entryPoint: absoluteFilePath });
+    const featuresRes = detectFeatures({ entryPoint: absoluteFilePath });
+    const features = featuresRes.isOk() ? featuresRes.value : [];
 
-    if (params.checkpoint !== undefined && features.isOk() && !features.value.includes('checkpoints')) {
+    if (featuresRes.isOk() && params.checkpoint !== undefined && !features.includes('checkpoints')) {
         return Err(new UnusedCheckpointDefinitionError(filePath, ['createSync', 'checkpoint']));
     }
 
@@ -315,8 +316,7 @@ export function parseSync({
         version: params.version || '',
         webhookSubscriptions: params.webhookSubscriptions || [],
         json_schema: jsonSchema,
-        features: features.isOk() ? features.value : [], // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
-        checkpoint: params.checkpoint !== undefined
+        features
     };
 
     return Ok(sync);
@@ -347,9 +347,10 @@ export function parseAction({
 
     const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
 
-    const features = detectFeatures({ entryPoint: absoluteFilePath });
+    const featuresRes = detectFeatures({ entryPoint: absoluteFilePath });
+    const features = featuresRes.isOk() ? featuresRes.value : [];
 
-    if (params.checkpoint !== undefined && features.isOk() && !features.value.includes('checkpoints')) {
+    if (featuresRes.isOk() && params.checkpoint !== undefined && !features.includes('checkpoints')) {
         return Err(new UnusedCheckpointDefinitionError(filePath, ['createAction', 'checkpoint']));
     }
 
@@ -364,8 +365,7 @@ export function parseAction({
         usedModels: [inputName, outputName],
         version: params.version || '',
         json_schema: jsonSchema,
-        features: features.isOk() ? features.value : [], // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
-        checkpoint: params.checkpoint !== undefined
+        features
     });
 }
 

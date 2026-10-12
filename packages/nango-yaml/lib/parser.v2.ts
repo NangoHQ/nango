@@ -140,8 +140,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 scopes: this.getScopes(sync),
                 endpoints,
                 webhookSubscriptions,
-                features: [], // not supporting features detection in Nango YAML
-                checkpoint: false // Checkpoints are not supported in Nango YAML
+                features: [] // not supporting features detection in Nango YAML
             };
 
             parsedSyncs.push(parsedSync);
@@ -186,8 +185,7 @@ export class NangoYamlParserV2 extends NangoYamlParser {
                 output: modelOutput && modelOutput.length > 0 ? modelOutput.map((m) => m.name) : null,
                 usedModels: Array.from(modelNames),
                 endpoint,
-                features: [], // not supporting features detection in Nango YAML
-                checkpoint: false // Checkpoints are not supported in Nango YAML
+                features: [] // not supporting features detection in Nango YAML
             };
 
             parsedActions.push(parsedAction);

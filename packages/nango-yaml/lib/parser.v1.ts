@@ -47,8 +47,7 @@ export class NangoYamlParserV1 extends NangoYamlParser {
                         output: modelOutput && modelOutput.length > 0 ? modelOutput.map((m) => m.name) : null,
                         scopes: [], // Scopes was never allowed in v1
                         usedModels: [],
-                        version: syncOrAction.version || '',
-                        checkpoint: false // Checkpoints were never allowed in v1
+                        version: syncOrAction.version || ''
                     });
                 } else {
                     const modelOutput = this.getModelForOutput({
@@ -75,8 +74,7 @@ export class NangoYamlParserV1 extends NangoYamlParser {
                         usedModels: modelOutput.map((m) => m.name),
                         sync_type: 'incremental',
                         webhookSubscriptions: [],
-                        version: syncOrAction.version || '',
-                        checkpoint: false // Checkpoints were never allowed in v1
+                        version: syncOrAction.version || ''
                     });
                 }
             }

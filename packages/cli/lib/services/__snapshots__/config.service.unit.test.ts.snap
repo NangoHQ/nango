@@ -6,7 +6,6 @@ exports[`load > should parse a nango.yaml file that is version 1 as expected 1`]
     {
       "actions": [
         {
-          "checkpoint": false,
           "description": "",
           "endpoint": null,
           "input": null,
@@ -31,7 +30,6 @@ exports[`load > should parse a nango.yaml file that is version 1 as expected 1`]
       "syncs": [
         {
           "auto_start": true,
-          "checkpoint": false,
           "description": "",
           "endpoints": [],
           "input": null,
@@ -160,7 +158,6 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
     {
       "actions": [
         {
-          "checkpoint": false,
           "description": "Get a GitHub issue.",
           "endpoint": {
             "method": "GET",
@@ -182,7 +179,6 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "version": "",
         },
         {
-          "checkpoint": false,
           "description": "Creates a GitHub issue.",
           "endpoint": {
             "method": "POST",
@@ -206,7 +202,6 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
           "version": "",
         },
         {
-          "checkpoint": false,
           "description": "Deletes a GitHub issue.",
           "endpoint": {
             "method": "DELETE",
@@ -237,7 +232,6 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
       "syncs": [
         {
           "auto_start": true,
-          "checkpoint": false,
           "description": "Sync github issues continuously from public repos",
           "endpoints": [
             {
@@ -268,7 +262,6 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
         },
         {
           "auto_start": true,
-          "checkpoint": false,
           "description": "Sync github issues continuously from public repos example two",
           "endpoints": [
             {
@@ -297,7 +290,6 @@ exports[`load > should parse a nango.yaml file that is version 2 as expected 1`]
         },
         {
           "auto_start": true,
-          "checkpoint": false,
           "description": "Sync github issues to multiple models",
           "endpoints": [
             {
