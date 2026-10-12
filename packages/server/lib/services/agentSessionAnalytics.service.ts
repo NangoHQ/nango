@@ -109,9 +109,10 @@ export function trackAgentSessionToolSearch({ session, query, matches, related, 
             match_count: matches.length,
             related_count: related.length,
             ...(matches[0] ? { top_match_confidence: matches[0].confidence } : {}),
-            ...outcomeProperties(outcome)
-        },
-        structuredProperties: { matches, related }
+            ...outcomeProperties(outcome),
+            matches,
+            related
+        }
     });
 }
 

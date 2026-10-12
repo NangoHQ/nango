@@ -13,8 +13,6 @@ export interface AnalyticsEventDefinition {
     insight: string;
     fires: string;
     properties: z.ZodType;
-    structured_properties?: z.ZodType;
-    structured_reason?: string;
 }
 
 const none = z.record(z.string(), z.never());
@@ -365,13 +363,11 @@ export const analyticsEventCatalogue = defineCatalogue({
             query: z.string().optional(),
             match_count: z.number(),
             related_count: z.number(),
-            top_match_confidence: z.number().optional()
-        }),
-        structured_properties: z.object({
+            top_match_confidence: z.number().optional(),
+            // Arrays on purpose: search quality is judged by reading a query next to its results. The search limit caps both.
             matches: z.array(z.custom<AgentSessionToolSearchHit>()),
             related: z.array(z.custom<AgentSessionToolSearchHit>())
-        }),
-        structured_reason: 'Search quality is judged by reading a query next to the tools it returned. The lists are capped by the search limit'
+        })
     }
 });
 
@@ -384,21 +380,10 @@ export type AnalyticsEventNameFor<S extends AnalyticsSurface> = {
 
 export type AnalyticsEventProperties<E extends AnalyticsEventKey> = z.infer<AnalyticsEventCatalogue[E]['properties']>;
 
-// Distributes over a union of names, so properties become optional only when no member requires any.
-type HasNoRequiredProperties<E extends AnalyticsEventKey> = E extends unknown
-    ? Record<never, never> extends AnalyticsEventProperties<E>
-        ? true
-        : false
-    : never;
-
 export type AnalyticsEventPropertiesInput<E extends AnalyticsEventKey> =
-    false extends HasNoRequiredProperties<E> ? { eventProperties: AnalyticsEventProperties<E> } : { eventProperties?: AnalyticsEventProperties<E> };
+    Record<never, never> extends AnalyticsEventProperties<E>
+        ? { eventProperties?: AnalyticsEventProperties<E> }
+        : { eventProperties: AnalyticsEventProperties<E> };
 
 export type AnalyticsEventPropertiesArgs<E extends AnalyticsEventKey> =
-    false extends HasNoRequiredProperties<E> ? [properties: AnalyticsEventProperties<E>] : [properties?: AnalyticsEventProperties<E>];
-
-export type AnalyticsEventStructuredProperties<E extends AnalyticsEventKey> = AnalyticsEventCatalogue[E] extends {
-    structured_properties: infer S extends z.ZodType;
-}
-    ? z.infer<S>
-    : never;
+    Record<never, never> extends AnalyticsEventProperties<E> ? [properties?: AnalyticsEventProperties<E>] : [properties: AnalyticsEventProperties<E>];

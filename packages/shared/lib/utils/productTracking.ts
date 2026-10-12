@@ -4,16 +4,7 @@ import { PostHog } from 'posthog-node';
 
 import { baseUrl, FixedSizeMap, NANGO_VERSION, report } from '@nangohq/utils';
 
-import type {
-    AccountGroupProperties,
-    AnalyticsEventNameFor,
-    AnalyticsEventPropertiesInput,
-    AnalyticsEventStructuredProperties,
-    DBEnvironment,
-    DBPlan,
-    DBTeam,
-    DBUser
-} from '@nangohq/types';
+import type { AccountGroupProperties, AnalyticsEventNameFor, AnalyticsEventPropertiesInput, DBEnvironment, DBPlan, DBTeam, DBUser } from '@nangohq/types';
 
 const ACCOUNT_GROUP = 'company';
 
@@ -168,13 +159,8 @@ class ProductTracking {
         environment,
         user,
         plan,
-        eventProperties,
-        structuredProperties
-    }: {
-        name: E;
-        structuredProperties?: AnalyticsEventStructuredProperties<E>;
-    } & AnalyticsEventPropertiesInput<E> &
-        TrackingContextInput) {
+        eventProperties
+    }: { name: E } & AnalyticsEventPropertiesInput<E> & TrackingContextInput) {
         try {
             if (this.client == null) {
                 return;
@@ -190,7 +176,7 @@ class ProductTracking {
             }
             const attribution = this.attribute(resolved);
 
-            const properties: Record<string, unknown> = { ...eventProperties, ...(structuredProperties as object | undefined), ...attribution.properties };
+            const properties: Record<string, unknown> = { ...eventProperties, ...attribution.properties };
 
             this.client.capture({ event: name, distinctId: attribution.distinctId, properties, groups: attribution.groups });
         } catch (err) {
