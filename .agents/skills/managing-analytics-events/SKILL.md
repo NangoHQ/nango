@@ -13,9 +13,8 @@ validated at runtime.
 
 The allowed categories, objects and actions, each with its meaning, are the interfaces in
 `packages/types/lib/analytics/taxonomy.ts`. A name built from anything else fails `npm run ts-build`.
-`catalogue.unit.test.ts` checks the rest with `rules.ts`: `snake_case` names and properties, `is_` and `has_`
-booleans, primitive values, `is_success` on `complete` events, and `structured_reason`. The other rules
-below are yours and the reviewer's to check.
+`catalogue.unit.test.ts` checks that property names are `snake_case` and that booleans start with `is_` or
+`has_`. The other rules below are yours and the reviewer's to check.
 
 **No insight, no event.** If you can't name the chart or funnel step an event feeds, don't add it. The
 questions we want answered are on the [product insights page](https://app.notion.com/p/3e4ce298312181d7a9c7d8efd1a96c1a).
@@ -60,7 +59,7 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
     - Booleans start with `is_` or `has_`. Dates end in `_date` or `_timestamp`.
     - For a change, the old value takes a `previous_` prefix and the new value the plain name:
       `previous_plan` and `plan`.
-    - Values are mostly strings, numbers or booleans. The one exception is `structured_properties`, below.
+    - Values are mostly strings, numbers or booleans. Arrays and objects are the exception, below.
     - A `complete` event always carries `is_success`. When `is_success` is false, add `error_code` with
       our API's error code, such as `resource_capped`, never the error message.
     - A `create`, `update` or `delete` that also reports failed attempts carries `is_success`.
@@ -69,8 +68,8 @@ The reasoning behind the rules below is on the [taxonomy page](https://app.notio
     - Don't list `surface` or `is_production`. Every sender adds `surface`, and the server adds
       `is_production` when it knows the environment.
     - An array or object is allowed only when an insight can't be answered without it and it has a fixed
-      maximum size. Put it in `structured_properties`, say why in `structured_reason`, and send primitive
-      summaries next to it, such as a count or the top value.
+      maximum size. Say why in a comment on the property, and send primitive summaries next to it, such as a
+      count or the top value.
 
 6. **Add the entry.**
 
