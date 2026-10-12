@@ -31,6 +31,26 @@ describe('describeChatError', () => {
         });
     });
 
+    it('says the playground is unavailable when the model provider fails, and offers a retry', () => {
+        const error = new Error(JSON.stringify({ error: { code: 'model_unavailable', retryable: true } }));
+
+        expect(describeChatError(error)).toEqual({
+            title: 'The Agent Playground is temporarily unavailable.',
+            detail: 'Try again in a few minutes.',
+            action: 'retry'
+        });
+    });
+
+    it('offers no retry when waiting will not bring the model provider back', () => {
+        const error = new Error(JSON.stringify({ error: { code: 'model_unavailable', retryable: false } }));
+
+        expect(describeChatError(error)).toEqual({
+            title: 'The Agent Playground is temporarily unavailable.',
+            detail: 'Please check back later.',
+            action: 'none'
+        });
+    });
+
     it('keeps the text of an error sent mid-reply', () => {
         expect(describeChatError(new Error('Rate limit reached'))).toEqual({
             title: 'The agent ran into a problem.',
