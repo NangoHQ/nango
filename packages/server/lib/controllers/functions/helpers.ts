@@ -14,6 +14,7 @@ export function toGetFunctionResponse(fn: functionConfigService.CurrentFunctionC
         provider: fn.integration.provider,
         name: fn.config.name,
         description: fn.currentVersion.description,
+        tags: fn.currentVersion.tags,
         state: fn.config.enabled ? 'enabled' : 'disabled',
         source: fn.currentVersion.source,
         trigger: fn.currentVersion.trigger,

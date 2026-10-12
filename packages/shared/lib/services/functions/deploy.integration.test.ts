@@ -44,6 +44,7 @@ function functionVersion(
 ): Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> {
     return {
         description: artifact.description,
+        tags: {},
         file_location: `functions/${artifact.integrationId}/${artifact.name}`,
         version: functionVersionHash(artifact).unwrap(),
         source: 'repo',
