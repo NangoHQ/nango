@@ -1,19 +1,65 @@
+import { simulateReadableStream } from 'ai';
+import { MockLanguageModelV4 } from 'ai/test';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
-import { seeders } from '@nangohq/shared';
+import { productTracking, seeders } from '@nangohq/shared';
 
 import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 import type * as ModelService from '../../../services/agentPlaygroundModel.service.js';
+import type { LanguageModelV4StreamPart } from '@ai-sdk/provider';
 import type { AgentPlaygroundIntegrationSetup, AgentPlaygroundMessageMetadata } from '@nangohq/types';
+import type { LanguageModel } from 'ai';
+import type { MockInstance } from 'vitest';
+
+const modelOverride = vi.hoisted(() => ({ current: undefined as (() => LanguageModel) | undefined }));
 
 // A developer's OPENAI_API_KEY would otherwise send these tests to the real model.
 vi.mock('../../../services/agentPlaygroundModel.service.js', async (importOriginal) => {
     const original = await importOriginal<typeof ModelService>();
-    return { ...original, createPlaygroundModel: original.createStreamingMockModel };
+    return { ...original, createPlaygroundModel: () => (modelOverride.current ?? original.createStreamingMockModel)() };
 });
+
+const stepUsage = { inputTokens: { total: 1_000, noCache: 1_000, cacheRead: 0, cacheWrite: 0 }, outputTokens: { total: 10, text: 10, reasoning: 0 } };
+
+function twoStepModel(secondStep: LanguageModelV4StreamPart[] | 'until-aborted' | 'throws'): LanguageModel {
+    let calls = 0;
+    return new MockLanguageModelV4({
+        modelId: 'gpt-6-luna',
+        doStream: ({ abortSignal }) => {
+            calls += 1;
+            if (calls === 1) {
+                return Promise.resolve({
+                    stream: simulateReadableStream<LanguageModelV4StreamPart>({
+                        chunks: [
+                            { type: 'tool-call', toolCallId: 'call-1', toolName: 'nango_tool_search', input: JSON.stringify({ query: 'calendar' }) },
+                            { type: 'finish', finishReason: { unified: 'tool-calls', raw: undefined }, usage: stepUsage }
+                        ]
+                    })
+                });
+            }
+            if (secondStep === 'throws') {
+                return Promise.reject(new Error('429 Too Many Requests'));
+            }
+            if (secondStep === 'until-aborted') {
+                return Promise.resolve({
+                    stream: new ReadableStream<LanguageModelV4StreamPart>({
+                        start(controller) {
+                            abortSignal?.addEventListener('abort', () => controller.error(abortSignal.reason));
+                        }
+                    })
+                });
+            }
+            return Promise.resolve({ stream: simulateReadableStream({ chunks: secondStep }) });
+        }
+    });
+}
+
+function playgroundTurnEvents(track: MockInstance<typeof productTracking.track>) {
+    return track.mock.calls.filter(([event]) => event.name === 'playground:agent_turn_complete').map(([event]) => event.eventProperties);
+}
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -58,6 +104,7 @@ describe('POST /api/v1/agent-playground/chat', () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
+        modelOverride.current = undefined;
     });
 
     afterAll(() => {
@@ -110,6 +157,8 @@ describe('POST /api/v1/agent-playground/chat', () => {
         const { user, env } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
+        const track = vi.spyOn(productTracking, 'track');
+
         const turn = await chat(session, { messages: [userMessage("What's on my calendar today?")], timeZone: 'Europe/Kyiv' });
 
         expect(turn.status).toBe(200);
@@ -117,6 +166,94 @@ describe('POST /api/v1/agent-playground/chat', () => {
         expect(turn.integrationSetup).toBeUndefined();
         expect(turn.text).toContain('Mock reply');
         expect(await integrationsIn(env.id)).toEqual([]);
+        await vi.waitFor(() => {
+            const turnEvents = track.mock.calls.filter(([event]) => event.name === 'playground:agent_turn_complete');
+            expect(turnEvents).toHaveLength(1);
+            expect(turnEvents[0]?.[0].eventProperties).toMatchObject({
+                agent_session_id: turn.sessionId,
+                environment_id: env.id,
+                is_success: true,
+                is_stopped: false,
+                model: 'mock',
+                step_count: 2,
+                cost_usd: 0
+            });
+        });
+    });
+
+    it('tracks a turn that fails mid-stream once, as a failure, with the failing step', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        modelOverride.current = () =>
+            twoStepModel([
+                { type: 'error', error: new Error('provider failed') },
+                { type: 'finish', finishReason: { unified: 'error', raw: 'error' }, usage: stepUsage }
+            ]);
+        const track = vi.spyOn(productTracking, 'track');
+
+        await chat(session, { messages: [userMessage("What's on my calendar today?")] });
+
+        await vi.waitFor(() => {
+            expect(playgroundTurnEvents(track)).toEqual([
+                expect.objectContaining({ is_success: false, error_code: 'model_error', is_stopped: false, step_count: 2, input_tokens: 2_000 })
+            ]);
+        });
+    });
+
+    it('tracks a turn whose model request throws, as a failure', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        modelOverride.current = () => twoStepModel('throws');
+        const track = vi.spyOn(productTracking, 'track');
+
+        await chat(session, { messages: [userMessage("What's on my calendar today?")] });
+
+        await vi.waitFor(() => {
+            expect(playgroundTurnEvents(track)).toEqual([
+                expect.objectContaining({ is_success: false, error_code: 'model_error', step_count: 1, input_tokens: 1_000 })
+            ]);
+        });
+    });
+
+    it('tracks a stopped turn once, with the steps that finished', async () => {
+        vi.spyOn(getFlags(), 'isAgentPlaygroundEnabled').mockResolvedValue(true);
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+        modelOverride.current = () => twoStepModel('until-aborted');
+        const track = vi.spyOn(productTracking, 'track');
+
+        const stop = new AbortController();
+        const res = await fetch(`${api.url}/api/v1/agent-playground/chat?env=dev`, {
+            method: 'POST',
+            headers: { cookie: session, 'content-type': 'application/json' },
+            body: JSON.stringify({ messages: [userMessage("What's on my calendar today?")] }),
+            signal: stop.signal
+        });
+        const reader = res.body?.getReader();
+        if (!reader) {
+            throw new Error('The chat response has no body');
+        }
+        const decoder = new TextDecoder();
+        let received = '';
+        while (!received.includes('tool-output-available')) {
+            const { value, done } = await reader.read();
+            if (done) {
+                break;
+            }
+            received += decoder.decode(value);
+        }
+        stop.abort();
+
+        await vi.waitFor(
+            () => {
+                expect(playgroundTurnEvents(track)).toEqual([
+                    expect.objectContaining({ is_success: true, is_stopped: true, step_count: 1, input_tokens: 1_000 })
+                ]);
+            },
+            { timeout: 5_000 }
+        );
     });
 
     it("creates only the pre-made prompt's integration, on Nango's OAuth app", async () => {
