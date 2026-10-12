@@ -16,6 +16,13 @@ describe('buildInstructions', () => {
         expect(instructions.indexOf('# Nango agent session')).toBeLessThan(instructions.indexOf('# Nango Agent Playground'));
     });
 
+    it('points an app the session does not have to the Integrations tab', () => {
+        const instructions = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'), undefined);
+
+        expect(instructions).toContain('they can add it in the Integrations tab if Nango supports it');
+        expect(instructions).not.toContain('does not offer that app');
+    });
+
     it('names the apps that are not set up yet, and says nothing when all are', () => {
         const withMissing = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'), undefined, ['Google Calendar']);
         const withoutMissing = buildInstructions('UTC', new Date('2026-09-29T15:00:00Z'), undefined, []);
